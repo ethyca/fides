@@ -21,23 +21,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1.scope_registry import (
-    STORAGE_CREATE_OR_UPDATE,
-    STORAGE_DELETE,
-    STORAGE_READ,
-)
-from fides.api.api.v1.urn_registry import (
-    STORAGE_ACTIVE_DEFAULT,
-    STORAGE_BY_KEY,
-    STORAGE_CONFIG,
-    STORAGE_DEFAULT,
-    STORAGE_DEFAULT_BY_TYPE,
-    STORAGE_DEFAULT_SECRETS,
-    STORAGE_SECRETS,
-    STORAGE_STATUS,
-    STORAGE_UPLOAD,
-    V1_URL_PREFIX,
-)
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, StorageUploadError
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.privacy_request import PrivacyRequest
@@ -71,6 +54,23 @@ from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
 from fides.api.util.storage_util import get_schema_for_secrets
+from fides.common.api.scope_registry import (
+    STORAGE_CREATE_OR_UPDATE,
+    STORAGE_DELETE,
+    STORAGE_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    STORAGE_ACTIVE_DEFAULT,
+    STORAGE_BY_KEY,
+    STORAGE_CONFIG,
+    STORAGE_DEFAULT,
+    STORAGE_DEFAULT_BY_TYPE,
+    STORAGE_DEFAULT_SECRETS,
+    STORAGE_SECRETS,
+    STORAGE_STATUS,
+    STORAGE_UPLOAD,
+    V1_URL_PREFIX,
+)
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
 
@@ -104,7 +104,7 @@ def upload_data(
     logger.info("Starting storage upload for request id: {}", request_id)
     try:
         data_location: str = upload(
-            db, request_id=request_id, data=data, storage_key=storage_key
+            db, privacy_request=privacy_request, data=data, storage_key=storage_key
         )
     except StorageUploadError as e:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))

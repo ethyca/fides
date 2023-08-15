@@ -25,7 +25,6 @@ def optional_requirements(
     """
     Matches the provided dependency names to lines in `optional-requirements.txt`,
     and returns the full dependency string for each one.
-
     Prevents the need to store version numbers in two places.
     """
 
@@ -46,13 +45,12 @@ def optional_requirements(
 # Human-Readable Extras
 # Versions are read from corresponding lines in `optional-requirements.txt`
 extras = {
-    "mssql": optional_requirements(["pyodbc"], dangerous_requires),
+    "mssql": optional_requirements(["pymssql"], dangerous_requires),
 }
 dangerous_extras = ["mssql"]  # These extras break on certain platforms
 extras["all"] = sum(
     [value for key, value in extras.items() if key not in dangerous_extras], []
 )
-
 
 ###################
 ## Package Setup ##

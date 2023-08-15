@@ -6,25 +6,6 @@ from unittest.mock import Mock
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.scope_registry import (
-    CLIENT_CREATE,
-    CLIENT_DELETE,
-    CLIENT_READ,
-    CLIENT_UPDATE,
-    SCOPE_READ,
-    SCOPE_REGISTRY,
-    STORAGE_READ,
-)
-from fides.api.api.v1.urn_registry import (
-    CLIENT,
-    CLIENT_BY_ID,
-    CLIENT_SCOPE,
-    OAUTH_CALLBACK,
-    ROLE,
-    SCOPE,
-    TOKEN,
-    V1_URL_PREFIX,
-)
 from fides.api.common_exceptions import OAuth2TokenException
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -34,10 +15,33 @@ from fides.api.cryptography.schemas.jwt import (
 )
 from fides.api.models.authentication_request import AuthenticationRequest
 from fides.api.models.client import ClientDetail
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import OWNER
 from fides.api.oauth.utils import extract_payload
-from fides.core.config import CONFIG
+from fides.api.schemas.connection_configuration.connection_secrets import (
+    TestStatusMessage,
+)
+from fides.common.api.scope_registry import (
+    CLIENT_CREATE,
+    CLIENT_DELETE,
+    CLIENT_READ,
+    CLIENT_UPDATE,
+    SCOPE_READ,
+    SCOPE_REGISTRY,
+    STORAGE_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    CLIENT,
+    CLIENT_BY_ID,
+    CLIENT_SCOPE,
+    OAUTH_CALLBACK,
+    ROLE,
+    SCOPE,
+    TOKEN,
+    V1_URL_PREFIX,
+)
+from fides.config import CONFIG
 
 
 class TestCreateClient:
@@ -532,6 +536,113 @@ class TestCallback:
         )
         assert response.status_code == 400
         assert response.json() == {"detail": "Unable to retrieve access token."}
+
+        authentication_request.delete(db)
+
+    @mock.patch("fides.api.api.v1.endpoints.oauth_endpoints.connection_status")
+    @mock.patch(
+        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+    )
+    def test_successful_callback_with_referer(
+        self,
+        get_access_token_mock: Mock,
+        connection_status_mock: Mock,
+        db,
+        api_client: TestClient,
+        callback_url,
+        oauth2_authorization_code_connection_config: ConnectionConfig,
+    ):
+        get_access_token_mock.return_value = None
+        connection_status_mock.return_value = Mock(
+            test_status=ConnectionTestStatus.succeeded
+        )
+        authentication_request = AuthenticationRequest.create_or_update(
+            db,
+            data={
+                "connection_key": oauth2_authorization_code_connection_config.key,
+                "state": "new_request",
+                "referer": "http://test.com",
+            },
+        )
+        response = api_client.get(
+            callback_url, params={"code": "abc", "state": "new_request"}
+        )
+
+        get_access_token_mock.assert_called_once()
+        assert response.history[0].status_code == 307  # HTTP status for redirection
+        assert (
+            response.history[0].headers["location"]
+            == f"http://test.com/systems/configure/{oauth2_authorization_code_connection_config.system.fides_key}?status=succeeded"
+        )
+
+        authentication_request.delete(db)
+
+    @mock.patch("fides.api.api.v1.endpoints.oauth_endpoints.connection_status")
+    @mock.patch(
+        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+    )
+    def test_failed_callback_with_referer(
+        self,
+        get_access_token_mock: Mock,
+        connection_status_mock: Mock,
+        db,
+        api_client: TestClient,
+        callback_url,
+        oauth2_authorization_code_connection_config: ConnectionConfig,
+    ):
+        get_access_token_mock.return_value = None
+        connection_status_mock.return_value = Mock(
+            test_status=ConnectionTestStatus.failed
+        )
+        authentication_request = AuthenticationRequest.create_or_update(
+            db,
+            data={
+                "connection_key": oauth2_authorization_code_connection_config.key,
+                "state": "new_request",
+                "referer": "http://test.com",
+            },
+        )
+        response = api_client.get(
+            callback_url, params={"code": "abc", "state": "new_request"}
+        )
+
+        get_access_token_mock.assert_called_once()
+        assert response.history[0].status_code == 307  # HTTP status for redirection
+        assert (
+            response.history[0].headers["location"]
+            == f"http://test.com/systems/configure/{oauth2_authorization_code_connection_config.system.fides_key}?status=failed"
+        )
+
+        authentication_request.delete(db)
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+    )
+    def test_callback_without_referer(
+        self,
+        get_access_token_mock: Mock,
+        db,
+        api_client: TestClient,
+        callback_url,
+        oauth2_authorization_code_connection_config,
+    ):
+        get_access_token_mock.return_value = None
+        authentication_request = AuthenticationRequest.create_or_update(
+            db,
+            data={
+                "connection_key": oauth2_authorization_code_connection_config.key,
+                "state": "new_request",
+            },
+        )
+        response = api_client.get(
+            callback_url, params={"code": "abc", "state": "new_request"}
+        )
+        get_access_token_mock.assert_called_once()
+        assert response.status_code == 200
+        assert (
+            response.text
+            == "Connection test status: failed. No referer URL available. Please navigate back to the Fides Admin UI."
+        )
 
         authentication_request.delete(db)
 

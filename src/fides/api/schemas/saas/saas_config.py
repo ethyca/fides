@@ -102,7 +102,7 @@ class SaaSRequest(BaseModel):
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
     grouped_inputs: Optional[List[str]] = []
-    ignore_errors: Optional[bool] = False
+    ignore_errors: Optional[Union[bool, List[int]]] = False
     rate_limit_config: Optional[RateLimitConfig]
     skip_missing_param_values: Optional[
         bool
@@ -271,6 +271,7 @@ class ConnectorParam(BaseModel):
     default_value: Optional[Union[str, List[str]]]
     multiselect: Optional[bool] = False
     description: Optional[str]
+    sensitive: Optional[bool] = False
 
     @root_validator
     def validate_connector_param(cls, values: Dict[str, Any]) -> Dict[str, Any]:

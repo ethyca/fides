@@ -5,13 +5,13 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.connection_configuration.connection_secrets_redshift import (
     RedshiftSchema,
 )
@@ -30,14 +30,35 @@ def redshift_connection_config(db: Session) -> Generator:
             "access": AccessLevel.write,
         },
     )
-    uri = integration_config.get("redshift", {}).get("external_uri") or os.environ.get(
-        "REDSHIFT_TEST_URI"
+
+    host = integration_config.get("redshift", {}).get("host") or os.environ.get(
+        "REDSHIFT_TEST_HOST"
+    )
+    port = integration_config.get("redshift", {}).get("port") or os.environ.get(
+        "REDSHIFT_TEST_PORT"
+    )
+    user = integration_config.get("redshift", {}).get("user") or os.environ.get(
+        "REDSHIFT_TEST_USER"
+    )
+    password = integration_config.get("redshift", {}).get("password") or os.environ.get(
+        "REDSHIFT_TEST_PASSWORD"
+    )
+    database = integration_config.get("redshift", {}).get("database") or os.environ.get(
+        "REDSHIFT_TEST_DATABASE"
     )
     db_schema = integration_config.get("redshift", {}).get(
         "db_schema"
     ) or os.environ.get("REDSHIFT_TEST_DB_SCHEMA")
-    if uri and db_schema:
-        schema = RedshiftSchema(url=uri, db_schema=db_schema)
+
+    if all([host, port, user, password, database, db_schema]):
+        schema = RedshiftSchema(
+            host=host,
+            port=int(port) if port and port.isdigit() else None,
+            user=user,
+            password=password,
+            database=database,
+            db_schema=db_schema,
+        )
         connection_config.secrets = schema.dict()
         connection_config.save(db=db)
 

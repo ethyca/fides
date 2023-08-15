@@ -3,7 +3,7 @@ from unittest import mock
 from fides.api.api.v1.endpoints.consent_request_endpoints import (
     queue_privacy_request_to_propagate_consent_old_workflow,
 )
-from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
+from fides.api.db.seed import DEFAULT_CONSENT_POLICY
 from fides.api.graph.config import CollectionAddress
 from fides.api.models.privacy_request import (
     Consent,
@@ -141,10 +141,12 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
 
         consent_preferences = ConsentPreferences(
-            consent=[{"data_use": "advertising", "opt_in": False}]
+            consent=[{"data_use": "marketing.advertising", "opt_in": False}]
         )
         executable_consents = [
-            ConsentWithExecutableStatus(data_use="advertising", executable=True)
+            ConsentWithExecutableStatus(
+                data_use="marketing.advertising", executable=True
+            )
         ]
 
         queue_privacy_request_to_propagate_consent_old_workflow(
@@ -160,7 +162,10 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         assert call_kwargs["db"] == db
         assert call_kwargs["data"][0].identity.email == "test@email.com"
         assert len(call_kwargs["data"][0].consent_preferences) == 1
-        assert call_kwargs["data"][0].consent_preferences[0].data_use == "advertising"
+        assert (
+            call_kwargs["data"][0].consent_preferences[0].data_use
+            == "marketing.advertising"
+        )
         assert call_kwargs["data"][0].consent_preferences[0].opt_in is False
         assert (
             call_kwargs["authenticated"] is True
@@ -192,7 +197,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
 
         consent_preferences = ConsentPreferences(
-            consent=[{"data_use": "advertising", "opt_in": False}]
+            consent=[{"data_use": "marketing.advertising", "opt_in": False}]
         )
 
         queue_privacy_request_to_propagate_consent_old_workflow(
@@ -201,7 +206,9 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             policy=DEFAULT_CONSENT_POLICY,
             consent_preferences=consent_preferences,
             executable_consents=[
-                ConsentWithExecutableStatus(data_use="advertising", executable=False)
+                ConsentWithExecutableStatus(
+                    data_use="marketing.advertising", executable=False
+                )
             ],
         )
 
@@ -232,7 +239,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         browser_identity = Identity(ga_client_id="user_id_from_browser")
 
         consent_preferences = ConsentPreferences(
-            consent=[{"data_use": "advertising", "opt_in": False}]
+            consent=[{"data_use": "marketing.advertising", "opt_in": False}]
         )
 
         queue_privacy_request_to_propagate_consent_old_workflow(
@@ -241,7 +248,9 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             policy=DEFAULT_CONSENT_POLICY,
             consent_preferences=consent_preferences,
             executable_consents=[
-                ConsentWithExecutableStatus(data_use="advertising", executable=True)
+                ConsentWithExecutableStatus(
+                    data_use="marketing.advertising", executable=True
+                )
             ],
             browser_identity=browser_identity,
         )

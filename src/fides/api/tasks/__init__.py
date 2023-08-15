@@ -5,7 +5,7 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.db.session import get_db_engine, get_db_session
-from fides.core.config import CONFIG, FidesConfig
+from fides.config import CONFIG, FidesConfig
 
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
 
@@ -78,7 +78,7 @@ celery_app = _create_celery(CONFIG)
 
 def get_worker_ids() -> List[Optional[str]]:
     """
-    Returns a list of the connected heahtly worker UUIDs.
+    Returns a list of the connected healthy worker UUIDs.
     """
     try:
         connected_workers = [

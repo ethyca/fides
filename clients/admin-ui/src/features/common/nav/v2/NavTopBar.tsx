@@ -21,6 +21,10 @@ export const NavTopBar = () => {
       borderColor="gray.100"
     >
       {nav.groups.map((group) => {
+        // "Management" is navigated to via the gear icon, so don't display it in the nav
+        if (group.title === "Management") {
+          return null;
+        }
         // The group links to its first child's path.
         const { path } = group.children[0]!;
 

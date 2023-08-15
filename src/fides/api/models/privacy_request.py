@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Set, Union
 
 from celery.result import AsyncResult
 from loguru import logger
@@ -27,7 +27,6 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fides.api.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fides.api.common_exceptions import (
     IdentityVerificationException,
     ManualWebhookFieldsUnset,
@@ -45,7 +44,6 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
-    ActionType,
     CurrentStep,
     Policy,
     PolicyPreWebhook,
@@ -57,6 +55,7 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.external_https import SecondPartyResponseFormat, WebhookJWE
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity, IdentityBase
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (
@@ -72,7 +71,8 @@ from fides.api.util.cache import (
 from fides.api.util.collection_util import Row
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.identity_verification import IdentityVerificationMixin
-from fides.core.config import CONFIG
+from fides.common.api.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
+from fides.config import CONFIG
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
@@ -660,6 +660,24 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
 
+    def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
+        """
+        Cache a dict of collections traversed in the privacy request
+        mapped to their associated data uses
+        """
+        cache: FidesopsRedis = get_cache()
+        cache.set_encoded_object(f"DATA_USE_MAP__{self.id}", value)
+
+    def get_cached_data_use_map(self) -> Optional[Dict[str, Set[str]]]:
+        """
+        Fetch the collection -> data use map cached for this privacy request
+        """
+        cache: FidesopsRedis = get_cache()
+        value_dict: Optional[
+            Dict[str, Optional[Dict[str, Set[str]]]]
+        ] = cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
+        return list(value_dict.values())[0] if value_dict else None
+
     def trigger_policy_webhook(
         self,
         webhook: WebhookTypes,
@@ -887,9 +905,9 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         )
         return hashed_value
 
-    def as_identity_schema(self) -> IdentityBase:
+    def as_identity_schema(self) -> Identity:
         """Creates an Identity schema from a ProvidedIdentity record in the application DB."""
-        identity = IdentityBase()
+        identity = Identity()
         if any(
             [
                 not self.field_name,

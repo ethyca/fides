@@ -28,6 +28,7 @@ export const transformPrivacyNoticeResponseToCreation = (
     updated_at: updatedAt,
     privacy_notice_history_id: historyId,
     version,
+    cookies,
     ...rest
   } = notice;
   return {

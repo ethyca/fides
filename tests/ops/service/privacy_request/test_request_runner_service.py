@@ -17,6 +17,7 @@ from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
+from fides.api.graph.config import CollectionAddress, FieldPath
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.audit_log import AuditLog, AuditLogAction
@@ -60,7 +61,7 @@ from fides.api.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
 )
 from fides.api.util.data_category import DataCategory
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
@@ -309,6 +310,121 @@ def get_privacy_request_results(
     )
 
     return PrivacyRequest.get(db=db, object_id=privacy_request.id)
+
+
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+def test_upload_access_results_has_data_category_field_mapping(
+    upload_mock: Mock,
+    postgres_example_test_dataset_config_read_access,
+    postgres_integration_db,
+    db,
+    policy,
+    run_privacy_request_task,
+):
+    """
+    Ensure we are passing along a correctly populated data_category_field_mapping to the 'upload' function
+    that publishes the access request output.
+    """
+    customer_email = "customer-1@example.com"
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
+
+    # sanity check that acccess results returned as expected
+    results = pr.get_results()
+    assert len(results.keys()) == 11
+
+    # what we're really testing - ensure data_category_field_mapping arg is well-populated
+    args, kwargs = upload_mock.call_args
+    data_category_field_mapping = kwargs["data_category_field_mapping"]
+
+    # make sure the category field mapping generally looks as we expect
+    address_mapping = data_category_field_mapping[
+        CollectionAddress.from_string("postgres_example_test_dataset:address")
+    ]
+    assert len(address_mapping) >= 5
+    assert address_mapping["user.contact.address.street"] == [
+        FieldPath("house"),
+        FieldPath("street"),
+    ]
+    product_mapping = data_category_field_mapping[
+        CollectionAddress.from_string("postgres_example_test_dataset:product")
+    ]
+    assert len(product_mapping) >= 1
+    assert product_mapping["system.operations"] == [
+        FieldPath(
+            "id",
+        ),
+        FieldPath(
+            "name",
+        ),
+        FieldPath(
+            "price",
+        ),
+    ]
+
+
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+def test_upload_access_results_has_data_use_map(
+    upload_mock: Mock,
+    postgres_example_test_dataset_config_read_access,
+    postgres_integration_db,
+    db,
+    policy,
+    run_privacy_request_task,
+):
+    """
+    Ensure we are passing along a correctly populated data_use_map to the 'upload' function
+    that publishes the access request output.
+    """
+    customer_email = "customer-1@example.com"
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
+
+    # sanity check that acccess results returned as expected
+    results = pr.get_results()
+    assert len(results.keys()) == 11
+
+    # what we're really testing - ensure data_use_map arg is well-populated
+    args, kwargs = upload_mock.call_args
+    data_use_map = kwargs["data_use_map"]
+
+    assert data_use_map == {
+        "postgres_example_test_dataset:report": "{'marketing.advertising'}",
+        "postgres_example_test_dataset:employee": "{'marketing.advertising'}",
+        "postgres_example_test_dataset:customer": "{'marketing.advertising'}",
+        "postgres_example_test_dataset:service_request": "{'marketing.advertising'}",
+        "postgres_example_test_dataset:visit": "{'marketing.advertising'}",
+        "postgres_example_test_dataset:address": "{'marketing.advertising'}",
+        "postgres_example_test_dataset:login": "{'marketing.advertising'}",
+        "postgres_example_test_dataset:orders": "{'marketing.advertising'}",
+        "postgres_example_test_dataset:payment_card": "{'marketing.advertising'}",
+        "postgres_example_test_dataset:order_item": "{'marketing.advertising'}",
+        "postgres_example_test_dataset:product": "{'marketing.advertising'}",
+    }
 
 
 @pytest.mark.integration_postgres
@@ -2048,7 +2164,7 @@ class TestConsentEmailStep:
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
         privacy_request_with_consent_policy.cache_identity(identity)
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).dict()
         ]
         privacy_request_with_consent_policy.save(db)
 
@@ -2101,7 +2217,7 @@ class TestConsentEmailStep:
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).dict()
         ]
         privacy_request_with_consent_policy.save(db)
         assert not needs_batch_email_send(
@@ -2124,7 +2240,7 @@ class TestConsentEmailStep:
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).dict()
         ]
         privacy_request_with_consent_policy.save(db)
         assert not needs_batch_email_send(
@@ -2148,7 +2264,7 @@ class TestConsentEmailStep:
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).dict()
         ]
         privacy_request_with_consent_policy.save(db)
         assert needs_batch_email_send(

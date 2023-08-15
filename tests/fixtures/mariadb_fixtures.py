@@ -5,7 +5,6 @@ import pytest
 import sqlalchemy
 from sqlalchemy.orm import Session
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -13,10 +12,16 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.service.connectors import MariaDBConnector
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 from .application_fixtures import integration_secrets
+
+
+@pytest.fixture(scope="function")
+def mariadb_example_secrets():
+    return integration_secrets["mariadb_example"]
 
 
 @pytest.fixture(scope="function")

@@ -1,11 +1,10 @@
-/* eslint-disable no-console */
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { CacheControl, stringify } from "cache-control-parser";
 
 import { ConsentOption, FidesConfig } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
-import { getGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
+import { lookupGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
 
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
 
@@ -52,9 +51,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Check if a geolocation was provided via headers or query param; if so, inject into the bundle
-  const geolocation = getGeolocation(req);
-
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await loadPrivacyCenterEnvironment();
   let options: ConsentOption[] = [];
@@ -67,6 +63,10 @@ export default async function handler(
     }));
   }
 
+  // Check if a geolocation was provided via headers, query param, or obtainable via a geolocation URL;
+  // if so, inject into the bundle, along with privacy experience
+  const geolocation = await lookupGeolocation(req);
+
   // Create the FidesConfig JSON that will be used to initialize fides.js
   const fidesConfig: FidesConfig = {
     consent: {
@@ -76,33 +76,35 @@ export default async function handler(
       debug: environment.settings.DEBUG,
       geolocationApiUrl: environment.settings.GEOLOCATION_API_URL,
       isGeolocationEnabled: environment.settings.IS_GEOLOCATION_ENABLED,
-      isOverlayDisabled: environment.settings.IS_OVERLAY_DISABLED,
+      isOverlayEnabled: environment.settings.IS_OVERLAY_ENABLED,
       overlayParentId: environment.settings.OVERLAY_PARENT_ID,
+      modalLinkId: environment.settings.MODAL_LINK_ID,
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
+      fidesApiUrl: environment.settings.FIDES_API_URL,
+      tcfEnabled: environment.settings.TCF_ENABLED,
     },
-    geolocation,
+    geolocation: geolocation || undefined,
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
-  console.log(
-    "Bundling generic fides.js & Privacy Center configuration together..."
-  );
+  if (process.env.NODE_ENV === "development") {
+    // eslint-disable-next-line no-console
+    console.log(
+      "Bundling generic fides.js & Privacy Center configuration together..."
+    );
+  }
   const fidesJSBuffer = await fsPromises.readFile("public/lib/fides.js");
   const fidesJS: string = fidesJSBuffer.toString();
-  const fidesCSSBuffer = await fsPromises.readFile(
-    "../fides-js/dist/fides.css"
-  );
-  const fidesCSS: string = JSON.stringify(fidesCSSBuffer.toString());
   if (!fidesJS || fidesJS === "") {
     throw new Error("Unable to load latest fides.js script from server!");
   }
   const script = `
   (function () {
-    // Include default CSS
-    const style = document.createElement('style');
-    style.innerHTML = ${fidesCSS};
-    document.head.append(style);
-
+    // This polyfill service adds a fetch polyfill only when needed, depending on browser making the request 
+    var script = document.createElement('script');
+    script.src = 'https://polyfill.io/v3/polyfill.min.js?features=fetch';
+    document.head.appendChild(script);
+    
     // Include generic fides.js script
     ${fidesJS}
 

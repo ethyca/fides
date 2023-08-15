@@ -1,99 +1,52 @@
-import { h, FunctionComponent } from "preact";
-import { useState, useEffect } from "preact/hooks";
-import { ButtonType, ExperienceConfig } from "../lib/consent-types";
-import Button from "./Button";
-import "../lib/overlay.module.css";
-import { useHasMounted } from "../lib/hooks";
+import { h, FunctionComponent, VNode } from "preact";
+import { getConsentContext } from "../lib/consent-context";
+import { ExperienceConfig } from "../lib/consent-types";
+import CloseButton from "./CloseButton";
+import { GpcBadge } from "./GpcBadge";
 
 interface BannerProps {
   experience: ExperienceConfig;
-  onAcceptAll: () => void;
-  onRejectAll: () => void;
-  waitBeforeShow?: number;
-  managePreferencesLabel?: string;
-  onOpenModal: () => void;
+  onClose: () => void;
+  bannerIsOpen: boolean;
+  buttonGroup: VNode;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
   experience,
-  onAcceptAll,
-  onRejectAll,
-  waitBeforeShow,
-  managePreferencesLabel = "Manage preferences",
-  onOpenModal,
+  buttonGroup,
+  onClose,
+  bannerIsOpen,
 }) => {
-  const [isShown, setIsShown] = useState(false);
-  const hasMounted = useHasMounted();
-  const {
-    banner_title: bannerTitle = "Manage your consent",
-    banner_description:
-      bannerDescription = "This website processes your data respectfully, so we require your consent to use cookies.",
-    confirmation_button_label: confirmationButtonLabel = "Accept All",
-    reject_button_label: rejectButtonLabel = "Reject All",
-  } = experience;
-
-  useEffect(() => {
-    const delayBanner = setTimeout(() => {
-      setIsShown(true);
-    }, waitBeforeShow);
-    return () => clearTimeout(delayBanner);
-  }, [setIsShown, waitBeforeShow]);
-
-  const handleManagePreferencesClick = (): void => {
-    onOpenModal();
-    setIsShown(false);
-  };
-
-  if (!hasMounted) {
-    return null;
-  }
-
+  const showGpcBadge = getConsentContext().globalPrivacyControl;
   return (
     <div
-      id="fides-consent-banner"
-      className={`fides-consent-banner fides-consent-banner-bottom ${
-        isShown ? "" : "fides-consent-banner-hidden"
+      id="fides-banner-container"
+      className={`fides-banner fides-banner-bottom ${
+        bannerIsOpen ? "" : "fides-banner-hidden"
       } `}
     >
-      <div>
-        <div
-          id="fides-consent-banner-title"
-          className="fides-consent-banner-title"
-        >
-          {bannerTitle || ""}
+      <div id="fides-banner">
+        <div id="fides-banner-inner">
+          <CloseButton ariaLabel="Close banner" onClick={onClose} />
+          <div id="fides-banner-heading">
+            <div id="fides-banner-title" className="fides-banner-title">
+              {experience.title}
+            </div>
+            {showGpcBadge ? (
+              <GpcBadge
+                label="Global Privacy Control Signal"
+                status="detected"
+              />
+            ) : null}
+          </div>
+          <div
+            id="fides-banner-description"
+            className="fides-banner-description"
+          >
+            {experience.description}
+          </div>
+          {buttonGroup}
         </div>
-        <div
-          id="fides-consent-banner-description"
-          className="fides-consent-banner-description"
-        >
-          {bannerDescription || ""}
-        </div>
-      </div>
-      <div
-        id="fides-consent-banner-buttons"
-        className="fides-consent-banner-buttons"
-      >
-        <Button
-          buttonType={ButtonType.SECONDARY}
-          label={managePreferencesLabel}
-          onClick={handleManagePreferencesClick}
-        />
-        <Button
-          buttonType={ButtonType.PRIMARY}
-          label={rejectButtonLabel}
-          onClick={() => {
-            onRejectAll();
-            setIsShown(false);
-          }}
-        />
-        <Button
-          buttonType={ButtonType.PRIMARY}
-          label={confirmationButtonLabel}
-          onClick={() => {
-            onAcceptAll();
-            setIsShown(false);
-          }}
-        />
       </div>
     </div>
   );

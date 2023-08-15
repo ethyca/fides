@@ -78,7 +78,7 @@ const About: NextPage = () => {
             Please visit{" "}
             <Link
               color="complimentary.500"
-              href="https://docs.ethyca.com/fides/overview"
+              href="https://docs.ethyca.com"
               isExternal
             >
               docs.ethyca.com

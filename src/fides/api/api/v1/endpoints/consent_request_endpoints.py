@@ -26,21 +26,12 @@ from fides.api.api.deps import get_config_proxy, get_db
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
-from fides.api.api.v1.endpoints.utils import validate_start_and_end_filters
-from fides.api.api.v1.scope_registry import CONSENT_READ
-from fides.api.api.v1.urn_registry import (
-    CONSENT_REQUEST,
-    CONSENT_REQUEST_PREFERENCES,
-    CONSENT_REQUEST_PREFERENCES_WITH_ID,
-    CONSENT_REQUEST_VERIFY,
-    V1_URL_PREFIX,
-)
 from fides.api.common_exceptions import (
     FunctionalityNotConfigured,
     IdentityVerificationException,
     MessageDispatchException,
 )
-from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
+from fides.api.db.seed import DEFAULT_CONSENT_POLICY
 from fides.api.models.messaging import get_messaging_method
 from fides.api.models.privacy_request import (
     Consent,
@@ -67,9 +58,18 @@ from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
+from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.logger import Pii
-from fides.core.config import CONFIG
-from fides.core.config.config_proxy import ConfigProxy
+from fides.common.api.scope_registry import CONSENT_READ
+from fides.common.api.v1.urn_registry import (
+    CONSENT_REQUEST,
+    CONSENT_REQUEST_PREFERENCES,
+    CONSENT_REQUEST_PREFERENCES_WITH_ID,
+    CONSENT_REQUEST_VERIFY,
+    V1_URL_PREFIX,
+)
+from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
@@ -256,7 +256,7 @@ def consent_request_verify(
         HTTP_200_OK: {
             "consent": [
                 {
-                    "data_use": "advertising",
+                    "data_use": "marketing.advertising",
                     "data_use_description": "We may use some of your personal information for advertising performance "
                     "analysis and audience modeling for ongoing advertising which may be "
                     "interpreted as 'Data Sharing' under some regulations.",
@@ -648,9 +648,13 @@ def _prepare_consent_preferences(
     provided_identity: ProvidedIdentity,
 ) -> ConsentPreferences:
     """Returns consent preferences for the identity given."""
-    consent_records: List[Consent] = Consent.filter(
-        db=db, conditions=Consent.provided_identity_id == provided_identity.id
-    ).all()
+    consent_records: List[Consent] = (
+        Consent.filter(
+            db=db, conditions=Consent.provided_identity_id == provided_identity.id
+        )
+        .order_by(Consent.updated_at)
+        .all()
+    )
 
     if not consent_records:
         return ConsentPreferences(consent=None)

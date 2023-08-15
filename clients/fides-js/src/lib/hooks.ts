@@ -1,5 +1,13 @@
-import { useEffect, useState } from "preact/hooks";
-import { useCallback } from "react";
+import { useEffect, useState, useCallback } from "preact/hooks";
+import { FidesEvent } from "./events";
+import {
+  FidesOptions,
+  LastServedNoticeSchema,
+  NoticesServedRequest,
+  PrivacyNotice,
+  ServingComponent,
+} from "./consent-types";
+import { patchNoticesServed } from "../services/fides/api";
 
 /**
  * Hook which tracks if the app has mounted yet.
@@ -43,7 +51,7 @@ export const useDisclosure = ({ id }: { id: string }) => {
 
   const getDisclosureProps = () => ({
     id,
-    className: isOpen ? "disclosure-visible" : "disclosure-hidden",
+    className: isOpen ? "fides-disclosure-visible" : "fides-disclosure-hidden",
   });
 
   return {
@@ -54,4 +62,63 @@ export const useDisclosure = ({ id }: { id: string }) => {
     getButtonProps,
     getDisclosureProps,
   };
+};
+
+export const useConsentServed = ({
+  notices,
+  options,
+  userGeography,
+  privacyExperienceId,
+  acknowledgeMode,
+}: {
+  notices: PrivacyNotice[];
+  options: FidesOptions;
+  userGeography?: string;
+  privacyExperienceId?: string;
+  acknowledgeMode?: boolean;
+}) => {
+  const [servedNotices, setServedNotices] = useState<
+    LastServedNoticeSchema[] | undefined
+  >(undefined);
+
+  const handleUIEvent = useCallback(
+    async (event: FidesEvent) => {
+      // Only send notices-served request when we show via the modal since that
+      // is the only time we show all notices
+      if (
+        !event.detail.extraDetails ||
+        event.detail.extraDetails.servingComponent !== ServingComponent.OVERLAY
+      ) {
+        return;
+      }
+      const request: NoticesServedRequest = {
+        browser_identity: event.detail.identity,
+        privacy_experience_id: privacyExperienceId,
+        user_geography: userGeography,
+        acknowledge_mode: acknowledgeMode,
+        privacy_notice_history_ids: notices.map(
+          (n) => n.privacy_notice_history_id
+        ),
+        serving_component: event.detail.extraDetails.servingComponent,
+      };
+      const result = await patchNoticesServed({
+        request,
+        fidesApiUrl: options.fidesApiUrl,
+        debug: options.debug,
+      });
+      if (result) {
+        setServedNotices(result);
+      }
+    },
+    [notices, options, acknowledgeMode, privacyExperienceId, userGeography]
+  );
+
+  useEffect(() => {
+    window.addEventListener("FidesUIShown", handleUIEvent);
+    return () => {
+      window.removeEventListener("FidesUIShown", handleUIEvent);
+    };
+  }, [handleUIEvent]);
+
+  return { servedNotices };
 };

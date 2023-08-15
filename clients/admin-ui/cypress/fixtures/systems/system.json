@@ -16,10 +16,11 @@
       "data_use": "improve.system",
       "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
       "data_subjects": ["customer"],
-      "dataset_references": ["demo_users_dataset"]
+      "dataset_references": ["demo_users_dataset"],
+      "cookies": [],
+      "id": "pri_ac9d4dfb-d033-4b06-bc7f-968df8d125ff"
     }
   ],
-  "system_dependencies": ["demo_marketing_system"],
   "joint_controller": { "name": "Sally Controller" },
   "third_country_transfers": ["USA", "CAN"],
   "administrating_department": "Engineering",

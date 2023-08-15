@@ -80,9 +80,12 @@ class SaaSSchema(BaseModel, abc.ABC):
         ]
 
     class Config:
-        """Only permit selected secret fields to be stored."""
+        """
+        Certain SaaS workflows need to save secrets that are not part of the schema,
+        such as access and refresh tokens for OAuth2. So we allow extra fields
+        """
 
-        extra = Extra.forbid
+        extra = Extra.ignore
         orm_mode = True
 
 
@@ -106,6 +109,7 @@ class SaaSSchemaFactory:
                     title=connector_param.label,
                     description=connector_param.description,
                     default=connector_param.default_value,
+                    sensitive=connector_param.sensitive,
                 )
                 if connector_param.default_value
                 else (
@@ -113,6 +117,7 @@ class SaaSSchemaFactory:
                     FieldInfo(
                         title=connector_param.label,
                         description=connector_param.description,
+                        sensitive=connector_param.sensitive,
                     ),
                 )
             )

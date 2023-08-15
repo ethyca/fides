@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { Cookies } from "./Cookies";
+
 /**
  * The PrivacyDeclaration resource model.
  *
@@ -41,4 +43,8 @@ export type PrivacyDeclaration = {
    * The resources from which data is received. Any `fides_key`s included in this list reference `DataFlow` entries in the `ingress` array of any `System` resources to which this `PrivacyDeclaration` is applied.
    */
   ingress?: Array<string>;
+  /**
+   * Cookies associated with this data use to deliver services and functionality
+   */
+  cookies?: Array<Cookies>;
 };

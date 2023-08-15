@@ -3,12 +3,13 @@ saas_config:
   name: HubSpot
   type: hubspot
   description: A sample schema representing the HubSpot connector for Fides
-  version: 0.0.1
+  version: 0.0.3
 
   connector_params:
     - name: domain
       default_value: api.hubapi.com
     - name: private_app_token
+      sensitive: True
 
   client_config:
     protocol: https

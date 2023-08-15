@@ -17,7 +17,7 @@ from fides.api.models.audit_log import AuditLog
 from fides.api.models.system_manager import SystemManager  # type: ignore[unused-import]
 
 if TYPE_CHECKING:
-    from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
+    from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
 class FidesUser(Base):
@@ -46,7 +46,7 @@ class FidesUser(Base):
         "ClientDetail", backref="user", cascade="all, delete", uselist=False
     )
 
-    systems = relationship("System", secondary="systemmanager", back_populates="users")  # type: ignore
+    systems = relationship("System", secondary="systemmanager", back_populates="data_stewards")  # type: ignore
 
     @property
     def system_ids(self) -> List[str]:
@@ -116,7 +116,7 @@ class FidesUser(Base):
                 "Must pass in a system to set user as system manager."
             )
 
-        if self in system.users:
+        if self in system.data_stewards:
             raise SystemManagerException(
                 f"User '{self.username}' is already a system manager of '{system.name}'."
             )

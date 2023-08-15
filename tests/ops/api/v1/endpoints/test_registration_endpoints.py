@@ -2,8 +2,8 @@ from unittest import mock
 
 import pytest
 
-from fides.api.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
 from fides.api.models.registration import UserRegistration
+from fides.common.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
 
 
 class TestUserRegistration:

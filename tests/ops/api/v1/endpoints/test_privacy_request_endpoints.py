@@ -18,38 +18,6 @@ from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
     validate_manual_input,
 )
-from fides.api.api.v1.scope_registry import (
-    DATASET_CREATE_OR_UPDATE,
-    PRIVACY_REQUEST_CALLBACK_RESUME,
-    PRIVACY_REQUEST_CREATE,
-    PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
-    PRIVACY_REQUEST_NOTIFICATIONS_READ,
-    PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_REVIEW,
-    PRIVACY_REQUEST_TRANSFER,
-    PRIVACY_REQUEST_UPLOAD_DATA,
-    PRIVACY_REQUEST_VIEW_DATA,
-    STORAGE_CREATE_OR_UPDATE,
-)
-from fides.api.api.v1.urn_registry import (
-    DATASETS,
-    PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
-    PRIVACY_REQUEST_APPROVE,
-    PRIVACY_REQUEST_AUTHENTICATED,
-    PRIVACY_REQUEST_BULK_RETRY,
-    PRIVACY_REQUEST_DENY,
-    PRIVACY_REQUEST_MANUAL_ERASURE,
-    PRIVACY_REQUEST_MANUAL_INPUT,
-    PRIVACY_REQUEST_NOTIFICATIONS,
-    PRIVACY_REQUEST_RESUME,
-    PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
-    PRIVACY_REQUEST_RETRY,
-    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
-    PRIVACY_REQUEST_VERIFY_IDENTITY,
-    PRIVACY_REQUESTS,
-    REQUEST_PREVIEW,
-    V1_URL_PREFIX,
-)
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -63,7 +31,7 @@ from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import ActionType, CurrentStep, Policy
+from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -84,7 +52,7 @@ from fides.api.schemas.messaging.messaging import (
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
-from fides.api.schemas.policy import PolicyResponse
+from fides.api.schemas.policy import ActionType, PolicyResponse
 from fides.api.schemas.redis_cache import Identity
 from fides.api.task import graph_task
 from fides.api.tasks import MESSAGING_QUEUE_NAME
@@ -93,7 +61,39 @@ from fides.api.util.cache import (
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
-from fides.core.config import CONFIG
+from fides.common.api.scope_registry import (
+    DATASET_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_CREATE,
+    PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_NOTIFICATIONS_READ,
+    PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_REVIEW,
+    PRIVACY_REQUEST_TRANSFER,
+    PRIVACY_REQUEST_UPLOAD_DATA,
+    PRIVACY_REQUEST_VIEW_DATA,
+    STORAGE_CREATE_OR_UPDATE,
+)
+from fides.common.api.v1.urn_registry import (
+    CONNECTION_DATASETS,
+    PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
+    PRIVACY_REQUEST_APPROVE,
+    PRIVACY_REQUEST_AUTHENTICATED,
+    PRIVACY_REQUEST_BULK_RETRY,
+    PRIVACY_REQUEST_DENY,
+    PRIVACY_REQUEST_MANUAL_ERASURE,
+    PRIVACY_REQUEST_MANUAL_INPUT,
+    PRIVACY_REQUEST_NOTIFICATIONS,
+    PRIVACY_REQUEST_RESUME,
+    PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
+    PRIVACY_REQUEST_RETRY,
+    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
+    PRIVACY_REQUEST_VERIFY_IDENTITY,
+    PRIVACY_REQUESTS,
+    REQUEST_PREVIEW,
+    V1_URL_PREFIX,
+)
+from fides.config import CONFIG
 
 page_size = Params().size
 
@@ -1733,7 +1733,7 @@ class TestRequestPreview:
         mongo_connection_config,
         connection_config,
     ) -> None:
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + CONNECTION_DATASETS
         path_params = {"connection_key": mongo_connection_config.key}
         datasets_url = path.format(**path_params)
 

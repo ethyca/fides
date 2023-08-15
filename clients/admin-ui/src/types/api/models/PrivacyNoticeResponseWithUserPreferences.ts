@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { ConsentMechanism } from "./ConsentMechanism";
+import type { Cookies } from "./Cookies";
 import type { EnforcementLevel } from "./EnforcementLevel";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { UserConsentPreference } from "./UserConsentPreference";
@@ -31,7 +32,10 @@ export type PrivacyNoticeResponseWithUserPreferences = {
   updated_at: string;
   version: number;
   privacy_notice_history_id: string;
+  cookies: Array<Cookies>;
   default_preference: UserConsentPreference;
   current_preference?: UserConsentPreference;
   outdated_preference?: UserConsentPreference;
+  current_served?: boolean;
+  outdated_served?: boolean;
 };

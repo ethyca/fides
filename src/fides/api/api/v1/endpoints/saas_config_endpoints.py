@@ -2,7 +2,7 @@ from io import BytesIO
 from typing import Optional
 from zipfile import BadZipFile, ZipFile
 
-from fastapi import Body, Depends, HTTPException
+from fastapi import Body, Depends, HTTPException, Request
 from fastapi.params import Security
 from fastapi.responses import JSONResponse
 from fideslang.validation import FidesKey
@@ -18,29 +18,15 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1.scope_registry import (
-    CONNECTION_AUTHORIZE,
-    CONNECTOR_TEMPLATE_REGISTER,
-    SAAS_CONFIG_CREATE_OR_UPDATE,
-    SAAS_CONFIG_DELETE,
-    SAAS_CONFIG_READ,
-    SAAS_CONNECTION_INSTANTIATE,
-)
-from fides.api.api.v1.urn_registry import (
-    AUTHORIZE,
-    CONNECTION_TYPES,
-    REGISTER_CONNECTOR_TEMPLATE,
-    SAAS_CONFIG,
-    SAAS_CONFIG_VALIDATE,
-    SAAS_CONNECTOR_FROM_TEMPLATE,
-    V1_URL_PREFIX,
-)
 from fides.api.common_exceptions import FidesopsException, KeyOrNameAlreadyExists
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import System  # type: ignore
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateResponse,
+)
+from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
@@ -63,6 +49,23 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import validate_secrets
+from fides.common.api.scope_registry import (
+    CONNECTION_AUTHORIZE,
+    CONNECTOR_TEMPLATE_REGISTER,
+    SAAS_CONFIG_CREATE_OR_UPDATE,
+    SAAS_CONFIG_DELETE,
+    SAAS_CONFIG_READ,
+    SAAS_CONNECTION_INSTANTIATE,
+)
+from fides.common.api.v1.urn_registry import (
+    AUTHORIZE,
+    CONNECTION_TYPES,
+    REGISTER_CONNECTOR_TEMPLATE,
+    SAAS_CONFIG,
+    SAAS_CONFIG_VALIDATE,
+    SAAS_CONNECTOR_FROM_TEMPLATE,
+    V1_URL_PREFIX,
+)
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 
@@ -254,10 +257,14 @@ def delete_saas_config(
     response_model=str,
 )
 def authorize_connection(
+    request: Request,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_saas_connection_config),
 ) -> Optional[str]:
     """Returns the authorization URL for the SaaS Connector (if available)"""
+
+    # store the referer (if available) so that we can redirect back to the UI
+    referer = request.headers.get("Referer")
 
     verify_oauth_connection_config(connection_config)
     authentication = connection_config.get_saas_config().client_config.authentication  # type: ignore
@@ -266,7 +273,7 @@ def authorize_connection(
         auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = AuthenticationStrategy.get_strategy(
             authentication.strategy, authentication.configuration  # type: ignore
         )
-        return auth_strategy.get_authorization_url(db, connection_config)
+        return auth_strategy.get_authorization_url(db, connection_config, referer)
     except FidesopsException as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc))
 
@@ -281,13 +288,21 @@ def instantiate_connection_from_template(
     template_values: SaasConnectionTemplateValues,
     db: Session = Depends(deps.get_db),
 ) -> SaasConnectionTemplateResponse:
+    return instantiate_connection(db, saas_connector_type, template_values)
+
+
+def instantiate_connection(
+    db: Session,
+    saas_connector_type: str,
+    template_values: SaasConnectionTemplateValues,
+    system: Optional[System] = None,
+) -> SaasConnectionTemplateResponse:
     """
     Creates a SaaS Connector and a SaaS Dataset from a template.
 
     Looks up the connector type in the SaaS connector registry and, if all required
     fields are provided, persists the associated connection config and dataset to the database.
     """
-
     connector_template: Optional[
         ConnectorTemplate
     ] = ConnectorRegistry.get_connector_template(saas_connector_type)
@@ -321,6 +336,8 @@ def instantiate_connection_from_template(
     connection_config.secrets = validate_secrets(
         db, template_values.secrets, connection_config
     ).dict()
+    if system:
+        connection_config.system_id = system.id
     connection_config.save(db=db)  # Not persisted to db until secrets are validated
 
     try:

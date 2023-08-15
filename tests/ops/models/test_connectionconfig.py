@@ -7,6 +7,7 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.util.text import to_snake_case
 
@@ -155,3 +156,49 @@ class TestConnectionConfigModel:
         connection_config.save(db)
 
         assert connection_config.system_key == system.fides_key
+
+    def test_enabled_actions(self, db, connection_config):
+        connection_config.enabled_actions = [
+            ActionType.access,
+            ActionType.erasure,
+            ActionType.consent,
+        ]
+        connection_config.save(db)
+        assert connection_config.enabled_actions == [
+            ActionType.access,
+            ActionType.erasure,
+            ActionType.consent,
+        ]
+
+    def test_authorized_property(self, db: Session, saas_example_config) -> None:
+        saas_config = SaaSConfig(**saas_example_config)
+        config = ConnectionConfig.create(
+            db=db,
+            data={
+                "name": "OAuth2 Connection",
+                "connection_type": ConnectionType.saas,
+                "access": AccessLevel.read,
+            },
+        )
+
+        # initially, the connection is not authorized
+        assert not config.authorized
+
+        # set up the SaaS config with an OAuth2 authorization code strategy
+        saas_config.client_config.authentication.strategy = "oauth2_authorization_code"
+        config.update_saas_config(db, saas_config=saas_config)
+
+        # still not authorized because access_token is missing in secrets
+        assert not config.authorized
+
+        # add an access_token to the secrets
+        config.secrets = {"access_token": "dummy_token"}
+        db.add(config)
+        db.commit()
+        db.refresh(config)
+
+        # now the connection should be authorized
+        assert config.authorized
+
+        db.delete(config)
+        db.commit()

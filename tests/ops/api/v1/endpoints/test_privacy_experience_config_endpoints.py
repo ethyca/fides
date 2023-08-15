@@ -4,18 +4,19 @@ import pytest
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
-from fides.api.api.v1 import scope_registry as scopes
 from fides.api.api.v1.endpoints.privacy_experience_config_endpoints import (
     get_experience_config_or_error,
 )
-from fides.api.api.v1.urn_registry import EXPERIENCE_CONFIG, V1_URL_PREFIX
 from fides.api.models.privacy_experience import (
     BannerEnabled,
     ComponentType,
     PrivacyExperience,
     PrivacyExperienceConfig,
+    PrivacyExperienceConfigHistory,
 )
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
+from fides.common.api import scope_registry as scopes
+from fides.common.api.v1.urn_registry import EXPERIENCE_CONFIG, V1_URL_PREFIX
 
 
 class TestGetExperienceConfigList:
@@ -70,18 +71,16 @@ class TestGetExperienceConfigList:
         experience_config_privacy_center,
         experience_config_overlay,
     ) -> None:
+        unescape_header = {"Unescape-Safestr": "true"}
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
-        response = api_client.get(
-            url,
-            headers=auth_header,
-        )
+        response = api_client.get(url, headers={**auth_header, **unescape_header})
         assert response.status_code == 200
         resp = response.json()
-        assert resp["total"] == 2
+        assert resp["total"] == 4  # Two default configs loaded on startup plus two here
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 2
+        assert len(data) == 4
 
         first_config = data[0]
         assert first_config["id"] == experience_config_overlay.id
@@ -99,6 +98,9 @@ class TestGetExperienceConfigList:
 
         second_config = data[1]
         assert second_config["id"] == experience_config_privacy_center.id
+        assert (
+            second_config["description"] == "user's description <script />"
+        )  # Unescaped due to header
         assert second_config["component"] == "privacy_center"
         assert second_config["banner_enabled"] is None
         assert second_config["disabled"] is True
@@ -110,6 +112,45 @@ class TestGetExperienceConfigList:
             second_config["experience_config_history_id"]
             == experience_config_privacy_center.experience_config_history_id
         )
+
+        third_config = data[2]
+        assert third_config["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
+        assert third_config["is_default"] is True
+        assert third_config["component"] == "privacy_center"
+        assert third_config["regions"] == []
+        assert third_config["version"] == 1.0
+        assert third_config["created_at"] is not None
+        assert third_config["updated_at"] is not None
+
+        fourth_config = data[3]
+        assert fourth_config["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        assert fourth_config["is_default"] is True
+        assert fourth_config["disabled"] is False
+        assert fourth_config["regions"] == []
+        assert fourth_config["component"] == "overlay"
+
+    @pytest.mark.usefixtures(
+        "privacy_experience_privacy_center",
+        "privacy_experience_overlay",
+        "experience_config_overlay",
+    )
+    def test_get_experience_config_list_no_unescape_header(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        experience_config_privacy_center,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        resp = response.json()["items"]
+
+        second_config = resp[1]
+        assert second_config["id"] == experience_config_privacy_center.id
+        assert (
+            second_config["description"] == "user&#x27;s description &lt;script /&gt;"
+        )  # Still escaped
 
     @pytest.mark.usefixtures(
         "privacy_experience_overlay",
@@ -130,11 +171,11 @@ class TestGetExperienceConfigList:
         )
         assert response.status_code == 200
         resp = response.json()
-        assert resp["total"] == 1
+        assert resp["total"] == 3
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 1
+        assert len(data) == 3
 
         config = data[0]
         assert config["id"] == experience_config_overlay.id
@@ -148,6 +189,22 @@ class TestGetExperienceConfigList:
             config["experience_config_history_id"]
             == experience_config_overlay.experience_config_history_id
         )
+
+        second_config = data[1]
+        assert second_config["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
+        assert second_config["is_default"] is True
+        assert second_config["component"] == "privacy_center"
+        assert second_config["disabled"] is False
+        assert second_config["version"] == 1.0
+        assert second_config["created_at"] is not None
+        assert second_config["updated_at"] is not None
+
+        third_config = data[2]
+        assert third_config["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        assert third_config["is_default"] is True
+        assert third_config["disabled"] is False
+        assert third_config["regions"] == []
+        assert third_config["component"] == "overlay"
 
     @pytest.mark.usefixtures(
         "privacy_experience_overlay",
@@ -199,13 +256,14 @@ class TestGetExperienceConfigList:
         )
         assert response.status_code == 200
         resp = response.json()
-        assert resp["total"] == 1
+        assert resp["total"] == 2
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 1
+        assert len(data) == 2
 
         assert data[0]["id"] == experience_config_overlay.id
+        assert data[1]["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
 
         response = api_client.get(
             url + "?component=privacy_center",
@@ -213,13 +271,14 @@ class TestGetExperienceConfigList:
         )
         assert response.status_code == 200
         resp = response.json()
-        assert resp["total"] == 1
+        assert resp["total"] == 2
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 1
+        assert len(data) == 2
 
         assert data[0]["id"] == experience_config_privacy_center.id
+        assert data[1]["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
 
 
 class TestCreateExperienceConfig:
@@ -299,7 +358,7 @@ class TestCreateExperienceConfig:
                 "accept_button_label": "Accept",
                 "description": "We care about your privacy",
                 "component": "overlay",
-                "regions": ["eu_it"],
+                "regions": ["it"],
                 "reject_button_label": "Reject",
                 "save_button_label": "Save",
                 "title": "Manage your privacy",
@@ -327,7 +386,7 @@ class TestCreateExperienceConfig:
                 "accept_button_label": "Accept",
                 "description": "We care about your privacy",
                 "component": "privacy_center",
-                "regions": ["eu_it"],
+                "regions": ["it"],
                 "save_button_label": "Save",
             },
             headers=auth_header,
@@ -353,12 +412,42 @@ class TestCreateExperienceConfig:
                 "reject_button_label": "Reject all",
                 "save_button_label": "Save",
                 "title": "Control your privacy",
-                "regions": ["eu_it", "eu_it"],
+                "regions": ["it", "it"],
             },
             headers=auth_header,
         )
         assert response.status_code == 422
         assert response.json()["detail"][0]["msg"] == "Duplicate regions found."
+
+    def test_create_another_default_experience_config(
+        self, api_client: TestClient, url, generate_auth_header, db
+    ) -> None:
+        """We have defaults loaded in at startup so don't allow other defaults to be created here"""
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "accept_button_label": "Yes",
+                "banner_enabled": "always_disabled",
+                "component": "privacy_center",
+                "description": "We take your privacy seriously",
+                "is_default": True,
+                "privacy_policy_link_label": "Manage your privacy",
+                "privacy_policy_url": "example.com/privacy",
+                "reject_button_label": "No",
+                "save_button_label": "Save",
+                "title": "Manage your privacy",
+            },
+            headers=auth_header,
+        )
+
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == "Cannot set as the default. Only one default privacy_center config can be in the system."
+        )
 
     def test_create_experience_config_with_no_regions(
         self, api_client: TestClient, url, generate_auth_header, db
@@ -376,7 +465,7 @@ class TestCreateExperienceConfig:
                 "accept_button_label": "Yes",
                 "banner_enabled": "always_disabled",
                 "component": "privacy_center",
-                "description": "We take your privacy seriously",
+                "description": "We take your company's privacy seriously",
                 "privacy_policy_link_label": "Manage your privacy",
                 "privacy_policy_url": "example.com/privacy",
                 "reject_button_label": "No",
@@ -390,7 +479,9 @@ class TestCreateExperienceConfig:
         assert resp["accept_button_label"] == "Yes"
         assert resp["banner_enabled"] == "always_disabled"
         assert resp["component"] == "privacy_center"
-        assert resp["description"] == "We take your privacy seriously"
+        assert (
+            resp["description"] == "We take your company's privacy seriously"
+        )  # Returned in the response, unescaped, for display
         assert resp["privacy_policy_link_label"] == "Manage your privacy"
         assert resp["privacy_policy_url"] == "example.com/privacy"
         assert resp["regions"] == []
@@ -406,6 +497,10 @@ class TestCreateExperienceConfig:
         assert experience_config.privacy_policy_link_label == "Manage your privacy"
         assert experience_config.experiences.all() == []
         assert experience_config.histories.count() == 1
+        assert (
+            experience_config.description
+            == "We take your company&#x27;s privacy seriously"
+        )  # Saved in the db escaped
         history = experience_config.histories[0]
         assert history.version == 1.0
         assert history.component == ComponentType.privacy_center
@@ -599,26 +694,8 @@ class TestCreateExperienceConfig:
         experience = experience_config.experiences[0]
         assert experience.region == PrivacyNoticeRegion.us_ny
         assert experience.component == ComponentType.overlay
-        assert experience.disabled is False
-        assert experience.version == 1.0
         assert experience.experience_config_id == experience_config.id
-        assert experience.experience_config_history_id == experience_config_history.id
 
-        # Created Experience History
-        assert experience.histories.count() == 1
-        experience_history = experience.histories[0]
-        assert experience_history.region == PrivacyNoticeRegion.us_ny
-        assert experience_history.component == ComponentType.overlay
-        assert experience_history.disabled is False
-        assert experience_history.version == 1.0
-        assert experience_history.experience_config_id == experience_config.id
-        assert (
-            experience_history.experience_config_history_id
-            == experience_config_history.id
-        )
-        assert experience_history.privacy_experience_id == experience.id
-
-        experience_history.delete(db)
         experience.delete(db)
         experience_config_history.delete(db)
         experience_config.delete(db)
@@ -636,20 +713,16 @@ class TestCreateExperienceConfig:
         """
         Specifying a TX region to be used with the new ExperienceConfig can
         cause an existing TX PrivacyExperience to be linked to the current ExperienceConfig
-        with its version bumped
         """
 
         privacy_experience = PrivacyExperience.create(
             db,
             data={
-                "disabled": False,
                 "component": ComponentType.overlay,
                 "region": PrivacyNoticeRegion.us_tx,
             },
         )
 
-        assert privacy_experience.version == 1.0
-        assert privacy_experience.histories.count() == 1.0
         assert privacy_experience.experience_config_id is None
 
         auth_header = generate_auth_header(
@@ -709,7 +782,7 @@ class TestCreateExperienceConfig:
         )
         assert experience_config_history.experience_config_id == experience_config.id
 
-        # Updated Privacy Experience - TX Privacy Experience automatically linked, and bumped to 2.0
+        # Updated Privacy Experience - TX Privacy Experience automatically linked
         assert experience_config.experiences.count() == 1
         experience = experience_config.experiences[0]
         db.refresh(experience)
@@ -718,30 +791,11 @@ class TestCreateExperienceConfig:
         )  # Linked experience is the same Texas experience from above
         assert experience.region == PrivacyNoticeRegion.us_tx
         assert experience.component == ComponentType.overlay
-        assert experience.disabled is False
-        assert experience.version == 2.0
         assert experience.experience_config_id == experience_config.id
-        assert experience.experience_config_history_id == experience_config_history.id
-
-        # Created Experience History - new version of Privacy Experience created due to config being linked
-        assert experience.histories.count() == 2
-        experience_history = experience.histories[-1]
-        assert experience_history.region == PrivacyNoticeRegion.us_tx
-        assert experience_history.component == ComponentType.overlay
-        assert experience_history.disabled is False
-        assert experience_history.version == 2.0
-        assert experience_history.experience_config_id == experience_config.id
-        assert (
-            experience_history.experience_config_history_id
-            == experience_config_history.id
-        )
-        assert experience_history.privacy_experience_id == experience.id
 
         assert response.json()["linked_regions"] == ["us_tx"]
         assert response.json()["unlinked_regions"] == []
 
-        for history in experience.histories:
-            history.delete(db)
         experience.delete(db)
         experience_config_history.delete(db)
         experience_config.delete(db)
@@ -837,6 +891,32 @@ class TestGetExperienceConfigDetail:
             == experience_config_overlay.experience_config_history_id
         )
         assert resp["title"] == "Manage your consent"
+        assert (
+            resp["privacy_policy_link_label"]
+            == "View our company&#x27;s privacy policy"
+        )  # Escaped without request header
+
+    @pytest.mark.usefixtures(
+        "privacy_experience_overlay",
+    )
+    def test_get_experience_config_detail_with_unescape_header(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        experience_config_overlay,
+    ) -> None:
+        unescape_header = {"Unescape-Safestr": "true"}
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_READ])
+        response = api_client.get(url, headers={**auth_header, **unescape_header})
+        assert response.status_code == 200
+        resp = response.json()
+
+        assert resp["id"] == experience_config_overlay.id
+        assert resp["component"] == "overlay"
+        assert (
+            resp["privacy_policy_link_label"] == "View our company's privacy policy"
+        )  # Unescaped with request header
 
 
 class TestUpdateExperienceConfig:
@@ -983,6 +1063,57 @@ class TestUpdateExperienceConfig:
             == "The following additional fields are required when defining an overlay: acknowledge_button_label, banner_enabled, and privacy_preferences_link_label."
         )
 
+    def test_update_as_default(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        overlay_experience_config,
+    ):
+        """We already have a default overlay added to the system on startup, so we don't
+        want to update this separate overlay to be a default"""
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "is_default": True,
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == "Cannot set as the default. Only one default overlay config can be in the system."
+        )
+
+    def test_update_experience_config_with_fields_that_should_be_escaped(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        overlay_experience_config,
+        db,
+    ) -> None:
+        """Failing if duplicate regions in request to avoid unexpected behavior"""
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "title": "We care about you and your family's privacy",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert (
+            response.json()["experience_config"]["title"]
+            == "We care about you and your family's privacy"
+        )  # Unescaped in response
+        db.refresh(overlay_experience_config)
+        assert (
+            overlay_experience_config.title
+            == "We care about you and your family&#x27;s privacy"
+        )  # But stored escaped
+
     def test_attempt_to_update_component_type(
         self,
         api_client: TestClient,
@@ -1037,22 +1168,24 @@ class TestUpdateExperienceConfig:
         experience_config = get_experience_config_or_error(db, resp["id"])
         assert experience_config.experiences.all() == [privacy_experience_overlay]
         assert experience_config.histories.count() == 2
-        history = experience_config.histories[0]
+        history = experience_config.histories.order_by(
+            PrivacyExperienceConfigHistory.created_at
+        )[0]
         assert history.version == 1.0
         assert history.component == ComponentType.overlay
         assert history.banner_enabled == BannerEnabled.enabled_where_required
         assert history.experience_config_id == experience_config.id
         assert history.disabled is False
 
-        history = experience_config.histories[1]
+        history = experience_config.histories.order_by(
+            PrivacyExperienceConfigHistory.created_at
+        )[1]
         assert history.version == 2.0
         assert history.disabled is True
 
         assert response.json()["linked_regions"] == []
         assert response.json()["unlinked_regions"] == []
 
-        for history in privacy_experience_overlay.histories:
-            history.delete(db)
         privacy_experience_overlay.delete(db)
 
         for history in experience_config.histories:
@@ -1096,14 +1229,18 @@ class TestUpdateExperienceConfig:
         experience_config = get_experience_config_or_error(db, resp["id"])
         assert experience_config.experiences.all() == []
         assert experience_config.histories.count() == 2
-        history = experience_config.histories[0]
+        history = experience_config.histories.order_by(
+            PrivacyExperienceConfigHistory.created_at
+        )[0]
         assert history.version == 1.0
         assert history.component == ComponentType.overlay
         assert history.banner_enabled == BannerEnabled.enabled_where_required
         assert history.experience_config_id == experience_config.id
         assert history.disabled is False
 
-        history = experience_config.histories[1]
+        history = experience_config.histories.order_by(
+            PrivacyExperienceConfigHistory.created_at
+        )[1]
         assert history.version == 2.0
         assert history.disabled is True
 
@@ -1176,26 +1313,8 @@ class TestUpdateExperienceConfig:
         experience = overlay_experience_config.experiences[0]
         assert experience.region == PrivacyNoticeRegion.us_ny
         assert experience.component == ComponentType.overlay
-        assert experience.disabled is False
-        assert experience.version == 1.0
         assert experience.experience_config_id == overlay_experience_config.id
-        assert experience.experience_config_history_id == experience_config_history.id
 
-        # Created Experience History
-        assert experience.histories.count() == 1
-        experience_history = experience.histories[0]
-        assert experience_history.region == PrivacyNoticeRegion.us_ny
-        assert experience_history.component == ComponentType.overlay
-        assert experience_history.disabled is False
-        assert experience_history.version == 1.0
-        assert experience_history.experience_config_id == overlay_experience_config.id
-        assert (
-            experience_history.experience_config_history_id
-            == experience_config_history.id
-        )
-        assert experience_history.privacy_experience_id == experience.id
-
-        experience_history.delete(db)
         experience.delete(db)
 
         assert response.json()["linked_regions"] == ["us_ny"]
@@ -1213,20 +1332,16 @@ class TestUpdateExperienceConfig:
         Existing ExperienceConfig is updated to add TX.  A Texas Privacy Experience already exists.
 
         This should cause the existing Texas PrivacyExperience to be given a FK to the existing ExperienceConfig record
-        with its version bumped as its config has changed.
         """
 
         privacy_experience = PrivacyExperience.create(
             db,
             data={
-                "disabled": False,
                 "component": ComponentType.overlay,
                 "region": PrivacyNoticeRegion.us_tx,
             },
         )
 
-        assert privacy_experience.version == 1.0
-        assert privacy_experience.histories.count() == 1.0
         assert privacy_experience.experience_config_id is None
 
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
@@ -1271,7 +1386,7 @@ class TestUpdateExperienceConfig:
             == overlay_experience_config.id
         )
 
-        # Updated Privacy Experience - TX Privacy Experience automatically linked, and bumped to 2.0
+        # Updated Privacy Experience - TX Privacy Experience automatically linked
         assert overlay_experience_config.experiences.count() == 1
         experience = overlay_experience_config.experiences[0]
         db.refresh(experience)
@@ -1280,30 +1395,11 @@ class TestUpdateExperienceConfig:
         )  # Linked experience is the same Texas experience from above
         assert experience.region == PrivacyNoticeRegion.us_tx
         assert experience.component == ComponentType.overlay
-        assert experience.disabled is False
-        assert experience.version == 2.0
         assert experience.experience_config_id == overlay_experience_config.id
-        assert experience.experience_config_history_id == experience_config_history.id
-
-        # Created Experience History - new version of Privacy Experience created due to config being linked
-        assert experience.histories.count() == 2
-        experience_history = experience.histories[-1]
-        assert experience_history.region == PrivacyNoticeRegion.us_tx
-        assert experience_history.component == ComponentType.overlay
-        assert experience_history.disabled is False
-        assert experience_history.version == 2.0
-        assert experience_history.experience_config_id == overlay_experience_config.id
-        assert (
-            experience_history.experience_config_history_id
-            == experience_config_history.id
-        )
-        assert experience_history.privacy_experience_id == experience.id
 
         assert response.json()["linked_regions"] == ["us_tx"]
         assert response.json()["unlinked_regions"] == []
 
-        for history in experience.histories:
-            history.delete(db)
         experience.delete(db)
 
     def test_update_experience_config_experience_also_updated(
@@ -1325,14 +1421,11 @@ class TestUpdateExperienceConfig:
         privacy_experience = PrivacyExperience.create(
             db,
             data={
-                "disabled": False,
                 "component": ComponentType.overlay,
                 "region": PrivacyNoticeRegion.us_tx,
             },
         )
 
-        assert privacy_experience.version == 1.0
-        assert privacy_experience.histories.count() == 1.0
         assert privacy_experience.experience_config_id is None
 
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
@@ -1364,7 +1457,9 @@ class TestUpdateExperienceConfig:
         db.refresh(overlay_experience_config)
         # ExperienceConfig was disabled - this is a change, so another historical record is created
         assert overlay_experience_config.histories.count() == 2
-        experience_config_history = overlay_experience_config.histories[1]
+        experience_config_history = overlay_experience_config.histories.order_by(
+            PrivacyExperienceConfigHistory.created_at
+        )[1]
         assert experience_config_history.version == 2.0
         assert experience_config_history.disabled
         assert experience_config_history.component == ComponentType.overlay
@@ -1377,7 +1472,7 @@ class TestUpdateExperienceConfig:
             == overlay_experience_config.id
         )
 
-        # Updated Privacy Experience - TX Privacy Experience automatically linked, and bumped to 2.0
+        # Updated Privacy Experience - TX Privacy Experience automatically linked
         assert overlay_experience_config.experiences.count() == 1
         experience = overlay_experience_config.experiences[0]
         db.refresh(experience)
@@ -1386,32 +1481,11 @@ class TestUpdateExperienceConfig:
         )  # Linked experience is the same Texas experience from above
         assert experience.region == PrivacyNoticeRegion.us_tx
         assert experience.component == ComponentType.overlay
-        assert (
-            experience.disabled is True
-        ), "Experience disabled because it was linked to a disabled config"
-        assert experience.version == 2.0
         assert experience.experience_config_id == overlay_experience_config.id
-        assert experience.experience_config_history_id == experience_config_history.id
-
-        # Created Experience History - new version of Privacy Experience created due to config being linked
-        assert experience.histories.count() == 2
-        experience_history = experience.histories[-1]
-        assert experience_history.region == PrivacyNoticeRegion.us_tx
-        assert experience_history.component == ComponentType.overlay
-        assert experience_history.disabled is True
-        assert experience_history.version == 2.0
-        assert experience_history.experience_config_id == overlay_experience_config.id
-        assert (
-            experience_history.experience_config_history_id
-            == experience_config_history.id
-        )
-        assert experience_history.privacy_experience_id == experience.id
 
         assert response.json()["linked_regions"] == ["us_tx"]
         assert response.json()["unlinked_regions"] == []
 
-        for history in experience.histories:
-            history.delete(db)
         experience.delete(db)
 
     def test_update_experience_config_to_remove_region(
@@ -1429,16 +1503,12 @@ class TestUpdateExperienceConfig:
         privacy_experience = PrivacyExperience.create(
             db,
             data={
-                "disabled": False,
                 "component": ComponentType.overlay,
                 "region": PrivacyNoticeRegion.us_tx,
                 "experience_config_id": overlay_experience_config.id,
-                "experience_config_history_id": overlay_experience_config.experience_config_history_id,
             },
         )
 
-        assert privacy_experience.version == 1.0
-        assert privacy_experience.histories.count() == 1.0
         assert privacy_experience.experience_config_id == overlay_experience_config.id
 
         db.refresh(overlay_experience_config)
@@ -1473,25 +1543,13 @@ class TestUpdateExperienceConfig:
             == overlay_experience_config.id
         )
 
-        # Updated Privacy Experience - TX Privacy Experience automatically *unlinked*, and bumped to 2.0
+        # Updated Privacy Experience - TX Privacy Experience automatically *unlinked*
         assert overlay_experience_config.experiences.count() == 0
         db.refresh(privacy_experience)
 
-        assert privacy_experience.version == 2.0
-        assert privacy_experience.experience_config_id is None
-        assert privacy_experience.experience_config_history_id is None
+        assert (
+            privacy_experience.experience_config_id
+            == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        )  # Default overlay experience config linked instead
 
-        # Created Experience History - new version of Privacy Experience created due to config being *unlinked*
-        assert privacy_experience.histories.count() == 2
-        experience_history = privacy_experience.histories[-1]
-        assert experience_history.region == PrivacyNoticeRegion.us_tx
-        assert experience_history.component == ComponentType.overlay
-        assert experience_history.disabled is False
-        assert experience_history.version == 2.0
-        assert experience_history.experience_config_id is None
-        assert experience_history.experience_config_history_id is None
-        assert experience_history.privacy_experience_id == privacy_experience.id
-
-        for history in privacy_experience.histories:
-            history.delete(db)
         privacy_experience.delete(db)

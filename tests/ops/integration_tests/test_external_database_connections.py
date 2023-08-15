@@ -27,15 +27,34 @@ def redshift_test_engine() -> Generator:
     )
 
     # Pulling from integration config file or GitHub secrets
-    uri = integration_config.get("redshift", {}).get("external_uri") or os.environ.get(
-        "REDSHIFT_TEST_URI"
+    host = integration_config.get("redshift", {}).get("host") or os.environ.get(
+        "REDSHIFT_TEST_HOST"
+    )
+    port = integration_config.get("redshift", {}).get("port") or os.environ.get(
+        "REDSHIFT_TEST_PORT"
+    )
+    user = integration_config.get("redshift", {}).get("user") or os.environ.get(
+        "REDSHIFT_TEST_USER"
+    )
+    password = integration_config.get("redshift", {}).get("password") or os.environ.get(
+        "REDSHIFT_TEST_PASSWORD"
+    )
+    database = integration_config.get("redshift", {}).get("database") or os.environ.get(
+        "REDSHIFT_TEST_DATABASE"
     )
     db_schema = integration_config.get("redshift", {}).get(
         "db_schema"
     ) or os.environ.get("REDSHIFT_TEST_DB_SCHEMA")
-    if uri and db_schema:
-        schema = RedshiftSchema(url=uri, db_schema=db_schema)
-        connection_config.secrets = schema.dict()
+
+    schema = RedshiftSchema(
+        host=host,
+        port=int(port) if port and port.isdigit() else None,
+        user=user,
+        password=password,
+        database=database,
+        db_schema=db_schema,
+    )
+    connection_config.secrets = schema.dict()
 
     connector: RedshiftConnector = get_connector(connection_config)
     engine = connector.client()
@@ -47,10 +66,34 @@ def redshift_test_engine() -> Generator:
 def snowflake_test_engine() -> Generator:
     """Return a connection to a Snowflake database"""
     # Pulling from integration config file or GitHub secrets
-    uri = integration_config.get("snowflake", {}).get("external_uri") or os.environ.get(
-        "SNOWFLAKE_TEST_URI"
+    account_identifier = integration_config.get("snowflake", {}).get(
+        "account_identifier"
+    ) or os.environ.get("SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER")
+    user_login_name = integration_config.get("snowflake", {}).get(
+        "user_login_name"
+    ) or os.environ.get("SNOWFLAKE_TEST_USER_LOGIN_NAME")
+    password = integration_config.get("snowflake", {}).get(
+        "password"
+    ) or os.environ.get("SNOWFLAKE_TEST_PASSWORD")
+    warehouse_name = integration_config.get("snowflake", {}).get(
+        "warehouse_name"
+    ) or os.environ.get("SNOWFLAKE_TEST_WAREHOUSE_NAME")
+    database_name = integration_config.get("snowflake", {}).get(
+        "database_name"
+    ) or os.environ.get("SNOWFLAKE_TEST_DATABASE_NAME")
+    schema_name = integration_config.get("snowflake", {}).get(
+        "schema_name"
+    ) or os.environ.get("SNOWFLAKE_TEST_SCHEMA_NAME")
+
+    schema = SnowflakeSchema(
+        account_identifier=account_identifier,
+        user_login_name=user_login_name,
+        password=password,
+        warehouse_name=warehouse_name,
+        database_name=database_name,
+        schema_name=schema_name,
     )
-    schema = SnowflakeSchema(url=uri)
+
     connection_config = ConnectionConfig(
         name="My Snowflake Config",
         key="test_snowflake_key",
@@ -61,6 +104,16 @@ def snowflake_test_engine() -> Generator:
     engine = connector.client()
     yield engine
     engine.dispose()
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_redshift
+def test_redshift_sslmode_default(redshift_test_engine):
+    """Confirm that sslmode is set to verify-full for non SSH connections"""
+    _, kwargs = redshift_test_engine.dialect.create_connect_args(
+        redshift_test_engine.url
+    )
+    assert kwargs["sslmode"] == "verify-full"
 
 
 @pytest.mark.integration_external

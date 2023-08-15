@@ -1,13 +1,12 @@
 from datetime import datetime
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Type, Union
 
 from fideslang.validation import FidesKey
 from pydantic import Field, validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.audit_log import AuditLogAction
-from fides.api.models.policy import ActionType
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLogStatus,
@@ -15,11 +14,12 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.policy import PolicyResponse as PolicySchema
-from fides.api.schemas.redis_cache import Identity, IdentityBase
+from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.user import PrivacyRequestReviewer
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 class PrivacyRequestDRPStatus(EnumType):
@@ -65,7 +65,7 @@ class ConsentReport(Consent):
     """Schema for reporting Consent requests."""
 
     id: str
-    identity: IdentityBase
+    identity: Identity
     created_at: datetime
     updated_at: datetime
 
@@ -84,7 +84,7 @@ class PrivacyRequestCreate(FidesSchema):
 
     @validator("encryption_key")
     def validate_encryption_key(
-        cls: "PrivacyRequestCreate", value: Optional[str] = None
+        cls: Type["PrivacyRequestCreate"], value: Optional[str] = None
     ) -> Optional[str]:
         """Validate encryption key where applicable"""
         if value:

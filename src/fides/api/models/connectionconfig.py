@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional, Type
 
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, event
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -14,10 +14,11 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
-from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
-from fides.api.db.base_class import Base, FidesBase, JSONTypeOverride, get_key_from_data
+from fides.api.db.base_class import Base, FidesBase, JSONTypeOverride
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 
 
 class ConnectionTestStatus(enum.Enum):
@@ -104,7 +105,7 @@ class ConnectionConfig(Base):
     Stores credentials to connect fidesops to an engineer's application databases.
     """
 
-    name = Column(String, index=True, unique=True, nullable=False)
+    name = Column(String, nullable=True)
     key = Column(String, index=True, unique=True, nullable=False)
     description = Column(String, index=True, nullable=True)
     connection_type = Column(Enum(ConnectionType), nullable=False)
@@ -137,6 +138,7 @@ class ConnectionConfig(Base):
     datasets = relationship(  # type: ignore[misc]
         "DatasetConfig",
         back_populates="connection_config",
+        cascade="all, delete",
     )
 
     access_manual_webhook = relationship(  # type: ignore[misc]
@@ -146,14 +148,39 @@ class ConnectionConfig(Base):
         uselist=False,
     )
 
-    system = relationship(System)
+    system = relationship(System, back_populates="connection_configs", uselist=False)
+
+    # Identifies the privacy actions needed from this connection by the associated system.
+    enabled_actions = Column(
+        ARRAY(Enum(ActionType, native_enum=False)), unique=False, nullable=True
+    )
 
     @property
-    def system_key(self) -> str:
+    def system_key(self) -> Optional[str]:
         """Property for caching a system identifier for systems (or connector names as a fallback) for consent reporting"""
         if self.system:
             return self.system.fides_key
+        # TODO: Remove this fallback once all connection configs are linked to systems
+        # This will always be None in the future. `self.system` will always be set.
         return self.name
+
+    @property
+    def authorized(self) -> bool:
+        """Returns True if the connection config has an access token, used for OAuth2 connections"""
+
+        saas_config = self.get_saas_config()
+        if not saas_config:
+            return False
+
+        authentication = saas_config.client_config.authentication
+        if not authentication:
+            return False
+
+        # hard-coding to avoid cyclic dependency
+        if authentication.strategy != "oauth2_authorization_code":
+            return False
+
+        return bool(self.secrets and self.secrets.get("access_token"))
 
     @classmethod
     def create_without_saving(
@@ -163,19 +190,11 @@ class ConnectionConfig(Base):
         # Build properly formatted key/name for ConnectionConfig.
         # Borrowed from OrmWrappedFidesBase.create
         if hasattr(cls, "key"):
-            data["key"] = get_key_from_data(data, cls.__name__)
             if db.query(cls).filter_by(key=data["key"]).first():
                 raise KeyOrNameAlreadyExists(
                     f"Key {data['key']} already exists in {cls.__name__}. Keys will be snake-cased names if not provided. "
                     f"If you are seeing this error without providing a key, please provide a key or a different name."
                     ""
-                )
-
-        if hasattr(cls, "name"):
-            data["name"] = data.get("name")
-            if db.query(cls).filter_by(name=data["name"]).first():
-                raise KeyOrNameAlreadyExists(
-                    f"Name {data['name']} already exists in {cls.__name__}."
                 )
 
         # Create

@@ -4923,6 +4923,145 @@
 			]
 		},
 		{
+			"name": "Systems",
+			"item": [
+				{
+					"name": "Get System",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/system/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"system",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create System",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"data_responsibility_title\":\"Processor\",\n   \"description\":\"Collect data about our users for marketing.\",\n   \"egress\":[\n      {\n         \"fides_key\":\"demo_analytics_system\",\n         \"type\":\"system\",\n         \"data_categories\":null\n      }\n   ],\n   \"fides_key\":\"test_system\",\n   \"ingress\":null,\n   \"name\":\"Test system\",\n   \"organization_fides_key\":\"default_organization\",\n   \"privacy_declarations\":[\n      {\n         \"name\":\"Collect data for marketing\",\n         \"data_categories\":[\n            \"user.device.cookie_id\"\n         ],\n         \"data_use\":\"personalize\",\n         \"data_qualifier\":\"aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified\",\n         \"data_subjects\":[\n            \"customer\"\n         ],\n         \"dataset_references\":null,\n         \"egress\":null,\n         \"ingress\":null,\n         \"cookies\":[\n            {\n               \"name\":\"test_cookie\",\n               \"path\":\"/\"\n            }\n         ]\n      }\n   ],\n   \"system_dependencies\":[\n      \"demo_analytics_system\"\n   ],\n   \"system_type\":\"Service\",\n   \"tags\":null,\n   \"third_country_transfers\":null,\n   \"administrating_department\":\"Marketing\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/system",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"system"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update System",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"data_responsibility_title\":\"Processor\",\n   \"description\":\"Collect data about our users for marketing.\",\n   \"egress\":[\n      {\n         \"fides_key\":\"demo_analytics_system\",\n         \"type\":\"system\",\n         \"data_categories\":null\n      }\n   ],\n   \"fides_key\":\"test_system\",\n   \"ingress\":null,\n   \"name\":\"Test system\",\n   \"organization_fides_key\":\"default_organization\",\n   \"privacy_declarations\":[\n      {\n         \"name\":\"Collect data for marketing\",\n         \"data_categories\":[\n            \"user.device.cookie_id\"\n         ],\n         \"data_use\":\"marketing.advertising\",\n         \"data_qualifier\":\"aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified\",\n         \"data_subjects\":[\n            \"customer\"\n         ],\n         \"dataset_references\":null,\n         \"egress\":null,\n         \"ingress\":null,\n         \"cookies\":[\n            {\n               \"name\":\"another_cookie\",\n               \"path\":\"/\"\n            }\n         ]\n      }\n   ],\n   \"system_dependencies\":[\n      \"demo_analytics_system\"\n   ],\n   \"system_type\":\"Service\",\n   \"tags\":null,\n   \"third_country_transfers\":null,\n   \"administrating_department\":\"Marketing\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/system?",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"system"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete System",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/system/test_system",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"system",
+								"test_system"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Roles",
 			"item": [
 				{
@@ -5216,7 +5355,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n   {\n      \"name\":\"Profiling\",\n      \"notice_key\": \"profiling\",\n      \"regions\":[\n         \"us_ca\",\n         \"us_ut\"\n      ],\n      \"description\":\"Making a decision solely by automated means.\",\n      \"consent_mechanism\":\"opt_in\",\n      \"data_uses\":[\n         \"personalize\"\n      ],\n      \"enforcement_level\":\"system_wide\",\n      \"has_gpc_flag\":false,\n      \"displayed_in_overlay\":true\n   },\n   {\n      \"name\":\"Essential\",\n      \"notice_key\": \"essential\",\n      \"regions\":[\n         \"eu_de\"\n      ],\n      \"description\":\"Notify the user about data processing activities that are essential to your services' functionality. Typically consent is not required for this.\",\n      \"consent_mechanism\":\"notice_only\",\n      \"data_uses\":[\n         \"provide.service\"\n      ],\n      \"enforcement_level\":\"system_wide\",\n      \"displayed_in_overlay\":true\n   },\n   {\n      \"name\":\"Advertising\",\n      \"notice_key\": \"advertising\",\n      \"regions\":[\n         \"us_ca\"\n      ],\n      \"description\":\"Sample advertising notice\",\n      \"consent_mechanism\":\"opt_out\",\n      \"data_uses\":[\n         \"advertising\"\n      ],\n      \"enforcement_level\":\"system_wide\",\n      \"displayed_in_privacy_center\":true\n   }\n]",
+							"raw": "[\n   {\n      \"name\":\"Profiling\",\n      \"notice_key\": \"profiling\",\n      \"regions\":[\n         \"us_wv\",\n         \"us_mt\"\n      ],\n      \"description\":\"Making a decision solely by automated means.\",\n      \"consent_mechanism\":\"opt_in\",\n      \"data_uses\":[\n         \"personalize\"\n      ],\n      \"enforcement_level\":\"system_wide\",\n      \"has_gpc_flag\":false,\n      \"displayed_in_overlay\":true\n   },\n   {\n      \"name\":\"Essential\",\n      \"notice_key\": \"essential\",\n      \"regions\":[\n         \"us_ak\"\n      ],\n      \"description\":\"Notify the user about data processing activities that are essential to your services' functionality. Typically consent is not required for this.\",\n      \"consent_mechanism\":\"notice_only\",\n      \"data_uses\":[\n         \"essential.service\"\n      ],\n      \"enforcement_level\":\"system_wide\",\n      \"displayed_in_overlay\":true\n   },\n   {\n      \"name\":\"Advertising\",\n      \"notice_key\": \"advertising\",\n      \"regions\":[\n         \"us_nc\"\n      ],\n      \"description\":\"Sample advertising notice\",\n      \"consent_mechanism\":\"opt_out\",\n      \"data_uses\":[\n         \"marketing.advertising\"\n      ],\n      \"enforcement_level\":\"system_wide\",\n      \"displayed_in_privacy_center\":true\n   }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5455,7 +5594,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"accept_button_label\": \"Accept all\",\n    \"acknowledge_button_label\": \"Confirm\",\n    \"banner_enabled\": \"enabled_where_required\",\n    \"component\": \"overlay\",\n    \"description\": \"On this page you can opt in and out of these data uses cases\",\n    \"disabled\": false,\n    \"privacy_preferences_link_label\": \"Manage preferences\",\n    \"privacy_policy_link_label\": \"View our privacy policy\",\n    \"privacy_policy_url\": \"example.com/privacy\",\n    \"regions\": [\"us_ca\"],\n    \"reject_button_label\": \"Reject all\",\n    \"save_button_label\": \"Save\",\n    \"title\": \"Manage your consent\"\n}",
+							"raw": "{\n    \"accept_button_label\": \"Accept all\",\n    \"acknowledge_button_label\": \"Acknowledge\",\n    \"banner_enabled\": \"enabled_where_required\",\n    \"component\": \"overlay\",\n    \"description\": \"On this page you can opt in and out of these data uses cases\",\n    \"disabled\": false,\n    \"privacy_preferences_link_label\": \"Manage preferences\",\n    \"privacy_policy_link_label\": \"View our privacy policy\",\n    \"privacy_policy_url\": \"example.com/privacy\",\n    \"regions\": [\"us_nc\"],\n    \"reject_button_label\": \"Reject all\",\n    \"save_button_label\": \"Save\",\n    \"title\": \"Manage your consent\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5491,7 +5630,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"accept_button_label\": \"Accept\",\n    \"reject_button_label\": \"Reject\",\n    \"save_button_label\": \"Save all\",\n    \"title\": \"Here is where you manage your consent!\",\n    \"regions\": [\"us_ca\", \"eu_de\"]\n}",
+							"raw": "{\n    \"accept_button_label\": \"Accept\",\n    \"reject_button_label\": \"Reject\",\n    \"save_button_label\": \"Save all\",\n    \"title\": \"Here is where you manage your consent!\",\n    \"regions\": [\"us_ca\", \"de\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5670,7 +5809,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n   \"browser_identity\": {\n       \"ga_client_id\": \"UA-XXXXXXXXX\",\n       \"ljt_readerID\": \"test_sovrn_id\",\n       \"fides_user_device_id\": \"{{fides_user_device_id}}\"\n   },\n   \"preferences\": [{\n       \"privacy_notice_history_id\": \"{{privacy_notice_history_id}}\",\n       \"preference\": \"opt_out\"\n   }],\n   \"user_geography\": \"us_ca\",\n   \"privacy_experience_history_id\": \"{{privacy_experience_history_id}}\",\n   \"method\": \"button\"\n}",
+							"raw": "{\n   \"browser_identity\": {\n       \"ga_client_id\": \"UA-XXXXXXXXX\",\n       \"ljt_readerID\": \"test_sovrn_id\",\n       \"fides_user_device_id\": \"{{fides_user_device_id}}\"\n   },\n   \"preferences\": [{\n       \"privacy_notice_history_id\": \"{{privacy_notice_history_id}}\",\n       \"preference\": \"opt_out\"\n   }],\n   \"user_geography\": \"us_ca\",\n   \"privacy_experience_id\": \"{{privacy_experience_id}}\",\n   \"method\": \"button\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -6088,11 +6227,6 @@
 		},
 		{
 			"key": "experience-config-id",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "privacy_experience_history_id",
 			"value": "",
 			"type": "string"
 		}

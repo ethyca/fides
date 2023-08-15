@@ -23,7 +23,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.task import graph_task
 from fides.api.task.graph_task import get_cached_data_for_erasures
-from fides.core.config import CONFIG
+from fides.config import CONFIG
 from tests.fixtures.application_fixtures import integration_secrets
 
 from ..service.privacy_request.test_request_runner_service import (
@@ -618,8 +618,8 @@ async def test_restart_graph_from_failure(
         )
     assert exc.value.__class__ == ValidationError
     assert (
-        exc.value.errors()[0]["msg"]
-        == "MongoDBSchema must be supplied a 'url' or all of: ['host']."
+        "MongoDBSchema must be supplied all of: ['host', 'username', 'password', 'defaultauthdb']"
+        in str(exc.value)
     )
 
     execution_logs = get_sorted_execution_logs(db, privacy_request)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any, Type, TypeVar
+from typing import Any, Optional, Type, TypeVar
 from uuid import uuid4
 
 from fideslang.models import FidesKey  # type: ignore
@@ -226,7 +226,13 @@ class OrmWrappedFidesBase(FidesBase):
         return db_obj
 
     @classmethod
-    def create_or_update(cls: Type[T], db: Session, *, data: dict[str, Any]) -> T:
+    def create_or_update(
+        cls: Type[T],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: Optional[bool] = True,
+    ) -> T:
         """Create an object, or update the existing version.
 
         There's an edge case where `data["id"]` and `data["key"]` can point attempt
@@ -239,7 +245,7 @@ class OrmWrappedFidesBase(FidesBase):
         if db_obj:
             db_obj.update(db=db, data=data)  # type: ignore
         else:
-            db_obj = cls.create(db=db, data=data)
+            db_obj = cls.create(db=db, data=data, check_name=check_name)  # type: ignore
         return db_obj
 
     @classmethod

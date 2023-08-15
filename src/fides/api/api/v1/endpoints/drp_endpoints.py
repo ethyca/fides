@@ -15,12 +15,10 @@ from starlette.status import (
 
 from fides.api import common_exceptions
 from fides.api.api import deps
-from fides.api.api.v1 import scope_registry as scopes
-from fides.api.api.v1 import urn_registry as urls
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,
 )
-from fides.api.models.policy import DrpAction, Policy
+from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.drp_privacy_request import (
@@ -30,6 +28,7 @@ from fides.api.schemas.drp_privacy_request import (
     DrpPrivacyRequestCreate,
     DrpRevokeRequest,
 )
+from fides.api.schemas.policy import DrpAction
 from fides.api.schemas.privacy_request import PrivacyRequestDRPStatusResponse
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
@@ -46,8 +45,10 @@ from fides.api.service.privacy_request.request_service import (
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.logger import Pii
-from fides.core.config import CONFIG
-from fides.core.config.config_proxy import ConfigProxy
+from fides.common.api import scope_registry as scopes
+from fides.common.api.v1 import urn_registry as urls
+from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)
 

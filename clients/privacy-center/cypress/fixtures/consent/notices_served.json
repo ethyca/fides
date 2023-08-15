@@ -1,0 +1,56 @@
+[
+  {
+    "id": "las_7bc77963-2ab1-4af8-8643-803c5c219f1d",
+    "updated_at": "2023-07-20T17:59:07.114527+00:00",
+    "privacy_notice_history": {
+      "name": "Data Sales and Sharing",
+      "notice_key": "data_sales_and_sharing",
+      "description": "We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of cross-contextual targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.",
+      "internal_description": "“Sale of personal“ data means the exchange of personal data for monetary or other valuable consideration. Data sharing refers to sharing of data with third parties for the purpose of cross contextual behavioral advertising. This is also closely analogous to “Targeted Advertising” as defined in other U.S. state laws and they have been combined here under one notice.",
+      "origin": "pri_309d287c-b208-4fd1-93b2-7b2ff13eddat",
+      "regions": ["us_ca", "us_co", "us_ct", "us_ia", "us_ut", "us_va"],
+      "consent_mechanism": "opt_out",
+      "data_uses": [
+        "marketing.advertising.first_party.targeted",
+        "marketing.advertising.third_party.targeted"
+      ],
+      "enforcement_level": "frontend",
+      "disabled": false,
+      "has_gpc_flag": true,
+      "displayed_in_privacy_center": true,
+      "displayed_in_overlay": true,
+      "displayed_in_api": false,
+      "id": "pri_mock_history_id_1",
+      "version": 1.0,
+      "privacy_notice_id": "pri_mock_id_1"
+    },
+    "served_notice_history_id": "ser_153d302f-4007-4f72-bbcd-2d5b2610c6a6"
+  },
+  {
+    "id": "las_e6ed634c-3188-4884-a2cf-23ac813bffbb",
+    "updated_at": "2023-07-20T19:42:45.832742+00:00",
+    "privacy_notice_history": {
+      "name": "Essential",
+      "notice_key": "essential",
+      "description": "Essential behavior",
+      "internal_description": "",
+      "origin": "pri_309d287c-b208-4fd1-93b2-7b2ff13eddat",
+      "regions": ["us_ca", "us_co", "us_ct", "us_ia", "us_ut", "us_va"],
+      "consent_mechanism": "opt_out",
+      "data_uses": [
+        "marketing.advertising.first_party.targeted",
+        "marketing.advertising.third_party.targeted"
+      ],
+      "enforcement_level": "frontend",
+      "disabled": false,
+      "has_gpc_flag": true,
+      "displayed_in_privacy_center": true,
+      "displayed_in_overlay": true,
+      "displayed_in_api": false,
+      "id": "pri_mock_history_id_2",
+      "version": 1.0,
+      "privacy_notice_id": "pri_mock_id_2"
+    },
+    "served_notice_history_id": "ser_e4c4f2c7-e884-4763-8447-69691890da80"
+  }
+]

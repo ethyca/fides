@@ -6,15 +6,15 @@ import yaml
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import ConnectionType
-from fides.api.models.policy import SUPPORTED_ACTION_TYPES, ActionType
 from fides.api.schemas.connection_configuration import (
     SaaSSchemaFactory,
     secrets_schemas,
 )
-from fides.api.schemas.connection_configuration.connection_config import (
+from fides.api.schemas.connection_configuration.connection_type_system_map import (
     ConnectionSystemTypeMap,
-    SystemType,
 )
+from fides.api.schemas.connection_configuration.enums.system_type import SystemType
+from fides.api.schemas.policy import SUPPORTED_ACTION_TYPES, ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors.consent_email_connector import (
     CONSENT_EMAIL_CONNECTOR_TYPES,
@@ -28,7 +28,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 from fides.api.util.saas_util import load_config_from_string
 
 
-def connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]:
+def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]:
     """Returns the secret fields that should be supplied to authenticate with a particular connection type.
 
     Note that this does not return actual secrets, instead we return the *types* of
@@ -171,21 +171,17 @@ def get_connection_types(
         )
 
         for item in saas_types:
-            if ConnectorRegistry.get_connector_template(item) is not None:
-                connector_template = ConnectorRegistry.get_connector_template(item)
-
-            connection_system_types.append(
-                ConnectionSystemTypeMap(
-                    identifier=item,
-                    type=SystemType.saas,
-                    human_readable=connector_template.human_readable
-                    if connector_template is not None
-                    else "",
-                    encoded_icon=connector_template.icon
-                    if connector_template is not None
-                    else None,
+            connector_template = ConnectorRegistry.get_connector_template(item)
+            if connector_template is not None:
+                connection_system_types.append(
+                    ConnectionSystemTypeMap(
+                        identifier=item,
+                        type=SystemType.saas,
+                        human_readable=connector_template.human_readable,
+                        encoded_icon=connector_template.icon,
+                        authorization_required=connector_template.authorization_required,
+                    )
                 )
-            )
 
     if (
         system_type == SystemType.manual or system_type is None

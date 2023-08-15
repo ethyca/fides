@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from toml import load as load_toml
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -14,7 +13,8 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.models.policy import Policy, Rule, RuleTarget
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.saas.saas_config import ParamValue
 from fides.api.schemas.saas.strategy_configuration import (
     OAuth2AuthorizationCodeConfiguration,
@@ -285,7 +285,7 @@ def oauth2_authorization_code_configuration() -> OAuth2AuthorizationCodeConfigur
 
 @pytest.fixture(scope="function")
 def oauth2_authorization_code_connection_config(
-    db: Session, oauth2_authorization_code_configuration
+    db: Session, oauth2_authorization_code_configuration, system
 ) -> Generator:
     secrets = {
         "domain": "localhost",
@@ -298,8 +298,8 @@ def oauth2_authorization_code_connection_config(
     saas_config = {
         "fides_key": "oauth2_authorization_code_connector",
         "name": "OAuth2 Auth Code Connector",
-        "type": "custom",
-        "description": "Generic OAuth2 connector for testing",
+        "type": "salesforce",
+        "description": "Salesforce connector for testing OAuth2",
         "version": "0.0.1",
         "connector_params": [{"name": item} for item in secrets.keys()],
         "client_config": {
@@ -324,6 +324,7 @@ def oauth2_authorization_code_connection_config(
             "access": AccessLevel.write,
             "secrets": secrets,
             "saas_config": saas_config,
+            "system_id": system.id,
         },
     )
     yield connection_config
@@ -658,7 +659,7 @@ def planet_express_invalid_dataset() -> str:
 
 @pytest.fixture
 def planet_express_icon() -> str:
-    return encode_file_contents(
+    return load_as_string(
         "tests/fixtures/saas/test_data/planet_express/planet_express.svg"
     )
 

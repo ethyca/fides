@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 from fastapi.params import Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -13,63 +13,44 @@ from pydantic import conlist
 from sqlalchemy import null, or_
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
-from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 
 from fides.api.api import deps
-from fides.api.api.v1.scope_registry import (
-    CONNECTION_CREATE_OR_UPDATE,
-    CONNECTION_DELETE,
-    CONNECTION_READ,
-)
-from fides.api.api.v1.urn_registry import (
-    CONNECTION_BY_KEY,
-    CONNECTION_SECRETS,
-    CONNECTION_TEST,
-    CONNECTIONS,
-    V1_URL_PREFIX,
-)
-from fides.api.common_exceptions import ClientUnsuccessfulException, ConnectionException
-from fides.api.models.connectionconfig import (
-    ConnectionConfig,
-    ConnectionTestStatus,
-    ConnectionType,
-)
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
 from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
     CreateConnectionConfigurationWithSecrets,
-    SystemType,
-    TestStatus,
 )
 from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
-from fides.api.service.connectors import get_connector
+from fides.api.schemas.connection_configuration.enums.system_type import SystemType
+from fides.api.schemas.connection_configuration.enums.test_status import TestStatus
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
+    connection_status,
+    delete_connection_config,
+    get_connection_config_or_error,
     patch_connection_configs,
-    requeue_requires_input_requests,
     validate_secrets,
 )
-from fides.api.util.logger import Pii
+from fides.common.api.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_DELETE,
+    CONNECTION_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    CONNECTION_BY_KEY,
+    CONNECTION_SECRETS,
+    CONNECTION_TEST,
+    CONNECTIONS,
+    V1_URL_PREFIX,
+)
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
-
-
-def get_connection_config_or_error(
-    db: Session, connection_key: FidesKey
-) -> ConnectionConfig:
-    """Helper to load the ConnectionConfig object or throw a 404"""
-    connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
-    logger.info("Finding connection configuration with key '{}'", connection_key)
-    if not connection_config:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No connection configuration found with key '{connection_key}'.",
-        )
-    return connection_config
 
 
 @router.get(
@@ -212,49 +193,7 @@ def patch_connections(
 def delete_connection(
     connection_key: FidesKey, *, db: Session = Depends(deps.get_db)
 ) -> None:
-    """Removes the connection configuration with matching key."""
-    connection_config = get_connection_config_or_error(db, connection_key)
-    connection_type = connection_config.connection_type
-    logger.info("Deleting connection config with key '{}'.", connection_key)
-    connection_config.delete(db)
-
-    # Access Manual Webhooks are cascade deleted if their ConnectionConfig is deleted,
-    # so we queue any privacy requests that are no longer blocked by webhooks
-    if connection_type == ConnectionType.manual_webhook:
-        requeue_requires_input_requests(db)
-
-
-def connection_status(
-    connection_config: ConnectionConfig, msg: str, db: Session = Depends(deps.get_db)
-) -> TestStatusMessage:
-    """Connect, verify with a trivial query or API request, and report the status."""
-
-    connector = get_connector(connection_config)
-    try:
-        status: ConnectionTestStatus | None = connector.test_connection()
-
-    except (ConnectionException, ClientUnsuccessfulException) as exc:
-        logger.warning(
-            "Connection test failed on {}: {}",
-            connection_config.key,
-            Pii(str(exc)),
-        )
-        connection_config.update_test_status(
-            test_status=ConnectionTestStatus.failed, db=db
-        )
-        return TestStatusMessage(
-            msg=msg,
-            test_status=ConnectionTestStatus.failed,
-            failure_reason=str(exc),
-        )
-
-    logger.info("Connection test {} on {}", status.value, connection_config.key)  # type: ignore
-    connection_config.update_test_status(test_status=status, db=db)  # type: ignore
-
-    return TestStatusMessage(
-        msg=msg,
-        test_status=status,
-    )
+    delete_connection_config(db, connection_key)
 
 
 @router.put(

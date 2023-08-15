@@ -23,7 +23,7 @@ from fides.api.service.privacy_request.email_batch_service import (
     send_email_batch,
 )
 from fides.api.util.cache import get_all_cache_keys_for_privacy_request, get_cache
-from fides.core.config import get_config
+from fides.config import get_config
 from tests.fixtures.application_fixtures import (
     _create_privacy_request_for_policy,
     privacy_preference_history_us_ca_provide,
@@ -36,7 +36,7 @@ def cache_identity_and_consent_preferences(privacy_request, db, reader_id):
     identity = Identity(email="customer_1#@example.com", ljt_readerID=reader_id)
     privacy_request.cache_identity(identity)
     privacy_request.consent_preferences = [
-        Consent(data_use="advertising", opt_in=False).dict()
+        Consent(data_use="marketing.advertising", opt_in=False).dict()
     ]
     privacy_request.save(db)
 
@@ -189,7 +189,7 @@ class TestConsentEmailBatchSend:
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
         privacy_request_awaiting_consent_email_send.cache_identity(identity)
         privacy_request_awaiting_consent_email_send.consent_preferences = [
-            Consent(data_use="advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).dict()
         ]
         privacy_request_awaiting_consent_email_send.save(db)
 
@@ -318,7 +318,9 @@ class TestConsentEmailBatchSend:
                 identities={"ljt_readerID": "12345"},
                 consent_preferences=[
                     Consent(
-                        data_use="advertising", data_use_description=None, opt_in=False
+                        data_use="marketing.advertising",
+                        data_use_description=None,
+                        opt_in=False,
                     )
                 ],
                 privacy_preferences=[],
@@ -388,7 +390,9 @@ class TestConsentEmailBatchSend:
                 identities={"ljt_readerID": "12345"},
                 consent_preferences=[
                     Consent(
-                        data_use="advertising", data_use_description=None, opt_in=False
+                        data_use="marketing.advertising",
+                        data_use_description=None,
+                        opt_in=False,
                     )
                 ],
                 privacy_preferences=[],
@@ -536,11 +540,10 @@ class TestConsentEmailBatchSend:
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="example privacy notice",
                             notice_key="example_privacy_notice",
-                            description="a sample privacy notice configuration",
-                            origin="privacy_notice_template_1",
+                            description="user&#x27;s description &lt;script /&gt;",  # This isn't actually sent in the email
                             regions=["us_ca", "us_co"],
                             consent_mechanism="opt_in",
-                            data_uses=["advertising", "third_party_sharing"],
+                            data_uses=["marketing.advertising", "third_party_sharing"],
                             enforcement_level="system_wide",
                             disabled=False,
                             has_gpc_flag=False,
@@ -666,11 +669,11 @@ class TestConsentEmailBatchSend:
                         preference=UserConsentPreference.opt_out,
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="example privacy notice",
-                            description="a sample privacy notice configuration",
-                            origin="privacy_notice_template_1",
+                            notice_key="example_privacy_notice",
+                            description="user&#x27;s description &lt;script /&gt;",
                             regions=["us_ca", "us_co"],
                             consent_mechanism="opt_in",
-                            data_uses=["advertising", "third_party_sharing"],
+                            data_uses=["marketing.advertising", "third_party_sharing"],
                             enforcement_level="system_wide",
                             disabled=False,
                             has_gpc_flag=False,

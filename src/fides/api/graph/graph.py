@@ -18,6 +18,8 @@ from fides.api.graph.config import (
     SeedAddress,
 )
 
+DataCategoryFieldMapping = Dict[CollectionAddress, Dict[FidesKey, List[FieldPath]]]
+
 
 class Node:
     """A traversal_node represents a single collection as a graph traversal_node.
@@ -229,7 +231,7 @@ class DatasetGraph:
     @property
     def data_category_field_mapping(
         self,
-    ) -> Dict[CollectionAddress, Dict[FidesKey, List[FieldPath]]]:
+    ) -> DataCategoryFieldMapping:
         """
         Maps the data_categories for each traversal_node to a list of field paths that have that
         same data category.

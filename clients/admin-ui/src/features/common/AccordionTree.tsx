@@ -52,9 +52,10 @@ const AccordionTree = ({
 
     if (node.children.length === 0) {
       return (
-        <Box py={2} {...itemProps} data-testid={`item-${node.label}`}>
+        <Box py={2} {...itemProps}>
           <Box display="flex" alignItems="center">
             <Text
+              data-testid={`item-${node.label}`}
               pl={5} // AccordionButton's caret is 20px, so use 5 to line this up
               color={isFocused ? "complimentary.500" : undefined}
               mr={2}
@@ -68,11 +69,7 @@ const AccordionTree = ({
       );
     }
     return (
-      <AccordionItem
-        p={0}
-        border="none"
-        data-testid={`accordion-item-${node.label}`}
-      >
+      <AccordionItem p={0} border="none">
         <Box {...itemProps}>
           <AccordionButton
             _expanded={{ color: "complimentary.500" }}
@@ -81,7 +78,9 @@ const AccordionTree = ({
             color={isFocused ? "complimentary.500" : undefined}
           >
             <AccordionIcon />
-            <Text mr={2}>{node.label}</Text>
+            <Text data-testid={`accordion-item-${node.label}`} mr={2}>
+              {node.label}
+            </Text>
             {renderTag ? renderTag(node) : null}
           </AccordionButton>
           {hoverContent}

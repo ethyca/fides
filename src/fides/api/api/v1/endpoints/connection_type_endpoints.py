@@ -6,23 +6,23 @@ from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
 from starlette.status import HTTP_404_NOT_FOUND
 
-from fides.api.api.v1.scope_registry import CONNECTION_TYPE_READ
-from fides.api.api.v1.urn_registry import (
+from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
+from fides.api.oauth.utils import verify_oauth_client
+from fides.api.schemas.connection_configuration.connection_type_system_map import (
+    ConnectionSystemTypeMap,
+)
+from fides.api.schemas.connection_configuration.enums.system_type import SystemType
+from fides.api.schemas.policy import ActionType
+from fides.api.util.api_router import APIRouter
+from fides.api.util.connection_type import (
+    get_connection_type_secret_schema,
+    get_connection_types,
+)
+from fides.common.api.scope_registry import CONNECTION_TYPE_READ
+from fides.common.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
     V1_URL_PREFIX,
-)
-from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
-from fides.api.models.policy import ActionType
-from fides.api.oauth.utils import verify_oauth_client
-from fides.api.schemas.connection_configuration.connection_config import (
-    ConnectionSystemTypeMap,
-    SystemType,
-)
-from fides.api.util.api_router import APIRouter
-from fides.api.util.connection_type import (
-    connection_type_secret_schema,
-    get_connection_types,
 )
 
 router = APIRouter(tags=["Connection Types"], prefix=V1_URL_PREFIX)
@@ -77,7 +77,7 @@ def get_all_connection_types(
     CONNECTION_TYPE_SECRETS,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_TYPE_READ])],
 )
-def get_connection_type_secret_schema(
+def get_connection_type_secret_schema_route(
     *, connection_type: str
 ) -> Optional[Dict[str, Any]]:
     """Returns the secret fields that should be supplied to authenticate with a particular connection type
@@ -86,7 +86,7 @@ def get_connection_type_secret_schema(
     to authenticate.
     """
     try:
-        return connection_type_secret_schema(connection_type=connection_type)
+        return get_connection_type_secret_schema(connection_type=connection_type)
     except NoSuchConnectionTypeSecretSchemaError:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

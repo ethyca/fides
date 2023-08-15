@@ -6,7 +6,10 @@ from fideslang.validation import FidesKey
 from sqlalchemy.orm import Session
 
 from fides.api import common_exceptions
-from fides.api.ctl.sql_models import DataCategory as DataCategoryDbModel  # type: ignore
+
+from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
+    DataCategory as DataCategoryDbModel,
+)
 
 
 def generate_fides_data_categories() -> Type[EnumType]:

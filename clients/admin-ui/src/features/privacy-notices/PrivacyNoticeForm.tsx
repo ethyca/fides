@@ -27,7 +27,7 @@ import {
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
-  selectDataUseOptions,
+  selectEnabledDataUseOptions,
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
 import {
@@ -63,7 +63,7 @@ const PrivacyNoticeForm = ({
 
   // Query for data uses
   useGetAllDataUsesQuery();
-  const dataUseOptions = useAppSelector(selectDataUseOptions);
+  const dataUseOptions = useAppSelector(selectEnabledDataUseOptions);
 
   const [patchNoticesMutationTrigger] = usePatchPrivacyNoticesMutation();
   const [postNoticesMutationTrigger] = usePostPrivacyNoticeMutation();

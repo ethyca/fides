@@ -3,12 +3,14 @@ saas_config:
   name: Zendesk
   type: zendesk
   description: A sample schema representing the Zendesk connector for Fides
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: domain
     - name: username
     - name: api_key
+      label: API Key
+      sensitive: True
 
   client_config:
     protocol: https

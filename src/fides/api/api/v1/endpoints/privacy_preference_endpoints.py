@@ -1,6 +1,6 @@
 import ipaddress
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Type, Union
 
 from fastapi import Depends, HTTPException, Request, Response
 from fastapi.params import Security
@@ -10,7 +10,12 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from sqlalchemy import literal
 from sqlalchemy.orm import Query, Session
-from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 
 from fides.api.api.deps import get_db
 from fides.api.api.v1.endpoints.consent_request_endpoints import (
@@ -19,29 +24,20 @@ from fides.api.api.v1.endpoints.consent_request_endpoints import (
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
-from fides.api.api.v1.endpoints.utils import (
-    fides_limiter,
-    validate_start_and_end_filters,
-)
-from fides.api.api.v1.scope_registry import (
-    CURRENT_PRIVACY_PREFERENCE_READ,
-    PRIVACY_PREFERENCE_HISTORY_READ,
-)
-from fides.api.api.v1.urn_registry import (
-    CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY,
-    CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
-    CURRENT_PRIVACY_PREFERENCES_REPORT,
-    HISTORICAL_PRIVACY_PREFERENCES_REPORT,
-    PRIVACY_PREFERENCES,
-    V1_URL_PREFIX,
-)
-from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
+from fides.api.custom_types import SafeStr
+from fides.api.db.seed import DEFAULT_CONSENT_POLICY
 from fides.api.models.fides_user import FidesUser
-from fides.api.models.privacy_experience import PrivacyExperienceHistory
-from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeHistory
+from fides.api.models.privacy_experience import PrivacyExperience
+from fides.api.models.privacy_notice import (
+    EnforcementLevel,
+    PrivacyNotice,
+    PrivacyNoticeHistory,
+)
 from fides.api.models.privacy_preference import (
     CurrentPrivacyPreference,
+    LastServedNotice,
     PrivacyPreferenceHistory,
+    ServedNoticeHistory,
 )
 from fides.api.models.privacy_request import (
     ConsentRequest,
@@ -54,6 +50,9 @@ from fides.api.schemas.privacy_preference import (
     ConsentReportingSchema,
     CurrentPrivacyPreferenceReportingSchema,
     CurrentPrivacyPreferenceSchema,
+    LastServedNoticeSchema,
+    NoticesServedCreate,
+    NoticesServedRequest,
     PrivacyPreferencesCreate,
     PrivacyPreferencesRequest,
 )
@@ -67,10 +66,44 @@ from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
-from fides.core.config import CONFIG
-from fides.core.config.config_proxy import ConfigProxy
+from fides.api.util.endpoint_utils import fides_limiter, validate_start_and_end_filters
+from fides.common.api.scope_registry import (
+    CURRENT_PRIVACY_PREFERENCE_READ,
+    PRIVACY_PREFERENCE_HISTORY_READ,
+)
+from fides.common.api.v1.urn_registry import (
+    CONSENT_REQUEST_NOTICES_SERVED,
+    CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY,
+    CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
+    CURRENT_PRIVACY_PREFERENCES_REPORT,
+    HISTORICAL_PRIVACY_PREFERENCES_REPORT,
+    NOTICES_SERVED,
+    PRIVACY_PREFERENCES,
+    V1_URL_PREFIX,
+)
+from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Privacy Preference"], prefix=V1_URL_PREFIX)
+
+
+def get_served_notice_history(
+    db: Session, served_notice_history_id: str
+) -> ServedNoticeHistory:
+    """
+    Helper method to load a ServedNoticeHistory record or throw a 404
+    """
+    logger.info("Finding ServedNoticeHistory with id '{}'", served_notice_history_id)
+    served_notice_history = ServedNoticeHistory.get(
+        db=db, object_id=served_notice_history_id
+    )
+    if not served_notice_history:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No ServedNoticeHistory record found for id {served_notice_history_id}.",
+        )
+
+    return served_notice_history
 
 
 @router.post(
@@ -120,7 +153,7 @@ def consent_request_verify_for_privacy_preferences(
 
 
 def verify_privacy_notice_and_historical_records(
-    db: Session, data: PrivacyPreferencesRequest
+    db: Session, notice_history_list: List[SafeStr]
 ) -> None:
     """
     Used when saving privacy preferences: runs a check that makes sure all the privacy notice histories referenced by
@@ -137,22 +170,38 @@ def verify_privacy_notice_and_historical_records(
             PrivacyNoticeHistory.privacy_notice_id == PrivacyNotice.id,
         )
         .filter(
-            PrivacyNoticeHistory.id.in_(
-                [
-                    consent_option.privacy_notice_history_id
-                    for consent_option in data.preferences
-                ]
-            ),
+            PrivacyNoticeHistory.id.in_(notice_history_list),
         )
         .distinct()
         .count()
     )
 
-    if privacy_notice_count < len(data.preferences):
+    if privacy_notice_count < len(notice_history_list):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="Invalid privacy notice histories in request",
         )
+
+
+def verify_valid_service_notice_history_records(
+    db: Session, data: PrivacyPreferencesRequest
+) -> None:
+    """Verify service notice history records specified in the request (that link an event that a notice was
+    served to the event that saved the preference) are valid before saving privacy preferences
+    """
+    for preference in data.preferences:
+        if preference.served_notice_history_id:
+            served_notice_history = get_served_notice_history(
+                db, preference.served_notice_history_id
+            )
+            if (
+                served_notice_history.privacy_notice_history_id
+                != preference.privacy_notice_history_id
+            ):
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"The ServedNoticeHistory record '{served_notice_history.id}' did not serve the PrivacyNoticeHistory record '{preference.privacy_notice_history_id}'.",
+                )
 
 
 def extract_identity_from_provided_identity(
@@ -196,42 +245,48 @@ def anonymize_ip_address(ip_address: Optional[str]) -> Optional[str]:
 
 
 def _get_request_origin_and_config(
-    db: Session, data: PrivacyPreferencesRequest
+    db: Session, data: Union[PrivacyPreferencesRequest, NoticesServedRequest]
 ) -> Tuple[Optional[str], Optional[str]]:
     """
-    Extract details to save with the privacy preferences preferences from the
-    Experience history if applicable: request origin (privacy center, overlay)
+    Extract details to save with the privacy preferences or notices
+    served from the Experience history if applicable: request origin (privacy center, overlay)
     and the Experience Config history.
 
     Additionally validate that the experience config history is valid if supplied.
     """
-    privacy_experience_history: Optional[PrivacyExperienceHistory] = None
-    experience_config_id: Optional[str] = None
-    if data.privacy_experience_history_id:
-        privacy_experience_history = PrivacyExperienceHistory.get(
-            db=db, object_id=data.privacy_experience_history_id
+    privacy_experience: Optional[PrivacyExperience] = None
+    experience_config_history_id: Optional[str] = None
+    if data.privacy_experience_id:
+        privacy_experience = PrivacyExperience.get(
+            db=db, object_id=data.privacy_experience_id
         )
-        if not privacy_experience_history:
+        if not privacy_experience:
             raise HTTPException(
                 status_code=HTTP_404_NOT_FOUND,
-                detail=f"Privacy Experience History '{data.privacy_experience_history_id}' not found.",
+                detail=f"Privacy Experience '{data.privacy_experience_id}' not found.",
             )
-        experience_config_id = privacy_experience_history.experience_config_history_id
+        experience_config_id = privacy_experience.experience_config_id
+        if experience_config_id:
+            experience_config_history_id = (
+                privacy_experience.experience_config.experience_config_history_id
+            )
 
     origin: Optional[str] = (
-        privacy_experience_history.component.value  # type: ignore[attr-defined]
-        if privacy_experience_history
+        privacy_experience.component.value  # type: ignore[attr-defined]
+        if privacy_experience
         else None
     )
-    return origin, experience_config_id
+    return origin, experience_config_history_id
 
 
-def supplement_privacy_preferences_with_user_and_experience_details(
-    db: Session, request: Request, data: PrivacyPreferencesRequest
-) -> PrivacyPreferencesCreate:
+def supplement_request_with_user_and_experience_details(
+    db: Session,
+    request: Request,
+    data: Union[PrivacyPreferencesRequest, NoticesServedRequest],
+    resource_type: Union[Type[PrivacyPreferencesCreate], Type[NoticesServedCreate]],
+) -> Union[PrivacyPreferencesCreate, NoticesServedCreate]:
     """
     Pull additional user information from request headers and experience to record for consent reporting purposes
-
     """
 
     request_headers = request.headers
@@ -242,7 +297,7 @@ def supplement_privacy_preferences_with_user_and_experience_details(
         db, data
     )
 
-    return PrivacyPreferencesCreate(
+    return resource_type(
         **data.dict(),
         anonymized_ip_address=anonymize_ip_address(ip_address),
         experience_config_history_id=experience_config_history_id,
@@ -273,42 +328,43 @@ def save_privacy_preferences_with_verified_identity(
     Creates historical records for these preferences for record keeping, and also updates current preferences.
     Creates a privacy request to propagate preferences to third party systems.
     """
-    verify_privacy_notice_and_historical_records(db=db, data=data)
+    verify_privacy_notice_and_historical_records(
+        db=db,
+        notice_history_list=[
+            consent_option.privacy_notice_history_id
+            for consent_option in data.preferences
+        ],
+    )
+    verify_valid_service_notice_history_records(db, data)
+
     consent_request, provided_identity = _get_consent_request_and_provided_identity(
         db=db,
         consent_request_id=consent_request_id,
         verification_code=data.code,
     )
-    if not provided_identity.hashed_value:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing"
-        )
 
-    if provided_identity.field_name == ProvidedIdentityType.fides_user_device_id:
-        # If consent request was saved against a fides user device id only, this is our primary identity
-        # This workflow is for when customers don't want to collect email/phone number.
-        fides_user_provided_identity = provided_identity
-        provided_identity = None  # type: ignore[assignment]
-    else:
-        # Get the fides user device id from the dictionary of browser identifiers
-        try:
-            fides_user_provided_identity = (
-                get_or_create_fides_user_device_id_provided_identity(
-                    db=db, identity_data=data.browser_identity
-                )
-            )
-        except HTTPException:
-            fides_user_provided_identity = None
+    (
+        provided_identity_verified,
+        fides_user_provided_identity,
+    ) = classify_identities_for_privacy_center_consent_reporting(
+        db=db,
+        provided_identity=provided_identity,
+        browser_identity=data.browser_identity,
+    )
 
     logger.info("Saving privacy preferences")
+
+    request_data = supplement_request_with_user_and_experience_details(
+        db, request, data, resource_type=PrivacyPreferencesCreate
+    )
+    assert isinstance(request_data, PrivacyPreferencesCreate)  # For mypy
+
     return _save_privacy_preferences_for_identities(
         db=db,
         consent_request=consent_request,
-        verified_provided_identity=provided_identity,
+        verified_provided_identity=provided_identity_verified,
         fides_user_provided_identity=fides_user_provided_identity,
-        request_data=supplement_privacy_preferences_with_user_and_experience_details(
-            db, request, data
-        ),
+        request_data=request_data,
     )
 
 
@@ -337,8 +393,12 @@ def _save_privacy_preferences_for_identities(
         fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
     )
 
+    needs_server_side_propagation: bool = False
     for privacy_preference in request_data.preferences:
-        historical_preference: PrivacyPreferenceHistory = PrivacyPreferenceHistory.create(
+        (
+            historical_preference,
+            current_preference,
+        ) = PrivacyPreferenceHistory.create_history_and_upsert_current_preference(
             db=db,
             data={
                 "anonymized_ip_address": request_data.anonymized_ip_address,
@@ -346,8 +406,8 @@ def _save_privacy_preferences_for_identities(
                 "privacy_experience_config_history_id": request_data.experience_config_history_id
                 if request_data.experience_config_history_id
                 else None,
-                "privacy_experience_history_id": request_data.privacy_experience_history_id
-                if request_data.privacy_experience_history_id
+                "privacy_experience_id": request_data.privacy_experience_id
+                if request_data.privacy_experience_id
                 else None,
                 "fides_user_device": fides_user_device_id,
                 "fides_user_device_provided_identity_id": fides_user_provided_identity.id
@@ -364,18 +424,22 @@ def _save_privacy_preferences_for_identities(
                 if verified_provided_identity
                 else None,
                 "request_origin": request_data.request_origin,
+                "served_notice_history_id": privacy_preference.served_notice_history_id,
                 "user_agent": request_data.user_agent,
                 "user_geography": request_data.user_geography,
                 "url_recorded": request_data.url_recorded,
             },
             check_name=False,
         )
-        upserted_current_preference: CurrentPrivacyPreference = (
-            historical_preference.current_privacy_preference
-        )
-
         created_historical_preferences.append(historical_preference)
-        upserted_current_preferences.append(upserted_current_preference)
+        upserted_current_preferences.append(current_preference)
+
+        if (
+            historical_preference.privacy_notice_history.enforcement_level
+            == EnforcementLevel.system_wide
+        ):
+            # At least one privacy notice has expected system wide enforcement
+            needs_server_side_propagation = True
 
     identity = (
         request_data.browser_identity if request_data.browser_identity else Identity()
@@ -388,31 +452,99 @@ def _save_privacy_preferences_for_identities(
             verified_provided_identity.encrypted_value["value"],  # type:ignore[index]
         )
 
-    # Privacy Request needs to be created with respect to the *historical* privacy preferences
-    privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
-        db=db,
-        config_proxy=ConfigProxy(db),
-        data=[
-            PrivacyRequestCreate(
-                identity=identity,
-                policy_key=request_data.policy_key or DEFAULT_CONSENT_POLICY,
-            )
-        ],
-        authenticated=True,
-        privacy_preferences=created_historical_preferences,
-    )
-
-    if privacy_request_results.failed or not privacy_request_results.succeeded:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=privacy_request_results.failed[0].message,
+    if needs_server_side_propagation:
+        # Privacy Request needs to be created with respect to the *historical* privacy preferences
+        privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
+            db=db,
+            config_proxy=ConfigProxy(db),
+            data=[
+                PrivacyRequestCreate(
+                    identity=identity,
+                    policy_key=request_data.policy_key or DEFAULT_CONSENT_POLICY,
+                )
+            ],
+            authenticated=True,
+            privacy_preferences=created_historical_preferences,
         )
 
-    if consent_request:
-        # If we have a verified user identity, go ahead and update the associated ConsentRequest for record keeping
-        consent_request.privacy_request_id = privacy_request_results.succeeded[0].id
-        consent_request.save(db=db)
+        if privacy_request_results.failed or not privacy_request_results.succeeded:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail=privacy_request_results.failed[0].message,
+            )
+
+        if consent_request:
+            # If we have a verified user identity, go ahead and update the associated ConsentRequest for record keeping
+            consent_request.privacy_request_id = privacy_request_results.succeeded[0].id
+            consent_request.save(db=db)
+
     return upserted_current_preferences
+
+
+def _save_notices_served_for_identities(
+    db: Session,
+    verified_provided_identity: Optional[ProvidedIdentity],
+    fides_user_provided_identity: Optional[ProvidedIdentity],
+    request_data: NoticesServedCreate,
+) -> List[LastServedNotice]:
+    """
+    Common code that saves that notices have been served (both historical and current records).
+    We store a historical record for every single time a notice was served to the user in the frontend,
+    and a separate "last served notice" for just the last time a notice was served to a given user.
+    """
+    created_notices_served: List[ServedNoticeHistory] = []
+    upserted_last_served: List[LastServedNotice] = []
+
+    email, hashed_email = extract_identity_from_provided_identity(
+        verified_provided_identity, ProvidedIdentityType.email
+    )
+    phone_number, hashed_phone_number = extract_identity_from_provided_identity(
+        verified_provided_identity, ProvidedIdentityType.phone_number
+    )
+    fides_user_device_id, hashed_device_id = extract_identity_from_provided_identity(
+        fides_user_provided_identity, ProvidedIdentityType.fides_user_device_id
+    )
+
+    for notice_history_id in request_data.privacy_notice_history_ids:
+        (
+            historical_preference,
+            current_preference,
+        ) = ServedNoticeHistory.save_notice_served_and_last_notice_served(
+            db=db,
+            data={
+                "acknowledge_mode": request_data.acknowledge_mode,
+                "anonymized_ip_address": request_data.anonymized_ip_address,
+                "email": email,
+                "fides_user_device": fides_user_device_id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id
+                if fides_user_provided_identity
+                else None,
+                "hashed_email": hashed_email,
+                "hashed_fides_user_device": hashed_device_id,
+                "hashed_phone_number": hashed_phone_number,
+                "phone_number": phone_number,
+                "privacy_experience_config_history_id": request_data.experience_config_history_id
+                if request_data.experience_config_history_id
+                else None,
+                "privacy_experience_id": request_data.privacy_experience_id
+                if request_data.privacy_experience_id
+                else None,
+                "privacy_notice_history_id": notice_history_id,
+                "provided_identity_id": verified_provided_identity.id
+                if verified_provided_identity
+                else None,
+                "request_origin": request_data.request_origin,
+                "serving_component": request_data.serving_component,
+                "url_recorded": request_data.url_recorded,
+                "user_agent": request_data.user_agent,
+                "user_geography": request_data.user_geography,
+            },
+            check_name=False,
+        )
+        created_notices_served.append(historical_preference)
+        upserted_last_served.append(current_preference)
+
+    return upserted_last_served
 
 
 @router.patch(
@@ -433,21 +565,32 @@ def save_privacy_preferences(
     Creates historical records for these preferences for record keeping, and also updates current preferences.
     Creates a privacy request to propagate preferences to third party systems.
     """
-    verify_privacy_notice_and_historical_records(db=db, data=data)
+    verify_privacy_notice_and_historical_records(
+        db=db,
+        notice_history_list=[
+            consent_option.privacy_notice_history_id
+            for consent_option in data.preferences
+        ],
+    )
+
+    verify_valid_service_notice_history_records(db, data)
 
     fides_user_provided_identity = get_or_create_fides_user_device_id_provided_identity(
         db=db, identity_data=data.browser_identity
     )
 
     logger.info("Saving privacy preferences with respect to fides user device id")
+    request_data = supplement_request_with_user_and_experience_details(
+        db, request, data, resource_type=PrivacyPreferencesCreate
+    )
+
+    assert isinstance(request_data, PrivacyPreferencesCreate)  # For mypy
     return _save_privacy_preferences_for_identities(
         db=db,
         consent_request=None,
         verified_provided_identity=None,
         fides_user_provided_identity=fides_user_provided_identity,
-        request_data=supplement_privacy_preferences_with_user_and_experience_details(
-            db, request, data
-        ),
+        request_data=request_data,
     )
 
 
@@ -529,8 +672,8 @@ def get_historical_consent_report(
             ),
             PrivacyPreferenceHistory.url_recorded.label("url_recorded"),
             PrivacyPreferenceHistory.user_agent.label("user_agent"),
-            PrivacyPreferenceHistory.privacy_experience_history_id.label(
-                "privacy_experience_history_id"
+            PrivacyPreferenceHistory.privacy_experience_id.label(
+                "privacy_experience_id"
             ),
             PrivacyPreferenceHistory.privacy_experience_config_history_id.label(
                 "experience_config_history_id"
@@ -539,6 +682,9 @@ def get_historical_consent_report(
                 "truncated_ip_address"
             ),
             PrivacyPreferenceHistory.method.label("method"),
+            PrivacyPreferenceHistory.served_notice_history_id.label(
+                "served_notice_history_id"
+            ),
         )
         .outerjoin(
             PrivacyRequest,
@@ -555,3 +701,129 @@ def get_historical_consent_report(
     query = query.order_by(PrivacyPreferenceHistory.created_at.desc())
 
     return paginate(query, params)
+
+
+@router.patch(
+    NOTICES_SERVED,
+    status_code=HTTP_200_OK,
+    response_model=List[LastServedNoticeSchema],
+)
+@fides_limiter.limit(CONFIG.security.public_request_rate_limit)
+def save_notices_served(
+    *,
+    db: Session = Depends(get_db),
+    data: NoticesServedRequest,
+    request: Request,
+    response: Response,  # required for rate limiting
+) -> List[LastServedNotice]:
+    """Records what notices were served to a fides user device id only.  Generally called by the banner
+    or an overlay.
+
+    All notices that were served in an experience should be included in the request body.
+    """
+    verify_privacy_notice_and_historical_records(
+        db=db, notice_history_list=data.privacy_notice_history_ids
+    )
+
+    fides_user_provided_identity = get_or_create_fides_user_device_id_provided_identity(
+        db=db, identity_data=data.browser_identity
+    )
+
+    logger.info("Recording notices served with respect to fides user device id")
+    request_data = supplement_request_with_user_and_experience_details(
+        db, request, data, resource_type=NoticesServedCreate
+    )
+    assert isinstance(request_data, NoticesServedCreate)  # For mypy
+    return _save_notices_served_for_identities(
+        db=db,
+        verified_provided_identity=None,
+        fides_user_provided_identity=fides_user_provided_identity,
+        request_data=request_data,
+    )
+
+
+def classify_identities_for_privacy_center_consent_reporting(
+    db: Session,
+    provided_identity: ProvidedIdentity,
+    browser_identity: Identity,
+) -> Tuple[Optional[ProvidedIdentity], Optional[ProvidedIdentity]]:
+    """For consent reporting purposes, we distinguish which type of identities we have that
+    identity the user.
+
+    We want to classify the "provided_identity" as an identifier saved against an email or phone,
+    and the "fides_user_provided_identity" as an identifier saved against the fides user device id.
+    """
+    if not provided_identity.hashed_value:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing"
+        )
+
+    if provided_identity.field_name == ProvidedIdentityType.fides_user_device_id:
+        # If consent request was saved against a fides user device id only, this is our primary identity
+        # This workflow is for when customers don't want to collect email/phone number.
+        fides_user_provided_identity = provided_identity
+        provided_identity = None  # type: ignore[assignment]
+    else:
+        # Get the fides user device id from the dictionary of browser identifiers
+        try:
+            fides_user_provided_identity = (
+                get_or_create_fides_user_device_id_provided_identity(
+                    db=db, identity_data=browser_identity
+                )
+            )
+        except HTTPException:
+            fides_user_provided_identity = None
+
+    return provided_identity, fides_user_provided_identity
+
+
+@router.patch(
+    CONSENT_REQUEST_NOTICES_SERVED,
+    status_code=HTTP_200_OK,
+    response_model=List[LastServedNoticeSchema],
+)
+def save_notices_served_via_privacy_center(
+    *,
+    consent_request_id: str,
+    db: Session = Depends(get_db),
+    data: NoticesServedRequest,
+    request: Request,
+) -> List[LastServedNotice]:
+    """Saves that notices were served via a verified identity flow (privacy center)
+
+    Capable of saving that notices were served against a verified email/phone number and a fides user device id
+    simultaneously.
+
+    Creates a ServedNoticeHistory history record for every notice in the request and upserts
+    a LastServedNotice record.
+    """
+    verify_privacy_notice_and_historical_records(
+        db=db,
+        notice_history_list=data.privacy_notice_history_ids,
+    )
+    _, provided_identity = _get_consent_request_and_provided_identity(
+        db=db,
+        consent_request_id=consent_request_id,
+        verification_code=data.code,
+    )
+
+    (
+        provided_identity_verified,
+        fides_user_provided_identity,
+    ) = classify_identities_for_privacy_center_consent_reporting(
+        db=db,
+        provided_identity=provided_identity,
+        browser_identity=data.browser_identity,
+    )
+
+    logger.info("Saving notices served for privacy center")
+    request_data = supplement_request_with_user_and_experience_details(
+        db, request, data, resource_type=NoticesServedCreate
+    )
+    assert isinstance(request_data, NoticesServedCreate)
+    return _save_notices_served_for_identities(
+        db=db,
+        verified_provided_identity=provided_identity_verified,
+        fides_user_provided_identity=fides_user_provided_identity,
+        request_data=request_data,
+    )
