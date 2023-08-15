@@ -510,7 +510,7 @@ class TestLoadSamples:
             # expected to exist; the others defined in the sample_connections.yml
             # will be ignored since they are missing secrets!
             assert sorted([e.key for e in connections]) == [
-                "postgres_connector",
+                "cookie_house_postgresql_database",
                 "stripe_connector",
             ]
             assert sorted([e.fides_key for e in dataset_configs]) == [
