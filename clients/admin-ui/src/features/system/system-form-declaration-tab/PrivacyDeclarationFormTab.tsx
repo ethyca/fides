@@ -61,7 +61,7 @@ const PrivacyDeclarationFormTab = ({
     PrivacyDeclarationResponse | undefined
   >(undefined);
 
-  const checkAlreadyExists = (values: PrivacyDeclarationResponse) => 
+  const checkAlreadyExists = (values: PrivacyDeclarationResponse) =>
     // if (
     //   system.privacy_declarations.filter(
     //     (d) => d.data_use === values.data_use && d.name === values.name
@@ -74,15 +74,12 @@ const PrivacyDeclarationFormTab = ({
     //   );
     //   return true;
     // }
-     false
-  ;
+    false;
 
   const handleSave = async (
     updatedDeclarations: PrivacyDeclarationResponse[],
     isDelete?: boolean
   ) => {
-    console.log("saving declarations...");
-    console.log(updatedDeclarations);
     // The API can return a null name, but cannot receive a null name,
     // so do an additional transform here (fides#3862)
     const transformedDeclarations = updatedDeclarations.map((d) => ({
@@ -195,7 +192,7 @@ const PrivacyDeclarationFormTab = ({
 
   return (
     <Stack spacing={3}>
-      {MockDeclarationsData.length === 0 ? (
+      {system.privacy_declarations.length === 0 ? (
         <Box
           display="flex"
           flexDirection="row"
@@ -231,7 +228,7 @@ const PrivacyDeclarationFormTab = ({
       ) : (
         <PrivacyDeclarationDisplayGroup
           heading="Data use"
-          declarations={MockDeclarationsData}
+          declarations={system.privacy_declarations}
           handleAdd={handleOpenNewForm}
           handleEdit={handleOpenEditForm}
           handleDelete={handleDelete}

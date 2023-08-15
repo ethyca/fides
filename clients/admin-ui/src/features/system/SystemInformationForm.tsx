@@ -1,9 +1,7 @@
 import {
-  Badge,
   Box,
   Button,
   Collapse,
-  Divider,
   Heading,
   Stack,
   Text,
@@ -30,7 +28,7 @@ import {
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
   defaultInitialValues,
-  // FormValues,
+  FormValues,
   transformFormValuesToSystem,
   transformSystemToFormValues,
 } from "~/features/system/form";
@@ -42,10 +40,6 @@ import {
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import SystemInformationFormExtension from "~/features/system/SystemInformationFormExtension";
 import { ResourceTypes, System, SystemResponse } from "~/types/api";
-
-import { MockSystemData } from "./MockSystemData"; // temp
-import { FormValues,transformNewSystemToFormValues } from "./newForm";
-import { NewSystem } from "./newSystemMockType";
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
@@ -66,6 +60,7 @@ const SystemHeading = ({ system }: { system?: SystemResponse }) => {
 
 interface Props {
   onSuccess: (system: System) => void;
+  onToggleProcessesData: (newState: boolean) => void;
   abridged?: boolean;
   system?: SystemResponse;
   withHeader?: boolean;
@@ -84,18 +79,16 @@ const SystemInformationForm = ({
     resourceFidesKey: passedInSystem?.fides_key,
   });
 
-  // const initialValues = useMemo(
-  //   () =>
-  //     passedInSystem
-  //       ? transformSystemToFormValues(
-  //           passedInSystem,
-  //           customFields.customFieldValues
-  //         )
-  //       : defaultInitialValues,
-  //   [passedInSystem, customFields.customFieldValues]
-  // );
-  const initialValues: FormValues =
-    transformNewSystemToFormValues(MockSystemData);
+  const initialValues = useMemo(
+    () =>
+      passedInSystem
+        ? transformSystemToFormValues(
+            passedInSystem,
+            customFields.customFieldValues
+          )
+        : defaultInitialValues,
+    [passedInSystem, customFields.customFieldValues]
+  );
 
   const [createSystemMutationTrigger, createSystemMutationResult] =
     useCreateSystemMutation();
@@ -113,44 +106,44 @@ const SystemInformationForm = ({
 
   const toast = useToast();
 
-  // const handleSubmit = async (
-  //   values: FormValues,
-  //   formikHelpers: FormikHelpers<FormValues>
-  // ) => {
-  //   const systemBody = transformFormValuesToSystem(values);
+  const handleSubmit = async (
+    values: FormValues,
+    formikHelpers: FormikHelpers<FormValues>
+  ) => {
+    const systemBody = transformFormValuesToSystem(values);
 
-  //   const handleResult = (
-  //     result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
-  //   ) => {
-  //     if (isErrorResult(result)) {
-  //       const attemptedAction = isEditing ? "editing" : "creating";
-  //       const errorMsg = getErrorMessage(
-  //         result.error,
-  //         `An unexpected error occurred while ${attemptedAction} the system. Please try again.`
-  //       );
-  //       toast({
-  //         status: "error",
-  //         description: errorMsg,
-  //       });
-  //     } else {
-  //       toast.closeAll();
-  //       // Reset state such that isDirty will be checked again before next save
-  //       formikHelpers.resetForm({ values });
-  //       onSuccess(systemBody);
-  //     }
-  //   };
+    const handleResult = (
+      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+    ) => {
+      if (isErrorResult(result)) {
+        const attemptedAction = isEditing ? "editing" : "creating";
+        const errorMsg = getErrorMessage(
+          result.error,
+          `An unexpected error occurred while ${attemptedAction} the system. Please try again.`
+        );
+        toast({
+          status: "error",
+          description: errorMsg,
+        });
+      } else {
+        toast.closeAll();
+        // Reset state such that isDirty will be checked again before next save
+        formikHelpers.resetForm({ values });
+        onSuccess(systemBody);
+      }
+    };
 
-  //   let result;
-  //   if (isEditing) {
-  //     result = await updateSystemMutationTrigger(systemBody);
-  //   } else {
-  //     result = await createSystemMutationTrigger(systemBody);
-  //   }
+    let result;
+    if (isEditing) {
+      result = await updateSystemMutationTrigger(systemBody);
+    } else {
+      result = await createSystemMutationTrigger(systemBody);
+    }
 
-  //   await customFields.upsertCustomFields(values);
+    await customFields.upsertCustomFields(values);
 
-  //   handleResult(result);
-  // };
+    handleResult(result);
+  };
 
   const isLoading =
     updateSystemMutationResult.isLoading ||
@@ -158,9 +151,9 @@ const SystemInformationForm = ({
     customFields.isLoading;
 
   const testSelectOptions = [
-    "Fake dataset 1",
-    "Fake dataset 2",
-    "Fake dataset 3",
+    "fake_dataset_1",
+    "fake_dataset_2",
+    "fake_dataset_3",
   ].map((opt) => ({
     value: opt,
     label: opt,
@@ -196,7 +189,7 @@ const SystemInformationForm = ({
     <Formik
       initialValues={initialValues}
       enableReinitialize
-      onSubmit={() => console.log("submitting system...")}
+      onSubmit={handleSubmit}
       validationSchema={ValidationSchema}
     >
       {({ dirty, values, isValid }) => (
@@ -397,7 +390,7 @@ const SystemInformationForm = ({
                   }
                 />
                 <CustomTextInput
-                  label="Privacy policy"
+                  label="Privacy policy URL"
                   name="privacy_policy"
                   tooltip="Where can the privacy policy be located?"
                   variant="stacked"

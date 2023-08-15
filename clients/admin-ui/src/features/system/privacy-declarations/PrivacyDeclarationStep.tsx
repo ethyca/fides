@@ -57,7 +57,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         <Spinner />
       ) : (
         <PrivacyDeclarationFormTab
-          system={MockSystemData}
+          system={system}
           includeCustomFields
           includeCookies
           {...filteredDataProps}
