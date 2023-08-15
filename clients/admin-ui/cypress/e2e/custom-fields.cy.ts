@@ -151,19 +151,21 @@ describe("Custom Fields", () => {
         cy.get("tbody > tr").first().should("contain", "Multiple select list");
 
         // the patched data needs to be mock or cypress will return the same data
-        cy.fixture("custom-fields/list.json").then((customFieldsList)=>{
-          const updatedList = customFieldsList.map((cf)=> {
-            if(cf.name === "Single select list"){
-              return {...cf, active: false}
+        cy.fixture("custom-fields/list.json").then((customFieldsList) => {
+          const updatedList = customFieldsList.map((cf) => {
+            if (cf.name === "Single select list") {
+              return { ...cf, active: false };
             }
-            return cf
-          })
-          cy.intercept("GET", "/api/v1/plus/custom-metadata/custom-field-definition*",
-          {
-            body: updatedList   
-          }
-          ).as("getCustomFieldSingleSelectEnabled")
-        })
+            return cf;
+          });
+          cy.intercept(
+            "GET",
+            "/api/v1/plus/custom-metadata/custom-field-definition*",
+            {
+              body: updatedList,
+            }
+          ).as("getCustomFieldSingleSelectEnabled");
+        });
 
         // enable custom field
         cy.getByTestId("row-Taxonomy - Single select").within(() => {
@@ -184,7 +186,7 @@ describe("Custom Fields", () => {
             fixture: "custom-fields/list.json",
           }
         ).as("getCustomFields");
-        
+
         // disable custom field
         cy.getByTestId("row-Taxonomy - Single select").within(() => {
           cy.getByTestId("toggle-Enable").click();
