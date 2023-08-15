@@ -21,6 +21,11 @@ The types of changes are:
 - Fixed issue when generating masked values for invalid data paths (#3906)[https://github.com/ethyca/fides/pull/3906]
 - Code reload now works when running `nox -s dev` (#3914)[https://github.com/ethyca/fides/pull/3914]
 - Reduce verbosity of privacy center logging further (#3915)[https://github.com/ethyca/fides/pull/3915]
+- Resolved an issue where the integration dropdown input lost focus during typing. (#3917)[https://github.com/ethyca/fides/pull/3917]
+
+### Changed
+
+- Systems and Privacy Declaration schema and data migration to support the Dictionary [#3901](https://github.com/ethyca/fides/pull/3901)
 
 ## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
 
@@ -312,6 +317,7 @@ The types of changes are:
 - A JavaScript modal to copy a script tag for `fides.js` [#3238](https://github.com/ethyca/fides/pull/3238)
 - Access and erasure support for OneSignal [#3199](https://github.com/ethyca/fides/pull/3199)
 - Add the ability to "inject" location into `/fides.js` bundles and cache responses for one hour [#3272](https://github.com/ethyca/fides/pull/3272)
+- Prevent column sorts from resetting when data changes [#3290](https://github.com/ethyca/fides/pull/3290)
 
 ### Changed
 
