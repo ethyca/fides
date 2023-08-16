@@ -178,8 +178,7 @@ export type NavGroup = {
 const navAllGroupReqsPlus = (group: NavConfigGroup, hasPlus: boolean) => {
   // if all routes in the group require plus and plus is not running then return true
   if (
-    group.routes.filter((route) => route.requiresPlus === true).length ===
-      group.routes.length &&
+    group.routes.every(route => route.requiresPlus)
     !hasPlus
   ) {
     return true;
