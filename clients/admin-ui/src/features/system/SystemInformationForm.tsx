@@ -14,7 +14,10 @@ import { useMemo } from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
-import { useCustomFields } from "~/features/common/custom-fields";
+import {
+  CustomFieldsList,
+  useCustomFields,
+} from "~/features/common/custom-fields";
 import {
   CustomCreatableSelect,
   CustomSelect,
@@ -485,6 +488,14 @@ const SystemInformationForm = ({
                   }
                 />
               </SystemFormInputGroup>
+              {values.fides_key ? (
+                <SystemFormInputGroup heading="Custom fields">
+                  <CustomFieldsList
+                    resourceType={ResourceTypes.SYSTEM}
+                    resourceFidesKey={values.fides_key}
+                  ></CustomFieldsList>
+                </SystemFormInputGroup>
+              ) : null}
             </Collapse>
           </Stack>
           <Box mt={6}>

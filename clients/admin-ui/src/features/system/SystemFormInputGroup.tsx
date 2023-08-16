@@ -13,6 +13,7 @@ const SystemFormInputGroup = ({
       border="1px"
       borderColor="gray.200"
       borderRadius={6}
+      overflow="visible"
       mt={6}
     >
       <Box

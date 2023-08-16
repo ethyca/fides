@@ -31,23 +31,8 @@ export const CustomFieldsList = ({
   }
 
   return (
-    <Flex
-      flexDir="column"
-      mt={resourceType === ResourceTypes.SYSTEM ? "28px" : ""}
-      data-testid="custom-fields-list"
-    >
+    <Flex flexDir="column" data-testid="custom-fields-list">
       <Flex flexDir="column" gap="24px">
-        <Divider color="gray.200" />
-        <Flex flexDir="column" gap="12px">
-          <Text
-            color="gray.900"
-            fontSize="md"
-            fontWeight="semibold"
-            lineHeight="24px"
-          >
-            Custom fields
-          </Text>
-        </Flex>
         {isLoading ? (
           <Center>
             <Spinner />
@@ -75,6 +60,7 @@ export const CustomFieldsList = ({
                           {...field}
                           label={customFieldDefinition.name}
                           tooltip={customFieldDefinition.description}
+                          variant="stacked"
                         />
                       )}
                     </Field>
@@ -110,6 +96,7 @@ export const CustomFieldsList = ({
                         label={customFieldDefinition.name}
                         options={options}
                         tooltip={customFieldDefinition.description}
+                        variant="stacked"
                       />
                     )}
                   </Field>
