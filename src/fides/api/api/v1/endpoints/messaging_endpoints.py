@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from fastapi import Depends, Security
 from fastapi_pagination import Page, Params
@@ -33,7 +33,7 @@ from fides.api.models.messaging_template import (
     MessagingTemplate,
 )
 from fides.api.oauth.utils import verify_oauth_client
-from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
+from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import (
     BulkPutMessagingTemplateResponse,
     MessagingActionType,
