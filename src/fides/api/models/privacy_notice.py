@@ -117,6 +117,19 @@ PrivacyNoticeRegion = Enum(
         ("is", "is"),  # iceland
         ("no", "no"),  # norway
         ("li", "li"),  # liechtenstein
+        ("ca_ab", "ca_ab"),  # alberta
+        ("ca_bc", "ca_bc"),  # british columbia
+        ("ca_mb", "ca_mb"),  # manitoba
+        ("ca_nb", "ca_nb"),  # new brunswick
+        ("ca_nl", "ca_nl"),  # newfoundland and labrador
+        ("ca_ns", "ca_ns"),  # nova scotia
+        ("ca_on", "ca_on"),  # ontario
+        ("ca_pe", "ca_pe"),  # prince edward island
+        ("ca_qc", "ca_qc"),  # quebec
+        ("ca_sk", "ca_sk"),  # saskatchewan
+        ("ca_nt", "ca_nt"),  # northwest territories
+        ("ca_nu", "ca_nu"),  # nunavut
+        ("ca_yt", "ca_yt"),  # yukon
     ],
 )
 
