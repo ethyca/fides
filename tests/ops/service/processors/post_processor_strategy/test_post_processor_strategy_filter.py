@@ -336,3 +336,33 @@ def test_filter_invalid_field_value_array():
     assert str(exc.value) == (
         "Every value in the 'attribute.email_contacts' list must be a string"
     )
+
+
+def test_nested_array_path():
+    config = FilterPostProcessorConfiguration(
+        field="agreement.orgs.members.email", value="somebody@email.com"
+    )
+    data = [
+        {
+            "agreement": {
+                "id": 1,
+                "orgs": [{"members": [{"email": "somebody@email.com"}]}],
+            }
+        },
+        {
+            "agreement": {
+                "id": 2,
+                "orgs": [{"members": [{"email": "somebody_else@email.com"}]}],
+            }
+        },
+    ]
+    processor = FilterPostProcessorStrategy(configuration=config)
+    result = processor.process(data)
+    assert result == [
+        {
+            "agreement": {
+                "id": 1,
+                "orgs": [{"members": [{"email": "somebody@email.com"}]}],
+            }
+        }
+    ]

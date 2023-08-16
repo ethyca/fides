@@ -287,7 +287,7 @@ def update_managed_systems(
 
     # Adding new systems for which the user is not already a manager
     for system in retrieved_systems:
-        if user not in system.users:
+        if user not in system.data_stewards:
             user.set_as_system_manager(db, system)
 
     # Removing systems for which the user in no longer a manager
