@@ -2,24 +2,20 @@ import {
   Box,
   Button,
   ButtonProps,
-  DeleteIcon,
   Divider,
   Heading,
   HStack,
-  IconButton,
   Stack,
   Text,
-  Tooltip,
   useToast,
   WarningTwoIcon,
 } from "@fidesui/react";
-import { current, SerializedError } from "@reduxjs/toolkit";
+import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import PrivacyDeclarationAccordion from "~/features/system/privacy-declarations/PrivacyDeclarationAccordion";
 import { useUpdateSystemMutation } from "~/features/system/system.slice";
 import {
   PrivacyDeclarationDisplayGroup,
@@ -36,9 +32,6 @@ import {
   SystemResponse,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
-
-import { MockDeclarationsData } from "../MockSystemData";
-import { NewDeclaration, NewSystem } from "../newSystemMockType";
 
 interface Props {
   system: SystemResponse;
@@ -60,9 +53,6 @@ const PrivacyDeclarationFormTab = ({
 
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
   const [showForm, setShowForm] = useState(false);
-  const [declarationEditing, setDeclarationEditing] = useState<
-    PrivacyDeclarationResponse | undefined
-  >(undefined);
   const [currentDeclaration, setCurrentDeclaration] = useState<
     PrivacyDeclarationResponse | undefined
   >(undefined);
@@ -157,6 +147,11 @@ const PrivacyDeclarationFormTab = ({
     return handleSave(updatedDeclarations);
   };
 
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setCurrentDeclaration(undefined);
+  };
+
   const handleCreateDeclaration = async (
     values: PrivacyDeclarationResponse
   ) => {
@@ -182,11 +177,6 @@ const PrivacyDeclarationFormTab = ({
   ) => {
     setShowForm(true);
     setCurrentDeclaration(declarationToEdit);
-  };
-
-  const handleCloseForm = () => {
-    setShowForm(false);
-    setCurrentDeclaration(undefined);
   };
 
   const handleSubmit = (values: PrivacyDeclarationResponse) => {
@@ -229,7 +219,7 @@ const PrivacyDeclarationFormTab = ({
             <WarningTwoIcon color="blue.400" boxSize="18px" />
             <Stack spacing={1}>
               <Heading as="h4" size="md">
-                You don't have a data use set up for this system yet.
+                You don&apos;t have a data use set up for this system yet.
               </Heading>
               <Text size="sm">[copy]</Text>
               <HStack>
@@ -273,8 +263,6 @@ const PrivacyDeclarationFormTab = ({
           initialValues={currentDeclaration}
           onSubmit={handleSubmit}
           onCancel={handleCloseForm}
-          includeCustomFields={includeCustomFields}
-          includeCookies={includeCookies}
           {...dataProps}
         />
       </PrivacyDeclarationFormModal>

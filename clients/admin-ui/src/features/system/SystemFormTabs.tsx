@@ -129,10 +129,6 @@ const SystemFormTabs = ({
     toast({ ...toastParams });
   };
 
-  const handleToggleProcessesData = (newState: boolean) => {
-    setSystemProcessesPersonalData(newState);
-  };
-
   useEffect(() => {
     /**
      * The first time this component mounts, if it's a create, make sure we don't have an active system
@@ -180,9 +176,7 @@ const SystemFormTabs = ({
             {/* ts-ignore */}
             <SystemInformationForm
               onSuccess={handleSuccess}
-              onToggleProcessesData={handleToggleProcessesData}
               system={activeSystem}
-              abridged={isCreate}
             >
               <UnmountWarning
                 isUnmounting={queuedIndex !== undefined}

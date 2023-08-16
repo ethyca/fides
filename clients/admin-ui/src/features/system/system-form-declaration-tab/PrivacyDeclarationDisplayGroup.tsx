@@ -33,9 +33,11 @@ const PrivacyDeclarationRow = ({
           h="100%"
           cursor="pointer"
         >
-          <Text>
-            {declaration.name ? declaration.name : declaration.data_use}
-          </Text>
+          <LinkOverlay>
+            <Text>
+              {declaration.name ? declaration.name : declaration.data_use}
+            </Text>
+          </LinkOverlay>
         </LinkBox>
         <Spacer />
         <IconButton

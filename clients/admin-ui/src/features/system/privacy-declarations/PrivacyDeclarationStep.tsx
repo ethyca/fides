@@ -1,12 +1,9 @@
 import { Heading, Spinner, Stack, Text } from "@fidesui/react";
 import NextLink from "next/link";
 
+import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
+import PrivacyDeclarationFormTab from "~/features/system/system-form-declaration-tab/PrivacyDeclarationFormTab";
 import { SystemResponse } from "~/types/api";
-
-import { MockSystemData } from "../MockSystemData";
-import PrivacyDeclarationFormTab from "../system-form-declaration-tab/PrivacyDeclarationFormTab";
-import { usePrivacyDeclarationData } from "./hooks";
-import PrivacyDeclarationManager from "./PrivacyDeclarationManager";
 
 interface Props {
   system: SystemResponse;

@@ -14,10 +14,7 @@ import { useMemo } from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
-import {
-  CustomFieldsList,
-  useCustomFields,
-} from "~/features/common/custom-fields";
+import { useCustomFields } from "~/features/common/custom-fields";
 import {
   CustomCreatableSelect,
   CustomSelect,
@@ -38,14 +35,9 @@ import {
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
-import SystemInformationFormExtension from "~/features/system/SystemInformationFormExtension";
-import {
-  LegalBasisForProcessingEnum,
-  LegalBasisForProfilingEnum,
-  ResourceTypes,
-  System,
-  SystemResponse,
-} from "~/types/api";
+import { ResourceTypes, System, SystemResponse } from "~/types/api";
+
+import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
@@ -66,8 +58,6 @@ const SystemHeading = ({ system }: { system?: SystemResponse }) => {
 
 interface Props {
   onSuccess: (system: System) => void;
-  onToggleProcessesData: (newState: boolean) => void;
-  abridged?: boolean;
   system?: SystemResponse;
   withHeader?: boolean;
   children?: React.ReactNode;
@@ -75,7 +65,6 @@ interface Props {
 
 const SystemInformationForm = ({
   onSuccess,
-  abridged,
   system: passedInSystem,
   withHeader,
   children,
@@ -84,6 +73,13 @@ const SystemInformationForm = ({
     resourceType: ResourceTypes.SYSTEM,
     resourceFidesKey: passedInSystem?.fides_key,
   });
+
+  const { ...dataProps } = usePrivacyDeclarationData({
+    includeDatasets: true,
+    includeDisabled: false,
+  });
+
+  const allEnabledDatasets = dataProps.allDatasets;
 
   const initialValues = useMemo(
     () =>
@@ -156,14 +152,12 @@ const SystemInformationForm = ({
     createSystemMutationResult.isLoading ||
     customFields.isLoading;
 
-  const testSelectOptions = [
-    "fake_dataset_1",
-    "fake_dataset_2",
-    "fake_dataset_3",
-  ].map((opt) => ({
-    value: opt,
-    label: opt,
-  }));
+  const datasetSelectOptions = allEnabledDatasets
+    ? allEnabledDatasets.map((ds) => ({
+        value: ds.fides_key,
+        label: ds.name ? ds.name : ds.fides_key,
+      }))
+    : [];
 
   const legalBasisForProfilingOptions = [
     "Explicit consent",
@@ -258,7 +252,7 @@ const SystemInformationForm = ({
               <CustomSelect
                 name="dataset_references"
                 label="Dataset references"
-                options={testSelectOptions}
+                options={datasetSelectOptions}
                 tooltip="Is there a dataset configured for this system?"
                 isMulti
                 variant="stacked"
@@ -501,7 +495,6 @@ const SystemInformationForm = ({
               isDisabled={isLoading || !dirty || !isValid}
               isLoading={isLoading}
               data-testid="save-btn"
-              onClick={() => console.log(values)}
             >
               Save
             </Button>

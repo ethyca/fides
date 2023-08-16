@@ -2,31 +2,11 @@
  * Exports various parts of the privacy declaration form for flexibility
  */
 
-import {
-  Box,
-  BoxProps,
-  Button,
-  ButtonGroup,
-  Collapse,
-  Flex,
-  GreenCheckCircleIcon,
-  Heading,
-  Spacer,
-  Stack,
-  Text,
-  useDisclosure,
-} from "@fidesui/react";
-import { CreatableSelect } from "chakra-react-select";
-import {
-  CustomFieldsList,
-  CustomFieldValues,
-  useCustomFields,
-} from "common/custom-fields";
-import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
+import { Box, Button, Collapse, Flex, Spacer, Stack } from "@fidesui/react";
+import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
 
-import ConfirmationModal from "~/features/common/ConfirmationModal";
 import {
   CustomCreatableSelect,
   CustomNumberInput,
@@ -42,9 +22,9 @@ import {
   DataUse,
   LegalBasisForProcessingEnum,
   PrivacyDeclarationResponse,
-  ResourceTypes,
   SpecialCategoryLegalBasisEnum,
 } from "~/types/api";
+
 import SystemFormInputGroup from "../SystemFormInputGroup";
 
 export const ValidationSchema = Yup.object().shape({
@@ -55,7 +35,6 @@ export const ValidationSchema = Yup.object().shape({
 });
 
 export type FormValues = Omit<PrivacyDeclarationResponse, "cookies"> & {
-  // customFieldValues: CustomFieldValues;
   cookies?: string[];
 };
 
@@ -92,6 +71,12 @@ const transformFormValueToDeclaration = (values: FormValues) => {
     special_category_legal_basis: values.processes_special_category_data
       ? values.special_category_legal_basis
       : undefined,
+    third_parties: values.data_shared_with_third_parties
+      ? values.third_parties
+      : undefined,
+    shared_categories: values.data_shared_with_third_parties
+      ? values.shared_categories
+      : undefined,
     cookies: transformedCookies,
   };
   return declaration;
@@ -111,25 +96,10 @@ export const PrivacyDeclarationFormComponents = ({
   allDatasets,
   values,
   privacyDeclarationId,
-  includeCookies,
-  includeCustomFields,
 }: DataProps & {
   values: FormValues;
   privacyDeclarationId?: string;
-  includeCookies?: boolean;
-  includeCustomFields?: boolean;
 }) => {
-  const { dirty, isSubmitting, isValid, initialValues } =
-    useFormikContext<FormValues>();
-  const deleteModal = useDisclosure();
-
-  const datasetOptions = allDatasets
-    ? allDatasets.map((d) => ({
-        label: d.name ?? d.fides_key,
-        value: d.fides_key,
-      }))
-    : [];
-
   const legalBasisForProcessingOptions = (
     Object.keys(LegalBasisForProcessingEnum) as Array<
       keyof typeof LegalBasisForProcessingEnum
@@ -147,6 +117,13 @@ export const PrivacyDeclarationFormComponents = ({
     value: SpecialCategoryLegalBasisEnum[key],
     label: SpecialCategoryLegalBasisEnum[key],
   }));
+
+  const datasetSelectOptions = allDatasets
+    ? allDatasets.map((ds) => ({
+        value: ds.fides_key,
+        label: ds.name ? ds.name : ds.fides_key,
+      }))
+    : [];
 
   return (
     <Stack spacing={4}>
@@ -198,14 +175,7 @@ export const PrivacyDeclarationFormComponents = ({
         <CustomSelect
           name="data_sources"
           label="Data sources"
-          options={
-            allDatasets
-              ? allDatasets.map((set) => ({
-                  value: set.fides_key,
-                  label: set.fides_key,
-                }))
-              : []
-          }
+          options={[]}
           tooltip="Where do these categories of data come from?"
           isMulti
           variant="stacked"
@@ -249,6 +219,16 @@ export const PrivacyDeclarationFormComponents = ({
           options={[]}
           disableMenu
           isMulti
+        />
+      </SystemFormInputGroup>
+      <SystemFormInputGroup heading="Dataset reference">
+        <CustomSelect
+          name="dataset_references"
+          label="Dataset references"
+          options={datasetSelectOptions}
+          tooltip="Is there a dataset configured for this system?"
+          isMulti
+          variant="stacked"
         />
       </SystemFormInputGroup>
       <SystemFormInputGroup heading="Special categories of processing">
@@ -348,17 +328,10 @@ export const transformPrivacyDeclarationToFormValues = (
 export const usePrivacyDeclarationForm = ({
   onSubmit,
   initialValues: passedInInitialValues,
-  allDataUses,
-  privacyDeclarationId,
 }: Omit<Props, "onDelete"> & Pick<DataProps, "allDataUses">) => {
-  const { customFieldValues, upsertCustomFields } = useCustomFields({
-    resourceType: ResourceTypes.PRIVACY_DECLARATION,
-    resourceFidesKey: privacyDeclarationId,
-  });
-
   const initialValues = useMemo(
     () => transformPrivacyDeclarationToFormValues(passedInInitialValues),
-    [passedInInitialValues, customFieldValues]
+    [passedInInitialValues]
   );
 
   const handleSubmit = (
@@ -379,8 +352,6 @@ interface Props {
   onCancel: () => void;
   initialValues?: PrivacyDeclarationResponse;
   privacyDeclarationId?: string;
-  includeCustomFields?: boolean;
-  includeCookies?: boolean;
 }
 
 export const PrivacyDeclarationForm = ({
