@@ -179,7 +179,6 @@ export type NavGroup = {
 const navAllGroupReqsPlus = (group: NavConfigGroup, hasPlus: boolean) => {
   if (
     group.routes.every(route => route.requiresPlus)
-    !hasPlus
   ) {
     return true;
   }
