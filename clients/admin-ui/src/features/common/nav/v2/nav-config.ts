@@ -175,8 +175,8 @@ export type NavGroup = {
   children: Array<NavGroupChild>;
 };
 
+/** If all routes in the group require plus and plus is not running then return true */
 const navAllGroupReqsPlus = (group: NavConfigGroup, hasPlus: boolean) => {
-  // if all routes in the group require plus and plus is not running then return true
   if (
     group.routes.every(route => route.requiresPlus)
     !hasPlus
