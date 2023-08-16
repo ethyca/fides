@@ -33,6 +33,7 @@ class UserConsentPreference(Enum):
 PrivacyNoticeRegion = Enum(
     "PrivacyNoticeRegion",
     [
+        ("us", "us"),  # united states
         ("us_al", "us_al"),  # alabama
         ("us_ak", "us_ak"),  # alaska
         ("us_az", "us_az"),  # arizona
@@ -117,6 +118,7 @@ PrivacyNoticeRegion = Enum(
         ("is", "is"),  # iceland
         ("no", "no"),  # norway
         ("li", "li"),  # liechtenstein
+        ("ca", "ca"),  # canada
         ("ca_ab", "ca_ab"),  # alberta
         ("ca_bc", "ca_bc"),  # british columbia
         ("ca_mb", "ca_mb"),  # manitoba
