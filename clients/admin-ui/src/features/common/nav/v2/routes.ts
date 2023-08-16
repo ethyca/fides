@@ -7,12 +7,13 @@ export const CLASSIFY_SYSTEMS_ROUTE = "/classify-systems";
 export const DATASET_ROUTE = "/dataset";
 
 // Privacy requests group
-export const CONSENT_ROUTE = "/consent";
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
-export const PRIVACY_EXPERIENCE_ROUTE = "/consent/privacy-experience";
-export const PRIVACY_NOTICES_ROUTE = "/consent/privacy-notices";
 export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";
 export const PRIVACY_REQUESTS_CONFIGURATION_ROUTE = `${PRIVACY_REQUESTS_ROUTE}/configure`;
+
+// Consent group
+export const PRIVACY_EXPERIENCE_ROUTE = "/consent/privacy-experience";
+export const PRIVACY_NOTICES_ROUTE = "/consent/privacy-notices";
 
 // Management group
 export const USER_MANAGEMENT_ROUTE = "/user-management";
