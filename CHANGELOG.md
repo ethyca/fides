@@ -17,8 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.18.0...main)
 
-### Changed
-- Removed deprecated fields from the taxonomy editor [#3909](https://github.com/ethyca/fides/pull/3909)
+### Added
+- Access support for Adobe Sign [#3504](https://github.com/ethyca/fides/pull/3504)
 
 ### Fixed
 - Fixed issue when generating masked values for invalid data paths [#3906](https://github.com/ethyca/fides/pull/3906)
@@ -31,6 +31,7 @@ The types of changes are:
 
 - Systems and Privacy Declaration schema and data migration to support the Dictionary [#3901](https://github.com/ethyca/fides/pull/3901)
 - The integration search dropdown is now case-insensitive [#3916](https://github.com/ethyca/fides/pull/3916)
+- Removed deprecated fields from the taxonomy editor [#3909](https://github.com/ethyca/fides/pull/3909)
 
 ## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
 
