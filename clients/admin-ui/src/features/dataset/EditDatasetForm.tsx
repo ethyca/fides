@@ -12,7 +12,6 @@ import DataCategoryInput from "./DataCategoryInput";
 
 export const FORM_ID = "edit-field-drawer";
 
-
 type FormValues = Partial<Dataset>;
 
 interface Props {
