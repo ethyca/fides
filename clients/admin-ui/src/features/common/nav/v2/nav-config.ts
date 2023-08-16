@@ -176,9 +176,9 @@ export type NavGroup = {
 };
 
 /** If all routes in the group require plus and plus is not running then return true */
-const navAllGroupReqsPlus = (group: NavConfigGroup) => {
+const navAllGroupReqsPlus = (group: NavConfigGroup, hasPlus: boolean) => {
   if (
-    group.routes.every(route => route.requiresPlus)
+    group.routes.every(route => route.requiresPlus) && !hasPlus
   ) {
     return true;
   }
@@ -299,7 +299,7 @@ export const configureNavGroups = ({
     // if no nav routes are scoped for the user or all require plus
     if (
       !navGroupInScope(group, userScopes) ||
-      navAllGroupReqsPlus(group)
+      navAllGroupReqsPlus(group, hasPlus)
     ) {
       return;
     }
