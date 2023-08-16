@@ -13,7 +13,8 @@ import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
-import { FidesCookie } from "~/fides";
+import { FidesCookie } from "../lib/cookie";
+import { buildTcStringPreferences } from "../lib/tcf/tcf";
 
 interface RenderBannerProps {
   isOpen: boolean;
@@ -55,7 +56,7 @@ const Overlay: FunctionComponent<Props> = ({
   const handleOpenModal = useCallback(() => {
     if (instance) {
       instance.show();
-      dispatchFidesEvent("FidesUIShown", cookie, experience, options.debug, {
+      dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
         servingComponent: ServingComponent.OVERLAY,
       });
     }
@@ -106,7 +107,7 @@ const Overlay: FunctionComponent<Props> = ({
 
   useEffect(() => {
     if (showBanner && bannerIsOpen) {
-      dispatchFidesEvent("FidesUIShown", cookie, experience, options.debug, {
+      dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
         servingComponent: ServingComponent.BANNER,
       });
     }

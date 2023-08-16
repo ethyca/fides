@@ -15,7 +15,8 @@ import {
 } from "./cookie";
 import { dispatchFidesEvent } from "./events";
 import { patchUserPreferenceToFidesServer } from "../services/fides/api";
-import { TcfSavePreferences } from "./tcf/types";
+import {TcfSavePreferences, TcStringPreferences} from "./tcf/types";
+import {buildTcStringPreferences} from "./tcf/tcf";
 
 /**
  * Updates the user's consent preferences, going through the following steps:
@@ -43,7 +44,7 @@ export const updateConsentPreferences = ({
   userLocationString?: string;
   cookie: FidesCookie;
   debug?: boolean;
-  servedNotices?: Array<LastServedNoticeSchema>;
+  servedNotices?: Array<LastServedNoticeSchema> | null;
   tcf?: TcfSavePreferences;
 }) => {
   // Derive the CookieKeyConsent object from privacy notices
@@ -91,11 +92,51 @@ export const updateConsentPreferences = ({
   debugLog(debug, "Updating window.Fides");
   window.Fides.consent = cookie.consent;
 
-  // 3. Save preferences to the cookie
+  // 3. TCF
+  let tcStringPreferences: TcStringPreferences;
+  // Instead of making a new call for user prefs, this manually adds the new tcf preferences to existing experience
+  // tcf data in the effort of reducing roundtrip calls to Fides server for performance
+  if (tcf) {
+    console.log(experience)
+    // At this point, this obj contains just experience data, restructured
+    tcStringPreferences = buildTcStringPreferences(experience)
+    console.log("tc string tcf purposes...")
+    console.log(tcStringPreferences?.tcf_purposes)
+    console.log(tcStringPreferences?.tcf_purposes?.get(6))
+    console.log(tcStringPreferences?.tcf_purposes?.get(6)?.current_preference)
+    // "Upsert" new tcf preferences to existing experience data
+    tcf.purpose_preferences?.forEach(purpose => {
+      // @ts-ignore
+      // todo- map preference to current_preference
+      tcStringPreferences.tcf_purposes.get(purpose.id) = tcStringPreferences.tcf_purposesget(purpose.id) || {}
+      tcStringPreferences.tcf_purposes.get(purpose.id).current_preference = purpose.preference
+    })
+    tcf.special_purpose_preferences?.forEach(purpose => {
+      // @ts-ignore
+      tcStringPreferences.tcf_special_purposes[purpose.id] = purpose
+    })
+    tcf.vendor_preferences?.forEach(purpose => {
+      // @ts-ignore
+      tcStringPreferences.tcf_vendors[purpose.id] = purpose
+    })
+    tcf.feature_preferences?.forEach(purpose => {
+      // @ts-ignore
+      tcStringPreferences.tcf_features[purpose.id] = purpose
+    })
+    tcf.special_feature_preferences?.forEach(purpose => {
+      // @ts-ignore
+      tcStringPreferences.tcf_special_features[purpose.id] = purpose
+    })
+    // Update the cookie object with TCF prefs
+    // eslint-disable-next-line no-param-reassign
+    cookie.tcStringPreferences = tcStringPreferences
+  }
+
+  // 4. Save preferences to the cookie
   debugLog(debug, "Saving preferences to cookie");
   saveFidesCookie(cookie);
 
-  // 4. Remove cookies associated with notices that were opted-out from the browser
+  // 5. Remove cookies associated with notices that were opted-out from the browser
   consentPreferencesToSave
     .filter(
       (preference) =>
@@ -105,6 +146,6 @@ export const updateConsentPreferences = ({
       removeCookiesFromBrowser(preference.notice.cookies);
     });
 
-  // 5. Dispatch a "FidesUpdated" event
-  dispatchFidesEvent("FidesUpdated", cookie, experience, debug);
+  // 6. Dispatch a "FidesUpdated" event
+  dispatchFidesEvent("FidesUpdated", cookie, debug);
 };
