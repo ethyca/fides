@@ -38,7 +38,7 @@ export type Dataset = {
   /**
    * Array of Data Qualifier resources identified by `fides_key`, that apply to all collections in the Dataset.
    */
-    data_qualifier?: string;
+  data_qualifier?: string;
   /**
    *
    * The DatasetMetadata resource model.
@@ -59,14 +59,14 @@ export type Dataset = {
    *
    */
   joint_controller?: ContactDetails;
-    /**
+  /**
    * An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset.
    */
-    retention?: string;
-    /**
-     * An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3).
-     */
-    third_country_transfers?: Array<string>;
+  retention?: string;
+  /**
+   * An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3).
+   */
+  third_country_transfers?: Array<string>;
   /**
    * An array of objects that describe the Dataset's collections.
    */
