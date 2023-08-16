@@ -65,6 +65,12 @@
       "type": "email",
       "human_readable": "Sovrn",
       "encoded_icon": null
+    },
+    {
+      "identifier": "shopify",
+      "type": "saas",
+      "human_readable": "Shopify",
+      "encoded_icon": null
     }
   ],
   "total": 10,
