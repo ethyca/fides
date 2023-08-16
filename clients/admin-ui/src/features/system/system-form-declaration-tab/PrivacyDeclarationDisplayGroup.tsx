@@ -6,15 +6,14 @@ import {
   Heading,
   HStack,
   IconButton,
-  Link,
+  LinkBox,
+  LinkOverlay,
   Spacer,
   Stack,
   Text,
 } from "@fidesui/react";
 
 import { PrivacyDeclarationResponse } from "~/types/api";
-
-import { NewDeclaration } from "../newSystemMockType";
 
 const PrivacyDeclarationRow = ({
   declaration,
@@ -25,37 +24,45 @@ const PrivacyDeclarationRow = ({
   handleDelete: (dec: PrivacyDeclarationResponse) => void;
   handleEdit: (dec: PrivacyDeclarationResponse) => void;
 }) => (
-    <Link onClick={() => handleEdit(declaration)}>
-      <Box px={6} py={4}>
-        <HStack>
-          <Text>{declaration.name}</Text>
-          <Spacer />
-          <IconButton
-            aria-label="delete-declaration"
-            variant="outline"
-            size="sm"
-            onClick={() => handleDelete(declaration)}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </HStack>
-      </Box>
-      <Divider />
-    </Link>
-  );
+  <>
+    <Box px={6} py={4}>
+      <HStack>
+        <LinkBox
+          onClick={() => handleEdit(declaration)}
+          w="100%"
+          h="100%"
+          cursor="pointer"
+        >
+          <Text>
+            {declaration.name ? declaration.name : declaration.data_use}
+          </Text>
+        </LinkBox>
+        <Spacer />
+        <IconButton
+          aria-label="delete-declaration"
+          variant="outline"
+          zIndex={2}
+          size="sm"
+          onClick={() => handleDelete(declaration)}
+        >
+          <DeleteIcon />
+        </IconButton>
+      </HStack>
+    </Box>
+    <Divider />
+  </>
+);
 
-const PrivacyDeclarationDisplayGroup = ({
+export const PrivacyDeclarationTabTable = ({
   heading,
-  declarations,
+  children,
+  hasAddButton = false,
   handleAdd,
-  handleDelete,
-  handleEdit,
 }: {
   heading: string;
-  declarations: PrivacyDeclarationResponse[];
+  children?: React.ReactNode;
+  hasAddButton?: boolean;
   handleAdd?: () => void;
-  handleDelete: (dec: PrivacyDeclarationResponse) => void;
-  handleEdit: (dec: PrivacyDeclarationResponse) => void;
 }) => (
   <Stack spacing={4}>
     <Box maxWidth="720px" border="1px" borderColor="gray.200" borderRadius={6}>
@@ -72,32 +79,52 @@ const PrivacyDeclarationDisplayGroup = ({
         </Heading>
       </Box>
 
-      <Stack spacing={0}>
-        {declarations.map((pd) => (
-          <PrivacyDeclarationRow
-            declaration={pd}
-            key={pd.id}
-            handleDelete={handleDelete}
-            handleEdit={handleEdit}
-          />
-        ))}
-      </Stack>
+      <Stack spacing={0}>{children}</Stack>
       <Box backgroundColor="gray.50" px={6} py={4} borderBottomRadius={6}>
-        <Button
-          onClick={handleAdd}
-          size="xs"
-          px={2}
-          py={1}
-          backgroundColor="primary.800"
-          color="white"
-          fontWeight="600"
-        >
-          <Text mr={2}>Add data use</Text>
-          <AddIcon boxSize={3} color="white" />
-        </Button>
+        {hasAddButton ? (
+          <Button
+            onClick={handleAdd}
+            size="xs"
+            px={2}
+            py={1}
+            backgroundColor="primary.800"
+            color="white"
+            fontWeight="600"
+          >
+            <Text mr={2}>Add data use</Text>
+            <AddIcon boxSize={3} color="white" />
+          </Button>
+        ) : null}
       </Box>
     </Box>
   </Stack>
 );
 
-export default PrivacyDeclarationDisplayGroup;
+export const PrivacyDeclarationDisplayGroup = ({
+  heading,
+  declarations,
+  handleAdd,
+  handleDelete,
+  handleEdit,
+}: {
+  heading: string;
+  declarations: PrivacyDeclarationResponse[];
+  handleAdd?: () => void;
+  handleDelete: (dec: PrivacyDeclarationResponse) => void;
+  handleEdit: (dec: PrivacyDeclarationResponse) => void;
+}) => (
+  <PrivacyDeclarationTabTable
+    heading={heading}
+    hasAddButton
+    handleAdd={handleAdd}
+  >
+    {declarations.map((pd) => (
+      <PrivacyDeclarationRow
+        declaration={pd}
+        key={pd.id}
+        handleDelete={handleDelete}
+        handleEdit={handleEdit}
+      />
+    ))}
+  </PrivacyDeclarationTabTable>
+);

@@ -13,7 +13,7 @@ import {
   useToast,
   WarningTwoIcon,
 } from "@fidesui/react";
-import { SerializedError } from "@reduxjs/toolkit";
+import { current, SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { useEffect, useMemo, useState } from "react";
 
@@ -21,7 +21,10 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import PrivacyDeclarationAccordion from "~/features/system/privacy-declarations/PrivacyDeclarationAccordion";
 import { useUpdateSystemMutation } from "~/features/system/system.slice";
-import PrivacyDeclarationDisplayGroup from "~/features/system/system-form-declaration-tab/PrivacyDeclarationDisplayGroup";
+import {
+  PrivacyDeclarationDisplayGroup,
+  PrivacyDeclarationTabTable,
+} from "~/features/system/system-form-declaration-tab/PrivacyDeclarationDisplayGroup";
 import {
   DataProps,
   PrivacyDeclarationForm,
@@ -57,24 +60,38 @@ const PrivacyDeclarationFormTab = ({
 
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
   const [showForm, setShowForm] = useState(false);
+  const [declarationEditing, setDeclarationEditing] = useState<
+    PrivacyDeclarationResponse | undefined
+  >(undefined);
   const [currentDeclaration, setCurrentDeclaration] = useState<
     PrivacyDeclarationResponse | undefined
   >(undefined);
 
-  const checkAlreadyExists = (values: PrivacyDeclarationResponse) =>
-    // if (
-    //   system.privacy_declarations.filter(
-    //     (d) => d.data_use === values.data_use && d.name === values.name
-    //   ).length > 0
-    // ) {
-    //   toast(
-    //     errorToastParams(
-    //       "A declaration already exists with that data use in this system. Please supply a different data use."
-    //     )
-    //   );
-    //   return true;
-    // }
-    false;
+  const assignedCookies = [
+    ...system.privacy_declarations
+      .filter((d) => d.cookies !== undefined)
+      .flatMap((d) => d.cookies),
+  ];
+
+  const unassignedCookies = system.cookies
+    ? system.cookies.filter((c) => !assignedCookies.includes(c))
+    : undefined;
+
+  const checkAlreadyExists = (values: PrivacyDeclarationResponse) => {
+    if (
+      system.privacy_declarations.filter(
+        (d) => d.data_use === values.data_use && d.name === values.name
+      ).length > 0
+    ) {
+      toast(
+        errorToastParams(
+          "A declaration already exists with that data use in this system. Please supply a different data use."
+        )
+      );
+      return true;
+    }
+    return false;
+  };
 
   const handleSave = async (
     updatedDeclarations: PrivacyDeclarationResponse[],
@@ -140,7 +157,9 @@ const PrivacyDeclarationFormTab = ({
     return handleSave(updatedDeclarations);
   };
 
-  const saveNewDeclaration = async (values: PrivacyDeclarationResponse) => {
+  const handleCreateDeclaration = async (
+    values: PrivacyDeclarationResponse
+  ) => {
     if (checkAlreadyExists(values)) {
       return undefined;
     }
@@ -148,13 +167,7 @@ const PrivacyDeclarationFormTab = ({
     toast.closeAll();
     const updatedDeclarations = [...system.privacy_declarations, values];
     const res = await handleSave(updatedDeclarations);
-    if (res) {
-      const savedDeclaration = res.filter(
-        (pd) =>
-          (pd.name ? pd.name === values.name : true) &&
-          pd.data_use === values.data_use
-      )[0];
-    }
+
     handleCloseForm();
     return res;
   };
@@ -176,6 +189,15 @@ const PrivacyDeclarationFormTab = ({
     setCurrentDeclaration(undefined);
   };
 
+  const handleSubmit = (values: PrivacyDeclarationResponse) => {
+    handleCloseForm();
+    if (currentDeclaration) {
+      handleEditDeclaration(currentDeclaration, values);
+    } else {
+      handleCreateDeclaration(values);
+    }
+  };
+
   const handleDelete = async (
     declarationToDelete: PrivacyDeclarationResponse
   ) => {
@@ -191,7 +213,7 @@ const PrivacyDeclarationFormTab = ({
   }, [system.fides_key]);
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={6}>
       {system.privacy_declarations.length === 0 ? (
         <Box
           display="flex"
@@ -234,10 +256,22 @@ const PrivacyDeclarationFormTab = ({
           handleDelete={handleDelete}
         />
       )}
+      {unassignedCookies ? (
+        <PrivacyDeclarationTabTable heading="Unassigned cookies">
+          {unassignedCookies.map((cookie) => (
+            <>
+              <Box px={6} py={4}>
+                <Text>{cookie.name}</Text>
+              </Box>
+              <Divider />
+            </>
+          ))}
+        </PrivacyDeclarationTabTable>
+      ) : null}
       <PrivacyDeclarationFormModal isOpen={showForm} onClose={handleCloseForm}>
         <PrivacyDeclarationForm
           initialValues={currentDeclaration}
-          onSubmit={saveNewDeclaration}
+          onSubmit={handleSubmit}
           onCancel={handleCloseForm}
           includeCustomFields={includeCustomFields}
           includeCookies={includeCookies}

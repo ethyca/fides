@@ -39,7 +39,13 @@ import {
 } from "~/features/system/system.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import SystemInformationFormExtension from "~/features/system/SystemInformationFormExtension";
-import { ResourceTypes, System, SystemResponse } from "~/types/api";
+import {
+  LegalBasisForProcessingEnum,
+  LegalBasisForProfilingEnum,
+  ResourceTypes,
+  System,
+  SystemResponse,
+} from "~/types/api";
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
@@ -178,12 +184,14 @@ const SystemInformationForm = ({
     label: opt,
   }));
 
-  const responsibilityOptions = ["Controller", "Processor", "Subprocessor"].map(
-    (opt) => ({
-      value: opt,
-      label: opt,
-    })
-  );
+  const responsibilityOptions = [
+    "Controller",
+    "Processor",
+    "Sub-Processor",
+  ].map((opt) => ({
+    value: opt,
+    label: opt,
+  }));
 
   return (
     <Formik
@@ -323,7 +331,6 @@ const SystemInformationForm = ({
                             options={legalBasisForProfilingOptions}
                             tooltip="What is the legal basis under which profiling is performed?"
                             isRequired={values.uses_profiling}
-                            isMulti
                             variant="stacked"
                           />
                         </Box>
@@ -447,6 +454,7 @@ const SystemInformationForm = ({
                   options={responsibilityOptions}
                   tooltip="What is the role of the business with regard to data processing?"
                   variant="stacked"
+                  isMulti
                   disabled={
                     !values.processes_personal_data ||
                     values.exempt_from_privacy_regulations

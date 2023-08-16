@@ -253,8 +253,6 @@ export const usePrivacyDeclarationForm = ({
     [passedInInitialValues, customFieldValues]
   );
 
-  const [showSaved, setShowSaved] = useState(false);
-
   const title = useMemo(() => {
     const thisDataUse = allDataUses.filter(
       (du) => du.fides_key === initialValues.data_use
@@ -292,7 +290,6 @@ export const usePrivacyDeclarationForm = ({
       }
       // Reset state such that isDirty will be checked again before next save
       formikHelpers.resetForm({ values });
-      setShowSaved(true);
     }
   };
 
