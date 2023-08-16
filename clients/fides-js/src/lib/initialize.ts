@@ -1,8 +1,8 @@
+import { ContainerNode } from "preact";
 import { gtm } from "../integrations/gtm";
 import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
 import { getConsentContext } from "./consent-context";
-import { initOverlay } from "./consent";
 import {
   CookieKeyConsent,
   CookieIdentity,
@@ -34,6 +34,7 @@ import { getGeolocation } from "../services/external/geolocation";
 import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
+import { initOverlay } from "./consent";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -183,7 +184,11 @@ export const initialize = async ({
   options,
   experience,
   geolocation,
-}: { cookie: FidesCookie } & FidesConfig): Promise<Partial<Fides>> => {
+  renderOverlay,
+}: {
+  cookie: FidesCookie;
+  renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
+} & FidesConfig): Promise<Partial<Fides>> => {
   const context = getConsentContext();
 
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
@@ -233,11 +238,12 @@ export const initialize = async ({
       );
 
       if (shouldInitOverlay) {
-        await initOverlay(<OverlayProps>{
+        await initOverlay({
           experience: effectiveExperience,
-          fidesRegionString,
+          fidesRegionString: fidesRegionString as string,
           cookie,
           options,
+          renderOverlay,
         }).catch(() => {});
       }
     }

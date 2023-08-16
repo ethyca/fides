@@ -60,6 +60,8 @@ import {
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 
+import { renderOverlay } from "./lib/renderOverlay";
+
 declare global {
   interface Window {
     Fides: Fides;
@@ -81,7 +83,7 @@ const init = async (config: FidesConfig) => {
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
     dispatchFidesEvent("FidesUpdated", cookie, config.options.debug);
   }
-  const updatedFides = await initialize({ ...config, cookie });
+  const updatedFides = await initialize({ ...config, cookie, renderOverlay });
   Object.assign(_Fides, updatedFides);
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial
