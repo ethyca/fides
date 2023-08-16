@@ -60,7 +60,7 @@ import {
 import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
 import { isNewFidesCookie } from "./fides";
-import { renderOverlay } from "./lib/renderOverlay";
+import { renderOverlay } from "./lib/tcf/renderOverlay";
 
 declare global {
   interface Window {
