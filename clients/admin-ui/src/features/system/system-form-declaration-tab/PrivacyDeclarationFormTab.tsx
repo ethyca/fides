@@ -221,7 +221,12 @@ const PrivacyDeclarationFormTab = ({
               <Heading as="h4" size="md">
                 You don&apos;t have a data use set up for this system yet.
               </Heading>
-              <Text size="sm">[copy]</Text>
+              <Text size="sm">
+                A Data Use is the purpose for which data is used in a system. In
+                Fides, a system may have more than one Data Use. For example, a
+                CRM system may be used both for "Customer Support" and also for
+                "Email Marketing", each of these is a Data Use.
+              </Text>
               <HStack>
                 <Button
                   variant="outline"
@@ -246,7 +251,7 @@ const PrivacyDeclarationFormTab = ({
           handleDelete={handleDelete}
         />
       )}
-      {unassignedCookies ? (
+      {unassignedCookies && unassignedCookies.length > 0 ? (
         <PrivacyDeclarationTabTable heading="Unassigned cookies">
           {unassignedCookies.map((cookie) => (
             <>

@@ -100,30 +100,42 @@ export const PrivacyDeclarationFormComponents = ({
   values: FormValues;
   privacyDeclarationId?: string;
 }) => {
-  const legalBasisForProcessingOptions = (
-    Object.keys(LegalBasisForProcessingEnum) as Array<
-      keyof typeof LegalBasisForProcessingEnum
-    >
-  ).map((key) => ({
-    value: LegalBasisForProcessingEnum[key],
-    label: LegalBasisForProcessingEnum[key],
-  }));
+  const legalBasisForProcessingOptions = useMemo(
+    () =>
+      (
+        Object.keys(LegalBasisForProcessingEnum) as Array<
+          keyof typeof LegalBasisForProcessingEnum
+        >
+      ).map((key) => ({
+        value: LegalBasisForProcessingEnum[key],
+        label: LegalBasisForProcessingEnum[key],
+      })),
+    []
+  );
 
-  const legalBasisForSpecialCategoryOptions = (
-    Object.keys(SpecialCategoryLegalBasisEnum) as Array<
-      keyof typeof SpecialCategoryLegalBasisEnum
-    >
-  ).map((key) => ({
-    value: SpecialCategoryLegalBasisEnum[key],
-    label: SpecialCategoryLegalBasisEnum[key],
-  }));
+  const legalBasisForSpecialCategoryOptions = useMemo(
+    () =>
+      (
+        Object.keys(SpecialCategoryLegalBasisEnum) as Array<
+          keyof typeof SpecialCategoryLegalBasisEnum
+        >
+      ).map((key) => ({
+        value: SpecialCategoryLegalBasisEnum[key],
+        label: SpecialCategoryLegalBasisEnum[key],
+      })),
+    []
+  );
 
-  const datasetSelectOptions = allDatasets
-    ? allDatasets.map((ds) => ({
-        value: ds.fides_key,
-        label: ds.name ? ds.name : ds.fides_key,
-      }))
-    : [];
+  const datasetSelectOptions = useMemo(
+    () =>
+      allDatasets
+        ? allDatasets.map((ds) => ({
+            value: ds.fides_key,
+            label: ds.name ? ds.name : ds.fides_key,
+          }))
+        : [],
+    []
+  );
 
   return (
     <Stack spacing={4}>
@@ -286,6 +298,7 @@ export const PrivacyDeclarationFormComponents = ({
                 }))}
                 tooltip="Which categories of personal data does this system share with third parties?"
                 variant="stacked"
+                isMulti
               />
             </Stack>
           </Collapse>

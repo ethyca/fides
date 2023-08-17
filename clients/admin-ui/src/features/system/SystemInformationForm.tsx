@@ -44,6 +44,7 @@ import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
+  privacy_policy: Yup.string().url().nullable(),
 });
 
 const SystemHeading = ({ system }: { system?: SystemResponse }) => {
@@ -82,8 +83,6 @@ const SystemInformationForm = ({
     includeDisabled: false,
   });
 
-  const allEnabledDatasets = dataProps.allDatasets;
-
   const initialValues = useMemo(
     () =>
       passedInSystem
@@ -107,6 +106,49 @@ const SystemInformationForm = ({
           systems?.some((s) => s.fides_key === passedInSystem?.fides_key)
       ),
     [passedInSystem, systems]
+  );
+
+  const datasetSelectOptions = useMemo(
+    () =>
+      dataProps.allDatasets
+        ? dataProps.allDatasets.map((ds) => ({
+            value: ds.fides_key,
+            label: ds.name ? ds.name : ds.fides_key,
+          }))
+        : [],
+    [dataProps.allDatasets]
+  );
+
+  const legalBasisForProfilingOptions = useMemo(
+    () =>
+      ["Explicit consent", "Contract", "Authorised by law"].map((opt) => ({
+        value: opt,
+        label: opt,
+      })),
+    []
+  );
+
+  const legalBasisForTransferOptions = useMemo(
+    () =>
+      [
+        "Adequacy decision",
+        "Standard contractual clauses",
+        "Binding corporate rules",
+        "Other",
+      ].map((opt) => ({
+        value: opt,
+        label: opt,
+      })),
+    []
+  );
+
+  const responsibilityOptions = useMemo(
+    () =>
+      ["Controller", "Processor", "Sub-Processor"].map((opt) => ({
+        value: opt,
+        label: opt,
+      })),
+    []
   );
 
   const toast = useToast();
@@ -154,41 +196,6 @@ const SystemInformationForm = ({
     updateSystemMutationResult.isLoading ||
     createSystemMutationResult.isLoading ||
     customFields.isLoading;
-
-  const datasetSelectOptions = allEnabledDatasets
-    ? allEnabledDatasets.map((ds) => ({
-        value: ds.fides_key,
-        label: ds.name ? ds.name : ds.fides_key,
-      }))
-    : [];
-
-  const legalBasisForProfilingOptions = [
-    "Explicit consent",
-    "Contract",
-    "Authorised by law",
-  ].map((opt) => ({
-    value: opt,
-    label: opt,
-  }));
-
-  const legalBasisForTransferOptions = [
-    "Adequacy decision",
-    "Standard contractual clauses",
-    "Binding corporate rules",
-    "Other",
-  ].map((opt) => ({
-    value: opt,
-    label: opt,
-  }));
-
-  const responsibilityOptions = [
-    "Controller",
-    "Processor",
-    "Sub-Processor",
-  ].map((opt) => ({
-    value: opt,
-    label: opt,
-  }));
 
   return (
     <Formik
@@ -373,7 +380,7 @@ const SystemInformationForm = ({
                         <Box mt={4}>
                           <CustomTextInput
                             label="DPIA/DPA location"
-                            name="dpi_location"
+                            name="dpa_location"
                             tooltip="Where is the DPA/DPIA stored?"
                             variant="stacked"
                             isRequired={
@@ -437,7 +444,7 @@ const SystemInformationForm = ({
                 />
                 <CustomTextInput
                   label="Department"
-                  name="department"
+                  name="administrating_department"
                   tooltip="Which department is concerned with this system?"
                   variant="stacked"
                   disabled={
@@ -459,7 +466,7 @@ const SystemInformationForm = ({
                 />
                 <CustomTextInput
                   label="Legal contact (DPO)"
-                  name="legal_contact"
+                  name="dpo"
                   tooltip="What is the official privacy contact information?"
                   variant="stacked"
                   disabled={
@@ -469,7 +476,7 @@ const SystemInformationForm = ({
                 />
                 <CustomTextInput
                   label="Joint controller"
-                  name="joint_controller"
+                  name="joint_controller_info"
                   tooltip="Who are the party or parties that share responsibility for processing data?"
                   variant="stacked"
                   disabled={

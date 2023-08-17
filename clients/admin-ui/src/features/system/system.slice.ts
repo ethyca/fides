@@ -213,8 +213,6 @@ export const selectActiveClassifySystem = createSelector(
     if (fidesKey === undefined) {
       return undefined;
     }
-
-    // @ts-ignore
     const system = allSystems?.find((s) => s.fides_key === fidesKey);
     return system;
   }
