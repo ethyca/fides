@@ -401,7 +401,7 @@ async def load_default_taxonomy(async_session: AsyncSession) -> None:
             await upsert_resources(
                 sql_model_map[resource_type], resources, async_session
             )
-        except QueryError:  # pragma: no cover
+        except QueryError as e:  # pragma: no cover
             pass  # The create_resource function will log the error
         else:
             log.debug(f"UPSERTED {len(resources)} {resource_type} resource(s)")

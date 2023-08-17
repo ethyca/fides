@@ -151,8 +151,13 @@ class DataCategory(Base, FidesBase):
     __tablename__ = "ctl_data_categories"
 
     parent_key = Column(Text)
-    is_default = Column(BOOLEAN, default=False)
     active = Column(BOOLEAN, default=True, nullable=False)
+
+    # Default Fields
+    is_default = Column(BOOLEAN, default=False)
+    version_added = Column(Text)
+    version_deprecated = Column(Text)
+    replaced_by = Column(Text)
 
     @classmethod
     def from_fideslang_obj(
@@ -177,8 +182,13 @@ class DataQualifier(Base, FidesBase):
     __tablename__ = "ctl_data_qualifiers"
 
     parent_key = Column(Text)
-    is_default = Column(BOOLEAN, default=False)
     active = Column(BOOLEAN, default=True, nullable=False)
+
+    # Default Fields
+    is_default = Column(BOOLEAN, default=False)
+    version_added = Column(Text)
+    version_deprecated = Column(Text)
+    replaced_by = Column(Text)
 
 
 class DataSubject(Base, FidesBase):
@@ -189,8 +199,13 @@ class DataSubject(Base, FidesBase):
     __tablename__ = "ctl_data_subjects"
     rights = Column(JSON, nullable=True)
     automated_decisions_or_profiling = Column(BOOLEAN, nullable=True)
-    is_default = Column(BOOLEAN, default=False)
     active = Column(BOOLEAN, default=True, nullable=False)
+
+    # Default Fields
+    is_default = Column(BOOLEAN, default=False)
+    version_added = Column(Text)
+    version_deprecated = Column(Text)
+    replaced_by = Column(Text)
 
 
 class DataUse(Base, FidesBase):
@@ -214,8 +229,13 @@ class DataUse(Base, FidesBase):
     legitimate_interest_impact_assessment = Column(
         String, nullable=True
     )  # Deprecated in favor of PrivacyDeclaration.legal_basis_for_processing
-    is_default = Column(BOOLEAN, default=False)
     active = Column(BOOLEAN, default=True, nullable=False)
+
+    # Default Fields
+    is_default = Column(BOOLEAN, default=False)
+    version_added = Column(Text)
+    version_deprecated = Column(Text)
+    replaced_by = Column(Text)
 
     @staticmethod
     def get_parent_uses_from_key(data_use_key: str) -> Set[str]:
