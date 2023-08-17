@@ -46,6 +46,7 @@ The types of changes are:
 ### Fixed
 - Fix datamap zoom for low system counts [#3835](https://github.com/ethyca/fides/pull/3835)
 - Fixed connector forms with external dataset reference fields [#3873](https://github.com/ethyca/fides/pull/3873)
+- Fix ability to make server side API calls from privacy-center [#3895](https://github.com/ethyca/fides/pull/3895)
 
 ### Changed
 
