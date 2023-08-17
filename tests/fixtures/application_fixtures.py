@@ -2559,6 +2559,7 @@ def tcf_system(db: Session) -> System:
         db=db,
         data={
             "fides_key": f"tcf-system_key-f{uuid4()}",
+            "vendor_id": "sendgrid",
             "name": f"TCF System Test",
             "description": "My TCF System Description",
             "organization_fides_key": "default_organization",

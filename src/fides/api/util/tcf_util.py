@@ -1,13 +1,11 @@
 from functools import lru_cache
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 from fideslang.gvl import MAPPED_PURPOSES, MAPPED_SPECIAL_PURPOSES, data_use_to_purpose
 from fideslang.gvl.models import Purpose
-from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import array_agg
 from sqlalchemy.orm import Query, Session
 
-from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_preference import ConsentRecordType
 from fides.api.models.sql_models import (  # type:ignore[attr-defined]
     PrivacyDeclaration,
@@ -62,25 +60,20 @@ def get_purposes_and_vendors(
             System.id,
             System.name,
             System.description,
+            System.vendor_id,
             array_agg(PrivacyDeclaration.data_use).label("data_uses"),
-            array_agg(func.distinct(ConnectionConfig.saas_config["type"])).label(
-                "vendor"
-            ),
         )
         .join(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
-        .outerjoin(ConnectionConfig, ConnectionConfig.system_id == System.id)
         .group_by(System.id)
         .filter(PrivacyDeclaration.data_use.in_(relevant_data_uses))
     )
 
     for record in matching_systems:
         # Get looked-up vendor if it exists
-        vendor: Optional[str] = next(
-            (vendor for vendor in record.vendor if vendor is not None), None
-        )
-        if vendor and vendor not in system_map:
-            system_map[vendor] = TCFVendorRecord(
-                id=vendor, name=record.name, description=record.description
+        vendor_id = record["vendor_id"]
+        if vendor_id and vendor_id not in system_map:
+            system_map[vendor_id] = TCFVendorRecord(
+                id=vendor_id, name=record.name, description=record.description
             )
 
         for use in record.data_uses:
@@ -95,13 +88,13 @@ def get_purposes_and_vendors(
                     **system_purpose.dict()
                 )
 
-            if vendor:
+            if vendor_id:
                 # Embed vendor on the given purpose or special purpose
                 purpose_map[system_purpose.id].vendors.extend(
-                    [EmbeddedVendor(id=vendor, name=record.name)]
+                    [EmbeddedVendor(id=vendor_id, name=record.name)]
                 )
                 # Do the reverse, and append the purpose or the special purpose to the vendor
-                getattr(system_map[vendor], purpose_field).append(system_purpose)
+                getattr(system_map[vendor_id], purpose_field).append(system_purpose)
 
     for purpose in purpose_map.values():
         purpose.vendors.sort(key=lambda x: x.id)

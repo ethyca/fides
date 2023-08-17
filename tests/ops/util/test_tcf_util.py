@@ -28,8 +28,13 @@ class TestGetTCFPurposesAndVendors:
         assert tcf_contents.tcf_special_features == []
 
     @pytest.mark.usefixtures("tcf_system")
-    def test_system_exists_with_tcf_data_use_but_no_official_vendor_linked(self, db):
+    def test_system_exists_with_tcf_data_use_but_no_official_vendor_linked(
+        self, db, tcf_system
+    ):
         get_tcf_contents.cache_clear()
+
+        tcf_system.vendor_id = None
+        tcf_system.save(db)
 
         tcf_contents = get_tcf_contents(db)
         assert len(tcf_contents.tcf_purposes) == 1
@@ -41,20 +46,6 @@ class TestGetTCFPurposesAndVendors:
     @pytest.mark.usefixtures("tcf_system")
     def test_system_exists_with_tcf_purpose_and_vendor(self, db, tcf_system):
         get_tcf_contents.cache_clear()
-
-        secrets = {
-            "domain": "test_sendgrid_domain",
-            "api_key": "test_sendgrid_api_key",
-        }
-        connection_config, dataset_config = instantiate_connector(
-            db,
-            "sendgrid",
-            "secondary_sendgrid_instance",
-            "Sendgrid ConnectionConfig description",
-            secrets,
-        )
-        connection_config.system_id = tcf_system.id
-        connection_config.save(db)
 
         tcf_contents = get_tcf_contents(db)
         assert len(tcf_contents.tcf_purposes) == 1
@@ -78,20 +69,6 @@ class TestGetTCFPurposesAndVendors:
     @pytest.mark.usefixtures("tcf_system")
     def test_system_matches_subset_of_purpose_data_uses(self, db, tcf_system):
         get_tcf_contents.cache_clear()
-
-        secrets = {
-            "domain": "test_sendgrid_domain",
-            "api_key": "test_sendgrid_api_key",
-        }
-        connection_config, dataset_config = instantiate_connector(
-            db,
-            "sendgrid",
-            "secondary_sendgrid_instance",
-            "Sendgrid ConnectionConfig description",
-            secrets,
-        )
-        connection_config.system_id = tcf_system.id
-        connection_config.save(db)
 
         decl = tcf_system.privacy_declarations[0]
         decl.data_use = "marketing.advertising.first_party.contextual"
@@ -120,22 +97,9 @@ class TestGetTCFPurposesAndVendors:
         assert tcf_contents.tcf_features == []
         assert tcf_contents.tcf_special_features == []
 
-    def test_special_purposes(self, db, tcf_system):
+    @pytest.mark.usefixtures("tcf_system")
+    def test_special_purposes(self, db):
         get_tcf_contents.cache_clear()
-
-        secrets = {
-            "domain": "test_sendgrid_domain",
-            "api_key": "test_sendgrid_api_key",
-        }
-        connection_config, dataset_config = instantiate_connector(
-            db,
-            "sendgrid",
-            "secondary_sendgrid_instance",
-            "Sendgrid ConnectionConfig description",
-            secrets,
-        )
-        connection_config.system_id = tcf_system.id
-        connection_config.save(db)
 
         tcf_contents = get_tcf_contents(db)
         assert len(tcf_contents.tcf_special_purposes) == 1
