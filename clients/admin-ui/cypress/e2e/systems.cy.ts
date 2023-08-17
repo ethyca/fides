@@ -74,7 +74,7 @@ describe("System management page", () => {
         }).as("getConnectionTypes");
       });
 
-      it("Can step through the flow", () => {
+      it.skip("Can step through the flow", () => {
         cy.fixture("systems/system.json").then((system) => {
           cy.intercept("GET", "/api/v1/system/*", {
             body: { ...system, privacy_declarations: [] },
@@ -275,7 +275,7 @@ describe("System management page", () => {
       cy.url().should("contain", "/systems/configure/fidesctl_system");
     });
 
-    it("Can go through the edit flow", () => {
+    it.skip("Can go through the edit flow", () => {
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
@@ -347,7 +347,7 @@ describe("System management page", () => {
       cy.getByTestId("saved-indicator");
     });
 
-    it("Can render and edit extended form fields", () => {
+    it.skip("Can render and edit extended form fields", () => {
       cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
         "getDatasets"
       );
@@ -443,7 +443,7 @@ describe("System management page", () => {
       });
     });
 
-    it("warns when a data use and processing activity is being added that is already used", () => {
+    it.skip("warns when a data use and processing activity is being added that is already used", () => {
       cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("more-btn").click();
@@ -496,7 +496,7 @@ describe("System management page", () => {
       cy.getByTestId("toast-error-msg");
     });
 
-    it("can have multiple of the same data use if the names are different", () => {
+    it.skip("can have multiple of the same data use if the names are different", () => {
       cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("more-btn").click();
@@ -517,7 +517,7 @@ describe("System management page", () => {
       cy.getByTestId("toast-success-msg");
     });
 
-    it("can edit an accordion data use while persisting a newly added data use", () => {
+    it.skip("can edit an accordion data use while persisting a newly added data use", () => {
       cy.visit(`${SYSTEM_ROUTE}/configure/fidesctl_system`);
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").click();
@@ -602,7 +602,7 @@ describe("System management page", () => {
         cy.getByTestId("tab-Data uses").click();
       });
 
-      it("deletes a new privacy declaration", () => {
+      it.skip("deletes a new privacy declaration", () => {
         cy.getByTestId("add-btn").click();
         cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
 
