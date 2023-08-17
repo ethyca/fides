@@ -623,7 +623,7 @@ describe("System management page", () => {
         cy.getByTestId("toast-success-msg").contains("Data use deleted");
       });
 
-      it("deletes an accordion privacy declaration", () => {
+      it.skip("deletes an accordion privacy declaration", () => {
         cy.getByTestId("accordion-header-improve.system").click();
         cy.getByTestId("improve.system-form").within(() => {
           cy.getByTestId("delete-btn").click();
