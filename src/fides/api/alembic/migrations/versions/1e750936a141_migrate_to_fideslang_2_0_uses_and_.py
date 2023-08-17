@@ -14,6 +14,12 @@ from sqlalchemy import text
 from sqlalchemy.engine import Connection, ResultProxy
 from sqlalchemy.sql.elements import TextClause
 
+# revision identifiers, used by Alembic.
+revision = "1e750936a141"
+down_revision = "708a780b01ba"
+branch_labels = None
+depends_on = None
+
 ###############
 ## Data Uses ##
 ###############
@@ -21,7 +27,7 @@ from sqlalchemy.sql.elements import TextClause
 data_use_upgrades: Dict[str, str] = {
     "improve.system": "functional.service.improve",  # Verified in 2.0
     "improve": "functional",  # Posted a question in the Confluence doc to verify this
-    "essential.service.operations.support.optimizations": "essential.service.operations.improve", # Verified in 2.0
+    "essential.service.operations.support.optimizations": "essential.service.operations.improve",  # Verified in 2.0
 }
 data_use_downgrades: Dict[str, str] = {
     value: key for key, value in data_use_upgrades.items()
@@ -52,6 +58,7 @@ data_category_upgrades: Dict[str, str] = {
 data_category_downgrades: Dict[str, str] = {
     value: key for key, value in data_use_upgrades.items()
 }
+
 
 def update_privacy_declaration_data_uses(
     bind: Connection, data_use_map: Dict[str, str]
@@ -99,12 +106,6 @@ def update_ctl_policy_data_uses(bind: Connection, data_use_map: Dict[str, str]) 
                 {"policy_id": row["id"], "updated_rules": json.dumps(rules)},
             )
 
-
-# revision identifiers, used by Alembic.
-revision = "1e750936a141"
-down_revision = "fd52d5f08c17"
-branch_labels = None
-depends_on = None
 
 def upgrade() -> None:
     bind: Connection = op.get_bind()
