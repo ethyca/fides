@@ -1,20 +1,22 @@
 connection:
-  - key: postgres_connector
+  - key: cookie_house_postgresql_database
     name: Postgres Connector
     connection_type: postgres
     access: write
     dataset: postgres_example_test_dataset
+    system_key: cookie_house_postgresql_database
     secrets:
       host: $FIDES_DEPLOY__CONNECTORS__POSTGRES__HOST
       port: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT
       dbname: $FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME
       username: $FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME
       password: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD
-  - key: mongodb_connector
+  - key: cookie_house_customer_database_mongodb
     name: MongoDB Connector
     connection_type: mongodb
     access: write
     dataset: mongo_test
+    system_key: cookie_house_customer_database
     secrets:
       host: $FIDES_DEPLOY__CONNECTORS__MONGO_HOST
       port: $FIDES_DEPLOY__CONNECTORS__MONGO_PORT

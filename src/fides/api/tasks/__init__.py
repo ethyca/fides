@@ -78,7 +78,7 @@ celery_app = _create_celery(CONFIG)
 
 def get_worker_ids() -> List[Optional[str]]:
     """
-    Returns a list of the connected heahtly worker UUIDs.
+    Returns a list of the connected healthy worker UUIDs.
     """
     try:
         connected_workers = [

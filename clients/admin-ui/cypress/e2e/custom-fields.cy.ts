@@ -117,19 +117,87 @@ describe("Custom Fields", () => {
       });
     });
 
-    it("can sort", () => {
-      cy.get("tbody > tr")
-        .first()
-        .should("contain", "Taxonomy - Single select");
-      // sort alphabetical
-      cy.getByTestId("column-Label").click();
-      cy.get("tbody > tr").first().should("contain", "Multiple select list");
+    describe("sorting", () => {
+      beforeEach(() => {
+        cy.intercept(
+          "PUT",
+          "/api/v1/plus/custom-metadata/custom-field-definition*",
+          {
+            fixture: "custom-fields/list.json",
+          }
+        ).as("patchCustomFields");
+      });
+      it("should be able to sort", () => {
+        cy.get("tbody > tr")
+          .first()
+          .should("contain", "Taxonomy - Single select");
+        // sort alphabetical
+        cy.getByTestId("column-Label").click();
+        cy.get("tbody > tr").first().should("contain", "Multiple select list");
 
-      // sort reverse
-      cy.getByTestId("column-Label").click();
-      cy.get("tbody > tr")
-        .first()
-        .should("contain", "Taxonomy - Single select");
+        // sort reverse
+        cy.getByTestId("column-Label").click();
+        cy.get("tbody > tr")
+          .first()
+          .should("contain", "Taxonomy - Single select");
+      });
+
+      it("should maintain sort after custom field is enabled/disabled", () => {
+        cy.get("tbody > tr")
+          .first()
+          .should("contain", "Taxonomy - Single select");
+        // sort alphabetical
+        cy.getByTestId("column-Label").click();
+        cy.get("tbody > tr").first().should("contain", "Multiple select list");
+
+        // the patched data needs to be mock or cypress will return the same data
+        cy.fixture("custom-fields/list.json").then((customFieldsList) => {
+          const updatedList = customFieldsList.map((cf) => {
+            if (cf.name === "Single select list") {
+              return { ...cf, active: false };
+            }
+            return cf;
+          });
+          cy.intercept(
+            "GET",
+            "/api/v1/plus/custom-metadata/custom-field-definition*",
+            {
+              body: updatedList,
+            }
+          ).as("getCustomFieldSingleSelectEnabled");
+        });
+
+        // enable custom field
+        cy.getByTestId("row-Taxonomy - Single select").within(() => {
+          cy.getByTestId("toggle-Enable").click();
+        });
+
+        cy.wait("@patchCustomFields");
+        // redux should requery after invalidation
+        cy.wait("@getCustomFieldSingleSelectEnabled");
+
+        cy.get("tbody > tr").first().should("contain", "Multiple select list");
+
+        // the original mock needs to be brought back
+        cy.intercept(
+          "GET",
+          "/api/v1/plus/custom-metadata/custom-field-definition*",
+          {
+            fixture: "custom-fields/list.json",
+          }
+        ).as("getCustomFields");
+
+        // disable custom field
+        cy.getByTestId("row-Taxonomy - Single select").within(() => {
+          cy.getByTestId("toggle-Enable").click();
+        });
+
+        cy.wait("@patchCustomFields");
+        // redux should requery after invalidation
+        cy.wait("@getCustomFields");
+
+        cy.get("tbody > tr").first().should("contain", "Multiple select list");
+      });
     });
 
     it("can delete from the more actions menu", () => {
