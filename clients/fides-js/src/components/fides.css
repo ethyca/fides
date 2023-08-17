@@ -314,6 +314,23 @@ div#fides-modal .fides-modal-button-group {
   background: var(--fides-overlay-hover-color);
 }
 
+.fides-back-button {
+  position: absolute;
+  top: 0.5em;
+  left: 0.2em;
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--fides-overlay-background-dark-color);
+  border-radius: var(--fides-overlay-button-border-radius);
+  display: flex;
+  padding: 0.4em;
+  align-items: center;
+}
+
+.fides-back-button > svg {
+  margin-right: 0.6em;
+}
+
 .fides-modal-notices {
   margin-bottom: 1em;
 }

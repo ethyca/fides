@@ -6,6 +6,18 @@ import { ButtonType, PrivacyExperience } from "../../lib/consent-types";
 import type { EnabledIds, UpdateEnabledIds } from "./TcfOverlay";
 import Button from "../Button";
 
+const BackButton = ({ onClick }: { onClick: () => void }) => (
+  <button type="button" className="fides-back-button" onClick={onClick}>
+    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none">
+      <path
+        fill="#2D3748"
+        d="M3.914 5.5H10v1H3.914l2.682 2.682-.707.707L2 6l3.889-3.889.707.707L3.914 5.5Z"
+      />
+    </svg>
+    Back
+  </button>
+);
+
 const TcfModalContent = ({
   experience,
   draftIds,
@@ -40,6 +52,7 @@ const TcfModalContent = ({
   }
   return (
     <div>
+      <BackButton onClick={() => setIsInitialLayer(false)} />
       <TcfTabs
         experience={experience}
         enabledIds={draftIds}
