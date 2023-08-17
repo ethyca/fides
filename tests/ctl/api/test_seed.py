@@ -326,10 +326,7 @@ def test_create_or_update_parent_user_change_password(db):
     db.refresh(user)
 
     assert user.password_reset_at is not None
-    assert (
-        user.authorization.credentials_valid(CONFIG.security.parent_server_password)
-        is True
-    )
+    assert user.credentials_valid(CONFIG.security.parent_server_password) is True
     user.delete(db)
 
 

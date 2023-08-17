@@ -18,8 +18,8 @@ class TestFidesUser:
         assert user.last_login_at is None
         assert user.password_reset_at is None
 
-        assert not user.authorization.credentials_valid("bad_password")
-        assert user.authorization.credentials_valid("test_password")
+        assert not user.credentials_valid("bad_password")
+        assert user.credentials_valid("test_password")
 
         user.delete(db)
 
@@ -38,14 +38,14 @@ class TestFidesUser:
 
         assert user.username == "user_1"
         assert user.password_reset_at is None
-        assert user.authorization.credentials_valid("test_password")
+        assert user.credentials_valid("test_password")
 
         user.update_password(db, "new_test_password")
 
         assert user.username == "user_1"
         assert user.password_reset_at is not None
-        assert user.authorization.credentials_valid("new_test_password")
+        assert user.credentials_valid("new_test_password")
         assert user.hashed_password != "new_test_password"
-        assert not user.authorization.credentials_valid("test_password")
+        assert not user.credentials_valid("test_password")
 
         user.delete(db)

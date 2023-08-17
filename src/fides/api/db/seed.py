@@ -92,9 +92,7 @@ def create_or_update_parent_user() -> None:
         )
 
         if user and CONFIG.security.parent_server_password:
-            if not user.authorization.credentials_valid(
-                CONFIG.security.parent_server_password
-            ):
+            if not user.credentials_valid(CONFIG.security.parent_server_password):
                 log.debug("Updating Fides parent user credentials")
                 user.update_password(db_session, CONFIG.security.parent_server_password)
                 return
