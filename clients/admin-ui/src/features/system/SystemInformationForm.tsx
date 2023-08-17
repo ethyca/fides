@@ -151,14 +151,6 @@ const SystemInformationForm = ({
     []
   );
 
-  const dataStewards = useMemo(() => {
-    const usernames = passedInSystem?.data_stewards?.map(
-      (user) => user.username
-    );
-    console.log(usernames);
-    console.log(usernames?.join(", "));
-  }, [passedInSystem]);
-
   const toast = useToast();
 
   const handleSubmit = async (

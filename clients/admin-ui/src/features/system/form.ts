@@ -47,14 +47,11 @@ export const transformSystemToFormValues = (
   const { data_protection_impact_assessment: dpia } = system;
   // @ts-ignore
   const dataStewards = system?.data_stewards
-    ?.map((user) => user.username)
+    ?.map((user: any) => user.username)
     .join(", ");
 
   return {
     ...system,
-    data_stewards: passedInSystem.data_stewards
-      .map((user) => user.username)
-      .join(", "),
     data_protection_impact_assessment: {
       ...dpia,
       is_required: dpia?.is_required ? "true" : "false",

@@ -224,8 +224,9 @@ const PrivacyDeclarationFormTab = ({
               <Text size="sm">
                 A Data Use is the purpose for which data is used in a system. In
                 Fides, a system may have more than one Data Use. For example, a
-                CRM system may be used both for "Customer Support" and also for
-                "Email Marketing", each of these is a Data Use.
+                CRM system may be used both for &quot;Customer Support&quot; and
+                also for &quot;Email Marketing&quot;, each of these is a Data
+                Use.
               </Text>
               <HStack>
                 <Button
