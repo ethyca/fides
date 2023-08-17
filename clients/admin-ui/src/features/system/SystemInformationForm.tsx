@@ -44,7 +44,7 @@ import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
-  privacy_policy: Yup.string().url().nullable(),
+  privacy_policy: Yup.string().min(1).url().nullable(),
 });
 
 const SystemHeading = ({ system }: { system?: SystemResponse }) => {
@@ -150,6 +150,14 @@ const SystemInformationForm = ({
       })),
     []
   );
+
+  const dataStewards = useMemo(() => {
+    const usernames = passedInSystem?.data_stewards?.map(
+      (user) => user.username
+    );
+    console.log(usernames);
+    console.log(usernames?.join(", "));
+  }, [passedInSystem]);
 
   const toast = useToast();
 
@@ -403,14 +411,11 @@ const SystemInformationForm = ({
             >
               <SystemFormInputGroup heading="Administrative properties">
                 <CustomTextInput
-                  label="Data steward"
-                  name="data_steward"
+                  label="Data stewards"
+                  name="data_stewards"
                   tooltip="Who are the stewards assigned to the system?"
                   variant="stacked"
-                  disabled={
-                    !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations
-                  }
+                  disabled
                 />
                 <CustomTextInput
                   label="Privacy policy URL"

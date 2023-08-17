@@ -183,15 +183,14 @@ export const PrivacyDeclarationFormComponents = ({
           isMulti
           variant="stacked"
         />
-
-        <CustomSelect
+        {/* <CustomSelect
           name="data_sources"
           label="Data sources"
           options={[]}
           tooltip="Where do these categories of data come from?"
           isMulti
           variant="stacked"
-        />
+        /> */}
         <Stack spacing={0}>
           <CustomSelect
             name="legal_basis_for_processing"
@@ -216,10 +215,11 @@ export const PrivacyDeclarationFormComponents = ({
           </Collapse>
         </Stack>
         <CustomNumberInput
-          name="data_retention"
+          name="retention_period"
           label="Retention period (days)"
           tooltip="How long is personal data retained for this purpose?"
           variant="stacked"
+          minValue={0}
         />
       </SystemFormInputGroup>
       <SystemFormInputGroup heading="Features">
@@ -258,7 +258,7 @@ export const PrivacyDeclarationFormComponents = ({
           >
             <Box mt={4}>
               <CustomSelect
-                name="legal_basis_for_special_category_processing"
+                name="special_category_legal_basis"
                 label="Legal basis for processing"
                 options={legalBasisForSpecialCategoryOptions}
                 isRequired={values.processes_special_category_data}
@@ -304,7 +304,7 @@ export const PrivacyDeclarationFormComponents = ({
           </Collapse>
         </Stack>
       </SystemFormInputGroup>
-      <SystemFormInputGroup heading="Cookies">
+      {/* <SystemFormInputGroup heading="Cookies">
         <CustomSelect
           name="cookies"
           label="Cookies"
@@ -313,7 +313,7 @@ export const PrivacyDeclarationFormComponents = ({
           tooltip="Which cookies are placed on consumer domains for this purpose?"
           variant="stacked"
         />
-      </SystemFormInputGroup>
+      </SystemFormInputGroup> */}
     </Stack>
   );
 };

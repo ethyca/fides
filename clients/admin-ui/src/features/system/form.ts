@@ -47,6 +47,9 @@ export const transformSystemToFormValues = (
 
   return {
     ...system,
+    data_stewards: passedInSystem.data_stewards
+      .map((user) => user.username)
+      .join(", "),
     data_protection_impact_assessment: {
       ...dpia,
       is_required: dpia?.is_required ? "true" : "false",
@@ -59,6 +62,9 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
   const key = formValues.fides_key
     ? formValues.fides_key
     : formatKey(formValues.name!);
+
+  const privacyPolicy =
+    formValues.privacy_policy === "" ? undefined : formValues.privacy_policy;
 
   if (!formValues.processes_personal_data) {
     return {
@@ -109,7 +115,7 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
     dpa_location: formValues.requires_data_protection_assessments
       ? formValues.dpa_location
       : undefined,
-    privacy_policy: formValues.privacy_policy,
+    privacy_policy: privacyPolicy,
     legal_name: formValues.legal_name,
     legal_address: formValues.legal_address,
     administrating_department: formValues.administrating_department,

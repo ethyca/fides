@@ -759,6 +759,7 @@ interface CustomNumberInputProps {
   variant?: "inline" | "condensed" | "stacked";
   isDisabled?: boolean;
   isRequired?: boolean;
+  minValue?: number;
 }
 export const CustomNumberInput = ({
   label,
@@ -766,9 +767,11 @@ export const CustomNumberInput = ({
   variant = "inline",
   isDisabled,
   isRequired = false,
+  minValue,
   ...props
 }: CustomNumberInputProps & FieldHookConfig<number>) => {
   const [field, meta] = useField({ ...props, type: "number" });
+  const { setFieldValue } = useFormikContext();
   const isInvalid = !!(meta.touched && meta.error);
 
   if (variant === "inline") {
@@ -803,10 +806,19 @@ export const CustomNumberInput = ({
         </Flex>
         <NumberInput
           {...field}
+          onChange={(e) => {
+            if (
+              minValue !== undefined &&
+              (e as unknown as number) >= minValue
+            ) {
+              setFieldValue(props.name, e);
+            }
+          }}
           size="sm"
           w="100%"
           isDisabled={isDisabled}
           data-testid={`input-${field.name}`}
+          min={minValue || undefined}
         >
           <NumberInputField />
           <NumberInputStepper>
