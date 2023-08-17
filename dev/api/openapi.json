@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.18.1b0.post0.dev8"
+    "version": "2.18.1b0.post0.dev9"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -18866,6 +18866,7 @@
       "PrivacyNoticeRegion": {
         "title": "PrivacyNoticeRegion",
         "enum": [
+          "us",
           "us_al",
           "us_ak",
           "us_az",
@@ -18949,7 +18950,21 @@
           "gb_nir",
           "is",
           "no",
-          "li"
+          "li",
+          "ca",
+          "ca_ab",
+          "ca_bc",
+          "ca_mb",
+          "ca_nb",
+          "ca_nl",
+          "ca_ns",
+          "ca_on",
+          "ca_pe",
+          "ca_qc",
+          "ca_sk",
+          "ca_nt",
+          "ca_nu",
+          "ca_yt"
         ],
         "description": "An enumeration."
       },
