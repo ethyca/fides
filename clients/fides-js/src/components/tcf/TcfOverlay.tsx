@@ -13,7 +13,7 @@ import "../fides.css";
 import Overlay from "../Overlay";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import { OverlayProps } from "../types";
-import TcfTabs from "./TcfTabs";
+
 import type {
   TCFFeatureRecord,
   TCFFeatureSave,
@@ -28,6 +28,7 @@ import type {
 
 import { updateConsentPreferences } from "../../lib/preferences";
 import { ConsentMethod, PrivacyExperience } from "../../lib/consent-types";
+import TcfModalContent from "./TcfModalContent";
 
 const resolveConsentValueFromTcfModel = (
   model: TCFPurposeRecord | TCFFeatureRecord | TCFVendorRecord
@@ -207,7 +208,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               <TcfConsentButtons
                 experience={experience}
                 onManagePreferencesClick={onManagePreferencesClick}
-                enabledKeys={draftIds}
                 onSave={(keys) => {
                   handleUpdateAllPreferences(keys);
                   onSave();
@@ -218,22 +218,15 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         ) : null
       }
       renderModalContent={({ onClose }) => (
-        <div>
-          <TcfTabs
-            experience={experience}
-            enabledIds={draftIds}
-            onChange={handleUpdateDraftState}
-          />
-          <TcfConsentButtons
-            experience={experience}
-            enabledKeys={draftIds}
-            onSave={(keys) => {
-              handleUpdateAllPreferences(keys);
-              onClose();
-            }}
-            isInModal
-          />
-        </div>
+        <TcfModalContent
+          experience={experience}
+          draftIds={draftIds}
+          onChange={handleUpdateDraftState}
+          onSave={(keys) => {
+            handleUpdateAllPreferences(keys);
+            onClose();
+          }}
+        />
       )}
     />
   );

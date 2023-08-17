@@ -1,4 +1,4 @@
-import { h } from "preact";
+import { VNode, h } from "preact";
 
 import { PrivacyExperience } from "../../lib/consent-types";
 import { ConsentButtons } from "../ConsentButtons";
@@ -13,8 +13,7 @@ interface TcfConsentButtonProps {
   experience: PrivacyExperience;
   onManagePreferencesClick?: () => void;
   onSave: (keys: EnabledIds) => void;
-  enabledKeys: EnabledIds;
-  isInModal?: boolean;
+  firstButton?: VNode;
 }
 
 const getAllIds = (
@@ -34,8 +33,7 @@ export const TcfConsentButtons = ({
   experience,
   onManagePreferencesClick,
   onSave,
-  enabledKeys,
-  isInModal,
+  firstButton,
 }: TcfConsentButtonProps) => {
   if (!experience.experience_config) {
     return null;
@@ -62,18 +60,13 @@ export const TcfConsentButtons = ({
     onSave(emptyIds);
   };
 
-  const handleSave = () => {
-    onSave(enabledKeys);
-  };
-
   return (
     <ConsentButtons
       experienceConfig={experience.experience_config}
       onManagePreferencesClick={onManagePreferencesClick}
-      onSave={handleSave}
       onAcceptAll={handleAcceptAll}
       onRejectAll={handleRejectAll}
-      isInModal={isInModal}
+      firstButton={firstButton}
     />
   );
 };
