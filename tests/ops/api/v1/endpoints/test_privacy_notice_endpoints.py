@@ -1144,7 +1144,7 @@ class TestGetPrivacyNoticesByDataUse:
                             PrivacyNoticeRegion.us_va,
                         ],
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["essential.service.operations.support.optimization"],
+                        data_uses=["essential.service.operations.improve"],
                         enforcement_level=EnforcementLevel.system_wide,
                         created_at=NOW,
                         updated_at=NOW,
@@ -1181,7 +1181,7 @@ class TestGetPrivacyNoticesByDataUse:
                             ],
                         )
                     ],
-                    "essential.service.operations.support.optimization": [
+                    "essential.service.operations.improve": [
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-4",
                             name=f"{PRIVACY_NOTICE_NAME}-4",
@@ -1192,9 +1192,7 @@ class TestGetPrivacyNoticesByDataUse:
                                 PrivacyNoticeRegion.us_va,
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=[
-                                "essential.service.operations.support.optimization"
-                            ],
+                            data_uses=["essential.service.operations.improve"],
                             enforcement_level=EnforcementLevel.system_wide,
                             created_at=NOW,
                             updated_at=NOW,
@@ -2302,7 +2300,9 @@ class TestPatchPrivacyNotices:
 
         # conflict with parent/child data uses within region
         # we make the two patch payload items have parent/child data uses, they should fail
-        patch_privacy_notice_us_ca_updated_data_use["data_uses"] = ["improve.system"]
+        patch_privacy_notice_us_ca_updated_data_use["data_uses"] = [
+            "functional.service.improve"
+        ]
 
         resp = api_client.patch(
             url,

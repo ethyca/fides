@@ -71,7 +71,7 @@
       "origin": null,
       "regions": ["fr", "ie"],
       "consent_mechanism": "opt_in",
-      "data_uses": ["improve.system"],
+      "data_uses": ["functional.service.improve"],
       "enforcement_level": "system_wide",
       "disabled": false,
       "has_gpc_flag": false,

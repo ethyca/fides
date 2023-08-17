@@ -136,7 +136,7 @@ dataset:
                   field: address.id
                   direction: to
           * name: ccn
-            data_categories: [user.financial.account_number]
+            data_categories: [user.financial.bank_account]
           * name: code
             data_categories: [user.financial]
           * name: customer_id

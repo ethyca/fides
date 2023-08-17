@@ -105,7 +105,7 @@
     "active": true
   },
   {
-    "fides_key": "improve.system",
+    "fides_key": "functional.service.improve",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "System",

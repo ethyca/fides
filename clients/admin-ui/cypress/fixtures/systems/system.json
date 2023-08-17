@@ -13,7 +13,7 @@
     {
       "name": "Analyze customer behaviour for improvements.",
       "data_categories": ["user.contact", "user.device.cookie_id"],
-      "data_use": "improve.system",
+      "data_use": "functional.service.improve",
       "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
       "data_subjects": ["customer"],
       "dataset_references": ["demo_users_dataset"],

@@ -272,7 +272,7 @@ dataset:
                   - name: installments
                     data_categories: [system.operations]
                   - name: last4
-                    data_categories: [user.financial.account_number]
+                    data_categories: [user.financial.bank_account]
                     fidesops_meta:
                       data_type: string
                   - name: network
@@ -342,7 +342,7 @@ dataset:
               - name: cvc_check
                 data_categories: [system.operations]
               - name: dynamic_last4
-                data_categories: [user.financial.account_number]
+                data_categories: [user.financial.bank_account]
                 fidesops_meta:
                   data_type: string
               - name: exp_month
@@ -356,7 +356,7 @@ dataset:
               - name: id
                 data_categories: [system.operations]
               - name: last4
-                data_categories: [user.financial.account_number]
+                data_categories: [user.financial.bank_account]
                 fidesops_meta:
                   data_type: string
               - name: name
@@ -687,7 +687,7 @@ dataset:
               - name: generated_from
                 data_categories: [system.operations]
               - name: last4
-                data_categories: [user.financial.account_number]
+                data_categories: [user.financial.bank_account]
                 fidesops_meta:
                   data_type: string
               - name: networks
@@ -741,11 +741,11 @@ dataset:
           - name: fingerprint
             data_categories: [system.operations]
           - name: last4
-            data_categories: [user.financial.account_number]
+            data_categories: [user.financial.bank_account]
             fidesops_meta:
               data_type: string
           - name: routing_number
-            data_categories: [user.financial.account_number]
+            data_categories: [user.financial.bank_account]
             fidesops_meta:
               data_type: string
           - name: status
@@ -798,7 +798,7 @@ dataset:
           - name: cvc_check
             data_categories: [system.operations]
           - name: dynamic_last4
-            data_categories: [user.financial.account_number]
+            data_categories: [user.financial.bank_account]
             fidesops_meta:
               data_type: string
           - name: exp_month
@@ -810,7 +810,7 @@ dataset:
           - name: funding
             data_categories: [system.operations]
           - name: last4
-            data_categories: [user.financial.account_number]
+            data_categories: [user.financial.bank_account]
             fidesops_meta:
               data_type: string
           - name: name

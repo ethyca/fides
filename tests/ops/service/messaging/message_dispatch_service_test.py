@@ -505,7 +505,7 @@ class TestMessageDispatchService:
                                     id="test_3",
                                     privacy_notice_id="39391",
                                     consent_mechanism=ConsentMechanism.opt_in,
-                                    data_uses=["improve.system"],
+                                    data_uses=["functional.service.improve"],
                                     enforcement_level=EnforcementLevel.system_wide,
                                     version=1.0,
                                     displayed_in_overlay=True,
