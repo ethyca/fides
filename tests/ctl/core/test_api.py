@@ -2164,7 +2164,11 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
+
+        #  Set fields for default labels
         manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         result = _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
@@ -2185,7 +2189,11 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
+
+        #  Set fields for default labels
         manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         result = _api.upsert(
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
@@ -2213,7 +2221,10 @@ class TestDefaultTaxonomyCrud:
             headers=test_config.user.auth_header,
         )
 
+        #  Set fields for default labels
         manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         result = _api.update(
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
@@ -2227,8 +2238,12 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
-        manifest.is_default = True
         second_item = manifest.copy()
+
+        #  Set fields for default labels
+        manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         second_item.is_default = False
 
         _api.create(
@@ -2330,6 +2345,7 @@ class TestCrudActiveProperty:
         )  # cast resource to extended model
         resource.fides_key = resource.fides_key + "_test_create_active_false"
         resource.is_default = False
+        resource.version_added = None
         resource.active = False
         json_resource = resource.json(exclude_none=True)
         token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
