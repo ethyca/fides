@@ -134,7 +134,7 @@ export const PrivacyDeclarationFormComponents = ({
             label: ds.name ? ds.name : ds.fides_key,
           }))
         : [],
-    []
+    [allDatasets]
   );
 
   return (

@@ -5,16 +5,16 @@ import {
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import { DataProtectionImpactAssessment, System } from "~/types/api";
 
-export interface FormValues
-  extends Omit<System, "data_protection_impact_assessment">,
-    CustomFieldsFormValues {
-  data_protection_impact_assessment?: {
-    is_required: "true" | "false";
-    progress?: DataProtectionImpactAssessment["progress"];
-    link?: DataProtectionImpactAssessment["link"];
+export type FormValues = Omit<System, "data_protection_impact_assessment"> &
+  CustomFieldsFormValues & {
+    data_protection_impact_assessment?: {
+      is_required: "true" | "false";
+      progress?: DataProtectionImpactAssessment["progress"];
+      link?: DataProtectionImpactAssessment["link"];
+    };
+    customFieldValues?: CustomFieldValues;
+    data_stewards: string;
   };
-  customFieldValues?: CustomFieldValues;
-}
 
 export const defaultInitialValues: FormValues = {
   system_type: "",
@@ -37,6 +37,7 @@ export const defaultInitialValues: FormValues = {
   joint_controller_info: "",
   data_security_practices: "",
   privacy_declarations: [],
+  data_stewards: "",
 };
 
 export const transformSystemToFormValues = (
@@ -44,6 +45,10 @@ export const transformSystemToFormValues = (
   customFieldValues?: CustomFieldValues
 ): FormValues => {
   const { data_protection_impact_assessment: dpia } = system;
+  // @ts-ignore
+  const dataStewards = system?.data_stewards
+    ?.map((user) => user.username)
+    .join(", ");
 
   return {
     ...system,
@@ -55,6 +60,7 @@ export const transformSystemToFormValues = (
       is_required: dpia?.is_required ? "true" : "false",
     },
     customFieldValues,
+    data_stewards: dataStewards,
   };
 };
 
