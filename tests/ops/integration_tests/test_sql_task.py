@@ -49,7 +49,7 @@ sample_postgres_configuration_policy = erasure_policy(
     "user.contact.address.postal_code",
     "user.contact.address.state",
     "user.contact.address.street",
-    "user.financial.account_number",
+    "user.financial.bank_account",
     "user.financial",
     "user.name",
     "user",

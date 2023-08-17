@@ -27,7 +27,7 @@ depends_on = None
 data_use_upgrades: Dict[str, str] = {
     "improve.system": "functional.service.improve",  # Verified in 2.0
     "improve": "functional",  # Posted a question in the Confluence doc to verify this
-    "essential.service.operations.support.optimizations": "essential.service.operations.improve",  # Verified in 2.0
+    "essential.service.operations.support.optimization": "essential.service.operations.improve",  # Verified in 2.0
 }
 data_use_downgrades: Dict[str, str] = {
     value: key for key, value in data_use_upgrades.items()

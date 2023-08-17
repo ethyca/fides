@@ -108,7 +108,7 @@ dataset:
               data_type: object
             fields:
               - name: gender
-                data_categories: [user.gender]
+                data_categories: [user.demographic.gender]
                 fidesops_meta:
                   data_type: string
               - name: interests
@@ -246,7 +246,7 @@ dataset:
               data_type: object
             fields:
               - name: gender
-                data_categories: [user.gender]
+                data_categories: [user.demographic.gender]
                 fidesops_meta:
                   data_type: string
               - name: interests

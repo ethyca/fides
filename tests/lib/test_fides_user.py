@@ -16,8 +16,8 @@ def test_create_user():
 
     assert user.username == "user_1"
     assert user.hashed_password != "test_password"
-    assert not user.credentials_valid("bad_password")
-    assert user.credentials_valid(password)
+    assert not user.authorization.credentials_valid("bad_password")
+    assert user.authorization.credentials_valid(password)
 
 
 def test_create_user_bad_payload():
@@ -37,13 +37,13 @@ def test_update_user_password():
 
     assert user.username == "user_1"
     assert user.password_reset_at is None
-    assert user.credentials_valid(password)
+    assert user.authorization.credentials_valid(password)
 
     new_password = "new_test_password"
     user.update_password(MagicMock(), new_password)
 
     assert user.username == "user_1"
     assert user.password_reset_at is not None
-    assert user.credentials_valid(new_password)
+    assert user.authorization.credentials_valid(new_password)
     assert user.hashed_password != new_password
-    assert not user.credentials_valid(password)
+    assert not user.authorization.credentials_valid(password)

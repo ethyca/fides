@@ -579,7 +579,7 @@ class TestMongoQueryConfig:
             "configuration": {"algorithm": "SHA-512"},
         }
         target = rule.targets[0]
-        target.data_category = DataCategory("user.date_of_birth").value
+        target.data_category = DataCategory("user.demographic.date_of_birth").value
 
         rule_two = erasure_policy_two_rules.rules[1]
         rule_two.masking_strategy = {
@@ -587,7 +587,7 @@ class TestMongoQueryConfig:
             "configuration": {"length": 30},
         }
         target = rule_two.targets[0]
-        target.data_category = DataCategory("user.gender").value
+        target.data_category = DataCategory("user.demographic.gender").value
         # cache secrets for hash strategy
         secret = MaskingSecretCache[str](
             secret="adobo",

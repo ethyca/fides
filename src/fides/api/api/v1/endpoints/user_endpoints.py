@@ -151,7 +151,7 @@ def update_user_password(
     """
     _validate_current_user(user_id, current_user)
 
-    if not current_user.credentials_valid(
+    if not current_user.authorization.credentials_valid(
         b64_str_to_str(data.old_password), CONFIG.security.encoding
     ):
         raise HTTPException(

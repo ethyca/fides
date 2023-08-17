@@ -206,7 +206,7 @@ describe("makeConsentDefaultsLegacy", () => {
       {
         cookieKeys: ["default_true"],
         default: true,
-        fidesDataUseKey: "improve.system",
+        fidesDataUseKey: "functional.service.improve",
       },
       {
         cookieKeys: ["default_false"],

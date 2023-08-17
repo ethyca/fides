@@ -17,11 +17,11 @@ dataset:
                   field: customer.id
                   direction: from
           - name: gender
-            data_categories: [user.gender]
+            data_categories: [user.demographic.gender]
             fides_meta:
               data_type: string
           - name: birthday
-            data_categories: [user.date_of_birth]
+            data_categories: [user.demographic.date_of_birth]
             fides_meta:
               data_type: string
           - name: workplace_info
@@ -189,7 +189,7 @@ dataset:
                 fides_meta:
                   data_type: string
               - name: ccn
-                data_categories: [user.financial.account_number]
+                data_categories: [user.financial.bank_account]
                 fides_meta:
                   data_type: string
       - name: employee
@@ -245,7 +245,7 @@ dataset:
           - name: billing_address_id
             data_categories: [system.operations]
           - name: ccn
-            data_categories: [user.financial.account_number]
+            data_categories: [user.financial.bank_account]
             fides_meta:
               references:
                 - dataset: mongo_test

@@ -741,7 +741,7 @@ class TestUpdateUserPassword:
 
         db.expunge(application_user)
         application_user = application_user.refresh_from_db(db=db)
-        assert application_user.credentials_valid(password=OLD_PASSWORD)
+        assert application_user.authorization.credentials_valid(password=OLD_PASSWORD)
 
     def test_update_user_password_invalid(
         self,
@@ -768,7 +768,7 @@ class TestUpdateUserPassword:
 
         db.expunge(application_user)
         application_user = application_user.refresh_from_db(db=db)
-        assert application_user.credentials_valid(password=OLD_PASSWORD)
+        assert application_user.authorization.credentials_valid(password=OLD_PASSWORD)
 
     def test_update_user_password(
         self,
@@ -792,7 +792,7 @@ class TestUpdateUserPassword:
         assert resp.status_code == HTTP_200_OK
         db.expunge(application_user)
         application_user = application_user.refresh_from_db(db=db)
-        assert application_user.credentials_valid(password=NEW_PASSWORD)
+        assert application_user.authorization.credentials_valid(password=NEW_PASSWORD)
 
     def test_force_update_different_user_password_without_scope(
         self,
@@ -849,7 +849,7 @@ class TestUpdateUserPassword:
         assert resp.status_code == HTTP_200_OK
         db.expunge(user)
         user = user.refresh_from_db(db=db)
-        assert user.credentials_valid(password=NEW_PASSWORD)
+        assert user.authorization.credentials_valid(password=NEW_PASSWORD)
 
     def test_force_update_non_existent_user(
         self,

@@ -92,7 +92,9 @@ def create_or_update_parent_user() -> None:
         )
 
         if user and CONFIG.security.parent_server_password:
-            if not user.credentials_valid(CONFIG.security.parent_server_password):
+            if not user.authorization.credentials_valid(
+                CONFIG.security.parent_server_password
+            ):
                 log.debug("Updating Fides parent user credentials")
                 user.update_password(db_session, CONFIG.security.parent_server_password)
                 return
@@ -327,7 +329,7 @@ def load_default_dsr_policies() -> None:
         excluded_data_categories = [
             "user.financial",
             "user.payment",
-            "user.credentials",
+            "user.authorization.credentials",
         ]
         all_data_categories = [
             str(category.fides_key) for category in DEFAULT_TAXONOMY.data_category

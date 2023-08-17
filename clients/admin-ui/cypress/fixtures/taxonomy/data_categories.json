@@ -80,7 +80,7 @@
     "active": true
   },
   {
-    "fides_key": "user.browsing_history",
+    "fides_key": "user.behavior.browsing_history",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "Browsing History",
@@ -160,7 +160,7 @@
     "active": true
   },
   {
-    "fides_key": "user.gender",
+    "fides_key": "user.demographic.gender",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "Gender",
@@ -180,7 +180,7 @@
     "active": true
   },
   {
-    "fides_key": "user.media_consumption",
+    "fides_key": "user.behavior.media_consumption",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "Media Consumption Data",
@@ -190,7 +190,7 @@
     "active": true
   },
   {
-    "fides_key": "user.non_specific_age",
+    "fides_key": "user.demographic.age_range",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "Non-Specific Age",
@@ -200,7 +200,7 @@
     "active": true
   },
   {
-    "fides_key": "user.observed",
+    "fides_key": "user.behavior",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "Observed Data",
@@ -210,7 +210,7 @@
     "active": true
   },
   {
-    "fides_key": "user.profiling",
+    "fides_key": "user.demographic.profile",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "Profiling Data",
@@ -220,7 +220,7 @@
     "active": true
   },
   {
-    "fides_key": "user.race",
+    "fides_key": "user.demographic.race_ethnicity",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "Race",
@@ -230,7 +230,7 @@
     "active": true
   },
   {
-    "fides_key": "user.religious_belief",
+    "fides_key": "user.demographic.religious_belief",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "Religious Belief",
@@ -240,7 +240,7 @@
     "active": true
   },
   {
-    "fides_key": "user.search_history",
+    "fides_key": "user.behavior.search_history",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "Search History",
@@ -250,7 +250,7 @@
     "active": true
   },
   {
-    "fides_key": "user.sexual_orientation",
+    "fides_key": "user.demographic.sexual_orientation",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "Sexual Orientation",
@@ -300,7 +300,7 @@
     "active": true
   },
   {
-    "fides_key": "user.organization",
+    "fides_key": "user.contact.organization",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "Organization Identifiable Data",
@@ -440,7 +440,7 @@
     "active": true
   },
   {
-    "fides_key": "user.date_of_birth",
+    "fides_key": "user.demographic.date_of_birth",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "Date of Birth",
@@ -460,7 +460,7 @@
     "active": true
   },
   {
-    "fides_key": "user.financial.account_number",
+    "fides_key": "user.financial.bank_account",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "User Financial Account Number",
@@ -470,7 +470,7 @@
     "active": true
   },
   {
-    "fides_key": "user.genetic",
+    "fides_key": "user.health_and_medical.genetic",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "Genetic Data",
@@ -550,7 +550,7 @@
     "active": true
   },
   {
-    "fides_key": "user.political_opinion",
+    "fides_key": "user.demographic.political_opinion",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "Political Opinion",

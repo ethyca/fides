@@ -207,7 +207,7 @@ def test_hydrate_missing_resources(test_config: FidesConfig) -> None:
         headers=test_config.user.auth_header,
         dehydrated_taxonomy=dehydrated_taxonomy,
         missing_resource_keys={
-            "user.credentials",
+            "user.authorization.credentials",
             "user",
         },
     )
@@ -576,13 +576,13 @@ def test_failed_evaluation_error_message(
                               'system (customer_data_sharing_system) failed '
                               'rule (reject_targeted_marketing) from policy '
                               '(primary_privacy_policy). Violated usage of '
-                              'data categories (user.political_opinion) with '
+                              'data categories (user.demographic.political_opinion) with '
                               'qualifier '
                               '(aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified) '
                               'for data uses '
                               '(marketing.advertising.third_party) and '
                               'subjects (customer)',
-                    'violating_attributes': { 'data_categories': [ 'user.political_opinion'],
+                    'violating_attributes': { 'data_categories': [ 'user.demographic.political_opinion'],
                                               'data_qualifier': 'aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified',
                                               'data_subjects': ['customer'],
                                               'data_uses': [ 'marketing.advertising.third_party']}}]}
