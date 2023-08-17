@@ -493,7 +493,7 @@ const SystemInformationForm = ({
                   <CustomFieldsList
                     resourceType={ResourceTypes.SYSTEM}
                     resourceFidesKey={values.fides_key}
-                  ></CustomFieldsList>
+                  />
                 </SystemFormInputGroup>
               ) : null}
             </Collapse>

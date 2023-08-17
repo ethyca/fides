@@ -376,7 +376,7 @@ export const PrivacyDeclarationForm = ({
       validationSchema={ValidationSchema}
     >
       {({ dirty, values }) => (
-        <Form>
+        <Form data-testid="declaration-form">
           <FormGuard id="PrivacyDeclaration" name="New Privacy Declaration" />
           <Stack spacing={4}>
             <PrivacyDeclarationFormComponents values={values} {...dataProps} />
@@ -395,7 +395,7 @@ export const PrivacyDeclarationForm = ({
                 size="sm"
                 type="submit"
                 disabled={!dirty}
-                data-testid="submit-btn"
+                data-testid="save-btn"
               >
                 Save
               </Button>

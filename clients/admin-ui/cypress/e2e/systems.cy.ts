@@ -91,14 +91,25 @@ describe("System management page", () => {
           cy.wait("@postSystem").then((interception) => {
             const { body } = interception.request;
             expect(body).to.eql({
-              name: system.name,
-              organization_fides_key: system.organization_fides_key,
-              fides_key: system.fides_key,
+              administrating_department: "",
+              data_security_practices: "",
+              dataset_references: [],
               description: system.description,
+              does_international_transfers: false,
+              exempt_from_privacy_regulations: false,
+              fides_key: system.fides_key,
+              joint_controller_info: "",
+              legal_address: "",
+              legal_name: "",
+              name: system.name,
+              privacy_declarations: [],
+              privacy_policy: "",
+              processes_personal_data: true,
+              requires_data_protection_assessments: false,
+              responsibility: [],
               system_type: "",
               tags: [],
-              privacy_declarations: [],
-              third_country_transfers: [],
+              uses_profiling: false,
             });
           });
 
@@ -112,7 +123,7 @@ describe("System management page", () => {
             "@getFilteredDatasets",
             "@getDemoSystem",
           ]);
-          cy.getByTestId("new-declaration-form");
+          cy.getByTestId("declaration-form");
           const declaration = system.privacy_declarations[0];
           cy.getByTestId("input-data_use").click();
           cy.getByTestId("input-data_use").within(() => {
@@ -140,6 +151,11 @@ describe("System management page", () => {
               dataset_references: ["demo_users_dataset_2"],
               cookies: [],
               id: "",
+              features: [],
+              impact_assessment_location: "",
+              retention_period: "0",
+              processes_special_category_data: false,
+              data_shared_with_third_parties: false,
             });
           });
         });
