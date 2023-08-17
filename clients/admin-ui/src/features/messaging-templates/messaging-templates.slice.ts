@@ -1,4 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
+import { BulkUpdateFailed } from "~/types/api/models/BulkUpdateFailed";
 
 export type MessagingTemplate = {
   key: string;
@@ -9,6 +10,11 @@ export type MessagingTemplate = {
   };
 };
 
+export type BulkPutMessagingTemplateResponse = {
+  succeeded: MessagingTemplate[];
+  failed: BulkUpdateFailed[];
+};
+
 // Messaging Templates API
 const messagingTemplatesApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -16,7 +22,10 @@ const messagingTemplatesApi = baseApi.injectEndpoints({
       query: () => ({ url: `messaging/templates/` }),
       providesTags: () => ["Messaging Templates"],
     }),
-    updateMessagingTemplates: build.mutation<string, MessagingTemplate[]>({
+    updateMessagingTemplates: build.mutation<
+      BulkPutMessagingTemplateResponse,
+      MessagingTemplate[]
+    >({
       query: (templates) => ({
         url: `messaging/templates/`,
         method: "PUT",

@@ -162,6 +162,7 @@ describe("configureNavGroups", () => {
         children: [
           { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
           { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
+          { title: "Email templates", path: routes.EMAIL_TEMPLATES_ROUTE },
           { title: "About Fides", path: routes.ABOUT_ROUTE },
         ],
       });

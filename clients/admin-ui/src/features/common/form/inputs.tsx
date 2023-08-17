@@ -33,7 +33,7 @@ import {
   Size,
 } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
@@ -599,13 +599,13 @@ export const CustomTextArea = ({
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const resizeTextarea = () => {
+  const resizeTextarea = useCallback(() => {
     const textarea = textareaRef.current;
     if (resize && textarea) {
       textarea.style.height = "auto";
       textarea.style.height = `${textarea.scrollHeight}px`;
     }
-  };
+  }, [resize]);
 
   const innerTextArea = (
     <Textarea
@@ -624,7 +624,7 @@ export const CustomTextArea = ({
 
   useEffect(() => {
     resizeTextarea(); // attempt to resize the textarea when the component mounts
-  }, []);
+  }, [resizeTextarea]);
 
   // When there is no label, it doesn't matter if stacked or inline
   // since we only render the text field
