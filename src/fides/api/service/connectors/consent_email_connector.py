@@ -99,7 +99,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                         identities=self.identities_for_test_email,
                         consent_preferences=[  # TODO slated for deprecation
                             Consent(data_use="marketing.advertising", opt_in=False),
-                            Consent(data_use="improve", opt_in=True),
+                            Consent(data_use="functional", opt_in=True),
                         ],
                         privacy_preferences=[
                             MinimalPrivacyPreferenceHistorySchema(

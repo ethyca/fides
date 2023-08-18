@@ -2275,14 +2275,14 @@ class TestPatchPrivacyNotices:
         patch_privacy_notice_payload_updated_data_use = (
             patch_privacy_notice_payload.copy()
         )
-        patch_privacy_notice_payload_updated_data_use["data_uses"] = ["improve"]
+        patch_privacy_notice_payload_updated_data_use["data_uses"] = ["functional"]
         # ensure we are not disabling privacy notice, because that will bypass validation
         patch_privacy_notice_payload_updated_data_use["disabled"] = False
 
         patch_privacy_notice_us_ca_updated_data_use = (
             patch_privacy_notice_payload_us_ca_provide.copy()
         )
-        patch_privacy_notice_us_ca_updated_data_use["data_uses"] = ["improve"]
+        patch_privacy_notice_us_ca_updated_data_use["data_uses"] = ["functional"]
 
         resp = api_client.patch(
             url,
@@ -2295,7 +2295,7 @@ class TestPatchPrivacyNotices:
         assert resp.status_code == 422
         assert (
             resp.json()["detail"]
-            == "Privacy Notice 'my notice's name' has already assigned data use 'improve' to region 'PrivacyNoticeRegion.us_ca'"
+            == "Privacy Notice 'my notice's name' has already assigned data use 'functional' to region 'PrivacyNoticeRegion.us_ca'"
         )
 
         # conflict with parent/child data uses within region

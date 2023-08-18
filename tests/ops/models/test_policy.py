@@ -216,7 +216,10 @@ def test_create_rule_target_invalid_data_category(
         )
 
     assert exc.value.__class__ == DataCategoryNotSupported
-    assert exc.value.args[0] == "The data category a_fake_category is not supported."
+    assert (
+        exc.value.args[0]
+        == "The data category 'a_fake_category' was not found in the database, and is therefore not valid for use here."
+    )
 
 
 def test_create_rule_target_valid_data_category(
