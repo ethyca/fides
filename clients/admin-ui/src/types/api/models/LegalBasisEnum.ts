@@ -3,9 +3,7 @@
 /* eslint-disable */
 
 /**
- * The model for allowable legal basis categories
- *
- * Based upon article 6 of the GDPR
+ * Deprecated. The model for allowable legal basis categories on data uses.
  */
 export enum LegalBasisEnum {
   CONSENT = "Consent",

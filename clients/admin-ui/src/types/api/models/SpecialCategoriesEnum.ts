@@ -3,10 +3,7 @@
 /* eslint-disable */
 
 /**
- * The model for processing special categories
- * of personal data.
- *
- * Based upon article 9 of the GDPR
+ * Deprecated. Special Categories Enum that was used on Data Uses.
  */
 export enum SpecialCategoriesEnum {
   CONSENT = "Consent",

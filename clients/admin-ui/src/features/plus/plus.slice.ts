@@ -31,6 +31,8 @@ import {
   SystemsDiff,
 } from "~/types/api";
 
+import { DictEntry, Page } from "./types";
+
 interface ScanParams {
   classify?: boolean;
 }
@@ -241,6 +243,13 @@ const plusApi = baseApi.injectEndpoints({
       transformResponse: (list: CustomFieldDefinitionWithId[]) =>
         list.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")),
     }),
+    getAllDictionaryEntries: build.query<Page<DictEntry>, void>({
+      query: () => ({
+        params: { size: 1000 },
+        url: `plus/dictionary/system`,
+      }),
+      providesTags: ["Dictionary"],
+    }),
   }),
 });
 
@@ -265,6 +274,7 @@ export const {
   useUpsertCustomFieldMutation,
   useGetAllCustomFieldDefinitionsQuery,
   useGetAllowListQuery,
+  useGetAllDictionaryEntriesQuery,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
