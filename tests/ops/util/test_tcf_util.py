@@ -93,12 +93,12 @@ class TestGetTCFPurposesAndVendors:
         connection_config.system_id = tcf_system.id
         connection_config.save(db)
 
-        decl = tcf_system.privacy_declarations[0]
-        decl.data_use = "marketing.advertising.first_party.contextual"
-        tcf_system.privacy_declarations[0].save(db)
-
-        decl_2 = tcf_system.privacy_declarations[1]
-        decl_2.delete(db)
+        for i, decl in enumerate(tcf_system.privacy_declarations):
+            if i:
+                decl.data_use = "marketing.advertising.first_party.contextual"
+                tcf_system.privacy_declarations[0].save(db)
+            else:
+                decl.delete(db)
 
         tcf_contents = get_tcf_contents(db)
 
