@@ -235,8 +235,10 @@ const SystemInformationForm = ({
             </Text>
             {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 
-            <SystemFormInputGroup heading="System details">
-              <DictSuggestionToggle />
+            <SystemFormInputGroup
+              heading="System details"
+              HeadingButton={DictSuggestionToggle}
+            >
               {features.dictionaryService ? (
                 <CustomSelect
                   id="vendor"
