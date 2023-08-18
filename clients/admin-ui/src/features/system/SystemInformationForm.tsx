@@ -18,6 +18,7 @@ import {
   CustomFieldsList,
   useCustomFields,
 } from "~/features/common/custom-fields";
+import { useFeatures } from "~/features/common/features/features.slice";
 import {
   CustomCreatableSelect,
   CustomSelect,
@@ -26,6 +27,7 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
 import {
   defaultInitialValues,
   FormValues,
@@ -94,10 +96,29 @@ const SystemInformationForm = ({
     [passedInSystem, customFields.customFieldValues]
   );
 
+  const features = useFeatures();
+
   const [createSystemMutationTrigger, createSystemMutationResult] =
     useCreateSystemMutation();
   const [updateSystemMutationTrigger, updateSystemMutationResult] =
     useUpdateSystemMutation();
+  const { data: dictionaryData } = useGetAllDictionaryEntriesQuery(undefined, {
+    skip: !features.dictionaryService,
+  });
+
+  const dictionaryOptions = useMemo(
+    () =>
+      dictionaryData?.items
+        ? dictionaryData.items
+            .map((d) => ({
+              label: d.display_name ? d.display_name : d.legal_name,
+              value: d.id,
+              description: d.description ? d.description : undefined,
+            }))
+            .sort((a, b) => (a.label > b.label ? 1 : -1))
+        : [],
+    [dictionaryData]
+  );
   const systems = useAppSelector(selectAllSystems);
   const isEditing = useMemo(
     () =>
@@ -157,7 +178,7 @@ const SystemInformationForm = ({
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
-    const systemBody = transformFormValuesToSystem(values);
+    const systemBody = transformFormValuesToSystem(values, features);
 
     const handleResult = (
       result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
@@ -218,6 +239,19 @@ const SystemInformationForm = ({
             {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 
             <SystemFormInputGroup heading="System details">
+              {features.dictionaryService ? (
+                <CustomSelect
+                  id="vendor"
+                  name="meta.vendor.id"
+                  label="Vendor"
+                  placeholder="Select a vendor"
+                  singleValueBlock
+                  options={dictionaryOptions}
+                  tooltip="Select the vendor that matches the system"
+                  isCustomOption
+                  variant="stacked"
+                />
+              ) : null}
               <CustomTextInput
                 id="name"
                 name="name"
