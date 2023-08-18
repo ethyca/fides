@@ -86,7 +86,7 @@ class TestFilterDataCategories:
         excluded_data_categories = [
             "user.financial",
             "user.payment",
-            "user.authorization.credentials",
+            "user.authorization",
         ]
         all_data_categories = [
             "user.name",
@@ -95,7 +95,7 @@ class TestFilterDataCategories:
             "user.payment",
             "user.payment.financial_account_number",
             "user.authorization.credentials",
-            "user.authorization.credentials.biometric_credentials",
+            "user.authorization.biometric",
             "user.financial.bank_account",
             "user.financial",
         ]
@@ -112,7 +112,7 @@ class TestFilterDataCategories:
         excluded_data_categories = [
             "user.financial",
             "user.payment",
-            "user.authorization.credentials",
+            "user.authorization",
         ]
         all_data_categories = [
             "user.name",
@@ -121,7 +121,7 @@ class TestFilterDataCategories:
             "user.payment",
             "user.payment.financial_account_number",
             "user.authorization.credentials",
-            "user.authorization.credentials.biometric_credentials",
+            "user.authorization.biometric",
             "user.financial.bank_account",
             "user.financial",
         ]
@@ -151,7 +151,7 @@ class TestFilterDataCategories:
         all_data_categories = [
             "user.name",
             "user.payment",
-            "user.authorization.credentials",
+            "user.authorization",
             "user.financial",
         ]
         assert seed.filter_data_categories(all_data_categories, []) == sorted(
@@ -163,7 +163,7 @@ class TestFilterDataCategories:
         excluded_data_categories = ["user.payment"]
         all_data_categories = [
             "user.name",
-            "user.authorization.credentials",
+            "user.authorization",
             "user.financial",
         ]
         assert seed.filter_data_categories(
@@ -174,7 +174,7 @@ class TestFilterDataCategories:
         """Test that the filter method works as intended"""
         all_data_categories = [
             "user.name",
-            "user.authorization.credentials",
+            "user.authorization",
             "user.financial",
             # These are excluded
             "nonuser.foo",
@@ -182,7 +182,7 @@ class TestFilterDataCategories:
         ]
         expected_categories = [
             "user.name",
-            "user.authorization.credentials",
+            "user.authorization",
             "user.financial",
         ]
         assert seed.filter_data_categories(all_data_categories, []) == sorted(
