@@ -551,10 +551,7 @@ class TestSovrnConnector:
         )
         assert preferences[0]["consent_preferences"][0]["opt_in"] is False
 
-        assert (
-            preferences[0]["consent_preferences"][1]["data_use"]
-            == "Improves the product, service, application or system."
-        )
+        assert preferences[0]["consent_preferences"][1]["data_use"] == "Functional"
         assert preferences[0]["consent_preferences"][1]["opt_in"] is True
 
         assert (
