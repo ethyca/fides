@@ -21,6 +21,9 @@ export type FidesOptions = {
   // Whether or not the banner should be globally enabled
   isOverlayEnabled: boolean;
 
+  // Whether we should pre-fetch geolocation and experience server-side
+  isPrefetchEnabled: boolean;
+
   // Whether user geolocation should be enabled. Requires geolocationApiUrl
   isGeolocationEnabled: boolean;
 
@@ -35,6 +38,9 @@ export type FidesOptions = {
 
   // URL for the Fides API, used to fetch and save consent preferences. Required.
   fidesApiUrl: string;
+
+  // URL for Server-side Fides API, used to fetch geolocation and consent preference. Optional.
+  serverSideFidesApiUrl: string;
 
   // Whether we should show the TCF modal
   tcfEnabled: boolean;
@@ -183,6 +189,7 @@ export type PrivacyPreferencesRequest = {
 export type ConsentOptionCreate = {
   privacy_notice_history_id: string;
   preference: UserConsentPreference;
+  served_notice_history_id?: string;
 };
 
 export type Identity = {
@@ -207,6 +214,34 @@ export enum GpcStatus {
   /** GPC is enabled but consent has been set to override the configured default. */
   OVERRIDDEN = "overridden",
 }
+
+// Consent reporting
+export enum ServingComponent {
+  OVERLAY = "overlay",
+  BANNER = "banner",
+  PRIVACY_CENTER = "privacy_center",
+}
+/**
+ * Request body when indicating that notices were served in the UI
+ */
+export type NoticesServedRequest = {
+  browser_identity: Identity;
+  code?: string;
+  privacy_notice_history_ids: Array<string>;
+  privacy_experience_id?: string;
+  user_geography?: string;
+  acknowledge_mode?: boolean;
+  serving_component: ServingComponent;
+};
+/**
+ * Schema that surfaces the last version of a notice that was shown to a user
+ */
+export type LastServedNoticeSchema = {
+  id: string;
+  updated_at: string;
+  privacy_notice_history: PrivacyNotice;
+  served_notice_history_id: string;
+};
 
 // ------------------LEGACY TYPES BELOW -------------------
 

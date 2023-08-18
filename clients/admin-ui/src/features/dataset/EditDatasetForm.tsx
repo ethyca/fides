@@ -3,20 +3,14 @@ import { Form, Formik } from "formik";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 
-import { COUNTRY_OPTIONS } from "~/features/common/countries";
 import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
 import { Dataset } from "~/types/api";
 
-import { CustomSelect, CustomTextInput } from "../common/form/inputs";
-import { DATA_QUALIFIERS, DATASET } from "./constants";
+import { CustomTextInput } from "../common/form/inputs";
+import { DATASET } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 
 export const FORM_ID = "edit-field-drawer";
-
-const DATA_QUALIFIERS_OPTIONS = DATA_QUALIFIERS.map((qualifier) => ({
-  label: qualifier.label,
-  value: qualifier.key,
-}));
 
 type FormValues = Partial<Dataset>;
 
@@ -29,9 +23,6 @@ const EditDatasetForm = ({ values, onSubmit }: Props) => {
   const initialValues: FormValues = {
     name: values.name ?? "",
     description: values.description ?? "",
-    retention: values.retention ?? "",
-    data_qualifier: values.data_qualifier,
-    third_country_transfers: values.third_country_transfers ?? [],
     data_categories: values.data_categories,
   };
   const allDataCategories = useSelector(selectDataCategories);
@@ -64,28 +55,6 @@ const EditDatasetForm = ({ values, onSubmit }: Props) => {
             label="Description"
             tooltip={DATASET.description.tooltip}
             data-testid="description-input"
-          />
-          <CustomTextInput
-            name="retention"
-            label="Retention period"
-            tooltip={DATASET.retention.tooltip}
-            data-testid="retention-input"
-          />
-          <CustomSelect
-            name="data_qualifier"
-            label="Identifiability"
-            options={DATA_QUALIFIERS_OPTIONS}
-            tooltip={DATASET.data_qualifiers.tooltip}
-            data-testid="identifiability-input"
-          />
-          <CustomSelect
-            name="third_country_transfers"
-            label="Geographic location"
-            tooltip={DATASET.third_country_transfers.tooltip}
-            isSearchable
-            options={COUNTRY_OPTIONS}
-            data-testid="geography-input"
-            isMulti
           />
           <DataCategoryInput
             dataCategories={allDataCategories}

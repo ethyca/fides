@@ -171,21 +171,17 @@ def get_connection_types(
         )
 
         for item in saas_types:
-            if ConnectorRegistry.get_connector_template(item) is not None:
-                connector_template = ConnectorRegistry.get_connector_template(item)
-
-            connection_system_types.append(
-                ConnectionSystemTypeMap(
-                    identifier=item,
-                    type=SystemType.saas,
-                    human_readable=connector_template.human_readable
-                    if connector_template is not None
-                    else "",
-                    encoded_icon=connector_template.icon
-                    if connector_template is not None
-                    else None,
+            connector_template = ConnectorRegistry.get_connector_template(item)
+            if connector_template is not None:
+                connection_system_types.append(
+                    ConnectionSystemTypeMap(
+                        identifier=item,
+                        type=SystemType.saas,
+                        human_readable=connector_template.human_readable,
+                        encoded_icon=connector_template.icon,
+                        authorization_required=connector_template.authorization_required,
+                    )
                 )
-            )
 
     if (
         system_type == SystemType.manual or system_type is None

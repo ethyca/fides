@@ -51,9 +51,11 @@ def teardown(session: nox.Session, volumes: bool = False, images: bool = False) 
     session.log("Teardown complete")
 
 
-def install_requirements(session: nox.Session) -> None:
+def install_requirements(session: nox.Session, include_dangerous=False) -> None:
     session.install("-r", "requirements.txt")
     session.install("-r", "dev-requirements.txt")
+    if include_dangerous:
+        session.install("-r", "dangerous-requirements.txt")
 
 
 @nox.session()

@@ -1,0 +1,77 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Recurly
+  type: recurly
+  description: A sample schema representing the Recurly connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: v3.recurly.com
+    - name: username
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <username>
+
+  test_request:
+    method: GET
+    path: /accounts
+    headers:
+      - name: Accept
+        value: application/vnd.recurly.v2021-02-25
+
+  endpoints:
+    - name: accounts
+      requests:
+        read:
+          method: GET
+          path: /accounts
+          headers:
+            - name: Accept
+              value: application/vnd.recurly.v2021-02-25
+          query_params:
+            - name: email
+              value: <email>
+          data_path: data
+          param_values:
+            - name: email
+              identity: email
+    - name: billing_info
+      requests:
+        read:
+          method: GET
+          path: /accounts/<accounts_id>/billing_info
+          headers:
+            - name: Accept
+              value: application/vnd.recurly.v2021-02-25
+          param_values:
+            - name: accounts_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: accounts.id
+                  direction: from
+    - name: shipping_address
+      requests:
+        read:
+          method: GET
+          path: /accounts/<accounts_id>/shipping_addresses
+          headers:
+            - name: Accept
+              value: application/vnd.recurly.v2021-02-25
+          data_path: data
+          param_values:
+            - name: accounts_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: accounts.id
+                  direction: from
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: next

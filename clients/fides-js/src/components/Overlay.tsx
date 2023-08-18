@@ -1,11 +1,13 @@
 import { h, FunctionComponent } from "preact";
 import { useEffect, useState, useCallback, useMemo } from "preact/hooks";
 import {
+  ConsentMechanism,
   ConsentMethod,
   FidesOptions,
   PrivacyExperience,
   PrivacyNotice,
   SaveConsentPreference,
+  ServingComponent,
 } from "../lib/consent-types";
 import ConsentBanner from "./ConsentBanner";
 
@@ -20,8 +22,9 @@ import { FidesCookie } from "../lib/cookie";
 import "./fides.css";
 import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
-import { useHasMounted } from "../lib/hooks";
+import { useConsentServed, useHasMounted } from "../lib/hooks";
 import ConsentButtons from "./ConsentButtons";
+import { dispatchFidesEvent } from "../lib/events";
 
 export interface OverlayProps {
   options: FidesOptions;
@@ -59,8 +62,11 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   const handleOpenModal = useCallback(() => {
     if (instance) {
       instance.show();
+      dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+        servingComponent: ServingComponent.OVERLAY,
+      });
     }
-  }, [instance]);
+  }, [instance, cookie, options.debug]);
 
   const handleCloseModal = useCallback(() => {
     if (instance) {
@@ -105,10 +111,30 @@ const Overlay: FunctionComponent<OverlayProps> = ({
     [experience]
   );
 
+  useEffect(() => {
+    if (showBanner && bannerIsOpen) {
+      dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+        servingComponent: ServingComponent.BANNER,
+      });
+    }
+  }, [showBanner, cookie, options.debug, bannerIsOpen]);
+
   const privacyNotices = useMemo(
     () => experience.privacy_notices ?? [],
     [experience.privacy_notices]
   );
+
+  const isAllNoticeOnly = privacyNotices.every(
+    (n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY
+  );
+
+  const { servedNotices } = useConsentServed({
+    notices: privacyNotices,
+    options,
+    userGeography: fidesRegionString,
+    acknowledgeMode: isAllNoticeOnly,
+    privacyExperienceId: experience.id,
+  });
 
   const handleUpdatePreferences = useCallback(
     (enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>) => {
@@ -126,6 +152,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
         consentMethod: ConsentMethod.button,
         userLocationString: fidesRegionString,
         cookie,
+        servedNotices,
       });
       // Make sure our draft state also updates
       setDraftEnabledNoticeKeys(enabledPrivacyNoticeKeys);
@@ -136,6 +163,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
       fidesRegionString,
       experience.id,
       options.fidesApiUrl,
+      servedNotices,
     ]
   );
 
@@ -171,6 +199,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
                 handleUpdatePreferences(keys);
                 setBannerIsOpen(false);
               }}
+              isAcknowledge={isAllNoticeOnly}
             />
           }
         />
@@ -191,6 +220,7 @@ const Overlay: FunctionComponent<OverlayProps> = ({
               handleUpdatePreferences(keys);
               handleCloseModal();
             }}
+            isAcknowledge={isAllNoticeOnly}
           />
         }
         options={options}

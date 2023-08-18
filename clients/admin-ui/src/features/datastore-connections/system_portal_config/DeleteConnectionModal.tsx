@@ -47,7 +47,7 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
       <>
         <Spacer />
         <Flex alignItems="center">
-          <Text fontSize="sm">Delete Integration</Text>
+          <Text fontSize="sm">Delete integration</Text>
           <IconButton
             marginLeft="8px"
             aria-label="Delete integration"
@@ -63,7 +63,7 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
       <Modal isCentered isOpen={isOpen} onClose={closeIfComplete}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Delete Integration</ModalHeader>
+          <ModalHeader>Delete integration</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <Stack direction="column" spacing="15px">

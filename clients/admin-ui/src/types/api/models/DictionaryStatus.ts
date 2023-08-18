@@ -2,13 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ClusterHealth } from "./ClusterHealth";
+import type { ServiceHealth } from "./ServiceHealth";
 
 /**
  * Dictionary status schema
  */
 export type DictionaryStatus = {
   enabled?: boolean;
-  service_health?: ClusterHealth;
+  service_health?: ServiceHealth;
   service_error?: string;
 };
