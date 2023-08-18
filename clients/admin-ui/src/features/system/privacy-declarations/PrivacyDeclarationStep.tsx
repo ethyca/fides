@@ -1,10 +1,9 @@
 import { Heading, Spinner, Stack, Text } from "@fidesui/react";
 import NextLink from "next/link";
 
+import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
+import PrivacyDeclarationFormTab from "~/features/system/system-form-declaration-tab/PrivacyDeclarationFormTab";
 import { SystemResponse } from "~/types/api";
-
-import { usePrivacyDeclarationData } from "./hooks";
-import PrivacyDeclarationManager from "./PrivacyDeclarationManager";
 
 interface Props {
   system: SystemResponse;
@@ -54,7 +53,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
       {isLoading ? (
         <Spinner />
       ) : (
-        <PrivacyDeclarationManager
+        <PrivacyDeclarationFormTab
           system={system}
           includeCustomFields
           includeCookies
