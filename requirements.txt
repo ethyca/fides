@@ -6,7 +6,6 @@ boto3==1.26.1
 celery[pytest]==5.2.7
 colorama>=0.4.3
 cryptography==38.0.3
-Cython==0.29.35 # workaround eeded for https://github.com/ethyca/fides/issues/3824
 dask==2022.9.2
 deepdiff==6.3.0
 defusedxml==0.7.1
@@ -14,7 +13,7 @@ expandvars==0.9.0
 fastapi[all]==0.89.1
 fastapi-caching[redis]==0.3.0
 fastapi-pagination[sqlalchemy]~= 0.10.0
-fideslang==1.4.3
+fideslang==1.4.4
 fideslog==1.2.10
 firebase-admin==5.3.0
 GitPython==3.1.31
@@ -37,7 +36,6 @@ pydantic==1.10.9
 pydash==6.0.2
 PyJWT==2.4.0
 pymongo==3.13.0
-pymssql>=2.1.5, <2.2.8 # workaround needed for https://github.com/ethyca/fides/issues/3824
 PyMySQL==1.0.2
 python-jose[cryptography]==3.3.0
 pyyaml>=5,<7

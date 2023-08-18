@@ -131,6 +131,7 @@ const automaticallyApplyGPCPreferences = (
   cookie: FidesCookie,
   fidesRegionString: string | null,
   fidesApiUrl: string,
+  debug: boolean,
   effectiveExperience?: PrivacyExperience | null
 ) => {
   if (!effectiveExperience || !effectiveExperience.privacy_notices) {
@@ -174,6 +175,7 @@ const automaticallyApplyGPCPreferences = (
       consentMethod: ConsentMethod.gpc,
       userLocationString: fidesRegionString || undefined,
       cookie,
+      debug,
     });
   }
 };
@@ -276,6 +278,7 @@ const init = async ({
       cookie,
       fidesRegionString,
       options.fidesApiUrl,
+      options.debug,
       effectiveExperience
     );
   }
@@ -307,12 +310,14 @@ _Fides = {
   options: {
     debug: true,
     isOverlayEnabled: false,
+    isPrefetchEnabled: false,
     isGeolocationEnabled: false,
     geolocationApiUrl: "",
     overlayParentId: null,
     modalLinkId: null,
     privacyCenterUrl: "",
     fidesApiUrl: "",
+    serverSideFidesApiUrl: "",
     tcfEnabled: false,
   },
   fides_meta: {},

@@ -266,7 +266,7 @@ def collect_tests(session: nox.Session) -> None:
     errors within the test code.
     """
     session.install(".")
-    install_requirements(session)
+    install_requirements(session, include_dangerous=True)
     command = ("pytest", "tests/", "--collect-only")
     session.run(*command)
 

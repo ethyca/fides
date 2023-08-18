@@ -170,7 +170,12 @@ describe("Taxonomy management page", () => {
       );
     });
 
-    it("Can render an extended form for Data Uses", () => {
+    /*
+     * These fields are deprecated.
+     * This test is being kept so it can be updated
+     * with new fields in the future
+     */
+    it.skip("Can render an extended form for Data Uses", () => {
       cy.getByTestId("tab-Data Uses").click();
 
       // check an entity that has optional fields filled in ("provides")
