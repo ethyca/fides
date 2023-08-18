@@ -1,11 +1,4 @@
-import {
-  Box,
-  Button,
-  ButtonProps,
-  Stack,
-  Tooltip,
-  useToast,
-} from "@fidesui/react";
+import { Box, ButtonProps, Stack, Text, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { useEffect, useMemo, useState } from "react";
@@ -157,11 +150,6 @@ const PrivacyDeclarationManager = ({
     return res;
   };
 
-  const handleShowNewForm = () => {
-    setShowNewForm(true);
-    setNewDeclaration(undefined);
-  };
-
   const handleDelete = async (
     declarationToDelete: PrivacyDeclarationResponse
   ) => {
@@ -181,10 +169,6 @@ const PrivacyDeclarationManager = ({
     }
     return success;
   };
-
-  const showAddDataUseButton =
-    system.privacy_declarations.length > 0 ||
-    (system.privacy_declarations.length === 0 && !showNewForm);
 
   // Reset the new form when the system changes (i.e. when clicking on a new datamap node)
   useEffect(() => {
@@ -213,26 +197,10 @@ const PrivacyDeclarationManager = ({
           />
         </Box>
       ) : null}
-      {showAddDataUseButton ? (
-        <Box py={2}>
-          <Tooltip
-            label="Add a Data Use"
-            hasArrow
-            placement="top"
-            isDisabled={accordionDeclarations.length === 0}
-          >
-            <Button
-              colorScheme="primary"
-              size="xs"
-              data-testid="add-btn"
-              onClick={handleShowNewForm}
-              disabled={showNewForm && !newDeclaration}
-              {...addButtonProps}
-            >
-              Add a Data Use +
-            </Button>
-          </Tooltip>
-        </Box>
+      {system.privacy_declarations.length === 0 ? (
+        <Text fontSize="sm" lineHeight={5} fontWeight="medium" pl={2}>
+          No data uses
+        </Text>
       ) : null}
     </Stack>
   );
