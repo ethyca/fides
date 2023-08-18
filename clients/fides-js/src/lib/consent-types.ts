@@ -48,7 +48,7 @@ export type FidesOptions = {
   fidesApiUrl: string;
 
   // Whether we should show the TCF modal
-  tcfEnabled: boolean;
+  tcfEnabled?: boolean;
 };
 
 export class SaveConsentPreference {

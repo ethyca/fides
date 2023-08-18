@@ -64,6 +64,11 @@ export default async function handler(
     }));
   }
 
+  // DEFER: The Fides server controls whether or not TCF is enabled, and so we
+  // should prefetch that value here. Until the endpoint is ready, we use an
+  // environment variable
+  const tcfEnabled = environment.settings.TCF_ENABLED;
+
   // Check if a geolocation was provided via headers, query param, or obtainable via a geolocation URL;
   // if so, inject into the bundle, along with privacy experience
   const geolocation = await lookupGeolocation(req);
@@ -82,7 +87,7 @@ export default async function handler(
       modalLinkId: environment.settings.MODAL_LINK_ID,
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
       fidesApiUrl: environment.settings.FIDES_API_URL,
-      tcfEnabled: environment.settings.TCF_ENABLED,
+      tcfEnabled,
     },
     geolocation: geolocation || undefined,
   };
@@ -91,7 +96,10 @@ export default async function handler(
   console.log(
     "Bundling generic fides.js & Privacy Center configuration together..."
   );
-  const fidesJSBuffer = await fsPromises.readFile("public/lib/fides.js");
+  const fidesJsFile = tcfEnabled
+    ? "public/lib/fides-tcf.js"
+    : "public/lib/fides.js";
+  const fidesJSBuffer = await fsPromises.readFile(fidesJsFile);
   const fidesJS: string = fidesJSBuffer.toString();
   if (!fidesJS || fidesJS === "") {
     throw new Error("Unable to load latest fides.js script from server!");

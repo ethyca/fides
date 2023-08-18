@@ -10,7 +10,6 @@ describe("getGeolocation", () => {
     GEOLOCATION_API_URL: "",
     IS_GEOLOCATION_ENABLED: false,
     IS_OVERLAY_ENABLED: false,
-    TCF_ENABLED: false,
     OVERLAY_PARENT_ID: null,
     MODAL_LINK_ID: null,
     PRIVACY_CENTER_URL: "privacy.example.com",

@@ -1,10 +1,8 @@
-import { h, render } from "preact";
+import { ContainerNode } from "preact";
 
 import { ComponentType } from "./consent-types";
 import { debugLog } from "./consent-utils";
 
-import NoticeOverlay from "../components/notices/NoticeOverlay";
-import TcfOverlay from "../components/tcf/TcfOverlay";
 import { OverlayProps } from "../components/types";
 
 /**
@@ -17,7 +15,10 @@ export const initOverlay = async ({
   fidesRegionString,
   cookie,
   options,
-}: OverlayProps): Promise<void> => {
+  renderOverlay,
+}: OverlayProps & {
+  renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
+}): Promise<void> => {
   debugLog(options.debug, "Initializing Fides consent overlays...");
 
   async function renderFidesOverlay(): Promise<void> {
@@ -41,30 +42,16 @@ export const initOverlay = async ({
         document.body.prepend(parentElem);
       }
 
-      // DEFER(fides#3859): use a separate TCF bundle instead of this if statement
-      // so that the vanilla fides-js bundle does not need to know about TCF
-      if (experience.component === ComponentType.OVERLAY) {
+      if (
+        experience.component === ComponentType.OVERLAY ||
+        experience.component === ComponentType.TCF_OVERLAY
+      ) {
         // Render the Overlay to the DOM!
-        render(
-          <NoticeOverlay
-            options={options}
-            experience={experience}
-            cookie={cookie}
-            fidesRegionString={fidesRegionString}
-          />,
+        renderOverlay(
+          { experience, fidesRegionString, cookie, options },
           parentElem
         );
         debugLog(options.debug, "Fides overlay is now showing!");
-      } else if (experience.component === ComponentType.TCF_OVERLAY) {
-        render(
-          <TcfOverlay
-            options={options}
-            experience={experience}
-            cookie={cookie}
-            fidesRegionString={fidesRegionString}
-          />,
-          parentElem
-        );
       }
       return await Promise.resolve();
     } catch (e) {

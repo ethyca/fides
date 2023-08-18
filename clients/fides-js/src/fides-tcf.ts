@@ -1,5 +1,6 @@
 /**
- * Fides.js: Javascript library for Fides (https://github.com/ethyca/fides)
+ * Fides-tcf.js: Javascript library for Fides (https://github.com/ethyca/fides), including
+ * features for supporting the Transparency Consent Framework
  *
  * This JS module provides easy access to interact with Fides from a webpage, including the ability to:
  * - initialize the page with default consent options (e.g. opt-out of advertising cookies, opt-in to analytics, etc.)
@@ -48,19 +49,18 @@ import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 
-import { isNewFidesCookie } from "./lib/cookie";
 import { FidesConfig } from "./lib/consent-types";
 
-import { dispatchFidesEvent } from "./lib/events";
-
+import { tcf } from "./lib/tcf";
 import {
-  initialize,
   getInitialCookie,
   getInitialFides,
+  initialize,
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
-
-import { renderOverlay } from "./lib/renderOverlay";
+import { dispatchFidesEvent } from "./lib/events";
+import { isNewFidesCookie } from "./fides";
+import { renderOverlay } from "./lib/tcf/renderOverlay";
 
 declare global {
   interface Window {
@@ -94,6 +94,8 @@ const init = async (config: FidesConfig) => {
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
   }
   dispatchFidesEvent("FidesUpdated", cookie, config.options.debug);
+
+  tcf();
 };
 
 // The global Fides object; this is bound to window.Fides if available
@@ -110,7 +112,7 @@ _Fides = {
     modalLinkId: null,
     privacyCenterUrl: "",
     fidesApiUrl: "",
-    tcfEnabled: false,
+    tcfEnabled: true,
   },
   fides_meta: {},
   identity: {},
@@ -125,10 +127,8 @@ if (typeof window !== "undefined") {
   window.Fides = _Fides;
 }
 
-// Export everything from ./lib/* to use when importing fides.mjs as a module
+// Export everything from ./lib/* to use when importing fides-tcf.mjs as a module
 export * from "./components";
-export * from "./services/fides/api";
-export * from "./services/external/geolocation";
 export * from "./lib/consent";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";
