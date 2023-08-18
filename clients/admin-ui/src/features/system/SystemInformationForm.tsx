@@ -255,7 +255,7 @@ const SystemInformationForm = ({
               <DictSuggestionTextInput
                 id="name"
                 name="name"
-                dictField="legal_name"
+                dictField="display_name"
                 label="System name"
                 tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
               />
@@ -267,12 +267,19 @@ const SystemInformationForm = ({
                 disabled
                 variant="stacked"
               />
-              <CustomTextInput
+              {/* <CustomTextInput
                 id="description"
                 name="description"
                 label="Description"
                 tooltip="What services does this system perform?"
                 variant="stacked"
+              /> */}
+              <DictSuggestionTextInput
+                id="description"
+                name="description"
+                label="Description"
+                dictField="description"
+                tooltip="What services does this system perform?"
               />
               <CustomCreatableSelect
                 id="tags"
@@ -442,7 +449,7 @@ const SystemInformationForm = ({
                   variant="stacked"
                   disabled
                 />
-                <CustomTextInput
+                {/* <CustomTextInput
                   label="Privacy policy URL"
                   name="privacy_policy"
                   tooltip="Where can the privacy policy be located?"
@@ -451,8 +458,15 @@ const SystemInformationForm = ({
                     !values.processes_personal_data ||
                     values.exempt_from_privacy_regulations
                   }
+                /> */}
+                <DictSuggestionTextInput
+                  id="privacy_policy"
+                  name="privacy_policy"
+                  label="Privacy policy URL"
+                  dictField="privacy_policy"
+                  tooltip="Where can the privacy policy be located?"
                 />
-                <CustomTextInput
+                {/* <CustomTextInput
                   label="Legal name"
                   name="legal_name"
                   tooltip="What is the legal name of the business?"
@@ -461,8 +475,15 @@ const SystemInformationForm = ({
                     !values.processes_personal_data ||
                     values.exempt_from_privacy_regulations
                   }
+                /> */}
+                <DictSuggestionTextInput
+                  id="legal_name"
+                  name="legal_name"
+                  label="Legal name"
+                  tooltip="What is the legal name of the business?"
+                  dictField="legal_name"
                 />
-                <CustomTextArea
+                {/* <CustomTextArea
                   label="Legal address"
                   name="legal_address"
                   tooltip="What is the legal address for the business?"
@@ -471,6 +492,13 @@ const SystemInformationForm = ({
                     !values.processes_personal_data ||
                     values.exempt_from_privacy_regulations
                   }
+                /> */}
+                <DictSuggestionTextInput
+                  id="legal_address"
+                  name="legal_address"
+                  label="Legal address"
+                  tooltip="What is the legal address for the business?"
+                  dictField="legal_address"
                 />
                 <CustomTextInput
                   label="Department"
@@ -494,7 +522,7 @@ const SystemInformationForm = ({
                     values.exempt_from_privacy_regulations
                   }
                 />
-                <CustomTextInput
+                {/* <CustomTextInput
                   label="Legal contact (DPO)"
                   name="dpo"
                   tooltip="What is the official privacy contact information?"
@@ -503,6 +531,13 @@ const SystemInformationForm = ({
                     !values.processes_personal_data ||
                     values.exempt_from_privacy_regulations
                   }
+                /> */}
+                <DictSuggestionTextInput
+                  name="dpo"
+                  id="dpo"
+                  label="Legal contact (DPO)"
+                  tooltip="What is the official privacy contact information?"
+                  dictField="dpo"
                 />
                 <CustomTextInput
                   label="Joint controller"
@@ -514,7 +549,7 @@ const SystemInformationForm = ({
                     values.exempt_from_privacy_regulations
                   }
                 />
-                <CustomTextArea
+                {/* <CustomTextArea
                   label="Data security practices"
                   name="data_security_practices"
                   tooltip="Which data security practices are employed to keep the data safe?"
@@ -523,6 +558,13 @@ const SystemInformationForm = ({
                     !values.processes_personal_data ||
                     values.exempt_from_privacy_regulations
                   }
+                /> */}
+                <DictSuggestionTextInput
+                  label="Data security practices"
+                  name="data_security_practices"
+                  id="data_security_practices"
+                  dictField="data_security_practices"
+                  tooltip="Which data security practices are employed to keep the data safe?"
                 />
               </SystemFormInputGroup>
               {values.fides_key ? (
