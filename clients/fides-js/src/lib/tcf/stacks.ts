@@ -31,3 +31,18 @@ export const createStacks = ({
 
   return matches.map((match) => match[1]);
 };
+
+export const getIdsNotRepresentedInStacks = ({
+  ids,
+  stacks,
+  modelType,
+}: {
+  ids: number[];
+  stacks: Stack[];
+  modelType: "purposes" | "specialFeatures";
+}) => {
+  const idsInStacks = new Set(
+    ([] as number[]).concat(...stacks.map((s) => s[modelType]))
+  );
+  return ids.filter((id) => !idsInStacks.has(id));
+};

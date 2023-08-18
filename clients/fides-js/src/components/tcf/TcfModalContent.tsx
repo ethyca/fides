@@ -5,6 +5,7 @@ import { TcfConsentButtons } from "./TcfConsentButtons";
 import { ButtonType, PrivacyExperience } from "../../lib/consent-types";
 import type { EnabledIds, UpdateEnabledIds } from "./TcfOverlay";
 import Button from "../Button";
+import InitialLayer from "./InitialLayer";
 
 const BackButton = ({ onClick }: { onClick: () => void }) => (
   <button type="button" className="fides-back-button" onClick={onClick}>
@@ -33,7 +34,7 @@ const TcfModalContent = ({
   if (isInitialLayer) {
     return (
       <div>
-        initial layer
+        <InitialLayer experience={experience} />
         <TcfConsentButtons
           experience={experience}
           onSave={onSave}
@@ -52,7 +53,7 @@ const TcfModalContent = ({
   }
   return (
     <div>
-      <BackButton onClick={() => setIsInitialLayer(false)} />
+      <BackButton onClick={() => setIsInitialLayer(true)} />
       <TcfTabs
         experience={experience}
         enabledIds={draftIds}

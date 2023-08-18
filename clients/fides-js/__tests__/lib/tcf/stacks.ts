@@ -1,4 +1,8 @@
-import { createStacks, Stack } from "../../../src/lib/tcf/stacks";
+import {
+  createStacks,
+  getIdsNotRepresentedInStacks,
+  Stack,
+} from "../../../src/lib/tcf/stacks";
 
 const mockStack = ({
   id,
@@ -111,6 +115,51 @@ describe("createStacks", () => {
       });
 
       expect(result.map((r) => r.id)).toEqual(expected);
+    }
+  );
+});
+
+describe("getIdsNotRepresentedInStacks", () => {
+  it.each([
+    {
+      stacks: [mockStack({ id: 1, purposes: [1, 2], specialFeatures: [1, 2] })],
+      ids: [1, 2, 3],
+      modelType: "purposes",
+      expected: [3],
+    },
+    {
+      stacks: [
+        mockStack({ id: 1, purposes: [1, 2, 3], specialFeatures: [1, 2] }),
+      ],
+      ids: [1, 2, 3],
+      modelType: "purposes",
+      expected: [],
+    },
+    {
+      stacks: [
+        mockStack({ id: 1, purposes: [1, 2, 3], specialFeatures: [1, 2] }),
+      ],
+      ids: [1, 2, 3, 4, 5],
+      modelType: "purposes",
+      expected: [4, 5],
+    },
+    {
+      stacks: [
+        mockStack({ id: 1, purposes: [1, 2, 3], specialFeatures: [1, 2] }),
+      ],
+      ids: [1, 2, 3, 4, 5],
+      modelType: "specialFeatures",
+      expected: [3, 4, 5],
+    },
+  ])(
+    "can get ids not represented in stacks",
+    ({ stacks, ids, modelType, expected }) => {
+      const result = getIdsNotRepresentedInStacks({
+        ids,
+        stacks,
+        modelType: modelType as "purposes" | "specialFeatures",
+      });
+      expect(result).toEqual(expected);
     }
   );
 });
