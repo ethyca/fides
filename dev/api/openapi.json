@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.18.1b0.post0.dev11"
+    "version": "2.18.1b1.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -11398,6 +11398,90 @@
         ]
       }
     },
+    "/api/v1/messaging/templates": {
+      "get": {
+        "tags": [
+          "Messaging"
+        ],
+        "summary": "Get Messaging Templates",
+        "description": "Returns the available messaging templates, augments the models with labels to be used in the UI.",
+        "operationId": "get_messaging_templates_api_v1_messaging_templates_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Messaging Templates Api V1 Messaging Templates Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MessagingTemplateResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging-template:update"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Messaging"
+        ],
+        "summary": "Update Messaging Templates",
+        "description": "Updates the messaging templates and reverts empty subject or body values to the default values.",
+        "operationId": "update_messaging_templates_api_v1_messaging_templates_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Templates",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MessagingTemplateRequest"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPutMessagingTemplateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging-template:update"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/connection/{connection_key}/validate_saas_config": {
       "put": {
         "tags": [
@@ -13493,6 +13577,31 @@
           }
         },
         "description": "Schema with mixed success/failure responses for Bulk Create/Update of Datasets."
+      },
+      "BulkPutMessagingTemplateResponse": {
+        "title": "BulkPutMessagingTemplateResponse",
+        "required": [
+          "succeeded",
+          "failed"
+        ],
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "title": "Succeeded",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessagingTemplateResponse"
+            }
+          },
+          "failed": {
+            "title": "Failed",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BulkUpdateFailed"
+            }
+          }
+        },
+        "description": "Schema for responses from bulk update/create requests.  Override to set \"succeeded\" and \"failed\" attributes on\nyour child class with paginated types.\n\nExample:\nfrom fastapi_pagination import Page\n\nsucceeded: List[ConnectionConfigurationResponse]\nfailed: List[BulkUpdateFailed]"
       },
       "BulkPutPolicyResponse": {
         "title": "BulkPutPolicyResponse",
@@ -17070,6 +17179,47 @@
         ],
         "description": "Enum for messaging service type. Upper-cased in the database"
       },
+      "MessagingTemplateRequest": {
+        "title": "MessagingTemplateRequest",
+        "required": [
+          "key",
+          "content"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "content": {
+            "title": "Content",
+            "type": "object"
+          }
+        }
+      },
+      "MessagingTemplateResponse": {
+        "title": "MessagingTemplateResponse",
+        "required": [
+          "key",
+          "content",
+          "label"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "content": {
+            "title": "Content",
+            "type": "object"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        }
+      },
       "MongoDBDocsSchema": {
         "title": "MongoDBDocsSchema",
         "required": [
@@ -20508,6 +20658,7 @@
           "dataset:delete",
           "dataset:read",
           "encryption:exec",
+          "messaging-template:update",
           "evaluation:create",
           "evaluation:read",
           "evaluation:delete",
