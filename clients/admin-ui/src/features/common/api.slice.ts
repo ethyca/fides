@@ -33,6 +33,7 @@ export const baseApi = createApi({
     "Dataset",
     "Datasets",
     "Messaging Templates",
+    "Dictionary",
     "Latest Scan",
     "Managed Systems",
     "Notification",

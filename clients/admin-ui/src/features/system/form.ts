@@ -2,6 +2,7 @@ import {
   CustomFieldsFormValues,
   CustomFieldValues,
 } from "~/features/common/custom-fields";
+import { Features } from "~/features/common/features";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import { DataProtectionImpactAssessment, System } from "~/types/api";
 
@@ -61,7 +62,10 @@ export const transformSystemToFormValues = (
   };
 };
 
-export const transformFormValuesToSystem = (formValues: FormValues): System => {
+export const transformFormValuesToSystem = (
+  formValues: FormValues,
+  features: Features
+): System => {
   const key = formValues.fides_key
     ? formValues.fides_key
     : formatKey(formValues.name!);
@@ -69,25 +73,40 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
   const privacyPolicy =
     formValues.privacy_policy === "" ? undefined : formValues.privacy_policy;
 
+  const payload: System = {
+    system_type: formValues.system_type,
+    fides_key: key,
+    name: formValues.name,
+    description: formValues.description,
+    tags: formValues.tags,
+    privacy_declarations: formValues.processes_personal_data
+      ? formValues.privacy_declarations
+      : [],
+  };
+
+  if (features.plus) {
+    if (!payload.meta) {
+      payload.meta = {};
+    }
+
+    if (features.dictionaryService && formValues?.meta?.vendor?.id) {
+      if (!("vendor" in payload.meta)) {
+        payload.meta.vendor = {};
+      }
+      payload.meta.vendor = {
+        ...payload.meta.vendor,
+        id: formValues.meta.vendor.id,
+      };
+    }
+  }
+
   if (!formValues.processes_personal_data) {
-    return {
-      system_type: formValues.system_type,
-      fides_key: key,
-      name: formValues.name,
-      description: formValues.description,
-      tags: formValues.tags,
-      privacy_declarations: [],
-    };
+    return payload;
   }
 
   if (formValues.exempt_from_privacy_regulations) {
     return {
-      system_type: formValues.system_type,
-      fides_key: key,
-      name: formValues.name,
-      description: formValues.description,
-      tags: formValues.tags,
-      privacy_declarations: formValues.privacy_declarations,
+      ...payload,
       processes_personal_data: formValues.processes_personal_data,
       exempt_from_privacy_regulations:
         formValues.exempt_from_privacy_regulations,
@@ -96,12 +115,7 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
   }
 
   return {
-    system_type: formValues.system_type,
-    fides_key: key,
-    name: formValues.name,
-    description: formValues.description,
-    tags: formValues.tags,
-    privacy_declarations: formValues.privacy_declarations,
+    ...payload,
     dataset_references: formValues.dataset_references,
     processes_personal_data: formValues.processes_personal_data,
     exempt_from_privacy_regulations: formValues.exempt_from_privacy_regulations,
