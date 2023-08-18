@@ -172,6 +172,13 @@ export const { reducer } = datastoreConnectionSlice;
 
 export const datastoreConnectionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    getAuthorizationUrl: build.query<string, string>({
+      query: (connectionKey) => ({
+        url: `${CONNECTION_ROUTE}/${connectionKey}/authorize`,
+        method: "GET",
+      }),
+      providesTags: () => ["Datastore Connection"],
+    }),
     createAccessManualWebhook: build.mutation<
       CreateAccessManualWebhookResponse,
       CreateAccessManualWebhookRequest
@@ -368,6 +375,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useLazyGetAuthorizationUrlQuery,
   useCreateAccessManualWebhookMutation,
   useCreateSassConnectionConfigMutation,
   useCreateUnlinkedSassConnectionConfigMutation,

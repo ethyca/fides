@@ -1,7 +1,7 @@
 import {
   Box,
   Button,
-  Divider,
+  Collapse,
   Heading,
   Stack,
   Text,
@@ -18,8 +18,16 @@ import {
   CustomFieldsList,
   useCustomFields,
 } from "~/features/common/custom-fields";
-import { CustomTextInput } from "~/features/common/form/inputs";
+import { useFeatures } from "~/features/common/features/features.slice";
+import {
+  CustomCreatableSelect,
+  CustomSelect,
+  CustomSwitch,
+  CustomTextArea,
+  CustomTextInput,
+} from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
 import {
   defaultInitialValues,
   FormValues,
@@ -31,15 +39,17 @@ import {
   useCreateSystemMutation,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
-import SystemInformationFormExtension from "~/features/system/SystemInformationFormExtension";
-import { ResourceTypes, System } from "~/types/api";
+import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
+import { ResourceTypes, System, SystemResponse } from "~/types/api";
+
+import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
-  fides_key: Yup.string().required().label("System key"),
+  privacy_policy: Yup.string().min(1).url().nullable(),
 });
 
-const SystemHeading = ({ system }: { system?: System }) => {
+const SystemHeading = ({ system }: { system?: SystemResponse }) => {
   const isManual = !system;
   const headingName = isManual
     ? "your new system"
@@ -54,15 +64,13 @@ const SystemHeading = ({ system }: { system?: System }) => {
 
 interface Props {
   onSuccess: (system: System) => void;
-  abridged?: boolean;
-  system?: System;
+  system?: SystemResponse;
   withHeader?: boolean;
   children?: React.ReactNode;
 }
 
 const SystemInformationForm = ({
   onSuccess,
-  abridged,
   system: passedInSystem,
   withHeader,
   children,
@@ -70,6 +78,11 @@ const SystemInformationForm = ({
   const customFields = useCustomFields({
     resourceType: ResourceTypes.SYSTEM,
     resourceFidesKey: passedInSystem?.fides_key,
+  });
+
+  const { ...dataProps } = usePrivacyDeclarationData({
+    includeDatasets: true,
+    includeDisabled: false,
   });
 
   const initialValues = useMemo(
@@ -83,10 +96,29 @@ const SystemInformationForm = ({
     [passedInSystem, customFields.customFieldValues]
   );
 
+  const features = useFeatures();
+
   const [createSystemMutationTrigger, createSystemMutationResult] =
     useCreateSystemMutation();
   const [updateSystemMutationTrigger, updateSystemMutationResult] =
     useUpdateSystemMutation();
+  const { data: dictionaryData } = useGetAllDictionaryEntriesQuery(undefined, {
+    skip: !features.dictionaryService,
+  });
+
+  const dictionaryOptions = useMemo(
+    () =>
+      dictionaryData?.items
+        ? dictionaryData.items
+            .map((d) => ({
+              label: d.display_name ? d.display_name : d.legal_name,
+              value: d.id,
+              description: d.description ? d.description : undefined,
+            }))
+            .sort((a, b) => (a.label > b.label ? 1 : -1))
+        : [],
+    [dictionaryData]
+  );
   const systems = useAppSelector(selectAllSystems);
   const isEditing = useMemo(
     () =>
@@ -97,13 +129,56 @@ const SystemInformationForm = ({
     [passedInSystem, systems]
   );
 
+  const datasetSelectOptions = useMemo(
+    () =>
+      dataProps.allDatasets
+        ? dataProps.allDatasets.map((ds) => ({
+            value: ds.fides_key,
+            label: ds.name ? ds.name : ds.fides_key,
+          }))
+        : [],
+    [dataProps.allDatasets]
+  );
+
+  const legalBasisForProfilingOptions = useMemo(
+    () =>
+      ["Explicit consent", "Contract", "Authorised by law"].map((opt) => ({
+        value: opt,
+        label: opt,
+      })),
+    []
+  );
+
+  const legalBasisForTransferOptions = useMemo(
+    () =>
+      [
+        "Adequacy decision",
+        "Standard contractual clauses",
+        "Binding corporate rules",
+        "Other",
+      ].map((opt) => ({
+        value: opt,
+        label: opt,
+      })),
+    []
+  );
+
+  const responsibilityOptions = useMemo(
+    () =>
+      ["Controller", "Processor", "Sub-Processor"].map((opt) => ({
+        value: opt,
+        label: opt,
+      })),
+    []
+  );
+
   const toast = useToast();
 
   const handleSubmit = async (
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
-    const systemBody = transformFormValuesToSystem(values);
+    const systemBody = transformFormValuesToSystem(values, features);
 
     const handleResult = (
       result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
@@ -152,7 +227,7 @@ const SystemInformationForm = ({
     >
       {({ dirty, values, isValid }) => (
         <Form>
-          <Stack spacing={6} maxWidth={{ base: "100%", lg: "70%" }}>
+          <Stack spacing={0} maxWidth={{ base: "100%", lg: "70%" }}>
             {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 
             <Text fontSize="sm" fontWeight="medium">
@@ -161,63 +236,317 @@ const SystemInformationForm = ({
               for everyone from engineering to legal teams. So let’s do this
               now.
             </Text>
-            <Heading as="h4" size="sm">
-              System details
-            </Heading>
-            <Stack spacing={4}>
-              <Stack spacing={4}>
-                <CustomTextInput
-                  id="name"
-                  name="name"
-                  label="System name"
-                  tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+            {withHeader ? <SystemHeading system={passedInSystem} /> : null}
+
+            <SystemFormInputGroup heading="System details">
+              {features.dictionaryService ? (
+                <CustomSelect
+                  id="vendor"
+                  name="meta.vendor.id"
+                  label="Vendor"
+                  placeholder="Select a vendor"
+                  singleValueBlock
+                  options={dictionaryOptions}
+                  tooltip="Select the vendor that matches the system"
+                  isCustomOption
                   variant="stacked"
                 />
-                <CustomTextInput
-                  id="fides_key"
-                  name="fides_key"
-                  label="System Fides key"
-                  disabled={isEditing}
-                  tooltip="A string token of your own invention that uniquely identifies this System. It's your responsibility to ensure that the value is unique across all of your System objects. The value may only contain alphanumeric characters, underscores, and hyphens. ([A-Za-z0-9_.-])."
-                  variant="stacked"
-                />
-                <CustomTextInput
-                  id="description"
-                  name="description"
-                  label="System description"
-                  tooltip="If you wish you can provide a description which better explains the purpose of this system."
-                  variant="stacked"
-                />
-              </Stack>
-              {!abridged ? (
-                <>
-                  <Box py={6}>
-                    <Divider />
-                  </Box>
-                  <SystemInformationFormExtension values={values} />
-                </>
               ) : null}
-              {isEditing && (
-                <CustomFieldsList
-                  resourceFidesKey={passedInSystem?.fides_key}
-                  resourceType={ResourceTypes.SYSTEM}
+              <CustomTextInput
+                id="name"
+                name="name"
+                isRequired
+                label="Name"
+                tooltip="What display name should we use for the system?"
+                variant="stacked"
+              />
+              <CustomTextInput
+                id="fides_key"
+                name="fides_key"
+                isRequired
+                label="Unique ID"
+                disabled
+                variant="stacked"
+              />
+              <CustomTextInput
+                id="description"
+                name="description"
+                label="Description"
+                tooltip="What services does this system perform?"
+                variant="stacked"
+              />
+              <CustomCreatableSelect
+                id="tags"
+                name="tags"
+                label="System Tags"
+                variant="stacked"
+                options={
+                  initialValues.tags
+                    ? initialValues.tags.map((s) => ({
+                        value: s,
+                        label: s,
+                      }))
+                    : []
+                }
+                tooltip="Are there any tags to associate with this system?"
+                isMulti
+              />
+            </SystemFormInputGroup>
+            <SystemFormInputGroup heading="Dataset reference">
+              <CustomSelect
+                name="dataset_references"
+                label="Dataset references"
+                options={datasetSelectOptions}
+                tooltip="Is there a dataset configured for this system?"
+                isMulti
+                variant="stacked"
+              />
+            </SystemFormInputGroup>
+            <SystemFormInputGroup heading="Data processing properties">
+              <Stack spacing={0}>
+                <Box mb={4}>
+                  <CustomSwitch
+                    name="processes_personal_data"
+                    label="This system processes personal data"
+                    tooltip="Does this system process personal data?"
+                    variant="stacked"
+                  />
+                </Box>
+                <Box padding={4} borderRadius={4} backgroundColor="gray.50">
+                  <Stack spacing={0}>
+                    <CustomSwitch
+                      name="exempt_from_privacy_regulations"
+                      label="This system is exempt from privacy regulations"
+                      tooltip="Is this system exempt from privacy regulations?"
+                      disabled={!values.processes_personal_data}
+                      variant="stacked"
+                    />
+                    <Collapse
+                      in={values.exempt_from_privacy_regulations}
+                      animateOpacity
+                    >
+                      <Box mt={4}>
+                        <CustomTextInput
+                          name="reason_for_exemption"
+                          label="Reason for exemption"
+                          tooltip="Why is this system exempt from privacy regulation?"
+                          variant="stacked"
+                          isRequired={values.exempt_from_privacy_regulations}
+                        />
+                      </Box>
+                    </Collapse>
+                  </Stack>
+                </Box>
+                <Collapse
+                  in={
+                    values.processes_personal_data &&
+                    !values.exempt_from_privacy_regulations
+                  }
+                  style={{
+                    overflow: "visible",
+                  }}
+                  animateOpacity
+                >
+                  <Stack spacing={4} mt={4}>
+                    <Stack spacing={0}>
+                      <CustomSwitch
+                        name="uses_profiling"
+                        label="This system performs profiling"
+                        tooltip="Does this system perform profiling that could have a legal effect?"
+                        variant="stacked"
+                      />
+                      <Collapse
+                        in={values.uses_profiling}
+                        animateOpacity
+                        style={{
+                          overflow: "visible",
+                        }}
+                      >
+                        <Box mt={4}>
+                          <CustomSelect
+                            name="legal_basis_for_profiling"
+                            label="Legal basis for profiling"
+                            options={legalBasisForProfilingOptions}
+                            tooltip="What is the legal basis under which profiling is performed?"
+                            isRequired={values.uses_profiling}
+                            variant="stacked"
+                          />
+                        </Box>
+                      </Collapse>
+                    </Stack>
+                    <Stack spacing={0}>
+                      <CustomSwitch
+                        name="does_international_transfers"
+                        label="This system transfers data"
+                        tooltip="Does this system transfer data to other countries or international organizations?"
+                        variant="stacked"
+                      />
+                      <Collapse
+                        in={values.does_international_transfers}
+                        animateOpacity
+                        style={{
+                          overflow: "visible",
+                        }}
+                      >
+                        <Box mt={4}>
+                          <CustomSelect
+                            name="legal_basis_for_transfers"
+                            label="Legal basis for transfer"
+                            options={legalBasisForTransferOptions}
+                            tooltip="What is the legal basis under which the data is transferred?"
+                            isRequired={values.does_international_transfers}
+                            variant="stacked"
+                          />
+                        </Box>
+                      </Collapse>
+                    </Stack>
+                    <Stack spacing={0}>
+                      <CustomSwitch
+                        name="requires_data_protection_assessments"
+                        label="This system requires Data Privacy Assessments"
+                        tooltip="Does this system require (DPA/DPIA) assessments?"
+                        variant="stacked"
+                      />
+                      <Collapse
+                        in={values.requires_data_protection_assessments}
+                        animateOpacity
+                      >
+                        <Box mt={4}>
+                          <CustomTextInput
+                            label="DPIA/DPA location"
+                            name="dpa_location"
+                            tooltip="Where is the DPA/DPIA stored?"
+                            variant="stacked"
+                            isRequired={
+                              values.requires_data_protection_assessments
+                            }
+                          />
+                        </Box>
+                      </Collapse>
+                    </Stack>
+                  </Stack>
+                </Collapse>
+              </Stack>
+            </SystemFormInputGroup>
+            <Collapse
+              in={
+                values.processes_personal_data &&
+                !values.exempt_from_privacy_regulations
+              }
+              animateOpacity
+            >
+              <SystemFormInputGroup heading="Administrative properties">
+                <CustomTextInput
+                  label="Data stewards"
+                  name="data_stewards"
+                  tooltip="Who are the stewards assigned to the system?"
+                  variant="stacked"
+                  disabled
                 />
-              )}
-            </Stack>
-            <Box>
-              <Button
-                type="submit"
-                variant="primary"
-                size="sm"
-                isDisabled={isLoading || !dirty || !isValid}
-                isLoading={isLoading}
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
-            </Box>
-            {children}
+                <CustomTextInput
+                  label="Privacy policy URL"
+                  name="privacy_policy"
+                  tooltip="Where can the privacy policy be located?"
+                  variant="stacked"
+                  disabled={
+                    !values.processes_personal_data ||
+                    values.exempt_from_privacy_regulations
+                  }
+                />
+                <CustomTextInput
+                  label="Legal name"
+                  name="legal_name"
+                  tooltip="What is the legal name of the business?"
+                  variant="stacked"
+                  disabled={
+                    !values.processes_personal_data ||
+                    values.exempt_from_privacy_regulations
+                  }
+                />
+                <CustomTextArea
+                  label="Legal address"
+                  name="legal_address"
+                  tooltip="What is the legal address for the business?"
+                  variant="stacked"
+                  disabled={
+                    !values.processes_personal_data ||
+                    values.exempt_from_privacy_regulations
+                  }
+                />
+                <CustomTextInput
+                  label="Department"
+                  name="administrating_department"
+                  tooltip="Which department is concerned with this system?"
+                  variant="stacked"
+                  disabled={
+                    !values.processes_personal_data ||
+                    values.exempt_from_privacy_regulations
+                  }
+                />
+                <CustomSelect
+                  label="Responsibility"
+                  name="responsibility"
+                  options={responsibilityOptions}
+                  tooltip="What is the role of the business with regard to data processing?"
+                  variant="stacked"
+                  isMulti
+                  disabled={
+                    !values.processes_personal_data ||
+                    values.exempt_from_privacy_regulations
+                  }
+                />
+                <CustomTextInput
+                  label="Legal contact (DPO)"
+                  name="dpo"
+                  tooltip="What is the official privacy contact information?"
+                  variant="stacked"
+                  disabled={
+                    !values.processes_personal_data ||
+                    values.exempt_from_privacy_regulations
+                  }
+                />
+                <CustomTextInput
+                  label="Joint controller"
+                  name="joint_controller_info"
+                  tooltip="Who are the party or parties that share responsibility for processing data?"
+                  variant="stacked"
+                  disabled={
+                    !values.processes_personal_data ||
+                    values.exempt_from_privacy_regulations
+                  }
+                />
+                <CustomTextArea
+                  label="Data security practices"
+                  name="data_security_practices"
+                  tooltip="Which data security practices are employed to keep the data safe?"
+                  variant="stacked"
+                  disabled={
+                    !values.processes_personal_data ||
+                    values.exempt_from_privacy_regulations
+                  }
+                />
+              </SystemFormInputGroup>
+              {values.fides_key ? (
+                <CustomFieldsList
+                  resourceType={ResourceTypes.SYSTEM}
+                  resourceFidesKey={values.fides_key}
+                />
+              ) : null}
+            </Collapse>
           </Stack>
+          <Box mt={6}>
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              isDisabled={isLoading || !dirty || !isValid}
+              isLoading={isLoading}
+              data-testid="save-btn"
+            >
+              Save
+            </Button>
+          </Box>
+          {children}
         </Form>
       )}
     </Formik>

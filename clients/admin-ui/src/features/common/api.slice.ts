@@ -32,6 +32,7 @@ export const baseApi = createApi({
     "Datastore Connection",
     "Dataset",
     "Datasets",
+    "Dictionary",
     "Latest Scan",
     "Managed Systems",
     "Notification",

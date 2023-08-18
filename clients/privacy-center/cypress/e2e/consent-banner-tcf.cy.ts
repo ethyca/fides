@@ -25,6 +25,7 @@ describe("Fides-js TCF", () => {
       stubConfig({
         options: {
           isOverlayEnabled: true,
+          tcfEnabled: true,
         },
         experience: experience.items[0],
       });

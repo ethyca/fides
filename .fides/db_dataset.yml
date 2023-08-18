@@ -1021,6 +1021,63 @@ dataset:
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: vendor_id
+      data_categories:
+      - system.operations
+    - name: dataset_references
+      data_categories:
+      - system.operations
+    - name: processes_personal_data
+      data_categories:
+      - system.operations
+    - name: exempt_from_privacy_regulations
+      data_categories:
+      - system.operations
+    - name: reason_for_exemption
+      data_categories:
+      - system.operations
+    - name: uses_profiling
+      data_categories:
+      - system.operations
+    - name: legal_basis_for_profiling
+      data_categories:
+      - system.operations
+    - name: does_international_transfers
+      data_categories:
+      - system.operations
+    - name: legal_basis_for_transfers
+      data_categories:
+      - system.operations
+    - name: requires_data_protection_assessments
+      data_categories:
+      - system.operations
+    - name: dpa_location
+      data_categories:
+      - system.operations
+    - name: dpa_progress
+      data_categories:
+      - system.operations
+    - name: privacy_policy
+      data_categories:
+      - system.operations
+    - name: legal_name
+      data_categories:
+      - system.operations
+    - name: legal_address
+      data_categories:
+      - system.operations
+    - name: responsibility
+      data_categories:
+      - system.operations
+    - name: dpo
+      data_categories:
+      - system.operations
+    - name: joint_controller_info
+      data_categories:
+      - system.operations
+    - name: data_security_practices
+      data_categories:
+      - system.operations
   - name: messagingconfig
     description: 'Fides Generated Description for Table: messagingconfig'
     data_categories: []
@@ -1057,6 +1114,9 @@ dataset:
     data_categories: []
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
+    - name: referer
+      data_categories: [ system.operations ]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: connection_key
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -1420,6 +1480,33 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: features
+      data_categories:
+      - system.operations
+    - name: legal_basis_for_processing
+      data_categories:
+      - system.operations
+    - name: impact_assessment_location
+      data_categories:
+      - system.operations
+    - name: retention_period
+      data_categories:
+      - system.operations
+    - name: processes_special_category_data
+      data_categories:
+      - system.operations
+    - name: special_category_legal_basis
+      data_categories:
+      - system.operations
+    - name: data_shared_with_third_parties
+      data_categories:
+      - system.operations
+    - name: third_parties
+      data_categories:
+      - system.operations
+    - name: shared_categories
+      data_categories:
+      - system.operations
   - name: privacyexperience
     description: 'PrivacyExperiences hold the experience for a given region'
     data_categories: []
