@@ -21,6 +21,9 @@ export type FidesOptions = {
   // Whether or not the banner should be globally enabled
   isOverlayEnabled: boolean;
 
+  // Whether we should pre-fetch geolocation and experience server-side
+  isPrefetchEnabled: boolean;
+
   // Whether user geolocation should be enabled. Requires geolocationApiUrl
   isGeolocationEnabled: boolean;
 
@@ -35,6 +38,9 @@ export type FidesOptions = {
 
   // URL for the Fides API, used to fetch and save consent preferences. Required.
   fidesApiUrl: string;
+
+  // URL for Server-side Fides API, used to fetch geolocation and consent preference. Optional.
+  serverSideFidesApiUrl: string;
 
   // Whether we should show the TCF modal
   tcfEnabled: boolean;

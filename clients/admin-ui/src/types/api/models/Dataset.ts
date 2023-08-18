@@ -36,7 +36,7 @@ export type Dataset = {
    */
   data_categories?: Array<string>;
   /**
-   * Array of Data Qualifier resources identified by `fides_key`, that apply to all collections in the Dataset.
+   * Deprecated. Array of Data Qualifier resources identified by `fides_key`, that apply to all collections in the Dataset.
    */
   data_qualifier?: string;
   /**
@@ -48,7 +48,7 @@ export type Dataset = {
    */
   fides_meta?: DatasetMetadata;
   /**
-   *
+   * Deprecated.
    * The contact details information model.
    *
    * Used to capture contact information for controllers, used
@@ -60,11 +60,11 @@ export type Dataset = {
    */
   joint_controller?: ContactDetails;
   /**
-   * An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset.
+   * Deprecated. An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset.
    */
   retention?: string;
   /**
-   * An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3).
+   * Deprecated. An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3).
    */
   third_country_transfers?: Array<string>;
   /**
