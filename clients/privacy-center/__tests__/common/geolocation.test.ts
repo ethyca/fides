@@ -1,19 +1,8 @@
 import { createRequest } from "node-mocks-http";
 
 import { lookupGeolocation } from "~/common/geolocation";
-import { PrivacyCenterClientSettings } from "~/app/server-environment";
 
 describe("getGeolocation", () => {
-  const privacyCenterSettings: PrivacyCenterClientSettings = {
-    FIDES_API_URL: "",
-    DEBUG: false,
-    GEOLOCATION_API_URL: "",
-    IS_GEOLOCATION_ENABLED: false,
-    IS_OVERLAY_ENABLED: false,
-    OVERLAY_PARENT_ID: null,
-    MODAL_LINK_ID: null,
-    PRIVACY_CENTER_URL: "privacy.example.com",
-  };
   describe("when using geolocation headers", () => {
     it("returns geolocation data from country & region headers", async () => {
       const req = createRequest({
@@ -114,35 +103,6 @@ describe("getGeolocation", () => {
       });
       const geolocation = await lookupGeolocation(req);
       expect(geolocation).toBeNull();
-    });
-  });
-
-  describe("when using geolocation URL", () => {
-    it.skip("fetches data from geolocation URL", async () => {
-      privacyCenterSettings.IS_GEOLOCATION_ENABLED = true;
-      privacyCenterSettings.GEOLOCATION_API_URL = "some-geolocation-api.com";
-      privacyCenterSettings.IS_OVERLAY_ENABLED = true;
-      global.fetch = jest.fn(() =>
-        Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              country: "US",
-              location: "US-CA",
-              region: "CA",
-            }),
-        })
-      ) as jest.Mock;
-      const req = createRequest({
-        url: "https://privacy.example.com/fides.js",
-      });
-
-      const geolocation = await lookupGeolocation(req);
-      expect(geolocation).toEqual({
-        country: "US",
-        location: "US-CA",
-        region: "CA",
-      });
     });
   });
 });

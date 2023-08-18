@@ -60,8 +60,5 @@ export const lookupGeolocation = async (
       };
     }
   }
-
-  // DEFER: read headers to determine & return the request's IP address
-  // Get geolocation if settings.IS_OVERLAY_ENABLED && settings.IS_GEOLOCATION_ENABLED && settings.GEOLOCATION_API_URL
   return null;
 };

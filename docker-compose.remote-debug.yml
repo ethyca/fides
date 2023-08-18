@@ -1,6 +1,6 @@
 services:
   fides:
-    command: python -m debugpy --listen 0.0.0.0:5678 -m uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src fides.api.main:app
+    command: python -m debugpy --listen 0.0.0.0:5678 -m uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src --reload-dir data --reload-include='*.yml' fides.api.main:app
     ports:
       - "8080:8080"
       - "5678:5678"

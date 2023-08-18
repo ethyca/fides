@@ -18,7 +18,6 @@ export namespace CoreHealthCheck {
   export enum database {
     HEALTHY = "healthy",
     UNHEALTHY = "unhealthy",
-    NEEDS_MIGRATION = "needs migration",
   }
 
   export enum cache {
