@@ -124,37 +124,26 @@ export default async function handler(
       modalLinkId: environment.settings.MODAL_LINK_ID,
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
       fidesApiUrl: environment.settings.FIDES_API_URL,
-<<<<<<< HEAD
       tcfEnabled,
-=======
       serverSideFidesApiUrl:
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
         environment.settings.FIDES_API_URL,
-      tcfEnabled: environment.settings.TCF_ENABLED,
->>>>>>> tcf_backend_poc
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
-<<<<<<< HEAD
-  console.log(
-    "Bundling generic fides.js & Privacy Center configuration together..."
-  );
-  const fidesJsFile = tcfEnabled
-    ? "public/lib/fides-tcf.js"
-    : "public/lib/fides.js";
-  const fidesJSBuffer = await fsPromises.readFile(fidesJsFile);
-=======
   if (process.env.NODE_ENV === "development") {
     // eslint-disable-next-line no-console
     console.log(
       "Bundling generic fides.js & Privacy Center configuration together..."
     );
   }
-  const fidesJSBuffer = await fsPromises.readFile("public/lib/fides.js");
->>>>>>> tcf_backend_poc
+  const fidesJsFile = tcfEnabled
+    ? "public/lib/fides-tcf.js"
+    : "public/lib/fides.js";
+  const fidesJSBuffer = await fsPromises.readFile(fidesJsFile);
   const fidesJS: string = fidesJSBuffer.toString();
   if (!fidesJS || fidesJS === "") {
     throw new Error("Unable to load latest fides.js script from server!");
