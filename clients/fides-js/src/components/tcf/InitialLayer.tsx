@@ -7,6 +7,7 @@ import {
   createStacks,
   getIdsNotRepresentedInStacks,
 } from "../../lib/tcf/stacks";
+import InitialLayerAccordion from "./InitialLayerAccordion";
 
 // Temporarily hard coding this here until GVL json is integrated
 const STACKS_JSON = {
@@ -410,9 +411,34 @@ const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
 
   return (
     <div>
-      <div>{stacks.map((s) => s.name)}</div>
-      <div>{purposes.map((p) => p.name)}</div>
-      <div>{specialFeatures.map((sf) => sf.name)}</div>
+      <div>
+        {stacks.map((s) => (
+          <InitialLayerAccordion
+            key={s.id}
+            title={s.name}
+            description={s.description}
+          />
+        ))}
+      </div>
+      <div>
+        {purposes.map((p) => (
+          <InitialLayerAccordion
+            key={p.id}
+            title={p.name}
+            description={p.description}
+          />
+        ))}
+      </div>
+      <div>
+        {specialFeatures.map((sf) => (
+          <InitialLayerAccordion
+            key={sf.id}
+            // TODO: features are still being worked on in the backend
+            title={sf.name || ""}
+            description=""
+          />
+        ))}
+      </div>
     </div>
   );
 };
