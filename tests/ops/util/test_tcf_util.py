@@ -5,7 +5,7 @@ from fides.api.util.tcf_util import get_tcf_contents
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
 
-class TestGetTCFPurposesAndVendors:
+class TestTCFContents:
     def test_load_tcf_data_uses_no_applicable_systems(self, db):
         get_tcf_contents.cache_clear()
 
@@ -70,12 +70,26 @@ class TestGetTCFPurposesAndVendors:
     def test_system_matches_subset_of_purpose_data_uses(self, db, tcf_system):
         get_tcf_contents.cache_clear()
 
-        decl = tcf_system.privacy_declarations[0]
-        decl.data_use = "marketing.advertising.first_party.contextual"
-        tcf_system.privacy_declarations[0].save(db)
+        secrets = {
+            "domain": "test_sendgrid_domain",
+            "api_key": "test_sendgrid_api_key",
+        }
+        connection_config, dataset_config = instantiate_connector(
+            db,
+            "sendgrid",
+            "secondary_sendgrid_instance",
+            "Sendgrid ConnectionConfig description",
+            secrets,
+        )
+        connection_config.system_id = tcf_system.id
+        connection_config.save(db)
 
-        decl_2 = tcf_system.privacy_declarations[1]
-        decl_2.delete(db)
+        for i, decl in enumerate(tcf_system.privacy_declarations):
+            if i:
+                decl.data_use = "marketing.advertising.first_party.contextual"
+                tcf_system.privacy_declarations[0].save(db)
+            else:
+                decl.delete(db)
 
         tcf_contents = get_tcf_contents(db)
 
@@ -122,3 +136,87 @@ class TestGetTCFPurposesAndVendors:
         assert tcf_contents.tcf_vendors[0].special_purposes[0].id == 1
         assert tcf_contents.tcf_features == []
         assert tcf_contents.tcf_special_features == []
+
+    @pytest.mark.usefixtures("system")
+    def test_features(self, db, system):
+        get_tcf_contents.cache_clear()
+
+        system.vendor_id = "test_system"
+        system.save(db)
+        declaration = system.privacy_declarations[0]
+
+        declaration.features = [
+            "Receive and use automatically-sent device characteristics for identification",
+            "unknown feature",
+        ]
+        declaration.save(db)
+
+        tcf_contents = get_tcf_contents(db)
+        assert len(tcf_contents.tcf_features) == 1
+        assert tcf_contents.tcf_features[0].id == 3
+        assert (
+            tcf_contents.tcf_features[0].name
+            == "Receive and use automatically-sent device characteristics for identification"
+        )
+        assert tcf_contents.tcf_special_features == []
+
+        assert len(tcf_contents.tcf_vendors) == 1
+        assert len(tcf_contents.tcf_vendors[0].features) == 1
+        assert tcf_contents.tcf_vendors[0].features[0].id == 3
+
+    @pytest.mark.usefixtures("system")
+    def test_features(self, db, system):
+        get_tcf_contents.cache_clear()
+
+        system.vendor_id = "test_system"
+        system.save(db)
+        declaration = system.privacy_declarations[0]
+
+        declaration.features = [
+            "Receive and use automatically-sent device characteristics for identification",
+            "unknown feature",
+        ]
+        declaration.save(db)
+
+        tcf_contents = get_tcf_contents(db)
+        assert len(tcf_contents.tcf_special_features) == 0
+        assert len(tcf_contents.tcf_features) == 1
+        assert tcf_contents.tcf_features[0].id == 3
+        assert (
+            tcf_contents.tcf_features[0].name
+            == "Receive and use automatically-sent device characteristics for identification"
+        )
+        assert tcf_contents.tcf_special_features == []
+
+        assert len(tcf_contents.tcf_vendors) == 1
+        assert len(tcf_contents.tcf_vendors[0].features) == 1
+        assert len(tcf_contents.tcf_vendors[0].special_features) == 0
+        assert tcf_contents.tcf_vendors[0].features[0].id == 3
+
+    @pytest.mark.usefixtures("system")
+    def test_special_features(self, db, system):
+        get_tcf_contents.cache_clear()
+
+        system.vendor_id = "test_system"
+        system.save(db)
+        declaration = system.privacy_declarations[0]
+
+        declaration.features = [
+            "Actively scan device characteristics for identification",
+            "unknown special feature",
+        ]
+        declaration.save(db)
+
+        tcf_contents = get_tcf_contents(db)
+        assert len(tcf_contents.tcf_features) == 0
+        assert len(tcf_contents.tcf_special_features) == 1
+        assert tcf_contents.tcf_special_features[0].id == 2
+        assert (
+            tcf_contents.tcf_special_features[0].name
+            == "Actively scan device characteristics for identification"
+        )
+
+        assert len(tcf_contents.tcf_vendors) == 1
+        assert len(tcf_contents.tcf_vendors[0].special_features) == 1
+        assert tcf_contents.tcf_vendors[0].special_features[0].id == 2
+        assert len(tcf_contents.tcf_vendors[0].features) == 0

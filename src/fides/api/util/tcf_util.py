@@ -1,8 +1,15 @@
 from functools import lru_cache
 from typing import Dict, List, Tuple
 
-from fideslang.gvl import MAPPED_PURPOSES, MAPPED_SPECIAL_PURPOSES, data_use_to_purpose
-from fideslang.gvl.models import Purpose
+from fideslang.gvl import (
+    GVL_FEATURES,
+    GVL_SPECIAL_FEATURES,
+    MAPPED_PURPOSES,
+    MAPPED_SPECIAL_PURPOSES,
+    data_use_to_purpose,
+    feature_name_to_feature,
+)
+from fideslang.gvl.models import Feature, Purpose
 from sqlalchemy.dialects.postgresql import array_agg
 from sqlalchemy.orm import Query, Session
 
@@ -101,6 +108,61 @@ def get_purposes_and_vendors(
     return purpose_map, system_map
 
 
+def get_features_and_vendors(
+    db: Session,
+    relevant_features: List[str],
+    feature_field: str,
+    system_map: Dict[str, TCFVendorRecord],
+) -> Tuple[Dict[int, TCFFeatureRecord], Dict[str, TCFVendorRecord]]:
+    matching_systems: Query = (
+        db.query(
+            System.id,
+            System.name,
+            System.description,
+            System.vendor_id,
+            array_agg(PrivacyDeclaration.features).label("features"),
+        )
+        .join(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
+        .filter(PrivacyDeclaration.features.overlap(set(relevant_features)))
+        .group_by(System.id)
+    )
+
+    feature_map: Dict[int, TCFFeatureRecord] = {}
+    for record in matching_systems:
+        vendor_id = record["vendor_id"]
+        if vendor_id and vendor_id not in system_map:
+            system_map[vendor_id] = TCFVendorRecord(
+                id=vendor_id, name=record.name, description=record.description
+            )
+
+        unique_features = set()
+        for feature_list in record.features:
+            for feature_name in feature_list:
+                unique_features.add(feature_name)
+
+        for feature_name in unique_features:
+            if feature_name not in relevant_features:
+                continue
+            feature: Feature = feature_name_to_feature(feature_name)
+            if not feature:
+                continue
+
+            if feature.id not in feature_map:
+                feature_map[feature.id] = TCFFeatureRecord(**feature.dict())
+
+            if vendor_id:
+                # Embed vendor on the given feature or special feature
+                feature_map[feature.id].vendors.extend(
+                    [EmbeddedVendor(id=vendor_id, name=record.name)]
+                )
+                # Do the reverse, and append the feature or the special feature to the vendor
+                getattr(system_map[vendor_id], feature_field).append(feature)
+
+    for feature_record in feature_map.values():
+        feature_record.vendors.sort(key=lambda x: x.id)
+    return feature_map, system_map
+
+
 @lru_cache()
 def get_tcf_contents(
     db: Session,
@@ -127,10 +189,26 @@ def get_tcf_contents(
     special_purpose_data_uses: List[str] = []
     for special_purpose in MAPPED_SPECIAL_PURPOSES.values():
         special_purpose_data_uses.extend(special_purpose.data_uses)
-    special_purpose_map, second_round_updated_system_map = get_purposes_and_vendors(
+    special_purpose_map, updated_system_map = get_purposes_and_vendors(
         db,
         special_purpose_data_uses,
         purpose_field="special_purposes",
+        system_map=updated_system_map,
+    )
+
+    # Collect features and update system map
+    feature_map, updated_system_map = get_features_and_vendors(
+        db,
+        [feature.name for feature in GVL_FEATURES.values()],
+        feature_field="features",
+        system_map=updated_system_map,
+    )
+
+    # Collect special features and update system map
+    special_feature_map, updated_system_map = get_features_and_vendors(
+        db,
+        [feature.name for feature in GVL_SPECIAL_FEATURES.values()],
+        feature_field="special_features",
         system_map=updated_system_map,
     )
 
@@ -141,11 +219,19 @@ def get_tcf_contents(
     tcf_consent_contents.tcf_special_purposes = sorted(
         list(special_purpose_map.values()), key=lambda x: x.id
     )
+    tcf_consent_contents.tcf_features = sorted(
+        list(feature_map.values()), key=lambda x: x.id
+    )
+    tcf_consent_contents.tcf_special_features = sorted(
+        list(special_feature_map.values()), key=lambda x: x.id
+    )
     tcf_consent_contents.tcf_vendors = sorted(
-        list(second_round_updated_system_map.values()), key=lambda x: x.id
+        list(updated_system_map.values()), key=lambda x: x.id
     )
     for vendor in tcf_consent_contents.tcf_vendors:
         vendor.purposes.sort(key=lambda x: x.id)
         vendor.special_purposes.sort(key=lambda x: x.id)
+        vendor.features.sort(key=lambda x: x.id)
+        vendor.special_features.sort(key=lambda x: x.id)
 
     return tcf_consent_contents

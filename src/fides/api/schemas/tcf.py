@@ -76,6 +76,7 @@ class TCFFeatureRecord(TCFSavedandServedDetails):
 
     id: int
     name: Optional[str]
+    vendors: List[EmbeddedVendor] = []  # Vendors that use this feature
 
 
 class TCFPreferenceSaveBase(FidesSchema):
