@@ -1,22 +1,20 @@
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Literal
 
-from fastapi import HTTPException, status, Depends
+from fastapi import Depends, HTTPException, status
 from loguru import logger
 from pydantic import BaseModel
 from redis.exceptions import ResponseError
 from sqlalchemy.orm import Session
 
-
 import fides
 from fides.api.api.deps import get_db
 from fides.api.common_exceptions import RedisConnectionError
-from fides.api.db.database import DatabaseHealth, get_db_health
+from fides.api.db.database import get_db_health
 from fides.api.tasks import celery_app, get_worker_ids
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache
 from fides.api.util.logger import Pii
 from fides.config import CONFIG
-
 
 CacheHealth = Literal["healthy", "unhealthy", "no cache configured"]
 HEALTH_ROUTER = APIRouter(tags=["Health"])
@@ -84,12 +82,12 @@ def get_cache_health() -> str:
 )
 async def database_health(db: Session = Depends(get_db)) -> Dict:
     """Confirm that the API is running and healthy."""
-    health = get_db_health(CONFIG.database.sync_database_uri, db=db)
+    db_health = get_db_health(CONFIG.database.sync_database_uri, db=db)
     response = DatabaseHealthCheck(
-        database=health,
+        database=db_health,
     ).dict()
 
-    if health != "healthy":
+    if db_health != "healthy":
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
         )

@@ -8,9 +8,9 @@ from alembic import command, script
 from alembic.config import Config
 from alembic.runtime import migration
 from loguru import logger as log
+from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists
 from sqlalchemy_utils.types.encrypted.encrypted_type import InvalidCiphertextError
-from sqlalchemy.orm import Session
 
 from fides.api.db.base import Base  # type: ignore[attr-defined]
 from fides.api.db.ctl_session import async_session
