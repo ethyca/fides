@@ -117,6 +117,67 @@ describe("createStacks", () => {
       expect(result.map((r) => r.id)).toEqual(expected);
     }
   );
+
+  it.each([
+    {
+      stacks: {
+        1: mockStack({ id: 1, purposes: [2, 7], specialFeatures: [] }),
+        2: mockStack({ id: 2, purposes: [2, 7, 9], specialFeatures: [] }),
+        3: mockStack({ id: 3, purposes: [2, 4, 7, 9], specialFeatures: [] }),
+        4: mockStack({ id: 4, purposes: [3, 5], specialFeatures: [] }),
+      },
+      purposeIds: [2, 3, 4, 5, 7, 9, 10],
+      specialFeatureIds: [],
+      expected: [3, 4],
+    },
+    {
+      stacks: {
+        1: mockStack({ id: 1, purposes: [2, 4, 7, 9], specialFeatures: [] }),
+        2: mockStack({ id: 2, purposes: [2, 7, 9], specialFeatures: [] }),
+        3: mockStack({ id: 3, purposes: [2, 4], specialFeatures: [] }),
+        4: mockStack({ id: 4, purposes: [3, 5], specialFeatures: [] }),
+      },
+      purposeIds: [2, 3, 4, 5, 7, 9, 10],
+      specialFeatureIds: [],
+      expected: [1, 4],
+    },
+    {
+      stacks: {
+        1: mockStack({
+          id: 1,
+          purposes: [],
+          specialFeatures: [1, 2],
+        }),
+        2: mockStack({ id: 2, purposes: [], specialFeatures: [1] }),
+        3: mockStack({ id: 3, purposes: [], specialFeatures: [1] }),
+        4: mockStack({ id: 4, purposes: [], specialFeatures: [5] }),
+      },
+      purposeIds: [],
+      specialFeatureIds: [1, 2, 5],
+      expected: [1, 4],
+    },
+    {
+      stacks: {
+        1: mockStack({
+          id: 1,
+          purposes: [2, 4, 7, 9],
+          specialFeatures: [1, 2],
+        }),
+        2: mockStack({ id: 2, purposes: [2, 7, 9], specialFeatures: [1] }),
+        3: mockStack({ id: 3, purposes: [2, 4], specialFeatures: [1] }),
+        4: mockStack({ id: 4, purposes: [3, 5], specialFeatures: [] }),
+      },
+      purposeIds: [2, 3, 4, 5, 7, 9, 10],
+      specialFeatureIds: [1, 2],
+      expected: [1, 4],
+    },
+  ])(
+    "should return the stack that has the most matches",
+    ({ stacks, purposeIds, specialFeatureIds, expected }) => {
+      const result = createStacks({ purposeIds, specialFeatureIds, stacks });
+      expect(result.map((r) => r.id)).toEqual(expected);
+    }
+  );
 });
 
 describe("getIdsNotRepresentedInStacks", () => {
