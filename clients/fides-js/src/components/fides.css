@@ -672,3 +672,12 @@ div#fides-modal .fides-modal-button-group {
   list-style: none;
   margin-left: 0;
 }
+
+/* Link button */
+.fides-link-button {
+  border: none;
+  color: var(--fides-overlay-primary-color);
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}

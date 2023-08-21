@@ -1,5 +1,6 @@
-import { h } from "preact";
+import { VNode, h } from "preact";
 import { useDisclosure } from "../../lib/hooks";
+import { TCFPurposeRecord } from "~/lib/tcf/types";
 
 const ArrowDown = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
@@ -13,9 +14,13 @@ const ArrowDown = () => (
 const InitialLayerAccordion = ({
   title,
   description,
+  purposes,
+  managePreferencesLink,
 }: {
   title: string;
   description: string;
+  managePreferencesLink: VNode;
+  purposes?: Array<TCFPurposeRecord>;
 }) => {
   const { isOpen, getButtonProps, getDisclosureProps, onToggle } =
     useDisclosure({
@@ -36,17 +41,36 @@ const InitialLayerAccordion = ({
           : "fides-notice-toggle"
       }
     >
-      <span
-        role="button"
-        tabIndex={0}
-        onKeyDown={handleKeyDown}
-        {...getButtonProps()}
-        className="fides-notice-toggle-trigger"
-      >
-        {title}
-        <ArrowDown />
-      </span>
-      <div {...getDisclosureProps()}>{description}</div>
+      <div key={title} className="fides-notice-toggle-title">
+        <span
+          role="button"
+          tabIndex={0}
+          onKeyDown={handleKeyDown}
+          {...getButtonProps()}
+          className="fides-notice-toggle-trigger"
+        >
+          {title}
+          <ArrowDown />
+        </span>
+      </div>
+      <div {...getDisclosureProps()}>
+        <div>{description}</div>
+        {purposes ? (
+          <div className="fides-tcf-purpose-vendor fides-background-dark">
+            <div className="fides-tcf-purpose-vendor-title fides-tcf-toggle-content">
+              Purposes include
+            </div>
+            <ul className="fides-tcf-purpose-vendor-list fides-tcf-toggle-content">
+              {purposes.map((purpose) => (
+                <li>
+                  Purpose {purpose.id}: {purpose.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {managePreferencesLink}
+      </div>
     </div>
   );
 };

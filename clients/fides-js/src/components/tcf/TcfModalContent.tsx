@@ -19,6 +19,18 @@ const BackButton = ({ onClick }: { onClick: () => void }) => (
   </button>
 );
 
+const ManagePreferencesLink = ({
+  linkLabel,
+  onClick,
+}: {
+  linkLabel: string;
+  onClick: () => void;
+}) => (
+  <button type="button" onClick={onClick} className="fides-link-button">
+    {linkLabel}
+  </button>
+);
+
 const TcfModalContent = ({
   experience,
   draftIds,
@@ -31,10 +43,24 @@ const TcfModalContent = ({
   onSave: (keys: EnabledIds) => void;
 }) => {
   const [isInitialLayer, setIsInitialLayer] = useState(true);
+  const goToSecondLayer = () => {
+    setIsInitialLayer(false);
+  };
   if (isInitialLayer) {
     return (
       <div>
-        <InitialLayer experience={experience} />
+        <InitialLayer
+          experience={experience}
+          managePreferencesLink={
+            <ManagePreferencesLink
+              onClick={goToSecondLayer}
+              linkLabel={
+                experience.experience_config?.privacy_preferences_link_label ||
+                ""
+              }
+            />
+          }
+        />
         <TcfConsentButtons
           experience={experience}
           onSave={onSave}
@@ -44,7 +70,7 @@ const TcfModalContent = ({
               label={
                 experience.experience_config?.privacy_preferences_link_label
               }
-              onClick={() => setIsInitialLayer(false)}
+              onClick={goToSecondLayer}
             />
           }
         />
