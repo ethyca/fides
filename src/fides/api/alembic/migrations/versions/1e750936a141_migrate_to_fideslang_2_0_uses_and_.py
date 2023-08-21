@@ -114,6 +114,46 @@ data_category_downgrades: Dict[str, str] = {
 # - Data Flow
 
 
+def update_datasets_data_categories(
+    bind: Connection, data_label_map: Dict[str, str]
+) -> None:
+    """Upgrade the datasets in the database to use the new data categories."""
+
+    # Get all datasets out of the database
+    existing_datasets: ResultProxy = bind.execute(
+        text("SELECT id, data_categories, collections FROM ctl_datasets;")
+    )
+
+    for row in existing_datasets:
+        # Update data categories at the top level
+        labels: List[str] = row["data_categories"]
+        updated_labels: List[str] = [
+            data_label_map.get(label, label) for label in labels
+        ]
+
+        update_label_query: TextClause = text(
+            "UPDATE datasets SET data_categories = :updated_labels WHERE id= :dataset_id"
+        )
+        bind.execute(
+            update_label_query,
+            {"dataset_id": row["id"], "updated_labels": updated_labels},
+        )
+
+        # Update the collections objects
+        collections = row["collections"]
+
+        for key, value in data_label_map.items():
+            collections.replace(key, value)
+
+        update_collections_query: TextClause = text(
+            "UPDATE datasets SET collections = :updated_labels WHERE id= :dataset_id"
+        )
+        bind.execute(
+            update_collections_query,
+            {"dataset_id": row["id"], "updated_labels": collections},
+        )
+
+
 def update_privacy_declaration_data_categories(
     bind: Connection, data_label_map: Dict[str, str]
 ) -> None:
@@ -172,6 +212,15 @@ def upgrade() -> None:
     logger.info("Upgrading ctl policy rule data uses")
     update_ctl_policy_data_uses(bind, data_use_upgrades)
 
+    logger.info("Upgrading data category on privacy declaration")
+    update_privacy_declaration_data_uses(bind, data_category_upgrades)
+
+    logger.info("Upgrading ctl policy rule data categories")
+    update_ctl_policy_data_uses(bind, data_category_upgrades)
+
+    logger.info("Upgrading data categories in datasets")
+    update_datasets_data_categories(bind, data_category_upgrades)
+
 
 def downgrade() -> None:
     bind: Connection = op.get_bind()
@@ -181,3 +230,12 @@ def downgrade() -> None:
 
     logger.info("Downgrading ctl policy rule data uses")
     update_ctl_policy_data_uses(bind, data_use_downgrades)
+
+    logger.info("Downgrading data category on privacy declaration")
+    update_privacy_declaration_data_uses(bind, data_category_downgrades)
+
+    logger.info("Downgrading ctl policy rule data categories")
+    update_ctl_policy_data_uses(bind, data_category_downgrades)
+
+    logger.info("Downgrading data categories in datasets")
+    update_datasets_data_categories(bind, data_category_downgrades)
