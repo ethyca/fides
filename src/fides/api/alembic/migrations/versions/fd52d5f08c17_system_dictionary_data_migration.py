@@ -6,7 +6,8 @@ Create Date: 2023-08-04 14:14:32.421414
 
 """
 import json
-from typing import Any, Dict, List, Optional, Tuple
+from collections import defaultdict
+from typing import Any, Dict, List, Optional, Tuple, Set
 
 from alembic import op
 
@@ -78,16 +79,6 @@ def _system_transform_joint_controller_info(
     return new_joint_controller_info
 
 
-def _system_calculate_does_international_transfers(
-    system_third_country_transfers: Optional[List[str]],
-    dataset_third_country_transfers: Optional[List[str]],
-) -> bool:
-    """Migrating System.third_country_transfers and Dataset.third_country_transfers to System.does_international_transfers
-    If any countries are listed, regardless of which country it is, System.does_international_transfers will be set to true.
-    """
-    return any([system_third_country_transfers, dataset_third_country_transfers])
-
-
 def _system_transform_data_responsibility_title_type(
     dept_str: Optional[str],
 ) -> List[str]:
@@ -118,19 +109,19 @@ def _flatten_data_protection_impact_assessment(
 def system_dictionary_additive_migration(bind: Connection):
     """Copy and/or transform existing data in Datasets, PrivacyDeclarations and the System itself to new
     Systems fields to support dictionary work"""
+    all_systems: Dict[str, Dict] = {}
+
     get_systems_query: TextClause = text(
         """
         SELECT 
             ctl_systems.id,
             pgp_sym_decrypt(ctl_systems.joint_controller::bytea, :encryption_key) AS joint_controller_decrypted,
-            ctl_systems.third_country_transfers,
             ctl_systems.data_responsibility_title,
             ctl_systems.data_protection_impact_assessment,
-            array_accum(ctl_datasets.third_country_transfers) as dataset_third_country_transfers,
             array_agg(pgp_sym_decrypt(ctl_datasets.joint_controller::bytea, :encryption_key)) AS datasets_joint_controller_decrypted
         FROM ctl_systems
         LEFT JOIN privacydeclaration ON ctl_systems.id = privacydeclaration.system_id 
-        LEFT JOIN ctl_datasets ON ctl_datasets.fides_key = ANY(privacydeclaration.dataset_references) 
+        LEFT JOIN ctl_datasets ON ctl_datasets.fides_key = ANY(privacydeclaration.dataset_references)
         GROUP BY ctl_systems.id
         """
     )
@@ -160,10 +151,6 @@ def system_dictionary_additive_migration(bind: Connection):
                 system_joint_controller_data, datasets_joint_controller_data
             ),  # System.joint_controller_info populated from flattened data from either System.joint_controller
             # or Datasets.joint_controller. New field is not as rigid
-            DOES_INTERNATIONAL_TRANSFERS: _system_calculate_does_international_transfers(
-                row["third_country_transfers"], row["dataset_third_country_transfers"]
-            ),  # System.does_international_transfers is populated based on whether System.third_country_transfers
-            # or Dataset.third_country_transfers exist
             RESPONSIBILITY: _system_transform_data_responsibility_title_type(
                 row[
                     "data_responsibility_title"
@@ -174,6 +161,41 @@ def system_dictionary_additive_migration(bind: Connection):
             DPA_PROGRESS: dpa_progress,  # From System.data_protection_impact_assessment
         }
 
+        all_systems[row["id"]] = system_data
+
+    get_third_country_transfers_query: TextClause = text(
+        """
+        SELECT 
+            ctl_systems.id,
+            ctl_systems.third_country_transfers,
+            ctl_datasets.third_country_transfers as dataset_third_country_transfers
+        FROM ctl_systems
+        LEFT JOIN privacydeclaration ON ctl_systems.id = privacydeclaration.system_id 
+        LEFT JOIN ctl_datasets ON ctl_datasets.fides_key = ANY(privacydeclaration.dataset_references) 
+        """
+    )
+
+    third_country_transfers_mapping: Dict[str, Set] = defaultdict(set)
+    for row in bind.execute(get_third_country_transfers_query):
+        # Iterate through all rows with dataset references.  There may be multiple ctl_datasets records
+        # for each system
+        system_id: str = row["id"]
+        third_country_transfers_mapping[system_id].update(
+            row["third_country_transfers"] or []
+        )
+        third_country_transfers_mapping[system_id].update(
+            row["dataset_third_country_transfers"] or []
+        )
+
+    for system_id, third_country_transfers in third_country_transfers_mapping.items():
+        """Migrating System.third_country_transfers and Dataset.third_country_transfers to System.does_international_transfers
+        If any countries are listed, regardless of which country it is, System.does_international_transfers will be set to true.
+        """
+        all_systems[system_id][DOES_INTERNATIONAL_TRANSFERS] = any(
+            third_country_transfers
+        )
+
+    for system_id, update_data in all_systems.items():
         update_system_query: TextClause = text(
             """
                 UPDATE ctl_systems
@@ -188,10 +210,9 @@ def system_dictionary_additive_migration(bind: Connection):
             """
         )
 
-        system_data: Dict[str, Any] = system_data
         bind.execute(
             update_system_query,
-            {"id": row["id"], **system_data},
+            {"id": system_id, **update_data},
         )
 
 
@@ -349,21 +370,7 @@ def privacy_declaration_additive_migration(bind: Connection):
 
 def upgrade():
     bind: Connection = op.get_bind()
-    bind.execute(text("DROP AGGREGATE IF EXISTS array_accum(anyarray);"))
-    # Add a new function to be able to combine potentially multiple arrays of different sizes alongside null values
-    # into a single array
-    bind.execute(
-        text(
-            """
-            CREATE AGGREGATE array_accum (anyarray)
-            (
-                sfunc = array_cat,
-                stype = anyarray,
-                initcond = '{}'
-            );  
-             """
-        )
-    )
+
     system_dictionary_additive_migration(bind)
     privacy_declaration_additive_migration(bind)
 

@@ -82,31 +82,6 @@ class TestSystemDictionaryDataMigrationFunctions:
             == "Jane Doe; 233 Test Town; jane@example.com; 224-242-2424"
         )
 
-    def test_system_calculate_does_international_transfers(self):
-        assert (
-            _system_calculate_does_international_transfers(
-                system_third_country_transfers=["GBR"],
-                dataset_third_country_transfers=["IRL", "GBR"],
-            )
-            is True
-        )
-
-        assert (
-            _system_calculate_does_international_transfers(
-                system_third_country_transfers=None,
-                dataset_third_country_transfers=None,
-            )
-            is False
-        )
-
-        assert (
-            _system_calculate_does_international_transfers(
-                system_third_country_transfers=[],
-                dataset_third_country_transfers=["GBR"],
-            )
-            is True
-        )
-
     def test_system_transform_data_responsibility_title_type(self):
         assert _system_transform_data_responsibility_title_type(dept_str=None) == []
 
