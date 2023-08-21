@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 
+- Added new endpoints for healthchecks [#3947](https://github.com/ethyca/fides/pull/3947)
 - Added vendor list dropdown [#3857](https://github.com/ethyca/fides/pull/3857)
 - Access support for Adobe Sign [#3504](https://github.com/ethyca/fides/pull/3504)
 
