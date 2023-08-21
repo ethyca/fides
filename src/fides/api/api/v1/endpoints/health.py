@@ -39,7 +39,8 @@ def get_cache_health() -> str:
     except (RedisConnectionError, ResponseError) as e:
         logger.error("Unable to reach cache: {}", Pii(str(e)))
         return "unhealthy"
-
+        
+# add descrete endpoints for Database health and worker health
 
 @HEALTH_ROUTER.get(
     "/health",
