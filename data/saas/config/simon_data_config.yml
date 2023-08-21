@@ -25,8 +25,13 @@ saas_config:
     path: /v1/privacy/export
 
   endpoints:
-    - name: privacy
+    - name: user #TODO update the Dataset once an example exists
       requests:
+        read:
+          request_overrirde: simon_data_access
+          param_values:
+            - name: user_email
+              identity: email
         delete:
           method: POST
           path: /v1/privacy/delete
