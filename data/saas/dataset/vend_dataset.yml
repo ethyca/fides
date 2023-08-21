@@ -403,31 +403,3 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: integer
-          - name: page_info
-            fidesops_meta:
-              data_type: object
-            fields:
-              - name: start_cursor
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: end_cursor
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: has_next_page
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: boolean
-          - name: version
-            fidesops_meta:
-              data_type: object
-            fields:
-              - name: min
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: integer
-              - name: max
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: integer

@@ -84,6 +84,8 @@ const SystemFormTabs = ({
   const toast = useToast();
   const dispatch = useAppDispatch();
   const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
+  const [systemProcessesPersonalData, setSystemProcessesPersonalData] =
+    useState<boolean | undefined>(undefined);
 
   // Once we have saved the system basics, subscribe to the query so that activeSystem
   // stays up to date when redux invalidates the cache (for example, when we patch a connection config)
@@ -95,6 +97,12 @@ const SystemFormTabs = ({
   useEffect(() => {
     dispatch(setActiveSystem(systemFromApi));
   }, [systemFromApi, dispatch]);
+
+  useEffect(() => {
+    if (activeSystem) {
+      setSystemProcessesPersonalData(activeSystem.processes_personal_data);
+    }
+  }, [activeSystem]);
 
   const handleSuccess = (system: System) => {
     // show a save message if this is the first time the system was saved
@@ -168,7 +176,6 @@ const SystemFormTabs = ({
             <SystemInformationForm
               onSuccess={handleSuccess}
               system={activeSystem}
-              abridged={isCreate}
             >
               <UnmountWarning
                 isUnmounting={queuedIndex !== undefined}
@@ -205,7 +212,7 @@ const SystemFormTabs = ({
           <PrivacyDeclarationStep system={activeSystem} />
         </Box>
       ) : null,
-      isDisabled: !activeSystem,
+      isDisabled: !activeSystem || !systemProcessesPersonalData,
     },
     {
       label: "Data flow",

@@ -162,6 +162,7 @@ describe("configureNavGroups", () => {
         children: [
           { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
           { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
+          { title: "Email templates", path: routes.EMAIL_TEMPLATES_ROUTE },
           { title: "About Fides", path: routes.ABOUT_ROUTE },
         ],
       });
@@ -182,6 +183,10 @@ describe("configureNavGroups", () => {
           { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
           { title: "Organization", path: routes.ORGANIZATION_MANAGEMENT_ROUTE },
           { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
+          {
+            title: "Email templates",
+            path: routes.EMAIL_TEMPLATES_ROUTE,
+          },
           { title: "About Fides", path: routes.ABOUT_ROUTE },
         ],
       });
@@ -235,24 +240,18 @@ describe("findActiveNav", () => {
         path: routes.DATASTORE_CONNECTION_ROUTE,
       },
     },
-    // Nested side nav child
     {
       path: routes.PRIVACY_EXPERIENCE_ROUTE,
       expected: {
-        title: "Privacy requests",
-        // this _might_ not be the right thing to expect, but it at least works intuitively
-        // since then both the Consent route and the Privacy experience route will be marked as "active"
-        // since they both start with "/consent". if we see weird behavior with which nav is active
-        // we may need to revisit the logic in `findActiveNav`
-        path: routes.CONSENT_ROUTE,
+        title: "Consent",
+        path: routes.PRIVACY_EXPERIENCE_ROUTE,
       },
     },
-    // Parent side nav
     {
-      path: routes.CONSENT_ROUTE,
+      path: routes.PRIVACY_NOTICES_ROUTE,
       expected: {
-        title: "Privacy requests",
-        path: routes.CONSENT_ROUTE,
+        title: "Consent",
+        path: routes.PRIVACY_NOTICES_ROUTE,
       },
     },
   ] as const;
