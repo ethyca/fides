@@ -12,28 +12,39 @@ saas_config:
       description: Your Firebase URL
     - name: type
       default_value: service_account
-      label:
-      description: 
+      label: Type of account
+      description:  The type of account to use for connecting to Firebase
     - name: project_id
       label: Project ID
+      description: The ID of the project in Firebase
     - name: private_key_id
       label: Private Key ID
+      description: The ID of the private key for your service account
     - name: private_key
+      label: Private key
+      description: The private key for your service account
       sensitive: True
     - name: client_email
+      label: Client email
+      description: The client email for your service account
     - name: client_id
       label: Client ID
+      description: The client ID for your service account
     - name: auth_uri
       label: Auth URI
+      description: The URL for authorization
       default_value: https://accounts.google.com/o/oauth2/auth
     - name: token_uri
       label: Token URI
+      description: The URL for the token
       default_value: https://oauth2.googleapis.com/token
     - name: auth_provider_x509_cert_url
-      label: Auth Provider X509 Cert URL
+      label: Auth Provider Certificate URL
+      description: The URL for the Auth provider's x509 public key certificate,
       default_value: https://www.googleapis.com/oauth2/v1/certs
     - name: client_x509_cert_url
-      label: Client X509 Cert URL
+      label: Client Certificate URL
+      description: The URL for the client's x509 public key certificate
 
   client_config:
     protocol: NOT_USED
