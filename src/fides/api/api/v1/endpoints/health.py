@@ -89,7 +89,7 @@ async def database_health(db: Session = Depends(get_db)) -> Dict:
         database=health,
     ).dict()
 
-    if database_health != "healthy":
+    if health != "healthy":
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
         )
