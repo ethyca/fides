@@ -9,6 +9,18 @@ const PURPOSE_2 = {
   id: 9,
   name: "Understand audiences through statistics or combinations of data from different sources",
 };
+const PURPOSE_3 = {
+  id: 6,
+  name: "Use profiles to select personalised content",
+};
+const PURPOSE_4 = {
+  id: 7,
+  name: "Use profiles to select personalised content",
+};
+const PURPOSE_5 = {
+  id: 2,
+  name: "Use profiles to select personalised content",
+};
 const SPECIAL_PURPOSE_1 = {
   id: 1,
   name: "Ensure security, prevent and detect fraud, and fix errors",
@@ -16,6 +28,10 @@ const SPECIAL_PURPOSE_1 = {
 const VENDOR_1 = {
   id: "amplitude",
   name: "test",
+};
+const STACK_1 = {
+  id: 7,
+  name: "Selection of personalised advertising, advertising measurement, and audience research",
 };
 
 describe("Fides-js TCF", () => {
@@ -35,14 +51,25 @@ describe("Fides-js TCF", () => {
     beforeEach(() => {
       cy.get("#fides-modal-link").click();
     });
-    it.only("can render purposes in the initial layer", () => {});
+    it("can render purposes in the initial layer as a stack", () => {
+      cy.get("span").contains(STACK_1.name);
+      cy.get("span").contains(PURPOSE_3.name);
+
+      cy.get("span").contains(STACK_1.name).click();
+      const ids = [PURPOSE_1.id, PURPOSE_2.id, PURPOSE_4.id, PURPOSE_5.id];
+      ids.forEach((id) => {
+        cy.get("li").contains(`Purpose ${id}`);
+      });
+    });
   });
 
   describe("second layer", () => {
     beforeEach(() => {
       cy.get("#fides-modal-link").click();
       cy.getByTestId("fides-modal-content").within(() => {
-        cy.get("button").contains("Manage preferences").click();
+        cy.get("#fides-banner-button-secondary")
+          .contains("Manage preferences")
+          .click();
       });
     });
 
@@ -100,7 +127,10 @@ describe("Fides-js TCF", () => {
           cy.wait("@patchPrivacyPreference").then((interception) => {
             const { body } = interception.request;
             expect(body.purpose_preferences).to.eql([
+              { id: PURPOSE_5.id, preference: "opt_out" },
               { id: PURPOSE_1.id, preference: "opt_out" },
+              { id: PURPOSE_3.id, preference: "opt_out" },
+              { id: PURPOSE_4.id, preference: "opt_out" },
               { id: PURPOSE_2.id, preference: "opt_out" },
             ]);
             expect(body.special_purpose_preferences).to.eql([
@@ -119,7 +149,10 @@ describe("Fides-js TCF", () => {
           cy.wait("@patchPrivacyPreference").then((interception) => {
             const { body } = interception.request;
             expect(body.purpose_preferences).to.eql([
+              { id: PURPOSE_5.id, preference: "opt_in" },
               { id: PURPOSE_1.id, preference: "opt_in" },
+              { id: PURPOSE_3.id, preference: "opt_in" },
+              { id: PURPOSE_4.id, preference: "opt_in" },
               { id: PURPOSE_2.id, preference: "opt_in" },
             ]);
             expect(body.special_purpose_preferences).to.eql([
@@ -142,7 +175,10 @@ describe("Fides-js TCF", () => {
           cy.wait("@patchPrivacyPreference").then((interception) => {
             const { body } = interception.request;
             expect(body.purpose_preferences).to.eql([
+              { id: PURPOSE_5.id, preference: "opt_in" },
               { id: PURPOSE_1.id, preference: "opt_out" },
+              { id: PURPOSE_3.id, preference: "opt_in" },
+              { id: PURPOSE_4.id, preference: "opt_in" },
               { id: PURPOSE_2.id, preference: "opt_in" },
             ]);
             expect(body.special_purpose_preferences).to.eql([
