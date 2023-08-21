@@ -12,15 +12,17 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
 import {
-  resetSuggestions,
   selectSuggestions,
   toggleSuggestions,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
+
+import { useResetSuggestionContext } from "./dict-suggestion.context";
 
 export const DictSuggestionToggle = () => {
   const dispatch = useAppDispatch();
 
   const form = useFormikContext();
+  const context = useResetSuggestionContext();
 
   // @ts-ignore
   const vendorId = form.values?.meta?.vendor?.id;
@@ -78,7 +80,11 @@ export const DictSuggestionToggle = () => {
         </MenuItem>
         <MenuItem
           onClick={() => {
-            dispatch(resetSuggestions());
+            if (context?.callbacks) {
+              context.callbacks.forEach((cb) => {
+                cb?.callback();
+              });
+            }
           }}
         >
           <Text fontSize="xs" lineHeight={4} fontWeight="medium">

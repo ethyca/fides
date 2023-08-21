@@ -2,7 +2,7 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { type RootState } from "~/app/store";
 
-export type Suggestions = "showing" | "hiding" | "reset";
+export type Suggestions = "showing" | "hiding";
 
 type State = {
   suggestions: Suggestions;
@@ -22,13 +22,10 @@ export const dictSuggestionsSlice = createSlice({
     setSuggestions: (draftState, action: PayloadAction<Suggestions>) => {
       draftState.suggestions = action.payload;
     },
-    resetSuggestions: (draftState) => {
-      draftState.suggestions = "reset";
-    },
   },
 });
 
-export const { toggleSuggestions, setSuggestions, resetSuggestions } =
+export const { toggleSuggestions, setSuggestions } =
   dictSuggestionsSlice.actions;
 
 const selectDictSuggestionSlice = (state: RootState) => state.dictSuggestions;
