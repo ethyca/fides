@@ -215,7 +215,6 @@ const PrivacyDeclarationFormTab = ({
               data-testid="add-btn"
               onClick={handleOpenNewForm}
             >
-              {" "}
               Add data use
             </Button>
           }
