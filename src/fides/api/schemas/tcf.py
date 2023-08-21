@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional
 
 from fideslang.gvl import MAPPED_PURPOSES, MAPPED_SPECIAL_PURPOSES
-from fideslang.gvl.models import MappedPurpose
+from fideslang.gvl.models import Feature, MappedPurpose
 from pydantic import root_validator, validator
 
 from fides.api.models.privacy_notice import UserConsentPreference
@@ -35,7 +35,14 @@ class EmbeddedVendor(FidesSchema):
 class TCFPurposeRecord(MappedPurpose, TCFSavedandServedDetails):
     """Schema for a TCF Purpose or a Special Purpose: returned in the TCF Overlay Experience"""
 
-    vendors: List[EmbeddedVendor] = []  # Vendors that use this purpose
+    vendors: List[
+        EmbeddedVendor
+    ] = []  # Vendors that use this purpose or special purpose
+    systems: List[
+        EmbeddedVendor
+    ] = (
+        []
+    )  # Systems that use this purpose or special purpose (we don't have a vendor_id)
 
 
 class EmbeddedLineItem(FidesSchema):
@@ -59,9 +66,9 @@ class TCFVendorRecord(TCFSavedandServedDetails):
     """Schema for a TCF Vendor: returned in the TCF Overlay Experience"""
 
     id: str
+    has_vendor_id: bool
     name: Optional[str]
     description: Optional[str]
-    is_gvl: Optional[bool]
     purposes: List[EmbeddedLineItem] = []
     special_purposes: List[EmbeddedLineItem] = []
     data_categories: List[TCFDataCategoryRecord] = []
@@ -69,14 +76,17 @@ class TCFVendorRecord(TCFSavedandServedDetails):
     special_features: List[EmbeddedLineItem] = []
 
 
-class TCFFeatureRecord(TCFSavedandServedDetails):
-    """Schema for a TCF Feature or a special feature: returned in the TCF Overlay Experience
-    TODO: TCF Flesh out TCFFeatureRecord
-    """
+class TCFFeatureRecord(Feature, TCFSavedandServedDetails):
+    """Schema for a TCF Feature or a special feature: returned in the TCF Overlay Experience"""
 
-    id: int
-    name: Optional[str]
-    vendors: List[EmbeddedVendor] = []  # Vendors that use this feature
+    vendors: List[
+        EmbeddedVendor
+    ] = []  # Vendors that use this feature or special feature
+    systems: List[
+        EmbeddedVendor
+    ] = (
+        []
+    )  # Systems that use this feature or special feature (we don't have a vendor_id)
 
 
 class TCFPreferenceSaveBase(FidesSchema):

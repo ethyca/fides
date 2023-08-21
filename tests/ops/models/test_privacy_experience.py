@@ -1217,7 +1217,7 @@ class TestCacheSavedAndServedOnConsentRecord:
         return TCFPurposeRecord(**MAPPED_PURPOSES[8].dict())
 
     @pytest.mark.usefixtures(
-        "served_notice_history_us_provice_for_fides_user",
+        "served_notice_history_us_provide_for_fides_user",
         "privacy_preference_history_us_ca_provide_for_fides_user",
     )
     def test_cache_saved_and_served_for_privacy_notice_history(
@@ -1350,7 +1350,9 @@ class TestCacheSavedAndServedOnConsentRecord:
 
     @pytest.mark.usefixtures("privacy_preference_history_for_vendor")
     def test_cache_saved_and_served_for_vendor(self, db, fides_user_provided_identity):
-        vendor_record = TCFVendorRecord(id="amplitude", name="amplitude")
+        vendor_record = TCFVendorRecord(
+            id="amplitude", name="amplitude", has_vendor_id=True
+        )
         cache_saved_and_served_on_consent_record(
             db,
             vendor_record,
@@ -1363,3 +1365,23 @@ class TestCacheSavedAndServedOnConsentRecord:
         assert vendor_record.outdated_preference is None
         assert vendor_record.current_served is None
         assert vendor_record.outdated_served is None
+
+    @pytest.mark.usefixtures("privacy_preference_history_for_system")
+    def test_cache_saved_and_served_for_system(
+        self, db, fides_user_provided_identity, system
+    ):
+        system_record = TCFVendorRecord(
+            id=system.fides_key, name=system.name, has_vendor_id=False
+        )
+        cache_saved_and_served_on_consent_record(
+            db,
+            system_record,
+            fides_user_provided_identity,
+            record_type=ConsentRecordType.system_fides_key,
+        )
+
+        assert system_record.default_preference == UserConsentPreference.opt_out
+        assert system_record.current_preference == UserConsentPreference.opt_in
+        assert system_record.outdated_preference is None
+        assert system_record.current_served is None
+        assert system_record.outdated_served is None
