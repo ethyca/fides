@@ -121,26 +121,28 @@ def update_datasets_data_categories(
     for row in existing_datasets:
         # Update data categories at the top level
         labels: List[str] = row["data_categories"]
-        updated_labels: List[str] = [
-            data_label_map.get(label, label) for label in labels
-        ]
 
-        update_label_query: TextClause = text(
-            "UPDATE datasets SET data_categories = :updated_labels WHERE id= :dataset_id"
-        )
-        bind.execute(
-            update_label_query,
-            {"dataset_id": row["id"], "updated_labels": updated_labels},
-        )
+        if labels:
+            updated_labels: List[str] = [
+                data_label_map.get(label, label) for label in labels
+            ]
+
+            update_label_query: TextClause = text(
+                "UPDATE ctl_datasets SET data_categories = :updated_labels WHERE id= :dataset_id"
+            )
+            bind.execute(
+                update_label_query,
+                {"dataset_id": row["id"], "updated_labels": updated_labels},
+            )
 
         # Update the collections objects
-        collections = row["collections"]
+        collections = json.dumps(row["collections"])
 
         for key, value in data_label_map.items():
             collections.replace(key, value)
 
         update_collections_query: TextClause = text(
-            "UPDATE datasets SET collections = :updated_collections WHERE id= :dataset_id"
+            "UPDATE ctl_datasets SET collections = :updated_collections WHERE id= :dataset_id"
         )
         bind.execute(
             update_collections_query,
@@ -162,26 +164,29 @@ def update_system_ingress_egress_data_categories(
 
         # Do a blunt find/replace
         for key, value in data_label_map.items():
-            ingress.replace(key, value)
-            egress.replace(key, value)
+            if ingress:
+                ingress.replace(key, value)
 
-        # Insert ingress changes
-        update_ingress_query: TextClause = text(
-            "UPDATE ctl_systems SET ingress = :updated_ingress WHERE id= :system_id"
-        )
-        bind.execute(
-            update_ingress_query,
-            {"system_id": row["id"], "updated_ingress": ingress},
-        )
+            if egress:
+                egress.replace(key, value)
 
-        # Insert egress changes
-        update_egress_query: TextClause = text(
-            "UPDATE ctl_systems SET egress = :updated_egress WHERE id= :system_id"
-        )
-        bind.execute(
-            update_egress_query,
-            {"system_id": row["id"], "updated_egress": egress},
-        )
+        if ingress:
+            update_ingress_query: TextClause = text(
+                "UPDATE ctl_systems SET ingress = :updated_ingress WHERE id= :system_id"
+            )
+            bind.execute(
+                update_ingress_query,
+                {"system_id": row["id"], "updated_ingress": ingress},
+            )
+
+        if egress:
+            update_egress_query: TextClause = text(
+                "UPDATE ctl_systems SET egress = :updated_egress WHERE id= :system_id"
+            )
+            bind.execute(
+                update_egress_query,
+                {"system_id": row["id"], "updated_egress": egress},
+            )
 
 
 def update_privacy_declaration_data_categories(
@@ -189,20 +194,20 @@ def update_privacy_declaration_data_categories(
 ) -> None:
     """Upgrade or downgrade data uses from fideslang 1.4 for privacy declarations"""
     existing_ctl_policies: ResultProxy = bind.execute(
-        text("SELECT id, data_category FROM privacydeclaration;")
+        text("SELECT id, data_categories FROM privacydeclaration;")
     )
     for row in existing_ctl_policies:
-        label: str = row["data_category"]
-        updated_label: Optional[str] = data_label_map.get(label, None)
+        labels: List[str] = [
+            data_label_map.get(label, label) for label in row["data_categories"]
+        ]
 
-        if updated_label:
-            update_label_query: TextClause = text(
-                "UPDATE privacydeclaration SET data_category = :updated_label WHERE id= :declaration_id"
-            )
-            bind.execute(
-                update_label_query,
-                {"declaration_id": row["id"], "updated_label": updated_label},
-            )
+        update_label_query: TextClause = text(
+            "UPDATE privacydeclaration SET data_categories = :updated_label WHERE id= :declaration_id"
+        )
+        bind.execute(
+            update_label_query,
+            {"declaration_id": row["id"], "updated_label": labels},
+        )
 
 
 def update_ctl_policy_data_categories(
@@ -243,7 +248,7 @@ def upgrade() -> None:
     update_ctl_policy_data_uses(bind, data_use_upgrades)
 
     logger.info("Upgrading data category on privacy declaration")
-    update_privacy_declaration_data_uses(bind, data_category_upgrades)
+    update_privacy_declaration_data_categories(bind, data_category_upgrades)
 
     logger.info("Upgrading ctl policy rule data categories")
     update_ctl_policy_data_uses(bind, data_category_upgrades)
