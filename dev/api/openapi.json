@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.18.1b2.post0.dev2"
+    "version": "2.18.1b4.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13088,6 +13088,86 @@
         ]
       }
     },
+    "/health/database": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Database Health",
+        "description": "Confirm that the API is running and healthy.",
+        "operationId": "database_health_health_database_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatabaseHealthCheck"
+                },
+                "example": {
+                  "database": "healthy"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "database": "unhealthy"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/workers": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Workers Health",
+        "description": "Confirm that the API is running and healthy.",
+        "operationId": "workers_health_health_workers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkerHealthCheck"
+                },
+                "example": {
+                  "workers_enabled": "True",
+                  "workers": [
+                    "celery@c606808353b5"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "workers_enabled": "True",
+                    "workers": [
+                      "celery@c606808353b5"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -13107,12 +13187,7 @@
                 "example": {
                   "webserver": "healthy",
                   "version": "1.0.0",
-                  "database": "healthy",
-                  "cache": "healthy",
-                  "workers_enabled": "True",
-                  "workers": [
-                    "celery@c606808353b5"
-                  ]
+                  "cache": "healthy"
                 }
               }
             }
@@ -13125,12 +13200,7 @@
                   "detail": {
                     "webserver": "healthy",
                     "version": "1.0.0",
-                    "database": "unhealthy",
-                    "cache": "healthy",
-                    "workers_enabled": "True",
-                    "workers": [
-                      "celery@c606808353b5"
-                    ]
+                    "cache": "unhealthy"
                   }
                 }
               }
@@ -14491,10 +14561,7 @@
         "required": [
           "webserver",
           "version",
-          "database",
-          "cache",
-          "workers_enabled",
-          "workers"
+          "cache"
         ],
         "type": "object",
         "properties": {
@@ -14506,14 +14573,6 @@
             "title": "Version",
             "type": "string"
           },
-          "database": {
-            "title": "Database",
-            "enum": [
-              "healthy",
-              "unhealthy"
-            ],
-            "type": "string"
-          },
           "cache": {
             "title": "Cache",
             "enum": [
@@ -14522,20 +14581,9 @@
               "no cache configured"
             ],
             "type": "string"
-          },
-          "workers_enabled": {
-            "title": "Workers Enabled",
-            "type": "boolean"
-          },
-          "workers": {
-            "title": "Workers",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
           }
         },
-        "description": "Healthcheck schema"
+        "description": "Server Healthcheck schema"
       },
       "CreateConnectionConfigurationWithSecrets": {
         "title": "CreateConnectionConfigurationWithSecrets",
@@ -15128,6 +15176,20 @@
           }
         },
         "description": "The model for the connection config for databases"
+      },
+      "DatabaseHealthCheck": {
+        "title": "DatabaseHealthCheck",
+        "required": [
+          "database"
+        ],
+        "type": "object",
+        "properties": {
+          "database": {
+            "title": "Database",
+            "type": "string"
+          }
+        },
+        "description": "Database Healthcheck Schema"
       },
       "Dataset": {
         "title": "Dataset",
@@ -22265,6 +22327,28 @@
           }
         },
         "description": "Schema for displaying a minimal amount of information about the webhook and its order"
+      },
+      "WorkerHealthCheck": {
+        "title": "WorkerHealthCheck",
+        "required": [
+          "workers_enabled",
+          "workers"
+        ],
+        "type": "object",
+        "properties": {
+          "workers_enabled": {
+            "title": "Workers Enabled",
+            "type": "boolean"
+          },
+          "workers": {
+            "title": "Workers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "Worker Healthcheck Schema"
       },
       "fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds": {
         "title": "KeyfileCreds",
