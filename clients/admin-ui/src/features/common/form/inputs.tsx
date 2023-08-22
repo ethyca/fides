@@ -11,29 +11,40 @@ import {
   FormLabel,
   FormLabelProps,
   Grid,
+  HStack,
   IconButton,
   Input,
   InputGroup,
   InputProps,
   InputRightElement,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
   Radio,
   RadioGroup,
   Stack,
   Switch,
+  Text,
   Textarea,
   TextareaProps,
   VStack,
 } from "@fidesui/react";
 import {
+  chakraComponents,
   CreatableSelect,
+  GroupBase,
   MenuPosition,
   MultiValue,
+  OptionProps,
   Select,
+  SelectComponentsConfig,
   SingleValue,
   Size,
 } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
-import { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
@@ -125,10 +136,37 @@ export const ErrorMessage = ({
   );
 };
 
+const ClearIndicator = () => null;
+
 export interface Option {
   value: string;
   label: string;
+  description?: string;
 }
+
+const CustomOption: React.FC<
+  OptionProps<Option, boolean, GroupBase<Option>>
+> = ({ children, ...props }) => (
+  <chakraComponents.Option {...props}>
+    <Flex flexDirection="column" padding={2}>
+      <Text color="gray.700" fontSize="14px" lineHeight={5} fontWeight="medium">
+        {props.data.label}
+      </Text>
+
+      {props.data.description ? (
+        <Text
+          color="gray.500"
+          fontSize="12px"
+          lineHeight={4}
+          fontWeight="normal"
+        >
+          {props.data.description}
+        </Text>
+      ) : null}
+    </Flex>
+  </chakraComponents.Option>
+);
+
 export interface SelectProps {
   label?: string;
   labelProps?: FormLabelProps;
@@ -148,7 +186,9 @@ export interface SelectProps {
    */
   singleValueBlock?: boolean;
   isFormikOnChange?: boolean;
+  isCustomOption?: boolean;
 }
+
 export const SelectInput = ({
   options,
   fieldName,
@@ -160,6 +200,7 @@ export const SelectInput = ({
   isDisabled = false,
   menuPosition = "absolute",
   onChange,
+  isCustomOption,
 }: { fieldName: string; isMulti?: boolean; onChange?: any } & Omit<
   SelectProps,
   "label"
@@ -201,7 +242,18 @@ export const SelectInput = ({
     }
   };
 
-  const components = isClearable ? undefined : { ClearIndicator: () => null };
+  const components: SelectComponentsConfig<
+    Option,
+    boolean,
+    GroupBase<Option>
+  > = {};
+  if (!isClearable) {
+    components.ClearIndicator = ClearIndicator;
+  }
+
+  if (isCustomOption) {
+    components.Option = CustomOption;
+  }
 
   return (
     <Select
@@ -221,6 +273,10 @@ export const SelectInput = ({
           flexGrow: 1,
           backgroundColor: "white",
         }),
+        option: (provided, state) => ({
+          ...provided,
+          background: state.isSelected || state.isFocused ? "gray.50" : "unset",
+        }),
         dropdownIndicator: (provided) => ({
           ...provided,
           bg: "transparent",
@@ -231,10 +287,27 @@ export const SelectInput = ({
           ...provided,
           display: "none",
         }),
+        multiValueLabel: (provided) => ({
+          ...provided,
+          display: "flex",
+          height: "16px",
+          alignItems: "center",
+        }),
         multiValue: (provided) => ({
           ...provided,
-          background: "primary.400",
-          color: "white",
+          fontWeight: "400",
+          background: "gray.200",
+          color: "gray.600",
+          borderRadius: "2px",
+          py: 1,
+          px: 2,
+        }),
+        multiValueRemove: (provided) => ({
+          ...provided,
+          ml: 1,
+          size: "lg",
+          width: 3,
+          height: 3,
         }),
         singleValue: singleValueBlock
           ? (provided) => ({
@@ -247,7 +320,7 @@ export const SelectInput = ({
             })
           : undefined,
       }}
-      components={components}
+      components={Object.keys(components).length > 0 ? components : undefined}
       isSearchable={isSearchable}
       isClearable={isClearable}
       instanceId={`select-${field.name}`}
@@ -331,10 +404,27 @@ const CreatableSelectInput = ({
           ...provided,
           display: "none",
         }),
+        multiValueLabel: (provided) => ({
+          ...provided,
+          display: "flex",
+          height: "16px",
+          alignItems: "center",
+        }),
         multiValue: (provided) => ({
           ...provided,
-          background: "primary.400",
-          color: "white",
+          fontWeight: "400",
+          background: "gray.200",
+          color: "gray.600",
+          borderRadius: "2px",
+          py: 1,
+          px: 2,
+        }),
+        multiValueRemove: (provided) => ({
+          ...provided,
+          ml: 1,
+          size: "lg",
+          width: 3,
+          height: 3,
         }),
       }}
       components={components}
@@ -391,7 +481,7 @@ export const CustomTextInput = ({
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>
+          <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
@@ -428,6 +518,7 @@ export const CustomSelect = ({
   singleValueBlock,
   onChange,
   isFormikOnChange,
+  isCustomOption,
   ...props
 }: SelectProps & StringField) => {
   const [field, meta] = useField(props);
@@ -453,6 +544,7 @@ export const CustomSelect = ({
                 isClearable={isClearable}
                 isMulti={isMulti}
                 isDisabled={isDisabled}
+                isCustomOption={isCustomOption}
                 singleValueBlock={singleValueBlock}
                 menuPosition={props.menuPosition}
                 onChange={!isFormikOnChange ? onChange : undefined}
@@ -476,7 +568,7 @@ export const CustomSelect = ({
           {label ? (
             <Label
               htmlFor={props.id || props.name}
-              fontSize="sm"
+              fontSize="xs"
               my={0}
               mr={1}
               {...labelProps}
@@ -496,6 +588,7 @@ export const CustomSelect = ({
             isMulti={isMulti}
             singleValueBlock={singleValueBlock}
             isDisabled={isDisabled}
+            isCustomOption={isCustomOption}
             menuPosition={props.menuPosition}
           />
         </Box>
@@ -552,7 +645,7 @@ export const CustomCreatableSelect = ({
     <FormControl isInvalid={isInvalid}>
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>
+          <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
@@ -582,6 +675,7 @@ interface CustomTextAreaProps {
   tooltip?: string;
   variant?: Variant;
   isRequired?: boolean;
+  resize?: boolean;
 }
 export const CustomTextArea = ({
   textAreaProps,
@@ -589,19 +683,41 @@ export const CustomTextArea = ({
   tooltip,
   variant = "inline",
   isRequired = false,
+  resize = false,
   ...props
 }: CustomTextAreaProps & StringField) => {
   const [initialField, meta] = useField(props);
   const field = { ...initialField, value: initialField.value ?? "" };
   const isInvalid = !!(meta.touched && meta.error);
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const resizeTextarea = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (resize && textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  }, [resize]);
+
   const innerTextArea = (
     <Textarea
-      {...field}
       size="sm"
-      {...textAreaProps}
       data-testid={`input-${field.name}`}
+      {...field}
+      {...textAreaProps}
+      ref={textareaRef}
+      style={{ overflowY: resize ? "hidden" : "visible" }}
+      onChange={(event) => {
+        resizeTextarea();
+        field.onChange(event);
+      }}
     />
   );
+
+  useEffect(() => {
+    resizeTextarea(); // attempt to resize the textarea when the component mounts
+  }, [resizeTextarea]);
 
   // When there is no label, it doesn't matter if stacked or inline
   // since we only render the text field
@@ -647,7 +763,7 @@ export const CustomTextArea = ({
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>
+          <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
@@ -713,10 +829,88 @@ export const CustomRadioGroup = ({
   );
 };
 
+interface CustomNumberInputProps {
+  label: string;
+  tooltip?: string;
+  variant?: "inline" | "condensed" | "stacked";
+  isDisabled?: boolean;
+  isRequired?: boolean;
+  minValue?: number;
+}
+export const CustomNumberInput = ({
+  label,
+  tooltip,
+  variant = "inline",
+  isDisabled,
+  isRequired = false,
+  minValue,
+  ...props
+}: CustomNumberInputProps & FieldHookConfig<number>) => {
+  const [field, meta] = useField({ ...props, type: "number" });
+  const { setFieldValue } = useFormikContext();
+  const isInvalid = !!(meta.touched && meta.error);
+
+  if (variant === "inline") {
+    return (
+      <FormControl isInvalid={isInvalid} isRequired={isRequired}>
+        <Grid templateColumns="1fr 3fr">
+          <Label htmlFor={props.id || props.name}>{label}</Label>
+          <Flex alignItems="center">
+            <Flex flexDir="column" flexGrow={1} mr="2">
+              <NumberInput>
+                <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+            </Flex>
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Flex>
+        </Grid>
+      </FormControl>
+    );
+  }
+  return (
+    <FormControl isInvalid={isInvalid} isRequired={isRequired}>
+      <VStack alignItems="start" w="100%">
+        <Flex alignItems="center">
+          <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
+            {label}
+          </Label>
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Flex>
+        <NumberInput
+          {...field}
+          onChange={(e) => {
+            if (
+              minValue !== undefined &&
+              (e as unknown as number) >= minValue
+            ) {
+              setFieldValue(props.name, e);
+            }
+          }}
+          size="sm"
+          w="100%"
+          isDisabled={isDisabled}
+          data-testid={`input-${field.name}`}
+          min={minValue || undefined}
+        >
+          <NumberInputField />
+          <NumberInputStepper>
+            <NumberIncrementStepper />
+            <NumberDecrementStepper />
+          </NumberInputStepper>
+        </NumberInput>
+      </VStack>
+    </FormControl>
+  );
+};
+
 interface CustomSwitchProps {
   label: string;
   tooltip?: string;
-  variant?: "inline" | "condensed";
+  variant?: "inline" | "condensed" | "stacked";
   isDisabled?: boolean;
 }
 export const CustomSwitch = ({
@@ -735,10 +929,11 @@ export const CustomSwitch = ({
       isChecked={field.checked}
       onChange={field.onChange}
       onBlur={field.onBlur}
-      colorScheme="secondary"
+      colorScheme="purple"
       mr={2}
       data-testid={`input-${field.name}`}
       disabled={isDisabled}
+      size="sm"
     />
   );
 
@@ -757,6 +952,23 @@ export const CustomSwitch = ({
       </FormControl>
     );
   }
+
+  if (variant === "stacked") {
+    return (
+      <FormControl isInvalid={isInvalid} width="full">
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <HStack spacing={1}>
+            <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={0}>
+              {label}
+            </Label>
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </HStack>
+          <HStack>{innerSwitch}</HStack>
+        </Box>
+      </FormControl>
+    );
+  }
+
   return (
     <FormControl isInvalid={isInvalid} width="fit-content">
       <Box display="flex" alignItems="center">

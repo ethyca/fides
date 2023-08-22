@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 import requests
 import sendgrid
+from jinja2 import Environment
 from loguru import logger
 from sendgrid.helpers.mail import Content, Email, Mail, Personalization, TemplateId, To
 from sqlalchemy.orm import Session
@@ -18,6 +19,7 @@ from fides.api.models.messaging import (  # type: ignore[attr-defined]
     MessagingConfig,
     get_messaging_method,
 )
+from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.models.privacy_request import (
     PrivacyRequestError,
     PrivacyRequestNotifications,
@@ -39,6 +41,9 @@ from fides.api.schemas.messaging.messaging import (
     SubjectIdentityVerificationBodyParams,
 )
 from fides.api.schemas.redis_cache import Identity
+from fides.api.service.messaging.messaging_crud_service import (
+    get_messaging_template_by_key,
+)
 from fides.api.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.logger import Pii
 from fides.config import CONFIG
@@ -147,10 +152,14 @@ def dispatch_message(
     messaging_method = get_messaging_method(service_type)
     message: Optional[Union[EmailForActionType, str]] = None
 
+    logger.info("Getting custom messaging template for action type: {}", action_type)
+    messaging_template = get_messaging_template_by_key(db=db, key=action_type.value)
+
     if messaging_method == MessagingMethod.EMAIL:
         message = _build_email(
             action_type=action_type,
             body_params=message_body_params,
+            messaging_template=messaging_template,
         )
     elif messaging_method == MessagingMethod.SMS:
         message = _build_sms(
@@ -248,31 +257,46 @@ def _build_sms(  # pylint: disable=too-many-return-statements
     )
 
 
+def _render(template_str: str, variables: Optional[Dict] = None) -> str:
+    """Helper function to render a template string with the provided variables."""
+    if variables is None:
+        variables = {}
+    jinja_env = Environment()
+    template = jinja_env.from_string(template_str)
+    return template.render(variables)
+
+
 def _build_email(  # pylint: disable=too-many-return-statements
     action_type: MessagingActionType,
     body_params: Any,
+    messaging_template: Optional[MessagingTemplate] = None,
 ) -> EmailForActionType:
-    if action_type == MessagingActionType.CONSENT_REQUEST:
-        template = get_email_template(action_type)
-        return EmailForActionType(
-            subject="Your one-time code",
-            body=template.render(
-                {
-                    "code": body_params.verification_code,
-                    "minutes": body_params.get_verification_code_ttl_minutes(),
-                }
-            ),
-        )
+    """
+    Builds an email for a specified messaging action type, using the provided parameters.
+
+    The messaging_template parameter is used as the template for the email wording, and
+    its rendered output is passed to the HTML templates. This is only applicable for action
+    types that allow the user to specify a custom messaging template.
+
+    Parameters:
+        action_type (MessagingActionType): The type of messaging action for which the email is being built.
+        body_params (Any): Parameters used to populate the email body, such as verification codes.
+        messaging_template (Optional[MessagingTemplate]): An optional custom messaging template for the email wording.
+            This parameter is used to define the subject and body of the email, and its rendered output is
+            passed to the HTML templates. Only applicable for specific action types.
+
+    Returns:
+        EmailForActionType: The constructed email object with the subject and body populated based on the action type.
+    """
     if action_type == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION:
-        template = get_email_template(action_type)
+        variables = {
+            "code": body_params.verification_code,
+            "minutes": body_params.get_verification_code_ttl_minutes(),
+        }
         return EmailForActionType(
-            subject="Your one-time code",
-            body=template.render(
-                {
-                    "code": body_params.verification_code,
-                    "minutes": body_params.get_verification_code_ttl_minutes(),
-                }
-            ),
+            subject=_render(messaging_template.content["subject"], variables),  # type: ignore
+            body=_render(messaging_template.content["body"], variables),  # type: ignore
+            template_variables=variables,
         )
     if action_type == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT:
         base_template = get_email_template(action_type)
@@ -293,26 +317,23 @@ def _build_email(  # pylint: disable=too-many-return-statements
             body=base_template.render({"body": body_params}),
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:
-        base_template = get_email_template(action_type)
+        variables = {"request_types": body_params.request_types}
         return EmailForActionType(
-            subject="Your request has been received",
-            body=base_template.render({"request_types": body_params.request_types}),
+            subject=_render(messaging_template.content["subject"], variables),  # type: ignore
+            body=_render(messaging_template.content["body"], variables),  # type: ignore
+            template_variables=variables,
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
-        base_template = get_email_template(action_type)
+        variables = {"download_link": body_params.download_links[0]}
         return EmailForActionType(
-            subject="Your data is ready to be downloaded",
-            body=base_template.render(
-                {
-                    "download_links": body_params.download_links,
-                }
-            ),
+            subject=_render(messaging_template.content["subject"], variables),  # type: ignore
+            body=_render(messaging_template.content["body"], variables),  # type: ignore
+            template_variables=variables,
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
-        base_template = get_email_template(action_type)
         return EmailForActionType(
-            subject="Your data has been deleted",
-            body=base_template.render(),
+            subject=_render(messaging_template.content["subject"]),  # type: ignore
+            body=_render(messaging_template.content["body"]),  # type: ignore
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION:
         base_template = get_email_template(action_type)
@@ -321,18 +342,16 @@ def _build_email(  # pylint: disable=too-many-return-statements
             body=base_template.render(),
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
-        base_template = get_email_template(action_type)
         return EmailForActionType(
-            subject="Your request has been approved",
-            body=base_template.render(),
+            subject=_render(messaging_template.content["subject"]),  # type: ignore
+            body=_render(messaging_template.content["body"]),  # type: ignore
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY:
-        base_template = get_email_template(action_type)
+        variables = {"denied_reason": body_params.rejection_reason}
         return EmailForActionType(
-            subject="Your request has been denied",
-            body=base_template.render(
-                {"rejection_reason": body_params.rejection_reason}
-            ),
+            subject=_render(messaging_template.content["subject"], variables),  # type: ignore
+            body=_render(messaging_template.content["body"], variables),  # type: ignore
+            template_variables=variables,
         )
     if action_type == MessagingActionType.TEST_MESSAGE:
         base_template = get_email_template(action_type)
@@ -461,10 +480,12 @@ def _mailgun_dispatcher(
         }
 
         if template_test.status_code == 200:
+            mailgun_variables = {
+                "fides_email_body": message.body,
+                **(message.template_variables or {}),
+            }
             data["template"] = EMAIL_TEMPLATE_NAME
-            data["h:X-Mailgun-Variables"] = json.dumps(
-                {"fides_email_body": message.body}
-            )
+            data["h:X-Mailgun-Variables"] = json.dumps(mailgun_variables)
             response = requests.post(
                 f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/messages",
                 auth=(

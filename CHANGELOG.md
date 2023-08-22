@@ -18,24 +18,31 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.18.0...main)
 
 ### Added
+
+- Added new endpoints for healthchecks [#3947](https://github.com/ethyca/fides/pull/3947)
+- Added vendor list dropdown [#3857](https://github.com/ethyca/fides/pull/3857)
 - Access support for Adobe Sign [#3504](https://github.com/ethyca/fides/pull/3504)
 
 ### Fixed
+
 - Fixed issue when generating masked values for invalid data paths [#3906](https://github.com/ethyca/fides/pull/3906)
 - Code reload now works when running `nox -s dev` [#3914](https://github.com/ethyca/fides/pull/3914)
 - Reduce verbosity of privacy center logging further [#3915](https://github.com/ethyca/fides/pull/3915)
 - Resolved an issue where the integration dropdown input lost focus during typing. [#3917](https://github.com/ethyca/fides/pull/3917)
 - Fixed dataset issue that was preventing the Vend connector from loading during server startup [#3923](https://github.com/ethyca/fides/pull/3923)
+- Adding version check to version-dependent migration script [#3951](https://github.com/ethyca/fides/pull/3951)
 
 ### Changed
 
 - Systems and Privacy Declaration schema and data migration to support the Dictionary [#3901](https://github.com/ethyca/fides/pull/3901)
 - The integration search dropdown is now case-insensitive [#3916](https://github.com/ethyca/fides/pull/3916)
 - Removed deprecated fields from the taxonomy editor [#3909](https://github.com/ethyca/fides/pull/3909)
+- Systems and Privacy Declaration schema and data migration to support the Dictionary [#3901](https://github.com/ethyca/fides/pull/3901)
 
 ## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
 
 ### Added
+
 - Additional consent reporting calls from `fides-js` [#3845](https://github.com/ethyca/fides/pull/3845)
 - Additional consent reporting calls from privacy center [#3847](https://github.com/ethyca/fides/pull/3847)
 - Access support for Recurly [#3595](https://github.com/ethyca/fides/pull/3595)
