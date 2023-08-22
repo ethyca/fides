@@ -110,10 +110,6 @@ class ConsentReportingMixin:
         ),
     )
 
-    feature = Column(
-        Integer, index=True
-    )  # When saving privacy preferences with respect to a feature directly
-
     # Encrypted fides user device id, for reporting
     fides_user_device = Column(
         StringEncryptedType(
@@ -144,10 +140,6 @@ class ConsentReportingMixin:
             padding="pkcs5",
         ),
     )
-
-    purpose = Column(
-        Integer, index=True
-    )  # When saving privacy preferences with respect to a TCF purpose directly
 
     # The specific version of the experience config the user was shown to present the relevant notice
     # Contains the version, language, button labels, description, etc.
@@ -185,12 +177,7 @@ class ConsentReportingMixin:
 
     # Location where we received the request
     request_origin = Column(EnumColumn(RequestOrigin))  # privacy center, overlay, API
-    special_feature = Column(
-        Integer, index=True
-    )  # When saving privacy preferences with respect to a TCF special feature directly
-    special_purpose = Column(
-        Integer, index=True
-    )  # When saving privacy preferences with respect to a TCF special purpose directly
+
     url_recorded = Column(String)
     user_agent = Column(
         StringEncryptedType(
@@ -203,10 +190,22 @@ class ConsentReportingMixin:
 
     user_geography = Column(String, index=True)
 
+    # ==== TCF Attributes against which preferences can be saved ==== #
+    feature = Column(
+        Integer, index=True
+    )  # When saving privacy preferences with respect to a TCF feature directly
+    purpose = Column(
+        Integer, index=True
+    )  # When saving privacy preferences with respect to a TCF purpose directly
+    special_feature = Column(
+        Integer, index=True
+    )  # When saving privacy preferences with respect to a TCF special feature directly
+    special_purpose = Column(
+        Integer, index=True
+    )  # When saving privacy preferences with respect to a TCF special purpose directly
     vendor = Column(
         String, index=True
     )  # When saving privacy preferences with respect to a vendor directly. Vendors can apply to multiple systems.
-
     system_fides_key = Column(
         String, index=True
     )  # When saving privacy preferences with respect to a system directly, in the case where the vendor is unknown
@@ -625,6 +624,16 @@ class LastSavedMixin:
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        index=True,
+    )
+
+    tcf_version = Column(String)
+
+    # ==== TCF Attributes that can be served ==== #
     feature = Column(Integer, index=True)  # When a feature was served directly (TCF)
 
     purpose = Column(Integer, index=True)  # When a purpose was served directly (TCF)
@@ -636,15 +645,6 @@ class LastSavedMixin:
     special_purpose = Column(
         Integer, index=True
     )  # When a special purpose was served directly (TCF)
-
-    updated_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now(),
-        index=True,
-    )
-
-    tcf_version = Column(String)
 
     vendor = Column(
         String, index=True
