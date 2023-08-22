@@ -4,7 +4,10 @@
  * @returns
  */
 export const formatKey = (key: string): string =>
-  key.toLowerCase().replace(/ /g, "_");
+  key
+    .toLowerCase()
+    .replace(/ /g, "_")
+    .replace(/[^a-zA-Z0-9._<>-]/g, "");
 
 /**
  * Modify the current history entry, replacing it with the new URL
