@@ -19,11 +19,10 @@ router = APIRouter(tags=["Consent Settings"], prefix=urls.V1_URL_PREFIX)
 
 @router.get(
     urls.CONSENT_SETTINGS,
-    dependencies=[Security(verify_oauth_client, scopes=[scopes.CONSENT_SETTINGS_READ])],
     response_model=ConsentSettingsResponseSchema,
 )
 def get_consent_settings(*, db: Session = Depends(deps.get_db)) -> ConsentSettings:
-    """Returns organization-wide consent settings."""
+    """Public endpoint that returns organization-wide consent settings."""
     logger.info("Getting organization-wide consent settings")
     return ConsentSettings.get_or_create_with_defaults(db)
 
