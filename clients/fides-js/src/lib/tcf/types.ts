@@ -114,4 +114,5 @@ export type TcfSavePreferences = Pick<
   | "feature_preferences"
   | "special_feature_preferences"
   | "vendor_preferences"
+  | "system_preferences"
 >;

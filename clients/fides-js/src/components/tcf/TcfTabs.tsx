@@ -47,8 +47,10 @@ const TcfTabs = ({
       name: "Vendors",
       content: (
         <TcfVendors
+          allSystems={experience.tcf_systems}
           allVendors={experience.tcf_vendors}
-          enabledIds={enabledIds.vendors}
+          enabledVendorIds={enabledIds.vendors}
+          enabledSystemIds={enabledIds.systems}
           onChange={onChange}
         />
       ),
