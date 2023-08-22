@@ -107,12 +107,6 @@ data_category_downgrades: Dict[str, str] = {
     value: key for key, value in data_use_upgrades.items()
 }
 
-# Data Category fides keys are referenced in the following places:
-# - Datasets (fields, collections and dataset-level)
-# - Policy Rule - DONE
-# - Privacy Declaration - DONE
-# - Data Flow
-
 
 def update_datasets_data_categories(
     bind: Connection, data_label_map: Dict[str, str]
@@ -151,6 +145,42 @@ def update_datasets_data_categories(
         bind.execute(
             update_collections_query,
             {"dataset_id": row["id"], "updated_labels": collections},
+        )
+
+
+def update_system_ingress_egress_data_categories(
+    bind: Connection, data_label_map: Dict[str, str]
+) -> None:
+    """Upgrade or downgrade system DataFlow objects"""
+    existing_systems: ResultProxy = bind.execute(
+        text("SELECT id, egress, ingress FROM ctl_systems;")
+    )
+
+    for row in existing_systems:
+        ingress = row["ingress"]
+        egress = row["egress"]
+
+        # Do a blunt find/replace
+        for key, value in data_label_map.items():
+            ingress.replace(key, value)
+            egress.replace(key, value)
+
+        # Insert ingress changes
+        update_ingress_query: TextClause = text(
+            "UPDATE ctl_systems SET ingress = :updated_ingress WHERE id= :system_id"
+        )
+        bind.execute(
+            update_ingress_query,
+            {"system_id": row["id"], "updated_ingress": ingress},
+        )
+
+        # Insert egress changes
+        update_egress_query: TextClause = text(
+            "UPDATE ctl_systems SET egress = :updated_egress WHERE id= :system_id"
+        )
+        bind.execute(
+            update_egress_query,
+            {"system_id": row["id"], "updated_egress": egress},
         )
 
 
@@ -221,6 +251,9 @@ def upgrade() -> None:
     logger.info("Upgrading data categories in datasets")
     update_datasets_data_categories(bind, data_category_upgrades)
 
+    logger.info("Upgrading the System egress/ingress data cateogries")
+    update_system_ingress_egress_data_categories(bind, data_category_upgrades)
+
 
 def downgrade() -> None:
     bind: Connection = op.get_bind()
@@ -239,3 +272,6 @@ def downgrade() -> None:
 
     logger.info("Downgrading data categories in datasets")
     update_datasets_data_categories(bind, data_category_downgrades)
+
+    logger.info("Downgrading the System egress/ingress data cateogries")
+    update_system_ingress_egress_data_categories(bind, data_category_downgrades)
