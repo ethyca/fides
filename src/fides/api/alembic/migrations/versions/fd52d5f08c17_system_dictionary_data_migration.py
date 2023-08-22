@@ -7,7 +7,7 @@ Create Date: 2023-08-04 14:14:32.421414
 """
 import json
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Tuple, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from alembic import op
 
@@ -370,7 +370,6 @@ def privacy_declaration_additive_migration(bind: Connection):
 
 def upgrade():
     bind: Connection = op.get_bind()
-
     system_dictionary_additive_migration(bind)
     privacy_declaration_additive_migration(bind)
 

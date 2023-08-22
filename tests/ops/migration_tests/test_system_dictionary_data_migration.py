@@ -3,7 +3,6 @@ from fides.api.alembic.migrations.versions.fd52d5f08c17_system_dictionary_data_m
     _get_privacy_declaration_legal_basis_for_processing,
     _get_retention_period,
     _get_third_party_data,
-    _system_calculate_does_international_transfers,
     _system_transform_data_responsibility_title_type,
     _system_transform_joint_controller_info,
 )
