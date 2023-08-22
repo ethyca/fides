@@ -6,6 +6,7 @@ import esbuild from "rollup-plugin-esbuild";
 import filesize from "rollup-plugin-filesize";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import postcss from "rollup-plugin-postcss";
+import json from "@rollup/plugin-json";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
@@ -13,8 +14,8 @@ const GZIP_SIZE_ERROR_KB = 20; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 15; // log a warning if bundle size exceeds this
 
 // TCF
-const GZIP_SIZE_TCF_ERROR_KB = 40;
-const GZIP_SIZE_TCF_WARN_KB = 30;
+const GZIP_SIZE_TCF_ERROR_KB = 80;
+const GZIP_SIZE_TCF_WARN_KB = 70;
 
 const preactAliases = {
   entries: [
@@ -71,6 +72,7 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
       },
     ],
   }),
+  json(),
 ];
 
 const SCRIPTS = [
@@ -111,7 +113,13 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb }) => {
   };
   const mjs = {
     input: `src/${name}.ts`,
-    plugins: [alias(preactAliases), nodeResolve(), postcss(), esbuild()],
+    plugins: [
+      alias(preactAliases),
+      nodeResolve(),
+      postcss(),
+      esbuild(),
+      json(),
+    ],
     output: [
       {
         // Compatible with ES module imports. Apps in this repo may be able to share the code.
