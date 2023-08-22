@@ -3,17 +3,22 @@ saas_config:
   name: Friendbuy
   type: friendbuy
   description: A sample schema representing the Friendbuy connector for Fides
-  version: 0.0.2
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/friendbuy
+  version: 0.0.3
 
   connector_params:
     - name: domain
+      default_value: api.friendbuy.com/v2
+      description: The Friendbuy API domain
     - name: token
+      label: API token
       sensitive: True
+      description: Your long-lived API token
 
   external_references:
     - name: friendbuy_user_id
-      label: Friendbuy User ID
-      description: Dataset reference to the location of Friendbuy User IDs
+      label: Friendbuy User ID Field
+      description: The location in your owned database where you store Friendbuy User IDs
 
   client_config:
     protocol: https

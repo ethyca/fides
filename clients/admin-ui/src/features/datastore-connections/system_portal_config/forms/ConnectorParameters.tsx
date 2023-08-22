@@ -445,10 +445,9 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         mb={4}
       >
         <div>
-          Connect to your {connectionOption.human_readable} environment by
-          providing credential information below. Once you have saved your
-          integration credentials, you can review what data is included when
-          processing a privacy request in your Dataset configuration.
+          Connect to your {connectionOption!.human_readable} environment by
+          providing the information below. Once you have saved the form, you may
+          test the integration to confirm that it&apos;s working correctly.
         </div>
         {connectionOption.user_guide && (
           <div style={{ marginTop: "12px" }}>

@@ -3,15 +3,19 @@ saas_config:
   name: Aircall
   type: aircall
   description: A sample schema representing the Aircall connector for Fides
-  version: 0.1.1
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/aircall
+  version: 0.1.2
 
   connector_params:
     - name: domain
       default_value: api.aircall.io
+      description: Your Aircall URL
     - name: api_id
       label: API ID
+      description: Your Aircall API ID
     - name: api_token
       label: API Token
+      description: Your Aircall secret token
       sensitive: True
 
   client_config:
