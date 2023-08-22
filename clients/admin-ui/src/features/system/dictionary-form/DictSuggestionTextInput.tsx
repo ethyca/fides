@@ -116,7 +116,7 @@ export const DictSuggestionTextInput = ({
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label htmlFor={id || name} fontSize="sm" my={0} mr={1}>
+          <Label htmlFor={id || name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
