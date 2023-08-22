@@ -9,7 +9,6 @@ import * as Yup from "yup";
 
 import {
   CustomCreatableSelect,
-  CustomNumberInput,
   CustomSelect,
   CustomSwitch,
   CustomTextInput,
@@ -214,12 +213,11 @@ export const PrivacyDeclarationFormComponents = ({
             </Box>
           </Collapse>
         </Stack>
-        <CustomNumberInput
+        <CustomTextInput
           name="retention_period"
           label="Retention period (days)"
           tooltip="How long is personal data retained for this purpose?"
           variant="stacked"
-          minValue={0}
         />
       </SystemFormInputGroup>
       <SystemFormInputGroup heading="Features">
