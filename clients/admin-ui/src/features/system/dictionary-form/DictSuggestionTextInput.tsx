@@ -1,6 +1,6 @@
 import { Flex, FormControl, Textarea, VStack } from "@fidesui/react";
 import { useField, useFormikContext } from "formik";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -19,7 +19,6 @@ import { useResetSuggestionContext } from "./dict-suggestion.context";
 
 const useDictSuggestion = (fieldName: string, dictField: string) => {
   const [preSuggestionValue, setPreSuggestionValue] = useState("");
-  const [hasRenderedOnce, setHasRenderedOnce] = useState(false);
   const [initialField, meta, { setValue }] = useField(fieldName);
   const isInvalid = !!(meta.touched && meta.error);
   const { error } = meta;
@@ -31,26 +30,31 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
   const dictEntry = useAppSelector(selectDictEntry(vendorId || ""));
   const isShowingSuggestions = useAppSelector(selectSuggestions);
 
-  useMemo(() => {
+  useEffect(() => {
     if (
       isShowingSuggestions === "showing" &&
       dictEntry &&
-      dictField in dictEntry &&
-      hasRenderedOnce
+      dictField in dictEntry
     ) {
       if (field.value !== dictEntry[dictField as keyof DictEntry]) {
         setPreSuggestionValue(field.value);
         setValue(dictEntry[dictField as keyof DictEntry]);
       }
     }
-    if (isShowingSuggestions === "hiding" && hasRenderedOnce) {
-      // hasRenderedOnce is needed to prevent updating the
-      // form during it's initial render. It throws an
-      // error otherwise.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    isShowingSuggestions,
+    setValue,
+    dictEntry,
+    dictField,
+    setPreSuggestionValue,
+  ]);
+
+  useEffect(() => {
+    if (isShowingSuggestions === "hiding") {
       setValue(preSuggestionValue);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isShowingSuggestions, setValue]);
+  }, [isShowingSuggestions, setValue, preSuggestionValue]);
 
   const reset = useCallback(() => {
     if (dictEntry && dictField in dictEntry) {
@@ -73,9 +77,6 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
     };
   }, [context, reset, fieldName]);
 
-  useMemo(() => {
-    setHasRenderedOnce(true);
-  }, []);
   return {
     field,
     isInvalid,
