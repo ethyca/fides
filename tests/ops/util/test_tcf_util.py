@@ -1,8 +1,10 @@
 import pytest
+from fideslang import GVL_PURPOSES, MAPPED_PURPOSES
+from fideslang.models import LegalBasisForProcessingEnum
 
+from fides.api.models.sql_models import PrivacyDeclaration
 from fides.api.schemas.tcf import EmbeddedVendor
 from fides.api.util.tcf_util import get_tcf_contents
-from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
 
 class TestTCFContents:
@@ -128,6 +130,7 @@ class TestTCFContents:
         for i, decl in enumerate(tcf_system.privacy_declarations):
             if i:
                 decl.data_use = "marketing.advertising.first_party.contextual"
+                decl.legal_basis_for_processing = "Consent"
                 tcf_system.privacy_declarations[0].save(db)
             else:
                 decl.delete(db)
@@ -141,6 +144,7 @@ class TestTCFContents:
             "marketing.advertising.frequency_capping",
             "marketing.advertising.negative_targeting",
         ]
+        assert tcf_contents.tcf_purposes[0].legal_bases == ["Consent"]
         assert tcf_contents.tcf_purposes[0].vendors == [
             EmbeddedVendor(id="sendgrid", name="TCF System Test")
         ]
@@ -149,6 +153,7 @@ class TestTCFContents:
         assert tcf_contents.tcf_vendors[0].id == "sendgrid"
         assert len(tcf_contents.tcf_vendors[0].purposes) == 1
         assert tcf_contents.tcf_vendors[0].purposes[0].id == 2
+        assert tcf_contents.tcf_vendors[0].purposes[0].legal_bases == ["Consent"]
         assert tcf_contents.tcf_features == []
         assert tcf_contents.tcf_special_features == []
 
@@ -163,6 +168,7 @@ class TestTCFContents:
             tcf_contents.tcf_special_purposes[0].name
             == "Ensure security, prevent and detect fraud, and fix errors\n"
         )
+        assert tcf_contents.tcf_special_purposes[0].legal_bases == ["Legal obligations"]
         assert tcf_contents.tcf_special_purposes[0].vendors == [
             EmbeddedVendor(id="sendgrid", name="TCF System Test")
         ]
@@ -173,8 +179,13 @@ class TestTCFContents:
         assert tcf_contents.tcf_vendors[0].id == "sendgrid"
         assert len(tcf_contents.tcf_vendors[0].purposes) == 1
         assert tcf_contents.tcf_vendors[0].purposes[0].id == 8
+        assert tcf_contents.tcf_vendors[0].purposes[0].legal_bases == ["Consent"]
+
         assert len(tcf_contents.tcf_vendors[0].special_purposes) == 1
         assert tcf_contents.tcf_vendors[0].special_purposes[0].id == 1
+        assert tcf_contents.tcf_vendors[0].special_purposes[0].legal_bases == [
+            "Legal obligations"
+        ]
         assert tcf_contents.tcf_features == []
         assert tcf_contents.tcf_special_features == []
 
@@ -234,3 +245,44 @@ class TestTCFContents:
         assert len(tcf_contents.tcf_vendors[0].special_features) == 1
         assert tcf_contents.tcf_vendors[0].special_features[0].id == 2
         assert len(tcf_contents.tcf_vendors[0].features) == 0
+
+    def test_system_with_multiple_privacy_declarations(self, db, system):
+        get_tcf_contents.cache_clear()
+
+        legal_bases = [item.value for item in LegalBasisForProcessingEnum]
+
+        for i, legal_basis in enumerate(legal_bases):
+            gvl_purpose = list(MAPPED_PURPOSES.values())[i]
+
+            PrivacyDeclaration.create(
+                db=db,
+                data={
+                    "name": gvl_purpose.name,
+                    "system_id": system.id,
+                    "data_categories": ["user.device.cookie_id"],
+                    "data_use": gvl_purpose.data_uses[0],
+                    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                    "data_subjects": ["customer"],
+                    "legal_basis_for_processing": legal_basis,
+                },
+            )
+
+        tcf_contents = get_tcf_contents(db)
+        assert len(tcf_contents.tcf_purposes) == 6
+        for i, purpose in enumerate(tcf_contents.tcf_purposes):
+            assert purpose.legal_bases == [legal_bases[i]]
+            assert purpose.id == list(MAPPED_PURPOSES.values())[i].id
+        assert (
+            len(tcf_contents.tcf_vendors) == 0
+        )  # No official vendor id on this system
+
+        assert len(tcf_contents.tcf_systems) == 0
+        system_info = tcf_contents.tcf_systems[0]
+
+        assert len(system_info.special_purposes) == 0
+        assert len(system_info.features) == 0
+        assert len(system_info.special_features) == 0
+        assert len(tcf_contents.tcf_systems[0].purposes) == 6
+        for i, embedded_purpose in enumerate(tcf_contents.tcf_systems[0].purposes):
+            assert embedded_purpose.legal_bases == [legal_bases[i]]
+            assert embedded_purpose.id == list(MAPPED_PURPOSES.values())[i].id

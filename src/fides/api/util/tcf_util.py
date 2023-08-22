@@ -11,7 +11,7 @@ from fideslang.gvl import (
 )
 from fideslang.gvl.models import Feature, Purpose
 from sqlalchemy import case, func
-from sqlalchemy.dialects.postgresql import array_agg
+from sqlalchemy.dialects.postgresql import array, array_agg
 from sqlalchemy.engine import Row
 from sqlalchemy.orm import Query, Session
 
@@ -88,7 +88,16 @@ def get_tcf_component_and_vendors(
             System.name,
             System.description,
             System.vendor_id,
-            array_agg(PrivacyDeclaration.data_use).label("data_uses"),
+            array_agg(
+                array(
+                    [
+                        PrivacyDeclaration.data_use,
+                        PrivacyDeclaration.legal_basis_for_processing,
+                    ]
+                )
+            ).label(
+                "data_uses_and_legal_bases"
+            ),  # A list of lists with a data use and a legal basis for each privacy declaration
             array_agg(
                 case(
                     [
@@ -112,8 +121,9 @@ def get_tcf_component_and_vendors(
 
     tcf_record_type: Union[Type[TCFPurposeRecord], Type[TCFFeatureRecord]]
     get_tcf_construct: Callable
+    is_purpose_type: bool = tcf_component_name in ["purposes", "special_purposes"]
 
-    if tcf_component_name in ["purposes", "special_purposes"]:
+    if is_purpose_type:
         matching_systems = matching_systems.filter(
             PrivacyDeclaration.data_use.in_(relevant_uses_or_features)
         )
@@ -137,13 +147,16 @@ def get_tcf_component_and_vendors(
                 id=system_identifier,
                 name=record.name,
                 description=record.description,
-                has_vendor_id=bool(vendor_id),
+                has_vendor_id=bool(
+                    vendor_id
+                ),  # This will later let us separate TCF components
+                # into vendors and systems.
             )
 
-        # Pull the attributes we care about from the system record depending on the TCF component.
+        # Pull the attributes we care about from the system record depending on the type TCF component.
         relevant_system_attributes: Set[str] = (
-            record.data_uses
-            if tcf_component_name in ["purposes", "special_purposes"]
+            [data_use[0] for data_use in record.data_uses_and_legal_bases]
+            if is_purpose_type
             else get_system_features(
                 record, relevant_features=relevant_uses_or_features
             )
@@ -155,11 +168,19 @@ def get_tcf_component_and_vendors(
             if not fideslang_gvl_record:
                 continue
 
-            if fideslang_gvl_record.id not in matching_record_map:
-                # Collect relevant TCF component
-                matching_record_map[fideslang_gvl_record.id] = tcf_record_type(
-                    **fideslang_gvl_record.dict()
+            # Collect relevant TCF component
+            tcf_record = tcf_record_type(**fideslang_gvl_record.dict())
+            if is_purpose_type:
+                tcf_record.legal_bases = list(
+                    {
+                        use[1]
+                        for use in record.data_uses_and_legal_bases
+                        if use[1] is not None and use[0] in tcf_record.data_uses
+                    }
                 )
+
+            if fideslang_gvl_record.id not in matching_record_map:
+                matching_record_map[fideslang_gvl_record.id] = tcf_record
 
             # Embed the systems information beneath the TCF component data
             embedded_system_or_vendor_record = (
@@ -181,9 +202,9 @@ def get_tcf_component_and_vendors(
                 system_map[system_identifier], tcf_component_name
             )
             if fideslang_gvl_record.id not in [
-                tcf_record.id for tcf_record in system_tcf_subsection
+                tcf_sub_record.id for tcf_sub_record in system_tcf_subsection
             ]:
-                system_tcf_subsection.append(fideslang_gvl_record)
+                system_tcf_subsection.append(tcf_record)
 
     return matching_record_map, system_map
 

@@ -35,6 +35,7 @@ class EmbeddedVendor(FidesSchema):
 class TCFPurposeRecord(MappedPurpose, TCFSavedandServedDetails):
     """Schema for a TCF Purpose or a Special Purpose: returned in the TCF Overlay Experience"""
 
+    legal_bases: List[str] = []
     vendors: List[
         EmbeddedVendor
     ] = []  # Vendors that use this purpose or special purpose
@@ -50,6 +51,10 @@ class EmbeddedLineItem(FidesSchema):
 
     id: int
     name: str
+
+
+class EmbeddedPurpose(EmbeddedLineItem):
+    legal_bases: List[str] = []
 
 
 class TCFDataCategoryRecord(FidesSchema):
@@ -69,8 +74,8 @@ class TCFVendorRecord(TCFSavedandServedDetails):
     has_vendor_id: bool
     name: Optional[str]
     description: Optional[str]
-    purposes: List[EmbeddedLineItem] = []
-    special_purposes: List[EmbeddedLineItem] = []
+    purposes: List[EmbeddedPurpose] = []
+    special_purposes: List[EmbeddedPurpose] = []
     data_categories: List[TCFDataCategoryRecord] = []
     features: List[EmbeddedLineItem] = []
     special_features: List[EmbeddedLineItem] = []
