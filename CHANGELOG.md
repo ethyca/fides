@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.18.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.19.0...main)
+
+## [Unreleased](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 
 ### Added
 - Add dictionary suggestions [#3937](https://github.com/ethyca/fides/pull/3937)
