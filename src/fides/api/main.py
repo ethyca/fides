@@ -232,6 +232,7 @@ async def setup_server() -> None:
     **NOTE**: The order of operations here _is_ deliberate
     and must be maintained.
     """
+    # time the server startup
     if not CONFIG.dev_mode:
         sys.tracebacklimit = 0
 
