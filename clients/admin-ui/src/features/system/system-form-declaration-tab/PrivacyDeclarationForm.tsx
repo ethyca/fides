@@ -243,11 +243,11 @@ export const PrivacyDeclarationFormComponents = ({
           variant="stacked"
         />
       </SystemFormInputGroup>
-      <SystemFormInputGroup heading="Special categories of processing">
+      <SystemFormInputGroup heading="Special category data">
         <Stack spacing={0}>
           <CustomSwitch
             name="processes_special_category_data"
-            label="This system processes Special Category data"
+            label="This system processes special category data"
             tooltip="Is this system processing special category data as defined by GDPR Article 9?"
             variant="stacked"
           />
