@@ -14,6 +14,7 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.messaging import MessagingConfig
+from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.privacy_experience import (
     PrivacyExperience,

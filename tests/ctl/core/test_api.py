@@ -2391,23 +2391,47 @@ def test_404_on_api_routes(test_config: FidesConfig) -> None:
 
 # Integration Tests
 @pytest.mark.integration
-@pytest.mark.parametrize(
-    "database_health, expected_status_code",
-    [("healthy", 200), ("unhealthy", 503)],
-)
-def test_api_ping(
-    test_config: FidesConfig,
-    database_health: str,
-    expected_status_code: int,
-    monkeypatch: MonkeyPatch,
-    test_client: TestClient,
-) -> None:
-    def mock_get_db_health(url: str) -> str:
-        return database_health
+class TestHealthchecks:
+    @pytest.mark.parametrize(
+        "database_health, expected_status_code",
+        [("healthy", 200), ("unhealthy", 503), ("needs migration", 503)],
+    )
+    def test_database_healthcheck(
+        self,
+        test_config: FidesConfig,
+        database_health: str,
+        expected_status_code: int,
+        monkeypatch: MonkeyPatch,
+        test_client: TestClient,
+    ) -> None:
+        """Test the database health checks."""
 
-    monkeypatch.setattr(health, "get_db_health", mock_get_db_health)
-    response = test_client.get(test_config.cli.server_url + "/health")
-    assert response.status_code == expected_status_code
+        def mock_get_db_health(url: str, db) -> str:
+            return database_health
+
+        monkeypatch.setattr(health, "get_db_health", mock_get_db_health)
+        response = test_client.get(test_config.cli.server_url + "/health/database")
+        assert (
+            response.status_code == expected_status_code
+        ), f"Request failed: {response.text}"
+
+    def test_server_healthcheck(
+        self,
+        test_config: FidesConfig,
+        test_client: TestClient,
+    ) -> None:
+        """Test the server healthcheck."""
+        response = test_client.get(test_config.cli.server_url + "/health")
+        assert response.status_code == 200
+
+    def test_worker_healthcheck(
+        self,
+        test_config: FidesConfig,
+        test_client: TestClient,
+    ) -> None:
+        """Test the server healthcheck."""
+        response = test_client.get(test_config.cli.server_url + "/health/workers")
+        assert response.status_code == 200
 
 
 @pytest.mark.integration
