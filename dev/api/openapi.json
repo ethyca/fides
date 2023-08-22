@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.18.1b4.post0.dev2"
+    "version": "2.18.1b4.post0.dev3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -14031,6 +14031,10 @@
             "title": "Authorization Required",
             "type": "boolean",
             "default": false
+          },
+          "user_guide": {
+            "title": "User Guide",
+            "type": "string"
           }
         },
         "description": "Describes the returned schema for connection types"
@@ -20406,6 +20410,10 @@
           },
           "consent_requests": {
             "$ref": "#/components/schemas/ConsentRequestMap"
+          },
+          "user_guide": {
+            "title": "User Guide",
+            "type": "string"
           }
         },
         "description": "Used to store endpoint and param configurations for a SaaS connector.\nThis is done to separate the details of how to make the API calls\nfrom the data provided by a given API collection.\n\nThe required fields for the config are converted into a Dataset which is\nmerged with the standard Fidesops Dataset to provide a complete set of dependencies\nfor the graph traversal."
