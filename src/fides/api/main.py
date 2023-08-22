@@ -4,6 +4,7 @@ Contains the code that sets up the API.
 import os
 import sys
 from datetime import datetime, timezone
+from time import perf_counter
 from logging import WARNING
 from typing import Callable, Optional
 from urllib.parse import unquote
@@ -232,7 +233,8 @@ async def setup_server() -> None:
     **NOTE**: The order of operations here _is_ deliberate
     and must be maintained.
     """
-    # time the server startup
+    start_time = perf_counter()
+    logger.info("Starting server setup...")
     if not CONFIG.dev_mode:
         sys.tracebacklimit = 0
 
@@ -263,7 +265,9 @@ async def setup_server() -> None:
     if not CONFIG.logging.serialization:
         logger.info(FIDES_ASCII_ART)
 
-    logger.info(f"Fides startup complete! v{VERSION}")
+    logger.info("Fides startup complete! v{}", VERSION)
+    startup_time = round(perf_counter() - start_time, 3)
+    logger.info("Server setup completed in {} seconds", startup_time)
 
 
 def start_webserver(port: int = 8080) -> None:
