@@ -271,13 +271,6 @@ const SystemInformationForm = ({
                   disabled
                   variant="stacked"
                 />
-                {/* <CustomTextInput
-                id="description"
-                name="description"
-                label="Description"
-                tooltip="What services does this system perform?"
-                variant="stacked"
-              /> */}
                 <DictSuggestionTextArea
                   id="description"
                   name="description"
