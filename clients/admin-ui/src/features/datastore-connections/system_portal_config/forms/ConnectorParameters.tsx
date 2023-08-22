@@ -443,7 +443,8 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         mb={4}
       >
         Connect to your {connectionOption!.human_readable} environment by
-        providing the information below. Once you have saved the form, you may test the integration to confirm that it's working correctly. 
+        providing the information below. Once you have saved the form, you may
+        test the integration to confirm that it&apos;s working correctly.
       </Box>
       <ConnectorParametersForm
         secretsSchema={secretsSchema}
