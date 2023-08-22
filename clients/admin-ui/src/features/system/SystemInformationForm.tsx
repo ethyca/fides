@@ -27,7 +27,7 @@ import {
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
-  selectAllDictEnties,
+  selectAllDictEntries,
   useGetAllDictionaryEntriesQuery,
 } from "~/features/plus/plus.slice";
 import { setSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
@@ -116,7 +116,7 @@ const SystemInformationForm = ({
     skip: !features.dictionaryService,
   });
 
-  const dictionaryOptions = useAppSelector(selectAllDictEnties);
+  const dictionaryOptions = useAppSelector(selectAllDictEntries);
 
   const systems = useAppSelector(selectAllSystems);
   const isEditing = useMemo(
@@ -453,16 +453,6 @@ const SystemInformationForm = ({
                     variant="stacked"
                     disabled
                   />
-                  {/* <CustomTextInput
-                  label="Privacy policy URL"
-                  name="privacy_policy"
-                  tooltip="Where can the privacy policy be located?"
-                  variant="stacked"
-                  disabled={
-                    !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations
-                  }
-                /> */}
                   <DictSuggestionTextInput
                     id="privacy_policy"
                     name="privacy_policy"
@@ -470,16 +460,6 @@ const SystemInformationForm = ({
                     dictField="privacy_policy"
                     tooltip="Where can the privacy policy be located?"
                   />
-                  {/* <CustomTextInput
-                  label="Legal name"
-                  name="legal_name"
-                  tooltip="What is the legal name of the business?"
-                  variant="stacked"
-                  disabled={
-                    !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations
-                  }
-                /> */}
                   <DictSuggestionTextInput
                     id="legal_name"
                     name="legal_name"
@@ -487,16 +467,6 @@ const SystemInformationForm = ({
                     tooltip="What is the legal name of the business?"
                     dictField="legal_name"
                   />
-                  {/* <CustomTextArea
-                  label="Legal address"
-                  name="legal_address"
-                  tooltip="What is the legal address for the business?"
-                  variant="stacked"
-                  disabled={
-                    !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations
-                  }
-                /> */}
                   <DictSuggestionTextInput
                     id="legal_address"
                     name="legal_address"
@@ -526,16 +496,6 @@ const SystemInformationForm = ({
                       values.exempt_from_privacy_regulations
                     }
                   />
-                  {/* <CustomTextInput
-                  label="Legal contact (DPO)"
-                  name="dpo"
-                  tooltip="What is the official privacy contact information?"
-                  variant="stacked"
-                  disabled={
-                    !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations
-                  }
-                /> */}
                   <DictSuggestionTextInput
                     name="dpo"
                     id="dpo"
@@ -553,16 +513,6 @@ const SystemInformationForm = ({
                       values.exempt_from_privacy_regulations
                     }
                   />
-                  {/* <CustomTextArea
-                  label="Data security practices"
-                  name="data_security_practices"
-                  tooltip="Which data security practices are employed to keep the data safe?"
-                  variant="stacked"
-                  disabled={
-                    !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations
-                  }
-                /> */}
                   <DictSuggestionTextInput
                     label="Data security practices"
                     name="data_security_practices"

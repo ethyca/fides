@@ -1,7 +1,7 @@
 import { createIcon } from "@fidesui/react";
 
 export const SparkleIcon = createIcon({
-  displayName: "SparkeIcon",
+  displayName: "SparkleIcon",
   viewBox: "0 0 18 18",
   path: (
     <path

@@ -389,7 +389,7 @@ type DictOption = {
 };
 
 const EMPTY_DICT_ENTRIES: DictOption[] = [];
-export const selectAllDictEnties = createSelector(
+export const selectAllDictEntries = createSelector(
   [
     (RootState) => RootState,
     plusApi.endpoints.getAllDictionaryEntries.select(),

@@ -312,11 +312,13 @@ export const SelectInput = ({
         singleValue: singleValueBlock
           ? (provided) => ({
               ...provided,
-              background: "primary.400",
-              color: "white",
-              borderRadius: ".375rem",
-              fontSize: ".75rem",
-              paddingX: ".5rem",
+              fontSize: "12px",
+              background: "gray.200",
+              color: "gray.600",
+              fontWeight: "400",
+              borderRadius: "2px",
+              py: 1,
+              px: 2,
             })
           : undefined,
       }}
