@@ -37,7 +37,7 @@ The types of changes are:
 - Systems and Privacy Declaration schema and data migration to support the Dictionary [#3901](https://github.com/ethyca/fides/pull/3901)
 - The integration search dropdown is now case-insensitive [#3916](https://github.com/ethyca/fides/pull/3916)
 - Removed deprecated fields from the taxonomy editor [#3909](https://github.com/ethyca/fides/pull/3909)
-- Systems and Privacy Declaration schema and data migration to support the Dictionary [#3901](https://github.com/ethyca/fides/pull/3901)
+- Remove custom array_accum function from dictionary migration [#3949](https://github.com/ethyca/fides/pull/3949/)
 
 ## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
 
