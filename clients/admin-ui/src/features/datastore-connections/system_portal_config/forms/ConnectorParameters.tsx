@@ -17,6 +17,8 @@ import {
 import { useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import DocsLink from "~/features/common/DocsLink";
+import RightArrow from "~/features/common/Icon/RightArrow";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import TestConnectionMessage from "~/features/datastore-connections/system_portal_config/TestConnectionMessage";
@@ -43,8 +45,6 @@ import { ConnectionConfigFormValues } from "../types";
 import ConnectorParametersForm, {
   TestConnectionResponse,
 } from "./ConnectorParametersForm";
-import DocsLink from "~/features/common/DocsLink";
-import RightArrow from "~/features/common/Icon/RightArrow";
 
 const generateIntegrationKey = (
   systemFidesKey: string,
@@ -445,14 +445,14 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         mb={4}
       >
         <div>
-          Connect to your {connectionOption!.human_readable} environment by
+          Connect to your {connectionOption.human_readable} environment by
           providing credential information below. Once you have saved your
           integration credentials, you can review what data is included when
           processing a privacy request in your Dataset configuration.
         </div>
-        {connectionOption!.user_guide && (
+        {connectionOption.user_guide && (
           <div style={{ marginTop: "12px" }}>
-            <DocsLink href={connectionOption!.user_guide}>
+            <DocsLink href={connectionOption.user_guide}>
               View docs for help with this integration <RightArrow />
             </DocsLink>
           </div>
