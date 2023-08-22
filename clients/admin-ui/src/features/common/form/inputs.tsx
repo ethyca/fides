@@ -50,7 +50,7 @@ import QuestionTooltip from "~/features/common/QuestionTooltip";
 
 type Variant = "inline" | "stacked" | "block";
 
-interface CustomInputProps {
+export interface CustomInputProps {
   disabled?: boolean;
   label: string;
   tooltip?: string;
@@ -78,7 +78,7 @@ export const Label = ({
   </FormLabel>
 );
 
-const TextInput = ({
+export const TextInput = ({
   isPassword,
   ...props
 }: InputProps & { isPassword: boolean }) => {
@@ -312,11 +312,13 @@ export const SelectInput = ({
         singleValue: singleValueBlock
           ? (provided) => ({
               ...provided,
-              background: "primary.400",
-              color: "white",
-              borderRadius: ".375rem",
-              fontSize: ".75rem",
-              paddingX: ".5rem",
+              fontSize: "12px",
+              background: "gray.200",
+              color: "gray.600",
+              fontWeight: "400",
+              borderRadius: "2px",
+              py: 1,
+              px: 2,
             })
           : undefined,
       }}
