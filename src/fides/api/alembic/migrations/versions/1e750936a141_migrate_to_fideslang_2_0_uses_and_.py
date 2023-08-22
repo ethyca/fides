@@ -140,11 +140,11 @@ def update_datasets_data_categories(
             collections.replace(key, value)
 
         update_collections_query: TextClause = text(
-            "UPDATE datasets SET collections = :updated_labels WHERE id= :dataset_id"
+            "UPDATE datasets SET collections = :updated_collections WHERE id= :dataset_id"
         )
         bind.execute(
             update_collections_query,
-            {"dataset_id": row["id"], "updated_labels": collections},
+            {"dataset_id": row["id"], "updated_collections": collections},
         )
 
 
