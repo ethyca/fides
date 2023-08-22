@@ -3,23 +3,30 @@ saas_config:
   name: Yotpo Loyalty & Referrals
   type: yotpo_loyalty
   description: A sample schema representing the Yotpo Loyalty & Referrals connector for Fides
-  version: 0.1.1
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/yotpo-loyalty
+  version: 0.1.2
 
   connector_params:
     - name: domain
       default_value: loyalty.yotpo.com
+      description: The URL for your Yotpo Loyalty instance
     - name: merchant_id
       label: Merchant ID
+      description: Your Yotpo merchant ID
     - name: guid
       label: GUID
+      description: Your Yotpo Global Unique Identifier (GUID)
     - name: api_key
       label: API Key
+      description: Your Yotpo API key
       sensitive: True
     - name: store_id
       label: Store ID
-      description: Formerly known as app key
+      description: Your Yotpo Store ID, previously referred to as `app key`
     - name: secret_key
       sensitive: True
+      label: Secret Key
+      description: Your Yotpo secret key
 
   client_config:
     protocol: https

@@ -21,6 +21,7 @@ def test_get_connection_types():
         "human_readable": "PostgreSQL",
         "encoded_icon": None,
         "authorization_required": False,
+        "user_guide": None,
     } in data
     first_saas_type = ConnectorRegistry.connector_types().pop()
     first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
@@ -30,6 +31,7 @@ def test_get_connection_types():
         "human_readable": first_saas_template.human_readable,
         "encoded_icon": first_saas_template.icon,
         "authorization_required": first_saas_template.authorization_required,
+        "user_guide": first_saas_template.user_guide,
     } in data
 
     assert "saas" not in [item.identifier for item in data]
@@ -43,6 +45,7 @@ def test_get_connection_types():
         "human_readable": "Sovrn",
         "encoded_icon": None,
         "authorization_required": False,
+        "user_guide": None,
     } in data
 
 
@@ -74,6 +77,7 @@ def connection_type_objects():
             "human_readable": "PostgreSQL",
             "encoded_icon": None,
             "authorization_required": False,
+            "user_guide": None,
         },
         ConnectionType.manual_webhook.value: {
             "identifier": ConnectionType.manual_webhook.value,
@@ -81,6 +85,7 @@ def connection_type_objects():
             "human_readable": "Manual Process",
             "encoded_icon": None,
             "authorization_required": False,
+            "user_guide": None,
         },
         GOOGLE_ANALYTICS: {
             "identifier": GOOGLE_ANALYTICS,
@@ -88,6 +93,7 @@ def connection_type_objects():
             "human_readable": google_analytics_template.human_readable,
             "encoded_icon": google_analytics_template.icon,
             "authorization_required": google_analytics_template.authorization_required,
+            "user_guide": google_analytics_template.user_guide,
         },
         MAILCHIMP_TRANSACTIONAL: {
             "identifier": MAILCHIMP_TRANSACTIONAL,
@@ -95,6 +101,7 @@ def connection_type_objects():
             "human_readable": mailchimp_transactional_template.human_readable,
             "encoded_icon": mailchimp_transactional_template.icon,
             "authorization_required": mailchimp_transactional_template.authorization_required,
+            "user_guide": mailchimp_transactional_template.user_guide,
         },
         SEGMENT: {
             "identifier": SEGMENT,
@@ -102,6 +109,7 @@ def connection_type_objects():
             "human_readable": segment_template.human_readable,
             "encoded_icon": segment_template.icon,
             "authorization_required": segment_template.authorization_required,
+            "user_guide": segment_template.user_guide,
         },
         STRIPE: {
             "identifier": STRIPE,
@@ -109,6 +117,7 @@ def connection_type_objects():
             "human_readable": stripe_template.human_readable,
             "encoded_icon": stripe_template.icon,
             "authorization_required": stripe_template.authorization_required,
+            "user_guide": stripe_template.user_guide,
         },
         ZENDESK: {
             "identifier": ZENDESK,
@@ -116,6 +125,7 @@ def connection_type_objects():
             "human_readable": zendesk_template.human_readable,
             "encoded_icon": zendesk_template.icon,
             "authorization_required": zendesk_template.authorization_required,
+            "user_guide": zendesk_template.user_guide,
         },
         DOORDASH: {
             "identifier": DOORDASH,
@@ -123,6 +133,7 @@ def connection_type_objects():
             "human_readable": doordash_template.human_readable,
             "encoded_icon": doordash_template.icon,
             "authorization_required": doordash_template.authorization_required,
+            "user_guide": doordash_template.user_guide,
         },
         ConnectionType.sovrn.value: {
             "identifier": ConnectionType.sovrn.value,
@@ -130,6 +141,7 @@ def connection_type_objects():
             "human_readable": "Sovrn",
             "encoded_icon": None,
             "authorization_required": False,
+            "user_guide": None,
         },
         ConnectionType.attentive.value: {
             "identifier": ConnectionType.attentive.value,
@@ -137,6 +149,7 @@ def connection_type_objects():
             "human_readable": "Attentive",
             "encoded_icon": None,
             "authorization_required": False,
+            "user_guide": None,
         },
     }
 
