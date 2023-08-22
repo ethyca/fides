@@ -11,10 +11,10 @@ saas_config:
       default_value: amplitude.com
       description: Your Amplitude URL
     - name: api_key
-      label: API Key
+      label: API key
       description: Your Amplitude project's API key
     - name: secret_key
-      label: Secret Key
+      label: Secret key
       sensitive: True
       description: Your Amplitude project's secret key
 

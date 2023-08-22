@@ -11,6 +11,7 @@ saas_config:
     - name: client_id
       label: Client ID
     - name: client_secret
+      label: Client secret
       sensitive: True
     - name: redirect_uri
       label: Redirect URI

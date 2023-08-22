@@ -11,13 +11,13 @@ saas_config:
       default_value: api.fullstory.com
       description: FullStory API Domain
     - name: api_key
-      label: API Key
+      label: API key
       sensitive: True
       description: Your FullStory API Key
 
   external_references:
     - name: fullstory_user_id
-      label: FullStory User ID Field
+      label: FullStory user ID field
       description: The location in your owned database where you store FullStory User IDs
 
   client_config:

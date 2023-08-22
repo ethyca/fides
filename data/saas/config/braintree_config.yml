@@ -11,10 +11,10 @@ saas_config:
       label: Domain
       description: The unique URL for your Braintree instance
     - name: public_key
-      label: Public Key
+      label: Public key
       description: Your Braintree public API key
     - name: private_key
-      label: Private Key
+      label: Private key
       description: Your Braintree private API key
       sensitive: True
 

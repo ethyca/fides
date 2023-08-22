@@ -12,7 +12,7 @@ saas_config:
       description: Your Sentry API URL
     - name: access_token
       sensitive: True
-      label: Access Token
+      label: Access token
       description: Your authentication token for Sentry
 
   client_config:
