@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 - Added vendor list dropdown [#3857](https://github.com/ethyca/fides/pull/3857)
 - Access support for Adobe Sign [#3504](https://github.com/ethyca/fides/pull/3504)
+- Add initial layer to TCF modal [#3956](https://github.com/ethyca/fides/pull/3956)
 
 ### Fixed
 - Fixed issue when generating masked values for invalid data paths [#3906](https://github.com/ethyca/fides/pull/3906)
