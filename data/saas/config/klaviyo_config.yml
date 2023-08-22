@@ -11,7 +11,7 @@ saas_config:
       default_value: a.klaviyo.com
       description: Your Klaviyo API URL
     - name: api_key
-      label: API Key
+      label: API key
       sensitive: True
       description: Your Private API key
     - name: revision

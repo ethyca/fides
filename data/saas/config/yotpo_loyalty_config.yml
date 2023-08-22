@@ -17,7 +17,7 @@ saas_config:
       label: GUID
       description: Your Yotpo Global Unique Identifier (GUID)
     - name: api_key
-      label: API Key
+      label: API key
       description: Your Yotpo API key
       sensitive: True
     - name: store_id
@@ -25,7 +25,7 @@ saas_config:
       description: Your Yotpo Store ID, previously referred to as `app key`
     - name: secret_key
       sensitive: True
-      label: Secret Key
+      label: Secret key
       description: Your Yotpo secret key
 
   client_config:

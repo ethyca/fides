@@ -14,7 +14,7 @@ saas_config:
       description: Your Auth0 application's client ID
     - name: client_secret
       sensitive: True
-      label: Client Secret
+      label: Client secret
       description: Your Auth0 application's client secret
 
   client_config:

@@ -11,7 +11,7 @@ saas_config:
       default_value: api.kustomerapp.com
       description: Your Kustomer API URL
     - name: api_key
-      label: API Key
+      label: API key
       sensitive: True
       description: Your Kustomer API key
 

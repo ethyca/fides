@@ -11,20 +11,20 @@ saas_config:
       default_value: api.outreach.io
       description: Your Outreach URL
     - name: requester_email
-      label: Requester Email
+      label: Requester email
       description: The email address of the Outreach user that created your custom app
     - name: client_id
       label: Client ID
       description: The OAuth 2.0 client ID for your application
     - name: client_secret
-      label: Client Secret
+      label: Client secret
       description: The OAuth 2.0 client secret
       sensitive: True
     - name: redirect_uri
       label: Redirect URL
       description: The Fides URL to which users will be redirected upon successful authentication
     - name: page_size
-      label: Page Size
+      label: Page size
       description: The number of results to return on each page
 
   client_config:
