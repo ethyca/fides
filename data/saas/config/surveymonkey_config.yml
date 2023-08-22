@@ -3,13 +3,18 @@ saas_config:
   name: SurveyMonkey
   type: surveymonkey
   description: A sample schema representing the SurveyMonkey connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/survey-monkey
   version: 0.1.0
 
   connector_params:
     - name: domain
       default_value: api.surveymonkey.com
+      description: Your SurveyMonkey API URL
     - name: api_token
-      label: API Token
+      label: Access token
+      description: Your SurveyMonkey access token
+      sensitive: True
+
 
   client_config:
     protocol: https

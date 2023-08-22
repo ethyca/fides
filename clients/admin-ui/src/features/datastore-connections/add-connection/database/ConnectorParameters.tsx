@@ -128,9 +128,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     <>
       <Box color="gray.700" fontSize="14px" h="80px">
         Connect to your {connectionOption!.human_readable} environment by
-        providing credential information below. Once you have saved your
-        connector credentials, you can review what data is included when
-        processing a privacy request in your Dataset configuration.
+        providing the information below. Once you have saved the form, you may test the integration to confirm that it's working correctly. 
       </Box>
       <ConnectorParametersForm
         data={data}

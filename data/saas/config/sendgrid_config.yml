@@ -3,12 +3,16 @@ saas_config:
   name: SendGrid
   type: sendgrid
   description: A sample schema representing the SendGrid connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/sendgrid
   version: 0.0.2
 
   connector_params:
     - name: domain
+      description: The Sendgrid API
+      default_value: api.sendgrid.com
     - name: api_key
-      label: API Key
+      label: API key
+      description
       sensitive: True
 
   client_config:
