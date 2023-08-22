@@ -11,8 +11,8 @@ saas_config:
       default_value: slack.com
       description: Your Slack Enterprise URL
     - name: user_oauth_token
-      label: Access token
-      description: Your OAuth 2.0 access token.
+      label: Access Token
+      description: Your OAuth 2.0 access token
       sensitive: True
 
   client_config:

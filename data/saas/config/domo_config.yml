@@ -4,7 +4,7 @@ saas_config:
   type: domo
   description: A sample schema representing the Domo connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/domo
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
@@ -15,7 +15,7 @@ saas_config:
       label: Client ID
       description: Your Domo client ID
     - name: client_secret
-      label: Client secret
+      label: Client Secret
       description: Your Domo client secret
       sensitive: True
 

@@ -4,7 +4,7 @@ saas_config:
   type: friendbuy
   description: A sample schema representing the Friendbuy connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/friendbuy
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
@@ -17,8 +17,8 @@ saas_config:
 
   external_references:
     - name: friendbuy_user_id
-      label: User ID field
-      description: The location in your owned database where you store Friendbuy User Ids
+      label: Friendbuy User ID Field
+      description: The location in your owned database where you store Friendbuy User IDs
 
   client_config:
     protocol: https

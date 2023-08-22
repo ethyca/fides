@@ -4,7 +4,7 @@ saas_config:
   type: firebase_auth
   description: A sample schema representing the Firebase Auth connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/firebase
-  version: 0.0.4
+  version: 0.0.5
 
   connector_params:
     - name: domain
@@ -12,8 +12,8 @@ saas_config:
       description: Your Firebase URL
     - name: type
       default_value: service_account
-      label: Type of account
-      description:  The type of account to use for connecting to Firebase
+      label: Type of Account
+      description: The type of account to use for connecting to Firebase
     - name: project_id
       label: Project ID
       description: The ID of the project in Firebase
@@ -21,11 +21,11 @@ saas_config:
       label: Private Key ID
       description: The ID of the private key for your service account
     - name: private_key
-      label: Private key
+      label: Private Key
       description: The private key for your service account
       sensitive: True
     - name: client_email
-      label: Client email
+      label: Client Email
       description: The client email for your service account
     - name: client_id
       label: Client ID

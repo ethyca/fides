@@ -4,14 +4,14 @@ saas_config:
   type: klaviyo
   description: A sample schema representing the Klaviyo connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/klaviyo
-  version: 0.1.1
+  version: 0.1.2
 
   connector_params:
     - name: domain
       default_value: a.klaviyo.com
-      description:  Your Klaviyo API URL
+      description: Your Klaviyo API URL
     - name: api_key
-      label: API key
+      label: API Key
       sensitive: True
       description: Your Private API key
     - name: revision

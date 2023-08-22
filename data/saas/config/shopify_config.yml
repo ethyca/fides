@@ -4,13 +4,13 @@ saas_config:
   type: shopify
   description: A sample schema representing the Shopify connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/shopify
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
-      description: Your Shopify URL 
+      description: Your Shopify URL
     - name: access_token
-      label: Access token
+      label: Access Token
       description: Your Shopify access token
       sensitive: True
 

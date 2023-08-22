@@ -4,10 +4,11 @@ saas_config:
   type: adobe_campaign
   description: A schema representing the Adobe Campaign connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/adobe-campaign
-  version: 0.0.3
+  version: 0.0.4
 
   connector_params:
     - name: domain
+      default_value: mc.adobe.io
       label: Domain
       description: The specific URL used to access your organization's Adobe Campaign instance
     - name: organization
@@ -31,11 +32,12 @@ saas_config:
       sensitive: True
     - name: regulation
       label: Regulation
-      description: The regulation to apply for request processing - pick from GDPR, CCPA, PDPA, LGPD.  
+      options: [GDPR, CCPA, PDPA, LGPD]
+      description: The regulation to apply for request processing - pick from GDPR, CCPA, PDPA, LGPD.
     - name: namespace
       label: Namespace
+      default_value: defaultNamespace1
       description: The schema or partition where the user data resides.
-
 
   client_config:
     protocol: https

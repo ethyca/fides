@@ -4,7 +4,7 @@ saas_config:
   type: heap
   description: A sample schema representing the Heap connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/heap
-  version: 0.1.0
+  version: 0.1.1
 
   connector_params:
     - name: domain
@@ -14,7 +14,7 @@ saas_config:
       label: App ID
       description: Your Heap custom App ID
     - name: api_key
-      label: API key
+      label: API Key
       description: Your Heap custom App ID
 
   client_config:

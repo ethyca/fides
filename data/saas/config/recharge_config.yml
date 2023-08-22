@@ -4,14 +4,14 @@ saas_config:
   type: recharge
   description: A sample schema representing the Recharge connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/recharge
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
       default_value: api.rechargeapps.com
       description: Your Recharge URL
     - name: api_key
-      label: API key
+      label: API Key
       description: Your Recharge API key.
       sensitive: True
 

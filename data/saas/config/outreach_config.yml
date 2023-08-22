@@ -4,27 +4,27 @@ saas_config:
   type: outreach
   description: A sample schema representing the Outreach connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/outreach
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
       default_value: api.outreach.io
       description: Your Outreach URL
     - name: requester_email
-      label: Requester email
+      label: Requester Email
       description: The email address of the Outreach user that created your custom app
     - name: client_id
       label: Client ID
       description: The OAuth 2.0 client ID for your application
     - name: client_secret
-      label: Client secret
+      label: Client Secret
       description: The OAuth 2.0 client secret
       sensitive: True
     - name: redirect_uri
       label: Redirect URL
       description: The Fides URL to which users will be redirected upon successful authentication
     - name: page_size
-      label: Page size
+      label: Page Size
       description: The number of results to return on each page
 
   client_config:

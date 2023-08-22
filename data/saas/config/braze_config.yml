@@ -4,7 +4,7 @@ saas_config:
   type: braze
   description: A sample schema representing the Braze connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/braze
-  version: 0.0.3
+  version: 0.0.4
 
   connector_params:
     - name: domain

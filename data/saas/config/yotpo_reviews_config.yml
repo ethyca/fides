@@ -4,24 +4,23 @@ saas_config:
   type: yotpo_reviews
   description: A sample schema representing the Yotpo Reviews connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/yotpo-reviews
-  version: 0.1.1
+  version: 0.1.2
 
   connector_params:
     - name: domain
       default_value: api.yotpo.com
-      description: The URL for your Yotpo Loyalty instance 
+      description: The URL for your Yotpo Loyalty instance
     - name: store_id
       label: Store ID
       description: Your Yotpo Store ID, previously referred to as `app key`
     - name: secret_key
       sensitive: True
-      label: Secret key
+      label: Secret Key
       description: Your Yotpo secret key
-
 
   external_references:
     - name: yotpo_external_id
-      label: Yotpo External ID
+      label: Yotpo External ID Field
       description: Dataset reference to the location of Yotpo external IDs
 
   client_config:

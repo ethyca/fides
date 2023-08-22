@@ -4,15 +4,15 @@ saas_config:
   type: zendesk
   description: A sample schema representing the Zendesk connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/zendesk
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
-      description: our Zendesk URL 
+      description: our Zendesk URL
     - name: username
       description: Your Zendesk username
     - name: api_key
-      label: API key
+      label: API Key
       sensitive: True
       description: Your Zendesk API key
 

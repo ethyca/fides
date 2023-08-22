@@ -4,7 +4,7 @@ saas_config:
   type: jira
   description: A sample schema representing the Jira connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/jira
-  version: 0.1.1
+  version: 0.1.2
 
   connector_params:
     - name: domain
@@ -12,7 +12,7 @@ saas_config:
     - name: username
       description: The email address of the authorized JIRA user
     - name: api_key
-      label: API token
+      label: API Token
       description: The token used for authentication to JIRA
       sensitive: True
 

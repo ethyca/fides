@@ -4,17 +4,17 @@ saas_config:
   type: amplitude
   description: A sample schema representing the Amplitude connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/amplitude
-  version: 0.1.1
+  version: 0.1.2
 
   connector_params:
     - name: domain
       default_value: amplitude.com
       description: Your Amplitude URL
     - name: api_key
-      label: API key
+      label: API Key
       description: Your Amplitude project's API key
     - name: secret_key
-      label: Secret key
+      label: Secret Key
       sensitive: True
       description: Your Amplitude project's secret key
 

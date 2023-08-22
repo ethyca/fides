@@ -4,21 +4,21 @@ saas_config:
   type: rollbar
   description: A sample schema representing the Rollbar connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/rollbar
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
       description: Your Rollbar URL
     - name: read_access_token
-      label: Read access token
+      label: Read Access Token
       description: An account access token with read permissions
       sensitive: True
     - name: write_access_token
-      label: Write access token
+      label: Write Access Token
       description: An account access token with write permissions
       sensitive: True
     - name: page_limit
-      label: Page limit
+      label: Page Limit
       default_value: 100
       description: The maximum number of pages to return from Rollbar's _instances_ endpoint
 

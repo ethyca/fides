@@ -4,7 +4,7 @@ saas_config:
   type: auth0
   description: A sample schema representing the Auth0 connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/auth0
-  version: 0.0.3
+  version: 0.0.4
 
   connector_params:
     - name: domain
@@ -14,7 +14,7 @@ saas_config:
       description: Your Auth0 application's client ID
     - name: client_secret
       sensitive: True
-      label: Client secret
+      label: Client Secret
       description: Your Auth0 application's client secret
 
   client_config:

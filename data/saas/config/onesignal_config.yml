@@ -4,23 +4,23 @@ saas_config:
   type: onesignal
   description: A sample schema representing the OneSignal connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/onesignal
-  version: 0.1.1
+  version: 0.1.2
 
   connector_params:
     - name: domain
       default_value: onesignal.com
-      description: Your OneSignal URL 
+      description: Your OneSignal URL
     - name: app_id
       label: App ID
       description: Your OneSignal App ID
     - name: api_key
-      label: API key
-      description:  Your OneSignal REST API key
+      label: API Key
+      description: Your OneSignal REST API key
       sensitive: True
 
   external_references:
     - name: player_id
-      label: Player ID
+      label: Player ID Field
       description: The location in your owned database where you store OneSignal Player IDs
 
   client_config:
