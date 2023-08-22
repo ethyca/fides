@@ -31,13 +31,20 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
   const isShowingSuggestions = useAppSelector(selectSuggestions);
 
   useEffect(() => {
+    if (isShowingSuggestions === "showing") {
+      setPreSuggestionValue(field.value);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isShowingSuggestions, setPreSuggestionValue]);
+
+  useEffect(() => {
     if (
       isShowingSuggestions === "showing" &&
       dictEntry &&
       dictField in dictEntry
     ) {
       if (field.value !== dictEntry[dictField as keyof DictEntry]) {
-        setPreSuggestionValue(field.value);
         setValue(dictEntry[dictField as keyof DictEntry]);
       }
     }
