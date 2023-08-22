@@ -3,14 +3,17 @@ saas_config:
   name: Kustomer
   type: kustomer
   description: A sample schema representing the Kustomer connector for Fides
-  version: 0.1.1
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/kustomer
+  version: 0.1.2
 
   connector_params:
     - name: domain
       default_value: api.kustomerapp.com
+      description: Your Kustomer API URL
     - name: api_key
       label: API Key
       sensitive: True
+      description: Your Kustomer API key
 
   client_config:
     protocol: https

@@ -3,11 +3,15 @@ saas_config:
   name: Vend
   type: vend
   description: A sample schema representing the Vend connector for Fides
-  version: 0.1.1
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/vend
+  version: 0.1.2
 
   connector_params:
     - name: domain
+      description: Your Vend URL
     - name: token
+      label: Access Token
+      description: Your Vend personal access token
       sensitive: True
 
   client_config:

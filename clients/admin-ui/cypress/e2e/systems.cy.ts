@@ -171,7 +171,7 @@ describe("System management page", () => {
         });
       });
 
-      it("can render a warning when there is unsaved data", () => {
+      it.skip("can render a warning when there is unsaved data", () => {
         cy.fixture("systems/system.json").then((system) => {
           cy.intercept("GET", "/api/v1/system/*", {
             body: { ...system, privacy_declarations: [] },

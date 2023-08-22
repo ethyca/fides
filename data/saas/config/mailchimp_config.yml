@@ -3,13 +3,17 @@ saas_config:
   name: Mailchimp
   type: mailchimp
   description: A sample schema representing the Mailchimp connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/mailchimp
   version: 0.0.3
 
   connector_params:
     - name: domain
+      description: Your Mailchimp URL
     - name: username
+      description: Your Mailchimp username
     - name: api_key
       label: API Key
+      description: Your Mailchimp API key
       sensitive: True
 
   client_config:

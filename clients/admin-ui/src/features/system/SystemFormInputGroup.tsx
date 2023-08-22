@@ -1,10 +1,12 @@
-import { Box, Heading, Stack } from "@fidesui/react";
+import { Box, Heading, Spacer, Stack } from "@fidesui/react";
 
 const SystemFormInputGroup = ({
   heading,
+  HeadingButton,
   children,
 }: {
   heading: string;
+  HeadingButton?: React.ReactNode;
   children?: React.ReactNode;
 }) => (
   <Stack spacing={4}>
@@ -20,6 +22,9 @@ const SystemFormInputGroup = ({
         backgroundColor="gray.50"
         px={6}
         py={4}
+        display="flex"
+        flexDirection="row"
+        alignItems="center"
         borderBottom="1px"
         borderColor="gray.200"
         borderTopRadius={6}
@@ -27,6 +32,13 @@ const SystemFormInputGroup = ({
         <Heading as="h3" size="xs">
           {heading}
         </Heading>
+        {HeadingButton ? (
+          <>
+            <Spacer />
+            {/* @ts-ignore */}
+            <HeadingButton />
+          </>
+        ) : null}
       </Box>
 
       <Stack spacing={4} px={6} py={6}>

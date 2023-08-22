@@ -2582,3 +2582,23 @@ dataset:
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: messaging_template
+    description: 'Table used to store custom messaging templates'
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: key
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: content
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

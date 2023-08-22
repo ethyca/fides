@@ -183,7 +183,6 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         if len(components) > 1:
             if isinstance(value, dict):
                 return self._get_nested_values(value, ".".join(components[1:]))
-
             if isinstance(value, list):
                 return pydash.flatten(
                     [

@@ -44,13 +44,13 @@ import {
   Size,
 } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
 type Variant = "inline" | "stacked" | "block";
 
-interface CustomInputProps {
+export interface CustomInputProps {
   disabled?: boolean;
   label: string;
   tooltip?: string;
@@ -78,7 +78,7 @@ export const Label = ({
   </FormLabel>
 );
 
-const TextInput = ({
+export const TextInput = ({
   isPassword,
   ...props
 }: InputProps & { isPassword: boolean }) => {
@@ -312,11 +312,13 @@ export const SelectInput = ({
         singleValue: singleValueBlock
           ? (provided) => ({
               ...provided,
-              background: "primary.400",
-              color: "white",
-              borderRadius: ".375rem",
-              fontSize: ".75rem",
-              paddingX: ".5rem",
+              fontSize: "12px",
+              background: "gray.200",
+              color: "gray.600",
+              fontWeight: "400",
+              borderRadius: "2px",
+              py: 1,
+              px: 2,
             })
           : undefined,
       }}
@@ -675,6 +677,7 @@ interface CustomTextAreaProps {
   tooltip?: string;
   variant?: Variant;
   isRequired?: boolean;
+  resize?: boolean;
 }
 export const CustomTextArea = ({
   textAreaProps,
@@ -682,19 +685,41 @@ export const CustomTextArea = ({
   tooltip,
   variant = "inline",
   isRequired = false,
+  resize = false,
   ...props
 }: CustomTextAreaProps & StringField) => {
   const [initialField, meta] = useField(props);
   const field = { ...initialField, value: initialField.value ?? "" };
   const isInvalid = !!(meta.touched && meta.error);
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const resizeTextarea = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (resize && textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  }, [resize]);
+
   const innerTextArea = (
     <Textarea
-      {...field}
       size="sm"
-      {...textAreaProps}
       data-testid={`input-${field.name}`}
+      {...field}
+      {...textAreaProps}
+      ref={textareaRef}
+      style={{ overflowY: resize ? "hidden" : "visible" }}
+      onChange={(event) => {
+        resizeTextarea();
+        field.onChange(event);
+      }}
     />
   );
+
+  useEffect(() => {
+    resizeTextarea(); // attempt to resize the textarea when the component mounts
+  }, [resizeTextarea]);
 
   // When there is no label, it doesn't matter if stacked or inline
   // since we only render the text field

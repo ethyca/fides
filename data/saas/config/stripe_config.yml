@@ -2,14 +2,17 @@ saas_config:
   fides_key: <instance_fides_key>
   name: Stripe
   type: stripe
+  user_guide: https://docs.ethyca.com/user-guides/integrations/stripe
   description: A sample schema representing the Stripe connector for Fides
-  version: 0.0.4
+  version: 0.0.5
 
   connector_params:
     - name: domain
       default_value: api.stripe.com
+      description: Your Stripe URL
     - name: api_key
       label: API Key
+      description: Your Stripe API key
       sensitive: True
 
   client_config:
