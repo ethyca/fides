@@ -10,7 +10,7 @@ saas_config:
     - name: domain
       description: Your Vend URL
     - name: token
-      label: Access Token
+      label: Access token
       description: Your Vend personal access token
       sensitive: True
 

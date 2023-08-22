@@ -12,7 +12,7 @@ saas_config:
     - name: username
       description: The email address of the authorized JIRA user
     - name: api_key
-      label: API Token
+      label: API token
       description: The token used for authentication to JIRA
       sensitive: True
 

@@ -14,7 +14,7 @@ saas_config:
       label: App ID
       description: Your Heap custom App ID
     - name: api_key
-      label: API Key
+      label: API key
       description: Your Heap custom App ID
 
   client_config:

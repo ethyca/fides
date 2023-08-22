@@ -23,7 +23,7 @@ saas_config:
 
   external_references:
     - name: doordash_delivery_id
-      label: Delivery ID Field
+      label: Delivery ID field
       description: The location in your owned database where you store Doordash delivery IDs
 
   client_config:

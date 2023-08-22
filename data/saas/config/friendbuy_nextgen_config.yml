@@ -12,10 +12,10 @@ saas_config:
       default_value: mapi.fbot.me/v1
     - name: key
       description: Your API key
-      label: API Key
+      label: API key
     - name: secret
       description: Your API secret
-      label: API Secret
+      label: API secret
       sensitive: True
 
   client_config:

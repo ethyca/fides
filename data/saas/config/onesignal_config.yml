@@ -14,13 +14,13 @@ saas_config:
       label: App ID
       description: Your OneSignal App ID
     - name: api_key
-      label: API Key
+      label: API key
       description: Your OneSignal REST API key
       sensitive: True
 
   external_references:
     - name: player_id
-      label: Player ID Field
+      label: Player ID field
       description: The location in your owned database where you store OneSignal Player IDs
 
   client_config:

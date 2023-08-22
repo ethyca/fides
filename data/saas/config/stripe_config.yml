@@ -11,7 +11,7 @@ saas_config:
       default_value: api.stripe.com
       description: Your Stripe URL
     - name: api_key
-      label: API Key
+      label: API key
       description: Your Stripe API key
       sensitive: True
 

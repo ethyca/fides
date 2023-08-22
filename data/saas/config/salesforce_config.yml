@@ -14,7 +14,7 @@ saas_config:
       description: Your Salesforce OAuth client ID.
     - name: client_secret
       sensitive: True
-      label: Client Secret
+      label: Client secret
       description: Your Salesforce OAuth client secret
     - name: redirect_uri
       label: Redirect URL

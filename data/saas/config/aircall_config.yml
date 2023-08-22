@@ -14,7 +14,7 @@ saas_config:
       label: API ID
       description: Your Aircall API ID
     - name: api_token
-      label: API Token
+      label: API token
       description: Your Aircall secret token
       sensitive: True
 
