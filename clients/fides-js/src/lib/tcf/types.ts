@@ -93,7 +93,7 @@ export type TCFVendorRecord = {
   id: string;
   name?: string;
   description?: string;
-  is_gvl?: boolean;
+  has_vendor_id: boolean;
   purposes?: Array<EmbeddedLineItem>;
   special_purposes?: Array<EmbeddedLineItem>;
   data_categories?: Array<TCFDataCategoryRecord>;
