@@ -15,7 +15,7 @@ class TestMaskSenstiveValues:
                 "api_id": {"sensitive": False, "title": "API ID", "type": "string"},
                 "api_token": {
                     "sensitive": True,
-                    "title": "API Token",
+                    "title": "API token",
                     "type": "string",
                 },
                 "domain": {
@@ -50,7 +50,7 @@ class TestMaskSenstiveValues:
                 },
                 "key_id": {"title": "Key ID", "sensitive": False, "type": "string"},
                 "signing_secret": {
-                    "title": "Signing Secret",
+                    "title": "Signing secret",
                     "sensitive": True,
                     "type": "string",
                 },
