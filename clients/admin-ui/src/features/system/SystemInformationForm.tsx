@@ -263,14 +263,16 @@ const SystemInformationForm = ({
                   label="System name"
                   tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
                 />
-                <CustomTextInput
-                  id="fides_key"
-                  name="fides_key"
-                  isRequired
-                  label="Unique ID"
-                  disabled
-                  variant="stacked"
-                />
+                {passedInSystem?.fides_key && (
+                  <CustomTextInput
+                    id="fides_key"
+                    name="fides_key"
+                    label="Unique ID"
+                    disabled
+                    variant="stacked"
+                    tooltip="An auto-generated unique ID based on the system name"
+                  />
+                )}
                 <DictSuggestionTextArea
                   id="description"
                   name="description"
