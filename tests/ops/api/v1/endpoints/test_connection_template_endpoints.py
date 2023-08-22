@@ -477,7 +477,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": google_analytics_template.human_readable,
                 "encoded_icon": google_analytics_template.icon,
                 "authorization_required": True,
-                "user_guide": None,
+                "user_guide": google_analytics_template.user_guide,
             },
             MAILCHIMP_TRANSACTIONAL: {
                 "identifier": MAILCHIMP_TRANSACTIONAL,
@@ -485,7 +485,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": mailchimp_transactional_template.human_readable,
                 "encoded_icon": mailchimp_transactional_template.icon,
                 "authorization_required": False,
-                "user_guide": None,
+                "user_guide": mailchimp_transactional_template.user_guide,
             },
             SEGMENT: {
                 "identifier": SEGMENT,
@@ -493,7 +493,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": segment_template.human_readable,
                 "encoded_icon": segment_template.icon,
                 "authorization_required": False,
-                "user_guide": None,
+                "user_guide": segment_template.user_guide,
             },
             STRIPE: {
                 "identifier": STRIPE,
@@ -501,7 +501,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": stripe_template.human_readable,
                 "encoded_icon": stripe_template.icon,
                 "authorization_required": False,
-                "user_guide": None,
+                "user_guide": stripe_template.user_guide,
             },
             ZENDESK: {
                 "identifier": ZENDESK,
@@ -509,7 +509,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": zendesk_template.human_readable,
                 "encoded_icon": zendesk_template.icon,
                 "authorization_required": False,
-                "user_guide": None,
+                "user_guide": zendesk_template.user_guide,
             },
             DOORDASH: {
                 "identifier": DOORDASH,
@@ -517,7 +517,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": doordash_template.human_readable,
                 "encoded_icon": doordash_template.icon,
                 "authorization_required": False,
-                "user_guide": None,
+                "user_guide": doordash_template.user_guide,
             },
             ConnectionType.sovrn.value: {
                 "identifier": ConnectionType.sovrn.value,
@@ -1188,15 +1188,17 @@ class TestGetConnectionSecretSchema:
             "description": "Hubspot secrets schema",
             "type": "object",
             "properties": {
-                "private_app_token": {
-                    "title": "Private App Token",
-                    "sensitive": True,
-                    "type": "string",
-                },
                 "domain": {
                     "title": "Domain",
+                    "description": "Your HubSpot domain",
                     "default": "api.hubapi.com",
                     "sensitive": False,
+                    "type": "string",
+                },
+                "private_app_token": {
+                    "title": "Private App Token",
+                    "description": "Your HubSpot Private Apps access token",
+                    "sensitive": True,
                     "type": "string",
                 },
             },
