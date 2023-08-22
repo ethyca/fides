@@ -180,6 +180,7 @@ def get_connection_types(
                         human_readable=connector_template.human_readable,
                         encoded_icon=connector_template.icon,
                         authorization_required=connector_template.authorization_required,
+                        user_guide=connector_template.user_guide,
                     )
                 )
 
