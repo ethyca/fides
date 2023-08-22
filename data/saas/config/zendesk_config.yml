@@ -8,7 +8,7 @@ saas_config:
 
   connector_params:
     - name: domain
-      description: our Zendesk URL
+      description: Your Zendesk URL
     - name: username
       description: Your Zendesk username
     - name: api_key

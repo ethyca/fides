@@ -12,7 +12,7 @@ saas_config:
       description: The URL for your Yotpo Loyalty instance
     - name: store_id
       label: Store ID
-      description: Your Yotpo Store ID, previously referred to as `app key`
+      description: Your Yotpo Store ID, previously referred to as "app key"
     - name: secret_key
       sensitive: True
       label: Secret Key

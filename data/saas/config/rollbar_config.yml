@@ -20,7 +20,7 @@ saas_config:
     - name: page_limit
       label: Page Limit
       default_value: 100
-      description: The maximum number of pages to return from Rollbar's _instances_ endpoint
+      description: The maximum number of pages to return from Rollbar's "instances" endpoint
 
   client_config:
     protocol: https
