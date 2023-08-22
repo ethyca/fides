@@ -4,10 +4,11 @@ Contains all of the logic related to the database including connections, setup, 
 from os import path
 from typing import Literal
 
-from alembic import command
+from alembic import command, script
 from alembic.config import Config
 from alembic.runtime import migration
 from loguru import logger as log
+from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists
 from sqlalchemy_utils.types.encrypted.encrypted_type import InvalidCiphertextError
 
@@ -17,7 +18,7 @@ from fides.api.db.seed import load_default_resources, load_samples
 from fides.api.util.errors import get_full_exception_name
 from fides.core.utils import get_db_engine
 
-DatabaseHealth = Literal["healthy", "unhealthy"]
+DatabaseHealth = Literal["healthy", "unhealthy", "needs migration"]
 
 
 def get_alembic_config(database_url: str) -> Config:
@@ -81,16 +82,23 @@ def reset_db(database_url: str) -> None:
     log.info("Reset complete.")
 
 
-def get_db_health(database_url: str) -> DatabaseHealth:
-    """Checks if the db is reachable."""
+def get_db_health(database_url: str, db: Session) -> DatabaseHealth:
+    """Checks if the db is reachable and up-to-date with Alembic migrations."""
     try:
-        get_db_engine(database_url)
+        alembic_config = get_alembic_config(database_url)
+        alembic_script_directory = script.ScriptDirectory.from_config(alembic_config)
+        context = migration.MigrationContext.configure(db.connection())
+
+        if (
+            context.get_current_revision()
+            != alembic_script_directory.get_current_head()
+        ):
+            return "needs migration"
+        return "healthy"
     except Exception as error:  # pylint: disable=broad-except
         error_type = get_full_exception_name(error)
         log.error("Unable to reach the database: {}: {}", error_type, error)
         return "unhealthy"
-    else:
-        return "healthy"
 
 
 async def configure_db(database_url: str, samples: bool = False) -> None:

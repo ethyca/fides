@@ -350,20 +350,39 @@ def privacy_declaration_additive_migration(bind: Connection):
 def upgrade():
     bind: Connection = op.get_bind()
     bind.execute(text("DROP AGGREGATE IF EXISTS array_accum(anyarray);"))
+
+    result = bind.execute("SHOW server_version;")  # 12.16 (Debian 12.16-1.pgdg120+1)
+    version = result.fetchone()[0]
+    major_version = int(version.split(".")[0])
+
     # Add a new function to be able to combine potentially multiple arrays of different sizes alongside null values
     # into a single array
-    bind.execute(
-        text(
-            """
-            CREATE AGGREGATE array_accum (anyarray)
-            (
-                sfunc = array_cat,
-                stype = anyarray,
-                initcond = '{}'
-            );  
-             """
+    if major_version >= 14:
+        bind.execute(
+            text(
+                """
+                CREATE AGGREGATE array_accum (anycompatiblearray)
+                (
+                    sfunc = array_cat,
+                    stype = anycompatiblearray,
+                    initcond = '{}'
+                );  
+                """
+            )
         )
-    )
+    else:
+        bind.execute(
+            text(
+                """
+                CREATE AGGREGATE array_accum (anyarray)
+                (
+                    sfunc = array_cat,
+                    stype = anyarray,
+                    initcond = '{}'
+                );  
+                """
+            )
+        )
     system_dictionary_additive_migration(bind)
     privacy_declaration_additive_migration(bind)
 

@@ -64,6 +64,7 @@ STORAGE_DEFAULT_BY_TYPE = "/storage/default/{storage_type}"
 
 
 # Email URLs
+MESSAGING_TEMPLATES = "/messaging/templates"
 MESSAGING_CONFIG = "/messaging/config"
 MESSAGING_SECRETS = "/messaging/config/{config_key}/secret"
 MESSAGING_BY_KEY = "/messaging/config/{config_key}"
