@@ -796,7 +796,7 @@ class TestGetTCFPrivacyExperiences:
 
         system_data = resp.json()["items"][0]["tcf_systems"][0]
 
-        assert system_data["id"] == system.fides_key
+        assert system_data["id"] == system.id
         assert system_data["purposes"] == []
         assert system_data["special_purposes"] == []
         assert len(system_data["features"]) == 1

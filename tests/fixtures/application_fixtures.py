@@ -2350,7 +2350,7 @@ def privacy_preference_history_for_system(
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
             "method": "button",
-            "system_fides_key": system.fides_key,
+            "system": system.id,
             "privacy_experience_config_history_id": None,
             "privacy_experience_id": privacy_experience_france_overlay.id,
             "preference": "opt_in",

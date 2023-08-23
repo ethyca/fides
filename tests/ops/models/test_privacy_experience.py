@@ -1371,13 +1371,13 @@ class TestCacheSavedAndServedOnConsentRecord:
         self, db, fides_user_provided_identity, system
     ):
         system_record = TCFVendorRecord(
-            id=system.fides_key, name=system.name, has_vendor_id=False
+            id=system.id, name=system.name, has_vendor_id=False
         )
         cache_saved_and_served_on_consent_record(
             db,
             system_record,
             fides_user_provided_identity,
-            record_type=ConsentRecordType.system_fides_key,
+            record_type=ConsentRecordType.system,
         )
 
         assert system_record.default_preference == UserConsentPreference.opt_out

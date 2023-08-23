@@ -136,7 +136,7 @@ class TCFSpecialPurposeSave(TCFPreferenceSaveBase):
 
 class TCFVendorSave(FidesSchema):
     """Base schema for saving preferences with respect to a TCF Vendor
-    TODO: TCF Add validation for allowable features
+    TODO: TCF Add validation for allowable vendors
     """
 
     id: str

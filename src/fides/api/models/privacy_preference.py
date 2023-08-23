@@ -66,7 +66,7 @@ class TCFComponentType(Enum):
     purpose = "purpose"
     special_purpose = "special_purpose"
     vendor = "vendor"
-    system_fides_key = "system_fides_key"
+    system = "system"
     feature = "feature"
     special_feature = "special_feature"
 
@@ -79,7 +79,7 @@ class ConsentRecordType(Enum):
     purpose = "purpose"
     special_purpose = "special_purpose"
     vendor = "vendor"
-    system_fides_key = "system_fides_key"
+    system = "system"
     feature = "feature"
     special_feature = "special_feature"
 
@@ -148,7 +148,6 @@ class ConsentReportingMixin:
         return Column(
             String,
             ForeignKey("privacyexperienceconfighistory.id"),
-            nullable=True,
             index=True,
         )
 
@@ -156,9 +155,7 @@ class ConsentReportingMixin:
     # Minimal information stored here, mostly just region and component type
     @declared_attr
     def privacy_experience_id(cls) -> Column:
-        return Column(
-            String, ForeignKey("privacyexperience.id"), nullable=True, index=True
-        )
+        return Column(String, ForeignKey("privacyexperience.id"), index=True)
 
     @declared_attr
     def privacy_notice_history_id(cls) -> Column:
@@ -166,9 +163,7 @@ class ConsentReportingMixin:
         The specific historical record the user consented to - applicable when
         saving preferences with respect to a privacy notice directly
         """
-        return Column(
-            String, ForeignKey(PrivacyNoticeHistory.id), nullable=True, index=True
-        )
+        return Column(String, ForeignKey(PrivacyNoticeHistory.id), index=True)
 
     # Optional FK to a verified provided identity (like email or phone), if applicable
     @declared_attr
@@ -206,9 +201,9 @@ class ConsentReportingMixin:
     vendor = Column(
         String, index=True
     )  # When saving privacy preferences with respect to a vendor directly. Vendors can apply to multiple systems.
-    system_fides_key = Column(
+    system = Column(
         String, index=True
-    )  # When saving privacy preferences with respect to a system directly, in the case where the vendor is unknown
+    )  # When saving privacy preferences with respect to a system id directly, in the case where the vendor is unknown
 
     tcf_version = Column(String)
 
@@ -245,8 +240,8 @@ class ConsentReportingMixin:
             return ConsentRecordType.special_purpose
         if self.vendor:
             return ConsentRecordType.vendor
-        if self.system_fides_key:
-            return ConsentRecordType.system_fides_key
+        if self.system:
+            return ConsentRecordType.system
         if self.special_feature:
             return ConsentRecordType.special_feature
         return ConsentRecordType.feature
@@ -532,8 +527,8 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
         if tcf_field == TCFComponentType.vendor.value:
             return systems_that_match_vendor_string(db, tcf_value)
 
-        if tcf_field == TCFComponentType.system_fides_key.value:
-            return systems_that_match_fides_key(db, tcf_value)
+        if tcf_field == TCFComponentType.system.value:
+            return systems_that_match_system_id(db, tcf_value)
 
         return []
 
@@ -650,9 +645,9 @@ class LastSavedMixin:
         String, index=True
     )  # When a vendor was served directly (TCF). Vendors can apply to multiple systems.
 
-    system_fides_key = Column(
+    system = Column(
         String, index=True
-    )  # When a system fides key was served directly (TCF). Used for when the specific vendor type is unknown.
+    )  # The id of a system (TCF). Used for when the specific vendor type is unknown.
 
     @declared_attr
     def provided_identity_id(cls) -> Column:
@@ -665,13 +660,11 @@ class LastSavedMixin:
     @declared_attr
     def privacy_notice_id(cls) -> Column:
         """When saving a notice was served directly"""
-        return Column(String, ForeignKey(PrivacyNotice.id), nullable=True, index=True)
+        return Column(String, ForeignKey(PrivacyNotice.id), index=True)
 
     @declared_attr
     def privacy_notice_history_id(cls) -> Column:
-        return Column(
-            String, ForeignKey(PrivacyNoticeHistory.id), nullable=True, index=True
-        )
+        return Column(String, ForeignKey(PrivacyNoticeHistory.id), index=True)
 
     # Relationships
     @declared_attr
@@ -750,13 +743,11 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
             "vendor",
             name="fides_user_device_identity_vendor",
         ),
-        UniqueConstraint(
-            "provided_identity_id", "system_fides_key", name="identity_system_fides_key"
-        ),
+        UniqueConstraint("provided_identity_id", "system", name="identity_system"),
         UniqueConstraint(
             "fides_user_device_provided_identity_id",
-            "system_fides_key",
-            name="fides_user_device_identity_system_fides_key",
+            "system",
+            name="fides_user_device_identity_system",
         ),
         UniqueConstraint("provided_identity_id", "feature", name="identity_feature"),
         UniqueConstraint(
@@ -866,13 +857,13 @@ class LastServedNotice(LastSavedMixin, Base):
         ),
         UniqueConstraint(
             "provided_identity_id",
-            "system_fides_key",
-            name="last_served_identity_system_fides_key",
+            "system",
+            name="last_served_identity_system",
         ),
         UniqueConstraint(
             "fides_user_device_provided_identity_id",
-            "system_fides_key",
-            name="last_served_fides_user_device_identity_system_fides_key",
+            "system",
+            name="last_served_fides_user_device_identity_system",
         ),
         UniqueConstraint(
             "provided_identity_id",
@@ -1051,17 +1042,18 @@ def systems_that_match_vendor_string(
     ]
 
 
-def systems_that_match_fides_key(
-    db: Session, system_fides_key: Optional[str]
+def systems_that_match_system_id(
+    db: Session, system_id: Optional[str]
 ) -> List[FidesKey]:
-    """Returns the system fides key if it exists on the system"""
-    if not system_fides_key:
+    """Returns the system id if it exists on the system"""
+    if not system_id:
         return []
+
     return [
         system.fides_key
         for system in (
             db.query(System.fides_key)
-            .filter(System.fides_key == system_fides_key)
-            .distinct(System.id)
+            .filter(System.id == system_id)
+            .distinct(System.fides_key)
         )
     ]

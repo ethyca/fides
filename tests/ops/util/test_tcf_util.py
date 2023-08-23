@@ -54,7 +54,7 @@ class TestTCFContents:
         assert tcf_contents.tcf_special_features == []
         assert len(tcf_contents.tcf_systems) == 1
 
-        assert tcf_contents.tcf_systems[0].id == tcf_system.fides_key
+        assert tcf_contents.tcf_systems[0].id == tcf_system.id
         assert tcf_contents.tcf_systems[0].name == "TCF System Test"
         assert tcf_contents.tcf_systems[0].description == "My TCF System Description"
 
@@ -276,7 +276,7 @@ class TestTCFContents:
             len(tcf_contents.tcf_vendors) == 0
         )  # No official vendor id on this system
 
-        assert len(tcf_contents.tcf_systems) == 0
+        assert len(tcf_contents.tcf_systems) == 1
         system_info = tcf_contents.tcf_systems[0]
 
         assert len(system_info.special_purposes) == 0
