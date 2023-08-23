@@ -35,6 +35,7 @@ TCF_PREFERENCES_FIELD_MAPPING: Dict[str, str] = {
     "feature_preferences": TCFComponentType.feature.value,
     "special_feature_preferences": TCFComponentType.special_feature.value,
     "vendor_preferences": TCFComponentType.vendor.value,
+    "system_preferences": TCFComponentType.system_fides_key.value,
 }
 
 
@@ -55,6 +56,10 @@ class TCFAttributes(FidesSchema):
     )
     special_feature: Optional[int] = Field(
         title="The TCF special feature that was served or saved against"
+    )
+    system_fides_key: Optional[str] = Field(
+        title="The System Fides key that consent was served or saved against. Used when we don't know what vendor "
+        "corresponds to the system, so we save preferences against the system directly"
     )
 
 
@@ -77,6 +82,7 @@ class PrivacyPreferencesRequest(FidesSchema):
     vendor_preferences: conlist(TCFVendorSave, max_items=50) = []  # type: ignore
     feature_preferences: conlist(TCFFeatureSave, max_items=50) = []  # type: ignore
     special_feature_preferences: conlist(TCFSpecialFeatureSave, max_items=50) = []  # type: ignore
+    system_preferences: conlist(TCFVendorSave, max_items=50) = []  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]
@@ -131,6 +137,7 @@ class RecordConsentServedRequest(FidesSchema):
     tcf_vendors: List[SafeStr] = []
     tcf_features: List[int] = []
     tcf_special_features: List[int] = []
+    tcf_systems: List[SafeStr] = []
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]
     acknowledge_mode: Optional[bool]
