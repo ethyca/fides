@@ -1,7 +1,7 @@
 """add tcf columns
 
 Revision ID: 66df7d9b8103
-Revises: fd52d5f08c17
+Revises: 507563f6f8d4
 Create Date: 2023-07-24 20:23:49.622518
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "66df7d9b8103"
-down_revision = "fd52d5f08c17"
+down_revision = "507563f6f8d4"
 branch_labels = None
 depends_on = None
 

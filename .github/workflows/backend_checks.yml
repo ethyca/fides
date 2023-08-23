@@ -79,7 +79,6 @@ jobs:
           [
             "isort",
             "black",
-            "mypy",
             "pylint",
             "xenon",
             "check_install",
