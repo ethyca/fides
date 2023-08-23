@@ -1,0 +1,564 @@
+{
+  "gvlSpecificationVersion": 2,
+  "vendorListVersion": 1,
+  "tcfPolicyVersion": 2,
+  "lastUpdated": "2019-09-12T16:05:11Z",
+  "purposes": {
+    "1": {
+      "id": 1,
+      "name": "Store and/or access information on a device",
+      "description": "Cookies, device identifiers, or other information can be stored or accessed on your device for the purposes presented to you.",
+      "descriptionLegal": "Vendors can:\n* Store and access information on the device such as cookies and device identifiers presented to a user."
+    },
+    "2": {
+      "id": 2,
+      "name": "Select basic ads",
+      "description": "Ads can be shown to you based on the content you\u2019re viewing, the app you\u2019re using, your approximate location, or your device type.",
+      "descriptionLegal": "To do basic ad selection vendors can:\n* Use real-time information about the context in which the ad will be shown, to show the ad, including information about the content and the device, such as: device type and capabilities, user agent, URL, IP address\n* Use a user\u2019s non-precise geolocation data\n* Control the frequency of ads shown to a user.\n* Sequence the order in which ads are shown to a user.\n* Prevent an ad from serving in an unsuitable editorial (brand-unsafe) context\nVendors cannot:\n* Create a personalised ads profile using this information for the selection of future ads.\n* N.B. Non-precise means only an approximate location involving at least a radius of 500 meters is permitted."
+    },
+    "3": {
+      "id": 3,
+      "name": "Create a personalised ads profile",
+      "description": "A profile can be built about you and your interests to show you personalised ads that are relevant to you.",
+      "descriptionLegal": "To create a personalised ads profile vendors can:\n* Collect information about a user, including a user's activity, interests, demographic information, or location, to create or edit a user profile for use in personalised advertising.\n* Combine this information with other information previously collected, including from across websites and apps, to create or edit a user profile for use in personalised advertising."
+    },
+    "4": {
+      "id": 4,
+      "name": "Select personalised ads",
+      "description": "Personalised ads can be shown to you based on a profile about you.",
+      "descriptionLegal": "To select personalised ads vendors can:\n* Select personalised ads based on a user profile or other historical user data, including a user\u2019s prior activity, interests, visits to sites or apps, location, or demographic information."
+    },
+    "5": {
+      "id": 5,
+      "name": "Create a personalised content profile",
+      "description": "A profile can be built about you and your interests to show you personalised content that is relevant to you.",
+      "descriptionLegal": "To create a personalised content profile vendors can:\n* Collect information about a user, including a user's activity, interests, visits to sites or apps, demographic information, or location, to create or edit a user profile for personalising content.\n* Combine this information with other information previously collected, including from across websites and apps, to create or edit a user profile for use in personalising content."
+    },
+    "6": {
+      "id": 6,
+      "name": "Select personalised content",
+      "description": "Personalised content can be shown to you based on a profile about you.",
+      "descriptionLegal": "To select personalised content vendors can:\n* Select personalised content based on a user profile or other historical user data, including a user\u2019s prior activity, interests, visits to sites or apps, location, or demographic information."
+    },
+    "7": {
+      "id": 7,
+      "name": "Measure ad performance",
+      "description": "The performance and effectiveness of ads that you see or interact with can be measured.",
+      "descriptionLegal": "To measure ad performance vendors can:\n* Measure whether and how ads were delivered to and interacted with by a user\n* Provide reporting about ads including their effectiveness and performance\n* Provide reporting about users who interacted with ads using data observed during the course of the user's interaction with that ad\n* Provide reporting to publishers about the ads displayed on their property\n* Measure whether an ad is serving in a suitable editorial environment (brand-safe) context\n* Determine the percentage of the ad that had the opportunity to be seen and the duration of that opportunity\n* Combine this information with other information previously collected, including from across websites and apps\nVendors cannot:\n*Apply panel- or similarly-derived audience insights data to ad measurement data without a Legal Basis to apply market research to generate audience insights (Purpose 9)"
+    },
+    "8": {
+      "id": 8,
+      "name": "Measure content performance",
+      "description": "The performance and effectiveness of content that you see or interact with can be measured.",
+      "descriptionLegal": "To measure content performance vendors can:\n* Measure and report on how content was delivered to and interacted with by users.\n* Provide reporting, using directly measurable or known information, about users who interacted with the content\n* Combine this information with other information previously collected, including from across websites and apps.\nVendors cannot:\n* Measure whether and how ads (including native ads) were delivered to and interacted with by a user.\n* Apply panel- or similarly derived audience insights data to ad measurement data without a Legal Basis to apply market research to generate audience insights (Purpose 9)"
+    },
+    "9": {
+      "id": 9,
+      "name": "Apply market research to generate audience insights",
+      "description": "Market research can be used to learn more about the audiences who visit sites/apps and view ads.",
+      "descriptionLegal": "To apply market research to generate audience insights vendors can:\n* Provide aggregate reporting to advertisers or their representatives about the audiences reached by their ads, through panel-based and similarly derived insights.\n* Provide aggregate reporting to publishers about the audiences that were served or interacted with content and/or ads on their property by applying panel-based and similarly derived insights.\n* Associate offline data with an online user for the purposes of market research to generate audience insights if vendors have declared to match and combine offline data sources (Feature 1)\n* Combine this information with other information previously collected including from across websites and apps. \nVendors cannot:\n* Measure the performance and effectiveness of ads that a specific user was served or interacted with, without a Legal Basis to measure ad performance.\n* Measure which content a specific user was served and how they interacted with it, without a Legal Basis to measure content performance."
+    },
+    "10": {
+      "id": 10,
+      "name": "Develop and improve products",
+      "description": "Your data can be used to improve existing systems and software, and to develop new products",
+      "descriptionLegal": "To develop new products and improve products vendors can:\n* Use information to improve their existing products with new features and to develop new products\n* Create new models and algorithms through machine learning\nVendors cannot:\n* Conduct any other data processing operation allowed under a different purpose under this purpose"
+    }
+  },
+  "specialPurposes": {
+    "1": {
+      "id": 1,
+      "name": "Ensure security, prevent fraud, and debug",
+      "description": "Your data can be used to monitor for and prevent fraudulent activity, and ensure systems and processes work properly and securely.",
+      "descriptionLegal": "To ensure security, prevent fraud and debug vendors can:\n* Ensure data are securely transmitted\n* Detect and prevent malicious, fraudulent, invalid, or illegal activity.\n* Ensure correct and efficient operation of systems and processes, including to monitor and enhance the performance of systems and processes engaged in permitted purposes\nVendors cannot:\n* Conduct any other data processing operation allowed under a different purpose under this purpose."
+    },
+    "2": {
+      "id": 2,
+      "name": "Technically deliver ads or content",
+      "description": "Your device can receive and send information that allows you to see and interact with ads and content.",
+      "descriptionLegal": "To deliver information and respond to technical requests vendors can:\n* Use a user\u2019s IP address to deliver an ad over the internet\n* Respond to a user\u2019s interaction with an ad by sending the user to a landing page\n* Use a user\u2019s IP address to deliver content over the internet\n* Respond to a user\u2019s interaction with content by sending the user to a landing page\n* Use information about the device type and capabilities for delivering ads or content, for example, to deliver the right size ad creative or video file in a format supported by the device\nVendors cannot:\n* Conduct any other data processing operation allowed under a different purpose under this purpose"
+    }
+  },
+  "features": {
+    "1": {
+      "id": 1,
+      "name": "Match and combine offline data sources",
+      "description": "Data from offline data sources can be combined with your online activity in support of one or more purposes",
+      "descriptionLegal": "Vendors can:\n* Combine data obtained offline with data collected online in support of one or more Purposes or Special Purposes."
+    },
+    "2": {
+      "id": 2,
+      "name": "Link different devices",
+      "description": "Different devices can be determined as belonging to you or your household in support of one or more of purposes.",
+      "descriptionLegal": "Vendors can:\n* Deterministically determine that two or more devices belong to the same user or household\n* Probabilistically determine that two or more devices belong to the same user or household\n* Actively scan device characteristics for identification for probabilistic identification if users have allowed vendors to actively scan device characteristics for identification (Special Feature 2)"
+    },
+    "3": {
+      "id": 3,
+      "name": "Receive and use automatically-sent device characteristics for identification",
+      "description": "Your device might be distinguished from other devices based on information it automatically sends, such as IP address or browser type.",
+      "descriptionLegal": "Vendors can:\n* Create an identifier using data collected automatically from a device for specific characteristics, e.g. IP address, user-agent string.\n* Use such an identifier to attempt to re-identify a device.\nVendors cannot:\n* Create an identifier using data collected via actively scanning a device for specific characteristics, e.g. installed font or screen resolution without users\u2019 separate opt-in to actively scanning device characteristics for identification.\n* Use such an identifier to re-identify a device."
+    }
+  },
+  "specialFeatures": {
+    "1": {
+      "id": 1,
+      "name": "Use precise geolocation data",
+      "description": "Your precise geolocation data can be used in support of one or more purposes. This means your location can be accurate to within several meters.",
+      "descriptionLegal": "Vendors can:\n* Collect and process precise geolocation data in support of one or more purposes.\nN.B. Precise geolocation means that there are no restrictions on the precision of a user\u2019s location; this can be accurate to within several meters."
+    },
+    "2": {
+      "id": 2,
+      "name": "Actively scan device characteristics for identification",
+      "description": "Your device can be identified based on a scan of your device's unique combination of characteristics.",
+      "descriptionLegal": "Vendors can:\n* Create an identifier using data collected via actively scanning a device for specific characteristics, e.g. installed fonts or screen resolution.\n* Use such an identifier to re-identify a device."
+    }
+  },
+  "stacks": {
+    "1": {
+      "id": 1,
+      "purposes": [],
+      "specialFeatures": [
+        1,
+        2
+      ],
+      "name": "Precise geolocation data, and identification through device scanning",
+      "description": "Precise geolocation and information about device characteristics can be used."
+    },
+    "2": {
+      "id": 2,
+      "purposes": [
+        2,
+        7
+      ],
+      "specialFeatures": [],
+      "name": "Basic ads, and ad measurement",
+      "description": "Basic ads can be served. Ad performance can be measured."
+    },
+    "3": {
+      "id": 3,
+      "purposes": [
+        2,
+        3,
+        4
+      ],
+      "specialFeatures": [],
+      "name": "Personalised ads",
+      "description": "Ads can be personalised based on a profile. More data can be added to better personalise ads."
+    },
+    "4": {
+      "id": 4,
+      "purposes": [
+        2,
+        7,
+        9
+      ],
+      "specialFeatures": [],
+      "name": "Basic ads, and ad measurement",
+      "description": "Basic ads can be served. Ad performance can be measured. Insights about the audiences who saw the ads and content can be derived."
+    },
+    "5": {
+      "id": 5,
+      "purposes": [
+        2,
+        3,
+        7
+      ],
+      "specialFeatures": [],
+      "name": "Basic ads, personalised ads profile, and ad measurement",
+      "description": "Basic ads can be served. More data can be added to better personalise ads. Ad performance can be measured."
+    },
+    "6": {
+      "id": 6,
+      "purposes": [
+        2,
+        4,
+        7
+      ],
+      "specialFeatures": [],
+      "name": "Personalised ads display, and measurement",
+      "description": "Ads can be personalised based on a profile. Ad performance can be measured."
+    },
+    "7": {
+      "id": 7,
+      "purposes": [
+        2,
+        4,
+        7,
+        9
+      ],
+      "specialFeatures": [],
+      "name": "Personalised ads display, ad measurement, and audience insights",
+      "description": "Ads can be personalised based on a profile. Ad performance can be measured. Insights about the audiences who saw the ads and content can be derived."
+    },
+    "8": {
+      "id": 8,
+      "purposes": [
+        2,
+        3,
+        4,
+        7
+      ],
+      "specialFeatures": [],
+      "name": "Personalised ads, and ad measurement",
+      "description": "Ads can be personalised based on a profile. More data can be added to better personalise ads. Ad performance can be measured."
+    },
+    "9": {
+      "id": 9,
+      "purposes": [
+        2,
+        3,
+        4,
+        7,
+        9
+      ],
+      "specialFeatures": [],
+      "name": "Personalised ads, ad measurement, and audience insights",
+      "description": "Ads can be personalised based on a profile. More data can be added to better personalise ads. Ad performance can be measured. Insights about the audiences who saw the ads and content can be derived."
+    },
+    "10": {
+      "id": 10,
+      "purposes": [
+        3,
+        4
+      ],
+      "specialFeatures": [],
+      "name": "Personalised ads profile and display",
+      "description": "Ads can be personalised based on a profile. More data can be added to better personalise ads."
+    },
+    "11": {
+      "id": 11,
+      "purposes": [
+        5,
+        6
+      ],
+      "specialFeatures": [],
+      "name": "Personalised content",
+      "description": "Content can be personalised based on a profile. More data can be added to better personalise content."
+    },
+    "12": {
+      "id": 12,
+      "purposes": [
+        6,
+        8
+      ],
+      "specialFeatures": [],
+      "name": "Personalised content display, and content measurement",
+      "description": "Content can be personalised based on a profile. Content performance can be measured."
+    },
+    "13": {
+      "id": 13,
+      "purposes": [
+        6,
+        8,
+        9
+      ],
+      "specialFeatures": [],
+      "name": "Personalised content display, content measurement and audience insights",
+      "description": "Content can be personalised based on a profile. Content performance can be measured. Insights about the audiences who saw the ads and content can be derived."
+    },
+    "14": {
+      "id": 14,
+      "purposes": [
+        5,
+        6,
+        8
+      ],
+      "specialFeatures": [],
+      "name": "Personalised content, and content measurement",
+      "description": "Content can be personalised based on a profile. More data can be added to better personalise content. Content performance can be measured."
+    },
+    "15": {
+      "id": 15,
+      "purposes": [
+        5,
+        6,
+        8,
+        9
+      ],
+      "specialFeatures": [],
+      "name": "Personalised content, content measurement and audience insights",
+      "description": "Content can be personalised based on a profile. More data can be added to better personalise content. Content performance can be measured. Insights about the audiences who saw the ads and content can be derived."
+    },
+    "16": {
+      "id": 16,
+      "purposes": [
+        5,
+        6,
+        8,
+        9,
+        10
+      ],
+      "specialFeatures": [],
+      "name": "Personalised content, content measurement, audience insights, and product development",
+      "description": "Content can be personalised based on a profile. More data can be added to better personalise content. Content performance can be measured. Insights about the audiences who saw the ads and content can be derived. Data can be used to build or improve user experience, systems, and software"
+    },
+    "17": {
+      "id": 17,
+      "purposes": [
+        7,
+        8,
+        9
+      ],
+      "specialFeatures": [],
+      "name": "Ad and content measurement, and audience insights",
+      "description": "Ad and content performance can be measured.  Insights about the audiences who saw the ads and content can be derived."
+    },
+    "18": {
+      "id": 18,
+      "purposes": [
+        7,
+        8
+      ],
+      "specialFeatures": [],
+      "name": "Ad and content measurement",
+      "description": "Ad and content performance can be measured."
+    },
+    "19": {
+      "id": 19,
+      "purposes": [
+        7,
+        9
+      ],
+      "specialFeatures": [],
+      "name": "Ad measurement, and audience insights",
+      "description": "Ad can be measured.  Insights about the audiences who saw the ads and content can be derived."
+    },
+    "20": {
+      "id": 20,
+      "purposes": [
+        7,
+        8,
+        9,
+        10
+      ],
+      "specialFeatures": [],
+      "name": "Ad and content measurement, audience insights, and product development",
+      "description": "Ad and content performance can be measured.  Insights about the audiences who saw the ads and content can be derived. Data can be used to build or improve user experience, systems, and software. Insights about the audiences who saw the ads and content can be derived."
+    },
+    "21": {
+      "id": 21,
+      "purposes": [
+        8,
+        9,
+        10
+      ],
+      "specialFeatures": [],
+      "name": "Content measurement, audience insights, and product development.",
+      "description": "Content performance can be measured. Insights about the audiences who saw the ads and content can be derived. Data can be used to build or improve user experience, systems, and software."
+    },
+    "22": {
+      "id": 22,
+      "purposes": [
+        8,
+        10
+      ],
+      "specialFeatures": [],
+      "name": "Content measurement, and product development",
+      "description": "Content performance can be measured. Data can be used to build or improve user experience, systems, and software."
+    },
+    "23": {
+      "id": 23,
+      "purposes": [
+        2,
+        4,
+        6,
+        7,
+        8
+      ],
+      "specialFeatures": [],
+      "name": "Personalised ads and content display, ad and content measurement",
+      "description": "Ads and content can be personalised based on a profile. Ad and content performance can be measured."
+    },
+    "24": {
+      "id": 24,
+      "purposes": [
+        2,
+        4,
+        6,
+        7,
+        8,
+        9
+      ],
+      "specialFeatures": [],
+      "name": "Personalised ads and content display, ad and content measurement, and audience insights",
+      "description": "Ads and content can be personalised based on a profile. Ad and content performance can be measured. Insights about the audiences who saw the ads and content can be derived. Data can be used to build or improve user experience, systems, and software."
+    },
+    "25": {
+      "id": 25,
+      "purposes": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "specialFeatures": [],
+      "name": "Personalised ads and content, ad and content measurement",
+      "description": "Ads and content can be personalised based on a profile. More data can be added to better personalise ads and content. Ad and content performance can be measured."
+    },
+    "26": {
+      "id": 26,
+      "purposes": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "specialFeatures": [],
+      "name": "Personalised ads and content, ad and content measurement, and audience insights",
+      "description": "Ads and content can be personalised based on a profile. More data can be added to better personalise ads and content. Ad and content performance can be measured. Insights about the audiences who saw the ads and content can be derived."
+    },
+    "27": {
+      "id": 27,
+      "purposes": [
+        3,
+        5
+      ],
+      "specialFeatures": [],
+      "name": "Personalised ads, and content profile",
+      "description": "More data can be added to personalise ads and content."
+    },
+    "28": {
+      "id": 28,
+      "purposes": [
+        2,
+        4,
+        6
+      ],
+      "specialFeatures": [],
+      "name": "Personalised ads and content display",
+      "description": "Ads and content can be personalised based on a profile."
+    },
+    "29": {
+      "id": 29,
+      "purposes": [
+        2,
+        7,
+        8,
+        9
+      ],
+      "specialFeatures": [],
+      "name": "Basic ads, ad and content measurement, and audience insights",
+      "description": "Basic ads can be served. Ad and content performance can be measured. Insights about the audiences who saw the ads and content can be derived."
+    },
+    "30": {
+      "id": 30,
+      "purposes": [
+        2,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "specialFeatures": [],
+      "name": "Personalised ads display, personalised content, ad and content measurement, and audience insights",
+      "description": "Ads and content can be personalised based on a profile. More data can be added to better personalise content. Ad and content performance can be measured. Insights about the audiences who saw the ads and content can be derived."
+    },
+    "31": {
+      "id": 31,
+      "purposes": [
+        2,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "specialFeatures": [],
+      "name": "Personalised ads display, personalised content, ad and content measurement, audience insights, and product development",
+      "description": "Ads and content can be personalised based on a profile. More data can be added to better personalise content. Ad and content performance can be measured. Insights about the audiences who saw the ads and content can be derived. Data can be used to build or improve user experience, systems, and software."
+    },
+    "32": {
+      "id": 32,
+      "purposes": [
+        2,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "specialFeatures": [],
+      "name": "Basic ads, personalised content, ad and content measurement, and audience insights",
+      "description": "Basic ads can be served. Content can be personalised based on a profile. More data can be added to better personalise content. Ad and content performance can be measured. Insights about the audiences who saw the ads and content can be derived."
+    },
+    "33": {
+      "id": 33,
+      "purposes": [
+        2,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "specialFeatures": [],
+      "name": "Basic ads, personalised content, ad and content measurement, audience insights, and product development",
+      "description": "Basic ads can be served. Content can be personalised based on a profile. More data can be added to better personalise content. Ad and content performance can be measured. Insights about the audiences who saw the ads and content can be derived. Data can be used to build or improve user experience, systems, and software."
+    },
+    "34": {
+      "id": 34,
+      "purposes": [
+        2,
+        5,
+        6,
+        8,
+        9
+      ],
+      "specialFeatures": [],
+      "name": "Basic ads, personalised content, content measurement, and audience insights",
+      "description": "Basic ads can be served. Content can be personalised based on a profile. More data can be added to better personalise content. Ad and content performance can be measured. Insights about the audiences who saw the ads and content can be derived."
+    },
+    "35": {
+      "id": 35,
+      "purposes": [
+        2,
+        5,
+        6,
+        8,
+        9,
+        10
+      ],
+      "specialFeatures": [],
+      "name": "Basic ads, personalised content, content measurement, audience insights, and product development",
+      "description": "Basic ads can be served. Content can be personalised based on a profile. More data can be added to better personalise content. Content performance can be measured. Insights about the audiences who saw the ads and content can be derived. Data can be used to build or improve user experience, systems, and software."
+    },
+    "36": {
+      "id": 36,
+      "purposes": [
+        2,
+        5,
+        6,
+        7
+      ],
+      "specialFeatures": [],
+      "name": "Basic ads, personalised content, and ad measurement",
+      "description": "Basic ads can be served. Content can be personalised based on a profile. More data can be added to better personalise content. Ad performance can be measured."
+    },
+    "37": {
+      "id": 37,
+      "purposes": [
+        2,
+        5,
+        6,
+        7,
+        10
+      ],
+      "specialFeatures": [],
+      "name": "Basic ads, personalised content, ad measurement, and product development",
+      "description": "Basic ads can be served. Content can be personalised based on a profile. More data can be added to better personalise content. Ad performance can be measured. Data can be used to build or improve user experience, systems, and software."
+    }
+  },
+  "vendors": {}
+}

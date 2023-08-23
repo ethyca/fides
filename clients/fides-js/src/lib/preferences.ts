@@ -1,7 +1,7 @@
 import {
   ConsentMethod,
   ConsentOptionCreate,
-  LastServedNoticeSchema,
+  LastServedNoticeSchema, PrivacyExperience,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
   UserConsentPreference,
@@ -27,7 +27,7 @@ import { TcfSavePreferences } from "./tcf/types";
  */
 export const updateConsentPreferences = ({
   consentPreferencesToSave,
-  experienceId,
+  experience,
   fidesApiUrl,
   consentMethod,
   userLocationString,
@@ -37,7 +37,7 @@ export const updateConsentPreferences = ({
   tcf,
 }: {
   consentPreferencesToSave: Array<SaveConsentPreference>;
-  experienceId: string;
+  experience: PrivacyExperience;
   fidesApiUrl: string;
   consentMethod: ConsentMethod;
   userLocationString?: string;
@@ -80,7 +80,7 @@ export const updateConsentPreferences = ({
   const privacyPreferenceCreate: PrivacyPreferencesRequest = {
     browser_identity: cookie.identity,
     preferences: fidesUserPreferences,
-    privacy_experience_id: experienceId,
+    privacy_experience_id: experience.id,
     user_geography: userLocationString,
     method: consentMethod,
     ...(tcf ?? []),
@@ -106,5 +106,5 @@ export const updateConsentPreferences = ({
     });
 
   // 5. Dispatch a "FidesUpdated" event
-  dispatchFidesEvent("FidesUpdated", cookie, debug);
+  dispatchFidesEvent("FidesUpdated", cookie, experience, debug);
 };

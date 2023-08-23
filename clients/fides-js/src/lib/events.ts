@@ -1,5 +1,6 @@
 import { FidesCookie } from "./cookie";
 import { debugLog } from "./consent-utils";
+import {PrivacyExperience} from "~/lib/consent-types";
 
 /**
  * Defines the available event names:
@@ -27,6 +28,8 @@ declare global {
  * around.
  */
 export type FidesEventDetail = FidesCookie & {
+  experience?: PrivacyExperience;
+  debug?: boolean;
   extraDetails?: Record<string, string>;
 };
 
@@ -49,12 +52,13 @@ export type FidesEvent = CustomEvent<FidesEventDetail>;
 export const dispatchFidesEvent = (
   type: FidesEventType,
   cookie: FidesCookie,
+  experience: PrivacyExperience | undefined,
   debug: boolean,
   extraDetails?: Record<string, string>
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     const event = new CustomEvent(type, {
-      detail: { ...cookie, extraDetails },
+      detail: { ...cookie, experience, debug, extraDetails },
     });
     debugLog(
       debug,

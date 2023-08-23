@@ -90,7 +90,7 @@ export type TCFVendorRecord = {
   outdated_preference?: UserConsentPreference;
   current_served?: boolean;
   outdated_served?: boolean;
-  id: string;
+  id: string; // is this a string or a number?
   name?: string;
   description?: string;
   is_gvl?: boolean;

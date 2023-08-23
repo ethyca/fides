@@ -55,7 +55,7 @@ const Overlay: FunctionComponent<Props> = ({
   const handleOpenModal = useCallback(() => {
     if (instance) {
       instance.show();
-      dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+      dispatchFidesEvent("FidesUIShown", cookie, experience, options.debug, {
         servingComponent: ServingComponent.OVERLAY,
       });
     }
@@ -106,7 +106,7 @@ const Overlay: FunctionComponent<Props> = ({
 
   useEffect(() => {
     if (showBanner && bannerIsOpen) {
-      dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+      dispatchFidesEvent("FidesUIShown", cookie, experience, options.debug, {
         servingComponent: ServingComponent.BANNER,
       });
     }
