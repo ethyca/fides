@@ -1397,6 +1397,58 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             == "Cannot save preferences against invalid special purpose id: '3'"
         )
 
+    def test_invalid_tcf_feature_in_request_body(
+        self,
+        api_client,
+        url,
+        privacy_experience_france_tcf_overlay,
+    ):
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
+            },
+            "feature_preferences": [
+                {
+                    "id": 4,
+                    "preference": "opt_out",
+                }
+            ],
+            "user_geography": "fr",
+            "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Cannot save preferences against invalid feature id: '4'"
+        )
+
+    def test_invalid_tcf_special_feature_in_request_body(
+        self,
+        api_client,
+        url,
+        privacy_experience_france_tcf_overlay,
+    ):
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
+            },
+            "special_feature_preferences": [
+                {
+                    "id": 3,
+                    "preference": "opt_out",
+                }
+            ],
+            "user_geography": "fr",
+            "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Cannot save preferences against invalid special feature id: '3'"
+        )
+
     def test_duplicate_tcf_preferences_in_request_body(
         self,
         api_client,
