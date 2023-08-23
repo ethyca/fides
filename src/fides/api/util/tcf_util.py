@@ -216,9 +216,7 @@ def get_tcf_contents(
     Load TCF Purposes and Special Purposes from Fideslang and then return a subset of those whose data uses
     are on systems. Return a reverse representation for the vendors themselves.
 
-    TODO: TCF Populate TCF Experience with Features and Special Features
     TODO: TCF Return more Vendor information
-    TODO: TCF Pull Vendor field from System instead of Integration
     """
     system_map: Dict[str, TCFVendorRecord] = {}
 

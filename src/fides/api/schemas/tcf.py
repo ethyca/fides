@@ -1,10 +1,10 @@
 from typing import Any, Dict, List, Optional
 
 from fideslang.gvl import (
-    MAPPED_PURPOSES,
-    MAPPED_SPECIAL_PURPOSES,
     GVL_FEATURES,
     GVL_SPECIAL_FEATURES,
+    MAPPED_PURPOSES,
+    MAPPED_SPECIAL_PURPOSES,
 )
 from fideslang.gvl.models import Feature, MappedPurpose
 from pydantic import root_validator, validator
@@ -141,7 +141,7 @@ class TCFSpecialPurposeSave(TCFPreferenceSaveBase):
 
 class TCFVendorSave(FidesSchema):
     """Base schema for saving preferences with respect to a TCF Vendor
-    TODO: TCF Add validation for allowable vendors
+    TODO: TCF Add validation for allowable vendors (in GVL or dictionary?)
     """
 
     id: str
