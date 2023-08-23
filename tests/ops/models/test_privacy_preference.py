@@ -1,5 +1,3 @@
-from uuid import uuid4
-
 import pytest
 from sqlalchemy.exc import InvalidRequestError
 
@@ -1421,16 +1419,16 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
         assert (
             PrivacyPreferenceHistory.determine_relevant_systems(
                 db,
-                tcf_field=TCFComponentType.system_fides_key.value,
-                tcf_value="non_matching_fides_key",
+                tcf_field=TCFComponentType.system.value,
+                tcf_value="non_matching_system_id",
             )
             == []
         )
 
         assert PrivacyPreferenceHistory.determine_relevant_systems(
             db,
-            tcf_field=TCFComponentType.system_fides_key.value,
-            tcf_value=system_with_no_uses.fides_key,
+            tcf_field=TCFComponentType.system.value,
+            tcf_value=system_with_no_uses.id,
         ) == [system_with_no_uses.fides_key]
 
 

@@ -1160,7 +1160,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             ],
             "feature_preferences": [{"id": 1, "preference": "opt_out"}],
             "special_feature_preferences": [{"id": 2, "preference": "opt_in"}],
-            "system_preferences": [{"id": system.fides_key, "preference": "opt_out"}],
+            "system_preferences": [{"id": system.id, "preference": "opt_out"}],
             "user_geography": "fr",
             "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
         }
@@ -1617,15 +1617,15 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         # Assert system portion of the response
         system_response = response.json()[4]
         assert system_response["preference"] == "opt_out"
-        assert system_response["system_fides_key"] == system.fides_key
+        assert system_response["system"] == system.id
         current_system_preference = CurrentPrivacyPreference.get(
             db, object_id=system_response["id"]
         )
         system_privacy_preference_history = (
             current_system_preference.privacy_preference_history
         )
-        assert current_system_preference.system_fides_key == system.fides_key
-        assert system_privacy_preference_history.system_fides_key == system.fides_key
+        assert current_system_preference.system == system.id
+        assert system_privacy_preference_history.system == system.id
 
         current_system_preference.delete(db)
         system_privacy_preference_history.delete(db)
@@ -2205,7 +2205,7 @@ class TestSaveNoticesServedForFidesDeviceId:
             "tcf_purposes": [5],
             "tcf_vendors": ["amplitude"],
             "tcf_special_features": [2],
-            "tcf_systems": [system.fides_key],
+            "tcf_systems": [system.id],
             "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
             "user_geography": "fr",
             "acknowledge_mode": False,
@@ -2497,7 +2497,7 @@ class TestSaveNoticesServedForFidesDeviceId:
         assert system_served["vendor"] is None
         assert system_served["feature"] is None
         assert system_served["special_feature"] is None
-        assert system_served["system_fides_key"] == system.fides_key
+        assert system_served["system"] == system.id
         assert system_served["privacy_notice_history"] is None
         last_served_system = LastServedNotice.get(db, object_id=system_served["id"])
 
@@ -2556,11 +2556,11 @@ class TestSaveNoticesServedForFidesDeviceId:
         assert special_feature_served_history.special_feature == 2
 
         # Assert system last served
-        assert last_served_system.system_fides_key == system.fides_key
+        assert last_served_system.system == system.id
         system_served_history = ServedNoticeHistory.get(
             db, object_id=last_served_system.served_notice_history_id
         )
-        assert system_served_history.system_fides_key == system.fides_key
+        assert system_served_history.system == system.id
 
         last_served_system.delete(db)
         system_served_history.delete(db)

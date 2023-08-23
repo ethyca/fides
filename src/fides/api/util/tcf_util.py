@@ -35,7 +35,7 @@ TCF_COMPONENT_MAPPING: Dict[str, ConsentRecordType] = {
     "tcf_features": ConsentRecordType.feature,
     "tcf_special_features": ConsentRecordType.special_feature,
     "tcf_vendors": ConsentRecordType.vendor,
-    "tcf_systems": ConsentRecordType.system_fides_key,  # Systems where there is no known vendor id
+    "tcf_systems": ConsentRecordType.system,  # Systems where there is no known vendor id
 }
 
 
@@ -84,7 +84,6 @@ def get_tcf_component_and_vendors(
     matching_systems: Query = (
         db.query(
             System.id,
-            System.fides_key,
             System.name,
             System.description,
             System.vendor_id,
@@ -138,9 +137,9 @@ def get_tcf_component_and_vendors(
 
     for record in matching_systems:
         # Identify system by vendor id if it exists, otherwise use system fides key.
-        system_fides_key: str = record["fides_key"]
+        system_id: str = record["id"]
         vendor_id: Optional[str] = record["vendor_id"]
-        system_identifier: str = vendor_id if vendor_id else system_fides_key
+        system_identifier: str = vendor_id if vendor_id else system_id
 
         if system_identifier not in system_map:
             system_map[system_identifier] = TCFVendorRecord(

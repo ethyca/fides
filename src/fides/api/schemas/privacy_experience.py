@@ -211,7 +211,8 @@ class PrivacyExperienceResponse(PrivacyExperienceWithId):
         description="For TCF Experiences, the TCF Special Features that appear on your Systems"
     )
     tcf_systems: Optional[List[TCFVendorRecord]] = Field(
-        description="For TCF Experiences, Systems with TCF components that do not have an official vendor id"
+        description="For TCF Experiences, Systems with TCF components that do not have an official vendor id "
+        "(identified by system id)"
     )
     experience_config: Optional[ExperienceConfigResponse] = Field(
         description="The Experience copy or language"

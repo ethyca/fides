@@ -35,7 +35,7 @@ TCF_PREFERENCES_FIELD_MAPPING: Dict[str, str] = {
     "feature_preferences": TCFComponentType.feature.value,
     "special_feature_preferences": TCFComponentType.special_feature.value,
     "vendor_preferences": TCFComponentType.vendor.value,
-    "system_preferences": TCFComponentType.system_fides_key.value,
+    "system_preferences": TCFComponentType.system.value,
 }
 
 
@@ -57,8 +57,8 @@ class TCFAttributes(FidesSchema):
     special_feature: Optional[int] = Field(
         title="The TCF special feature that was served or saved against"
     )
-    system_fides_key: Optional[str] = Field(
-        title="The System Fides key that consent was served or saved against. Used when we don't know what vendor "
+    system: Optional[str] = Field(
+        title="The System id that consent was served or saved against. Used when we don't know what vendor "
         "corresponds to the system, so we save preferences against the system directly"
     )
 
