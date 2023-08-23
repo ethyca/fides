@@ -120,7 +120,7 @@ def update_datasets_data_categories(
 
     for row in existing_datasets:
         # Update data categories at the top level
-        labels: List[str] = row["data_categories"]
+        labels: Optional[List[str]] = row["data_categories"]
 
         if labels:
             updated_labels: List[str] = [
@@ -136,7 +136,7 @@ def update_datasets_data_categories(
             )
 
         # Update the collections objects
-        collections = json.dumps(row["collections"])
+        collections: str = json.dumps(row["collections"])
 
         for key, value in data_label_map.items():
             collections.replace(key, value)
