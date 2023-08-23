@@ -101,13 +101,15 @@ export const updateConsentPreferences = ({
     // At this point, this obj contains just experience data, restructured
     tcStringPreferences = buildTcStringPreferences(experience)
     console.log("tc string tcf purposes...")
+    console.log(tcf.purpose_preferences)
     console.log(tcStringPreferences?.tcf_purposes)
     console.log(tcStringPreferences?.tcf_purposes?.get(6))
-    // "Upsert" new tcf preferences to existing experience data
     tcf.purpose_preferences?.forEach(purpose => {
       // @ts-ignore
-      // todo- map preference to current_preference
       console.log(purpose.preference)
+      console.log("purpose id")
+      console.log(purpose.id)
+      // fixme- // "Upsert" new tcf preferences to existing experience data, but overwrite current_preference
       tcStringPreferences.tcf_purposes.set(purpose.id, {current_preference: purpose.preference})
     })
     tcf.special_purpose_preferences?.forEach(purpose => {
