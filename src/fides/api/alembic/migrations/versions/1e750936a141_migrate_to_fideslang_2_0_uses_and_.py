@@ -139,7 +139,7 @@ def update_datasets_data_categories(
         collections: str = json.dumps(row["collections"])
 
         for key, value in data_label_map.items():
-            collections.replace(key, value)
+            collections = collections.replace(key, value)
 
         update_collections_query: TextClause = text(
             "UPDATE ctl_datasets SET collections = :updated_collections WHERE id= :dataset_id"
@@ -163,12 +163,19 @@ def update_system_ingress_egress_data_categories(
         egress = row["egress"]
 
         # Do a blunt find/replace
-        for key, value in data_label_map.items():
-            if ingress:
-                ingress.replace(key, value)
+        if ingress:
+            for item in ingress:
+                item["data_categories"] = [
+                    data_label_map.get(label, label)
+                    for label in item.get("data_categories", [])
+                ]
 
-            if egress:
-                egress.replace(key, value)
+        if egress:
+            for item in egress:
+                item["data_categories"] = [
+                    data_label_map.get(label, label)
+                    for label in item.get("data_categories", [])
+                ]
 
         if ingress:
             update_ingress_query: TextClause = text(
@@ -176,7 +183,7 @@ def update_system_ingress_egress_data_categories(
             )
             bind.execute(
                 update_ingress_query,
-                {"system_id": row["id"], "updated_ingress": ingress},
+                {"system_id": row["id"], "updated_ingress": json.dumps(ingress)},
             )
 
         if egress:
@@ -185,7 +192,7 @@ def update_system_ingress_egress_data_categories(
             )
             bind.execute(
                 update_egress_query,
-                {"system_id": row["id"], "updated_egress": egress},
+                {"system_id": row["id"], "updated_egress": json.dumps(egress)},
             )
 
 
