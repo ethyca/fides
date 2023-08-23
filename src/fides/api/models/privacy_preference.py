@@ -5,7 +5,12 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
-from fideslang.gvl import purpose_to_data_use
+from fideslang.gvl import (
+    GVL_FEATURES,
+    GVL_SPECIAL_FEATURES,
+    feature_id_to_feature_name,
+    purpose_to_data_use,
+)
 from fideslang.validation import FidesKey
 from sqlalchemy import ARRAY, Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
@@ -23,7 +28,6 @@ from fides.api.common_exceptions import (
     PrivacyNoticeHistoryNotFound,
 )
 from fides.api.db.base_class import Base, JSONTypeOverride
-from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeHistory,
@@ -62,6 +66,7 @@ class TCFComponentType(Enum):
     purpose = "purpose"
     special_purpose = "special_purpose"
     vendor = "vendor"
+    system_fides_key = "system_fides_key"
     feature = "feature"
     special_feature = "special_feature"
 
@@ -74,6 +79,7 @@ class ConsentRecordType(Enum):
     purpose = "purpose"
     special_purpose = "special_purpose"
     vendor = "vendor"
+    system_fides_key = "system_fides_key"
     feature = "feature"
     special_feature = "special_feature"
 
@@ -103,10 +109,6 @@ class ConsentReportingMixin:
             padding="pkcs5",
         ),
     )
-
-    feature = Column(
-        Integer, index=True
-    )  # When saving privacy preferences with respect to a feature directly
 
     # Encrypted fides user device id, for reporting
     fides_user_device = Column(
@@ -138,10 +140,6 @@ class ConsentReportingMixin:
             padding="pkcs5",
         ),
     )
-
-    purpose = Column(
-        Integer, index=True
-    )  # When saving privacy preferences with respect to a TCF purpose directly
 
     # The specific version of the experience config the user was shown to present the relevant notice
     # Contains the version, language, button labels, description, etc.
@@ -179,12 +177,7 @@ class ConsentReportingMixin:
 
     # Location where we received the request
     request_origin = Column(EnumColumn(RequestOrigin))  # privacy center, overlay, API
-    special_feature = Column(
-        Integer, index=True
-    )  # When saving privacy preferences with respect to a TCF special feature directly
-    special_purpose = Column(
-        Integer, index=True
-    )  # When saving privacy preferences with respect to a TCF special purpose directly
+
     url_recorded = Column(String)
     user_agent = Column(
         StringEncryptedType(
@@ -197,9 +190,25 @@ class ConsentReportingMixin:
 
     user_geography = Column(String, index=True)
 
+    # ==== TCF Attributes against which preferences can be saved ==== #
+    feature = Column(
+        Integer, index=True
+    )  # When saving privacy preferences with respect to a TCF feature directly
+    purpose = Column(
+        Integer, index=True
+    )  # When saving privacy preferences with respect to a TCF purpose directly
+    special_feature = Column(
+        Integer, index=True
+    )  # When saving privacy preferences with respect to a TCF special feature directly
+    special_purpose = Column(
+        Integer, index=True
+    )  # When saving privacy preferences with respect to a TCF special purpose directly
     vendor = Column(
         String, index=True
-    )  # When saving privacy preferences with respect to a vendor directly
+    )  # When saving privacy preferences with respect to a vendor directly. Vendors can apply to multiple systems.
+    system_fides_key = Column(
+        String, index=True
+    )  # When saving privacy preferences with respect to a system directly, in the case where the vendor is unknown
 
     tcf_version = Column(String)
 
@@ -236,6 +245,8 @@ class ConsentReportingMixin:
             return ConsentRecordType.special_purpose
         if self.vendor:
             return ConsentRecordType.vendor
+        if self.system_fides_key:
+            return ConsentRecordType.system_fides_key
         if self.special_feature:
             return ConsentRecordType.special_feature
         return ConsentRecordType.feature
@@ -259,7 +270,8 @@ def _validate_before_saving_consent_history(
 
     - Validates that a notice history exists if supplied
     - Validates that at least one provided identity type is supplied
-    - Validates that only one of a data use, special purpose, vendor, or special feature exists in request body
+    - Validates that only one of a data use, special purpose, vendor, system_id, feature or special
+    feature exists in request body
     """
     privacy_notice_history = None
     if data.get("privacy_notice_history_id"):
@@ -304,7 +316,7 @@ def _validate_before_saving_consent_history(
 class ServedNoticeHistory(ConsentReportingMixin, Base):
     """A historical record of every time a resource was served in the UI to which an end user could consent
 
-    This might be a privacy notice, a data use, a vendor, or a feature.
+    This might be a privacy notice, a data use, a vendor, a system_id, or a feature.
     """
 
     acknowledge_mode = Column(
@@ -506,8 +518,22 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
             )
             return systems_that_match_tcf_data_uses(db, special_purpose_data_uses)
 
+        if tcf_field == TCFComponentType.feature.value:
+            return systems_that_match_tcf_feature(
+                db, feature_id_to_feature_name(feature_id=tcf_value)
+            )
+
+        if tcf_field == TCFComponentType.special_feature.value:
+            return systems_that_match_tcf_feature(
+                db,
+                feature_id_to_feature_name(feature_id=tcf_value, special_feature=True),
+            )
+
         if tcf_field == TCFComponentType.vendor.value:
             return systems_that_match_vendor_string(db, tcf_value)
+
+        if tcf_field == TCFComponentType.system_fides_key.value:
+            return systems_that_match_fides_key(db, tcf_value)
 
         return []
 
@@ -598,6 +624,16 @@ class LastSavedMixin:
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        index=True,
+    )
+
+    tcf_version = Column(String)
+
+    # ==== TCF Attributes that can be served ==== #
     feature = Column(Integer, index=True)  # When a feature was served directly (TCF)
 
     purpose = Column(Integer, index=True)  # When a purpose was served directly (TCF)
@@ -610,16 +646,13 @@ class LastSavedMixin:
         Integer, index=True
     )  # When a special purpose was served directly (TCF)
 
-    updated_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now(),
-        index=True,
-    )
+    vendor = Column(
+        String, index=True
+    )  # When a vendor was served directly (TCF). Vendors can apply to multiple systems.
 
-    tcf_version = Column(String)
-
-    vendor = Column(String, index=True)  # When a vendor was served directly (TCF)
+    system_fides_key = Column(
+        String, index=True
+    )  # When a system fides key was served directly (TCF). Used for when the specific vendor type is unknown.
 
     @declared_attr
     def provided_identity_id(cls) -> Column:
@@ -717,6 +750,14 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
             "vendor",
             name="fides_user_device_identity_vendor",
         ),
+        UniqueConstraint(
+            "provided_identity_id", "system_fides_key", name="identity_system_fides_key"
+        ),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "system_fides_key",
+            name="fides_user_device_identity_system_fides_key",
+        ),
         UniqueConstraint("provided_identity_id", "feature", name="identity_feature"),
         UniqueConstraint(
             "fides_user_device_provided_identity_id",
@@ -747,7 +788,7 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
         preference_value: Union[int, str],
     ) -> Optional[CurrentPrivacyPreference]:
         """Retrieves the CurrentPrivacyPreference saved against a notice, TCF purpose,
-        TCF special purpose, TCF vendor, TCF feature, or TCF special feature for a given fides user device id
+        TCF special purpose, TCF vendor, TCF feature, TCF special feature, or system fides key for a given fides user device id
         """
 
         return (
@@ -822,6 +863,16 @@ class LastServedNotice(LastSavedMixin, Base):
             "fides_user_device_provided_identity_id",
             "vendor",
             name="last_served_fides_user_device_identity_vendor",
+        ),
+        UniqueConstraint(
+            "provided_identity_id",
+            "system_fides_key",
+            name="last_served_identity_system_fides_key",
+        ),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "system_fides_key",
+            name="last_served_fides_user_device_identity_system_fides_key",
         ),
         UniqueConstraint(
             "provided_identity_id",
@@ -962,13 +1013,31 @@ def systems_that_match_tcf_data_uses(
     ]
 
 
+def systems_that_match_tcf_feature(db: Session, feature: str) -> List[FidesKey]:
+    """Check which systems have these data uses directly.
+
+    This is used for determining relevant systems for TCF features and special features. Unlike
+    determining relevant systems for Privacy Notices where we use a hierarchy-type matching,
+    for TCF, we're looking for an exact match on feature."""
+    if not feature:
+        return []
+
+    return [
+        system.fides_key
+        for system in (
+            db.query(System.fides_key)
+            .join(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
+            .filter(PrivacyDeclaration.features.any(feature))
+            .distinct(System.id)
+        )
+    ]
+
+
 def systems_that_match_vendor_string(
-    db: Session, vendor: Optional[Any]
+    db: Session, vendor: Optional[str]
 ) -> List[FidesKey]:
     """Check which systems have this vendor associated with them. Unlike PrivacyNotices, where we use hierarchy-type matching,
     with TCF components, we are looking for exact matches.
-
-    TODO: Filter on System vendor field instead of Integration
     """
     if not vendor:
         return []
@@ -976,9 +1045,23 @@ def systems_that_match_vendor_string(
         system.fides_key
         for system in (
             db.query(System.fides_key)
-            .outerjoin(ConnectionConfig, ConnectionConfig.system_id == System.id)
-            .filter(ConnectionConfig.saas_config.is_not(None))  # type: ignore
-            .filter(ConnectionConfig.saas_config["type"].astext.cast(String) == vendor)
+            .filter(System.vendor_id == vendor)
+            .distinct(System.id)
+        )
+    ]
+
+
+def systems_that_match_fides_key(
+    db: Session, system_fides_key: Optional[str]
+) -> List[FidesKey]:
+    """Returns the system fides key if it exists on the system"""
+    if not system_fides_key:
+        return []
+    return [
+        system.fides_key
+        for system in (
+            db.query(System.fides_key)
+            .filter(System.fides_key == system_fides_key)
             .distinct(System.id)
         )
     ]

@@ -454,7 +454,8 @@ def persist_tcf_preferences(
         )
         return current_preference
 
-    # Save TCF preferences separately with respect to purpose, special purpose, vendor, feature, and/or special feature.
+    # Save TCF preferences individually with respect to purpose, special purpose, vendor,
+    # feature, special feature, and/or system fides key.
     # Currently, we don't attempt to propagate these preferences to third party systems.
     for tcf_preference_field, field_name in TCF_PREFERENCES_FIELD_MAPPING.items():
         for preference in getattr(request_data, tcf_preference_field):
