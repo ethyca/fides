@@ -2464,7 +2464,7 @@ class TestSaveNoticesServedForFidesDeviceId:
         assert response.status_code == 422
         assert (
             response.json()["detail"][0]["msg"]
-            == "Invalid values for TCF Purposes served'"
+            == "Invalid values for tcf_purposes served."
         )
 
     def test_invalid_tcf_special_purpose_served(
@@ -2485,7 +2485,49 @@ class TestSaveNoticesServedForFidesDeviceId:
         assert response.status_code == 422
         assert (
             response.json()["detail"][0]["msg"]
-            == "Invalid values for TCF Special Purposes served'"
+            == "Invalid values for tcf_special_purposes served."
+        )
+
+    def test_invalid_tcf_features_served(
+        self,
+        api_client,
+        url,
+    ):
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
+            },
+            "tcf_features": [4],
+            "user_geography": "us_ca",
+            "acknowledge_mode": False,
+            "serving_component": ServingComponent.tcf_overlay.value,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Invalid values for tcf_features served."
+        )
+
+    def test_invalid_tcf_special_features_served(
+        self,
+        api_client,
+        url,
+    ):
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
+            },
+            "tcf_special_features": [3],
+            "user_geography": "us_ca",
+            "acknowledge_mode": False,
+            "serving_component": ServingComponent.tcf_overlay.value,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Invalid values for tcf_special_features served."
         )
 
     @mock.patch(

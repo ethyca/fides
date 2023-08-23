@@ -496,9 +496,8 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
         tcf_field: Optional[str] = None,
         tcf_value: Union[Optional[int], Optional[str]] = None,
     ) -> List[FidesKey]:
-        """Used to take a snapshot of relevant systems before saving privacy preferences.
-
-        TODO: TCF Add in feature and special feature support for calculating relevant systems
+        """Used to take a snapshot of relevant system fides keys before saving privacy preferences
+        for consent reporting
         """
         if privacy_notice_history:
             return privacy_notice_history.calculate_relevant_systems(db)

@@ -1,7 +1,12 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from fideslang.gvl import MAPPED_PURPOSES, MAPPED_SPECIAL_PURPOSES
+from fideslang.gvl import (
+    GVL_FEATURES,
+    GVL_SPECIAL_FEATURES,
+    MAPPED_PURPOSES,
+    MAPPED_SPECIAL_PURPOSES,
+)
 from fideslang.validation import FidesKey
 from pydantic import Field, conlist, root_validator
 
@@ -148,7 +153,6 @@ class RecordConsentServedRequest(FidesSchema):
     def validate_tcf_served(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
         Check that TCF values are valid and that there are no duplicates
-        TODO: TCF Add validation against vendors, features, and special features that are being recorded as served
         """
 
         def tcf_duplicates_detected(preference_list: List) -> bool:
@@ -159,15 +163,19 @@ class RecordConsentServedRequest(FidesSchema):
                 raise ValueError(
                     f"Duplicate served records saved against TCF component: '{field_name}'"
                 )
-        if not set(values.get("tcf_purposes", [])).issubset(
-            set(MAPPED_PURPOSES.keys())
-        ):
-            raise ValueError("Invalid values for TCF Purposes served'")
 
-        if not set(values.get("tcf_special_purposes", [])).issubset(
-            set(MAPPED_SPECIAL_PURPOSES.keys())
-        ):
-            raise ValueError("Invalid values for TCF Special Purposes served'")
+        expected_field_mapping = {
+            "tcf_purposes": MAPPED_PURPOSES,
+            "tcf_special_purposes": MAPPED_SPECIAL_PURPOSES,
+            "tcf_features": GVL_FEATURES,
+            "tcf_special_features": GVL_SPECIAL_FEATURES,
+        }
+
+        for field_name, expected_values in expected_field_mapping.items():
+            if not set(values.get(field_name, [])).issubset(
+                set(expected_values.keys())
+            ):
+                raise ValueError(f"Invalid values for {field_name} served.")
 
         return values
 
