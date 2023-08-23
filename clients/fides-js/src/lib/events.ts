@@ -1,6 +1,6 @@
 import { FidesCookie } from "./cookie";
 import { debugLog } from "./consent-utils";
-import {PrivacyExperience} from "~/lib/consent-types";
+import {PrivacyExperience} from "./consent-types";
 
 /**
  * Defines the available event names:
@@ -28,7 +28,7 @@ declare global {
  * around.
  */
 export type FidesEventDetail = FidesCookie & {
-  experience?: PrivacyExperience;
+  experience?: PrivacyExperience | undefined;
   debug?: boolean;
   extraDetails?: Record<string, string>;
 };

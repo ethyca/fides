@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@iabtechlabtcf/core": "^1.5.7",
+    "@rollup/plugin-json": "^6.0.0",
     "a11y-dialog": "^7.5.2",
     "preact": "^10.13.2",
     "react": "^17.0.2",
