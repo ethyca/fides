@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 - Added vendor list dropdown [#3857](https://github.com/ethyca/fides/pull/3857)
 - Access support for Adobe Sign [#3504](https://github.com/ethyca/fides/pull/3504)
+- Support for rendering in the TCF modal whether or not a vendor is part of the GVL [#3972](https://github.com/ethyca/fides/pull/3972)
 
 ### Fixed
 - Fixed issue when generating masked values for invalid data paths [#3906](https://github.com/ethyca/fides/pull/3906)
