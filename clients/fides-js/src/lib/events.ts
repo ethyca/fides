@@ -1,6 +1,5 @@
 import { FidesCookie } from "./cookie";
 import { debugLog } from "./consent-utils";
-import {TcStringPreferences} from "./tcf/types";
 
 /**
  * Defines the available event names:

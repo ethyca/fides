@@ -80,8 +80,8 @@ const init = async (config: FidesConfig) => {
   const initialFides = getInitialFides({ ...config, cookie });
   if (initialFides) {
     Object.assign(_Fides, initialFides);
-    dispatchFidesEvent("FidesInitialized", cookie, initialFides.experience, config.options.debug);
-    dispatchFidesEvent("FidesUpdated", cookie, initialFides.experience, config.options.debug);
+    dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
+    dispatchFidesEvent("FidesUpdated", cookie, config.options.debug);
   }
   const updatedFides = await initialize({ ...config, cookie, renderOverlay });
   Object.assign(_Fides, updatedFides);
@@ -91,9 +91,9 @@ const init = async (config: FidesConfig) => {
   // For convenience, also dispatch the "FidesUpdated" event; this allows
   // listeners to ignore the initialization event if they prefer
   if (isNewFidesCookie(cookie)) {
-    dispatchFidesEvent("FidesInitialized", cookie, updatedFides.experience, config.options.debug);
+    dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
   }
-  dispatchFidesEvent("FidesUpdated", cookie, updatedFides.experience, config.options.debug);
+  dispatchFidesEvent("FidesUpdated", cookie, config.options.debug);
 
   tcf();
 };
