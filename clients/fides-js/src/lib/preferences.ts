@@ -103,13 +103,12 @@ export const updateConsentPreferences = ({
     console.log("tc string tcf purposes...")
     console.log(tcStringPreferences?.tcf_purposes)
     console.log(tcStringPreferences?.tcf_purposes?.get(6))
-    console.log(tcStringPreferences?.tcf_purposes?.get(6)?.current_preference)
     // "Upsert" new tcf preferences to existing experience data
     tcf.purpose_preferences?.forEach(purpose => {
       // @ts-ignore
       // todo- map preference to current_preference
-      tcStringPreferences.tcf_purposes.get(purpose.id) = tcStringPreferences.tcf_purposesget(purpose.id) || {}
-      tcStringPreferences.tcf_purposes.get(purpose.id).current_preference = purpose.preference
+      console.log(purpose.preference)
+      tcStringPreferences.tcf_purposes.set(purpose.id, {current_preference: purpose.preference})
     })
     tcf.special_purpose_preferences?.forEach(purpose => {
       // @ts-ignore
