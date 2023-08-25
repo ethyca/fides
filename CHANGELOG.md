@@ -22,6 +22,7 @@ The types of changes are:
 - Added new endpoints for healthchecks [#3947](https://github.com/ethyca/fides/pull/3947)
 - Added vendor list dropdown [#3857](https://github.com/ethyca/fides/pull/3857)
 - Access support for Adobe Sign [#3504](https://github.com/ethyca/fides/pull/3504)
+- Support for rendering in the TCF modal whether or not a vendor is part of the GVL [#3972](https://github.com/ethyca/fides/pull/3972)
 
 ### Fixed
 

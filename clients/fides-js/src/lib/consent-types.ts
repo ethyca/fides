@@ -80,6 +80,7 @@ export type PrivacyExperience = {
   tcf_purposes?: Array<TCFPurposeRecord>;
   tcf_special_purposes?: Array<TCFPurposeRecord>;
   tcf_vendors?: Array<TCFVendorRecord>;
+  tcf_systems?: Array<TCFVendorRecord>;
   tcf_features?: Array<TCFFeatureRecord>;
   tcf_special_features?: Array<TCFFeatureRecord>;
 };
@@ -200,6 +201,7 @@ export type PrivacyPreferencesRequest = {
   purpose_preferences?: Array<TCFPurposeSave>;
   special_purpose_preferences?: Array<TCFSpecialPurposeSave>;
   vendor_preferences?: Array<TCFVendorSave>;
+  system_preferences?: Array<TCFVendorSave>;
   feature_preferences?: Array<TCFFeatureSave>;
   special_feature_preferences?: Array<TCFSpecialFeatureSave>;
   policy_key?: string; // Will use default consent policy if not supplied

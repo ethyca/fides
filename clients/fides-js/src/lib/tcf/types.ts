@@ -93,7 +93,7 @@ export type TCFVendorRecord = {
   id: string;
   name?: string;
   description?: string;
-  is_gvl?: boolean;
+  has_vendor_id: boolean;
   purposes?: Array<EmbeddedLineItem>;
   special_purposes?: Array<EmbeddedLineItem>;
   data_categories?: Array<TCFDataCategoryRecord>;
@@ -114,4 +114,5 @@ export type TcfSavePreferences = Pick<
   | "feature_preferences"
   | "special_feature_preferences"
   | "vendor_preferences"
+  | "system_preferences"
 >;
