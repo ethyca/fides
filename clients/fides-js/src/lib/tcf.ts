@@ -5,7 +5,12 @@
  * In the future, this should hold interactions with the CMP API as well as string generation.
  */
 
-import { TCModel, TCString, GVL } from "@iabtechlabtcf/core";
+import {
+  TCModel,
+  TCString,
+  GVL,
+  VersionOrVendorList,
+} from "@iabtechlabtcf/core";
 import { transformUserPreferenceToBoolean } from "./consent-utils";
 import gvlJson from "./tcf/GVL.json";
 import { TcfSavePreferences } from "./tcf/types";
@@ -22,7 +27,7 @@ export const generateTcString = async (
   // due to TCF library not yet supporting latest GVL (https://vendor-list.consensu.org/v3/vendor-list.json).
   // We'll need to update this with our own hosted GVL once the lib is updated
   // https://github.com/InteractiveAdvertisingBureau/iabtcf-es/pull/389
-  const tcModel = new TCModel(new GVL(gvlJson));
+  const tcModel = new TCModel(new GVL(gvlJson as VersionOrVendorList));
 
   let encodedString = "";
 
@@ -35,21 +40,21 @@ export const generateTcString = async (
 
   if (tcStringPreferences) {
     // todo- when we set vendorLegitimateInterests, make sure we never set purposes 1, 3, 4, 5 and 6
-    // Set vendor consent on tcModel
-    if (
-      tcStringPreferences.vendor_preferences &&
-      tcStringPreferences.vendor_preferences.length > 0
-    ) {
-      tcStringPreferences.vendor_preferences.forEach((vendorPreference) => {
-        const consented = transformUserPreferenceToBoolean(
-          vendorPreference.preference
-        );
-        if (consented) {
-          // TODO: safely make sure this is a number!
-          tcModel.vendorConsents.set(+vendorPreference.id);
-        }
-      });
-    }
+    // TODO: Set vendor consent on tcModel once https://github.com/ethyca/fides/pull/3972 is in. We will need to filter by GVL vendors
+    // if (
+    //   tcStringPreferences.vendor_preferences &&
+    //   tcStringPreferences.vendor_preferences.length > 0
+    // ) {
+    //   tcStringPreferences.vendor_preferences.forEach((vendorPreference) => {
+    //     const consented = transformUserPreferenceToBoolean(
+    //       vendorPreference.preference
+    //     );
+    //     if (consented) {
+    //       // TODO: safely make sure this is a number!
+    //       tcModel.vendorConsents.set(+vendorPreference.id);
+    //     }
+    //   });
+    // }
 
     // Set purpose consent on tcModel
     if (
@@ -61,7 +66,7 @@ export const generateTcString = async (
           purposePreference.preference
         );
         if (consented) {
-          tcModel.vendorConsents.set(+purposePreference.id);
+          tcModel.purposeConsents.set(+purposePreference.id);
         }
       });
     }
@@ -77,7 +82,7 @@ export const generateTcString = async (
             specialFeaturePreference.preference
           );
           if (consented) {
-            tcModel.vendorConsents.set(+specialFeaturePreference.id);
+            tcModel.purposeConsents.set(+specialFeaturePreference.id);
           }
         }
       );
@@ -87,11 +92,10 @@ export const generateTcString = async (
     // the user is not given choice by a CMP.
     // See https://iabeurope.eu/iab-europe-transparency-consent-framework-policies/
     // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/issues/63#issuecomment-581798996
-
     encodedString = TCString.encode(tcModel);
   }
-  console.log("Generated TC str...")
-  console.log(encodedString)
+  console.log("Generated TC str...");
+  console.log(encodedString);
   return Promise.resolve(encodedString);
 };
 
