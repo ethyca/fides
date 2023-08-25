@@ -14,8 +14,8 @@ const GZIP_SIZE_ERROR_KB = 20; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 15; // log a warning if bundle size exceeds this
 
 // TCF
-const GZIP_SIZE_TCF_ERROR_KB = 40;
-const GZIP_SIZE_TCF_WARN_KB = 30;
+const GZIP_SIZE_TCF_ERROR_KB = 80;
+const GZIP_SIZE_TCF_WARN_KB = 70;
 
 const preactAliases = {
   entries: [
@@ -29,6 +29,7 @@ const preactAliases = {
 const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   alias(preactAliases),
   nodeResolve(),
+  json(),
   postcss({
     minimize: !IS_DEV,
   }),
