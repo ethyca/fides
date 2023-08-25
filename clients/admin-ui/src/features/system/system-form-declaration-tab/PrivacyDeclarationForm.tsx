@@ -9,7 +9,6 @@ import * as Yup from "yup";
 
 import {
   CustomCreatableSelect,
-  CustomNumberInput,
   CustomSelect,
   CustomSwitch,
   CustomTextInput,
@@ -48,7 +47,7 @@ const defaultInitialValues: FormValues = {
   features: [],
   legal_basis_for_processing: undefined,
   impact_assessment_location: "",
-  retention_period: "0",
+  retention_period: "",
   processes_special_category_data: false,
   special_category_legal_basis: undefined,
   data_shared_with_third_parties: false,
@@ -214,18 +213,18 @@ export const PrivacyDeclarationFormComponents = ({
             </Box>
           </Collapse>
         </Stack>
-        <CustomNumberInput
+        <CustomTextInput
           name="retention_period"
-          label="Retention period (days)"
+          label="Retention period"
           tooltip="How long is personal data retained for this purpose?"
           variant="stacked"
-          minValue={0}
         />
       </SystemFormInputGroup>
       <SystemFormInputGroup heading="Features">
         <CustomCreatableSelect
           name="features"
           label="Features"
+          placeholder="Describe features..."
           tooltip="What are some features of how data is processed?"
           variant="stacked"
           options={[]}
