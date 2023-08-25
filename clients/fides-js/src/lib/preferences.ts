@@ -1,7 +1,8 @@
 import {
   ConsentMethod,
   ConsentOptionCreate,
-  LastServedNoticeSchema, PrivacyExperience,
+  LastServedNoticeSchema,
+  PrivacyExperience,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
   UserConsentPreference,
@@ -15,8 +16,8 @@ import {
 } from "./cookie";
 import { dispatchFidesEvent } from "./events";
 import { patchUserPreferenceToFidesServer } from "../services/fides/api";
-import {TcfSavePreferences, TcStringPreferences} from "./tcf/types";
-import {buildTcStringPreferences, generateTcString} from "./tcf";
+import { TcfSavePreferences } from "./tcf/types";
+import { generateTcString } from "./tcf";
 
 /**
  * Updates the user's consent preferences, going through the following steps:
@@ -93,47 +94,12 @@ export const updateConsentPreferences = ({
   window.Fides.consent = cookie.consent;
 
   // 3. TCF
-  let tcStringPreferences: TcStringPreferences;
-  // Instead of making a new call for user prefs, this manually adds the new tcf preferences to existing experience
-  // tcf data in the effort of reducing roundtrip calls to Fides server for performance
   if (tcf) {
-    console.log(experience)
-    // At this point, this obj contains just experience data, restructured
-    tcStringPreferences = buildTcStringPreferences(experience)
-    console.log("tc string tcf purposes...")
-    console.log(tcf.purpose_preferences)
-    console.log(tcStringPreferences?.tcf_purposes)
-    console.log(tcStringPreferences?.tcf_purposes?.get(6))
-    tcf.purpose_preferences?.forEach(purpose => {
-      // @ts-ignore
-      console.log(purpose.preference)
-      console.log("purpose id")
-      console.log(purpose.id)
-      // fixme- // "Upsert" new tcf preferences to existing experience data, but overwrite current_preference
-      tcStringPreferences.tcf_purposes.set(purpose.id, {current_preference: purpose.preference})
-    })
-    tcf.special_purpose_preferences?.forEach(purpose => {
-      // @ts-ignore
-      tcStringPreferences.tcf_special_purposes[purpose.id] = purpose
-    })
-    tcf.vendor_preferences?.forEach(purpose => {
-      // @ts-ignore
-      tcStringPreferences.tcf_vendors[purpose.id] = purpose
-    })
-    tcf.feature_preferences?.forEach(purpose => {
-      // @ts-ignore
-      tcStringPreferences.tcf_features[purpose.id] = purpose
-    })
-    tcf.special_feature_preferences?.forEach(purpose => {
-      // @ts-ignore
-      tcStringPreferences.tcf_special_features[purpose.id] = purpose
-    })
-
     // Update the cookie object with TCF prefs
-    generateTcString(tcStringPreferences, debug).then((result) => {
+    generateTcString(tcf).then((result) => {
       // eslint-disable-next-line no-param-reassign
-      cookie.tcString = result
-    })
+      cookie.tcString = result;
+    });
   }
 
   // 4. Save preferences to the cookie
