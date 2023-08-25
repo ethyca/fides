@@ -134,7 +134,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   options,
   cookie,
 }) => {
-  // TODO: should we get this from the cookie?
   const initialEnabledIds: EnabledIds = useMemo(() => {
     const {
       tcf_purposes: purposes,
