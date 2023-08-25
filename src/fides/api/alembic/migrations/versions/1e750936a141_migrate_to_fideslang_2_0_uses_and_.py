@@ -258,7 +258,7 @@ def upgrade() -> None:
     update_privacy_declaration_data_categories(bind, data_category_upgrades)
 
     logger.info("Upgrading ctl policy rule data categories")
-    update_ctl_policy_data_uses(bind, data_category_upgrades)
+    update_ctl_policy_data_categories(bind, data_category_upgrades)
 
     logger.info("Upgrading data categories in datasets")
     update_datasets_data_categories(bind, data_category_upgrades)
@@ -277,10 +277,10 @@ def downgrade() -> None:
     update_ctl_policy_data_uses(bind, data_use_downgrades)
 
     logger.info("Downgrading data category on privacy declaration")
-    update_privacy_declaration_data_uses(bind, data_category_downgrades)
+    update_privacy_declaration_data_categories(bind, data_category_downgrades)
 
     logger.info("Downgrading ctl policy rule data categories")
-    update_ctl_policy_data_uses(bind, data_category_downgrades)
+    update_ctl_policy_data_categories(bind, data_category_downgrades)
 
     logger.info("Downgrading data categories in datasets")
     update_datasets_data_categories(bind, data_category_downgrades)
