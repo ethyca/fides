@@ -29,7 +29,7 @@ import { generateTcString } from "./tcf";
  */
 export const updateConsentPreferences = ({
   consentPreferencesToSave,
-  experience,
+  experienceId,
   fidesApiUrl,
   consentMethod,
   userLocationString,
@@ -39,7 +39,7 @@ export const updateConsentPreferences = ({
   tcf,
 }: {
   consentPreferencesToSave: Array<SaveConsentPreference>;
-  experience: PrivacyExperience;
+  experienceId: string;
   fidesApiUrl: string;
   consentMethod: ConsentMethod;
   userLocationString?: string;
@@ -82,7 +82,7 @@ export const updateConsentPreferences = ({
   const privacyPreferenceCreate: PrivacyPreferencesRequest = {
     browser_identity: cookie.identity,
     preferences: fidesUserPreferences,
-    privacy_experience_id: experience.id,
+    privacy_experience_id: experienceId,
     user_geography: userLocationString,
     method: consentMethod,
     ...(tcf ?? []),
