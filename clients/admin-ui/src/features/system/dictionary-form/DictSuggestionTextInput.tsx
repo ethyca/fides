@@ -23,7 +23,10 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
   const isInvalid = !!(meta.touched && meta.error);
   const { error } = meta;
   const field = { ...initialField, value: initialField.value ?? "" };
-  const { values, setTouched: setFormTouched, touched } = useFormikContext();
+  const {
+    values,
+    touched,
+  } = useFormikContext();
   const context = useResetSuggestionContext();
   // @ts-ignore
   const vendorId = values?.meta?.vendor?.id;
@@ -47,11 +50,9 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
     ) {
       if (field.value !== dictEntry[dictField as keyof DictEntry]) {
         setValue(dictEntry[dictField as keyof DictEntry]);
-        // console.log(fieldName, inputRef.current)
 
         setTimeout(() => {
           setTouched(true);
-          // console.log("blurring",fieldName, JSON.stringify(inputRef.current ? 'actual ref': undefined))
           // @ts-ignore
           inputRef.current?.blur();
         }, 300);
@@ -99,7 +100,6 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
     isInvalid,
     isShowingSuggestions,
     error,
-    setFormTouched,
     touched,
     inputRef,
   };
