@@ -20,7 +20,6 @@ import {
   FidesOptions,
   PrivacyExperience,
   SaveConsentPreference,
-  UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
 import {
@@ -36,8 +35,6 @@ import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
-import { generateTcString } from "./tcf";
-import { TcfSavePreferences } from "./tcf/types";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -189,9 +186,14 @@ export const initialize = async ({
   experience,
   geolocation,
   renderOverlay,
+  updateCookie,
 }: {
   cookie: FidesCookie;
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
+  updateCookie?: (
+    oldCookie: FidesCookie,
+    experience: PrivacyExperience
+  ) => Promise<FidesCookie>;
 } & FidesConfig): Promise<Partial<Fides>> => {
   const context = getConsentContext();
 
@@ -240,52 +242,10 @@ export const initialize = async ({
         context,
         options.debug
       );
-      // if tcf enabled, build TC string and add to cookie
-      if (options.tcfEnabled) {
-        const tcSavePrefs: TcfSavePreferences = {
-          purpose_preferences: effectiveExperience.tcf_purposes?.map(
-            (purpose) => ({
-              id: purpose.id,
-              preference:
-                (purpose.current_preference ?? purpose.default_preference) ||
-                UserConsentPreference.OPT_OUT,
-            })
-          ),
-          special_purpose_preferences:
-            effectiveExperience.tcf_special_purposes?.map((purpose) => ({
-              id: purpose.id,
-              preference:
-                (purpose.current_preference ?? purpose.default_preference) ||
-                UserConsentPreference.OPT_OUT,
-            })),
-          feature_preferences: effectiveExperience.tcf_features?.map(
-            (purpose) => ({
-              id: purpose.id,
-              preference:
-                (purpose.current_preference ?? purpose.default_preference) ||
-                UserConsentPreference.OPT_OUT,
-            })
-          ),
-          special_feature_preferences:
-            effectiveExperience.tcf_special_features?.map((purpose) => ({
-              id: purpose.id,
-              preference:
-                (purpose.current_preference ?? purpose.default_preference) ||
-                UserConsentPreference.OPT_OUT,
-            })),
-          vendor_preferences: effectiveExperience.tcf_vendors?.map(
-            (purpose) => ({
-              id: purpose.id,
-              preference:
-                (purpose.current_preference ?? purpose.default_preference) ||
-                UserConsentPreference.OPT_OUT,
-            })
-          ),
-        };
-        generateTcString(tcSavePrefs).then((result) => {
-          // eslint-disable-next-line no-param-reassign
-          cookie.tcString = result;
-        });
+
+      if (updateCookie) {
+        // eslint-disable-next-line no-param-reassign
+        cookie = await updateCookie(cookie, effectiveExperience);
       }
 
       if (shouldInitOverlay) {
