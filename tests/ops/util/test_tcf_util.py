@@ -1,5 +1,5 @@
 import pytest
-from fideslang import GVL_PURPOSES, MAPPED_PURPOSES
+from fideslang import MAPPED_PURPOSES
 from fideslang.models import LegalBasisForProcessingEnum
 
 from fides.api.models.sql_models import PrivacyDeclaration

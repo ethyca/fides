@@ -5,12 +5,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
-from fideslang.gvl import (
-    GVL_FEATURES,
-    GVL_SPECIAL_FEATURES,
-    feature_id_to_feature_name,
-    purpose_to_data_use,
-)
+from fideslang.gvl import feature_id_to_feature_name, purpose_to_data_use
 from fideslang.validation import FidesKey
 from sqlalchemy import ARRAY, Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
@@ -232,19 +227,20 @@ class ConsentReportingMixin:
     def consent_record_type(self) -> ConsentRecordType:
         """Determine the type of record for which a preference was saved
         or served against based on which field exists"""
-        if self.privacy_notice_history_id:
-            return ConsentRecordType.privacy_notice_id
-        if self.purpose:
-            return ConsentRecordType.purpose
-        if self.special_purpose:
-            return ConsentRecordType.special_purpose
-        if self.vendor:
-            return ConsentRecordType.vendor
-        if self.system:
-            return ConsentRecordType.system
-        if self.special_feature:
-            return ConsentRecordType.special_feature
-        return ConsentRecordType.feature
+        consent_record_type_mapping = {
+            "privacy_notice_history_id": ConsentRecordType.privacy_notice_id,
+            "purpose": ConsentRecordType.purpose,
+            "special_purpose": ConsentRecordType.special_purpose,
+            "vendor": ConsentRecordType.vendor,
+            "system": ConsentRecordType.system,
+            "special_feature": ConsentRecordType.special_feature,
+            "feature": ConsentRecordType.feature,
+        }
+        for field_name, consent_record_type in consent_record_type_mapping.items():
+            if getattr(self, field_name):
+                return consent_record_type
+
+        return ConsentRecordType.privacy_notice_id
 
 
 class ServingComponent(Enum):

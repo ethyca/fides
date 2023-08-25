@@ -27,20 +27,20 @@ from fides.api.schemas.tcf import (
     TCFVendorRecord,
 )
 
-# Each TCF sections embedded in the TCF Overlay mapped to the
-# specific field name from which previously-saved values are retrieved
+# Each TCF section in the TCF Overlay mapped to the
+# specific database field name from which previously-saved values are retrieved
 TCF_COMPONENT_MAPPING: Dict[str, ConsentRecordType] = {
     "tcf_purposes": ConsentRecordType.purpose,
     "tcf_special_purposes": ConsentRecordType.special_purpose,
     "tcf_features": ConsentRecordType.feature,
     "tcf_special_features": ConsentRecordType.special_feature,
     "tcf_vendors": ConsentRecordType.vendor,
-    "tcf_systems": ConsentRecordType.system,  # Systems where there is no known vendor id
+    "tcf_systems": ConsentRecordType.system,  # Systems where there are no known vendor id - we don't know the system "type"
 }
 
 
 class TCFExperienceContents:
-    """Schema to serialize the initial contents of a TCF overlay when we pull mapped purposes and special purposes
+    """Schema to serialize the initial contents of a TCF overlay when we pull mapped purposes and features
     from the GVL in Fideslang and combine them with system data."""
 
     tcf_purposes: List[TCFPurposeRecord] = []
@@ -53,7 +53,7 @@ class TCFExperienceContents:
 
 def get_system_features(record: Row, relevant_features: List[str]) -> Set[str]:
     """Collapses the relevant features across all the privacy declarations on the current system into a set.
-    Sometimes the relevant features might be "TCF features" - other times they might be "TCF Special Features"
+    Sometimes the relevant features might be "TCF Features" - other times they might be "TCF Special Features"
     """
     unique_features = set()
     for feature_list in record.features:
@@ -61,6 +61,40 @@ def get_system_features(record: Row, relevant_features: List[str]) -> Set[str]:
             if feature_name in relevant_features:
                 unique_features.add(feature_name)
     return unique_features
+
+
+def _get_tcf_functions_per_component_type(
+    matching_systems: Query,
+    tcf_component_name: str,
+    relevant_uses_or_features: List[str],
+) -> Tuple[
+    Query, Union[Type[TCFPurposeRecord], Type[TCFFeatureRecord]], Callable, bool
+]:
+    """Helper for dynamically returning objects needed to build the TCF overlay
+    depending on the type of TCF component"""
+    tcf_record_type: Union[Type[TCFPurposeRecord], Type[TCFFeatureRecord]]
+    get_tcf_construct_function: Callable
+    is_purpose_type: bool = tcf_component_name in ["purposes", "special_purposes"]
+
+    if is_purpose_type:
+        matching_systems = matching_systems.filter(
+            PrivacyDeclaration.data_use.in_(relevant_uses_or_features)
+        )
+        tcf_record_type = TCFPurposeRecord
+        get_tcf_construct_function = data_use_to_purpose
+    else:
+        matching_systems = matching_systems.filter(
+            PrivacyDeclaration.features.overlap(relevant_uses_or_features)
+        )
+        tcf_record_type = TCFFeatureRecord
+        get_tcf_construct_function = feature_name_to_feature
+
+    return (
+        matching_systems,
+        tcf_record_type,
+        get_tcf_construct_function,
+        is_purpose_type,
+    )
 
 
 def get_tcf_component_and_vendors(
@@ -73,12 +107,14 @@ def get_tcf_component_and_vendors(
 ]:
     """Helper method for building data for a specific portion of the TCF overlay.
 
-    Purposes and features have vendor/systems info enbedded, and vendor/system info has purposes and features embedded.
+    Purposes and features have vendor/systems info embedded, and vendor/system info have purposes and features embedded.
 
     - System map is passed in as an argument instead of being constructed here, because both
     purposes/features are added to it and we modify that mapping multiple times.
     """
-    matching_record_map: Dict[int, Union[TCFPurposeRecord, TCFFeatureRecord]] = {}
+    matching_purpose_or_feature_map: Dict[
+        int, Union[TCFPurposeRecord, TCFFeatureRecord]
+    ] = {}
 
     # Base query
     matching_systems: Query = (
@@ -118,25 +154,19 @@ def get_tcf_component_and_vendors(
         )  # Order by to get repeatable results when collapsing information
     )
 
-    tcf_record_type: Union[Type[TCFPurposeRecord], Type[TCFFeatureRecord]]
-    get_tcf_construct: Callable
-    is_purpose_type: bool = tcf_component_name in ["purposes", "special_purposes"]
-
-    if is_purpose_type:
-        matching_systems = matching_systems.filter(
-            PrivacyDeclaration.data_use.in_(relevant_uses_or_features)
-        )
-        tcf_record_type = TCFPurposeRecord
-        get_tcf_construct = data_use_to_purpose
-    else:
-        matching_systems = matching_systems.filter(
-            PrivacyDeclaration.features.overlap(relevant_uses_or_features)
-        )
-        tcf_record_type = TCFFeatureRecord
-        get_tcf_construct = feature_name_to_feature
+    (
+        matching_systems,
+        tcf_record_type,
+        get_tcf_construct_function,
+        is_purpose_type,
+    ) = _get_tcf_functions_per_component_type(
+        matching_systems=matching_systems,
+        tcf_component_name=tcf_component_name,
+        relevant_uses_or_features=relevant_uses_or_features,
+    )
 
     for record in matching_systems:
-        # Identify system by vendor id if it exists, otherwise use system fides key.
+        # Identify system by vendor id if it exists, otherwise use system id.
         system_id: str = record["id"]
         vendor_id: Optional[str] = record["vendor_id"]
         system_identifier: str = vendor_id if vendor_id else system_id
@@ -152,7 +182,7 @@ def get_tcf_component_and_vendors(
                 # into vendors and systems.
             )
 
-        # Pull the attributes we care about from the system record depending on the type TCF component.
+        # Pull the attributes we care about from the system record depending on the TCF component.
         relevant_system_attributes: Set[str] = (
             [data_use[0] for data_use in record.data_uses_and_legal_bases]
             if is_purpose_type
@@ -162,41 +192,45 @@ def get_tcf_component_and_vendors(
         )
 
         for item in relevant_system_attributes:
-            # Get the matching TCF Record
-            fideslang_gvl_record: Union[Purpose, Feature] = get_tcf_construct(item)
+            # Get the matching GVL record for the (special) purpose or (special) feature
+            fideslang_gvl_record: Union[Purpose, Feature] = get_tcf_construct_function(
+                item
+            )
             if not fideslang_gvl_record:
                 continue
 
-            # Collect relevant TCF component
-            tcf_record = tcf_record_type(**fideslang_gvl_record.dict())
+            # Transform into the TCF record type that has more elements for TCF display
+            tcf_record: Union[TCFPurposeRecord, TCFFeatureRecord] = tcf_record_type(
+                **fideslang_gvl_record.dict()
+            )
             if is_purpose_type:
                 tcf_record.legal_bases = list(
                     {
                         use[1]
                         for use in record.data_uses_and_legal_bases
-                        if use[1] is not None and use[0] in tcf_record.data_uses
+                        if use[1] and use[0] in tcf_record.data_uses
                     }
                 )
 
-            if fideslang_gvl_record.id not in matching_record_map:
-                matching_record_map[fideslang_gvl_record.id] = tcf_record
+            if fideslang_gvl_record.id not in matching_purpose_or_feature_map:
+                matching_purpose_or_feature_map[fideslang_gvl_record.id] = tcf_record
 
-            # Embed the systems information beneath the TCF component data
-            embedded_system_or_vendor_record = (
-                matching_record_map[fideslang_gvl_record.id].vendors
+            embedded_system_or_vendor_record_list: List[EmbeddedVendor] = (
+                matching_purpose_or_feature_map[fideslang_gvl_record.id].vendors
                 if vendor_id
-                else matching_record_map[fideslang_gvl_record.id].systems
+                else matching_purpose_or_feature_map[fideslang_gvl_record.id].systems
             )
 
+            # Embed the system or vendor information beneath the TCF purpose/feature
             if system_identifier not in [
                 system_construct.id
-                for system_construct in embedded_system_or_vendor_record
+                for system_construct in embedded_system_or_vendor_record_list
             ]:
-                embedded_system_or_vendor_record.extend(
+                embedded_system_or_vendor_record_list.extend(
                     [EmbeddedVendor(id=system_identifier, name=record.name)]
                 )
 
-            # Do the reverse, and embed the TCF component under the systems subsection
+            # Do the reverse, and embed the TCF purpose/feature under the systems subsection
             system_tcf_subsection = getattr(
                 system_map[system_identifier], tcf_component_name
             )
@@ -205,7 +239,7 @@ def get_tcf_component_and_vendors(
             ]:
                 system_tcf_subsection.append(tcf_record)
 
-    return matching_record_map, system_map
+    return matching_purpose_or_feature_map, system_map
 
 
 @lru_cache()
@@ -213,14 +247,18 @@ def get_tcf_contents(
     db: Session,
 ) -> TCFExperienceContents:
     """
-    Load TCF Purposes and Special Purposes from Fideslang and then return a subset of those whose data uses
-    are on systems. Return a reverse representation for the vendors themselves.
+    Returns the base contents of the TCF overlay.
 
-    TODO: TCF Return more Vendor information
+    Loads TCF Purposes and Special Purposes from Fideslang and then returns a subset of those whose data uses
+    are on systems.
+
+    Similarly returns Features and Special Features from fideslang that are on the systems.
+
+    Return a reverse representation for the vendors and systems themselves.
     """
     system_map: Dict[str, TCFVendorRecord] = {}
 
-    # Collect purposes and systems
+    # Collect purposes and update system map
     all_tcf_data_uses: List[str] = []
     for purpose in MAPPED_PURPOSES.values():
         all_tcf_data_uses.extend(purpose.data_uses)
