@@ -73,7 +73,6 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
       },
     ],
   }),
-  json(),
 ];
 
 const SCRIPTS = [

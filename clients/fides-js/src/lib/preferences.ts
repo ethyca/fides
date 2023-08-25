@@ -2,7 +2,6 @@ import {
   ConsentMethod,
   ConsentOptionCreate,
   LastServedNoticeSchema,
-  PrivacyExperience,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
   UserConsentPreference,
@@ -17,7 +16,6 @@ import {
 import { dispatchFidesEvent } from "./events";
 import { patchUserPreferenceToFidesServer } from "../services/fides/api";
 import { TcfSavePreferences } from "./tcf/types";
-import { generateTcString } from "./tcf";
 
 /**
  * Updates the user's consent preferences, going through the following steps:
@@ -27,7 +25,7 @@ import { generateTcString } from "./tcf";
  * 4. Remove any cookies from notices that were opted-out from the browser
  * 5. Dispatch a "FidesUpdated" event
  */
-export const updateConsentPreferences = ({
+export const updateConsentPreferences = async ({
   consentPreferencesToSave,
   experienceId,
   fidesApiUrl,
@@ -37,6 +35,7 @@ export const updateConsentPreferences = ({
   debug = false,
   servedNotices,
   tcf,
+  updateCookie,
 }: {
   consentPreferencesToSave: Array<SaveConsentPreference>;
   experienceId: string;
@@ -47,6 +46,7 @@ export const updateConsentPreferences = ({
   debug?: boolean;
   servedNotices?: Array<LastServedNoticeSchema> | null;
   tcf?: TcfSavePreferences;
+  updateCookie?: (oldCookie: FidesCookie) => Promise<FidesCookie>;
 }) => {
   // Derive the CookieKeyConsent object from privacy notices
   const noticeMap = new Map<string, boolean>(
@@ -94,13 +94,17 @@ export const updateConsentPreferences = ({
   window.Fides.consent = cookie.consent;
 
   // 3. TCF
-  if (tcf) {
-    // Update the cookie object with TCF prefs
-    generateTcString(tcf).then((result) => {
-      // eslint-disable-next-line no-param-reassign
-      cookie.tcString = result;
-    });
+  if (updateCookie) {
+    // eslint-disable-next-line no-param-reassign
+    cookie = await updateCookie(cookie);
   }
+  // if (tcf) {
+  //   // Update the cookie object with TCF prefs
+  //   generateTcString(tcf).then((result) => {
+  //     // eslint-disable-next-line no-param-reassign
+  //     cookie.tcString = result;
+  //   });
+  // }
 
   // 4. Save preferences to the cookie
   debugLog(debug, "Saving preferences to cookie");

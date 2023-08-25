@@ -28,6 +28,8 @@ import type {
 
 import { updateConsentPreferences } from "../../lib/preferences";
 import { ConsentMethod, PrivacyExperience } from "../../lib/consent-types";
+import { generateTcString } from "../../lib/tcf";
+import { FidesCookie } from "../../lib/cookie";
 
 const resolveConsentValueFromTcfModel = (
   model: TCFPurposeRecord | TCFFeatureRecord | TCFVendorRecord
@@ -167,6 +169,14 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     [draftIds]
   );
 
+  const updateCookie = async (
+    oldCookie: FidesCookie,
+    tcf: TcfSavePreferences
+  ) => {
+    const tcString = await generateTcString(tcf);
+    return { ...oldCookie, tcString };
+  };
+
   const handleUpdateAllPreferences = useCallback(
     (enabledIds: EnabledIds) => {
       const tcf = createTcfSavePayload({ experience, enabledIds });
@@ -180,6 +190,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         debug: options.debug,
         servedNotices: null, // TODO: served notices
         tcf,
+        updateCookie: (oldCookie) => updateCookie(oldCookie, tcf),
       });
       setDraftIds(enabledIds);
     },
