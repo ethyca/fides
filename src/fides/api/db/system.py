@@ -230,13 +230,12 @@ async def update_system(
         before, after = dict_diff(
             existing_system_dict, SystemSchema.from_orm(updated_system).dict()
         )
-        system_history = SystemHistory(
+        SystemHistory(
             edited_by=current_user.username,
             system_key=resource.fides_key,
             before=before,
             after=after,
-        )
-        system_history.save(db=db)
+        ).save(db=db)
 
     return updated_system
 

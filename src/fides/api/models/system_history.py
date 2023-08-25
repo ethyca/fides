@@ -2,8 +2,10 @@ from sqlalchemy import Column, DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.orm import relationship
 
 from fides.api.db.base_class import Base
+from fides.api.models.sql_models import System
 
 
 class SystemHistory(Base):

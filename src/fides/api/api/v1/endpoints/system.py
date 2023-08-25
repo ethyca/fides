@@ -276,8 +276,9 @@ async def upsert(
     resources: List[SystemSchema],
     response: Response,
     db: AsyncSession = Depends(get_async_db),
+    current_user: FidesUser = Depends(get_current_user),
 ) -> Dict:
-    inserted, updated = await upsert_system(resources, db)
+    inserted, updated = await upsert_system(resources, db, current_user)
     response.status_code = (
         status.HTTP_201_CREATED if inserted > 0 else response.status_code
     )

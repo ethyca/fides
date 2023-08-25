@@ -4,8 +4,8 @@ Contains the code that sets up the API.
 import os
 import sys
 from datetime import datetime, timezone
-from time import perf_counter
 from logging import WARNING
+from time import perf_counter
 from typing import Callable, Optional
 from urllib.parse import unquote
 
@@ -30,6 +30,9 @@ from fides.api.schemas.analytics import Event, ExtraData
 # pylint: disable=wildcard-import, unused-wildcard-import
 from fides.api.service.privacy_request.email_batch_service import (
     initiate_scheduled_batch_email_send,
+)
+from fides.api.service.system.system_history_digest import (
+    initiate_scheduled_system_change_digest,
 )
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.ui import (
@@ -248,6 +251,7 @@ async def setup_server() -> None:
         scheduler.start()
 
     initiate_scheduled_batch_email_send()
+    initiate_scheduled_system_change_digest()
 
     logger.debug("Sending startup analytics events...")
     # Avoid circular imports
