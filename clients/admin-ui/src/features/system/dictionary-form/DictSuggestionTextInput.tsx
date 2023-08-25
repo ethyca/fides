@@ -1,6 +1,6 @@
 import { Flex, FormControl, Textarea, VStack } from "@fidesui/react";
 import { useField, useFormikContext } from "formik";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -14,8 +14,7 @@ import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { selectDictEntry } from "~/features/plus/plus.slice";
 import { DictEntry } from "~/features/plus/types";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
-
-import { useResetSuggestionContext } from "./dict-suggestion.context";
+import { FormValues } from "~/features/system/form";
 
 const useDictSuggestion = (fieldName: string, dictField: string) => {
   const [preSuggestionValue, setPreSuggestionValue] = useState("");
@@ -23,10 +22,9 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
   const isInvalid = !!(meta.touched && meta.error);
   const { error } = meta;
   const field = { ...initialField, value: initialField.value ?? "" };
-  const form = useFormikContext();
-  const context = useResetSuggestionContext();
-  // @ts-ignore
-  const vendorId = form.values?.meta?.vendor?.id;
+  const form = useFormikContext<FormValues>();
+
+  const vendorId: string | undefined = form.values.meta?.vendor?.id;
   const dictEntry = useAppSelector(selectDictEntry(vendorId || ""));
   const isShowingSuggestions = useAppSelector(selectSuggestions);
 
@@ -62,27 +60,6 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
       setValue(preSuggestionValue);
     }
   }, [isShowingSuggestions, setValue, preSuggestionValue]);
-
-  const reset = useCallback(() => {
-    if (dictEntry && dictField in dictEntry) {
-      setValue(dictEntry[dictField as keyof DictEntry], true);
-    }
-  }, [dictEntry, dictField, setValue]);
-
-  useEffect(() => {
-    if (context) {
-      const payload = {
-        name: fieldName,
-        callback: reset,
-      };
-      context.addResetCallback(payload);
-    }
-    return () => {
-      if (context) {
-        context.removeResetCallback(fieldName);
-      }
-    };
-  }, [context, reset, fieldName]);
 
   return {
     field,
