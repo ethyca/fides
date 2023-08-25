@@ -10,11 +10,11 @@ saas_config:
     - name: domain
       description: Your Salesforce URL
     - name: client_id
-      label: Client ID
+      label: Consumer key
       description: Your Salesforce OAuth client ID.
     - name: client_secret
       sensitive: True
-      label: Client secret
+      label: Consumer secret
       description: Your Salesforce OAuth client secret
     - name: redirect_uri
       label: Redirect URL
