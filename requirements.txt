@@ -13,7 +13,7 @@ expandvars==0.9.0
 fastapi[all]==0.89.1
 fastapi-caching[redis]==0.3.0
 fastapi-pagination[sqlalchemy]~= 0.10.0
-fideslang==1.4.4
+fideslang @ git+https://github.com/ethyca/fideslang.git@5e7c0c330b198a56832c88e9e41bee56bf1075a4#egg=fideslang
 fideslog==1.2.10
 firebase-admin==5.3.0
 GitPython==3.1.31

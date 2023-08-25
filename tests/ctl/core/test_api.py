@@ -463,9 +463,9 @@ class TestSystemCreate:
             exempt_from_privacy_regulations=False,
             reason_for_exemption=None,
             uses_profiling=True,
-            legal_basis_for_profiling="Authorised by law",
+            legal_basis_for_profiling=["Authorised by law", "Contract"],
             does_international_transfers=True,
-            legal_basis_for_transfers="Binding corporate rules",
+            legal_basis_for_transfers=["Adequacy Decision", "BCRs"],
             requires_data_protection_assessments=True,
             dpa_location="https://www.example.com/dpa",
             dpa_progress="pending",
@@ -634,9 +634,9 @@ class TestSystemCreate:
         assert system.exempt_from_privacy_regulations is False
         assert system.reason_for_exemption is None
         assert system.uses_profiling is True
-        assert system.legal_basis_for_profiling == "Authorised by law"
+        assert system.legal_basis_for_profiling == ["Authorised by law", "Contract"]
         assert system.does_international_transfers is True
-        assert system.legal_basis_for_transfers == "Binding corporate rules"
+        assert system.legal_basis_for_transfers == ["Adequacy Decision", "BCRs"]
         assert system.requires_data_protection_assessments is True
         assert system.dpa_location == "https://www.example.com/dpa"
         assert system.dpa_progress == "pending"
@@ -938,7 +938,7 @@ class TestSystemCreate:
     async def test_system_create_invalid_legal_basis_for_profiling(
         self, generate_auth_header, test_config, system_create_request_body
     ):
-        system_create_request_body.legal_basis_for_profiling = "bad_basis"
+        system_create_request_body.legal_basis_for_profiling = ["bad_basis"]
         auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
 
         result = _api.create(
@@ -1054,9 +1054,9 @@ class TestSystemUpdate:
             exempt_from_privacy_regulations=False,
             reason_for_exemption=None,
             uses_profiling=True,
-            legal_basis_for_profiling="Authorised by law",
+            legal_basis_for_profiling=["Authorised by law", "Contract"],
             does_international_transfers=True,
-            legal_basis_for_transfers="Binding corporate rules",
+            legal_basis_for_transfers=["Adequacy Decision", "BCRs"],
             requires_data_protection_assessments=True,
             dpa_location="https://www.example.com/dpa",
             dpa_progress="pending",
@@ -1484,9 +1484,9 @@ class TestSystemUpdate:
         assert system.exempt_from_privacy_regulations is False
         assert system.reason_for_exemption is None
         assert system.uses_profiling is True
-        assert system.legal_basis_for_profiling == "Authorised by law"
+        assert system.legal_basis_for_profiling == ["Authorised by law", "Contract"]
         assert system.does_international_transfers is True
-        assert system.legal_basis_for_transfers == "Binding corporate rules"
+        assert system.legal_basis_for_transfers == ["Adequacy Decision", "BCRs"]
         assert system.requires_data_protection_assessments is True
         assert system.dpa_location == "https://www.example.com/dpa"
         assert system.dpa_progress == "pending"
