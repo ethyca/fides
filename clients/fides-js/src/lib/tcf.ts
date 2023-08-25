@@ -94,8 +94,6 @@ export const generateTcString = async (
     // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/issues/63#issuecomment-581798996
     encodedString = TCString.encode(tcModel);
   }
-  console.log("Generated TC str...");
-  console.log(encodedString);
   return Promise.resolve(encodedString);
 };
 
@@ -103,7 +101,7 @@ export const generateTcString = async (
  * Call tcf() to configure Fides with tcf support (if tcf is enabled).
  */
 export const tcf = () => {
-  console.log("adding event listeners for tcf");
+  // console.log("adding event listeners for tcf");
   // window.addEventListener("FidesInitialized", (event) => {
   //   generateTcString(event.detail.tcStringPreferences, event.detail.debug).then(
   //     (tcString) => {
@@ -112,7 +110,6 @@ export const tcf = () => {
   //     }
   //   );
   // });
-
   // window.addEventListener("FidesUpdated", (event) => {
   //   generateTcString(event.detail.tcStringPreferences, event.detail.debug).then(
   //     (tcString) => {
