@@ -1,6 +1,6 @@
 import { Flex, FormControl, Textarea, VStack } from "@fidesui/react";
 import { useField, useFormikContext } from "formik";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -19,16 +19,17 @@ import { useResetSuggestionContext } from "./dict-suggestion.context";
 
 const useDictSuggestion = (fieldName: string, dictField: string) => {
   const [preSuggestionValue, setPreSuggestionValue] = useState("");
-  const [initialField, meta, { setValue }] = useField(fieldName);
+  const [initialField, meta, { setValue, setTouched }] = useField(fieldName);
   const isInvalid = !!(meta.touched && meta.error);
   const { error } = meta;
   const field = { ...initialField, value: initialField.value ?? "" };
-  const form = useFormikContext();
+  const {values, touched, validateForm} = useFormikContext();
   const context = useResetSuggestionContext();
   // @ts-ignore
-  const vendorId = form.values?.meta?.vendor?.id;
+  const vendorId = values?.meta?.vendor?.id;
   const dictEntry = useAppSelector(selectDictEntry(vendorId || ""));
   const isShowingSuggestions = useAppSelector(selectSuggestions);
+  const inputRef = useRef(); 
 
   useEffect(() => {
     if (isShowingSuggestions === "showing") {
@@ -46,6 +47,23 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
     ) {
       if (field.value !== dictEntry[dictField as keyof DictEntry]) {
         setValue(dictEntry[dictField as keyof DictEntry]);
+        console.log(fieldName, inputRef.current)
+
+          setTimeout(()=>{
+            
+          console.log("blurring", JSON.stringify(inputRef.current ? 'actual ref': undefined))
+          // @ts-ignore
+          inputRef.current?.blur()
+          }, 300)
+        if(inputRef.current){
+
+          setTouched(true, true )
+          validateForm()
+        }
+        // console.log(field.onChange)
+        // field?.onChange(dictEntry[dictField as keyof DictEntry])
+        
+        // form.setFieldValue(fieldName,dictEntry[dictField as keyof DictEntry])
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -54,7 +72,7 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
     setValue,
     dictEntry,
     dictField,
-    setPreSuggestionValue,
+    inputRef.current
   ]);
 
   useEffect(() => {
@@ -65,7 +83,8 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
 
   const reset = useCallback(() => {
     if (dictEntry && dictField in dictEntry) {
-      setValue(dictEntry[dictField as keyof DictEntry], true);
+      setValue(dictEntry[dictField as keyof DictEntry]);
+      setTouched(true, true)
     }
   }, [dictEntry, dictField, setValue]);
 
@@ -89,6 +108,8 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
     isInvalid,
     isShowingSuggestions,
     error,
+    touched,
+    inputRef
   };
 };
 
@@ -107,7 +128,7 @@ export const DictSuggestionTextInput = ({
   placeholder,
   id,
 }: Props) => {
-  const { field, isInvalid, isShowingSuggestions, error } = useDictSuggestion(
+  const { field, isInvalid, isShowingSuggestions, error, inputRef } = useDictSuggestion(
     name,
     dictField
   );
@@ -123,6 +144,12 @@ export const DictSuggestionTextInput = ({
         </Flex>
         <TextInput
           {...field}
+          ref={inputRef}
+          isRequired={isRequired}
+          onBlur={(e)=>{
+            console.log("blurred!!!", name)
+            field.onBlur(e)
+          }}
           isDisabled={disabled}
           data-testid={`input-${field.name}`}
           placeholder={placeholder}

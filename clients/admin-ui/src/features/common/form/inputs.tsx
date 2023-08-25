@@ -44,7 +44,7 @@ import {
   Size,
 } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { forwardRef, LegacyRef, MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
@@ -78,10 +78,10 @@ export const Label = ({
   </FormLabel>
 );
 
-export const TextInput = ({
+export const TextInput = forwardRef(({
   isPassword,
   ...props
-}: InputProps & { isPassword: boolean }) => {
+}: InputProps & { isPassword: boolean }, ref) => {
   const [type, setType] = useState<"text" | "password">(
     isPassword ? "password" : "text"
   );
@@ -93,6 +93,7 @@ export const TextInput = ({
     <InputGroup size="sm">
       <Input
         {...props}
+        ref={ref as LegacyRef<HTMLInputElement> | undefined}
         type={type}
         pr={isPassword ? "10" : "3"}
         background="white"
@@ -115,7 +116,7 @@ export const TextInput = ({
       ) : null}
     </InputGroup>
   );
-};
+});
 
 export const ErrorMessage = ({
   isInvalid,
