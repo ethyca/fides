@@ -35,11 +35,13 @@ import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
+import {buildTcStringPreferences, generateTcString} from "~/lib/tcf";
 
 export type Fides = {
   consent: CookieKeyConsent;
   experience?: PrivacyExperience;
   geolocation?: UserGeolocation;
+  tcString?: string | undefined;
   options: FidesOptions;
   fides_meta: CookieMeta;
   gtm: typeof gtm;
@@ -113,7 +115,7 @@ const automaticallyApplyGPCPreferences = (
   if (gpcApplied) {
     updateConsentPreferences({
       consentPreferencesToSave,
-      experienceId: effectiveExperience.id,
+      experience: effectiveExperience,
       fidesApiUrl,
       consentMethod: ConsentMethod.gpc,
       userLocationString: fidesRegionString || undefined,
@@ -236,6 +238,13 @@ export const initialize = async ({
         context,
         options.debug
       );
+      // if tcf enabled, build tc str and put on cookie
+      if (options.tcfEnabled) {
+        const prefs = buildTcStringPreferences(effectiveExperience)
+        const string = generateTcString(prefs, options.debug)
+        // todo- change format to pure string
+        cookie.tcStringPreferences = string
+      }
 
       if (shouldInitOverlay) {
         await initOverlay({
@@ -262,6 +271,7 @@ export const initialize = async ({
     consent: cookie.consent,
     fides_meta: cookie.fides_meta,
     identity: cookie.identity,
+    tcString: cookie.tcStringPreferences,
     experience,
     geolocation,
     options,

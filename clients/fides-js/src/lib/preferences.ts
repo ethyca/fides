@@ -16,7 +16,7 @@ import {
 import { dispatchFidesEvent } from "./events";
 import { patchUserPreferenceToFidesServer } from "../services/fides/api";
 import {TcfSavePreferences, TcStringPreferences} from "./tcf/types";
-import {buildTcStringPreferences} from "./tcf/tcf";
+import {buildTcStringPreferences} from "./tcf";
 
 /**
  * Updates the user's consent preferences, going through the following steps:
