@@ -66,7 +66,6 @@ export const transformFormValuesToSystem = (
   formValues: FormValues,
   features: Features
 ): System => {
-  // console.log(formValues);
   const key = formValues.fides_key
     ? formValues.fides_key
     : formatKey(formValues.name!);
