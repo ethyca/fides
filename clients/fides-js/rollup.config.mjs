@@ -4,7 +4,7 @@ import copy from "rollup-plugin-copy";
 import dts from "rollup-plugin-dts";
 import esbuild from "rollup-plugin-esbuild";
 import filesize from "rollup-plugin-filesize";
-import json from '@rollup/plugin-json';
+import json from "@rollup/plugin-json";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import postcss from "rollup-plugin-postcss";
 
@@ -112,7 +112,13 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb }) => {
   };
   const mjs = {
     input: `src/${name}.ts`,
-    plugins: [alias(preactAliases), json(), nodeResolve(), postcss(), esbuild()],
+    plugins: [
+      alias(preactAliases),
+      json(),
+      nodeResolve(),
+      postcss(),
+      esbuild(),
+    ],
     output: [
       {
         // Compatible with ES module imports. Apps in this repo may be able to share the code.

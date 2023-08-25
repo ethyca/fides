@@ -1,5 +1,4 @@
 import type {
-  PrivacyExperience,
   PrivacyPreferencesRequest,
   UserConsentPreference,
 } from "../consent-types";
@@ -117,10 +116,12 @@ export type TcfSavePreferences = Pick<
   | "vendor_preferences"
 >;
 
-export type TcStringPreferences = {
-    tcf_purposes?: Map<number, TCFPurposeRecord>;
-    tcf_special_purposes?: Map<number, TCFPurposeRecord>;
-    tcf_vendors?: Map<string, TCFVendorRecord>;
-    tcf_features?: Map<number, TCFFeatureRecord>;
-    tcf_special_features?: Map<number, TCFFeatureRecord>;
-    } | undefined
+export type TcStringPreferences =
+  | {
+      tcf_purposes?: Map<number, TCFPurposeRecord>;
+      tcf_special_purposes?: Map<number, TCFPurposeRecord>;
+      tcf_vendors?: Map<string, TCFVendorRecord>;
+      tcf_features?: Map<number, TCFFeatureRecord>;
+      tcf_special_features?: Map<number, TCFFeatureRecord>;
+    }
+  | undefined;
