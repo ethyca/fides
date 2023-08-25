@@ -243,7 +243,7 @@ export const initialize = async ({
         const prefs = buildTcStringPreferences(effectiveExperience)
         const string = generateTcString(prefs, options.debug)
         // todo- change format to pure string
-        cookie.tcStringPreferences = string
+        cookie.tcString = string
       }
 
       if (shouldInitOverlay) {
@@ -271,7 +271,7 @@ export const initialize = async ({
     consent: cookie.consent,
     fides_meta: cookie.fides_meta,
     identity: cookie.identity,
-    tcString: cookie.tcStringPreferences,
+    tcString: cookie.tcString,
     experience,
     geolocation,
     options,

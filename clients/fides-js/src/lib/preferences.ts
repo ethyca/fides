@@ -16,7 +16,7 @@ import {
 import { dispatchFidesEvent } from "./events";
 import { patchUserPreferenceToFidesServer } from "../services/fides/api";
 import {TcfSavePreferences, TcStringPreferences} from "./tcf/types";
-import {buildTcStringPreferences} from "./tcf";
+import {buildTcStringPreferences, generateTcString} from "./tcf";
 
 /**
  * Updates the user's consent preferences, going through the following steps:
@@ -128,9 +128,12 @@ export const updateConsentPreferences = ({
       // @ts-ignore
       tcStringPreferences.tcf_special_features[purpose.id] = purpose
     })
+
     // Update the cookie object with TCF prefs
-    // eslint-disable-next-line no-param-reassign
-    cookie.tcStringPreferences = tcStringPreferences
+    generateTcString(tcStringPreferences, debug).then((result) => {
+      // eslint-disable-next-line no-param-reassign
+      cookie.tcString = result
+    })
   }
 
   // 4. Save preferences to the cookie

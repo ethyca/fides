@@ -12,7 +12,6 @@ import {
   PrivacyExperience,
 } from "./consent-types";
 import { debugLog } from "./consent-utils";
-import {TcStringPreferences} from "./tcf/types";
 
 /**
  * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
@@ -50,7 +49,7 @@ export interface FidesCookie {
   consent: CookieKeyConsent;
   identity: CookieIdentity;
   fides_meta: CookieMeta;
-  tcStringPreferences?: TcStringPreferences;
+  tcString?: string;
 }
 
 /**
