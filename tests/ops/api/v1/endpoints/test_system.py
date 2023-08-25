@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 from unittest import mock
 
 import pytest
@@ -23,6 +24,7 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.models.sql_models import Dataset, System
+from fides.api.models.system_history import SystemHistory
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -30,6 +32,7 @@ from fides.common.api.scope_registry import (
     SAAS_CONNECTION_INSTANTIATE,
     STORAGE_DELETE,
     SYSTEM_MANAGER_UPDATE,
+    SYSTEM_READ,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from tests.conftest import generate_role_header_for_user
@@ -966,3 +969,19 @@ class TestInstantiateSystemConnectionFromTemplate:
         dataset_config.delete(db)
         connection_config.delete(db)
         dataset_config.ctl_dataset.delete(db=db)
+
+
+class TestSystemHistory:
+    @pytest.fixture(scope="function")
+    def url(self, system) -> str:
+        return V1_URL_PREFIX + f"/system/{system.fides_key}/history"
+
+    def test_get_system_history(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SYSTEM_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_200_OK

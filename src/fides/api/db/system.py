@@ -1,7 +1,8 @@
 """
 Functions for interacting with System objects in the database.
 """
-from typing import Dict, List, Optional, Tuple
+import copy
+from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import HTTPException
 from fideslang.models import Cookies as CookieSchema
@@ -13,12 +14,15 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.db.crud import create_resource, get_resource, update_resource
+from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
     DataUse,
     PrivacyDeclaration,
     System,
 )
+from fides.api.models.system_history import SystemHistory
+from fides.api.util.dict_diff import dict_diff
 from fides.api.util.errors import NotFoundError
 
 
@@ -74,7 +78,7 @@ async def validate_privacy_declarations(db: AsyncSession, system: SystemSchema) 
 
 
 async def upsert_system(
-    resources: List[SystemSchema], db: AsyncSession
+    resources: List[SystemSchema], db: AsyncSession, current_user: FidesUser
 ) -> Tuple[int, int]:
     """Helper method to abstract system upsert logic from API code"""
     inserted = 0
@@ -93,7 +97,7 @@ async def upsert_system(
             await create_system(resource=resource, db=db)
             inserted += 1
             continue
-        await update_system(resource=resource, db=db)
+        await update_system(resource=resource, db=db, current_user=current_user)
         updated += 1
     return (inserted, updated)
 
@@ -197,11 +201,14 @@ async def upsert_cookies(
     )
 
 
-async def update_system(resource: SystemSchema, db: AsyncSession) -> Dict:
+async def update_system(
+    resource: SystemSchema, db: AsyncSession, current_user: FidesUser
+) -> Dict:
     """Helper function to share core system update logic for wrapping endpoint functions"""
     system: System = await get_resource(
         sql_model=System, fides_key=resource.fides_key, async_session=db
     )
+    existing_system_dict = copy.deepcopy(SystemSchema.from_orm(system).dict())
 
     # handle the privacy declaration upsert logic
     try:
@@ -220,6 +227,17 @@ async def update_system(resource: SystemSchema, db: AsyncSession) -> Dict:
     updated_system = await update_resource(System, resource.dict(), db)
     async with db.begin():
         await db.refresh(updated_system)
+        before, after = dict_diff(
+            existing_system_dict, SystemSchema.from_orm(updated_system).dict()
+        )
+        system_history = SystemHistory(
+            edited_by=current_user.username,
+            system_key=resource.fides_key,
+            before=before,
+            after=after,
+        )
+        system_history.save(db=db)
+
     return updated_system
 
 
