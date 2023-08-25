@@ -70,7 +70,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       });
       updateConsentPreferences({
         consentPreferencesToSave,
-        experience,
+        experienceId: experience.id,
         fidesApiUrl: options.fidesApiUrl,
         consentMethod: ConsentMethod.button,
         userLocationString: fidesRegionString,

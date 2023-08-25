@@ -134,7 +134,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   options,
   cookie,
 }) => {
-  // TODO: should we get this from the cookie?
   const initialEnabledIds: EnabledIds = useMemo(() => {
     const {
       tcf_purposes: purposes,
@@ -173,7 +172,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       const tcf = createTcfSavePayload({ experience, enabledIds });
       updateConsentPreferences({
         consentPreferencesToSave: [],
-        experience,
+        experienceId: experience.id,
         fidesApiUrl: options.fidesApiUrl,
         consentMethod: ConsentMethod.button,
         userLocationString: fidesRegionString,

@@ -14,7 +14,6 @@ import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
 import { FidesCookie } from "../lib/cookie";
-import { buildTcStringPreferences } from "../lib/tcf/tcf";
 
 interface RenderBannerProps {
   isOpen: boolean;
