@@ -78,7 +78,13 @@ export const transformFormValuesToSystem = (
     fides_key: key,
     name: formValues.name,
     description: formValues.description,
+    dataset_references: formValues.dataset_references,
     tags: formValues.tags,
+    processes_personal_data: formValues.processes_personal_data,
+    exempt_from_privacy_regulations: formValues.exempt_from_privacy_regulations,
+    reason_for_exemption: formValues.exempt_from_privacy_regulations
+      ? formValues.reason_for_exemption
+      : undefined,
     privacy_declarations: formValues.processes_personal_data
       ? formValues.privacy_declarations
       : [],
@@ -104,21 +110,9 @@ export const transformFormValuesToSystem = (
     return payload;
   }
 
-  if (formValues.exempt_from_privacy_regulations) {
-    return {
-      ...payload,
-      processes_personal_data: formValues.processes_personal_data,
-      exempt_from_privacy_regulations:
-        formValues.exempt_from_privacy_regulations,
-      reason_for_exemption: formValues.reason_for_exemption,
-    };
-  }
-
   return {
     ...payload,
     dataset_references: formValues.dataset_references,
-    processes_personal_data: formValues.processes_personal_data,
-    exempt_from_privacy_regulations: formValues.exempt_from_privacy_regulations,
     uses_profiling: formValues.uses_profiling,
     legal_basis_for_profiling: formValues.uses_profiling
       ? formValues.legal_basis_for_profiling
