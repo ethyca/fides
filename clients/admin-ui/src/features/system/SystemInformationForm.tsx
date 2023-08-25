@@ -9,7 +9,7 @@ import {
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
-import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
+import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
 
@@ -30,7 +30,7 @@ import {
   selectAllDictEntries,
   useGetAllDictionaryEntriesQuery,
 } from "~/features/plus/plus.slice";
-import { selectSuggestions, setSuggestions, Suggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
+import { setSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
   DictSuggestionTextArea,
   DictSuggestionTextInput,
@@ -54,7 +54,7 @@ import { DictSuggestionToggle } from "./dictionary-form/ToggleDictSuggestions";
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
 
 const ValidationSchema = Yup.object().shape({
-  // name: Yup.string().required().label("System name"),
+  name: Yup.string().required().label("System name"),
   privacy_policy: Yup.string().min(1).url().nullable(),
 });
 
@@ -70,34 +70,6 @@ const SystemHeading = ({ system }: { system?: SystemResponse }) => {
     </Heading>
   );
 };
-
-
-
-
-const SaveButton = ({ isLoading}:{ isLoading: boolean})=>{
-  const { touched, isValid, dirty: formikDirty, values } = useFormikContext();
-  
-  const dirty = useMemo(()=>{
-    // @ts-ignore
-    return Object.keys(touched).some((key)=> touched[key]===true)
-  },[touched])
-  // console.log(touched, dirty, isLoading, isValid, "isDisabled: ",  isLoading || !dirty || !isValid )
-  // console.log("touched: ",touched , "manual dirty: ", dirty, " formik dirty: ", formikDirty, " isValid: ", isValid, values)
-  return (
-    <Button
-      type="submit"
-      variant="primary"
-      size="sm"
-      isDisabled={isLoading ||  !dirty|| !isValid }
-      isLoading={isLoading}
-      data-testid="save-btn"
-    >
-      Custom Save button
-    </Button>
-  )
-}
-
-
 
 interface Props {
   onSuccess: (system: System) => void;
@@ -288,7 +260,7 @@ const SystemInformationForm = ({
                   id="name"
                   name="name"
                   dictField="display_name"
-                  isRequired={true}
+                  isRequired
                   label="System name"
                   tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
                 />
@@ -562,9 +534,8 @@ const SystemInformationForm = ({
                 isLoading={isLoading}
                 data-testid="save-btn"
               >
-                Default save button
+                Save
               </Button>
-              <SaveButton isLoading={isLoading} />
             </Box>
             {children}
           </Form>

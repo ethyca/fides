@@ -44,7 +44,14 @@ import {
   Size,
 } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
-import React, { forwardRef, LegacyRef, MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  LegacyRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
@@ -78,45 +85,45 @@ export const Label = ({
   </FormLabel>
 );
 
-export const TextInput = forwardRef(({
-  isPassword,
-  ...props
-}: InputProps & { isPassword: boolean }, ref) => {
-  const [type, setType] = useState<"text" | "password">(
-    isPassword ? "password" : "text"
-  );
+export const TextInput = forwardRef(
+  ({ isPassword, ...props }: InputProps & { isPassword: boolean }, ref) => {
+    const [type, setType] = useState<"text" | "password">(
+      isPassword ? "password" : "text"
+    );
 
-  const handleClickReveal = () =>
-    setType(type === "password" ? "text" : "password");
+    const handleClickReveal = () =>
+      setType(type === "password" ? "text" : "password");
 
-  return (
-    <InputGroup size="sm">
-      <Input
-        {...props}
-        ref={ref as LegacyRef<HTMLInputElement> | undefined}
-        type={type}
-        pr={isPassword ? "10" : "3"}
-        background="white"
-      />
-      {isPassword ? (
-        <InputRightElement pr="2">
-          <IconButton
-            size="xs"
-            variant="unstyled"
-            aria-label="Reveal/Hide Secret"
-            icon={
-              <EyeIcon
-                boxSize="full"
-                color={type === "password" ? "gray.400" : "gray.700"}
-              />
-            }
-            onClick={handleClickReveal}
-          />
-        </InputRightElement>
-      ) : null}
-    </InputGroup>
-  );
-});
+    return (
+      <InputGroup size="sm">
+        <Input
+          {...props}
+          ref={ref as LegacyRef<HTMLInputElement> | undefined}
+          type={type}
+          pr={isPassword ? "10" : "3"}
+          background="white"
+        />
+        {isPassword ? (
+          <InputRightElement pr="2">
+            <IconButton
+              size="xs"
+              variant="unstyled"
+              aria-label="Reveal/Hide Secret"
+              icon={
+                <EyeIcon
+                  boxSize="full"
+                  color={type === "password" ? "gray.400" : "gray.700"}
+                />
+              }
+              onClick={handleClickReveal}
+            />
+          </InputRightElement>
+        ) : null}
+      </InputGroup>
+    );
+  }
+);
+TextInput.displayName = "TextInput";
 
 export const ErrorMessage = ({
   isInvalid,
@@ -224,7 +231,6 @@ export const SelectInput = ({
     );
   };
   const handleChangeSingle = (newValue: SingleValue<Option>) => {
-    // console.log()
     if (newValue) {
       setFieldValue(fieldName, newValue.value);
     } else if (isClearable) {
