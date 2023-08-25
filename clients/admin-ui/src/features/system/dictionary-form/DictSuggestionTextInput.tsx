@@ -48,6 +48,9 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
       if (field.value !== dictEntry[dictField as keyof DictEntry]) {
         setValue(dictEntry[dictField as keyof DictEntry]);
 
+        // This blur is a workaround some forik issues.
+        // the setTimeout is required to get around a 
+        // timing issue with the ref not being ready yet. 
         setTimeout(() => {
           setTouched(true);
           // @ts-ignore
