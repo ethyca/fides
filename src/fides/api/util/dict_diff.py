@@ -10,6 +10,10 @@ def dict_diff(
     for key in set(dict1) | set(dict2):
         val1, val2 = dict1.get(key), dict2.get(key)
 
+        # Treat empty strings and None as equivalent
+        if val1 in ["", None] and val2 in ["", None]:
+            continue
+
         if isinstance(val1, dict) and isinstance(val2, dict):
             nested_before, nested_after = dict_diff(val1, val2)
             if nested_before:
