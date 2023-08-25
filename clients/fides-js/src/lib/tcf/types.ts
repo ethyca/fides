@@ -115,13 +115,3 @@ export type TcfSavePreferences = Pick<
   | "special_feature_preferences"
   | "vendor_preferences"
 >;
-
-export type TcStringPreferences =
-  | {
-      tcf_purposes?: Map<number, TCFPurposeRecord>;
-      tcf_special_purposes?: Map<number, TCFPurposeRecord>;
-      tcf_vendors?: Map<string, TCFVendorRecord>;
-      tcf_features?: Map<number, TCFFeatureRecord>;
-      tcf_special_features?: Map<number, TCFFeatureRecord>;
-    }
-  | undefined;

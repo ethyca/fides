@@ -6,34 +6,9 @@
  */
 
 import { TCModel, TCString, GVL } from "@iabtechlabtcf/core";
-import { PrivacyExperience } from "./consent-types";
 import { transformUserPreferenceToBoolean } from "./consent-utils";
 import gvlJson from "./tcf/GVL.json";
-import { TcStringPreferences, TcfSavePreferences } from "./tcf/types";
-
-export const buildTcStringPreferences = (
-  experience?: PrivacyExperience
-): TcStringPreferences => ({
-  tcf_purposes: experience?.tcf_purposes
-    ? new Map(experience.tcf_purposes.map((purpose) => [purpose.id, purpose]))
-    : undefined,
-  tcf_special_purposes: experience?.tcf_special_purposes
-    ? new Map(
-        experience.tcf_special_purposes.map((purpose) => [purpose.id, purpose])
-      )
-    : undefined,
-  tcf_vendors: experience?.tcf_vendors
-    ? new Map(experience.tcf_vendors.map((vendor) => [vendor.id, vendor]))
-    : undefined,
-  tcf_features: experience?.tcf_features
-    ? new Map(experience.tcf_features.map((feature) => [feature.id, feature]))
-    : undefined,
-  tcf_special_features: experience?.tcf_special_features
-    ? new Map(
-        experience.tcf_special_features.map((feature) => [feature.id, feature])
-      )
-    : undefined,
-});
+import { TcfSavePreferences } from "./tcf/types";
 
 /**
  * Generate TC String based on TCF-related info from privacy experience.
@@ -47,7 +22,6 @@ export const generateTcString = async (
   // due to TCF library not yet supporting latest GVL (https://vendor-list.consensu.org/v3/vendor-list.json).
   // We'll need to update this with our own hosted GVL once the lib is updated
   // https://github.com/InteractiveAdvertisingBureau/iabtcf-es/pull/389
-  console.log("initilaize TC Model");
   const tcModel = new TCModel(new GVL(gvlJson));
 
   let encodedString = "";
@@ -114,10 +88,10 @@ export const generateTcString = async (
     // See https://iabeurope.eu/iab-europe-transparency-consent-framework-policies/
     // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/issues/63#issuecomment-581798996
 
-    console.log("encode string");
-    console.log(tcModel);
     encodedString = TCString.encode(tcModel);
   }
+  console.log("Generated TC str...")
+  console.log(encodedString)
   return Promise.resolve(encodedString);
 };
 
