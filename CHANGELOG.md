@@ -34,6 +34,7 @@ The types of changes are:
 - Resolved an issue where the integration dropdown input lost focus during typing. [#3917](https://github.com/ethyca/fides/pull/3917)
 - Fixed dataset issue that was preventing the Vend connector from loading during server startup [#3923](https://github.com/ethyca/fides/pull/3923)
 - Adding version check to version-dependent migration script [#3951](https://github.com/ethyca/fides/pull/3951)
+- Fixed a bug where some fields were not saving correctly on the system form [#3975](https://github.com/ethyca/fides/pull/3975)
 
 ### Changed
 
