@@ -238,12 +238,14 @@ export const initialize = async ({
         context,
         options.debug
       );
-      // if tcf enabled, build tc str and put on cookie
+      // if tcf enabled, build TC string and add to cookie
       if (options.tcfEnabled) {
         const prefs = buildTcStringPreferences(effectiveExperience)
-        const string = generateTcString(prefs, options.debug)
-        // todo- change format to pure string
-        cookie.tcString = string
+        generateTcString(prefs, options.debug).then((result) => {
+          // eslint-disable-next-line no-param-reassign
+          cookie.tcString = result
+        })
+        
       }
 
       if (shouldInitOverlay) {
