@@ -36,8 +36,8 @@ import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
-import { generateTcString } from "~/lib/tcf";
-import { TcfSavePreferences } from "~/lib/tcf/types";
+import { generateTcString } from "./tcf";
+import { TcfSavePreferences } from "./tcf/types";
 
 export type Fides = {
   consent: CookieKeyConsent;
