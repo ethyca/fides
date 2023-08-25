@@ -32,9 +32,10 @@ import {
 } from "~/features/plus/plus.slice";
 import { setSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
+  DictSuggestionSelect,
   DictSuggestionTextArea,
   DictSuggestionTextInput,
-} from "~/features/system/dictionary-form/DictSuggestionTextInput";
+} from "~/features/system/dictionary-form/DictSuggestionInputs";
 import {
   defaultInitialValues,
   FormValues,
@@ -394,13 +395,21 @@ const SystemInformationForm = ({
                           }}
                         >
                           <Box mt={4}>
-                            <CustomSelect
+                            {/* <CustomSelect
                               name="legal_basis_for_transfers"
                               label="Legal basis for transfer"
                               options={legalBasisForTransferOptions}
                               tooltip="What is the legal basis under which the data is transferred?"
                               isRequired={values.does_international_transfers}
                               variant="stacked"
+                            /> */}
+                            <DictSuggestionSelect
+                              name="legal_basis_for_transfers"
+                              dictField="legal_basis_for_transfers"
+                              label="Legal basis for transfer"
+                              options={legalBasisForTransferOptions}
+                              tooltip="What is the legal basis under which the data is transferred?"
+                              isRequired={values.does_international_transfers}
                             />
                           </Box>
                         </Collapse>

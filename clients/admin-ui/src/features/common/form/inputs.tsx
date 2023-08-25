@@ -223,7 +223,6 @@ export const SelectInput = ({
     );
   };
   const handleChangeSingle = (newValue: SingleValue<Option>) => {
-    // console.log()
     if (newValue) {
       setFieldValue(fieldName, newValue.value);
     } else if (isClearable) {
