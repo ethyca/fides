@@ -1,26 +1,27 @@
-import { ContainerNode } from "preact";
-import { gtm } from "../integrations/gtm";
-import { meta } from "../integrations/meta";
-import { shopify } from "../integrations/shopify";
-import { getConsentContext } from "./consent-context";
+import {ContainerNode} from "preact";
+import {gtm} from "../integrations/gtm";
+import {meta} from "../integrations/meta";
+import {shopify} from "../integrations/shopify";
+import {getConsentContext} from "./consent-context";
 import {
-  CookieKeyConsent,
-  CookieIdentity,
-  CookieMeta,
-  getOrMakeFidesCookie,
-  makeConsentDefaultsLegacy,
   buildCookieConsentForExperiences,
+  CookieIdentity,
+  CookieKeyConsent,
+  CookieMeta,
   FidesCookie,
+  getOrMakeFidesCookie,
   isNewFidesCookie,
+  makeConsentDefaultsLegacy,
 } from "./cookie";
 import {
-  PrivacyExperience,
+  ConsentMechanism,
+  ConsentMethod,
   FidesConfig,
   FidesOptions,
-  UserGeolocation,
-  ConsentMethod,
+  PrivacyExperience,
   SaveConsentPreference,
-  ConsentMechanism,
+  UserConsentPreference,
+  UserGeolocation,
 } from "./consent-types";
 import {
   constructFidesRegionString,
@@ -29,13 +30,14 @@ import {
   transformConsentToFidesUserPreference,
   validateOptions,
 } from "./consent-utils";
-import { fetchExperience } from "../services/fides/api";
-import { getGeolocation } from "../services/external/geolocation";
-import { OverlayProps } from "../components/types";
-import { updateConsentPreferences } from "./preferences";
-import { resolveConsentValue } from "./consent-value";
-import { initOverlay } from "./consent";
-import {buildTcStringPreferences, generateTcString} from "~/lib/tcf";
+import {fetchExperience} from "../services/fides/api";
+import {getGeolocation} from "../services/external/geolocation";
+import {OverlayProps} from "../components/types";
+import {updateConsentPreferences} from "./preferences";
+import {resolveConsentValue} from "./consent-value";
+import {initOverlay} from "./consent";
+import {generateTcString} from "~/lib/tcf";
+import {TcfSavePreferences} from "~/lib/tcf/types";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -240,12 +242,32 @@ export const initialize = async ({
       );
       // if tcf enabled, build TC string and add to cookie
       if (options.tcfEnabled) {
-        const prefs = buildTcStringPreferences(effectiveExperience)
-        generateTcString(prefs, options.debug).then((result) => {
+        const tcSavePrefs: TcfSavePreferences = {
+          purpose_preferences: effectiveExperience.tcf_purposes?.map((purpose) => ({
+              id: purpose.id,
+              preference: (purpose.current_preference ?? purpose.default_preference) || UserConsentPreference.OPT_OUT
+            })),
+          special_purpose_preferences: effectiveExperience.tcf_special_purposes?.map((purpose) => ({
+            id: purpose.id,
+            preference: (purpose.current_preference ?? purpose.default_preference) || UserConsentPreference.OPT_OUT
+          })),
+          feature_preferences: effectiveExperience.tcf_features?.map((purpose) => ({
+            id: purpose.id,
+            preference: (purpose.current_preference ?? purpose.default_preference) || UserConsentPreference.OPT_OUT
+          })),
+          special_feature_preferences: effectiveExperience.tcf_special_features?.map((purpose) => ({
+            id: purpose.id,
+            preference: (purpose.current_preference ?? purpose.default_preference) || UserConsentPreference.OPT_OUT
+          })),
+          vendor_preferences: effectiveExperience.tcf_vendors?.map((purpose) => ({
+            id: purpose.id,
+            preference: (purpose.current_preference ?? purpose.default_preference) || UserConsentPreference.OPT_OUT
+          })),
+        }
+        generateTcString(tcSavePrefs).then((result) => {
           // eslint-disable-next-line no-param-reassign
           cookie.tcString = result
         })
-        
       }
 
       if (shouldInitOverlay) {
