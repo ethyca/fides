@@ -23,10 +23,7 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
   const isInvalid = !!(meta.touched && meta.error);
   const { error } = meta;
   const field = { ...initialField, value: initialField.value ?? "" };
-  const {
-    values,
-    touched,
-  } = useFormikContext();
+  const { values, touched } = useFormikContext();
   const context = useResetSuggestionContext();
   // @ts-ignore
   const vendorId = values?.meta?.vendor?.id;
@@ -59,13 +56,7 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isShowingSuggestions,
-    setValue,
-    dictEntry,
-    dictField,
-    inputRef.current,
-  ]);
+  }, [isShowingSuggestions, setValue, dictEntry, dictField, inputRef.current]);
 
   useEffect(() => {
     if (isShowingSuggestions === "hiding") {
