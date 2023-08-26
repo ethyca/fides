@@ -104,7 +104,7 @@ data_category_upgrades: Dict[str, str] = {
     "user.genetic": "user.health_and_medical.genetic",  # Verified in 2.0
 }
 data_category_downgrades: Dict[str, str] = {
-    value: key for key, value in data_use_upgrades.items()
+    value: key for key, value in data_category_upgrades.items()
 }
 
 
