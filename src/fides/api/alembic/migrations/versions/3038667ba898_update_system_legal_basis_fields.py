@@ -9,6 +9,7 @@ from typing import Dict
 
 import sqlalchemy as sa
 from alembic import op
+from loguru import logger
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import text
 
@@ -68,9 +69,9 @@ FROM ctl_systems"""
         updated_value = legal_basis_transfers_upgrades.get(
             existing_value, existing_value
         )
-        updated_value = [
-            updated_value
-        ]  # wrap in a list because column is now array type
+        updated_value = (
+            [updated_value] if updated_value else []
+        )  # wrap in a list because column is now array type
         bind.execute(
             text(
                 "UPDATE ctl_systems SET legal_basis_for_transfers = :updated_basis WHERE id = :id"
@@ -107,9 +108,9 @@ FROM ctl_systems"""
         updated_value = legal_basis_transfers_upgrades.get(
             existing_value, existing_value
         )
-        updated_value = [
-            updated_value
-        ]  # wrap in a list because column is now array type
+        updated_value = (
+            [updated_value] if updated_value else []
+        )  # wrap in a list because column is now array type
         bind.execute(
             text(
                 "UPDATE ctl_systems SET legal_basis_for_profiling = :updated_basis WHERE id = :id"
@@ -122,11 +123,14 @@ def downgrade():
     """
     Downgrade from array fields to single-value.
 
-    We do not try to perform a data migration, since we'd have to
+    We do not try to perform a data migration, since we'd likely have to
     drop some values arbitrarily. Better to just null the column out
     to make it clear that manual intervention is needed.
     """
-
+    logger.warning(
+        "Database migration downgrade will remove all values for `system.legal_basis_for_transfers` and `system.legal_basis_for_profiling` fields. \
+        Values for these fields must be repopulated manually!"
+    )
     op.drop_column(
         "ctl_systems",
         "legal_basis_for_transfers",
