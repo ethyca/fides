@@ -37,7 +37,7 @@ data_use_downgrades: Dict[str, str] = {
 def update_privacy_declaration_data_uses(
     bind: Connection, data_use_map: Dict[str, str]
 ) -> None:
-    """Upgrade or downgrade data uses from fideslang 1.4 for privacy declarations"""
+    """Upgrade or downgrade data uses from fideslang 2.0 for privacy declarations"""
     existing_ctl_policies: ResultProxy = bind.execute(
         text("SELECT id, data_use FROM privacydeclaration;")
     )
@@ -56,7 +56,7 @@ def update_privacy_declaration_data_uses(
 
 
 def update_ctl_policy_data_uses(bind: Connection, data_use_map: Dict[str, str]) -> None:
-    """Upgrade or downgrade data uses from fideslang 1.4 for ctl policies"""
+    """Upgrade or downgrade data uses from fideslang 2.0 for ctl policies"""
     existing_ctl_policies: ResultProxy = bind.execute(
         text("SELECT id, rules FROM ctl_policies;")
     )
@@ -199,7 +199,7 @@ def update_system_ingress_egress_data_categories(
 def update_privacy_declaration_data_categories(
     bind: Connection, data_label_map: Dict[str, str]
 ) -> None:
-    """Upgrade or downgrade data uses from fideslang 1.4 for privacy declarations"""
+    """Upgrade or downgrade data uses from fideslang 2.0 for data categories"""
     existing_ctl_policies: ResultProxy = bind.execute(
         text("SELECT id, data_categories FROM privacydeclaration;")
     )
@@ -220,7 +220,7 @@ def update_privacy_declaration_data_categories(
 def update_ctl_policy_data_categories(
     bind: Connection, data_label_map: Dict[str, str]
 ) -> None:
-    """Upgrade or downgrade data uses from fideslang 1.4 for ctl policies"""
+    """Upgrade or downgrade data uses from fideslang 2.0 for ctl policies"""
     existing_ctl_policies: ResultProxy = bind.execute(
         text("SELECT id, rules FROM ctl_policies;")
     )
@@ -263,7 +263,7 @@ def upgrade() -> None:
     logger.info("Upgrading data categories in datasets")
     update_datasets_data_categories(bind, data_category_upgrades)
 
-    logger.info("Upgrading the System egress/ingress data cateogries")
+    logger.info("Upgrading the System egress/ingress data categories")
     update_system_ingress_egress_data_categories(bind, data_category_upgrades)
 
 
@@ -285,5 +285,5 @@ def downgrade() -> None:
     logger.info("Downgrading data categories in datasets")
     update_datasets_data_categories(bind, data_category_downgrades)
 
-    logger.info("Downgrading the System egress/ingress data cateogries")
+    logger.info("Downgrading the System egress/ingress data categories")
     update_system_ingress_egress_data_categories(bind, data_category_downgrades)
