@@ -19,6 +19,7 @@ import {
 } from "./system.slice";
 import SystemInformationForm from "./SystemInformationForm";
 import UnmountWarning from "./UnmountWarning";
+import SystemHistoryTable from "./history/SystemHistoryTable";
 
 // The toast doesn't seem to handle next links well, so use buttons with onClick
 // handlers instead
@@ -152,7 +153,9 @@ const SystemFormTabs = ({
       (index === 1 && tabIndex === 2) ||
       (index === 2 && tabIndex === 1) ||
       index === 3 ||
-      tabIndex === 3
+      index === 4 ||
+      tabIndex === 3 ||
+      tabIndex === 4
     ) {
       setTabIndex(index);
     } else {
@@ -254,6 +257,22 @@ const SystemFormTabs = ({
             connectionConfig={activeSystem.connection_configs}
             systemFidesKey={activeSystem.fides_key}
           />
+        </Box>
+      ) : null,
+      isDisabled: !activeSystem,
+    },
+    {
+      label: "History",
+      content: activeSystem ? (
+        <Box width={{ base: "100%", lg: "70%" }}>
+          <Box px={6} paddingBottom={6}>
+            <Text fontSize="sm" lineHeight={5} fontWeight="medium">
+              All changes to this system are tracked here in this audit table by
+              date and by user. You can inspect the changes by selecting any of
+              the events listed.
+            </Text>
+          </Box>
+          <SystemHistoryTable system={activeSystem}></SystemHistoryTable>
         </Box>
       ) : null,
       isDisabled: !activeSystem,
