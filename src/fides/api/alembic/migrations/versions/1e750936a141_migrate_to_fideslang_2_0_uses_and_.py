@@ -47,7 +47,7 @@ def update_privacy_declaration_data_uses(
     for row in existing_privacy_declarations:
         data_use: str = row["data_use"]
         for key, value in data_use_map.items():
-            if key in data_use:
+            if data_use.startswith(key):
                 data_use = data_use.replace(key, value)
 
         update_data_use_query: TextClause = text(
@@ -71,7 +71,7 @@ def update_ctl_policy_data_uses(bind: Connection, data_use_map: Dict[str, str]) 
             for j, val in enumerate(data_uses.get("values", [])):
                 data_use: str = val
                 for key, value in data_use_map.items():
-                    if key in data_use:
+                    if data_use.startswith(key):
                         data_use = data_use.replace(key, value)
                 rules[i]["data_uses"]["values"][j] = data_use
 
@@ -134,7 +134,7 @@ def update_datasets_data_categories(
                 label.replace(key, value)
                 for key, value in data_label_map.items()
                 for label in labels
-                if key in label
+                if label.startswith(key)
             ]
 
             update_label_query: TextClause = text(
