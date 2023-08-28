@@ -27,6 +27,7 @@ declare global {
  * around.
  */
 export type FidesEventDetail = FidesCookie & {
+  debug?: boolean;
   extraDetails?: Record<string, string>;
 };
 
@@ -54,7 +55,7 @@ export const dispatchFidesEvent = (
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     const event = new CustomEvent(type, {
-      detail: { ...cookie, extraDetails },
+      detail: { ...cookie, debug, extraDetails },
     });
     debugLog(
       debug,

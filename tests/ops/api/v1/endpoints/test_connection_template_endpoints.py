@@ -66,6 +66,7 @@ class TestGetConnections:
             "human_readable": "PostgreSQL",
             "encoded_icon": None,
             "authorization_required": False,
+            "user_guide": None,
         } in data
         first_saas_type = ConnectorRegistry.connector_types().pop()
         first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
@@ -75,6 +76,7 @@ class TestGetConnections:
             "human_readable": first_saas_template.human_readable,
             "encoded_icon": first_saas_template.icon,
             "authorization_required": first_saas_template.authorization_required,
+            "user_guide": first_saas_template.user_guide,
         } in data
 
         assert "saas" not in [item["identifier"] for item in data]
@@ -153,6 +155,7 @@ class TestGetConnections:
                 "human_readable": saas_template[1].human_readable,
                 "encoded_icon": saas_template[1].icon,
                 "authorization_required": saas_template[1].authorization_required,
+                "user_guide": saas_template[1].user_guide,
             }
             for saas_template in expected_saas_templates
         ]
@@ -180,6 +183,7 @@ class TestGetConnections:
                 "human_readable": saas_template[1].human_readable,
                 "encoded_icon": saas_template[1].icon,
                 "authorization_required": saas_template[1].authorization_required,
+                "user_guide": saas_template[1].user_guide,
             }
             for saas_template in expected_saas_templates
         ]
@@ -197,6 +201,7 @@ class TestGetConnections:
             "human_readable": "PostgreSQL",
             "encoded_icon": None,
             "authorization_required": False,
+            "user_guide": None,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
@@ -204,6 +209,7 @@ class TestGetConnections:
             "human_readable": "Amazon Redshift",
             "encoded_icon": None,
             "authorization_required": False,
+            "user_guide": None,
         } in data
         for expected_data in expected_saas_data:
             assert expected_data in data, f"{expected_data} not in"
@@ -229,6 +235,7 @@ class TestGetConnections:
                 "human_readable": saas_template[1].human_readable,
                 "encoded_icon": saas_template[1].icon,
                 "authorization_required": saas_template[1].authorization_required,
+                "user_guide": saas_template[1].user_guide,
             }
             for saas_template in expected_saas_types
         ]
@@ -245,6 +252,7 @@ class TestGetConnections:
             "human_readable": "PostgreSQL",
             "encoded_icon": None,
             "authorization_required": False,
+            "user_guide": None,
         } in data
 
         for expected_data in expected_saas_data:
@@ -266,6 +274,7 @@ class TestGetConnections:
                 "human_readable": saas_template[1].human_readable,
                 "encoded_icon": saas_template[1].icon,
                 "authorization_required": saas_template[1].authorization_required,
+                "user_guide": saas_template[1].user_guide,
             }
             for saas_template in expected_saas_types
         ]
@@ -281,6 +290,7 @@ class TestGetConnections:
             "human_readable": "PostgreSQL",
             "encoded_icon": None,
             "authorization_required": False,
+            "user_guide": None,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
@@ -288,6 +298,7 @@ class TestGetConnections:
             "human_readable": "Amazon Redshift",
             "encoded_icon": None,
             "authorization_required": False,
+            "user_guide": None,
         } in data
 
         for expected_data in expected_saas_data:
@@ -351,6 +362,7 @@ class TestGetConnections:
                 "human_readable": "Manual Process",
                 "encoded_icon": None,
                 "authorization_required": False,
+                "user_guide": None,
             }
         ]
 
@@ -368,6 +380,7 @@ class TestGetConnections:
                 "identifier": "attentive",
                 "type": "email",
                 "authorization_required": False,
+                "user_guide": None,
             },
             {
                 "encoded_icon": None,
@@ -375,6 +388,7 @@ class TestGetConnections:
                 "identifier": "generic_consent_email",
                 "type": "email",
                 "authorization_required": False,
+                "user_guide": None,
             },
             {
                 "encoded_icon": None,
@@ -382,6 +396,7 @@ class TestGetConnections:
                 "identifier": "generic_erasure_email",
                 "type": "email",
                 "authorization_required": False,
+                "user_guide": None,
             },
             {
                 "encoded_icon": None,
@@ -389,6 +404,7 @@ class TestGetConnections:
                 "identifier": "sovrn",
                 "type": "email",
                 "authorization_required": False,
+                "user_guide": None,
             },
         ]
 
@@ -445,6 +461,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": "PostgreSQL",
                 "encoded_icon": None,
                 "authorization_required": False,
+                "user_guide": None,
             },
             ConnectionType.manual_webhook.value: {
                 "identifier": ConnectionType.manual_webhook.value,
@@ -452,6 +469,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": "Manual Process",
                 "encoded_icon": None,
                 "authorization_required": False,
+                "user_guide": None,
             },
             GOOGLE_ANALYTICS: {
                 "identifier": GOOGLE_ANALYTICS,
@@ -459,6 +477,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": google_analytics_template.human_readable,
                 "encoded_icon": google_analytics_template.icon,
                 "authorization_required": True,
+                "user_guide": google_analytics_template.user_guide,
             },
             MAILCHIMP_TRANSACTIONAL: {
                 "identifier": MAILCHIMP_TRANSACTIONAL,
@@ -466,6 +485,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": mailchimp_transactional_template.human_readable,
                 "encoded_icon": mailchimp_transactional_template.icon,
                 "authorization_required": False,
+                "user_guide": mailchimp_transactional_template.user_guide,
             },
             SEGMENT: {
                 "identifier": SEGMENT,
@@ -473,6 +493,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": segment_template.human_readable,
                 "encoded_icon": segment_template.icon,
                 "authorization_required": False,
+                "user_guide": segment_template.user_guide,
             },
             STRIPE: {
                 "identifier": STRIPE,
@@ -480,6 +501,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": stripe_template.human_readable,
                 "encoded_icon": stripe_template.icon,
                 "authorization_required": False,
+                "user_guide": stripe_template.user_guide,
             },
             ZENDESK: {
                 "identifier": ZENDESK,
@@ -487,6 +509,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": zendesk_template.human_readable,
                 "encoded_icon": zendesk_template.icon,
                 "authorization_required": False,
+                "user_guide": zendesk_template.user_guide,
             },
             DOORDASH: {
                 "identifier": DOORDASH,
@@ -494,6 +517,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": doordash_template.human_readable,
                 "encoded_icon": doordash_template.icon,
                 "authorization_required": False,
+                "user_guide": doordash_template.user_guide,
             },
             ConnectionType.sovrn.value: {
                 "identifier": ConnectionType.sovrn.value,
@@ -501,6 +525,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": "Sovrn",
                 "encoded_icon": None,
                 "authorization_required": False,
+                "user_guide": None,
             },
             ConnectionType.attentive.value: {
                 "identifier": ConnectionType.attentive.value,
@@ -508,6 +533,7 @@ class TestGetConnectionsActionTypeParams:
                 "human_readable": "Attentive",
                 "encoded_icon": None,
                 "authorization_required": False,
+                "user_guide": None,
             },
         }
 
@@ -1162,15 +1188,17 @@ class TestGetConnectionSecretSchema:
             "description": "Hubspot secrets schema",
             "type": "object",
             "properties": {
-                "private_app_token": {
-                    "title": "Private App Token",
-                    "sensitive": True,
-                    "type": "string",
-                },
                 "domain": {
                     "title": "Domain",
+                    "description": "Your HubSpot domain",
                     "default": "api.hubapi.com",
                     "sensitive": False,
+                    "type": "string",
+                },
+                "private_app_token": {
+                    "title": "Private app token",
+                    "description": "Your HubSpot Private Apps access token",
+                    "sensitive": True,
                     "type": "string",
                 },
             },

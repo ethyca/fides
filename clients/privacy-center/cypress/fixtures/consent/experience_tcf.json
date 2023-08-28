@@ -203,6 +203,29 @@
           ]
         }
       ],
+      "tcf_systems": [
+        {
+          "default_preference": "opt_out",
+          "current_preference": "opt_in",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "id": "Fides System",
+          "name": "Fides System",
+          "has_vendor_id": false,
+          "description": "A system that is only in Fides",
+          "purposes": [],
+          "special_purposes": [
+            {
+              "id": 1,
+              "name": "Ensure security, prevent and detect fraud, and fix errors\n"
+            }
+          ],
+          "data_categories": [],
+          "features": [],
+          "special_features": []
+        }
+      ],
       "tcf_vendors": [
         {
           "default_preference": "opt_out",
@@ -210,10 +233,10 @@
           "outdated_preference": null,
           "current_served": null,
           "outdated_served": null,
-          "id": "amplitude",
-          "name": "test",
+          "id": "2",
+          "name": "amplitude",
           "description": "A longer description",
-          "is_gvl": null,
+          "has_vendor_id": true,
           "purposes": [
             {
               "id": 4,

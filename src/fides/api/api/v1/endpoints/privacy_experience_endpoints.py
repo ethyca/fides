@@ -135,10 +135,21 @@ def privacy_experience_list(
     'show_disabled' query params are passed along to further filter
     notices as well.
 
-    'fides_user_device_id' query param will stash the current preferences of the given user
-    alongside each notice where applicable.
+    :param db:
+    :param params:
+    :param show_disabled: If False, returns enabled Experiences and Notices
+    :param region: Return the Experiences for the given region
+    :param component: Returns Experiences of the given component type
+    :param has_notices: Return if the Experience has content
+    :param has_config: Return if the Experience has copy
+    :param fides_user_device_id: Supplement the response with current saved preferences of the given user
+    :param systems_applicable: Only return embedded Notices associated with systems.
+    :param request:
+    :param response:
+    :return:
     """
     logger.info("Finding all Privacy Experiences with pagination params '{}'", params)
+    content_required: bool = has_notices  # Renaming confusing query param
     fides_user_provided_identity: Optional[ProvidedIdentity] = None
     if fides_user_device_id:
         try:
@@ -213,7 +224,8 @@ def privacy_experience_list(
                 fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
             )
 
-        if not (has_notices and not content_exists):
+        if not (content_required and not content_exists):
+            # Append experience unless we're missing required content
             results.append(privacy_experience)
 
     return fastapi_paginate(results, params=params)
@@ -230,7 +242,7 @@ def embed_experience_details(
     """
     At runtime embeds relevant Experience contents where applicable:
         - Privacy Notices
-        - TCF Components: purposes, special purposes, vendors, features, and special features
+        - TCF Components: purposes, special purposes, vendors, systems, features, and special features
 
     Returns whether content exists on the experience.
     """
@@ -239,14 +251,18 @@ def embed_experience_details(
     for component in TCF_COMPONENT_MAPPING:
         setattr(privacy_experience, component, [])
 
-    # Temporarily add TCF Contents to the Experience object if applicable
+    # Fetch the base TCF Contents
     tcf_contents: TCFExperienceContents = privacy_experience.get_related_tcf_contents(
         db, fides_user_provided_identity
     )
+    has_tcf_contents: bool = any(
+        getattr(tcf_contents, component) for component in TCF_COMPONENT_MAPPING
+    )
+    # Supplement the Privacy Experience with TCF Contents if applicable
     for component in TCF_COMPONENT_MAPPING:
         setattr(privacy_experience, component, getattr(tcf_contents, component))
 
-    # Temporarily add Privacy Notices to the Experience object if applicable
+    # Add Privacy Notices to the Experience if applicable
     privacy_notices: List[
         PrivacyNotice
     ] = privacy_experience.get_related_privacy_notices(
@@ -264,6 +280,4 @@ def embed_experience_details(
         ]
     privacy_experience.privacy_notices = privacy_notices
 
-    return bool(privacy_notices) or any(
-        getattr(tcf_contents, component) for component in TCF_COMPONENT_MAPPING
-    )
+    return bool(privacy_notices) or has_tcf_contents

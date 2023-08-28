@@ -36,6 +36,7 @@ import { privacyExperienceConfigSlice } from "~/features/privacy-experience/priv
 import { privacyNoticesSlice } from "~/features/privacy-notices/privacy-notices.slice";
 import { subjectRequestsSlice } from "~/features/privacy-requests";
 import { systemSlice } from "~/features/system";
+import { dictSuggestionsSlice } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { taxonomySlice } from "~/features/taxonomy";
 import { userManagementSlice } from "~/features/user-management";
 
@@ -85,6 +86,7 @@ const reducer = {
   [systemSlice.name]: systemSlice.reducer,
   [taxonomySlice.name]: taxonomySlice.reducer,
   [userManagementSlice.name]: userManagementSlice.reducer,
+  [dictSuggestionsSlice.name]: dictSuggestionsSlice.reducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;
@@ -109,7 +111,11 @@ const persistConfig = {
     and restored which could leave you with phantom subscriptions from components that do not exist any more.
     (https://redux-toolkit.js.org/usage/usage-guide#use-with-redux-persist)
   */
-  blacklist: [baseApi.reducerPath, healthApi.reducerPath],
+  blacklist: [
+    baseApi.reducerPath,
+    healthApi.reducerPath,
+    dictSuggestionsSlice.name,
+  ],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

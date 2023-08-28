@@ -46,6 +46,7 @@ export const TcfConsentButtons = ({
       features: getAllIds(experience.tcf_features),
       specialFeatures: getAllIds(experience.tcf_special_features),
       vendors: getAllIds(experience.tcf_vendors),
+      systems: getAllIds(experience.tcf_systems),
     };
     onSave(allIds);
   };
@@ -56,6 +57,7 @@ export const TcfConsentButtons = ({
       features: [],
       specialFeatures: [],
       vendors: [],
+      systems: [],
     };
     onSave(emptyIds);
   };

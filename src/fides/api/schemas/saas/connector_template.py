@@ -54,3 +54,8 @@ class ConnectorTemplate(BaseModel):
             if authentication
             else False
         )
+
+    @property
+    def user_guide(self) -> Optional[str]:
+        config = SaaSConfig(**load_config_from_string(self.config))
+        return config.user_guide

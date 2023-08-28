@@ -25,7 +25,7 @@ import { TcfSavePreferences } from "./tcf/types";
  * 4. Remove any cookies from notices that were opted-out from the browser
  * 5. Dispatch a "FidesUpdated" event
  */
-export const updateConsentPreferences = ({
+export const updateConsentPreferences = async ({
   consentPreferencesToSave,
   experienceId,
   fidesApiUrl,
@@ -35,6 +35,7 @@ export const updateConsentPreferences = ({
   debug = false,
   servedNotices,
   tcf,
+  updateCookie,
 }: {
   consentPreferencesToSave: Array<SaveConsentPreference>;
   experienceId: string;
@@ -43,8 +44,9 @@ export const updateConsentPreferences = ({
   userLocationString?: string;
   cookie: FidesCookie;
   debug?: boolean;
-  servedNotices?: Array<LastServedNoticeSchema>;
+  servedNotices?: Array<LastServedNoticeSchema> | null;
   tcf?: TcfSavePreferences;
+  updateCookie?: (oldCookie: FidesCookie) => Promise<FidesCookie>;
 }) => {
   // Derive the CookieKeyConsent object from privacy notices
   const noticeMap = new Map<string, boolean>(
@@ -91,11 +93,17 @@ export const updateConsentPreferences = ({
   debugLog(debug, "Updating window.Fides");
   window.Fides.consent = cookie.consent;
 
-  // 3. Save preferences to the cookie
+  // 3. TCF
+  if (updateCookie) {
+    // eslint-disable-next-line no-param-reassign
+    cookie = await updateCookie(cookie);
+  }
+
+  // 4. Save preferences to the cookie
   debugLog(debug, "Saving preferences to cookie");
   saveFidesCookie(cookie);
 
-  // 4. Remove cookies associated with notices that were opted-out from the browser
+  // 5. Remove cookies associated with notices that were opted-out from the browser
   consentPreferencesToSave
     .filter(
       (preference) =>
@@ -105,6 +113,6 @@ export const updateConsentPreferences = ({
       removeCookiesFromBrowser(preference.notice.cookies);
     });
 
-  // 5. Dispatch a "FidesUpdated" event
+  // 6. Dispatch a "FidesUpdated" event
   dispatchFidesEvent("FidesUpdated", cookie, debug);
 };

@@ -29,6 +29,8 @@ import type {
 import { updateConsentPreferences } from "../../lib/preferences";
 import { ConsentMethod, PrivacyExperience } from "../../lib/consent-types";
 import TcfModalContent from "./TcfModalContent";
+import { generateTcString } from "../../lib/tcf";
+import { FidesCookie } from "../../lib/cookie";
 
 const resolveConsentValueFromTcfModel = (
   model: TCFPurposeRecord | TCFFeatureRecord | TCFVendorRecord
@@ -72,6 +74,7 @@ export interface EnabledIds {
   features: string[];
   specialFeatures: string[];
   vendors: string[];
+  systems: string[];
 }
 
 export interface UpdateEnabledIds {
@@ -127,6 +130,10 @@ const createTcfSavePayload = ({
     modelList: experience.tcf_vendors,
     enabledIds: enabledIds.vendors,
   }) as TCFVendorSave[],
+  system_preferences: transformTcfModelToTcfSave({
+    modelList: experience.tcf_systems,
+    enabledIds: enabledIds.systems,
+  }) as TCFVendorSave[],
 });
 
 const TcfOverlay: FunctionComponent<OverlayProps> = ({
@@ -135,7 +142,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   options,
   cookie,
 }) => {
-  // TODO: should we get this from the cookie?
   const initialEnabledIds: EnabledIds = useMemo(() => {
     const {
       tcf_purposes: purposes,
@@ -143,6 +149,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       tcf_features: features,
       tcf_special_features: specialFeatures,
       tcf_vendors: vendors,
+      tcf_systems: systems,
     } = experience;
 
     return {
@@ -151,6 +158,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       features: getEnabledIds(features),
       specialFeatures: getEnabledIds(specialFeatures),
       vendors: getEnabledIds(vendors),
+      systems: getEnabledIds(systems),
     };
   }, [experience]);
 
@@ -169,6 +177,14 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     [draftIds]
   );
 
+  const updateCookie = async (
+    oldCookie: FidesCookie,
+    tcf: TcfSavePreferences
+  ) => {
+    const tcString = await generateTcString(tcf);
+    return { ...oldCookie, tcString };
+  };
+
   const handleUpdateAllPreferences = useCallback(
     (enabledIds: EnabledIds) => {
       const tcf = createTcfSavePayload({ experience, enabledIds });
@@ -179,8 +195,10 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         consentMethod: ConsentMethod.button,
         userLocationString: fidesRegionString,
         cookie,
+        debug: options.debug,
+        servedNotices: null, // TODO: served notices
         tcf,
-        // TODO: served notices
+        updateCookie: (oldCookie) => updateCookie(oldCookie, tcf),
       });
       setDraftIds(enabledIds);
     },

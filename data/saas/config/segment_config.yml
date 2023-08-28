@@ -3,20 +3,30 @@ saas_config:
   name: Segment
   type: segment
   description: A sample schema representing the Segment connector for Fides
-  version: 0.0.2
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/segment
+  version: 0.0.3
 
   connector_params:
     - name: domain
       default_value: platform.segmentapis.com
+      description: Your Segment API URL
     - name: personas_domain
       default_value: profiles.segment.com
+      description: Your Segment profiles API URL
+      label: Profiles domain
     - name: workspace
+      description: Your Segment workspace ID
     - name: access_token
+      description: Your Segment access token.
+      label: Access token
       sensitive: True
     - name: namespace_id
-      label: Namespace ID
+      label: Space ID
+      description: Your Segment space ID
     - name: access_secret
       sensitive: True
+      label: Access secret
+      description: Access Secret for your Personas Domain
 
   client_config:
     protocol: https

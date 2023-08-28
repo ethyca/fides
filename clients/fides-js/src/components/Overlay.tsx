@@ -13,7 +13,7 @@ import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
-import { FidesCookie } from "~/fides";
+import { FidesCookie } from "../lib/cookie";
 
 interface RenderBannerProps {
   isOpen: boolean;

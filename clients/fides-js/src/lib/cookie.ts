@@ -49,6 +49,7 @@ export interface FidesCookie {
   consent: CookieKeyConsent;
   identity: CookieIdentity;
   fides_meta: CookieMeta;
+  tcString?: string;
 }
 
 /**

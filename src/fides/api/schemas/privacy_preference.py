@@ -1,7 +1,12 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from fideslang.gvl import MAPPED_PURPOSES, MAPPED_SPECIAL_PURPOSES
+from fideslang.gvl import (
+    GVL_FEATURES,
+    GVL_SPECIAL_FEATURES,
+    MAPPED_PURPOSES,
+    MAPPED_SPECIAL_PURPOSES,
+)
 from fideslang.validation import FidesKey
 from pydantic import Field, conlist, root_validator
 
@@ -35,6 +40,7 @@ TCF_PREFERENCES_FIELD_MAPPING: Dict[str, str] = {
     "feature_preferences": TCFComponentType.feature.value,
     "special_feature_preferences": TCFComponentType.special_feature.value,
     "vendor_preferences": TCFComponentType.vendor.value,
+    "system_preferences": TCFComponentType.system.value,
 }
 
 
@@ -55,6 +61,10 @@ class TCFAttributes(FidesSchema):
     )
     special_feature: Optional[int] = Field(
         title="The TCF special feature that was served or saved against"
+    )
+    system: Optional[str] = Field(
+        title="The System id that consent was served or saved against. Used when we don't know what vendor "
+        "corresponds to the system, so we save preferences against the system directly"
     )
 
 
@@ -77,6 +87,7 @@ class PrivacyPreferencesRequest(FidesSchema):
     vendor_preferences: conlist(TCFVendorSave, max_items=50) = []  # type: ignore
     feature_preferences: conlist(TCFFeatureSave, max_items=50) = []  # type: ignore
     special_feature_preferences: conlist(TCFSpecialFeatureSave, max_items=50) = []  # type: ignore
+    system_preferences: conlist(TCFVendorSave, max_items=50) = []  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]
@@ -131,6 +142,7 @@ class RecordConsentServedRequest(FidesSchema):
     tcf_vendors: List[SafeStr] = []
     tcf_features: List[int] = []
     tcf_special_features: List[int] = []
+    tcf_systems: List[SafeStr] = []
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]
     acknowledge_mode: Optional[bool]
@@ -141,7 +153,6 @@ class RecordConsentServedRequest(FidesSchema):
     def validate_tcf_served(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
         Check that TCF values are valid and that there are no duplicates
-        TODO: TCF Add validation against vendors, features, and special features that are being recorded as served
         """
 
         def tcf_duplicates_detected(preference_list: List) -> bool:
@@ -152,15 +163,19 @@ class RecordConsentServedRequest(FidesSchema):
                 raise ValueError(
                     f"Duplicate served records saved against TCF component: '{field_name}'"
                 )
-        if not set(values.get("tcf_purposes", [])).issubset(
-            set(MAPPED_PURPOSES.keys())
-        ):
-            raise ValueError("Invalid values for TCF Purposes served'")
 
-        if not set(values.get("tcf_special_purposes", [])).issubset(
-            set(MAPPED_SPECIAL_PURPOSES.keys())
-        ):
-            raise ValueError("Invalid values for TCF Special Purposes served'")
+        expected_field_mapping = {
+            "tcf_purposes": MAPPED_PURPOSES,
+            "tcf_special_purposes": MAPPED_SPECIAL_PURPOSES,
+            "tcf_features": GVL_FEATURES,
+            "tcf_special_features": GVL_SPECIAL_FEATURES,
+        }
+
+        for field_name, expected_values in expected_field_mapping.items():
+            if not set(values.get(field_name, [])).issubset(
+                set(expected_values.keys())
+            ):
+                raise ValueError(f"Invalid values for {field_name} served.")
 
         return values
 

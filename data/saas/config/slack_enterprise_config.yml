@@ -3,13 +3,16 @@ saas_config:
   name: Slack Enterprise
   type: slack_enterprise
   description: A sample schema representing the Slack Enterprise connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/square
   version: 0.0.2
 
   connector_params:
     - name: domain
       default_value: slack.com
+      description: Your Slack Enterprise URL
     - name: user_oauth_token
-      label: User OAuth Token
+      label: Access token
+      description: Your OAuth 2.0 access token
       sensitive: True
 
   client_config:
