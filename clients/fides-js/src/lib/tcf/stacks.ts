@@ -11,6 +11,17 @@ export interface Stack {
 /**
  * Figure out the stacks that match based on a list of purpose and special feature IDs.
  * Filter only to the matches that have the highest overlap with the given lists.
+ *
+ * Examples:
+ * If we have stack definitions
+ * 1. [1,2,3]
+ * 2. [4,5,6]
+ * 3. [1,2,3,4]
+ *
+ * For the following purposes, we would return:
+ * Purposes: [1,2,3] --> Stack 1
+ * Purposes: [3,4,5,6] --> Stack 2
+ * Purposes: [1,2,3,4,5,6,7] --> Stacks 2 and 3
  */
 export const createStacks = ({
   purposeIds,
@@ -34,7 +45,7 @@ export const createStacks = ({
   });
 
   const matchingStacks = matches.map((match) => match[1]);
-  // Compare all matches to find the matches that contain the most matches.
+  // Compare all matches to find the matches that contain the most ids.
   // If a stack with purposes [1,2] and another with purposes [1,2,3] both match,
   // we only want to return [1,2,3].
   return matchingStacks.filter((match1) => {
