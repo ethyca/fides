@@ -100,7 +100,7 @@ def _get_tcf_functions_per_component_type(
     )
 
 
-def get_tcf_component_and_vendors(
+def build_purpose_or_feature_section_and_update_system_map(
     db: Session,
     relevant_uses_or_features: List[str],
     tcf_component_name: str,
@@ -108,7 +108,7 @@ def get_tcf_component_and_vendors(
 ) -> Tuple[
     Dict[int, Union[TCFPurposeRecord, TCFFeatureRecord]], Dict[str, TCFVendorRecord]
 ]:
-    """Helper method for building data for a specific portion of the TCF overlay.
+    """Helper method for building data for a specific portion of the TCF overlay, depending on the tcf_component_name
 
     Purposes and features have vendor/systems info embedded, and vendor/system info have purposes and features embedded.
 
@@ -134,7 +134,7 @@ def get_tcf_component_and_vendors(
                     ]
                 )
             ).label(
-                "data_use_and_legal_bases_tuple"
+                "data_use_and_legal_bases_list_of_lists"
             ),  # A list of lists with a data use and a legal basis for each privacy declaration
             array_agg(
                 case(
@@ -168,30 +168,28 @@ def get_tcf_component_and_vendors(
         relevant_uses_or_features=relevant_uses_or_features,
     )
 
-    for record in matching_systems:
-        # Identify system by vendor id if it exists, otherwise use system id.
-        # Multiple systems can have the same vendor, so their information is collapsed into a single vendor record.
-        system_id: str = record["id"]
-        vendor_id: Optional[str] = record["vendor_id"]
+    for system in matching_systems:
+        system_id: str = system["id"]
+        vendor_id: Optional[str] = system["vendor_id"]
         system_identifier: str = vendor_id if vendor_id else system_id
 
         if system_identifier not in system_map:
             system_map[system_identifier] = TCFVendorRecord(
-                id=system_identifier,
-                name=record.name,
-                description=record.description,
+                id=system_identifier,  # Identify system by vendor id if it exists, otherwise use system id.
+                # Collapses systems with same vendor id into one record.
+                name=system.name,
+                description=system.description,
                 has_vendor_id=bool(
                     vendor_id
-                ),  # This will later let us separate TCF components
-                # into vendors and systems.
+                ),  # Has_vendor_id will later let us separate into "tcf_vendors" and "tcf_systems"
             )
 
-        # Pull the attributes we care about from the system record depending on the TCF component.
+        # Pull the attributes we care about from the system record depending on the TCF section we're building.
         relevant_system_attributes: Set[str] = (
-            [data_use[0] for data_use in record.data_use_and_legal_bases_tuple]
+            [data_use[0] for data_use in system.data_use_and_legal_bases_list_of_lists]
             if is_purpose_type
             else get_system_features(
-                record, relevant_features=relevant_uses_or_features
+                system, relevant_features=relevant_uses_or_features
             )
         )
 
@@ -205,22 +203,26 @@ def get_tcf_component_and_vendors(
             tcf_record: Union[TCFPurposeRecord, TCFFeatureRecord] = tcf_record_type(
                 **fideslang_gvl_record.dict()
             )
+            # Consolidate a list of legal_bases for [special] purpose types
             if is_purpose_type:
-                tcf_record.legal_bases = list(
-                    {
-                        use[1]
-                        for use in record.data_use_and_legal_bases_tuple
-                        if use[1] and use[0] in tcf_record.data_uses
-                    }
+                tcf_record.legal_bases = sorted(
+                    list(
+                        {
+                            use_legal_basis_pair[1]
+                            for use_legal_basis_pair in system.data_use_and_legal_bases_list_of_lists
+                            if use_legal_basis_pair[1]
+                            and use_legal_basis_pair[0] in tcf_record.data_uses
+                        }
+                    )
                 )
 
-            if fideslang_gvl_record.id not in matching_purpose_or_feature_map:
-                matching_purpose_or_feature_map[fideslang_gvl_record.id] = tcf_record
+            if tcf_record.id not in matching_purpose_or_feature_map:
+                matching_purpose_or_feature_map[tcf_record.id] = tcf_record
 
             embedded_system_or_vendor_record_list: List[EmbeddedVendor] = (
-                matching_purpose_or_feature_map[fideslang_gvl_record.id].vendors
+                matching_purpose_or_feature_map[tcf_record.id].vendors
                 if vendor_id
-                else matching_purpose_or_feature_map[fideslang_gvl_record.id].systems
+                else matching_purpose_or_feature_map[tcf_record.id].systems
             )
 
             # Embed the system or vendor information beneath the TCF purpose/feature
@@ -229,14 +231,17 @@ def get_tcf_component_and_vendors(
                 for embedded_system_record in embedded_system_or_vendor_record_list
             ]:
                 embedded_system_or_vendor_record_list.extend(
-                    [EmbeddedVendor(id=system_identifier, name=record.name)]
+                    [EmbeddedVendor(id=system_identifier, name=system.name)]
                 )
+
+            # Go ahead and sort embedded vendors by name while we're here.  Other sorting will occur at the end.
+            embedded_system_or_vendor_record_list.sort(key=lambda x: x.name)
 
             # Do the reverse, and embed the TCF purpose/feature under the systems subsection
             system_tcf_subsection = getattr(
                 system_map[system_identifier], tcf_component_name
             )
-            if fideslang_gvl_record.id not in [
+            if tcf_record.id not in [
                 tcf_sub_record.id for tcf_sub_record in system_tcf_subsection
             ]:
                 system_tcf_subsection.append(tcf_record)
@@ -256,7 +261,7 @@ def get_tcf_contents(
 
     Similarly returns Features and Special Features from fideslang that are on the systems.
 
-    Return a reverse representation for the vendors and systems themselves.
+    Returns a reverse representation for the vendors and systems themselves.
     """
     system_map: Dict[str, TCFVendorRecord] = {}
 
@@ -264,7 +269,10 @@ def get_tcf_contents(
     all_tcf_data_uses: List[str] = []
     for purpose in MAPPED_PURPOSES.values():
         all_tcf_data_uses.extend(purpose.data_uses)
-    purpose_map, updated_system_map = get_tcf_component_and_vendors(
+    (
+        purpose_map,
+        updated_system_map,
+    ) = build_purpose_or_feature_section_and_update_system_map(
         db, all_tcf_data_uses, tcf_component_name="purposes", system_map=system_map
     )
 
@@ -272,7 +280,10 @@ def get_tcf_contents(
     special_purpose_data_uses: List[str] = []
     for special_purpose in MAPPED_SPECIAL_PURPOSES.values():
         special_purpose_data_uses.extend(special_purpose.data_uses)
-    special_purpose_map, updated_system_map = get_tcf_component_and_vendors(
+    (
+        special_purpose_map,
+        updated_system_map,
+    ) = build_purpose_or_feature_section_and_update_system_map(
         db,
         special_purpose_data_uses,
         tcf_component_name="special_purposes",
@@ -280,7 +291,10 @@ def get_tcf_contents(
     )
 
     # Collect features and update system map
-    feature_map, updated_system_map = get_tcf_component_and_vendors(
+    (
+        feature_map,
+        updated_system_map,
+    ) = build_purpose_or_feature_section_and_update_system_map(
         db,
         [feature.name for feature in GVL_FEATURES.values()],
         tcf_component_name="features",
@@ -288,32 +302,38 @@ def get_tcf_contents(
     )
 
     # Collect special features and update system map
-    special_feature_map, updated_system_map = get_tcf_component_and_vendors(
+    (
+        special_feature_map,
+        updated_system_map,
+    ) = build_purpose_or_feature_section_and_update_system_map(
         db,
         [feature.name for feature in GVL_SPECIAL_FEATURES.values()],
         tcf_component_name="special_features",
         system_map=updated_system_map,
     )
 
+    # Sort purposes/features by id, and vendors by name
     tcf_consent_contents = TCFExperienceContents()
     tcf_consent_contents.tcf_purposes = _sort_by_id(purpose_map)
     tcf_consent_contents.tcf_special_purposes = _sort_by_id(special_purpose_map)
     tcf_consent_contents.tcf_features = _sort_by_id(feature_map)
     tcf_consent_contents.tcf_special_features = _sort_by_id(special_feature_map)
 
-    sorted_vendors = _sort_by_id(updated_system_map)
+    sorted_vendors = _sort_by_name(updated_system_map)
     for vendor in sorted_vendors:
         vendor.purposes.sort(key=lambda x: x.id)
         vendor.special_purposes.sort(key=lambda x: x.id)
         vendor.features.sort(key=lambda x: x.id)
         vendor.special_features.sort(key=lambda x: x.id)
 
-    tcf_consent_contents.tcf_vendors = list(
-        filter(lambda vendor_record: vendor_record.has_vendor_id, sorted_vendors)
-    )
-    tcf_consent_contents.tcf_systems = list(
-        filter(lambda vendor_record: not vendor_record.has_vendor_id, sorted_vendors)
-    )
+    tcf_consent_contents.tcf_vendors = []
+    tcf_consent_contents.tcf_systems = []
+    for system_or_vendor_record in sorted_vendors:
+        tcf_consent_contents.tcf_vendors.append(
+            system_or_vendor_record
+        ) if system_or_vendor_record.has_vendor_id else tcf_consent_contents.tcf_systems.append(
+            system_or_vendor_record
+        )
 
     return tcf_consent_contents
 
@@ -322,3 +342,9 @@ def _sort_by_id(
     tcf_mapping: Dict,
 ) -> List[Union[TCFPurposeRecord, TCFFeatureRecord, TCFVendorRecord]]:
     return sorted(list(tcf_mapping.values()), key=lambda x: x.id)
+
+
+def _sort_by_name(
+    tcf_mapping: Dict,
+) -> List[Union[TCFPurposeRecord, TCFFeatureRecord, TCFVendorRecord]]:
+    return sorted(list(tcf_mapping.values()), key=lambda x: x.name)
