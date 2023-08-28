@@ -1,6 +1,6 @@
 import { Flex, FormControl, Textarea, VStack } from "@fidesui/react";
 import { useField, useFormikContext } from "formik";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -18,17 +18,24 @@ import { selectSuggestions } from "~/features/system/dictionary-form/dict-sugges
 import { useResetSuggestionContext } from "./dict-suggestion.context";
 
 const useDictSuggestion = (fieldName: string, dictField: string) => {
-  const [preSuggestionValue, setPreSuggestionValue] = useState("");
-  const [initialField, meta, { setValue }] = useField(fieldName);
+  const [initialField, meta, { setValue, setTouched }] = useField(fieldName);
   const isInvalid = !!(meta.touched && meta.error);
   const { error } = meta;
-  const field = { ...initialField, value: initialField.value ?? "" };
-  const form = useFormikContext();
+  const field = {
+    ...initialField,
+    value: initialField.value ?? "",
+  };
+
+  const [preSuggestionValue, setPreSuggestionValue] = useState(
+    field.value ?? ""
+  );
+  const { values } = useFormikContext();
   const context = useResetSuggestionContext();
   // @ts-ignore
-  const vendorId = form.values?.meta?.vendor?.id;
+  const vendorId = values?.meta?.vendor?.id;
   const dictEntry = useAppSelector(selectDictEntry(vendorId || ""));
   const isShowingSuggestions = useAppSelector(selectSuggestions);
+  const inputRef = useRef();
 
   useEffect(() => {
     if (isShowingSuggestions === "showing") {
@@ -46,16 +53,19 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
     ) {
       if (field.value !== dictEntry[dictField as keyof DictEntry]) {
         setValue(dictEntry[dictField as keyof DictEntry]);
+
+        // This blur is a workaround some forik issues.
+        // the setTimeout is required to get around a
+        // timing issue with the ref not being ready yet.
+        setTimeout(() => {
+          setTouched(true);
+          // @ts-ignore
+          inputRef.current?.blur();
+        }, 300);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isShowingSuggestions,
-    setValue,
-    dictEntry,
-    dictField,
-    setPreSuggestionValue,
-  ]);
+  }, [isShowingSuggestions, setValue, dictEntry, dictField, inputRef.current]);
 
   useEffect(() => {
     if (isShowingSuggestions === "hiding") {
@@ -65,9 +75,10 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
 
   const reset = useCallback(() => {
     if (dictEntry && dictField in dictEntry) {
-      setValue(dictEntry[dictField as keyof DictEntry], true);
+      setValue(dictEntry[dictField as keyof DictEntry]);
+      setTouched(true, true);
     }
-  }, [dictEntry, dictField, setValue]);
+  }, [dictEntry, dictField, setValue, setTouched]);
 
   useEffect(() => {
     if (context) {
@@ -89,6 +100,7 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
     isInvalid,
     isShowingSuggestions,
     error,
+    inputRef,
   };
 };
 
@@ -107,10 +119,8 @@ export const DictSuggestionTextInput = ({
   placeholder,
   id,
 }: Props) => {
-  const { field, isInvalid, isShowingSuggestions, error } = useDictSuggestion(
-    name,
-    dictField
-  );
+  const { field, isInvalid, isShowingSuggestions, error, inputRef } =
+    useDictSuggestion(name, dictField);
 
   return (
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
@@ -123,6 +133,8 @@ export const DictSuggestionTextInput = ({
         </Flex>
         <TextInput
           {...field}
+          ref={inputRef}
+          isRequired={isRequired}
           isDisabled={disabled}
           data-testid={`input-${field.name}`}
           placeholder={placeholder}
