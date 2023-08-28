@@ -1,12 +1,11 @@
 """
 Perform all setup and then run an Access + Erasure requests.
 
-This script is intended to be run "locally" after spinning up
-the required Docker containers.
+This script is intended to be run from within a Docker shell, i.e. `nox -s shell`
 
 Steps to run:
 1. `nox -s dev -- postgres mongodb`
-2. After everything is running, use another terminal windows: `python scripts/run_privacy_request.py`
+2. After everything is running, use another terminal window: `nox -s shell` and then `python scripts/run_privacy_request.py`
 """
 import json
 import os
@@ -622,7 +621,7 @@ def configure_access_policies(data_category: str = "user") -> None:
     print("  - Policy Rule Target Created.")
 
 
-def run_access_request(email: str = "jane@example.com") -> None:
+def run_access_request(email: str = "jane@example.com") -> str:
     """Run an access request."""
 
     print(f"> Running Access request...")
@@ -632,6 +631,7 @@ def run_access_request(email: str = "jane@example.com") -> None:
     )
     privacy_request_id = privacy_requests["succeeded"][0]["id"]
     print(f"  - Access request complete.")
+    return privacy_request_id
 
 
 def run_erasure_request(email: str = "jane@example.com") -> None:
@@ -654,18 +654,14 @@ def run_erasure_request(email: str = "jane@example.com") -> None:
     print_results(request_id=access_result_id)
 
 
-def populate_tasks_api() -> None:
-    """Do some stuff"""
-    pass
-
-
-def run_privacy_request() -> None:
+def run_privacy_request():
     """Perform the setup for a privacy request and run it."""
 
     configure_datastores()
     configure_access_policies()
-    populate_tasks_api()
+    request_id = run_access_request()
     print("> Privacy Requests complete.")
+    return load_graph_into_db(request_id)
 
 
 if __name__ == "__main__":
