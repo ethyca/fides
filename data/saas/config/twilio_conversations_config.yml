@@ -3,20 +3,26 @@ saas_config:
   name: Twilio Conversations
   type: twilio_conversations
   description: A sample schema representing the Twilio Conversations connector for Fides
-  version: 0.0.3
+  user_guide: https://docs.ethyca.com/user-guides/integrations/twilio-conversations
+  version: 0.0.4
 
   connector_params:
     - name: domain
       default_value: conversations.twilio.com
+      description: Your Twilio Conversations URL
     - name: account_id
+      label: Account SID
+      description: Your Account SID from the Twilio Conversations Console
       sensitive: True
     - name: password
+      label: Access token
+      description: Your access token from the Twilio Conversations Console
       sensitive: True
 
   external_references:
     - name: twilio_user_id
-      label: Twilio User ID
-      description: Dataset reference to the location of Twilio user SIDs
+      label: User SID field
+      description: The location in your owned database where you store Twilio User SIDs
 
   client_config:
     protocol: https

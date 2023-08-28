@@ -3,15 +3,13 @@ import {
   Button,
   ButtonProps,
   Divider,
-  Heading,
-  HStack,
   Stack,
   Text,
   useToast,
-  WarningTwoIcon,
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
+import EmptyTableState from "common/table/EmptyTableState";
 import { useEffect, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -205,44 +203,22 @@ const PrivacyDeclarationFormTab = ({
   return (
     <Stack spacing={6}>
       {system.privacy_declarations.length === 0 ? (
-        <Box
-          display="flex"
-          flexDirection="row"
-          p={4}
-          mt={6}
-          border="1px"
-          borderColor="blue.400"
-          borderRadius={8}
-          backgroundColor="gray.50"
-        >
-          <HStack spacing={2} display="flex" alignItems="start">
-            <WarningTwoIcon color="blue.400" boxSize="18px" />
-            <Stack spacing={1}>
-              <Heading as="h4" size="md">
-                You don&apos;t have a data use set up for this system yet.
-              </Heading>
-              <Text size="sm">
-                A Data Use is the purpose for which data is used in a system. In
-                Fides, a system may have more than one Data Use. For example, a
-                CRM system may be used both for &quot;Customer Support&quot; and
-                also for &quot;Email Marketing&quot;, each of these is a Data
-                Use.
-              </Text>
-              <HStack>
-                <Button
-                  variant="outline"
-                  size="md"
-                  data-testid="add-btn"
-                  onClick={handleOpenNewForm}
-                  mt={2}
-                  {...addButtonProps}
-                >
-                  Add data use
-                </Button>
-              </HStack>
-            </Stack>
-          </HStack>
-        </Box>
+        <EmptyTableState
+          title="You don't have a data use set up for this system yet."
+          description='A Data Use is the purpose for which data is used in a system. In Fides, a system may have more than one Data Use. For example, a CRM system may be used both for "Customer Support" and also for "Email Marketing", each of these is a Data Use.'
+          button={
+            <Button
+              size="sm"
+              variant="outline"
+              fontWeight="semibold"
+              minWidth="auto"
+              data-testid="add-btn"
+              onClick={handleOpenNewForm}
+            >
+              Add data use
+            </Button>
+          }
+        />
       ) : (
         <PrivacyDeclarationDisplayGroup
           heading="Data use"

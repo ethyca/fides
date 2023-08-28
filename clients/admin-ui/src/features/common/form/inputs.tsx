@@ -44,13 +44,20 @@ import {
   Size,
 } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  LegacyRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
 type Variant = "inline" | "stacked" | "block";
 
-interface CustomInputProps {
+export interface CustomInputProps {
   disabled?: boolean;
   label: string;
   tooltip?: string;
@@ -78,44 +85,45 @@ export const Label = ({
   </FormLabel>
 );
 
-const TextInput = ({
-  isPassword,
-  ...props
-}: InputProps & { isPassword: boolean }) => {
-  const [type, setType] = useState<"text" | "password">(
-    isPassword ? "password" : "text"
-  );
+export const TextInput = forwardRef(
+  ({ isPassword, ...props }: InputProps & { isPassword: boolean }, ref) => {
+    const [type, setType] = useState<"text" | "password">(
+      isPassword ? "password" : "text"
+    );
 
-  const handleClickReveal = () =>
-    setType(type === "password" ? "text" : "password");
+    const handleClickReveal = () =>
+      setType(type === "password" ? "text" : "password");
 
-  return (
-    <InputGroup size="sm">
-      <Input
-        {...props}
-        type={type}
-        pr={isPassword ? "10" : "3"}
-        background="white"
-      />
-      {isPassword ? (
-        <InputRightElement pr="2">
-          <IconButton
-            size="xs"
-            variant="unstyled"
-            aria-label="Reveal/Hide Secret"
-            icon={
-              <EyeIcon
-                boxSize="full"
-                color={type === "password" ? "gray.400" : "gray.700"}
-              />
-            }
-            onClick={handleClickReveal}
-          />
-        </InputRightElement>
-      ) : null}
-    </InputGroup>
-  );
-};
+    return (
+      <InputGroup size="sm">
+        <Input
+          {...props}
+          ref={ref as LegacyRef<HTMLInputElement> | undefined}
+          type={type}
+          pr={isPassword ? "10" : "3"}
+          background="white"
+        />
+        {isPassword ? (
+          <InputRightElement pr="2">
+            <IconButton
+              size="xs"
+              variant="unstyled"
+              aria-label="Reveal/Hide Secret"
+              icon={
+                <EyeIcon
+                  boxSize="full"
+                  color={type === "password" ? "gray.400" : "gray.700"}
+                />
+              }
+              onClick={handleClickReveal}
+            />
+          </InputRightElement>
+        ) : null}
+      </InputGroup>
+    );
+  }
+);
+TextInput.displayName = "TextInput";
 
 export const ErrorMessage = ({
   isInvalid,
@@ -170,6 +178,7 @@ const CustomOption: React.FC<
 export interface SelectProps {
   label?: string;
   labelProps?: FormLabelProps;
+  placeholder?: string;
   tooltip?: string;
   options: Option[];
   isDisabled?: boolean;
@@ -192,6 +201,7 @@ export interface SelectProps {
 export const SelectInput = ({
   options,
   fieldName,
+  placeholder,
   size,
   isSearchable,
   isClearable,
@@ -223,7 +233,6 @@ export const SelectInput = ({
     );
   };
   const handleChangeSingle = (newValue: SingleValue<Option>) => {
-    // console.log()
     if (newValue) {
       setFieldValue(fieldName, newValue.value);
     } else if (isClearable) {
@@ -267,6 +276,7 @@ export const SelectInput = ({
       value={selected}
       size={size}
       classNamePrefix="custom-select"
+      placeholder={placeholder}
       chakraStyles={{
         container: (provided) => ({
           ...provided,
@@ -312,11 +322,13 @@ export const SelectInput = ({
         singleValue: singleValueBlock
           ? (provided) => ({
               ...provided,
-              background: "primary.400",
-              color: "white",
-              borderRadius: ".375rem",
-              fontSize: ".75rem",
-              paddingX: ".5rem",
+              fontSize: "12px",
+              background: "gray.200",
+              color: "gray.600",
+              fontWeight: "400",
+              borderRadius: "2px",
+              py: 1,
+              px: 2,
             })
           : undefined,
       }}
@@ -337,6 +349,7 @@ interface CreatableSelectProps extends SelectProps {
 }
 const CreatableSelectInput = ({
   options,
+  placeholder,
   fieldName,
   size,
   isSearchable,
@@ -385,6 +398,7 @@ const CreatableSelectInput = ({
       }}
       onChange={handleChange}
       name={fieldName}
+      placeholder={placeholder}
       value={selected}
       size={size}
       classNamePrefix="custom-creatable-select"
