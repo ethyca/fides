@@ -18,11 +18,17 @@ import { selectSuggestions } from "~/features/system/dictionary-form/dict-sugges
 import { useResetSuggestionContext } from "./dict-suggestion.context";
 
 const useDictSuggestion = (fieldName: string, dictField: string) => {
-  const [preSuggestionValue, setPreSuggestionValue] = useState("");
   const [initialField, meta, { setValue, setTouched }] = useField(fieldName);
   const isInvalid = !!(meta.touched && meta.error);
   const { error } = meta;
-  const field = { ...initialField, value: initialField.value ?? "" };
+  const field = {
+    ...initialField,
+    value: initialField.value ?? "",
+  };
+
+  const [preSuggestionValue, setPreSuggestionValue] = useState(
+    field.value ?? ""
+  );
   const { values } = useFormikContext();
   const context = useResetSuggestionContext();
   // @ts-ignore
