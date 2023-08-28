@@ -49,8 +49,8 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
         setValue(dictEntry[dictField as keyof DictEntry]);
 
         // This blur is a workaround some forik issues.
-        // the setTimeout is required to get around a 
-        // timing issue with the ref not being ready yet. 
+        // the setTimeout is required to get around a
+        // timing issue with the ref not being ready yet.
         setTimeout(() => {
           setTouched(true);
           // @ts-ignore
