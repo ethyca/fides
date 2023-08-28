@@ -12,7 +12,7 @@ import {
   VersionOrVendorList,
 } from "@iabtechlabtcf/core";
 import { transformUserPreferenceToBoolean } from "./consent-utils";
-import gvlJson from "./tcf/GVL.json";
+import gvlJson from "./tcf/gvl.json";
 import { TcfSavePreferences } from "./tcf/types";
 
 /**
@@ -40,21 +40,21 @@ export const generateTcString = async (
 
   if (tcStringPreferences) {
     // todo- when we set vendorLegitimateInterests, make sure we never set purposes 1, 3, 4, 5 and 6
-    // TODO: Set vendor consent on tcModel once https://github.com/ethyca/fides/pull/3972 is in. We will need to filter by GVL vendors
-    // if (
-    //   tcStringPreferences.vendor_preferences &&
-    //   tcStringPreferences.vendor_preferences.length > 0
-    // ) {
-    //   tcStringPreferences.vendor_preferences.forEach((vendorPreference) => {
-    //     const consented = transformUserPreferenceToBoolean(
-    //       vendorPreference.preference
-    //     );
-    //     if (consented) {
-    //       // TODO: safely make sure this is a number!
-    //       tcModel.vendorConsents.set(+vendorPreference.id);
-    //     }
-    //   });
-    // }
+    // TODO: figure out how we filter by gvl vendors
+    if (
+      tcStringPreferences.vendor_preferences &&
+      tcStringPreferences.vendor_preferences.length > 0
+    ) {
+      tcStringPreferences.vendor_preferences.forEach((vendorPreference) => {
+        const consented = transformUserPreferenceToBoolean(
+          vendorPreference.preference
+        );
+        if (consented) {
+          // TODO: safely make sure this is a number!
+          tcModel.vendorConsents.set(+vendorPreference.id);
+        }
+      });
+    }
 
     // Set purpose consent on tcModel
     if (

@@ -73,6 +73,7 @@ export interface EnabledIds {
   features: string[];
   specialFeatures: string[];
   vendors: string[];
+  systems: string[];
 }
 
 export interface UpdateEnabledIds {
@@ -128,6 +129,10 @@ const createTcfSavePayload = ({
     modelList: experience.tcf_vendors,
     enabledIds: enabledIds.vendors,
   }) as TCFVendorSave[],
+  system_preferences: transformTcfModelToTcfSave({
+    modelList: experience.tcf_systems,
+    enabledIds: enabledIds.systems,
+  }) as TCFVendorSave[],
 });
 
 const TcfOverlay: FunctionComponent<OverlayProps> = ({
@@ -143,6 +148,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       tcf_features: features,
       tcf_special_features: specialFeatures,
       tcf_vendors: vendors,
+      tcf_systems: systems,
     } = experience;
 
     return {
@@ -151,6 +157,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       features: getEnabledIds(features),
       specialFeatures: getEnabledIds(specialFeatures),
       vendors: getEnabledIds(vendors),
+      systems: getEnabledIds(systems),
     };
   }, [experience]);
 

@@ -23,11 +23,7 @@ def send_verification_code_to_user(
     config_proxy = ConfigProxy(db)
     verification_code = generate_id_verification_code()
     request.cache_identity_verification_code(verification_code)
-    messaging_action_type = (
-        MessagingActionType.CONSENT_REQUEST
-        if isinstance(request, ConsentRequest)
-        else MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
-    )
+    messaging_action_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
     dispatch_message(
         db,
         action_type=messaging_action_type,

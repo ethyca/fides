@@ -5,6 +5,7 @@ import { PrivacyExperience } from "../../lib/consent-types";
 import { UpdateEnabledIds } from "./TcfOverlay";
 import DataUseToggle from "../DataUseToggle";
 import FilterButtons from "./FilterButtons";
+import { vendorIsGvl } from "../../lib/tcf/vendors";
 
 const FILTERS = [{ name: "All vendors" }, { name: "GVL vendors" }];
 
@@ -33,30 +34,41 @@ const VendorDetails = ({
 
 const TcfVendors = ({
   allVendors,
-  enabledIds,
+  allSystems,
+  enabledVendorIds,
+  enabledSystemIds,
   onChange,
 }: {
   allVendors: PrivacyExperience["tcf_vendors"];
-  enabledIds: string[];
+  allSystems: PrivacyExperience["tcf_systems"];
+  enabledVendorIds: string[];
+  enabledSystemIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
 }) => {
   const [isFiltered, setIsFiltered] = useState(false);
 
-  if (!allVendors || allVendors.length === 0) {
+  // Vendors and Systems are the same for the FE, but are 2 separate
+  // objects in the backend. We combine them here but keep them separate
+  // when patching preferences
+  const vendors = [...(allVendors || []), ...(allSystems || [])];
+  const enabledIds = [...enabledVendorIds, ...enabledSystemIds];
+
+  if (vendors.length === 0) {
     // TODO: empty state?
     return null;
   }
 
   const handleToggle = (vendor: TCFVendorRecord) => {
+    const modelType = vendor.has_vendor_id ? "vendors" : "systems";
     if (enabledIds.indexOf(vendor.id) !== -1) {
       onChange({
         newEnabledIds: enabledIds.filter((e) => e !== vendor.id),
-        modelType: "vendors",
+        modelType,
       });
     } else {
       onChange({
         newEnabledIds: [...enabledIds, vendor.id],
-        modelType: "vendors",
+        modelType,
       });
     }
   };
@@ -70,8 +82,8 @@ const TcfVendors = ({
   };
 
   const vendorsToDisplay = isFiltered
-    ? allVendors.filter((v) => v.is_gvl)
-    : allVendors;
+    ? vendors.filter((v) => vendorIsGvl(v))
+    : vendors;
 
   return (
     <div>
@@ -83,7 +95,7 @@ const TcfVendors = ({
             handleToggle(vendor);
           }}
           checked={enabledIds.indexOf(vendor.id) !== -1}
-          badge={vendor.is_gvl ? "GVL" : undefined}
+          badge={vendorIsGvl(vendor) ? "GVL" : undefined}
         >
           <div>
             <p>{vendor.description}</p>

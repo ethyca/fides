@@ -98,13 +98,6 @@ export const updateConsentPreferences = async ({
     // eslint-disable-next-line no-param-reassign
     cookie = await updateCookie(cookie);
   }
-  // if (tcf) {
-  //   // Update the cookie object with TCF prefs
-  //   generateTcString(tcf).then((result) => {
-  //     // eslint-disable-next-line no-param-reassign
-  //     cookie.tcString = result;
-  //   });
-  // }
 
   // 4. Save preferences to the cookie
   debugLog(debug, "Saving preferences to cookie");

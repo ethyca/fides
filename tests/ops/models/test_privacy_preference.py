@@ -1368,37 +1368,20 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
             == []
         )
 
-        secrets = {
-            "domain": "test_amplitude_domain",
-            "api_key": "test_amplitude_api_key",
-            "secret_key": "test_amplitude_secret",
-        }
-        connection_config, dataset_config = instantiate_connector(
-            db,
-            "amplitude",
-            "amplitude_instance",
-            "Amplitude ConnectionConfig description",
-            secrets,
-        )
-        connection_config.system_id = system_with_no_uses.id
-        connection_config.save(db)
+        system_with_no_uses.vendor_id = "amplitude"
+        system_with_no_uses.save(db)
 
         assert PrivacyPreferenceHistory.determine_relevant_systems(
             db, tcf_field=TCFComponentType.vendor.value, tcf_value="amplitude"
         ) == [system_with_no_uses.fides_key]
 
-        dataset_config.delete(db)
-        connection_config.delete(db)
-
-    def test_determine_relevant_systems_for_tcf_special_feature_and_features(
-        self, db, system_with_no_uses
-    ):
-        assert (
-            PrivacyPreferenceHistory.determine_relevant_systems(
-                db, tcf_field=TCFComponentType.special_feature.value, tcf_value=1
-            )
-            == []
-        )
+    def test_determine_relevant_systems_for_tcf_feature(self, db, system):
+        # Add feature that we don't have a preference for
+        decl = system.privacy_declarations[0]
+        decl.features = [
+            "Receive and use automatically-sent device characteristics for identification"
+        ]
+        decl.save(db)
 
         assert (
             PrivacyPreferenceHistory.determine_relevant_systems(
@@ -1406,6 +1389,49 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
             )
             == []
         )
+
+        decl.features = ["Match and combine offline data sources"]
+        decl.save(db)
+
+        assert PrivacyPreferenceHistory.determine_relevant_systems(
+            db, tcf_field=TCFComponentType.feature.value, tcf_value=1
+        ) == [system.fides_key]
+
+    def test_determine_relevant_systems_for_tcf_special_feature(self, db, system):
+        # Add special feature that we're not saving preference for
+        decl = system.privacy_declarations[0]
+        decl.features = ["Actively scan device characteristics for identification"]
+        decl.save(db)
+
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db, tcf_field=TCFComponentType.feature.value, tcf_value=1
+            )
+            == []
+        )
+
+        decl.features = ["Use precise geolocation data"]
+        decl.save(db)
+
+        assert PrivacyPreferenceHistory.determine_relevant_systems(
+            db, tcf_field=TCFComponentType.special_feature.value, tcf_value=1
+        ) == [system.fides_key]
+
+    def test_determine_relevant_systems_for_tcf_system(self, db, system_with_no_uses):
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db,
+                tcf_field=TCFComponentType.system_fides_key.value,
+                tcf_value="non_matching_fides_key",
+            )
+            == []
+        )
+
+        assert PrivacyPreferenceHistory.determine_relevant_systems(
+            db,
+            tcf_field=TCFComponentType.system_fides_key.value,
+            tcf_value=system_with_no_uses.fides_key,
+        ) == [system_with_no_uses.fides_key]
 
 
 class TestCurrentPrivacyPreference:
