@@ -65,7 +65,7 @@ import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
 import { FidesCookie, isNewFidesCookie } from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
-import { TcfSavePreferences } from "./lib/tcf/types";
+import { TCFPurposeRecord, TcfSavePreferences } from "./lib/tcf/types";
 
 declare global {
   interface Window {
@@ -77,6 +77,16 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
+/** Helper function to determine the initial value of a TCF object */
+const getInitialPreference = (
+  tcfObject: Pick<TCFPurposeRecord, "current_preference" | "default_preference">
+) => {
+  if (tcfObject.current_preference) {
+    return tcfObject.current_preference;
+  }
+  return tcfObject.default_preference ?? UserConsentPreference.OPT_OUT;
+};
+
 const updateCookie = async (
   oldCookie: FidesCookie,
   experience: PrivacyExperience
@@ -84,37 +94,27 @@ const updateCookie = async (
   const tcSavePrefs: TcfSavePreferences = {
     purpose_preferences: experience.tcf_purposes?.map((purpose) => ({
       id: purpose.id,
-      preference:
-        (purpose.current_preference ?? purpose.default_preference) ||
-        UserConsentPreference.OPT_OUT,
+      preference: getInitialPreference(purpose),
     })),
     special_purpose_preferences: experience.tcf_special_purposes?.map(
       (purpose) => ({
         id: purpose.id,
-        preference:
-          (purpose.current_preference ?? purpose.default_preference) ||
-          UserConsentPreference.OPT_OUT,
+        preference: getInitialPreference(purpose),
       })
     ),
-    feature_preferences: experience.tcf_features?.map((purpose) => ({
-      id: purpose.id,
-      preference:
-        (purpose.current_preference ?? purpose.default_preference) ||
-        UserConsentPreference.OPT_OUT,
+    feature_preferences: experience.tcf_features?.map((feature) => ({
+      id: feature.id,
+      preference: getInitialPreference(feature),
     })),
     special_feature_preferences: experience.tcf_special_features?.map(
-      (purpose) => ({
-        id: purpose.id,
-        preference:
-          (purpose.current_preference ?? purpose.default_preference) ||
-          UserConsentPreference.OPT_OUT,
+      (feature) => ({
+        id: feature.id,
+        preference: getInitialPreference(feature),
       })
     ),
-    vendor_preferences: experience.tcf_vendors?.map((purpose) => ({
-      id: purpose.id,
-      preference:
-        (purpose.current_preference ?? purpose.default_preference) ||
-        UserConsentPreference.OPT_OUT,
+    vendor_preferences: experience.tcf_vendors?.map((vendor) => ({
+      id: vendor.id,
+      preference: getInitialPreference(vendor),
     })),
   };
 
