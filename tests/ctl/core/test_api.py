@@ -720,8 +720,6 @@ class TestSystemCreate:
             "joint_controller",
             "joint_controller_info",
             "legal_address",
-            "legal_basis_for_profiling",
-            "legal_basis_for_transfers",
             "legal_name",
             "meta",
             "name",
@@ -751,6 +749,8 @@ class TestSystemCreate:
             "cookies",
             "dataset_references",
             "data_stewards",
+            "legal_basis_for_profiling",
+            "legal_basis_for_transfers",
             "responsibility",
         ]
         for field in expected_empty_list:
@@ -952,6 +952,7 @@ class TestSystemCreate:
         assert result.json()["detail"][0]["loc"] == [
             "body",
             "legal_basis_for_profiling",
+            0,
         ]
 
 
