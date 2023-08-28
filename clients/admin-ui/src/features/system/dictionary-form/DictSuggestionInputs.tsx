@@ -1,8 +1,15 @@
-import { Flex, FormControl, Textarea, VStack } from "@fidesui/react";
-import { useField, useFormikContext } from "formik";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-
+import {
+  Box,
+  Flex,
+  FormControl,
+  HStack,
+  Switch,
+  Textarea,
+  VStack,
+} from "@fidesui/react";
 import { MultiValue, Select, SingleValue } from "chakra-react-select";
+import { useField, useFormikContext } from "formik";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -19,20 +26,32 @@ import { selectSuggestions } from "~/features/system/dictionary-form/dict-sugges
 
 import { useResetSuggestionContext } from "./dict-suggestion.context";
 
-const useDictSuggestion = (fieldName: string, dictField: string) => {
-  const [preSuggestionValue, setPreSuggestionValue] = useState("");
-  const [initialField, meta, { setValue }] = useField(fieldName);
+const useDictSuggestion = (
+  fieldName: string,
+  dictField: string,
+  fieldType?: string
+) => {
+  const [initialField, meta, { setValue, setTouched }] = useField({
+    name: fieldName,
+    type: fieldType || undefined,
+  });
   const isInvalid = !!(meta.touched && meta.error);
   const { error } = meta;
-  const field = { ...initialField, value: initialField.value ?? "" };
-  const form = useFormikContext();
+  const field = {
+    ...initialField,
+    value: initialField.value ?? "",
+  };
+
+  const [preSuggestionValue, setPreSuggestionValue] = useState(
+    field.value ?? ""
+  );
+  const { values } = useFormikContext();
   const context = useResetSuggestionContext();
   // @ts-ignore
-  const vendorId = form.values?.meta?.vendor?.id;
+  const vendorId = values?.meta?.vendor?.id;
   const dictEntry = useAppSelector(selectDictEntry(vendorId || ""));
   const isShowingSuggestions = useAppSelector(selectSuggestions);
-
-  useMemo(() => console.log(dictEntry), [dictEntry]);
+  const inputRef = useRef();
 
   useEffect(() => {
     if (isShowingSuggestions === "showing") {
@@ -49,24 +68,20 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
       dictField in dictEntry
     ) {
       if (field.value !== dictEntry[dictField as keyof DictEntry]) {
-        if (
-          field.name === "legal_basis_for_profiling" ||
-          field.name === "legal_basis_for_transfers"
-        ) {
-          //@ts-ignore
-          setValue(dictEntry[dictField as keyof DictEntry][0]);
-        }
         setValue(dictEntry[dictField as keyof DictEntry]);
+
+        // This blur is a workaround some forik issues.
+        // the setTimeout is required to get around a
+        // timing issue with the ref not being ready yet.
+        setTimeout(() => {
+          setTouched(true);
+          // @ts-ignore
+          inputRef.current?.blur();
+        }, 300);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isShowingSuggestions,
-    setValue,
-    dictEntry,
-    dictField,
-    setPreSuggestionValue,
-  ]);
+  }, [isShowingSuggestions, setValue, dictEntry, dictField, inputRef.current]);
 
   useEffect(() => {
     if (isShowingSuggestions === "hiding") {
@@ -76,9 +91,10 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
 
   const reset = useCallback(() => {
     if (dictEntry && dictField in dictEntry) {
-      setValue(dictEntry[dictField as keyof DictEntry], true);
+      setValue(dictEntry[dictField as keyof DictEntry]);
+      setTouched(true, true);
     }
-  }, [dictEntry, dictField, setValue]);
+  }, [dictEntry, dictField, setValue, setTouched]);
 
   useEffect(() => {
     if (context) {
@@ -100,8 +116,10 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
     isInvalid,
     isShowingSuggestions,
     error,
+    inputRef,
   };
 };
+
 type Props = {
   dictField: string;
 } & Omit<CustomInputProps, "variant"> &
@@ -117,10 +135,8 @@ export const DictSuggestionTextInput = ({
   placeholder,
   id,
 }: Props) => {
-  const { field, isInvalid, isShowingSuggestions, error } = useDictSuggestion(
-    name,
-    dictField
-  );
+  const { field, isInvalid, isShowingSuggestions, error, inputRef } =
+    useDictSuggestion(name, dictField);
 
   return (
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
@@ -133,6 +149,8 @@ export const DictSuggestionTextInput = ({
         </Flex>
         <TextInput
           {...field}
+          ref={inputRef}
+          isRequired={isRequired}
           isDisabled={disabled}
           data-testid={`input-${field.name}`}
           placeholder={placeholder}
@@ -196,6 +214,49 @@ export const DictSuggestionTextArea = ({
   );
 };
 
+export const DictSuggestionSwitch = ({
+  label,
+  tooltip,
+  dictField,
+  name,
+  id,
+}: Props) => {
+  const { field, isInvalid, error } = useDictSuggestion(
+    name,
+    dictField,
+    "checkbox"
+  );
+  return (
+    <FormControl isInvalid={isInvalid} width="full">
+      <Box display="flex" alignItems="center" justifyContent="space-between">
+        <HStack spacing={1}>
+          <Label htmlFor={id || name} fontSize="sm" my={0} mr={0}>
+            {label}
+          </Label>
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </HStack>
+        <HStack>
+          <Switch
+            name={field.name}
+            isChecked={field.checked}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            colorScheme="purple"
+            mr={2}
+            data-testid={`input-${field.name}`}
+            size="sm"
+          />
+        </HStack>
+      </Box>
+      <ErrorMessage
+        isInvalid={isInvalid}
+        message={error}
+        fieldName={field.name}
+      />
+    </FormControl>
+  );
+};
+
 interface SelectOption {
   value: string;
   label: string;
@@ -205,53 +266,6 @@ type SelectProps = Props & {
   options: SelectOption[];
   isMulti?: boolean;
 };
-
-// export const DictSuggestionSelect = ({
-//   label,
-//   tooltip,
-//   disabled,
-//   isRequired = false,
-//   dictField,
-//   name,
-//   placeholder,
-//   id,
-//   options,
-// }: SelectProps) => {
-//   const { field, isInvalid, isShowingSuggestions, error } = useDictSuggestion(
-//     name,
-//     dictField
-//   );
-
-//   return (
-//     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
-//       <VStack alignItems="start">
-//         <Flex alignItems="center">
-//           <Label htmlFor={id || name} fontSize="xs" my={0} mr={1}>
-//             {label}
-//           </Label>
-//           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-//         </Flex>
-//         <TextInput
-//           {...field}
-//           isDisabled={disabled}
-//           data-testid={`input-${field.name}`}
-//           placeholder={placeholder}
-//           isPassword={false}
-//           color={
-//             isShowingSuggestions === "showing"
-//               ? "complimentary.500"
-//               : "gray.800"
-//           }
-//         />
-//         <ErrorMessage
-//           isInvalid={isInvalid}
-//           message={error}
-//           fieldName={field.name}
-//         />
-//       </VStack>
-//     </FormControl>
-//   );
-// };
 
 export const DictSuggestionSelect = ({
   label,
@@ -277,7 +291,6 @@ export const DictSuggestionSelect = ({
   const { setFieldValue } = useFormikContext();
 
   const handleChangeMulti = (newValue: MultiValue<SelectOption>) => {
-    // console.log(newValue);
     setFieldValue(
       field.name,
       newValue.map((v) => v.value)
@@ -290,11 +303,10 @@ export const DictSuggestionSelect = ({
 
   const handleChange = (
     newValue: MultiValue<SelectOption> | SingleValue<SelectOption>
-  ) => {
+  ) =>
     isMulti
       ? handleChangeMulti(newValue as MultiValue<SelectOption>)
       : handleChangeSingle(newValue as SingleValue<SelectOption>);
-  };
 
   return (
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
@@ -312,9 +324,7 @@ export const DictSuggestionSelect = ({
             value={selected}
             isDisabled={disabled}
             isMulti={isMulti}
-            onChange={(e) => {
-              handleChange(e);
-            }}
+            onChange={handleChange}
             data-testid={`input-${field.name}`}
             placeholder={placeholder}
             options={options}
