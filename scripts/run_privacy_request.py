@@ -23,6 +23,7 @@ from fides.api.models.connectionconfig import ConnectionType
 from fides.api.schemas.policy import ActionType
 from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.common.api.v1 import urn_registry as ops_urls
+from fides.api.execution.tasks import load_graph_into_db
 from fides.config import get_config
 
 CONFIG = get_config()
@@ -653,14 +654,17 @@ def run_erasure_request(email: str = "jane@example.com") -> None:
     print_results(request_id=access_result_id)
 
 
+def populate_tasks_api() -> None:
+    """Do some stuff"""
+    pass
+
+
 def run_privacy_request() -> None:
     """Perform the setup for a privacy request and run it."""
 
     configure_datastores()
     configure_access_policies()
-    run_access_request()
-    configure_erasure_policies()
-    run_erasure_request()
+    populate_tasks_api()
     print("> Privacy Requests complete.")
 
 
