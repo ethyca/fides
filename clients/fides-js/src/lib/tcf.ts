@@ -14,6 +14,7 @@ import {
 import { transformUserPreferenceToBoolean } from "./consent-utils";
 import gvlJson from "./tcf/gvl.json";
 import { TcfSavePreferences } from "./tcf/types";
+import { vendorIsGvl } from "./tcf/vendors";
 
 /**
  * Generate TC String based on TCF-related info from privacy experience.
@@ -40,7 +41,6 @@ export const generateTcString = async (
 
   if (tcStringPreferences) {
     // todo- when we set vendorLegitimateInterests, make sure we never set purposes 1, 3, 4, 5 and 6
-    // TODO: figure out how we filter by gvl vendors
     if (
       tcStringPreferences.vendor_preferences &&
       tcStringPreferences.vendor_preferences.length > 0
@@ -49,8 +49,7 @@ export const generateTcString = async (
         const consented = transformUserPreferenceToBoolean(
           vendorPreference.preference
         );
-        if (consented) {
-          // TODO: safely make sure this is a number!
+        if (consented && vendorIsGvl(vendorPreference)) {
           tcModel.vendorConsents.set(+vendorPreference.id);
         }
       });
