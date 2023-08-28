@@ -3,11 +3,13 @@ saas_config:
   name: Wunderkind
   type: wunderkind
   description: A schema representing the Wunderkind connector for Fides
-  version: 0.0.2
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/wunderkind
+  version: 0.0.3
 
   connector_params:
     - name: website_id
       label: Website ID
+      description: Your Wunderkind website ID
 
   client_config:
     protocol: https

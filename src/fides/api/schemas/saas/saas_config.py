@@ -365,6 +365,7 @@ class SaaSConfig(SaaSConfigBase):
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
     rate_limit_config: Optional[RateLimitConfig]
     consent_requests: Optional[ConsentRequestMap]
+    user_guide: Optional[str]
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:

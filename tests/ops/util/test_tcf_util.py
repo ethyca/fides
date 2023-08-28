@@ -1,5 +1,5 @@
 import pytest
-from fideslang import GVL_PURPOSES, MAPPED_PURPOSES
+from fideslang import MAPPED_PURPOSES
 from fideslang.models import LegalBasisForProcessingEnum
 
 from fides.api.models.sql_models import PrivacyDeclaration
@@ -31,36 +31,23 @@ class TestTCFContents:
         assert tcf_contents.tcf_special_features == []
         assert tcf_contents.tcf_systems == []
 
-    def test_system_exists_with_tcf_data_use_but_no_official_vendor_linked(
-        self, db, tcf_system
-    ):
-        """System does not have an official vendor id so we return preferences against the system itself"""
+    def test_feature_that_is_not_in_the_gvl(self, db, system):
         get_tcf_contents.cache_clear()
 
-        tcf_system.vendor_id = None
-        tcf_system.save(db)
+        decl = system.privacy_declarations[0]
+        decl.features = ["non_gvl_feature"]
+        decl.save(db)
+
+        db.refresh(decl)
+        assert decl.features == ["non_gvl_feature"]
 
         tcf_contents = get_tcf_contents(db)
-        assert len(tcf_contents.tcf_purposes) == 1
-        assert tcf_contents.tcf_purposes[0].id == 8
-
-        # No "vendors" because we don't have an official vendor id
-        assert len(tcf_contents.tcf_purposes[0].vendors) == 0
-        # System returned instead
-        assert len(tcf_contents.tcf_purposes[0].systems) == 1
-
+        assert tcf_contents.tcf_purposes == []
         assert tcf_contents.tcf_vendors == []
+        assert tcf_contents.tcf_special_purposes == []
         assert tcf_contents.tcf_features == []
         assert tcf_contents.tcf_special_features == []
-        assert len(tcf_contents.tcf_systems) == 1
-
-        assert tcf_contents.tcf_systems[0].id == tcf_system.fides_key
-        assert tcf_contents.tcf_systems[0].name == "TCF System Test"
-        assert tcf_contents.tcf_systems[0].description == "My TCF System Description"
-
-        assert len(tcf_contents.tcf_systems[0].purposes) == 1
-        assert tcf_contents.tcf_systems[0].purposes[0].id == 8
-        assert tcf_contents.tcf_systems[0].has_vendor_id is False
+        assert tcf_contents.tcf_systems == []
 
     @pytest.mark.usefixtures("tcf_system")
     def test_system_exists_with_tcf_purpose_and_vendor(self, db):
@@ -87,6 +74,37 @@ class TestTCFContents:
         assert tcf_contents.tcf_features == []
         assert tcf_contents.tcf_special_features == []
 
+    def test_system_exists_with_tcf_data_use_but_no_official_vendor_linked(
+        self, db, tcf_system
+    ):
+        """System does not have an official vendor id so we return preferences against the system itself"""
+        get_tcf_contents.cache_clear()
+
+        tcf_system.vendor_id = None
+        tcf_system.save(db)
+
+        tcf_contents = get_tcf_contents(db)
+        assert len(tcf_contents.tcf_purposes) == 1
+        assert tcf_contents.tcf_purposes[0].id == 8
+
+        # No "vendors" because we don't have an official vendor id
+        assert len(tcf_contents.tcf_purposes[0].vendors) == 0
+        # System returned instead
+        assert len(tcf_contents.tcf_purposes[0].systems) == 1
+
+        assert tcf_contents.tcf_vendors == []
+        assert tcf_contents.tcf_features == []
+        assert tcf_contents.tcf_special_features == []
+        assert len(tcf_contents.tcf_systems) == 1
+
+        assert tcf_contents.tcf_systems[0].id == tcf_system.id
+        assert tcf_contents.tcf_systems[0].name == "TCF System Test"
+        assert tcf_contents.tcf_systems[0].description == "My TCF System Description"
+
+        assert len(tcf_contents.tcf_systems[0].purposes) == 1
+        assert tcf_contents.tcf_systems[0].purposes[0].id == 8
+        assert tcf_contents.tcf_systems[0].has_vendor_id is False
+
     @pytest.mark.usefixtures("tcf_system")
     def test_vendor_on_multiple_systems(self, db, system, tcf_system):
         """Vendor id shows up on multiple systems but it is collapsed in response"""
@@ -102,12 +120,29 @@ class TestTCFContents:
         decl.data_use = "analytics.reporting.content_performance"
         decl.save(db)
 
+        # Add a separate use to this system
+        PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Store and access info on a device",
+                "system_id": system.id,
+                "data_categories": ["user"],
+                "data_use": "functional.storage",
+                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                "data_subjects": ["customer"],
+                "dataset_references": None,
+                "egress": None,
+                "ingress": None,
+            },
+        )
+
         tcf_contents = get_tcf_contents(db)
-        assert len(tcf_contents.tcf_purposes) == 1
-        assert tcf_contents.tcf_purposes[0].id == 8
-        assert tcf_contents.tcf_purposes[0].data_uses == [
-            "analytics.reporting.content_performance"
-        ]
+
+        assert len(tcf_contents.tcf_purposes) == 2
+        assert {purpose.id for purpose in tcf_contents.tcf_purposes} == {1, 8}
+        assert {
+            use for purpose in tcf_contents.tcf_purposes for use in purpose.data_uses
+        } == {"functional.storage", "analytics.reporting.content_performance"}
         assert tcf_contents.tcf_purposes[0].vendors == [
             EmbeddedVendor(id="sendgrid", name="TCF System Test")
         ]
@@ -118,8 +153,11 @@ class TestTCFContents:
         assert tcf_contents.tcf_vendors[0].name == "TCF System Test"
         assert tcf_contents.tcf_vendors[0].description == "My TCF System Description"
         # Purposes also consolidated
-        assert len(tcf_contents.tcf_vendors[0].purposes) == 1
-        assert tcf_contents.tcf_vendors[0].purposes[0].id == 8
+        assert len(tcf_contents.tcf_vendors[0].purposes) == 2
+        assert {purpose.id for purpose in tcf_contents.tcf_vendors[0].purposes} == {
+            1,
+            8,
+        }
         assert tcf_contents.tcf_features == []
         assert tcf_contents.tcf_special_features == []
 
@@ -276,7 +314,7 @@ class TestTCFContents:
             len(tcf_contents.tcf_vendors) == 0
         )  # No official vendor id on this system
 
-        assert len(tcf_contents.tcf_systems) == 0
+        assert len(tcf_contents.tcf_systems) == 1
         system_info = tcf_contents.tcf_systems[0]
 
         assert len(system_info.special_purposes) == 0
@@ -286,3 +324,72 @@ class TestTCFContents:
         for i, embedded_purpose in enumerate(tcf_contents.tcf_systems[0].purposes):
             assert embedded_purpose.legal_bases == [legal_bases[i]]
             assert embedded_purpose.id == list(MAPPED_PURPOSES.values())[i].id
+
+    def test_duplicate_data_uses_on_system(self, tcf_system, db):
+        """Contrived test (since UI enforces unique data uses on systems), that adds the same data use to multiple privacy declarations.
+        Assert that this doesn't create duplicate purposes
+        """
+        get_tcf_contents.cache_clear()
+
+        for privacy_decl in tcf_system.privacy_declarations:
+            privacy_decl.data_use = "marketing.advertising.profiling"
+            privacy_decl.save(db)
+
+        tcf_contents = get_tcf_contents(db)
+        assert len(tcf_contents.tcf_purposes) == 1
+        assert tcf_contents.tcf_purposes[0].id == 3
+        assert len(tcf_contents.tcf_purposes[0].vendors) == 1
+        assert tcf_contents.tcf_purposes[0].vendors[0].name == tcf_system.name
+        assert len(tcf_contents.tcf_purposes[0].systems) == 0
+
+        assert len(tcf_contents.tcf_vendors) == 1
+        assert tcf_contents.tcf_vendors[0].name == tcf_system.name
+        assert len(tcf_contents.tcf_vendors[0].purposes) == 1
+        assert tcf_contents.tcf_vendors[0].purposes[0].id == 3
+        assert tcf_contents.tcf_special_purposes == []
+        assert tcf_contents.tcf_features == []
+        assert tcf_contents.tcf_special_features == []
+        assert tcf_contents.tcf_systems == []
+
+    def test_add_different_data_uses_that_correspond_to_same_purpose(
+        self, tcf_system, db
+    ):
+        """Add different data uses to the same system that correspond to the same purpose
+        Assert that this doesn't create duplicate purposes
+        """
+        get_tcf_contents.cache_clear()
+
+        new_uses = [
+            "marketing.advertising.first_party.contextual",
+            "marketing.advertising.frequency_capping",
+        ]
+        new_legal_bases = ["Consent", "Public interest"]
+        for i, privacy_decl in enumerate(tcf_system.privacy_declarations):
+            privacy_decl.data_use = new_uses[i]
+            privacy_decl.legal_basis_for_processing = new_legal_bases[i]
+            privacy_decl.save(db)
+
+        tcf_contents = get_tcf_contents(db)
+        assert len(tcf_contents.tcf_purposes) == 1
+        assert tcf_contents.tcf_purposes[0].id == 2
+        assert tcf_contents.tcf_purposes[0].legal_bases == [
+            "Consent",
+            "Public interest",
+        ]
+        assert len(tcf_contents.tcf_purposes[0].vendors) == 1
+        assert tcf_contents.tcf_purposes[0].vendors[0].name == tcf_system.name
+        assert len(tcf_contents.tcf_purposes[0].systems) == 0
+
+        assert len(tcf_contents.tcf_vendors) == 1
+        assert tcf_contents.tcf_vendors[0].name == tcf_system.name
+        assert len(tcf_contents.tcf_vendors[0].purposes) == 1
+        assert tcf_contents.tcf_vendors[0].purposes[0].id == 2
+        assert tcf_contents.tcf_vendors[0].purposes[0].legal_bases == [
+            "Consent",
+            "Public interest",
+        ]
+
+        assert tcf_contents.tcf_special_purposes == []
+        assert tcf_contents.tcf_features == []
+        assert tcf_contents.tcf_special_features == []
+        assert tcf_contents.tcf_systems == []

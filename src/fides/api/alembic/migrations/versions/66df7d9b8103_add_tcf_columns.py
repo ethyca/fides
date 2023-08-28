@@ -1,8 +1,8 @@
-"""add tcf columns
+"""Add tcf columns
 
 Revision ID: 66df7d9b8103
 Revises: 507563f6f8d4
-Create Date: 2023-07-24 20:23:49.622518
+Create Date: 2023-08-23 21:12:43.651877
 
 """
 import sqlalchemy as sa
@@ -16,7 +16,6 @@ depends_on = None
 
 
 def upgrade():
-    # Add new consent settings table
     op.create_table(
         "consentsettings",
         sa.Column("id", sa.String(length=255), nullable=False),
@@ -38,10 +37,18 @@ def upgrade():
     op.create_index(
         op.f("ix_consentsettings_id"), "consentsettings", ["id"], unique=False
     )
-
-    # Allow current privacy preferences to be saved against a purpose, special purpose, vendor, feature, or special feature
+    op.add_column(
+        "currentprivacypreference", sa.Column("tcf_version", sa.String(), nullable=True)
+    )
+    op.add_column(
+        "currentprivacypreference", sa.Column("feature", sa.Integer(), nullable=True)
+    )
     op.add_column(
         "currentprivacypreference", sa.Column("purpose", sa.Integer(), nullable=True)
+    )
+    op.add_column(
+        "currentprivacypreference",
+        sa.Column("special_feature", sa.Integer(), nullable=True),
     )
     op.add_column(
         "currentprivacypreference",
@@ -51,17 +58,8 @@ def upgrade():
         "currentprivacypreference", sa.Column("vendor", sa.String(), nullable=True)
     )
     op.add_column(
-        "currentprivacypreference", sa.Column("feature", sa.Integer(), nullable=True)
+        "currentprivacypreference", sa.Column("system", sa.String(), nullable=True)
     )
-    op.add_column(
-        "currentprivacypreference",
-        sa.Column("special_feature", sa.Integer(), nullable=True),
-    )
-    # Add TCF version for historical record keeping
-    op.add_column(
-        "currentprivacypreference", sa.Column("tcf_version", sa.String(), nullable=True)
-    )
-    # Relax nullable constraint on privacy notice id and history id since we can save against tcf attributes instead
     op.alter_column(
         "currentprivacypreference",
         "privacy_notice_id",
@@ -74,8 +72,6 @@ def upgrade():
         existing_type=sa.VARCHAR(),
         nullable=True,
     )
-    # Create unique constraints in CurrentPrivacyPreference for both possible identity types and
-    # every feature/special feature/vendor/purpose/special purpose
     op.create_unique_constraint(
         "fides_user_device_identity_feature",
         "currentprivacypreference",
@@ -95,6 +91,11 @@ def upgrade():
         "fides_user_device_identity_special_purpose",
         "currentprivacypreference",
         ["fides_user_device_provided_identity_id", "special_purpose"],
+    )
+    op.create_unique_constraint(
+        "fides_user_device_identity_system",
+        "currentprivacypreference",
+        ["fides_user_device_provided_identity_id", "system"],
     )
     op.create_unique_constraint(
         "fides_user_device_identity_vendor",
@@ -122,11 +123,15 @@ def upgrade():
         ["provided_identity_id", "purpose"],
     )
     op.create_unique_constraint(
+        "identity_system",
+        "currentprivacypreference",
+        ["provided_identity_id", "system"],
+    )
+    op.create_unique_constraint(
         "identity_vendor",
         "currentprivacypreference",
         ["provided_identity_id", "vendor"],
     )
-    # Index Current Privacy Preference feature, purpose, special feature, special purpose, and vendor
     op.create_index(
         op.f("ix_currentprivacypreference_feature"),
         "currentprivacypreference",
@@ -152,14 +157,20 @@ def upgrade():
         unique=False,
     )
     op.create_index(
+        op.f("ix_currentprivacypreference_system"),
+        "currentprivacypreference",
+        ["system"],
+        unique=False,
+    )
+    op.create_index(
         op.f("ix_currentprivacypreference_vendor"),
         "currentprivacypreference",
         ["vendor"],
         unique=False,
     )
-
-    # Allow last served notice to be saved for a given feature, purpose, special feature, special purpose, or vendor.
-    # Also track tcf_version fo record keeping
+    op.add_column(
+        "lastservednotice", sa.Column("tcf_version", sa.String(), nullable=True)
+    )
     op.add_column("lastservednotice", sa.Column("feature", sa.Integer(), nullable=True))
     op.add_column("lastservednotice", sa.Column("purpose", sa.Integer(), nullable=True))
     op.add_column(
@@ -168,12 +179,8 @@ def upgrade():
     op.add_column(
         "lastservednotice", sa.Column("special_purpose", sa.Integer(), nullable=True)
     )
-    op.add_column(
-        "lastservednotice", sa.Column("tcf_version", sa.String(), nullable=True)
-    )
     op.add_column("lastservednotice", sa.Column("vendor", sa.String(), nullable=True))
-    # Relax not nullable constraint for privacy notice and privacy notice history now that
-    # we can save last serve against TCF attributes alternatively
+    op.add_column("lastservednotice", sa.Column("system", sa.String(), nullable=True))
     op.alter_column(
         "lastservednotice",
         "privacy_notice_id",
@@ -186,7 +193,6 @@ def upgrade():
         existing_type=sa.VARCHAR(),
         nullable=True,
     )
-    # Index last served feature/purpose/special feature/special purpose/vendor
     op.create_index(
         op.f("ix_lastservednotice_feature"),
         "lastservednotice",
@@ -212,9 +218,11 @@ def upgrade():
         unique=False,
     )
     op.create_index(
+        op.f("ix_lastservednotice_system"), "lastservednotice", ["system"], unique=False
+    )
+    op.create_index(
         op.f("ix_lastservednotice_vendor"), "lastservednotice", ["vendor"], unique=False
     )
-    # Add unique constraints for last served for both identity types and all tcf attribute types
     op.create_unique_constraint(
         "last_served_fides_user_device_identity_feature",
         "lastservednotice",
@@ -234,6 +242,11 @@ def upgrade():
         "last_served_fides_user_device_identity_special_purpose",
         "lastservednotice",
         ["fides_user_device_provided_identity_id", "special_purpose"],
+    )
+    op.create_unique_constraint(
+        "last_served_fides_user_device_identity_system",
+        "lastservednotice",
+        ["fides_user_device_provided_identity_id", "system"],
     )
     op.create_unique_constraint(
         "last_served_fides_user_device_identity_vendor",
@@ -261,12 +274,23 @@ def upgrade():
         ["provided_identity_id", "special_purpose"],
     )
     op.create_unique_constraint(
+        "last_served_identity_system",
+        "lastservednotice",
+        ["provided_identity_id", "system"],
+    )
+    op.create_unique_constraint(
         "last_served_identity_vendor",
         "lastservednotice",
         ["provided_identity_id", "vendor"],
     )
-    # Add feature, purpose, special feature, special purpose, and vendor for PrivacyPreferenceHistory
-    # This allows preferences to be saved against TCF attributes directly.  Also track tcf_version for record keeping
+    op.drop_index("ix_messagingtemplate_id", table_name="messaging_template")
+    op.drop_index("ix_messagingtemplate_key", table_name="messaging_template")
+    op.create_index(
+        op.f("ix_messaging_template_id"), "messaging_template", ["id"], unique=False
+    )
+    op.create_index(
+        op.f("ix_messaging_template_key"), "messaging_template", ["key"], unique=True
+    )
     op.add_column(
         "privacypreferencehistory", sa.Column("feature", sa.Integer(), nullable=True)
     )
@@ -285,16 +309,17 @@ def upgrade():
         "privacypreferencehistory", sa.Column("vendor", sa.String(), nullable=True)
     )
     op.add_column(
+        "privacypreferencehistory", sa.Column("system", sa.String(), nullable=True)
+    )
+    op.add_column(
         "privacypreferencehistory", sa.Column("tcf_version", sa.String(), nullable=True)
     )
-    # Relax privacy notice history id since we can save privacy preference history against tcf attributes
     op.alter_column(
         "privacypreferencehistory",
         "privacy_notice_history_id",
         existing_type=sa.VARCHAR(),
         nullable=True,
     )
-    # Index privacy preference history feature, purpose, special feature, special purpose, and vendor
     op.create_index(
         op.f("ix_privacypreferencehistory_feature"),
         "privacypreferencehistory",
@@ -320,13 +345,17 @@ def upgrade():
         unique=False,
     )
     op.create_index(
+        op.f("ix_privacypreferencehistory_system"),
+        "privacypreferencehistory",
+        ["system"],
+        unique=False,
+    )
+    op.create_index(
         op.f("ix_privacypreferencehistory_vendor"),
         "privacypreferencehistory",
         ["vendor"],
         unique=False,
     )
-    # For served notice history, start tracking optional feature, purpose, special feature,
-    # special purpose, vendor, and tcf_version
     op.add_column(
         "servednoticehistory", sa.Column("feature", sa.Integer(), nullable=True)
     )
@@ -343,16 +372,17 @@ def upgrade():
         "servednoticehistory", sa.Column("vendor", sa.String(), nullable=True)
     )
     op.add_column(
+        "servednoticehistory", sa.Column("system", sa.String(), nullable=True)
+    )
+    op.add_column(
         "servednoticehistory", sa.Column("tcf_version", sa.String(), nullable=True)
     )
-    # Relax privacy notice history id on served notice history id
     op.alter_column(
         "servednoticehistory",
         "privacy_notice_history_id",
         existing_type=sa.VARCHAR(),
         nullable=True,
     )
-    # Index feature, purpose, special feature, special purpose, and vendor on served notice history
     op.create_index(
         op.f("ix_servednoticehistory_feature"),
         "servednoticehistory",
@@ -378,6 +408,12 @@ def upgrade():
         unique=False,
     )
     op.create_index(
+        op.f("ix_servednoticehistory_system"),
+        "servednoticehistory",
+        ["system"],
+        unique=False,
+    )
+    op.create_index(
         op.f("ix_servednoticehistory_vendor"),
         "servednoticehistory",
         ["vendor"],
@@ -388,6 +424,9 @@ def upgrade():
 def downgrade():
     op.drop_index(
         op.f("ix_servednoticehistory_vendor"), table_name="servednoticehistory"
+    )
+    op.drop_index(
+        op.f("ix_servednoticehistory_system"), table_name="servednoticehistory"
     )
     op.drop_index(
         op.f("ix_servednoticehistory_special_purpose"), table_name="servednoticehistory"
@@ -401,8 +440,8 @@ def downgrade():
     op.drop_index(
         op.f("ix_servednoticehistory_feature"), table_name="servednoticehistory"
     )
-
     op.drop_column("servednoticehistory", "tcf_version")
+    op.drop_column("servednoticehistory", "system")
     op.drop_column("servednoticehistory", "vendor")
     op.drop_column("servednoticehistory", "special_purpose")
     op.drop_column("servednoticehistory", "special_feature")
@@ -410,6 +449,10 @@ def downgrade():
     op.drop_column("servednoticehistory", "feature")
     op.drop_index(
         op.f("ix_privacypreferencehistory_vendor"),
+        table_name="privacypreferencehistory",
+    )
+    op.drop_index(
+        op.f("ix_privacypreferencehistory_system"),
         table_name="privacypreferencehistory",
     )
     op.drop_index(
@@ -428,15 +471,26 @@ def downgrade():
         op.f("ix_privacypreferencehistory_feature"),
         table_name="privacypreferencehistory",
     )
-
     op.drop_column("privacypreferencehistory", "tcf_version")
+    op.drop_column("privacypreferencehistory", "system")
     op.drop_column("privacypreferencehistory", "vendor")
     op.drop_column("privacypreferencehistory", "special_purpose")
     op.drop_column("privacypreferencehistory", "special_feature")
     op.drop_column("privacypreferencehistory", "purpose")
     op.drop_column("privacypreferencehistory", "feature")
+    op.drop_index(op.f("ix_messaging_template_key"), table_name="messaging_template")
+    op.drop_index(op.f("ix_messaging_template_id"), table_name="messaging_template")
+    op.create_index(
+        "ix_messagingtemplate_key", "messaging_template", ["key"], unique=False
+    )
+    op.create_index(
+        "ix_messagingtemplate_id", "messaging_template", ["id"], unique=False
+    )
     op.drop_constraint(
         "last_served_identity_vendor", "lastservednotice", type_="unique"
+    )
+    op.drop_constraint(
+        "last_served_identity_system", "lastservednotice", type_="unique"
     )
     op.drop_constraint(
         "last_served_identity_special_purpose", "lastservednotice", type_="unique"
@@ -452,6 +506,11 @@ def downgrade():
     )
     op.drop_constraint(
         "last_served_fides_user_device_identity_vendor",
+        "lastservednotice",
+        type_="unique",
+    )
+    op.drop_constraint(
+        "last_served_fides_user_device_identity_system",
         "lastservednotice",
         type_="unique",
     )
@@ -476,6 +535,7 @@ def downgrade():
         type_="unique",
     )
     op.drop_index(op.f("ix_lastservednotice_vendor"), table_name="lastservednotice")
+    op.drop_index(op.f("ix_lastservednotice_system"), table_name="lastservednotice")
     op.drop_index(
         op.f("ix_lastservednotice_special_purpose"), table_name="lastservednotice"
     )
@@ -484,15 +544,19 @@ def downgrade():
     )
     op.drop_index(op.f("ix_lastservednotice_purpose"), table_name="lastservednotice")
     op.drop_index(op.f("ix_lastservednotice_feature"), table_name="lastservednotice")
-
+    op.drop_column("lastservednotice", "system")
     op.drop_column("lastservednotice", "vendor")
-    op.drop_column("lastservednotice", "tcf_version")
     op.drop_column("lastservednotice", "special_purpose")
     op.drop_column("lastservednotice", "special_feature")
     op.drop_column("lastservednotice", "purpose")
     op.drop_column("lastservednotice", "feature")
+    op.drop_column("lastservednotice", "tcf_version")
     op.drop_index(
         op.f("ix_currentprivacypreference_vendor"),
+        table_name="currentprivacypreference",
+    )
+    op.drop_index(
+        op.f("ix_currentprivacypreference_system"),
         table_name="currentprivacypreference",
     )
     op.drop_index(
@@ -512,6 +576,7 @@ def downgrade():
         table_name="currentprivacypreference",
     )
     op.drop_constraint("identity_vendor", "currentprivacypreference", type_="unique")
+    op.drop_constraint("identity_system", "currentprivacypreference", type_="unique")
     op.drop_constraint(
         "identity_special_purpose", "currentprivacypreference", type_="unique"
     )
@@ -522,6 +587,9 @@ def downgrade():
     op.drop_constraint("identity_feature", "currentprivacypreference", type_="unique")
     op.drop_constraint(
         "fides_user_device_identity_vendor", "currentprivacypreference", type_="unique"
+    )
+    op.drop_constraint(
+        "fides_user_device_identity_system", "currentprivacypreference", type_="unique"
     )
     op.drop_constraint(
         "fides_user_device_identity_special_purpose",
@@ -539,12 +607,12 @@ def downgrade():
     op.drop_constraint(
         "fides_user_device_identity_feature", "currentprivacypreference", type_="unique"
     )
-
+    op.drop_column("currentprivacypreference", "system")
     op.drop_column("currentprivacypreference", "vendor")
-    op.drop_column("currentprivacypreference", "tcf_version")
     op.drop_column("currentprivacypreference", "special_purpose")
     op.drop_column("currentprivacypreference", "special_feature")
     op.drop_column("currentprivacypreference", "purpose")
     op.drop_column("currentprivacypreference", "feature")
+    op.drop_column("currentprivacypreference", "tcf_version")
     op.drop_index(op.f("ix_consentsettings_id"), table_name="consentsettings")
     op.drop_table("consentsettings")

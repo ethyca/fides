@@ -1,6 +1,11 @@
 from typing import Any, Dict, List, Optional
 
-from fideslang.gvl import MAPPED_PURPOSES, MAPPED_SPECIAL_PURPOSES
+from fideslang.gvl import (
+    GVL_FEATURES,
+    GVL_SPECIAL_FEATURES,
+    MAPPED_PURPOSES,
+    MAPPED_SPECIAL_PURPOSES,
+)
 from fideslang.gvl.models import Feature, MappedPurpose
 from pydantic import root_validator, validator
 
@@ -136,7 +141,7 @@ class TCFSpecialPurposeSave(TCFPreferenceSaveBase):
 
 class TCFVendorSave(FidesSchema):
     """Base schema for saving preferences with respect to a TCF Vendor
-    TODO: TCF Add validation for allowable features
+    TODO: TCF Add validation for allowable vendors (in GVL or dictionary?)
     """
 
     id: str
@@ -145,12 +150,32 @@ class TCFVendorSave(FidesSchema):
 
 
 class TCFFeatureSave(TCFPreferenceSaveBase):
-    """Schema for saving a user's preference with respect to a TCF feature
-    TODO: TCF Add validation for allowable features
-    """
+    """Schema for saving a user's preference with respect to a TCF feature"""
+
+    @validator("id")
+    @classmethod
+    def validate_feature_id(cls, value: int) -> int:
+        """
+        Validate feature id is valid
+        """
+        if value not in GVL_FEATURES:
+            raise ValueError(
+                f"Cannot save preferences against invalid feature id: '{value}'"
+            )
+        return value
 
 
 class TCFSpecialFeatureSave(TCFPreferenceSaveBase):
-    """Schema for saving a user's preference with respect to a TCF special feature
-    TODO: TCF Add validation for allowable special features
-    """
+    """Schema for saving a user's preference with respect to a TCF special feature"""
+
+    @validator("id")
+    @classmethod
+    def validate_special_feature_id(cls, value: int) -> int:
+        """
+        Validate special feature id is valid
+        """
+        if value not in GVL_SPECIAL_FEATURES:
+            raise ValueError(
+                f"Cannot save preferences against invalid special feature id: '{value}'"
+            )
+        return value
