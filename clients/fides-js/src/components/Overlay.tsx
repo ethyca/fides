@@ -13,7 +13,11 @@ import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
-import { FidesCookie } from "../lib/cookie";
+import {
+  FidesCookie,
+  getOrMakeFidesCookie,
+  isNewFidesCookie,
+} from "../lib/cookie";
 
 interface RenderBannerProps {
   isOpen: boolean;
@@ -33,6 +37,11 @@ interface Props {
   renderBanner: (props: RenderBannerProps) => VNode | null;
   renderModalContent: (props: RenderModalContent) => VNode;
 }
+
+const getLatestCookie = (cookieFromParam: FidesCookie) => {
+  const latestCookie = getOrMakeFidesCookie();
+  return isNewFidesCookie(latestCookie) ? cookieFromParam : latestCookie;
+};
 
 const Overlay: FunctionComponent<Props> = ({
   experience,
@@ -55,17 +64,27 @@ const Overlay: FunctionComponent<Props> = ({
   const handleOpenModal = useCallback(() => {
     if (instance) {
       instance.show();
-      dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
-        servingComponent: ServingComponent.OVERLAY,
-      });
+      dispatchFidesEvent(
+        "FidesUIShown",
+        getLatestCookie(cookie),
+        options.debug,
+        {
+          servingComponent: ServingComponent.OVERLAY,
+        }
+      );
     }
   }, [instance, cookie, options.debug]);
 
   const handleCloseModal = useCallback(() => {
     if (instance) {
       instance.hide();
+      dispatchFidesEvent(
+        "FidesModalClosed",
+        getLatestCookie(cookie),
+        options.debug
+      );
     }
-  }, [instance]);
+  }, [instance, cookie, options.debug]);
 
   useEffect(() => {
     const delayBanner = setTimeout(() => {
@@ -105,8 +124,9 @@ const Overlay: FunctionComponent<Props> = ({
   );
 
   useEffect(() => {
+    const eventCookie = getLatestCookie(cookie);
     if (showBanner && bannerIsOpen) {
-      dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+      dispatchFidesEvent("FidesUIShown", eventCookie, options.debug, {
         servingComponent: ServingComponent.BANNER,
       });
     }

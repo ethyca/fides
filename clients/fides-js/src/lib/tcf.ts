@@ -117,7 +117,11 @@ export const tcf = () => {
     console.log(`fidesuishown with tcstring: ${tcString}`);
     cmpApi.update(tcString ?? null, true);
   });
-  // TODO: need FidesUIClosed ?
+  window.addEventListener("FidesModalClosed", (event) => {
+    const { tcString } = event.detail;
+    console.log(`fidesmodalclosed with tcstring: ${tcString}`);
+    cmpApi.update(tcString ?? null, false);
+  });
   window.addEventListener("FidesUpdated", (event) => {
     const { tcString } = event.detail;
     console.log(`fidesupdated with tcstring: ${tcString}`);
