@@ -4,23 +4,23 @@ import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
 import { getConsentContext } from "./consent-context";
 import {
-  CookieKeyConsent,
-  CookieIdentity,
-  CookieMeta,
-  getOrMakeFidesCookie,
-  makeConsentDefaultsLegacy,
   buildCookieConsentForExperiences,
+  CookieIdentity,
+  CookieKeyConsent,
+  CookieMeta,
   FidesCookie,
+  getOrMakeFidesCookie,
   isNewFidesCookie,
+  makeConsentDefaultsLegacy,
 } from "./cookie";
 import {
-  PrivacyExperience,
+  ConsentMechanism,
+  ConsentMethod,
   FidesConfig,
   FidesOptions,
-  UserGeolocation,
-  ConsentMethod,
+  PrivacyExperience,
   SaveConsentPreference,
-  ConsentMechanism,
+  UserGeolocation,
 } from "./consent-types";
 import {
   constructFidesRegionString,
@@ -40,6 +40,7 @@ export type Fides = {
   consent: CookieKeyConsent;
   experience?: PrivacyExperience;
   geolocation?: UserGeolocation;
+  tcString?: string | undefined;
   options: FidesOptions;
   fides_meta: CookieMeta;
   gtm: typeof gtm;
@@ -185,9 +186,14 @@ export const initialize = async ({
   experience,
   geolocation,
   renderOverlay,
+  updateCookie,
 }: {
   cookie: FidesCookie;
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
+  updateCookie?: (
+    oldCookie: FidesCookie,
+    experience: PrivacyExperience
+  ) => Promise<FidesCookie>;
 } & FidesConfig): Promise<Partial<Fides>> => {
   const context = getConsentContext();
 
@@ -237,6 +243,11 @@ export const initialize = async ({
         options.debug
       );
 
+      if (updateCookie) {
+        // eslint-disable-next-line no-param-reassign
+        cookie = await updateCookie(cookie, effectiveExperience);
+      }
+
       if (shouldInitOverlay) {
         await initOverlay({
           experience: effectiveExperience,
@@ -262,6 +273,7 @@ export const initialize = async ({
     consent: cookie.consent,
     fides_meta: cookie.fides_meta,
     identity: cookie.identity,
+    tcString: cookie.tcString,
     experience,
     geolocation,
     options,

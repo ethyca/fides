@@ -49,9 +49,13 @@ import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 
-import { FidesConfig } from "./lib/consent-types";
+import {
+  FidesConfig,
+  PrivacyExperience,
+  UserConsentPreference,
+} from "./lib/consent-types";
 
-import { tcf } from "./lib/tcf";
+import { generateTcString, tcf } from "./lib/tcf";
 import {
   getInitialCookie,
   getInitialFides,
@@ -59,8 +63,9 @@ import {
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
-import { isNewFidesCookie } from "./fides";
+import { FidesCookie, isNewFidesCookie } from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
+import { TCFPurposeRecord, TcfSavePreferences } from "./lib/tcf/types";
 
 declare global {
   interface Window {
@@ -71,6 +76,51 @@ declare global {
 // The global Fides object; this is bound to window.Fides if available
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
+
+/** Helper function to determine the initial value of a TCF object */
+const getInitialPreference = (
+  tcfObject: Pick<TCFPurposeRecord, "current_preference" | "default_preference">
+) => {
+  if (tcfObject.current_preference) {
+    return tcfObject.current_preference;
+  }
+  return tcfObject.default_preference ?? UserConsentPreference.OPT_OUT;
+};
+
+const updateCookie = async (
+  oldCookie: FidesCookie,
+  experience: PrivacyExperience
+) => {
+  const tcSavePrefs: TcfSavePreferences = {
+    purpose_preferences: experience.tcf_purposes?.map((purpose) => ({
+      id: purpose.id,
+      preference: getInitialPreference(purpose),
+    })),
+    special_purpose_preferences: experience.tcf_special_purposes?.map(
+      (purpose) => ({
+        id: purpose.id,
+        preference: getInitialPreference(purpose),
+      })
+    ),
+    feature_preferences: experience.tcf_features?.map((feature) => ({
+      id: feature.id,
+      preference: getInitialPreference(feature),
+    })),
+    special_feature_preferences: experience.tcf_special_features?.map(
+      (feature) => ({
+        id: feature.id,
+        preference: getInitialPreference(feature),
+      })
+    ),
+    vendor_preferences: experience.tcf_vendors?.map((vendor) => ({
+      id: vendor.id,
+      preference: getInitialPreference(vendor),
+    })),
+  };
+
+  const tcString = await generateTcString(tcSavePrefs);
+  return { ...oldCookie, tcString };
+};
 
 /**
  * Initialize the global Fides object with the given configuration values
@@ -83,7 +133,13 @@ const init = async (config: FidesConfig) => {
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
     dispatchFidesEvent("FidesUpdated", cookie, config.options.debug);
   }
-  const updatedFides = await initialize({ ...config, cookie, renderOverlay });
+  const updatedFides = await initialize({
+    ...config,
+    cookie,
+    renderOverlay,
+    updateCookie: (oldCookie, experience) =>
+      updateCookie(oldCookie, experience),
+  });
   Object.assign(_Fides, updatedFides);
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial
