@@ -393,3 +393,72 @@ class TestTCFContents:
         assert tcf_contents.tcf_features == []
         assert tcf_contents.tcf_special_features == []
         assert tcf_contents.tcf_systems == []
+
+    def test_add_same_data_use_to_different_systems(
+        self, system_with_no_uses, system, db
+    ):
+        """Add same data uses to different systems. Assert this doesn't create duplicate purposes
+        One system has a legal basis, the other doesn't.  assert that the legal basis shows up on high level purposes record,
+        but only shows up under the matching system > purposes record
+        """
+        get_tcf_contents.cache_clear()
+
+        system.name = "System A"
+        system.save(db)
+
+        system_with_no_uses.name = "System B"
+        system_with_no_uses.save(db)
+
+        PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Collect data for content performance",
+                "system_id": system_with_no_uses.id,
+                "data_categories": ["user.device.cookie_id"],
+                "data_use": "marketing.advertising.first_party.targeted",
+                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                "data_subjects": ["customer"],
+                "dataset_references": None,
+                "legal_basis_for_processing": "Consent",
+                "egress": None,
+                "ingress": None,
+            },
+        )
+
+        decl = system.privacy_declarations[0]
+        decl.data_use = "marketing.advertising.first_party.targeted"
+        decl.save(db)
+
+        tcf_contents = get_tcf_contents(db)
+        assert len(tcf_contents.tcf_purposes) == 1
+        assert tcf_contents.tcf_purposes[0].id == 4
+        assert tcf_contents.tcf_purposes[0].legal_bases == [
+            "Consent",
+        ]
+        assert len(tcf_contents.tcf_purposes[0].vendors) == 0
+
+        assert len(tcf_contents.tcf_purposes[0].systems) == 2
+        assert tcf_contents.tcf_purposes[0].systems[0].name == "System A"
+        assert tcf_contents.tcf_purposes[0].systems[1].name == "System B"
+
+        assert len(tcf_contents.tcf_purposes) == 1
+        assert tcf_contents.tcf_purposes[0].legal_bases == ["Consent"]
+        assert tcf_contents.tcf_purposes[0].id == 4
+
+        assert tcf_contents.tcf_special_purposes == []
+        assert tcf_contents.tcf_features == []
+        assert tcf_contents.tcf_special_features == []
+        assert len(tcf_contents.tcf_vendors) == 0
+
+        assert len(tcf_contents.tcf_systems) == 2
+        assert tcf_contents.tcf_systems[0].name == "System A"
+        assert len(tcf_contents.tcf_systems[0].purposes) == 1
+        assert tcf_contents.tcf_systems[0].purposes[0].id == 4
+        assert (
+            tcf_contents.tcf_systems[0].purposes[0].legal_bases == []
+        )  # System A has no legal basis
+
+        assert tcf_contents.tcf_systems[1].name == "System B"
+        assert len(tcf_contents.tcf_systems[1].purposes) == 1
+        assert tcf_contents.tcf_systems[1].purposes[0].id == 4
+        assert tcf_contents.tcf_systems[1].purposes[0].legal_bases == ["Consent"]
