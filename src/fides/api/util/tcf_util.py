@@ -35,13 +35,16 @@ TCF_COMPONENT_MAPPING: Dict[str, ConsentRecordType] = {
     "tcf_features": ConsentRecordType.feature,
     "tcf_special_features": ConsentRecordType.special_feature,
     "tcf_vendors": ConsentRecordType.vendor,
-    "tcf_systems": ConsentRecordType.system,  # Systems where there are no known vendor id - we don't know the system "type"
+    "tcf_systems": ConsentRecordType.system,  # Systems where there are no known vendor id -
+    # we don't know the system "type"
 }
 
 
 class TCFExperienceContents:
-    """Schema to serialize the initial contents of a TCF overlay when we pull mapped purposes and features
-    from the GVL in Fideslang and combine them with system data."""
+    """Schema to serialize the initial contents of a TCF overlay
+
+    Used to store GVL information pulled from Fideslang that has been combined with system data
+    """
 
     tcf_purposes: List[TCFPurposeRecord] = []
     tcf_special_purposes: List[TCFPurposeRecord] = []
@@ -73,7 +76,7 @@ def _get_tcf_functions_per_component_type(
     """Helper for dynamically returning objects needed to build the TCF overlay
     depending on the type of TCF component"""
     tcf_record_type: Union[Type[TCFPurposeRecord], Type[TCFFeatureRecord]]
-    get_tcf_construct_function: Callable
+    get_gvl_construct: Callable
     is_purpose_type: bool = tcf_component_name in ["purposes", "special_purposes"]
 
     if is_purpose_type:
@@ -81,18 +84,18 @@ def _get_tcf_functions_per_component_type(
             PrivacyDeclaration.data_use.in_(relevant_uses_or_features)
         )
         tcf_record_type = TCFPurposeRecord
-        get_tcf_construct_function = data_use_to_purpose
+        get_gvl_construct = data_use_to_purpose
     else:
         matching_systems = matching_systems.filter(
             PrivacyDeclaration.features.overlap(relevant_uses_or_features)
         )
         tcf_record_type = TCFFeatureRecord
-        get_tcf_construct_function = feature_name_to_feature
+        get_gvl_construct = feature_name_to_feature
 
     return (
         matching_systems,
         tcf_record_type,
-        get_tcf_construct_function,
+        get_gvl_construct,
         is_purpose_type,
     )
 
@@ -131,7 +134,7 @@ def get_tcf_component_and_vendors(
                     ]
                 )
             ).label(
-                "data_uses_and_legal_bases"
+                "data_use_and_legal_bases_tuple"
             ),  # A list of lists with a data use and a legal basis for each privacy declaration
             array_agg(
                 case(
@@ -157,7 +160,7 @@ def get_tcf_component_and_vendors(
     (
         matching_systems,
         tcf_record_type,
-        get_tcf_construct_function,
+        gvl_construct_function,
         is_purpose_type,
     ) = _get_tcf_functions_per_component_type(
         matching_systems=matching_systems,
@@ -167,6 +170,7 @@ def get_tcf_component_and_vendors(
 
     for record in matching_systems:
         # Identify system by vendor id if it exists, otherwise use system id.
+        # Multiple systems can have the same vendor, so their information is collapsed into a single vendor record.
         system_id: str = record["id"]
         vendor_id: Optional[str] = record["vendor_id"]
         system_identifier: str = vendor_id if vendor_id else system_id
@@ -184,7 +188,7 @@ def get_tcf_component_and_vendors(
 
         # Pull the attributes we care about from the system record depending on the TCF component.
         relevant_system_attributes: Set[str] = (
-            [data_use[0] for data_use in record.data_uses_and_legal_bases]
+            [data_use[0] for data_use in record.data_use_and_legal_bases_tuple]
             if is_purpose_type
             else get_system_features(
                 record, relevant_features=relevant_uses_or_features
@@ -192,14 +196,12 @@ def get_tcf_component_and_vendors(
         )
 
         for item in relevant_system_attributes:
-            # Get the matching GVL record for the (special) purpose or (special) feature
-            fideslang_gvl_record: Union[Purpose, Feature] = get_tcf_construct_function(
-                item
-            )
+            # Get the matching GVL record for the [special] purpose or [special] feature
+            fideslang_gvl_record: Union[Purpose, Feature] = gvl_construct_function(item)
             if not fideslang_gvl_record:
                 continue
 
-            # Transform into the TCF record type that has more elements for TCF display
+            # Transform the base gvl record into the TCF record type that has more elements for TCF display
             tcf_record: Union[TCFPurposeRecord, TCFFeatureRecord] = tcf_record_type(
                 **fideslang_gvl_record.dict()
             )
@@ -207,7 +209,7 @@ def get_tcf_component_and_vendors(
                 tcf_record.legal_bases = list(
                     {
                         use[1]
-                        for use in record.data_uses_and_legal_bases
+                        for use in record.data_use_and_legal_bases_tuple
                         if use[1] and use[0] in tcf_record.data_uses
                     }
                 )
@@ -223,8 +225,8 @@ def get_tcf_component_and_vendors(
 
             # Embed the system or vendor information beneath the TCF purpose/feature
             if system_identifier not in [
-                system_construct.id
-                for system_construct in embedded_system_or_vendor_record_list
+                embedded_system_record.id
+                for embedded_system_record in embedded_system_or_vendor_record_list
             ]:
                 embedded_system_or_vendor_record_list.extend(
                     [EmbeddedVendor(id=system_identifier, name=record.name)]

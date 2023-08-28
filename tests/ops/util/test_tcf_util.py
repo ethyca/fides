@@ -102,12 +102,29 @@ class TestTCFContents:
         decl.data_use = "analytics.reporting.content_performance"
         decl.save(db)
 
+        # Add a separate use to this system
+        PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Store and access info on a device",
+                "system_id": system.id,
+                "data_categories": ["user"],
+                "data_use": "functional.storage",
+                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                "data_subjects": ["customer"],
+                "dataset_references": None,
+                "egress": None,
+                "ingress": None,
+            },
+        )
+
         tcf_contents = get_tcf_contents(db)
-        assert len(tcf_contents.tcf_purposes) == 1
-        assert tcf_contents.tcf_purposes[0].id == 8
-        assert tcf_contents.tcf_purposes[0].data_uses == [
-            "analytics.reporting.content_performance"
-        ]
+  
+        assert len(tcf_contents.tcf_purposes) == 2
+        assert {purpose.id for purpose in tcf_contents.tcf_purposes} == {1, 8}
+        assert {
+            use for purpose in tcf_contents.tcf_purposes for use in purpose.data_uses
+        } == {"functional.storage", "analytics.reporting.content_performance"}
         assert tcf_contents.tcf_purposes[0].vendors == [
             EmbeddedVendor(id="sendgrid", name="TCF System Test")
         ]
@@ -118,8 +135,11 @@ class TestTCFContents:
         assert tcf_contents.tcf_vendors[0].name == "TCF System Test"
         assert tcf_contents.tcf_vendors[0].description == "My TCF System Description"
         # Purposes also consolidated
-        assert len(tcf_contents.tcf_vendors[0].purposes) == 1
-        assert tcf_contents.tcf_vendors[0].purposes[0].id == 8
+        assert len(tcf_contents.tcf_vendors[0].purposes) == 2
+        assert {purpose.id for purpose in tcf_contents.tcf_vendors[0].purposes} == {
+            1,
+            8,
+        }
         assert tcf_contents.tcf_features == []
         assert tcf_contents.tcf_special_features == []
 
