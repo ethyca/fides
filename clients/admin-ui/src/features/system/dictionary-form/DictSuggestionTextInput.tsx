@@ -23,7 +23,7 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
   const isInvalid = !!(meta.touched && meta.error);
   const { error } = meta;
   const field = { ...initialField, value: initialField.value ?? "" };
-  const { values, touched } = useFormikContext();
+  const { values } = useFormikContext();
   const context = useResetSuggestionContext();
   // @ts-ignore
   const vendorId = values?.meta?.vendor?.id;
@@ -94,7 +94,6 @@ const useDictSuggestion = (fieldName: string, dictField: string) => {
     isInvalid,
     isShowingSuggestions,
     error,
-    touched,
     inputRef,
   };
 };
