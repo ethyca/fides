@@ -75,7 +75,7 @@ export const DictSuggestionToggle = () => {
             lineHeight={4}
             fontWeight="medium"
           >
-            {isShowingSuggestions === "showing" ? "Hide" : "Show"} Suggestions
+            {isShowingSuggestions === "showing" ? "Hide" : "Show"} suggestions
           </Text>
         </MenuItem>
         <MenuItem
@@ -88,7 +88,7 @@ export const DictSuggestionToggle = () => {
           }}
         >
           <Text fontSize="xs" lineHeight={4} fontWeight="medium">
-            Reset Suggestions
+            Reset suggestions
           </Text>
         </MenuItem>
       </MenuList>

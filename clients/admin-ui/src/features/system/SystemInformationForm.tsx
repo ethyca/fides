@@ -261,6 +261,7 @@ const SystemInformationForm = ({
                   id="name"
                   name="name"
                   dictField="display_name"
+                  isRequired
                   label="System name"
                   tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
                 />
@@ -471,7 +472,7 @@ const SystemInformationForm = ({
                     tooltip="What is the legal name of the business?"
                     dictField="legal_name"
                   />
-                  <DictSuggestionTextInput
+                  <DictSuggestionTextArea
                     id="legal_address"
                     name="legal_address"
                     label="Legal address"
