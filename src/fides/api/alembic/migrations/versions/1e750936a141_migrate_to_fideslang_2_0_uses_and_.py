@@ -23,11 +23,14 @@ depends_on = None
 ###############
 ## Data Uses ##
 ###############
-# The `key` is the old value, the `value` is the new value
+"""
+The `key` is the old value, the `value` is the new value
+These are ordered specifically so that string replacement works on both parent and child items
+"""
 data_use_upgrades: Dict[str, str] = {
-    "improve.system": "functional.service.improve",  # Verified in 2.0
-    "improve": "functional",  # Posted a question in the Confluence doc to verify this
-    "essential.service.operations.support.optimization": "essential.service.operations.improve",  # Verified in 2.0
+    "essential.service.operations.support.optimization": "essential.service.operations.improve",
+    "improve.system": "functional.service.improve",
+    "improve": "functional",
 }
 data_use_downgrades: Dict[str, str] = {
     value: key for key, value in data_use_upgrades.items()
@@ -38,21 +41,22 @@ def update_privacy_declaration_data_uses(
     bind: Connection, data_use_map: Dict[str, str]
 ) -> None:
     """Upgrade or downgrade data uses from fideslang 2.0 for privacy declarations"""
-    existing_ctl_policies: ResultProxy = bind.execute(
+    existing_privacy_declarations: ResultProxy = bind.execute(
         text("SELECT id, data_use FROM privacydeclaration;")
     )
-    for row in existing_ctl_policies:
+    for row in existing_privacy_declarations:
         data_use: str = row["data_use"]
-        updated_data_use: Optional[str] = data_use_map.get(data_use, None)
+        for key, value in data_use_map.items():
+            if key in data_use:
+                data_use = data_use.replace(key, value)
 
-        if updated_data_use:
-            update_data_use_query: TextClause = text(
-                "UPDATE privacydeclaration SET data_use = :updated_use WHERE id= :declaration_id"
-            )
-            bind.execute(
-                update_data_use_query,
-                {"declaration_id": row["id"], "updated_use": updated_data_use},
-            )
+        update_data_use_query: TextClause = text(
+            "UPDATE privacydeclaration SET data_use = :updated_use WHERE id= :declaration_id"
+        )
+        bind.execute(
+            update_data_use_query,
+            {"declaration_id": row["id"], "updated_use": data_use},
+        )
 
 
 def update_ctl_policy_data_uses(bind: Connection, data_use_map: Dict[str, str]) -> None:
@@ -61,47 +65,49 @@ def update_ctl_policy_data_uses(bind: Connection, data_use_map: Dict[str, str]) 
         text("SELECT id, rules FROM ctl_policies;")
     )
     for row in existing_ctl_policies:
-        needs_update: bool = False
         rules: List[Dict] = row["rules"]
         for i, rule in enumerate(rules or []):
             data_uses: Dict = rule.get("data_uses", {})
             for j, val in enumerate(data_uses.get("values", [])):
-                new_data_use: Optional[str] = data_use_map.get(val, None)
-                if new_data_use:
-                    rules[i]["data_uses"]["values"][j] = new_data_use
-                    needs_update = True
+                data_use: str = val
+                for key, value in data_use_map.items():
+                    if key in data_use:
+                        data_use = data_use.replace(key, value)
+                rules[i]["data_uses"]["values"][j] = data_use
 
-        if needs_update:
-            update_data_use_query: TextClause = text(
-                "UPDATE ctl_policies SET rules = :updated_rules WHERE id= :policy_id"
-            )
-            bind.execute(
-                update_data_use_query,
-                {"policy_id": row["id"], "updated_rules": json.dumps(rules)},
-            )
+        update_data_use_query: TextClause = text(
+            "UPDATE ctl_policies SET rules = :updated_rules WHERE id= :policy_id"
+        )
+        bind.execute(
+            update_data_use_query,
+            {"policy_id": row["id"], "updated_rules": json.dumps(rules)},
+        )
 
 
 #####################
 ## Data Categories ##
 #####################
-# The `key` is the old value, the `value` is the new value
+"""
+The `key` is the old value, the `value` is the new value
+These are ordered specifically so that string replacement works on both parent and child items
+"""
 data_category_upgrades: Dict[str, str] = {
-    "user.credentials": "user.authorization.credentials",  # Verified in 2.0
-    "user.observed": "user.behavior",  # Verified in 2.0
-    "user.browsing_history": "user.behavior.browsing_history",  # Verified in 2.0
-    "user.media_consumption": "user.behavior.media_consumption",  # Verified in 2.0
-    "user.search_history": "user.behavior.search_history",  # Verified in 2.0
-    "user.organization": "user.contact.organization",  # Verified in 2.0
-    "user.non_specific_age": "user.demographic.age_range",  # Verified in 2.0
-    "user.date_of_birth": "user.demographic.date_of_birth",  # Verified in 2.0
-    "user.gender": "user.demographic.gender",  # Verified in 2.0
-    "user.political_opinion": "user.demographic.political_opinion",  # Verified in 2.0
-    "user.profiling": "user.demographic.profile",  # Verified in 2.0
-    "user.race": "user.demographic.race_ethnicity",  # Verified in 2.0
-    "user.religious_belief": "user.demographic.religious_belief",  # Verified in 2.0
-    "user.sexual_orientation": "user.demographic.sexual_orientation",  # Verified in 2.0
-    "user.financial.account_number": "user.financial.bank_account",  # Verified in 2.0
-    "user.genetic": "user.health_and_medical.genetic",  # Verified in 2.0
+    "user.financial.account_number": "user.financial.bank_account",
+    "user.credentials": "user.authorization.credentials",
+    "user.observed": "user.behavior",
+    "user.browsing_history": "user.behavior.browsing_history",
+    "user.media_consumption": "user.behavior.media_consumption",
+    "user.search_history": "user.behavior.search_history",
+    "user.organization": "user.contact.organization",
+    "user.non_specific_age": "user.demographic.age_range",
+    "user.date_of_birth": "user.demographic.date_of_birth",
+    "user.gender": "user.demographic.gender",
+    "user.political_opinion": "user.demographic.political_opinion",
+    "user.profiling": "user.demographic.profile",
+    "user.race": "user.demographic.race_ethnicity",
+    "user.religious_belief": "user.demographic.religious_belief",
+    "user.sexual_orientation": "user.demographic.sexual_orientation",
+    "user.genetic": "user.health_and_medical.genetic",
 }
 data_category_downgrades: Dict[str, str] = {
     value: key for key, value in data_category_upgrades.items()
@@ -123,8 +129,12 @@ def update_datasets_data_categories(
         labels: Optional[List[str]] = row["data_categories"]
 
         if labels:
+            # Do a string replace here to catch child items
             updated_labels: List[str] = [
-                data_label_map.get(label, label) for label in labels
+                label.replace(key, value)
+                for key, value in data_label_map.items()
+                for label in labels
+                if key in label
             ]
 
             update_label_query: TextClause = text(
@@ -166,15 +176,19 @@ def update_system_ingress_egress_data_categories(
         if ingress:
             for item in ingress:
                 item["data_categories"] = [
-                    data_label_map.get(label, label)
+                    label.replace(key, value)
+                    for key, value in data_label_map.items()
                     for label in item.get("data_categories", [])
+                    if key in label
                 ]
 
         if egress:
             for item in egress:
                 item["data_categories"] = [
-                    data_label_map.get(label, label)
+                    label.replace(key, value)
+                    for key, value in data_label_map.items()
                     for label in item.get("data_categories", [])
+                    if key in label
                 ]
 
         if ingress:
@@ -200,12 +214,15 @@ def update_privacy_declaration_data_categories(
     bind: Connection, data_label_map: Dict[str, str]
 ) -> None:
     """Upgrade or downgrade data uses from fideslang 2.0 for data categories"""
-    existing_ctl_policies: ResultProxy = bind.execute(
+    existing_privacy_declarations: ResultProxy = bind.execute(
         text("SELECT id, data_categories FROM privacydeclaration;")
     )
-    for row in existing_ctl_policies:
-        labels: List[str] = [
-            data_label_map.get(label, label) for label in row["data_categories"]
+    for row in existing_privacy_declarations:
+        labels = [
+            label.replace(key, value)
+            for key, value in data_label_map.items()
+            for label in row["data_categories"]
+            if key in label
         ]
 
         update_label_query: TextClause = text(
@@ -230,10 +247,11 @@ def update_ctl_policy_data_categories(
         for i, rule in enumerate(rules or []):
             data_labels: Dict = rule.get("data_categories", {})
             for j, val in enumerate(data_labels.get("values", [])):
-                new_data_label: Optional[str] = data_label_map.get(val, None)
-                if new_data_label:
-                    rules[i]["data_categories"]["values"][j] = new_data_label
-                    needs_update = True
+                data_category: str = val
+                for key, value in data_label_map.items():
+                    if key in data_category:
+                        data_category = data_category.replace(key, value)
+                rules[i]["data_uses"]["values"][j] = data_category
 
         if needs_update:
             update_data_label_query: TextClause = text(
