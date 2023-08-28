@@ -47,7 +47,7 @@ const defaultInitialValues: FormValues = {
   features: [],
   legal_basis_for_processing: undefined,
   impact_assessment_location: "",
-  retention_period: "0",
+  retention_period: "",
   processes_special_category_data: false,
   special_category_legal_basis: undefined,
   data_shared_with_third_parties: false,
@@ -224,6 +224,7 @@ export const PrivacyDeclarationFormComponents = ({
         <CustomCreatableSelect
           name="features"
           label="Features"
+          placeholder="Describe features..."
           tooltip="What are some features of how data is processed?"
           variant="stacked"
           options={[]}

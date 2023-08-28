@@ -178,6 +178,7 @@ const CustomOption: React.FC<
 export interface SelectProps {
   label?: string;
   labelProps?: FormLabelProps;
+  placeholder?: string;
   tooltip?: string;
   options: Option[];
   isDisabled?: boolean;
@@ -200,6 +201,7 @@ export interface SelectProps {
 export const SelectInput = ({
   options,
   fieldName,
+  placeholder,
   size,
   isSearchable,
   isClearable,
@@ -274,6 +276,7 @@ export const SelectInput = ({
       value={selected}
       size={size}
       classNamePrefix="custom-select"
+      placeholder={placeholder}
       chakraStyles={{
         container: (provided) => ({
           ...provided,
@@ -346,6 +349,7 @@ interface CreatableSelectProps extends SelectProps {
 }
 const CreatableSelectInput = ({
   options,
+  placeholder,
   fieldName,
   size,
   isSearchable,
@@ -394,6 +398,7 @@ const CreatableSelectInput = ({
       }}
       onChange={handleChange}
       name={fieldName}
+      placeholder={placeholder}
       value={selected}
       size={size}
       classNamePrefix="custom-creatable-select"
