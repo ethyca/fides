@@ -20,7 +20,7 @@ The types of changes are:
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 
 ### Added
-- Add dictionary suggestions [#3937](https://github.com/ethyca/fides/pull/3937)
+- Add dictionary suggestions [#3937](https://github.com/ethyca/fides/pull/3937), [#3988](https://github.com/ethyca/fides/pull/3988)
 - Added new endpoints for healthchecks [#3947](https://github.com/ethyca/fides/pull/3947)
 - Added vendor list dropdown [#3857](https://github.com/ethyca/fides/pull/3857)
 - Access support for Adobe Sign [#3504](https://github.com/ethyca/fides/pull/3504)
