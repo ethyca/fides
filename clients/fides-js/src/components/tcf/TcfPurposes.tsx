@@ -4,6 +4,9 @@ import DataUseToggle from "../DataUseToggle";
 import { PrivacyExperience } from "../../lib/consent-types";
 import { TCFPurposeRecord } from "../../lib/tcf/types";
 import { UpdateEnabledIds } from "./TcfOverlay";
+import LegalBasisDropdown, {
+  useLegalBasisDropdown,
+} from "./LegalBasisDropdown";
 
 const PurposeToggle = ({
   purpose,
@@ -15,6 +18,7 @@ const PurposeToggle = ({
   checked: boolean;
 }) => {
   const dataUse = { key: purpose.name, name: purpose.name };
+  const vendors = [...(purpose.vendors || []), ...(purpose.systems || [])];
   return (
     <DataUseToggle dataUse={dataUse} checked={checked} onToggle={onToggle}>
       <div>
@@ -22,13 +26,13 @@ const PurposeToggle = ({
         <p className="fides-tcf-illustration fides-background-dark">
           {purpose.illustrations[0]}
         </p>
-        {purpose.vendors && purpose.vendors.length ? (
+        {vendors.length ? (
           <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
             <span className="fides-tcf-purpose-vendor-title">
               Vendors we use for this purpose
             </span>
             <ul className="fides-tcf-purpose-vendor-list">
-              {purpose.vendors.map((v) => (
+              {vendors.map((v) => (
                 <li>{v.name}</li>
               ))}
             </ul>
@@ -54,7 +58,9 @@ const PurposeBlock = ({
     return null;
   }
 
-  const allChecked = allPurposes.length === enabledIds.length;
+  const allChecked = allPurposes.every(
+    (p) => enabledIds.indexOf(`${p.id}`) !== -1
+  );
   const handleToggle = (purpose: TCFPurposeRecord) => {
     const purposeId = `${purpose.id}`;
     if (enabledIds.indexOf(purposeId) !== -1) {
@@ -104,25 +110,37 @@ const TcfPurposes = ({
   enabledPurposeIds: string[];
   enabledSpecialPurposeIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
-}) => (
-  <div>
-    <PurposeBlock
-      label="Purposes"
-      allPurposes={allPurposes}
-      enabledIds={enabledPurposeIds}
-      onChange={(newEnabledIds) =>
-        onChange({ newEnabledIds, modelType: "purposes" })
-      }
-    />
-    <PurposeBlock
-      label="Special purposes"
-      allPurposes={allSpecialPurposes}
-      enabledIds={enabledSpecialPurposeIds}
-      onChange={(newEnabledIds) =>
-        onChange({ newEnabledIds, modelType: "specialPurposes" })
-      }
-    />
-  </div>
-);
+}) => {
+  const { filtered, legalBasisFilter, setLegalBasisFilter } =
+    useLegalBasisDropdown({
+      allPurposes,
+      allSpecialPurposes,
+    });
+
+  return (
+    <div>
+      <LegalBasisDropdown
+        selected={legalBasisFilter}
+        onSelect={(basis) => setLegalBasisFilter(basis)}
+      />
+      <PurposeBlock
+        label="Purposes"
+        allPurposes={filtered.purposes as TCFPurposeRecord[]}
+        enabledIds={enabledPurposeIds}
+        onChange={(newEnabledIds) =>
+          onChange({ newEnabledIds, modelType: "purposes" })
+        }
+      />
+      <PurposeBlock
+        label="Special purposes"
+        allPurposes={filtered.specialPurposes as TCFPurposeRecord[]}
+        enabledIds={enabledSpecialPurposeIds}
+        onChange={(newEnabledIds) =>
+          onChange({ newEnabledIds, modelType: "specialPurposes" })
+        }
+      />
+    </div>
+  );
+};
 
 export default TcfPurposes;

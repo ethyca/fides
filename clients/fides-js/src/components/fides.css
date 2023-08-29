@@ -44,6 +44,8 @@
   --fides-overlay-row-hover-color: var(--fides-overlay-hover-color);
   /* Badge */
   --fides-overlay-badge-background-color: #718096;
+  /* Select */
+  --fides-overlay-select-border-color: #e2e8f0;
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
@@ -680,4 +682,14 @@ div#fides-modal .fides-modal-button-group {
   background: none;
   padding: 0;
   cursor: pointer;
+}
+
+/* Dropdown */
+
+.fides-select-dropdown {
+  display: block;
+  width: 100%;
+  border-radius: var(--fides-overlay-component-border-radius);
+  padding: 0.4em;
+  border: 1px solid var(--fides-overlay-select-border-color);
 }

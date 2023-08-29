@@ -88,7 +88,8 @@
               "id": "amplitude",
               "name": "test"
             }
-          ]
+          ],
+          "legal_bases": ["Legitimate interests"]
         },
         {
           "default_preference": "opt_out",
@@ -112,7 +113,8 @@
               "id": "amplitude",
               "name": "test"
             }
-          ]
+          ],
+          "legal_bases": ["Consent"]
         },
         {
           "default_preference": "opt_out",
@@ -133,7 +135,8 @@
               "id": "amplitude",
               "name": "test"
             }
-          ]
+          ],
+          "legal_bases": ["Consent"]
         },
         {
           "default_preference": "opt_out",
@@ -154,7 +157,8 @@
               "id": "amplitude",
               "name": "test"
             }
-          ]
+          ],
+          "legal_bases": ["Consent"]
         },
         {
           "default_preference": "opt_out",
@@ -175,7 +179,8 @@
               "id": "amplitude",
               "name": "test"
             }
-          ]
+          ],
+          "legal_bases": ["Consent"]
         }
       ],
       "tcf_special_purposes": [
@@ -200,7 +205,8 @@
               "id": "amplitude",
               "name": "test"
             }
-          ]
+          ],
+          "legal_bases": ["Consent"]
         }
       ],
       "tcf_systems": [
@@ -218,7 +224,8 @@
           "special_purposes": [
             {
               "id": 1,
-              "name": "Ensure security, prevent and detect fraud, and fix errors\n"
+              "name": "Ensure security, prevent and detect fraud, and fix errors\n",
+              "legal_bases": ["Legitimate interests"]
             }
           ],
           "data_categories": [],
@@ -240,17 +247,20 @@
           "purposes": [
             {
               "id": 4,
-              "name": "Use profiles to select personalised advertising"
+              "name": "Use profiles to select personalised advertising",
+              "legal_bases": ["Consent"]
             },
             {
               "id": 9,
-              "name": "Understand audiences through statistics or combinations of data from different sources"
+              "name": "Understand audiences through statistics or combinations of data from different sources",
+              "legal_bases": ["Consent"]
             }
           ],
           "special_purposes": [
             {
               "id": 1,
-              "name": "Ensure security, prevent and detect fraud, and fix errors\n"
+              "name": "Ensure security, prevent and detect fraud, and fix errors\n",
+              "legal_bases": ["Consent"]
             }
           ],
           "data_categories": [],
@@ -258,7 +268,42 @@
           "special_features": []
         }
       ],
-      "tcf_features": [],
+      "tcf_features": [
+        {
+          "default_preference": "opt_out",
+          "current_preference": "opt_out",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "id": 1,
+          "name": "Match and combine offline data sources",
+          "description": "Data from offline data sources can be combined with your online activity in support of one or more purposes",
+          "vendors": [],
+          "systems": [
+            {
+              "id": "ctl_fe7ea469-43c0-421a-b7ef-a66f256a7b77",
+              "name": "Adform"
+            }
+          ]
+        },
+        {
+          "default_preference": "opt_out",
+          "current_preference": null,
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "id": 2,
+          "name": "Link different devices",
+          "description": "Different devices can be determined as belonging to you or your household in support of one or more of purposes.",
+          "vendors": [],
+          "systems": [
+            {
+              "id": "ctl_fe7ea469-43c0-421a-b7ef-a66f256a7b77",
+              "name": "Adform"
+            }
+          ]
+        }
+      ],
       "tcf_special_features": []
     }
   ],

@@ -13,6 +13,12 @@ export type EmbeddedVendor = {
   name: string;
 };
 
+export type EmbeddedPurpose = {
+  id: number;
+  name: string;
+  legal_bases?: Array<string>;
+};
+
 export type TCFDataCategoryRecord = {
   id: string;
   name?: string;
@@ -27,8 +33,20 @@ export type TCFFeatureRecord = {
   outdated_preference?: UserConsentPreference;
   current_served?: boolean;
   outdated_served?: boolean;
+  /**
+   * Official GVL feature ID or special feature ID
+   */
   id: number;
-  name?: string;
+  /**
+   * Name of the GVL feature or special feature.
+   */
+  name: string;
+  /**
+   * Description of the GVL feature or special feature.
+   */
+  description: string;
+  vendors?: Array<EmbeddedVendor>;
+  systems?: Array<EmbeddedVendor>;
 };
 
 export type TCFFeatureSave = {
@@ -63,7 +81,9 @@ export type TCFPurposeRecord = {
    * The fideslang default taxonomy data uses that are associated with the purpose.
    */
   data_uses: Array<string>;
+  legal_bases?: Array<string>;
   vendors?: Array<EmbeddedVendor>;
+  systems?: Array<EmbeddedVendor>;
 };
 
 export type TCFPurposeSave = {
@@ -91,11 +111,11 @@ export type TCFVendorRecord = {
   current_served?: boolean;
   outdated_served?: boolean;
   id: string;
+  has_vendor_id: boolean;
   name?: string;
   description?: string;
-  has_vendor_id: boolean;
-  purposes?: Array<EmbeddedLineItem>;
-  special_purposes?: Array<EmbeddedLineItem>;
+  purposes?: Array<EmbeddedPurpose>;
+  special_purposes?: Array<EmbeddedPurpose>;
   data_categories?: Array<TCFDataCategoryRecord>;
   features?: Array<EmbeddedLineItem>;
   special_features?: Array<EmbeddedLineItem>;
@@ -116,3 +136,12 @@ export type TcfSavePreferences = Pick<
   | "vendor_preferences"
   | "system_preferences"
 >;
+
+export enum LegalBasisForProcessingEnum {
+  CONSENT = "Consent",
+  CONTRACT = "Contract",
+  LEGAL_OBLIGATIONS = "Legal obligations",
+  VITAL_INTERESTS = "Vital interests",
+  PUBLIC_INTEREST = "Public interest",
+  LEGITIMATE_INTERESTS = "Legitimate interests",
+}
