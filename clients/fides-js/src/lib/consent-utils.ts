@@ -10,7 +10,7 @@ import {
   UserGeolocation,
   VALID_ISO_3166_LOCATION_REGEX,
 } from "./consent-types";
-import { TCFPurposeRecord } from "~/lib/tcf/types";
+import { TCFPurposeRecord } from "./tcf/types";
 
 /**
  * Wrapper around 'console.log' that only logs output when the 'debug' banner
