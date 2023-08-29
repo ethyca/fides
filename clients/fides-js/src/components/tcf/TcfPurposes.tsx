@@ -58,7 +58,9 @@ const PurposeBlock = ({
     return null;
   }
 
-  const allChecked = allPurposes.length === enabledIds.length;
+  const allChecked = allPurposes.every(
+    (p) => enabledIds.indexOf(`${p.id}`) !== -1
+  );
   const handleToggle = (purpose: TCFPurposeRecord) => {
     const purposeId = `${purpose.id}`;
     if (enabledIds.indexOf(purposeId) !== -1) {

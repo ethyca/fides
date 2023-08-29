@@ -22,14 +22,20 @@ export const useLegalBasisDropdown = ({
   );
   const filtered = useMemo(() => {
     const purposes = allPurposes
-      ? allPurposes.filter(
-          (p) => p.legal_bases?.indexOf(legalBasisFilter) !== -1
-        )
+      ? allPurposes.filter((p) => {
+          if (!p.legal_bases) {
+            return false;
+          }
+          return p.legal_bases.indexOf(legalBasisFilter) !== -1;
+        })
       : [];
     const specialPurposes = allSpecialPurposes
-      ? allSpecialPurposes.filter(
-          (sp) => sp.legal_bases?.indexOf(legalBasisFilter) !== -1
-        )
+      ? allSpecialPurposes.filter((sp) => {
+          if (!sp.legal_bases) {
+            return false;
+          }
+          return sp.legal_bases.indexOf(legalBasisFilter) !== -1;
+        })
       : [];
     return { purposes, specialPurposes };
   }, [allPurposes, allSpecialPurposes, legalBasisFilter]);
