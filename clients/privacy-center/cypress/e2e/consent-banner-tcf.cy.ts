@@ -15,11 +15,11 @@ const PURPOSE_3 = {
 };
 const PURPOSE_4 = {
   id: 7,
-  name: "Use profiles to select personalised content",
+  name: "Measure advertising performance",
 };
 const PURPOSE_5 = {
   id: 2,
-  name: "Use profiles to select personalised content",
+  name: "Use limited data to select advertising",
 };
 const SPECIAL_PURPOSE_1 = {
   id: 1,
@@ -40,6 +40,14 @@ const STACK_1 = {
 const STACK_2 = {
   id: 28,
   name: "Personalised ads and content display",
+};
+const FEATURE_1 = {
+  id: 1,
+  name: "Match and combine offline data sources",
+};
+const FEATURE_2 = {
+  id: 2,
+  name: "Link different devices",
 };
 
 describe("Fides-js TCF", () => {
@@ -106,8 +114,14 @@ describe("Fides-js TCF", () => {
         cy.getByTestId(`toggle-${SPECIAL_PURPOSE_1.name}`).within(() => {
           cy.get("input").should("be.checked");
         });
-        // TODO: add tests once we have features
-        cy.get("#fides-tab-Features");
+
+        cy.get("#fides-tab-Features").click();
+        cy.getByTestId(`toggle-${FEATURE_1.name}`).within(() => {
+          cy.get("input").should("not.be.checked");
+        });
+        cy.getByTestId(`toggle-${FEATURE_2.name}`).within(() => {
+          cy.get("input").should("not.be.checked");
+        });
 
         // Vendors
         cy.get("#fides-tab-Vendors").click();
@@ -135,6 +149,24 @@ describe("Fides-js TCF", () => {
         });
         cy.get("span").contains(VENDOR_1.name).should("not.exist");
         cy.get("span").contains(VENDOR_2.name);
+      });
+
+      it("can filter by legal bases", () => {
+        // Purposes tab
+        cy.getByTestId(`toggle-${PURPOSE_1.name}`);
+        cy.getByTestId(`toggle-${PURPOSE_5.name}`).should("not.exist");
+        cy.get("#legal-basis-select").select("Legitimate interests");
+        cy.getByTestId(`toggle-${PURPOSE_1.name}`).should("not.exist");
+        cy.getByTestId(`toggle-${PURPOSE_5.name}`);
+
+        // Vendors tab
+        cy.get("#fides-tab-Vendors").click();
+        cy.get("span").contains(VENDOR_1.name).click();
+        cy.get(`div[id="${VENDOR_1.name}"]`).within(() => {
+          cy.get("li").should("not.exist");
+          cy.get("#legal-basis-select").select("Legitimate interests");
+          cy.get("li").contains(SPECIAL_PURPOSE_1.name);
+        });
       });
 
       it("can group toggle", () => {
@@ -170,6 +202,10 @@ describe("Fides-js TCF", () => {
             expect(body.special_purpose_preferences).to.eql([
               { id: SPECIAL_PURPOSE_1.id, preference: "opt_in" },
             ]);
+            expect(body.feature_preferences).to.eql([
+              { id: FEATURE_1.id, preference: "opt_in" },
+              { id: FEATURE_2.id, preference: "opt_in" },
+            ]);
             expect(body.vendor_preferences).to.eql([
               { id: VENDOR_2.id, preference: "opt_in" },
             ]);
@@ -194,6 +230,10 @@ describe("Fides-js TCF", () => {
             expect(body.special_purpose_preferences).to.eql([
               { id: SPECIAL_PURPOSE_1.id, preference: "opt_out" },
             ]);
+            expect(body.feature_preferences).to.eql([
+              { id: FEATURE_1.id, preference: "opt_out" },
+              { id: FEATURE_2.id, preference: "opt_out" },
+            ]);
             expect(body.vendor_preferences).to.eql([
               { id: VENDOR_2.id, preference: "opt_out" },
             ]);
@@ -208,6 +248,10 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.getByTestId(`toggle-${PURPOSE_1.name}`).click();
           cy.getByTestId(`toggle-${SPECIAL_PURPOSE_1.name}`).click();
+
+          cy.get("#fides-tab-Features").click();
+          cy.getByTestId(`toggle-${FEATURE_1.name}`).click();
+
           cy.get("#fides-tab-Vendors").click();
           cy.getByTestId(`toggle-${VENDOR_1.name}`).click();
           cy.get("button").contains("Save").click();
@@ -222,6 +266,10 @@ describe("Fides-js TCF", () => {
             ]);
             expect(body.special_purpose_preferences).to.eql([
               { id: SPECIAL_PURPOSE_1.id, preference: "opt_out" },
+            ]);
+            expect(body.feature_preferences).to.eql([
+              { id: FEATURE_1.id, preference: "opt_in" },
+              { id: FEATURE_2.id, preference: "opt_out" },
             ]);
             expect(body.vendor_preferences).to.eql([
               { id: VENDOR_2.id, preference: "opt_in" },

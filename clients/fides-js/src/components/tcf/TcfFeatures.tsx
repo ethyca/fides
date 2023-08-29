@@ -45,15 +45,34 @@ const FeatureBlock = ({
         checked={allChecked}
         isHeader
       />
-      {allFeatures.map((f) => (
-        <DataUseToggle
-          dataUse={{ key: `${f.id}`, name: f.name }}
-          onToggle={() => {
-            handleToggle(f);
-          }}
-          checked={enabledIds.indexOf(`${f.id}`) !== -1}
-        />
-      ))}
+      {allFeatures.map((f) => {
+        const vendors = [...(f.vendors || []), ...(f.systems || [])];
+        return (
+          <DataUseToggle
+            dataUse={{ key: `${f.id}`, name: f.name }}
+            onToggle={() => {
+              handleToggle(f);
+            }}
+            checked={enabledIds.indexOf(`${f.id}`) !== -1}
+          >
+            <div>
+              <p className="fides-tcf-toggle-content">{f.description}</p>
+              {vendors.length ? (
+                <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
+                  <span className="fides-tcf-purpose-vendor-title">
+                    Vendors we use for this feature
+                  </span>
+                  <ul className="fides-tcf-purpose-vendor-list">
+                    {vendors.map((v) => (
+                      <li>{v.name}</li>
+                    ))}
+                  </ul>
+                </p>
+              ) : null}
+            </div>
+          </DataUseToggle>
+        );
+      })}
     </div>
   );
 };

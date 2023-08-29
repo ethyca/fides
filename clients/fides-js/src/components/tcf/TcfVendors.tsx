@@ -1,11 +1,18 @@
 import { h } from "preact";
 import { useState } from "preact/hooks";
-import { EmbeddedLineItem, TCFVendorRecord } from "../../lib/tcf/types";
+import {
+  EmbeddedLineItem,
+  EmbeddedPurpose,
+  TCFVendorRecord,
+} from "../../lib/tcf/types";
 import { PrivacyExperience } from "../../lib/consent-types";
 import { UpdateEnabledIds } from "./TcfOverlay";
 import DataUseToggle from "../DataUseToggle";
 import FilterButtons from "./FilterButtons";
 import { vendorIsGvl } from "../../lib/tcf/vendors";
+import LegalBasisDropdown, {
+  useLegalBasisDropdown,
+} from "./LegalBasisDropdown";
 
 const FILTERS = [{ name: "All vendors" }, { name: "GVL vendors" }];
 
@@ -29,6 +36,46 @@ const VendorDetails = ({
         ))}
       </ul>
     </p>
+  );
+};
+
+const PurposeVendorDetails = ({
+  purposes,
+  specialPurposes,
+}: {
+  purposes: EmbeddedPurpose[] | undefined;
+  specialPurposes: EmbeddedPurpose[] | undefined;
+}) => {
+  const { filtered, legalBasisFilter, setLegalBasisFilter } =
+    useLegalBasisDropdown({
+      allPurposes: purposes,
+      allSpecialPurposes: specialPurposes,
+    });
+
+  const emptyPurposes = purposes ? purposes.length === 0 : true;
+  const emptySpecialPurposes = specialPurposes
+    ? specialPurposes.length === 0
+    : true;
+
+  if (emptyPurposes && emptySpecialPurposes) {
+    return null;
+  }
+
+  return (
+    <div>
+      <LegalBasisDropdown
+        selected={legalBasisFilter}
+        onSelect={(basis) => setLegalBasisFilter(basis)}
+      />
+      <VendorDetails
+        label="Purposes"
+        lineItems={filtered.purposes as EmbeddedLineItem[]}
+      />
+      <VendorDetails
+        label="Special purposes"
+        lineItems={filtered.specialPurposes as EmbeddedLineItem[]}
+      />
+    </div>
   );
 };
 
@@ -99,11 +146,11 @@ const TcfVendors = ({
         >
           <div>
             <p>{vendor.description}</p>
-            <VendorDetails label="Purposes" lineItems={vendor.purposes} />
-            <VendorDetails
-              label="Special purposes"
-              lineItems={vendor.special_purposes}
+            <PurposeVendorDetails
+              purposes={vendor.purposes}
+              specialPurposes={vendor.special_purposes}
             />
+
             <VendorDetails label="Features" lineItems={vendor.features} />
             <VendorDetails
               label="Special features"
