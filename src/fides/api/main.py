@@ -31,7 +31,7 @@ from fides.api.schemas.analytics import Event, ExtraData
 from fides.api.service.privacy_request.email_batch_service import (
     initiate_scheduled_batch_email_send,
 )
-from fides.api.service.system.system_history_digest import (
+from fides.api.service.system.system_change_digest import (
     initiate_scheduled_system_change_digest,
 )
 from fides.api.tasks.scheduled.scheduler import scheduler

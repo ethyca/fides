@@ -34,8 +34,8 @@ def send_system_change_digest(self: DatabaseTask) -> None:
                 .join(subquery, System.fides_key == subquery.c.system_key)
                 .all()
             )
-    except Exception as e:
-        logger.error(f"An error occurred while querying the database: {e}")
+    except Exception as exc:
+        logger.error(f"An error occurred while querying the database: {exc}")
         return
 
     if not modified_systems:
@@ -59,8 +59,8 @@ def send_system_change_digest(self: DatabaseTask) -> None:
             logger.error(
                 f"Unable to post system change digest to {webhook_url}. Response: {response.text}"
             )
-    except RequestException as e:
-        logger.error(f"Failed to send POST request to webhook: {e}")
+    except RequestException as exc:
+        logger.error(f"Failed to send POST request to webhook: {exc}")
 
     logger.info(f"Found {len(modified_systems)} modified systems.")
 

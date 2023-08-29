@@ -205,7 +205,7 @@ async def upsert_cookies(
 
 
 async def update_system(
-    resource: SystemSchema, db: AsyncSession, current_username: Optional[str]
+    resource: SystemSchema, db: AsyncSession, current_username: Optional[str] = None
 ) -> Dict:
     """Helper function to share core system update logic for wrapping endpoint functions"""
     system: System = await get_resource(
@@ -244,7 +244,7 @@ async def update_system(
 
 
 async def create_system(
-    resource: SystemSchema, db: AsyncSession, current_username: Optional[str]
+    resource: SystemSchema, db: AsyncSession, current_username: Optional[str] = None
 ) -> Dict:
     """
     Override `System` create/POST to handle `.privacy_declarations` defined inline,

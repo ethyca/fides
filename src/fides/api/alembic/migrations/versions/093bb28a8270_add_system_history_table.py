@@ -32,7 +32,7 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("edited_by", sa.String(), nullable=False),
+        sa.Column("edited_by", sa.String(), nullable=True),
         sa.Column("system_key", sa.String(), nullable=False),
         sa.Column("before", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column("after", postgresql.JSONB(astext_type=sa.Text()), nullable=False),

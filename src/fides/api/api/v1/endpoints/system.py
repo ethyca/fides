@@ -256,7 +256,9 @@ async def update(
     to add additional "system manager" permission checks.
     """
     await validate_privacy_declarations(db, resource)
-    return await update_system(resource, db, current_user.username)
+    return await update_system(
+        resource, db, current_user.username if current_user else None
+    )
 
 
 @SYSTEM_ROUTER.post(
@@ -277,7 +279,9 @@ async def upsert(
     db: AsyncSession = Depends(get_async_db),
     current_user: FidesUser = Depends(get_current_user),
 ) -> Dict:
-    inserted, updated = await upsert_system(resources, db, current_user.username)
+    inserted, updated = await upsert_system(
+        resources, db, current_user.username if current_user else None
+    )
     response.status_code = (
         status.HTTP_201_CREATED if inserted > 0 else response.status_code
     )
@@ -349,7 +353,9 @@ async def create(
     Override `System` create/POST to handle `.privacy_declarations` defined inline,
     for backward compatibility and ease of use for API users.
     """
-    return await create_system(resource, db, current_user.username)
+    return await create_system(
+        resource, db, current_user.username if current_user else None
+    )
 
 
 @SYSTEM_ROUTER.get(

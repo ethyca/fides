@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.sql_models import System
 from fides.api.models.system_history import SystemHistory
-from fides.api.service.system.system_history_digest import send_system_change_digest
+from fides.api.service.system.system_change_digest import send_system_change_digest
 from fides.config import get_config
 
 CONFIG = get_config()
