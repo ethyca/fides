@@ -104,8 +104,62 @@ export const generateTcString = async (
  * Call tcf() to configure Fides with tcf support (if tcf is enabled).
  */
 export const tcf = () => {
+
   const isServiceSpecific = true; // TODO: determine this from the backend?
   const cmpApi = new CmpApi(CMP_ID, CMP_VERSION, isServiceSpecific);
+
+
+  // @ts-ignore
+  const callbackloaded = (tcData, success) => {
+
+    if(success && tcData.eventStatus === 'tcloaded') {
+      console.log("tcloaded")
+      console.log(tcData)
+
+    } else {
+
+      console.log("err")
+
+    }
+
+  }
+  // @ts-ignore
+  __tcfapi('addEventListener', 2, callbackloaded);
+
+  // @ts-ignore
+  const callbackUserAction = (tcData, success) => {
+
+    if(success && tcData.eventStatus === 'useractioncomplete') {
+      console.log("useractioncomplete")
+      console.log(tcData)
+
+    } else {
+
+      console.log("err")
+
+    }
+
+  }
+  // @ts-ignore
+  __tcfapi('addEventListener', 2, callbackUserAction);
+
+  // @ts-ignore
+  const callbackUIShown = (tcData, success) => {
+
+    if(success && tcData.eventStatus === 'cmpuishown') {
+      console.log("cmpuishown")
+      console.log(tcData)
+
+    } else {
+
+      console.log("err")
+
+    }
+
+  }
+  // @ts-ignore
+  __tcfapi('addEventListener', 2, callbackUIShown);
+
   console.log("adding event listeners for tcf");
   window.addEventListener("FidesInitialized", (event) => {
     const { tcString } = event.detail;

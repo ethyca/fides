@@ -63,9 +63,9 @@ import {
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
-import { FidesCookie, isNewFidesCookie } from "./fides";
+import {FidesCookie, hasSavedTcfPreferences, isNewFidesCookie} from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
-import { TCFPurposeRecord, TcfSavePreferences } from "./lib/tcf/types";
+import { TCFPurposeRecord, TcfSavePreferences} from "./lib/tcf/types";
 
 declare global {
   interface Window {
@@ -87,29 +87,12 @@ const getInitialPreference = (
   return tcfObject.default_preference ?? UserConsentPreference.OPT_OUT;
 };
 
-/** Check if a list of records has any current preference at all */
-const hasCurrentPreference = (
-  records: Pick<TCFPurposeRecord, "current_preference">[] | undefined
-) => {
-  if (!records || records.length === 0) {
-    return false;
-  }
-  return records.some((record) => record.current_preference);
-};
-
 const updateCookie = async (
   oldCookie: FidesCookie,
   experience: PrivacyExperience
 ) => {
   // First check if the user has never consented before
-  const hasSavedTcfPreferences =
-    hasCurrentPreference(experience.tcf_purposes) ||
-    hasCurrentPreference(experience.tcf_special_purposes) ||
-    hasCurrentPreference(experience.tcf_features) ||
-    hasCurrentPreference(experience.tcf_special_features) ||
-    hasCurrentPreference(experience.tcf_vendors);
-
-  if (!hasSavedTcfPreferences) {
+  if (!hasSavedTcfPreferences(experience)) {
     return { ...oldCookie, tcString: "" };
   }
 
