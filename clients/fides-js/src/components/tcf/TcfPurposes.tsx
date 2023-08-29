@@ -15,6 +15,7 @@ const PurposeToggle = ({
   checked: boolean;
 }) => {
   const dataUse = { key: purpose.name, name: purpose.name };
+  const vendors = [...(purpose.vendors || []), ...(purpose.systems || [])];
   return (
     <DataUseToggle dataUse={dataUse} checked={checked} onToggle={onToggle}>
       <div>
@@ -22,13 +23,13 @@ const PurposeToggle = ({
         <p className="fides-tcf-illustration fides-background-dark">
           {purpose.illustrations[0]}
         </p>
-        {purpose.vendors && purpose.vendors.length ? (
+        {vendors.length ? (
           <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
             <span className="fides-tcf-purpose-vendor-title">
               Vendors we use for this purpose
             </span>
             <ul className="fides-tcf-purpose-vendor-list">
-              {purpose.vendors.map((v) => (
+              {vendors.map((v) => (
                 <li>{v.name}</li>
               ))}
             </ul>
