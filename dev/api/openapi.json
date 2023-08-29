@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.18.1b4.post0.dev18"
+    "version": "2.18.1b4.post0.dev19"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -16681,9 +16681,9 @@
       "LegalBasisForTransfersEnum": {
         "title": "LegalBasisForTransfersEnum",
         "enum": [
-          "Adequacy decision",
-          "Standard contractual clauses",
-          "Binding corporate rules",
+          "Adequacy Decision",
+          "SCCs",
+          "BCRs",
           "Other"
         ],
         "type": "string",
@@ -21365,12 +21365,11 @@
             "default": false
           },
           "legal_basis_for_profiling": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LegalBasisForProfilingEnum"
-              }
-            ],
-            "description": "The legal basis for performing profiling that has a legal effect."
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LegalBasisForProfilingEnum"
+            },
+            "description": "The legal basis (or bases) for performing profiling that has a legal effect."
           },
           "does_international_transfers": {
             "title": "Does International Transfers",
@@ -21379,12 +21378,11 @@
             "default": false
           },
           "legal_basis_for_transfers": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LegalBasisForTransfersEnum"
-              }
-            ],
-            "description": "The legal basis under which the data is transferred."
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LegalBasisForTransfersEnum"
+            },
+            "description": "The legal basis (or bases) under which the data is transferred."
           },
           "requires_data_protection_assessments": {
             "title": "Requires Data Protection Assessments",
@@ -21632,12 +21630,11 @@
             "default": false
           },
           "legal_basis_for_profiling": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LegalBasisForProfilingEnum"
-              }
-            ],
-            "description": "The legal basis for performing profiling that has a legal effect."
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LegalBasisForProfilingEnum"
+            },
+            "description": "The legal basis (or bases) for performing profiling that has a legal effect."
           },
           "does_international_transfers": {
             "title": "Does International Transfers",
@@ -21646,12 +21643,11 @@
             "default": false
           },
           "legal_basis_for_transfers": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LegalBasisForTransfersEnum"
-              }
-            ],
-            "description": "The legal basis under which the data is transferred."
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LegalBasisForTransfersEnum"
+            },
+            "description": "The legal basis (or bases) under which the data is transferred."
           },
           "requires_data_protection_assessments": {
             "title": "Requires Data Protection Assessments",
