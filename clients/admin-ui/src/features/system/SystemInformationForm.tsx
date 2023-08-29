@@ -146,6 +146,12 @@ const SystemInformationForm = ({
     [dataProps.allDatasets]
   );
 
+  const dataStewards = useMemo(
+    () =>
+      passedInSystem?.data_stewards?.map((user) => user.username).join(", "),
+    [passedInSystem]
+  );
+
   const toast = useToast();
 
   const handleSubmit = async (
@@ -423,6 +429,7 @@ const SystemInformationForm = ({
                     label="Data stewards"
                     name="data_stewards"
                     tooltip="Who are the stewards assigned to the system?"
+                    value={dataStewards}
                     variant="stacked"
                     disabled
                   />

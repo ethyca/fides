@@ -502,6 +502,7 @@ export const CustomTextInput = ({
         </Flex>
         <TextInput
           {...field}
+          value={props.value ? props.value : field.value}
           isDisabled={disabled}
           data-testid={`input-${field.name}`}
           placeholder={placeholder}
