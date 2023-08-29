@@ -94,7 +94,6 @@ These are ordered specifically so that string replacement works on both parent a
 data_category_upgrades: Dict[str, str] = {
     "user.financial.account_number": "user.financial.bank_account",
     "user.credentials": "user.authorization.credentials",
-    "user.observed": "user.behavior",
     "user.browsing_history": "user.behavior.browsing_history",
     "user.media_consumption": "user.behavior.media_consumption",
     "user.search_history": "user.behavior.search_history",
@@ -108,6 +107,7 @@ data_category_upgrades: Dict[str, str] = {
     "user.religious_belief": "user.demographic.religious_belief",
     "user.sexual_orientation": "user.demographic.sexual_orientation",
     "user.genetic": "user.health_and_medical.genetic",
+    "user.observed": "user.behavior",
 }
 data_category_downgrades: Dict[str, str] = {
     value: key for key, value in data_category_upgrades.items()
@@ -131,10 +131,9 @@ def update_datasets_data_categories(
         if labels:
             # Do a string replace here to catch child items
             updated_labels: List[str] = [
-                label.replace(key, value)
+                label.replace(key, value) if label.startswith(key) else label
                 for key, value in data_label_map.items()
                 for label in labels
-                if label.startswith(key)
             ]
 
             update_label_query: TextClause = text(
@@ -176,19 +175,17 @@ def update_system_ingress_egress_data_categories(
         if ingress:
             for item in ingress:
                 item["data_categories"] = [
-                    label.replace(key, value)
+                    label.replace(key, value) if key in label else label
                     for key, value in data_label_map.items()
                     for label in item.get("data_categories", [])
-                    if key in label
                 ]
 
         if egress:
             for item in egress:
                 item["data_categories"] = [
-                    label.replace(key, value)
+                    label.replace(key, value) if key in label else label
                     for key, value in data_label_map.items()
                     for label in item.get("data_categories", [])
-                    if key in label
                 ]
 
         if ingress:
@@ -224,10 +221,9 @@ def update_privacy_declaration_data_categories(
     )
     for row in existing_privacy_declarations:
         labels = [
-            label.replace(key, value)
+            label.replace(key, value) if key in label else label
             for key, value in data_label_map.items()
             for label in row["data_categories"]
-            if key in label
         ]
 
         update_label_query: TextClause = text(
