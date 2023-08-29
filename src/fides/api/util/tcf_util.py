@@ -67,7 +67,7 @@ def get_system_features(record: Row, relevant_features: List[str]) -> Set[str]:
 
 
 def _get_tcf_functions_per_component_type(
-    matching_systems: Query,
+    db: Session,
     tcf_component_name: str,
     relevant_uses_or_features: List[str],
 ) -> Tuple[
@@ -79,47 +79,6 @@ def _get_tcf_functions_per_component_type(
     get_gvl_construct: Callable
     is_purpose_type: bool = tcf_component_name in ["purposes", "special_purposes"]
 
-    if is_purpose_type:
-        matching_systems = matching_systems.filter(
-            PrivacyDeclaration.data_use.in_(relevant_uses_or_features)
-        )
-        tcf_record_type = TCFPurposeRecord
-        get_gvl_construct = data_use_to_purpose
-    else:
-        matching_systems = matching_systems.filter(
-            PrivacyDeclaration.features.overlap(relevant_uses_or_features)
-        )
-        tcf_record_type = TCFFeatureRecord
-        get_gvl_construct = feature_name_to_feature
-
-    return (
-        matching_systems,
-        tcf_record_type,
-        get_gvl_construct,
-        is_purpose_type,
-    )
-
-
-def build_purpose_or_feature_section_and_update_system_map(
-    db: Session,
-    relevant_uses_or_features: List[str],
-    tcf_component_name: str,
-    system_map: Dict[str, TCFVendorRecord],
-) -> Tuple[
-    Dict[int, Union[TCFPurposeRecord, TCFFeatureRecord]], Dict[str, TCFVendorRecord]
-]:
-    """Helper method for building data for a specific portion of the TCF overlay, depending on the tcf_component_name
-
-    Purposes and features have vendor/systems info embedded, and vendor/system info have purposes and features embedded.
-
-    - System map is passed in as an argument instead of being constructed here, because both
-    purposes/features are added to it and we modify that mapping multiple times.
-    """
-    matching_purpose_or_feature_map: Dict[
-        int, Union[TCFPurposeRecord, TCFFeatureRecord]
-    ] = {}
-
-    # Base query
     matching_systems: Query = (
         db.query(
             System.id,
@@ -157,16 +116,58 @@ def build_purpose_or_feature_section_and_update_system_map(
         )  # Order by to get repeatable results when collapsing information
     )
 
-    (
+    if is_purpose_type:
+        matching_systems = matching_systems.filter(
+            PrivacyDeclaration.data_use.in_(relevant_uses_or_features)
+        )
+        tcf_record_type = TCFPurposeRecord
+        get_gvl_construct = data_use_to_purpose
+    else:
+        matching_systems = matching_systems.filter(
+            PrivacyDeclaration.features.overlap(relevant_uses_or_features)
+        )
+        tcf_record_type = TCFFeatureRecord
+        get_gvl_construct = feature_name_to_feature
+
+    return (
         matching_systems,
         tcf_record_type,
-        gvl_construct_function,
+        get_gvl_construct,
+        is_purpose_type,
+    )
+
+
+def build_tcf_section_and_update_system_map(
+    db: Session,
+    relevant_uses_or_features: List[str],
+    tcf_component_name: str,
+    system_map: Dict[str, TCFVendorRecord],
+) -> Tuple[
+    Dict[int, Union[TCFPurposeRecord, TCFFeatureRecord]], Dict[str, TCFVendorRecord]
+]:
+    """Helper method for building data for a specific portion of the TCF overlay, depending on the tcf_component_name.
+
+    Represents information in multiple formats.  Puts purposes and features at the top-level and embeds vendor and systems
+    information underneath.  Likewise, puts vendor and system information top-level, and embeds purpose and feature information
+    underneath.
+
+    - System map is passed in as an argument instead of being constructed here, because both
+    purposes/features are added to it and we modify that mapping multiple times.
+    """
+    (
+        matching_systems,
+        tcf_section_type,
+        get_gvl_record,
         is_purpose_type,
     ) = _get_tcf_functions_per_component_type(
-        matching_systems=matching_systems,
+        db=db,
         tcf_component_name=tcf_component_name,
         relevant_uses_or_features=relevant_uses_or_features,
     )
+
+    matching_purpose_or_feature_map: Dict[
+        int, Union[TCFPurposeRecord, TCFFeatureRecord]
+    ] = {}
 
     for system in matching_systems:
         system_id: str = system["id"]
@@ -195,58 +196,109 @@ def build_purpose_or_feature_section_and_update_system_map(
 
         for item in relevant_system_attributes:
             # Get the matching GVL record for the [special] purpose or [special] feature
-            fideslang_gvl_record: Union[Purpose, Feature] = gvl_construct_function(item)
+            fideslang_gvl_record: Union[Purpose, Feature] = get_gvl_record(item)
             if not fideslang_gvl_record:
                 continue
 
-            # Transform the base gvl record into the TCF record type that has more elements for TCF display
-            tcf_record: Union[TCFPurposeRecord, TCFFeatureRecord] = tcf_record_type(
+            # Transform the base gvl record into the TCF record type that has more elements for TCF display.
+            # Will be a top-level section.
+            tcf_record: Union[TCFPurposeRecord, TCFFeatureRecord] = tcf_section_type(
                 **fideslang_gvl_record.dict()
             )
-            # Consolidate a list of legal_bases for [special] purpose types
-            if is_purpose_type:
-                tcf_record.legal_bases = sorted(
-                    list(
-                        {
-                            use_legal_basis_pair[1]
-                            for use_legal_basis_pair in system.data_use_and_legal_bases_list_of_lists
-                            if use_legal_basis_pair[1]
-                            and use_legal_basis_pair[0] in tcf_record.data_uses
-                        }
-                    )
-                )
+            # Clone the tcf_record. This will be a nested section beneath a system, and will contain only the
+            # legal bases that apply to that system, if applicable.
+            embedded_tcf_record: Union[
+                TCFPurposeRecord, TCFFeatureRecord
+            ] = tcf_record.copy()
 
+            # First, add the top-level TCF record if it does not exist
             if tcf_record.id not in matching_purpose_or_feature_map:
                 matching_purpose_or_feature_map[tcf_record.id] = tcf_record
 
-            embedded_system_or_vendor_record_list: List[EmbeddedVendor] = (
+            # Consolidate a list of legal_bases across relevant privacy declarations
+            system_legal_bases = (
+                list(
+                    {
+                        use_legal_basis_pair[1]
+                        for use_legal_basis_pair in system.data_use_and_legal_bases_list_of_lists
+                        if use_legal_basis_pair[1]
+                        and use_legal_basis_pair[0] in tcf_record.data_uses
+                    }
+                )
+                if is_purpose_type
+                else []
+            )
+
+            # Update legal_bases in-place in the top-level record if applicable for purpose and special purpose sections
+            extend_legal_bases(
+                is_purpose_type,
+                matching_purpose_or_feature_map[tcf_record.id],
+                system_legal_bases,
+            )
+
+            # Now we embed the second-level TCF purpose/feature under the systems subsection
+            system_subsection = getattr(
+                system_map[system_identifier], tcf_component_name
+            )
+
+            existing_matching_record = next(
+                (
+                    tcf_sub_record
+                    for tcf_sub_record in system_subsection
+                    if tcf_sub_record.id == tcf_record.id
+                ),  # Occurs when consolidating vendors
+                None,
+            )
+
+            if existing_matching_record:
+                # Update legal_bases on embedded tcf record beneath system
+                extend_legal_bases(
+                    is_purpose_type, existing_matching_record, system_legal_bases
+                )
+            else:
+                # *Override* legal_bases for embedded purpose and special purpose record. Do not extend because embedded
+                # purpose records should only have the legal_bases that apply to this particular system.
+                if is_purpose_type:
+                    embedded_tcf_record.legal_bases = system_legal_bases
+                # Embed tcf record beneath system
+                system_subsection.append(embedded_tcf_record)
+
+            # Finally, we do the reverse and embed the second-level system or vendor information
+            # beneath the TCF purpose/feature section
+            embedded_system_section: List[EmbeddedVendor] = (
                 matching_purpose_or_feature_map[tcf_record.id].vendors
                 if vendor_id
                 else matching_purpose_or_feature_map[tcf_record.id].systems
             )
-
-            # Embed the system or vendor information beneath the TCF purpose/feature
             if system_identifier not in [
                 embedded_system_record.id
-                for embedded_system_record in embedded_system_or_vendor_record_list
+                for embedded_system_record in embedded_system_section
             ]:
-                embedded_system_or_vendor_record_list.extend(
+                embedded_system_section.extend(
                     [EmbeddedVendor(id=system_identifier, name=system.name)]
                 )
 
             # Go ahead and sort embedded vendors by name while we're here.  Other sorting will occur at the end.
-            embedded_system_or_vendor_record_list.sort(key=lambda x: x.name)
-
-            # Do the reverse, and embed the TCF purpose/feature under the systems subsection
-            system_tcf_subsection = getattr(
-                system_map[system_identifier], tcf_component_name
-            )
-            if tcf_record.id not in [
-                tcf_sub_record.id for tcf_sub_record in system_tcf_subsection
-            ]:
-                system_tcf_subsection.append(tcf_record)
+            embedded_system_section.sort(key=lambda x: x.name)
 
     return matching_purpose_or_feature_map, system_map
+
+
+def extend_legal_bases(
+    is_purpose_type: bool,
+    purpose_record: TCFPurposeRecord,
+    system_legal_bases: List[str],
+):
+    """Consolidates legal_bases in place if applicable"""
+    if not is_purpose_type or not system_legal_bases:
+        return
+
+    purpose_record.legal_bases.extend(
+        legal_basis
+        for legal_basis in system_legal_bases
+        if legal_basis not in purpose_record.legal_bases
+    )
+    purpose_record.legal_bases.sort()
 
 
 @lru_cache()
@@ -272,7 +324,7 @@ def get_tcf_contents(
     (
         purpose_map,
         updated_system_map,
-    ) = build_purpose_or_feature_section_and_update_system_map(
+    ) = build_tcf_section_and_update_system_map(
         db, all_tcf_data_uses, tcf_component_name="purposes", system_map=system_map
     )
 
@@ -283,7 +335,7 @@ def get_tcf_contents(
     (
         special_purpose_map,
         updated_system_map,
-    ) = build_purpose_or_feature_section_and_update_system_map(
+    ) = build_tcf_section_and_update_system_map(
         db,
         special_purpose_data_uses,
         tcf_component_name="special_purposes",
@@ -294,7 +346,7 @@ def get_tcf_contents(
     (
         feature_map,
         updated_system_map,
-    ) = build_purpose_or_feature_section_and_update_system_map(
+    ) = build_tcf_section_and_update_system_map(
         db,
         [feature.name for feature in GVL_FEATURES.values()],
         tcf_component_name="features",
@@ -305,7 +357,7 @@ def get_tcf_contents(
     (
         special_feature_map,
         updated_system_map,
-    ) = build_purpose_or_feature_section_and_update_system_map(
+    ) = build_tcf_section_and_update_system_map(
         db,
         [feature.name for feature in GVL_SPECIAL_FEATURES.values()],
         tcf_component_name="special_features",
@@ -329,11 +381,10 @@ def get_tcf_contents(
     tcf_consent_contents.tcf_vendors = []
     tcf_consent_contents.tcf_systems = []
     for system_or_vendor_record in sorted_vendors:
-        tcf_consent_contents.tcf_vendors.append(
-            system_or_vendor_record
-        ) if system_or_vendor_record.has_vendor_id else tcf_consent_contents.tcf_systems.append(
-            system_or_vendor_record
-        )
+        if system_or_vendor_record.has_vendor_id:
+            tcf_consent_contents.tcf_vendors.append(system_or_vendor_record)
+        else:
+            tcf_consent_contents.tcf_systems.append(system_or_vendor_record)
 
     return tcf_consent_contents
 
