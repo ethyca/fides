@@ -10,15 +10,15 @@ saas_config:
     - name: domain
       description: Your Rollbar URL
     - name: read_access_token
-      label: Read Access Token
+      label: Read access token
       description: An account access token with read permissions
       sensitive: True
     - name: write_access_token
-      label: Write Access Token
+      label: Write access token
       description: An account access token with write permissions
       sensitive: True
     - name: page_limit
-      label: Page Limit
+      label: Page limit
       default_value: 100
       description: The maximum number of pages to return from Rollbar's "instances" endpoint
 

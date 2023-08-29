@@ -13,19 +13,19 @@ saas_config:
     - name: personas_domain
       default_value: profiles.segment.com
       description: Your Segment profiles API URL
-      label: Profiles Domain
+      label: Profiles domain
     - name: workspace
       description: Your Segment workspace ID
     - name: access_token
       description: Your Segment access token.
-      label: Access Token
+      label: Access token
       sensitive: True
     - name: namespace_id
       label: Space ID
       description: Your Segment space ID
     - name: access_secret
       sensitive: True
-      label: Access Secret
+      label: Access secret
       description: Access Secret for your Personas Domain
 
   client_config:

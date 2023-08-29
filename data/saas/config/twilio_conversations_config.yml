@@ -15,13 +15,13 @@ saas_config:
       description: Your Account SID from the Twilio Conversations Console
       sensitive: True
     - name: password
-      label: Access Token
+      label: Access token
       description: Your access token from the Twilio Conversations Console
       sensitive: True
 
   external_references:
     - name: twilio_user_id
-      label: User SID Field
+      label: User SID field
       description: The location in your owned database where you store Twilio User SIDs
 
   client_config:

@@ -17,7 +17,7 @@ saas_config:
 
   external_references:
     - name: friendbuy_user_id
-      label: Friendbuy User ID Field
+      label: Friendbuy user ID field
       description: The location in your owned database where you store Friendbuy User IDs
 
   client_config:

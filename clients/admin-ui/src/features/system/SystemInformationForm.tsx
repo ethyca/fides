@@ -32,9 +32,11 @@ import {
 } from "~/features/plus/plus.slice";
 import { setSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
+  DictSuggestionSelect,
+  DictSuggestionSwitch,
   DictSuggestionTextArea,
   DictSuggestionTextInput,
-} from "~/features/system/dictionary-form/DictSuggestionTextInput";
+} from "~/features/system/dictionary-form/DictSuggestionInputs";
 import {
   defaultInitialValues,
   FormValues,
@@ -52,6 +54,11 @@ import { ResourceTypes, System, SystemResponse } from "~/types/api";
 import { ResetSuggestionContextProvider } from "./dictionary-form/dict-suggestion.context";
 import { DictSuggestionToggle } from "./dictionary-form/ToggleDictSuggestions";
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
+import {
+  legalBasisForProfilingOptions,
+  legalBasisForTransferOptions,
+  responsibilityOptions,
+} from "./SystemInformationFormSelectOptions";
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("System name"),
@@ -137,38 +144,6 @@ const SystemInformationForm = ({
           }))
         : [],
     [dataProps.allDatasets]
-  );
-
-  const legalBasisForProfilingOptions = useMemo(
-    () =>
-      ["Explicit consent", "Contract", "Authorised by law"].map((opt) => ({
-        value: opt,
-        label: opt,
-      })),
-    []
-  );
-
-  const legalBasisForTransferOptions = useMemo(
-    () =>
-      [
-        "Adequacy decision",
-        "Standard contractual clauses",
-        "Binding corporate rules",
-        "Other",
-      ].map((opt) => ({
-        value: opt,
-        label: opt,
-      })),
-    []
-  );
-
-  const responsibilityOptions = useMemo(
-    () =>
-      ["Controller", "Processor", "Sub-Processor"].map((opt) => ({
-        value: opt,
-        label: opt,
-      })),
-    []
   );
 
   const toast = useToast();
@@ -260,17 +235,20 @@ const SystemInformationForm = ({
                   id="name"
                   name="name"
                   dictField="display_name"
+                  isRequired
                   label="System name"
                   tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
                 />
-                <CustomTextInput
-                  id="fides_key"
-                  name="fides_key"
-                  isRequired
-                  label="Unique ID"
-                  disabled
-                  variant="stacked"
-                />
+                {passedInSystem?.fides_key && (
+                  <CustomTextInput
+                    id="fides_key"
+                    name="fides_key"
+                    label="Unique ID"
+                    disabled
+                    variant="stacked"
+                    tooltip="An auto-generated unique ID based on the system name"
+                  />
+                )}
                 <DictSuggestionTextArea
                   id="description"
                   name="description"
@@ -352,11 +330,11 @@ const SystemInformationForm = ({
                   >
                     <Stack spacing={4} mt={4}>
                       <Stack spacing={0}>
-                        <CustomSwitch
+                        <DictSuggestionSwitch
                           name="uses_profiling"
+                          dictField="uses_profiling"
                           label="This system performs profiling"
                           tooltip="Does this system perform profiling that could have a legal effect?"
-                          variant="stacked"
                         />
                         <Collapse
                           in={values.uses_profiling}
@@ -366,23 +344,24 @@ const SystemInformationForm = ({
                           }}
                         >
                           <Box mt={4}>
-                            <CustomSelect
+                            <DictSuggestionSelect
                               name="legal_basis_for_profiling"
+                              dictField="legal_basis_for_profiling"
                               label="Legal basis for profiling"
                               options={legalBasisForProfilingOptions}
                               tooltip="What is the legal basis under which profiling is performed?"
+                              isMulti
                               isRequired={values.uses_profiling}
-                              variant="stacked"
                             />
                           </Box>
                         </Collapse>
                       </Stack>
                       <Stack spacing={0}>
-                        <CustomSwitch
+                        <DictSuggestionSwitch
                           name="does_international_transfers"
+                          dictField="international_transfers"
                           label="This system transfers data"
                           tooltip="Does this system transfer data to other countries or international organizations?"
-                          variant="stacked"
                         />
                         <Collapse
                           in={values.does_international_transfers}
@@ -392,13 +371,14 @@ const SystemInformationForm = ({
                           }}
                         >
                           <Box mt={4}>
-                            <CustomSelect
+                            <DictSuggestionSelect
                               name="legal_basis_for_transfers"
+                              dictField="legal_basis_for_transfers"
                               label="Legal basis for transfer"
                               options={legalBasisForTransferOptions}
                               tooltip="What is the legal basis under which the data is transferred?"
+                              isMulti
                               isRequired={values.does_international_transfers}
-                              variant="stacked"
                             />
                           </Box>
                         </Collapse>
@@ -460,7 +440,7 @@ const SystemInformationForm = ({
                     tooltip="What is the legal name of the business?"
                     dictField="legal_name"
                   />
-                  <DictSuggestionTextInput
+                  <DictSuggestionTextArea
                     id="legal_address"
                     name="legal_address"
                     label="Legal address"
@@ -477,12 +457,12 @@ const SystemInformationForm = ({
                       values.exempt_from_privacy_regulations
                     }
                   />
-                  <CustomSelect
+                  <DictSuggestionSelect
                     label="Responsibility"
                     name="responsibility"
+                    dictField="responsibility"
                     options={responsibilityOptions}
                     tooltip="What is the role of the business with regard to data processing?"
-                    variant="stacked"
                     isMulti
                     disabled={
                       !values.processes_personal_data ||
@@ -541,4 +521,5 @@ const SystemInformationForm = ({
     </ResetSuggestionContextProvider>
   );
 };
+
 export default SystemInformationForm;

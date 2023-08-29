@@ -1196,7 +1196,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "private_app_token": {
-                    "title": "Private App Token",
+                    "title": "Private app token",
                     "description": "Your HubSpot Private Apps access token",
                     "sensitive": True,
                     "type": "string",

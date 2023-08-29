@@ -11,7 +11,7 @@ saas_config:
       default_value: api.rechargeapps.com
       description: Your Recharge URL
     - name: api_key
-      label: API Key
+      label: API key
       description: Your Recharge API key.
       sensitive: True
 

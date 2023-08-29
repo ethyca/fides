@@ -12,7 +12,7 @@ saas_config:
       description: Your HubSpot domain
     - name: private_app_token
       sensitive: True
-      label: Private App Token
+      label: Private app token
       description: Your HubSpot Private Apps access token
 
   client_config:

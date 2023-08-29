@@ -379,9 +379,9 @@ class System(Base, FidesBase):
     )
     reason_for_exemption = Column(String)
     uses_profiling = Column(BOOLEAN(), server_default="f", nullable=False)
-    legal_basis_for_profiling = Column(String)
+    legal_basis_for_profiling = Column(ARRAY(String), server_default="{}")
     does_international_transfers = Column(BOOLEAN(), server_default="f", nullable=False)
-    legal_basis_for_transfers = Column(String)
+    legal_basis_for_transfers = Column(ARRAY(String), server_default="{}")
     requires_data_protection_assessments = Column(
         BOOLEAN(), server_default="f", nullable=False
     )
