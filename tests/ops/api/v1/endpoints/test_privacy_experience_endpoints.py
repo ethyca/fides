@@ -765,6 +765,8 @@ class TestGetTCFPrivacyExperiences:
         settings = ConsentSettings.get_or_create_with_defaults(db)
         settings.update(db=db, data={"tcf_enabled": True})
         privacy_declaration = system.privacy_declarations[0]
+        privacy_declaration.data_use = "functional.storage"
+        privacy_declaration.legal_basis_for_processing = "Consent"
         privacy_declaration.features = ["Link different devices"]
         privacy_declaration.save(db)
 
@@ -777,7 +779,7 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["id"] == privacy_experience_france_tcf_overlay.id
         assert resp.json()["items"][0]["component"] == ComponentType.tcf_overlay.value
         assert resp.json()["items"][0]["privacy_notices"] == []
-        assert resp.json()["items"][0]["tcf_purposes"] == []
+        assert len(resp.json()["items"][0]["tcf_purposes"]) == 1
         assert resp.json()["items"][0]["tcf_special_purposes"] == []
         assert resp.json()["items"][0]["tcf_vendors"] == []
         assert resp.json()["items"][0]["tcf_special_features"] == []
@@ -797,7 +799,7 @@ class TestGetTCFPrivacyExperiences:
         system_data = resp.json()["items"][0]["tcf_systems"][0]
 
         assert system_data["id"] == system.id
-        assert system_data["purposes"] == []
+        assert len(system_data["purposes"]) == 1
         assert system_data["special_purposes"] == []
         assert len(system_data["features"]) == 1
         assert system_data["features"][0]["id"] == 2
