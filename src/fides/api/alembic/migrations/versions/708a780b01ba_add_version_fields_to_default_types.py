@@ -1,7 +1,7 @@
 """add version fields to default types
 
 Revision ID: 708a780b01ba
-Revises: 1e750936a141
+Revises: 3038667ba898
 Create Date: 2023-08-17 12:29:04.855626
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "708a780b01ba"
-down_revision = "507563f6f8d4"
+down_revision = "3038667ba898"
 branch_labels = None
 depends_on = None
 
