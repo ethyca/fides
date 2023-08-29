@@ -41,7 +41,7 @@ TCF_COMPONENT_MAPPING: Dict[str, ConsentRecordType] = {
 
 
 class TCFExperienceContents:
-    """Schema to serialize the initial contents of a TCF overlay
+    """Class to serialize the initial contents of a TCF overlay
 
     Used to store GVL information pulled from Fideslang that has been combined with system data
     """
@@ -228,6 +228,10 @@ def build_tcf_section_and_update_system_map(
                 if is_purpose_type
                 else []
             )
+            # *Override* legal_bases for embedded purpose and special purpose record. Do not extend because embedded
+            # purpose records should only have the legal_bases that apply to this particular system.
+            if is_purpose_type:
+                embedded_tcf_record.legal_bases = system_legal_bases
 
             # Update legal_bases in-place in the top-level record if applicable for purpose and special purpose sections
             extend_legal_bases(
@@ -251,16 +255,12 @@ def build_tcf_section_and_update_system_map(
             )
 
             if existing_matching_record:
-                # Update legal_bases on embedded tcf record beneath system
+                # Update legal_bases on existing embedded TCF record beneath system
                 extend_legal_bases(
                     is_purpose_type, existing_matching_record, system_legal_bases
                 )
             else:
-                # *Override* legal_bases for embedded purpose and special purpose record. Do not extend because embedded
-                # purpose records should only have the legal_bases that apply to this particular system.
-                if is_purpose_type:
-                    embedded_tcf_record.legal_bases = system_legal_bases
-                # Embed tcf record beneath system
+                # Embed new cloned TCF record beneath system
                 system_subsection.append(embedded_tcf_record)
 
             # Finally, we do the reverse and embed the second-level system or vendor information
