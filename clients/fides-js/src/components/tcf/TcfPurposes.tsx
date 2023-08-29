@@ -1,14 +1,12 @@
 import { h } from "preact";
 
-import { useMemo, useState } from "preact/hooks";
 import DataUseToggle from "../DataUseToggle";
 import { PrivacyExperience } from "../../lib/consent-types";
-import {
-  LegalBasisForProcessingEnum,
-  TCFPurposeRecord,
-} from "../../lib/tcf/types";
+import { TCFPurposeRecord } from "../../lib/tcf/types";
 import { UpdateEnabledIds } from "./TcfOverlay";
-import LegalBasisDropdown from "./LegalBasisDropdown";
+import LegalBasisDropdown, {
+  useLegalBasisDropdown,
+} from "./LegalBasisDropdown";
 
 const PurposeToggle = ({
   purpose,
@@ -111,22 +109,11 @@ const TcfPurposes = ({
   enabledSpecialPurposeIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
 }) => {
-  const [legalBasisFilter, setLegalBasisFilter] = useState(
-    LegalBasisForProcessingEnum.CONSENT
-  );
-  const filtered = useMemo(() => {
-    const purposes = allPurposes
-      ? allPurposes.filter(
-          (p) => p.legal_bases?.indexOf(legalBasisFilter) !== -1
-        )
-      : [];
-    const specialPurposes = allSpecialPurposes
-      ? allSpecialPurposes.filter(
-          (sp) => sp.legal_bases?.indexOf(legalBasisFilter) !== -1
-        )
-      : [];
-    return { purposes, specialPurposes };
-  }, [allPurposes, allSpecialPurposes, legalBasisFilter]);
+  const { filtered, legalBasisFilter, setLegalBasisFilter } =
+    useLegalBasisDropdown({
+      allPurposes,
+      allSpecialPurposes,
+    });
 
   return (
     <div>
@@ -136,7 +123,7 @@ const TcfPurposes = ({
       />
       <PurposeBlock
         label="Purposes"
-        allPurposes={filtered.purposes}
+        allPurposes={filtered.purposes as TCFPurposeRecord[]}
         enabledIds={enabledPurposeIds}
         onChange={(newEnabledIds) =>
           onChange({ newEnabledIds, modelType: "purposes" })
@@ -144,7 +131,7 @@ const TcfPurposes = ({
       />
       <PurposeBlock
         label="Special purposes"
-        allPurposes={filtered.specialPurposes}
+        allPurposes={filtered.specialPurposes as TCFPurposeRecord[]}
         enabledIds={enabledSpecialPurposeIds}
         onChange={(newEnabledIds) =>
           onChange({ newEnabledIds, modelType: "specialPurposes" })
