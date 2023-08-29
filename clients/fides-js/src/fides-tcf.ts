@@ -63,9 +63,9 @@ import {
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
-import {FidesCookie, hasSavedTcfPreferences, isNewFidesCookie} from "./fides";
+import { FidesCookie, hasSavedTcfPreferences, isNewFidesCookie } from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
-import { TCFPurposeRecord, TcfSavePreferences} from "./lib/tcf/types";
+import { TCFPurposeRecord, TcfSavePreferences } from "./lib/tcf/types";
 
 declare global {
   interface Window {

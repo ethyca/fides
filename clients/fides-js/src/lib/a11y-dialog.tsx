@@ -32,7 +32,7 @@ export const useA11yDialog = ({ role, id, onClose }: Props) => {
       instance.hide();
     }
     if (onClose) {
-      onClose()
+      onClose();
     }
   }, [instance]);
 

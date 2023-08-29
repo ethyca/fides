@@ -104,7 +104,6 @@ export const generateTcString = async (
  * Call tcf() to configure Fides with tcf support (if tcf is enabled).
  */
 export const tcf = () => {
-
   const isServiceSpecific = true; // TODO: determine this from the backend?
   const cmpApi = new CmpApi(CMP_ID, CMP_VERSION, isServiceSpecific);
 
