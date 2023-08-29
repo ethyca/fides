@@ -1,9 +1,9 @@
 import json
-from datetime import datetime, timezone
 from unittest import mock
 
 import pytest
 from fastapi_pagination import Params
+from fideslang.models import System as SystemSchema
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -24,7 +24,6 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.models.sql_models import Dataset, System
-from fides.api.models.system_history import SystemHistory
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -33,6 +32,7 @@ from fides.common.api.scope_registry import (
     STORAGE_DELETE,
     SYSTEM_MANAGER_UPDATE,
     SYSTEM_READ,
+    SYSTEM_UPDATE,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from tests.conftest import generate_role_header_for_user
@@ -973,15 +973,52 @@ class TestInstantiateSystemConnectionFromTemplate:
 
 class TestSystemHistory:
     @pytest.fixture(scope="function")
-    def url(self, system) -> str:
+    def system_url(self) -> str:
+        return V1_URL_PREFIX + f"/system"
+
+    @pytest.fixture(scope="function")
+    def history_url(self, system) -> str:
         return V1_URL_PREFIX + f"/system/{system.fides_key}/history"
+
+    def test_get_system_history_not_authenticated(
+        self,
+        api_client: TestClient,
+        history_url,
+    ) -> None:
+        resp = api_client.get(history_url)
+        assert resp.status_code == 401
+
+    def test_get_system_history_wrong_scope(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        history_url,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
+        resp = api_client.get(history_url, headers=auth_header)
+        assert resp.status_code == 403
 
     def test_get_system_history(
         self,
         api_client: TestClient,
         generate_auth_header,
-        url,
+        system_url,
+        history_url,
+        system,
     ) -> None:
-        auth_header = generate_auth_header(scopes=[SYSTEM_READ])
-        resp = api_client.get(url, headers=auth_header)
-        assert resp.status_code == HTTP_200_OK
+        auth_header = generate_auth_header(scopes=[SYSTEM_READ, SYSTEM_UPDATE])
+
+        # update a field on the system to create a system history entry
+        system.description = "new description"
+
+        resp = api_client.put(
+            system_url, headers=auth_header, json=SystemSchema.from_orm(system).dict()
+        )
+        assert resp.status_code == 200
+
+        resp = api_client.get(history_url, headers=auth_header)
+        assert resp.status_code == 200
+
+        items = resp.json()["items"]
+        assert len(items) == 1
+        assert items[0]["system_key"] == system.fides_key

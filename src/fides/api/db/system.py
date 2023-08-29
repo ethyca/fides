@@ -2,7 +2,7 @@
 Functions for interacting with System objects in the database.
 """
 import copy
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from fastapi import HTTPException
 from fideslang.models import Cookies as CookieSchema
@@ -14,7 +14,6 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.db.crud import create_resource, get_resource, update_resource
-from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
     DataUse,
@@ -78,7 +77,9 @@ async def validate_privacy_declarations(db: AsyncSession, system: SystemSchema) 
 
 
 async def upsert_system(
-    resources: List[SystemSchema], db: AsyncSession, current_user: FidesUser
+    resources: List[SystemSchema],
+    db: AsyncSession,
+    current_username: Optional[str] = None,
 ) -> Tuple[int, int]:
     """Helper method to abstract system upsert logic from API code"""
     inserted = 0
@@ -94,10 +95,12 @@ async def upsert_system(
             log.debug(
                 f"Upsert System with fides_key {resource.fides_key} not found, will create"
             )
-            await create_system(resource=resource, db=db)
+            await create_system(
+                resource=resource, db=db, current_username=current_username
+            )
             inserted += 1
             continue
-        await update_system(resource=resource, db=db, current_user=current_user)
+        await update_system(resource=resource, db=db, current_username=current_username)
         updated += 1
     return (inserted, updated)
 
@@ -202,7 +205,7 @@ async def upsert_cookies(
 
 
 async def update_system(
-    resource: SystemSchema, db: AsyncSession, current_user: FidesUser
+    resource: SystemSchema, db: AsyncSession, current_username: Optional[str] = None
 ) -> Dict:
     """Helper function to share core system update logic for wrapping endpoint functions"""
     system: System = await get_resource(
@@ -231,7 +234,7 @@ async def update_system(
             existing_system_dict, SystemSchema.from_orm(updated_system).dict()
         )
         SystemHistory(
-            edited_by=current_user.username,
+            edited_by=current_username,
             system_key=resource.fides_key,
             before=before,
             after=after,
@@ -241,8 +244,7 @@ async def update_system(
 
 
 async def create_system(
-    resource: SystemSchema,
-    db: AsyncSession,
+    resource: SystemSchema, db: AsyncSession, current_username: Optional[str] = None
 ) -> Dict:
     """
     Override `System` create/POST to handle `.privacy_declarations` defined inline,
@@ -258,8 +260,13 @@ async def create_system(
 
     # create the system resource using generic creation
     # the system must be created before the privacy declarations so that it can be referenced
+    resource_dict = resource.dict()
+
+    # set the current user's username as the system creator
+    resource_dict["created_by"] = current_username
+
     created_system = await create_resource(
-        System, resource_dict=resource.dict(), async_session=db
+        System, resource_dict=resource_dict, async_session=db
     )
 
     privacy_declaration_exception = None
