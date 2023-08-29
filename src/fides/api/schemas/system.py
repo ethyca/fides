@@ -2,8 +2,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from fideslang.models import Cookies, PrivacyDeclaration, System
-from loguru import logger
-from pydantic import Field, root_validator
+from pydantic import Field
 from pydantic.main import BaseModel
 
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -38,6 +37,12 @@ class SystemResponse(System):
     )
 
     cookies: Optional[List[Cookies]] = []
+
+    created_at: datetime
+
+    created_by: Optional[str] = Field(
+        description="The username of the user who created the system"
+    )
 
 
 class SystemHistoryResponse(BaseModel):

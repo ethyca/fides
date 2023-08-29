@@ -28,8 +28,8 @@ class JobSettings(FidesSettings):
 
         if validators.url(value):
             return value
-        else:
-            raise ValueError("Invalid system change webhook URL")
+
+        raise ValueError("Invalid system change webhook URL")
 
     class Config:
         env_prefix = ENV_PREFIX

@@ -2,10 +2,8 @@ from sqlalchemy import Column, DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship
 
 from fides.api.db.base_class import Base
-from fides.api.models.sql_models import System
 
 
 class SystemHistory(Base):
@@ -15,7 +13,7 @@ class SystemHistory(Base):
     def __tablename__(self) -> str:
         return "system_history"
 
-    edited_by = Column(String, nullable=False)
+    edited_by = Column(String, nullable=True)
     system_key = Column(
         String, ForeignKey("ctl_systems.fides_key", ondelete="cascade"), nullable=False
     )

@@ -3,6 +3,7 @@ from typing import Generator
 from unittest import mock
 
 import pytest
+from requests import RequestException
 from sqlalchemy.orm import Session
 
 from fides.api.models.sql_models import System
@@ -43,7 +44,7 @@ class TestSystemHistoryDigest:
         system_c.delete(db)
 
     @mock.patch("fides.api.service.system.system_history_digest.requests.post")
-    def test_webhook_url_defined(self, mock_post, systems, db: Session):
+    def test_webhook_url_defined(self, mock_post, systems, db: Session, loguru_caplog):
         # make some system changes to verify that we deduplicate systems
         # and only return changes from within the last 24 hours
         SystemHistory(
@@ -77,10 +78,59 @@ class TestSystemHistoryDigest:
         send_system_change_digest.delay().get()
         mock_post.assert_called_with(
             webhook_url,
-            data={
+            json={
                 "modified_systems": [
                     {"fides_key": "system_a", "name": "System A"},
                     {"fides_key": "system_b", "name": "System B"},
                 ]
             },
+        )
+
+        assert "Starting system change digest send..." in loguru_caplog.text
+
+        assert (
+            f"Successfully posted system change digest to {webhook_url}"
+            in loguru_caplog.text
+        )
+        assert "Found 2 modified systems." in loguru_caplog.text
+
+    @mock.patch("fides.api.service.system.system_history_digest.requests.post")
+    def test_no_modified_systems(self, mock_post, systems, db: Session):
+        # No system changes are made
+        send_system_change_digest.delay().get()
+        mock_post.assert_not_called()
+
+    @mock.patch("fides.api.service.system.system_history_digest.requests.post")
+    def test_webhook_failure(self, mock_post, systems, db: Session, loguru_caplog):
+        SystemHistory(
+            edited_by="fides",
+            system_key="system_a",
+            before={"description": ""},
+            after={"description": "System A"},
+        ).save(db=db)
+
+        # Simulate a webhook failure
+        mock_post.side_effect = RequestException("Webhook error")
+        send_system_change_digest.delay().get()
+
+        assert "ERROR" in loguru_caplog.text
+        assert (
+            "Failed to send POST request to webhook: Webhook error"
+            in loguru_caplog.text
+        )
+
+    @mock.patch("fides.api.service.system.system_history_digest.requests.post")
+    @mock.patch(
+        "fides.api.service.system.system_history_digest.DatabaseTask.get_new_session"
+    )
+    def test_database_error(
+        self, mock_get_new_session, mock_post, systems, db: Session, loguru_caplog
+    ):
+        mock_get_new_session.side_effect = Exception("Database error")
+        send_system_change_digest.delay().get()
+
+        assert "ERROR" in loguru_caplog.text
+        assert (
+            "An error occurred while querying the database: Database error"
+            in loguru_caplog.text
         )

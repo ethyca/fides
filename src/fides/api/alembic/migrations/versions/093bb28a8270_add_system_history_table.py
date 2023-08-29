@@ -41,7 +41,20 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index(
+        "idx_system_history_created_at_system_key",
+        "system_history",
+        ["created_at", "system_key"],
+    )
+    op.add_column(
+        "ctl_systems",
+        sa.Column("created_by", sa.String, nullable=True),
+    )
 
 
 def downgrade():
+    op.drop_column("ctl_systems", "created_by")
+    op.drop_index(
+        op.f("idx_system_history_created_at_system_key"), table_name="system_history"
+    )
     op.drop_table("system_history")

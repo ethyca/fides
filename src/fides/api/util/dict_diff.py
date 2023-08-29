@@ -2,28 +2,28 @@ from typing import Any, Dict, Tuple
 
 
 def dict_diff(
-    dict1: Dict[str, Any], dict2: Dict[str, Any]
+    first_dict: Dict[str, Any], second_dict: Dict[str, Any]
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     before = {}
     after = {}
 
-    for key in set(dict1) | set(dict2):
-        val1, val2 = dict1.get(key), dict2.get(key)
+    for key in set(first_dict) | set(second_dict):
+        before_value, after_value = first_dict.get(key), second_dict.get(key)
 
         # Treat empty strings and None as equivalent
-        if val1 in ["", None] and val2 in ["", None]:
+        if before_value in ["", None] and after_value in ["", None]:
             continue
 
-        if isinstance(val1, dict) and isinstance(val2, dict):
-            nested_before, nested_after = dict_diff(val1, val2)
+        if isinstance(before_value, dict) and isinstance(after_value, dict):
+            nested_before, nested_after = dict_diff(before_value, after_value)
             if nested_before:
                 before[key] = nested_before
             if nested_after:
                 after[key] = nested_after
-        elif val1 != val2:
-            if key in dict1:
-                before[key] = val1
-            if key in dict2:
-                after[key] = val2
+        elif before_value != after_value:
+            if key in first_dict and before_value is not None:
+                before[key] = before_value
+            if key in second_dict and after_value is not None:
+                after[key] = after_value
 
     return before, after
