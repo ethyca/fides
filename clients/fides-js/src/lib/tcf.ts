@@ -161,21 +161,31 @@ export const tcf = () => {
   __tcfapi('addEventListener', 2, callbackUIShown);
 
   console.log("adding event listeners for tcf");
+  // `null` value indicates that GDPR does not apply
+  // Initialize api with TC str, we don't yet show UI, so we use false
+  // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
   window.addEventListener("FidesInitialized", (event) => {
     const { tcString } = event.detail;
     console.log(`fidesinitialized with tcstring: ${tcString}`);
-    cmpApi.update(tcString ?? null);
+    cmpApi.update(tcString ?? null, false);
   });
+  // UI is visible
+  // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--tc-string-needs-update
+  // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--new-user--no-tc-string
   window.addEventListener("FidesUIShown", (event) => {
     const { tcString } = event.detail;
     console.log(`fidesuishown with tcstring: ${tcString}`);
     cmpApi.update(tcString ?? null, true);
   });
+  // UI is no longer visible
+  // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
   window.addEventListener("FidesModalClosed", (event) => {
     const { tcString } = event.detail;
     console.log(`fidesmodalclosed with tcstring: ${tcString}`);
     cmpApi.update(tcString ?? null, false);
   });
+  // User preference collected
+  // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--tc-string-needs-update
   window.addEventListener("FidesUpdated", (event) => {
     const { tcString } = event.detail;
     console.log(`fidesupdated with tcstring: ${tcString}`);
