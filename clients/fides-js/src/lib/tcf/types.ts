@@ -136,3 +136,12 @@ export type TcfSavePreferences = Pick<
   | "vendor_preferences"
   | "system_preferences"
 >;
+
+export enum LegalBasisForProcessingEnum {
+  CONSENT = "Consent",
+  CONTRACT = "Contract",
+  LEGAL_OBLIGATIONS = "Legal obligations",
+  VITAL_INTERESTS = "Vital interests",
+  PUBLIC_INTEREST = "Public interest",
+  LEGITIMATE_INTERESTS = "Legitimate interests",
+}

@@ -1,9 +1,14 @@
 import { h } from "preact";
 
+import { useMemo, useState } from "preact/hooks";
 import DataUseToggle from "../DataUseToggle";
 import { PrivacyExperience } from "../../lib/consent-types";
-import { TCFPurposeRecord } from "../../lib/tcf/types";
+import {
+  LegalBasisForProcessingEnum,
+  TCFPurposeRecord,
+} from "../../lib/tcf/types";
 import { UpdateEnabledIds } from "./TcfOverlay";
+import LegalBasisDropdown from "./LegalBasisDropdown";
 
 const PurposeToggle = ({
   purpose,
@@ -105,25 +110,48 @@ const TcfPurposes = ({
   enabledPurposeIds: string[];
   enabledSpecialPurposeIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
-}) => (
-  <div>
-    <PurposeBlock
-      label="Purposes"
-      allPurposes={allPurposes}
-      enabledIds={enabledPurposeIds}
-      onChange={(newEnabledIds) =>
-        onChange({ newEnabledIds, modelType: "purposes" })
-      }
-    />
-    <PurposeBlock
-      label="Special purposes"
-      allPurposes={allSpecialPurposes}
-      enabledIds={enabledSpecialPurposeIds}
-      onChange={(newEnabledIds) =>
-        onChange({ newEnabledIds, modelType: "specialPurposes" })
-      }
-    />
-  </div>
-);
+}) => {
+  const [legalBasisFilter, setLegalBasisFilter] = useState(
+    LegalBasisForProcessingEnum.CONSENT
+  );
+  const filtered = useMemo(() => {
+    const purposes = allPurposes
+      ? allPurposes.filter(
+          (p) => p.legal_bases?.indexOf(legalBasisFilter) !== -1
+        )
+      : [];
+    const specialPurposes = allSpecialPurposes
+      ? allSpecialPurposes.filter(
+          (sp) => sp.legal_bases?.indexOf(legalBasisFilter) !== -1
+        )
+      : [];
+    return { purposes, specialPurposes };
+  }, [allPurposes, allSpecialPurposes, legalBasisFilter]);
+
+  return (
+    <div>
+      <LegalBasisDropdown
+        selected={legalBasisFilter}
+        onSelect={(basis) => setLegalBasisFilter(basis)}
+      />
+      <PurposeBlock
+        label="Purposes"
+        allPurposes={filtered.purposes}
+        enabledIds={enabledPurposeIds}
+        onChange={(newEnabledIds) =>
+          onChange({ newEnabledIds, modelType: "purposes" })
+        }
+      />
+      <PurposeBlock
+        label="Special purposes"
+        allPurposes={filtered.specialPurposes}
+        enabledIds={enabledSpecialPurposeIds}
+        onChange={(newEnabledIds) =>
+          onChange({ newEnabledIds, modelType: "specialPurposes" })
+        }
+      />
+    </div>
+  );
+};
 
 export default TcfPurposes;
