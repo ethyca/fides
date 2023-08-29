@@ -1,4 +1,4 @@
-import { h } from "preact";
+import { h, VNode } from "preact";
 import Button from "./Button";
 import {
   ButtonType,
@@ -11,15 +11,13 @@ import {
 export const ConsentButtons = ({
   experienceConfig,
   onManagePreferencesClick,
-  onSave,
-  isInModal,
+  firstButton,
   onAcceptAll,
   onRejectAll,
 }: {
   experienceConfig: ExperienceConfig;
-  onSave: () => void;
   onManagePreferencesClick?: () => void;
-  isInModal?: boolean;
+  firstButton?: VNode;
   onAcceptAll: () => void;
   onRejectAll: () => void;
 }) => (
@@ -33,14 +31,8 @@ export const ConsentButtons = ({
         />
       </div>
     ) : null}
-    <div className={isInModal ? "fides-modal-button-group" : undefined}>
-      {isInModal ? (
-        <Button
-          buttonType={ButtonType.SECONDARY}
-          label={experienceConfig.save_button_label}
-          onClick={onSave}
-        />
-      ) : null}
+    <div className={firstButton ? "fides-modal-button-group" : undefined}>
+      {firstButton || null}
       <Button
         buttonType={ButtonType.PRIMARY}
         label={experienceConfig.reject_button_label}
@@ -115,10 +107,17 @@ export const NoticeConsentButtons = ({
     <ConsentButtons
       experienceConfig={config}
       onManagePreferencesClick={onManagePreferencesClick}
-      onSave={handleSave}
       onAcceptAll={handleAcceptAll}
       onRejectAll={handleRejectAll}
-      isInModal={isInModal}
+      firstButton={
+        isInModal ? (
+          <Button
+            buttonType={ButtonType.SECONDARY}
+            label={config.save_button_label}
+            onClick={handleSave}
+          />
+        ) : undefined
+      }
     />
   );
 };

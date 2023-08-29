@@ -71,6 +71,31 @@
           "outdated_preference": null,
           "current_served": null,
           "outdated_served": null,
+          "id": 2,
+          "name": "Use limited data to select advertising",
+          "description": "Advertising presented to you on this service can be based on limited data, such as the website or app you are using, your non-precise location, your device type or which content you are (or have been) interacting with (for example, to limit the number of times an ad is presented to you).",
+          "illustrations": [
+            "A car manufacturer wants to promote its electric vehicles to environmentally conscious users living in the city after office hours. The advertising is presented on a page with related content (such as an article on climate change actions) after 6:30 p.m. to users whose non-precise location suggests that they are in an urban zone.",
+            "A large producer of watercolour paints wants to carry out an online advertising campaign for its latest watercolour range, diversifying its audience to reach as many amateur and professional artists as possible and avoiding showing the ad next to mismatched content (for instance, articles about how to paint your house). The number of times that the ad has been presented to you is detected and limited, to avoid presenting it too often."
+          ],
+          "data_uses": [
+            "marketing.advertising.first_party.contextual",
+            "marketing.advertising.frequency_capping",
+            "marketing.advertising.negative_targeting"
+          ],
+          "vendors": [
+            {
+              "id": "amplitude",
+              "name": "test"
+            }
+          ]
+        },
+        {
+          "default_preference": "opt_out",
+          "current_preference": "opt_in",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
           "id": 4,
           "name": "Use profiles to select personalised advertising",
           "description": "Advertising presented to you on this service can be based on your advertising profiles, which can reflect your activity on this service or other websites or apps (like the forms you submit, content you look at), possible interests and personal aspects.",
@@ -82,6 +107,48 @@
             "marketing.advertising.first_party.targeted",
             "marketing.advertising.third_party.targeted"
           ],
+          "vendors": [
+            {
+              "id": "amplitude",
+              "name": "test"
+            }
+          ]
+        },
+        {
+          "default_preference": "opt_out",
+          "current_preference": "opt_in",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "id": 6,
+          "name": "Use profiles to select personalised content",
+          "description": "Content presented to you on this service can be based on your content personalisation profiles, which can reflect your activity on this or other services (for instance, the forms you submit, content you look at), possible interests and personal aspects, such as by adapting the order in which content is shown to you, so that it is even easier for you to find (non-advertising) content that matches your interests.",
+          "illustrations": [
+            "You read articles on vegetarian food on a social media platform and then use the cooking app of an unrelated company. The profile built about you on the social media platform will be used to present you vegetarian recipes on the welcome screen of the cooking app.",
+            "You have viewed three videos about rowing across different websites. An unrelated video sharing platform will recommend five other videos on rowing that may be of interest to you when you use your TV app, based on a profile built about you when you visited those different websites to watch online videos."
+          ],
+          "data_uses": ["personalize.content"],
+          "vendors": [
+            {
+              "id": "amplitude",
+              "name": "test"
+            }
+          ]
+        },
+        {
+          "default_preference": "opt_out",
+          "current_preference": "opt_in",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "id": 7,
+          "name": "Measure advertising performance",
+          "description": "Information regarding which advertising is presented to you and how you interact with it can be used to determine how well an advert has worked for you or other users and whether the goals of the advertising were reached. For instance, whether you saw an ad, whether you clicked on it, whether it led you to buy a product or visit a website, etc. This is very helpful to understand the relevance of advertising campaigns.",
+          "illustrations": [
+            "You have clicked on an advertisement about a “black Friday” discount by an online shop on the website of a publisher and purchased a product. Your click will be linked to this purchase. Your interaction and that of other users will be measured to know how many clicks on the ad led to a purchase.",
+            "You are one of very few to have clicked on an advertisement about an “international appreciation day” discount by an online gift shop within the app of a publisher. The publisher wants to have reports to understand how often a specific ad placement within the app, and notably the “international appreciation day” ad, has been viewed or clicked by you and other users, in order to help the publisher and its partners (such as agencies) optimise ad placements."
+          ],
+          "data_uses": ["analytics.reporting.ad_performance"],
           "vendors": [
             {
               "id": "amplitude",

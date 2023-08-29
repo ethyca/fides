@@ -1,7 +1,7 @@
 import { h } from "preact";
 import { useRef, useState } from "preact/hooks";
 import TcfPurposes from "./TcfPurposes";
-import { PrivacyExperience } from "~/fides";
+import { PrivacyExperience } from "../../lib/consent-types";
 import type { EnabledIds, UpdateEnabledIds } from "./TcfOverlay";
 import TcfFeatures from "./TcfFeatures";
 import TcfVendors from "./TcfVendors";
