@@ -24,7 +24,7 @@ from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
-from sqlalchemy.sql.sqltypes import DateTime
+from sqlalchemy.sql.sqltypes import DateTime, String
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base
@@ -33,27 +33,22 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.config import CONFIG
+from pydantic import BaseModel
 
 
-# class Tasks(Base):
-#     """
-#     The SQL model for a Task.
-#     """
+class Task(Base):
+    """
+    The SQL model for a Task.
+    """
 
-#     __tablename__ = "tasks"
-#     privacy_request_id = Column(
-#         String,
-#         ForeignKey(PrivacyRequest.id),
-#         nullable=False,
-#     )
-#     status = Column(Text)
-#     dataset = Column(Text)
-#     collection = Column(Text)
-#     field = Column(Text)
-#     labels = Column(JSON)
-#     created_at = Column(DateTime(timezone=True), server_default=func.now())
-#     updated_at = Column(
-#         DateTime(timezone=True),
-#         server_default=func.now(),
-#         onupdate=func.now(),
-#     )
+    __tablename__ = "tasks"
+    privacy_request_id = Column(
+        String,
+        ForeignKey(PrivacyRequest.id),
+        nullable=False,
+    )
+    downstream = Column(ARRAY(String))
+    upstream = Column(ARRAY(String))
+    data = Column(String)
+    connection_config = Column(String)
+    labels = Column(String)
