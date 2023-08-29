@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, cast
 
 from fastapi import Depends, HTTPException, Response, Security
 from fastapi_pagination import Page, Params
@@ -29,13 +29,15 @@ from fides.api.db.system import (
     validate_privacy_declarations,
 )
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.sql_models import System
+from fides.api.models.system_history import SystemHistory  # type: ignore[attr-defined]
 from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key,
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )
-from fides.api.oauth.utils import verify_oauth_client_prod
+from fides.api.oauth.utils import get_current_user, verify_oauth_client_prod
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
 from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
@@ -49,7 +51,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
-from fides.api.schemas.system import SystemResponse
+from fides.api.schemas.system import SystemHistoryResponse, SystemResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
     connection_status,
@@ -71,6 +73,7 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1.urn_registry import (
     INSTANTIATE_SYSTEM_CONNECTION,
     SYSTEM_CONNECTIONS,
+    SYSTEM_HISTORY,
     V1_URL_PREFIX,
 )
 
@@ -247,13 +250,14 @@ async def update(
     ),  # Security dependency defined here instead of the path operation decorator so we have access to the request body
     # to be able to look up the system as well as return a value
     db: AsyncSession = Depends(get_async_db),
+    current_user: FidesUser = Depends(get_current_user),
 ) -> Dict:
     """
     Update a System by the fides_key extracted from the request body.  Defined outside of the crud routes
     to add additional "system manager" permission checks.
     """
     await validate_privacy_declarations(db, resource)
-    return await update_system(resource, db)
+    return await update_system(resource, db, current_user)
 
 
 @SYSTEM_ROUTER.post(
@@ -272,8 +276,9 @@ async def upsert(
     resources: List[SystemSchema],
     response: Response,
     db: AsyncSession = Depends(get_async_db),
+    current_user: FidesUser = Depends(get_current_user),
 ) -> Dict:
-    inserted, updated = await upsert_system(resources, db)
+    inserted, updated = await upsert_system(resources, db, current_user)
     response.status_code = (
         status.HTTP_201_CREATED if inserted > 0 else response.status_code
     )
@@ -403,3 +408,21 @@ def instantiate_connection_from_template(
 
     system = get_system(db, fides_key)
     return instantiate_connection(db, saas_connector_type, template_values, system)
+
+
+@SYSTEM_ROUTER.get(
+    "/{fides_key}/history",
+    dependencies=[Security(verify_oauth_client_prod, scopes=[SYSTEM_READ])],
+    response_model=Page[SystemHistoryResponse],
+)
+def get_system_history(
+    fides_key: str,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+) -> AbstractPage[SystemHistoryResponse]:
+    return paginate(
+        SystemHistory.filter(
+            db=db, conditions=(SystemHistory.system_key == fides_key)
+        ).order_by(SystemHistory.created_at.desc()),
+        params,
+    )

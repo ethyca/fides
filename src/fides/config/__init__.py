@@ -14,6 +14,7 @@ from pydantic.class_validators import _FUNCS
 from pydantic.env_settings import SettingsSourceCallable
 
 from fides.common.utils import echo_red
+from fides.config.job_settings import JobSettings
 
 from .admin_ui_settings import AdminUISettings
 from .cli_settings import CLISettings
@@ -80,6 +81,7 @@ class FidesConfig(FidesSettings):
     redis: RedisSettings
     security: SecuritySettings
     user: UserSettings
+    jobs: JobSettings
 
     class Config:  # pylint: disable=C0115
         case_sensitive = True
@@ -157,6 +159,7 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
         "redis": RedisSettings,
         "security": SecuritySettings,
         "user": UserSettings,
+        "jobs": JobSettings,
     }
 
     for key, value in settings_map.items():
