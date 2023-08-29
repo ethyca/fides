@@ -4,6 +4,23 @@ from typing import Any, Dict, Tuple
 def dict_diff(
     first_dict: Dict[str, Any], second_dict: Dict[str, Any]
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    Compare two dictionaries and return dictionaries capturing value differences.
+
+    Args:
+        first_dict: The first dictionary for comparison.
+        second_dict: The second dictionary for comparison.
+
+    Returns:
+        A tuple of two dictionaries:
+        - The first shows differing values from the first dictionary.
+        - The second shows differing values from the second dictionary.
+
+    Example:
+        >>> dict_diff({'a': 1, 'b': 2}, {'a': 1, 'b': 3})
+        ({'b': 2}, {'b': 3})
+    """
+
     before = {}
     after = {}
 

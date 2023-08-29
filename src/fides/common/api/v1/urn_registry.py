@@ -178,9 +178,6 @@ INSTANTIATE_SYSTEM_CONNECTION = (
     "/system/{fides_key}/connection/instantiate/{saas_connector_type}"
 )
 
-# System History
-SYSTEM_HISTORY = "/system/{fides_key}/history"
-
 # User URLs
 USERS = "/user"
 USER_DETAIL = "/user/{user_id}"
