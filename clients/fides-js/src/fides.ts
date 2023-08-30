@@ -206,7 +206,12 @@ const init = async ({
   // If saved preferences are detected, immediately initialize from local cache,
   // and then continue geolocating, etc.
   const hasExistingCookie = !isNewFidesCookie(cookie);
+
+  // This var tracks whether or not we have notices in pre-fetched experience that we don't have consent for in the cookie.
+  // If we have notices missing consent, we attempt to retrieve it from the server using the fides_user_device_id.
+  // If we still have consent, we init the overlay as usual.
   let hasNoticesThatRequireConsent = false;
+
   if (hasExistingCookie) {
     _Fides.consent = cookie.consent;
     _Fides.fides_meta = cookie.fides_meta;
