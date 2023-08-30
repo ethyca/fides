@@ -1,4 +1,13 @@
-import { Flex, FormControl, Textarea, VStack } from "@fidesui/react";
+import {
+  Box,
+  Flex,
+  FormControl,
+  HStack,
+  Switch,
+  Textarea,
+  VStack,
+} from "@fidesui/react";
+import { MultiValue, Select, SingleValue } from "chakra-react-select";
 import { useField, useFormikContext } from "formik";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
@@ -17,8 +26,15 @@ import { selectSuggestions } from "~/features/system/dictionary-form/dict-sugges
 
 import { useResetSuggestionContext } from "./dict-suggestion.context";
 
-const useDictSuggestion = (fieldName: string, dictField: string) => {
-  const [initialField, meta, { setValue, setTouched }] = useField(fieldName);
+const useDictSuggestion = (
+  fieldName: string,
+  dictField: string,
+  fieldType?: string
+) => {
+  const [initialField, meta, { setValue, setTouched }] = useField({
+    name: fieldName,
+    type: fieldType || undefined,
+  });
   const isInvalid = !!(meta.touched && meta.error);
   const { error } = meta;
   const field = {
@@ -188,6 +204,181 @@ export const DictSuggestionTextArea = ({
               : "gray.800"
           }
         />
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={error}
+          fieldName={field.name}
+        />
+      </VStack>
+    </FormControl>
+  );
+};
+
+export const DictSuggestionSwitch = ({
+  label,
+  tooltip,
+  dictField,
+  name,
+  id,
+}: Props) => {
+  const { field, isInvalid, error } = useDictSuggestion(
+    name,
+    dictField,
+    "checkbox"
+  );
+  return (
+    <FormControl isInvalid={isInvalid} width="full">
+      <Box display="flex" alignItems="center" justifyContent="space-between">
+        <HStack spacing={1}>
+          <Label htmlFor={id || name} fontSize="sm" my={0} mr={0}>
+            {label}
+          </Label>
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </HStack>
+        <HStack>
+          <Switch
+            name={field.name}
+            isChecked={field.checked}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            colorScheme="purple"
+            mr={2}
+            data-testid={`input-${field.name}`}
+            size="sm"
+          />
+        </HStack>
+      </Box>
+      <ErrorMessage
+        isInvalid={isInvalid}
+        message={error}
+        fieldName={field.name}
+      />
+    </FormControl>
+  );
+};
+
+interface SelectOption {
+  value: string;
+  label: string;
+}
+
+type SelectProps = Props & {
+  options: SelectOption[];
+  isMulti?: boolean;
+};
+
+export const DictSuggestionSelect = ({
+  label,
+  tooltip,
+  disabled,
+  isRequired = false,
+  dictField,
+  name,
+  placeholder,
+  id,
+  options,
+  isMulti = false,
+}: SelectProps) => {
+  const { field, isInvalid, isShowingSuggestions, error } = useDictSuggestion(
+    name,
+    dictField
+  );
+
+  const selected = isMulti
+    ? options.filter((o) => field.value.indexOf(o.value) >= 0)
+    : options.find((o) => o.value === field.value) || null;
+
+  const { setFieldValue } = useFormikContext();
+
+  const handleChangeMulti = (newValue: MultiValue<SelectOption>) => {
+    setFieldValue(
+      field.name,
+      newValue.map((v) => v.value)
+    );
+  };
+
+  const handleChangeSingle = (newValue: SingleValue<SelectOption>) => {
+    setFieldValue(field.name, newValue);
+  };
+
+  const handleChange = (
+    newValue: MultiValue<SelectOption> | SingleValue<SelectOption>
+  ) =>
+    isMulti
+      ? handleChangeMulti(newValue as MultiValue<SelectOption>)
+      : handleChangeSingle(newValue as SingleValue<SelectOption>);
+
+  return (
+    <FormControl isInvalid={isInvalid} isRequired={isRequired}>
+      <VStack alignItems="start">
+        <Flex alignItems="center">
+          <Label htmlFor={id || name} fontSize="xs" my={0} mr={1}>
+            {label}
+          </Label>
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Flex>
+        <Flex width="100%">
+          <Select
+            {...field}
+            size="sm"
+            value={selected}
+            isDisabled={disabled}
+            isMulti={isMulti}
+            onChange={handleChange}
+            data-testid={`input-${field.name}`}
+            placeholder={placeholder}
+            options={options}
+            chakraStyles={{
+              input: (provided) => ({
+                ...provided,
+                color:
+                  isShowingSuggestions === "showing"
+                    ? "complimentary.500"
+                    : "gray.800",
+              }),
+              container: (provided) => ({
+                ...provided,
+                flexGrow: 1,
+                backgroundColor: "white",
+              }),
+              dropdownIndicator: (provided) => ({
+                ...provided,
+                bg: "transparent",
+                px: 2,
+                cursor: "inherit",
+              }),
+              indicatorSeparator: (provided) => ({
+                ...provided,
+                display: "none",
+              }),
+              multiValueLabel: (provided) => ({
+                ...provided,
+                display: "flex",
+                height: "16px",
+                alignItems: "center",
+              }),
+              multiValue: (provided) => ({
+                ...provided,
+                fontWeight: "400",
+                background: "gray.200",
+                color:
+                  isShowingSuggestions === "showing"
+                    ? "complimentary.500"
+                    : "gray.800",
+                borderRadius: "2px",
+                py: 1,
+                px: 2,
+              }),
+              multiValueRemove: (provided) => ({
+                ...provided,
+                ml: 1,
+                size: "lg",
+                width: 3,
+                height: 3,
+              }),
+            }}
+          />
+        </Flex>
         <ErrorMessage
           isInvalid={isInvalid}
           message={error}
