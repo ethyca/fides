@@ -20,8 +20,44 @@ class TestTCFContents:
         assert tcf_contents.tcf_systems == []
 
     @pytest.mark.usefixtures("system")
-    def test_load_tcf_data_uses_systems_but_no_overlapping_use_or_feature(self, db):
+    def test_load_tcf_data_uses_systems_but_no_overlapping_data_use(self, db):
         get_tcf_contents.cache_clear()
+
+        tcf_contents = get_tcf_contents(db)
+        assert tcf_contents.tcf_purposes == []
+        assert tcf_contents.tcf_vendors == []
+        assert tcf_contents.tcf_special_purposes == []
+        assert tcf_contents.tcf_features == []
+        assert tcf_contents.tcf_special_features == []
+        assert tcf_contents.tcf_systems == []
+
+    def test_system_has_appropriate_data_use_but_missing_legal_bases(self, db, system):
+        """Test system has relevant data use but legal basis is not Consent or Legitimate Interests."""
+        get_tcf_contents.cache_clear()
+
+        decl = system.privacy_declarations[0]
+        decl.data_use = "analytics.reporting.content_performance"
+        decl.legal_basis_for_processing = "Vital interests"
+        decl.save(db)
+        db.refresh(decl)
+
+        tcf_contents = get_tcf_contents(db)
+        assert tcf_contents.tcf_purposes == []
+        assert tcf_contents.tcf_vendors == []
+        assert tcf_contents.tcf_special_purposes == []
+        assert tcf_contents.tcf_features == []
+        assert tcf_contents.tcf_special_features == []
+        assert tcf_contents.tcf_systems == []
+
+    def test_system_has_legal_basis_but_not_a_gvl_data_use(self, db, system):
+        """Test system has Consent legal basis but data use is not in the GVL."""
+        get_tcf_contents.cache_clear()
+
+        decl = system.privacy_declarations[0]
+        decl.data_use = "analytics"
+        decl.legal_basis_for_processing = "Consent"
+        decl.save(db)
+        db.refresh(decl)
 
         tcf_contents = get_tcf_contents(db)
         assert tcf_contents.tcf_purposes == []
@@ -32,9 +68,12 @@ class TestTCFContents:
         assert tcf_contents.tcf_systems == []
 
     def test_feature_that_is_not_in_the_gvl(self, db, system):
+        """Test system has relevant data use and legal basis, but feature is not in the gvl"""
         get_tcf_contents.cache_clear()
 
         decl = system.privacy_declarations[0]
+        decl.data_use = "analytics.reporting.content_performance"
+        decl.legal_basis_for_processing = "Consent"
         decl.features = ["non_gvl_feature"]
         decl.save(db)
 
@@ -42,12 +81,48 @@ class TestTCFContents:
         assert decl.features == ["non_gvl_feature"]
 
         tcf_contents = get_tcf_contents(db)
-        assert tcf_contents.tcf_purposes == []
+        assert len(tcf_contents.tcf_purposes) == 1
         assert tcf_contents.tcf_vendors == []
         assert tcf_contents.tcf_special_purposes == []
         assert tcf_contents.tcf_features == []
         assert tcf_contents.tcf_special_features == []
+        assert len(tcf_contents.tcf_systems) == 1
+
+    def test_system_has_feature_on_different_declaration_than_relevant_use(
+        self, tcf_system, db
+    ):
+        """Assert that a feature has to be paired up with a relevant GVL use to show up. If it's on the system,
+        but on a different declaration, it is excluded
+        """
+        get_tcf_contents.cache_clear()
+
+        PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Store and access info on a device",
+                "system_id": tcf_system.id,
+                "data_categories": ["user"],
+                "data_use": "analytics",
+                "features": [
+                    "Receive and use automatically-sent device characteristics for identification"
+                ],
+                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                "data_subjects": ["customer"],
+                "dataset_references": None,
+                "legal_basis_for_processing": "Consent",
+                "egress": None,
+                "ingress": None,
+            },
+        )
+
+        tcf_contents = get_tcf_contents(db)
+
+        assert len(tcf_contents.tcf_purposes) == 1
+        assert len(tcf_contents.tcf_special_purposes) == 1
+        assert tcf_contents.tcf_features == []
+        assert tcf_contents.tcf_special_features == []
         assert tcf_contents.tcf_systems == []
+        assert len(tcf_contents.tcf_vendors) == 1
 
     @pytest.mark.usefixtures("tcf_system")
     def test_system_exists_with_tcf_purpose_and_vendor(self, db):
@@ -118,6 +193,7 @@ class TestTCFContents:
         # Add the same TCF-related data use to the system that the tcf system is using
         decl = system.privacy_declarations[0]
         decl.data_use = "analytics.reporting.content_performance"
+        decl.legal_basis_for_processing = "Consent"
         decl.save(db)
 
         # Add a separate use to this system
@@ -131,6 +207,7 @@ class TestTCFContents:
                 "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "dataset_references": None,
+                "legal_basis_for_processing": "Consent",
                 "egress": None,
                 "ingress": None,
             },
@@ -206,7 +283,9 @@ class TestTCFContents:
             tcf_contents.tcf_special_purposes[0].name
             == "Ensure security, prevent and detect fraud, and fix errors\n"
         )
-        assert tcf_contents.tcf_special_purposes[0].legal_bases == ["Legal obligations"]
+        assert tcf_contents.tcf_special_purposes[0].legal_bases == [
+            "Legitimate interests"
+        ]
         assert tcf_contents.tcf_special_purposes[0].vendors == [
             EmbeddedVendor(id="sendgrid", name="TCF System Test")
         ]
@@ -222,7 +301,7 @@ class TestTCFContents:
         assert len(tcf_contents.tcf_vendors[0].special_purposes) == 1
         assert tcf_contents.tcf_vendors[0].special_purposes[0].id == 1
         assert tcf_contents.tcf_vendors[0].special_purposes[0].legal_bases == [
-            "Legal obligations"
+            "Legitimate interests"
         ]
         assert tcf_contents.tcf_features == []
         assert tcf_contents.tcf_special_features == []
@@ -235,6 +314,8 @@ class TestTCFContents:
         system.save(db)
         declaration = system.privacy_declarations[0]
 
+        declaration.data_use = "functional.storage"  # needs a GVL data use for features to show up. Feature must be linked to a GVL data use.
+        declaration.legal_basis_for_processing = "Consent"  # Needed to be applicable
         declaration.features = [
             "Receive and use automatically-sent device characteristics for identification",
             "unknown feature",
@@ -254,6 +335,7 @@ class TestTCFContents:
         assert len(tcf_contents.tcf_vendors) == 1
         assert len(tcf_contents.tcf_vendors[0].features) == 1
         assert tcf_contents.tcf_vendors[0].features[0].id == 3
+        assert len(tcf_contents.tcf_purposes) == 1
 
     @pytest.mark.usefixtures("system")
     def test_special_features(self, db, system):
@@ -263,6 +345,8 @@ class TestTCFContents:
         system.save(db)
         declaration = system.privacy_declarations[0]
 
+        declaration.data_use = "functional.storage"  # needs a GVL data use for features to show up. Feature must be linked to a GVL data use.
+        declaration.legal_basis_for_processing = "Consent"  # Needed to be applicable
         declaration.features = [
             "Actively scan device characteristics for identification",
             "unknown special feature",
@@ -283,8 +367,12 @@ class TestTCFContents:
         assert len(tcf_contents.tcf_vendors[0].special_features) == 1
         assert tcf_contents.tcf_vendors[0].special_features[0].id == 2
         assert len(tcf_contents.tcf_vendors[0].features) == 0
+        assert len(tcf_contents.tcf_purposes) == 1
 
     def test_system_with_multiple_privacy_declarations(self, db, system):
+        """Add a system with multiple privacy declarations, one for each legal basis for processing, with a different gvl data use
+        Only the two privacy declarations with Consent and Legitimate Interests legal bases are relevant here.
+        """
         get_tcf_contents.cache_clear()
 
         legal_bases = [item.value for item in LegalBasisForProcessingEnum]
@@ -306,10 +394,15 @@ class TestTCFContents:
             )
 
         tcf_contents = get_tcf_contents(db)
-        assert len(tcf_contents.tcf_purposes) == 6
-        for i, purpose in enumerate(tcf_contents.tcf_purposes):
-            assert purpose.legal_bases == [legal_bases[i]]
-            assert purpose.id == list(MAPPED_PURPOSES.values())[i].id
+        assert len(tcf_contents.tcf_purposes) == 2
+        first_purpose = tcf_contents.tcf_purposes[0]
+        assert first_purpose.id == 1
+        assert first_purpose.legal_bases == ["Consent"]
+
+        first_purpose = tcf_contents.tcf_purposes[1]
+        assert first_purpose.id == 6
+        assert first_purpose.legal_bases == ["Legitimate interests"]
+
         assert (
             len(tcf_contents.tcf_vendors) == 0
         )  # No official vendor id on this system
@@ -320,10 +413,15 @@ class TestTCFContents:
         assert len(system_info.special_purposes) == 0
         assert len(system_info.features) == 0
         assert len(system_info.special_features) == 0
-        assert len(tcf_contents.tcf_systems[0].purposes) == 6
-        for i, embedded_purpose in enumerate(tcf_contents.tcf_systems[0].purposes):
-            assert embedded_purpose.legal_bases == [legal_bases[i]]
-            assert embedded_purpose.id == list(MAPPED_PURPOSES.values())[i].id
+
+        assert len(tcf_contents.tcf_systems[0].purposes) == 2
+        assert tcf_contents.tcf_systems[0].purposes[0].id == 1
+        assert tcf_contents.tcf_systems[0].purposes[0].legal_bases == ["Consent"]
+
+        assert tcf_contents.tcf_systems[0].purposes[1].id == 6
+        assert tcf_contents.tcf_systems[0].purposes[1].legal_bases == [
+            "Legitimate interests"
+        ]
 
     def test_duplicate_data_uses_on_system(self, tcf_system, db):
         """Contrived test (since UI enforces unique data uses on systems), that adds the same data use to multiple privacy declarations.
@@ -363,7 +461,7 @@ class TestTCFContents:
             "marketing.advertising.first_party.contextual",
             "marketing.advertising.frequency_capping",
         ]
-        new_legal_bases = ["Consent", "Public interest"]
+        new_legal_bases = ["Consent", "Legitimate interests"]
         for i, privacy_decl in enumerate(tcf_system.privacy_declarations):
             privacy_decl.data_use = new_uses[i]
             privacy_decl.legal_basis_for_processing = new_legal_bases[i]
@@ -374,7 +472,7 @@ class TestTCFContents:
         assert tcf_contents.tcf_purposes[0].id == 2
         assert tcf_contents.tcf_purposes[0].legal_bases == [
             "Consent",
-            "Public interest",
+            "Legitimate interests",
         ]
         assert len(tcf_contents.tcf_purposes[0].vendors) == 1
         assert tcf_contents.tcf_purposes[0].vendors[0].name == tcf_system.name
@@ -386,7 +484,7 @@ class TestTCFContents:
         assert tcf_contents.tcf_vendors[0].purposes[0].id == 2
         assert tcf_contents.tcf_vendors[0].purposes[0].legal_bases == [
             "Consent",
-            "Public interest",
+            "Legitimate interests",
         ]
 
         assert tcf_contents.tcf_special_purposes == []
@@ -425,24 +523,37 @@ class TestTCFContents:
             },
         )
 
+        # Contrived - same data use, different legal basis
+        PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Collect data for content performance",
+                "system_id": system_with_no_uses.id,
+                "data_categories": ["user.device.cookie_id"],
+                "data_use": "marketing.advertising.first_party.targeted",
+                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                "data_subjects": ["customer"],
+                "dataset_references": None,
+                "legal_basis_for_processing": "Legitimate interests",
+                "egress": None,
+                "ingress": None,
+            },
+        )
+
         decl = system.privacy_declarations[0]
+        decl.legal_basis_for_processing = "Legitimate interests"
         decl.data_use = "marketing.advertising.first_party.targeted"
         decl.save(db)
 
         tcf_contents = get_tcf_contents(db)
-        assert len(tcf_contents.tcf_purposes) == 1
-        assert tcf_contents.tcf_purposes[0].id == 4
-        assert tcf_contents.tcf_purposes[0].legal_bases == [
-            "Consent",
-        ]
+
         assert len(tcf_contents.tcf_purposes[0].vendors) == 0
 
-        assert len(tcf_contents.tcf_purposes[0].systems) == 2
-        assert tcf_contents.tcf_purposes[0].systems[0].name == "System A"
-        assert tcf_contents.tcf_purposes[0].systems[1].name == "System B"
-
         assert len(tcf_contents.tcf_purposes) == 1
-        assert tcf_contents.tcf_purposes[0].legal_bases == ["Consent"]
+        assert tcf_contents.tcf_purposes[0].legal_bases == [
+            "Consent",
+            "Legitimate interests",
+        ]
         assert tcf_contents.tcf_purposes[0].id == 4
 
         assert tcf_contents.tcf_special_purposes == []
@@ -454,11 +565,14 @@ class TestTCFContents:
         assert tcf_contents.tcf_systems[0].name == "System A"
         assert len(tcf_contents.tcf_systems[0].purposes) == 1
         assert tcf_contents.tcf_systems[0].purposes[0].id == 4
-        assert (
-            tcf_contents.tcf_systems[0].purposes[0].legal_bases == []
-        )  # System A has no legal basis
+        assert tcf_contents.tcf_systems[0].purposes[0].legal_bases == [
+            "Legitimate interests"
+        ]  # System A only shows its specific legal basis
 
         assert tcf_contents.tcf_systems[1].name == "System B"
         assert len(tcf_contents.tcf_systems[1].purposes) == 1
         assert tcf_contents.tcf_systems[1].purposes[0].id == 4
-        assert tcf_contents.tcf_systems[1].purposes[0].legal_bases == ["Consent"]
+        assert tcf_contents.tcf_systems[1].purposes[0].legal_bases == [
+            "Consent",
+            "Legitimate interests",
+        ]

@@ -2681,7 +2681,7 @@ def tcf_system(db: Session) -> System:
             "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
-            "legal_basis_for_processing": "Legal obligations",
+            "legal_basis_for_processing": "Legitimate interests",
             "egress": None,
             "ingress": None,
         },
