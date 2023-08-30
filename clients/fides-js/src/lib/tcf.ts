@@ -6,7 +6,6 @@
  */
 
 import { CmpApi } from "@iabtechlabtcf/cmpapi";
-// import * as _cmpstub from "@iabtechlabtcf/stub";
 import {
   TCModel,
   TCString,
@@ -21,7 +20,6 @@ import { vendorIsGvl } from "./tcf/vendors";
 
 const CMP_ID = 12; // TODO: hardcode our unique CMP ID after certification
 const CMP_VERSION = 1;
-// const cmpstub = _cmpstub;
 
 /**
  * Generate TC String based on TCF-related info from privacy experience.
@@ -107,8 +105,6 @@ export const generateTcString = async (
  * Call tcf() to configure Fides with tcf support (if tcf is enabled).
  */
 export const tcf = () => {
-  // console.log({ cmpstub, _cmpstub });
-  // cmpstub();
   makeStub();
   const isServiceSpecific = true; // TODO: determine this from the backend?
   const cmpApi = new CmpApi(CMP_ID, CMP_VERSION, isServiceSpecific);
