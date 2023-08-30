@@ -1,9 +1,9 @@
 """Contains the nox sessions used during CI checks."""
+import time
 from functools import partial
 from typing import Callable, Dict
 
 import nox
-import time
 from nox.command import CommandFailed
 
 from constants_nox import (
@@ -244,7 +244,7 @@ def load_test(session: nox.Session) -> None:
     """
     Load test the application.
 
-    Requires a Rust/Cargo installation.
+    Requires a Rust/Cargo installation and then `cargo install drill`
     """
     session.notify("teardown")
     session.run(*START_APP, external=True)
