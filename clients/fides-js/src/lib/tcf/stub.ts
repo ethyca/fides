@@ -1,13 +1,26 @@
 // Typescript adaptation of https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/stub
 
 /* eslint-disable no-underscore-dangle */
+
+interface MessageData {
+  __tcfapiCall: {
+    command: string;
+    parameter: string | number;
+    version: number;
+    callId: string | number;
+  };
+}
+
+const isMessageData = (data: unknown): data is MessageData =>
+  typeof data === "object" && data != null && "__tcfapiCall" in data;
+
 export const makeStub = () => {
   const TCF_LOCATOR_NAME = "__tcfapiLocator";
-  const queue = [];
+  const queue: any[] = [];
   const currentWindow = window;
   let frameLocator = currentWindow;
   let cmpFrame;
-  let gdprApplies;
+  let gdprApplies: boolean;
 
   function addFrame() {
     const doc = currentWindow.document;
@@ -50,6 +63,7 @@ export const makeStub = () => {
         parseInt(args[1], 10) === 2 &&
         typeof args[3] === "boolean"
       ) {
+        // eslint-disable-next-line prefer-destructuring
         gdprApplies = args[3];
 
         if (typeof args[2] === "function") {
@@ -75,9 +89,10 @@ export const makeStub = () => {
        */
       queue.push(args);
     }
+    return null;
   }
 
-  function postMessageEventHandler(event: MessageEvent) {
+  function postMessageEventHandler(event: MessageEvent<MessageData>) {
     const msgIsString = typeof event.data === "string";
     let json = {};
 
@@ -90,20 +105,24 @@ export const makeStub = () => {
          */
         json = JSON.parse(event.data);
       } catch (ignore) {
+        json = {};
         /* empty */
       }
     } else {
       json = event.data;
     }
 
-    const payload =
-      typeof json === "object" && json !== null ? json.__tcfapiCall : null;
+    if (!isMessageData(json)) {
+      return null;
+    }
 
-    if (payload) {
+    const payload = json.__tcfapiCall;
+
+    if (payload && window.__tcfapi) {
       window.__tcfapi(
         payload.command,
         payload.version,
-        (retValue, success) => {
+        (retValue: any, success: boolean) => {
           const returnMsg = {
             __tcfapiReturn: {
               returnValue: retValue,
@@ -115,6 +134,7 @@ export const makeStub = () => {
           if (event && event.source && event.source.postMessage) {
             event.source.postMessage(
               msgIsString ? JSON.stringify(returnMsg) : returnMsg,
+              //   @ts-ignore
               "*"
             );
           }
@@ -146,6 +166,7 @@ export const makeStub = () => {
     }
 
     // Move up
+    // @ts-ignore
     frameLocator = frameLocator.parent;
   }
 
