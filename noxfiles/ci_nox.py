@@ -245,6 +245,8 @@ def load_tests(session: nox.Session) -> None:
     Load test the application.
 
     Requires a Rust/Cargo installation and then `cargo install drill`
+
+    https://github.com/fcsonline/drill
     """
     session.notify("teardown")
     session.run(*START_APP, external=True)

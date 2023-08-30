@@ -110,7 +110,6 @@ jobs:
   ##################
   Performance-Checks:
     needs: Build
-    strategy:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
