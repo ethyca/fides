@@ -206,6 +206,7 @@ const init = async ({
   // If saved preferences are detected, immediately initialize from local cache,
   // and then continue geolocating, etc.
   const hasExistingCookie = !isNewFidesCookie(cookie);
+  let hasNoticesThatRequireConsent = false;
   if (hasExistingCookie) {
     _Fides.consent = cookie.consent;
     _Fides.fides_meta = cookie.fides_meta;
@@ -214,6 +215,17 @@ const init = async ({
     _Fides.geolocation = geolocation;
     _Fides.options = options;
     _Fides.initialized = true;
+    if (experience) {
+      // at this point, pre-fetched experience contains no user consent, so we populate with the Fides cookie
+      experience?.privacy_notices?.forEach(notice => {
+        if (cookie.consent[notice.notice_key]) {
+          // eslint-disable-next-line no-param-reassign
+          notice.current_preference = transformConsentToFidesUserPreference(Boolean(cookie.consent[notice.notice_key]), notice.consent_mechanism)
+        } else {
+          hasNoticesThatRequireConsent = true
+        }
+      })
+    }
     dispatchFidesEvent("FidesInitialized", cookie, options.debug);
     dispatchFidesEvent("FidesUpdated", cookie, options.debug);
   }
@@ -243,7 +255,7 @@ const init = async ({
         `User location could not be obtained. Skipping overlay initialization.`
       );
       shouldInitOverlay = false;
-    } else if (!effectiveExperience) {
+    } else if (!effectiveExperience || hasNoticesThatRequireConsent) {
       effectiveExperience = await fetchExperience(
         fidesRegionString,
         options.fidesApiUrl,
