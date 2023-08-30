@@ -19,9 +19,9 @@ export type DictEntry = {
   dpo: string;
   legal_address: string;
   international_transfers: boolean;
-  legal_basis_for_transfers?: string;
+  legal_basis_for_transfers?: string[];
   uses_profiling: boolean;
-  legal_basis_for_profiling?: string;
+  legal_basis_for_profiling?: string[];
   data_security_practices?: string;
   tags?: string;
   logo?: string;

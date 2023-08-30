@@ -999,7 +999,9 @@ def systems_that_match_tcf_data_uses(
     ]
 
 
-def systems_that_match_tcf_feature(db: Session, feature: str) -> List[FidesKey]:
+def systems_that_match_tcf_feature(
+    db: Session, feature: Optional[str]
+) -> List[FidesKey]:
     """Check which systems have these data uses directly.
 
     This is used for determining relevant systems for TCF features and special features. Unlike

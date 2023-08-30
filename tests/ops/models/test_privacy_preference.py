@@ -27,8 +27,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     ProvidedIdentityType,
 )
-from fides.api.models.sql_models import PrivacyDeclaration, System
-from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
+from fides.api.models.sql_models import PrivacyDeclaration
 
 
 class TestPrivacyPreferenceHistory:
