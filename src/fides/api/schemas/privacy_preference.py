@@ -163,7 +163,7 @@ class RecordConsentServedRequest(FidesSchema):
                     f"Duplicate served records saved against TCF component: '{field_name}'"
                 )
 
-        expected_field_mapping = {
+        expected_field_mapping: Dict[str, Dict] = {
             "tcf_purposes": MAPPED_PURPOSES,
             "tcf_special_purposes": MAPPED_SPECIAL_PURPOSES,
             "tcf_features": GVL_FEATURES,
