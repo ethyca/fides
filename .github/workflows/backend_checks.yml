@@ -141,7 +141,9 @@ jobs:
         run: pip install nox>=2022
 
       - name: Start the Application
-        run: docker compose up --wait fides
+        run: |
+          touch .env
+          docker compose up --wait fides
 
       - name: Run Performance Tests
         run: nox -s performance_tests
