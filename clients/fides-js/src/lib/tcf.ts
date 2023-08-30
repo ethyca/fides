@@ -12,6 +12,7 @@ import {
   GVL,
   VersionOrVendorList,
 } from "@iabtechlabtcf/core";
+import { makeStub } from "./tcf/stub";
 import { transformUserPreferenceToBoolean } from "./consent-utils";
 import gvlJson from "./tcf/gvl.json";
 import { TcfSavePreferences } from "./tcf/types";
@@ -104,6 +105,7 @@ export const generateTcString = async (
  * Call tcf() to configure Fides with tcf support (if tcf is enabled).
  */
 export const tcf = () => {
+  makeStub();
   const isServiceSpecific = true; // TODO: determine this from the backend?
   const cmpApi = new CmpApi(CMP_ID, CMP_VERSION, isServiceSpecific);
 
