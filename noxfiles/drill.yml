@@ -8,6 +8,10 @@ iterations: 400
 rampup: 2
 
 plan:
-  - name: Health
+  - name: Health Check
     request:
       url: /health
+
+  - name: Worker Health Check
+    request:
+      url: /health/workers

@@ -1,5 +1,4 @@
 """Contains the nox sessions used during CI checks."""
-import time
 from functools import partial
 from typing import Callable, Dict
 
@@ -221,22 +220,30 @@ def minimal_config_startup(session: nox.Session) -> None:
 ## Performance ##
 #################
 @nox.session()
-def docker_stats(session: nox.Session) -> None:
-    """Use the builtin `docker stats` command to show resource usage."""
-    session.notify("teardown")
-    session.run(*START_APP, external=True)
+def performance_tests(session: nox.Session) -> None:
+    """Compose the various performance checks into a single uber-test."""
     samples = 6
     for i in range(6):
         session.log(f"Sample {i} of {samples}")
-        session.run(
-            "docker",
-            "stats",
-            "--no-stream",
-            "--format",
-            "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}",
-            external=True,
-        )
-        time.sleep(10)
+        load_tests(session)
+        docker_stats(session)
+
+
+@nox.session()
+def docker_stats(session: nox.Session) -> None:
+    """
+    Use the builtin `docker stats` command to show resource usage.
+
+    Run this _last_ to get a better worst-case scenario
+    """
+    session.run(
+        "docker",
+        "stats",
+        "--no-stream",
+        "--format",
+        "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}",
+        external=True,
+    )
 
 
 @nox.session()
@@ -248,8 +255,6 @@ def load_tests(session: nox.Session) -> None:
 
     https://github.com/fcsonline/drill
     """
-    session.notify("teardown")
-    session.run(*START_APP, external=True)
     session.run(
         "drill", "-b", "noxfiles/drill.yml", "--quiet", "--stats", external=True
     )

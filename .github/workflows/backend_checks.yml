@@ -140,14 +140,11 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Install Dev Requirements
-        run: pip install -r dev-requirements.txt
+      - name: Start the Application
+        run: docker compose up --wait fides
 
-      - name: Check Resource Usage
-        run: nox -s docker_stats
-
-      - name: Run Load Tests
-        run: nox -s load_tests
+      - name: Run Performance Tests
+        run: nox -s performance_tests
 
   #################
   ## Misc Checks ##
