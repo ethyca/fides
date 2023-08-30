@@ -51,6 +51,7 @@ import {
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import { ResourceTypes, System, SystemResponse } from "~/types/api";
 
+import { FormGuard } from "../common/hooks/useIsAnyFormDirty";
 import { ResetSuggestionContextProvider } from "./dictionary-form/dict-suggestion.context";
 import { DictSuggestionToggle } from "./dictionary-form/ToggleDictSuggestions";
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
@@ -203,6 +204,7 @@ const SystemInformationForm = ({
       >
         {({ dirty, values, isValid }) => (
           <Form>
+            <FormGuard id="SystemInfoTab" name="System Info" />
             <Stack spacing={0} maxWidth={{ base: "100%", lg: "70%" }}>
               {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 
