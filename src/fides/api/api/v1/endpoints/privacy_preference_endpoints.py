@@ -35,7 +35,6 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeHistory,
 )
 from fides.api.models.privacy_preference import (
-    ConsentRecordType,
     CurrentPrivacyPreference,
     LastServedNotice,
     PrivacyPreferenceHistory,
@@ -79,7 +78,7 @@ from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, validate_start_and_end_filters
-from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING
+from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING, ConsentRecordType
 from fides.common.api.scope_registry import (
     CURRENT_PRIVACY_PREFERENCE_READ,
     PRIVACY_PREFERENCE_HISTORY_READ,

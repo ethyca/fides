@@ -5,7 +5,6 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
-from fideslang.gvl import feature_id_to_feature_name, purpose_to_data_use
 from fideslang.validation import FidesKey
 from sqlalchemy import ARRAY, Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
@@ -33,9 +32,10 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     ProvidedIdentity,
 )
-from fides.api.models.sql_models import (  # type:ignore[attr-defined]
-    PrivacyDeclaration,
-    System,
+from fides.api.util.tcf_util import (
+    ConsentRecordType,
+    TCFComponentType,
+    get_relevant_systems_for_tcf_attribute,
 )
 from fides.config import CONFIG
 
@@ -53,30 +53,6 @@ class ConsentMethod(Enum):
     button = "button"
     gpc = "gpc"
     individual_notice = "individual_notice"
-
-
-class TCFComponentType(Enum):
-    """A particular element of the TCF form"""
-
-    purpose = "purpose"
-    special_purpose = "special_purpose"
-    vendor = "vendor"
-    system = "system"
-    feature = "feature"
-    special_feature = "special_feature"
-
-
-class ConsentRecordType(Enum):
-    """All of the relevant consent items that can be served or have preferences saved against"""
-
-    privacy_notice_id = "privacy_notice_id"
-    privacy_notice_history_id = "privacy_notice_history_id"
-    purpose = "purpose"
-    special_purpose = "special_purpose"
-    vendor = "vendor"
-    system = "system"
-    feature = "feature"
-    special_feature = "special_feature"
 
 
 class ConsentReportingMixin:
@@ -498,34 +474,7 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
         if privacy_notice_history:
             return privacy_notice_history.calculate_relevant_systems(db)
 
-        if tcf_field == TCFComponentType.purpose.value:
-            purpose_data_uses: List[str] = purpose_to_data_use(tcf_value)  # type: ignore[arg-type]
-            return systems_that_match_tcf_data_uses(db, purpose_data_uses)
-
-        if tcf_field == TCFComponentType.special_purpose.value:
-            special_purpose_data_uses: List[str] = purpose_to_data_use(
-                tcf_value, special_purpose=True  # type: ignore[arg-type]
-            )
-            return systems_that_match_tcf_data_uses(db, special_purpose_data_uses)
-
-        if tcf_field == TCFComponentType.feature.value:
-            return systems_that_match_tcf_feature(
-                db, feature_id_to_feature_name(feature_id=tcf_value)
-            )
-
-        if tcf_field == TCFComponentType.special_feature.value:
-            return systems_that_match_tcf_feature(
-                db,
-                feature_id_to_feature_name(feature_id=tcf_value, special_feature=True),
-            )
-
-        if tcf_field == TCFComponentType.vendor.value:
-            return systems_that_match_vendor_string(db, tcf_value)
-
-        if tcf_field == TCFComponentType.system.value:
-            return systems_that_match_system_id(db, tcf_value)
-
-        return []
+        return get_relevant_systems_for_tcf_attribute(db, tcf_field, tcf_value)
 
     @classmethod
     def create(
@@ -975,82 +924,3 @@ def upsert_last_saved_record(
         )
 
     return current_record
-
-
-def systems_that_match_tcf_data_uses(
-    db: Session, data_uses: List[str]
-) -> List[FidesKey]:
-    """Check which systems have these data uses directly.
-
-    This is used for determining relevant systems for TCF purposes and special purposes. Unlike
-    determining relevant systems for Privacy Notices where we use a hierarchy-type matching,
-    for TCF, we're looking for an exact match on data use."""
-    if not data_uses:
-        return []
-
-    return [
-        system.fides_key
-        for system in (
-            db.query(System.fides_key)
-            .join(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
-            .filter(PrivacyDeclaration.data_use.in_(data_uses))
-            .distinct(System.id)
-        )
-    ]
-
-
-def systems_that_match_tcf_feature(
-    db: Session, feature: Optional[str]
-) -> List[FidesKey]:
-    """Check which systems have these data uses directly.
-
-    This is used for determining relevant systems for TCF features and special features. Unlike
-    determining relevant systems for Privacy Notices where we use a hierarchy-type matching,
-    for TCF, we're looking for an exact match on feature."""
-    if not feature:
-        return []
-
-    return [
-        system.fides_key
-        for system in (
-            db.query(System.fides_key)
-            .join(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
-            .filter(PrivacyDeclaration.features.any(feature))
-            .distinct(System.id)
-        )
-    ]
-
-
-def systems_that_match_vendor_string(
-    db: Session, vendor: Optional[str]
-) -> List[FidesKey]:
-    """Check which systems have this vendor associated with them. Unlike PrivacyNotices, where we use hierarchy-type matching,
-    with TCF components, we are looking for exact matches.
-    """
-    if not vendor:
-        return []
-    return [
-        system.fides_key
-        for system in (
-            db.query(System.fides_key)
-            .filter(System.vendor_id == vendor)
-            .distinct(System.id)
-        )
-    ]
-
-
-def systems_that_match_system_id(
-    db: Session, system_id: Optional[str]
-) -> List[FidesKey]:
-    """Returns the system id if it exists on the system"""
-    if not system_id:
-        return []
-
-    return [
-        system.fides_key
-        for system in (
-            db.query(System.fides_key)
-            .filter(System.id == system_id)
-            .distinct(System.fides_key)
-        )
-    ]

@@ -149,7 +149,7 @@ def privacy_experience_list(
     :return:
     """
     logger.info("Finding all Privacy Experiences with pagination params '{}'", params)
-    content_required: bool = has_notices  # Renaming confusing query param
+    content_required: bool = bool(has_notices)  # Renaming confusing query param
     fides_user_provided_identity: Optional[ProvidedIdentity] = None
     if fides_user_device_id:
         try:

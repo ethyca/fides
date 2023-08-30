@@ -16,7 +16,6 @@ from fides.api.models.privacy_preference import (
     ConsentMethod,
     RequestOrigin,
     ServingComponent,
-    TCFComponentType,
 )
 from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.schemas.base_class import FidesSchema
@@ -30,7 +29,7 @@ from fides.api.schemas.tcf import (
     TCFSpecialPurposeSave,
     TCFVendorSave,
 )
-from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING
+from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING, TCFComponentType
 
 # Maps the sections in the request body for saving various TCF preferences
 # against the specific field name on which these preferences are saved

@@ -4,8 +4,8 @@ Contains the code that sets up the API.
 import os
 import sys
 from datetime import datetime, timezone
-from time import perf_counter
 from logging import WARNING
+from time import perf_counter
 from typing import Callable, Optional
 from urllib.parse import unquote
 

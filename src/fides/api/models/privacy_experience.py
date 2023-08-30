@@ -18,7 +18,6 @@ from fides.api.models.privacy_notice import (
     update_if_modified,
 )
 from fides.api.models.privacy_preference import (
-    ConsentRecordType,
     CurrentPrivacyPreference,
     LastServedNotice,
 )
@@ -27,6 +26,7 @@ from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.tcf import TCFPurposeRecord, TCFVendorRecord
 from fides.api.util.tcf_util import (
     TCF_COMPONENT_MAPPING,
+    ConsentRecordType,
     TCFExperienceContents,
     get_tcf_contents,
 )
