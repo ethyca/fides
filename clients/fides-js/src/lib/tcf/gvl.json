@@ -1,8 +1,8 @@
 {
   "gvlSpecificationVersion": 2,
-  "vendorListVersion": 211,
+  "vendorListVersion": 212,
   "tcfPolicyVersion": 2,
-  "lastUpdated": "2023-08-17T16:05:25Z",
+  "lastUpdated": "2023-08-24T16:05:23Z",
   "purposes": {
     "1": {
       "id": 1,
@@ -860,7 +860,7 @@
       "usesCookies": true,
       "cookieRefresh": false,
       "usesNonCookieAccess": false,
-      "deviceStorageDisclosureUrl": "https://c.sharethis.mgr.consensu.org/disclosures.json"
+      "deviceStorageDisclosureUrl": "https://gdpr-api.sharethis.com/disclosures.json"
     },
     "34": {
       "id": 34,
@@ -3528,13 +3528,13 @@
       "specialPurposes": [1, 2],
       "features": [2, 3],
       "specialFeatures": [1],
-      "policyUrl": "https://spolecznosci.pl/polityka-prywatnosci",
+      "policyUrl": "https://tri-table.com/polityka-prywatnosci",
       "overflow": { "httpGetLimit": 128 },
       "cookieMaxAgeSeconds": 31622400,
       "usesCookies": true,
       "cookieRefresh": false,
       "usesNonCookieAccess": false,
-      "deviceStorageDisclosureUrl": "https://spolecznosci.mgr.consensu.org/v2/deviceStorage.json"
+      "deviceStorageDisclosureUrl": "https://cmp.spolecznosci.net/v2/deviceStorage.json"
     },
     "250": {
       "id": 250,
@@ -3685,18 +3685,18 @@
     },
     "262": {
       "id": 262,
-      "name": "Fyber ",
+      "name": "Fyber Monetization Ltd.",
       "purposes": [1, 2, 3, 4, 5, 7],
       "legIntPurposes": [],
       "flexiblePurposes": [],
       "specialPurposes": [],
       "features": [3],
-      "specialFeatures": [1],
-      "policyUrl": "https://www.fyber.com/legal/privacy-policy/",
+      "specialFeatures": [2],
+      "policyUrl": "https://www.digitalturbine.com/privacy-policy/",
       "cookieMaxAgeSeconds": null,
       "usesCookies": false,
       "cookieRefresh": false,
-      "usesNonCookieAccess": false,
+      "usesNonCookieAccess": true,
       "deviceStorageDisclosureUrl": "https://cdn2.inner-active.mobi/deviceStorageDisclosure/deviceStorageDisclosureUrl.json"
     },
     "263": {
@@ -3897,15 +3897,15 @@
       "id": 280,
       "name": "Open Web Technologies Ltd",
       "purposes": [1, 3, 4],
-      "legIntPurposes": [2, 7, 9, 10],
-      "flexiblePurposes": [2, 7, 9, 10],
+      "legIntPurposes": [2, 7, 10],
+      "flexiblePurposes": [2, 7, 10],
       "specialPurposes": [1, 2],
       "features": [],
       "specialFeatures": [],
       "policyUrl": "https://www.openweb.com/legal-and-privacy/privacy/",
-      "cookieMaxAgeSeconds": 263000,
+      "cookieMaxAgeSeconds": 31536000,
       "usesCookies": true,
-      "cookieRefresh": true,
+      "cookieRefresh": false,
       "usesNonCookieAccess": true,
       "deviceStorageDisclosureUrl": "https://spotim-prd-static-assets.s3.amazonaws.com/iab/device-storage.json"
     },
@@ -4429,8 +4429,8 @@
     "331": {
       "id": 331,
       "name": "ad6media",
-      "purposes": [1, 3, 4],
-      "legIntPurposes": [7, 8, 9, 10],
+      "purposes": [1, 3, 4, 7, 8, 9, 10],
+      "legIntPurposes": [],
       "flexiblePurposes": [],
       "specialPurposes": [1, 2],
       "features": [3],
@@ -4745,11 +4745,11 @@
       "features": [],
       "specialFeatures": [1],
       "policyUrl": "https://seeding-alliance.de/datenschutz/",
-      "cookieMaxAgeSeconds": 15552000,
+      "cookieMaxAgeSeconds": 315360000,
       "usesCookies": true,
       "cookieRefresh": true,
       "usesNonCookieAccess": false,
-      "deviceStorageDisclosureUrl": "https://c.nativendo.de/cdn/asset/tcf/purpose-specific-storage-and-access-information.json"
+      "deviceStorageDisclosureUrl": "https://s.nativendo.de/cdn/asset/tcf/purpose-specific-storage-and-access-information.json"
     },
     "373": {
       "id": 373,
@@ -5141,18 +5141,17 @@
     "424": {
       "id": 424,
       "name": "KUPONA GmbH",
-      "purposes": [4, 7],
+      "purposes": [1, 2, 3, 4, 7, 9, 10],
       "legIntPurposes": [],
-      "flexiblePurposes": [4],
+      "flexiblePurposes": [],
       "specialPurposes": [],
       "features": [],
       "specialFeatures": [],
-      "policyUrl": "https://www.kupona.de/dsgvo/",
-      "deletedDate": "2023-08-10T00:00:00Z",
-      "cookieMaxAgeSeconds": 31536000,
+      "policyUrl": "https://www.kupona.de/dsgvo/#datenschutzerklaerung",
+      "cookieMaxAgeSeconds": 90,
       "usesCookies": true,
       "cookieRefresh": true,
-      "usesNonCookieAccess": false,
+      "usesNonCookieAccess": true,
       "deviceStorageDisclosureUrl": "https://opt.kuponacdn.de/tcf.json"
     },
     "427": {
@@ -6369,7 +6368,7 @@
       "legIntPurposes": [],
       "flexiblePurposes": [7, 8, 9, 10],
       "specialPurposes": [],
-      "features": [1],
+      "features": [],
       "specialFeatures": [1],
       "policyUrl": "https://www.kairosfire.com/legal-notice/",
       "cookieMaxAgeSeconds": null,
@@ -6872,7 +6871,7 @@
       "purposes": [1, 2, 3, 4, 9, 10],
       "legIntPurposes": [],
       "flexiblePurposes": [],
-      "specialPurposes": [1, 2],
+      "specialPurposes": [],
       "features": [1, 2],
       "specialFeatures": [1],
       "policyUrl": "https://www.beintoo.com/privacy-cookie-policy/",
@@ -8746,8 +8745,8 @@
     "770": {
       "id": 770,
       "name": "MARKETPERF CORP",
-      "purposes": [1, 2, 3, 4],
-      "legIntPurposes": [7, 8, 9, 10],
+      "purposes": [1, 2, 3, 4, 7, 8, 9, 10],
+      "legIntPurposes": [],
       "flexiblePurposes": [],
       "specialPurposes": [1, 2],
       "features": [3],
@@ -10331,17 +10330,17 @@
     "869": {
       "id": 869,
       "name": "Brave People Ltd.",
-      "purposes": [2],
+      "purposes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       "legIntPurposes": [],
-      "flexiblePurposes": [2],
-      "specialPurposes": [1, 2],
+      "flexiblePurposes": [2, 7, 8, 9, 10],
+      "specialPurposes": [1],
       "features": [3],
-      "specialFeatures": [],
+      "specialFeatures": [1],
       "policyUrl": "https://thebrave.io/privacy-policy/",
       "cookieMaxAgeSeconds": null,
       "usesCookies": false,
       "cookieRefresh": false,
-      "usesNonCookieAccess": false,
+      "usesNonCookieAccess": true,
       "deviceStorageDisclosureUrl": "https://thebrave.io/tcf.json"
     },
     "870": {
@@ -11381,18 +11380,18 @@
     },
     "936": {
       "id": 936,
-      "name": "Digital Squad",
-      "purposes": [1, 3, 4, 5],
+      "name": "DIGITAL SQUAD",
+      "purposes": [1, 2, 3, 4, 5],
       "legIntPurposes": [],
       "flexiblePurposes": [],
       "specialPurposes": [],
       "features": [1],
       "specialFeatures": [],
-      "policyUrl": "https://account.squadata.net/fr/privacy",
-      "cookieMaxAgeSeconds": 34164000,
+      "policyUrl": "https://www.squadata.net/en/private-policy/",
+      "cookieMaxAgeSeconds": 360,
       "usesCookies": true,
       "cookieRefresh": true,
-      "usesNonCookieAccess": false,
+      "usesNonCookieAccess": true,
       "deviceStorageDisclosureUrl": "https://asset.easydmp.net/tcf-v2.json"
     },
     "937": {
@@ -11512,8 +11511,8 @@
     "944": {
       "id": 944,
       "name": "AudienceRun corp",
-      "purposes": [1, 2, 3, 4],
-      "legIntPurposes": [7, 8, 9, 10],
+      "purposes": [1, 2, 3, 4, 7, 8, 9, 10],
+      "legIntPurposes": [],
       "flexiblePurposes": [],
       "specialPurposes": [1, 2],
       "features": [3],
@@ -13712,14 +13711,14 @@
       "legIntPurposes": [],
       "flexiblePurposes": [2],
       "specialPurposes": [1, 2],
-      "features": [3],
+      "features": [],
       "specialFeatures": [],
       "policyUrl": "https://se7en.es/private-policy",
       "cookieMaxAgeSeconds": null,
       "usesCookies": false,
       "cookieRefresh": false,
       "usesNonCookieAccess": false,
-      "deviceStorageDisclosureUrl": "https://se7en.es/deviceStorage.json"
+      "deviceStorageDisclosureUrl": "https://tcf.se7en.es/se7en/tcf.json"
     },
     "1084": {
       "id": 1084,
@@ -16376,7 +16375,39 @@
       "usesCookies": false,
       "cookieRefresh": false,
       "usesNonCookieAccess": true,
-      "deviceStorageDisclosureUrl": "https://traffic.360.audion.fm"
+      "deviceStorageDisclosureUrl": "https://www.audion.fm/tcfv2.json"
+    },
+    "1232": {
+      "id": 1232,
+      "name": "Greenbids",
+      "purposes": [7, 8, 10],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [],
+      "features": [],
+      "specialFeatures": [],
+      "policyUrl": "https://www.greenbids.ai/privacy",
+      "cookieMaxAgeSeconds": null,
+      "usesCookies": false,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": false,
+      "deviceStorageDisclosureUrl": "https://greenbids.ai/vendorjson.json"
+    },
+    "1233": {
+      "id": 1233,
+      "name": "NEXTCHANCE ASSETS, S.L.",
+      "purposes": [2, 7, 9, 10],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [1, 2],
+      "features": [2, 3],
+      "specialFeatures": [2],
+      "policyUrl": "https://adsviu.com/en/privacy-policy/",
+      "cookieMaxAgeSeconds": null,
+      "usesCookies": false,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": false,
+      "deviceStorageDisclosureUrl": "https://nextchance.github.io/adsviu-IAB-config/vendor.json"
     }
   }
 }
