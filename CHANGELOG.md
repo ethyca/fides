@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.19.0...main)
 
+### Changed
+
+- Bump PyMSSQL version and remove workarounds [#3996](https://github.com/ethyca/fides/pull/3996)
+
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 
 ### Added
