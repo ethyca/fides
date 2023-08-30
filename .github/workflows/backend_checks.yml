@@ -105,6 +105,34 @@ jobs:
       - name: Run Static Check
         run: nox -s ${{ matrix.session_name }}
 
+  ##################
+  ## Performance ##
+  ##################
+  Performance-Checks:
+    strategy:
+      matrix:
+        session_name: ["docker_stats"]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Install Dev Requirements
+        run: pip install -r dev-requirements.txt
+
+      - name: Run Static Check
+        run: nox -s ${{ matrix.session_name }}
+
   #################
   ## Misc Checks ##
   #################

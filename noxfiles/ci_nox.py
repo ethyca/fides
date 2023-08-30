@@ -3,6 +3,7 @@ from functools import partial
 from typing import Callable, Dict
 
 import nox
+import time
 from nox.command import CommandFailed
 
 from constants_nox import (
@@ -16,7 +17,6 @@ from constants_nox import (
 from setup_tests_nox import pytest_ctl, pytest_lib, pytest_nox, pytest_ops
 from utils_nox import install_requirements
 
-# Add a Nox command for resource usage
 
 ###################
 ## Static Checks ##
@@ -215,6 +215,28 @@ def minimal_config_startup(session: nox.Session) -> None:
         IMAGE_NAME,
     )
     session.run(*start_command, external=True)
+
+
+#################
+## Performance ##
+#################
+@nox.session()
+def docker_stats(session: nox.Session) -> None:
+    """Use the builtin `docker stats` command to show resource usage."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    samples = 6
+    for i in range(6):
+        session.log(f"Sample {i} of {samples}")
+        session.run(
+            "docker",
+            "stats",
+            "--no-stream",
+            "--format",
+            "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}",
+            external=True,
+        )
+        time.sleep(10)
 
 
 ############
