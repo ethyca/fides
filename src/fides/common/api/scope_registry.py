@@ -58,6 +58,7 @@ SCOPE = "scope"
 STORAGE = "storage"
 SYSTEM = "system"
 SYSTEM_MANAGER = "system_manager"
+TASK = "task"
 TAXONOMY = "taxonomy"
 TRANSFER = "transfer"
 UPDATE = "update"
@@ -212,6 +213,10 @@ SYSTEM_MANAGER_READ = f"{SYSTEM_MANAGER}:{READ}"
 SYSTEM_MANAGER_UPDATE = f"{SYSTEM_MANAGER}:{UPDATE}"
 SYSTEM_MANAGER_DELETE = f"{SYSTEM_MANAGER}:{DELETE}"
 
+TASK_CREATE = f"{TASK}:{CREATE}"
+TASK_UPDATE = f"{TASK}:{UPDATE}"
+TASK_READ = f"{TASK}:{READ}"
+
 TAXONOMY_CREATE = f"{TAXONOMY}:{CREATE}"
 TAXONOMY_UPDATE = f"{TAXONOMY}:{UPDATE}"
 TAXONOMY_DELETE = f"{TAXONOMY}:{DELETE}"
@@ -338,6 +343,9 @@ SCOPE_DOCS = {
     SYSTEM_MANAGER_READ: "Read systems users can manage",
     SYSTEM_MANAGER_DELETE: "Delete systems user can manage",
     SYSTEM_MANAGER_UPDATE: "Update systems user can manage",
+    TASK_CREATE: "Create Task",
+    TASK_READ: "Read a task",
+    TASK_UPDATE: "Update a task",
     TAXONOMY_CREATE: "Create local taxonomy",
     TAXONOMY_DELETE: "Delete local taxonomy",
     TAXONOMY_UPDATE: "Update local taxonomy",
