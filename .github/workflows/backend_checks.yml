@@ -109,12 +109,22 @@ jobs:
   ## Performance ##
   ##################
   Performance-Checks:
+    needs: Build
     strategy:
       matrix:
         session_name: ["docker_stats"]
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
+
       - name: Checkout
         uses: actions/checkout@v3
 

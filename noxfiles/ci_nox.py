@@ -239,6 +239,17 @@ def docker_stats(session: nox.Session) -> None:
         time.sleep(10)
 
 
+@nox.session()
+def load_test(session: nox.Session) -> None:
+    """
+    Load test the application.
+
+    Requires a Rust/Cargo installation.
+    """
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+
+
 ############
 ## Pytest ##
 ############
