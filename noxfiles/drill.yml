@@ -2,10 +2,9 @@
 
 ---
 
-concurrency: 20
+concurrency: 4
 base: 'http://localhost:8080'
 iterations: 400
-rampup: 2
 
 plan:
   - name: Health Check
