@@ -222,6 +222,8 @@ def minimal_config_startup(session: nox.Session) -> None:
 @nox.session()
 def performance_tests(session: nox.Session) -> None:
     """Compose the various performance checks into a single uber-test."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True, silent=True)
     samples = 2
     for i in range(samples):
         session.log(f"Sample {i} of {samples}")

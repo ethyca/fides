@@ -109,7 +109,7 @@ jobs:
   ## Performance ##
   ##################
   Performance-Checks:
-    needs: Build
+    needs: Check-Container-Startup
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -139,11 +139,6 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
-
-      - name: Start the Application
-        run: |
-          touch .env
-          docker compose up --wait fides
 
       - name: Run Performance Tests
         run: nox -s performance_tests
