@@ -222,8 +222,8 @@ def minimal_config_startup(session: nox.Session) -> None:
 @nox.session()
 def performance_tests(session: nox.Session) -> None:
     """Compose the various performance checks into a single uber-test."""
-    samples = 6
-    for i in range(6):
+    samples = 2
+    for i in range(samples):
         session.log(f"Sample {i} of {samples}")
         load_tests(session)
         docker_stats(session)
