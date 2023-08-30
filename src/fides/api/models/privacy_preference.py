@@ -20,6 +20,7 @@ from fides.api.common_exceptions import (
     ConsentHistorySaveError,
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
+    SystemNotFound,
 )
 from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.api.models.privacy_notice import (
@@ -32,6 +33,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     ProvidedIdentity,
 )
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.util.tcf_util import (
     ConsentRecordType,
     TCFComponentType,
@@ -237,6 +239,7 @@ def _validate_before_saving_consent_history(
 
     - Validates that a notice history exists if supplied
     - Validates that at least one provided identity type is supplied
+    - Validates that a system exists if supplied
     - Validates that only one of a data use, special purpose, vendor, system_id, feature or special
     feature exists in request body.  Each record can only store preferences for one attribute at a time.
     """
@@ -246,7 +249,9 @@ def _validate_before_saving_consent_history(
             db=db, object_id=data.get("privacy_notice_history_id")
         )
         if not privacy_notice_history:
-            raise PrivacyNoticeHistoryNotFound()
+            raise PrivacyNoticeHistoryNotFound(
+                f"Can't save consent against invalid privacy notice history '{data.get('privacy_notice_history_id')}'."
+            )
 
     if not data.get("provided_identity_id") and not data.get(
         "fides_user_device_provided_identity_id"
@@ -254,6 +259,13 @@ def _validate_before_saving_consent_history(
         raise IdentityNotFoundException(
             "Must supply a verified provided identity id or a fides_user_device_provided_identity_id"
         )
+
+    if data.get("system"):
+        system = db.query(System).filter(System.id == data.get("system")).first()
+        if not system:
+            raise SystemNotFound(
+                f"Can't save consent against invalid system id '{data.get('system')}'."
+            )
 
     tcf_attributes: Dict[str, Union[Optional[str], Optional[int]]] = {
         tcf_key: data[tcf_key]

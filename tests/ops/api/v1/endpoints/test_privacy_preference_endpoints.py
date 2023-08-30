@@ -9,6 +9,7 @@ from starlette.testclient import TestClient
 
 from fides.api.models.consent_settings import ConsentSettings
 from fides.api.models.privacy_preference import (
+    CURRENT_TCF_VERSION,
     ConsentMethod,
     CurrentPrivacyPreference,
     LastServedNotice,
@@ -17,7 +18,6 @@ from fides.api.models.privacy_preference import (
     ServedNoticeHistory,
     ServingComponent,
     UserConsentPreference,
-    CURRENT_TCF_VERSION,
 )
 from fides.api.models.privacy_request import (
     ConsentRequest,
@@ -1450,6 +1450,33 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             == "Cannot save preferences against invalid special feature id: '3'"
         )
 
+    def test_invalid_system_in_request_body(
+        self, api_client, url, db, privacy_experience_france_tcf_overlay
+    ):
+        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
+        consent_settings.tcf_enabled = True
+        consent_settings.save(db=db)
+
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
+            },
+            "system_preferences": [
+                {
+                    "id": "bad_system",
+                    "preference": "opt_out",
+                }
+            ],
+            "user_geography": "fr",
+            "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == "Can't save consent against invalid system id 'bad_system'."
+        )
+
     def test_duplicate_tcf_preferences_in_request_body(
         self,
         api_client,
@@ -2570,6 +2597,27 @@ class TestSaveNoticesServedForFidesDeviceId:
         assert (
             response.json()["detail"][0]["msg"]
             == "Invalid values for tcf_special_features served."
+        )
+
+    def test_invalid_system_served(
+        self,
+        api_client,
+        url,
+    ):
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
+            },
+            "tcf_systems": ["bad_system"],
+            "user_geography": "us_ca",
+            "acknowledge_mode": False,
+            "serving_component": ServingComponent.tcf_overlay.value,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == "Can't save consent against invalid system id 'bad_system'."
         )
 
     @mock.patch(

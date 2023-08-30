@@ -24,6 +24,11 @@ from fides.api.api.v1.endpoints.consent_request_endpoints import (
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
+from fides.api.common_exceptions import (
+    IdentityNotFoundException,
+    PrivacyNoticeHistoryNotFound,
+    SystemNotFound,
+)
 from fides.api.custom_types import SafeStr
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
 from fides.api.models.consent_settings import ConsentSettings
@@ -407,14 +412,21 @@ def save_privacy_preferences_with_verified_identity(
 
     logger.info("Saving privacy preferences")
 
-    return save_privacy_preferences_for_identities(
-        db=db,
-        consent_request=consent_request,
-        verified_provided_identity=provided_identity_verified,
-        fides_user_provided_identity=fides_user_provided_identity,
-        request=request,
-        original_request_data=data,
-    )
+    try:
+        return save_privacy_preferences_for_identities(
+            db=db,
+            consent_request=consent_request,
+            verified_provided_identity=provided_identity_verified,
+            fides_user_provided_identity=fides_user_provided_identity,
+            request=request,
+            original_request_data=data,
+        )
+    except (
+        IdentityNotFoundException,
+        PrivacyNoticeHistoryNotFound,
+        SystemNotFound,
+    ) as exc:
+        raise HTTPException(status_code=400, detail=exc.args[0])
 
 
 def persist_tcf_preferences(
@@ -750,14 +762,21 @@ def save_privacy_preferences(
 
     logger.info("Saving privacy preferences with respect to fides user device id")
 
-    return save_privacy_preferences_for_identities(
-        db=db,
-        consent_request=None,
-        verified_provided_identity=None,
-        fides_user_provided_identity=fides_user_provided_identity,
-        request=request,
-        original_request_data=data,
-    )
+    try:
+        return save_privacy_preferences_for_identities(
+            db=db,
+            consent_request=None,
+            verified_provided_identity=None,
+            fides_user_provided_identity=fides_user_provided_identity,
+            request=request,
+            original_request_data=data,
+        )
+    except (
+        IdentityNotFoundException,
+        PrivacyNoticeHistoryNotFound,
+        SystemNotFound,
+    ) as exc:
+        raise HTTPException(status_code=400, detail=exc.args[0])
 
 
 @router.get(
@@ -904,13 +923,20 @@ def save_consent_served_to_user(
 
     logger.info("Recording consent served with respect to fides user device id")
 
-    return save_consent_served_for_identities(
-        db=db,
-        verified_provided_identity=None,
-        fides_user_provided_identity=fides_user_provided_identity,
-        request=request,
-        original_request_data=data,
-    )
+    try:
+        return save_consent_served_for_identities(
+            db=db,
+            verified_provided_identity=None,
+            fides_user_provided_identity=fides_user_provided_identity,
+            request=request,
+            original_request_data=data,
+        )
+    except (
+        IdentityNotFoundException,
+        PrivacyNoticeHistoryNotFound,
+        SystemNotFound,
+    ) as exc:
+        raise HTTPException(status_code=400, detail=exc.args[0])
 
 
 def classify_identities_for_privacy_center_consent_reporting(
@@ -988,10 +1014,17 @@ def save_consent_served_via_privacy_center(
 
     logger.info("Saving notices served for privacy center")
 
-    return save_consent_served_for_identities(
-        db=db,
-        verified_provided_identity=provided_identity_verified,
-        fides_user_provided_identity=fides_user_provided_identity,
-        request=request,
-        original_request_data=data,
-    )
+    try:
+        return save_consent_served_for_identities(
+            db=db,
+            verified_provided_identity=provided_identity_verified,
+            fides_user_provided_identity=fides_user_provided_identity,
+            request=request,
+            original_request_data=data,
+        )
+    except (
+        IdentityNotFoundException,
+        PrivacyNoticeHistoryNotFound,
+        SystemNotFound,
+    ) as exc:
+        raise HTTPException(status_code=400, detail=exc.args[0])

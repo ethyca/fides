@@ -9,8 +9,10 @@ from fides.api.common_exceptions import (
     ConsentHistorySaveError,
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
+    SystemNotFound,
 )
 from fides.api.models.privacy_preference import (
+    CURRENT_TCF_VERSION,
     ConsentRecordType,
     CurrentPrivacyPreference,
     LastServedNotice,
@@ -21,7 +23,6 @@ from fides.api.models.privacy_preference import (
     TCFComponentType,
     UserConsentPreference,
     _validate_before_saving_consent_history,
-    CURRENT_TCF_VERSION,
 )
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
@@ -1171,6 +1172,16 @@ class TestPrivacyPreferenceHistory:
                 db,
                 {
                     "fides_user_device_provided_identity_id": fides_user_provided_identity.id
+                },
+            )
+
+        with pytest.raises(SystemNotFound):
+            # Attempted to save preferences against system that doesn't exist
+            _validate_before_saving_consent_history(
+                db,
+                {
+                    "system": "bad system",
+                    "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
                 },
             )
 
