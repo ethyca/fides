@@ -112,7 +112,7 @@ jobs:
     needs: Build
     strategy:
       matrix:
-        session_name: ["docker_stats"]
+        session_name: ["docker_stats", "load_test"]
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -133,6 +133,9 @@ jobs:
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
+
+      - name: Install Rust/Cargo
+        run: curl https://sh.rustup.rs -sSf | sh
 
       - name: Install Nox
         run: pip install nox>=2022

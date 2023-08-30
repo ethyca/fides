@@ -1,0 +1,13 @@
+# This file is used by "drill", a load testing utility
+
+---
+
+concurrency: 20
+base: 'http://localhost:8080'
+iterations: 400
+rampup: 2
+
+plan:
+  - name: Health
+    request:
+      url: /health

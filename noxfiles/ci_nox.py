@@ -248,6 +248,9 @@ def load_test(session: nox.Session) -> None:
     """
     session.notify("teardown")
     session.run(*START_APP, external=True)
+    session.run(
+        "drill", "-b", "noxfiles/drill.yml", "--quiet", "--stats", external=True
+    )
 
 
 ############
