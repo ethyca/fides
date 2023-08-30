@@ -240,7 +240,7 @@ def docker_stats(session: nox.Session) -> None:
 
 
 @nox.session()
-def load_test(session: nox.Session) -> None:
+def load_tests(session: nox.Session) -> None:
     """
     Load test the application.
 

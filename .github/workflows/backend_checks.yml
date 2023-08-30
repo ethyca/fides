@@ -111,8 +111,6 @@ jobs:
   Performance-Checks:
     needs: Build
     strategy:
-      matrix:
-        session_name: ["docker_stats", "load_test"]
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -135,7 +133,10 @@ jobs:
           cache: "pip"
 
       - name: Install Rust/Cargo
-        run: curl https://sh.rustup.rs -sSf | sh
+        run: curl -y https://sh.rustup.rs -sSf | sh
+
+      - name: Install Drill
+        run: cargo install drill
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -143,8 +144,11 @@ jobs:
       - name: Install Dev Requirements
         run: pip install -r dev-requirements.txt
 
-      - name: Run Static Check
-        run: nox -s ${{ matrix.session_name }}
+      - name: Check Resource Usage
+        run: nox -s docker_stats
+
+      - name: Run Load Tests
+        run: nox -s load_tests
 
   #################
   ## Misc Checks ##
