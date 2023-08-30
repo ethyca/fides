@@ -21,6 +21,7 @@ from fides.api.models.privacy_preference import (
     TCFComponentType,
     UserConsentPreference,
     _validate_before_saving_consent_history,
+    CURRENT_TCF_VERSION,
 )
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
@@ -347,7 +348,7 @@ class TestPrivacyPreferenceHistory:
         assert preference_history_record.special_feature is None
         assert preference_history_record.vendor is None
         assert preference_history_record.special_purpose is None
-        assert preference_history_record.tcf_version == "2.2"
+        assert preference_history_record.tcf_version == CURRENT_TCF_VERSION
         assert preference_history_record.privacy_notice_id is None
 
         assert preference_history_record.phone_number is None
@@ -378,7 +379,7 @@ class TestPrivacyPreferenceHistory:
         assert current_privacy_preference.special_feature is None
         assert current_privacy_preference.vendor is None
         assert current_privacy_preference.special_purpose is None
-        assert current_privacy_preference.tcf_version == "2.2"
+        assert current_privacy_preference.tcf_version == CURRENT_TCF_VERSION
 
         # Save preferences again with an "opt in" preference for this purpose
         next_preference_history_record = PrivacyPreferenceHistory.create(
@@ -443,7 +444,9 @@ class TestPrivacyPreferenceHistory:
         assert special_purpose_preference_history_record.purpose is None
         assert special_purpose_preference_history_record.feature is None
         assert special_purpose_preference_history_record.special_feature is None
-        assert special_purpose_preference_history_record.tcf_version == "2.2"
+        assert (
+            special_purpose_preference_history_record.tcf_version == CURRENT_TCF_VERSION
+        )
         assert (
             special_purpose_preference_history_record.privacy_notice_history_id is None
         )
@@ -457,7 +460,7 @@ class TestPrivacyPreferenceHistory:
         assert current_special_purpose_preference.feature is None
         assert current_special_purpose_preference.special_feature is None
         assert current_special_purpose_preference.privacy_notice_history_id is None
-        assert current_special_purpose_preference.tcf_version == "2.2"
+        assert current_special_purpose_preference.tcf_version == CURRENT_TCF_VERSION
 
         current_special_purpose_preference.delete(db)
         special_purpose_preference_history_record.delete(db)
@@ -516,7 +519,7 @@ class TestPrivacyPreferenceHistory:
         assert preference_history_record.special_purpose is None
         assert preference_history_record.feature is None
         assert preference_history_record.special_feature is None
-        assert preference_history_record.tcf_version == "2.2"
+        assert preference_history_record.tcf_version == CURRENT_TCF_VERSION
         assert preference_history_record.privacy_notice_id is None
         assert preference_history_record.phone_number is None
         assert preference_history_record.hashed_phone_number is None
@@ -542,7 +545,7 @@ class TestPrivacyPreferenceHistory:
         assert current_privacy_preference.preference == UserConsentPreference.opt_out
         assert current_privacy_preference.privacy_notice_history is None
         assert current_privacy_preference.vendor == "sendgrid"
-        assert current_privacy_preference.tcf_version == "2.2"
+        assert current_privacy_preference.tcf_version == CURRENT_TCF_VERSION
 
         # Save preferences again with an "opt in" preference for this privacy notice
         next_preference_history_record = PrivacyPreferenceHistory.create(
@@ -572,7 +575,7 @@ class TestPrivacyPreferenceHistory:
         assert current_privacy_preference.special_purpose is None
         assert current_privacy_preference.feature is None
         assert current_privacy_preference.special_feature is None
-        assert current_privacy_preference.tcf_version == "2.2"
+        assert current_privacy_preference.tcf_version == CURRENT_TCF_VERSION
         assert (
             next_preference_history_record.current_privacy_preference
             == current_privacy_preference
@@ -1950,13 +1953,13 @@ class TestLastServedNotice:
         last_served = (
             served_notice_history_us_ca_provide_for_fides_user.last_served_record
         )
-        assert last_served.record_matches_latest_version is True
+        assert last_served.record_matches_current_version is True
 
         privacy_notice_us_ca_provide.update(db, data={"description": "new_description"})
         assert privacy_notice_us_ca_provide.version == 2.0
         assert privacy_notice_us_ca_provide.description == "new_description"
 
-        assert last_served.record_matches_latest_version is False
+        assert last_served.record_matches_current_version is False
 
     def test_served_latest_tcf_version(
         self,
@@ -1964,11 +1967,11 @@ class TestLastServedNotice:
         served_notice_history_for_tcf_purpose,
     ):
         last_served = served_notice_history_for_tcf_purpose.last_served_record
-        assert last_served.record_matches_latest_version is True
+        assert last_served.record_matches_current_version is True
 
         # Just for demonstration
         last_served.update(db, data={"tcf_version": "1.0"})
-        assert last_served.record_matches_latest_version is False
+        assert last_served.record_matches_current_version is False
 
     def test_get_last_served_for_notice_and_fides_user_device(
         self,

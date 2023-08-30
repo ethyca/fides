@@ -17,6 +17,7 @@ from fides.api.models.privacy_preference import (
     ServedNoticeHistory,
     ServingComponent,
     UserConsentPreference,
+    CURRENT_TCF_VERSION,
 )
 from fides.api.models.privacy_request import (
     ConsentRequest,
@@ -1911,7 +1912,7 @@ class TestHistoricalPreferences:
         assert response_body["vendor"] is None
         assert response_body["feature"] is None
         assert response_body["special_feature"] is None
-        assert response_body["tcf_version"] == "2.2"
+        assert response_body["tcf_version"] == CURRENT_TCF_VERSION
 
         assert response_body["request_timestamp"] is not None
         assert response_body["request_origin"] == "tcf_overlay"
@@ -2645,7 +2646,7 @@ class TestSaveNoticesServedForFidesDeviceId:
         assert last_served_use.feature is None
         assert last_served_use.created_at is not None
         assert last_served_use.updated_at is not None
-        assert last_served_use.tcf_version == "2.2"
+        assert last_served_use.tcf_version == CURRENT_TCF_VERSION
         assert last_served_use.served_notice_history_id == purpose_served_history_id
         use_served_history = ServedNoticeHistory.get(
             db, object_id=purpose_served_history_id

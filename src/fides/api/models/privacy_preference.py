@@ -39,7 +39,7 @@ from fides.api.util.tcf_util import (
 )
 from fides.config import CONFIG
 
-CURRENT_TCF_VERSION = "2.2"
+CURRENT_TCF_VERSION = "2.0"
 
 
 class RequestOrigin(Enum):
@@ -637,7 +637,7 @@ class LastSavedMixin:
         return relationship(PrivacyNoticeHistory)
 
     @property
-    def record_matches_latest_version(self) -> bool:
+    def record_matches_current_version(self) -> bool:
         """Returns True if the latest saved preference corresponds to the
         latest version for this notice or TCF standard"""
 

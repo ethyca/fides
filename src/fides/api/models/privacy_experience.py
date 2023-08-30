@@ -607,7 +607,7 @@ def cache_saved_and_served_on_consent_record(
         )
     )
     if saved_preference:
-        if saved_preference.record_matches_latest_version:
+        if saved_preference.record_matches_current_version:
             consent_record.current_preference = saved_preference.preference
         else:
             consent_record.outdated_preference = saved_preference.preference
@@ -623,7 +623,7 @@ def cache_saved_and_served_on_consent_record(
     )
 
     if served_record:
-        if served_record.record_matches_latest_version:
+        if served_record.record_matches_current_version:
             consent_record.current_served = True
         else:
             consent_record.outdated_served = True

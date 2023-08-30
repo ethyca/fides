@@ -1263,11 +1263,11 @@ class TestCacheSavedAndServedOnConsentRecord:
         served_notice_history_for_tcf_purpose,
     ):
         privacy_preference_history_for_tcf_purpose.current_privacy_preference.tcf_version = (
-            "2.1"
+            "1.0"
         )
         privacy_preference_history_for_tcf_purpose.current_privacy_preference.save(db)
 
-        served_notice_history_for_tcf_purpose.last_served_record.tcf_version = "2.1"
+        served_notice_history_for_tcf_purpose.last_served_record.tcf_version = "1.0"
         served_notice_history_for_tcf_purpose.last_served_record.save(db)
 
         cache_saved_and_served_on_consent_record(
