@@ -218,18 +218,25 @@ def verify_previously_served_records(
         name_for_log: str,
     ) -> None:
         """Internal helper method to verify the ServedNoticeHistory record is a valid type for the preference
-        that we're saving"""
-        if preference_record.served_notice_history_id:
-            served_notice_history: ServedNoticeHistory = get_served_notice_history(
-                db, preference_record.served_notice_history_id
+        that we're saving.
+
+        For example, say we're saving preferences for TCF purpose with id 4, and we also have the record of serving
+        TCF purpose with id 4 to the user.  This validation makes sure that the served record and the pending saved
+        record are both referring to a purpose with an id of 4.
+        """
+        if not preference_record.served_notice_history_id:
+            return
+
+        served_notice_history: ServedNoticeHistory = get_served_notice_history(
+            db, preference_record.served_notice_history_id
+        )
+        if getattr(served_notice_history, served_record_field, None) != getattr(
+            preference_record, saved_preference_field, None
+        ):
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"The ServedNoticeHistory record '{served_notice_history.id}' did not serve the {name_for_log} '{getattr(preference_record, saved_preference_field)}'.",
             )
-            if getattr(served_notice_history, served_record_field, None) != getattr(
-                preference_record, saved_preference_field, None
-            ):
-                raise HTTPException(
-                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail=f"The ServedNoticeHistory record '{served_notice_history.id}' did not serve the {name_for_log} '{getattr(preference_record, saved_preference_field)}'.",
-                )
 
     # Validate served record for privacy notice if applicable
     for preference in data.preferences:
@@ -453,8 +460,8 @@ def persist_tcf_preferences(
         )
         return current_preference
 
-    # Save TCF preferences individually with respect to purpose, special purpose, vendor,
-    # feature, special feature, and/or system fides key.
+    # Save TCF preferences individually in the database, with respect to purpose, special purpose, vendor,
+    # feature, special feature, and/or system id.
     # Currently, we don't attempt to propagate these preferences to third party systems.
     for tcf_preference_field, field_name in TCF_PREFERENCES_FIELD_MAPPING.items():
         for preference in getattr(request_data, tcf_preference_field):
@@ -476,7 +483,7 @@ def update_request_body_for_consent_served_or_saved(
         Type[PrivacyPreferencesCreate], Type[RecordConsentServedCreate]
     ],
 ) -> Dict[str, Union[Optional[RequestOrigin], Optional[str]]]:
-    """Common method to share building the starting details to save that consent
+    """Common method for building the starting details to save that consent
     was served or saved for a given user"""
 
     request_data = _supplement_request_data_from_request_headers(
@@ -528,10 +535,10 @@ def save_privacy_preferences_for_identities(
     original_request_data: PrivacyPreferencesRequest,
 ) -> List[CurrentPrivacyPreference]:
     """
-    Shared method to save privacy preferences for an end user across multiple endpoints.
+    Shared method to save privacy preferences for an end user.
 
     Saves preferences for either a privacy notice, or individual TCF items like purposes, special purposes, vendors,
-    features, or special features.
+    systems, features, or special features.
 
     Creates both a detailed historical record and upserts a current record with just the most recently saved changes
     for each preference type.
@@ -542,7 +549,7 @@ def save_privacy_preferences_for_identities(
     created_historical_preferences: List[PrivacyPreferenceHistory] = []
     upserted_current_preferences: List[CurrentPrivacyPreference] = []
 
-    # Combines user data from request body and request headers
+    # Combines user data from request body and request headers for consent reporting
     common_user_data: Dict = update_request_body_for_consent_served_or_saved(
         db=db,
         verified_provided_identity=verified_provided_identity,
@@ -647,16 +654,17 @@ def save_consent_served_for_identities(
     original_request_data: RecordConsentServedRequest,
 ) -> List[LastServedNotice]:
     """
-    Saves that consent components were served to the end user.
+    Shared method to save that consent components were served to the end user.
 
     Saves that either privacy notices or individual TCF components like purposes, special purposes, vendors,
-    special features, or features were served.
+    systems, special features, or features were served.
 
     We save a historical record every time a consent item was served to the user in the frontend,
     and a separate "last served notice" for just the last time a consent item was served to a given user.
     """
     upserted_last_served: List[LastServedNotice] = []
-    # Gather data from request body and additional data about the user from request headers
+
+    # Combines user data from request body and request headers for consent reporting
     common_data: Dict = update_request_body_for_consent_served_or_saved(
         db=db,
         verified_provided_identity=verified_provided_identity,
@@ -667,11 +675,15 @@ def save_consent_served_for_identities(
     )
     common_data["serving_component"] = original_request_data.serving_component
 
-    def save_consent_served(
+    def save_consent_served_for_field_name(
         identifiers: Union[List[SafeStr], List[int]], field_name: ConsentRecordType
     ) -> None:
         """Internal helper for creating a ServedNoticeHistory record for various types
-        of consent components"""
+        of consent components
+
+        Loops through the list of all consent components of a given type and saves
+        to the database that they were served.
+        """
         for identifier in identifiers:
             (
                 _,
@@ -690,15 +702,15 @@ def save_consent_served_for_identities(
             upserted_last_served.append(current_served)
 
     # Save consent served for privacy notices if applicable
-    save_consent_served(
+    save_consent_served_for_field_name(
         original_request_data.privacy_notice_history_ids,
         ConsentRecordType.privacy_notice_history_id,
     )
     # Save consent served for TCF components if applicable
-    for tcf_component, field_name in TCF_COMPONENT_MAPPING.items():
-        save_consent_served(
+    for tcf_component, database_column in TCF_COMPONENT_MAPPING.items():
+        save_consent_served_for_field_name(
             getattr(original_request_data, tcf_component),
-            field_name,
+            database_column,
         )
 
     return upserted_last_served
@@ -842,6 +854,7 @@ def get_historical_consent_report(
             PrivacyPreferenceHistory.purpose.label("purpose"),
             PrivacyPreferenceHistory.special_purpose.label("special_purpose"),
             PrivacyPreferenceHistory.vendor.label("vendor"),
+            PrivacyPreferenceHistory.system.label("system"),
             PrivacyPreferenceHistory.feature.label("feature"),
             PrivacyPreferenceHistory.special_feature.label("special_feature"),
             PrivacyPreferenceHistory.tcf_version.label("tcf_version"),

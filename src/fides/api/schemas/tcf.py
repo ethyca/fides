@@ -15,7 +15,7 @@ from fides.api.schemas.privacy_notice import UserSpecificConsentDetails
 
 
 class TCFSavedandServedDetails(UserSpecificConsentDetails):
-    """Default Schema that is supplements provided TCF details with whether a consent item was
+    """Default Schema that combines TCF details with whether a consent item was
     previously saved or served."""
 
     @root_validator
@@ -31,7 +31,7 @@ class TCFSavedandServedDetails(UserSpecificConsentDetails):
 
 
 class EmbeddedVendor(FidesSchema):
-    """Sparse details for an embedded vendor.  Read-only."""
+    """Sparse details for an embedded vendor beneath a purpose or feature section. Read-only."""
 
     id: str
     name: str
@@ -59,6 +59,8 @@ class EmbeddedLineItem(FidesSchema):
 
 
 class EmbeddedPurpose(EmbeddedLineItem):
+    """Sparse details for an embedded purpose beneath a system or vendor section.  Read-only."""
+
     legal_bases: List[str] = []
 
 
@@ -73,7 +75,7 @@ class TCFDataCategoryRecord(FidesSchema):
 
 
 class TCFVendorRecord(TCFSavedandServedDetails):
-    """Schema for a TCF Vendor: returned in the TCF Overlay Experience"""
+    """Schema for a TCF Vendor or system: returned in the TCF Overlay Experience"""
 
     id: str
     has_vendor_id: bool
@@ -140,7 +142,7 @@ class TCFSpecialPurposeSave(TCFPreferenceSaveBase):
 
 
 class TCFVendorSave(FidesSchema):
-    """Base schema for saving preferences with respect to a TCF Vendor
+    """Base schema for saving preferences with respect to a TCF Vendor or a System
     TODO: TCF Add validation for allowable vendors (in GVL or dictionary?)
     """
 

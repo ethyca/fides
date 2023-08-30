@@ -32,7 +32,7 @@ from fides.api.schemas.tcf import (
 from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING, TCFComponentType
 
 # Maps the sections in the request body for saving various TCF preferences
-# against the specific field name on which these preferences are saved
+# against the specific database column name on which these preferences are saved
 TCF_PREFERENCES_FIELD_MAPPING: Dict[str, str] = {
     "purpose_preferences": TCFComponentType.purpose.value,
     "special_purpose_preferences": TCFComponentType.special_purpose.value,
@@ -76,17 +76,23 @@ class ConsentOptionCreate(FidesSchema):
 
 
 class PrivacyPreferencesRequest(FidesSchema):
-    """Request body for creating PrivacyPreferences."""
+    """Request body for creating PrivacyPreferences.
+
+
+    "preferences" key reserved for saving preferences against a privacy notice.
+
+    New *_preferences fields are used for saving preferences against various tcf components.
+    """
 
     browser_identity: Identity
     code: Optional[SafeStr]
-    preferences: conlist(ConsentOptionCreate, max_items=50) = []  # type: ignore
-    purpose_preferences: conlist(TCFPurposeSave, max_items=50) = []  # type: ignore
-    special_purpose_preferences: conlist(TCFSpecialPurposeSave, max_items=50) = []  # type: ignore
-    vendor_preferences: conlist(TCFVendorSave, max_items=50) = []  # type: ignore
-    feature_preferences: conlist(TCFFeatureSave, max_items=50) = []  # type: ignore
-    special_feature_preferences: conlist(TCFSpecialFeatureSave, max_items=50) = []  # type: ignore
-    system_preferences: conlist(TCFVendorSave, max_items=50) = []  # type: ignore
+    preferences: conlist(ConsentOptionCreate, max_items=200) = []  # type: ignore
+    purpose_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
+    special_purpose_preferences: conlist(TCFSpecialPurposeSave, max_items=200) = []  # type: ignore
+    vendor_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
+    feature_preferences: conlist(TCFFeatureSave, max_items=200) = []  # type: ignore
+    special_feature_preferences: conlist(TCFSpecialFeatureSave, max_items=200) = []  # type: ignore
+    system_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]

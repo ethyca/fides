@@ -23,7 +23,7 @@ from fides.api.models.privacy_preference import (
 )
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.schemas.tcf import TCFPurposeRecord, TCFVendorRecord
+from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
 from fides.api.util.tcf_util import (
     TCF_COMPONENT_MAPPING,
     ConsentRecordType,
@@ -235,6 +235,8 @@ class PrivacyExperience(Base):
         Relevant privacy notices are queried at runtime.
         """
         if self.component == ComponentType.tcf_overlay:
+            # For now, just returning that the TCF Overlay should always show a banner,
+            # but this is subject to change.
             return True
 
         if self.component != ComponentType.overlay:
@@ -576,12 +578,16 @@ def upsert_privacy_experiences_after_config_update(
 
 def cache_saved_and_served_on_consent_record(
     db: Session,
-    consent_record: Union[PrivacyNotice, TCFPurposeRecord, TCFVendorRecord],
+    consent_record: Union[
+        PrivacyNotice, TCFPurposeRecord, TCFFeatureRecord, TCFVendorRecord
+    ],
     fides_user_provided_identity: Optional[ProvidedIdentity],
     record_type: ConsentRecordType,
 ) -> None:
-    """For display purposes, cache whether the resource was served to the given user and/or the user has saved
-    preferences for that resource.
+    """For display purposes, look up whether the resource was served to the given user and/or the user has saved
+    preferences for that resource and add this to the consent_record
+
+    Updates the consent_record in place.
     """
     if not fides_user_provided_identity:
         return
@@ -591,7 +597,7 @@ def cache_saved_and_served_on_consent_record(
     consent_record.current_served = None
     consent_record.outdated_served = None
 
-    # Check if we have any previously saved preferences for this user on this record type
+    # Check if we have any previously saved preferences for this user
     saved_preference = (
         CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
             db=db,

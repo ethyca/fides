@@ -146,7 +146,8 @@ class PrivacyNoticeResponse(PrivacyNoticeWithId):
 
 class UserSpecificConsentDetails(FidesSchema):
     """Schema for surfacing previously-saved preferences or previously-served
-    consent components"""
+    consent components
+    """
 
     default_preference: Optional[
         UserConsentPreference

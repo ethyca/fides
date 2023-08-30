@@ -1940,6 +1940,26 @@ class TestHistoricalPreferences:
             == served_notice_history_for_tcf_purpose.id
         )
 
+    def test_get_historical_preferences_saved_for_system(
+        self,
+        generate_auth_header,
+        api_client,
+        url,
+        privacy_preference_history_for_system,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_PREFERENCE_HISTORY_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert len(response.json()["items"]) == 1
+        assert (
+            response.json()["items"][0]["system"]
+            == privacy_preference_history_for_system.system
+        )
+        assert (
+            response.json()["items"][0]["preference"]
+            == privacy_preference_history_for_system.preference.value
+        )
+
     def test_get_historical_preferences_user_geography_unsupported(
         self,
         api_client: TestClient,
@@ -2424,9 +2444,8 @@ class TestSaveNoticesServedForFidesDeviceId:
         last_served_notice.delete(db)
         served_notice_history.delete(db)
 
-    def test_duplicate_tcf_item_served(
+    def test_duplicate_tcf_special_purpose_served(
         self,
-        db,
         api_client,
         url,
     ):
@@ -2444,6 +2463,28 @@ class TestSaveNoticesServedForFidesDeviceId:
         assert (
             response.json()["detail"][0]["msg"]
             == "Duplicate served records saved against TCF component: 'tcf_special_purposes'"
+        )
+
+    def test_duplicate_tcf_feature_served(
+        self,
+        db,
+        api_client,
+        url,
+    ):
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
+            },
+            "tcf_features": [1, 1],
+            "user_geography": "us_ca",
+            "acknowledge_mode": False,
+            "serving_component": ServingComponent.tcf_overlay.value,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Duplicate served records saved against TCF component: 'tcf_features'"
         )
 
     def test_invalid_tcf_purpose_served(

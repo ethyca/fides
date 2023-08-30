@@ -238,7 +238,7 @@ def _validate_before_saving_consent_history(
     - Validates that a notice history exists if supplied
     - Validates that at least one provided identity type is supplied
     - Validates that only one of a data use, special purpose, vendor, system_id, feature or special
-    feature exists in request body
+    feature exists in request body.  Each record can only store preferences for one attribute at a time.
     """
     privacy_notice_history = None
     if data.get("privacy_notice_history_id"):
@@ -283,7 +283,10 @@ def _validate_before_saving_consent_history(
 class ServedNoticeHistory(ConsentReportingMixin, Base):
     """A historical record of every time a resource was served in the UI to which an end user could consent
 
-    This might be a privacy notice, a data use, a vendor, a system_id, or a feature.
+    This might be a privacy notice, a purpose, special purpose, feature, special feature, vendor, or system.
+
+    The name "ServedNoticeHistory" comes from where we originally just stored the history of every time a notice was
+    served, but this table was later expanded to store when TCF attributes like purposes, special purposes, etc. were stored
     """
 
     acknowledge_mode = Column(
@@ -353,13 +356,15 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
             "fides_user_device_provided_identity_id": created_served_notice_history.fides_user_device_provided_identity_id,
         }
 
+        # Add additional data to store the "historical" version of the consent component that was served.
+        # Either the privacy notice history record or the TCF version
         if privacy_notice_history:
             last_served_data["privacy_notice_history_id"] = privacy_notice_history.id
             last_served_data[
                 "privacy_notice_id"
             ] = privacy_notice_history.privacy_notice_id
 
-        if tcf_field:
+        elif tcf_field:
             last_served_data[tcf_field] = tcf_val
             last_served_data["tcf_version"] = CURRENT_TCF_VERSION
 
@@ -514,7 +519,8 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
             tcf_val,
         ) = _validate_before_saving_consent_history(db, data)
 
-        # Take a snapshot of relevant systems and save
+        # Take a snapshot of systems that are relevant at this point in time for this consent
+        # attribute and save.
         data["relevant_systems"] = PrivacyPreferenceHistory.determine_relevant_systems(
             db,
             privacy_notice_history=privacy_notice_history,
@@ -535,6 +541,8 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
             "privacy_preference_history_id": created_privacy_preference_history.id,
             "fides_user_device_provided_identity_id": created_privacy_preference_history.fides_user_device_provided_identity_id,
         }
+        # Add additional data to store the "historical" version of the consent component that was saved.
+        # Either the privacy notice history record or the TCF version
         if privacy_notice_history:
             current_privacy_preference_data[
                 "privacy_notice_id"
@@ -542,8 +550,7 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
             current_privacy_preference_data[
                 "privacy_notice_history_id"
             ] = privacy_notice_history.id
-
-        if tcf_field:
+        elif tcf_field:
             current_privacy_preference_data[tcf_field] = tcf_val
             current_privacy_preference_data["tcf_version"] = CURRENT_TCF_VERSION
 
@@ -723,7 +730,7 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
         preference_value: Union[int, str],
     ) -> Optional[CurrentPrivacyPreference]:
         """Retrieves the CurrentPrivacyPreference saved against a notice, TCF purpose,
-        TCF special purpose, TCF vendor, TCF feature, TCF special feature, or system fides key for a given fides user device id
+        TCF special purpose, TCF vendor, TCF feature, TCF special feature, or system id for a given fides user device id
         """
 
         return (
@@ -739,9 +746,13 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
 
 
 class LastServedNotice(LastSavedMixin, Base):
-    """Stores the last time a notice was served for a given user
+    """Stores the last time a consent attribute was served for a given user.
 
-    Also consolidates serving notices among various user identities.
+    Also consolidates serving consent among various user identities.
+
+    The name "LastServedNotice" is because we originally stored serving notices to end users,
+    and we expanded this table to store serving tcf components like purposes, special purposes, etc.
+    to end uses.
     """
 
     served_notice_history_id = Column(

@@ -1141,7 +1141,7 @@ class TestPrivacyPreferenceHistory:
         )
 
     def test_validate_before_saving_consent_history_helper(
-        self, db, fides_user_provided_identity, privacy_notice
+        self, db, fides_user_provided_identity, privacy_notice, system
     ):
         with pytest.raises(IdentityNotFoundException):
             _validate_before_saving_consent_history(db, {})
@@ -1260,6 +1260,21 @@ class TestPrivacyPreferenceHistory:
         assert privacy_notice_history == privacy_notice.histories[0]
         assert tcf_key is None
         assert tcf_val is None
+
+        (
+            privacy_notice_history,
+            tcf_key,
+            tcf_val,
+        ) = _validate_before_saving_consent_history(
+            db,
+            {
+                "system": system.id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+            },
+        )
+        assert privacy_notice_history is None
+        assert tcf_key == ConsentRecordType.system.value
+        assert tcf_val == system.id
 
 
 class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
@@ -1558,6 +1573,80 @@ class TestCurrentPrivacyPreference:
                 fides_user_provided_identity=fides_user_provided_identity,
                 preference_type=ConsentRecordType.purpose,
                 preference_value=500,
+            )
+            is None
+        )
+
+    def test_get_preference_by_feature_and_fides_user_device(
+        self,
+        db,
+        empty_provided_identity,
+        privacy_preference_history_for_tcf_feature,
+        fides_user_provided_identity,
+    ):
+        pref = CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+            db=db,
+            fides_user_provided_identity=fides_user_provided_identity,
+            preference_type=ConsentRecordType.feature,
+            preference_value=2,
+        )
+        assert (
+            pref
+            == privacy_preference_history_for_tcf_feature.current_privacy_preference
+        )
+
+        assert (
+            CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+                db=db,
+                fides_user_provided_identity=empty_provided_identity,
+                preference_type=ConsentRecordType.feature,
+                preference_value=2,
+            )
+            is None
+        )
+
+        assert (
+            CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+                db=db,
+                fides_user_provided_identity=fides_user_provided_identity,
+                preference_type=ConsentRecordType.feature,
+                preference_value=500,
+            )
+            is None
+        )
+
+    def test_get_preference_by_system_and_fides_user_device(
+        self,
+        db,
+        empty_provided_identity,
+        privacy_preference_history_for_system,
+        fides_user_provided_identity,
+        system,
+    ):
+        pref = CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+            db=db,
+            fides_user_provided_identity=fides_user_provided_identity,
+            preference_type=ConsentRecordType.system,
+            preference_value=system.id,
+        )
+        assert pref == privacy_preference_history_for_system.current_privacy_preference
+
+        assert (
+            CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+                db=db,
+                fides_user_provided_identity=empty_provided_identity,
+                preference_type=ConsentRecordType.system,
+                preference_value=system.id,
+            )
+            is None
+        )
+
+        assert (
+            CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+                db=db,
+                fides_user_provided_identity=fides_user_provided_identity,
+                preference_type=ConsentRecordType.system,
+                preference_value="another system",
             )
             is None
         )
@@ -1955,6 +2044,44 @@ class TestLastServedNotice:
                 db,
                 fides_user_provided_identity=fides_user_provided_identity,
                 record_type=ConsentRecordType.purpose,
+                preference_value=200,
+            )
+            is None
+        )
+
+    def test_get_last_served_for_feature_and_fides_user_device(
+        self,
+        db,
+        fides_user_provided_identity,
+        empty_provided_identity,
+        served_notice_history_for_tcf_feature,
+    ):
+        retrieved_record = (
+            LastServedNotice.get_last_served_for_record_type_and_fides_user_device(
+                db,
+                fides_user_provided_identity=fides_user_provided_identity,
+                record_type=ConsentRecordType.feature,
+                preference_value=2,
+            )
+        )
+        assert (
+            retrieved_record == served_notice_history_for_tcf_feature.last_served_record
+        )
+
+        assert (
+            LastServedNotice.get_last_served_for_record_type_and_fides_user_device(
+                db,
+                fides_user_provided_identity=empty_provided_identity,
+                record_type=ConsentRecordType.feature,
+                preference_value=2,
+            )
+            is None
+        )
+        assert (
+            LastServedNotice.get_last_served_for_record_type_and_fides_user_device(
+                db,
+                fides_user_provided_identity=fides_user_provided_identity,
+                record_type=ConsentRecordType.feature,
                 preference_value=200,
             )
             is None
