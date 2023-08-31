@@ -149,7 +149,7 @@ def privacy_experience_list(
     :return:
     """
     logger.info("Finding all Privacy Experiences with pagination params '{}'", params)
-    content_required: bool = has_notices  # Renaming confusing query param
+    content_required: bool = bool(has_notices)  # Renaming confusing query param
     fides_user_provided_identity: Optional[ProvidedIdentity] = None
     if fides_user_device_id:
         try:
@@ -202,7 +202,7 @@ def privacy_experience_list(
     for privacy_experience in experience_query.order_by(
         PrivacyExperience.created_at.desc()
     ):
-        content_exists = embed_experience_details(
+        content_exists: bool = embed_experience_details(
             db,
             privacy_experience=privacy_experience,
             show_disabled=show_disabled,
@@ -244,7 +244,8 @@ def embed_experience_details(
         - Privacy Notices
         - TCF Components: purposes, special purposes, vendors, systems, features, and special features
 
-    Returns whether content exists on the experience.
+    The PrivacyExperience is updated in-place, and this method just returns whether there is content
+    on this experience.
     """
     # Reset any temporary cached items just in case
     privacy_experience.privacy_notices = []
@@ -258,11 +259,10 @@ def embed_experience_details(
     has_tcf_contents: bool = any(
         getattr(tcf_contents, component) for component in TCF_COMPONENT_MAPPING
     )
-    # Supplement the Privacy Experience with TCF Contents if applicable
+    # Add fetched TCF contents to the Privacy Experience if applicable
     for component in TCF_COMPONENT_MAPPING:
         setattr(privacy_experience, component, getattr(tcf_contents, component))
 
-    # Add Privacy Notices to the Experience if applicable
     privacy_notices: List[
         PrivacyNotice
     ] = privacy_experience.get_related_privacy_notices(
@@ -278,6 +278,7 @@ def embed_experience_details(
             )
             for notice in privacy_notices
         ]
+    # Add Privacy Notices to the Experience if applicable
     privacy_experience.privacy_notices = privacy_notices
 
     return bool(privacy_notices) or has_tcf_contents

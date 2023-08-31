@@ -1,3 +1,4 @@
+from enum import Enum
 from functools import lru_cache
 from typing import Callable, Dict, List, Optional, Set, Tuple, Type, Union
 
@@ -7,14 +8,16 @@ from fideslang.gvl import (
     MAPPED_PURPOSES,
     MAPPED_SPECIAL_PURPOSES,
     data_use_to_purpose,
+    feature_id_to_feature_name,
     feature_name_to_feature,
+    purpose_to_data_use,
 )
 from fideslang.gvl.models import Feature, Purpose
 from fideslang.models import LegalBasisForProcessingEnum
-from sqlalchemy.engine.row import Row
+from fideslang.validation import FidesKey
+from sqlalchemy.engine.row import Row  # type:ignore[import]
 from sqlalchemy.orm import Query, Session
 
-from fides.api.models.privacy_preference import ConsentRecordType
 from fides.api.models.sql_models import (  # type:ignore[attr-defined]
     PrivacyDeclaration,
     System,
@@ -28,6 +31,33 @@ from fides.api.schemas.tcf import (
 
 TCFPurposeOrFeature = Union[TCFPurposeRecord, TCFFeatureRecord]
 
+PURPOSE_DATA_USES: List[str] = []
+for purpose in MAPPED_PURPOSES.values():
+    PURPOSE_DATA_USES.extend(purpose.data_uses)
+
+SPECIAL_PURPOSE_DATA_USES: List[str] = []
+for special_purpose in MAPPED_SPECIAL_PURPOSES.values():
+    SPECIAL_PURPOSE_DATA_USES.extend(special_purpose.data_uses)
+
+ALL_GVL_DATA_USES = list(set(PURPOSE_DATA_USES) | set(SPECIAL_PURPOSE_DATA_USES))
+
+
+class ConsentRecordType(Enum):
+    """*ALL* of the relevant consent items that can be served or have preferences saved against.
+
+    Includes notice items and tcf items
+    """
+
+    privacy_notice_id = "privacy_notice_id"
+    privacy_notice_history_id = "privacy_notice_history_id"
+    purpose = "purpose"
+    special_purpose = "special_purpose"
+    vendor = "vendor"
+    system = "system"
+    feature = "feature"
+    special_feature = "special_feature"
+
+
 # Each TCF section in the TCF Overlay mapped to the specific database column
 # from which previously-saved values are retrieved
 TCF_COMPONENT_MAPPING: Dict[str, ConsentRecordType] = {
@@ -39,6 +69,17 @@ TCF_COMPONENT_MAPPING: Dict[str, ConsentRecordType] = {
     "tcf_systems": ConsentRecordType.system,  # Systems where there are no known vendor id -
     # we don't know the system "type"
 }
+
+
+class TCFComponentType(Enum):
+    """A particular element of the TCF form"""
+
+    purpose = "purpose"
+    special_purpose = "special_purpose"
+    vendor = "vendor"
+    system = "system"
+    feature = "feature"
+    special_feature = "special_feature"
 
 
 class TCFExperienceContents:
@@ -55,9 +96,7 @@ class TCFExperienceContents:
     tcf_systems: List[TCFVendorRecord] = []
 
 
-def get_matching_privacy_declarations(
-    db: Session, all_gvl_data_uses: List[str]
-) -> Query:
+def get_matching_privacy_declarations(db: Session) -> Query:
     """Returns flattened system/privacy declaration records where we have a matching gvl data use AND the
     legal basis for processing is "Consent" or "Legitimate interests"
 
@@ -66,6 +105,7 @@ def get_matching_privacy_declarations(
     matching_privacy_declarations: Query = (
         db.query(
             System.id.label("system_id"),
+            System.fides_key.label("system_fides_key"),
             System.name.label("system_name"),
             System.description.label("system_description"),
             System.vendor_id,
@@ -75,7 +115,7 @@ def get_matching_privacy_declarations(
         )
         .join(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
         .filter(
-            PrivacyDeclaration.data_use.in_(all_gvl_data_uses),
+            PrivacyDeclaration.data_use.in_(ALL_GVL_DATA_USES),
             PrivacyDeclaration.legal_basis_for_processing.in_(
                 [
                     LegalBasisForProcessingEnum.CONSENT,
@@ -371,24 +411,14 @@ def get_tcf_contents(
     """
     system_map: Dict[str, TCFVendorRecord] = {}
 
-    all_tcf_data_uses: List[str] = []
-    for purpose in MAPPED_PURPOSES.values():
-        all_tcf_data_uses.extend(purpose.data_uses)
-
-    special_purpose_data_uses: List[str] = []
-    for special_purpose in MAPPED_SPECIAL_PURPOSES.values():
-        special_purpose_data_uses.extend(special_purpose.data_uses)
-
-    matching_privacy_declarations: Query = get_matching_privacy_declarations(
-        db, all_tcf_data_uses + special_purpose_data_uses
-    )
+    matching_privacy_declarations: Query = get_matching_privacy_declarations(db)
 
     # Collect purposes and update system map
     (
         purpose_map,
         updated_system_map,
     ) = build_purpose_or_feature_section_and_update_system_map(
-        all_tcf_data_uses,
+        PURPOSE_DATA_USES,
         tcf_component_name="purposes",
         system_map=system_map,
         matching_privacy_declaration_query=matching_privacy_declarations,
@@ -399,7 +429,7 @@ def get_tcf_contents(
         special_purpose_map,
         updated_system_map,
     ) = build_purpose_or_feature_section_and_update_system_map(
-        special_purpose_data_uses,
+        SPECIAL_PURPOSE_DATA_USES,
         tcf_component_name="special_purposes",
         system_map=updated_system_map,
         matching_privacy_declaration_query=matching_privacy_declarations,
@@ -450,7 +480,7 @@ def combine_overlay_sections(
     tcf_consent_contents.tcf_features = _sort_by_id(feature_map)  # type: ignore[assignment]
     tcf_consent_contents.tcf_special_features = _sort_by_id(special_feature_map)  # type: ignore[assignment]
 
-    sorted_vendors: List[TCFVendorRecord] = _sort_by_name(updated_system_map)
+    sorted_vendors: List[TCFVendorRecord] = _sort_by_name(updated_system_map)  # type: ignore[assignment]
     for vendor in sorted_vendors:
         vendor.purposes.sort(key=lambda x: x.id)
         vendor.special_purposes.sort(key=lambda x: x.id)
@@ -481,3 +511,127 @@ def _sort_by_name(
     tcf_mapping: Dict,
 ) -> Union[List[TCFPurposeRecord], List[TCFFeatureRecord], List[TCFVendorRecord]]:
     return sorted(list(tcf_mapping.values()), key=lambda x: x.name)
+
+
+def systems_that_match_tcf_data_uses(
+    matching_privacy_declarations: Query, data_uses: List[str]
+) -> List[FidesKey]:
+    """Check which systems have these data uses directly.
+
+    This is used for determining relevant systems for TCF purposes and special purposes. Unlike
+    determining relevant systems for Privacy Notices where we use a hierarchy-type matching,
+    for TCF, we're looking for an exact match on data use."""
+    if not data_uses:
+        return []
+
+    return list(
+        {
+            privacy_declaration_record.system_fides_key
+            for privacy_declaration_record in matching_privacy_declarations.filter(
+                PrivacyDeclaration.data_use.in_(data_uses)
+            )
+        }
+    )
+
+
+def get_relevant_systems_for_tcf_attribute(
+    db: Session,
+    tcf_field: Optional[str],
+    tcf_value: Union[Optional[str], Optional[int]],
+) -> List[FidesKey]:
+    """Return a list of the system fides keys that match the given TCF attribute,
+    provided the system is relevant for TCF.
+
+    Used for consent reporting, to take a snapshot of the systems that are relevant at that point in time
+    """
+
+    # For TCF attributes, we need to first filter to systems/privacy declarations that have a relevant GVL data use
+    # as well as a legal basis of processing of consent or legitimate interests
+    starting_privacy_declarations: Query = get_matching_privacy_declarations(db)
+
+    if tcf_field in [
+        TCFComponentType.purpose.value,
+        TCFComponentType.special_purpose.value,
+    ]:
+        purpose_data_uses: List[str] = purpose_to_data_use(tcf_value, special_purpose="special" in tcf_field)  # type: ignore[arg-type]
+        return systems_that_match_tcf_data_uses(
+            starting_privacy_declarations, purpose_data_uses
+        )
+
+    if tcf_field in [
+        TCFComponentType.feature.value,
+        TCFComponentType.special_feature.value,
+    ]:
+        return systems_that_match_tcf_feature(
+            starting_privacy_declarations,
+            feature_id_to_feature_name(
+                feature_id=tcf_value, special_feature="special" in tcf_field  # type: ignore[arg-type]
+            ),
+        )
+
+    if tcf_field == TCFComponentType.vendor.value:
+        return systems_that_match_vendor_string(
+            starting_privacy_declarations, tcf_value  # type: ignore[arg-type]
+        )
+
+    if tcf_field == TCFComponentType.system.value:
+        return systems_that_match_system_id(starting_privacy_declarations, tcf_value)  # type: ignore[arg-type]
+
+    return []
+
+
+def systems_that_match_tcf_feature(
+    matching_privacy_declarations: Query, feature: Optional[str]
+) -> List[FidesKey]:
+    """Check which systems have these data uses directly and are also relevant for TCF.
+
+    This is used for determining relevant systems for TCF features and special features. Unlike
+    determining relevant systems for Privacy Notices where we use a hierarchy-type matching,
+    for TCF, we're looking for an exact match on feature."""
+    if not feature:
+        return []
+
+    return list(
+        {
+            privacy_declaration_record.system_fides_key
+            for privacy_declaration_record in matching_privacy_declarations.filter(
+                PrivacyDeclaration.features.any(feature)
+            )
+        }
+    )
+
+
+def systems_that_match_vendor_string(
+    matching_privacy_declarations: Query, vendor: Optional[str]
+) -> List[FidesKey]:
+    """Check which systems have this vendor associated with them and are relevant for TCF. Unlike PrivacyNotices,
+    where we use hierarchy-type matching, with TCF components, we are looking for exact matches.
+    """
+    if not vendor:
+        return []
+
+    return list(
+        {
+            privacy_declaration_record.system_fides_key
+            for privacy_declaration_record in matching_privacy_declarations.filter(
+                System.vendor_id == vendor
+            )
+        }
+    )
+
+
+def systems_that_match_system_id(
+    matching_privacy_declarations: Query, system_id: Optional[str]
+) -> List[FidesKey]:
+    """Returns the system id if it exists on the system and the system is relevant for TCF"""
+    if not system_id:
+        return []
+
+    return list(
+        {
+            privacy_declaration_record.system_fides_key
+            for privacy_declaration_record in matching_privacy_declarations.filter(
+                System.id == system_id
+            )
+        }
+    )

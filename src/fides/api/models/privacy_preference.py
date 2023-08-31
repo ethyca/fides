@@ -5,7 +5,6 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
-from fideslang.gvl import feature_id_to_feature_name, purpose_to_data_use
 from fideslang.validation import FidesKey
 from sqlalchemy import ARRAY, Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
@@ -21,6 +20,7 @@ from fides.api.common_exceptions import (
     ConsentHistorySaveError,
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
+    SystemNotFound,
 )
 from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.api.models.privacy_notice import (
@@ -33,13 +33,15 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     ProvidedIdentity,
 )
-from fides.api.models.sql_models import (  # type:ignore[attr-defined]
-    PrivacyDeclaration,
-    System,
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+from fides.api.util.tcf_util import (
+    ConsentRecordType,
+    TCFComponentType,
+    get_relevant_systems_for_tcf_attribute,
 )
 from fides.config import CONFIG
 
-CURRENT_TCF_VERSION = "2.2"
+CURRENT_TCF_VERSION = "2.0"
 
 
 class RequestOrigin(Enum):
@@ -53,30 +55,6 @@ class ConsentMethod(Enum):
     button = "button"
     gpc = "gpc"
     individual_notice = "individual_notice"
-
-
-class TCFComponentType(Enum):
-    """A particular element of the TCF form"""
-
-    purpose = "purpose"
-    special_purpose = "special_purpose"
-    vendor = "vendor"
-    system = "system"
-    feature = "feature"
-    special_feature = "special_feature"
-
-
-class ConsentRecordType(Enum):
-    """All of the relevant consent items that can be served or have preferences saved against"""
-
-    privacy_notice_id = "privacy_notice_id"
-    privacy_notice_history_id = "privacy_notice_history_id"
-    purpose = "purpose"
-    special_purpose = "special_purpose"
-    vendor = "vendor"
-    system = "system"
-    feature = "feature"
-    special_feature = "special_feature"
 
 
 class ConsentReportingMixin:
@@ -261,8 +239,9 @@ def _validate_before_saving_consent_history(
 
     - Validates that a notice history exists if supplied
     - Validates that at least one provided identity type is supplied
+    - Validates that a system exists if supplied
     - Validates that only one of a data use, special purpose, vendor, system_id, feature or special
-    feature exists in request body
+    feature exists in request body.  Each record can only store preferences for one attribute at a time.
     """
     privacy_notice_history = None
     if data.get("privacy_notice_history_id"):
@@ -270,7 +249,9 @@ def _validate_before_saving_consent_history(
             db=db, object_id=data.get("privacy_notice_history_id")
         )
         if not privacy_notice_history:
-            raise PrivacyNoticeHistoryNotFound()
+            raise PrivacyNoticeHistoryNotFound(
+                f"Can't save consent against invalid privacy notice history '{data.get('privacy_notice_history_id')}'."
+            )
 
     if not data.get("provided_identity_id") and not data.get(
         "fides_user_device_provided_identity_id"
@@ -278,6 +259,13 @@ def _validate_before_saving_consent_history(
         raise IdentityNotFoundException(
             "Must supply a verified provided identity id or a fides_user_device_provided_identity_id"
         )
+
+    if data.get("system"):
+        system = db.query(System).filter(System.id == data.get("system")).first()
+        if not system:
+            raise SystemNotFound(
+                f"Can't save consent against invalid system id '{data.get('system')}'."
+            )
 
     tcf_attributes: Dict[str, Union[Optional[str], Optional[int]]] = {
         tcf_key: data[tcf_key]
@@ -307,7 +295,10 @@ def _validate_before_saving_consent_history(
 class ServedNoticeHistory(ConsentReportingMixin, Base):
     """A historical record of every time a resource was served in the UI to which an end user could consent
 
-    This might be a privacy notice, a data use, a vendor, a system_id, or a feature.
+    This might be a privacy notice, a purpose, special purpose, feature, special feature, vendor, or system.
+
+    The name "ServedNoticeHistory" comes from where we originally just stored the history of every time a notice was
+    served, but this table was later expanded to store when TCF attributes like purposes, special purposes, etc. were stored
     """
 
     acknowledge_mode = Column(
@@ -377,13 +368,15 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
             "fides_user_device_provided_identity_id": created_served_notice_history.fides_user_device_provided_identity_id,
         }
 
+        # Add additional data to store the "historical" version of the consent component that was served.
+        # Either the privacy notice history record or the TCF version
         if privacy_notice_history:
             last_served_data["privacy_notice_history_id"] = privacy_notice_history.id
             last_served_data[
                 "privacy_notice_id"
             ] = privacy_notice_history.privacy_notice_id
 
-        if tcf_field:
+        elif tcf_field:
             last_served_data[tcf_field] = tcf_val
             last_served_data["tcf_version"] = CURRENT_TCF_VERSION
 
@@ -498,34 +491,7 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
         if privacy_notice_history:
             return privacy_notice_history.calculate_relevant_systems(db)
 
-        if tcf_field == TCFComponentType.purpose.value:
-            purpose_data_uses: List[str] = purpose_to_data_use(tcf_value)  # type: ignore[arg-type]
-            return systems_that_match_tcf_data_uses(db, purpose_data_uses)
-
-        if tcf_field == TCFComponentType.special_purpose.value:
-            special_purpose_data_uses: List[str] = purpose_to_data_use(
-                tcf_value, special_purpose=True  # type: ignore[arg-type]
-            )
-            return systems_that_match_tcf_data_uses(db, special_purpose_data_uses)
-
-        if tcf_field == TCFComponentType.feature.value:
-            return systems_that_match_tcf_feature(
-                db, feature_id_to_feature_name(feature_id=tcf_value)
-            )
-
-        if tcf_field == TCFComponentType.special_feature.value:
-            return systems_that_match_tcf_feature(
-                db,
-                feature_id_to_feature_name(feature_id=tcf_value, special_feature=True),
-            )
-
-        if tcf_field == TCFComponentType.vendor.value:
-            return systems_that_match_vendor_string(db, tcf_value)
-
-        if tcf_field == TCFComponentType.system.value:
-            return systems_that_match_system_id(db, tcf_value)
-
-        return []
+        return get_relevant_systems_for_tcf_attribute(db, tcf_field, tcf_value)
 
     @classmethod
     def create(
@@ -565,7 +531,8 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
             tcf_val,
         ) = _validate_before_saving_consent_history(db, data)
 
-        # Take a snapshot of relevant systems and save
+        # Take a snapshot of systems that are relevant at this point in time for this consent
+        # attribute and save.
         data["relevant_systems"] = PrivacyPreferenceHistory.determine_relevant_systems(
             db,
             privacy_notice_history=privacy_notice_history,
@@ -586,6 +553,8 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
             "privacy_preference_history_id": created_privacy_preference_history.id,
             "fides_user_device_provided_identity_id": created_privacy_preference_history.fides_user_device_provided_identity_id,
         }
+        # Add additional data to store the "historical" version of the consent component that was saved.
+        # Either the privacy notice history record or the TCF version
         if privacy_notice_history:
             current_privacy_preference_data[
                 "privacy_notice_id"
@@ -593,8 +562,7 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
             current_privacy_preference_data[
                 "privacy_notice_history_id"
             ] = privacy_notice_history.id
-
-        if tcf_field:
+        elif tcf_field:
             current_privacy_preference_data[tcf_field] = tcf_val
             current_privacy_preference_data["tcf_version"] = CURRENT_TCF_VERSION
 
@@ -681,7 +649,7 @@ class LastSavedMixin:
         return relationship(PrivacyNoticeHistory)
 
     @property
-    def record_matches_latest_version(self) -> bool:
+    def record_matches_current_version(self) -> bool:
         """Returns True if the latest saved preference corresponds to the
         latest version for this notice or TCF standard"""
 
@@ -774,7 +742,7 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
         preference_value: Union[int, str],
     ) -> Optional[CurrentPrivacyPreference]:
         """Retrieves the CurrentPrivacyPreference saved against a notice, TCF purpose,
-        TCF special purpose, TCF vendor, TCF feature, TCF special feature, or system fides key for a given fides user device id
+        TCF special purpose, TCF vendor, TCF feature, TCF special feature, or system id for a given fides user device id
         """
 
         return (
@@ -790,9 +758,13 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
 
 
 class LastServedNotice(LastSavedMixin, Base):
-    """Stores the last time a notice was served for a given user
+    """Stores the last time a consent attribute was served for a given user.
 
-    Also consolidates serving notices among various user identities.
+    Also consolidates serving consent among various user identities.
+
+    The name "LastServedNotice" is because we originally stored serving notices to end users,
+    and we expanded this table to store serving tcf components like purposes, special purposes, etc.
+    to end uses.
     """
 
     served_notice_history_id = Column(
@@ -975,82 +947,3 @@ def upsert_last_saved_record(
         )
 
     return current_record
-
-
-def systems_that_match_tcf_data_uses(
-    db: Session, data_uses: List[str]
-) -> List[FidesKey]:
-    """Check which systems have these data uses directly.
-
-    This is used for determining relevant systems for TCF purposes and special purposes. Unlike
-    determining relevant systems for Privacy Notices where we use a hierarchy-type matching,
-    for TCF, we're looking for an exact match on data use."""
-    if not data_uses:
-        return []
-
-    return [
-        system.fides_key
-        for system in (
-            db.query(System.fides_key)
-            .join(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
-            .filter(PrivacyDeclaration.data_use.in_(data_uses))
-            .distinct(System.id)
-        )
-    ]
-
-
-def systems_that_match_tcf_feature(
-    db: Session, feature: Optional[str]
-) -> List[FidesKey]:
-    """Check which systems have these data uses directly.
-
-    This is used for determining relevant systems for TCF features and special features. Unlike
-    determining relevant systems for Privacy Notices where we use a hierarchy-type matching,
-    for TCF, we're looking for an exact match on feature."""
-    if not feature:
-        return []
-
-    return [
-        system.fides_key
-        for system in (
-            db.query(System.fides_key)
-            .join(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
-            .filter(PrivacyDeclaration.features.any(feature))
-            .distinct(System.id)
-        )
-    ]
-
-
-def systems_that_match_vendor_string(
-    db: Session, vendor: Optional[str]
-) -> List[FidesKey]:
-    """Check which systems have this vendor associated with them. Unlike PrivacyNotices, where we use hierarchy-type matching,
-    with TCF components, we are looking for exact matches.
-    """
-    if not vendor:
-        return []
-    return [
-        system.fides_key
-        for system in (
-            db.query(System.fides_key)
-            .filter(System.vendor_id == vendor)
-            .distinct(System.id)
-        )
-    ]
-
-
-def systems_that_match_system_id(
-    db: Session, system_id: Optional[str]
-) -> List[FidesKey]:
-    """Returns the system id if it exists on the system"""
-    if not system_id:
-        return []
-
-    return [
-        system.fides_key
-        for system in (
-            db.query(System.fides_key)
-            .filter(System.id == system_id)
-            .distinct(System.fides_key)
-        )
-    ]

@@ -9,8 +9,10 @@ from fides.api.common_exceptions import (
     ConsentHistorySaveError,
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
+    SystemNotFound,
 )
 from fides.api.models.privacy_preference import (
+    CURRENT_TCF_VERSION,
     ConsentRecordType,
     CurrentPrivacyPreference,
     LastServedNotice,
@@ -347,7 +349,7 @@ class TestPrivacyPreferenceHistory:
         assert preference_history_record.special_feature is None
         assert preference_history_record.vendor is None
         assert preference_history_record.special_purpose is None
-        assert preference_history_record.tcf_version == "2.2"
+        assert preference_history_record.tcf_version == CURRENT_TCF_VERSION
         assert preference_history_record.privacy_notice_id is None
 
         assert preference_history_record.phone_number is None
@@ -378,7 +380,7 @@ class TestPrivacyPreferenceHistory:
         assert current_privacy_preference.special_feature is None
         assert current_privacy_preference.vendor is None
         assert current_privacy_preference.special_purpose is None
-        assert current_privacy_preference.tcf_version == "2.2"
+        assert current_privacy_preference.tcf_version == CURRENT_TCF_VERSION
 
         # Save preferences again with an "opt in" preference for this purpose
         next_preference_history_record = PrivacyPreferenceHistory.create(
@@ -443,7 +445,9 @@ class TestPrivacyPreferenceHistory:
         assert special_purpose_preference_history_record.purpose is None
         assert special_purpose_preference_history_record.feature is None
         assert special_purpose_preference_history_record.special_feature is None
-        assert special_purpose_preference_history_record.tcf_version == "2.2"
+        assert (
+            special_purpose_preference_history_record.tcf_version == CURRENT_TCF_VERSION
+        )
         assert (
             special_purpose_preference_history_record.privacy_notice_history_id is None
         )
@@ -457,7 +461,7 @@ class TestPrivacyPreferenceHistory:
         assert current_special_purpose_preference.feature is None
         assert current_special_purpose_preference.special_feature is None
         assert current_special_purpose_preference.privacy_notice_history_id is None
-        assert current_special_purpose_preference.tcf_version == "2.2"
+        assert current_special_purpose_preference.tcf_version == CURRENT_TCF_VERSION
 
         current_special_purpose_preference.delete(db)
         special_purpose_preference_history_record.delete(db)
@@ -516,7 +520,7 @@ class TestPrivacyPreferenceHistory:
         assert preference_history_record.special_purpose is None
         assert preference_history_record.feature is None
         assert preference_history_record.special_feature is None
-        assert preference_history_record.tcf_version == "2.2"
+        assert preference_history_record.tcf_version == CURRENT_TCF_VERSION
         assert preference_history_record.privacy_notice_id is None
         assert preference_history_record.phone_number is None
         assert preference_history_record.hashed_phone_number is None
@@ -542,7 +546,7 @@ class TestPrivacyPreferenceHistory:
         assert current_privacy_preference.preference == UserConsentPreference.opt_out
         assert current_privacy_preference.privacy_notice_history is None
         assert current_privacy_preference.vendor == "sendgrid"
-        assert current_privacy_preference.tcf_version == "2.2"
+        assert current_privacy_preference.tcf_version == CURRENT_TCF_VERSION
 
         # Save preferences again with an "opt in" preference for this privacy notice
         next_preference_history_record = PrivacyPreferenceHistory.create(
@@ -572,7 +576,7 @@ class TestPrivacyPreferenceHistory:
         assert current_privacy_preference.special_purpose is None
         assert current_privacy_preference.feature is None
         assert current_privacy_preference.special_feature is None
-        assert current_privacy_preference.tcf_version == "2.2"
+        assert current_privacy_preference.tcf_version == CURRENT_TCF_VERSION
         assert (
             next_preference_history_record.current_privacy_preference
             == current_privacy_preference
@@ -1141,7 +1145,7 @@ class TestPrivacyPreferenceHistory:
         )
 
     def test_validate_before_saving_consent_history_helper(
-        self, db, fides_user_provided_identity, privacy_notice
+        self, db, fides_user_provided_identity, privacy_notice, system
     ):
         with pytest.raises(IdentityNotFoundException):
             _validate_before_saving_consent_history(db, {})
@@ -1168,6 +1172,16 @@ class TestPrivacyPreferenceHistory:
                 db,
                 {
                     "fides_user_device_provided_identity_id": fides_user_provided_identity.id
+                },
+            )
+
+        with pytest.raises(SystemNotFound):
+            # Attempted to save preferences against system that doesn't exist
+            _validate_before_saving_consent_history(
+                db,
+                {
+                    "system": "bad system",
+                    "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
                 },
             )
 
@@ -1261,26 +1275,34 @@ class TestPrivacyPreferenceHistory:
         assert tcf_key is None
         assert tcf_val is None
 
+        (
+            privacy_notice_history,
+            tcf_key,
+            tcf_val,
+        ) = _validate_before_saving_consent_history(
+            db,
+            {
+                "system": system.id,
+                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+            },
+        )
+        assert privacy_notice_history is None
+        assert tcf_key == ConsentRecordType.system.value
+        assert tcf_val == system.id
+
 
 class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
     def test_determine_relevant_systems_for_notice(
         self, db, privacy_notice, system_with_no_uses
     ):
-        assert (
-            PrivacyPreferenceHistory.determine_relevant_systems(
-                db, privacy_notice_history=privacy_notice.histories[0]
-            )
-            == []
-        )
-
-        # Add relevant data use to system for notice
+        # Add data use that is not relevant for notice
         pd_1 = PrivacyDeclaration.create(
             db=db,
             data={
                 "name": "Collect data for content performance",
                 "system_id": system_with_no_uses.id,
                 "data_categories": ["user.device.cookie_id"],
-                "data_use": privacy_notice.data_uses[0],
+                "data_use": "analytics",
                 "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "dataset_references": None,
@@ -1288,6 +1310,16 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
                 "ingress": None,
             },
         )
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db, privacy_notice_history=privacy_notice.histories[0]
+            )
+            == []
+        )
+
+        # Update data use to be relevant for notice
+        pd_1.data_use = privacy_notice.data_uses[0]
+        pd_1.save(db)
 
         assert PrivacyPreferenceHistory.determine_relevant_systems(
             db, privacy_notice_history=privacy_notice.histories[0]
@@ -1296,14 +1328,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
         pd_1.delete(db)
 
     def test_determine_relevant_systems_for_tcf_purpose(self, db, system_with_no_uses):
-        assert (
-            PrivacyPreferenceHistory.determine_relevant_systems(
-                db, tcf_field=TCFComponentType.purpose.value, tcf_value=3
-            )
-            == []
-        )
-
-        # Add relevant data use to system for notice
+        # Add data use to system that corresponds to purpose 3.  Also has consent legal basis, which is important.
         pd_1 = PrivacyDeclaration.create(
             db=db,
             data={
@@ -1314,9 +1339,17 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
                 "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "dataset_references": None,
+                "legal_basis_for_processing": "Consent",
                 "egress": None,
                 "ingress": None,
             },
+        )
+
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db, tcf_field=TCFComponentType.purpose.value, tcf_value=2
+            )
+            == []
         )
 
         assert PrivacyPreferenceHistory.determine_relevant_systems(
@@ -1335,7 +1368,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
             == []
         )
 
-        # Add relevant data use to system for notice
+        # Add relevant data use for special purpose 2 to system
         pd_1 = PrivacyDeclaration.create(
             db=db,
             data={
@@ -1345,6 +1378,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
                 "data_use": "marketing.advertising.ad_serving",
                 "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
+                "legal_basis_for_processing": "Consent",
                 "dataset_references": None,
                 "egress": None,
                 "ingress": None,
@@ -1358,6 +1392,8 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
         pd_1.delete(db)
 
     def test_determine_relevant_systems_for_tcf_vendor(self, db, system_with_no_uses):
+        system_with_no_uses.vendor_id = "amplitude"
+        system_with_no_uses.save(db)
         assert (
             PrivacyPreferenceHistory.determine_relevant_systems(
                 db, tcf_field=TCFComponentType.vendor.value, tcf_value="amplitude"
@@ -1365,8 +1401,22 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
             == []
         )
 
-        system_with_no_uses.vendor_id = "amplitude"
-        system_with_no_uses.save(db)
+        # Vendor needs to have a relevant data use, and a specific legal basis to make the vendor relevant
+        PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Collect data for content performance",
+                "system_id": system_with_no_uses.id,
+                "data_categories": ["user.device.cookie_id"],
+                "data_use": "marketing.advertising.ad_serving",
+                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                "data_subjects": ["customer"],
+                "legal_basis_for_processing": "Consent",
+                "dataset_references": None,
+                "egress": None,
+                "ingress": None,
+            },
+        )
 
         assert PrivacyPreferenceHistory.determine_relevant_systems(
             db, tcf_field=TCFComponentType.vendor.value, tcf_value="amplitude"
@@ -1388,6 +1438,8 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
         )
 
         decl.features = ["Match and combine offline data sources"]
+        decl.data_use = "marketing.advertising.ad_serving"
+        decl.legal_basis_for_processing = "Consent"
         decl.save(db)
 
         assert PrivacyPreferenceHistory.determine_relevant_systems(
@@ -1398,6 +1450,8 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
         # Add special feature that we're not saving preference for
         decl = system.privacy_declarations[0]
         decl.features = ["Actively scan device characteristics for identification"]
+        decl.data_use = "marketing.advertising.ad_serving"
+        decl.legal_basis_for_processing = "Consent"
         decl.save(db)
 
         assert (
@@ -1423,6 +1477,33 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
             )
             == []
         )
+
+        pd = PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Collect data for content performance",
+                "system_id": system_with_no_uses.id,
+                "data_categories": ["user.device.cookie_id"],
+                "data_use": "marketing.advertising.ad_serving",
+                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                "data_subjects": ["customer"],
+                "dataset_references": None,
+                "egress": None,
+                "ingress": None,
+            },
+        )
+
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db,
+                tcf_field=TCFComponentType.system.value,
+                tcf_value="non_matching_system_id",
+            )
+            == []
+        )
+
+        pd.legal_basis_for_processing = "Legitimate interests"
+        pd.save(db)
 
         assert PrivacyPreferenceHistory.determine_relevant_systems(
             db,
@@ -1506,6 +1587,80 @@ class TestCurrentPrivacyPreference:
                 fides_user_provided_identity=fides_user_provided_identity,
                 preference_type=ConsentRecordType.purpose,
                 preference_value=500,
+            )
+            is None
+        )
+
+    def test_get_preference_by_feature_and_fides_user_device(
+        self,
+        db,
+        empty_provided_identity,
+        privacy_preference_history_for_tcf_feature,
+        fides_user_provided_identity,
+    ):
+        pref = CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+            db=db,
+            fides_user_provided_identity=fides_user_provided_identity,
+            preference_type=ConsentRecordType.feature,
+            preference_value=2,
+        )
+        assert (
+            pref
+            == privacy_preference_history_for_tcf_feature.current_privacy_preference
+        )
+
+        assert (
+            CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+                db=db,
+                fides_user_provided_identity=empty_provided_identity,
+                preference_type=ConsentRecordType.feature,
+                preference_value=2,
+            )
+            is None
+        )
+
+        assert (
+            CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+                db=db,
+                fides_user_provided_identity=fides_user_provided_identity,
+                preference_type=ConsentRecordType.feature,
+                preference_value=500,
+            )
+            is None
+        )
+
+    def test_get_preference_by_system_and_fides_user_device(
+        self,
+        db,
+        empty_provided_identity,
+        privacy_preference_history_for_system,
+        fides_user_provided_identity,
+        system,
+    ):
+        pref = CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+            db=db,
+            fides_user_provided_identity=fides_user_provided_identity,
+            preference_type=ConsentRecordType.system,
+            preference_value=system.id,
+        )
+        assert pref == privacy_preference_history_for_system.current_privacy_preference
+
+        assert (
+            CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+                db=db,
+                fides_user_provided_identity=empty_provided_identity,
+                preference_type=ConsentRecordType.system,
+                preference_value=system.id,
+            )
+            is None
+        )
+
+        assert (
+            CurrentPrivacyPreference.get_preference_by_type_and_fides_user_device(
+                db=db,
+                fides_user_provided_identity=fides_user_provided_identity,
+                preference_type=ConsentRecordType.system,
+                preference_value="another system",
             )
             is None
         )
@@ -1809,13 +1964,13 @@ class TestLastServedNotice:
         last_served = (
             served_notice_history_us_ca_provide_for_fides_user.last_served_record
         )
-        assert last_served.record_matches_latest_version is True
+        assert last_served.record_matches_current_version is True
 
         privacy_notice_us_ca_provide.update(db, data={"description": "new_description"})
         assert privacy_notice_us_ca_provide.version == 2.0
         assert privacy_notice_us_ca_provide.description == "new_description"
 
-        assert last_served.record_matches_latest_version is False
+        assert last_served.record_matches_current_version is False
 
     def test_served_latest_tcf_version(
         self,
@@ -1823,11 +1978,11 @@ class TestLastServedNotice:
         served_notice_history_for_tcf_purpose,
     ):
         last_served = served_notice_history_for_tcf_purpose.last_served_record
-        assert last_served.record_matches_latest_version is True
+        assert last_served.record_matches_current_version is True
 
         # Just for demonstration
         last_served.update(db, data={"tcf_version": "1.0"})
-        assert last_served.record_matches_latest_version is False
+        assert last_served.record_matches_current_version is False
 
     def test_get_last_served_for_notice_and_fides_user_device(
         self,
@@ -1903,6 +2058,44 @@ class TestLastServedNotice:
                 db,
                 fides_user_provided_identity=fides_user_provided_identity,
                 record_type=ConsentRecordType.purpose,
+                preference_value=200,
+            )
+            is None
+        )
+
+    def test_get_last_served_for_feature_and_fides_user_device(
+        self,
+        db,
+        fides_user_provided_identity,
+        empty_provided_identity,
+        served_notice_history_for_tcf_feature,
+    ):
+        retrieved_record = (
+            LastServedNotice.get_last_served_for_record_type_and_fides_user_device(
+                db,
+                fides_user_provided_identity=fides_user_provided_identity,
+                record_type=ConsentRecordType.feature,
+                preference_value=2,
+            )
+        )
+        assert (
+            retrieved_record == served_notice_history_for_tcf_feature.last_served_record
+        )
+
+        assert (
+            LastServedNotice.get_last_served_for_record_type_and_fides_user_device(
+                db,
+                fides_user_provided_identity=empty_provided_identity,
+                record_type=ConsentRecordType.feature,
+                preference_value=2,
+            )
+            is None
+        )
+        assert (
+            LastServedNotice.get_last_served_for_record_type_and_fides_user_device(
+                db,
+                fides_user_provided_identity=fides_user_provided_identity,
+                record_type=ConsentRecordType.feature,
                 preference_value=200,
             )
             is None

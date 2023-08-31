@@ -21,7 +21,7 @@ from fides.api.models.privacy_notice import (
     UserConsentPreference,
 )
 from fides.api.models.privacy_preference import ConsentRecordType
-from fides.api.schemas.tcf import TCFPurposeRecord, TCFVendorRecord
+from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
 
 
 class TestExperienceConfig:
@@ -1263,11 +1263,11 @@ class TestCacheSavedAndServedOnConsentRecord:
         served_notice_history_for_tcf_purpose,
     ):
         privacy_preference_history_for_tcf_purpose.current_privacy_preference.tcf_version = (
-            "2.1"
+            "1.0"
         )
         privacy_preference_history_for_tcf_purpose.current_privacy_preference.save(db)
 
-        served_notice_history_for_tcf_purpose.last_served_record.tcf_version = "2.1"
+        served_notice_history_for_tcf_purpose.last_served_record.tcf_version = "1.0"
         served_notice_history_for_tcf_purpose.last_served_record.save(db)
 
         cache_saved_and_served_on_consent_record(
@@ -1276,6 +1276,7 @@ class TestCacheSavedAndServedOnConsentRecord:
             fides_user_provided_identity,
             record_type=ConsentRecordType.purpose,
         )
+
         assert tcf_purpose_consent_record.current_preference is None
         assert (
             tcf_purpose_consent_record.outdated_preference
@@ -1385,3 +1386,25 @@ class TestCacheSavedAndServedOnConsentRecord:
         assert system_record.outdated_preference is None
         assert system_record.current_served is None
         assert system_record.outdated_served is None
+
+    @pytest.mark.usefixtures("privacy_preference_history_for_tcf_feature")
+    def test_cache_saved_and_served_for_tcf_feature(
+        self, db, fides_user_provided_identity
+    ):
+        feature_record = TCFFeatureRecord(
+            id=2,
+            name="Link different devices",
+            description="Different devices can be determined as belonging to you or your household in support of one or more of purposes.",
+        )
+        cache_saved_and_served_on_consent_record(
+            db,
+            feature_record,
+            fides_user_provided_identity,
+            record_type=ConsentRecordType.feature,
+        )
+
+        assert feature_record.default_preference == UserConsentPreference.opt_out
+        assert feature_record.current_preference == UserConsentPreference.opt_in
+        assert feature_record.outdated_preference is None
+        assert feature_record.current_served is True
+        assert feature_record.outdated_served is None

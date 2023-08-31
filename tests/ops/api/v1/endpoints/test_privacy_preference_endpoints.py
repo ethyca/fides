@@ -9,6 +9,7 @@ from starlette.testclient import TestClient
 
 from fides.api.models.consent_settings import ConsentSettings
 from fides.api.models.privacy_preference import (
+    CURRENT_TCF_VERSION,
     ConsentMethod,
     CurrentPrivacyPreference,
     LastServedNotice,
@@ -1449,6 +1450,33 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             == "Cannot save preferences against invalid special feature id: '3'"
         )
 
+    def test_invalid_system_in_request_body(
+        self, api_client, url, db, privacy_experience_france_tcf_overlay
+    ):
+        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
+        consent_settings.tcf_enabled = True
+        consent_settings.save(db=db)
+
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
+            },
+            "system_preferences": [
+                {
+                    "id": "bad_system",
+                    "preference": "opt_out",
+                }
+            ],
+            "user_geography": "fr",
+            "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == "Can't save consent against invalid system id 'bad_system'."
+        )
+
     def test_duplicate_tcf_preferences_in_request_body(
         self,
         api_client,
@@ -1911,7 +1939,7 @@ class TestHistoricalPreferences:
         assert response_body["vendor"] is None
         assert response_body["feature"] is None
         assert response_body["special_feature"] is None
-        assert response_body["tcf_version"] == "2.2"
+        assert response_body["tcf_version"] == CURRENT_TCF_VERSION
 
         assert response_body["request_timestamp"] is not None
         assert response_body["request_origin"] == "tcf_overlay"
@@ -1938,6 +1966,26 @@ class TestHistoricalPreferences:
         assert (
             response_body["served_notice_history_id"]
             == served_notice_history_for_tcf_purpose.id
+        )
+
+    def test_get_historical_preferences_saved_for_system(
+        self,
+        generate_auth_header,
+        api_client,
+        url,
+        privacy_preference_history_for_system,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_PREFERENCE_HISTORY_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert len(response.json()["items"]) == 1
+        assert (
+            response.json()["items"][0]["system"]
+            == privacy_preference_history_for_system.system
+        )
+        assert (
+            response.json()["items"][0]["preference"]
+            == privacy_preference_history_for_system.preference.value
         )
 
     def test_get_historical_preferences_user_geography_unsupported(
@@ -2424,9 +2472,8 @@ class TestSaveNoticesServedForFidesDeviceId:
         last_served_notice.delete(db)
         served_notice_history.delete(db)
 
-    def test_duplicate_tcf_item_served(
+    def test_duplicate_tcf_special_purpose_served(
         self,
-        db,
         api_client,
         url,
     ):
@@ -2444,6 +2491,28 @@ class TestSaveNoticesServedForFidesDeviceId:
         assert (
             response.json()["detail"][0]["msg"]
             == "Duplicate served records saved against TCF component: 'tcf_special_purposes'"
+        )
+
+    def test_duplicate_tcf_feature_served(
+        self,
+        db,
+        api_client,
+        url,
+    ):
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
+            },
+            "tcf_features": [1, 1],
+            "user_geography": "us_ca",
+            "acknowledge_mode": False,
+            "serving_component": ServingComponent.tcf_overlay.value,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Duplicate served records saved against TCF component: 'tcf_features'"
         )
 
     def test_invalid_tcf_purpose_served(
@@ -2530,6 +2599,27 @@ class TestSaveNoticesServedForFidesDeviceId:
             == "Invalid values for tcf_special_features served."
         )
 
+    def test_invalid_system_served(
+        self,
+        api_client,
+        url,
+    ):
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
+            },
+            "tcf_systems": ["bad_system"],
+            "user_geography": "us_ca",
+            "acknowledge_mode": False,
+            "serving_component": ServingComponent.tcf_overlay.value,
+        }
+        response = api_client.patch(url, json=request_body)
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == "Can't save consent against invalid system id 'bad_system'."
+        )
+
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
     )
@@ -2604,7 +2694,7 @@ class TestSaveNoticesServedForFidesDeviceId:
         assert last_served_use.feature is None
         assert last_served_use.created_at is not None
         assert last_served_use.updated_at is not None
-        assert last_served_use.tcf_version == "2.2"
+        assert last_served_use.tcf_version == CURRENT_TCF_VERSION
         assert last_served_use.served_notice_history_id == purpose_served_history_id
         use_served_history = ServedNoticeHistory.get(
             db, object_id=purpose_served_history_id
