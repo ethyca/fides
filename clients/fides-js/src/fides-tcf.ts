@@ -45,6 +45,7 @@
  *   }
  * ```
  */
+import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
@@ -63,13 +64,20 @@ import {
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
-import { FidesCookie, isNewFidesCookie } from "./fides";
+import { FidesCookie, hasSavedTcfPreferences, isNewFidesCookie } from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
 import { TCFPurposeRecord, TcfSavePreferences } from "./lib/tcf/types";
 
 declare global {
   interface Window {
     Fides: Fides;
+    __tcfapiLocator?: Window;
+    __tcfapi?: (
+      command: string,
+      version: number,
+      callback: (tcData: TCData, success: boolean) => void,
+      parameter?: number | string
+    ) => void;
   }
 }
 
@@ -91,6 +99,11 @@ const updateCookie = async (
   oldCookie: FidesCookie,
   experience: PrivacyExperience
 ) => {
+  // First check if the user has never consented before
+  if (!hasSavedTcfPreferences(experience)) {
+    return { ...oldCookie, tcString: "" };
+  }
+
   const tcSavePrefs: TcfSavePreferences = {
     purpose_preferences: experience.tcf_purposes?.map((purpose) => ({
       id: purpose.id,

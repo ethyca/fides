@@ -26,6 +26,7 @@
     "directory": "clients/fides-js"
   },
   "dependencies": {
+    "@iabtechlabtcf/cmpapi": "^1.5.8",
     "@iabtechlabtcf/core": "^1.5.7",
     "a11y-dialog": "^7.5.2",
     "preact": "^10.13.2",

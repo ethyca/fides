@@ -10,6 +10,7 @@ import {
   UserGeolocation,
   VALID_ISO_3166_LOCATION_REGEX,
 } from "./consent-types";
+import { TCFPurposeRecord } from "./tcf/types";
 
 /**
  * Wrapper around 'console.log' that only logs output when the 'debug' banner
@@ -186,13 +187,32 @@ export const experienceIsValid = (
   return true;
 };
 
+/** Returns true if a list of records has any current preference at all */
+const hasCurrentPreference = (
+  records: Pick<TCFPurposeRecord, "current_preference">[] | undefined
+) => {
+  if (!records || records.length === 0) {
+    return false;
+  }
+  return records.some((record) => record.current_preference);
+};
+
+/**
+ * Returns true if the user has any saved TCF preferences
+ */
+export const hasSavedTcfPreferences = (experience: PrivacyExperience) =>
+  hasCurrentPreference(experience.tcf_purposes) ||
+  hasCurrentPreference(experience.tcf_special_purposes) ||
+  hasCurrentPreference(experience.tcf_features) ||
+  hasCurrentPreference(experience.tcf_special_features) ||
+  hasCurrentPreference(experience.tcf_vendors);
+
 /**
  * Returns true if there are notices in the experience that require a user preference
  */
 export const hasActionNeededNotices = (experience: PrivacyExperience) => {
   if (experience.component === ComponentType.TCF_OVERLAY) {
-    // TODO: determine preferences on TCF fields
-    return true;
+    return !hasSavedTcfPreferences(experience);
   }
   return Boolean(
     experience?.privacy_notices?.some(

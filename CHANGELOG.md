@@ -27,6 +27,7 @@ The types of changes are:
 - Add initial layer to TCF modal [#3956](https://github.com/ethyca/fides/pull/3956)
 - Support for rendering in the TCF modal whether or not a vendor is part of the GVL [#3972](https://github.com/ethyca/fides/pull/3972)
 - Features and legal bases dropdown for TCF modal [#3995](https://github.com/ethyca/fides/pull/3995)
+- TCF CMP stub API [#4000](https://github.com/ethyca/fides/pull/4000)
 
 ### Fixed
 

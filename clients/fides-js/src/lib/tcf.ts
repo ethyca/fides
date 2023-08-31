@@ -5,16 +5,21 @@
  * In the future, this should hold interactions with the CMP API as well as string generation.
  */
 
+import { CmpApi } from "@iabtechlabtcf/cmpapi";
 import {
   TCModel,
   TCString,
   GVL,
   VersionOrVendorList,
 } from "@iabtechlabtcf/core";
+import { makeStub } from "./tcf/stub";
 import { transformUserPreferenceToBoolean } from "./consent-utils";
 import gvlJson from "./tcf/gvl.json";
 import { TcfSavePreferences } from "./tcf/types";
 import { vendorIsGvl } from "./tcf/vendors";
+
+const CMP_ID = 12; // TODO: hardcode our unique CMP ID after certification
+const CMP_VERSION = 1;
 
 /**
  * Generate TC String based on TCF-related info from privacy experience.
@@ -35,8 +40,8 @@ export const generateTcString = async (
   // Some fields will not be populated until a GVL is loaded
   await tcModel.gvl.readyPromise;
 
-  tcModel.cmpId = 12; // todo - hardcode our unique cmp id
-  tcModel.cmpVersion = 1;
+  tcModel.cmpId = CMP_ID;
+  tcModel.cmpVersion = CMP_VERSION;
   tcModel.consentScreen = 1; // todo- On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
 
   if (tcStringPreferences) {
@@ -100,21 +105,34 @@ export const generateTcString = async (
  * Call tcf() to configure Fides with tcf support (if tcf is enabled).
  */
 export const tcf = () => {
-  // console.log("adding event listeners for tcf");
-  // window.addEventListener("FidesInitialized", (event) => {
-  //   generateTcString(event.detail.tcStringPreferences, event.detail.debug).then(
-  //     (tcString) => {
-  //       // do something with string
-  //       console.log(`fidesinitialized with tcstring: ${tcString}`);
-  //     }
-  //   );
-  // });
-  // window.addEventListener("FidesUpdated", (event) => {
-  //   generateTcString(event.detail.tcStringPreferences, event.detail.debug).then(
-  //     (tcString) => {
-  //       // do something with string
-  //       console.log(`fidesupdated with tcstring: ${tcString}`);
-  //     }
-  //   );
-  // });
+  makeStub();
+  const isServiceSpecific = true; // TODO: determine this from the backend?
+  const cmpApi = new CmpApi(CMP_ID, CMP_VERSION, isServiceSpecific);
+
+  // `null` value indicates that GDPR does not apply
+  // Initialize api with TC str, we don't yet show UI, so we use false
+  // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
+  window.addEventListener("FidesInitialized", (event) => {
+    const { tcString } = event.detail;
+    cmpApi.update(tcString ?? null, false);
+  });
+  // UI is visible
+  // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--tc-string-needs-update
+  // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--new-user--no-tc-string
+  window.addEventListener("FidesUIShown", (event) => {
+    const { tcString } = event.detail;
+    cmpApi.update(tcString ?? null, true);
+  });
+  // UI is no longer visible
+  // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
+  window.addEventListener("FidesModalClosed", (event) => {
+    const { tcString } = event.detail;
+    cmpApi.update(tcString ?? null, false);
+  });
+  // User preference collected
+  // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--tc-string-needs-update
+  window.addEventListener("FidesUpdated", (event) => {
+    const { tcString } = event.detail;
+    cmpApi.update(tcString ?? null, false);
+  });
 };
