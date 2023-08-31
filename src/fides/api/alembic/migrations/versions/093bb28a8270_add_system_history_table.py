@@ -1,7 +1,7 @@
 """Add system_history table
 
 Revision ID: 093bb28a8270
-Revises: 507563f6f8d4
+Revises: 3038667ba898
 Create Date: 2023-08-18 23:48:22.934916
 
 """
@@ -11,14 +11,14 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "093bb28a8270"
-down_revision = "507563f6f8d4"
+down_revision = "3038667ba898"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
     op.create_table(
-        "system_history",
+        "plus_system_history",
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column(
             "created_at",
@@ -33,18 +33,16 @@ def upgrade():
             nullable=True,
         ),
         sa.Column("edited_by", sa.String(), nullable=True),
-        sa.Column("system_key", sa.String(), nullable=False),
+        sa.Column("system_id", sa.String(), nullable=False),
         sa.Column("before", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column("after", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["system_key"], ["ctl_systems.fides_key"], ondelete="CASCADE"
-        ),
+        sa.ForeignKeyConstraint(["system_id"], ["ctl_systems.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        "idx_system_history_created_at_system_key",
+        "idx_system_history_created_at_system_id",
         "system_history",
-        ["created_at", "system_key"],
+        ["created_at", "system_id"],
     )
     op.add_column(
         "ctl_systems",
@@ -55,6 +53,6 @@ def upgrade():
 def downgrade():
     op.drop_column("ctl_systems", "created_by")
     op.drop_index(
-        op.f("idx_system_history_created_at_system_key"), table_name="system_history"
+        op.f("idx_system_history_created_at_system_id"), table_name="system_history"
     )
     op.drop_table("system_history")

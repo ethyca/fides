@@ -2,8 +2,10 @@
 Functions for interacting with System objects in the database.
 """
 import copy
-from typing import Dict, List, Optional, Tuple
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 
+from deepdiff import DeepDiff
 from fastapi import HTTPException
 from fideslang.models import Cookies as CookieSchema
 from fideslang.models import System as SystemSchema
@@ -21,7 +23,6 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     System,
 )
 from fides.api.models.system_history import SystemHistory
-from fides.api.util.dict_diff import dict_diff
 from fides.api.util.errors import NotFoundError
 
 
@@ -40,7 +41,7 @@ def get_system(db: Session, fides_key: str) -> System:
     if system is None:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail="A valid system must be provided to create, update, and delete connections",
+            detail="The specified system was not found. Please provide a valid system for the requested operation.",
         )
     return system
 
@@ -230,17 +231,77 @@ async def update_system(
     updated_system = await update_resource(System, resource.dict(), db)
     async with db.begin():
         await db.refresh(updated_system)
-        before, after = dict_diff(
-            existing_system_dict, SystemSchema.from_orm(updated_system).dict()
+        _audit_system_changes(
+            db,
+            system.id,
+            current_username,
+            existing_system_dict,
+            SystemSchema.from_orm(updated_system).dict(),
         )
-        SystemHistory(
-            edited_by=current_username,
-            system_key=resource.fides_key,
-            before=before,
-            after=after,
-        ).save(db=db)
 
     return updated_system
+
+
+def _audit_system_changes(
+    db: Session,
+    system_id: str,
+    current_username: Optional[str],
+    existing_system: Dict[str, Any],
+    updated_system: Dict[str, Any],
+) -> None:
+    """
+    Audits changes made to a system and logs them in the SystemHistory table.
+    The function creates separate SystemHistory entries for general changes,
+    changes to privacy declarations (data uses), and changes to egress and ingress (data flow) settings.
+    This is done to match the way the user interacts with the system from the UI.
+    """
+
+    # Extract egress, ingress, and privacy_declarations fields
+    egress_ingress_existing = {
+        field: existing_system.pop(field, None) for field in ["egress", "ingress"]
+    }
+    egress_ingress_updated = {
+        field: updated_system.pop(field, None) for field in ["egress", "ingress"]
+    }
+    privacy_existing = {
+        "privacy_declarations": existing_system.pop("privacy_declarations", [])
+    }
+    privacy_updated = {
+        "privacy_declarations": updated_system.pop("privacy_declarations", [])
+    }
+
+    # Get the current datetime
+    now = datetime.now()
+
+    # Create a SystemHistory entry for general changes
+    if DeepDiff(existing_system, updated_system, ignore_order=True):
+        SystemHistory(
+            edited_by=current_username,
+            system_id=system_id,
+            before=existing_system,
+            after=updated_system,
+            created_at=now,
+        ).save(db=db)
+
+    # Create a SystemHistory entry for changes to privacy_declarations
+    if DeepDiff(privacy_existing, privacy_updated, ignore_order=True):
+        SystemHistory(
+            edited_by=current_username,
+            system_id=system_id,
+            before=privacy_existing,
+            after=privacy_updated,
+            created_at=now,
+        ).save(db=db)
+
+    # Create a SystemHistory entry for changes to egress and ingress
+    if DeepDiff(egress_ingress_existing, egress_ingress_updated, ignore_order=True):
+        SystemHistory(
+            edited_by=current_username,
+            system_id=system_id,
+            before=egress_ingress_existing,
+            after=egress_ingress_updated,
+            created_at=now,
+        ).save(db=db)
 
 
 async def create_system(
