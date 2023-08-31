@@ -14,12 +14,15 @@ import { System, SystemResponse } from "~/types/api";
 
 import SystemHistoryTable from "./history/SystemHistoryTable";
 import {
+  DirtyFormConfirmationModal,
+  useIsAnyFormDirty,
+} from "../common/hooks/useIsAnyFormDirty";
+import {
   selectActiveSystem,
   setActiveSystem,
   useGetSystemByFidesKeyQuery,
 } from "./system.slice";
 import SystemInformationForm from "./SystemInformationForm";
-import UnmountWarning from "./UnmountWarning";
 
 // The toast doesn't seem to handle next links well, so use buttons with onClick
 // handlers instead
@@ -78,7 +81,6 @@ const SystemFormTabs = ({
   isCreate?: boolean;
 }) => {
   const [tabIndex, setTabIndex] = useState(initialTabIndex);
-  const [queuedIndex, setQueuedIndex] = useState<number | undefined>(undefined);
   const [showSaveMessage, setShowSaveMessage] = useState(false);
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
   const router = useRouter();
@@ -145,29 +147,14 @@ const SystemFormTabs = ({
     };
   }, [dispatch, isCreate]);
 
-  const checkTabChange = (index: number) => {
-    // While privacy declarations aren't updated yet, only apply the "unsaved changes" modal logic
-    // to the system information tab
-    if (
-      index === 0 ||
-      (index === 1 && tabIndex === 2) ||
-      (index === 2 && tabIndex === 1) ||
-      index === 3 ||
-      index === 4 ||
-      tabIndex === 3 ||
-      tabIndex === 4
-    ) {
-      setTabIndex(index);
-    } else {
-      setQueuedIndex(index);
-    }
-  };
+  const { attemptAction } = useIsAnyFormDirty();
 
-  const continueTabChange = () => {
-    if (queuedIndex) {
-      setTabIndex(queuedIndex);
-      setQueuedIndex(undefined);
-    }
+  const onTabChange = (index: number) => {
+    attemptAction().then((modalConfirmed: boolean) => {
+      if (modalConfirmed) {
+        setTabIndex(index);
+      }
+    });
   };
 
   const tabData: TabData[] = [
@@ -176,16 +163,11 @@ const SystemFormTabs = ({
       content: (
         <>
           <Box px={6} mb={9}>
+            <DirtyFormConfirmationModal />
             <SystemInformationForm
               onSuccess={handleSuccess}
               system={activeSystem}
-            >
-              <UnmountWarning
-                isUnmounting={queuedIndex !== undefined}
-                onContinue={continueTabChange}
-                onCancel={() => setQueuedIndex(undefined)}
-              />
-            </SystemInformationForm>
+            />
           </Box>
           {showSaveMessage ? (
             <Box backgroundColor="gray.100" px={6} py={3}>
@@ -286,7 +268,7 @@ const SystemFormTabs = ({
       index={tabIndex}
       isLazy
       isManual
-      onChange={checkTabChange}
+      onChange={onTabChange}
     />
   );
 };
