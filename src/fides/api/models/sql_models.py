@@ -37,7 +37,9 @@ from fides.api.db.base_class import FidesBase as FideslibBase
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
-from fides.config import CONFIG
+from fides.config import get_config
+
+CONFIG = get_config()
 
 
 class FidesBase(FideslibBase):
@@ -401,7 +403,21 @@ class System(Base, FidesBase):
         "Cookies", back_populates="system", lazy="selectin", uselist=True, viewonly=True
     )
 
-    created_by = Column(String, nullable=True)
+    user_id = Column(String, nullable=True)
+
+    @property
+    def created_by(self) -> Optional[str]:
+        """Derive the username from the user_id"""
+        if not self.user_id:
+            return None
+
+        if self.user_id == CONFIG.security.oauth_root_client_id:
+            return CONFIG.security.root_username
+
+        db = Session.object_session(self)
+        user: Optional[FidesUser] = FidesUser.get_by(db, field="id", value=self.user_id)
+
+        return user.username if user else None
 
     @classmethod
     def get_data_uses(

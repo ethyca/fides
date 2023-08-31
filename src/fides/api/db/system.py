@@ -80,7 +80,7 @@ async def validate_privacy_declarations(db: AsyncSession, system: SystemSchema) 
 async def upsert_system(
     resources: List[SystemSchema],
     db: AsyncSession,
-    current_username: Optional[str] = None,
+    current_user_id: Optional[str] = None,
 ) -> Tuple[int, int]:
     """Helper method to abstract system upsert logic from API code"""
     inserted = 0
@@ -97,11 +97,11 @@ async def upsert_system(
                 f"Upsert System with fides_key {resource.fides_key} not found, will create"
             )
             await create_system(
-                resource=resource, db=db, current_username=current_username
+                resource=resource, db=db, current_user_id=current_user_id
             )
             inserted += 1
             continue
-        await update_system(resource=resource, db=db, current_username=current_username)
+        await update_system(resource=resource, db=db, current_user_id=current_user_id)
         updated += 1
     return (inserted, updated)
 
@@ -206,7 +206,7 @@ async def upsert_cookies(
 
 
 async def update_system(
-    resource: SystemSchema, db: AsyncSession, current_username: Optional[str] = None
+    resource: SystemSchema, db: AsyncSession, current_user_id: Optional[str] = None
 ) -> Dict:
     """Helper function to share core system update logic for wrapping endpoint functions"""
     system: System = await get_resource(
@@ -234,7 +234,7 @@ async def update_system(
         _audit_system_changes(
             db,
             system.id,
-            current_username,
+            current_user_id,
             existing_system_dict,
             SystemSchema.from_orm(updated_system).dict(),
         )
@@ -245,7 +245,7 @@ async def update_system(
 def _audit_system_changes(
     db: Session,
     system_id: str,
-    current_username: Optional[str],
+    current_user_id: Optional[str],
     existing_system: Dict[str, Any],
     updated_system: Dict[str, Any],
 ) -> None:
@@ -276,7 +276,7 @@ def _audit_system_changes(
     # Create a SystemHistory entry for general changes
     if DeepDiff(existing_system, updated_system, ignore_order=True):
         SystemHistory(
-            edited_by=current_username,
+            user_id=current_user_id,
             system_id=system_id,
             before=existing_system,
             after=updated_system,
@@ -286,7 +286,7 @@ def _audit_system_changes(
     # Create a SystemHistory entry for changes to privacy_declarations
     if DeepDiff(privacy_existing, privacy_updated, ignore_order=True):
         SystemHistory(
-            edited_by=current_username,
+            user_id=current_user_id,
             system_id=system_id,
             before=privacy_existing,
             after=privacy_updated,
@@ -296,7 +296,7 @@ def _audit_system_changes(
     # Create a SystemHistory entry for changes to egress and ingress
     if DeepDiff(egress_ingress_existing, egress_ingress_updated, ignore_order=True):
         SystemHistory(
-            edited_by=current_username,
+            user_id=current_user_id,
             system_id=system_id,
             before=egress_ingress_existing,
             after=egress_ingress_updated,
@@ -305,7 +305,7 @@ def _audit_system_changes(
 
 
 async def create_system(
-    resource: SystemSchema, db: AsyncSession, current_username: Optional[str] = None
+    resource: SystemSchema, db: AsyncSession, current_user_id: Optional[str] = None
 ) -> Dict:
     """
     Override `System` create/POST to handle `.privacy_declarations` defined inline,
@@ -323,8 +323,8 @@ async def create_system(
     # the system must be created before the privacy declarations so that it can be referenced
     resource_dict = resource.dict()
 
-    # set the current user's username as the system creator
-    resource_dict["created_by"] = current_username
+    # set the current user's ID
+    resource_dict["user_id"] = current_user_id
 
     created_system = await create_resource(
         System, resource_dict=resource_dict, async_session=db
