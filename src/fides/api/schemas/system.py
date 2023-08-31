@@ -49,7 +49,7 @@ class SystemHistoryResponse(BaseModel):
     """Response schema for a single system history entry"""
 
     edited_by: Optional[str]
-    system_key: str
+    system_id: str
     before: Dict[str, Any]
     after: Dict[str, Any]
     created_at: datetime

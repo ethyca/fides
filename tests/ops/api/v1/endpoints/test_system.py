@@ -1021,4 +1021,4 @@ class TestSystemHistory:
 
         items = resp.json()["items"]
         assert len(items) == 1
-        assert items[0]["system_key"] == system.fides_key
+        assert items[0]["system_id"] == system.id
