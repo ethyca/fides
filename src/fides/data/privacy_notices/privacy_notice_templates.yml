@@ -241,12 +241,12 @@ privacy_notices:
   data_uses:
     - marketing.advertising.first_party.targeted
     - marketing.advertising.third_party.targeted
-  enforcement_level: system_wide
+  enforcement_level: frontend
   disabled: False
   has_gpc_flag: True
-  displayed_in_privacy_center: False
+  displayed_in_privacy_center: True
   displayed_in_overlay: True
-  displayed_in_api: True
+  displayed_in_api: False
 - name: Targeted Advertising and Marketing
   notice_key: targeted_advertising_marketing
   id: [not sure what to put here]
@@ -261,11 +261,11 @@ privacy_notices:
   enforcement_level: frontend
   disabled: False
   has_gpc_flag: True
-  displayed_in_privacy_center: False
+  displayed_in_privacy_center: True
   displayed_in_overlay: True
-  displayed_in_api: True
-- name: Essential
-  notice_key: essential
+  displayed_in_api: False
+- name: Functional and Essential
+  notice_key: functional_essential
   id: [not sure what to put here]
   description: This website uses cookies and services to enable core website features, assist with privacy compliance, and provide a seamless user experience. These cookies and services are used to facilitate features such as navigation, remember user preferences, and ensure the security of the website. 
   internal_description: Essential cookies and services, also known as strictly necessary, are technologies that are crucial for the proper functioning of a website. These technologies are typically exempt from requiring user consent under privacy regulations because they are essential for the website to deliver its basic functionalities and services or to comply with legal obligations such as tracking user consent.
@@ -279,6 +279,6 @@ privacy_notices:
   enforcement_level: not_applicable
   disabled: False
   has_gpc_flag: False
-  displayed_in_privacy_center: False
+  displayed_in_privacy_center: True
   displayed_in_overlay: True
-  displayed_in_api: True
+  displayed_in_api: False
