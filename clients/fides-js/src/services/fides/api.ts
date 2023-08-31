@@ -21,7 +21,7 @@ export const fetchExperience = async (
   userLocationString: string,
   fidesApiUrl: string,
   debug: boolean,
-  fidesUserDeviceId?: string | null,
+  fidesUserDeviceId?: string | null
 ): Promise<PrivacyExperience | null> => {
   debugLog(
     debug,
@@ -41,9 +41,9 @@ export const fetchExperience = async (
     systems_applicable: "true",
   };
   if (fidesUserDeviceId) {
-    params.fides_user_device_id = fidesUserDeviceId
+    params.fides_user_device_id = fidesUserDeviceId;
   }
-  params = new URLSearchParams(params)
+  params = new URLSearchParams(params);
   const response = await fetch(
     `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
     fetchOptions

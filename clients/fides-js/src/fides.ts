@@ -222,14 +222,17 @@ const init = async ({
     _Fides.initialized = true;
     if (experience) {
       // at this point, pre-fetched experience contains no user consent, so we populate with the Fides cookie
-      experience?.privacy_notices?.forEach(notice => {
+      experience?.privacy_notices?.forEach((notice) => {
         if (Object.hasOwn(cookie.consent, notice.notice_key)) {
           // eslint-disable-next-line no-param-reassign
-          notice.current_preference = transformConsentToFidesUserPreference(Boolean(cookie.consent[notice.notice_key]), notice.consent_mechanism)
+          notice.current_preference = transformConsentToFidesUserPreference(
+            Boolean(cookie.consent[notice.notice_key]),
+            notice.consent_mechanism
+          );
         } else {
-          hasNoticesThatRequireConsent = true
+          hasNoticesThatRequireConsent = true;
         }
-      })
+      });
     }
     dispatchFidesEvent("FidesInitialized", cookie, options.debug);
     dispatchFidesEvent("FidesUpdated", cookie, options.debug);
@@ -265,7 +268,7 @@ const init = async ({
         fidesRegionString,
         options.fidesApiUrl,
         options.debug,
-        cookie.identity.fides_user_device_id,
+        cookie.identity.fides_user_device_id
       );
     }
 
