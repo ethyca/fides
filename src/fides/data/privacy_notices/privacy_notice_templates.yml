@@ -137,6 +137,7 @@ privacy_notices:
     - is
     - "no"
     - li
+    - ca_qc
   consent_mechanism: opt_in
   data_uses:
     - analytics
@@ -240,9 +241,44 @@ privacy_notices:
   data_uses:
     - marketing.advertising.first_party.targeted
     - marketing.advertising.third_party.targeted
-  enforcement_level: [please update - system wide]
+  enforcement_level: system_wide
   disabled: False
   has_gpc_flag: True
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: True
+- name: Targeted Advertising and Marketing
+  notice_key: targeted_advertising_marketing
+  id: [not sure what to put here]
+  description: We may use some of your information and share it with partners for the purpose of marketing tracking and targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.
+  internal_description: Advertising, targeting, or marketing cookies and services are technologies that tracks users' browsing behavior across websites. These technologies enable targeted advertising and marketing campaigns by collecting information about users' interests, preferences, and online activities. Marketing technologies typically require user consent under privacy regulations.
+  regions:
+    - ca_qc
+  consent_mechanism: opt_in
+  data_uses:
+    - marketing.advertising.first_party.targeted
+    - marketing.advertising.third_party.targeted
+  enforcement_level: frontend
+  disabled: False
+  has_gpc_flag: True
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: True
+- name: Essential
+  notice_key: essential
+  id: [not sure what to put here]
+  description: This website uses cookies and services to enable core website features, assist with privacy compliance, and provide a seamless user experience. These cookies and services are used to facilitate features such as navigation, remember user preferences, and ensure the security of the website. 
+  internal_description: Essential cookies and services, also known as strictly necessary, are technologies that are crucial for the proper functioning of a website. These technologies are typically exempt from requiring user consent under privacy regulations because they are essential for the website to deliver its basic functionalities and services or to comply with legal obligations such as tracking user consent.
+  regions:
+    - ca_qc
+  consent_mechanism: notice_only
+  data_uses:
+    - essential
+    - personalize
+    - improve.system
+  enforcement_level: not_applicable
+  disabled: False
+  has_gpc_flag: False
   displayed_in_privacy_center: False
   displayed_in_overlay: True
   displayed_in_api: True
