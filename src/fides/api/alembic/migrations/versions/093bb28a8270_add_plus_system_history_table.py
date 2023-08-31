@@ -1,4 +1,4 @@
-"""Add system_history table
+"""Add plus_system_history table
 
 Revision ID: 093bb28a8270
 Revises: 3038667ba898
@@ -41,7 +41,7 @@ def upgrade():
     )
     op.create_index(
         "idx_system_history_created_at_system_id",
-        "system_history",
+        "plus_system_history",
         ["created_at", "system_id"],
     )
     op.add_column(
@@ -53,6 +53,7 @@ def upgrade():
 def downgrade():
     op.drop_column("ctl_systems", "created_by")
     op.drop_index(
-        op.f("idx_system_history_created_at_system_id"), table_name="system_history"
+        op.f("idx_plus_system_history_created_at_system_id"),
+        table_name="plus_system_history",
     )
-    op.drop_table("system_history")
+    op.drop_table("plus_system_history")
