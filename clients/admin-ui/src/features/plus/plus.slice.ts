@@ -407,13 +407,11 @@ export const selectAllDictEntries = createSelector(
 );
 
 const EMPTY_DICT_ENTRY = undefined;
-export const selectDictEntry = (vendorId: number) =>
+export const selectDictEntry = (vendorId: string) =>
   createSelector(
     [(state) => state, plusApi.endpoints.getAllDictionaryEntries.select()],
     (state, { data }) => {
-      const dictEntry = data?.items.find(
-        (d) => d.id.toString() === vendorId.toString()
-      );
+      const dictEntry = data?.items.find((d) => d.id.toString() === vendorId);
 
       return dictEntry || EMPTY_DICT_ENTRY;
     }

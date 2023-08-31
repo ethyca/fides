@@ -9,7 +9,7 @@ import {
 } from "@fidesui/react";
 import { MultiValue, Select, SingleValue } from "chakra-react-select";
 import { useField, useFormikContext } from "formik";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -23,8 +23,6 @@ import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { selectDictEntry } from "~/features/plus/plus.slice";
 import { DictEntry } from "~/features/plus/types";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
-
-import { useResetSuggestionContext } from "./dict-suggestion.context";
 
 const useDictSuggestion = (
   fieldName: string,
@@ -46,7 +44,6 @@ const useDictSuggestion = (
     field.value ?? ""
   );
   const { values } = useFormikContext();
-  const context = useResetSuggestionContext();
   // @ts-ignore
   const vendorId = values?.meta?.vendor?.id;
   const dictEntry = useAppSelector(selectDictEntry(vendorId || ""));
@@ -88,28 +85,6 @@ const useDictSuggestion = (
       setValue(preSuggestionValue);
     }
   }, [isShowingSuggestions, setValue, preSuggestionValue]);
-
-  const reset = useCallback(() => {
-    if (dictEntry && dictField in dictEntry) {
-      setValue(dictEntry[dictField as keyof DictEntry]);
-      setTouched(true, true);
-    }
-  }, [dictEntry, dictField, setValue, setTouched]);
-
-  useEffect(() => {
-    if (context) {
-      const payload = {
-        name: fieldName,
-        callback: reset,
-      };
-      context.addResetCallback(payload);
-    }
-    return () => {
-      if (context) {
-        context.removeResetCallback(fieldName);
-      }
-    };
-  }, [context, reset, fieldName]);
 
   return {
     field,
