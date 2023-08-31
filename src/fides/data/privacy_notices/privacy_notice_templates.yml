@@ -221,7 +221,7 @@ privacy_notices:
   displayed_in_api: False
 - name: Targeted Advertising
   notice_key: targeted_advertising
-  id: [not sure what to put here]
+  id: pri_0cde6efc-efe9-402c-ab82-5c001e5b6tar
   description: We may use some of your information and share it with partners for the purpose of targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.
   internal_description: Targeted advertising" means displaying advertisements to a consumer where the advertisement is selected based on personal data obtained or inferred from that consumer's activities over time and across nonaffiliated Internet web sites or online applications to predict such consumer's preferences or interests.
   regions:
@@ -249,7 +249,7 @@ privacy_notices:
   displayed_in_api: False
 - name: Targeted Advertising and Marketing
   notice_key: targeted_advertising_marketing
-  id: [not sure what to put here]
+  id: pri_c124c60f-b278-4ae6-a6f2-9b086b763tar
   description: We may use some of your information and share it with partners for the purpose of marketing tracking and targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.
   internal_description: Advertising, targeting, or marketing cookies and services are technologies that tracks users' browsing behavior across websites. These technologies enable targeted advertising and marketing campaigns by collecting information about users' interests, preferences, and online activities. Marketing technologies typically require user consent under privacy regulations.
   regions:
@@ -266,7 +266,7 @@ privacy_notices:
   displayed_in_api: False
 - name: Functional and Essential
   notice_key: functional_essential
-  id: [not sure what to put here]
+  id: pri_2ff6e1a1-2448-4db9-8a03-506810ed3fun
   description: This website uses cookies and services to enable core website features, assist with privacy compliance, and provide a seamless user experience. These cookies and services are used to facilitate features such as navigation, remember user preferences, and ensure the security of the website. 
   internal_description: Essential cookies and services, also known as strictly necessary, are technologies that are crucial for the proper functioning of a website. These technologies are typically exempt from requiring user consent under privacy regulations because they are essential for the website to deliver its basic functionalities and services or to comply with legal obligations such as tracking user consent.
   regions:
