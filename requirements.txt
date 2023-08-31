@@ -13,7 +13,7 @@ expandvars==0.9.0
 fastapi[all]==0.89.1
 fastapi-caching[redis]==0.3.0
 fastapi-pagination[sqlalchemy]~= 0.10.0
-fideslang==1.4.4
+fideslang==1.4.5
 fideslog==1.2.10
 firebase-admin==5.3.0
 GitPython==3.1.31
@@ -37,6 +37,7 @@ pydash==6.0.2
 PyJWT==2.4.0
 pymongo==3.13.0
 PyMySQL==1.0.2
+pymssql==2.2.8
 python-jose[cryptography]==3.3.0
 pyyaml>=5,<7
 redis==3.5.3
