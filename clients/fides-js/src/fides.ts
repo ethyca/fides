@@ -223,7 +223,7 @@ const init = async ({
     if (experience) {
       // at this point, pre-fetched experience contains no user consent, so we populate with the Fides cookie
       experience?.privacy_notices?.forEach(notice => {
-        if (cookie.consent[notice.notice_key]) {
+        if (Object.hasOwn(cookie.consent, notice.notice_key)) {
           // eslint-disable-next-line no-param-reassign
           notice.current_preference = transformConsentToFidesUserPreference(Boolean(cookie.consent[notice.notice_key]), notice.consent_mechanism)
         } else {
