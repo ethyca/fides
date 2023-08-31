@@ -1680,12 +1680,15 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def privacy_experience_france_tcf_overlay(db: Session) -> Generator:
+def privacy_experience_france_tcf_overlay(
+    db: Session, experience_config_tcf_overlay
+) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
         data={
             "component": ComponentType.tcf_overlay,
             "region": PrivacyNoticeRegion.fr,
+            "experience_config_id": experience_config_tcf_overlay.id,
         },
     )
 
@@ -2542,6 +2545,32 @@ def experience_config_overlay(db: Session) -> Generator:
             "acknowledge_button_label": "Confirm",
             "banner_enabled": "enabled_where_required",
             "component": "overlay",
+            "description": "On this page you can opt in and out of these data uses cases",
+            "disabled": False,
+            "privacy_preferences_link_label": "Manage preferences",
+            "privacy_policy_link_label": "View our company&#x27;s privacy policy",
+            "privacy_policy_url": "example.com/privacy",
+            "reject_button_label": "Reject all",
+            "save_button_label": "Save",
+            "title": "Manage your consent",
+        },
+    )
+
+    yield config
+    for history in config.histories:
+        history.delete(db)
+    config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def experience_config_tcf_overlay(db: Session) -> Generator:
+    config = PrivacyExperienceConfig.create(
+        db=db,
+        data={
+            "accept_button_label": "Accept all",
+            "acknowledge_button_label": "Confirm",
+            "banner_enabled": "enabled_where_required",
+            "component": "tcf_overlay",
             "description": "On this page you can opt in and out of these data uses cases",
             "disabled": False,
             "privacy_preferences_link_label": "Manage preferences",

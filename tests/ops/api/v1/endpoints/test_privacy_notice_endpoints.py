@@ -1681,7 +1681,10 @@ class TestPostPrivacyNotices:
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
 
         before_creation = datetime.now().isoformat()
-        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_center_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.be
         )
         assert overlay_exp is None
@@ -1690,7 +1693,9 @@ class TestPostPrivacyNotices:
         (
             ca_overlay_exp,
             ca_privacy_center_exp,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
         assert ca_overlay_exp is None
         assert ca_privacy_center_exp is None
 
@@ -1717,7 +1722,10 @@ class TestPostPrivacyNotices:
         assert response_notice["updated_at"] == db_notice.updated_at.isoformat()
         assert response_notice["disabled"] == db_notice.disabled
 
-        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_center_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.be
         )
         assert overlay_exp is not None  # Overlay Experience Created Automatically
@@ -1734,7 +1742,9 @@ class TestPostPrivacyNotices:
         (
             ca_overlay_exp,
             ca_privacy_center_exp,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
 
         overlay_exp.delete(db)
         ca_overlay_exp.delete(db)
@@ -1753,7 +1763,10 @@ class TestPostPrivacyNotices:
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
 
         before_creation = datetime.now().isoformat()
-        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_center_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.be
         )
         assert overlay_exp is None
@@ -1762,7 +1775,9 @@ class TestPostPrivacyNotices:
         (
             ca_overlay_exp,
             ca_privacy_center_exp,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
         assert ca_overlay_exp is None
         assert ca_privacy_center_exp is None
 
@@ -1791,7 +1806,10 @@ class TestPostPrivacyNotices:
         assert response_notice["disabled"] == db_notice.disabled
         assert response_notice["notice_key"] == "my_test_privacy_notice"
 
-        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_center_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.be
         )
         assert overlay_exp is not None
@@ -1803,7 +1821,9 @@ class TestPostPrivacyNotices:
         (
             ca_overlay_exp,
             ca_privacy_center_exp,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
         assert ca_overlay_exp is not None
         assert ca_privacy_center_exp is None
 
@@ -2589,7 +2609,10 @@ class TestPatchPrivacyNotices:
         """
         Test patching a single privacy notice
         """
-        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_center_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.us_ca
         )
         assert overlay_exp is None
@@ -2690,7 +2713,10 @@ class TestPatchPrivacyNotices:
         assert response_notice["consent_mechanism"] == db_notice.consent_mechanism.value
         assert response_notice["data_uses"] == db_notice.data_uses
 
-        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_center_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.us_ca
         )
         assert overlay_exp.component == ComponentType.overlay
@@ -2709,7 +2735,10 @@ class TestPatchPrivacyNotices:
         """
         Test escape behavior when patching notices
         """
-        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_center_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.us_ca
         )
         assert overlay_exp is None
@@ -2817,7 +2846,10 @@ class TestPatchPrivacyNotices:
         assert response_notice["consent_mechanism"] == db_notice.consent_mechanism.value
         assert response_notice["data_uses"] == db_notice.data_uses
 
-        overlay_exp, privacy_center_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_center_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.us_ca
         )
         assert overlay_exp.component == ComponentType.overlay
