@@ -37,6 +37,19 @@ data_use_downgrades: Dict[str, str] = {
 }
 
 
+def _replace_matching_data_uses(
+    data_use: Optional[str], data_use_map: Dict[str, str]
+) -> Optional[str]:
+    """Helper method to loop through all data uses in the data use map and iteratively replace any overlaps
+    in the current data use"""
+    if not data_use:
+        return
+    for key, value in data_use_map.items():
+        if data_use.startswith(key):
+            data_use = data_use.replace(key, value)
+    return data_use
+
+
 def update_privacy_declaration_data_uses(
     bind: Connection, data_use_map: Dict[str, str]
 ) -> None:
@@ -45,10 +58,7 @@ def update_privacy_declaration_data_uses(
         text("SELECT id, data_use FROM privacydeclaration;")
     )
     for row in existing_privacy_declarations:
-        data_use: str = row["data_use"]
-        for key, value in data_use_map.items():
-            if data_use.startswith(key):
-                data_use = data_use.replace(key, value)
+        data_use: str = _replace_matching_data_uses(row["data_use"], data_use_map)
 
         update_data_use_query: TextClause = text(
             "UPDATE privacydeclaration SET data_use = :updated_use WHERE id= :declaration_id"
@@ -68,12 +78,10 @@ def update_ctl_policy_data_uses(bind: Connection, data_use_map: Dict[str, str]) 
         rules: List[Dict] = row["rules"]
         for i, rule in enumerate(rules or []):
             data_uses: Dict = rule.get("data_uses", {})
-            for j, val in enumerate(data_uses.get("values", [])):
-                data_use: str = val
-                for key, value in data_use_map.items():
-                    if data_use.startswith(key):
-                        data_use = data_use.replace(key, value)
-                rules[i]["data_uses"]["values"][j] = data_use
+            rules[i]["data_uses"]["values"] = [
+                _replace_matching_data_uses(use, data_use_map)
+                for use in data_uses.get("values", [])
+            ]
 
         update_data_use_query: TextClause = text(
             "UPDATE ctl_policies SET rules = :updated_rules WHERE id= :policy_id"
@@ -114,10 +122,28 @@ data_category_downgrades: Dict[str, str] = {
 }
 
 
+def _replace_matching_data_categories(
+    data_categories: List[str], data_label_map: Dict[str, str]
+) -> List[str]:
+    """
+    For every data category in the list, loop through every data category upgrade and replace with a match if applicable.
+    This also picks up category upgrades for child categories
+    """
+    updated_data_categories: List[str] = []
+    for category in data_categories or []:
+        for old_cat, new_cat in data_label_map.items():
+            if category.startswith(old_cat):
+                # Do a string replace to catch child items
+                category = category.replace(old_cat, new_cat)
+        updated_data_categories.append(category)
+
+    return updated_data_categories
+
+
 def update_datasets_data_categories(
     bind: Connection, data_label_map: Dict[str, str]
 ) -> None:
-    """Upgrade the datasets in the database to use the new data categories."""
+    """Upgrade the datasets and their collections/fields in the database to use the new data categories."""
 
     # Get all datasets out of the database
     existing_datasets: ResultProxy = bind.execute(
@@ -126,43 +152,40 @@ def update_datasets_data_categories(
 
     for row in existing_datasets:
         # Update data categories at the top level
-        labels: Optional[List[str]] = row["data_categories"]
+        dataset_data_categories: Optional[List[str]] = row["data_categories"]
 
-        if labels:
-            # Do a string replace here to catch child items
-            updated_labels: List[str] = [
-                label.replace(key, value) if label.startswith(key) else label
-                for key, value in data_label_map.items()
-                for label in labels
-            ]
+        if dataset_data_categories:
+            updated_categories: List[str] = _replace_matching_data_categories(
+                dataset_data_categories, data_label_map
+            )
 
             update_label_query: TextClause = text(
                 "UPDATE ctl_datasets SET data_categories = :updated_labels WHERE id= :dataset_id"
             )
             bind.execute(
                 update_label_query,
-                {"dataset_id": row["id"], "updated_labels": updated_labels},
+                {"dataset_id": row["id"], "updated_labels": updated_categories},
             )
 
         # Update the collections objects
         collections: str = json.dumps(row["collections"])
+        if collections:
+            for key, value in data_label_map.items():
+                collections = collections.replace(key, value)
 
-        for key, value in data_label_map.items():
-            collections = collections.replace(key, value)
-
-        update_collections_query: TextClause = text(
-            "UPDATE ctl_datasets SET collections = :updated_collections WHERE id= :dataset_id"
-        )
-        bind.execute(
-            update_collections_query,
-            {"dataset_id": row["id"], "updated_collections": collections},
-        )
+            update_collections_query: TextClause = text(
+                "UPDATE ctl_datasets SET collections = :updated_collections WHERE id= :dataset_id"
+            )
+            bind.execute(
+                update_collections_query,
+                {"dataset_id": row["id"], "updated_collections": collections},
+            )
 
 
 def update_system_ingress_egress_data_categories(
     bind: Connection, data_label_map: Dict[str, str]
 ) -> None:
-    """Upgrade or downgrade system DataFlow objects"""
+    """Upgrade or downgrade data categories on system DataFlow objects (egress/ingress)"""
     existing_systems: ResultProxy = bind.execute(
         text("SELECT id, egress, ingress FROM ctl_systems;")
     )
@@ -174,21 +197,10 @@ def update_system_ingress_egress_data_categories(
         # Do a blunt find/replace
         if ingress:
             for item in ingress:
-                item["data_categories"] = [
-                    label.replace(key, value) if key in label else label
-                    for key, value in data_label_map.items()
-                    for label in item.get("data_categories", [])
-                ]
+                item["data_categories"] = _replace_matching_data_categories(
+                    item.get("data_categories"), data_label_map
+                )
 
-        if egress:
-            for item in egress:
-                item["data_categories"] = [
-                    label.replace(key, value) if key in label else label
-                    for key, value in data_label_map.items()
-                    for label in item.get("data_categories", [])
-                ]
-
-        if ingress:
             update_ingress_query: TextClause = text(
                 "UPDATE ctl_systems SET ingress = :updated_ingress WHERE id= :system_id"
             )
@@ -198,6 +210,11 @@ def update_system_ingress_egress_data_categories(
             )
 
         if egress:
+            for item in egress:
+                item["data_categories"] = _replace_matching_data_categories(
+                    item.get("data_categories"), data_label_map
+                )
+
             update_egress_query: TextClause = text(
                 "UPDATE ctl_systems SET egress = :updated_egress WHERE id= :system_id"
             )
@@ -215,11 +232,9 @@ def update_privacy_declaration_data_categories(
         text("SELECT id, data_categories FROM privacydeclaration;")
     )
     for row in existing_privacy_declarations:
-        labels = [
-            label.replace(key, value) if key in label else label
-            for key, value in data_label_map.items()
-            for label in row["data_categories"]
-        ]
+        labels: Optional[List[str]] = _replace_matching_data_categories(
+            row["data_categories"], data_label_map
+        )
 
         update_label_query: TextClause = text(
             "UPDATE privacydeclaration SET data_categories = :updated_label WHERE id= :declaration_id"
@@ -233,7 +248,7 @@ def update_privacy_declaration_data_categories(
 def update_ctl_policy_data_categories(
     bind: Connection, data_label_map: Dict[str, str]
 ) -> None:
-    """Upgrade or downgrade data uses from fideslang 2.0 for ctl policies"""
+    """Upgrade or downgrade data categories from fideslang 2.0 for ctl policies"""
     existing_ctl_policies: ResultProxy = bind.execute(
         text("SELECT id, rules FROM ctl_policies;")
     )
@@ -241,12 +256,11 @@ def update_ctl_policy_data_categories(
         rules: List[Dict] = row["rules"]
         for i, rule in enumerate(rules or []):
             data_labels: Dict = rule.get("data_categories", {})
-            for j, val in enumerate(data_labels.get("values", [])):
-                data_category: str = val
-                for key, value in data_label_map.items():
-                    if key in data_category:
-                        data_category = data_category.replace(key, value)
-                rules[i]["data_uses"]["values"][j] = data_category
+            rule_data_categories: List[str] = data_labels.get("values", [])
+            updated_data_categories: List[str] = _replace_matching_data_categories(
+                rule_data_categories, data_label_map
+            )
+            rules[i]["data_categories"]["values"] = updated_data_categories
 
         update_data_label_query: TextClause = text(
             "UPDATE ctl_policies SET rules = :updated_rules WHERE id= :policy_id"
