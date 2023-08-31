@@ -63,8 +63,8 @@ if CONFIG.dev_mode:
             profiler.stop()
             logger.debug("Request Profiled!")
             return HTMLResponse(profiler.output_html(timeline=True))
-        else:
-            return await call_next(request)
+
+        return await call_next(request)
 
 
 @app.middleware("http")
