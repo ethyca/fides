@@ -39,6 +39,7 @@ The types of changes are:
 - Adding version check to version-dependent migration script [#3951](https://github.com/ethyca/fides/pull/3951)
 - Fixed a bug where some fields were not saving correctly on the system form [#3975](https://github.com/ethyca/fides/pull/3975)
 - Changed "retention period" field in privacy declaration form from number input to text input  [#3980](https://github.com/ethyca/fides/pull/3980)
+- Fixed issue where unsaved changes modal appears incorrectly [#4005](https://github.com/ethyca/fides/pull/4005)
 
 ### Changed
 
