@@ -22,13 +22,11 @@ import React, { useState } from "react";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
 import SelectedHistoryProvider from "./SelectedHistoryContext";
-import {
-  SystemHistory,
-  useGetSystemHistoryQuery,
-} from "./system-history.slice";
 import SystemDataGroup from "./SystemDataGroup";
 import SystemDataTags from "./SystemDataTags";
 import SystemDataTextField from "./SystemDataTextField";
+import { useGetSystemHistoryQuery } from "~/features/plus/plus.slice";
+import { SystemHistory } from "~/types/api/models/SystemHistory";
 
 interface Props {
   system: SystemResponse;
