@@ -40,6 +40,9 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
+        op.f("ix_plus_system_history_id"), "plus_system_history", ["id"], unique=False
+    )
+    op.create_index(
         "idx_system_history_created_at_system_id",
         "plus_system_history",
         ["created_at", "system_id"],
@@ -56,4 +59,5 @@ def downgrade():
         op.f("idx_plus_system_history_created_at_system_id"),
         table_name="plus_system_history",
     )
+    op.drop_index(op.f("ix_plus_system_history_id"), table_name="plus_system_history")
     op.drop_table("plus_system_history")

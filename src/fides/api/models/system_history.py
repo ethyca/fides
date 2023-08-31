@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
@@ -19,3 +19,7 @@ class SystemHistory(Base):
     )
     before = Column(MutableDict.as_mutable(JSONB), nullable=False)
     after = Column(MutableDict.as_mutable(JSONB), nullable=False)
+
+    __table_args__ = (
+        Index("idx_system_history_created_at_system_id", "created_at", "system_id"),
+    )
