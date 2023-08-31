@@ -426,9 +426,13 @@ def get_system_history(
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
 ) -> AbstractPage[SystemHistoryResponse]:
+    """
+    Returns the paginated change history for the given system.
+    """
+    system = get_system(db, fides_key)
     return paginate(
         SystemHistory.filter(
-            db=db, conditions=(SystemHistory.system_key == fides_key)
+            db=db, conditions=(SystemHistory.system_id == system.id)
         ).order_by(SystemHistory.created_at.desc()),
         params,
     )

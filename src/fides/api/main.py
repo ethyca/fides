@@ -31,9 +31,6 @@ from fides.api.schemas.analytics import Event, ExtraData
 from fides.api.service.privacy_request.email_batch_service import (
     initiate_scheduled_batch_email_send,
 )
-from fides.api.service.system.system_change_digest import (
-    initiate_scheduled_system_change_digest,
-)
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.ui import (
     get_admin_index_as_response,
@@ -251,7 +248,6 @@ async def setup_server() -> None:
         scheduler.start()
 
     initiate_scheduled_batch_email_send()
-    initiate_scheduled_system_change_digest()
 
     logger.debug("Sending startup analytics events...")
     # Avoid circular imports
