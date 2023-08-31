@@ -26,6 +26,7 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import {
   selectAllDictEntries,
   useGetAllDictionaryEntriesQuery,
@@ -201,6 +202,7 @@ const SystemInformationForm = ({
     >
       {({ dirty, values, isValid }) => (
         <Form>
+          <FormGuard id="SystemInfoTab" name="System Info" />
           <Stack spacing={0} maxWidth={{ base: "100%", lg: "70%" }}>
             {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 
