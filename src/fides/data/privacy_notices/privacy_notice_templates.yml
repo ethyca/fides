@@ -218,3 +218,31 @@ privacy_notices:
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
+- name: Targeted Advertising
+  notice_key: targeted_advertising
+  id: [not sure what to put here]
+  description: We may use some of your information and share it with partners for the purpose of targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.
+  internal_description: Targeted advertising" means displaying advertisements to a consumer where the advertisement is selected based on personal data obtained or inferred from that consumer's activities over time and across nonaffiliated Internet web sites or online applications to predict such consumer's preferences or interests.
+  regions:
+    - ca_ab
+    - ca_bc
+    - ca_mb
+    - ca_nb
+    - ca_nl
+    - ca_ns
+    - ca_on
+    - ca_pe
+    - ca_sk
+    - ca_nt
+    - ca_nu
+    - ca_yt
+  consent_mechanism: opt_out
+  data_uses:
+    - marketing.advertising.first_party.targeted
+    - marketing.advertising.third_party.targeted
+  enforcement_level: [please update - system wide]
+  disabled: False
+  has_gpc_flag: True
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: True
