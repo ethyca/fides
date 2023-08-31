@@ -31,7 +31,6 @@ from fides.api.db.system import (
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import System  # type:ignore[attr-defined]
-from fides.api.models.system_history import SystemHistory  # type: ignore[attr-defined]
 from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key,
     verify_oauth_client_for_system_from_fides_key_cli,
@@ -51,7 +50,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
-from fides.api.schemas.system import SystemHistoryResponse, SystemResponse
+from fides.api.schemas.system import SystemResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
     connection_status,
@@ -69,11 +68,6 @@ from fides.common.api.scope_registry import (
     SYSTEM_DELETE,
     SYSTEM_READ,
     SYSTEM_UPDATE,
-)
-from fides.common.api.v1.urn_registry import (
-    INSTANTIATE_SYSTEM_CONNECTION,
-    SYSTEM_CONNECTIONS,
-    V1_URL_PREFIX,
 )
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
