@@ -21,7 +21,7 @@ const SystemDataTags = ({
   const [initialField] = useField(props.name);
   const field = { ...initialField, value: initialField.value ?? [] };
 
-  const contentRef = useRef(null);
+  const contentRef = useRef<HTMLElement>(null);
   const [height, setHeight] = useState(null);
   const [longestValue, setLongestValue] = useState([]);
   const [shouldHighlight, setShouldHighlight] = useState(false);

@@ -21,7 +21,7 @@ const SystemDataTextField = ({
   const [initialField] = useField(props);
   const field = { ...initialField, value: initialField.value ?? "" };
 
-  const contentRef = useRef(null);
+  const contentRef = useRef<HTMLElement>(null);
   const [height, setHeight] = useState(null);
   const [shouldHighlight, setShouldHighlight] = useState(false);
 
