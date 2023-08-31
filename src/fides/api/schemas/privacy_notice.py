@@ -35,6 +35,7 @@ class PrivacyNotice(FidesSchema):
     displayed_in_privacy_center: Optional[bool] = False
     displayed_in_overlay: Optional[bool] = False
     displayed_in_api: Optional[bool] = False
+    systems_applicable: Optional[bool] = False
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""

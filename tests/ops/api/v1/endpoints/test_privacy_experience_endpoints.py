@@ -433,6 +433,7 @@ class TestGetPrivacyExperiences:
             "third_party_sharing",
         ]
         assert system.privacy_declarations[0].data_use == "marketing.advertising"
+        assert system.privacy_declarations[0].systems_applicable is True
 
     @pytest.mark.usefixtures(
         "privacy_notice_us_co_provide_service_operations",  # not displayed in overlay or privacy center
