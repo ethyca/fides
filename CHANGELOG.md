@@ -17,10 +17,6 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.19.0...main)
 
-### Changed
-
-- Bump PyMSSQL version and remove workarounds [#3996](https://github.com/ethyca/fides/pull/3996)
-
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 
 ### Added
@@ -39,12 +35,15 @@ The types of changes are:
 - Adding version check to version-dependent migration script [#3951](https://github.com/ethyca/fides/pull/3951)
 - Fixed a bug where some fields were not saving correctly on the system form [#3975](https://github.com/ethyca/fides/pull/3975)
 - Changed "retention period" field in privacy declaration form from number input to text input  [#3980](https://github.com/ethyca/fides/pull/3980)
+- Fixed issue where unsaved changes modal appears incorrectly [#4005](https://github.com/ethyca/fides/pull/4005)
 
 ### Changed
 
 - Systems and Privacy Declaration schema and data migration to support the Dictionary [#3901](https://github.com/ethyca/fides/pull/3901)
 - The integration search dropdown is now case-insensitive [#3916](https://github.com/ethyca/fides/pull/3916)
 - Removed deprecated fields from the taxonomy editor [#3909](https://github.com/ethyca/fides/pull/3909)
+- Bump PyMSSQL version and remove workarounds [#3996](https://github.com/ethyca/fides/pull/3996)
+- Removed reset suggestions button [#4007](https://github.com/ethyca/fides/pull/4007)
 
 ## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
 
