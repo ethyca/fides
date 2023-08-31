@@ -264,8 +264,8 @@ const init = async ({
       effectiveExperience = await fetchExperience(
         fidesRegionString,
         options.fidesApiUrl,
+        options.debug,
         cookie.identity.fides_user_device_id,
-        options.debug
       );
     }
 
