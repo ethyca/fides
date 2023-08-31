@@ -238,7 +238,6 @@ def update_ctl_policy_data_categories(
         text("SELECT id, rules FROM ctl_policies;")
     )
     for row in existing_ctl_policies:
-        needs_update: bool = False
         rules: List[Dict] = row["rules"]
         for i, rule in enumerate(rules or []):
             data_labels: Dict = rule.get("data_categories", {})
@@ -249,14 +248,13 @@ def update_ctl_policy_data_categories(
                         data_category = data_category.replace(key, value)
                 rules[i]["data_uses"]["values"][j] = data_category
 
-        if needs_update:
-            update_data_label_query: TextClause = text(
-                "UPDATE ctl_policies SET rules = :updated_rules WHERE id= :policy_id"
-            )
-            bind.execute(
-                update_data_label_query,
-                {"policy_id": row["id"], "updated_rules": json.dumps(rules)},
-            )
+        update_data_label_query: TextClause = text(
+            "UPDATE ctl_policies SET rules = :updated_rules WHERE id= :policy_id"
+        )
+        bind.execute(
+            update_data_label_query,
+            {"policy_id": row["id"], "updated_rules": json.dumps(rules)},
+        )
 
 
 def upgrade() -> None:
