@@ -417,7 +417,7 @@ describe("Consent banner", () => {
         });
 
         cy.contains("button", "Manage preferences").click();
-        cy.wait("@getPrivacyExperience")
+        cy.wait("@getPrivacyExperience");
 
         // Save new preferences
         cy.getByTestId("toggle-Advertising").click();
@@ -425,7 +425,7 @@ describe("Consent banner", () => {
 
         // New privacy notice values only, no legacy ones
         const expectedConsent = {
-          [PRIVACY_NOTICE_KEY_1]: true
+          [PRIVACY_NOTICE_KEY_1]: true,
         };
 
         // check that consent was sent to Fides API
@@ -438,7 +438,7 @@ describe("Consent banner", () => {
                 privacy_notice_history_id:
                   "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076707",
                 preference: "opt_in",
-              }
+              },
             ],
             privacy_experience_id: "pri_b9d1af04-5852-4499-bdfb-2778a6117fb8",
             user_geography: "us_ca",
