@@ -21,10 +21,6 @@ The types of changes are:
 
 - Added new Performance-related nox commands and included them as part of the CI suite [#3997](https://github.com/ethyca/fides/pull/3997)
 
-### Changed
-
-- Bump PyMSSQL version and remove workarounds [#3996](https://github.com/ethyca/fides/pull/3996)
-
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 
 ### Added
@@ -50,6 +46,7 @@ The types of changes are:
 - Systems and Privacy Declaration schema and data migration to support the Dictionary [#3901](https://github.com/ethyca/fides/pull/3901)
 - The integration search dropdown is now case-insensitive [#3916](https://github.com/ethyca/fides/pull/3916)
 - Removed deprecated fields from the taxonomy editor [#3909](https://github.com/ethyca/fides/pull/3909)
+- Bump PyMSSQL version and remove workarounds [#3996](https://github.com/ethyca/fides/pull/3996)
 
 ## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
 
