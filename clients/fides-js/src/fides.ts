@@ -58,6 +58,7 @@ import {
   buildCookieConsentForExperiences,
   FidesCookie,
   isNewFidesCookie,
+  updateExperienceFromCookieConsent,
 } from "./lib/cookie";
 import {
   PrivacyExperience,
@@ -207,11 +208,6 @@ const init = async ({
   // and then continue geolocating, etc.
   const hasExistingCookie = !isNewFidesCookie(cookie);
 
-  // This var tracks whether or not we have notices in pre-fetched experience that we don't have consent for in the cookie.
-  // If we have notices missing consent, we attempt to retrieve it from the server using the fides_user_device_id.
-  // If we still have consent, we init the overlay as usual.
-  let hasNoticesThatRequireConsent = false;
-
   if (hasExistingCookie) {
     _Fides.consent = cookie.consent;
     _Fides.fides_meta = cookie.fides_meta;
@@ -222,17 +218,7 @@ const init = async ({
     _Fides.initialized = true;
     if (experience) {
       // at this point, pre-fetched experience contains no user consent, so we populate with the Fides cookie
-      experience?.privacy_notices?.forEach((notice) => {
-        if (Object.hasOwn(cookie.consent, notice.notice_key)) {
-          // eslint-disable-next-line no-param-reassign
-          notice.current_preference = transformConsentToFidesUserPreference(
-            Boolean(cookie.consent[notice.notice_key]),
-            notice.consent_mechanism
-          );
-        } else {
-          hasNoticesThatRequireConsent = true;
-        }
-      });
+      updateExperienceFromCookieConsent(experience, cookie, options.debug);
     }
     dispatchFidesEvent("FidesInitialized", cookie, options.debug);
     dispatchFidesEvent("FidesUpdated", cookie, options.debug);
@@ -263,7 +249,7 @@ const init = async ({
         `User location could not be obtained. Skipping overlay initialization.`
       );
       shouldInitOverlay = false;
-    } else if (!effectiveExperience || hasNoticesThatRequireConsent) {
+    } else if (!effectiveExperience) {
       effectiveExperience = await fetchExperience(
         fidesRegionString,
         options.fidesApiUrl,

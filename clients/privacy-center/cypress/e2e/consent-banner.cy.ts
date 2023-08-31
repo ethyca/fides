@@ -417,15 +417,18 @@ describe("Consent banner", () => {
         });
 
         cy.contains("button", "Manage preferences").click();
-        cy.wait("@getPrivacyExperience");
 
         // Save new preferences
-        cy.getByTestId("toggle-Advertising").click();
-        cy.getByTestId("Confirm-btn").click();
+        cy.getByTestId("toggle-Test privacy notice").click();
+        cy.getByTestId("toggle-Essential").within(() => {
+          cy.get("input").should("be.disabled");
+        });
+        cy.getByTestId("Save test-btn").click();
 
         // New privacy notice values only, no legacy ones
         const expectedConsent = {
           [PRIVACY_NOTICE_KEY_1]: true,
+          [PRIVACY_NOTICE_KEY_2]: true,
         };
 
         // check that consent was sent to Fides API
@@ -436,11 +439,16 @@ describe("Consent banner", () => {
             preferences: [
               {
                 privacy_notice_history_id:
-                  "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076707",
+                  "pri_b09058a7-9f54-4360-8da5-4521e8975d4f",
                 preference: "opt_in",
               },
+              {
+                privacy_notice_history_id:
+                  "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
+                preference: "acknowledge",
+              },
             ],
-            privacy_experience_id: "pri_b9d1af04-5852-4499-bdfb-2778a6117fb8",
+            privacy_experience_id: "132345243",
             user_geography: "us_ca",
             method: ConsentMethod.button,
           };
@@ -1292,6 +1300,7 @@ describe("Consent banner", () => {
           .its("consent")
           .should("eql", {
             [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
           });
         cy.get("@FidesInitialized")
           .should("have.been.calledOnce")
@@ -1312,6 +1321,7 @@ describe("Consent banner", () => {
           .its("secondCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
           });
       });
     });
@@ -1349,6 +1359,7 @@ describe("Consent banner", () => {
           .its("consent")
           .should("eql", {
             [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
           });
         cy.get("@FidesInitialized")
           .should("have.been.calledOnce")
@@ -1369,6 +1380,7 @@ describe("Consent banner", () => {
           .its("secondCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
           });
       });
     });
