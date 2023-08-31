@@ -1,10 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import { Flex, FormControl, Tag, VStack } from "@fidesui/react";
 import { useField } from "formik";
-import { FormControl, VStack, Flex, Tag } from "@fidesui/react";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
-import { useSelectedHistory } from "./SelectedHistoryContext";
-import { Label } from "~/features/common/form/inputs";
 import _ from "lodash";
+import React, { useEffect, useRef, useState } from "react";
+
+import { Label } from "~/features/common/form/inputs";
+import QuestionTooltip from "~/features/common/QuestionTooltip";
+
+import { useSelectedHistory } from "./SelectedHistoryContext";
 
 const SystemDataTags = ({
   label,
@@ -43,21 +45,25 @@ const SystemDataTags = ({
     }
   }, [longestValue]);
 
-  const highlightStyle = shouldHighlight
-    ? formType === "before"
-      ? {
-          backgroundColor: "#FFF5F5",
-          borderColor: "#E53E3E",
-          borderTop: "1px dashed #E53E3E",
-          borderBottom: "1px dashed #E53E3E",
-        }
-      : {
-          backgroundColor: "#F0FFF4",
-          borderColor: "#38A169",
-          borderTop: "1px dashed #38A169",
-          borderBottom: "1px dashed #38A169",
-        }
-    : {};
+  let highlightStyle = {};
+
+  if (shouldHighlight) {
+    if (formType === "before") {
+      highlightStyle = {
+        backgroundColor: "#FFF5F5",
+        borderColor: "#E53E3E",
+        borderTop: "1px dashed #E53E3E",
+        borderBottom: "1px dashed #E53E3E",
+      };
+    } else {
+      highlightStyle = {
+        backgroundColor: "#F0FFF4",
+        borderColor: "#38A169",
+        borderTop: "1px dashed #38A169",
+        borderBottom: "1px dashed #38A169",
+      };
+    }
+  }
 
   return (
     <FormControl
@@ -82,12 +88,13 @@ const SystemDataTags = ({
           style={{ minHeight: `${height}px` }}
         >
           {(height ? field.value : longestValue).map((value, index) => (
+            // eslint-disable-next-line react/no-array-index-key
             <Tag key={index} colorScheme="gray" size="md" m={1}>
               {value}
             </Tag>
           ))}
         </Flex>
-        {formType === "before" && (
+        {formType === "before" && shouldHighlight && (
           <div
             style={{
               position: "absolute",

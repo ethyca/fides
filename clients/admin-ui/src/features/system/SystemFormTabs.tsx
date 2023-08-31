@@ -12,6 +12,7 @@ import ConnectionForm from "~/features/datastore-connections/system_portal_confi
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
 import { System, SystemResponse } from "~/types/api";
 
+import SystemHistoryTable from "./history/SystemHistoryTable";
 import {
   selectActiveSystem,
   setActiveSystem,
@@ -19,7 +20,6 @@ import {
 } from "./system.slice";
 import SystemInformationForm from "./SystemInformationForm";
 import UnmountWarning from "./UnmountWarning";
-import SystemHistoryTable from "./history/SystemHistoryTable";
 
 // The toast doesn't seem to handle next links well, so use buttons with onClick
 // handlers instead
@@ -272,7 +272,7 @@ const SystemFormTabs = ({
               the events listed.
             </Text>
           </Box>
-          <SystemHistoryTable system={activeSystem}></SystemHistoryTable>
+          <SystemHistoryTable system={activeSystem} />
         </Box>
       ) : null,
       isDisabled: !activeSystem,

@@ -1,14 +1,16 @@
-import { FormControl, VStack, Flex, Text } from "@fidesui/react";
+import { Flex, FormControl, Text, VStack } from "@fidesui/react";
 import { useField } from "formik";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import _ from "lodash";
+import { useEffect, useRef, useState } from "react";
+
 import {
   CustomInputProps,
-  StringField,
   Label,
+  StringField,
 } from "~/features/common/form/inputs";
+import QuestionTooltip from "~/features/common/QuestionTooltip";
+
 import { useSelectedHistory } from "./SelectedHistoryContext";
-import { useEffect, useRef, useState } from "react";
-import _ from "lodash";
 
 const SystemDataTextField = ({
   label,
@@ -45,21 +47,25 @@ const SystemDataTextField = ({
     contentRef.current.textContent = field.value;
   }, [selectedHistory, props.name, field.value]);
 
-  const highlightStyle = shouldHighlight
-    ? formType === "before"
-      ? {
-          backgroundColor: "#FFF5F5",
-          borderColor: "#E53E3E",
-          borderTop: "1px dashed #E53E3E",
-          borderBottom: "1px dashed #E53E3E",
-        }
-      : {
-          backgroundColor: "#F0FFF4",
-          borderColor: "#38A169",
-          borderTop: "1px dashed #38A169",
-          borderBottom: "1px dashed #38A169",
-        }
-    : {};
+  let highlightStyle = {};
+
+  if (shouldHighlight) {
+    if (formType === "before") {
+      highlightStyle = {
+        backgroundColor: "#FFF5F5",
+        borderColor: "#E53E3E",
+        borderTop: "1px dashed #E53E3E",
+        borderBottom: "1px dashed #E53E3E",
+      };
+    } else {
+      highlightStyle = {
+        backgroundColor: "#F0FFF4",
+        borderColor: "#38A169",
+        borderTop: "1px dashed #38A169",
+        borderBottom: "1px dashed #38A169",
+      };
+    }
+  }
 
   return (
     <FormControl
@@ -83,7 +89,7 @@ const SystemDataTextField = ({
         >
           {field.value}
         </Text>
-        {formType === "before" && (
+        {formType === "before" && shouldHighlight && (
           <div
             style={{
               position: "absolute",

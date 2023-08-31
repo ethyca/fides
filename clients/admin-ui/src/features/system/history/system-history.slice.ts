@@ -2,7 +2,7 @@ import { baseApi } from "~/features/common/api.slice";
 
 export type SystemHistory = {
   edited_by: string;
-  system_key: string;
+  system_id: string;
   before: object;
   after: object;
   created_at: string;

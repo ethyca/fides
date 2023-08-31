@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   Badge,
   Heading,
@@ -16,16 +15,20 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
+import { Form, Formik } from "formik";
+import _ from "lodash";
+import React, { useState } from "react";
+
+import { SystemResponse } from "~/types/api/models/SystemResponse";
+
+import SelectedHistoryProvider from "./SelectedHistoryContext";
 import {
   SystemHistory,
   useGetSystemHistoryQuery,
 } from "./system-history.slice";
-import { SystemResponse } from "~/types/api/models/SystemResponse";
-import { Formik, Form } from "formik";
 import SystemDataGroup from "./SystemDataGroup";
-import SystemDataTextField from "./SystemDataTextField";
-import SelectedHistoryProvider from "./SelectedHistoryContext";
 import SystemDataTags from "./SystemDataTags";
+import SystemDataTextField from "./SystemDataTextField";
 
 interface Props {
   system: SystemResponse;
@@ -100,26 +103,18 @@ const SystemHistoryTable = ({ system }: Props) => {
   };
 
   const describeSystemChange = (history: SystemHistory) => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const { edited_by, before, after, created_at } = history;
 
-    const addedFields: string[] = [];
-    const removedFields: string[] = [];
-    const changedFields: string[] = [];
+    const uniqueKeys = new Set([...Object.keys(before), ...Object.keys(after)]);
 
-    // Check for added, removed, or changed fields
-    for (const key of new Set([
-      ...Object.keys(before),
-      ...Object.keys(after),
-    ])) {
+    const addedFields = [];
+    const removedFields = [];
+    const changedFields = [];
+
+    Array.from(uniqueKeys).forEach((key) => {
       const beforeValue = before[key];
       const afterValue = after[key];
-
-      // Helper function to check if a value is considered "empty"
-      const isEmpty = (value: any) =>
-        value === undefined ||
-        value === "" ||
-        value === null ||
-        (Array.isArray(value) && value.length === 0);
 
       if (Array.isArray(beforeValue) && Array.isArray(afterValue)) {
         if (beforeValue.length < afterValue.length) {
@@ -129,28 +124,29 @@ const SystemHistoryTable = ({ system }: Props) => {
         } else if (JSON.stringify(beforeValue) !== JSON.stringify(afterValue)) {
           changedFields.push(key);
         }
-      } else {
-        if (isEmpty(beforeValue) && !isEmpty(afterValue)) {
-          addedFields.push(key);
-        } else if (isEmpty(afterValue) && !isEmpty(beforeValue)) {
-          removedFields.push(key);
-        } else if (JSON.stringify(beforeValue) !== JSON.stringify(afterValue)) {
-          changedFields.push(key);
-        }
+      } else if (_.isEmpty(beforeValue) && !_.isEmpty(afterValue)) {
+        addedFields.push(key);
+      } else if (_.isEmpty(afterValue) && !_.isEmpty(beforeValue)) {
+        removedFields.push(key);
+      } else if (JSON.stringify(beforeValue) !== JSON.stringify(afterValue)) {
+        changedFields.push(key);
       }
-    }
+    });
 
     const changeDescriptions = [];
 
     if (addedFields.length > 0) {
+      // eslint-disable-next-line react/jsx-key
       changeDescriptions.push(["added ", <b>{addedFields.join(", ")}</b>]);
     }
 
     if (removedFields.length > 0) {
+      // eslint-disable-next-line react/jsx-key
       changeDescriptions.push(["removed ", <b>{removedFields.join(", ")}</b>]);
     }
 
     if (changedFields.length > 0) {
+      // eslint-disable-next-line react/jsx-key
       changeDescriptions.push(["changed ", <b>{changedFields.join(", ")}</b>]);
     }
 
@@ -159,10 +155,12 @@ const SystemHistoryTable = ({ system }: Props) => {
     }
 
     const lastDescription = changeDescriptions.pop();
+
     const descriptionList =
       changeDescriptions.length > 0 ? (
         <>
           {changeDescriptions.map((desc, i) => (
+            // eslint-disable-next-line react/no-array-index-key
             <React.Fragment key={i}>
               {desc}
               {i < changeDescriptions.length - 1 ? ", " : ""}
@@ -220,6 +218,7 @@ const SystemHistoryTable = ({ system }: Props) => {
             const description = describeSystemChange(history);
             return (
               <Tr
+                // eslint-disable-next-line react/no-array-index-key
                 key={index}
                 onClick={() => openModal(history)}
                 style={{ cursor: "pointer" }}
@@ -259,6 +258,7 @@ const SystemHistoryTable = ({ system }: Props) => {
                   {getBadges(selectedHistory.before, selectedHistory.after).map(
                     (badge, index) => (
                       <Badge
+                        // eslint-disable-next-line react/no-array-index-key
                         key={index}
                         marginLeft="8px"
                         fontSize="10px"

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, ReactNode } from "react";
+import React, { createContext, ReactNode, useContext, useMemo } from "react";
+
 import { SystemHistory } from "./system-history.slice";
 
 type FormType = "before" | "after";
@@ -11,9 +12,7 @@ interface SelectedHistoryContextProps {
 const SelectedHistoryContext =
   createContext<SelectedHistoryContextProps | null>(null);
 
-export const useSelectedHistory = () => {
-  return useContext(SelectedHistoryContext)!;
-};
+export const useSelectedHistory = () => useContext(SelectedHistoryContext)!;
 
 interface SelectedHistoryProviderProps {
   children: ReactNode;
@@ -26,8 +25,13 @@ const SelectedHistoryProvider: React.FC<SelectedHistoryProviderProps> = ({
   selectedHistory,
   formType,
 }) => {
+  const value = useMemo(
+    () => ({ selectedHistory, formType }),
+    [selectedHistory, formType]
+  );
+
   return (
-    <SelectedHistoryContext.Provider value={{ selectedHistory, formType }}>
+    <SelectedHistoryContext.Provider value={value}>
       {children}
     </SelectedHistoryContext.Provider>
   );
