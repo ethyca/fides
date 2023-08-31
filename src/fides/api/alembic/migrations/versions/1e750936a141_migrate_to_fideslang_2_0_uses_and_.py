@@ -265,6 +265,13 @@ def update_ctl_policy_data_categories(
 def upgrade() -> None:
     bind: Connection = op.get_bind()
 
+    # Given that our advice is to turn off auto-migrations and make a db copy,
+    # there is no "downgrade" version of this. It also wouldn't be feasible given
+    # it would require an older version of fideslang.
+    logger.info("Removing old default data categories and data uses")
+    bind.execute(text("DELETE FROM ctl_data_uses WHERE is_default = TRUE;"))
+    bind.execute(text("DELETE FROM ctl_data_categories WHERE is_default = TRUE;"))
+
     logger.info("Upgrading data use on privacy declaration")
     update_privacy_declaration_data_uses(bind, data_use_upgrades)
 
