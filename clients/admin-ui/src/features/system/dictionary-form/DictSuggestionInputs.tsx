@@ -9,7 +9,7 @@ import {
 } from "@fidesui/react";
 import { MultiValue, Select, SingleValue } from "chakra-react-select";
 import { useField, useFormikContext } from "formik";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {

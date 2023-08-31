@@ -42,6 +42,7 @@ The types of changes are:
 - The integration search dropdown is now case-insensitive [#3916](https://github.com/ethyca/fides/pull/3916)
 - Removed deprecated fields from the taxonomy editor [#3909](https://github.com/ethyca/fides/pull/3909)
 - Bump PyMSSQL version and remove workarounds [#3996](https://github.com/ethyca/fides/pull/3996)
+- Removed reset suggestions button [#4007](https://github.com/ethyca/fides/pull/4007)
 
 ## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
 
