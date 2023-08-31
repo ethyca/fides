@@ -22,10 +22,16 @@ const SystemDataTags = ({
   const contentRef = useRef(null);
   const [height, setHeight] = useState(null);
   const [longestValue, setLongestValue] = useState([]);
+  const [shouldHighlight, setShouldHighlight] = useState(false);
 
   useEffect(() => {
-    const beforeValue = _.get(selectedHistory?.before, props.name, "");
-    const afterValue = _.get(selectedHistory?.after, props.name, "");
+    const beforeValue = _.get(selectedHistory?.before, props.name, []);
+    const afterValue = _.get(selectedHistory?.after, props.name, []);
+
+    // Determine whether to highlight
+    setShouldHighlight(!_.isEqual(beforeValue, afterValue));
+
+    // Determine the longest value for height calculation
     setLongestValue(
       beforeValue.length > afterValue.length ? beforeValue : afterValue
     );
@@ -37,10 +43,21 @@ const SystemDataTags = ({
     }
   }, [longestValue]);
 
-  const highlightStyle =
-    formType === "before"
-      ? { backgroundColor: "#FFF5F5", borderColor: "#E53E3E" }
-      : { backgroundColor: "#F0FFF4", borderColor: "#38A169" };
+  const highlightStyle = shouldHighlight
+    ? formType === "before"
+      ? {
+          backgroundColor: "#FFF5F5",
+          borderColor: "#E53E3E",
+          borderTop: "1px dashed #E53E3E",
+          borderBottom: "1px dashed #E53E3E",
+        }
+      : {
+          backgroundColor: "#F0FFF4",
+          borderColor: "#38A169",
+          borderTop: "1px dashed #38A169",
+          borderBottom: "1px dashed #38A169",
+        }
+    : {};
 
   return (
     <FormControl
@@ -49,8 +66,6 @@ const SystemDataTags = ({
       paddingRight={4}
       paddingTop={3}
       paddingBottom={3}
-      borderTop="1px dashed"
-      borderBottom="1px dashed"
       marginTop="-1px !important"
     >
       <VStack alignItems="start">

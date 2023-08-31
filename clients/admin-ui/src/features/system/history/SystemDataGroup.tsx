@@ -19,7 +19,7 @@ const SystemDataGroup = ({
       const name = child.props.name;
       const beforeValue = _.get(selectedHistory?.before, name);
       const afterValue = _.get(selectedHistory?.after, name);
-      return beforeValue || afterValue;
+      return !_.isEmpty(beforeValue) || !_.isEmpty(afterValue);
     }
     return false;
   });
@@ -30,7 +30,7 @@ const SystemDataGroup = ({
   }
 
   return (
-    <Stack>
+    <Stack marginTop="0px !important">
       <Box
         maxWidth="720px"
         border="1px"

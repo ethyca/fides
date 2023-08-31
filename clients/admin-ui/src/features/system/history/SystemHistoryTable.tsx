@@ -264,9 +264,9 @@ const SystemHistoryTable = ({ system }: Props) => {
                         fontSize="10px"
                         padding="0px 4px"
                         variant="solid"
-                        lineHeight="16px"
+                        lineHeight="18px"
                         height="18px"
-                        backgroundColor="#805AD5"
+                        backgroundColor="#718096"
                         borderRadius="2px"
                       >
                         {badge}
