@@ -206,7 +206,7 @@ const SystemHistoryTable = ({ system }: Props) => {
                   {" "}
                   by <b>{system.created_by}</b>{" "}
                 </>
-              )}
+              )}{" "}
               on {formattedDate} at {formattedTime}
             </Td>
           </Tr>
