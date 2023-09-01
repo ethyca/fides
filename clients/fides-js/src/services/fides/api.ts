@@ -20,8 +20,8 @@ export enum FidesEndpointPaths {
 export const fetchExperience = async (
   userLocationString: string,
   fidesApiUrl: string,
-  fidesUserDeviceId: string,
-  debug: boolean
+  debug: boolean,
+  fidesUserDeviceId?: string | null
 ): Promise<PrivacyExperience | null> => {
   debugLog(
     debug,
@@ -32,15 +32,18 @@ export const fetchExperience = async (
     mode: "cors",
     headers: [["Unescape-Safestr", "true"]],
   };
-  const params = new URLSearchParams({
+  let params: any = {
     show_disabled: "false",
     region: userLocationString,
     component: ComponentType.OVERLAY,
     has_notices: "true",
     has_config: "true",
     systems_applicable: "true",
-    fides_user_device_id: fidesUserDeviceId,
-  });
+  };
+  if (fidesUserDeviceId) {
+    params.fides_user_device_id = fidesUserDeviceId;
+  }
+  params = new URLSearchParams(params);
   const response = await fetch(
     `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
     fetchOptions
