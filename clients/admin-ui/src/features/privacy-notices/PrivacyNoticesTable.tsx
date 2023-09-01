@@ -1,5 +1,5 @@
 import { Button, Flex, Spinner } from "@fidesui/react";
-import { PRIVACY_NOTICES_ROUTE, SYSTEM_ROUTE } from "common/nav/v2/routes";
+import { PRIVACY_NOTICES_ROUTE } from "common/nav/v2/routes";
 import Restrict, { useHasPermission } from "common/Restrict";
 import {
   DateCell,
@@ -9,7 +9,6 @@ import {
   TitleCell,
   WrappedCell,
 } from "common/table";
-import EmptyTableState from "common/table/EmptyTableState";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
@@ -83,28 +82,7 @@ export const PrivacyNoticesTable = () => {
       </Flex>
     );
   }
-  if (privacyNotices.length === 0) {
-    return (
-      <EmptyTableState
-        title="To start configuring consent, please first add data uses"
-        description="It looks like you have not yet added any data uses to the system. Fides
-        relies on how you use data in your organization to provide intelligent
-        recommendations and pre-built templates for privacy notices you may need
-        to display to your users. To get started with privacy notices, first add
-        your data uses to systems on your data map."
-        button={
-          <Button
-            size="sm"
-            variant="outline"
-            fontWeight="semibold"
-            minWidth="auto"
-          >
-            <NextLink href={SYSTEM_ROUTE}>Set up data uses</NextLink>
-          </Button>
-        }
-      />
-    );
-  }
+
   return (
     <FidesTable<PrivacyNoticeResponse>
       columns={columns}
