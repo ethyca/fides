@@ -128,6 +128,7 @@ export const DirtyFormConfirmationModal = () => {
       isOpen={isModalOpen}
       onClose={onClose}
       onConfirm={onConfirm}
+      isCentered
       title="Unsaved Changes"
       message="You have unsaved changes"
     />

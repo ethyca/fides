@@ -1,3 +1,0 @@
-# These requirements are dangerous on certain platforms
-Cython==0.29.35
-pymssql==2.2.7

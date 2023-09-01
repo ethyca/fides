@@ -1,7 +1,9 @@
-from typing import List, Optional
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from fideslang.models import Cookies, PrivacyDeclaration, System
 from pydantic import Field
+from pydantic.main import BaseModel
 
 from fides.api.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
@@ -35,3 +37,18 @@ class SystemResponse(System):
     )
 
     cookies: Optional[List[Cookies]] = []
+
+    created_at: datetime
+
+
+class SystemHistoryResponse(BaseModel):
+    """Response schema for a single system history entry"""
+
+    edited_by: Optional[str]
+    system_id: str
+    before: Dict[str, Any]
+    after: Dict[str, Any]
+    created_at: datetime
+
+    class Config:
+        orm_mode = True

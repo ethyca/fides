@@ -3,6 +3,7 @@ from unittest import mock
 
 import pytest
 from fastapi_pagination import Params
+from fideslang.models import System as SystemSchema
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -30,6 +31,8 @@ from fides.common.api.scope_registry import (
     SAAS_CONNECTION_INSTANTIATE,
     STORAGE_DELETE,
     SYSTEM_MANAGER_UPDATE,
+    SYSTEM_READ,
+    SYSTEM_UPDATE,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from tests.conftest import generate_role_header_for_user
@@ -136,7 +139,7 @@ class TestPatchSystemConnections:
         assert resp.status_code == HTTP_404_NOT_FOUND
         assert (
             resp.json()["detail"]
-            == "A valid system must be provided to create, update, and delete connections"
+            == "The specified system was not found. Please provide a valid system for the requested operation."
         )
 
     @pytest.mark.parametrize(
@@ -251,7 +254,7 @@ class TestGetConnections:
 
         assert (
             resp.json()["detail"]
-            == "A valid system must be provided to create, update, and delete connections"
+            == "The specified system was not found. Please provide a valid system for the requested operation."
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
 

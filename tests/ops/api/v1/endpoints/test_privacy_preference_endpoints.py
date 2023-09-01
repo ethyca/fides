@@ -174,7 +174,13 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert response.status_code == 200
         # Assert no existing privacy preferences exist for this identity
-        assert response.json() == {"items": [], "total": 0, "page": 1, "size": 50}
+        assert response.json() == {
+            "items": [],
+            "total": 0,
+            "page": 1,
+            "pages": 0,
+            "size": 50,
+        }
 
         response = api_client.patch(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
@@ -258,7 +264,13 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert response.status_code == 200
         # Assert no existing privacy preferences exist for this identity
-        assert response.json() == {"items": [], "total": 0, "page": 1, "size": 50}
+        assert response.json() == {
+            "items": [],
+            "total": 0,
+            "page": 1,
+            "pages": 0,
+            "size": 50,
+        }
 
         request_body = {
             "browser_identity": {"ga_client_id": "test"},
@@ -966,7 +978,13 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert response.status_code == 200
         # Assert no existing privacy preferences exist for this identity
-        assert response.json() == {"items": [], "total": 0, "page": 1, "size": 50}
+        assert response.json() == {
+            "items": [],
+            "total": 0,
+            "page": 1,
+            "pages": 0,
+            "size": 50,
+        }
 
         response = api_client.patch(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
@@ -1141,7 +1159,13 @@ class TestPrivacyPreferenceVerify:
         )
         assert response.status_code == 200
         assert verification_code in mock_verify_identity.call_args_list[0].args
-        assert response.json() == {"items": [], "total": 0, "page": 1, "size": 50}
+        assert response.json() == {
+            "items": [],
+            "total": 0,
+            "page": 1,
+            "pages": 0,
+            "size": 50,
+        }
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
@@ -2000,6 +2024,7 @@ class TestHistoricalPreferences:
         assert len(response.json()["items"]) == 1
         assert response.json()["total"] == 1
         assert response.json()["page"] == 1
+        assert response.json()["pages"] == 1
         assert response.json()["size"] == 50
 
         response_body = response.json()["items"][0]
@@ -2143,6 +2168,7 @@ class TestHistoricalPreferences:
         assert len(response.json()["items"]) == 1
         assert response.json()["total"] == 1
         assert response.json()["page"] == 1
+        assert response.json()["pages"] == 1
         assert response.json()["size"] == 50
 
         response_body = response.json()["items"][0]
@@ -2168,6 +2194,7 @@ class TestHistoricalPreferences:
         assert len(response.json()["items"]) == 3
         assert response.json()["total"] == 3
         assert response.json()["page"] == 1
+        assert response.json()["pages"] == 1
         assert response.json()["size"] == 50
 
         response_body = response.json()["items"]
@@ -2321,6 +2348,7 @@ class TestCurrentPrivacyPreferences:
         assert len(response.json()["items"]) == 1
         assert response.json()["total"] == 1
         assert response.json()["page"] == 1
+        assert response.json()["pages"] == 1
         assert response.json()["size"] == 50
 
         response_body = response.json()["items"][0]
@@ -2352,6 +2380,7 @@ class TestCurrentPrivacyPreferences:
         assert len(response.json()["items"]) == 3
         assert response.json()["total"] == 3
         assert response.json()["page"] == 1
+        assert response.json()["pages"] == 1
         assert response.json()["size"] == 50
 
         response_body = response.json()["items"]

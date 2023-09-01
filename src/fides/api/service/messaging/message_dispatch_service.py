@@ -324,7 +324,10 @@ def _build_email(  # pylint: disable=too-many-return-statements
             template_variables=variables,
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
-        variables = {"download_link": body_params.download_links[0]}
+        variables = {
+            "download_link": body_params.download_links[0],
+            "days": body_params.subject_request_download_time_in_days,
+        }
         return EmailForActionType(
             subject=_render(messaging_template.content["subject"], variables),  # type: ignore
             body=_render(messaging_template.content["body"], variables),  # type: ignore
@@ -347,7 +350,7 @@ def _build_email(  # pylint: disable=too-many-return-statements
             body=_render(messaging_template.content["body"]),  # type: ignore
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY:
-        variables = {"denied_reason": body_params.rejection_reason}
+        variables = {"denial_reason": body_params.rejection_reason}
         return EmailForActionType(
             subject=_render(messaging_template.content["subject"], variables),  # type: ignore
             body=_render(messaging_template.content["body"], variables),  # type: ignore

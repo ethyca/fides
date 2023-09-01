@@ -812,6 +812,7 @@ class TestGetMessagingConfigs:
                 }
             ],
             "page": 1,
+            "pages": 1,
             "size": PAGE_SIZE,
             "total": 1,
         }
