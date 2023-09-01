@@ -69,6 +69,11 @@ from fides.common.api.scope_registry import (
     SYSTEM_READ,
     SYSTEM_UPDATE,
 )
+from fides.common.api.v1.urn_registry import (
+    INSTANTIATE_SYSTEM_CONNECTION,
+    SYSTEM_CONNECTIONS,
+    V1_URL_PREFIX,
+)
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
 SYSTEM_CONNECTIONS_ROUTER = APIRouter(
