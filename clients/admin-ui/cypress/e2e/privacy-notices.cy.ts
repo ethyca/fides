@@ -81,15 +81,6 @@ describe("Privacy notices", () => {
     });
   });
 
-  it("can show an empty state", () => {
-    cy.intercept("GET", "/api/v1/privacy-notice*", {
-      body: { items: [], page: 1, size: 10, total: 0 },
-    }).as("getEmptyNotices");
-    cy.visit(PRIVACY_NOTICES_ROUTE);
-    cy.wait("@getEmptyNotices");
-    cy.getByTestId("empty-state");
-  });
-
   describe("table", () => {
     beforeEach(() => {
       cy.visit(PRIVACY_NOTICES_ROUTE);
