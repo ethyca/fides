@@ -64,7 +64,12 @@ export const EnablePrivacyNoticeCell = (
       {tagValue ? (
         <Box mt="2">
           <Tooltip label={tooltip}>
-            <Tag size="sm" width="fit-content" {...tagProps}>
+            <Tag
+              size="sm"
+              width="fit-content"
+              {...tagProps}
+              data-testid="systems-applicable-tag"
+            >
               {tagValue}
             </Tag>
           </Tooltip>

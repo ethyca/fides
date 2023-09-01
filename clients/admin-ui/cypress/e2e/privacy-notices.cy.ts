@@ -175,6 +175,21 @@ describe("Privacy notices", () => {
         // redux should requery after invalidation
         cy.wait("@getNotices");
       });
+
+      it("can render a tag based on systems_applicable", () => {
+        // Enabled and has applicable systems
+        cy.getByTestId("row-Essential").within(() => {
+          cy.getByTestId("systems-applicable-tag").contains("Active");
+        });
+        // Disabled but has applicable systems
+        cy.getByTestId("row-Data Sales").within(() => {
+          cy.getByTestId("systems-applicable-tag").contains("Suggested");
+        });
+        // Disabled and has no applicable systems
+        cy.getByTestId("row-Advertising").within(() => {
+          cy.getByTestId("systems-applicable-tag").should("not.exist");
+        });
+      });
     });
   });
 
