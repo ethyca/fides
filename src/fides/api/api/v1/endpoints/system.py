@@ -31,7 +31,6 @@ from fides.api.db.system import (
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import System  # type:ignore[attr-defined]
-from fides.api.models.system_history import SystemHistory  # type: ignore[attr-defined]
 from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key,
     verify_oauth_client_for_system_from_fides_key_cli,
@@ -256,9 +255,7 @@ async def update(
     to add additional "system manager" permission checks.
     """
     await validate_privacy_declarations(db, resource)
-    return await update_system(
-        resource, db, current_user.username if current_user else None
-    )
+    return await update_system(resource, db, current_user.id if current_user else None)
 
 
 @SYSTEM_ROUTER.post(
@@ -280,7 +277,7 @@ async def upsert(
     current_user: FidesUser = Depends(get_current_user),
 ) -> Dict:
     inserted, updated = await upsert_system(
-        resources, db, current_user.username if current_user else None
+        resources, db, current_user.id if current_user else None
     )
     response.status_code = (
         status.HTTP_201_CREATED if inserted > 0 else response.status_code
@@ -353,9 +350,7 @@ async def create(
     Override `System` create/POST to handle `.privacy_declarations` defined inline,
     for backward compatibility and ease of use for API users.
     """
-    return await create_system(
-        resource, db, current_user.username if current_user else None
-    )
+    return await create_system(resource, db, current_user.id if current_user else None)
 
 
 @SYSTEM_ROUTER.get(

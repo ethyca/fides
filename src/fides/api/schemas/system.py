@@ -40,10 +40,6 @@ class SystemResponse(System):
 
     created_at: datetime
 
-    created_by: Optional[str] = Field(
-        description="The username of the user who created the system"
-    )
-
 
 class SystemHistoryResponse(BaseModel):
     """Response schema for a single system history entry"""

@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.19.0...main)
 
+### Developer Experience
+- Fixed up parallelization in docker platform builds [#4013](https://github.com/ethyca/fides/pull/4013)
+
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 
 ### Added
@@ -36,6 +39,7 @@ The types of changes are:
 - Fixed a bug where some fields were not saving correctly on the system form [#3975](https://github.com/ethyca/fides/pull/3975)
 - Changed "retention period" field in privacy declaration form from number input to text input  [#3980](https://github.com/ethyca/fides/pull/3980)
 - Fixed issue where unsaved changes modal appears incorrectly [#4005](https://github.com/ethyca/fides/pull/4005)
+- Fixed banner resurfacing after user consent for pre-fetch experience [#4009](https://github.com/ethyca/fides/pull/4009)
 
 ### Changed
 
