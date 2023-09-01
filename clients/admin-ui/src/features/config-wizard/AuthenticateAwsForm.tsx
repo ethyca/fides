@@ -1,13 +1,4 @@
-import {
-  Accordion,
-  AccordionButton,
-  AccordionItem,
-  AccordionPanel,
-  Button,
-  Heading,
-  HStack,
-  Stack,
-} from "@fidesui/react";
+import { Button, Heading, HStack, Stack } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
@@ -28,17 +19,12 @@ import {
 } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors";
 
-import DocsLink from "../common/DocsLink";
 import {
   changeStep,
   selectOrganizationFidesKey,
   setSystemsForReview,
 } from "./config-wizard.slice";
-import {
-  AWS_REGION_OPTIONS,
-  DOCS_URL_AWS_PERMISSIONS,
-  DOCS_URL_IAM_POLICY,
-} from "./constants";
+import { AWS_REGION_OPTIONS } from "./constants";
 import { isSystem } from "./helpers";
 import { useGenerateMutation } from "./scanner.slice";
 import ScannerError from "./ScannerError";
@@ -138,7 +124,10 @@ const AuthenticateAwsForm = () => {
               <>
                 <Heading size="lg">Authenticate AWS Scanner</Heading>
                 <h2>
-                To use the scanner to inventory systems in AWS, you must first authenticate to your AWS cloud by providing the following information:</h2>
+                  To use the scanner to inventory systems in AWS, you must first
+                  authenticate to your AWS cloud by providing the following
+                  information:
+                </h2>
                 <Stack>
                   <CustomTextInput
                     name="aws_access_key_id"

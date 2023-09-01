@@ -1,21 +1,9 @@
-import {
-  Accordion,
-  AccordionButton,
-  AccordionItem,
-  AccordionPanel,
-  Button,
-  Divider,
-  Heading,
-  HStack,
-  Stack,
-  Text,
-} from "@fidesui/react";
+import { Button, Heading, HStack, Stack } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import DocsLink from "~/features/common/DocsLink";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import {
   isErrorResult,
@@ -36,7 +24,6 @@ import {
   selectOrganizationFidesKey,
   setSystemsForReview,
 } from "./config-wizard.slice";
-import { DOCS_URL_OKTA_TOKEN } from "./constants";
 import { isSystem } from "./helpers";
 import { useGenerateMutation } from "./scanner.slice";
 import ScannerError from "./ScannerError";
@@ -127,16 +114,17 @@ const AuthenticateOktaForm = () => {
             {!isSubmitting && !scannerError ? (
               <>
                 <Heading size="lg">Authenticate Okta Scanner</Heading>
-                      <>
-                        <h2>
-                        To use the scanner to inventory systems in Okta, you must first authenticate to your Okta account by providing the following information: 
-                        </h2>
+                <h2>
+                  To use the scanner to inventory systems in Okta, you must
+                  first authenticate to your Okta account by providing the
+                  following information:
+                </h2>
                 <Stack>
-                  <CustomTextInput 
-                    name="orgUrl" 
+                  <CustomTextInput
+                    name="orgUrl"
                     label="Domain"
                     tooltip="The URL for your organization's account on Okta"
-                     />
+                  />
                   <CustomTextInput
                     name="token"
                     label="Okta token"
