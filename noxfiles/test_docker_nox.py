@@ -1,6 +1,3 @@
-import pytest
-
-from constants_nox import DEV_TAG_SUFFIX, PRERELEASE_TAG_SUFFIX, RC_TAG_SUFFIX
 from docker_nox import generate_buildx_command
 
 
