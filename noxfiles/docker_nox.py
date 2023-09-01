@@ -201,6 +201,7 @@ def get_buildx_commands(tag_suffixes: List[str]) -> List[Tuple[str, ...]]:
     return buildx_commands
 
 
+# Let Github Actions handle the parallelization
 @nox.session()
 @nox.parametrize(
     "tag",
