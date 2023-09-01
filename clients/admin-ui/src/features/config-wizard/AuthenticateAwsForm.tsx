@@ -136,40 +136,14 @@ const AuthenticateAwsForm = () => {
             ) : null}
             {!isSubmitting && !scannerError ? (
               <>
-                <Heading size="lg">Authenticate Scanner</Heading>
+                <Heading size="lg">Authenticate AWS Scanner</Heading>
                 <Accordion allowToggle border="transparent">
                   <AccordionItem>
                     {({ isExpanded }) => (
                       <>
                         <h2>
-                          The scanner can be connected to your cloud
-                          infrastructure provider to automatically scan and
-                          create a list of all systems that may contain personal
-                          data.
-                          <AccordionButton
-                            display="inline"
-                            padding="0px"
-                            ml="5px"
-                            width="auto"
-                            color="complimentary.500"
-                          >
-                            {isExpanded ? `(show less)` : `(show more)`}
-                          </AccordionButton>
+                          To scan your AWS cloud infrastructure to inventory systems, you must first authenticate to your AWS cloud by providing the following information:
                         </h2>
-                        <AccordionPanel padding="0px" mt="20px">
-                          In order to run the scanner, please provide
-                          credentials for authenticating to AWS. Please note,
-                          the credentials must have the{" "}
-                          <DocsLink href={DOCS_URL_AWS_PERMISSIONS}>
-                            minimum permissions listed in the support
-                            documentation here
-                          </DocsLink>
-                          . You can{" "}
-                          <DocsLink href={DOCS_URL_IAM_POLICY}>
-                            copy the sample IAM policy here
-                          </DocsLink>
-                          .
-                        </AccordionPanel>
                       </>
                     )}
                   </AccordionItem>
@@ -182,20 +156,20 @@ const AuthenticateAwsForm = () => {
                     // TODO(#724): These fields should link to the AWS docs, but that requires HTML
                     // content instead of just a string label. The message would be:
                     // "You can find more information about creating access keys and secrets on AWS docs here."
-                    tooltip="AWS Access Key ID is the AWS ID associated with the account you want to use for scanning."
+                    tooltip="The Access Key ID created by the cloud hosting provider."
                   />
                   <CustomTextInput
                     type="password"
                     name="aws_secret_access_key"
                     label="Secret"
                     // "You can find more about creating access keys and secrets on AWS docs here."
-                    tooltip="The secret access key is generated when you create your new access key ID."
+                    tooltip="The secret associated with the Access Key ID used for authentication."
                   />
                   <CustomSelect
                     name="region_name"
-                    label="Default Region"
+                    label="AWS Region"
                     // "You can learn more about regions in AWS docs here."
-                    tooltip="Specify the default region in which your infrastructure is located. This is necessary for successful scanning."
+                    tooltip="The geographic region of the cloud hosting provider you would like to scan."
                     options={AWS_REGION_OPTIONS}
                   />
                 </Stack>
