@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.19.0...main)
 
+### Developer Experience
+- Fixed up parallelization in docker platform builds [#4013](https://github.com/ethyca/fides/pull/4013)
+
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 
 ### Added
