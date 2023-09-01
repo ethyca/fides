@@ -520,6 +520,26 @@ class TestSaveNoticesServedPrivacyCenter:
             "serving_component": ServingComponent.privacy_center.value,
         }
 
+    @pytest.fixture(scope="function")
+    def tcf_request_body(
+        self,
+        privacy_notice,
+        privacy_experience_france_tcf_overlay,
+        system,
+        verification_code,
+    ):
+        return {
+            "browser_identity": {
+                "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
+            },
+            "code": verification_code,
+            "tcf_purposes": [5],
+            "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
+            "user_geography": "fr",
+            "acknowledge_mode": False,
+            "serving_component": ServingComponent.tcf_overlay.value,
+        }
+
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
@@ -690,6 +710,41 @@ class TestSaveNoticesServedPrivacyCenter:
 
         last_served_notice.delete(db)
         served_notice_history.delete(db)
+
+    @pytest.mark.usefixtures("subject_identity_verification_required", "system")
+    def test_save_notices_served_tcf(
+        self,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+        tcf_request_body,
+        db,
+    ):
+        """Verify code, save purpose served, and return."""
+        provided_identity, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_NOTICES_SERVED.format(consent_request_id=consent_request.id)}",
+            json=tcf_request_body,
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        response_json = response.json()[0]
+
+        assert response_json["purpose"] == 5
+        served_history_id = response_json["served_notice_history_id"]
+        record = (
+            db.query(ServedNoticeHistory)
+            .filter(ServedNoticeHistory.id == served_history_id)
+            .first()
+        )
+        assert record.purpose == 5
+
+        current = record.last_served_record
+
+        current.delete(db)
+        record.delete(db)
 
     @pytest.mark.usefixtures("subject_identity_verification_required", "system")
     @mock.patch(

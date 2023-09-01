@@ -2410,6 +2410,11 @@ def privacy_preference_history_for_tcf_special_purpose(
     fides_user_provided_identity,
 ):
     """Fixture that saves a privacy preference against a TCF special purpose directly"""
+    (
+        provided_identity,
+        _,
+    ) = provided_identity_and_consent_request
+
     preference_history_record = PrivacyPreferenceHistory.create(
         db=db,
         data={
@@ -2420,6 +2425,7 @@ def privacy_preference_history_for_tcf_special_purpose(
             "privacy_experience_config_history_id": None,
             "privacy_experience_id": privacy_experience_france_overlay.id,
             "preference": "opt_in",
+            "provided_identity_id": provided_identity.id,
             "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
             "request_origin": "tcf_overlay",
             "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",

@@ -23,6 +23,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
+from fides.api.util.tcf_util import ConsentRecordType
 from fides.common.api.scope_registry import (
     CONSENT_READ,
     CURRENT_PRIVACY_PREFERENCE_READ,
@@ -60,6 +61,21 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             ],
             "policy_key": consent_policy.key,
             "user_geography": "us_ca",
+        }
+
+    @pytest.fixture(scope="function")
+    def tcf_request_body(self, privacy_notice, verification_code, consent_policy):
+        return {
+            "browser_identity": {"ga_client_id": "test"},
+            "code": verification_code,
+            "feature_preferences": [
+                {
+                    "id": 1,
+                    "preference": "opt_out",
+                }
+            ],
+            "policy_key": consent_policy.key,
+            "user_geography": "fr",
         }
 
     @pytest.mark.usefixtures(
@@ -721,6 +737,78 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         second_privacy_preference_history_created.delete(db)
 
     @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+        "automatically_approved",
+        "consent_policy",
+        "system",
+    )
+    @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_set_privacy_preferences_tcf(
+        self,
+        mock_run_privacy_request: MagicMock,
+        mock_verify_identity: MagicMock,
+        provided_identity_and_consent_request,
+        db,
+        api_client,
+        verification_code,
+        tcf_request_body,
+    ):
+        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
+        consent_settings.tcf_enabled = True
+        consent_settings.save(db=db)
+
+        provided_identity, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json=tcf_request_body,
+        )
+
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+
+        response_json = response.json()
+
+        first_privacy_preference_history_created = (
+            db.query(PrivacyPreferenceHistory)
+            .filter(
+                PrivacyPreferenceHistory.id
+                == response_json[0]["privacy_preference_history_id"]
+            )
+            .first()
+        )
+        assert response_json[0]["preference"] == "opt_out"
+        assert response.json()[0]["feature"] == 1
+
+        assert first_privacy_preference_history_created.feature == 1
+        assert (
+            first_privacy_preference_history_created.preference
+            == UserConsentPreference.opt_out
+        )
+        assert (
+            first_privacy_preference_history_created.consent_record_type
+            == ConsentRecordType.feature
+        )
+
+        current_preference = (
+            first_privacy_preference_history_created.current_privacy_preference
+        )
+
+        assert current_preference.feature == 1
+        assert current_preference.preference == UserConsentPreference.opt_out
+
+        assert verification_code in mock_verify_identity.call_args_list[0].args
+
+        current_preference.delete(db)
+        first_privacy_preference_history_created.delete(db)
+
+        assert not mock_run_privacy_request.called
+
+    @pytest.mark.usefixtures(
         "subject_identity_verification_required", "automatically_approved"
     )
     @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
@@ -1093,6 +1181,62 @@ class TestPrivacyPreferenceVerify:
                 privacy_preference_history.privacy_notice_history
             ).dict()
         )
+        db.refresh(consent_request)
+        assert consent_request.identity_verified_at is not None
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+        "privacy_preference_history_for_tcf_special_purpose",
+    )
+    def test_consent_verify_tcf_consent_preferences_tcf_disabled(
+        self, provided_identity_and_consent_request, api_client, verification_code
+    ):
+        provided_identity, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY.format(consent_request_id=consent_request.id)}",
+            json={"code": verification_code},
+        )
+        assert response.status_code == 200
+        assert len(response.json()["items"]) == 0
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    def test_consent_verify_tcf_consent_preferences(
+        self,
+        provided_identity_and_consent_request,
+        db,
+        api_client,
+        verification_code,
+        privacy_preference_history_for_tcf_special_purpose,
+    ):
+        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
+        consent_settings.tcf_enabled = True
+        consent_settings.save(db=db)
+
+        provided_identity, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY.format(consent_request_id=consent_request.id)}",
+            json={"code": verification_code},
+        )
+        assert response.status_code == 200
+        assert len(response.json()["items"]) == 1
+
+        current_preference_record = (
+            privacy_preference_history_for_tcf_special_purpose.current_privacy_preference
+        )
+        data = response.json()["items"][0]
+        assert data["id"] == current_preference_record.id
+        assert (
+            data["preference"]
+            == "opt_in"
+            == privacy_preference_history_for_tcf_special_purpose.preference.value
+        )
+        assert data["special_purpose"] == 1
         db.refresh(consent_request)
         assert consent_request.identity_verified_at is not None
 
@@ -2120,6 +2264,30 @@ class TestCurrentPrivacyPreferences:
         auth_header = generate_auth_header(scopes=[CONSENT_READ])
         response = api_client.get(url, headers=auth_header)
         assert 403 == response.status_code
+
+    def test_get_current_preferences_report_with_tcf(
+        self,
+        generate_auth_header,
+        privacy_preference_history_for_tcf_purpose,
+        api_client,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[CURRENT_PRIVACY_PREFERENCE_READ])
+
+        response = api_client.get(url, headers=auth_header)
+
+        assert response.status_code == 200
+        assert len(response.json()["items"]) == 1
+        data = response.json()["items"][0]
+        assert (
+            data["preference"]
+            == privacy_preference_history_for_tcf_purpose.preference.value
+        )
+        assert data["purpose"] == 8
+        assert (
+            data["id"]
+            == privacy_preference_history_for_tcf_purpose.current_privacy_preference.id
+        )
 
     @pytest.mark.parametrize(
         "role,expected_status",

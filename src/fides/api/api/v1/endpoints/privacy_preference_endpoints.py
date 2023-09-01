@@ -104,6 +104,8 @@ def get_served_notice_history(
 ) -> ServedNoticeHistory:
     """
     Helper method to load a ServedNoticeHistory record or throw a 404
+
+    This tracks where a notice or tcf component was served.
     """
     logger.info("Finding ServedNoticeHistory with id '{}'", served_notice_history_id)
     served_notice_history = ServedNoticeHistory.get(
@@ -130,10 +132,10 @@ def consent_request_verify_for_privacy_preferences(
     db: Session = Depends(get_db),
     data: VerificationCode,
 ) -> AbstractPage[CurrentPrivacyPreference]:
-    """Allows retrieving the most recently saved privacy preferences through the Privacy Center
+    """Retrieves the most recently saved privacy preferences through the Privacy Center
 
     Verifies the verification code and retrieves CurrentPrivacyPreferences, which are the latest
-    preferences saved for each PrivacyNotice
+    preferences saved for each PrivacyNotice or TCF component
     """
     _, provided_identity = _get_consent_request_and_provided_identity(
         db=db,
@@ -159,8 +161,13 @@ def consent_request_verify_for_privacy_preferences(
     query = (
         db.query(CurrentPrivacyPreference)
         .filter_by(**{field_name: provided_identity.id})
-        .order_by(CurrentPrivacyPreference.privacy_notice_id)
+        .order_by(CurrentPrivacyPreference.created_at)
     )
+
+    consent_settings = ConsentSettings.get_or_create_with_defaults(db)
+    if not consent_settings.tcf_enabled:
+        query = query.filter(CurrentPrivacyPreference.privacy_notice_id.isnot(None))
+
     return paginate(query, params)
 
 
@@ -336,7 +343,7 @@ def save_privacy_preferences_with_verified_identity(
     (
         provided_identity_verified,
         fides_user_provided_identity,
-    ) = classify_identities_for_privacy_center_consent_reporting(
+    ) = classify_identity_type_for_privacy_center_consent_reporting(
         db=db,
         provided_identity=provided_identity,
         browser_identity=data.browser_identity,
@@ -386,7 +393,8 @@ def persist_tcf_preferences(
             TCFSpecialFeatureSave,
         ],
     ) -> CurrentPrivacyPreference:
-        """Internal helper method for saving a preference against a specific TCF component"""
+        """Internal helper method for dynamically saving a preference against a specific TCF component
+        in the database"""
         (
             _,
             current_preference,
@@ -428,9 +436,11 @@ def update_request_body_for_consent_served_or_saved(
     ],
 ) -> Dict[str, Union[Optional[RequestOrigin], Optional[str]]]:
     """Common method for building the starting details to save that consent
-    was served or saved for a given user"""
+    was served or saved for a given user for consent reporting purposes"""
 
-    request_data = _supplement_request_data_from_request_headers(
+    request_data: Union[
+        PrivacyPreferencesCreate, RecordConsentServedCreate
+    ] = _supplement_request_data_from_request_headers(
         db, request, original_request_data, resource_type=resource_type
     )
 
@@ -484,8 +494,8 @@ def save_privacy_preferences_for_identities(
     Saves preferences for either a privacy notice, or individual TCF items like purposes, special purposes, vendors,
     systems, features, or special features.
 
-    Creates both a detailed historical record and upserts a current record with just the most recently saved changes
-    for each preference type.
+    Creates both a detailed historical record and upserts a separate current record with just the most recently
+    saved changes for each preference type.
 
     Creates a privacy request to propagate preferences to third-party systems if applicable.
 
@@ -595,7 +605,7 @@ def verify_previously_served_records(
 ) -> None:
     """
     Verifies that records indicating that consent was *served* are valid
-    before saving a preference alongside the previously served record.
+    before saving a preference alongside these "served" records.
     """
 
     def validate_served_record(
@@ -681,8 +691,10 @@ def save_privacy_preferences(
 
     verify_previously_served_records(db, data)
 
-    fides_user_provided_identity = get_or_create_fides_user_device_id_provided_identity(
-        db=db, identity_data=data.browser_identity
+    fides_user_provided_identity: ProvidedIdentity = (
+        get_or_create_fides_user_device_id_provided_identity(
+            db=db, identity_data=data.browser_identity
+        )
     )
 
     logger.info("Saving privacy preferences with respect to fides user device id")
@@ -820,7 +832,7 @@ def get_historical_consent_report(
     return paginate(query, params)
 
 
-def classify_identities_for_privacy_center_consent_reporting(
+def classify_identity_type_for_privacy_center_consent_reporting(
     db: Session,
     provided_identity: ProvidedIdentity,
     browser_identity: Identity,

@@ -312,7 +312,8 @@ class PrivacyExperience(Base):
         self, db: Session, fides_user_provided_identity: Optional[ProvidedIdentity]
     ) -> TCFExperienceContents:
         """Returns the contents of a TCF experience supplemented with any previous records of
-        a user being served or consenting to any of the individual TCF components"""
+        a user being served TCF components and/or consenting to any of the individual TCF components
+        """
         if self.component == ComponentType.tcf_overlay:
             tcf_contents: TCFExperienceContents = get_tcf_contents(db)
 
@@ -370,7 +371,7 @@ class PrivacyExperience(Base):
         """Load both the overlay and privacy center experience for a given region
 
         TCF overlays are not returned here.  This method is used in building experiences when Notices
-        are created, which as not applicable for TCF.
+        are created, which is not applicable for TCF.
         """
         overlay_experience: Optional[
             PrivacyExperience

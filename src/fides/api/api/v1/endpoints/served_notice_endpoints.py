@@ -10,7 +10,7 @@ from fides.api.api.v1.endpoints.consent_request_endpoints import (
     _get_consent_request_and_provided_identity,
 )
 from fides.api.api.v1.endpoints.privacy_preference_endpoints import (
-    classify_identities_for_privacy_center_consent_reporting,
+    classify_identity_type_for_privacy_center_consent_reporting,
     update_request_body_for_consent_served_or_saved,
     verify_privacy_notice_and_historical_records,
 )
@@ -190,7 +190,7 @@ def save_consent_served_via_privacy_center(
     (
         provided_identity_verified,
         fides_user_provided_identity,
-    ) = classify_identities_for_privacy_center_consent_reporting(
+    ) = classify_identity_type_for_privacy_center_consent_reporting(
         db=db,
         provided_identity=provided_identity,
         browser_identity=data.browser_identity,
