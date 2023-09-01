@@ -15,10 +15,10 @@ jobs:
   ParseTags:
     runs-on: ubuntu-latest
     outputs:
-      prod_tag: { { steps.check-prod-tag.outputs.match } }
-      rc_tag: { { steps.check-rc-tag.outputs.match } }
-      alpha_tag: { { steps.check-alpha-tag.outputs.match } }
-      beta_tag: { { steps.check-beta-tag.outputs.match } }
+      prod_tag: ${{ steps.check-prod-tag.outputs.match }}
+      rc_tag: ${{ steps.check-rc-tag.outputs.match }}
+      alpha_tag: ${{ steps.check-alpha-tag.outputs.match }}
+      beta_tag: ${{ steps.check-beta-tag.outputs.match }}
     steps:
       - name: Check Prod Tag
         id: check-prod-tag
