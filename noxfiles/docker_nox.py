@@ -1,6 +1,4 @@
 """Contains the nox sessions for docker-related tasks."""
-from multiprocessing import Pool
-from subprocess import run
 from typing import Callable, Dict, List, Tuple
 
 import nox
@@ -17,13 +15,6 @@ from constants_nox import (
     SAMPLE_APP_IMAGE,
 )
 from git_nox import get_current_tag, recognized_tag
-
-DOCKER_PLATFORMS = "linux/amd64,linux/arm64"
-
-
-def runner(args):
-    args_str = " ".join(args)
-    run(args_str, shell=True, check=True)
 
 
 def verify_git_tag(session: nox.Session) -> str:
@@ -47,13 +38,16 @@ def verify_git_tag(session: nox.Session) -> str:
     return existing_commit_tag
 
 
-def generate_multiplatform_buildx_command(
-    image_tags: List[str], docker_build_target: str, dockerfile_path: str = "."
+def generate_buildx_command(
+    image_tags: List[str],
+    docker_build_target: str,
+    platform: str,
+    dockerfile_path: str = ".",
 ) -> Tuple[str, ...]:
     """
-    Generate the command for building and publishing a multiplatform image.
+    Generate the command for building and publishing an image.
 
-    See tests for example usage.
+    See tests for example usage in `test_docker_nox.py`
     """
     buildx_command: Tuple[str, ...] = (
         "docker",
@@ -62,7 +56,7 @@ def generate_multiplatform_buildx_command(
         "--push",
         f"--target={docker_build_target}",
         "--platform",
-        DOCKER_PLATFORMS,
+        platform,
         dockerfile_path,
     )
 
@@ -167,41 +161,11 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     session.run(*build_command, external=True)
 
 
-def get_buildx_commands(tag_suffixes: List[str]) -> List[Tuple[str, ...]]:
-    """
-    Build and publish each image to Dockerhub
-    """
-    fides_tags = [f"{IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes]
-    fides_buildx_command = generate_multiplatform_buildx_command(
-        image_tags=fides_tags, docker_build_target="prod"
-    )
-
-    privacy_center_tags = [
-        f"{PRIVACY_CENTER_IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes
-    ]
-    privacy_center_buildx_command = generate_multiplatform_buildx_command(
-        image_tags=privacy_center_tags,
-        docker_build_target="prod_pc",
-    )
-
-    sample_app_tags = [
-        f"{SAMPLE_APP_IMAGE}:{tag_suffix}" for tag_suffix in tag_suffixes
-    ]
-    sample_app_buildx_command = generate_multiplatform_buildx_command(
-        image_tags=sample_app_tags,
-        docker_build_target="prod",
-        dockerfile_path="clients/sample-app",
-    )
-
-    buildx_commands = [
-        fides_buildx_command,
-        privacy_center_buildx_command,
-        sample_app_buildx_command,
-    ]
-    return buildx_commands
-
-
 @nox.session()
+@nox.parametrize(
+    "platform",
+    [nox.param("linux/amd64", id="x86"), nox.param("linux/arm64", id="ARM")],
+)
 @nox.parametrize(
     "tag",
     [
@@ -212,7 +176,15 @@ def get_buildx_commands(tag_suffixes: List[str]) -> List[Tuple[str, ...]]:
         nox.param("git-tag", id="git-tag"),
     ],
 )
-def push(session: nox.Session, tag: str) -> None:
+@nox.parametrize(
+    "app",
+    [
+        nox.param("fides", id="fides"),
+        nox.param("privacy_center", id="privacy_center"),
+        nox.param("sample_app", id="sample_app"),
+    ],
+)
+def push(session: nox.Session, tag: str, app: str, platform: str) -> None:
     """
     Push the main image & extra apps to DockerHub:
       - ethyca/fides
@@ -227,7 +199,9 @@ def push(session: nox.Session, tag: str) -> None:
     rc - Tags images with `rc` - used for rc tags
     git-tag - Tags images with the git tag of the current commit, if it exists
 
-    NOTE: This command also handles building images, including for multiple supported architectures.
+    Example Calls:
+    nox -s "push(fides, prod, x86)"
+    nox -s "push(sample_app, prerelease, ARM)"
     """
 
     # Create the buildx builder
@@ -252,10 +226,34 @@ def push(session: nox.Session, tag: str) -> None:
         "prod": lambda: [get_current_tag(), "latest"],
     }
 
+    app_info_map = {
+        "fides": {"image": IMAGE, "target": "prod", "path": "."},
+        "privacy_center": {
+            "image": PRIVACY_CENTER_IMAGE,
+            "target": "prod_pc",
+            "path": ".",
+        },
+        "sample_app": {
+            "image": SAMPLE_APP_IMAGE,
+            "target": "prod",
+            "path": "clients/sample-app",
+        },
+    }
+    app_info: Dict[str, str] = app_info_map[app]
+
     # Get the list of Tupled commands to run
-    buildx_commands = get_buildx_commands(tag_suffixes=param_tag_map[tag]())
+    tag_suffixes: List[str] = param_tag_map[tag]()
+    full_tags: List[str] = [
+        f"{app_info['image']}:{tag_suffix}" for tag_suffix in tag_suffixes
+    ]
 
     # Parallel build the various images
-    number_of_processes = len(buildx_commands)
-    with Pool(number_of_processes) as process_pool:
-        process_pool.map(runner, buildx_commands)
+
+    buildx_command: Tuple[str, ...] = generate_buildx_command(
+        image_tags=full_tags,
+        docker_build_target=app_info["target"],
+        platform=platform,
+        dockerfile_path=app_info["path"],
+    )
+
+    session.run(*buildx_command, external=True)
