@@ -164,7 +164,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             "items": [],
             "total": 0,
             "page": 1,
-            "pages": 1,
+            "pages": 0,
             "size": 50,
         }
 
@@ -254,7 +254,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             "items": [],
             "total": 0,
             "page": 1,
-            "pages": 1,
+            "pages": 0,
             "size": 50,
         }
 
@@ -896,7 +896,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             "items": [],
             "total": 0,
             "page": 1,
-            "pages": 1,
+            "pages": 0,
             "size": 50,
         }
 
@@ -1077,7 +1077,7 @@ class TestPrivacyPreferenceVerify:
             "items": [],
             "total": 0,
             "page": 1,
-            "pages": 1,
+            "pages": 0,
             "size": 50,
         }
 
