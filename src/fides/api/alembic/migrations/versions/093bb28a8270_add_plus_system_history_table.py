@@ -43,7 +43,7 @@ def upgrade():
         op.f("ix_plus_system_history_id"), "plus_system_history", ["id"], unique=False
     )
     op.create_index(
-        "idx_system_history_created_at_system_id",
+        "idx_plus_system_history_created_at_system_id",
         "plus_system_history",
         ["created_at", "system_id"],
     )
