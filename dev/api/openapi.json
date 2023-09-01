@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.18.1b6.post0.dev9"
+    "version": "2.18.1b6.post0.dev10"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3702,6 +3702,9 @@
             "OAuth2ClientCredentialsBearer": [
               "system:update"
             ]
+          },
+          {
+            "OAuth2ClientCredentialsBearer": []
           }
         ]
       },
@@ -3749,6 +3752,9 @@
             "OAuth2ClientCredentialsBearer": [
               "system:create"
             ]
+          },
+          {
+            "OAuth2ClientCredentialsBearer": []
           }
         ]
       }
@@ -3803,6 +3809,9 @@
               "system:create",
               "system:update"
             ]
+          },
+          {
+            "OAuth2ClientCredentialsBearer": []
           }
         ]
       }
@@ -21570,7 +21579,8 @@
         "required": [
           "fides_key",
           "system_type",
-          "privacy_declarations"
+          "privacy_declarations",
+          "created_at"
         ],
         "type": "object",
         "properties": {
@@ -21829,6 +21839,11 @@
               "$ref": "#/components/schemas/Cookies"
             },
             "default": []
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
           }
         },
         "description": "Extension of base pydantic model to include additional fields like `privacy_declarations`, connection_config fields\nand cookies in responses"
