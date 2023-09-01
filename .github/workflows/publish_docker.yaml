@@ -92,25 +92,25 @@ jobs:
       # if neither prod, rc, beta or alpha git tag, then push images with the ":dev" tag
       - name: Push Fides Dev Tag
         if: needs.ParseTags.outputs.prod_tag == 'false' && needs.ParseTags.outputs.rc_tag == 'false' && needs.ParseTags.outputs.beta_tag == 'false' && needs.ParseTags.outputs.alpha_tag == 'false'
-        run: nox -s "push({{ matrix.application }},dev,{{ matrix.platform }})"
+        run: nox -s "push(${{ matrix.application }},dev,${{ matrix.platform }})"
 
       # if a prod git tag, then we run the prod job to publish images tagged with the version number and a constant ":latest" tag
       - name: Push Fides Prod Tags
         if: needs.ParseTags.outputs.prod_tag == 'true'
-        run: nox -s "push({{ matrix.application }},prod,{{ matrix.platform }})"
+        run: nox -s "push(${{ matrix.application }},prod,${{ matrix.platform }})"
 
       # if an RC git tag, then we run the rc job to publish images with an ":rc" tag
       - name: Push Fides RC Tags
         if: needs.ParseTags.outputs.rc_tag == 'true'
-        run: nox -s "push({{ matrix.application }},rc,{{ matrix.platform }})"
+        run: nox -s "push(${{ matrix.application }},rc,${{ matrix.platform }})"
 
       # if an alpha or beta git tag, then we run the prerelease job to publish images with an ":prerelease" tag
       - name: Push Fides prerelease Tags
         if: needs.ParseTags.outputs.alpha_tag == 'true' || needs.ParseTags.outputs.beta_tag == 'true'
-        run: nox -s "push({{ matrix.application }},prerelease,{{ matrix.platform }})"
+        run: nox -s "push(${{ matrix.application }},prerelease,${{ matrix.platform }})"
 
       # if not a prod git tag, then we run the git-tag job to publish images with a git tag
       # if one exists on the current commit. the job is a no-op if the commit hasn't been tagged
       - name: Push Fides Commit Tags
         if: needs.ParseTags.outputs.prod_tag == 'false'
-        run: nox -s "push({{ matrix.application }},git-tag,{{ matrix.platform }})"
+        run: nox -s "push(${{ matrix.application }},git-tag,${{ matrix.platform }})"
