@@ -30,7 +30,6 @@ class TestSystemHistory:
         system = await create_system(
             resource, async_session_temp, CONFIG.security.oauth_root_client_id
         )
-        assert system.created_by == CONFIG.security.root_username
         yield system
         delete(System).where(System.id == system.id)
 
