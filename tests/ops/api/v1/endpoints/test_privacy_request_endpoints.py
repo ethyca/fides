@@ -713,6 +713,7 @@ class TestGetPrivacyRequests:
             ],
             "total": 1,
             "page": 1,
+            "pages": 1,
             "size": page_size,
         }
 
@@ -773,6 +774,7 @@ class TestGetPrivacyRequests:
             ],
             "total": 1,
             "page": 1,
+            "pages": 1,
             "size": page_size,
         }
 
@@ -1238,6 +1240,7 @@ class TestGetPrivacyRequests:
             ],
             "total": 1,
             "page": 1,
+            "pages": 1,
             "size": page_size,
         }
         assert resp == expected_resp
@@ -1690,6 +1693,7 @@ class TestGetExecutionLogs:
             ],
             "total": 3,
             "page": 1,
+            "pages": 1,
             "size": page_size,
         }
 
