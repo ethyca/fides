@@ -1,5 +1,6 @@
 import {
   Box,
+  Flex,
   Switch,
   Tag,
   Text,
@@ -9,6 +10,8 @@ import {
 import ConfirmationModal from "common/ConfirmationModal";
 import React, { ChangeEvent } from "react";
 import { CellProps } from "react-table";
+
+import ClipboardButton from "../ClipboardButton";
 
 export const TitleCell = <T extends object>({
   value,
@@ -21,6 +24,16 @@ export const TitleCell = <T extends object>({
 export const WrappedCell = <T extends object>({
   value,
 }: CellProps<T, string>) => <Text whiteSpace="normal">{value}</Text>;
+
+export const ClipboardCell = <T extends object>({
+  value,
+}: CellProps<T, string>) => (
+  <Flex alignItems="center">
+    <Text mr={4}>{value}</Text>
+
+    <ClipboardButton copyText={value} />
+  </Flex>
+);
 
 export const DateCell = <T extends object>({ value }: CellProps<T, string>) =>
   new Date(value).toDateString();

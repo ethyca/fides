@@ -153,6 +153,11 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
       {
+        title: "DNS Records",
+        path: routes.DNS_RECORDS,
+        scopes: [ScopeRegistryEnum.USER_READ],
+      },
+      {
         title: "About Fides",
         path: routes.ABOUT_ROUTE,
         scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features
