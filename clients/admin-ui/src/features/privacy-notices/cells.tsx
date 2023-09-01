@@ -11,7 +11,7 @@ export const MechanismCell = (
   cellProps: CellProps<typeof MECHANISM_MAP, string>
 ) => <MapCell map={MECHANISM_MAP} {...cellProps} />;
 
-type TagNames = "Suggested" | "Active";
+type TagNames = "Suggested" | "Active" | "Inactive";
 
 const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
   {
@@ -25,6 +25,11 @@ const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
       backgroundColor: "green.500",
       color: "white",
       tooltip: "Fides has detected systems which apply to this notice.",
+    },
+    Inactive: {
+      backgroundColor: "gray.500",
+      color: "white",
+      tooltip: "There are no systems which would apply to this notice.",
     },
   };
 
@@ -47,6 +52,8 @@ export const EnablePrivacyNoticeCell = (
   const { systems_applicable: systemsApplicable, disabled } = row.original;
   if (systemsApplicable) {
     tagValue = disabled ? "Suggested" : "Active";
+  } else {
+    tagValue = disabled ? undefined : "Inactive";
   }
   const { tooltip = undefined, ...tagProps } = tagValue
     ? systemsApplicableTags[tagValue]

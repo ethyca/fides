@@ -32,7 +32,7 @@
       "consent_mechanism": "opt_in",
       "data_uses": ["advertising.first_party.contextual"],
       "enforcement_level": "system_wide",
-      "disabled": false,
+      "disabled": true,
       "has_gpc_flag": false,
       "displayed_in_privacy_center": false,
       "displayed_in_overlay": true,
@@ -64,7 +64,7 @@
       "updated_at": "2023-05-30T23:36:47.181187+00:00",
       "version": 1.0,
       "privacy_notice_history_id": "pri_457e6ccc-89f7-4bed-a6d6-9bdc8ceafda8",
-      "systems_applicable": true
+      "systems_applicable": false
     },
     {
       "name": "Functional",

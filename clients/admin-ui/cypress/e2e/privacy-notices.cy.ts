@@ -181,6 +181,10 @@ describe("Privacy notices", () => {
         cy.getByTestId("row-Essential").within(() => {
           cy.getByTestId("systems-applicable-tag").contains("Active");
         });
+        // Enabled but has no applicable systems
+        cy.getByTestId("row-Analytics").within(() => {
+          cy.getByTestId("systems-applicable-tag").contains("Inactive");
+        });
         // Disabled but has applicable systems
         cy.getByTestId("row-Data Sales").within(() => {
           cy.getByTestId("systems-applicable-tag").contains("Suggested");
