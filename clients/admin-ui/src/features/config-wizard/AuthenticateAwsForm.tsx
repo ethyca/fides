@@ -137,18 +137,8 @@ const AuthenticateAwsForm = () => {
             {!isSubmitting && !scannerError ? (
               <>
                 <Heading size="lg">Authenticate AWS Scanner</Heading>
-                <Accordion allowToggle border="transparent">
-                  <AccordionItem>
-                    {({ isExpanded }) => (
-                      <>
-                        <h2>
-                          To scan your AWS cloud infrastructure to inventory systems, you must first authenticate to your AWS cloud by providing the following information:
-                        </h2>
-                      </>
-                    )}
-                  </AccordionItem>
-                </Accordion>
-
+                <h2>
+                To use the scanner to inventory systems in AWS, you must first authenticate to your AWS cloud by providing the following information:</h2>
                 <Stack>
                   <CustomTextInput
                     name="aws_access_key_id"
