@@ -7,7 +7,7 @@ import {
   WarningIcon,
 } from "@fidesui/react";
 import ConfirmationModal from "common/ConfirmationModal";
-import React, { ChangeEvent } from "react";
+import React, { ChangeEvent, ReactNode } from "react";
 import { CellProps } from "react-table";
 
 export const TitleCell = <T extends object>({
@@ -81,6 +81,7 @@ type EnableCellProps<T extends object> = CellProps<T, boolean> & {
   onToggle: (data: boolean) => Promise<any>;
   title: string;
   message: string;
+  children?: ReactNode;
 };
 
 export const EnableCell = <T extends object>({
@@ -89,6 +90,7 @@ export const EnableCell = <T extends object>({
   onToggle,
   title,
   message,
+  children,
 }: EnableCellProps<T>) => {
   const modal = useDisclosure();
   const handlePatch = async ({ enable }: { enable: boolean }) => {
@@ -121,6 +123,7 @@ export const EnableCell = <T extends object>({
         disabled={column.disabled}
         onChange={handleToggle}
       />
+      {children || null}
       <ConfirmationModal
         isOpen={modal.isOpen}
         onClose={modal.onClose}

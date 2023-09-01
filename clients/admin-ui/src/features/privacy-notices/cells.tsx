@@ -1,3 +1,4 @@
+import { Box, Tag, TagProps, Tooltip } from "@fidesui/react";
 import React from "react";
 import { CellProps } from "react-table";
 
@@ -9,6 +10,23 @@ import { PrivacyNoticeResponse } from "~/types/api";
 export const MechanismCell = (
   cellProps: CellProps<typeof MECHANISM_MAP, string>
 ) => <MapCell map={MECHANISM_MAP} {...cellProps} />;
+
+type TagNames = "Suggested" | "Active";
+
+const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
+  {
+    Suggested: {
+      backgroundColor: "orange.500",
+      color: "white",
+      tooltip:
+        "Fides has detected systems which would apply to this notice if it were enabled.",
+    },
+    Active: {
+      backgroundColor: "green.500",
+      color: "white",
+      tooltip: "Fides has detected systems which apply to this notice.",
+    },
+  };
 
 export const EnablePrivacyNoticeCell = (
   cellProps: CellProps<PrivacyNoticeResponse, boolean>
@@ -24,6 +42,16 @@ export const EnablePrivacyNoticeCell = (
       },
     ]);
   };
+
+  let tagValue: TagNames | undefined;
+  const { systems_applicable: systemsApplicable, disabled } = row.original;
+  if (systemsApplicable) {
+    tagValue = disabled ? "Suggested" : "Active";
+  }
+  const { tooltip = undefined, ...tagProps } = tagValue
+    ? systemsApplicableTags[tagValue]
+    : {};
+
   return (
     <EnableCell<PrivacyNoticeResponse>
       {...cellProps}
@@ -32,6 +60,16 @@ export const EnablePrivacyNoticeCell = (
       message="Are you sure you want to disable this privacy notice? Disabling this
             notice means your users will no longer see this explanation about
             your data uses which is necessary to ensure compliance."
-    />
+    >
+      {tagValue ? (
+        <Box mt="2">
+          <Tooltip label={tooltip}>
+            <Tag size="sm" width="fit-content" {...tagProps}>
+              {tagValue}
+            </Tag>
+          </Tooltip>
+        </Box>
+      ) : null}
+    </EnableCell>
   );
 };
