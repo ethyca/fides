@@ -1,32 +1,12 @@
-import {
-  Badge,
-  Heading,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Spacer,
-  Stack,
-  Table,
-  Tbody,
-  Td,
-  Thead,
-  Tr,
-} from "@fidesui/react";
-import { Form, Formik } from "formik";
+import { Table, Tbody, Td, Thead, Tr } from "@fidesui/react";
 import _ from "lodash";
 import React, { useState } from "react";
 
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
-import SelectedHistoryProvider from "./SelectedHistoryContext";
-import SystemDataGroup from "./SystemDataGroup";
-import SystemDataTags from "./SystemDataTags";
-import SystemDataTextField from "./SystemDataTextField";
 import { useGetSystemHistoryQuery } from "~/features/plus/plus.slice";
 import { SystemHistory } from "~/types/api/models/SystemHistory";
+import SystemHistoryModal from "./modal/SystemHistoryModal";
 
 interface Props {
   system: SystemResponse;
@@ -56,27 +36,20 @@ const formatDateAndTime = (dateString: string) => {
   return { formattedTime, formattedDate };
 };
 
-const getBadges = (before, after) => {
-  const badges = [];
-  const specialFields = new Set(["egress", "ingress", "privacy_declarations"]);
+function alignArrays(array1, array2) {
+  const allNames = new Set([...array1, ...array2].map((item) => item.data_use));
+  const alignedArray1 = [];
+  const alignedArray2 = [];
 
-  if (before.egress || after.egress || before.ingress || after.ingress) {
-    badges.push("Data Flow");
-  }
+  allNames.forEach((data_use) => {
+    const item1 = array1.find((item) => item.data_use === data_use) || {};
+    const item2 = array2.find((item) => item.data_use === data_use) || {};
+    alignedArray1.push(item1);
+    alignedArray2.push(item2);
+  });
 
-  if (before.privacy_declarations || after.privacy_declarations) {
-    badges.push("Data Uses");
-  }
-
-  const hasOtherFields = [...Object.keys(before), ...Object.keys(after)].some(
-    (key) => !specialFields.has(key)
-  );
-  if (hasOtherFields) {
-    badges.unshift("System Information");
-  }
-
-  return badges;
-};
+  return [alignedArray1, alignedArray2];
+}
 
 const SystemHistoryTable = ({ system }: Props) => {
   // Fetch system history data
@@ -88,10 +61,36 @@ const SystemHistoryTable = ({ system }: Props) => {
     null
   );
 
+  console.log(selectedHistory);
   const systemHistories = data?.items || [];
 
   const openModal = (history: SystemHistory) => {
-    setSelectedHistory(history);
+    // Align the privacy_declarations arrays
+    const beforePrivacyDeclarations =
+      history?.before?.privacy_declarations || [];
+    const afterPrivacyDeclarations = history?.after?.privacy_declarations || [];
+    const [alignedBefore, alignedAfter] = alignArrays(
+      beforePrivacyDeclarations,
+      afterPrivacyDeclarations
+    );
+
+    // Create new initialValues objects with the aligned arrays
+    const alignedBeforeInitialValues = {
+      ...history?.before,
+      privacy_declarations: alignedBefore,
+    };
+    const alignedAfterInitialValues = {
+      ...history?.after,
+      privacy_declarations: alignedAfter,
+    };
+
+    setSelectedHistory({
+      before: alignedBeforeInitialValues,
+      after: alignedAfterInitialValues,
+      edited_by: history.edited_by,
+      system_id: history.system_id,
+      created_at: history.created_at,
+    });
     setModalOpen(true);
   };
 
@@ -259,241 +258,11 @@ const SystemHistoryTable = ({ system }: Props) => {
           })}
         </Tbody>
       </Table>
-      <Modal isOpen={isModalOpen} onClose={closeModal} size="3xl">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader
-            style={{
-              backgroundColor: "#F7FAFC",
-              borderTopLeftRadius: "8px",
-              borderTopRightRadius: "8px",
-              borderBottom: "1px solid #E2E8F0",
-            }}
-          >
-            <Heading size="xs">
-              <span style={{ verticalAlign: "middle" }}>Diff review</span>
-              {selectedHistory && (
-                <>
-                  {getBadges(selectedHistory.before, selectedHistory.after).map(
-                    (badge, index) => (
-                      <Badge
-                        // eslint-disable-next-line react/no-array-index-key
-                        key={index}
-                        marginLeft="8px"
-                        fontSize="10px"
-                        padding="0px 4px"
-                        variant="solid"
-                        lineHeight="18px"
-                        height="18px"
-                        backgroundColor="#718096"
-                        borderRadius="2px"
-                      >
-                        {badge}
-                      </Badge>
-                    )
-                  )}
-                </>
-              )}
-            </Heading>
-            <>
-              <Spacer />
-              <ModalCloseButton />
-            </>
-          </ModalHeader>
-          <ModalBody paddingTop={0} paddingBottom={6}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <div
-                style={{
-                  flex: "0 50%",
-                  marginRight: "12px",
-                }}
-              >
-                <SelectedHistoryProvider
-                  selectedHistory={selectedHistory}
-                  formType="before"
-                >
-                  <Formik
-                    initialValues={selectedHistory?.before}
-                    enableReinitialize
-                  >
-                    {() => (
-                      <Form>
-                        <Stack>
-                          <SystemDataGroup heading="System details">
-                            <SystemDataTextField
-                              id="name"
-                              name="name"
-                              label="System name"
-                              variant="stacked"
-                              tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                            />
-                            <SystemDataTextField
-                              id="description"
-                              name="description"
-                              label="Description"
-                              variant="stacked"
-                              tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                            />
-                            <SystemDataTags
-                              id="tags"
-                              name="tags"
-                              label="System Tags"
-                              variant="stacked"
-                              tooltip="Are there any tags to associate with this system?"
-                            />
-                          </SystemDataGroup>
-                          <SystemDataGroup heading="Dataset reference">
-                            <SystemDataTags
-                              id="dataset_references"
-                              name="dataset_references"
-                              label="Dataset references"
-                              variant="stacked"
-                              tooltip="Is there a dataset configured for this system"
-                            />
-                          </SystemDataGroup>
-                          <SystemDataGroup heading="Administrative properties">
-                            <SystemDataTextField
-                              label="Data stewards"
-                              name="data_stewards"
-                              tooltip="Who are the stewards assigned to the system?"
-                              variant="stacked"
-                            />
-                            <SystemDataTextField
-                              id="legal_name"
-                              name="legal_name"
-                              label="Legal name"
-                              tooltip="What is the legal name of the business?"
-                              variant="stacked"
-                            />
-                            <SystemDataTextField
-                              label="Department"
-                              name="administrating_department"
-                              tooltip="Which department is concerned with this system?"
-                              variant="stacked"
-                            />
-                            <SystemDataTags
-                              label="Responsibility"
-                              name="responsibility"
-                              variant="stacked"
-                              tooltip="What is the role of the business with regard to data processing?"
-                            />
-                          </SystemDataGroup>
-                          <SystemDataGroup heading="Data use declaration">
-                            <SystemDataTextField
-                              id="privacy_declarations[0].name"
-                              label="Declaration name (optional)"
-                              name="privacy_declarations[0].name"
-                              tooltip="Would you like to append anything to the system name?"
-                              variant="stacked"
-                            />
-                          </SystemDataGroup>
-                        </Stack>
-                      </Form>
-                    )}
-                  </Formik>
-                </SelectedHistoryProvider>
-              </div>
-              <div
-                style={{
-                  flex: "0 50%",
-                  marginLeft: "12px",
-                }}
-              >
-                <SelectedHistoryProvider
-                  selectedHistory={selectedHistory}
-                  formType="after"
-                >
-                  <Formik
-                    initialValues={selectedHistory?.after}
-                    enableReinitialize
-                  >
-                    {() => (
-                      <Form>
-                        <Stack spacing={0}>
-                          <SystemDataGroup heading="System details">
-                            <SystemDataTextField
-                              id="name"
-                              name="name"
-                              label="System name"
-                              variant="stacked"
-                              tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                            />
-                            <SystemDataTextField
-                              id="description"
-                              name="description"
-                              label="Description"
-                              variant="stacked"
-                              tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                            />
-                            <SystemDataTags
-                              id="tags"
-                              name="tags"
-                              label="System Tags"
-                              variant="stacked"
-                              tooltip="Are there any tags to associate with this system?"
-                              isMulti
-                            />
-                          </SystemDataGroup>
-                          <SystemDataGroup heading="Dataset reference">
-                            <SystemDataTags
-                              id="dataset_references"
-                              name="dataset_references"
-                              label="Dataset references"
-                              variant="stacked"
-                              tooltip="Is there a dataset configured for this system"
-                            />
-                          </SystemDataGroup>
-                          <SystemDataGroup heading="Administrative properties">
-                            <SystemDataTextField
-                              label="Data stewards"
-                              name="data_stewards"
-                              tooltip="Who are the stewards assigned to the system?"
-                              variant="stacked"
-                            />
-                            <SystemDataTextField
-                              id="legal_name"
-                              name="legal_name"
-                              label="Legal name"
-                              tooltip="What is the legal name of the business?"
-                              variant="stacked"
-                            />
-                            <SystemDataTextField
-                              label="Department"
-                              name="administrating_department"
-                              tooltip="Which department is concerned with this system?"
-                              variant="stacked"
-                            />
-                            <SystemDataTags
-                              label="Responsibility"
-                              name="responsibility"
-                              variant="stacked"
-                              tooltip="What is the role of the business with regard to data processing?"
-                            />
-                          </SystemDataGroup>
-                          <SystemDataGroup heading="Data use declaration">
-                            <SystemDataTextField
-                              id="privacy_declarations[0].name"
-                              label="Declaration name (optional)"
-                              name="privacy_declarations[0].name"
-                              tooltip="Would you like to append anything to the system name?"
-                              variant="stacked"
-                            />
-                          </SystemDataGroup>
-                        </Stack>
-                      </Form>
-                    )}
-                  </Formik>
-                </SelectedHistoryProvider>
-              </div>
-            </div>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+      <SystemHistoryModal
+        selectedHistory={selectedHistory}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+      ></SystemHistoryModal>
     </>
   );
 };

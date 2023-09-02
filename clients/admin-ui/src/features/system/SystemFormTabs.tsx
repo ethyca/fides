@@ -18,7 +18,6 @@ import {
   DirtyFormConfirmationModal,
   useIsAnyFormDirty,
 } from "../common/hooks/useIsAnyFormDirty";
-import SystemHistoryTable from "./history/SystemHistoryTable";
 import {
   selectActiveSystem,
   setActiveSystem,
@@ -246,22 +245,6 @@ const SystemFormTabs = ({
       ) : null,
       isDisabled: !activeSystem,
     },
-    {
-      label: "History",
-      content: activeSystem ? (
-        <Box width={{ base: "100%", lg: "70%" }}>
-          <Box px={6} paddingBottom={6}>
-            <Text fontSize="sm" lineHeight={5} fontWeight="medium">
-              All changes to this system are tracked here in this audit table by
-              date and by user. You can inspect the changes by selecting any of
-              the events listed.
-            </Text>
-          </Box>
-          <SystemHistoryTable system={activeSystem} />
-        </Box>
-      ) : null,
-      isDisabled: !activeSystem,
-    },
   ];
 
   if (isPlusEnabled) {
@@ -272,7 +255,8 @@ const SystemFormTabs = ({
           <Box px={6} paddingBottom={6}>
             <Text fontSize="sm" lineHeight={5} fontWeight="medium">
               All changes to this system are tracked here in this audit table by
-              date and by user.
+              date and by user. You can inspect the changes by selecting any of
+              the events listed.
             </Text>
           </Box>
           <SystemHistoryTable system={activeSystem} />

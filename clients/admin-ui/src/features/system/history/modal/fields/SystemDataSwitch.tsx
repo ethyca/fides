@@ -1,4 +1,4 @@
-import { Flex, FormControl, Text, VStack } from "@fidesui/react";
+import { Flex, FormControl, Tag, Text, VStack } from "@fidesui/react";
 import { useField } from "formik";
 import _ from "lodash";
 import { useEffect, useRef, useState } from "react";
@@ -9,10 +9,9 @@ import {
   StringField,
 } from "~/features/common/form/inputs";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { useSelectedHistory } from "../SelectedHistoryContext";
 
-import { useSelectedHistory } from "./SelectedHistoryContext";
-
-const SystemDataTextField = ({
+const SystemDataSwitch = ({
   label,
   tooltip,
   ...props
@@ -21,30 +20,14 @@ const SystemDataTextField = ({
   const [initialField] = useField(props);
   const field = { ...initialField, value: initialField.value ?? "" };
 
-  const contentRef = useRef<HTMLElement>(null);
-  const [height, setHeight] = useState(null);
   const [shouldHighlight, setShouldHighlight] = useState(false);
 
   useEffect(() => {
-    const beforeValue = _.get(selectedHistory?.before, props.name, "");
-    const afterValue = _.get(selectedHistory?.after, props.name, "");
+    const beforeValue = _.get(selectedHistory?.before, props.name) || "";
+    const afterValue = _.get(selectedHistory?.after, props.name) || "";
 
     // Determine whether to highlight
     setShouldHighlight(beforeValue !== afterValue);
-
-    const longestValue =
-      beforeValue.length > afterValue.length ? beforeValue : afterValue;
-
-    // Temporarily set the value to the longest one to measure height
-    contentRef.current.textContent = longestValue;
-
-    // Measure and set the height
-    if (contentRef.current) {
-      setHeight(contentRef.current.offsetHeight);
-    }
-
-    // Reset the value to the actual one
-    contentRef.current.textContent = field.value;
   }, [selectedHistory, props.name, field.value]);
 
   let highlightStyle = {};
@@ -83,12 +66,9 @@ const SystemDataTextField = ({
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
-        <Text
-          ref={contentRef}
-          style={{ color: "#718096", height: `${height}px` }}
-        >
-          {field.value}
-        </Text>
+        <Tag colorScheme="gray" size="sm" m={1}>
+          {field.value ? "YES" : "NO"}
+        </Tag>
         {formType === "before" && shouldHighlight && (
           <div
             style={{
@@ -106,4 +86,4 @@ const SystemDataTextField = ({
   );
 };
 
-export default SystemDataTextField;
+export default SystemDataSwitch;

@@ -1,49 +1,51 @@
-import { Flex, FormControl, Tag, VStack } from "@fidesui/react";
+import { Flex, FormControl, Text, VStack } from "@fidesui/react";
 import { useField } from "formik";
 import _ from "lodash";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { Label } from "~/features/common/form/inputs";
+import {
+  CustomInputProps,
+  Label,
+  StringField,
+} from "~/features/common/form/inputs";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
-import { useSelectedHistory } from "./SelectedHistoryContext";
+import { useSelectedHistory } from "../SelectedHistoryContext";
 
-const SystemDataTags = ({
+const SystemDataTextField = ({
   label,
   tooltip,
   ...props
-}: {
-  label: string;
-  tooltip?: string;
-  name: string;
-}) => {
+}: CustomInputProps & StringField) => {
   const { selectedHistory, formType } = useSelectedHistory();
-  const [initialField] = useField(props.name);
-  const field = { ...initialField, value: initialField.value ?? [] };
+  const [initialField] = useField(props);
+  const field = { ...initialField, value: initialField.value ?? "" };
 
   const contentRef = useRef<HTMLElement>(null);
   const [height, setHeight] = useState(null);
-  const [longestValue, setLongestValue] = useState([]);
   const [shouldHighlight, setShouldHighlight] = useState(false);
 
   useEffect(() => {
-    const beforeValue = _.get(selectedHistory?.before, props.name, []);
-    const afterValue = _.get(selectedHistory?.after, props.name, []);
+    const beforeValue = _.get(selectedHistory?.before, props.name) || "";
+    const afterValue = _.get(selectedHistory?.after, props.name) || "";
 
     // Determine whether to highlight
-    setShouldHighlight(!_.isEqual(beforeValue, afterValue));
+    setShouldHighlight(beforeValue !== afterValue);
 
-    // Determine the longest value for height calculation
-    setLongestValue(
-      beforeValue.length > afterValue.length ? beforeValue : afterValue
-    );
-  }, [selectedHistory, props.name]);
+    const longestValue =
+      beforeValue.length > afterValue.length ? beforeValue : afterValue;
 
-  useEffect(() => {
+    // Temporarily set the value to the longest one to measure height
+    contentRef.current.textContent = longestValue;
+
+    // Measure and set the height
     if (contentRef.current) {
       setHeight(contentRef.current.offsetHeight);
     }
-  }, [longestValue]);
+
+    // Reset the value to the actual one
+    contentRef.current.textContent = field.value;
+  }, [selectedHistory, props.name, field.value]);
 
   let highlightStyle = {};
 
@@ -76,24 +78,17 @@ const SystemDataTags = ({
     >
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label htmlFor={props.name} fontSize="xs" my={0} mr={1}>
+          <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
-        <Flex
-          wrap="wrap"
-          alignItems="flex-start"
+        <Text
           ref={contentRef}
-          style={{ minHeight: `${height}px` }}
+          style={{ color: "#718096", height: `${height}px` }}
         >
-          {(height ? field.value : longestValue).map((value, index) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <Tag key={index} colorScheme="gray" size="md" m={1}>
-              {value}
-            </Tag>
-          ))}
-        </Flex>
+          {field.value}
+        </Text>
         {formType === "before" && shouldHighlight && (
           <div
             style={{
@@ -111,4 +106,4 @@ const SystemDataTags = ({
   );
 };
 
-export default SystemDataTags;
+export default SystemDataTextField;
