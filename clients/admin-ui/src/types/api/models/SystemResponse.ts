@@ -198,4 +198,6 @@ export type SystemResponse = {
    */
   data_stewards?: Array<UserResponse>;
   cookies?: Array<Cookies>;
+  created_by?: string;
+  created_at: string;
 };
