@@ -32,6 +32,7 @@ import {
 } from "~/types/api";
 
 import { DictEntry, Page } from "./types";
+import { SystemHistoryResponse } from "~/types/api/models/SystemHistoryResponse";
 
 interface ScanParams {
   classify?: boolean;
