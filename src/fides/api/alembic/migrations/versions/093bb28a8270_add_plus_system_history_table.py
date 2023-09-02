@@ -32,7 +32,7 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("edited_by", sa.String(), nullable=True),
+        sa.Column("user_id", sa.String(), nullable=True),
         sa.Column("system_id", sa.String(), nullable=False),
         sa.Column("before", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column("after", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
@@ -40,20 +40,24 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        "idx_system_history_created_at_system_id",
+        op.f("ix_plus_system_history_id"), "plus_system_history", ["id"], unique=False
+    )
+    op.create_index(
+        "idx_plus_system_history_created_at_system_id",
         "plus_system_history",
         ["created_at", "system_id"],
     )
     op.add_column(
         "ctl_systems",
-        sa.Column("created_by", sa.String, nullable=True),
+        sa.Column("user_id", sa.String, nullable=True),
     )
 
 
 def downgrade():
-    op.drop_column("ctl_systems", "created_by")
+    op.drop_column("ctl_systems", "user_id")
     op.drop_index(
         op.f("idx_plus_system_history_created_at_system_id"),
         table_name="plus_system_history",
     )
+    op.drop_index(op.f("ix_plus_system_history_id"), table_name="plus_system_history")
     op.drop_table("plus_system_history")

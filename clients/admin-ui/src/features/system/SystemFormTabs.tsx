@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
+import { useFeatures } from "~/features/common/features";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
@@ -17,6 +18,7 @@ import {
   DirtyFormConfirmationModal,
   useIsAnyFormDirty,
 } from "../common/hooks/useIsAnyFormDirty";
+import SystemHistoryTable from "./history/SystemHistoryTable";
 import {
   selectActiveSystem,
   setActiveSystem,
@@ -89,6 +91,7 @@ const SystemFormTabs = ({
   const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
   const [systemProcessesPersonalData, setSystemProcessesPersonalData] =
     useState<boolean | undefined>(undefined);
+  const { plus: isPlusEnabled } = useFeatures();
 
   // Once we have saved the system basics, subscribe to the query so that activeSystem
   // stays up to date when redux invalidates the cache (for example, when we patch a connection config)
@@ -260,6 +263,24 @@ const SystemFormTabs = ({
       isDisabled: !activeSystem,
     },
   ];
+
+  if (isPlusEnabled) {
+    tabData.push({
+      label: "History",
+      content: activeSystem ? (
+        <Box width={{ base: "100%", lg: "70%" }}>
+          <Box px={6} paddingBottom={6}>
+            <Text fontSize="sm" lineHeight={5} fontWeight="medium">
+              All changes to this system are tracked here in this audit table by
+              date and by user.
+            </Text>
+          </Box>
+          <SystemHistoryTable system={activeSystem} />
+        </Box>
+      ) : null,
+      isDisabled: !activeSystem,
+    });
+  }
 
   return (
     <DataTabs

@@ -30,6 +30,7 @@ import {
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
+import { SystemHistoryResponse } from "~/types/api/models/SystemHistoryResponse";
 
 import { DictEntry, Page } from "./types";
 

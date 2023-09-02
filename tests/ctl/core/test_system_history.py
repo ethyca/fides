@@ -9,6 +9,9 @@ from sqlalchemy import delete
 from fides.api.db.system import create_system, update_system
 from fides.api.models.sql_models import System
 from fides.api.models.system_history import SystemHistory
+from fides.config import get_config
+
+CONFIG = get_config()
 
 
 class TestSystemHistory:
@@ -24,7 +27,9 @@ class TestSystemHistory:
             privacy_declarations=[],
         )
 
-        system = await create_system(resource, async_session_temp)
+        system = await create_system(
+            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+        )
         yield system
         delete(System).where(System.id == system.id)
 
@@ -33,12 +38,15 @@ class TestSystemHistory:
     ):
         system_schema = SystemSchema.from_orm(system)
         system_schema.description = "Test system"
-        await update_system(system_schema, async_session_temp, "fidestest")
+        await update_system(
+            system_schema, async_session_temp, CONFIG.security.oauth_root_client_id
+        )
 
         system_histories = SystemHistory.filter(
             db=db, conditions=(SystemHistory.system_id == system.id)
         ).all()
         assert len(system_histories) == 1
+        assert system_histories[0].edited_by == CONFIG.security.root_username
 
     async def test_privacy_declaration_changes(
         self, db, async_session_temp, system: System
@@ -54,18 +62,23 @@ class TestSystemHistory:
                 dataset_references=[],
             ),
         )
-        await update_system(system_schema, async_session_temp, "fidestest")
+        await update_system(
+            system_schema, async_session_temp, CONFIG.security.oauth_root_client_id
+        )
 
         system_histories = SystemHistory.filter(
             db=db, conditions=(SystemHistory.system_id == system.id)
         ).all()
         assert len(system_histories) == 1
+        assert system_histories[0].edited_by == CONFIG.security.root_username
 
     async def test_ingress_egress_changes(self, db, async_session_temp, system: System):
         system_schema = SystemSchema.from_orm(system)
         system_schema.ingress = [DataFlowSchema(fides_key="upstream", type="system")]
         system_schema.egress = [DataFlowSchema(fides_key="user", type="user")]
-        await update_system(system_schema, async_session_temp, "fidestest")
+        await update_system(
+            system_schema, async_session_temp, CONFIG.security.oauth_root_client_id
+        )
 
         system_histories = SystemHistory.filter(
             db=db, conditions=(SystemHistory.system_id == system.id)
@@ -87,9 +100,13 @@ class TestSystemHistory:
         )
         system_schema.ingress = [DataFlowSchema(fides_key="upstream", type="system")]
         system_schema.egress = [DataFlowSchema(fides_key="user", type="user")]
-        await update_system(system_schema, async_session_temp, "fidestest")
+        await update_system(
+            system_schema, async_session_temp, CONFIG.security.oauth_root_client_id
+        )
 
         system_histories = SystemHistory.filter(
             db=db, conditions=(SystemHistory.system_id == system.id)
         ).all()
         assert len(system_histories) == 3
+        for system_history in system_histories:
+            system_history.edited_by == CONFIG.security.root_username

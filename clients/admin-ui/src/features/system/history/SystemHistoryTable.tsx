@@ -37,14 +37,14 @@ const formatDateAndTime = (dateString: string) => {
   const date = new Date(dateString);
   const userLocale = navigator.language;
 
-  const timeOptions = {
+  const timeOptions: Intl.DateTimeFormatOptions = {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
     timeZoneName: "short",
   };
 
-  const dateOptions = {
+  const dateOptions: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -106,32 +106,53 @@ const SystemHistoryTable = ({ system }: Props) => {
 
     const uniqueKeys = new Set([...Object.keys(before), ...Object.keys(after)]);
 
-    const addedFields = [];
-    const removedFields = [];
-    const changedFields = [];
+    const addedFields: string[] = [];
+    const removedFields: string[] = [];
+    const changedFields: string[] = [];
 
     Array.from(uniqueKeys).forEach((key) => {
+      // @ts-ignore
       const beforeValue = before[key];
+      // @ts-ignore
       const afterValue = after[key];
 
-      if (Array.isArray(beforeValue) && Array.isArray(afterValue)) {
-        if (beforeValue.length < afterValue.length) {
-          addedFields.push(key);
-        } else if (beforeValue.length > afterValue.length) {
-          removedFields.push(key);
-        } else if (JSON.stringify(beforeValue) !== JSON.stringify(afterValue)) {
+      // Handle booleans separately
+      if (typeof beforeValue === "boolean" || typeof afterValue === "boolean") {
+        if (beforeValue !== afterValue) {
           changedFields.push(key);
         }
-      } else if (_.isEmpty(beforeValue) && !_.isEmpty(afterValue)) {
-        addedFields.push(key);
-      } else if (_.isEmpty(afterValue) && !_.isEmpty(beforeValue)) {
-        removedFields.push(key);
-      } else if (JSON.stringify(beforeValue) !== JSON.stringify(afterValue)) {
-        changedFields.push(key);
+        return;
+      }
+
+      // Handle numbers separately
+      if (typeof beforeValue === "number" || typeof afterValue === "number") {
+        if (beforeValue !== afterValue) {
+          changedFields.push(key);
+        }
+        return;
+      }
+
+      // If both values are null or empty, skip
+      if (
+        (_.isNil(beforeValue) || _.isEmpty(beforeValue)) &&
+        (_.isNil(afterValue) || _.isEmpty(afterValue))
+      ) {
+        return;
+      }
+
+      // For all other types
+      if (!_.isEqual(beforeValue, afterValue)) {
+        if (_.isNil(beforeValue) || _.isEmpty(beforeValue)) {
+          addedFields.push(key);
+        } else if (_.isNil(afterValue) || _.isEmpty(afterValue)) {
+          removedFields.push(key);
+        } else {
+          changedFields.push(key);
+        }
       }
     });
 
-    const changeDescriptions = [];
+    const changeDescriptions: Array<[string, JSX.Element]> = [];
 
     if (addedFields.length > 0) {
       // eslint-disable-next-line react/jsx-key
