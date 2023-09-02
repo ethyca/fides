@@ -15,14 +15,14 @@ const formatDateAndTime = (dateString: string) => {
   const date = new Date(dateString);
   const userLocale = navigator.language;
 
-  const timeOptions = {
+  const timeOptions: Intl.DateTimeFormatOptions = {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
     timeZoneName: "short",
   };
 
-  const dateOptions = {
+  const dateOptions: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -53,7 +53,9 @@ const SystemHistoryTable = ({ system }: Props) => {
     const changedFields: string[] = [];
 
     Array.from(uniqueKeys).forEach((key) => {
+      // @ts-ignore
       const beforeValue = before[key];
+      // @ts-ignore
       const afterValue = after[key];
 
       // Handle booleans separately
