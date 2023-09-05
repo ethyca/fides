@@ -62,7 +62,7 @@ if CONFIG.dev_mode:
             await call_next(request)
             profiler.stop()
             logger.debug("Request Profiled!")
-            return HTMLResponse(profiler.output_html(timeline=True))
+            return HTMLResponse(profiler.output_text(timeline=True))
 
         return await call_next(request)
 

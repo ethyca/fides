@@ -136,3 +136,5 @@ nox -s clean
 
 !!! warning
     If you find yourself feeling the need to run this command regularly, open an issue or slack a member of the dev team as it is not expected that this will need to be run regularly.
+
+## Performance and Benchmarking
