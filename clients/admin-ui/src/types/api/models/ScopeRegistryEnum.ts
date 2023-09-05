@@ -74,6 +74,8 @@ export enum ScopeRegistryEnum {
   EVALUATION_DELETE = "evaluation:delete",
   EVALUATION_READ = "evaluation:read",
   EVALUATION_UPDATE = "evaluation:update",
+  FIDES_CLOUD_CONFIG_READ = "fides_cloud_config:read",
+  FIDES_CLOUD_CONFIG_UPDATE = "fides_cloud_config:update",
   FIDES_TAXONOMY_UPDATE = "fides_taxonomy:update",
   GENERATE_EXEC = "generate:exec",
   MASKING_EXEC = "masking:exec",

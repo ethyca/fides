@@ -40,13 +40,17 @@ const DNSRecordsPage: NextPage = () => {
 
   const { data: dnsRecords, isLoading } = useGetFidesCloudConfigQuery();
 
-  const data = useMemo<CNAMERecord[]>(() => dnsRecords?.domain_verification_records
-      ? dnsRecords.domain_verification_records.map((dr) => ({
-          hostName: "www",
-          type: "CNAME",
-          data: dr,
-        }))
-      : [], [dnsRecords]);
+  const data = useMemo<CNAMERecord[]>(
+    () =>
+      dnsRecords?.domain_verification_records
+        ? dnsRecords.domain_verification_records.map((dr) => ({
+            hostName: "www",
+            type: "CNAME",
+            data: dr,
+          }))
+        : [],
+    [dnsRecords]
+  );
 
   if (isLoading) {
     return <div>loading</div>;
