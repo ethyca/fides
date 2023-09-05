@@ -1,0 +1,6 @@
+/* -- START: Logo CSS overrides specific to fidesops repo -- */
+
+body header.md-header .md-logo img {
+    width: 120px;
+    height: auto;
+}
