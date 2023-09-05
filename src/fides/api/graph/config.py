@@ -413,6 +413,7 @@ class Collection(BaseModel):
     """A single grouping of individual data points that are accessed together"""
 
     name: str
+    skip_processing: bool = False
     fields: List[Field]
     # an optional list of collections that this collection must run after
     after: Set[CollectionAddress] = set()

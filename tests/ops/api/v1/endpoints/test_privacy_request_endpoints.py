@@ -2939,18 +2939,26 @@ class TestRestartFromFailure:
             == f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = in_processing."
         )
 
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
     def test_restart_from_failure_no_stopped_step(
-        self, api_client, url, generate_auth_header, db, privacy_request
+        self, submit_mock, api_client, url, generate_auth_header, db, privacy_request
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
         privacy_request.status = PrivacyRequestStatus.error
         privacy_request.save(db)
 
         response = api_client.post(url, headers=auth_header)
-        assert response.status_code == 400
-        assert (
-            response.json()["detail"]
-            == f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection."
+        assert response.status_code == 200
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+        submit_mock.assert_called_with(
+            privacy_request_id=privacy_request.id,
+            from_step=None,
+            from_webhook_id=None,
         )
 
         privacy_request.delete(db)

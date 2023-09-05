@@ -126,6 +126,52 @@ class TestValidateDataset:
         details = json.loads(response.text)["detail"]
         assert ["body", "collections"] in [e["loc"] for e in details]
 
+    def test_validate_with_valid_skipped_collections(
+        self,
+        example_datasets: List,
+        validate_dataset_url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+
+        dataset = example_datasets[0]
+        skipped_collection = next(
+            col for col in dataset["collections"] if col["name"] == "login"
+        )
+        skipped_collection["skip_processing"] = True
+        response = api_client.put(
+            validate_dataset_url, headers=auth_header, json=dataset
+        )
+        assert response.status_code == 200
+
+        details = response.json()["traversal_details"]
+        assert details["is_traversable"]
+
+    def test_validate_with_invalid_skipped_collections(
+        self,
+        example_datasets: List,
+        validate_dataset_url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+
+        dataset = example_datasets[0]
+        skipped_collection = next(
+            col for col in dataset["collections"] if col["name"] == "address"
+        )
+        skipped_collection["skip_processing"] = True
+        response = api_client.put(
+            validate_dataset_url, headers=auth_header, json=dataset
+        )
+        assert response.status_code == 200
+
+        details = response.json()["traversal_details"]
+        assert not details["is_traversable"]
+        assert details["msg"] == 'Referred to object postgres_example_test_dataset:address:id does not exist'
+
+
     def test_put_validate_dataset_nested_collections(
         self,
         example_datasets: List,

@@ -1057,18 +1057,13 @@ def bulk_restart_privacy_request_from_failure(
         failed_details: Optional[
             CheckpointActionRequired
         ] = privacy_request.get_failed_checkpoint_details()
-        if not failed_details:
-            failed.append(
-                {
-                    "message": f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection.",
-                    "data": {"privacy_request_id": privacy_request_id},
-                }
-            )
-            continue
 
         succeeded.append(
             _process_privacy_request_restart(
-                privacy_request, failed_details.step, failed_details.collection, db
+                privacy_request,
+                failed_details.step if failed_details.step else None,
+                failed_details.collection if failed_details else None,
+                db,
             )
         )
 
@@ -1102,14 +1097,12 @@ def restart_privacy_request_from_failure(
     failed_details: Optional[
         CheckpointActionRequired
     ] = privacy_request.get_failed_checkpoint_details()
-    if not failed_details:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection.",
-        )
 
     return _process_privacy_request_restart(
-        privacy_request, failed_details.step, failed_details.collection, db
+        privacy_request,
+        failed_details.step if failed_details else None,
+        failed_details.collection if failed_details else None,
+        db,
     )
 
 
@@ -1736,7 +1729,7 @@ def create_privacy_request_func(
 
 def _process_privacy_request_restart(
     privacy_request: PrivacyRequest,
-    failed_step: CurrentStep,
+    failed_step: Optional[CurrentStep],
     failed_collection: Optional[CollectionAddress],
     db: Session,
 ) -> PrivacyRequestResponse:
@@ -1751,7 +1744,7 @@ def _process_privacy_request_restart(
     privacy_request.save(db=db)
     queue_privacy_request(
         privacy_request_id=privacy_request.id,
-        from_step=failed_step.value,
+        from_step=failed_step.value if failed_step else None,
     )
 
     return privacy_request  # type: ignore[return-value]
