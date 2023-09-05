@@ -9,7 +9,7 @@ import {
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import EmptyTableState from "common/table/EmptyTableState";
+import EmptyTableState from "~/features/system/dictionary-data-uses/EmptyTableState";
 import { useEffect, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -30,6 +30,8 @@ import {
   SystemResponse,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
+import { useFeatures } from "../../common/features";
+import PrivacyDeclarationDictModalComponents from "../dictionary-data-uses/PrivacyDeclarationDictModalComponents";
 
 interface Props {
   system: SystemResponse;
@@ -51,9 +53,12 @@ const PrivacyDeclarationFormTab = ({
 
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
   const [showForm, setShowForm] = useState(false);
+  const [showDictionaryModal, setShowDictionaryModal] = useState(false);
   const [currentDeclaration, setCurrentDeclaration] = useState<
     PrivacyDeclarationResponse | undefined
   >(undefined);
+
+  const features = useFeatures();
 
   const assignedCookies = [
     ...system.privacy_declarations
@@ -177,6 +182,14 @@ const PrivacyDeclarationFormTab = ({
     setCurrentDeclaration(declarationToEdit);
   };
 
+  const handleOpenDictModal = () => {
+    setShowDictionaryModal(true);
+  };
+
+  const handleCloseDictModal = () => {
+    setShowDictionaryModal(false);
+  };
+
   const handleSubmit = (values: PrivacyDeclarationResponse) => {
     handleCloseForm();
     if (currentDeclaration) {
@@ -206,18 +219,9 @@ const PrivacyDeclarationFormTab = ({
         <EmptyTableState
           title="You don't have a data use set up for this system yet."
           description='A Data Use is the purpose for which data is used in a system. In Fides, a system may have more than one Data Use. For example, a CRM system may be used both for "Customer Support" and also for "Email Marketing", each of these is a Data Use.'
-          button={
-            <Button
-              size="sm"
-              variant="outline"
-              fontWeight="semibold"
-              minWidth="auto"
-              data-testid="add-btn"
-              onClick={handleOpenNewForm}
-            >
-              Add data use
-            </Button>
-          }
+          handleAdd={handleOpenNewForm}
+          handleDictSuggestion={handleOpenDictModal}
+          vendorSelected={!!system.vendor_id}
         />
       ) : (
         <PrivacyDeclarationDisplayGroup
@@ -240,12 +244,27 @@ const PrivacyDeclarationFormTab = ({
           ))}
         </PrivacyDeclarationTabTable>
       ) : null}
-      <PrivacyDeclarationFormModal isOpen={showForm} onClose={handleCloseForm}>
+      <PrivacyDeclarationFormModal
+        isOpen={showForm}
+        onClose={handleCloseForm}
+        heading="Configure data use"
+      >
         <PrivacyDeclarationForm
           initialValues={currentDeclaration}
           onSubmit={handleSubmit}
           onCancel={handleCloseForm}
           {...dataProps}
+        />
+      </PrivacyDeclarationFormModal>
+      <PrivacyDeclarationFormModal
+        isOpen={showDictionaryModal}
+        onClose={handleCloseDictModal}
+        isCentered
+        heading="Compass suggestions"
+      >
+        <PrivacyDeclarationDictModalComponents
+          alreadyHasDataUses={system.privacy_declarations.length > 0}
+          vendorId={system.vendor_id}
         />
       </PrivacyDeclarationFormModal>
     </Stack>
