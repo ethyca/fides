@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode, useContext, useMemo } from "react";
 
-import { SystemHistory } from "./system-history.slice";
+import { SystemHistory } from "~/types/api/models/SystemHistory";
 
 type FormType = "before" | "after";
 

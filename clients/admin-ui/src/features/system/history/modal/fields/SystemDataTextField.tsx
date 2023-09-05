@@ -21,8 +21,8 @@ const SystemDataTextField = ({
   const [initialField] = useField(props);
   const field = { ...initialField, value: initialField.value ?? "" };
 
-  const contentRef = useRef<HTMLElement>(null);
-  const [height, setHeight] = useState(null);
+  const contentRef = useRef<HTMLParagraphElement>(null);
+  const [height, setHeight] = useState<number | null>(null);
   const [shouldHighlight, setShouldHighlight] = useState(false);
 
   useEffect(() => {
@@ -35,16 +35,16 @@ const SystemDataTextField = ({
     const longestValue =
       beforeValue.length > afterValue.length ? beforeValue : afterValue;
 
-    // Temporarily set the value to the longest one to measure height
-    contentRef.current.textContent = longestValue;
-
-    // Measure and set the height
     if (contentRef.current) {
-      setHeight(contentRef.current.offsetHeight);
-    }
+      // Temporarily set the value to the longest one to measure height
+      contentRef.current.textContent = longestValue;
 
-    // Reset the value to the actual one
-    contentRef.current.textContent = field.value;
+      // Measure and set the height
+      setHeight(contentRef.current.offsetHeight);
+
+      // Reset the value to the actual one
+      contentRef.current.textContent = field.value;
+    }
   }, [selectedHistory, props.name, field.value]);
 
   let highlightStyle = {};
@@ -84,8 +84,9 @@ const SystemDataTextField = ({
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
         <Text
+          fontSize="14px"
           ref={contentRef}
-          style={{ color: "#718096", height: `${height}px` }}
+          style={{ height: `${height}px` }}
         >
           {field.value}
         </Text>

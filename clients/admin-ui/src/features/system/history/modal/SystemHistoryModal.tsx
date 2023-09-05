@@ -15,7 +15,7 @@ import { SystemHistory } from "~/types/api/models/SystemHistory";
 import SelectedHistoryProvider from "./SelectedHistoryContext";
 import SystemDataForm from "./SystemDataForm";
 
-const getBadges = (before, after) => {
+const getBadges = (before: Record<string, any>, after: Record<string, any>) => {
   const badges = [];
   const specialFields = new Set(["egress", "ingress", "privacy_declarations"]);
 

@@ -21,8 +21,8 @@ const SystemDataTags = ({
   const [initialField] = useField(props.name);
   const field = { ...initialField, value: initialField.value ?? [] };
 
-  const contentRef = useRef<HTMLElement>(null);
-  const [height, setHeight] = useState(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const [height, setHeight] = useState<number | null>(null);
   const [longestValue, setLongestValue] = useState([]);
   const [shouldHighlight, setShouldHighlight] = useState(false);
 
@@ -87,12 +87,14 @@ const SystemDataTags = ({
           ref={contentRef}
           style={{ minHeight: `${height}px` }}
         >
-          {(height ? field.value : longestValue).map((value, index) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <Tag key={index} colorScheme="gray" size="md" m={1}>
-              {typeof value === "object" ? value.fides_key : value}
-            </Tag>
-          ))}
+          {(height ? field.value : longestValue).map(
+            (value: any, index: number) => (
+              // eslint-disable-next-line react/no-array-index-key
+              <Tag key={index} colorScheme="gray" size="md" m={1}>
+                {typeof value === "object" ? value.fides_key : value}
+              </Tag>
+            )
+          )}
         </Flex>
         {formType === "before" && shouldHighlight && (
           <div

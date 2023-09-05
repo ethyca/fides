@@ -293,7 +293,7 @@ const SystemHistoryTable = ({ system }: Props) => {
           })}
         </Tbody>
       </Table>
-      {(data?.total || 0) > 0 && (
+      {(data?.total || 0) > 10 && (
         <div
           style={{
             display: "flex",
