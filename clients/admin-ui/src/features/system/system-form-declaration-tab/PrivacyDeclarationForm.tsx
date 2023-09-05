@@ -303,8 +303,8 @@ export const PrivacyDeclarationFormComponents = ({
           </Collapse>
         </Stack>
       </SystemFormInputGroup>
-      {/* <SystemFormInputGroup heading="Cookies">
-        <CustomSelect
+      <SystemFormInputGroup heading="Cookies">
+        <CustomCreatableSelect
           name="cookies"
           label="Cookies"
           options={[]}
@@ -312,7 +312,7 @@ export const PrivacyDeclarationFormComponents = ({
           tooltip="Which cookies are placed on consumer domains for this purpose?"
           variant="stacked"
         />
-      </SystemFormInputGroup> */}
+      </SystemFormInputGroup>
     </Stack>
   );
 };
