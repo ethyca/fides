@@ -19,18 +19,18 @@ const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
       backgroundColor: "orange.100",
       color: "orange.800",
       tooltip:
-        "Fides has detected systems which would apply to this notice if it were enabled.",
+        "This notice is associated with a system + data use and can be enabled",
     },
     enabled: {
       backgroundColor: "green.100",
       color: "green.800",
-      tooltip: "This notice is active.",
+      tooltip: "This notice is active and available for consumers",
     },
     inactive: {
       backgroundColor: "gray.100",
       color: "gray.800",
       tooltip:
-        "This notice is not active and cannot be enabled because no systems would apply to this notice.",
+        "This privacy notice cannot be enabled because the linked data use has not been assigned to a system",
     },
   };
 
