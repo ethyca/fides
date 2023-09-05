@@ -58,7 +58,6 @@ function alignArrays(before, after) {
 const itemsPerPage = 10;
 
 const SystemHistoryTable = ({ system }: Props) => {
-  // Fetch system history data
   const dispatch = useDispatch();
   const currentPage = useSelector(selectCurrentSystemHistoryPage);
   const { data } = useGetSystemHistoryQuery({
@@ -282,7 +281,7 @@ const SystemHistoryTable = ({ system }: Props) => {
           })}
         </Tbody>
       </Table>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginTop: '12px', marginLeft: "24px" }}>
+      {(data?.total || 0) > 0 && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginTop: '12px', marginLeft: "24px" }}>
         <Text fontSize="xs" lineHeight={4} fontWeight="600" paddingX={2}>
           {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, data?.total || 0)} of {data?.total || 0}
         </Text>
@@ -298,7 +297,7 @@ const SystemHistoryTable = ({ system }: Props) => {
         >
           <NextArrow/>
         </Button>
-      </div>
+      </div>}
       <SystemHistoryModal
         selectedHistory={selectedHistory}
         isOpen={isModalOpen}
