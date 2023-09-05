@@ -55,7 +55,7 @@ if CONFIG.dev_mode:
 
     @app.middleware("http")
     async def profile_request(request: Request, call_next: Callable) -> Response:
-        profiling = request.query_params.get("profile", False)
+        profiling = request.headers.get("profile-request", False)
         if profiling:
             profiler = Profiler(interval=0.001, async_mode="enabled")
             profiler.start()

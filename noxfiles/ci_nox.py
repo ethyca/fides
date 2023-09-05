@@ -226,7 +226,7 @@ def performance_tests(session: nox.Session) -> None:
     session.run(*START_APP, external=True, silent=True)
     samples = 2
     for i in range(samples):
-        session.log(f"Sample {i} of {samples}")
+        session.log(f"Sample {i + 1} of {samples}")
         load_tests(session)
         docker_stats(session)
 
