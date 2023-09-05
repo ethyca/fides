@@ -8,6 +8,7 @@ import { FidesTable, WrappedCell } from "~/features/common/table";
 import { ClipboardCell } from "~/features/common/table/cells";
 import EmptyTableState from "~/features/common/table/EmptyTableState";
 import { FidesObject } from "~/features/common/table/FidesTable";
+import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 
 type CNAMERecord = {
   hostName: string;
@@ -37,17 +38,23 @@ const DNSRecordsPage: NextPage = () => {
     []
   );
 
-  const data = useMemo<CNAMERecord[]>(
-    () => [
-      {
-        hostName: "www",
-        type: "CNAME",
-        data: "cname.ethyca-dns.com",
-      },
-    ],
-    []
-  );
+  const { data: dnsRecords, isLoading } = useGetFidesCloudConfigQuery();
 
+  const data = useMemo<CNAMERecord[]>(() => dnsRecords?.domain_verification_records
+      ? dnsRecords.domain_verification_records.map((dr) => ({
+          hostName: "www",
+          type: "CNAME",
+          data: dr,
+        }))
+      : [], [dnsRecords]);
+
+
+
+  if(isLoading){
+    return <div>loading</div>
+  }
+
+  
   return (
     <Layout title="DNS Records">
       <Box data-testid="dns-records">

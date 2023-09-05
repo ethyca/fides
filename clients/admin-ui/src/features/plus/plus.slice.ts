@@ -20,6 +20,7 @@ import {
   ClassifyRequestPayload,
   ClassifyStatusUpdatePayload,
   ClassifySystem,
+  CloudConfig,
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
   CustomFieldWithId,
@@ -250,6 +251,13 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Dictionary"],
     }),
+    getFidesCloudConfig: build.query<CloudConfig, void>({
+      query: () => ({
+        url: `plus/fides-cloud`,
+        method: "GET",
+      }),
+      providesTags: ["Fides Cloud Config"],
+    }),
   }),
 });
 
@@ -275,6 +283,7 @@ export const {
   useGetAllCustomFieldDefinitionsQuery,
   useGetAllowListQuery,
   useGetAllDictionaryEntriesQuery,
+  useGetFidesCloudConfigQuery,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
