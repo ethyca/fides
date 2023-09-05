@@ -331,7 +331,7 @@ const SystemHistoryTable = ({ system }: Props) => {
         </div>
       )}
       <SystemHistoryModal
-        selectedHistory={selectedHistory}
+        selectedHistory={selectedHistory!}
         isOpen={isModalOpen}
         onClose={closeModal}
       />
