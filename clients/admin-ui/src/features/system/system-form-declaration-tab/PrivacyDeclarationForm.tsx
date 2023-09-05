@@ -23,6 +23,7 @@ import {
   PrivacyDeclarationResponse,
   SpecialCategoryLegalBasisEnum,
 } from "~/types/api";
+import { Cookies } from "~/types/api/models/Cookies";
 
 import SystemFormInputGroup from "../SystemFormInputGroup";
 
@@ -86,6 +87,7 @@ export interface DataProps {
   allDataUses: DataUse[];
   allDataSubjects: DataSubject[];
   allDatasets?: Dataset[];
+  cookies?: Cookies[];
 }
 
 export const PrivacyDeclarationFormComponents = ({
@@ -93,6 +95,7 @@ export const PrivacyDeclarationFormComponents = ({
   allDataCategories,
   allDataSubjects,
   allDatasets,
+  cookies,
   values,
   privacyDeclarationId,
 }: DataProps & {
@@ -303,16 +306,20 @@ export const PrivacyDeclarationFormComponents = ({
           </Collapse>
         </Stack>
       </SystemFormInputGroup>
-      {/* <SystemFormInputGroup heading="Cookies">
-        <CustomSelect
+      <SystemFormInputGroup heading="Cookies">
+        <CustomCreatableSelect
           name="cookies"
           label="Cookies"
-          options={[]}
+          options={
+            cookies && cookies.length
+              ? cookies.map((c) => ({ label: c.name, value: c.name }))
+              : []
+          }
           isMulti
           tooltip="Which cookies are placed on consumer domains for this purpose?"
           variant="stacked"
         />
-      </SystemFormInputGroup> */}
+      </SystemFormInputGroup>
     </Stack>
   );
 };
