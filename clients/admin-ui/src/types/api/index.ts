@@ -27,6 +27,7 @@ export type { Body_upload_data_api_v1_storage__request_id__post } from "./models
 export type { BulkPostPrivacyRequests } from "./models/BulkPostPrivacyRequests";
 export type { BulkPutConnectionConfiguration } from "./models/BulkPutConnectionConfiguration";
 export type { BulkPutDataset } from "./models/BulkPutDataset";
+export type { BulkPutMessagingTemplateResponse } from "./models/BulkPutMessagingTemplateResponse";
 export type { BulkPutPolicyResponse } from "./models/BulkPutPolicyResponse";
 export type { BulkPutRuleResponse } from "./models/BulkPutRuleResponse";
 export type { BulkPutRuleTargetResponse } from "./models/BulkPutRuleTargetResponse";
@@ -50,6 +51,7 @@ export type { ClassifyStatusUpdatePayload } from "./models/ClassifyStatusUpdateP
 export type { ClassifySystem } from "./models/ClassifySystem";
 export type { ClientConfig } from "./models/ClientConfig";
 export type { ClientCreatedResponse } from "./models/ClientCreatedResponse";
+export type { CloudConfig } from "./models/CloudConfig";
 export { ClusterHealth } from "./models/ClusterHealth";
 export type { CollectionAddressResponse } from "./models/CollectionAddressResponse";
 export type { CollectionMeta } from "./models/CollectionMeta";
@@ -84,6 +86,7 @@ export type { CustomFieldDefinitionResponse } from "./models/CustomFieldDefiniti
 export type { CustomFieldDefinitionWithId } from "./models/CustomFieldDefinitionWithId";
 export type { CustomFieldWithId } from "./models/CustomFieldWithId";
 export type { DatabaseConfig } from "./models/DatabaseConfig";
+export type { DatabaseHealthCheck } from "./models/DatabaseHealthCheck";
 export type { DataCategory } from "./models/DataCategory";
 export type { DataFlow } from "./models/DataFlow";
 export type { DataProtectionImpactAssessment } from "./models/DataProtectionImpactAssessment";
@@ -178,6 +181,8 @@ export type { MessagingServiceDetailsMailgun } from "./models/MessagingServiceDe
 export type { MessagingServiceDetailsTwilioEmail } from "./models/MessagingServiceDetailsTwilioEmail";
 export type { MessagingServiceSecretsMailchimpTransactionalDocs } from "./models/MessagingServiceSecretsMailchimpTransactionalDocs";
 export { MessagingServiceType } from "./models/MessagingServiceType";
+export type { MessagingTemplateRequest } from "./models/MessagingTemplateRequest";
+export type { MessagingTemplateResponse } from "./models/MessagingTemplateResponse";
 export type { MongoDBDocsSchema } from "./models/MongoDBDocsSchema";
 export type { MSSQLDocsSchema } from "./models/MSSQLDocsSchema";
 export type { MySQLDocsSchema } from "./models/MySQLDocsSchema";
@@ -322,3 +327,4 @@ export type { Violation } from "./models/Violation";
 export type { ViolationAttributes } from "./models/ViolationAttributes";
 export { WebhookDirection } from "./models/WebhookDirection";
 export type { WebhookOrder } from "./models/WebhookOrder";
+export type { WorkerHealthCheck } from "./models/WorkerHealthCheck";

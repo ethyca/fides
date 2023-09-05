@@ -78,6 +78,7 @@ export enum ScopeRegistryEnum {
   GENERATE_EXEC = "generate:exec",
   MASKING_EXEC = "masking:exec",
   MASKING_READ = "masking:read",
+  MESSAGING_TEMPLATE_UPDATE = "messaging-template:update",
   MESSAGING_CREATE_OR_UPDATE = "messaging:create_or_update",
   MESSAGING_DELETE = "messaging:delete",
   MESSAGING_READ = "messaging:read",
