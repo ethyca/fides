@@ -54,17 +54,15 @@ export const EnablePrivacyNoticeCell = (
   const toggleIsDisabled = noticeIsDisabled && !systemsApplicable;
 
   return (
-    <Tooltip label="test">
-      <EnableCell<PrivacyNoticeResponse>
-        {...cellProps}
-        isDisabled={toggleIsDisabled}
-        onToggle={onToggle}
-        title="Disable privacy notice"
-        message="Are you sure you want to disable this privacy notice? Disabling this
+    <EnableCell<PrivacyNoticeResponse>
+      {...cellProps}
+      isDisabled={toggleIsDisabled}
+      onToggle={onToggle}
+      title="Disable privacy notice"
+      message="Are you sure you want to disable this privacy notice? Disabling this
             notice means your users will no longer see this explanation about
             your data uses which is necessary to ensure compliance."
-      />
-    </Tooltip>
+    />
   );
 };
 
