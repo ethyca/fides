@@ -2,6 +2,7 @@
 """Integration tests for the API module."""
 import json
 import typing
+from datetime import datetime
 from json import loads
 from typing import Dict, List
 
@@ -615,9 +616,12 @@ class TestSystemCreate:
 
         for field in SystemResponse.__fields__:
             system_val = getattr(system, field)
-            if isinstance(system_val, typing.Hashable):
+            if isinstance(system_val, typing.Hashable) and not isinstance(
+                system_val, datetime
+            ):
                 assert system_val == json_results[field]
         assert len(json_results["privacy_declarations"]) == 2
+        assert json_results["created_at"]
 
         for i, decl in enumerate(system.privacy_declarations):
             for field in PrivacyDeclarationResponse.__fields__:
@@ -1525,10 +1529,13 @@ class TestSystemUpdate:
         json_results = result.json()
         for field in SystemResponse.__fields__:
             system_val = getattr(system, field)
-            if isinstance(system_val, typing.Hashable):
+            if isinstance(system_val, typing.Hashable) and not isinstance(
+                system_val, datetime
+            ):
                 assert system_val == json_results[field]
         assert len(json_results["privacy_declarations"]) == 1
         assert json_results["data_stewards"] == []
+        assert json_results["created_at"]
 
         for i, decl in enumerate(system.privacy_declarations):
             for field in PrivacyDeclarationResponse.__fields__:

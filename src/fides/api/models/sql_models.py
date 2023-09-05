@@ -37,7 +37,9 @@ from fides.api.db.base_class import FidesBase as FideslibBase
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
-from fides.config import CONFIG
+from fides.config import get_config
+
+CONFIG = get_config()
 
 
 class FidesBase(FideslibBase):
@@ -420,6 +422,8 @@ class System(Base, FidesBase):
     cookies = relationship(
         "Cookies", back_populates="system", lazy="selectin", uselist=True, viewonly=True
     )
+
+    user_id = Column(String, nullable=True)
 
     @classmethod
     def get_data_uses(

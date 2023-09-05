@@ -39,6 +39,7 @@ export const defaultInitialValues: FormValues = {
   data_security_practices: "",
   privacy_declarations: [],
   data_stewards: "",
+  dpo: "",
 };
 
 export const transformSystemToFormValues = (
@@ -58,6 +59,7 @@ export const transformSystemToFormValues = (
       is_required: dpia?.is_required ? "true" : "false",
     },
     customFieldValues,
+    privacy_policy: system.privacy_policy ? system.privacy_policy : "",
     data_stewards: dataStewards,
   };
 };
