@@ -16,6 +16,8 @@ from constants_nox import (
 )
 from git_nox import get_current_tag, recognized_tag
 
+DOCKER_PLATFORMS = "linux/amd64,linux/arm64"
+
 
 def verify_git_tag(session: nox.Session) -> str:
     """
@@ -41,7 +43,6 @@ def verify_git_tag(session: nox.Session) -> str:
 def generate_buildx_command(
     image_tags: List[str],
     docker_build_target: str,
-    platform: str,
     dockerfile_path: str = ".",
 ) -> Tuple[str, ...]:
     """
@@ -56,7 +57,7 @@ def generate_buildx_command(
         "--push",
         f"--target={docker_build_target}",
         "--platform",
-        platform,
+        DOCKER_PLATFORMS,
         dockerfile_path,
     )
 
@@ -163,10 +164,6 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
 
 @nox.session()
 @nox.parametrize(
-    "platform",
-    [nox.param("linux/amd64", id="x86"), nox.param("linux/arm64", id="ARM")],
-)
-@nox.parametrize(
     "tag",
     [
         nox.param("prod", id="prod"),
@@ -184,7 +181,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         nox.param("sample_app", id="sample_app"),
     ],
 )
-def push(session: nox.Session, tag: str, app: str, platform: str) -> None:
+def push(session: nox.Session, tag: str, app: str) -> None:
     """
     Push the main image & extra apps to DockerHub:
       - ethyca/fides
@@ -199,9 +196,14 @@ def push(session: nox.Session, tag: str, app: str, platform: str) -> None:
     rc - Tags images with `rc` - used for rc tags
     git-tag - Tags images with the git tag of the current commit, if it exists
 
+    Note:
+    Due to how `buildx` works, all platform images need to be build in a
+    single `buildx` command. Otherwise it will cause the images in
+    Dockerhub to be overwritten.
+
     Example Calls:
-    nox -s "push(fides, prod, x86)"
-    nox -s "push(sample_app, prerelease, ARM)"
+    nox -s "push(fides, prod)"
+    nox -s "push(sample_app, prerelease)"
     """
 
     # Create the buildx builder
@@ -252,7 +254,6 @@ def push(session: nox.Session, tag: str, app: str, platform: str) -> None:
     buildx_command: Tuple[str, ...] = generate_buildx_command(
         image_tags=full_tags,
         docker_build_target=app_info["target"],
-        platform=platform,
         dockerfile_path=app_info["path"],
     )
 
