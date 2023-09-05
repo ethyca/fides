@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import NextArrow from "~/features/common/Icon/NextArrow";
 import PrevArrow from "~/features/common/Icon/PrevArrow";
 import { useGetSystemHistoryQuery } from "~/features/plus/plus.slice";
+import { PrivacyDeclaration } from "~/types/api";
 import { SystemHistory } from "~/types/api/models/SystemHistory";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
@@ -43,14 +44,23 @@ const formatDateAndTime = (dateString: string) => {
   return { formattedTime, formattedDate };
 };
 
-function alignArrays(before, after) {
+function alignArrays(
+  before: PrivacyDeclaration[],
+  after: PrivacyDeclaration[]
+) {
   const allNames = new Set([...before, ...after].map((item) => item.data_use));
-  const alignedBefore = [];
-  const alignedAfter = [];
+  const alignedBefore: PrivacyDeclaration[] = [];
+  const alignedAfter: PrivacyDeclaration[] = [];
 
   allNames.forEach((data_use) => {
-    const firstItem = before.find((item) => item.data_use === data_use) || {};
-    const secondItem = after.find((item) => item.data_use === data_use) || {};
+    const firstItem = before.find((item) => item.data_use === data_use) || {
+      data_use: "",
+      data_categories: [],
+    };
+    const secondItem = after.find((item) => item.data_use === data_use) || {
+      data_use: "",
+      data_categories: [],
+    };
     alignedBefore.push(firstItem);
     alignedAfter.push(secondItem);
   });
