@@ -5,7 +5,6 @@ import {
   DateCell,
   FidesTable,
   FidesTableFooter,
-  MultiTagCell,
   TitleCell,
   WrappedCell,
 } from "common/table";
@@ -18,6 +17,7 @@ import { Column } from "react-table";
 import { useAppSelector } from "~/app/hooks";
 import {
   EnablePrivacyNoticeCell,
+  LocationCell,
   MechanismCell,
 } from "~/features/privacy-notices/cells";
 import {
@@ -63,7 +63,7 @@ export const PrivacyNoticesTable = () => {
         accessor: "consent_mechanism",
         Cell: MechanismCell,
       },
-      { Header: "Locations", accessor: "regions", Cell: MultiTagCell },
+      { Header: "Locations", accessor: "regions", Cell: LocationCell },
       { Header: "Created", accessor: "created_at", Cell: DateCell },
       { Header: "Last update", accessor: "updated_at", Cell: DateCell },
       {

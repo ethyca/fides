@@ -1,7 +1,8 @@
 import React from "react";
 import { CellProps } from "react-table";
 
-import { EnableCell, MapCell } from "~/features/common/table/";
+import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
+import { EnableCell, MapCell, MultiTagCell } from "~/features/common/table/";
 import { MECHANISM_MAP } from "~/features/privacy-notices/constants";
 import { usePatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
 import { PrivacyNoticeResponse } from "~/types/api";
@@ -9,6 +10,10 @@ import { PrivacyNoticeResponse } from "~/types/api";
 export const MechanismCell = (
   cellProps: CellProps<typeof MECHANISM_MAP, string>
 ) => <MapCell map={MECHANISM_MAP} {...cellProps} />;
+
+export const LocationCell = (
+  cellProps: CellProps<PrivacyNoticeResponse, string[]>
+) => <MultiTagCell map={PRIVACY_NOTICE_REGION_MAP} {...cellProps} />;
 
 export const EnablePrivacyNoticeCell = (
   cellProps: CellProps<PrivacyNoticeResponse, boolean>
