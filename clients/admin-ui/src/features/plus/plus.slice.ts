@@ -260,10 +260,10 @@ const plusApi = baseApi.injectEndpoints({
         params: {
           page: params.page,
           size: params.size,
-        }
+        },
       }),
       providesTags: () => ["System History"],
-    })
+    }),
   }),
 });
 

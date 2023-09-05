@@ -88,7 +88,7 @@ const reducer = {
   [taxonomySlice.name]: taxonomySlice.reducer,
   [userManagementSlice.name]: userManagementSlice.reducer,
   [dictSuggestionsSlice.name]: dictSuggestionsSlice.reducer,
-  [systemHistorySlice.name]: systemHistorySlice.reducer
+  [systemHistorySlice.name]: systemHistorySlice.reducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;

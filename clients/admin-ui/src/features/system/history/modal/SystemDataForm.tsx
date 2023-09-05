@@ -1,5 +1,5 @@
 import { Stack } from "@fidesui/react";
-import { Form,Formik } from "formik";
+import { Form, Formik } from "formik";
 import React from "react";
 
 import { useFeatures } from "~/features/common/features/features.slice";

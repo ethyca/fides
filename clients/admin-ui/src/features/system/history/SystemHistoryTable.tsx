@@ -1,7 +1,7 @@
-import { Button, Table, Tbody, Td, Text,Thead, Tr } from "@fidesui/react";
+import { Button, Table, Tbody, Td, Text, Thead, Tr } from "@fidesui/react";
 import _ from "lodash";
 import React, { useState } from "react";
-import { useDispatch,useSelector  } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import NextArrow from "~/features/common/Icon/NextArrow";
 import PrevArrow from "~/features/common/Icon/PrevArrow";
@@ -10,7 +10,10 @@ import { SystemHistory } from "~/types/api/models/SystemHistory";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
 import SystemHistoryModal from "./modal/SystemHistoryModal";
-import { selectCurrentSystemHistoryPage, setCurrentPage } from "./system-history.slice";
+import {
+  selectCurrentSystemHistoryPage,
+  setCurrentPage,
+} from "./system-history.slice";
 
 interface Props {
   system: SystemResponse;
@@ -225,7 +228,6 @@ const SystemHistoryTable = ({ system }: Props) => {
     }
   };
 
-
   return (
     <>
       <Table style={{ marginLeft: "24px" }}>
@@ -281,28 +283,48 @@ const SystemHistoryTable = ({ system }: Props) => {
           })}
         </Tbody>
       </Table>
-      {(data?.total || 0) > 0 && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginTop: '12px', marginLeft: "24px" }}>
-        <Text fontSize="xs" lineHeight={4} fontWeight="600" paddingX={2}>
-          {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, data?.total || 0)} of {data?.total || 0}
-        </Text>
-        <Button size="xs" width="24px" variant="outline" paddingX={0} marginRight={2}
-          onClick={handlePrevPage} 
-          disabled={currentPage === 1}
+      {(data?.total || 0) > 0 && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            marginTop: "12px",
+            marginLeft: "24px",
+          }}
         >
-          <PrevArrow/>
-        </Button>
-        <Button size="xs" variant="outline" paddingX={0}
-          onClick={handleNextPage} 
-          disabled={currentPage === totalPages || totalPages === 0} 
-        >
-          <NextArrow/>
-        </Button>
-      </div>}
+          <Text fontSize="xs" lineHeight={4} fontWeight="600" paddingX={2}>
+            {(currentPage - 1) * itemsPerPage + 1} -{" "}
+            {Math.min(currentPage * itemsPerPage, data?.total || 0)} of{" "}
+            {data?.total || 0}
+          </Text>
+          <Button
+            size="xs"
+            width="24px"
+            variant="outline"
+            paddingX={0}
+            marginRight={2}
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+          >
+            <PrevArrow />
+          </Button>
+          <Button
+            size="xs"
+            variant="outline"
+            paddingX={0}
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages || totalPages === 0}
+          >
+            <NextArrow />
+          </Button>
+        </div>
+      )}
       <SystemHistoryModal
         selectedHistory={selectedHistory}
         isOpen={isModalOpen}
         onClose={closeModal}
-       />
+      />
     </>
   );
 };

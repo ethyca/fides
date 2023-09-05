@@ -11,13 +11,13 @@ const initialState: State = {
 };
 
 export const systemHistorySlice = createSlice({
-  name: 'systemHistory',
+  name: "systemHistory",
   initialState,
   reducers: {
     setCurrentPage: (draftState, action: PayloadAction<number>) => {
       draftState.currentPage = action.payload;
     },
-  }
+  },
 });
 
 export const { setCurrentPage } = systemHistorySlice.actions;
