@@ -48,13 +48,10 @@ const DNSRecordsPage: NextPage = () => {
         }))
       : [], [dnsRecords]);
 
-
-
-  if(isLoading){
-    return <div>loading</div>
+  if (isLoading) {
+    return <div>loading</div>;
   }
 
-  
   return (
     <Layout title="DNS Records">
       <Box data-testid="dns-records">

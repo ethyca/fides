@@ -155,6 +155,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "DNS Records",
         path: routes.DNS_RECORDS,
+        requiresPlus: true,
         scopes: [ScopeRegistryEnum.USER_READ],
       },
       {
