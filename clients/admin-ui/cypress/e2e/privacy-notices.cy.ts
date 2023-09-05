@@ -59,11 +59,7 @@ describe("Privacy notices", () => {
           cy.assumeRole(role);
           cy.visit(PRIVACY_NOTICES_ROUTE);
           cy.wait("@getNotices");
-          cy.getByTestId("toggle-Enable")
-            .first()
-            .within(() => {
-              cy.get("span").should("have.attr", "data-disabled");
-            });
+          cy.getByTestId("toggle-Enable").should("not.exist");
         }
       );
     });
@@ -170,19 +166,21 @@ describe("Privacy notices", () => {
       it("can render a tag based on systems_applicable", () => {
         // Enabled and has applicable systems
         cy.getByTestId("row-Essential").within(() => {
-          cy.getByTestId("systems-applicable-tag").contains("Active");
-        });
-        // Enabled but has no applicable systems
-        cy.getByTestId("row-Analytics").within(() => {
-          cy.getByTestId("systems-applicable-tag").contains("Inactive");
+          cy.getByTestId("status-badge").contains("enabled");
         });
         // Disabled but has applicable systems
         cy.getByTestId("row-Data Sales").within(() => {
-          cy.getByTestId("systems-applicable-tag").contains("Suggested");
+          cy.getByTestId("status-badge").contains("available");
         });
         // Disabled and has no applicable systems
         cy.getByTestId("row-Advertising").within(() => {
-          cy.getByTestId("systems-applicable-tag").should("not.exist");
+          cy.getByTestId("status-badge").contains("inactive");
+        });
+        // Enabled but has no applicable systems.
+        // Note: this state should not be possible via only the frontend,
+        // but could happen if directly hitting the API
+        cy.getByTestId("row-Analytics").within(() => {
+          cy.getByTestId("status-badge").contains("inactive");
         });
       });
     });

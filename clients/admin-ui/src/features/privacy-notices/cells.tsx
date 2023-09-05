@@ -1,4 +1,4 @@
-import { Box, Tag, TagProps, Tooltip } from "@fidesui/react";
+import { Badge, TagProps, Tooltip } from "@fidesui/react";
 import React from "react";
 import { CellProps } from "react-table";
 
@@ -11,25 +11,26 @@ export const MechanismCell = (
   cellProps: CellProps<typeof MECHANISM_MAP, string>
 ) => <MapCell map={MECHANISM_MAP} {...cellProps} />;
 
-type TagNames = "Suggested" | "Active" | "Inactive";
+type TagNames = "available" | "enabled" | "inactive";
 
 const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
   {
-    Suggested: {
-      backgroundColor: "orange.500",
-      color: "white",
+    available: {
+      backgroundColor: "orange.100",
+      color: "orange.800",
       tooltip:
         "Fides has detected systems which would apply to this notice if it were enabled.",
     },
-    Active: {
-      backgroundColor: "green.500",
-      color: "white",
-      tooltip: "Fides has detected systems which apply to this notice.",
+    enabled: {
+      backgroundColor: "green.100",
+      color: "green.800",
+      tooltip: "This notice is active.",
     },
-    Inactive: {
-      backgroundColor: "gray.500",
-      color: "white",
-      tooltip: "There are no systems which would apply to this notice.",
+    inactive: {
+      backgroundColor: "gray.100",
+      color: "gray.800",
+      tooltip:
+        "This notice is not active and cannot be enabled because no systems would apply to this notice.",
     },
   };
 
@@ -48,40 +49,54 @@ export const EnablePrivacyNoticeCell = (
     ]);
   };
 
+  const { systems_applicable: systemsApplicable, disabled: noticeIsDisabled } =
+    row.original;
+  const toggleIsDisabled = noticeIsDisabled && !systemsApplicable;
+
+  return (
+    <Tooltip label="test">
+      <EnableCell<PrivacyNoticeResponse>
+        {...cellProps}
+        isDisabled={toggleIsDisabled}
+        onToggle={onToggle}
+        title="Disable privacy notice"
+        message="Are you sure you want to disable this privacy notice? Disabling this
+            notice means your users will no longer see this explanation about
+            your data uses which is necessary to ensure compliance."
+      />
+    </Tooltip>
+  );
+};
+
+export const PrivacyNoticeStatusCell = (
+  cellProps: CellProps<PrivacyNoticeResponse, boolean>
+) => {
+  const { row } = cellProps;
+
   let tagValue: TagNames | undefined;
   const { systems_applicable: systemsApplicable, disabled } = row.original;
   if (systemsApplicable) {
-    tagValue = disabled ? "Suggested" : "Active";
+    tagValue = disabled ? "available" : "enabled";
   } else {
-    tagValue = disabled ? undefined : "Inactive";
+    tagValue = "inactive";
   }
   const { tooltip = undefined, ...tagProps } = tagValue
     ? systemsApplicableTags[tagValue]
     : {};
 
   return (
-    <EnableCell<PrivacyNoticeResponse>
-      {...cellProps}
-      onToggle={onToggle}
-      title="Disable privacy notice"
-      message="Are you sure you want to disable this privacy notice? Disabling this
-            notice means your users will no longer see this explanation about
-            your data uses which is necessary to ensure compliance."
-    >
-      {tagValue ? (
-        <Box mt="2">
-          <Tooltip label={tooltip}>
-            <Tag
-              size="sm"
-              width="fit-content"
-              {...tagProps}
-              data-testid="systems-applicable-tag"
-            >
-              {tagValue}
-            </Tag>
-          </Tooltip>
-        </Box>
-      ) : null}
-    </EnableCell>
+    <Tooltip label={tooltip}>
+      <Badge
+        size="sm"
+        width="fit-content"
+        {...tagProps}
+        data-testid="status-badge"
+        textTransform="uppercase"
+        fontWeight="600"
+        px={2}
+      >
+        {tagValue}
+      </Badge>
+    </Tooltip>
   );
 };

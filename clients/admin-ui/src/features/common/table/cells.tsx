@@ -7,7 +7,7 @@ import {
   WarningIcon,
 } from "@fidesui/react";
 import ConfirmationModal from "common/ConfirmationModal";
-import React, { ChangeEvent, ReactNode } from "react";
+import React, { ChangeEvent } from "react";
 import { CellProps } from "react-table";
 
 export const TitleCell = <T extends object>({
@@ -81,7 +81,11 @@ type EnableCellProps<T extends object> = CellProps<T, boolean> & {
   onToggle: (data: boolean) => Promise<any>;
   title: string;
   message: string;
-  children?: ReactNode;
+  /**
+   * Disables the toggle. Can also pass a prop on `column`.
+   * If either are true, then the toggle is disabled.
+   */
+  isDisabled?: boolean;
 };
 
 export const EnableCell = <T extends object>({
@@ -90,7 +94,7 @@ export const EnableCell = <T extends object>({
   onToggle,
   title,
   message,
-  children,
+  isDisabled,
 }: EnableCellProps<T>) => {
   const modal = useDisclosure();
   const handlePatch = async ({ enable }: { enable: boolean }) => {
@@ -120,10 +124,9 @@ export const EnableCell = <T extends object>({
          * https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/59837
          */
         // @ts-ignore
-        disabled={column.disabled}
+        disabled={isDisabled || column.disabled}
         onChange={handleToggle}
       />
-      {children || null}
       <ConfirmationModal
         isOpen={modal.isOpen}
         onClose={modal.onClose}
