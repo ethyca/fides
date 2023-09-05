@@ -18,6 +18,7 @@ import { useAppSelector } from "~/app/hooks";
 import {
   EnablePrivacyNoticeCell,
   MechanismCell,
+  PrivacyNoticeStatusCell,
 } from "~/features/privacy-notices/cells";
 import {
   selectAllPrivacyNotices,
@@ -45,8 +46,8 @@ export const PrivacyNoticesTable = () => {
     }
   };
 
-  const columns: Column<PrivacyNoticeResponse>[] = useMemo(
-    () => [
+  const columns: Column<PrivacyNoticeResponse>[] = useMemo(() => {
+    const noticeColumns: Column<PrivacyNoticeResponse>[] = [
       {
         Header: "Title",
         accessor: "name",
@@ -68,12 +69,19 @@ export const PrivacyNoticesTable = () => {
       {
         Header: "Enable",
         accessor: "disabled",
-        disabled: !userCanUpdate,
         Cell: EnablePrivacyNoticeCell,
       },
-    ],
-    [userCanUpdate]
-  );
+      {
+        Header: "Status",
+        Cell: PrivacyNoticeStatusCell,
+      },
+    ];
+    // Only render the "Enable" column with toggle if user has permission to toggle
+    if (userCanUpdate) {
+      return noticeColumns;
+    }
+    return noticeColumns.filter((c) => c.accessor !== "disabled");
+  }, [userCanUpdate]);
 
   if (isLoading) {
     return (
