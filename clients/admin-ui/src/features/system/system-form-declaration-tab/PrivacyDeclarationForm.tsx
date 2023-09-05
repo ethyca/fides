@@ -4,7 +4,6 @@
 
 import { Box, Button, Collapse, Flex, Spacer, Stack } from "@fidesui/react";
 import { Form, Formik, FormikHelpers } from "formik";
-import { Cookies } from "~/types/api/models/Cookies";
 import { useMemo } from "react";
 import * as Yup from "yup";
 
@@ -24,6 +23,7 @@ import {
   PrivacyDeclarationResponse,
   SpecialCategoryLegalBasisEnum,
 } from "~/types/api";
+import { Cookies } from "~/types/api/models/Cookies";
 
 import SystemFormInputGroup from "../SystemFormInputGroup";
 
