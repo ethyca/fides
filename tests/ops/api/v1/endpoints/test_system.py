@@ -3,7 +3,6 @@ from unittest import mock
 
 import pytest
 from fastapi_pagination import Params
-from fideslang.models import System as SystemSchema
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -31,8 +30,6 @@ from fides.common.api.scope_registry import (
     SAAS_CONNECTION_INSTANTIATE,
     STORAGE_DELETE,
     SYSTEM_MANAGER_UPDATE,
-    SYSTEM_READ,
-    SYSTEM_UPDATE,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from tests.conftest import generate_role_header_for_user
