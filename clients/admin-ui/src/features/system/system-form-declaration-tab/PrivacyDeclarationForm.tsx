@@ -4,6 +4,7 @@
 
 import { Box, Button, Collapse, Flex, Spacer, Stack } from "@fidesui/react";
 import { Form, Formik, FormikHelpers } from "formik";
+import { Cookies } from "~/types/api/models/Cookies";
 import { useMemo } from "react";
 import * as Yup from "yup";
 
@@ -86,6 +87,7 @@ export interface DataProps {
   allDataUses: DataUse[];
   allDataSubjects: DataSubject[];
   allDatasets?: Dataset[];
+  cookies?: Cookies[];
 }
 
 export const PrivacyDeclarationFormComponents = ({
@@ -93,6 +95,7 @@ export const PrivacyDeclarationFormComponents = ({
   allDataCategories,
   allDataSubjects,
   allDatasets,
+  cookies,
   values,
   privacyDeclarationId,
 }: DataProps & {
@@ -307,7 +310,11 @@ export const PrivacyDeclarationFormComponents = ({
         <CustomCreatableSelect
           name="cookies"
           label="Cookies"
-          options={[]}
+          options={
+            cookies && cookies.length
+              ? cookies.map((c) => ({ label: c.name, value: c.name }))
+              : []
+          }
           isMulti
           tooltip="Which cookies are placed on consumer domains for this purpose?"
           variant="stacked"
