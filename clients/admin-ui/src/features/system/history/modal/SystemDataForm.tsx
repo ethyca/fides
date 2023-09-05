@@ -1,11 +1,13 @@
-import React from "react";
-import { Formik, Form } from "formik";
-import SystemDataGroup from "./SystemDataGroup";
-import SystemDataTextField from "./fields/SystemDataTextField";
 import { Stack } from "@fidesui/react";
+import { Form,Formik } from "formik";
+import React from "react";
+
 import { useFeatures } from "~/features/common/features/features.slice";
+
 import SystemDataSwitch from "./fields/SystemDataSwitch";
 import SystemDataTags from "./fields/SystemDataTags";
+import SystemDataTextField from "./fields/SystemDataTextField";
+import SystemDataGroup from "./SystemDataGroup";
 
 const SystemDataForm = ({ initialValues }) => {
   const features = useFeatures();
@@ -185,7 +187,7 @@ const SystemDataForm = ({ initialValues }) => {
             {initialValues.privacy_declarations &&
               initialValues.privacy_declarations.map((_, index) => (
                 <>
-                  <SystemDataGroup key={index} heading="Data use declaration">
+                  <SystemDataGroup heading="Data use declaration">
                     <SystemDataTextField
                       id={`privacy_declarations[${index}].name`}
                       label="Declaration name (optional)"

@@ -1,15 +1,17 @@
 import {
+  Badge,
+  Heading,
   Modal,
-  ModalOverlay,
+  ModalBody,
+  ModalCloseButton,
   ModalContent,
   ModalHeader,
-  Heading,
-  Badge,
+  ModalOverlay,
   Spacer,
-  ModalCloseButton,
-  ModalBody,
 } from "@fidesui/react";
+
 import { SystemHistory } from "~/types/api/models/SystemHistory";
+
 import SelectedHistoryProvider from "./SelectedHistoryContext";
 import SystemDataForm from "./SystemDataForm";
 
@@ -44,8 +46,7 @@ interface Props {
   onClose: () => void;
 }
 
-const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => {
-  return (
+const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
     <Modal isOpen={isOpen} onClose={onClose} size="3xl">
       <ModalOverlay />
       <ModalContent>
@@ -110,6 +111,5 @@ const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => {
       </ModalContent>
     </Modal>
   );
-};
 
 export default SystemHistoryModal;

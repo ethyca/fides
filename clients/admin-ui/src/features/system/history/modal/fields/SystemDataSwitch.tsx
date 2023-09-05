@@ -1,7 +1,7 @@
-import { Flex, FormControl, Tag, Text, VStack } from "@fidesui/react";
+import { Flex, FormControl, Tag, VStack } from "@fidesui/react";
 import { useField } from "formik";
 import _ from "lodash";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   CustomInputProps,
@@ -9,6 +9,7 @@ import {
   StringField,
 } from "~/features/common/form/inputs";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
+
 import { useSelectedHistory } from "../SelectedHistoryContext";
 
 const SystemDataSwitch = ({

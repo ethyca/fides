@@ -13,11 +13,11 @@ import ConnectionForm from "~/features/datastore-connections/system_portal_confi
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
 import { System, SystemResponse } from "~/types/api";
 
-import SystemHistoryTable from "./history/SystemHistoryTable";
 import {
   DirtyFormConfirmationModal,
   useIsAnyFormDirty,
 } from "../common/hooks/useIsAnyFormDirty";
+import SystemHistoryTable from "./history/SystemHistoryTable";
 import {
   selectActiveSystem,
   setActiveSystem,

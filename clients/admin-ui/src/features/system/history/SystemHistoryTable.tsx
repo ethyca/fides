@@ -1,16 +1,16 @@
-import { Table, Tbody, Td, Thead, Tr, Button, Text } from "@fidesui/react";
+import { Button, Table, Tbody, Td, Text,Thead, Tr } from "@fidesui/react";
 import _ from "lodash";
 import React, { useState } from "react";
+import { useDispatch,useSelector  } from "react-redux";
 
-import { SystemResponse } from "~/types/api/models/SystemResponse";
-import { useSelector } from "react-redux";
-import { useDispatch } from 'react-redux';
-import { useGetSystemHistoryQuery } from "~/features/plus/plus.slice";
-import { SystemHistory } from "~/types/api/models/SystemHistory";
-import SystemHistoryModal from "./modal/SystemHistoryModal";
-import { selectCurrentSystemHistoryPage, setCurrentPage } from "./system-history.slice";
 import NextArrow from "~/features/common/Icon/NextArrow";
 import PrevArrow from "~/features/common/Icon/PrevArrow";
+import { useGetSystemHistoryQuery } from "~/features/plus/plus.slice";
+import { SystemHistory } from "~/types/api/models/SystemHistory";
+import { SystemResponse } from "~/types/api/models/SystemResponse";
+
+import SystemHistoryModal from "./modal/SystemHistoryModal";
+import { selectCurrentSystemHistoryPage, setCurrentPage } from "./system-history.slice";
 
 interface Props {
   system: SystemResponse;
@@ -302,7 +302,7 @@ const SystemHistoryTable = ({ system }: Props) => {
         selectedHistory={selectedHistory}
         isOpen={isModalOpen}
         onClose={closeModal}
-      ></SystemHistoryModal>
+       />
     </>
   );
 };
