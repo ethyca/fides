@@ -37,6 +37,7 @@ import { privacyNoticesSlice } from "~/features/privacy-notices/privacy-notices.
 import { subjectRequestsSlice } from "~/features/privacy-requests";
 import { systemSlice } from "~/features/system";
 import { dictSuggestionsSlice } from "~/features/system/dictionary-form/dict-suggestion.slice";
+import { systemHistorySlice } from "~/features/system/history/system-history.slice";
 import { taxonomySlice } from "~/features/taxonomy";
 import { userManagementSlice } from "~/features/user-management";
 
@@ -87,6 +88,7 @@ const reducer = {
   [taxonomySlice.name]: taxonomySlice.reducer,
   [userManagementSlice.name]: userManagementSlice.reducer,
   [dictSuggestionsSlice.name]: dictSuggestionsSlice.reducer,
+  [systemHistorySlice.name]: systemHistorySlice.reducer
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;

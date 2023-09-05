@@ -1,12 +1,16 @@
-import { Table, Tbody, Td, Thead, Tr } from "@fidesui/react";
+import { Table, Tbody, Td, Thead, Tr, Button, Text } from "@fidesui/react";
 import _ from "lodash";
 import React, { useState } from "react";
 
 import { SystemResponse } from "~/types/api/models/SystemResponse";
-
+import { useSelector } from "react-redux";
+import { useDispatch } from 'react-redux';
 import { useGetSystemHistoryQuery } from "~/features/plus/plus.slice";
 import { SystemHistory } from "~/types/api/models/SystemHistory";
 import SystemHistoryModal from "./modal/SystemHistoryModal";
+import { selectCurrentSystemHistoryPage, setCurrentPage } from "./system-history.slice";
+import NextArrow from "~/features/common/Icon/NextArrow";
+import PrevArrow from "~/features/common/Icon/PrevArrow";
 
 interface Props {
   system: SystemResponse;
@@ -36,32 +40,37 @@ const formatDateAndTime = (dateString: string) => {
   return { formattedTime, formattedDate };
 };
 
-function alignArrays(array1, array2) {
-  const allNames = new Set([...array1, ...array2].map((item) => item.data_use));
-  const alignedArray1 = [];
-  const alignedArray2 = [];
+function alignArrays(before, after) {
+  const allNames = new Set([...before, ...after].map((item) => item.data_use));
+  const alignedBefore = [];
+  const alignedAfter = [];
 
   allNames.forEach((data_use) => {
-    const item1 = array1.find((item) => item.data_use === data_use) || {};
-    const item2 = array2.find((item) => item.data_use === data_use) || {};
-    alignedArray1.push(item1);
-    alignedArray2.push(item2);
+    const firstItem = before.find((item) => item.data_use === data_use) || {};
+    const secondItem = after.find((item) => item.data_use === data_use) || {};
+    alignedBefore.push(firstItem);
+    alignedAfter.push(secondItem);
   });
 
-  return [alignedArray1, alignedArray2];
+  return [alignedBefore, alignedAfter];
 }
+
+const itemsPerPage = 10;
 
 const SystemHistoryTable = ({ system }: Props) => {
   // Fetch system history data
+  const dispatch = useDispatch();
+  const currentPage = useSelector(selectCurrentSystemHistoryPage);
   const { data } = useGetSystemHistoryQuery({
     system_key: system.fides_key,
+    page: currentPage,
+    size: itemsPerPage,
   });
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedHistory, setSelectedHistory] = useState<SystemHistory | null>(
     null
   );
 
-  console.log(selectedHistory);
   const systemHistories = data?.items || [];
 
   const openModal = (history: SystemHistory) => {
@@ -203,6 +212,21 @@ const SystemHistoryTable = ({ system }: Props) => {
 
   const { formattedTime, formattedDate } = formatDateAndTime(system.created_at);
 
+  const totalPages = data ? Math.ceil(data.total / itemsPerPage) : 0;
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      dispatch(setCurrentPage(currentPage + 1));
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      dispatch(setCurrentPage(currentPage - 1));
+    }
+  };
+
+
   return (
     <>
       <Table style={{ marginLeft: "24px" }}>
@@ -258,6 +282,23 @@ const SystemHistoryTable = ({ system }: Props) => {
           })}
         </Tbody>
       </Table>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginTop: '12px', marginLeft: "24px" }}>
+        <Text fontSize="xs" lineHeight={4} fontWeight="600" paddingX={2}>
+          {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, data?.total || 0)} of {data?.total || 0}
+        </Text>
+        <Button size="xs" width="24px" variant="outline" paddingX={0} marginRight={2}
+          onClick={handlePrevPage} 
+          disabled={currentPage === 1}
+        >
+          <PrevArrow/>
+        </Button>
+        <Button size="xs" variant="outline" paddingX={0}
+          onClick={handleNextPage} 
+          disabled={currentPage === totalPages || totalPages === 0} 
+        >
+          <NextArrow/>
+        </Button>
+      </div>
       <SystemHistoryModal
         selectedHistory={selectedHistory}
         isOpen={isModalOpen}
