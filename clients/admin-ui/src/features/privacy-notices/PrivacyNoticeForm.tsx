@@ -19,22 +19,15 @@ import {
   CustomTextArea,
   CustomTextInput,
 } from "~/features/common/form/inputs";
-import {
-  enumToOptions,
-  getErrorMessage,
-  isErrorResult,
-} from "~/features/common/helpers";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_NOTICE_REGION_OPTIONS } from "~/features/common/privacy-notice-regions";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   selectEnabledDataUseOptions,
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
-import {
-  PrivacyNoticeCreation,
-  PrivacyNoticeRegion,
-  PrivacyNoticeResponse,
-} from "~/types/api";
+import { PrivacyNoticeCreation, PrivacyNoticeResponse } from "~/types/api";
 
 import ConsentMechanismForm from "./ConsentMechanismForm";
 import {
@@ -47,8 +40,6 @@ import {
   usePatchPrivacyNoticesMutation,
   usePostPrivacyNoticeMutation,
 } from "./privacy-notices.slice";
-
-const REGION_OPTIONS = enumToOptions(PrivacyNoticeRegion);
 
 const PrivacyNoticeForm = ({
   privacyNotice: passedInPrivacyNotice,
@@ -136,7 +127,7 @@ const PrivacyNoticeForm = ({
                 <CustomSelect
                   name="regions"
                   label="Locations where consent notice is shown to visitors"
-                  options={REGION_OPTIONS}
+                  options={PRIVACY_NOTICE_REGION_OPTIONS}
                   variant="stacked"
                   isMulti
                   isRequired
