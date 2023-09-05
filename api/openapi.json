@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.18.0"
+    "version": "2.19.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3702,6 +3702,9 @@
             "OAuth2ClientCredentialsBearer": [
               "system:update"
             ]
+          },
+          {
+            "OAuth2ClientCredentialsBearer": []
           }
         ]
       },
@@ -3749,6 +3752,9 @@
             "OAuth2ClientCredentialsBearer": [
               "system:create"
             ]
+          },
+          {
+            "OAuth2ClientCredentialsBearer": []
           }
         ]
       }
@@ -3803,6 +3809,9 @@
               "system:create",
               "system:update"
             ]
+          },
+          {
+            "OAuth2ClientCredentialsBearer": []
           }
         ]
       }
@@ -11398,6 +11407,90 @@
         ]
       }
     },
+    "/api/v1/messaging/templates": {
+      "get": {
+        "tags": [
+          "Messaging"
+        ],
+        "summary": "Get Messaging Templates",
+        "description": "Returns the available messaging templates, augments the models with labels to be used in the UI.",
+        "operationId": "get_messaging_templates_api_v1_messaging_templates_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Messaging Templates Api V1 Messaging Templates Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MessagingTemplateResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging-template:update"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Messaging"
+        ],
+        "summary": "Update Messaging Templates",
+        "description": "Updates the messaging templates and reverts empty subject or body values to the default values.",
+        "operationId": "update_messaging_templates_api_v1_messaging_templates_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Templates",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MessagingTemplateRequest"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPutMessagingTemplateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging-template:update"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/connection/{connection_key}/validate_saas_config": {
       "put": {
         "tags": [
@@ -13004,6 +13097,86 @@
         ]
       }
     },
+    "/health/database": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Database Health",
+        "description": "Confirm that the API is running and healthy.",
+        "operationId": "database_health_health_database_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatabaseHealthCheck"
+                },
+                "example": {
+                  "database": "healthy"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "database": "unhealthy"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/workers": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Workers Health",
+        "description": "Confirm that the API is running and healthy.",
+        "operationId": "workers_health_health_workers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkerHealthCheck"
+                },
+                "example": {
+                  "workers_enabled": "True",
+                  "workers": [
+                    "celery@c606808353b5"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "workers_enabled": "True",
+                    "workers": [
+                      "celery@c606808353b5"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -13023,12 +13196,7 @@
                 "example": {
                   "webserver": "healthy",
                   "version": "1.0.0",
-                  "database": "healthy",
-                  "cache": "healthy",
-                  "workers_enabled": "True",
-                  "workers": [
-                    "celery@c606808353b5"
-                  ]
+                  "cache": "healthy"
                 }
               }
             }
@@ -13041,12 +13209,7 @@
                   "detail": {
                     "webserver": "healthy",
                     "version": "1.0.0",
-                    "database": "unhealthy",
-                    "cache": "healthy",
-                    "workers_enabled": "True",
-                    "workers": [
-                      "celery@c606808353b5"
-                    ]
+                    "cache": "unhealthy"
                   }
                 }
               }
@@ -13494,6 +13657,31 @@
         },
         "description": "Schema with mixed success/failure responses for Bulk Create/Update of Datasets."
       },
+      "BulkPutMessagingTemplateResponse": {
+        "title": "BulkPutMessagingTemplateResponse",
+        "required": [
+          "succeeded",
+          "failed"
+        ],
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "title": "Succeeded",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessagingTemplateResponse"
+            }
+          },
+          "failed": {
+            "title": "Failed",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BulkUpdateFailed"
+            }
+          }
+        },
+        "description": "Schema for responses from bulk update/create requests.  Override to set \"succeeded\" and \"failed\" attributes on\nyour child class with paginated types.\n\nExample:\nfrom fastapi_pagination import Page\n\nsucceeded: List[ConnectionConfigurationResponse]\nfailed: List[BulkUpdateFailed]"
+      },
       "BulkPutPolicyResponse": {
         "title": "BulkPutPolicyResponse",
         "required": [
@@ -13852,6 +14040,10 @@
             "title": "Authorization Required",
             "type": "boolean",
             "default": false
+          },
+          "user_guide": {
+            "title": "User Guide",
+            "type": "string"
           }
         },
         "description": "Describes the returned schema for connection types"
@@ -14382,10 +14574,7 @@
         "required": [
           "webserver",
           "version",
-          "database",
-          "cache",
-          "workers_enabled",
-          "workers"
+          "cache"
         ],
         "type": "object",
         "properties": {
@@ -14397,14 +14586,6 @@
             "title": "Version",
             "type": "string"
           },
-          "database": {
-            "title": "Database",
-            "enum": [
-              "healthy",
-              "unhealthy"
-            ],
-            "type": "string"
-          },
           "cache": {
             "title": "Cache",
             "enum": [
@@ -14413,20 +14594,9 @@
               "no cache configured"
             ],
             "type": "string"
-          },
-          "workers_enabled": {
-            "title": "Workers Enabled",
-            "type": "boolean"
-          },
-          "workers": {
-            "title": "Workers",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
           }
         },
-        "description": "Healthcheck schema"
+        "description": "Server Healthcheck schema"
       },
       "CreateConnectionConfigurationWithSecrets": {
         "title": "CreateConnectionConfigurationWithSecrets",
@@ -14960,7 +15130,7 @@
                 "$ref": "#/components/schemas/LegalBasisEnum"
               }
             ],
-            "description": "The legal basis category of which the data use falls under. This field is used as part of the creation of an exportable data map."
+            "description": "Deprecated. The legal basis category of which the data use falls under. This field is used as part of the creation of an exportable data map."
           },
           "special_category": {
             "allOf": [
@@ -14968,7 +15138,7 @@
                 "$ref": "#/components/schemas/SpecialCategoriesEnum"
               }
             ],
-            "description": "The special category for processing of which the data use falls under. This field is used as part of the creation of an exportable data map."
+            "description": "Deprecated. The special category for processing of which the data use falls under. This field is used as part of the creation of an exportable data map."
           },
           "recipients": {
             "title": "Recipients",
@@ -14976,20 +15146,19 @@
             "items": {
               "type": "string"
             },
-            "description": "An array of recipients when sharing personal data outside of your organization."
+            "description": "Deprecated. An array of recipients when sharing personal data outside of your organization."
           },
           "legitimate_interest": {
             "title": "Legitimate Interest",
             "type": "boolean",
-            "description": "A boolean representation of if the legal basis used is `Legitimate Interest`. Validated at run time and looks for a `legitimate_interest_impact_assessment` to exist if true.",
-            "default": false
+            "description": "Deprecated. A boolean representation of if the legal basis used is `Legitimate Interest`. Validated at run time and looks for a `legitimate_interest_impact_assessment` to exist if true."
           },
           "legitimate_interest_impact_assessment": {
             "title": "Legitimate Interest Impact Assessment",
             "maxLength": 65536,
             "minLength": 1,
             "type": "string",
-            "description": "A url pointing to the legitimate interest impact assessment. Required if the legal bases used is legitimate interest.",
+            "description": "Deprecated. A url pointing to the legitimate interest impact assessment. Required if the legal bases used is legitimate interest.",
             "format": "uri"
           },
           "is_default": {
@@ -15020,6 +15189,20 @@
           }
         },
         "description": "The model for the connection config for databases"
+      },
+      "DatabaseHealthCheck": {
+        "title": "DatabaseHealthCheck",
+        "required": [
+          "database"
+        ],
+        "type": "object",
+        "properties": {
+          "database": {
+            "title": "Database",
+            "type": "string"
+          }
+        },
+        "description": "Database Healthcheck Schema"
       },
       "Dataset": {
         "title": "Dataset",
@@ -15077,8 +15260,7 @@
             "title": "Data Qualifier",
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
-            "description": "Array of Data Qualifier resources identified by `fides_key`, that apply to all collections in the Dataset.",
-            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+            "description": "Deprecated. Array of Data Qualifier resources identified by `fides_key`, that apply to all collections in the Dataset."
           },
           "fides_meta": {
             "title": "Fides Meta",
@@ -15096,13 +15278,12 @@
                 "$ref": "#/components/schemas/ContactDetails"
               }
             ],
-            "description": "\n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
+            "description": "Deprecated. \n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
           },
           "retention": {
             "title": "Retention",
             "type": "string",
-            "description": "An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset.",
-            "default": "No retention or erasure policy"
+            "description": "Deprecated. An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset."
           },
           "third_country_transfers": {
             "title": "Third Country Transfers",
@@ -15110,7 +15291,7 @@
             "items": {
               "type": "string"
             },
-            "description": "An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)."
+            "description": "Deprecated. An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)."
           },
           "collections": {
             "title": "Collections",
@@ -16481,7 +16662,41 @@
           "Legitimate Interests"
         ],
         "type": "string",
-        "description": "The model for allowable legal basis categories\n\nBased upon article 6 of the GDPR"
+        "description": "Deprecated. The model for allowable legal basis categories on data uses."
+      },
+      "LegalBasisForProcessingEnum": {
+        "title": "LegalBasisForProcessingEnum",
+        "enum": [
+          "Consent",
+          "Contract",
+          "Legal obligations",
+          "Vital interests",
+          "Public interest",
+          "Legitimate interests"
+        ],
+        "type": "string",
+        "description": "The model for allowable legal basis categories on privacy declarations.\n\nBased upon article 6 of the GDPR"
+      },
+      "LegalBasisForProfilingEnum": {
+        "title": "LegalBasisForProfilingEnum",
+        "enum": [
+          "Explicit consent",
+          "Contract",
+          "Authorised by law"
+        ],
+        "type": "string",
+        "description": "The model for describing the legal basis under which profiling is performed"
+      },
+      "LegalBasisForTransfersEnum": {
+        "title": "LegalBasisForTransfersEnum",
+        "enum": [
+          "Adequacy Decision",
+          "SCCs",
+          "BCRs",
+          "Other"
+        ],
+        "type": "string",
+        "description": "The model for describing the legal basis under which data is transferred"
       },
       "MSSQLDocsSchema": {
         "title": "MSSQLDocsSchema",
@@ -17038,6 +17253,47 @@
           "mailchimp_transactional"
         ],
         "description": "Enum for messaging service type. Upper-cased in the database"
+      },
+      "MessagingTemplateRequest": {
+        "title": "MessagingTemplateRequest",
+        "required": [
+          "key",
+          "content"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "content": {
+            "title": "Content",
+            "type": "object"
+          }
+        }
+      },
+      "MessagingTemplateResponse": {
+        "title": "MessagingTemplateResponse",
+        "required": [
+          "key",
+          "content",
+          "label"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "content": {
+            "title": "Content",
+            "type": "object"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        }
       },
       "MongoDBDocsSchema": {
         "title": "MongoDBDocsSchema",
@@ -18323,8 +18579,7 @@
         "title": "PrivacyDeclaration",
         "required": [
           "data_categories",
-          "data_use",
-          "data_subjects"
+          "data_use"
         ],
         "type": "object",
         "properties": {
@@ -18352,8 +18607,7 @@
             "title": "Data Qualifier",
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
-            "description": "The fides key of the data qualifier describing a system in a privacy declaration.",
-            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+            "description": "Deprecated. The fides key of the data qualifier describing a system in a privacy declaration."
           },
           "data_subjects": {
             "title": "Data Subjects",
@@ -18391,6 +18645,65 @@
             },
             "description": "The resources from which data is received. Any `fides_key`s included in this list reference `DataFlow` entries in the `ingress` array of any `System` resources to which this `PrivacyDeclaration` is applied."
           },
+          "features": {
+            "title": "Features",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The features of processing personal data."
+          },
+          "legal_basis_for_processing": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LegalBasisForProcessingEnum"
+              }
+            ],
+            "description": "The legal basis under which personal data is processed for this purpose."
+          },
+          "impact_assessment_location": {
+            "title": "Impact Assessment Location",
+            "type": "string",
+            "description": "Where the legitimate interest impact assessment is stored"
+          },
+          "retention_period": {
+            "title": "Retention Period",
+            "type": "string",
+            "description": "An optional string to describe the time period for which data is retained for this purpose."
+          },
+          "processes_special_category_data": {
+            "title": "Processes Special Category Data",
+            "type": "boolean",
+            "description": "This system processes special category data",
+            "default": false
+          },
+          "special_category_legal_basis": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SpecialCategoryLegalBasisEnum"
+              }
+            ],
+            "description": "The legal basis under which the special category data is processed."
+          },
+          "data_shared_with_third_parties": {
+            "title": "Data Shared With Third Parties",
+            "type": "boolean",
+            "description": "This system shares data with third parties for this purpose.",
+            "default": false
+          },
+          "third_parties": {
+            "title": "Third Parties",
+            "type": "string",
+            "description": "The types of third parties the data is shared with."
+          },
+          "shared_categories": {
+            "title": "Shared Categories",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The categories of personal data that this system shares with third parties."
+          },
           "cookies": {
             "title": "Cookies",
             "type": "array",
@@ -18407,7 +18720,6 @@
         "required": [
           "data_categories",
           "data_use",
-          "data_subjects",
           "id"
         ],
         "type": "object",
@@ -18436,8 +18748,7 @@
             "title": "Data Qualifier",
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
-            "description": "The fides key of the data qualifier describing a system in a privacy declaration.",
-            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+            "description": "Deprecated. The fides key of the data qualifier describing a system in a privacy declaration."
           },
           "data_subjects": {
             "title": "Data Subjects",
@@ -18474,6 +18785,65 @@
               "type": "string"
             },
             "description": "The resources from which data is received. Any `fides_key`s included in this list reference `DataFlow` entries in the `ingress` array of any `System` resources to which this `PrivacyDeclaration` is applied."
+          },
+          "features": {
+            "title": "Features",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The features of processing personal data."
+          },
+          "legal_basis_for_processing": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LegalBasisForProcessingEnum"
+              }
+            ],
+            "description": "The legal basis under which personal data is processed for this purpose."
+          },
+          "impact_assessment_location": {
+            "title": "Impact Assessment Location",
+            "type": "string",
+            "description": "Where the legitimate interest impact assessment is stored"
+          },
+          "retention_period": {
+            "title": "Retention Period",
+            "type": "string",
+            "description": "An optional string to describe the time period for which data is retained for this purpose."
+          },
+          "processes_special_category_data": {
+            "title": "Processes Special Category Data",
+            "type": "boolean",
+            "description": "This system processes special category data",
+            "default": false
+          },
+          "special_category_legal_basis": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SpecialCategoryLegalBasisEnum"
+              }
+            ],
+            "description": "The legal basis under which the special category data is processed."
+          },
+          "data_shared_with_third_parties": {
+            "title": "Data Shared With Third Parties",
+            "type": "boolean",
+            "description": "This system shares data with third parties for this purpose.",
+            "default": false
+          },
+          "third_parties": {
+            "title": "Third Parties",
+            "type": "string",
+            "description": "The types of third parties the data is shared with."
+          },
+          "shared_categories": {
+            "title": "Shared Categories",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The categories of personal data that this system shares with third parties."
           },
           "cookies": {
             "title": "Cookies",
@@ -18721,6 +19091,7 @@
       "PrivacyNoticeRegion": {
         "title": "PrivacyNoticeRegion",
         "enum": [
+          "us",
           "us_al",
           "us_ak",
           "us_az",
@@ -18804,7 +19175,21 @@
           "gb_nir",
           "is",
           "no",
-          "li"
+          "li",
+          "ca",
+          "ca_ab",
+          "ca_bc",
+          "ca_mb",
+          "ca_nb",
+          "ca_nl",
+          "ca_ns",
+          "ca_on",
+          "ca_pe",
+          "ca_qc",
+          "ca_sk",
+          "ca_nt",
+          "ca_nu",
+          "ca_yt"
         ],
         "description": "An enumeration."
       },
@@ -20034,6 +20419,10 @@
           },
           "consent_requests": {
             "$ref": "#/components/schemas/ConsentRequestMap"
+          },
+          "user_guide": {
+            "title": "User Guide",
+            "type": "string"
           }
         },
         "description": "Used to store endpoint and param configurations for a SaaS connector.\nThis is done to separate the details of how to make the API calls\nfrom the data provided by a given API collection.\n\nThe required fields for the config are converted into a Dataset which is\nmerged with the standard Fidesops Dataset to provide a complete set of dependencies\nfor the graph traversal."
@@ -20348,6 +20737,7 @@
           "dataset:delete",
           "dataset:read",
           "encryption:exec",
+          "messaging-template:update",
           "evaluation:create",
           "evaluation:read",
           "evaluation:delete",
@@ -20539,7 +20929,24 @@
           "Public Health Interest"
         ],
         "type": "string",
-        "description": "The model for processing special categories\nof personal data.\n\nBased upon article 9 of the GDPR"
+        "description": "Deprecated. Special Categories Enum that was used on Data Uses."
+      },
+      "SpecialCategoryLegalBasisEnum": {
+        "title": "SpecialCategoryLegalBasisEnum",
+        "enum": [
+          "Explicit consent",
+          "Employment, social security and social protection",
+          "Vital interests",
+          "Not-for-profit bodies",
+          "Made public by the data subject",
+          "Legal claims or judicial acts",
+          "Reasons of substantial public interest (with a basis in law)",
+          "Health or social care (with a basis in law)",
+          "Public health (with a basis in law)",
+          "Archiving, research and statistics (with a basis in law)"
+        ],
+        "type": "string",
+        "description": "The model for the legal basis for processing special categories of personal data\non privacy declarations\n\nBased upon article 9 of the GDPR"
       },
       "StatusEnum": {
         "title": "StatusEnum",
@@ -20871,8 +21278,7 @@
                 "$ref": "#/components/schemas/DataResponsibilityTitle"
               }
             ],
-            "description": "\n    The model defining the responsibility or role over\n    the system that processes personal data.\n\n    Used to identify whether the organization is a\n    Controller, Processor, or Sub-Processor of the data\n    ",
-            "default": "Controller"
+            "description": "Deprecated. The responsibility or role over the system that processes personal data"
           },
           "egress": {
             "title": "Egress",
@@ -20905,7 +21311,7 @@
                 "$ref": "#/components/schemas/ContactDetails"
               }
             ],
-            "description": "\n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
+            "description": "Deprecated. \n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
           },
           "third_country_transfers": {
             "title": "Third Country Transfers",
@@ -20913,7 +21319,7 @@
             "items": {
               "type": "string"
             },
-            "description": "An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1."
+            "description": "Deprecated. An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1."
           },
           "administrating_department": {
             "title": "Administrating Department",
@@ -20928,10 +21334,120 @@
                 "$ref": "#/components/schemas/DataProtectionImpactAssessment"
               }
             ],
-            "description": "\n    The DataProtectionImpactAssessment (DPIA) resource model.\n\n    Contains information in regard to the data protection\n    impact assessment exported on a data map or Record of\n    Processing Activities (RoPA).\n\n    A legal requirement under GDPR for any project that\n    introduces a high risk to personal information.\n    ",
-            "default": {
-              "is_required": false
-            }
+            "description": "Deprecated. \n    The DataProtectionImpactAssessment (DPIA) resource model.\n\n    Contains information in regard to the data protection\n    impact assessment exported on a data map or Record of\n    Processing Activities (RoPA).\n\n    A legal requirement under GDPR for any project that\n    introduces a high risk to personal information.\n    "
+          },
+          "vendor_id": {
+            "title": "Vendor Id",
+            "type": "string",
+            "description": "The unique identifier for the vendor that's associated with this system."
+          },
+          "dataset_references": {
+            "title": "Dataset References",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "description": "Referenced Dataset fides keys used by the system."
+          },
+          "processes_personal_data": {
+            "title": "Processes Personal Data",
+            "type": "boolean",
+            "description": "This toggle indicates whether the system stores or processes personal data.",
+            "default": true
+          },
+          "exempt_from_privacy_regulations": {
+            "title": "Exempt From Privacy Regulations",
+            "type": "boolean",
+            "description": "This toggle indicates whether the system is exempt from privacy regulation if they do process personal data.",
+            "default": false
+          },
+          "reason_for_exemption": {
+            "title": "Reason For Exemption",
+            "type": "string",
+            "description": "The reason that the system is exempt from privacy regulation."
+          },
+          "uses_profiling": {
+            "title": "Uses Profiling",
+            "type": "boolean",
+            "description": "Whether the vendor uses data to profile a consumer in a way that has a legal effect.",
+            "default": false
+          },
+          "legal_basis_for_profiling": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LegalBasisForProfilingEnum"
+            },
+            "description": "The legal basis (or bases) for performing profiling that has a legal effect."
+          },
+          "does_international_transfers": {
+            "title": "Does International Transfers",
+            "type": "boolean",
+            "description": "Whether this system transfers data to other countries or international organizations.",
+            "default": false
+          },
+          "legal_basis_for_transfers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LegalBasisForTransfersEnum"
+            },
+            "description": "The legal basis (or bases) under which the data is transferred."
+          },
+          "requires_data_protection_assessments": {
+            "title": "Requires Data Protection Assessments",
+            "type": "boolean",
+            "description": "Whether this system requires data protection impact assessments.",
+            "default": false
+          },
+          "dpa_location": {
+            "title": "Dpa Location",
+            "type": "string",
+            "description": "Location where the DPAs or DIPAs can be found."
+          },
+          "dpa_progress": {
+            "title": "Dpa Progress",
+            "type": "string",
+            "description": "The optional status of a Data Protection Impact Assessment"
+          },
+          "privacy_policy": {
+            "title": "Privacy Policy",
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string",
+            "description": "A URL that points to the System's publicly accessible privacy policy.",
+            "format": "uri"
+          },
+          "legal_name": {
+            "title": "Legal Name",
+            "type": "string",
+            "description": "The legal name for the business represented by the system."
+          },
+          "legal_address": {
+            "title": "Legal Address",
+            "type": "string",
+            "description": "The legal address for the business represented by the system."
+          },
+          "responsibility": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DataResponsibilityTitle"
+            },
+            "description": "\n    The model defining the responsibility or role over\n    the system that processes personal data.\n\n    Used to identify whether the organization is a\n    Controller, Processor, or Sub-Processor of the data\n    "
+          },
+          "dpo": {
+            "title": "Dpo",
+            "type": "string",
+            "description": "The official privacy contact address or DPO."
+          },
+          "joint_controller_info": {
+            "title": "Joint Controller Info",
+            "type": "string",
+            "description": "The party or parties that share the responsibility for processing personal data."
+          },
+          "data_security_practices": {
+            "title": "Data Security Practices",
+            "type": "string",
+            "description": "The data security practices employed by this system."
           }
         },
         "description": "The System resource model.\n\nDescribes an application and includes a list of PrivacyDeclaration resources."
@@ -20963,7 +21479,8 @@
         "required": [
           "fides_key",
           "system_type",
-          "privacy_declarations"
+          "privacy_declarations",
+          "created_at"
         ],
         "type": "object",
         "properties": {
@@ -21027,8 +21544,7 @@
                 "$ref": "#/components/schemas/DataResponsibilityTitle"
               }
             ],
-            "description": "\n    The model defining the responsibility or role over\n    the system that processes personal data.\n\n    Used to identify whether the organization is a\n    Controller, Processor, or Sub-Processor of the data\n    ",
-            "default": "Controller"
+            "description": "Deprecated. The responsibility or role over the system that processes personal data"
           },
           "egress": {
             "title": "Egress",
@@ -21061,7 +21577,7 @@
                 "$ref": "#/components/schemas/ContactDetails"
               }
             ],
-            "description": "\n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
+            "description": "Deprecated. \n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
           },
           "third_country_transfers": {
             "title": "Third Country Transfers",
@@ -21069,7 +21585,7 @@
             "items": {
               "type": "string"
             },
-            "description": "An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1."
+            "description": "Deprecated. An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1."
           },
           "administrating_department": {
             "title": "Administrating Department",
@@ -21084,10 +21600,120 @@
                 "$ref": "#/components/schemas/DataProtectionImpactAssessment"
               }
             ],
-            "description": "\n    The DataProtectionImpactAssessment (DPIA) resource model.\n\n    Contains information in regard to the data protection\n    impact assessment exported on a data map or Record of\n    Processing Activities (RoPA).\n\n    A legal requirement under GDPR for any project that\n    introduces a high risk to personal information.\n    ",
-            "default": {
-              "is_required": false
-            }
+            "description": "Deprecated. \n    The DataProtectionImpactAssessment (DPIA) resource model.\n\n    Contains information in regard to the data protection\n    impact assessment exported on a data map or Record of\n    Processing Activities (RoPA).\n\n    A legal requirement under GDPR for any project that\n    introduces a high risk to personal information.\n    "
+          },
+          "vendor_id": {
+            "title": "Vendor Id",
+            "type": "string",
+            "description": "The unique identifier for the vendor that's associated with this system."
+          },
+          "dataset_references": {
+            "title": "Dataset References",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "description": "Referenced Dataset fides keys used by the system."
+          },
+          "processes_personal_data": {
+            "title": "Processes Personal Data",
+            "type": "boolean",
+            "description": "This toggle indicates whether the system stores or processes personal data.",
+            "default": true
+          },
+          "exempt_from_privacy_regulations": {
+            "title": "Exempt From Privacy Regulations",
+            "type": "boolean",
+            "description": "This toggle indicates whether the system is exempt from privacy regulation if they do process personal data.",
+            "default": false
+          },
+          "reason_for_exemption": {
+            "title": "Reason For Exemption",
+            "type": "string",
+            "description": "The reason that the system is exempt from privacy regulation."
+          },
+          "uses_profiling": {
+            "title": "Uses Profiling",
+            "type": "boolean",
+            "description": "Whether the vendor uses data to profile a consumer in a way that has a legal effect.",
+            "default": false
+          },
+          "legal_basis_for_profiling": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LegalBasisForProfilingEnum"
+            },
+            "description": "The legal basis (or bases) for performing profiling that has a legal effect."
+          },
+          "does_international_transfers": {
+            "title": "Does International Transfers",
+            "type": "boolean",
+            "description": "Whether this system transfers data to other countries or international organizations.",
+            "default": false
+          },
+          "legal_basis_for_transfers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LegalBasisForTransfersEnum"
+            },
+            "description": "The legal basis (or bases) under which the data is transferred."
+          },
+          "requires_data_protection_assessments": {
+            "title": "Requires Data Protection Assessments",
+            "type": "boolean",
+            "description": "Whether this system requires data protection impact assessments.",
+            "default": false
+          },
+          "dpa_location": {
+            "title": "Dpa Location",
+            "type": "string",
+            "description": "Location where the DPAs or DIPAs can be found."
+          },
+          "dpa_progress": {
+            "title": "Dpa Progress",
+            "type": "string",
+            "description": "The optional status of a Data Protection Impact Assessment"
+          },
+          "privacy_policy": {
+            "title": "Privacy Policy",
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string",
+            "description": "A URL that points to the System's publicly accessible privacy policy.",
+            "format": "uri"
+          },
+          "legal_name": {
+            "title": "Legal Name",
+            "type": "string",
+            "description": "The legal name for the business represented by the system."
+          },
+          "legal_address": {
+            "title": "Legal Address",
+            "type": "string",
+            "description": "The legal address for the business represented by the system."
+          },
+          "responsibility": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DataResponsibilityTitle"
+            },
+            "description": "\n    The model defining the responsibility or role over\n    the system that processes personal data.\n\n    Used to identify whether the organization is a\n    Controller, Processor, or Sub-Processor of the data\n    "
+          },
+          "dpo": {
+            "title": "Dpo",
+            "type": "string",
+            "description": "The official privacy contact address or DPO."
+          },
+          "joint_controller_info": {
+            "title": "Joint Controller Info",
+            "type": "string",
+            "description": "The party or parties that share the responsibility for processing personal data."
+          },
+          "data_security_practices": {
+            "title": "Data Security Practices",
+            "type": "string",
+            "description": "The data security practices employed by this system."
           },
           "connection_configs": {
             "title": "Connection Configs",
@@ -21098,6 +21724,14 @@
             ],
             "description": "\n    Describes the returned schema for a ConnectionConfiguration.\n    "
           },
+          "data_stewards": {
+            "title": "Data Stewards",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponse"
+            },
+            "description": "System managers of the current system"
+          },
           "cookies": {
             "title": "Cookies",
             "type": "array",
@@ -21105,9 +21739,14 @@
               "$ref": "#/components/schemas/Cookies"
             },
             "default": []
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
           }
         },
-        "description": "Extension of base pydantic model to include `privacy_declarations.id` fields in responses"
+        "description": "Extension of base pydantic model to include additional fields like `privacy_declarations`, connection_config fields\nand cookies in responses"
       },
       "SystemType": {
         "title": "SystemType",
@@ -21707,6 +22346,28 @@
           }
         },
         "description": "Schema for displaying a minimal amount of information about the webhook and its order"
+      },
+      "WorkerHealthCheck": {
+        "title": "WorkerHealthCheck",
+        "required": [
+          "workers_enabled",
+          "workers"
+        ],
+        "type": "object",
+        "properties": {
+          "workers_enabled": {
+            "title": "Workers Enabled",
+            "type": "boolean"
+          },
+          "workers": {
+            "title": "Workers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "Worker Healthcheck Schema"
       },
       "fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds": {
         "title": "KeyfileCreds",
