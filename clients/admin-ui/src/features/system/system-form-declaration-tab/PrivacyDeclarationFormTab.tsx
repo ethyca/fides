@@ -221,7 +221,7 @@ const PrivacyDeclarationFormTab = ({
           description='A Data Use is the purpose for which data is used in a system. In Fides, a system may have more than one Data Use. For example, a CRM system may be used both for "Customer Support" and also for "Email Marketing", each of these is a Data Use.'
           handleAdd={handleOpenNewForm}
           handleDictSuggestion={handleOpenDictModal}
-          vendorSelected={!!system.vendor_id}
+          vendorSelected={!!system.meta.vendor}
         />
       ) : (
         <PrivacyDeclarationDisplayGroup
