@@ -12,7 +12,6 @@ class TestCustomConnectorTemplate:
         planet_express_config,
         planet_express_dataset,
         planet_express_icon,
-        planet_express_functions,
     ) -> None:
         template = CustomConnectorTemplate(
             key="planet_express",
@@ -20,7 +19,6 @@ class TestCustomConnectorTemplate:
             config=planet_express_config,
             dataset=planet_express_dataset,
             icon=planet_express_icon,
-            functions=planet_express_functions,
         )
         template.save(db=db)
 
@@ -36,4 +34,3 @@ class TestCustomConnectorTemplate:
         assert custom_connector.config == planet_express_config
         assert custom_connector.dataset == planet_express_dataset
         assert custom_connector.icon == planet_express_icon
-        assert custom_connector.functions == planet_express_functions
