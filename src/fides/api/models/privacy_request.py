@@ -922,7 +922,16 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
             self.encrypted_value.get("value"),  # type:ignore
         )
         return identity
-
+    
+class ProvidedMetadata(Base):
+    privacy_request_id = Column(
+        String,
+        ForeignKey(PrivacyRequest.id_field_path),
+    )
+    privacy_request = relationship(
+        PrivacyRequest,
+        backref="provided_metadata",
+    )
 
 class Consent(Base):
     """The DB ORM model for Consent."""

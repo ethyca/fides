@@ -13,6 +13,20 @@
       "description_subtext": [],
       "identity_inputs": {
         "email": "required"
+      },
+      "custom_metadata": {
+        "first_name": {
+          "label": "First name",
+          "required": true
+        },
+        "last_name": {
+          "label": "Last name",
+          "required": true
+        },
+        "order_id": {
+          "label": "Order ID",
+          "required": true
+        }
       }
     },
     {

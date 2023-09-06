@@ -6,6 +6,11 @@ export type IdentityInputs = {
   phone?: string;
 };
 
+export type CustomMetadata = Record<string, {
+  label: string;
+  required: boolean;
+}>;
+
 export type LegacyConfig = {
   title: string;
   description: string;
@@ -71,6 +76,7 @@ export type PrivacyRequestOption = {
   confirmButtonText?: string;
   cancelButtonText?: string;
   identity_inputs?: IdentityInputs;
+  custom_metadata?: CustomMetadata;
 };
 
 export type ConfigConsentOption = {

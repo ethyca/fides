@@ -32,6 +32,16 @@ import {
 import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
 
+type KnownKeys = {
+  name: string;
+  email: string;
+  phone: string;
+};
+
+type FormValues = KnownKeys & {
+  [key: string]: any;
+};
+
 const usePrivacyRequestForm = ({
   onClose,
   action,
@@ -47,12 +57,14 @@ const usePrivacyRequestForm = ({
 }) => {
   const settings = useSettings();
   const identityInputs = action?.identity_inputs ?? defaultIdentityInput;
+  const customMetadata = action?.custom_metadata ?? {};
   const toast = useToast();
-  const formik = useFormik({
+  const formik = useFormik<FormValues>({
     initialValues: {
       name: "",
       email: "",
       phone: "",
+      ...Object.fromEntries(Object.keys(customMetadata).map(key => [key, ""]))
     },
     onSubmit: async (values) => {
       if (!action) {
@@ -167,10 +179,16 @@ const usePrivacyRequestForm = ({
           return true;
         }
       ),
+      ...Object.fromEntries(
+        Object.entries(customMetadata).map(([key, { label, required }]) => [
+          key,
+          required ? Yup.string().required(`${label} is required`) : Yup.string().notRequired()
+        ])
+      )
     }),
   });
 
-  return { ...formik, identityInputs };
+  return { ...formik, identityInputs, customMetadata };
 };
 
 type PrivacyRequestFormProps = {
@@ -208,6 +226,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
     dirty,
     resetForm,
     identityInputs,
+    customMetadata,
   } = usePrivacyRequestForm({
     onClose,
     action,
@@ -303,6 +322,26 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 <FormErrorMessage>{errors.phone}</FormErrorMessage>
               </FormControl>
             ) : null}
+            {Object.entries(customMetadata).map(([key, metadata]) => (
+              <FormControl
+                key={key}
+                id={key}
+                isInvalid={touched[key] && Boolean(errors[key])}
+                isRequired={metadata.required}
+              >
+                <FormLabel fontSize="sm">{metadata.label}</FormLabel>
+                <Input
+                  id={key}
+                  name={key}
+                  focusBorderColor="primary.500"
+                  placeholder={metadata.label}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values[key]}
+                />
+                <FormErrorMessage>{errors[key]}</FormErrorMessage>
+              </FormControl>
+            ))}
           </Stack>
         </ModalBody>
 
