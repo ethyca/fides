@@ -6,7 +6,6 @@ The steps to run the script are as follows:
 1. In a terminal, run `nox -s teardown -- volumes ; nox -s dev` to get the server running
 2. In a separate terminal, run `nox -s shell`, and then `fides user login ; fides push ; python scripts/verify_fideslang_2_data_migration.py`
 3. You can run `python scripts/verify_fideslang_2_data_migration.py` as many times as needed for testing
-
 """
 from typing import Dict
 import fideslang
@@ -136,6 +135,20 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
     )
     assert server_old_system.ingress[0].data_categories == ["user.behavior"]
     assert server_old_system.egress[0].data_categories == ["user.behavior"]
+
+    # Verify Policies
+    server_old_policy: fideslang.models.Policy = partial_get(
+        resource_key="old_policy", resource_type="policy"
+    )
+    assert server_old_policy.rules[0].data_categories.values == ["user.behavior"]
+    assert server_old_policy.rules[0].data_uses.values == ["functional.service.improve"]
+
+    # Verify Data Category
+    server_orphaned_category: fideslang.models.DataCategory = partial_get(
+        resource_key="user.behavior.custom", resource_type="data_category"
+    )
+    # TODO: FIX THIS
+    # assert server_orphaned_category
 
 
 def main() -> None:
