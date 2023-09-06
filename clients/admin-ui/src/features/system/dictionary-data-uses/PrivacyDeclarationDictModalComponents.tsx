@@ -11,7 +11,10 @@ import {
   Stack,
   HStack,
 } from "@fidesui/react";
+import { useState } from "react";
+import { DataUse } from "../../../types/api";
 import { SparkleIcon } from "../../common/Icon/SparkleIcon";
+import DataUseCheckboxTable, { TempDataUse } from "./DataUseCheckboxTable";
 
 interface Props {
   alreadyHasDataUses: boolean;
@@ -25,20 +28,33 @@ const PrivacyDeclarationDictModalComponents = ({
   const sampleData = [
     {
       name: "Data use 1",
+      fides_key: "data_use_1",
     },
     {
       name: "Data use 2",
+      fides_key: "data_use_2",
     },
     {
       name: "Data use 3",
+      fides_key: "data_use_3",
     },
     {
       name: "Data use 4",
+      fides_key: "data_use_4",
     },
     {
       name: "Data use 5",
+      fides_key: "data_use_5",
     },
   ];
+
+  const [selectedDataUses, setSelectedDataUses] =
+    useState<TempDataUse[]>(sampleData);
+
+  const handleChangeChecked = (newChecked: TempDataUse[]) => {
+    // console.log(newChecked);
+    setSelectedDataUses(newChecked);
+  };
 
   return (
     <Stack spacing={4} mt={4}>
@@ -60,28 +76,11 @@ const PrivacyDeclarationDictModalComponents = ({
         </HStack>
       </Box>
       <TableContainer>
-        <Table>
-          <Thead>
-            <Tr>
-              <Td>
-                <Checkbox />
-              </Td>
-              <Td>
-                <Text>Data use</Text>
-              </Td>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {sampleData.map((row) => (
-              <Tr key={row.name}>
-                <Td>
-                  <Checkbox />
-                </Td>
-                <Td>{row.name}</Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
+        <DataUseCheckboxTable
+          allDataUses={sampleData}
+          onChange={handleChangeChecked}
+          checked={selectedDataUses}
+        />
       </TableContainer>
       {alreadyHasDataUses ? (
         <Box
