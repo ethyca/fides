@@ -7,14 +7,22 @@ The steps to run the script are as follows:
 2. In a separate terminal, run `nox -s shell`, and then `fides user login ; fides push ; python scripts/verify_fideslang_2_data_migration.py`
 3. You can run `python scripts/verify_fideslang_2_data_migration.py` as many times as needed for testing
 """
-from typing import Dict
-import fideslang
-from fides.config import CONFIG
-from fides.api.db.database import get_alembic_config
-from alembic import command
-from fides.core.push import push
-from fides.core.api_helpers import get_server_resource
+import argparse
 from functools import partial
+from typing import Dict
+
+import fideslang
+from alembic import command
+
+from fides.api.db.database import get_alembic_config
+from fides.config import CONFIG
+from fides.core.api_helpers import get_server_resource
+from fides.core.push import push
+
+DATABASE_URL = CONFIG.database.sync_database_uri
+AUTH_HEADER = CONFIG.user.auth_header
+SERVER_URL = CONFIG.cli.server_url
+DOWN_REVISION = "708a780b01ba"
 
 assert (
     fideslang.__version__.split(".")[0] == "2"
@@ -153,23 +161,19 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
     )
     assert server_orphaned_category
 
+    assert False, "Need to implement Privacy Notices!"
 
-def main() -> None:
+
+def reload_objects() -> None:
     """
     Good luck :D
     """
     print("> Running Fideslang 2.0 Data Migration Test Script...")
 
     # Populate some variables
-    fides_config = CONFIG
-    database_url = fides_config.database.sync_database_uri
-    auth_header = CONFIG.user.auth_header
-    server_url = CONFIG.cli.server_url
-    alembic_config = get_alembic_config(database_url)
-
-    down_revision = "708a780b01ba"
-    print(f"> Rolling back one migration to: {down_revision}")
-    command.downgrade(alembic_config, down_revision)
+    alembic_config = get_alembic_config(DATABASE_URL)
+    print(f"> Rolling back one migration to: {DOWN_REVISION}")
+    command.downgrade(alembic_config, DOWN_REVISION)
 
     # Seed the database with objects we know will change
     print("> Seeding the database with 'outdated' Taxonomy objects")
@@ -183,19 +187,33 @@ def main() -> None:
         system=[old_system],
         policy=[old_policy],
     )
-    push(url=server_url, headers=auth_header, taxonomy=taxonomy_1)
-    push(url=server_url, headers=auth_header, taxonomy=taxonomy_2)
+    push(url=SERVER_URL, headers=AUTH_HEADER, taxonomy=taxonomy_1)
+    push(url=SERVER_URL, headers=AUTH_HEADER, taxonomy=taxonomy_2)
 
     # Migrate to HEAD
     print("Upgrading database to migration revision: head")
     command.upgrade(alembic_config, "head")
 
-    # Verify that the expected changes happened to our objects
-    print("> Verifying Data Migration Updates...")
-    verify_migration(server_url=server_url, auth_header=auth_header)
-
-    print("> Data Migration successful!")
-
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="Verify the Fideslang 2.0 Data Migrations"
+    )
+    parser.add_argument(
+        "--reload",
+        dest="reload",
+        action="store_const",
+        const=True,
+        default=False,
+        help="whether or not to redo the migrations and reload the objects",
+    )
+
+    args = parser.parse_args()
+    if args.reload:
+        reload_objects()
+
+    # Verify that the expected changes happened to our objects
+    print("> Verifying Data Migration Updates...")
+    verify_migration(server_url=SERVER_URL, auth_header=AUTH_HEADER)
+
+    print("> Data Verification Complete!")
