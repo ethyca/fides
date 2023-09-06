@@ -30,6 +30,7 @@ import {
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
+import { SystemHistoryResponse } from "~/types/api/models/SystemHistoryResponse";
 
 import { DictDataUse, DictEntry, Page } from "./types";
 
@@ -261,6 +262,13 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Dictionary"],
     }),
+    getSystemHistory: build.query<
+      SystemHistoryResponse,
+      { system_key: string }
+    >({
+      query: (params) => ({ url: `plus/system/${params.system_key}/history` }),
+      providesTags: () => ["System History"],
+    }),
   }),
 });
 
@@ -287,6 +295,7 @@ export const {
   useGetAllowListQuery,
   useGetAllDictionaryEntriesQuery,
   useGetDictionaryDataUsesQuery,
+  useGetSystemHistoryQuery,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
@@ -419,13 +428,11 @@ export const selectAllDictEntries = createSelector(
 );
 
 const EMPTY_DICT_ENTRY = undefined;
-export const selectDictEntry = (vendorId: number) =>
+export const selectDictEntry = (vendorId: string) =>
   createSelector(
     [(state) => state, plusApi.endpoints.getAllDictionaryEntries.select()],
     (state, { data }) => {
-      const dictEntry = data?.items.find(
-        (d) => d.id.toString() === vendorId.toString()
-      );
+      const dictEntry = data?.items.find((d) => d.id.toString() === vendorId);
 
       return dictEntry || EMPTY_DICT_ENTRY;
     }
