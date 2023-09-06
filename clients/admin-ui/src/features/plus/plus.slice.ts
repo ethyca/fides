@@ -31,6 +31,7 @@ import {
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
+import { SystemHistoryResponse } from "~/types/api/models/SystemHistoryResponse";
 
 import { DictEntry, Page } from "./types";
 
@@ -258,6 +259,13 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Fides Cloud Config"],
     }),
+    getSystemHistory: build.query<
+      SystemHistoryResponse,
+      { system_key: string }
+    >({
+      query: (params) => ({ url: `plus/system/${params.system_key}/history` }),
+      providesTags: () => ["System History"],
+    }),
   }),
 });
 
@@ -284,6 +292,7 @@ export const {
   useGetAllowListQuery,
   useGetAllDictionaryEntriesQuery,
   useGetFidesCloudConfigQuery,
+  useGetSystemHistoryQuery,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =

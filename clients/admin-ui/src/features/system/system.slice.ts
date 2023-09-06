@@ -70,7 +70,12 @@ const systemApi = baseApi.injectEndpoints({
         method: "POST",
         body: systems,
       }),
-      invalidatesTags: ["Datamap", "System", "Datastore Connection"],
+      invalidatesTags: [
+        "Datamap",
+        "System",
+        "Datastore Connection",
+        "System History",
+      ],
     }),
     updateSystem: build.mutation<
       SystemResponse,
@@ -87,6 +92,7 @@ const systemApi = baseApi.injectEndpoints({
         "System",
         "Privacy Notices",
         "Datastore Connection",
+        "System History",
       ],
     }),
     patchSystemConnectionConfigs: build.mutation<

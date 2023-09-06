@@ -1,0 +1,16 @@
+# This file is used by "drill", a load testing utility
+
+concurrency: 4
+base: 'http://localhost:8080'
+# There is a rate-limiter on the webserver, default is set to 2000 requests/min
+iterations: 400
+rampup: 3
+
+plan:
+  - name: Health Check
+    request:
+      url: /health
+
+  - name: Worker Health Check
+    request:
+      url: /health/workers
