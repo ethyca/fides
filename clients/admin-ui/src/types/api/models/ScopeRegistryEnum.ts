@@ -126,6 +126,7 @@ export enum ScopeRegistryEnum {
   SYSTEM_DELETE = "system:delete",
   SYSTEM_READ = "system:read",
   SYSTEM_UPDATE = "system:update",
+  SYSTEM_HISTORY_READ = "system_history:read",
   SYSTEM_MANAGER_DELETE = "system_manager:delete",
   SYSTEM_MANAGER_READ = "system_manager:read",
   SYSTEM_MANAGER_UPDATE = "system_manager:update",
