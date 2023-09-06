@@ -1,7 +1,7 @@
 """add version fields to default types
 
 Revision ID: 708a780b01ba
-Revises: 3038667ba898
+Revises: 66df7d9b8103
 Create Date: 2023-08-17 12:29:04.855626
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.engine import Connection
 
 # revision identifiers, used by Alembic.
 revision = "708a780b01ba"
-down_revision = "093bb28a8270"
+down_revision = "66df7d9b8103"
 branch_labels = None
 depends_on = None
 
