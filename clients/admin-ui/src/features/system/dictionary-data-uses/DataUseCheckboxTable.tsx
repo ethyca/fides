@@ -10,18 +10,25 @@ import {
   Tag,
 } from "@fidesui/react";
 import { useEffect } from "react";
+import { DataUse } from "../../../types/api";
 import { DictDataUse } from "../../plus/types";
 
 interface Props {
   onChange: (dataUses: DictDataUse[]) => void;
-  allDataUses: DictDataUse[];
+  allDataUses: DataUse[];
+  dictDataUses: DictDataUse[];
   checked: DictDataUse[];
 }
 
-const DataUseCheckboxTable = ({ onChange, allDataUses, checked }: Props) => {
+const DataUseCheckboxTable = ({
+  onChange,
+  allDataUses,
+  dictDataUses,
+  checked,
+}: Props) => {
   const handleChangeAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      onChange(allDataUses);
+      onChange(dictDataUses);
     } else {
       onChange([]);
     }
@@ -41,20 +48,25 @@ const DataUseCheckboxTable = ({ onChange, allDataUses, checked }: Props) => {
     }
   };
 
-  const tableHeaderProps = {
-    border: "1px",
-    borderColor: "gray.200",
-    backgroundColor: "gray.50",
+  const declarationTitle = (declaration: DictDataUse) => {
+    const dataUse = allDataUses.filter(
+      (du) => du.fides_key === declaration.data_use
+    )[0];
+    if (dataUse) {
+      return dataUse.name;
+    }
+    return declaration.data_use;
   };
 
-  const allChecked = allDataUses.length === checked.length;
+  const allChecked = dictDataUses.length === checked.length;
 
   return (
-    <Table variant="unstyled">
-      <Thead {...tableHeaderProps}>
-        <Tr>
+    <Table variant="unstyled" size="sm" border="1px" borderColor="gray.200">
+      <Thead border="1px" borderColor="gray.200" backgroundColor="gray.50">
+        <Tr sx={{ "border-collapse": "separate" }}>
           <Th width={3} borderRight="1px" borderRightColor="gray.200">
             <Checkbox
+              py={2}
               colorScheme="complimentary"
               isChecked={allChecked}
               onChange={handleChangeAll}
@@ -74,7 +86,7 @@ const DataUseCheckboxTable = ({ onChange, allDataUses, checked }: Props) => {
         </Tr>
       </Thead>
       <Tbody>
-        {allDataUses.map((du) => (
+        {dictDataUses.map((du) => (
           <Tr key={du.data_use} border="1px" borderColor="gray.200">
             <Td borderRight="1px" borderRightColor="gray.200">
               <Checkbox
@@ -96,7 +108,7 @@ const DataUseCheckboxTable = ({ onChange, allDataUses, checked }: Props) => {
                 backgroundColor="purple.500"
                 fontWeight="semibold"
               >
-                {du.data_use}
+                {declarationTitle(du)}
               </Tag>
             </Td>
           </Tr>

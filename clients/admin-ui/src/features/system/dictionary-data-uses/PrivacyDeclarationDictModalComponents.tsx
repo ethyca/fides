@@ -21,9 +21,11 @@ import {
 import { SparkleIcon } from "../../common/Icon/SparkleIcon";
 import DataUseCheckboxTable from "./DataUseCheckboxTable";
 import { DictDataUse } from "../../plus/types";
+import { DataUse } from "../../../types/api";
 
 interface Props {
   alreadyHasDataUses: boolean;
+  allDataUses: DataUse[];
   onCancel: () => void;
   onAccept: (suggestions: DictDataUse[]) => void;
   vendorId: number;
@@ -31,6 +33,7 @@ interface Props {
 
 const PrivacyDeclarationDictModalComponents = ({
   alreadyHasDataUses,
+  allDataUses,
   onCancel,
   onAccept,
   vendorId,
@@ -43,8 +46,6 @@ const PrivacyDeclarationDictModalComponents = ({
   useEffect(() => {
     setSelectedDataUses(dictDataUses);
   }, [dictDataUses]);
-
-  console.log(dictDataUses);
 
   const handleChangeChecked = (newChecked: DictDataUse[]) => {
     setSelectedDataUses(newChecked);
@@ -70,9 +71,10 @@ const PrivacyDeclarationDictModalComponents = ({
           </Text>
         </HStack>
       </Box>
-      <TableContainer>
+      <TableContainer maxHeight={96} overflowY="scroll">
         <DataUseCheckboxTable
-          allDataUses={dictDataUses}
+          dictDataUses={dictDataUses}
+          allDataUses={allDataUses}
           onChange={handleChangeChecked}
           checked={selectedDataUses}
         />

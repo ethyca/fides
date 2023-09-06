@@ -10,7 +10,7 @@ import {
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import EmptyTableState from "~/features/system/dictionary-data-uses/EmptyTableState";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
@@ -274,6 +274,7 @@ const PrivacyDeclarationFormTab = ({
           handleDelete={handleDelete}
           dictionaryEnabled={features.dictionaryService}
           handleOpenDictModal={handleOpenDictModal}
+          allDataUses={dataProps.allDataUses}
         />
       )}
       {unassignedCookies && unassignedCookies.length > 0 ? (
@@ -308,6 +309,7 @@ const PrivacyDeclarationFormTab = ({
       >
         <PrivacyDeclarationDictModalComponents
           alreadyHasDataUses={system.privacy_declarations.length > 0}
+          allDataUses={dataProps.allDataUses}
           onCancel={handleCloseDictModal}
           onAccept={handleAcceptDictSuggestions}
           vendorId={system.meta.vendor.id ? system.meta.vendor.id : undefined}

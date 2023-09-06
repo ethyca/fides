@@ -13,15 +13,17 @@ import {
   Text,
 } from "@fidesui/react";
 
-import { PrivacyDeclarationResponse } from "~/types/api";
+import { DataUse, PrivacyDeclarationResponse } from "~/types/api";
 import { SparkleIcon } from "../../common/Icon/SparkleIcon";
 
 const PrivacyDeclarationRow = ({
   declaration,
+  title,
   handleDelete,
   handleEdit,
 }: {
   declaration: PrivacyDeclarationResponse;
+  title?: string;
   handleDelete: (dec: PrivacyDeclarationResponse) => void;
   handleEdit: (dec: PrivacyDeclarationResponse) => void;
 }) => (
@@ -35,9 +37,7 @@ const PrivacyDeclarationRow = ({
           cursor="pointer"
         >
           <LinkOverlay>
-            <Text>
-              {declaration.name ? declaration.name : declaration.data_use}
-            </Text>
+            <Text>{title ? title : declaration.data_use}</Text>
           </LinkOverlay>
         </LinkBox>
         <Spacer />
@@ -93,6 +93,17 @@ export const PrivacyDeclarationTabTable = ({
   </Stack>
 );
 
+type Props = {
+  heading: string;
+  dictionaryEnabled?: boolean;
+  declarations: PrivacyDeclarationResponse[];
+  handleDelete: (dec: PrivacyDeclarationResponse) => void;
+  handleAdd?: () => void;
+  handleEdit: (dec: PrivacyDeclarationResponse) => void;
+  handleOpenDictModal: () => void;
+  allDataUses: DataUse[];
+};
+
 export const PrivacyDeclarationDisplayGroup = ({
   heading,
   dictionaryEnabled = false,
@@ -101,51 +112,59 @@ export const PrivacyDeclarationDisplayGroup = ({
   handleDelete,
   handleEdit,
   handleOpenDictModal,
-}: {
-  heading: string;
-  dictionaryEnabled?: boolean;
-  declarations: PrivacyDeclarationResponse[];
-  handleDelete: (dec: PrivacyDeclarationResponse) => void;
-  handleAdd?: () => void;
-  handleEdit: (dec: PrivacyDeclarationResponse) => void;
-  handleOpenDictModal: () => void;
-}) => (
-  <PrivacyDeclarationTabTable
-    heading={heading}
-    headerButton={
-      dictionaryEnabled ? (
-        <IconButton
-          onClick={handleOpenDictModal}
-          aria-label="Show dictionary suggestions"
-          variant="outline"
+  allDataUses,
+}: Props) => {
+  const declarationTitle = (declaration: PrivacyDeclarationResponse) => {
+    const dataUse = allDataUses.filter(
+      (du) => du.fides_key === declaration.data_use
+    )[0];
+    if (dataUse) {
+      return declaration.name
+        ? `${dataUse.name} - ${declaration.name}`
+        : dataUse.name;
+    }
+    return "";
+  };
+
+  return (
+    <PrivacyDeclarationTabTable
+      heading={heading}
+      headerButton={
+        dictionaryEnabled ? (
+          <IconButton
+            onClick={handleOpenDictModal}
+            aria-label="Show dictionary suggestions"
+            variant="outline"
+          >
+            <SparkleIcon />
+          </IconButton>
+        ) : null
+      }
+      footerButton={
+        <Button
+          onClick={handleAdd}
+          size="xs"
+          px={2}
+          py={1}
+          backgroundColor="primary.800"
+          color="white"
+          fontWeight="600"
+          rightIcon={<AddIcon />}
         >
-          <SparkleIcon />
-        </IconButton>
-      ) : null
-    }
-    footerButton={
-      <Button
-        onClick={handleAdd}
-        size="xs"
-        px={2}
-        py={1}
-        backgroundColor="primary.800"
-        color="white"
-        fontWeight="600"
-        rightIcon={<AddIcon />}
-      >
-        Add data use
-      </Button>
-    }
-    handleAdd={handleAdd}
-  >
-    {declarations.map((pd) => (
-      <PrivacyDeclarationRow
-        declaration={pd}
-        key={pd.id}
-        handleDelete={handleDelete}
-        handleEdit={handleEdit}
-      />
-    ))}
-  </PrivacyDeclarationTabTable>
-);
+          Add data use
+        </Button>
+      }
+      handleAdd={handleAdd}
+    >
+      {declarations.map((pd) => (
+        <PrivacyDeclarationRow
+          declaration={pd}
+          key={pd.id}
+          title={declarationTitle(pd)}
+          handleDelete={handleDelete}
+          handleEdit={handleEdit}
+        />
+      ))}
+    </PrivacyDeclarationTabTable>
+  );
+};
