@@ -25,6 +25,7 @@ import {
 } from "~/features/system/system-form-declaration-tab/PrivacyDeclarationForm";
 import { PrivacyDeclarationFormModal } from "~/features/system/system-form-declaration-tab/PrivacyDeclarationFormModal";
 import {
+  LegalBasisForProcessingEnum,
   PrivacyDeclarationResponse,
   System,
   SystemResponse,
@@ -85,6 +86,36 @@ const PrivacyDeclarationFormTab = ({
       return true;
     }
     return false;
+  };
+
+  const transformDictDataUseToDeclaration = (
+    dataUse: DictDataUse
+  ): PrivacyDeclarationResponse => {
+    // fix "Legitimate Interests" capitalization for API
+    const legalBasisForProcessing =
+      dataUse.legal_basis_for_processing === "Legitimate Interests"
+        ? "Legitimate interests"
+        : dataUse.legal_basis_for_processing;
+
+    // some data categories are nested on the backend, flatten them
+    // https://github.com/ethyca/fides-services/issues/100
+    const dataCategories = dataUse.data_categories.flatMap((dc) =>
+      dc.split(",")
+    );
+
+    return {
+      data_use: dataUse.data_use,
+      data_categories: dataCategories,
+      features: dataUse.features,
+      // @ts-ignore
+      legal_basis_for_processing: legalBasisForProcessing,
+      retention_period: `${dataUse.retention_period}`,
+      cookies: dataUse.cookies.map((c) => ({
+        name: c.identifier,
+        domain: c.domains,
+        path: "/",
+      })),
+    };
   };
 
   const handleSave = async (
@@ -192,8 +223,11 @@ const PrivacyDeclarationFormTab = ({
   };
 
   const handleAcceptDictSuggestions = (suggestions: DictDataUse[]) => {
-    console.log("saving the following to system data uses:");
-    console.log(suggestions);
+    const newDeclarations = suggestions.map((du) =>
+      transformDictDataUseToDeclaration(du)
+    );
+
+    handleSave(newDeclarations);
     setShowDictionaryModal(false);
   };
 
