@@ -86,7 +86,7 @@ export const generateTcString = async (
             specialFeaturePreference.preference
           );
           if (consented) {
-            tcModel.purposeConsents.set(+specialFeaturePreference.id);
+            tcModel.specialFeatureOptins.set(+specialFeaturePreference.id);
           }
         }
       );
