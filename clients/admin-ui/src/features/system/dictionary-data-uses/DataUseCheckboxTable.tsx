@@ -1,15 +1,15 @@
 import {
   Checkbox,
   Table,
+  Tag,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tr,
-  Text,
-  Tag,
 } from "@fidesui/react";
-import { useEffect } from "react";
+
 import { DataUse } from "../../../types/api";
 import { DictDataUse } from "../../plus/types";
 

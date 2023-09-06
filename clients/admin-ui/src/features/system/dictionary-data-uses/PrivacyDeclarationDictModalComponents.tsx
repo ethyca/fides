@@ -1,27 +1,23 @@
 import {
-  Text,
-  Table,
-  TableContainer,
-  Thead,
-  Tr,
-  Checkbox,
-  Td,
-  Tbody,
   Box,
-  Stack,
-  HStack,
   Button,
+  HStack,
+  Stack,
+  TableContainer,
+  Text,
 } from "@fidesui/react";
 import { useEffect, useState } from "react";
-import { useAppSelector } from "../../../app/hooks";
+
 import {
   selectDictDataUses,
   useGetDictionaryDataUsesQuery,
 } from "~/features/plus/plus.slice";
-import { SparkleIcon } from "../../common/Icon/SparkleIcon";
-import DataUseCheckboxTable from "./DataUseCheckboxTable";
-import { DictDataUse } from "../../plus/types";
+
+import { useAppSelector } from "../../../app/hooks";
 import { DataUse } from "../../../types/api";
+import { SparkleIcon } from "../../common/Icon/SparkleIcon";
+import { DictDataUse } from "../../plus/types";
+import DataUseCheckboxTable from "./DataUseCheckboxTable";
 
 interface Props {
   alreadyHasDataUses: boolean;

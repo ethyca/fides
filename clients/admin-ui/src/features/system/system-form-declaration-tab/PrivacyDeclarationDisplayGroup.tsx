@@ -14,6 +14,7 @@ import {
 } from "@fidesui/react";
 
 import { DataUse, PrivacyDeclarationResponse } from "~/types/api";
+
 import { SparkleIcon } from "../../common/Icon/SparkleIcon";
 
 const PrivacyDeclarationRow = ({
@@ -37,7 +38,7 @@ const PrivacyDeclarationRow = ({
           cursor="pointer"
         >
           <LinkOverlay>
-            <Text>{title ? title : declaration.data_use}</Text>
+            <Text>{title || declaration.data_use}</Text>
           </LinkOverlay>
         </LinkBox>
         <Spacer />
@@ -66,7 +67,6 @@ export const PrivacyDeclarationTabTable = ({
   children?: React.ReactNode;
   headerButton?: React.ReactNode;
   footerButton?: React.ReactNode;
-  handleAdd?: () => void;
 }) => (
   <Stack spacing={4}>
     <Box maxWidth="720px" border="1px" borderColor="gray.200" borderRadius={6}>
@@ -82,12 +82,12 @@ export const PrivacyDeclarationTabTable = ({
           {heading}
         </Heading>
         <Spacer />
-        {headerButton ? headerButton : null}
+        {headerButton || null}
       </HStack>
 
       <Stack spacing={0}>{children}</Stack>
       <Box backgroundColor="gray.50" px={6} py={4} borderBottomRadius={6}>
-        {footerButton ? footerButton : null}
+        {footerButton || null}
       </Box>
     </Box>
   </Stack>
@@ -154,7 +154,6 @@ export const PrivacyDeclarationDisplayGroup = ({
           Add data use
         </Button>
       }
-      handleAdd={handleAdd}
     >
       {declarations.map((pd) => (
         <PrivacyDeclarationRow

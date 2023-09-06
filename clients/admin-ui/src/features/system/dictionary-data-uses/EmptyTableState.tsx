@@ -1,6 +1,7 @@
 import { AddIcon, WarningTwoIcon } from "@chakra-ui/icons";
 import { Box, Button, HStack, Stack, Text, Tooltip } from "@fidesui/react";
 import { ReactNode, useMemo } from "react";
+
 import { SparkleIcon } from "../../common/Icon/SparkleIcon";
 
 type Props = {

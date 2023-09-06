@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   ButtonProps,
   Divider,
   Stack,
@@ -9,11 +8,11 @@ import {
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import EmptyTableState from "~/features/system/dictionary-data-uses/EmptyTableState";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import EmptyTableState from "~/features/system/dictionary-data-uses/EmptyTableState";
 import { useUpdateSystemMutation } from "~/features/system/system.slice";
 import {
   PrivacyDeclarationDisplayGroup,
@@ -25,15 +24,15 @@ import {
 } from "~/features/system/system-form-declaration-tab/PrivacyDeclarationForm";
 import { PrivacyDeclarationFormModal } from "~/features/system/system-form-declaration-tab/PrivacyDeclarationFormModal";
 import {
-  LegalBasisForProcessingEnum,
   PrivacyDeclarationResponse,
   System,
   SystemResponse,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
+
 import { useFeatures } from "../../common/features";
-import PrivacyDeclarationDictModalComponents from "../dictionary-data-uses/PrivacyDeclarationDictModalComponents";
 import { DictDataUse } from "../../plus/types";
+import PrivacyDeclarationDictModalComponents from "../dictionary-data-uses/PrivacyDeclarationDictModalComponents";
 
 interface Props {
   system: SystemResponse;
