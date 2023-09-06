@@ -31,7 +31,7 @@ import {
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 import { useFeatures } from "../../common/features";
-import PrivacyDeclarationDictModalComponents from "../dictionary-data-uses/PrivacyDeclarationDictModal";
+import PrivacyDeclarationDictModalComponents from "../dictionary-data-uses/PrivacyDeclarationDictModalComponents";
 import { TempDataUse } from "../dictionary-data-uses/DataUseCheckboxTable";
 
 interface Props {

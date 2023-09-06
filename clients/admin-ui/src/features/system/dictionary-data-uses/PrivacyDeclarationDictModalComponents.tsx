@@ -79,7 +79,7 @@ const PrivacyDeclarationDictModalComponents = ({
           </Text>
         </HStack>
       </Box>
-      <TableContainer>
+      <TableContainer overflowY="scroll">
         <DataUseCheckboxTable
           allDataUses={sampleData}
           onChange={handleChangeChecked}
@@ -107,6 +107,7 @@ const PrivacyDeclarationDictModalComponents = ({
           onClick={() => {
             onAccept(selectedDataUses);
           }}
+          isDisabled={selectedDataUses.length === 0}
         >
           {selectedDataUses.length === sampleData.length
             ? "Accept all"

@@ -1,4 +1,13 @@
-import { Checkbox, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
+import {
+  Checkbox,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+  Text,
+} from "@fidesui/react";
 import { DataUse } from "../../../types/api";
 
 // interface Props {
@@ -46,13 +55,26 @@ const DataUseCheckboxTable = ({
     }
   };
 
+  const tableHeaderProps = {
+    border: "1px",
+    borderColor: "gray.200",
+    backgroundColor: "gray.50",
+  };
+
+  const tableHeaderTextProps = {
+    fontSize: "12px",
+    fontWeight: "500",
+    casing: "none",
+    letterSpacing: "0",
+  };
+
   const allChecked = allDataUses.length === checked.length;
 
   return (
-    <Table>
-      <Thead>
+    <Table variant="unstyled">
+      <Thead {...tableHeaderProps}>
         <Tr>
-          <Th width={3}>
+          <Th width={3} borderRight="1px" borderRightColor="gray.200">
             <Checkbox
               colorScheme="complimentary"
               isChecked={allChecked}
@@ -60,13 +82,22 @@ const DataUseCheckboxTable = ({
               data-testid="select-all"
             />
           </Th>
-          <Th>Data Use</Th>
+          <Th>
+            <Text
+              fontSize="md"
+              fontWeight="500"
+              casing="none"
+              letterSpacing={0}
+            >
+              Data use
+            </Text>
+          </Th>
         </Tr>
       </Thead>
       <Tbody>
         {allDataUses.map((du) => (
-          <Tr key={du.fides_key}>
-            <Td>
+          <Tr key={du.fides_key} border="1px" borderColor="gray.200">
+            <Td borderRight="1px" borderRightColor="gray.200">
               <Checkbox
                 colorScheme="complimentary"
                 value={du.fides_key}
