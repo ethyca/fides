@@ -8,11 +8,14 @@ The steps to run the script are as follows:
 3. You can run `python scripts/verify_fideslang_2_data_migration.py` as many times as needed for testing
 
 """
+from typing import Dict
 import fideslang
 from fides.config import CONFIG
 from fides.api.db.database import get_alembic_config
 from alembic import command
 from fides.core.push import push
+from fides.core.api_helpers import get_server_resource
+from functools import partial
 
 assert (
     fideslang.__version__.split(".")[0] == "2"
@@ -47,7 +50,7 @@ old_system = fideslang.models.System(
             name="old_privacy_declaration_1",
             data_categories=["user.observed"],  # new key = user.behavior
             data_subjects=["employee"],
-            data_use="improve.system",  # new key = function.service.improve
+            data_use="improve.system",  # new key = functional.service.improve
         ),
     ],
     ingress=[
@@ -104,6 +107,37 @@ old_policy = fideslang.models.Policy(
 )
 
 
+def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
+    """
+    Run a battery of assertions to verify the data migration worked as intended.
+    """
+    partial_get = partial(get_server_resource, url=server_url, headers=auth_header)
+
+    # Verify Dataset
+    server_old_dataset: fideslang.models.Dataset = partial_get(
+        resource_key="old_dataset", resource_type="dataset"
+    )
+    assert server_old_dataset.data_categories == ["user.behavior"]
+    assert server_old_dataset.collections[0].data_categories == ["user.behavior"]
+    assert server_old_dataset.collections[0].fields[0].data_categories == [
+        "user.behavior"
+    ]
+
+    # Verify Systems
+    server_old_system: fideslang.models.System = partial_get(
+        resource_key="old_system", resource_type="system"
+    )
+    assert server_old_system.privacy_declarations[0].data_categories == [
+        "user.behavior"
+    ]
+    assert (
+        server_old_system.privacy_declarations[0].data_use
+        == "functional.service.improve"
+    )
+    assert server_old_system.ingress[0].data_categories == ["user.behavior"]
+    assert server_old_system.egress[0].data_categories == ["user.behavior"]
+
+
 def main() -> None:
     """
     Good luck :D
@@ -137,6 +171,10 @@ def main() -> None:
     command.upgrade(alembic_config, "head")
 
     # Verify that the expected changes happened to our objects
+    print("> Verifying Data Migration Updates...")
+    verify_migration(server_url=server_url, auth_header=auth_header)
+
+    print("> Data Migration successful!")
 
 
 if __name__ == "__main__":
