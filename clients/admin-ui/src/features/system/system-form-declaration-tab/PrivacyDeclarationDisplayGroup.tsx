@@ -119,7 +119,7 @@ export const PrivacyDeclarationDisplayGroup = ({
           aria-label="Show dictionary suggestions"
           variant="outline"
         >
-          <SparkleIcon color="purple.400" />
+          <SparkleIcon />
         </IconButton>
       ) : null
     }
