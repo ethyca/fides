@@ -7,6 +7,7 @@ import {
   Thead,
   Tr,
   Text,
+  Tag,
 } from "@fidesui/react";
 import { DataUse } from "../../../types/api";
 
@@ -61,13 +62,6 @@ const DataUseCheckboxTable = ({
     backgroundColor: "gray.50",
   };
 
-  const tableHeaderTextProps = {
-    fontSize: "12px",
-    fontWeight: "500",
-    casing: "none",
-    letterSpacing: "0",
-  };
-
   const allChecked = allDataUses.length === checked.length;
 
   return (
@@ -109,7 +103,17 @@ const DataUseCheckboxTable = ({
                 data-testid={`checkbox-${du.fides_key}`}
               />
             </Td>
-            <Td>{du.name}</Td>
+            <Td>
+              <Tag
+                size="lg"
+                py={1}
+                color="white"
+                backgroundColor="purple.500"
+                fontWeight="semibold"
+              >
+                {du.name}
+              </Tag>
+            </Td>
           </Tr>
         ))}
       </Tbody>

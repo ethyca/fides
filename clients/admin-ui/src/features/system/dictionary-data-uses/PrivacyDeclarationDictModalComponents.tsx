@@ -75,11 +75,12 @@ const PrivacyDeclarationDictModalComponents = ({
           <Text>
             Fides has automatically generated the following data uses. These
             data uses are commonly assigned to this system type. You can accept
-            these data use suggestions or cancel and add data uses manually.
+            these data use suggestions and optionally edit them or cancel and
+            add data uses manually.
           </Text>
         </HStack>
       </Box>
-      <TableContainer overflowY="scroll">
+      <TableContainer>
         <DataUseCheckboxTable
           allDataUses={sampleData}
           onChange={handleChangeChecked}
