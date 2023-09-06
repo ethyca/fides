@@ -31,7 +31,8 @@ import {
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 import { useFeatures } from "../../common/features";
-import PrivacyDeclarationDictModalComponents from "../dictionary-data-uses/PrivacyDeclarationDictModalComponents";
+import PrivacyDeclarationDictModalComponents from "../dictionary-data-uses/PrivacyDeclarationDictModal";
+import { TempDataUse } from "../dictionary-data-uses/DataUseCheckboxTable";
 
 interface Props {
   system: SystemResponse;
@@ -190,6 +191,12 @@ const PrivacyDeclarationFormTab = ({
     setShowDictionaryModal(false);
   };
 
+  const handleAcceptDictSuggestions = (suggestions: TempDataUse[]) => {
+    console.log("saving the following to system data uses:");
+    console.log(suggestions);
+    setShowDictionaryModal(false);
+  };
+
   const handleSubmit = (values: PrivacyDeclarationResponse) => {
     handleCloseForm();
     if (currentDeclaration) {
@@ -264,6 +271,8 @@ const PrivacyDeclarationFormTab = ({
       >
         <PrivacyDeclarationDictModalComponents
           alreadyHasDataUses={system.privacy_declarations.length > 0}
+          onCancel={handleCloseDictModal}
+          onAccept={handleAcceptDictSuggestions}
           vendorId={system.vendor_id}
         />
       </PrivacyDeclarationFormModal>

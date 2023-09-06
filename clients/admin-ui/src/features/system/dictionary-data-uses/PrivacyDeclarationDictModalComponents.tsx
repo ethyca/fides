@@ -10,6 +10,7 @@ import {
   Box,
   Stack,
   HStack,
+  Button,
 } from "@fidesui/react";
 import { useState } from "react";
 import { DataUse } from "../../../types/api";
@@ -18,11 +19,15 @@ import DataUseCheckboxTable, { TempDataUse } from "./DataUseCheckboxTable";
 
 interface Props {
   alreadyHasDataUses: boolean;
+  onCancel: () => void;
+  onAccept: (suggestions: TempDataUse[]) => void;
   vendorId?: string;
 }
 
 const PrivacyDeclarationDictModalComponents = ({
   alreadyHasDataUses,
+  onCancel,
+  onAccept,
   vendorId,
 }: Props) => {
   const sampleData = [
@@ -52,7 +57,6 @@ const PrivacyDeclarationDictModalComponents = ({
     useState<TempDataUse[]>(sampleData);
 
   const handleChangeChecked = (newChecked: TempDataUse[]) => {
-    // console.log(newChecked);
     setSelectedDataUses(newChecked);
   };
 
@@ -96,6 +100,19 @@ const PrivacyDeclarationDictModalComponents = ({
           see our docs.
         </Box>
       ) : null}
+      <HStack justifyContent="space-between">
+        <Button onClick={onCancel}>Cancel</Button>
+        <Button
+          variant="primary"
+          onClick={() => {
+            onAccept(selectedDataUses);
+          }}
+        >
+          {selectedDataUses.length === sampleData.length
+            ? "Accept all"
+            : "Accept"}
+        </Button>
+      </HStack>
     </Stack>
   );
 };

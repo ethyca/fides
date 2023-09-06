@@ -37,13 +37,11 @@ const DataUseCheckboxTable = ({
     console.log(exists);
     if (!exists) {
       const newChecked = [...checked, dataUse];
-      console.log(newChecked);
       onChange(newChecked);
     } else {
       const newChecked = checked.filter(
         (use) => use.fides_key !== dataUse.fides_key
       );
-      console.log(newChecked);
       onChange(newChecked);
     }
   };
