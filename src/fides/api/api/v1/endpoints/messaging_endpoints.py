@@ -170,7 +170,13 @@ def get_active_default_config(*, db: Session = Depends(deps.get_db)) -> Messagin
     Retrieves the active default messaging config.
     """
     logger.info("Finding active default messaging config")
-    messaging_config = MessagingConfig.get_active_default(db)
+    try:
+        messaging_config = MessagingConfig.get_active_default(db)
+    except ValueError:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Invalid notification_service_type configured.",
+        )
     if not messaging_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
