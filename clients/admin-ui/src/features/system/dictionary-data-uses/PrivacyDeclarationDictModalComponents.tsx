@@ -12,16 +12,21 @@ import {
   HStack,
   Button,
 } from "@fidesui/react";
-import { useState } from "react";
-import { DataUse } from "../../../types/api";
+import { useEffect, useState } from "react";
+import { useAppSelector } from "../../../app/hooks";
+import {
+  selectDictDataUses,
+  useGetDictionaryDataUsesQuery,
+} from "~/features/plus/plus.slice";
 import { SparkleIcon } from "../../common/Icon/SparkleIcon";
-import DataUseCheckboxTable, { TempDataUse } from "./DataUseCheckboxTable";
+import DataUseCheckboxTable from "./DataUseCheckboxTable";
+import { DictDataUse } from "../../plus/types";
 
 interface Props {
   alreadyHasDataUses: boolean;
   onCancel: () => void;
-  onAccept: (suggestions: TempDataUse[]) => void;
-  vendorId?: string;
+  onAccept: (suggestions: DictDataUse[]) => void;
+  vendorId: number;
 }
 
 const PrivacyDeclarationDictModalComponents = ({
@@ -30,33 +35,18 @@ const PrivacyDeclarationDictModalComponents = ({
   onAccept,
   vendorId,
 }: Props) => {
-  const sampleData = [
-    {
-      name: "Data use 1",
-      fides_key: "data_use_1",
-    },
-    {
-      name: "Data use 2",
-      fides_key: "data_use_2",
-    },
-    {
-      name: "Data use 3",
-      fides_key: "data_use_3",
-    },
-    {
-      name: "Data use 4",
-      fides_key: "data_use_4",
-    },
-    {
-      name: "Data use 5",
-      fides_key: "data_use_5",
-    },
-  ];
+  const [selectedDataUses, setSelectedDataUses] = useState<DictDataUse[]>([]);
 
-  const [selectedDataUses, setSelectedDataUses] =
-    useState<TempDataUse[]>(sampleData);
+  useGetDictionaryDataUsesQuery({ vendor_id: vendorId });
+  const dictDataUses = useAppSelector(selectDictDataUses(vendorId));
 
-  const handleChangeChecked = (newChecked: TempDataUse[]) => {
+  useEffect(() => {
+    setSelectedDataUses(dictDataUses);
+  }, [dictDataUses]);
+
+  console.log(dictDataUses);
+
+  const handleChangeChecked = (newChecked: DictDataUse[]) => {
     setSelectedDataUses(newChecked);
   };
 
@@ -82,7 +72,7 @@ const PrivacyDeclarationDictModalComponents = ({
       </Box>
       <TableContainer>
         <DataUseCheckboxTable
-          allDataUses={sampleData}
+          allDataUses={dictDataUses}
           onChange={handleChangeChecked}
           checked={selectedDataUses}
         />
@@ -110,7 +100,7 @@ const PrivacyDeclarationDictModalComponents = ({
           }}
           isDisabled={selectedDataUses.length === 0}
         >
-          {selectedDataUses.length === sampleData.length
+          {selectedDataUses.length === dictDataUses.length
             ? "Accept all"
             : "Accept"}
         </Button>

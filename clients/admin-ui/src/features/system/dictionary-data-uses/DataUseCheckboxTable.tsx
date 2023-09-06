@@ -9,30 +9,16 @@ import {
   Text,
   Tag,
 } from "@fidesui/react";
-import { DataUse } from "../../../types/api";
+import { useEffect } from "react";
+import { DictDataUse } from "../../plus/types";
 
-// interface Props {
-//   onChange: (dataUses: DataUse[]) => void;
-//   allDataUses: DataUse[];
-//   checked: DataUse[];
-// }
-
-export type TempDataUse = {
-  name: string;
-  fides_key: string;
-};
-
-interface TempProps {
-  onChange: (dataUses: TempDataUse[]) => void;
-  allDataUses: TempDataUse[];
-  checked: TempDataUse[];
+interface Props {
+  onChange: (dataUses: DictDataUse[]) => void;
+  allDataUses: DictDataUse[];
+  checked: DictDataUse[];
 }
 
-const DataUseCheckboxTable = ({
-  onChange,
-  allDataUses,
-  checked,
-}: TempProps) => {
+const DataUseCheckboxTable = ({ onChange, allDataUses, checked }: Props) => {
   const handleChangeAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
       onChange(allDataUses);
@@ -41,16 +27,15 @@ const DataUseCheckboxTable = ({
     }
   };
 
-  const onCheck = (dataUse: TempDataUse) => {
+  const onCheck = (dataUse: DictDataUse) => {
     const exists =
-      checked.filter((du) => du.fides_key === dataUse.fides_key).length > 0;
-    console.log(exists);
+      checked.filter((du) => du.data_use === dataUse.data_use).length > 0;
     if (!exists) {
       const newChecked = [...checked, dataUse];
       onChange(newChecked);
     } else {
       const newChecked = checked.filter(
-        (use) => use.fides_key !== dataUse.fides_key
+        (use) => use.data_use !== dataUse.data_use
       );
       onChange(newChecked);
     }
@@ -90,17 +75,17 @@ const DataUseCheckboxTable = ({
       </Thead>
       <Tbody>
         {allDataUses.map((du) => (
-          <Tr key={du.fides_key} border="1px" borderColor="gray.200">
+          <Tr key={du.data_use} border="1px" borderColor="gray.200">
             <Td borderRight="1px" borderRightColor="gray.200">
               <Checkbox
                 colorScheme="complimentary"
-                value={du.fides_key}
+                value={du.data_use}
                 isChecked={
-                  checked.filter((use) => use.fides_key === du.fides_key)
-                    .length > 0
+                  checked.filter((use) => use.data_use === du.data_use).length >
+                  0
                 }
                 onChange={() => onCheck(du)}
-                data-testid={`checkbox-${du.fides_key}`}
+                data-testid={`checkbox-${du.data_use}`}
               />
             </Td>
             <Td>
@@ -111,7 +96,7 @@ const DataUseCheckboxTable = ({
                 backgroundColor="purple.500"
                 fontWeight="semibold"
               >
-                {du.name}
+                {du.data_use}
               </Tag>
             </Td>
           </Tr>
