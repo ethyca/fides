@@ -50,6 +50,7 @@ old_system = fideslang.models.System(
             data_categories=["user.observed"],  # new key = user.behavior
             data_subjects=["employee"],
             data_use="improve.system",  # new key = functional.service.improve
+            shared_categories=["user.observed"],  # new key = user.behavior
         ),
     ],
     ingress=[
@@ -133,6 +134,9 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
         server_old_system.privacy_declarations[0].data_use
         == "functional.service.improve"
     )
+    assert server_old_system.privacy_declarations[0].shared_categories == [
+        "user.behavior"
+    ]
     assert server_old_system.ingress[0].data_categories == ["user.behavior"]
     assert server_old_system.egress[0].data_categories == ["user.behavior"]
 
@@ -147,8 +151,7 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
     server_orphaned_category: fideslang.models.DataCategory = partial_get(
         resource_key="user.behavior.custom", resource_type="data_category"
     )
-    # TODO: FIX THIS
-    # assert server_orphaned_category
+    assert server_orphaned_category
 
 
 def main() -> None:
@@ -170,14 +173,18 @@ def main() -> None:
 
     # Seed the database with objects we know will change
     print("> Seeding the database with 'outdated' Taxonomy objects")
-    taxonomy = fideslang.models.Taxonomy(
-        dataset=[old_dataset],
-        system=[old_system],
-        policy=[old_policy],
+    # We need two separate pushes here because of server-side validation
+    taxonomy_1 = fideslang.models.Taxonomy(
         data_category=[orphaned_data_category, fideslang_1_category],
         data_use=[fideslang_1_use],
     )
-    push(url=server_url, headers=auth_header, taxonomy=taxonomy)
+    taxonomy_2 = fideslang.models.Taxonomy(
+        dataset=[old_dataset],
+        system=[old_system],
+        policy=[old_policy],
+    )
+    push(url=server_url, headers=auth_header, taxonomy=taxonomy_1)
+    push(url=server_url, headers=auth_header, taxonomy=taxonomy_2)
 
     # Migrate to HEAD
     print("Upgrading database to migration revision: head")
