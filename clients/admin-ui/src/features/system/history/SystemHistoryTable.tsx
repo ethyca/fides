@@ -3,7 +3,7 @@ import _ from "lodash";
 import React from "react";
 
 import { useGetSystemHistoryQuery } from "~/features/plus/plus.slice";
-import { SystemHistory } from "~/types/api/models/SystemHistory";
+import { SystemHistoryResponse } from "~/types/api/models/SystemHistoryResponse";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
 interface Props {
@@ -42,7 +42,7 @@ const SystemHistoryTable = ({ system }: Props) => {
 
   const systemHistories = data?.items || [];
 
-  const describeSystemChange = (history: SystemHistory) => {
+  const describeSystemChange = (history: SystemHistoryResponse) => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { edited_by, before, after, created_at } = history;
 
@@ -174,28 +174,30 @@ const SystemHistoryTable = ({ system }: Props) => {
         </Tr>
       </Thead>
       <Tbody>
-        {systemHistories.map((history: SystemHistory, index: number) => {
-          const description = describeSystemChange(history);
-          return (
-            <Tr
-              // eslint-disable-next-line react/no-array-index-key
-              key={index}
-            >
-              <Td
-                style={{
-                  paddingTop: 10,
-                  paddingBottom: 10,
-                  paddingLeft: 16,
-                  fontSize: 12,
-                  borderLeft: "1px solid #E2E8F0",
-                  borderRight: "1px solid #E2E8F0",
-                }}
+        {systemHistories.map(
+          (history: SystemHistoryResponse, index: number) => {
+            const description = describeSystemChange(history);
+            return (
+              <Tr
+                // eslint-disable-next-line react/no-array-index-key
+                key={index}
               >
-                {description}
-              </Td>
-            </Tr>
-          );
-        })}
+                <Td
+                  style={{
+                    paddingTop: 10,
+                    paddingBottom: 10,
+                    paddingLeft: 16,
+                    fontSize: 12,
+                    borderLeft: "1px solid #E2E8F0",
+                    borderRight: "1px solid #E2E8F0",
+                  }}
+                >
+                  {description}
+                </Td>
+              </Tr>
+            );
+          }
+        )}
       </Tbody>
     </Table>
   );
