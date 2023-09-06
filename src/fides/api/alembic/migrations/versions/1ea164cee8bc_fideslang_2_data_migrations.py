@@ -307,22 +307,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    bind: Connection = op.get_bind()
-
-    logger.info("Downgrading data use on privacy declaration")
-    update_privacy_declaration_data_uses(bind, data_use_downgrades)
-
-    logger.info("Downgrading ctl policy rule data uses")
-    update_ctl_policy_data_uses(bind, data_use_downgrades)
-
-    logger.info("Downgrading data category on privacy declaration")
-    update_privacy_declaration_data_categories(bind, data_category_downgrades)
-
-    logger.info("Downgrading ctl policy rule data categories")
-    update_ctl_policy_data_categories(bind, data_category_downgrades)
-
-    logger.info("Downgrading data categories in datasets")
-    update_datasets_data_categories(bind, data_category_downgrades)
-
-    logger.info("Downgrading the System egress/ingress data categories")
-    update_system_ingress_egress_data_categories(bind, data_category_downgrades)
+    """
+    This migration does not support downgrades.
+    """
+    logger.info("Data migrations from Fideslang 2.0 to Fideslang 1.0 are not supported.")
