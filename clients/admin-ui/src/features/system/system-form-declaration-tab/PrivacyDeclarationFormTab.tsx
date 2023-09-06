@@ -271,6 +271,8 @@ const PrivacyDeclarationFormTab = ({
           handleAdd={handleOpenNewForm}
           handleEdit={handleOpenEditForm}
           handleDelete={handleDelete}
+          dictionaryEnabled={features.dictionaryService}
+          handleOpenDictModal={handleOpenDictModal}
         />
       )}
       {unassignedCookies && unassignedCookies.length > 0 ? (

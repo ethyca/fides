@@ -14,6 +14,7 @@ import {
 } from "@fidesui/react";
 
 import { PrivacyDeclarationResponse } from "~/types/api";
+import { SparkleIcon } from "../../common/Icon/SparkleIcon";
 
 const PrivacyDeclarationRow = ({
   declaration,
@@ -58,17 +59,18 @@ const PrivacyDeclarationRow = ({
 export const PrivacyDeclarationTabTable = ({
   heading,
   children,
-  hasAddButton = false,
-  handleAdd,
+  headerButton,
+  footerButton,
 }: {
   heading: string;
   children?: React.ReactNode;
-  hasAddButton?: boolean;
+  headerButton?: React.ReactNode;
+  footerButton?: React.ReactNode;
   handleAdd?: () => void;
 }) => (
   <Stack spacing={4}>
     <Box maxWidth="720px" border="1px" borderColor="gray.200" borderRadius={6}>
-      <Box
+      <HStack
         backgroundColor="gray.50"
         px={6}
         py={4}
@@ -79,24 +81,13 @@ export const PrivacyDeclarationTabTable = ({
         <Heading as="h3" size="xs">
           {heading}
         </Heading>
-      </Box>
+        <Spacer />
+        {headerButton ? headerButton : null}
+      </HStack>
 
       <Stack spacing={0}>{children}</Stack>
       <Box backgroundColor="gray.50" px={6} py={4} borderBottomRadius={6}>
-        {hasAddButton ? (
-          <Button
-            onClick={handleAdd}
-            size="xs"
-            px={2}
-            py={1}
-            backgroundColor="primary.800"
-            color="white"
-            fontWeight="600"
-          >
-            <Text mr={2}>Add data use</Text>
-            <AddIcon boxSize={3} color="white" />
-          </Button>
-        ) : null}
+        {footerButton ? footerButton : null}
       </Box>
     </Box>
   </Stack>
@@ -104,20 +95,48 @@ export const PrivacyDeclarationTabTable = ({
 
 export const PrivacyDeclarationDisplayGroup = ({
   heading,
+  dictionaryEnabled = false,
   declarations,
   handleAdd,
   handleDelete,
   handleEdit,
+  handleOpenDictModal,
 }: {
   heading: string;
+  dictionaryEnabled?: boolean;
   declarations: PrivacyDeclarationResponse[];
-  handleAdd?: () => void;
   handleDelete: (dec: PrivacyDeclarationResponse) => void;
+  handleAdd?: () => void;
   handleEdit: (dec: PrivacyDeclarationResponse) => void;
+  handleOpenDictModal: () => void;
 }) => (
   <PrivacyDeclarationTabTable
     heading={heading}
-    hasAddButton
+    headerButton={
+      dictionaryEnabled ? (
+        <IconButton
+          onClick={handleOpenDictModal}
+          aria-label="Show dictionary suggestions"
+          variant="outline"
+        >
+          <SparkleIcon color="purple.400" />
+        </IconButton>
+      ) : null
+    }
+    footerButton={
+      <Button
+        onClick={handleAdd}
+        size="xs"
+        px={2}
+        py={1}
+        backgroundColor="primary.800"
+        color="white"
+        fontWeight="600"
+        rightIcon={<AddIcon />}
+      >
+        Add data use
+      </Button>
+    }
     handleAdd={handleAdd}
   >
     {declarations.map((pd) => (
