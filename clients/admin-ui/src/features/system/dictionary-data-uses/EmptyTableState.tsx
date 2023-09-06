@@ -49,20 +49,21 @@ const EmptyTableState = ({
             <Tooltip
               hasArrow
               placement="top"
-              isDisabled={vendorSelected}
               label={dictDisabledTooltip}
             >
-              <Button
-                size="xs"
-                colorScheme="purple"
-                fontWeight="semibold"
-                data-testid="dict-btn"
-                onClick={handleDictSuggestion}
-                rightIcon={<SparkleIcon />}
-                disabled={!vendorSelected}
-              >
-                Generate data uses automatically
-              </Button>
+              <span>
+                <Button
+                  size="xs"
+                  colorScheme="purple"
+                  fontWeight="semibold"
+                  data-testid="dict-btn"
+                  onClick={handleDictSuggestion}
+                  rightIcon={<SparkleIcon />}
+                  disabled={!vendorSelected}
+                >
+                  Generate data uses automatically
+                </Button>
+              </span>
             </Tooltip>
             <Text size="sm">or</Text>
             <Button
