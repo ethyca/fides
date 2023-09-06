@@ -20,6 +20,7 @@ The types of changes are:
 ### Changed
 
 - Refactor how multiplatform builds are handled [#4024](https://github.com/ethyca/fides/pull/4024)
+- Added new Performance-related nox commands and included them as part of the CI suite [#3997](https://github.com/ethyca/fides/pull/3997)
 
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 

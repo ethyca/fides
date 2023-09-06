@@ -3,18 +3,23 @@ saas_config:
   name: Adobe Sign
   type: adobe_sign
   description: A sample schema representing the Adobe Sign connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/adobe-sign
   version: 0.1.0
 
   connector_params:
     - name: domain
       default_value: api.na3.adobesign.com
+      description: The unique URL for your Adobe Sign instance
     - name: client_id
       label: Client ID
+      description: Your Adobe Sign application's client ID
     - name: client_secret
       label: Client secret
+      description: Your Adobe Sign application's client secret.
       sensitive: True
     - name: redirect_uri
-      label: Redirect URI
+      label: Redirect URL
+      description: The Fides URL to which users will be redirected upon successful authentication
 
   client_config:
     protocol: https

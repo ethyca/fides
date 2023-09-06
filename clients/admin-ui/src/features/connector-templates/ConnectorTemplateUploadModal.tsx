@@ -122,8 +122,7 @@ const ConnectorTemplateUploadModal: React.FC<RequestModalProps> = ({
           </Box>
           <Text fontSize="sm" mt={4}>
             An integration template zip file must include a SaaS config and
-            dataset, but may also contain an icon (.svg) and custom functions
-            (.py) as optional files.
+            dataset, but may also contain an icon (.svg) as an optional file.
           </Text>
         </ModalBody>
         <ModalFooter>
