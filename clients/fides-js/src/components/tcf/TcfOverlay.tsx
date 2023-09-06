@@ -136,6 +136,18 @@ const createTcfSavePayload = ({
   }) as TCFVendorSave[],
 });
 
+const updateCookie = async (
+  oldCookie: FidesCookie,
+  tcf: TcfSavePreferences,
+  experience: PrivacyExperience
+) => {
+  const tcString = await generateTcString({
+    tcStringPreferences: tcf,
+    experience,
+  });
+  return { ...oldCookie, tcString };
+};
+
 const TcfOverlay: FunctionComponent<OverlayProps> = ({
   fidesRegionString,
   experience,
@@ -177,14 +189,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     [draftIds]
   );
 
-  const updateCookie = async (
-    oldCookie: FidesCookie,
-    tcf: TcfSavePreferences
-  ) => {
-    const tcString = await generateTcString(tcf);
-    return { ...oldCookie, tcString };
-  };
-
   const handleUpdateAllPreferences = useCallback(
     (enabledIds: EnabledIds) => {
       const tcf = createTcfSavePayload({ experience, enabledIds });
@@ -198,7 +202,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         debug: options.debug,
         servedNotices: null, // TODO: served notices
         tcf,
-        updateCookie: (oldCookie) => updateCookie(oldCookie, tcf),
+        updateCookie: (oldCookie) => updateCookie(oldCookie, tcf, experience),
       });
       setDraftIds(enabledIds);
     },
