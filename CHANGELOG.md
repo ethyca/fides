@@ -21,6 +21,10 @@ The types of changes are:
 
 - Added new Performance-related nox commands and included them as part of the CI suite [#3997](https://github.com/ethyca/fides/pull/3997)
 
+### Changed
+
+- Privacy notice regions now render human readable names instead of country codes [#4029](https://github.com/ethyca/fides/pull/4029)
+
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 
 ### Added
