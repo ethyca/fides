@@ -22,7 +22,7 @@ export const DictSuggestionToggle = () => {
 
   const form = useFormikContext<FormValues>();
 
-  const vendorId: string | undefined = form.values?.meta?.vendor?.id;
+  const vendorId: string | undefined = form.values?.vendor_id;
   const { plus: isPlusEnabled, dictionaryService: isDictionaryServiceEnabled } =
     useFeatures();
   const isShowingSuggestions = useAppSelector(selectSuggestions);

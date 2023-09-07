@@ -93,19 +93,10 @@ export const transformFormValuesToSystem = (
   };
 
   if (features.plus) {
-    if (!payload.meta) {
-      payload.meta = {};
-    }
-
-    if (features.dictionaryService && formValues?.meta?.vendor?.id) {
-      if (!("vendor" in payload.meta)) {
-        payload.meta.vendor = {};
+    if (features.dictionaryService) {
+      if (!("vendor" in payload)) {
+      payload.vendor_id = formValues.vendor_id;
       }
-      payload.meta.vendor = {
-        ...payload.meta.vendor,
-        id: formValues.meta.vendor.id,
-      };
-      payload.vendor_id = formValues.meta.vendor.id;
     }
   }
 
