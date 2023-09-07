@@ -93,6 +93,7 @@ fideslang_1_use = fideslang.models.DataUse(
 orphaned_data_category = fideslang.models.DataCategory(
     fides_key="user.observed.custom", parent_key="user.observed"
 )
+
 # This is used to test updating Policy Rules
 old_policy = fideslang.models.Policy(
     fides_key="old_policy",
@@ -125,7 +126,9 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
     server_old_dataset: fideslang.models.Dataset = partial_get(
         resource_key="old_dataset", resource_type="dataset"
     )
-    assert server_old_dataset.data_categories == ["user.behavior"]
+    assert server_old_dataset.data_categories == [
+        "user.behavior"
+    ], server_old_dataset.data_categories
     assert server_old_dataset.collections[0].data_categories == ["user.behavior"]
     assert server_old_dataset.collections[0].fields[0].data_categories == [
         "user.behavior"
@@ -159,8 +162,9 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
     server_orphaned_category: fideslang.models.DataCategory = partial_get(
         resource_key="user.behavior.custom", resource_type="data_category"
     )
-    assert server_orphaned_category
+    assert server_orphaned_category, server_orphaned_category
 
+    # Verify Privacy Notices
     assert False, "Need to implement Privacy Notices!"
 
 

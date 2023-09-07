@@ -35,118 +35,6 @@ data_use_upgrades: Dict[str, str] = {
 data_use_downgrades: Dict[str, str] = {
     value: key for key, value in data_use_upgrades.items()
 }
-
-
-def _replace_matching_data_categories(
-    data_categories: List[str], data_label_map: Dict[str, str]
-) -> List[str]:
-    """
-    For every data category in the list, loop through every data category upgrade and replace with a match if applicable.
-    This also picks up category upgrades for child categories
-    """
-    updated_data_categories: List[str] = []
-    for category in data_categories or []:
-        for old_cat, new_cat in data_label_map.items():
-            if category.startswith(old_cat):
-                # Do a string replace to catch child items
-                category = category.replace(old_cat, new_cat)
-        updated_data_categories.append(category)
-
-    return updated_data_categories
-
-
-def _replace_matching_data_uses(
-    data_use: Optional[str], data_use_map: Dict[str, str]
-) -> Optional[str]:
-    """
-    Helper method to loop through all data uses in the data use map and iteratively replace any overlaps
-    in the current data use
-    """
-    if not data_use:
-        return
-    for key, value in data_use_map.items():
-        if data_use.startswith(key):
-            data_use = data_use.replace(key, value)
-    return data_use
-
-
-def update_privacy_declarations(
-    bind: Connection, data_use_map: Dict[str, str], data_category_map: Dict[str, str]
-) -> None:
-    """
-    Upgrade or downgrade Privacy Declarations for Fideslang 2.0
-
-    This updates:
-    - data uses
-    - data categories
-    - shared categories
-    """
-    existing_privacy_declarations: ResultProxy = bind.execute(
-        text(
-            "SELECT id, data_use, data_categories, shared_categories FROM privacydeclaration;"
-        )
-    )
-    for row in existing_privacy_declarations:
-        data_use: Optional[str] = _replace_matching_data_uses(
-            row["data_use"], data_use_map
-        )
-        assert data_use  # We can't have an empty data use here
-        data_categories: List[str] = _replace_matching_data_categories(
-            row["data_categories"], data_category_map
-        )
-        shared_categories: List[str] = _replace_matching_data_categories(
-            row["shared_categories"], data_category_map
-        )
-
-        update_query: TextClause = text(
-            "UPDATE privacydeclaration SET data_use = :updated_use, data_categories = :updated_categories, shared_categories = :updated_shared WHERE id= :declaration_id"
-        )
-        bind.execute(
-            update_query,
-            {
-                "declaration_id": row["id"],
-                "updated_use": data_use,
-                "updated_categories": data_categories,
-                "updated_shared": shared_categories,
-            },
-        )
-
-
-def update_ctl_policies(
-    bind: Connection, data_use_map: Dict[str, str], data_category_map: Dict[str, str]
-) -> None:
-    """Upgrade or downgrade data uses from fideslang 2.0 for ctl policies"""
-    existing_ctl_policies: ResultProxy = bind.execute(
-        text("SELECT id, rules FROM ctl_policies;")
-    )
-
-    for row in existing_ctl_policies:
-        rules: List[Dict] = row["rules"]
-
-        for i, rule in enumerate(rules or []):
-            data_uses: Dict = rule.get("data_uses", {})
-            rules[i]["data_uses"]["values"] = [
-                _replace_matching_data_uses(use, data_use_map)
-                for use in data_uses.get("values", [])
-            ]
-
-            rule_data_categories: List[str] = rule.get("data_categories", {}).get(
-                "values", []
-            )
-            updated_data_categories: List[str] = _replace_matching_data_categories(
-                rule_data_categories, data_category_map
-            )
-            rules[i]["data_categories"]["values"] = updated_data_categories
-
-        update_data_use_query: TextClause = text(
-            "UPDATE ctl_policies SET rules = :updated_rules WHERE id= :policy_id"
-        )
-        bind.execute(
-            update_data_use_query,
-            {"policy_id": row["id"], "updated_rules": json.dumps(rules)},
-        )
-
-
 #####################
 ## Data Categories ##
 #####################
@@ -177,6 +65,127 @@ data_category_downgrades: Dict[str, str] = {
 }
 
 
+def _replace_matching_data_label(
+    data_label: str, data_label_map: Dict[str, str]
+) -> str:
+    """
+    Helper function to do string replacement for updated fides_keys.
+    """
+    for old, new in data_label_map.items():
+        if data_label.startswith(old):
+            return data_label.replace(old, new)
+
+    return data_label
+
+
+def update_privacy_declarations(
+    bind: Connection, data_use_map: Dict[str, str], data_category_map: Dict[str, str]
+) -> None:
+    """
+    Upgrade or downgrade Privacy Declarations for Fideslang 2.0
+
+    This updates:
+    - data uses
+    - data categories
+    - shared categories
+    """
+    existing_privacy_declarations: ResultProxy = bind.execute(
+        text(
+            "SELECT id, data_use, data_categories, shared_categories FROM privacydeclaration;"
+        )
+    )
+    for row in existing_privacy_declarations:
+        data_use: str = _replace_matching_data_label(row["data_use"], data_use_map)
+        data_categories: List[str] = [
+            _replace_matching_data_label(data_category, data_category_map)
+            for data_category in row["data_categories"]
+        ]
+        shared_categories: List[str] = [
+            _replace_matching_data_label(data_category, data_category_map)
+            for data_category in row["shared_categories"]
+        ]
+
+        update_query: TextClause = text(
+            "UPDATE privacydeclaration SET data_use = :updated_use, data_categories = :updated_categories, shared_categories = :updated_shared WHERE id= :declaration_id"
+        )
+        bind.execute(
+            update_query,
+            {
+                "declaration_id": row["id"],
+                "updated_use": data_use,
+                "updated_categories": data_categories,
+                "updated_shared": shared_categories,
+            },
+        )
+
+
+def update_ctl_policies(
+    bind: Connection, data_use_map: Dict[str, str], data_category_map: Dict[str, str]
+) -> None:
+    """
+    Upgrade or downgrade Policy Rules for Fideslang 2.0
+
+    This updates:
+    - data uses
+    - data categories
+    """
+    existing_ctl_policies: ResultProxy = bind.execute(
+        text("SELECT id, rules FROM ctl_policies;")
+    )
+
+    for row in existing_ctl_policies:
+        rules: List[Dict] = row["rules"]
+
+        for i, rule in enumerate(rules or []):
+            data_uses: List = rule.get("data_uses", {}).get("values", [])
+            rules[i]["data_uses"]["values"] = [
+                _replace_matching_data_label(use, data_use_map) for use in data_uses
+            ]
+
+            data_categories: List = rule.get("data_categories", {}).get("values", [])
+            rules[i]["data_categories"]["values"] = [
+                _replace_matching_data_label(category, data_category_map)
+                for category in data_categories
+            ]
+
+        update_data_use_query: TextClause = text(
+            "UPDATE ctl_policies SET rules = :updated_rules WHERE id= :policy_id"
+        )
+        bind.execute(
+            update_data_use_query,
+            {"policy_id": row["id"], "updated_rules": json.dumps(rules)},
+        )
+
+
+def update_data_label_tables(
+    bind: Connection, update_map: Dict[str, str], table_name: str
+) -> None:
+    """
+    Upgrade or downgrade Data Labels for Fideslang 2.0
+    """
+    existing_labels: ResultProxy = bind.execute(
+        text(f"SELECT fides_key, parent_key FROM {table_name};")
+    )
+    for row in existing_labels:
+        old_key = row["fides_key"]
+        new_key = _replace_matching_data_label(old_key, update_map)
+
+        old_parent = row["parent_key"]
+        new_parent = _replace_matching_data_label(old_parent, update_map)
+
+        update_query: TextClause = text(
+            f"UPDATE {table_name} SET fides_key = :updated_key, parent_key = :updated_parent WHERE fides_key = :old_key"
+        )
+        bind.execute(
+            update_query,
+            {
+                "updated_key": new_key,
+                "old_key": old_key,
+                "updated_parent": new_parent,
+            },
+        )
+
+
 def update_datasets_data_categories(
     bind: Connection, data_label_map: Dict[str, str]
 ) -> None:
@@ -192,9 +201,10 @@ def update_datasets_data_categories(
         dataset_data_categories: Optional[List[str]] = row["data_categories"]
 
         if dataset_data_categories:
-            updated_categories: List[str] = _replace_matching_data_categories(
-                dataset_data_categories, data_label_map
-            )
+            updated_categories: List[str] = [
+                _replace_matching_data_label(category, data_label_map)
+                for category in dataset_data_categories
+            ]
 
             update_label_query: TextClause = text(
                 "UPDATE ctl_datasets SET data_categories = :updated_labels WHERE id= :dataset_id"
@@ -234,9 +244,10 @@ def update_system_ingress_egress_data_categories(
         # Do a blunt find/replace
         if ingress:
             for item in ingress:
-                item["data_categories"] = _replace_matching_data_categories(
-                    item.get("data_categories"), data_label_map
-                )
+                item["data_categories"] = [
+                    _replace_matching_data_label(category, data_label_map)
+                    for category in item.get("data_categories")
+                ]
 
             update_ingress_query: TextClause = text(
                 "UPDATE ctl_systems SET ingress = :updated_ingress WHERE id= :system_id"
@@ -248,9 +259,10 @@ def update_system_ingress_egress_data_categories(
 
         if egress:
             for item in egress:
-                item["data_categories"] = _replace_matching_data_categories(
-                    item.get("data_categories"), data_label_map
-                )
+                item["data_categories"] = [
+                    _replace_matching_data_label(category, data_label_map)
+                    for category in item.get("data_categories")
+                ]
 
             update_egress_query: TextClause = text(
                 "UPDATE ctl_systems SET egress = :updated_egress WHERE id= :system_id"
@@ -259,6 +271,7 @@ def update_system_ingress_egress_data_categories(
                 update_egress_query,
                 {"system_id": row["id"], "updated_egress": json.dumps(egress)},
             )
+
 
 def upgrade() -> None:
     """
@@ -271,6 +284,10 @@ def upgrade() -> None:
     logger.info("Removing old default data categories and data uses")
     bind.execute(text("DELETE FROM ctl_data_uses WHERE is_default = TRUE;"))
     bind.execute(text("DELETE FROM ctl_data_categories WHERE is_default = TRUE;"))
+
+    logger.info("Upgrading Taxonomy Items for Fideslang 2.0")
+    update_data_label_tables(bind, data_use_upgrades, "ctl_data_uses")
+    update_data_label_tables(bind, data_category_upgrades, "ctl_data_categories")
 
     logger.info("Upgrading Privacy Declarations for Fideslang 2.0")
     update_privacy_declarations(bind, data_use_upgrades, data_category_upgrades)
