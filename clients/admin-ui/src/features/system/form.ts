@@ -105,6 +105,7 @@ export const transformFormValuesToSystem = (
         ...payload.meta.vendor,
         id: formValues.meta.vendor.id,
       };
+      payload.vendor_id = formValues.meta.vendor.id;
     }
   }
 
