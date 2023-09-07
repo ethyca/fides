@@ -85,34 +85,6 @@ export const generateTcString = async ({
         if (consented && vendorIsGvl(vendorPreference)) {
           tcModel.vendorConsents.set(+vendorPreference.id);
           tcModel.vendorLegitimateInterests.set(+vendorPreference.id);
-          // // Get the purposes associated with this vendor
-          // const thisVendor = experience.tcf_vendors?.filter(
-          //   (v) => v.id === vendorPreference.id
-          // )[0];
-          // const vendorPurposes = thisVendor?.purposes;
-          // console.log({ vendorPurposes });
-          // if (
-          //   vendorPurposes?.some(
-          //     (p) =>
-          //       p.legal_bases?.indexOf(LegalBasisForProcessingEnum.CONSENT) !==
-          //       -1
-          //   )
-          // ) {
-          //   tcModel.vendorConsents.set(+vendorPreference.id);
-          // }
-          // if (
-          //   vendorPurposes?.some(
-          //     (p) =>
-          //       p.legal_bases?.indexOf(
-          //         LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
-          //       ) !== -1 &&
-          //       // per the IAB, make sure we never set purposes 1, 3, 4, 5, or 6
-          //       FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.indexOf(p.id) === -1
-          //   )
-          // ) {
-          //   console.log("setting vendor legint", vendorPreference.id);
-          //   tcModel.vendorLegitimateInterests.set(+vendorPreference.id);
-          // }
         }
       });
     }
