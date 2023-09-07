@@ -6,7 +6,6 @@ import { Column } from "react-table";
 import Layout from "~/features/common/Layout";
 import { FidesTable, WrappedCell } from "~/features/common/table";
 import { ClipboardCell } from "~/features/common/table/cells";
-import EmptyTableState from "~/features/common/table/EmptyTableState";
 import { FidesObject } from "~/features/common/table/FidesTable";
 import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 

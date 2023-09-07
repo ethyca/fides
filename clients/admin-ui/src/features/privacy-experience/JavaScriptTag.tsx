@@ -19,10 +19,7 @@ import { CopyIcon } from "~/features/common/Icon";
 import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 
 const PRIVACY_CENTER_HOSTNAME_TEMPLATE = "{privacy-center-hostname-and-path}";
-const FIDES_JS_SCRIPT_TEMPLATE =
-  `<script src="https://${ 
-  PRIVACY_CENTER_HOSTNAME_TEMPLATE 
-  }/fides.js"></script>`;
+const FIDES_JS_SCRIPT_TEMPLATE = `<script src="https://${PRIVACY_CENTER_HOSTNAME_TEMPLATE}/fides.js"></script>`;
 const FIDES_GTM_SCRIPT_TAG = "<script>Fides.gtm()</script>";
 
 const JavaScriptTag = () => {
@@ -37,12 +34,16 @@ const JavaScriptTag = () => {
     }
   );
 
-  const FIDES_JS_SCRIPT_TAG = useMemo(() => isFidesCloud && isSuccess && fidesCloudConfig?.privacy_center_url
-      ? FIDES_JS_SCRIPT_TEMPLATE.replace(
-          PRIVACY_CENTER_HOSTNAME_TEMPLATE,
-          fidesCloudConfig.privacy_center_url
-        )
-      : FIDES_JS_SCRIPT_TEMPLATE, [fidesCloudConfig?.privacy_center_url, isFidesCloud, isSuccess]);
+  const FIDES_JS_SCRIPT_TAG = useMemo(
+    () =>
+      isFidesCloud && isSuccess && fidesCloudConfig?.privacy_center_url
+        ? FIDES_JS_SCRIPT_TEMPLATE.replace(
+            PRIVACY_CENTER_HOSTNAME_TEMPLATE,
+            fidesCloudConfig.privacy_center_url
+          )
+        : FIDES_JS_SCRIPT_TEMPLATE,
+    [fidesCloudConfig?.privacy_center_url, isFidesCloud, isSuccess]
+  );
 
   return (
     <>
