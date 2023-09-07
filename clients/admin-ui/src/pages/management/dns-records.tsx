@@ -63,12 +63,6 @@ const DNSRecordsPage: NextPage = () => {
           DNS Records
         </Heading>
         <Box maxWidth="600px">
-          <Box mt={4} mb={4}>
-            <EmptyTableState
-              title="Configuration not validated"
-              description="Depending on your provider, it might take some time for the DNS records to apply"
-            />
-          </Box>
           <Text marginBottom={2} fontSize="md">
             Set the follow record on your DNS provider to continue.
           </Text>
