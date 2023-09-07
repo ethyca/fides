@@ -27,8 +27,6 @@ const EmptyTableState = ({
     []
   );
 
-  console.log(vendorSelected);
-
   return (
     <Stack
       backgroundColor="gray.50"

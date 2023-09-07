@@ -55,7 +55,6 @@ const PrivacyDeclarationFormTab = ({
 
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
   const [showForm, setShowForm] = useState(false);
-  // const [showDictionaryModal, setShowDictionaryModal] = useState(false);
   const [currentDeclaration, setCurrentDeclaration] = useState<
     PrivacyDeclarationResponse | undefined
   >(undefined);
@@ -224,14 +223,6 @@ const PrivacyDeclarationFormTab = ({
     setShowForm(true);
     setCurrentDeclaration(declarationToEdit);
   };
-
-  // const handleOpenDictModal = () => {
-  //   setShowDictionaryModal(true);
-  // };
-
-  // const handleCloseDictModal = () => {
-  //   setShowDictionaryModal(false);
-  // };
 
   const handleAcceptDictSuggestions = (suggestions: DictDataUse[]) => {
     const newDeclarations = suggestions.map((du) =>
