@@ -4,6 +4,7 @@ import {
   Divider,
   Stack,
   Text,
+  useDisclosure,
   useToast,
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
@@ -54,12 +55,18 @@ const PrivacyDeclarationFormTab = ({
 
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
   const [showForm, setShowForm] = useState(false);
-  const [showDictionaryModal, setShowDictionaryModal] = useState(false);
+  // const [showDictionaryModal, setShowDictionaryModal] = useState(false);
   const [currentDeclaration, setCurrentDeclaration] = useState<
     PrivacyDeclarationResponse | undefined
   >(undefined);
 
   const features = useFeatures();
+
+  const {
+    isOpen: showDictionaryModal,
+    onOpen: handleOpenDictModal,
+    onClose: handleCloseDictModal,
+  } = useDisclosure();
 
   const assignedCookies = [
     ...system.privacy_declarations
@@ -218,13 +225,13 @@ const PrivacyDeclarationFormTab = ({
     setCurrentDeclaration(declarationToEdit);
   };
 
-  const handleOpenDictModal = () => {
-    setShowDictionaryModal(true);
-  };
+  // const handleOpenDictModal = () => {
+  //   setShowDictionaryModal(true);
+  // };
 
-  const handleCloseDictModal = () => {
-    setShowDictionaryModal(false);
-  };
+  // const handleCloseDictModal = () => {
+  //   setShowDictionaryModal(false);
+  // };
 
   const handleAcceptDictSuggestions = (suggestions: DictDataUse[]) => {
     const newDeclarations = suggestions.map((du) =>
@@ -232,7 +239,7 @@ const PrivacyDeclarationFormTab = ({
     );
 
     handleSave(newDeclarations);
-    setShowDictionaryModal(false);
+    handleCloseDictModal();
   };
 
   const handleSubmit = (values: PrivacyDeclarationResponse) => {
