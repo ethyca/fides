@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.19.0"
+    "version": "2.18.1b7.post0.dev10"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -17592,6 +17592,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -17625,6 +17630,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -17660,6 +17670,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -17693,6 +17708,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -17728,6 +17748,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -17761,6 +17786,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -17796,6 +17826,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -17829,6 +17864,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -17864,6 +17904,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -17897,6 +17942,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -17932,6 +17982,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -17965,6 +18020,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -18000,6 +18060,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -18033,6 +18098,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -18068,6 +18138,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -18101,6 +18176,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -18136,6 +18216,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -18169,6 +18254,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -18211,6 +18301,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -18244,6 +18339,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
