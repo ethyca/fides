@@ -37,11 +37,31 @@ data_use_downgrades: Dict[str, str] = {
 }
 
 
+def _replace_matching_data_categories(
+    data_categories: List[str], data_label_map: Dict[str, str]
+) -> List[str]:
+    """
+    For every data category in the list, loop through every data category upgrade and replace with a match if applicable.
+    This also picks up category upgrades for child categories
+    """
+    updated_data_categories: List[str] = []
+    for category in data_categories or []:
+        for old_cat, new_cat in data_label_map.items():
+            if category.startswith(old_cat):
+                # Do a string replace to catch child items
+                category = category.replace(old_cat, new_cat)
+        updated_data_categories.append(category)
+
+    return updated_data_categories
+
+
 def _replace_matching_data_uses(
     data_use: Optional[str], data_use_map: Dict[str, str]
 ) -> Optional[str]:
-    """Helper method to loop through all data uses in the data use map and iteratively replace any overlaps
-    in the current data use"""
+    """
+    Helper method to loop through all data uses in the data use map and iteratively replace any overlaps
+    in the current data use
+    """
     if not data_use:
         return
     for key, value in data_use_map.items():
@@ -50,38 +70,73 @@ def _replace_matching_data_uses(
     return data_use
 
 
-def update_privacy_declaration_data_uses(
-    bind: Connection, data_use_map: Dict[str, str]
+def update_privacy_declarations(
+    bind: Connection, data_use_map: Dict[str, str], data_category_map: Dict[str, str]
 ) -> None:
-    """Upgrade or downgrade data uses from fideslang 2.0 for privacy declarations"""
+    """
+    Upgrade or downgrade Privacy Declarations for Fideslang 2.0
+
+    This updates:
+    - data uses
+    - data categories
+    - shared categories
+    """
     existing_privacy_declarations: ResultProxy = bind.execute(
-        text("SELECT id, data_use FROM privacydeclaration;")
+        text(
+            "SELECT id, data_use, data_categories, shared_categories FROM privacydeclaration;"
+        )
     )
     for row in existing_privacy_declarations:
-        data_use: str = _replace_matching_data_uses(row["data_use"], data_use_map)
+        data_use: Optional[str] = _replace_matching_data_uses(
+            row["data_use"], data_use_map
+        )
+        assert data_use  # We can't have an empty data use here
+        data_categories: List[str] = _replace_matching_data_categories(
+            row["data_categories"], data_category_map
+        )
+        shared_categories: List[str] = _replace_matching_data_categories(
+            row["shared_categories"], data_category_map
+        )
 
-        update_data_use_query: TextClause = text(
-            "UPDATE privacydeclaration SET data_use = :updated_use WHERE id= :declaration_id"
+        update_query: TextClause = text(
+            "UPDATE privacydeclaration SET data_use = :updated_use, data_categories = :updated_categories, shared_categories = :updated_shared WHERE id= :declaration_id"
         )
         bind.execute(
-            update_data_use_query,
-            {"declaration_id": row["id"], "updated_use": data_use},
+            update_query,
+            {
+                "declaration_id": row["id"],
+                "updated_use": data_use,
+                "updated_categories": data_categories,
+                "updated_shared": shared_categories,
+            },
         )
 
 
-def update_ctl_policy_data_uses(bind: Connection, data_use_map: Dict[str, str]) -> None:
+def update_ctl_policies(
+    bind: Connection, data_use_map: Dict[str, str], data_category_map: Dict[str, str]
+) -> None:
     """Upgrade or downgrade data uses from fideslang 2.0 for ctl policies"""
     existing_ctl_policies: ResultProxy = bind.execute(
         text("SELECT id, rules FROM ctl_policies;")
     )
+
     for row in existing_ctl_policies:
         rules: List[Dict] = row["rules"]
+
         for i, rule in enumerate(rules or []):
             data_uses: Dict = rule.get("data_uses", {})
             rules[i]["data_uses"]["values"] = [
                 _replace_matching_data_uses(use, data_use_map)
                 for use in data_uses.get("values", [])
             ]
+
+            rule_data_categories: List[str] = rule.get("data_categories", {}).get(
+                "values", []
+            )
+            updated_data_categories: List[str] = _replace_matching_data_categories(
+                rule_data_categories, data_category_map
+            )
+            rules[i]["data_categories"]["values"] = updated_data_categories
 
         update_data_use_query: TextClause = text(
             "UPDATE ctl_policies SET rules = :updated_rules WHERE id= :policy_id"
@@ -120,24 +175,6 @@ data_category_upgrades: Dict[str, str] = {
 data_category_downgrades: Dict[str, str] = {
     value: key for key, value in data_category_upgrades.items()
 }
-
-
-def _replace_matching_data_categories(
-    data_categories: List[str], data_label_map: Dict[str, str]
-) -> List[str]:
-    """
-    For every data category in the list, loop through every data category upgrade and replace with a match if applicable.
-    This also picks up category upgrades for child categories
-    """
-    updated_data_categories: List[str] = []
-    for category in data_categories or []:
-        for old_cat, new_cat in data_label_map.items():
-            if category.startswith(old_cat):
-                # Do a string replace to catch child items
-                category = category.replace(old_cat, new_cat)
-        updated_data_categories.append(category)
-
-    return updated_data_categories
 
 
 def update_datasets_data_categories(
@@ -223,61 +260,11 @@ def update_system_ingress_egress_data_categories(
                 {"system_id": row["id"], "updated_egress": json.dumps(egress)},
             )
 
-
-def update_privacy_declaration_data_categories(
-    bind: Connection, data_label_map: Dict[str, str]
-) -> None:
-    """Upgrade or downgrade data uses from fideslang 2.0 for data categories"""
-    existing_privacy_declarations: ResultProxy = bind.execute(
-        text("SELECT id, data_categories FROM privacydeclaration;")
-    )
-    for row in existing_privacy_declarations:
-        labels: Optional[List[str]] = _replace_matching_data_categories(
-            row["data_categories"], data_label_map
-        )
-
-        update_label_query: TextClause = text(
-            "UPDATE privacydeclaration SET data_categories = :updated_label WHERE id= :declaration_id"
-        )
-        bind.execute(
-            update_label_query,
-            {"declaration_id": row["id"], "updated_label": labels},
-        )
-
-
-def update_ctl_policy_data_categories(
-    bind: Connection, data_label_map: Dict[str, str]
-) -> None:
-    """Upgrade or downgrade data categories from fideslang 2.0 for ctl policies"""
-    existing_ctl_policies: ResultProxy = bind.execute(
-        text("SELECT id, rules FROM ctl_policies;")
-    )
-    for row in existing_ctl_policies:
-        rules: List[Dict] = row["rules"]
-        for i, rule in enumerate(rules or []):
-            data_labels: Dict = rule.get("data_categories", {})
-            rule_data_categories: List[str] = data_labels.get("values", [])
-            updated_data_categories: List[str] = _replace_matching_data_categories(
-                rule_data_categories, data_label_map
-            )
-            rules[i]["data_categories"]["values"] = updated_data_categories
-
-        update_data_label_query: TextClause = text(
-            "UPDATE ctl_policies SET rules = :updated_rules WHERE id= :policy_id"
-        )
-        bind.execute(
-            update_data_label_query,
-            {"policy_id": row["id"], "updated_rules": json.dumps(rules)},
-        )
-
-
 def upgrade() -> None:
     """
     Given that our advice is to turn off auto-migrations and make a db copy,
     there is no "downgrade" version of this. It also wouldn't be feasible given
     it would require an older version of fideslang.
-
-    For more info regarding the logic in this migration, see `scripts/test_fideslang_2.py`
     """
     bind: Connection = op.get_bind()
 
@@ -285,19 +272,11 @@ def upgrade() -> None:
     bind.execute(text("DELETE FROM ctl_data_uses WHERE is_default = TRUE;"))
     bind.execute(text("DELETE FROM ctl_data_categories WHERE is_default = TRUE;"))
 
-    ## Data Uses ##
-    logger.info("Upgrading Data Uses in Privacy Declarations")
-    update_privacy_declaration_data_uses(bind, data_use_upgrades)
+    logger.info("Upgrading Privacy Declarations for Fideslang 2.0")
+    update_privacy_declarations(bind, data_use_upgrades, data_category_upgrades)
 
-    logger.info("Upgrading Data Uses in Policy Rules")
-    update_ctl_policy_data_uses(bind, data_use_upgrades)
-
-    ## Data Categories ##
-    logger.info("Upgrading Data Categories on Privacy Declarations")
-    update_privacy_declaration_data_categories(bind, data_category_upgrades)
-
-    logger.info("Upgrading Data Categories in Policy Rules")
-    update_ctl_policy_data_categories(bind, data_category_upgrades)
+    logger.info("Upgrading Policy Rules for Fideslang 2.0")
+    update_ctl_policies(bind, data_use_upgrades, data_category_upgrades)
 
     logger.info("Upgrading Data Categories in Datasets")
     update_datasets_data_categories(bind, data_category_upgrades)
@@ -310,4 +289,6 @@ def downgrade() -> None:
     """
     This migration does not support downgrades.
     """
-    logger.info("Data migrations from Fideslang 2.0 to Fideslang 1.0 are not supported.")
+    logger.info(
+        "Data migrations from Fideslang 2.0 to Fideslang 1.0 are not supported."
+    )

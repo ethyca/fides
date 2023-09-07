@@ -5,7 +5,7 @@ for moving users to Fideslang 2.0, found in Fides release 2.20
 The steps to run the script are as follows:
 1. In a terminal, run `nox -s teardown -- volumes ; nox -s dev` to get the server running
 2. In a separate terminal, run `nox -s shell`, and then `fides user login ; fides push ; python scripts/verify_fideslang_2_data_migration.py`
-3. You can run `python scripts/verify_fideslang_2_data_migration.py` as many times as needed for testing
+3. You can run `python scripts/verify_fideslang_2_data_migration.py -h` to understand how to invoke script
 """
 import argparse
 from functools import partial
