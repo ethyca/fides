@@ -61,7 +61,7 @@ const ActivityTimeline = ({
   return (
     <Box width="100%">
       <Text color="gray.900" fontSize="md" fontWeight="500" mb={1}>
-        Activity Timeline
+        Activity timeline
       </Text>
       {timelineEntries}
     </Box>

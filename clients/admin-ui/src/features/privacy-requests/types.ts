@@ -74,6 +74,7 @@ export interface PrivacyRequestEntity {
     email?: string;
     phone_number?: string;
   };
+  custom_metadata?: { [key: string]: any };
   policy: {
     name: string;
     key: string;

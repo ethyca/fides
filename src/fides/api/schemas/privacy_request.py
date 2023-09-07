@@ -78,6 +78,7 @@ class PrivacyRequestCreate(FidesSchema):
     finished_processing_at: Optional[datetime]
     requested_at: Optional[datetime]
     identity: Identity
+    custom_metadata: Optional[Dict[str, Any]] = None
     policy_key: FidesKey
     encryption_key: Optional[str] = None
     consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
@@ -195,6 +196,7 @@ class PrivacyRequestResponse(FidesSchema):
     # about our PII structure than is explicitly stored in the cache on request
     # creation.
     identity: Optional[Dict[str, Optional[str]]]
+    custom_metadata: Optional[Dict[str, Any]]
     policy: PolicySchema
     action_required_details: Optional[CheckpointActionRequiredDetails] = None
     resume_endpoint: Optional[str]

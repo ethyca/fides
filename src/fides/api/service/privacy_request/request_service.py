@@ -48,11 +48,13 @@ def cache_data(
     identity: Identity,
     encryption_key: Optional[str],
     drp_request_body: Optional[DrpPrivacyRequestCreate],
+    custom_metadata: Optional[Dict[str, Any]] = None,
 ) -> None:
     """Cache privacy request data"""
     # Store identity and encryption key in the cache
     logger.info("Caching identity for privacy request {}", privacy_request.id)
     privacy_request.cache_identity(identity)
+    privacy_request.cache_custom_metadata(custom_metadata)
     privacy_request.cache_encryption(encryption_key)  # handles None already
 
     # Store masking secrets in the cache

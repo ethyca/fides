@@ -63,6 +63,7 @@ from fides.api.util.cache import (
     get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
     get_cache,
+    get_custom_metadata_cache_key,
     get_drp_request_body_cache_key,
     get_encryption_cache_key,
     get_identity_cache_key,
@@ -202,6 +203,11 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
         nullable=True,
     )
+    custom_metadata_approved_by = Column(
+        String,
+        ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
+        nullable=True,
+    )
     client_id = Column(
         String,
         ForeignKey(ClientDetail.id_field_path),
@@ -252,10 +258,14 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     )
 
     reviewer = relationship(
-        FidesUser, backref=backref("privacy_request", passive_deletes=True)
+        FidesUser,
+        backref=backref("privacy_requests", passive_deletes=True),
+        foreign_keys=[reviewed_by],
     )
+
     paused_at = Column(DateTime(timezone=True), nullable=True)
     identity_verified_at = Column(DateTime(timezone=True), nullable=True)
+    custom_metadata_approved_at = Column(DateTime(timezone=True), nullable=True)
     due_date = Column(DateTime(timezone=True), nullable=True)
     awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
@@ -325,6 +335,21 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                     value,
                 )
 
+    def cache_custom_metadata(
+        self, custom_metadata: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """Sets each of the custom_metadata values under their own key in the cache"""
+        if not custom_metadata:
+            return
+
+        cache: FidesopsRedis = get_cache()
+        for key, value in custom_metadata.items():
+            if value is not None:
+                cache.set_with_autoexpire(
+                    get_custom_metadata_cache_key(self.id, key),
+                    value,
+                )
+
     def persist_identity(self, db: Session, identity: Identity) -> None:
         """
         Stores the identity provided with the privacy request in a secure way, compatible with
@@ -345,6 +370,22 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                     },
                 )
 
+    def persist_custom_metadata(
+        self, db: Session, custom_metadata: Dict[str, Any]
+    ) -> None:
+        for key, value in custom_metadata.items():
+            if value:
+                hashed_value = ProvidedMetadata.hash_value(value)
+                ProvidedMetadata.create(
+                    db=db,
+                    data={
+                        "privacy_request_id": self.id,
+                        "field_name": key,
+                        "encrypted_value": {"value": value},
+                        "hashed_value": hashed_value,
+                    },
+                )
+
     def get_persisted_identity(self) -> Identity:
         """
         Retrieves persisted identity fields from the DB.
@@ -357,6 +398,12 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                 field.encrypted_value["value"],
             )
         return schema
+
+    def get_persisted_metadata(self) -> Dict[str, Any]:
+        return {
+            field.field_name: field.encrypted_value["value"]
+            for field in self.provided_metadata  # type: ignore[attr-defined]
+        }
 
     def verify_identity(self, db: Session, provided_code: str) -> "PrivacyRequest":
         """Verify the identification code supplied by the user
@@ -440,6 +487,13 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache"""
         prefix = f"id-{self.id}-identity-*"
+        cache: FidesopsRedis = get_cache()
+        keys = cache.keys(prefix)
+        return {key.split("-")[-1]: cache.get(key) for key in keys}
+
+    def get_cached_custom_metadata(self) -> Dict[str, Any]:
+        """Retrieves any custom metadata pertaining to this request from the cache"""
+        prefix = f"id-{self.id}-custom-metadata-*"
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
         return {key.split("-")[-1]: cache.get(key) for key in keys}
@@ -922,7 +976,8 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
             self.encrypted_value.get("value"),  # type:ignore
         )
         return identity
-    
+
+
 class ProvidedMetadata(Base):
     privacy_request_id = Column(
         String,
@@ -932,6 +987,43 @@ class ProvidedMetadata(Base):
         PrivacyRequest,
         backref="provided_metadata",
     )
+    field_name = Column(
+        String,
+        index=False,
+        nullable=False,
+    )
+    hashed_value = Column(
+        String,
+        index=True,
+        unique=False,
+        nullable=True,
+    )  # This field is used as a blind index for exact match searches
+    encrypted_value = Column(
+        MutableDict.as_mutable(
+            StringEncryptedType(
+                JSONTypeOverride,
+                CONFIG.security.app_encryption_key,
+                AesGcmEngine,
+                "pkcs5",
+            )
+        ),
+        nullable=True,
+    )  # Type bytea in the db
+
+    @classmethod
+    def hash_value(
+        cls,
+        value: str,
+        encoding: str = "UTF-8",
+    ) -> str:
+        """Utility function to hash a user's password with a generated salt"""
+        SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
+        hashed_value = hash_with_salt(
+            value.encode(encoding),
+            SALT.encode(encoding),
+        )
+        return hashed_value
+
 
 class Consent(Base):
     """The DB ORM model for Consent."""

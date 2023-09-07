@@ -289,3 +289,23 @@ saas_config:
                   - dataset: saas_connector_example
                     field: customer.id
                     direction: from
+    - name: internal_information
+      requests:
+        read:
+          - method: POST
+            path: /v1/internal/
+            body: |
+              {
+                "user_info": {
+                  <custom_metadata>
+                }
+              }
+        update:
+          - method: POST
+            path: /v1/internal/
+            body: |
+              {
+                "user_info": {
+                  <custom_metadata>
+                }
+              }

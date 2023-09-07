@@ -64,7 +64,9 @@ const usePrivacyRequestForm = ({
       name: "",
       email: "",
       phone: "",
-      ...Object.fromEntries(Object.keys(customMetadata).map(key => [key, ""]))
+      ...Object.fromEntries(
+        Object.keys(customMetadata).map((key) => [key, ""])
+      ),
     },
     onSubmit: async (values) => {
       if (!action) {
@@ -72,14 +74,17 @@ const usePrivacyRequestForm = ({
         return;
       }
 
+      const { email, phone, name, ...customMetadata } = values;
+
       const body = [
         {
           identity: {
-            email: values.email,
-            phone_number: values.phone,
+            email: email,
+            phone_number: phone,
             // enable this when name field is supported on the server
             // name: values.name
           },
+          custom_metadata: customMetadata,
           policy_key: action.policy_key,
         },
       ];
@@ -182,9 +187,11 @@ const usePrivacyRequestForm = ({
       ...Object.fromEntries(
         Object.entries(customMetadata).map(([key, { label, required }]) => [
           key,
-          required ? Yup.string().required(`${label} is required`) : Yup.string().notRequired()
+          required
+            ? Yup.string().required(`${label} is required`)
+            : Yup.string().notRequired(),
         ])
-      )
+      ),
     }),
   });
 

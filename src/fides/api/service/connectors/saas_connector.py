@@ -40,7 +40,11 @@ from fides.api.util.consent_util import (
     cache_initial_status_and_identities_for_consent_reporting,
     should_opt_in_to_service,
 )
-from fides.api.util.saas_util import assign_placeholders, map_param_values
+from fides.api.util.saas_util import (
+    CUSTOM_METADATA,
+    assign_placeholders,
+    map_param_values,
+)
 
 
 class SaaSConnector(BaseConnector[AuthenticatedClient]):
@@ -189,6 +193,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"The 'read' action is not defined for the '{self.current_collection_name}' "
                 f"endpoint in {self.saas_config.fides_key}"
             )
+
+        # add the custom metadata to the input_data map (if available)
+        custom_metadata = privacy_request.get_cached_custom_metadata()
+        if custom_metadata:
+            input_data[CUSTOM_METADATA] = [custom_metadata]
 
         rows: List[Row] = []
         for read_request in read_requests:

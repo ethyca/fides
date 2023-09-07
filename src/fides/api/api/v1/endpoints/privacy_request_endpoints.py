@@ -284,6 +284,7 @@ def privacy_request_csv_download(
                 pr.status.value if pr.status else None,
                 pr.policy.rules[0].action_type if len(pr.policy.rules) > 0 else None,
                 pr.get_persisted_identity().dict(),
+                pr.get_persisted_metadata(),
                 pr.created_at,
                 pr.reviewed_by,
                 pr.id,
@@ -551,6 +552,7 @@ def get_request_status(
     action_type: Optional[ActionType] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
+    include_custom_metadata: Optional[bool] = False,
     download_csv: Optional[bool] = False,
     sort_field: str = "created_at",
     sort_direction: ColumnSort = ColumnSort.DESC,
@@ -601,15 +603,15 @@ def get_request_status(
         PrivacyRequest.execution_and_audit_logs_by_dataset = property(lambda self: None)
 
     paginated = paginate(query, params)
-    if include_identities:
-        # Conditionally include the cached identity data in the response if
-        # it is explicitly requested
-        for item in paginated.items:  # type: ignore
+
+    for item in paginated.items:  # type: ignore
+        if include_identities:
             item.identity = item.get_persisted_identity().dict()
-            attach_resume_instructions(item)
-    else:
-        for item in paginated.items:  # type: ignore
-            attach_resume_instructions(item)
+
+        if include_custom_metadata:
+            item.custom_metadata = item.get_persisted_metadata()
+
+        attach_resume_instructions(item)
 
     return paginated
 
@@ -1658,6 +1660,9 @@ def create_privacy_request_func(
             privacy_request.persist_identity(
                 db=db, identity=privacy_request_data.identity
             )
+            privacy_request.persist_custom_metadata(
+                db=db, custom_metadata=privacy_request_data.custom_metadata
+            )
             for privacy_preference in privacy_preferences:
                 privacy_preference.privacy_request_id = privacy_request.id
                 privacy_preference.save(db=db)
@@ -1668,6 +1673,7 @@ def create_privacy_request_func(
                 privacy_request_data.identity,
                 privacy_request_data.encryption_key,
                 None,
+                privacy_request_data.custom_metadata,
             )
 
             check_and_dispatch_error_notifications(db=db)
