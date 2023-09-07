@@ -63,7 +63,7 @@ const DataUseCheckboxTable = ({
   return (
     <Table variant="unstyled" size="sm" border="1px" borderColor="gray.200">
       <Thead border="1px" borderColor="gray.200" backgroundColor="gray.50">
-        <Tr sx={{ "border-collapse": "separate" }}>
+        <Tr>
           <Th width={3} borderRight="1px" borderRightColor="gray.200">
             <Checkbox
               py={2}
