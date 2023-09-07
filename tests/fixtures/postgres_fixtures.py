@@ -96,7 +96,8 @@ def postgres_example_test_dataset_config_skipped_login_collection(
     skipped_collection = next(
         col for col in postgres_dataset["collections"] if col["name"] == "login"
     )
-    skipped_collection["skip_processing"] = True
+    skipped_collection["fides_meta"] = {}
+    skipped_collection["fides_meta"]["skip_processing"] = True
 
     ctl_dataset = CtlDataset.create_from_dataset_dict(db, postgres_dataset)
 
@@ -125,7 +126,8 @@ def postgres_example_test_dataset_config_skipped_address_collection(
     skipped_collection = next(
         col for col in postgres_dataset["collections"] if col["name"] == "address"
     )
-    skipped_collection["skip_processing"] = True
+    skipped_collection["fides_meta"] = {}
+    skipped_collection["fides_meta"]["skip_processing"] = True
 
     ctl_dataset = CtlDataset.create_from_dataset_dict(db, postgres_dataset)
 

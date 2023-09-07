@@ -267,7 +267,7 @@ def to_graph_field(
 
 
 def convert_dataset_to_graph(
-    dataset: Dataset, connection_key: FidesKey, remove_skip_processing: bool = True
+    dataset: Dataset, connection_key: FidesKey
 ) -> GraphDataset:
     """
     Converts the given Fides dataset dataset into the concrete graph
@@ -281,7 +281,10 @@ def convert_dataset_to_graph(
     logger.debug("Parsing dataset '{}' into graph representation", dataset_name)
     graph_collections = []
     for collection in dataset.collections:
-        if collection.skip_processing and remove_skip_processing:
+        collection_skip_processing: bool = bool(
+            collection.fides_meta and collection.fides_meta.skip_processing
+        )
+        if collection_skip_processing:
             logger.debug(
                 "Skipping collection {} on dataset {} marked with skip_processing",
                 collection.name,
@@ -302,7 +305,10 @@ def convert_dataset_to_graph(
             }
 
         graph_collection = Collection(
-            name=collection.name, fields=graph_fields, after=collection_after
+            name=collection.name,
+            fields=graph_fields,
+            after=collection_after,
+            skip_processing=collection_skip_processing,
         )
         graph_collections.append(graph_collection)
     logger.debug(

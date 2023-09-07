@@ -139,7 +139,8 @@ class TestValidateDataset:
         skipped_collection = next(
             col for col in dataset["collections"] if col["name"] == "login"
         )
-        skipped_collection["skip_processing"] = True
+        skipped_collection["fides_meta"] = {}
+        skipped_collection["fides_meta"]["skip_processing"] = True
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=dataset
         )
@@ -161,7 +162,8 @@ class TestValidateDataset:
         skipped_collection = next(
             col for col in dataset["collections"] if col["name"] == "address"
         )
-        skipped_collection["skip_processing"] = True
+        skipped_collection["fides_meta"] = {}
+        skipped_collection["fides_meta"]["skip_processing"] = True
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=dataset
         )
@@ -169,8 +171,10 @@ class TestValidateDataset:
 
         details = response.json()["traversal_details"]
         assert not details["is_traversable"]
-        assert details["msg"] == 'Referred to object postgres_example_test_dataset:address:id does not exist'
-
+        assert (
+            details["msg"]
+            == "Referred to object postgres_example_test_dataset:address:id does not exist"
+        )
 
     def test_put_validate_dataset_nested_collections(
         self,

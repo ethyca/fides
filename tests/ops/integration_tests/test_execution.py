@@ -3,7 +3,7 @@ from typing import Optional
 from unittest import mock
 
 import pytest
-from fideslang.models import Dataset
+from fideslang.models import CollectionMeta, Dataset
 from pydantic import ValidationError
 from sqlalchemy.exc import InvalidRequestError
 
@@ -603,7 +603,8 @@ class TestSkipMarkedCollections:
                 for col in dataset_postgres.collections
                 if col.name == skipped_collection_name
             )
-            skipped_collection.skip_processing = True
+            skipped_collection.fides_meta = CollectionMeta
+            skipped_collection.fides_meta.skip_processing = True
 
         graph = convert_dataset_to_graph(dataset_postgres, integration_config.key)
         dataset_graph = DatasetGraph(*[graph])

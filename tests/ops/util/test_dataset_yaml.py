@@ -5,6 +5,7 @@ import yaml
 from fideslang.models import Dataset
 from pydantic import ValidationError
 
+from fides.api import common_exceptions
 from fides.api.graph.config import (
     CollectionAddress,
     FieldAddress,
@@ -341,3 +342,81 @@ def test_return_all_elements_specified_on_non_array_field():
     """Test return_all_elements can only be specified on array fields"""
     with pytest.raises(ValidationError):
         Dataset.parse_obj(__to_dataset__(non_array_field_with_invalid_flag))
+
+
+skip_processing_yaml = """dataset:
+  - fides_key: a_dataset      
+    name: a_dataset
+    description: a description
+    collections:
+      - name: a_collection
+        fides_meta:
+            skip_processing: True
+        fields:
+          - name: a_field
+            data_categories: [user.contact.address.city] 
+          - name: id
+            data_categories: [system.operations]
+      - name: b_collection
+        fields:
+          - name: b_field
+            data_categories: [user.contact.address.city] 
+          - name: id
+            data_categories: [system.operations]
+"""
+
+skip_processing_invalid_yaml = """dataset:
+  - fides_key: a_dataset      
+    name: A Dataset
+    description: a description
+    collections:
+      - name: a_collection
+        fides_meta:
+            skip_processing: True
+        fields:
+          - name: a_field
+            data_categories: [user.contact.address.city] 
+          - name: id
+            data_categories: [system.operations]
+      - name: b_collection
+        fields:
+          - name: b_field
+            data_categories: [user.contact.address.city] 
+          - name: id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: a_dataset
+                  field: a_collection.id
+                  direction: from
+"""
+
+
+class TestConvertDatasetToGraphSkipProcessing:
+    def test_collection_skip_processing(self):
+        dataset = __to_dataset__(skip_processing_yaml)
+        ds = Dataset.parse_obj(dataset)
+        converted_dataset = convert_dataset_to_graph(ds, "ignore")
+        assert len(converted_dataset.collections) == 1
+        assert converted_dataset.collections[0].name == "b_collection"
+        assert converted_dataset.collections[0].skip_processing is False
+
+        assert DatasetGraph(converted_dataset)
+
+    def test_invalid_collection_skip_processing(self):
+        """Skipping a collection that shouldn't be skipped is not picked in convert_dataset_to_graph, but
+        downstream when DatasetGraph is instantiated"""
+        dataset = __to_dataset__(skip_processing_invalid_yaml)
+        ds = Dataset.parse_obj(dataset)
+        converted_dataset = convert_dataset_to_graph(ds, "ignore")
+        assert len(converted_dataset.collections) == 1
+        assert converted_dataset.collections[0].name == "b_collection"
+        assert converted_dataset.collections[0].skip_processing is False
+
+        with pytest.raises(common_exceptions.ValidationError) as exc:
+            DatasetGraph(converted_dataset)
+
+        assert (
+            exc.value.message
+            == "Referred to object a_dataset:a_collection:id does not exist"
+        )
