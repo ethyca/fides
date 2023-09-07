@@ -394,7 +394,7 @@ describe("Fides-js TCF", () => {
           .its("lastCall.args")
           .then(([tcData, success]) => {
             expect(success).to.eql(true);
-            expect(tcData.eventStatus === "useractioncomplete");
+            expect(tcData.eventStatus).to.eql("useractioncomplete");
             expect(tcData.purpose.consents).to.eql({
               [PURPOSE_1.id]: true,
               [PURPOSE_2.id]: true,
@@ -407,6 +407,60 @@ describe("Fides-js TCF", () => {
               8: false,
             });
             expect(tcData.purpose.legitimateInterests).to.eql({
+              [PURPOSE_5.id]: true,
+              1: false,
+            });
+            expect(tcData.vendor.consents).to.eql({
+              1: false,
+              [VENDOR_2.id]: true,
+            });
+            expect(tcData.vendor.legitimateInterests).to.eql({});
+          });
+      });
+
+      it("can handle inappropriate legint purposes", () => {
+        cy.fixture("consent/experience_tcf.json").then((payload) => {
+          const experience: PrivacyExperience = payload.items[0];
+          // Set purpose with id 4 to LegInt which is not allowed!
+          experience.tcf_purposes![1].legal_bases = ["Legitimate interests"];
+          // Set the corresponding embedded vendor purpose too
+          experience.tcf_vendors![0].purposes![0].legal_bases = [
+            "Legitimate interests",
+          ];
+          stubConfig({
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+            },
+            experience,
+          });
+        });
+        // Since we've changed windows, redeclare the stub too
+        cy.window().then((win) => {
+          win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent2"));
+        });
+        cy.get("#fides-modal-link").click();
+        cy.getByTestId("consent-modal").within(() => {
+          cy.get("button").contains("Opt in to all").click();
+        });
+        cy.get("@TCFEvent2")
+          .its("lastCall.args")
+          .then(([tcData, success]) => {
+            expect(success).to.eql(true);
+            expect(tcData.eventStatus).to.eql("useractioncomplete");
+            expect(tcData.purpose.consents).to.eql({
+              4: false,
+              [PURPOSE_2.id]: true,
+              [PURPOSE_3.id]: true,
+              [PURPOSE_4.id]: true,
+              1: false,
+              2: false,
+              3: false,
+              5: false,
+              8: false,
+            });
+            expect(tcData.purpose.legitimateInterests).to.eql({
+              // No id 4 here!
               [PURPOSE_5.id]: true,
               1: false,
             });

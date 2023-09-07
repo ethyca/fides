@@ -43,7 +43,7 @@ const purposeHasLegalBasis = ({
   if (!purpose) {
     return false;
   }
-  return purpose.legal_bases?.indexOf(legalBasis) !== -1;
+  return purpose.legal_bases?.includes(legalBasis);
 };
 
 /**
@@ -84,7 +84,31 @@ export const generateTcString = async ({
         );
         if (consented && vendorIsGvl(vendorPreference)) {
           tcModel.vendorConsents.set(+vendorPreference.id);
-          tcModel.vendorLegitimateInterests.set(+vendorPreference.id);
+          const thisVendor = experience.tcf_vendors?.filter(
+            (v) => v.id === vendorPreference.id
+          )[0];
+          const vendorPurposes = thisVendor?.purposes;
+          // Handle the case where a vendor has forbidden legint purposes set
+          let skipSetLegInt = false;
+          if (vendorPurposes) {
+            const legIntPurposeIds = vendorPurposes
+              .filter((p) =>
+                p.legal_bases?.includes(
+                  LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
+                )
+              )
+              .map((p) => p.id);
+            if (
+              legIntPurposeIds.filter((id) =>
+                FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id)
+              ).length
+            ) {
+              skipSetLegInt = true;
+            }
+          }
+          if (!skipSetLegInt) {
+            tcModel.vendorLegitimateInterests.set(+vendorPreference.id);
+          }
         }
       });
     }
@@ -116,7 +140,7 @@ export const generateTcString = async ({
               legalBasis: LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS,
             }) &&
             // per the IAB, make sure we never set purposes 1, 3, 4, 5, or 6
-            FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.indexOf(id) === -1
+            !FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id)
           ) {
             tcModel.purposeLegitimateInterests.set(id);
           }
