@@ -17,9 +17,15 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.19.0...main)
 
+### Added
+
+- Added new Performance-related nox commands and included them as part of the CI suite [#3997](https://github.com/ethyca/fides/pull/3997)
+- Added dictionary suggestions for data uses [4035](https://github.com/ethyca/fides/pull/4035)
+
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 
 ### Added
+
 - Add dictionary suggestions [#3937](https://github.com/ethyca/fides/pull/3937), [#3988](https://github.com/ethyca/fides/pull/3988)
 - Added new endpoints for healthchecks [#3947](https://github.com/ethyca/fides/pull/3947)
 - Added vendor list dropdown [#3857](https://github.com/ethyca/fides/pull/3857)
@@ -37,7 +43,7 @@ The types of changes are:
 - Fixed dataset issue that was preventing the Vend connector from loading during server startup [#3923](https://github.com/ethyca/fides/pull/3923)
 - Adding version check to version-dependent migration script [#3951](https://github.com/ethyca/fides/pull/3951)
 - Fixed a bug where some fields were not saving correctly on the system form [#3975](https://github.com/ethyca/fides/pull/3975)
-- Changed "retention period" field in privacy declaration form from number input to text input  [#3980](https://github.com/ethyca/fides/pull/3980)
+- Changed "retention period" field in privacy declaration form from number input to text input [#3980](https://github.com/ethyca/fides/pull/3980)
 
 ### Changed
 
@@ -59,6 +65,7 @@ The types of changes are:
 - Changes in the `data` directory now trigger a server reload (for local development) [#3874](https://github.com/ethyca/fides/pull/3874)
 
 ### Fixed
+
 - Fix datamap zoom for low system counts [#3835](https://github.com/ethyca/fides/pull/3835)
 - Fixed connector forms with external dataset reference fields [#3873](https://github.com/ethyca/fides/pull/3873)
 - Fix ability to make server side API calls from privacy-center [#3895](https://github.com/ethyca/fides/pull/3895)
@@ -106,6 +113,7 @@ The types of changes are:
 - Erasure support for Heap [#3599](https://github.com/ethyca/fides/pull/3599)
 
 ### Fixed
+
 - Privacy notice UI's list of possible regions now matches the backend's list [#3787](https://github.com/ethyca/fides/pull/3787)
 - Admin UI "property does not existing" build issue [#3831](https://github.com/ethyca/fides/pull/3831)
 - Flagging sensitive inputs as passwords to mask values during entry [#3843](https://github.com/ethyca/fides/pull/3843)
@@ -127,7 +135,7 @@ The types of changes are:
 - Privacy center and fides-js now pass in `Unescape-Safestr` as a header so that special characters can be rendered properly [#3706](https://github.com/ethyca/fides/pull/3706)
 - Fixed ValidationError for saving PrivacyPreferences [#3719](https://github.com/ethyca/fides/pull/3719)
 - Fixed issue preventing ConnectionConfigs with duplicate names from saving [#3770](https://github.com/ethyca/fides/pull/3770)
-- Fixed creating and editing manual integrations [#3772](https://github.com/ethyca/fides/pull/3772) 
+- Fixed creating and editing manual integrations [#3772](https://github.com/ethyca/fides/pull/3772)
 - Fix lingering integration artifacts by cascading deletes from System [#3771](https://github.com/ethyca/fides/pull/3771)
 
 ### Developer Experience
@@ -150,23 +158,28 @@ The types of changes are:
 - Enable privacy notice and privacy experience feature flags by default [#3773](https://github.com/ethyca/fides/pull/3773)
 
 ### Security
+
 - Resolve Zip bomb file upload vulnerability [CVE-2023-37480](https://github.com/ethyca/fides/security/advisories/GHSA-g95c-2jgm-hqc6)
 - Resolve SVG bomb (billion laughs) file upload vulnerability [CVE-2023-37481](https://github.com/ethyca/fides/security/advisories/GHSA-3rw2-wfc8-wmj5)
 
 ## [2.15.1](https://github.com/ethyca/fides/compare/2.15.0...2.15.1)
 
 ### Added
+
 - Set `sslmode` to `prefer` if connecting to Redshift via ssh [#3685](https://github.com/ethyca/fides/pull/3685)
 
 ### Changed
+
 - Privacy center action cards are now able to expand to accommodate longer text [#3669](https://github.com/ethyca/fides/pull/3669)
 - Update integration endpoint permissions [#3707](https://github.com/ethyca/fides/pull/3707)
 
 ### Fixed
+
 - Handle names with a double underscore when processing access and erasure requests [#3688](https://github.com/ethyca/fides/pull/3688)
 - Allow Privacy Notices banner and modal to scroll as needed [#3713](https://github.com/ethyca/fides/pull/3713)
 
 ### Security
+
 - Resolve path traversal vulnerability in webserver API [CVE-2023-36827](https://github.com/ethyca/fides/security/advisories/GHSA-r25m-cr6v-p9hq)
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)

@@ -1,19 +1,19 @@
 import {
   Box,
-  Button,
   ButtonProps,
   Divider,
   Stack,
   Text,
+  useDisclosure,
   useToast,
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import EmptyTableState from "common/table/EmptyTableState";
 import { useEffect, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import EmptyTableState from "~/features/system/dictionary-data-uses/EmptyTableState";
 import { useUpdateSystemMutation } from "~/features/system/system.slice";
 import {
   PrivacyDeclarationDisplayGroup,
@@ -30,6 +30,10 @@ import {
   SystemResponse,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
+
+import { useFeatures } from "../../common/features";
+import { DictDataUse } from "../../plus/types";
+import PrivacyDeclarationDictModalComponents from "../dictionary-data-uses/PrivacyDeclarationDictModalComponents";
 
 interface Props {
   system: SystemResponse;
@@ -55,6 +59,14 @@ const PrivacyDeclarationFormTab = ({
     PrivacyDeclarationResponse | undefined
   >(undefined);
 
+  const features = useFeatures();
+
+  const {
+    isOpen: showDictionaryModal,
+    onOpen: handleOpenDictModal,
+    onClose: handleCloseDictModal,
+  } = useDisclosure();
+
   const assignedCookies = [
     ...system.privacy_declarations
       .filter((d) => d.cookies !== undefined)
@@ -79,6 +91,36 @@ const PrivacyDeclarationFormTab = ({
       return true;
     }
     return false;
+  };
+
+  const transformDictDataUseToDeclaration = (
+    dataUse: DictDataUse
+  ): PrivacyDeclarationResponse => {
+    // fix "Legitimate Interests" capitalization for API
+    const legalBasisForProcessing =
+      dataUse.legal_basis_for_processing === "Legitimate Interests"
+        ? "Legitimate interests"
+        : dataUse.legal_basis_for_processing;
+
+    // some data categories are nested on the backend, flatten them
+    // https://github.com/ethyca/fides-services/issues/100
+    const dataCategories = dataUse.data_categories.flatMap((dc) =>
+      dc.split(",")
+    );
+
+    return {
+      data_use: dataUse.data_use,
+      data_categories: dataCategories,
+      features: dataUse.features,
+      // @ts-ignore
+      legal_basis_for_processing: legalBasisForProcessing,
+      retention_period: `${dataUse.retention_period}`,
+      cookies: dataUse.cookies.map((c) => ({
+        name: c.identifier,
+        domain: c.domains,
+        path: "/",
+      })),
+    };
   };
 
   const handleSave = async (
@@ -177,6 +219,15 @@ const PrivacyDeclarationFormTab = ({
     setCurrentDeclaration(declarationToEdit);
   };
 
+  const handleAcceptDictSuggestions = (suggestions: DictDataUse[]) => {
+    const newDeclarations = suggestions.map((du) =>
+      transformDictDataUseToDeclaration(du)
+    );
+
+    handleSave(newDeclarations);
+    handleCloseDictModal();
+  };
+
   const handleSubmit = (values: PrivacyDeclarationResponse) => {
     handleCloseForm();
     if (currentDeclaration) {
@@ -206,18 +257,10 @@ const PrivacyDeclarationFormTab = ({
         <EmptyTableState
           title="You don't have a data use set up for this system yet."
           description='A Data Use is the purpose for which data is used in a system. In Fides, a system may have more than one Data Use. For example, a CRM system may be used both for "Customer Support" and also for "Email Marketing", each of these is a Data Use.'
-          button={
-            <Button
-              size="sm"
-              variant="outline"
-              fontWeight="semibold"
-              minWidth="auto"
-              data-testid="add-btn"
-              onClick={handleOpenNewForm}
-            >
-              Add data use
-            </Button>
-          }
+          dictAvailable={features.dictionaryService}
+          handleAdd={handleOpenNewForm}
+          handleDictSuggestion={handleOpenDictModal}
+          vendorSelected={!!system.meta.vendor}
         />
       ) : (
         <PrivacyDeclarationDisplayGroup
@@ -226,6 +269,9 @@ const PrivacyDeclarationFormTab = ({
           handleAdd={handleOpenNewForm}
           handleEdit={handleOpenEditForm}
           handleDelete={handleDelete}
+          dictionaryEnabled={features.dictionaryService}
+          handleOpenDictModal={handleOpenDictModal}
+          allDataUses={dataProps.allDataUses}
         />
       )}
       {unassignedCookies && unassignedCookies.length > 0 ? (
@@ -240,12 +286,30 @@ const PrivacyDeclarationFormTab = ({
           ))}
         </PrivacyDeclarationTabTable>
       ) : null}
-      <PrivacyDeclarationFormModal isOpen={showForm} onClose={handleCloseForm}>
+      <PrivacyDeclarationFormModal
+        isOpen={showForm}
+        onClose={handleCloseForm}
+        heading="Configure data use"
+      >
         <PrivacyDeclarationForm
           initialValues={currentDeclaration}
           onSubmit={handleSubmit}
           onCancel={handleCloseForm}
           {...dataProps}
+        />
+      </PrivacyDeclarationFormModal>
+      <PrivacyDeclarationFormModal
+        isOpen={showDictionaryModal}
+        onClose={handleCloseDictModal}
+        isCentered
+        heading="Compass suggestions"
+      >
+        <PrivacyDeclarationDictModalComponents
+          alreadyHasDataUses={system.privacy_declarations.length > 0}
+          allDataUses={dataProps.allDataUses}
+          onCancel={handleCloseDictModal}
+          onAccept={handleAcceptDictSuggestions}
+          vendorId={system.meta?.vendor?.id ? system.meta.vendor.id : undefined}
         />
       </PrivacyDeclarationFormModal>
     </Stack>
