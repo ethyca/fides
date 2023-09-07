@@ -27,6 +27,8 @@ const EmptyTableState = ({
     []
   );
 
+  console.log(vendorSelected);
+
   return (
     <Stack
       backgroundColor="gray.50"
@@ -61,6 +63,7 @@ const EmptyTableState = ({
                   placement="top"
                   label={dictDisabledTooltip}
                   isDisabled={vendorSelected}
+                  shouldWrapChildren
                 >
                   <Button
                     size="xs"
