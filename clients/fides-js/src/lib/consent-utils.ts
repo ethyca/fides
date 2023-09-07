@@ -197,22 +197,40 @@ const hasCurrentPreference = (
   return records.some((record) => record.current_preference);
 };
 
+const hasActionNeededTcfPreference = (
+  records: Pick<TCFPurposeRecord, "current_preference">[] | undefined
+) => {
+  if (!records || records.length === 0) {
+    return false;
+  }
+  return records.some((record) => record.current_preference == null);
+};
+
 /**
  * Returns true if the user has any saved TCF preferences
  */
-export const hasSavedTcfPreferences = (experience: PrivacyExperience) =>
+export const hasNoSavedTcfPreferences = (experience: PrivacyExperience) =>
   hasCurrentPreference(experience.tcf_purposes) ||
   hasCurrentPreference(experience.tcf_special_purposes) ||
   hasCurrentPreference(experience.tcf_features) ||
   hasCurrentPreference(experience.tcf_special_features) ||
-  hasCurrentPreference(experience.tcf_vendors);
+  hasCurrentPreference(experience.tcf_vendors) ||
+  hasCurrentPreference(experience.tcf_systems);
+
+export const hasActionNeededTcfPreferences = (experience: PrivacyExperience) =>
+  hasActionNeededTcfPreference(experience.tcf_purposes) ||
+  hasActionNeededTcfPreference(experience.tcf_special_purposes) ||
+  hasActionNeededTcfPreference(experience.tcf_features) ||
+  hasActionNeededTcfPreference(experience.tcf_special_features) ||
+  hasActionNeededTcfPreference(experience.tcf_vendors) ||
+  hasActionNeededTcfPreference(experience.tcf_systems);
 
 /**
  * Returns true if there are notices in the experience that require a user preference
  */
 export const hasActionNeededNotices = (experience: PrivacyExperience) => {
   if (experience.component === ComponentType.TCF_OVERLAY) {
-    return !hasSavedTcfPreferences(experience);
+    return hasActionNeededTcfPreferences(experience);
   }
   return Boolean(
     experience?.privacy_notices?.some(
