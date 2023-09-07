@@ -1,43 +1,23 @@
-import {
-  Button,
-  Divider,
-  Flex,
-  Heading,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Spacer,
-  Tag,
-  Text,
-} from "@fidesui/react";
+import { Divider, Flex, Heading, Tag, Text } from "@fidesui/react";
 import { useState } from "react";
 
 import PII from "../common/PII";
 import PIIToggle from "../common/PIIToggle";
 import { PrivacyRequestEntity } from "./types";
 import { snakeToSentenceCase } from "../common/utils";
-import { closeModal } from "../common/hooks/dirty-forms.slice";
-import ApproveCustomMetadataModal from "./ApproveCustomMetadataModal";
 
 type SubjectIdentitiesProps = {
   subjectRequest: PrivacyRequestEntity;
 };
 
 const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
-  const { identity, custom_metadata } = subjectRequest;
+  const {
+    identity,
+    identity_verified_at,
+    custom_metadata_approved_at,
+    custom_metadata,
+  } = subjectRequest;
   const [revealPII, setRevealPII] = useState(false);
-  const [isModalOpen, setModalOpen] = useState(false);
-
-  const openModal = () => {
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-  };
 
   return (
     <>
@@ -72,12 +52,15 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
           >
             Email:
           </Text>
-          <Text color="gray.600" fontWeight="500" fontSize="sm">
+          <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
             <PII
               data={identity.email ? identity.email : ""}
               revealPII={revealPII}
             />
           </Text>
+          <Tag color="white" bg="primary.400" fontWeight="medium" fontSize="sm">
+            {identity_verified_at ? "Verified" : "Unverified"}
+          </Tag>
         </Flex>
       )}
       {identity.phone_number && (
@@ -91,6 +74,9 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
               revealPII={revealPII}
             />
           </Text>
+          <Tag color="white" bg="primary.400" fontWeight="medium" fontSize="sm">
+            {identity_verified_at ? "Verified" : "Unverified"}
+          </Tag>
         </Flex>
       )}
       {custom_metadata && (
@@ -98,41 +84,34 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
           <Heading color="gray.900" fontSize="sm" fontWeight="semibold" mb={4}>
             Additional inputs
           </Heading>
-          {Object.entries(custom_metadata).map(([key, value]) => (
-            <Flex alignItems="flex-start" key={key}>
-              <Text
-                mb={4}
-                mr={2}
-                fontSize="sm"
-                color="gray.900"
-                fontWeight="500"
-              >
-                {snakeToSentenceCase(key)}:
-              </Text>
-              <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
-                <PII data={value ? value : ""} revealPII={revealPII} />
-              </Text>
-              <Tag
-                color="white"
-                bg="primary.400"
-                fontWeight="medium"
-                fontSize="sm"
-              >
-                Unverified
-              </Tag>
-            </Flex>
-          ))}
-          <Button size="xs" variant="outline" onClick={() => openModal()}>
-            Manually verify
-          </Button>
+          {Object.entries(custom_metadata)
+            .filter(([key, item]) => item["value"])
+            .map(([key, item]) => (
+              <Flex alignItems="flex-start" key={key}>
+                <Text
+                  mb={4}
+                  mr={2}
+                  fontSize="sm"
+                  color="gray.900"
+                  fontWeight="500"
+                >
+                  {snakeToSentenceCase(key)}:
+                </Text>
+                <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
+                  <PII data={item["value"]} revealPII={revealPII} />
+                </Text>
+                <Tag
+                  color="white"
+                  bg="primary.400"
+                  fontWeight="medium"
+                  fontSize="sm"
+                >
+                  Unverified
+                </Tag>
+              </Flex>
+            ))}
         </>
       )}
-      <ApproveCustomMetadataModal
-        message="Are your sure you want to verify these fields?"
-        subjectRequest={subjectRequest}
-        isOpen={isModalOpen}
-        onClose={closeModal}
-      />
     </>
   );
 };

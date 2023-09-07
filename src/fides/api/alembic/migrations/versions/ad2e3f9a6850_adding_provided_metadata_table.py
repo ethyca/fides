@@ -34,6 +34,7 @@ def upgrade():
         ),
         sa.Column("privacy_request_id", sa.String(), nullable=True),
         sa.Column("field_name", sa.String(), nullable=False),
+        sa.Column("field_label", sa.String(), nullable=False),
         sa.Column("hashed_value", sa.String(), nullable=True),
         sa.Column(
             "encrypted_value",

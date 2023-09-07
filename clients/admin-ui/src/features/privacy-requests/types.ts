@@ -74,7 +74,10 @@ export interface PrivacyRequestEntity {
     email?: string;
     phone_number?: string;
   };
-  custom_metadata?: { [key: string]: any };
+  identity_verified_at?: string;
+  custom_metadata?: { [key: string]: { label: string; value: any } };
+  custom_metadata_approved_by?: string;
+  custom_metadata_approved_at?: string;
   policy: {
     name: string;
     key: string;

@@ -201,6 +201,8 @@ class PrivacyRequestResponse(FidesSchema):
     action_required_details: Optional[CheckpointActionRequiredDetails] = None
     resume_endpoint: Optional[str]
     days_left: Optional[int]
+    custom_metadata_approved_by: Optional[str]
+    custom_metadata_approved_at: Optional[datetime]
 
     class Config:
         """Set orm_mode and use_enum_values"""

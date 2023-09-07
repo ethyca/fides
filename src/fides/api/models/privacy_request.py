@@ -347,7 +347,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             if value is not None:
                 cache.set_with_autoexpire(
                     get_custom_metadata_cache_key(self.id, key),
-                    value,
+                    value["value"],
                 )
 
     def persist_identity(self, db: Session, identity: Identity) -> None:
@@ -373,15 +373,16 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     def persist_custom_metadata(
         self, db: Session, custom_metadata: Dict[str, Any]
     ) -> None:
-        for key, value in custom_metadata.items():
-            if value:
-                hashed_value = ProvidedMetadata.hash_value(value)
+        for key, item in custom_metadata.items():
+            if item["value"]:
+                hashed_value = ProvidedMetadata.hash_value(item["value"])
                 ProvidedMetadata.create(
                     db=db,
                     data={
                         "privacy_request_id": self.id,
                         "field_name": key,
-                        "encrypted_value": {"value": value},
+                        "field_label": item["label"],
+                        "encrypted_value": {"value": item["value"]},
                         "hashed_value": hashed_value,
                     },
                 )
@@ -401,7 +402,10 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
 
     def get_persisted_metadata(self) -> Dict[str, Any]:
         return {
-            field.field_name: field.encrypted_value["value"]
+            field.field_name: {
+                "label": field.field_label,
+                "value": field.encrypted_value["value"],
+            }
             for field in self.provided_metadata  # type: ignore[attr-defined]
         }
 
@@ -988,6 +992,11 @@ class ProvidedMetadata(Base):
         backref="provided_metadata",
     )
     field_name = Column(
+        String,
+        index=False,
+        nullable=False,
+    )
+    field_label = Column(
         String,
         index=False,
         nullable=False,

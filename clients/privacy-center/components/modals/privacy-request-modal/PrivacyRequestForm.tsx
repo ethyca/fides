@@ -74,7 +74,20 @@ const usePrivacyRequestForm = ({
         return;
       }
 
-      const { email, phone, name, ...customMetadata } = values;
+      const { email, phone, name, ...customMetadataValues } = values;
+
+      // add the label to each custom metadata values
+      const transformedCustomMetadata = Object.keys(customMetadataValues).length
+        ? Object.fromEntries(
+            Object.entries(customMetadataValues).map(([key, value]) => [
+              key,
+              {
+                label: action.custom_metadata?.[key]?.label,
+                value,
+              },
+            ])
+          )
+        : null;
 
       const body = [
         {
@@ -84,7 +97,7 @@ const usePrivacyRequestForm = ({
             // enable this when name field is supported on the server
             // name: values.name
           },
-          custom_metadata: customMetadata,
+          custom_metadata: transformedCustomMetadata,
           policy_key: action.policy_key,
         },
       ];

@@ -256,6 +256,7 @@ def privacy_request_csv_download(
             "Status",
             "Request Type",
             "Subject Identity",
+            "Custom Metadata",
             "Time Received",
             "Reviewed By",
             "Request ID",
@@ -1270,9 +1271,14 @@ def approve_privacy_request(
 
     def _approve_request(privacy_request: PrivacyRequest) -> None:
         """Method for how to process requests - approved"""
+        now = datetime.utcnow()
         privacy_request.status = PrivacyRequestStatus.approved
-        privacy_request.reviewed_at = datetime.utcnow()
+        privacy_request.reviewed_at = now
         privacy_request.reviewed_by = user_id
+        # for now, the reviewer will be marked as the approver of the custom metadata
+        # this is to make it flexible in the future if we want to allow a different user to approve
+        privacy_request.custom_metadata_approved_at = now
+        privacy_request.custom_metadata_approved_by = user_id
         privacy_request.save(db=db)
         AuditLog.create(
             db=db,

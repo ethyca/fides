@@ -1,12 +1,39 @@
-import { Box, Flex, GreenCheckCircleIcon, Text } from "@fidesui/react";
+import {
+  Box,
+  Flex,
+  GreenCheckCircleIcon,
+  ErrorWarningIcon,
+  Text,
+} from "@fidesui/react";
 import { PrivacyRequestEntity } from "privacy-requests/types";
 import React from "react";
-
 import { EventData } from "./EventDetails";
+import { ExecutionLogStatus } from "~/types/api";
 
 type ActivityTimelineProps = {
   subjectRequest: PrivacyRequestEntity;
   setEventDetails: (d: EventData) => void;
+};
+
+const hasUnresolvedError = (entries) => {
+  const groupedByCollection = {};
+
+  // Group the entries by collection_name and keep only the latest entry for each collection.
+  entries.forEach((entry) => {
+    const { collection_name, updated_at } = entry;
+    if (
+      !groupedByCollection[collection_name] ||
+      new Date(groupedByCollection[collection_name].updated_at) <
+        new Date(updated_at)
+    ) {
+      groupedByCollection[collection_name] = entry;
+    }
+  });
+
+  // Check if any of the latest entries for the collections have an error status.
+  return Object.values(groupedByCollection).some(
+    (entry) => entry.status === ExecutionLogStatus.ERROR
+  );
 };
 
 const ActivityTimeline = ({
@@ -21,7 +48,11 @@ const ActivityTimeline = ({
     <Box key={key}>
       <Flex alignItems="center" height={23} position="relative">
         <Box zIndex={1}>
-          <GreenCheckCircleIcon />
+          {hasUnresolvedError(results![key]) ? (
+            <ErrorWarningIcon />
+          ) : (
+            <GreenCheckCircleIcon />
+          )}
         </Box>
         {index === resultKeys.length - 1 ? null : (
           <Box
