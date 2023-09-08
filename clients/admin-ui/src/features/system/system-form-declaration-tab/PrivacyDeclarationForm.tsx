@@ -30,8 +30,8 @@ import {
   CustomFieldsList,
   CustomFieldValues,
   useCustomFields,
-} from "../../common/custom-fields";
-import SystemFormInputGroup from "../SystemFormInputGroup";
+} from "~/features/common/custom-fields";
+import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 
 export const ValidationSchema = Yup.object().shape({
   data_categories: Yup.array(Yup.string())
