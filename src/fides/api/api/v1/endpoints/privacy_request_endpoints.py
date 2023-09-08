@@ -1030,7 +1030,6 @@ def bulk_restart_privacy_request_from_failure(
     db: Session = Depends(deps.get_db),
 ) -> BulkPostPrivacyRequests:
     """Bulk restart a of privacy request from failure."""
-
     succeeded: List[PrivacyRequestResponse] = []
     failed: List[Dict[str, Any]] = []
     for privacy_request_id in privacy_request_ids:
@@ -1061,7 +1060,7 @@ def bulk_restart_privacy_request_from_failure(
         succeeded.append(
             _process_privacy_request_restart(
                 privacy_request,
-                failed_details.step if failed_details.step else None,
+                failed_details.step if failed_details else None,
                 failed_details.collection if failed_details else None,
                 db,
             )
