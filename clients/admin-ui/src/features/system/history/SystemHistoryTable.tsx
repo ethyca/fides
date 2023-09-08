@@ -1,7 +1,6 @@
 import { Button, Table, Tbody, Td, Text, Thead, Tr } from "@fidesui/react";
 import _ from "lodash";
 import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 
 import NextArrow from "~/features/common/Icon/NextArrow";
 import PrevArrow from "~/features/common/Icon/PrevArrow";
@@ -11,10 +10,6 @@ import { SystemHistory } from "~/types/api/models/SystemHistory";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
 import SystemHistoryModal from "./modal/SystemHistoryModal";
-import {
-  selectCurrentSystemHistoryPage,
-  setCurrentPage,
-} from "./system-history.slice";
 
 interface Props {
   system: SystemResponse;
@@ -71,8 +66,7 @@ function alignArrays(
 const itemsPerPage = 10;
 
 const SystemHistoryTable = ({ system }: Props) => {
-  const dispatch = useDispatch();
-  const currentPage = useSelector(selectCurrentSystemHistoryPage);
+  const [currentPage, setCurrentPage] = useState(1);
   const { data } = useGetSystemHistoryQuery({
     system_key: system.fides_key,
     page: currentPage,
@@ -228,13 +222,13 @@ const SystemHistoryTable = ({ system }: Props) => {
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      dispatch(setCurrentPage(currentPage + 1));
+      setCurrentPage(currentPage + 1);
     }
   };
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
-      dispatch(setCurrentPage(currentPage - 1));
+      setCurrentPage(currentPage - 1);
     }
   };
 

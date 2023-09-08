@@ -21,7 +21,6 @@ import {
   useGetSystemByFidesKeyQuery,
 } from "~/features/system";
 import EditSystemFlow from "~/features/system/EditSystemFlow";
-import { setCurrentPage } from "~/features/system/history/system-history.slice";
 
 const INTEGRATION_TAB_INDEX = 3; // this needs to be updated if the order of the tabs changes
 
@@ -43,8 +42,6 @@ const ConfigureSystem: NextPage = () => {
 
   useEffect(() => {
     dispatch(setActiveSystem(system));
-    // set the system history page to 1 when loading a new system
-    dispatch(setCurrentPage(1));
   }, [system, dispatch]);
 
   useEffect(() => {
