@@ -20,6 +20,7 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Session, backref, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -63,7 +64,7 @@ from fides.api.util.cache import (
     get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
     get_cache,
-    get_custom_metadata_cache_key,
+    get_custom_privacy_request_field_cache_key,
     get_drp_request_body_cache_key,
     get_encryption_cache_key,
     get_identity_cache_key,
@@ -203,7 +204,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
         nullable=True,
     )
-    custom_metadata_approved_by = Column(
+    custom_privacy_request_fields_approved_by = Column(
         String,
         ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
         nullable=True,
@@ -265,7 +266,9 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
 
     paused_at = Column(DateTime(timezone=True), nullable=True)
     identity_verified_at = Column(DateTime(timezone=True), nullable=True)
-    custom_metadata_approved_at = Column(DateTime(timezone=True), nullable=True)
+    custom_privacy_request_fields_approved_at = Column(
+        DateTime(timezone=True), nullable=True
+    )
     due_date = Column(DateTime(timezone=True), nullable=True)
     awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
@@ -335,27 +338,27 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                     value,
                 )
 
-    def cache_custom_metadata(
-        self, custom_metadata: Optional[Dict[str, Any]] = None
+    def cache_custom_privacy_request_fields(
+        self, custom_privacy_request_fields: Optional[Dict[str, Any]] = None
     ) -> None:
-        """Sets each of the custom_metadata values under their own key in the cache"""
-        if not custom_metadata:
+        """Sets each of the custom privacy request fields values under their own key in the cache"""
+        if not custom_privacy_request_fields:
             return
 
-        if not CONFIG.execution.allow_unverified_custom_metadata_collection:
+        if not CONFIG.execution.allow_custom_privacy_request_field_collection:
             return
 
-        if CONFIG.execution.allow_unverified_custom_metadata_in_request_execution:
+        if CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution:
             cache: FidesopsRedis = get_cache()
-            for key, value in custom_metadata.items():
-                if value is not None:
+            for key, item in custom_privacy_request_fields.items():
+                if item is not None:
                     cache.set_with_autoexpire(
-                        get_custom_metadata_cache_key(self.id, key),
-                        value["value"],
+                        get_custom_privacy_request_field_cache_key(self.id, key),
+                        item["value"],
                     )
         else:
             logger.info(
-                "Custom metadata collected from privacy request {}, but config setting 'CONFIG.execution.allow_unverified_custom_metadata_in_request_execution' is set to false and prevents its usage.",
+                "Custom fields from privacy request {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution' is set to false and prevents their usage.",
                 self.id,
             )
 
@@ -379,17 +382,17 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                     },
                 )
 
-    def persist_custom_metadata(
-        self, db: Session, custom_metadata: Dict[str, Any]
+    def persist_custom_privacy_request_fields(
+        self, db: Session, custom_privacy_request_fields: Dict[str, Any]
     ) -> None:
-        if not custom_metadata:
+        if not custom_privacy_request_fields:
             return
 
-        if CONFIG.execution.allow_unverified_custom_metadata_collection:
-            for key, item in custom_metadata.items():
+        if CONFIG.execution.allow_custom_privacy_request_field_collection:
+            for key, item in custom_privacy_request_fields.items():
                 if item["value"]:
-                    hashed_value = ProvidedMetadata.hash_value(item["value"])
-                    ProvidedMetadata.create(
+                    hashed_value = CustomPrivacyRequestField.hash_value(item["value"])
+                    CustomPrivacyRequestField.create(
                         db=db,
                         data={
                             "privacy_request_id": self.id,
@@ -401,7 +404,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                     )
         else:
             logger.info(
-                "Custom metadata provided for privacy request {}, but config setting 'CONFIG.execution.allow_unverified_custom_metadata_collection' prevents its storage.",
+                "Custom fields provided in privacy request {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_field_collection' prevents their storage.",
                 self.id,
             )
 
@@ -418,13 +421,13 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             )
         return schema
 
-    def get_persisted_metadata(self) -> Dict[str, Any]:
+    def get_persisted_custom_privacy_request_fields(self) -> Dict[str, Any]:
         return {
             field.field_name: {
                 "label": field.field_label,
                 "value": field.encrypted_value["value"],
             }
-            for field in self.provided_metadata  # type: ignore[attr-defined]
+            for field in self.custom_fields  # type: ignore[attr-defined]
         }
 
     def verify_identity(self, db: Session, provided_code: str) -> "PrivacyRequest":
@@ -513,9 +516,9 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         keys = cache.keys(prefix)
         return {key.split("-")[-1]: cache.get(key) for key in keys}
 
-    def get_cached_custom_metadata(self) -> Dict[str, Any]:
-        """Retrieves any custom metadata pertaining to this request from the cache"""
-        prefix = f"id-{self.id}-custom-metadata-*"
+    def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
+        """Retrieves any custom fields pertaining to this request from the cache"""
+        prefix = f"id-{self.id}-custom-privacy-request-field-*"
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
         return {key.split("-")[-1]: cache.get(key) for key in keys}
@@ -1000,14 +1003,18 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         return identity
 
 
-class ProvidedMetadata(Base):
+class CustomPrivacyRequestField(Base):
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "custom_privacy_request_field"
+
     privacy_request_id = Column(
         String,
         ForeignKey(PrivacyRequest.id_field_path),
     )
     privacy_request = relationship(
         PrivacyRequest,
-        backref="provided_metadata",
+        backref="custom_fields",
     )
     field_name = Column(
         String,

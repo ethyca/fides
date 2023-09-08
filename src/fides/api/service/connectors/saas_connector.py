@@ -41,7 +41,7 @@ from fides.api.util.consent_util import (
     should_opt_in_to_service,
 )
 from fides.api.util.saas_util import (
-    UNVERIFIED_METADATA,
+    CUSTOM_PRIVACY_REQUEST_FIELDS,
     assign_placeholders,
     map_param_values,
 )
@@ -194,9 +194,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"endpoint in {self.saas_config.fides_key}"
             )
 
-        custom_metadata = privacy_request.get_cached_custom_metadata()
-        if custom_metadata:
-            input_data[UNVERIFIED_METADATA] = [custom_metadata]
+        custom_privacy_request_fields = (
+            privacy_request.get_cached_custom_privacy_request_fields()
+        )
+        if custom_privacy_request_fields:
+            input_data[CUSTOM_PRIVACY_REQUEST_FIELDS] = [custom_privacy_request_fields]
 
         rows: List[Row] = []
         for read_request in read_requests:

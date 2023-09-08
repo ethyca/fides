@@ -9,6 +9,7 @@ from fides.api.custom_types import SafeStr
 from fides.api.models.audit_log import AuditLogAction
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
+    CustomPrivacyRequestField,
     ExecutionLogStatus,
     PrivacyRequestStatus,
 )
@@ -78,7 +79,7 @@ class PrivacyRequestCreate(FidesSchema):
     finished_processing_at: Optional[datetime]
     requested_at: Optional[datetime]
     identity: Identity
-    custom_metadata: Optional[Dict[str, Any]] = None
+    custom_privacy_request_fields: Optional[Dict[str, Any]] = None
     policy_key: FidesKey
     encryption_key: Optional[str] = None
     consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
@@ -196,13 +197,13 @@ class PrivacyRequestResponse(FidesSchema):
     # about our PII structure than is explicitly stored in the cache on request
     # creation.
     identity: Optional[Dict[str, Optional[str]]]
-    custom_metadata: Optional[Dict[str, Any]]
+    custom_privacy_request_fields: Optional[Dict[str, Any]]
     policy: PolicySchema
     action_required_details: Optional[CheckpointActionRequiredDetails] = None
     resume_endpoint: Optional[str]
     days_left: Optional[int]
-    custom_metadata_approved_by: Optional[str]
-    custom_metadata_approved_at: Optional[datetime]
+    custom_privacy_request_fields_approved_by: Optional[str]
+    custom_privacy_request_fields_approved_at: Optional[datetime]
 
     class Config:
         """Set orm_mode and use_enum_values"""

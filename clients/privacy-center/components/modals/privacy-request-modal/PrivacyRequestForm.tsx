@@ -57,7 +57,8 @@ const usePrivacyRequestForm = ({
 }) => {
   const settings = useSettings();
   const identityInputs = action?.identity_inputs ?? defaultIdentityInput;
-  const customMetadata = action?.custom_metadata ?? {};
+  const customPrivacyRequestFields =
+    action?.custom_privacy_request_fields ?? {};
   const toast = useToast();
   const formik = useFormik<FormValues>({
     initialValues: {
@@ -65,7 +66,7 @@ const usePrivacyRequestForm = ({
       email: "",
       phone: "",
       ...Object.fromEntries(
-        Object.keys(customMetadata).map((key) => [key, ""])
+        Object.keys(customPrivacyRequestFields).map((key) => [key, ""])
       ),
     },
     onSubmit: async (values) => {
@@ -74,18 +75,22 @@ const usePrivacyRequestForm = ({
         return;
       }
 
-      const { email, phone, name, ...customMetadataValues } = values;
+      const { email, phone, name, ...customPrivacyRequestFieldValues } = values;
 
-      // add the label to each custom metadata values
-      const transformedCustomMetadata = Object.keys(customMetadataValues).length
+      // add the label to each custom privacy request field
+      const transformedCustomPrivacyRequestFields = Object.keys(
+        customPrivacyRequestFieldValues
+      ).length
         ? Object.fromEntries(
-            Object.entries(customMetadataValues).map(([key, value]) => [
-              key,
-              {
-                label: action.custom_metadata?.[key]?.label,
-                value,
-              },
-            ])
+            Object.entries(customPrivacyRequestFieldValues).map(
+              ([key, value]) => [
+                key,
+                {
+                  label: action.custom_privacy_request_fields?.[key]?.label,
+                  value,
+                },
+              ]
+            )
           )
         : null;
 
@@ -97,7 +102,7 @@ const usePrivacyRequestForm = ({
             // enable this when name field is supported on the server
             // name: values.name
           },
-          custom_metadata: transformedCustomMetadata,
+          custom_privacy_request_fields: transformedCustomPrivacyRequestFields,
           policy_key: action.policy_key,
         },
       ];
@@ -198,17 +203,19 @@ const usePrivacyRequestForm = ({
         }
       ),
       ...Object.fromEntries(
-        Object.entries(customMetadata).map(([key, { label, required }]) => [
-          key,
-          required
-            ? Yup.string().required(`${label} is required`)
-            : Yup.string().notRequired(),
-        ])
+        Object.entries(customPrivacyRequestFields).map(
+          ([key, { label, required }]) => [
+            key,
+            required
+              ? Yup.string().required(`${label} is required`)
+              : Yup.string().notRequired(),
+          ]
+        )
       ),
     }),
   });
 
-  return { ...formik, identityInputs, customMetadata };
+  return { ...formik, identityInputs, customPrivacyRequestFields };
 };
 
 type PrivacyRequestFormProps = {
@@ -246,7 +253,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
     dirty,
     resetForm,
     identityInputs,
-    customMetadata,
+    customPrivacyRequestFields,
   } = usePrivacyRequestForm({
     onClose,
     action,
@@ -342,19 +349,18 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 <FormErrorMessage>{errors.phone}</FormErrorMessage>
               </FormControl>
             ) : null}
-            {Object.entries(customMetadata).map(([key, metadata]) => (
+            {Object.entries(customPrivacyRequestFields).map(([key, item]) => (
               <FormControl
                 key={key}
                 id={key}
                 isInvalid={touched[key] && Boolean(errors[key])}
-                isRequired={metadata.required}
+                isRequired={item.required}
               >
-                <FormLabel fontSize="sm">{metadata.label}</FormLabel>
+                <FormLabel fontSize="sm">{item.label}</FormLabel>
                 <Input
                   id={key}
                   name={key}
                   focusBorderColor="primary.500"
-                  placeholder={metadata.label}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values[key]}

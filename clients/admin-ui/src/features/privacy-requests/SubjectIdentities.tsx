@@ -12,8 +12,8 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
   const {
     identity,
     identity_verified_at,
-    custom_metadata_approved_at,
-    custom_metadata,
+    custom_privacy_request_fields_approved_at,
+    custom_privacy_request_fields,
   } = subjectRequest;
   const [revealPII, setRevealPII] = useState(false);
 
@@ -77,12 +77,12 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
           </Tag>
         </Flex>
       )}
-      {Object.keys(custom_metadata).length > 0 && (
+      {Object.keys(custom_privacy_request_fields).length > 0 && (
         <>
           <Heading color="gray.900" fontSize="sm" fontWeight="semibold" mb={4}>
-            Additional metadata
+            Custom privacy request fields
           </Heading>
-          {Object.entries(custom_metadata)
+          {Object.entries(custom_privacy_request_fields)
             .filter(([key, item]) => item["value"])
             .map(([key, item]) => (
               <Flex alignItems="flex-start" key={key}>

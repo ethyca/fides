@@ -1,4 +1,4 @@
-"""adding provided metadata table
+"""adding custom privacy request field table
 
 Revision ID: ad2e3f9a6850
 Revises: 093bb28a8270
@@ -18,7 +18,7 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        "providedmetadata",
+        "custom_privacy_request_field",
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column(
             "created_at",
@@ -48,29 +48,36 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_providedmetadata_hashed_value"),
-        "providedmetadata",
+        op.f("ix_custom_privacy_request_field_hashed_value"),
+        "custom_privacy_request_field",
         ["hashed_value"],
         unique=False,
     )
     op.create_index(
-        op.f("ix_providedmetadata_id"), "providedmetadata", ["id"], unique=False
-    )
-    op.add_column(
-        "privacyrequest",
-        sa.Column("custom_metadata_approved_by", sa.String(), nullable=True),
+        op.f("ix_custom_privacy_request_field_id"),
+        "custom_privacy_request_field",
+        ["id"],
+        unique=False,
     )
     op.add_column(
         "privacyrequest",
         sa.Column(
-            "custom_metadata_approved_at", sa.DateTime(timezone=True), nullable=True
+            "custom_privacy_request_fields_approved_by", sa.String(), nullable=True
+        ),
+    )
+    op.add_column(
+        "privacyrequest",
+        sa.Column(
+            "custom_privacy_request_fields_approved_at",
+            sa.DateTime(timezone=True),
+            nullable=True,
         ),
     )
     op.create_foreign_key(
-        "privacyrequest_custom_metadata_approved_by_fkey",
+        "privacyrequest_custom_privacy_request_fields_approved_by_fkey",
         "privacyrequest",
         "fidesuser",
-        ["custom_metadata_approved_by"],
+        ["custom_privacy_request_fields_approved_by"],
         ["id"],
         ondelete="SET NULL",
     )
@@ -78,14 +85,18 @@ def upgrade():
 
 def downgrade():
     op.drop_constraint(
-        "privacyrequest_custom_metadata_approved_by_fkey",
+        "privacyrequest_custom_privacy_request_fields_approved_by_fkey",
         "privacyrequest",
         type_="foreignkey",
     )
-    op.drop_column("privacyrequest", "custom_metadata_approved_at")
-    op.drop_column("privacyrequest", "custom_metadata_approved_by")
-    op.drop_index(op.f("ix_providedmetadata_id"), table_name="providedmetadata")
+    op.drop_column("privacyrequest", "custom_privacy_request_fields_approved_at")
+    op.drop_column("privacyrequest", "custom_privacy_request_fields_approved_by")
     op.drop_index(
-        op.f("ix_providedmetadata_hashed_value"), table_name="providedmetadata"
+        op.f("ix_custom_privacy_request_field_id"),
+        table_name="custom_privacy_request_field",
     )
-    op.drop_table("providedmetadata")
+    op.drop_index(
+        op.f("ix_custom_privacy_request_field_hashed_value"),
+        table_name="custom_privacy_request_field",
+    )
+    op.drop_table("custom_privacy_request_field")

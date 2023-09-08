@@ -256,7 +256,7 @@ def privacy_request_csv_download(
             "Status",
             "Request Type",
             "Subject Identity",
-            "Custom Metadata",
+            "Custom Privacy Request Fields",
             "Time Received",
             "Reviewed By",
             "Request ID",
@@ -285,7 +285,7 @@ def privacy_request_csv_download(
                 pr.status.value if pr.status else None,
                 pr.policy.rules[0].action_type if len(pr.policy.rules) > 0 else None,
                 pr.get_persisted_identity().dict(),
-                pr.get_persisted_metadata(),
+                pr.get_persisted_custom_privacy_request_fields(),
                 pr.created_at,
                 pr.reviewed_by,
                 pr.id,
@@ -553,7 +553,7 @@ def get_request_status(
     action_type: Optional[ActionType] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
-    include_custom_metadata: Optional[bool] = False,
+    include_custom_privacy_request_fields: Optional[bool] = False,
     download_csv: Optional[bool] = False,
     sort_field: str = "created_at",
     sort_direction: ColumnSort = ColumnSort.DESC,
@@ -609,8 +609,10 @@ def get_request_status(
         if include_identities:
             item.identity = item.get_persisted_identity().dict()
 
-        if include_custom_metadata:
-            item.custom_metadata = item.get_persisted_metadata()
+        if include_custom_privacy_request_fields:
+            item.custom_privacy_request_fields = (
+                item.get_persisted_custom_privacy_request_fields()
+            )
 
         attach_resume_instructions(item)
 
@@ -1275,10 +1277,10 @@ def approve_privacy_request(
         privacy_request.status = PrivacyRequestStatus.approved
         privacy_request.reviewed_at = now
         privacy_request.reviewed_by = user_id
-        # for now, the reviewer will be marked as the approver of the custom metadata
+        # for now, the reviewer will be marked as the approver of the custom privacy request fields
         # this is to make it flexible in the future if we want to allow a different user to approve
-        privacy_request.custom_metadata_approved_at = now
-        privacy_request.custom_metadata_approved_by = user_id
+        privacy_request.custom_privacy_request_fields_approved_at = now
+        privacy_request.custom_privacy_request_fields_approved_by = user_id
         privacy_request.save(db=db)
         AuditLog.create(
             db=db,
@@ -1666,8 +1668,9 @@ def create_privacy_request_func(
             privacy_request.persist_identity(
                 db=db, identity=privacy_request_data.identity
             )
-            privacy_request.persist_custom_metadata(
-                db=db, custom_metadata=privacy_request_data.custom_metadata
+            privacy_request.persist_custom_privacy_request_fields(
+                db=db,
+                custom_privacy_request_fields=privacy_request_data.custom_privacy_request_fields,
             )
             for privacy_preference in privacy_preferences:
                 privacy_preference.privacy_request_id = privacy_request.id
@@ -1679,7 +1682,7 @@ def create_privacy_request_func(
                 privacy_request_data.identity,
                 privacy_request_data.encryption_key,
                 None,
-                privacy_request_data.custom_metadata,
+                privacy_request_data.custom_privacy_request_fields,
             )
 
             check_and_dispatch_error_notifications(db=db)

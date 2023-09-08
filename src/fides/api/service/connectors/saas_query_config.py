@@ -20,10 +20,10 @@ from fides.api.util import saas_util
 from fides.api.util.collection_util import Row, merge_dicts
 from fides.api.util.saas_util import (
     ALL_OBJECT_FIELDS,
+    CUSTOM_PRIVACY_REQUEST_FIELDS,
     FIDESOPS_GROUPED_INPUTS,
     MASKED_OBJECT_FIELDS,
     PRIVACY_REQUEST_ID,
-    UNVERIFIED_METADATA,
     get_identity,
     unflatten_dict,
 )
@@ -299,9 +299,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         if self.privacy_request:
             param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
 
-        metadata = input_data.get(UNVERIFIED_METADATA)
-        if isinstance(metadata, list) and len(metadata) > 0:
-            param_values[UNVERIFIED_METADATA] = metadata[0]
+        custom_privacy_request_fields = input_data.get(CUSTOM_PRIVACY_REQUEST_FIELDS)
+        if (
+            isinstance(custom_privacy_request_fields, list)
+            and len(custom_privacy_request_fields) > 0
+        ):
+            param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields[
+                0
+            ]
 
         logger.info(param_values)
 
@@ -368,7 +373,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         collection_name: str = self.node.address.collection
         collection_values: Dict[str, Row] = {collection_name: row}
         identity_data: Dict[str, Any] = privacy_request.get_cached_identity_data()
-        custom_metadata: Dict[str, Any] = privacy_request.get_cached_custom_metadata()
+        custom_privacy_request_fields: Dict[
+            str, Any
+        ] = privacy_request.get_cached_custom_privacy_request_fields()
 
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
@@ -398,7 +405,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         if self.privacy_request:
             param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
 
-        param_values[UNVERIFIED_METADATA] = custom_metadata
+        param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields
 
         # remove any row values for fields marked as read-only, these will be omitted from all update maps
         for field_path, field in self.field_map().items():

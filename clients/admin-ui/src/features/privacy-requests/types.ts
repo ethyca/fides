@@ -75,9 +75,11 @@ export interface PrivacyRequestEntity {
     phone_number?: string;
   };
   identity_verified_at?: string;
-  custom_metadata?: { [key: string]: { label: string; value: any } };
-  custom_metadata_approved_by?: string;
-  custom_metadata_approved_at?: string;
+  custom_privacy_request_fields?: {
+    [key: string]: { label: string; value: any };
+  };
+  custom_privacy_request_fields_approved_by?: string;
+  custom_privacy_request_fields_approved_at?: string;
   policy: {
     name: string;
     key: string;

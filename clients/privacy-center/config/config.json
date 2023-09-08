@@ -15,7 +15,7 @@
       "identity_inputs": {
         "email": "required"
       },
-      "custom_metadata": {
+      "custom_privacy_request_fields": {
         "first_name": {
           "label": "First name",
           "required": true

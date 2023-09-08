@@ -293,11 +293,11 @@ saas_config:
       requests:
         read:
           - method: POST
-            path: /v1/internal?first_name=<unverified_metadata.first_name>
+            path: /v1/internal?first_name=<custom_privacy_request_fields.first_name>
             body: |
               {
-                "last_name": "<unverified_metadata.last_name>"
-                "order_id": "<unverified_metadata.order_id?>"
+                "last_name": "<custom_privacy_request_fields.last_name>"
+                "order_id": "<custom_privacy_request_fields.order_id?>"
               }
         update:
           - method: POST
@@ -305,6 +305,6 @@ saas_config:
             body: |
               {
                 "user_info": {
-                  <unverified_metadata>
+                  <custom_privacy_request_fields>
                 }
               }

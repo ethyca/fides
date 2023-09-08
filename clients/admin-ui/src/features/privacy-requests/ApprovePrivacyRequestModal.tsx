@@ -30,7 +30,8 @@ const ApprovePrivacyRequestModal = ({
   isLoading,
   subjectRequest,
 }: ApproveModalProps) => {
-  const { identity, identity_verified_at, custom_metadata } = subjectRequest;
+  const { identity, identity_verified_at, custom_privacy_request_fields } =
+    subjectRequest;
   const handleSubmit = useCallback(() => {
     onApproveRequest().then(() => {
       onClose();
@@ -71,8 +72,8 @@ const ApprovePrivacyRequestModal = ({
                 </Flex>
               </ListItem>
             )}
-            {custom_metadata &&
-              Object.entries(custom_metadata)
+            {custom_privacy_request_fields &&
+              Object.entries(custom_privacy_request_fields)
                 .filter(([key, item]) => item["value"])
                 .map(([key, item]) => (
                   <ListItem key={key}>
