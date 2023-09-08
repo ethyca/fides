@@ -13,13 +13,12 @@ from fides.api.util.saas_util import load_config_from_string, load_dataset_from_
 class ConnectorTemplate(BaseModel):
     """
     A collection of artifacts that make up a complete
-    SaaS connector (SaaS config, dataset, icon, functions, etc.)
+    SaaS connector (SaaS config, dataset, icon, etc.)
     """
 
     config: str
     dataset: str
     icon: Optional[str]
-    functions: Optional[str]
     human_readable: str
 
     @validator("config")

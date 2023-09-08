@@ -11,17 +11,27 @@ import {
 type DataUseFormModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  testId?: String;
+  heading: string;
+  isCentered?: boolean;
+  testId?: string;
   children: React.ReactNode;
 };
 
 export const PrivacyDeclarationFormModal: React.FC<DataUseFormModalProps> = ({
   isOpen,
   onClose,
+  heading,
+  isCentered = false,
   testId = "privacy-declaration-modal",
   children,
 }) => (
-  <Modal isOpen={isOpen} onClose={onClose} scrollBehavior="inside" size="3xl">
+  <Modal
+    isOpen={isOpen}
+    onClose={onClose}
+    isCentered={isCentered}
+    scrollBehavior="inside"
+    size="3xl"
+  >
     <ModalOverlay />
     <ModalContent textAlign="left" p={0} data-testid={testId}>
       <ModalHeader p={0}>
@@ -34,7 +44,7 @@ export const PrivacyDeclarationFormModal: React.FC<DataUseFormModalProps> = ({
           borderTopRadius={6}
         >
           <Heading as="h3" size="sm">
-            Configure data use
+            {heading}
           </Heading>
         </Box>
       </ModalHeader>

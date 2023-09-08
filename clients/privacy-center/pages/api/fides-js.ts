@@ -6,7 +6,6 @@ import {
   ConsentOption,
   FidesConfig,
   constructFidesRegionString,
-  CONSENT_COOKIE_NAME,
   fetchExperience,
 } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
@@ -87,15 +86,8 @@ export default async function handler(
     environment.settings.IS_PREFETCH_ENABLED
   ) {
     const fidesRegionString = constructFidesRegionString(geolocation);
+
     if (fidesRegionString) {
-      let fidesUserDeviceId = "";
-      if (Object.keys(req.cookies).length) {
-        const fidesCookie = req.cookies[CONSENT_COOKIE_NAME];
-        if (fidesCookie) {
-          fidesUserDeviceId =
-            JSON.parse(fidesCookie)?.identity?.fides_user_device_id;
-        }
-      }
       if (environment.settings.DEBUG) {
         console.log("Fetching relevant experiences from server-side...");
       }
@@ -103,8 +95,8 @@ export default async function handler(
         fidesRegionString,
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
           environment.settings.FIDES_API_URL,
-        fidesUserDeviceId,
-        environment.settings.DEBUG
+        environment.settings.DEBUG,
+        null
       );
     }
   }

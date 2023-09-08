@@ -14,6 +14,7 @@ from fides.api.models.privacy_notice import (
     UserConsentPreference,
 )
 from fides.api.schemas.messaging.messaging import (
+    AccessRequestCompleteBodyParams,
     ConsentEmailFulfillmentBodyParams,
     ConsentPreferencesByUser,
     EmailForActionType,
@@ -22,6 +23,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
+    RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
@@ -93,6 +95,61 @@ class TestMessageDispatchService:
                 subject="Your one-time code is 2348",
                 body="Your privacy request verification code is 2348. Please return to the Privacy Center and enter the code to continue. This code will expire in 10 minutes.",
                 template_variables={"code": "2348", "minutes": 10},
+            ),
+            "test@email.com",
+        )
+
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    def test_email_dispatch_mailgun_privacy_request_complete_access(
+        self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
+    ) -> None:
+        download_link = "https://localhost"
+        days = 5
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=AccessRequestCompleteBodyParams(
+                download_links=[download_link],
+                subject_request_download_time_in_days=days,
+            ),
+        )
+        mock_mailgun_dispatcher.assert_called_with(
+            messaging_config,
+            EmailForActionType(
+                subject="Your data is ready to be downloaded",
+                body=f"Your access request has been completed and can be downloaded at {download_link}. For security purposes, this secret link will expire in {days} days.",
+                template_variables={"download_link": download_link, "days": days},
+            ),
+            "test@email.com",
+        )
+
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    def test_email_dispatch_mailgun_privacy_request_review_deny(
+        self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
+    ) -> None:
+        denial_reason = "Accounts with an unpaid balance cannot be deleted."
+
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=RequestReviewDenyBodyParams(
+                rejection_reason=denial_reason
+            ),
+        )
+        mock_mailgun_dispatcher.assert_called_with(
+            messaging_config,
+            EmailForActionType(
+                subject="Your privacy request has been denied",
+                body=f"Your privacy request has been denied. {denial_reason}.",
+                template_variables={"denial_reason": denial_reason},
             ),
             "test@email.com",
         )

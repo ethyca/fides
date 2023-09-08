@@ -150,7 +150,9 @@ class TestPrivacyExperience:
         (
             queried_overlay_exp,
             queried_pc_exp,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_tx)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_tx
+        )
         assert queried_overlay_exp is None
         assert queried_pc_exp is None
 
@@ -165,7 +167,9 @@ class TestPrivacyExperience:
         (
             queried_overlay_exp,
             queried_pc_exp,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_tx)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_tx
+        )
         assert queried_overlay_exp == overlay_exp
         assert queried_pc_exp is None
 
@@ -180,7 +184,9 @@ class TestPrivacyExperience:
         (
             queried_overlay_exp,
             queried_pc_exp,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_tx)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_tx
+        )
         assert queried_overlay_exp == overlay_exp
         assert queried_pc_exp == pc_exp
 
@@ -674,7 +680,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
         assert overlay_experience is None
         assert privacy_center_experience is None
 
@@ -685,7 +693,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
 
         assert overlay_experience is None  # Only privacy center experience was created
         assert privacy_center_experience is not None
@@ -740,7 +750,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
         assert overlay_experience is None
         assert privacy_center_experience is not None
 
@@ -751,7 +763,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience is not None
@@ -792,7 +806,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.it)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.it
+        )
         assert overlay_experience is None
         assert privacy_center_experience is None
 
@@ -803,7 +819,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.it)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.it
+        )
 
         assert overlay_experience is not None
         assert privacy_center_experience is None
@@ -858,7 +876,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
 
         assert overlay_experience is not None
         assert privacy_center_experience is None
@@ -870,7 +890,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
         db.refresh(overlay_experience)
 
         assert overlay_experience is not None
@@ -912,7 +934,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
         assert overlay_experience is None
         assert privacy_center_experience is None
 
@@ -923,7 +947,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
 
         assert overlay_experience is not None
         assert privacy_center_experience is not None
@@ -974,7 +1000,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
         assert overlay_experience is None
         assert privacy_center_experience is None
 
@@ -984,7 +1012,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience is not None
@@ -1024,7 +1054,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
         assert overlay_experience is None
         assert privacy_center_experience == pc_exp
 
@@ -1034,7 +1066,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience is not None
@@ -1075,7 +1109,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience == pc_exp
@@ -1086,7 +1122,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
         db.refresh(privacy_center_experience)
 
         assert overlay_experience is None
@@ -1129,7 +1167,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience == pc_exp
@@ -1140,7 +1180,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience is not None
@@ -1182,7 +1224,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience == pc_exp
@@ -1195,7 +1239,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience is not None

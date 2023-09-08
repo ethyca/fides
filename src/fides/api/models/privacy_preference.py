@@ -651,7 +651,7 @@ class LastSavedMixin:
     @property
     def record_matches_current_version(self) -> bool:
         """Returns True if the latest saved preference corresponds to the
-        latest version for this notice or TCF standard"""
+        latest version for this notice or TCF component"""
 
         if self.privacy_notice and self.privacy_notice_history_id:
             return (
@@ -741,9 +741,7 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
         preference_type: ConsentRecordType,
         preference_value: Union[int, str],
     ) -> Optional[CurrentPrivacyPreference]:
-        """Retrieves the CurrentPrivacyPreference saved against a notice, TCF purpose,
-        TCF special purpose, TCF vendor, TCF feature, TCF special feature, or system id for a given fides user device id
-        """
+        """Retrieves the CurrentPrivacyPreference saved against a notice or TCF component for a given fides user device id"""
 
         return (
             db.query(CurrentPrivacyPreference)
@@ -764,7 +762,7 @@ class LastServedNotice(LastSavedMixin, Base):
 
     The name "LastServedNotice" is because we originally stored serving notices to end users,
     and we expanded this table to store serving tcf components like purposes, special purposes, etc.
-    to end uses.
+    to end users.
     """
 
     served_notice_history_id = Column(

@@ -136,7 +136,7 @@ class TestPatchSystemConnections:
         assert resp.status_code == HTTP_404_NOT_FOUND
         assert (
             resp.json()["detail"]
-            == "A valid system must be provided to create, update, and delete connections"
+            == "The specified system was not found. Please provide a valid system for the requested operation."
         )
 
     @pytest.mark.parametrize(
@@ -251,7 +251,7 @@ class TestGetConnections:
 
         assert (
             resp.json()["detail"]
-            == "A valid system must be provided to create, update, and delete connections"
+            == "The specified system was not found. Please provide a valid system for the requested operation."
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
 

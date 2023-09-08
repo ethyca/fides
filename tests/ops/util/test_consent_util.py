@@ -543,7 +543,10 @@ class TestLoadDefaultNotices:
     def test_load_default_notices(self, db, load_default_data_uses):
         # Load notice from a file that only has one template (A) defined.
         # This should create one template (A), one notice (A), and one notice history (A)
-        overlay_exp, privacy_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.us_ak
         )
         assert overlay_exp is None
@@ -574,7 +577,10 @@ class TestLoadDefaultNotices:
         assert notice.displayed_in_overlay is True
         assert notice.displayed_in_api is False
         assert notice.version == 1.0
-        overlay_exp, privacy_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.us_ak
         )
         assert overlay_exp is not None
@@ -627,7 +633,10 @@ class TestLoadDefaultNotices:
         # This should update the existing template (A), create a separate new template (B),
         # and then create a new notice (B) and notice history (B) from just the new template (B).
         # Leave the existing notice (A) and notice history (A) untouched.
-        overlay_exp, privacy_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.us_al
         )
         assert overlay_exp is None
@@ -698,7 +707,10 @@ class TestLoadDefaultNotices:
         assert new_privacy_notice.version == 1.0
         assert new_privacy_notice.id != notice.id
 
-        overlay_exp, privacy_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.us_al
         )
         assert overlay_exp is None

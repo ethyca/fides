@@ -1573,3 +1573,48 @@ class TestUpdateExperienceConfig:
         )  # Default overlay experience config linked instead
 
         privacy_experience.delete(db)
+
+    @pytest.mark.usefixtures("privacy_experience_france_tcf_overlay")
+    def test_add_regions_to_tcf_overlay(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        experience_config_tcf_overlay,
+        db,
+    ) -> None:
+        """Verify that regions can technically be added to the tcf overlay.
+
+        This is a contrived example, but tests that this workflow doesn't break for the new tcf overlay
+        """
+        fr_experience = PrivacyExperience.get_experience_by_region_and_component(
+            db=db, region="fr", component=ComponentType.tcf_overlay
+        )
+        assert fr_experience
+
+        ca_experience = PrivacyExperience.get_experience_by_region_and_component(
+            db=db, region="us_ca", component=ComponentType.tcf_overlay
+        )
+        assert not ca_experience
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        url = V1_URL_PREFIX + EXPERIENCE_CONFIG + f"/{experience_config_tcf_overlay.id}"
+        response = api_client.patch(
+            url,
+            json={
+                "regions": ["us_ca", "fr"],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert response.json()["experience_config"]["regions"] == ["fr", "us_ca"]
+        assert response.json()["linked_regions"] == ["us_ca"]
+
+        fr_experience = PrivacyExperience.get_experience_by_region_and_component(
+            db=db, region="fr", component=ComponentType.tcf_overlay
+        )
+        assert fr_experience
+
+        ca_experience = PrivacyExperience.get_experience_by_region_and_component(
+            db=db, region="us_ca", component=ComponentType.tcf_overlay
+        )
+        assert ca_experience

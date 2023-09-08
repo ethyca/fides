@@ -19,6 +19,7 @@ class TestGetConsentSettings:
 
     def test_get_consent_settings_unauthenticated(self, api_client: TestClient, url):
         response = api_client.get(url, headers={})
+        # This is a public endpoint
         assert 200 == response.status_code
 
     @pytest.mark.parametrize(

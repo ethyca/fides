@@ -189,7 +189,7 @@ class PrivacyExperienceConfigHistory(ExperienceConfigBase, Base):
 
 class PrivacyExperience(Base):
     """Stores Privacy Experiences for a given just a single region.  The Experience describes how to surface
-    multiple Privacy Notices to the end user in a given region.
+    multiple Privacy Notices or TCF content to the end user in a given region.
 
     There can only be one component per region.
     """
@@ -312,7 +312,8 @@ class PrivacyExperience(Base):
         self, db: Session, fides_user_provided_identity: Optional[ProvidedIdentity]
     ) -> TCFExperienceContents:
         """Returns the contents of a TCF experience supplemented with any previous records of
-        a user being served or consenting to any of the individual TCF components"""
+        a user being served TCF components and/or consenting to any of the individual TCF components
+        """
         if self.component == ComponentType.tcf_overlay:
             tcf_contents: TCFExperienceContents = get_tcf_contents(db)
 
@@ -364,10 +365,14 @@ class PrivacyExperience(Base):
         )
 
     @staticmethod
-    def get_experiences_by_region(
+    def get_overlay_and_privacy_center_experience_by_region(
         db: Session, region: str
     ) -> Tuple[Optional[PrivacyExperience], Optional[PrivacyExperience]]:
-        """Load both the overlay and privacy center experience for a given region"""
+        """Load both the overlay and privacy center experience for a given region
+
+        TCF overlays are not returned here.  This method is used in building experiences when Notices
+        are created, which is not applicable for TCF.
+        """
         overlay_experience: Optional[
             PrivacyExperience
         ] = PrivacyExperience.get_experience_by_region_and_component(
@@ -444,7 +449,7 @@ def upsert_privacy_experiences_after_notice_update(
 ) -> List[PrivacyExperience]:
     """
     Keeps Privacy Experiences in sync with *PrivacyNotices* changes.
-    Create or update PrivacyExperiences based on the PrivacyNotices in the "affected_regions".
+    Create or update "overlay" or "privacy center" PrivacyExperiences based on the PrivacyNotices in the "affected_regions".
     To be called whenever PrivacyNotices are created or updated (pass in any regions that were potentially affected)
 
     PrivacyExperiences should not be deleted.  It's okay if no notices are associated with an Experience.
@@ -461,7 +466,9 @@ def upsert_privacy_experiences_after_notice_update(
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db=db, region=region.value)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db=db, region=region.value
+        )
 
         privacy_center_notices: Query = get_privacy_notices_by_region_and_component(
             db, region, ComponentType.privacy_center
@@ -543,17 +550,11 @@ def upsert_privacy_experiences_after_config_update(
     ] = remove_config_from_matched_experiences(db, experience_config, removed_regions)
 
     for region in regions:
-        (
-            overlay_experience,
-            privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, region.value)
-
-        existing_experience: Optional[PrivacyExperience] = (
-            overlay_experience
-            if experience_config.component == ComponentType.overlay
-            else privacy_center_experience
+        existing_experience: Optional[
+            PrivacyExperience
+        ] = PrivacyExperience.get_experience_by_region_and_component(
+            db=db, region=region, component=experience_config.component  # type: ignore[arg-type]
         )
-
         data = {
             "component": experience_config.component,
             "region": region,
