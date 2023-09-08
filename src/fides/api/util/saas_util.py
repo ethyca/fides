@@ -139,6 +139,14 @@ def get_collection_grouped_inputs(
     return collection.grouped_inputs
 
 
+def get_collection_skip_processing(collections: List[Collection], name: str) -> bool:
+    """If specified, return skip_processing value"""
+    collection: Collection | None = next(
+        (collect for collect in collections if collect.name == name), None
+    )
+    return bool(collection.skip_processing) if collection else False
+
+
 def get_collection_after(
     collections: List[Collection], name: str
 ) -> Set[CollectionAddress]:
@@ -176,6 +184,12 @@ def merge_datasets(dataset: GraphDataset, config_dataset: GraphDataset) -> Graph
 
     collections = []
     for collection_name, field_dict in field_aggregate.items():
+        skip_processing: bool = get_collection_skip_processing(
+            config_dataset.collections, collection_name
+        )
+        if skip_processing:
+            continue
+
         collections.append(
             Collection(
                 name=collection_name,
