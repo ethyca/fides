@@ -11,7 +11,10 @@ import {
   LegacyConsentConfig,
   PrivacyExperience,
 } from "./consent-types";
-import { debugLog } from "./consent-utils";
+import {
+  debugLog,
+  transformConsentToFidesUserPreference,
+} from "./consent-utils";
 
 /**
  * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
@@ -240,6 +243,39 @@ export const buildCookieConsentForExperiences = (
   });
   debugLog(debug, `Returning cookie consent for experiences.`, cookieConsent);
   return cookieConsent;
+};
+
+/**
+ * Updates prefetched experience, based on:
+ * 1) experience: pre-fetched experience-based consent configuration that does not contain user preference.
+ * 2) cookie: cookie containing user preference.
+ *
+ * Returns updated experience with user preferences.
+ */
+export const updateExperienceFromCookieConsent = (
+  experience: PrivacyExperience,
+  cookie: FidesCookie,
+  debug: boolean
+): PrivacyExperience => {
+  if (!experience.privacy_notices) {
+    return experience;
+  }
+  const updatedExperience = experience;
+  updatedExperience?.privacy_notices?.forEach((notice) => {
+    if (Object.hasOwn(cookie.consent, notice.notice_key)) {
+      // eslint-disable-next-line no-param-reassign
+      notice.current_preference = transformConsentToFidesUserPreference(
+        Boolean(cookie.consent[notice.notice_key]),
+        notice.consent_mechanism
+      );
+    }
+  });
+  debugLog(
+    debug,
+    `Returning updated pre-fetched experience with user consent.`,
+    experience
+  );
+  return updatedExperience;
 };
 
 /**

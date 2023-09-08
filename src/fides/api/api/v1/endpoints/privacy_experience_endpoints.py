@@ -73,17 +73,23 @@ def _filter_experiences_by_region_or_country(
     region = escape(region)
     country: str = region.split("_")[0]
 
-    overlay = PrivacyExperience.get_experience_by_region_and_component(
+    overlay: Optional[
+        PrivacyExperience
+    ] = PrivacyExperience.get_experience_by_region_and_component(
         db, region, ComponentType.overlay
     ) or PrivacyExperience.get_experience_by_region_and_component(
         db, country, ComponentType.overlay
     )
-    privacy_center = PrivacyExperience.get_experience_by_region_and_component(
+    privacy_center: Optional[
+        PrivacyExperience
+    ] = PrivacyExperience.get_experience_by_region_and_component(
         db, region, ComponentType.privacy_center
     ) or PrivacyExperience.get_experience_by_region_and_component(
         db, country, ComponentType.privacy_center
     )
-    tcf_overlay = PrivacyExperience.get_experience_by_region_and_component(
+    tcf_overlay: Optional[
+        PrivacyExperience
+    ] = PrivacyExperience.get_experience_by_region_and_component(
         db, region, ComponentType.tcf_overlay
     ) or PrivacyExperience.get_experience_by_region_and_component(
         db, country, ComponentType.tcf_overlay
@@ -119,9 +125,7 @@ def privacy_experience_list(
     show_disabled: Optional[bool] = True,
     region: Optional[str] = None,
     component: Optional[ComponentType] = None,
-    has_notices: Optional[
-        bool
-    ] = None,  # Does this experience have content? Notices or TCF details?
+    has_notices: Optional[bool] = None,
     has_config: Optional[bool] = None,
     fides_user_device_id: Optional[str] = None,
     systems_applicable: Optional[bool] = False,
@@ -130,18 +134,18 @@ def privacy_experience_list(
 ) -> AbstractPage[PrivacyExperience]:
     """
     Public endpoint that returns a list of PrivacyExperience records for individual regions with
-    relevant privacy notices embedded in the response.
+    relevant privacy notices or tcf contents embedded in the response.
 
     'show_disabled' query params are passed along to further filter
     notices as well.
 
     :param db:
     :param params:
-    :param show_disabled: If False, returns enabled Experiences and Notices
+    :param show_disabled: If False, returns only enabled Experiences and Notices
     :param region: Return the Experiences for the given region
     :param component: Returns Experiences of the given component type
     :param has_notices: Return if the Experience has content
-    :param has_config: Return if the Experience has copy
+    :param has_config: If True, returns Experiences with copy. If False, returns just Experiences without copy.
     :param fides_user_device_id: Supplement the response with current saved preferences of the given user
     :param systems_applicable: Only return embedded Notices associated with systems.
     :param request:
@@ -179,7 +183,8 @@ def privacy_experience_list(
         )
 
     if component is not None:
-        # If searching for "overlay" - return both overlay types: the regular overlay and the TCF Overlay
+        # If searching for "overlay" - return both overlay types: the regular overlay and the TCF Overlay,
+        # for ease with frontend querying
         component_search_map: Dict = {
             ComponentType.overlay: [ComponentType.overlay, ComponentType.tcf_overlay]
         }
@@ -211,6 +216,9 @@ def privacy_experience_list(
             should_unescape=should_unescape,
         )
 
+        if content_required and not content_exists:
+            continue
+
         # Temporarily save "show_banner" on the privacy experience object
         privacy_experience.show_banner = privacy_experience.get_should_show_banner(
             db, show_disabled
@@ -224,9 +232,7 @@ def privacy_experience_list(
                 fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
             )
 
-        if not (content_required and not content_exists):
-            # Append experience unless we're missing required content
-            results.append(privacy_experience)
+        results.append(privacy_experience)
 
     return fastapi_paginate(results, params=params)
 
@@ -240,11 +246,9 @@ def embed_experience_details(
     should_unescape: Optional[str],
 ) -> bool:
     """
-    At runtime embeds relevant Experience contents where applicable:
-        - Privacy Notices
-        - TCF Components: purposes, special purposes, vendors, systems, features, and special features
+    Embed the contents of the PrivacyExperience at runtime. Adds Privacy Notices or TCF contents if applicable.
 
-    The PrivacyExperience is updated in-place, and this method just returns whether there is content
+    The PrivacyExperience is updated in-place, and this method returns whether there is content
     on this experience.
     """
     # Reset any temporary cached items just in case

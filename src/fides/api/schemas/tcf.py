@@ -20,8 +20,7 @@ class TCFSavedandServedDetails(UserSpecificConsentDetails):
 
     @root_validator
     def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """For TCF purposes/special purposes, vendors, features, and special features,
-        the default preferences are just 'opt-out'"""
+        """For TCF components, the default preferences are just 'opt-out'"""
         values["default_preference"] = UserConsentPreference.opt_out
 
         return values

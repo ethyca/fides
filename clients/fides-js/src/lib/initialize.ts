@@ -12,6 +12,7 @@ import {
   getOrMakeFidesCookie,
   isNewFidesCookie,
   makeConsentDefaultsLegacy,
+  updateExperienceFromCookieConsent,
 } from "./cookie";
 import {
   ConsentMechanism,
@@ -160,11 +161,21 @@ export const getInitialFides = ({
     return null;
   }
 
+  let updatedExperience = experience;
+  if (experience) {
+    // at this point, pre-fetched experience contains no user consent, so we populate with the Fides cookie
+    updatedExperience = updateExperienceFromCookieConsent(
+      experience,
+      cookie,
+      options.debug
+    );
+  }
+
   return {
     consent: cookie.consent,
     fides_meta: cookie.fides_meta,
     identity: cookie.identity,
-    experience,
+    experience: updatedExperience,
     geolocation,
     options,
     initialized: true,
@@ -226,8 +237,8 @@ export const initialize = async ({
       effectiveExperience = await fetchExperience(
         fidesRegionString,
         options.fidesApiUrl,
-        cookie.identity.fides_user_device_id,
-        options.debug
+        options.debug,
+        cookie.identity.fides_user_device_id
       );
     }
 

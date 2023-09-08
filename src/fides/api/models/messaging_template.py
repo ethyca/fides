@@ -40,14 +40,14 @@ DEFAULT_MESSAGING_TEMPLATES: Dict[str, Any] = {
         },
     },
     MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS.value: {
-        "label": "Privacy request access completed",
+        "label": "Access request completed",
         "content": {
             "subject": "Your data is ready to be downloaded",
             "body": "Your access request has been completed and can be downloaded at {{download_link}}. For security purposes, this secret link will expire in {{days}} days.",
         },
     },
     MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION.value: {
-        "label": "Privacy request erasure completed",
+        "label": "Erasure request completed",
         "content": {
             "subject": "Your data has been deleted",
             "body": "Your erasure request has been completed.",
