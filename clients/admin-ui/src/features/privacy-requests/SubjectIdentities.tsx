@@ -4,8 +4,6 @@ import { useState } from "react";
 import PII from "../common/PII";
 import PIIToggle from "../common/PIIToggle";
 import { PrivacyRequestEntity } from "./types";
-import { snakeToSentenceCase } from "../common/utils";
-
 type SubjectIdentitiesProps = {
   subjectRequest: PrivacyRequestEntity;
 };
@@ -95,7 +93,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
                   color="gray.900"
                   fontWeight="500"
                 >
-                  {snakeToSentenceCase(key)}:
+                  {item["label"]}:
                 </Text>
                 <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
                   <PII data={item["value"]} revealPII={revealPII} />

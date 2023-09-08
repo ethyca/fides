@@ -14,7 +14,6 @@ import {
   Button,
   Text,
 } from "@fidesui/react";
-import { snakeToSentenceCase } from "../common/utils";
 
 type ApproveModalProps = {
   isOpen: boolean;
@@ -84,7 +83,7 @@ const ApprovePrivacyRequestModal = ({
                         color="gray.900"
                         fontWeight="500"
                       >
-                        {snakeToSentenceCase(key)}:
+                        {item["label"]}:
                       </Text>
                       <Text
                         color="gray.600"

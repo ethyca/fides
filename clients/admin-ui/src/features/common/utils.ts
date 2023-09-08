@@ -22,14 +22,6 @@ export const camelToSentenceCase = (text: string) => {
   return sentenceCase(withSpaces);
 };
 
-/**
- * "fun_on_a_bun" => "Fun on a bun"
- */
-export const snakeToSentenceCase = (text: string) => {
-  const withSpaces = text.replace(/_/g, " ");
-  return sentenceCase(withSpaces).replace(" id", " ID");
-};
-
 export const debounce = (fn: Function, ms = 0) => {
   let timeoutId: ReturnType<typeof setTimeout>;
   // eslint-disable-next-line func-names
