@@ -21,6 +21,8 @@ def upgrade():
     bind: Connection = op.get_bind()
     bind.execute(sa.text("DELETE FROM ctl_data_uses WHERE is_default = TRUE;"))
     bind.execute(sa.text("DELETE FROM ctl_data_categories WHERE is_default = TRUE;"))
+    bind.execute(sa.text("DELETE FROM ctl_data_qualifiers WHERE is_default = TRUE;"))
+    bind.execute(sa.text("DELETE FROM ctl_data_subjects WHERE is_default = TRUE;"))
 
     op.add_column(
         "ctl_data_categories", sa.Column("version_added", sa.Text(), nullable=True)
