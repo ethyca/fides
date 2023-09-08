@@ -8,12 +8,18 @@ import { useMemo } from "react";
 import * as Yup from "yup";
 
 import {
+  CustomFieldsList,
+  CustomFieldValues,
+  useCustomFields,
+} from "~/features/common/custom-fields";
+import {
   CustomCreatableSelect,
   CustomSelect,
   CustomSwitch,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
+import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import {
   DataCategory,
   Dataset,
@@ -25,13 +31,6 @@ import {
   SpecialCategoryLegalBasisEnum,
 } from "~/types/api";
 import { Cookies } from "~/types/api/models/Cookies";
-
-import {
-  CustomFieldsList,
-  CustomFieldValues,
-  useCustomFields,
-} from "~/features/common/custom-fields";
-import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 
 export const ValidationSchema = Yup.object().shape({
   data_categories: Yup.array(Yup.string())
