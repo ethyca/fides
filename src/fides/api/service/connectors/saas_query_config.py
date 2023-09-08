@@ -299,9 +299,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         if self.privacy_request:
             param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
 
-        metadata = input_data.get("CUSTOM_METADATA")
+        metadata = input_data.get(UNVERIFIED_METADATA)
         if isinstance(metadata, list) and len(metadata) > 0:
-            param_values[UNVERIFIED_METADATA] = json.dumps(metadata[0])[1:-1]
+            param_values[UNVERIFIED_METADATA] = metadata[0]
+
+        logger.info(param_values)
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
@@ -429,17 +431,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         A utility that, based on the provided param values and update request,
         generates the `SaaSRequestParams` that are to be used in request execution
         """
-
-        # removes outer {} wrapper from body for greater flexibility in custom body config
-        param_values[MASKED_OBJECT_FIELDS] = json.dumps(
-            param_values[MASKED_OBJECT_FIELDS]
-        )[1:-1]
-        param_values[ALL_OBJECT_FIELDS] = json.dumps(param_values[ALL_OBJECT_FIELDS])[
-            1:-1
-        ]
-        param_values[UNVERIFIED_METADATA] = json.dumps(
-            param_values[UNVERIFIED_METADATA]
-        )[1:-1]
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(

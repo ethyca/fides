@@ -342,13 +342,22 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         if not custom_metadata:
             return
 
-        cache: FidesopsRedis = get_cache()
-        for key, value in custom_metadata.items():
-            if value is not None:
-                cache.set_with_autoexpire(
-                    get_custom_metadata_cache_key(self.id, key),
-                    value["value"],
-                )
+        if not CONFIG.execution.allow_unverified_custom_metadata_collection:
+            return
+
+        if CONFIG.execution.allow_unverified_custom_metadata_in_request_execution:
+            cache: FidesopsRedis = get_cache()
+            for key, value in custom_metadata.items():
+                if value is not None:
+                    cache.set_with_autoexpire(
+                        get_custom_metadata_cache_key(self.id, key),
+                        value["value"],
+                    )
+        else:
+            logger.info(
+                "Custom metadata collected from privacy request {}, but config setting 'CONFIG.execution.allow_unverified_custom_metadata_in_request_execution' is set to false and prevents its usage.",
+                self.id,
+            )
 
     def persist_identity(self, db: Session, identity: Identity) -> None:
         """
@@ -373,19 +382,28 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     def persist_custom_metadata(
         self, db: Session, custom_metadata: Dict[str, Any]
     ) -> None:
-        for key, item in custom_metadata.items():
-            if item["value"]:
-                hashed_value = ProvidedMetadata.hash_value(item["value"])
-                ProvidedMetadata.create(
-                    db=db,
-                    data={
-                        "privacy_request_id": self.id,
-                        "field_name": key,
-                        "field_label": item["label"],
-                        "encrypted_value": {"value": item["value"]},
-                        "hashed_value": hashed_value,
-                    },
-                )
+        if not custom_metadata:
+            return
+
+        if CONFIG.execution.allow_unverified_custom_metadata_collection:
+            for key, item in custom_metadata.items():
+                if item["value"]:
+                    hashed_value = ProvidedMetadata.hash_value(item["value"])
+                    ProvidedMetadata.create(
+                        db=db,
+                        data={
+                            "privacy_request_id": self.id,
+                            "field_name": key,
+                            "field_label": item["label"],
+                            "encrypted_value": {"value": item["value"]},
+                            "hashed_value": hashed_value,
+                        },
+                    )
+        else:
+            logger.info(
+                "Custom metadata provided for privacy request {}, but config setting 'CONFIG.execution.allow_unverified_custom_metadata_collection' prevents its storage.",
+                self.id,
+            )
 
     def get_persisted_identity(self) -> Identity:
         """

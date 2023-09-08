@@ -34,6 +34,14 @@ class ExecutionSettings(FidesSettings):
     task_retry_delay: int = Field(
         default=1, description="The delays between retries in seconds."
     )
+    allow_unverified_custom_metadata_collection: bool = Field(
+        default=True,
+        description="Allows the collection of unverified custom metadata from privacy requests.",
+    )
+    allow_unverified_custom_metadata_in_request_execution: bool = Field(
+        default=True,
+        description="Allows unverified custom metadata to be used in request execution.",
+    )
 
     class Config:
         env_prefix = ENV_PREFIX

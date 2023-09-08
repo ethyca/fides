@@ -300,6 +300,10 @@ def assign_placeholders(value: Any, param_values: Dict[str, Any]) -> Optional[An
 
             placeholder_value = pydash.get(param_values, placeholder_key)
 
+            # removes outer {} wrapper from body for greater flexibility in custom body config
+            if isinstance(placeholder_value, dict):
+                placeholder_value = json.dumps(placeholder_value)[1:-1]
+
             if placeholder_value is not None:
                 value = value.replace(f"<{full_placeholder}>", str(placeholder_value))
             elif is_optional:

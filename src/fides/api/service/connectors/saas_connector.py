@@ -194,7 +194,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"endpoint in {self.saas_config.fides_key}"
             )
 
-        # add the custom metadata to the input_data map (if available)
         custom_metadata = privacy_request.get_cached_custom_metadata()
         if custom_metadata:
             input_data[UNVERIFIED_METADATA] = [custom_metadata]

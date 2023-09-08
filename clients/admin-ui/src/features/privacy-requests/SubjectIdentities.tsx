@@ -79,10 +79,10 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
           </Tag>
         </Flex>
       )}
-      {custom_metadata && (
+      {Object.keys(custom_metadata).length > 0 && (
         <>
           <Heading color="gray.900" fontSize="sm" fontWeight="semibold" mb={4}>
-            Additional inputs
+            Additional metadata
           </Heading>
           {Object.entries(custom_metadata)
             .filter(([key, item]) => item["value"])
