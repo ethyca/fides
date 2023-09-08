@@ -21,10 +21,16 @@ import {
   DataUse,
   LegalBasisForProcessingEnum,
   PrivacyDeclarationResponse,
+  ResourceTypes,
   SpecialCategoryLegalBasisEnum,
 } from "~/types/api";
 import { Cookies } from "~/types/api/models/Cookies";
 
+import {
+  CustomFieldsList,
+  CustomFieldValues,
+  useCustomFields,
+} from "../../common/custom-fields";
 import SystemFormInputGroup from "../SystemFormInputGroup";
 
 export const ValidationSchema = Yup.object().shape({
@@ -35,6 +41,7 @@ export const ValidationSchema = Yup.object().shape({
 });
 
 export type FormValues = Omit<PrivacyDeclarationResponse, "cookies"> & {
+  customFieldValues: CustomFieldValues;
   cookies?: string[];
 };
 
@@ -54,6 +61,7 @@ const defaultInitialValues: FormValues = {
   data_shared_with_third_parties: false,
   third_parties: "",
   shared_categories: [],
+  customFieldValues: {},
   cookies: [],
   id: "",
 };
@@ -87,6 +95,7 @@ export interface DataProps {
   allDataUses: DataUse[];
   allDataSubjects: DataSubject[];
   allDatasets?: Dataset[];
+  includeCustomFields?: boolean;
   cookies?: Cookies[];
 }
 
@@ -97,6 +106,7 @@ export const PrivacyDeclarationFormComponents = ({
   allDatasets,
   cookies,
   values,
+  includeCustomFields,
   privacyDeclarationId,
 }: DataProps & {
   values: FormValues;
@@ -320,12 +330,19 @@ export const PrivacyDeclarationFormComponents = ({
           variant="stacked"
         />
       </SystemFormInputGroup>
+      {includeCustomFields ? (
+        <CustomFieldsList
+          resourceType={ResourceTypes.PRIVACY_DECLARATION}
+          resourceFidesKey={privacyDeclarationId}
+        />
+      ) : null}
     </Stack>
   );
 };
 
 export const transformPrivacyDeclarationToFormValues = (
-  privacyDeclaration?: PrivacyDeclarationResponse
+  privacyDeclaration?: PrivacyDeclarationResponse,
+  customFieldValues?: CustomFieldValues
 ): FormValues => {
   if (privacyDeclaration) {
     const formCookies =
@@ -334,6 +351,7 @@ export const transformPrivacyDeclarationToFormValues = (
         : undefined;
     return {
       ...privacyDeclaration,
+      customFieldValues: customFieldValues || {},
       cookies: formCookies,
     };
   }
@@ -347,17 +365,46 @@ export const transformPrivacyDeclarationToFormValues = (
 export const usePrivacyDeclarationForm = ({
   onSubmit,
   initialValues: passedInInitialValues,
+  privacyDeclarationId,
 }: Omit<Props, "onDelete"> & Pick<DataProps, "allDataUses">) => {
+  const { customFieldValues, upsertCustomFields } = useCustomFields({
+    resourceType: ResourceTypes.PRIVACY_DECLARATION,
+    resourceFidesKey: privacyDeclarationId,
+  });
+
   const initialValues = useMemo(
-    () => transformPrivacyDeclarationToFormValues(passedInInitialValues),
-    [passedInInitialValues]
+    () =>
+      transformPrivacyDeclarationToFormValues(
+        passedInInitialValues,
+        customFieldValues
+      ),
+    [passedInInitialValues, customFieldValues]
   );
 
-  const handleSubmit = (
+  const handleSubmit = async (
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
-    onSubmit(transformFormValueToDeclaration(values), formikHelpers);
+    const { customFieldValues: formCustomFieldValues } = values;
+    const declarationToSubmit = transformFormValueToDeclaration(values);
+
+    const success = await onSubmit(declarationToSubmit, formikHelpers);
+    if (success) {
+      // find the matching resource based on data use and name
+      const customFieldResource = success.filter(
+        (pd) =>
+          pd.data_use === values.data_use &&
+          // name can be undefined, so avoid comparing undefined == ""
+          // (which we want to be true) - they both mean the PD has no name
+          (pd.name ? pd.name === values.name : true)
+      );
+      if (customFieldResource.length > 0) {
+        await upsertCustomFields({
+          customFieldValues: formCustomFieldValues,
+          fides_key: customFieldResource[0].id,
+        });
+      }
+    }
   };
 
   return { handleSubmit, initialValues };
@@ -367,7 +414,7 @@ interface Props {
   onSubmit: (
     values: PrivacyDeclarationResponse,
     formikHelpers: FormikHelpers<FormValues>
-  ) => void;
+  ) => Promise<PrivacyDeclarationResponse[] | undefined>;
   onCancel: () => void;
   initialValues?: PrivacyDeclarationResponse;
   privacyDeclarationId?: string;
