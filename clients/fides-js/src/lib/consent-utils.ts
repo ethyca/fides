@@ -209,7 +209,7 @@ const hasActionNeededTcfPreference = (
 /**
  * Returns true if the user has any saved TCF preferences
  */
-export const hasNoSavedTcfPreferences = (experience: PrivacyExperience) =>
+export const hasSavedTcfPreferences = (experience: PrivacyExperience) =>
   hasCurrentPreference(experience.tcf_purposes) ||
   hasCurrentPreference(experience.tcf_special_purposes) ||
   hasCurrentPreference(experience.tcf_features) ||
