@@ -1,4 +1,13 @@
-import { Button, Table, Tbody, Td, Text, Thead, Tr } from "@fidesui/react";
+import {
+  Button,
+  Flex,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Thead,
+  Tr,
+} from "@fidesui/react";
 import _ from "lodash";
 import React, { useState } from "react";
 
@@ -234,7 +243,7 @@ const SystemHistoryTable = ({ system }: Props) => {
 
   return (
     <>
-      <Table style={{ marginLeft: "24px" }}>
+      <Table ml="24px">
         <Thead>
           <Tr>
             <Td
@@ -279,14 +288,11 @@ const SystemHistoryTable = ({ system }: Props) => {
         </Tbody>
       </Table>
       {(data?.total || 0) > 10 && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            marginTop: "12px",
-            marginLeft: "24px",
-          }}
+        <Flex
+          alignItems="center"
+          justifyContent="flex-start"
+          marginTop="12px"
+          marginLeft="24px"
         >
           <Text fontSize="xs" lineHeight={4} fontWeight="600" paddingX={2}>
             {(currentPage - 1) * itemsPerPage + 1} -{" "}
@@ -313,7 +319,7 @@ const SystemHistoryTable = ({ system }: Props) => {
           >
             <NextArrow />
           </Button>
-        </div>
+        </Flex>
       )}
       <SystemHistoryModal
         selectedHistory={selectedHistory!}
