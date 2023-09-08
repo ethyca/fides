@@ -82,25 +82,25 @@ jobs:
             echo "match=false" >> $GITHUB_OUTPUT
           fi
 
-      # Prod and 'beta' tags go to PyPI; 'rc', 'alpha', all other tags and untagged commits go to TestPyPI
+      # Prod, 'rc' and 'beta' tags go to PyPI; 'alpha', all other tags and untagged commits go to TestPyPI
       #   2.10.0 (prod tag, official release commit) --> PyPI
       #   2.10.0b1 (beta tag, used on main) --> PyPI
+      #   2.10.0.rc0 (rc tag, used on release branches before release is cut) --> PyPI
       #   2.10.0.a0 (alpha tag, used on feature branches) --> TestPyPI
-      #   2.10.0.rc0 (rc tag, used on release branches before release is cut) --> TestPyPI
       #   2.10.0.dev0 (no match, arbitrary dev tag) --> TestPyPI
       #   no tag, just a vanilla commit/merge pushed to `main` --> TestPyPI
 
-      # Upload to TestPyPI if it is not a release (prod) or beta tag
+      # Upload to TestPyPI if it is not a release (prod), rc or beta tag
       - name: Upload to test pypi
-        if: steps.check-prod-tag.outputs.match == 'false' && steps.check-beta-tag.outputs.match == 'false'
+        if: steps.check-prod-tag.outputs.match == 'false' && steps.check-rc-tag.outputs.match == 'false' && steps.check-beta-tag.outputs.match == 'false'
         run: twine upload --repository testpypi dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
 
-      # If the tag matches either a release tag or a beta tag, allow publishing to PyPi, e.g.:
+      # If the tag matches either a release, rc or a beta tag, allow publishing to PyPi:
       - name: Upload to pypi
-        if: steps.check-prod-tag.outputs.match == 'true' || steps.check-beta-tag.outputs.match == 'true'
+        if: steps.check-prod-tag.outputs.match == 'true' || steps.check-rc-tag.outputs.match == 'true' || steps.check-beta-tag.outputs.match == 'true'
         run: twine upload dist/*
         env:
           TWINE_USERNAME: __token__

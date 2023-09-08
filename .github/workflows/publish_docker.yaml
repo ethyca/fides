@@ -12,69 +12,8 @@ env:
   DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
 
 jobs:
-  ParseTags:
+  push-fides:
     runs-on: ubuntu-latest
-    outputs:
-      prod_tag: ${{ steps.check-prod-tag.outputs.match }}
-      rc_tag: ${{ steps.check-rc-tag.outputs.match }}
-      alpha_tag: ${{ steps.check-alpha-tag.outputs.match }}
-      beta_tag: ${{ steps.check-beta-tag.outputs.match }}
-    steps:
-      - name: Check Prod Tag
-        id: check-prod-tag
-        run: |
-          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "match=true" >> $GITHUB_OUTPUT
-          else
-            echo "match=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Check RC Tag
-        id: check-rc-tag
-        run: |
-          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+rc[0-9]+$ ]]; then
-            echo "match=true" >> $GITHUB_OUTPUT
-          else
-            echo "match=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Check alpha Tag
-        id: check-alpha-tag
-        run: |
-          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+a[0-9]+$ ]]; then
-            echo "match=true" >> $GITHUB_OUTPUT
-          else
-            echo "match=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Check beta Tag
-        id: check-beta-tag
-        run: |
-          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+b[0-9]+$ ]]; then
-            echo "match=true" >> $GITHUB_OUTPUT
-          else
-            echo "match=false" >> $GITHUB_OUTPUT
-          fi
-
-      # if an RC git tag, also notify Fidesinfra to trigger a redeploy of rc env, to pick up our newly published images
-      - name: Send Repository Dispatch Event (RC redeploy)
-        if: steps.check-rc-tag.outputs.match == 'true'
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          event-type: trigger-fidesinfra-deploy-fides-rc
-          repository: ethyca/fidesinfra
-          token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
-
-  Push:
-    runs-on: ubuntu-latest
-    needs: ParseTags
-    strategy:
-      # This matrix will effectively _try_ to run every permutation in parallel,
-      # skipping all of the tasks that don't match. This leaves a ton of "skipped" jobs
-      # but is the fastest way to get this working without overhauling the tag check logic.
-      matrix:
-        application: ["fides", "sample_app", "privacy_center"]
-        platform: ["x86", "ARM"]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -89,28 +28,71 @@ jobs:
       - name: Install Dev Requirements
         run: pip install -r dev-requirements.txt
 
+
+      - name: Check Prod Tag
+        id: check-prod-tag
+        run: |
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "match=true" >> $GITHUB_OUTPUT
+          else
+            echo "match=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Check RC Tag
+        id: check-rc-tag
+        run: |
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+rc[0-9]+$ ]]; then
+            echo "match=true" >> $GITHUB_OUTPUT
+          else
+            echo "match=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Check alpha Tag
+        id: check-alpha-tag
+        run: |
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+a[0-9]+$ ]]; then
+            echo "match=true" >> $GITHUB_OUTPUT
+          else
+            echo "match=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Check beta Tag
+        id: check-beta-tag
+        run: |
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+b[0-9]+$ ]]; then
+            echo "match=true" >> $GITHUB_OUTPUT
+          else
+            echo "match=false" >> $GITHUB_OUTPUT
+          fi
+
       # if neither prod, rc, beta or alpha git tag, then push images with the ":dev" tag
       - name: Push Fides Dev Tag
-        if: needs.ParseTags.outputs.prod_tag == 'false' && needs.ParseTags.outputs.rc_tag == 'false' && needs.ParseTags.outputs.beta_tag == 'false' && needs.ParseTags.outputs.alpha_tag == 'false'
-        run: nox -s "push(${{ matrix.application }},dev,${{ matrix.platform }})"
+        if: steps.check-prod-tag.outputs.match == 'false' && steps.check-rc-tag.outputs.match == 'false' && steps.check-beta-tag.outputs.match == 'false' && steps.check-alpha-tag.outputs.match == 'false'
+        run: nox -s "push(dev)"
 
       # if a prod git tag, then we run the prod job to publish images tagged with the version number and a constant ":latest" tag
       - name: Push Fides Prod Tags
-        if: needs.ParseTags.outputs.prod_tag == 'true'
-        run: nox -s "push(${{ matrix.application }},prod,${{ matrix.platform }})"
+        if: steps.check-prod-tag.outputs.match == 'true'
+        run: nox -s "push(prod)"
 
       # if an RC git tag, then we run the rc job to publish images with an ":rc" tag
       - name: Push Fides RC Tags
-        if: needs.ParseTags.outputs.rc_tag == 'true'
-        run: nox -s "push(${{ matrix.application }},rc,${{ matrix.platform }})"
+        if: steps.check-rc-tag.outputs.match == 'true'
+        run: nox -s "push(rc)"
+
+      # if an RC git tag, also notify Fidesinfra to trigger a redeploy of rc env, to pick up our newly published images
+      - name: Send Repository Dispatch Event (RC redeploy)
+        if: steps.check-rc-tag.outputs.match == 'true'
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          event-type: trigger-fidesinfra-deploy-fides-rc
+          repository: ethyca/fidesinfra
+          token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
 
       # if an alpha or beta git tag, then we run the prerelease job to publish images with an ":prerelease" tag
       - name: Push Fides prerelease Tags
-        if: needs.ParseTags.outputs.alpha_tag == 'true' || needs.ParseTags.outputs.beta_tag == 'true'
-        run: nox -s "push(${{ matrix.application }},prerelease,${{ matrix.platform }})"
+        if: steps.check-alpha-tag.outputs.match == 'true' || steps.check-beta-tag.outputs.match == 'true'
+        run: nox -s "push(prerelease)"
 
       # if not a prod git tag, then we run the git-tag job to publish images with a git tag
       # if one exists on the current commit. the job is a no-op if the commit hasn't been tagged
       - name: Push Fides Commit Tags
-        if: needs.ParseTags.outputs.prod_tag == 'false'
-        run: nox -s "push(${{ matrix.application }},git-tag,${{ matrix.platform }})"
+        if: steps.check-prod-tag.outputs.match == 'false'
+        run: nox -s "push(git-tag)"
