@@ -12,6 +12,10 @@ export const legalBasisForTransferOptions = [
     value: "Adequacy Decision",
     label: "Adequacy decision",
   },
+    {
+    value: "Supplementary Measures",
+    label: "Supplementary measures",
+  },
   {
     value: "SCCs",
     label: "Standard contractual clauses",
