@@ -63,11 +63,11 @@ const PrivacyDeclarationFormTab = ({
 
   const unassignedCookies = system.cookies
     ? system.cookies.filter(
-        (c) =>
-          assignedCookies.filter(
-            (assigned) => assigned && assigned.name === c.name
-          ).length === 0
-      )
+      (c) =>
+        assignedCookies.filter(
+          (assigned) => assigned && assigned.name === c.name
+        ).length === 0
+    )
     : undefined;
 
   const checkAlreadyExists = (values: PrivacyDeclarationResponse) => {
@@ -182,13 +182,21 @@ const PrivacyDeclarationFormTab = ({
     setCurrentDeclaration(declarationToEdit);
   };
 
-  const handleSubmit = (values: PrivacyDeclarationResponse) => {
+  const handleAcceptDictSuggestions = (suggestions: DictDataUse[]) => {
+    const newDeclarations = suggestions.map((du) =>
+      transformDictDataUseToDeclaration(du)
+    );
+
+    handleSave(newDeclarations);
+    handleCloseDictModal();
+  };
+
+  const handleSubmit = async (values: PrivacyDeclarationResponse) => {
     handleCloseForm();
     if (currentDeclaration) {
-      handleEditDeclaration(currentDeclaration, values);
-    } else {
-      handleCreateDeclaration(values);
+      return handleEditDeclaration(currentDeclaration, values);
     }
+    return handleCreateDeclaration(values);
   };
 
   const handleDelete = async (
@@ -250,6 +258,7 @@ const PrivacyDeclarationFormTab = ({
           initialValues={currentDeclaration}
           onSubmit={handleSubmit}
           onCancel={handleCloseForm}
+          includeCustomFields={includeCustomFields}
           {...dataProps}
         />
       </PrivacyDeclarationFormModal>
