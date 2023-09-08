@@ -237,9 +237,8 @@ const PrivacyDeclarationFormTab = ({
     handleCloseForm();
     if (currentDeclaration) {
       return handleEditDeclaration(currentDeclaration, values);
-    } 
-      return handleCreateDeclaration(values);
-    
+    }
+    return handleCreateDeclaration(values);
   };
 
   const handleDelete = async (
