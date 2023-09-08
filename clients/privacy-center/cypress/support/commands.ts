@@ -184,9 +184,8 @@ declare global {
     __tcfapi: (
       command: string,
       version: number,
-      // tcData should be type TCData from the IAB's TCF library.
-      // We could consider adding that library here, or reexporting just the type
-      // from fides-js
+      // DEFER: tcData should be type TCData from the IAB's TCF library.
+      // Once we are importing that library, replace this `any` type.
       callback: (tcData: any, success: boolean) => void,
       parameter?: number | string
     ) => void;
