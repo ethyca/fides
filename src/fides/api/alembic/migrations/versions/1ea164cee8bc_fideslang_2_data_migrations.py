@@ -273,6 +273,42 @@ def update_system_ingress_egress_data_categories(
             )
 
 
+def update_privacy_notices(bind: Connection, data_use_map: Dict[str, str]) -> None:
+    """
+    Update the Privacy Notice Models.
+
+    This includes the following models:
+    - PrivacyNotice
+    - PrivacyNoticeHistory
+    - PrivacyNoticeTemplate
+    """
+    privacy_notice_tables = [
+        "privacynotice",
+        "privacynoticetemplate",
+        "privacynoticehistory",
+    ]
+    for table in privacy_notice_tables:
+        existing_notices: ResultProxy = bind.execute(
+            text(f"SELECT id, data_uses FROM {table};")
+        )
+
+        for row in existing_notices:
+            data_uses = row["data_uses"]
+
+            # Do a blunt find/replace
+            updated_data_uses = [
+                _replace_matching_data_label(use, data_use_map) for use in data_uses
+            ]
+
+            update_query: TextClause = text(
+                f"UPDATE {table} SET data_uses= :updated_uses WHERE id= :notice_id"
+            )
+            bind.execute(
+                update_query,
+                {"notice_id": row["id"], "updated_uses": updated_data_uses},
+            )
+
+
 def upgrade() -> None:
     """
     Given that our advice is to turn off auto-migrations and make a db copy,
@@ -300,6 +336,9 @@ def upgrade() -> None:
 
     logger.info("Upgrading Data Categories in System egress/ingress")
     update_system_ingress_egress_data_categories(bind, data_category_upgrades)
+
+    logger.info("Updating Privacy Notices")
+    update_privacy_notices(bind, data_use_upgrades)
 
 
 def downgrade() -> None:

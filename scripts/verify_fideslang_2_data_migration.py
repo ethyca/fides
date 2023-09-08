@@ -8,13 +8,16 @@ The steps to run the script are as follows:
 3. You can run `python scripts/verify_fideslang_2_data_migration.py -h` to understand how to invoke script
 """
 import argparse
+import json
 from functools import partial
 from typing import Dict
 
 import fideslang
+import requests
 from alembic import command
 
 from fides.api.db.database import get_alembic_config
+from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeRegion
 from fides.config import CONFIG
 from fides.core.api_helpers import get_server_resource
 from fides.core.push import push
@@ -23,6 +26,9 @@ DATABASE_URL = CONFIG.database.sync_database_uri
 AUTH_HEADER = CONFIG.user.auth_header
 SERVER_URL = CONFIG.cli.server_url
 DOWN_REVISION = "708a780b01ba"
+PRIVACY_NOTICE_ID = ""  # Guido forgive me, this gets mutated later
+
+print(f"Using Server URL: {SERVER_URL}")
 
 assert (
     fideslang.__version__.split(".")[0] == "2"
@@ -92,6 +98,16 @@ fideslang_1_use = fideslang.models.DataUse(
 # This is used to test what happens to Taxonomy items that extended off of now-updated default items
 orphaned_data_category = fideslang.models.DataCategory(
     fides_key="user.observed.custom", parent_key="user.observed"
+)
+
+# This is used to test Privacy Notices
+old_notice = PrivacyNoticeCreation(
+    name="old_notice",
+    data_uses=["improve.system"],
+    regions=[PrivacyNoticeRegion("lu")],
+    consent_mechanism="opt_in",
+    displayed_in_overlay=True,
+    enforcement_level="system_wide",
 )
 
 # This is used to test updating Policy Rules
@@ -165,7 +181,40 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
     assert server_orphaned_category, server_orphaned_category
 
     # Verify Privacy Notices
-    assert False, "Need to implement Privacy Notices!"
+    # NOTE: This only tests the `privacynotice` table explicitly because the other
+    # tables appear to be carbon copies (inheritance)
+    privacy_notice_response = requests.get(
+        url=f"{SERVER_URL}/api/v1/privacy-notice/{PRIVACY_NOTICE_ID}",
+        headers=AUTH_HEADER,
+        allow_redirects=True,
+    ).json()
+    assert privacy_notice_response["data_uses"] == ["functional.service.improve"]
+
+
+def create_outdated_objects() -> None:
+    # We need two separate pushes here because of server-side validation
+    taxonomy_1 = fideslang.models.Taxonomy(
+        data_category=[orphaned_data_category, fideslang_1_category],
+        data_use=[fideslang_1_use],
+    )
+    taxonomy_2 = fideslang.models.Taxonomy(
+        dataset=[old_dataset],
+        system=[old_system],
+        policy=[old_policy],
+    )
+    push(url=SERVER_URL, headers=AUTH_HEADER, taxonomy=taxonomy_1)
+    push(url=SERVER_URL, headers=AUTH_HEADER, taxonomy=taxonomy_2)
+
+    # Create Privacy Notice
+    response = requests.post(
+        url=f"{SERVER_URL}/api/v1/privacy-notice",
+        headers=AUTH_HEADER,
+        allow_redirects=True,
+        data=json.dumps([old_notice.dict()]),
+    )
+    assert response.ok, f"Failed to Create Privacy Notice: {response.text}"
+    global PRIVACY_NOTICE_ID  # I'm so sorry
+    PRIVACY_NOTICE_ID = response.json()[0]["id"]  # Please forgive me
 
 
 def reload_objects() -> None:
@@ -181,18 +230,7 @@ def reload_objects() -> None:
 
     # Seed the database with objects we know will change
     print("> Seeding the database with 'outdated' Taxonomy objects")
-    # We need two separate pushes here because of server-side validation
-    taxonomy_1 = fideslang.models.Taxonomy(
-        data_category=[orphaned_data_category, fideslang_1_category],
-        data_use=[fideslang_1_use],
-    )
-    taxonomy_2 = fideslang.models.Taxonomy(
-        dataset=[old_dataset],
-        system=[old_system],
-        policy=[old_policy],
-    )
-    push(url=SERVER_URL, headers=AUTH_HEADER, taxonomy=taxonomy_1)
-    push(url=SERVER_URL, headers=AUTH_HEADER, taxonomy=taxonomy_2)
+    create_outdated_objects()
 
     # Migrate to HEAD
     print("Upgrading database to migration revision: head")
