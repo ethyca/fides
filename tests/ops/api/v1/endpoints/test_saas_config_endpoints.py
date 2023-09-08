@@ -470,14 +470,12 @@ class TestRegisterConnectorTemplate:
         self,
         planet_express_config,
         planet_express_dataset,
-        planet_express_functions,
         planet_express_icon,
     ):
         return create_zip_file(
             {
                 "config.yml": planet_express_config,
                 "dataset.yml": planet_express_dataset,
-                "functions.py": planet_express_functions,
                 "icon.svg": planet_express_icon,
             }
         )
@@ -486,13 +484,11 @@ class TestRegisterConnectorTemplate:
     def connector_template_missing_config(
         self,
         planet_express_dataset,
-        planet_express_functions,
         planet_express_icon,
     ):
         return create_zip_file(
             {
                 "dataset.yml": planet_express_dataset,
-                "functions.py": planet_express_functions,
                 "icon.svg": planet_express_icon,
             }
         )
@@ -501,14 +497,12 @@ class TestRegisterConnectorTemplate:
     def connector_template_wrong_contents_config(
         self,
         planet_express_dataset,
-        planet_express_functions,
         planet_express_icon,
     ):
         return create_zip_file(
             {
                 "config.yml": "planet_express_config",
                 "dataset.yml": planet_express_dataset,
-                "functions.py": planet_express_functions,
                 "icon.svg": planet_express_icon,
             }
         )
@@ -518,14 +512,12 @@ class TestRegisterConnectorTemplate:
         self,
         planet_express_invalid_config,
         planet_express_dataset,
-        planet_express_functions,
         planet_express_icon,
     ):
         return create_zip_file(
             {
                 "config.yml": planet_express_invalid_config,
                 "dataset.yml": planet_express_dataset,
-                "functions.py": planet_express_functions,
                 "icon.svg": planet_express_icon,
             }
         )
@@ -534,13 +526,11 @@ class TestRegisterConnectorTemplate:
     def connector_template_missing_dataset(
         self,
         planet_express_config,
-        planet_express_functions,
         planet_express_icon,
     ):
         return create_zip_file(
             {
                 "config.yml": planet_express_config,
-                "functions.py": planet_express_functions,
                 "icon.svg": planet_express_icon,
             }
         )
@@ -549,14 +539,12 @@ class TestRegisterConnectorTemplate:
     def connector_template_wrong_contents_dataset(
         self,
         planet_express_config,
-        planet_express_functions,
         planet_express_icon,
     ):
         return create_zip_file(
             {
                 "config.yml": planet_express_config,
                 "dataset.yml": "planet_express_dataset",
-                "functions.py": planet_express_functions,
                 "icon.svg": planet_express_icon,
             }
         )
@@ -566,29 +554,12 @@ class TestRegisterConnectorTemplate:
         self,
         planet_express_config,
         planet_express_invalid_dataset,
-        planet_express_functions,
         planet_express_icon,
     ):
         return create_zip_file(
             {
                 "config.yml": planet_express_config,
                 "dataset.yml": planet_express_invalid_dataset,
-                "functions.py": planet_express_functions,
-                "icon.svg": planet_express_icon,
-            }
-        )
-
-    @pytest.fixture
-    def connector_template_no_functions(
-        self,
-        planet_express_config,
-        planet_express_dataset,
-        planet_express_icon,
-    ):
-        return create_zip_file(
-            {
-                "config.yml": planet_express_config,
-                "dataset.yml": planet_express_dataset,
                 "icon.svg": planet_express_icon,
             }
         )
@@ -598,13 +569,11 @@ class TestRegisterConnectorTemplate:
         self,
         planet_express_config,
         planet_express_dataset,
-        planet_express_functions,
     ):
         return create_zip_file(
             {
                 "config.yml": planet_express_config,
                 "dataset.yml": planet_express_dataset,
-                "functions.py": planet_express_functions,
             }
         )
 
@@ -613,7 +582,6 @@ class TestRegisterConnectorTemplate:
         self,
         planet_express_config,
         planet_express_dataset,
-        planet_express_functions,
         planet_express_icon,
     ):
         return create_zip_file(
@@ -621,7 +589,6 @@ class TestRegisterConnectorTemplate:
                 "1_config.yml": planet_express_config,
                 "2_config.yml": planet_express_config,
                 "dataset.yml": planet_express_dataset,
-                "functions.py": planet_express_functions,
                 "icon.svg": planet_express_icon,
             }
         )
@@ -631,7 +598,6 @@ class TestRegisterConnectorTemplate:
         self,
         planet_express_config,
         planet_express_dataset,
-        planet_express_functions,
         planet_express_icon,
     ):
         return create_zip_file(
@@ -639,25 +605,6 @@ class TestRegisterConnectorTemplate:
                 "config.yml": planet_express_config,
                 "1_dataset.yml": planet_express_dataset,
                 "2_dataset.yml": planet_express_dataset,
-                "functions.py": planet_express_functions,
-                "icon.svg": planet_express_icon,
-            }
-        )
-
-    @pytest.fixture
-    def connector_template_duplicate_functions(
-        self,
-        planet_express_config,
-        planet_express_dataset,
-        planet_express_functions,
-        planet_express_icon,
-    ):
-        return create_zip_file(
-            {
-                "config.yml": planet_express_config,
-                "dataset.yml": planet_express_dataset,
-                "1_functions.py": planet_express_functions,
-                "2_functions.py": planet_express_functions,
                 "icon.svg": planet_express_icon,
             }
         )
@@ -667,14 +614,12 @@ class TestRegisterConnectorTemplate:
         self,
         planet_express_config,
         planet_express_dataset,
-        planet_express_functions,
         planet_express_icon,
     ):
         return create_zip_file(
             {
                 "config.yml": planet_express_config,
                 "dataset.yml": planet_express_dataset,
-                "functions.py": planet_express_functions,
                 "1_icon.svg": planet_express_icon,
                 "2_icon.svg": planet_express_icon,
             }
@@ -687,7 +632,6 @@ class TestRegisterConnectorTemplate:
         generate_auth_header,
         complete_connector_template,
     ):
-        CONFIG.security.allow_custom_connector_functions = True
         auth_header = generate_auth_header(scopes=[CLIENT_READ])
         response = api_client.post(
             register_connector_template_url,
@@ -749,11 +693,6 @@ class TestRegisterConnectorTemplate:
                 },
             ),
             (
-                "connector_template_no_functions",
-                200,
-                {"message": "Connector template successfully registered."},
-            ),
-            (
                 "connector_template_no_icon",
                 200,
                 {"message": "Connector template successfully registered."},
@@ -773,65 +712,13 @@ class TestRegisterConnectorTemplate:
                 },
             ),
             (
-                "connector_template_duplicate_functions",
-                400,
-                {"detail": "Multiple Python (.py) files found, only one is allowed."},
-            ),
-            (
                 "connector_template_duplicate_icons",
                 400,
                 {"detail": "Multiple svg files found, only one is allowed."},
             ),
         ],
     )
-    @mock.patch(
-        "fides.api.service.connectors.saas.connector_registry_service.register_custom_functions"
-    )  # prevent functions from being registered to avoid test conflicts
-    def test_register_connector_template_allow_custom_connector_functions(
-        self,
-        mock_register_custom_functions: MagicMock,
-        api_client: TestClient,
-        register_connector_template_url,
-        generate_auth_header,
-        zip_file,
-        status_code,
-        details,
-        request,
-    ):
-        CONFIG.security.allow_custom_connector_functions = True
-        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
-        response = api_client.post(
-            register_connector_template_url,
-            headers=auth_header,
-            files={
-                "file": (
-                    "template.zip",
-                    request.getfixturevalue(zip_file).read(),
-                    "application/zip",
-                )
-            },
-        )
-        assert response.status_code == status_code
-        assert response.json() == details
-
-    @pytest.mark.parametrize(
-        "zip_file, status_code, details",
-        [
-            (
-                "complete_connector_template",
-                400,
-                {
-                    "detail": "The import of connector templates with custom functions is disabled by the 'security.allow_custom_connector_functions' setting."
-                },
-            ),
-            (
-                "connector_template_no_functions",
-                200,
-                {"message": "Connector template successfully registered."},
-            ),
-        ],
-    )
-    def test_register_connector_template_disallow_custom_connector_functions(
+    def test_register_connector_template(
         self,
         api_client: TestClient,
         register_connector_template_url,
@@ -841,7 +728,6 @@ class TestRegisterConnectorTemplate:
         details,
         request,
     ):
-        CONFIG.security.allow_custom_connector_functions = False
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
         response = api_client.post(
             register_connector_template_url,
