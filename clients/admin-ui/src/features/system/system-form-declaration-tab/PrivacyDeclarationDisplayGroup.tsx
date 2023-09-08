@@ -13,14 +13,18 @@ import {
   Text,
 } from "@fidesui/react";
 
-import { PrivacyDeclarationResponse } from "~/types/api";
+import { DataUse, PrivacyDeclarationResponse } from "~/types/api";
+
+import { SparkleIcon } from "../../common/Icon/SparkleIcon";
 
 const PrivacyDeclarationRow = ({
   declaration,
+  title,
   handleDelete,
   handleEdit,
 }: {
   declaration: PrivacyDeclarationResponse;
+  title?: string;
   handleDelete: (dec: PrivacyDeclarationResponse) => void;
   handleEdit: (dec: PrivacyDeclarationResponse) => void;
 }) => (
@@ -34,9 +38,7 @@ const PrivacyDeclarationRow = ({
           cursor="pointer"
         >
           <LinkOverlay>
-            <Text>
-              {declaration.name ? declaration.name : declaration.data_use}
-            </Text>
+            <Text>{title || declaration.data_use}</Text>
           </LinkOverlay>
         </LinkBox>
         <Spacer />
@@ -58,17 +60,17 @@ const PrivacyDeclarationRow = ({
 export const PrivacyDeclarationTabTable = ({
   heading,
   children,
-  hasAddButton = false,
-  handleAdd,
+  headerButton,
+  footerButton,
 }: {
   heading: string;
   children?: React.ReactNode;
-  hasAddButton?: boolean;
-  handleAdd?: () => void;
+  headerButton?: React.ReactNode;
+  footerButton?: React.ReactNode;
 }) => (
   <Stack spacing={4}>
     <Box maxWidth="720px" border="1px" borderColor="gray.200" borderRadius={6}>
-      <Box
+      <HStack
         backgroundColor="gray.50"
         px={6}
         py={4}
@@ -79,54 +81,89 @@ export const PrivacyDeclarationTabTable = ({
         <Heading as="h3" size="xs">
           {heading}
         </Heading>
-      </Box>
+        <Spacer />
+        {headerButton || null}
+      </HStack>
 
       <Stack spacing={0}>{children}</Stack>
       <Box backgroundColor="gray.50" px={6} py={4} borderBottomRadius={6}>
-        {hasAddButton ? (
-          <Button
-            onClick={handleAdd}
-            size="xs"
-            px={2}
-            py={1}
-            backgroundColor="primary.800"
-            color="white"
-            fontWeight="600"
-          >
-            <Text mr={2}>Add data use</Text>
-            <AddIcon boxSize={3} color="white" />
-          </Button>
-        ) : null}
+        {footerButton || null}
       </Box>
     </Box>
   </Stack>
 );
 
+type Props = {
+  heading: string;
+  dictionaryEnabled?: boolean;
+  declarations: PrivacyDeclarationResponse[];
+  handleDelete: (dec: PrivacyDeclarationResponse) => void;
+  handleAdd?: () => void;
+  handleEdit: (dec: PrivacyDeclarationResponse) => void;
+  handleOpenDictModal: () => void;
+  allDataUses: DataUse[];
+};
+
 export const PrivacyDeclarationDisplayGroup = ({
   heading,
+  dictionaryEnabled = false,
   declarations,
   handleAdd,
   handleDelete,
   handleEdit,
-}: {
-  heading: string;
-  declarations: PrivacyDeclarationResponse[];
-  handleAdd?: () => void;
-  handleDelete: (dec: PrivacyDeclarationResponse) => void;
-  handleEdit: (dec: PrivacyDeclarationResponse) => void;
-}) => (
-  <PrivacyDeclarationTabTable
-    heading={heading}
-    hasAddButton
-    handleAdd={handleAdd}
-  >
-    {declarations.map((pd) => (
-      <PrivacyDeclarationRow
-        declaration={pd}
-        key={pd.id}
-        handleDelete={handleDelete}
-        handleEdit={handleEdit}
-      />
-    ))}
-  </PrivacyDeclarationTabTable>
-);
+  handleOpenDictModal,
+  allDataUses,
+}: Props) => {
+  const declarationTitle = (declaration: PrivacyDeclarationResponse) => {
+    const dataUse = allDataUses.filter(
+      (du) => du.fides_key === declaration.data_use
+    )[0];
+    if (dataUse) {
+      return declaration.name
+        ? `${dataUse.name} - ${declaration.name}`
+        : dataUse.name;
+    }
+    return "";
+  };
+
+  return (
+    <PrivacyDeclarationTabTable
+      heading={heading}
+      headerButton={
+        dictionaryEnabled ? (
+          <IconButton
+            onClick={handleOpenDictModal}
+            aria-label="Show dictionary suggestions"
+            variant="outline"
+          >
+            <SparkleIcon />
+          </IconButton>
+        ) : null
+      }
+      footerButton={
+        <Button
+          onClick={handleAdd}
+          size="xs"
+          px={2}
+          py={1}
+          backgroundColor="primary.800"
+          color="white"
+          fontWeight="600"
+          rightIcon={<AddIcon />}
+        >
+          Add data use
+        </Button>
+      }
+    >
+      {declarations.map((pd) => (
+        <PrivacyDeclarationRow
+          declaration={pd}
+          key={pd.id}
+          title={declarationTitle(pd)}
+          handleDelete={handleDelete}
+          handleEdit={handleEdit}
+        />
+      ))}
+    </PrivacyDeclarationTabTable>
+  );
+};

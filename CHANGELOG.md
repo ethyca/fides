@@ -20,6 +20,8 @@ The types of changes are:
 ### Added
 
 - Added new Performance-related nox commands and included them as part of the CI suite [#3997](https://github.com/ethyca/fides/pull/3997)
+- Added dictionary suggestions for data uses [4035](https://github.com/ethyca/fides/pull/4035)
+- Relax system legal basis for transfers to be any string [#4049](https://github.com/ethyca/fides/pull/4049)
 
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 

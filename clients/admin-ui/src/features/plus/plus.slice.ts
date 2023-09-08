@@ -32,7 +32,7 @@ import {
 } from "~/types/api";
 import { SystemHistoryResponse } from "~/types/api/models/SystemHistoryResponse";
 
-import { DictEntry, Page } from "./types";
+import { DictDataUse, DictEntry, Page } from "./types";
 
 interface ScanParams {
   classify?: boolean;
@@ -251,6 +251,17 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Dictionary"],
     }),
+    getDictionaryDataUses: build.query<
+      Page<DictDataUse>,
+      { vendor_id: number }
+    >({
+      query: ({ vendor_id }) => ({
+        params: { size: 1000 },
+        url: `plus/dictionary/data-use-declarations/${vendor_id}`,
+        method: "GET",
+      }),
+      providesTags: ["Dictionary"],
+    }),
     getSystemHistory: build.query<
       SystemHistoryResponse,
       { system_key: string; page?: number; size?: number }
@@ -289,6 +300,7 @@ export const {
   useGetAllCustomFieldDefinitionsQuery,
   useGetAllowListQuery,
   useGetAllDictionaryEntriesQuery,
+  useGetDictionaryDataUsesQuery,
   useGetSystemHistoryQuery,
 } = plusApi;
 
@@ -430,4 +442,15 @@ export const selectDictEntry = (vendorId: string) =>
 
       return dictEntry || EMPTY_DICT_ENTRY;
     }
+  );
+
+const EMPTY_DATA_USES: DictDataUse[] = [];
+
+export const selectDictDataUses = (vendorId: number) =>
+  createSelector(
+    [
+      (state) => state,
+      plusApi.endpoints.getDictionaryDataUses.select({ vendor_id: vendorId }),
+    ],
+    (state, { data }) => (data ? data.items : EMPTY_DATA_USES)
   );
