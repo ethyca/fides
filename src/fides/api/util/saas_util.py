@@ -5,6 +5,7 @@ import re
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+import pydash
 import yaml
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
@@ -20,7 +21,7 @@ FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
 PRIVACY_REQUEST_ID = "privacy_request_id"
 MASKED_OBJECT_FIELDS = "masked_object_fields"
 ALL_OBJECT_FIELDS = "all_object_fields"
-CUSTOM_METADATA = "custom_metadata"
+UNVERIFIED_METADATA = "unverified_metadata"
 
 
 def load_yaml_as_string(filename: str) -> str:
@@ -293,10 +294,16 @@ def assign_placeholders(value: Any, param_values: Dict[str, Any]) -> Optional[An
     """
     if value and isinstance(value, str):
         placeholders = re.findall("<([^<>]+)>", value)
-        for placeholder in placeholders:
-            placeholder_value = param_values.get(placeholder)
+        for full_placeholder in placeholders:
+            is_optional = full_placeholder.endswith("?")
+            placeholder_key = full_placeholder[:-1] if is_optional else full_placeholder
+
+            placeholder_value = pydash.get(param_values, placeholder_key)
+
             if placeholder_value is not None:
-                value = value.replace(f"<{placeholder}>", str(placeholder_value))
+                value = value.replace(f"<{full_placeholder}>", str(placeholder_value))
+            elif is_optional:
+                value = value.replace(f'"<{full_placeholder}>"', "null")
             else:
                 return None
     return value
