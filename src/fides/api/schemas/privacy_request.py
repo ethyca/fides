@@ -65,7 +65,10 @@ class Consent(FidesSchema):
 
 
 class ConsentReport(Consent):
-    """Schema for reporting Consent requests."""
+    """
+    Schema for reporting Consent requests.
+    TODO: What is a consent report
+    """
 
     id: str
     identity: Identity
