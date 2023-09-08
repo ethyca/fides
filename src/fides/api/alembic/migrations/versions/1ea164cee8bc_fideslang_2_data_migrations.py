@@ -309,6 +309,31 @@ def update_privacy_notices(bind: Connection, data_use_map: Dict[str, str]) -> No
             )
 
 
+def update_consent(bind: Connection, data_use_map: Dict[str, str]) -> None:
+    """
+    Update Consent objects in the database.
+    """
+    existing_consents: ResultProxy = bind.execute(
+        text("SELECT provided_identity_id, data_use FROM consent;")
+    )
+
+    for row in existing_consents:
+        # Update data categories at the top level
+        updated_use: str = _replace_matching_data_label(row["data_use"], data_use_map)
+
+        update_label_query: TextClause = text(
+            "UPDATE consent SET data_use= :updated_label WHERE provided_identity_id= :key AND data_use = :old_use"
+        )
+        bind.execute(
+            update_label_query,
+            {
+                "provided_identity_id": row["provided_identity_id"],
+                "old_use": row["data_use"],
+                "updated_label": updated_use,
+            },
+        )
+
+
 def upgrade() -> None:
     """
     Given that our advice is to turn off auto-migrations and make a db copy,
@@ -339,6 +364,9 @@ def upgrade() -> None:
 
     logger.info("Updating Privacy Notices")
     update_privacy_notices(bind, data_use_upgrades)
+
+    logger.info("Updating Privacy Requests")
+    update_consent(bind, data_use_upgrades)
 
 
 def downgrade() -> None:

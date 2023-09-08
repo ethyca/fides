@@ -18,6 +18,7 @@ from alembic import command
 
 from fides.api.db.database import get_alembic_config
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeRegion
+from fides.api.schemas.privacy_request import PrivacyRequestCreate, Identity, Consent
 from fides.config import CONFIG
 from fides.core.api_helpers import get_server_resource
 from fides.core.push import push
@@ -27,6 +28,7 @@ AUTH_HEADER = CONFIG.user.auth_header
 SERVER_URL = CONFIG.cli.server_url
 DOWN_REVISION = "708a780b01ba"
 PRIVACY_NOTICE_ID = ""  # Guido forgive me, this gets mutated later
+PRIVACY_REQUEST_ID = ""  # Guido forgive me, this gets mutated later
 
 print(f"Using Server URL: {SERVER_URL}")
 
@@ -110,6 +112,13 @@ old_notice = PrivacyNoticeCreation(
     enforcement_level="system_wide",
 )
 
+old_request = PrivacyRequestCreate(
+    external_id="oldrequest@pm.me",
+    policy_key="default_access_policy",
+    identity=Identity(email="test@pm.me"),
+    consent_preferences=Consent(data_use="improve.system", opt_in=True)
+)
+
 # This is used to test updating Policy Rules
 old_policy = fideslang.models.Policy(
     fides_key="old_policy",
@@ -149,6 +158,7 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
     assert server_old_dataset.collections[0].fields[0].data_categories == [
         "user.behavior"
     ]
+    print("> Verified Datasets.")
 
     # Verify Systems
     server_old_system: fideslang.models.System = partial_get(
@@ -166,6 +176,7 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
     ]
     assert server_old_system.ingress[0].data_categories == ["user.behavior"]
     assert server_old_system.egress[0].data_categories == ["user.behavior"]
+    print("> Verified Systems.")
 
     # Verify Policies
     server_old_policy: fideslang.models.Policy = partial_get(
@@ -173,12 +184,14 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
     )
     assert server_old_policy.rules[0].data_categories.values == ["user.behavior"]
     assert server_old_policy.rules[0].data_uses.values == ["functional.service.improve"]
+    print("> Verified Policy Rules.")
 
     # Verify Data Category
     server_orphaned_category: fideslang.models.DataCategory = partial_get(
         resource_key="user.behavior.custom", resource_type="data_category"
     )
     assert server_orphaned_category, server_orphaned_category
+    print("> Verified Data Categories.")
 
     # Verify Privacy Notices
     # NOTE: This only tests the `privacynotice` table explicitly because the other
@@ -189,6 +202,18 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
         allow_redirects=True,
     ).json()
     assert privacy_notice_response["data_uses"] == ["functional.service.improve"]
+    print("> Verified Privacy Notices.")
+
+    # Verify Privacy Requests
+    privacy_request_response = requests.get(
+        url=f"{SERVER_URL}/api/v1/privacy-request?id={PRIVACY_REQUEST_ID}",
+        headers=AUTH_HEADER,
+        allow_redirects=True,
+    ).json()
+    assert (
+        privacy_request_response["consent_prefences"][0] == "functional.service.improve"
+    ) privacy_request_response.text
+    print("> Verified Privacy Requests.")
 
 
 def create_outdated_objects() -> None:
@@ -215,6 +240,17 @@ def create_outdated_objects() -> None:
     assert response.ok, f"Failed to Create Privacy Notice: {response.text}"
     global PRIVACY_NOTICE_ID  # I'm so sorry
     PRIVACY_NOTICE_ID = response.json()[0]["id"]  # Please forgive me
+
+    response = requests.post(
+        url=f"{SERVER_URL}/api/v1/privacy-request",
+        headers=AUTH_HEADER,
+        allow_redirects=True,
+        data=json.dumps([old_request.dict()]),
+    )
+    assert response.ok, f"Failed to Create Privacy Request: {response.text}"
+    assert len(response.json()["succeeded"]) > 0, response.text
+    global PRIVACY_REQUEST_ID  # I'm so sorry
+    PRIVACY_REQUEST_ID = response.json()["succeeded"][0]["id"]  # Please forgive me
 
 
 def reload_objects() -> None:

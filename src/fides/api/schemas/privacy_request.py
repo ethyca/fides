@@ -52,7 +52,10 @@ class PrivacyRequestDRPStatusResponse(FidesSchema):
 
 
 class Consent(FidesSchema):
-    """Schema for consent."""
+    """
+    Schema for consent.
+    TODO: What is consent in this situation? Are these hardcoded values that come from the frontend implementation?
+    """
 
     data_use: str
     data_use_description: Optional[str] = None

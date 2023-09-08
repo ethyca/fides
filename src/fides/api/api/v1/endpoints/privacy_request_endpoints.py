@@ -557,6 +557,8 @@ def get_request_status(
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
     """Returns PrivacyRequest information. Supports a variety of optional query params.
 
+    TODO: Why is request_id a query param instead of a path param?
+
     To fetch a single privacy request, use the request_id query param `?request_id=`.
     To see individual execution logs, use the verbose query param `?verbose=True`.
     """
@@ -1728,6 +1730,8 @@ def create_privacy_request_func(
         else:
             created.append(privacy_request)
 
+    # TODO: Don't return a 200 if there are failed requests, or at least not
+    # if there are zero successful ones
     return BulkPostPrivacyRequests(
         succeeded=created,
         failed=failed,
