@@ -238,16 +238,10 @@ const SystemHistoryTable = ({ system }: Props) => {
         <Thead>
           <Tr>
             <Td
-              style={{
-                paddingTop: 16,
-                paddingBottom: 16,
-                paddingLeft: 16,
-                fontSize: 12,
-                borderTop: "1px solid #E2E8F0",
-                borderLeft: "1px solid #E2E8F0",
-                borderRight: "1px solid #E2E8F0",
-                background: "#F7FAFC",
-              }}
+              p="16px"
+              fontSize="12px"
+              border="1px solid #E2E8F0"
+              background="#F7FAFC"
             >
               System created
               {system.created_by && (
@@ -271,14 +265,11 @@ const SystemHistoryTable = ({ system }: Props) => {
                 style={{ cursor: "pointer" }}
               >
                 <Td
-                  style={{
-                    paddingTop: 10,
-                    paddingBottom: 10,
-                    paddingLeft: 16,
-                    fontSize: 12,
-                    borderLeft: "1px solid #E2E8F0",
-                    borderRight: "1px solid #E2E8F0",
-                  }}
+                  pt="10px"
+                  pb="10px"
+                  pl="16px"
+                  fontSize="12px"
+                  border="1px solid #E2E8F0"
                 >
                   {description}
                 </Td>

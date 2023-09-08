@@ -1,5 +1,6 @@
 import {
   Badge,
+  Flex,
   Heading,
   Modal,
   ModalBody,
@@ -51,12 +52,10 @@ const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
     <ModalOverlay />
     <ModalContent>
       <ModalHeader
-        style={{
-          backgroundColor: "#F7FAFC",
-          borderTopLeftRadius: "8px",
-          borderTopRightRadius: "8px",
-          borderBottom: "1px solid #E2E8F0",
-        }}
+        backgroundColor="#F7FAFC"
+        borderTopLeftRadius="8px"
+        borderTopRightRadius="8px"
+        borderBottom="1px solid #E2E8F0"
       >
         <Heading size="xs">
           <span style={{ verticalAlign: "middle" }}>Diff review</span>
@@ -89,7 +88,7 @@ const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
         </>
       </ModalHeader>
       <ModalBody paddingTop={0} paddingBottom={6}>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <Flex justifyContent="space-between">
           <div style={{ flex: "0 50%", marginRight: "12px" }}>
             <SelectedHistoryProvider
               selectedHistory={selectedHistory}
@@ -106,7 +105,7 @@ const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
               <SystemDataForm initialValues={selectedHistory?.after} />
             </SelectedHistoryProvider>
           </div>
-        </div>
+        </Flex>
       </ModalBody>
     </ModalContent>
   </Modal>
