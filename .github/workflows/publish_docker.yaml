@@ -105,6 +105,10 @@ jobs:
         if: needs.ParseTags.outputs.prod_tag == 'false'
         run: nox -s "push(${{ matrix.application }},git-tag)"
 
+  NotifyRedeploy:
+    runs-on: ubuntu-latest
+    needs: ParseTags
+    steps:
       # if an RC git tag, also notify Fidesinfra to trigger a redeploy of rc env, to pick up our newly published images
       - name: Send Repository Dispatch Event (RC redeploy)
         if: needs.ParseTags.outputs.rc_tag == 'true'
