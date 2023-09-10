@@ -106,7 +106,7 @@ jobs:
 
   NotifyRedeploy:
     runs-on: ubuntu-latest
-    needs: ParseTags
+    needs: Push
     steps:
       # if an RC git tag, also notify Fidesinfra to trigger a redeploy of rc env, to pick up our newly published images
       - name: Send Repository Dispatch Event (RC redeploy)
