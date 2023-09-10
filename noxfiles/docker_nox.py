@@ -1,8 +1,7 @@
 """Contains the nox sessions for docker-related tasks."""
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 import nox
-
 from constants_nox import (
     DEV_TAG_SUFFIX,
     IMAGE,
@@ -19,23 +18,26 @@ from git_nox import get_current_tag, recognized_tag
 DOCKER_PLATFORMS = "linux/amd64,linux/arm64"
 
 
-def verify_git_tag(session: nox.Session) -> str:
+def verify_git_tag(session: nox.Session) -> Optional[str]:
     """
     Get the git tag for HEAD and validate it before using it.
+    Return `None` if no valid git tag is found on HEAD
     """
     existing_commit_tag = get_current_tag(existing=True)
     if existing_commit_tag is None:
-        session.skip(
-            "Did not find an existing git tag on the current commit, not pushing git-tag images"
+        session.log(
+            "Did not find an existing git tag on the current commit, not using git-tag image tag"
         )
+        return None
 
     if not recognized_tag(existing_commit_tag):
-        session.skip(
-            f"Existing git tag {existing_commit_tag} is not a recognized tag, not pushing git-tag images"
+        session.log(
+            f"Existing git tag {existing_commit_tag} is not a recognized tag, not using git-tag image tag"
         )
+        return None
 
     session.log(
-        f"Found git tag {existing_commit_tag} on the current commit, pushing corresponding git-tag images!"
+        f"Found git tag {existing_commit_tag} on the current commit, pushing corresponding git-tag image tags!"
     )
     return existing_commit_tag
 
@@ -170,7 +172,6 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         nox.param("dev", id="dev"),
         nox.param("rc", id="rc"),
         nox.param("prerelease", id="prerelease"),
-        nox.param("git-tag", id="git-tag"),
     ],
 )
 @nox.parametrize(
@@ -194,7 +195,9 @@ def push(session: nox.Session, tag: str, app: str) -> None:
     dev - Tags images with `dev`
     prerelease - Tags images with `prerelease` - used for alpha and beta tags
     rc - Tags images with `rc` - used for rc tags
-    git-tag - Tags images with the git tag of the current commit, if it exists
+
+    Posargs:
+    git_tag - Additionally tags images with the git tag of the current commit, if it exists
 
     Note:
     Due to how `buildx` works, all platform images need to be build in a
@@ -203,7 +206,7 @@ def push(session: nox.Session, tag: str, app: str) -> None:
 
     Example Calls:
     nox -s "push(fides, prod)"
-    nox -s "push(sample_app, prerelease)"
+    nox -s "push(sample_app, prerelease) -- git_tag"
     """
 
     # Create the buildx builder
@@ -224,7 +227,6 @@ def push(session: nox.Session, tag: str, app: str) -> None:
         "dev": lambda: [DEV_TAG_SUFFIX],
         "prerelease": lambda: [PRERELEASE_TAG_SUFFIX],
         "rc": lambda: [RC_TAG_SUFFIX],
-        "git-tag": lambda: [verify_git_tag(session)],
         "prod": lambda: [get_current_tag(), "latest"],
     }
 
@@ -245,6 +247,12 @@ def push(session: nox.Session, tag: str, app: str) -> None:
 
     # Get the list of Tupled commands to run
     tag_suffixes: List[str] = param_tag_map[tag]()
+    # add a git tag based tag suffix, if requested
+    if "git_tag" in session.posargs:
+        # no-op if no git tag is found
+        if git_tag_suffix := verify_git_tag(session):
+            tag_suffixes.append(git_tag_suffix)
+
     full_tags: List[str] = [
         f"{app_info['image']}:{tag_suffix}" for tag_suffix in tag_suffixes
     ]
