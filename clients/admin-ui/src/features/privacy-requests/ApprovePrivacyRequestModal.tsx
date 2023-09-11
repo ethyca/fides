@@ -1,19 +1,20 @@
-import React, { useCallback } from "react";
-import { PrivacyRequestEntity } from "./types";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  UnorderedList,
-  ListItem,
-  Flex,
-  ModalFooter,
-  SimpleGrid,
   Button,
+  Flex,
+  ListItem,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  SimpleGrid,
   Text,
+  UnorderedList,
 } from "@fidesui/react";
+import React, { useCallback } from "react";
+
+import { PrivacyRequestEntity } from "./types";
 
 type ApproveModalProps = {
   isOpen: boolean;
@@ -30,8 +31,11 @@ const ApprovePrivacyRequestModal = ({
   isLoading,
   subjectRequest,
 }: ApproveModalProps) => {
-  const { identity, identity_verified_at, custom_privacy_request_fields } =
-    subjectRequest;
+  const {
+    identity,
+    identity_verified_at: identityVerifiedAt,
+    custom_privacy_request_fields: customPrivacyRequestFields,
+  } = subjectRequest;
   const handleSubmit = useCallback(() => {
     onApproveRequest().then(() => {
       onClose();
@@ -48,7 +52,7 @@ const ApprovePrivacyRequestModal = ({
             Are you sure you want to approve this privacy request?
           </Text>
           <UnorderedList>
-            {identity.email && identity_verified_at && (
+            {identity.email && identityVerifiedAt && (
               <ListItem>
                 <Flex alignItems="flex-start">
                   <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
@@ -60,7 +64,7 @@ const ApprovePrivacyRequestModal = ({
                 </Flex>
               </ListItem>
             )}
-            {identity.phone_number && identity_verified_at && (
+            {identity.phone_number && customPrivacyRequestFields && (
               <ListItem>
                 <Flex alignItems="flex-start">
                   <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
@@ -72,9 +76,9 @@ const ApprovePrivacyRequestModal = ({
                 </Flex>
               </ListItem>
             )}
-            {custom_privacy_request_fields &&
-              Object.entries(custom_privacy_request_fields)
-                .filter(([key, item]) => item["value"])
+            {customPrivacyRequestFields &&
+              Object.entries(customPrivacyRequestFields)
+                .filter(([, item]) => item.value)
                 .map(([key, item]) => (
                   <ListItem key={key}>
                     <Flex alignItems="flex-start" key={key}>
@@ -84,7 +88,7 @@ const ApprovePrivacyRequestModal = ({
                         color="gray.900"
                         fontWeight="500"
                       >
-                        {item["label"]}:
+                        {item.label}:
                       </Text>
                       <Text
                         color="gray.600"
@@ -92,7 +96,7 @@ const ApprovePrivacyRequestModal = ({
                         fontSize="sm"
                         mr={2}
                       >
-                        {item["value"]} (Unverified)
+                        {item.value} (Unverified)
                       </Text>
                     </Flex>
                   </ListItem>

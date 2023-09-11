@@ -1,14 +1,16 @@
 import {
   Box,
+  ErrorWarningIcon,
   Flex,
   GreenCheckCircleIcon,
-  ErrorWarningIcon,
   Text,
 } from "@fidesui/react";
 import { PrivacyRequestEntity } from "privacy-requests/types";
 import React from "react";
-import { EventData } from "./EventDetails";
+
 import { ExecutionLogStatus } from "~/types/api";
+
+import { EventData } from "./EventDetails";
 
 type ActivityTimelineProps = {
   subjectRequest: PrivacyRequestEntity;
@@ -20,13 +22,13 @@ const hasUnresolvedError = (entries) => {
 
   // Group the entries by collection_name and keep only the latest entry for each collection.
   entries.forEach((entry) => {
-    const { collection_name, updated_at } = entry;
+    const { collection_name: collectionName, updated_at: updatedAt } = entry;
     if (
-      !groupedByCollection[collection_name] ||
-      new Date(groupedByCollection[collection_name].updated_at) <
-        new Date(updated_at)
+      !groupedByCollection[collectionName] ||
+      new Date(groupedByCollection[collectionName].updatedAt) <
+        new Date(updatedAt)
     ) {
-      groupedByCollection[collection_name] = entry;
+      groupedByCollection[collectionName] = entry;
     }
   });
 

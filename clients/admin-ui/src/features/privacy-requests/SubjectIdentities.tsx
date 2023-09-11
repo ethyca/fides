@@ -4,6 +4,7 @@ import { useState } from "react";
 import PII from "../common/PII";
 import PIIToggle from "../common/PIIToggle";
 import { PrivacyRequestEntity } from "./types";
+
 type SubjectIdentitiesProps = {
   subjectRequest: PrivacyRequestEntity;
 };
@@ -11,9 +12,8 @@ type SubjectIdentitiesProps = {
 const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
   const {
     identity,
-    identity_verified_at,
-    custom_privacy_request_fields_approved_at,
-    custom_privacy_request_fields,
+    identity_verified_at: identityVerifiedAt,
+    custom_privacy_request_fields: customPrivacyRequestFields,
   } = subjectRequest;
   const [revealPII, setRevealPII] = useState(false);
 
@@ -57,7 +57,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
             />
           </Text>
           <Tag color="white" bg="primary.400" fontWeight="medium" fontSize="sm">
-            {identity_verified_at ? "Verified" : "Unverified"}
+            {identityVerifiedAt ? "Verified" : "Unverified"}
           </Tag>
         </Flex>
       )}
@@ -73,43 +73,49 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
             />
           </Text>
           <Tag color="white" bg="primary.400" fontWeight="medium" fontSize="sm">
-            {identity_verified_at ? "Verified" : "Unverified"}
+            {identityVerifiedAt ? "Verified" : "Unverified"}
           </Tag>
         </Flex>
       )}
-      {Object.keys(custom_privacy_request_fields).length > 0 && (
-        <>
-          <Heading color="gray.900" fontSize="sm" fontWeight="semibold" mb={4}>
-            Custom privacy request fields
-          </Heading>
-          {Object.entries(custom_privacy_request_fields)
-            .filter(([key, item]) => item["value"])
-            .map(([key, item]) => (
-              <Flex alignItems="flex-start" key={key}>
-                <Text
-                  mb={4}
-                  mr={2}
-                  fontSize="sm"
-                  color="gray.900"
-                  fontWeight="500"
-                >
-                  {item["label"]}:
-                </Text>
-                <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
-                  <PII data={item["value"]} revealPII={revealPII} />
-                </Text>
-                <Tag
-                  color="white"
-                  bg="primary.400"
-                  fontWeight="medium"
-                  fontSize="sm"
-                >
-                  Unverified
-                </Tag>
-              </Flex>
-            ))}
-        </>
-      )}
+      {customPrivacyRequestFields &&
+        Object.keys(customPrivacyRequestFields).length > 0 && (
+          <>
+            <Heading
+              color="gray.900"
+              fontSize="sm"
+              fontWeight="semibold"
+              mb={4}
+            >
+              Custom privacy request fields
+            </Heading>
+            {Object.entries(customPrivacyRequestFields)
+              .filter(([, item]) => item.value)
+              .map(([key, item]) => (
+                <Flex alignItems="flex-start" key={key}>
+                  <Text
+                    mb={4}
+                    mr={2}
+                    fontSize="sm"
+                    color="gray.900"
+                    fontWeight="500"
+                  >
+                    {item.label}:
+                  </Text>
+                  <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
+                    <PII data={item.value} revealPII={revealPII} />
+                  </Text>
+                  <Tag
+                    color="white"
+                    bg="primary.400"
+                    fontWeight="medium"
+                    fontSize="sm"
+                  >
+                    Unverified
+                  </Tag>
+                </Flex>
+              ))}
+          </>
+        )}
     </>
   );
 };

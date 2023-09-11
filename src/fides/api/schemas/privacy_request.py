@@ -9,7 +9,6 @@ from fides.api.custom_types import SafeStr
 from fides.api.models.audit_log import AuditLogAction
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
-    CustomPrivacyRequestField,
     ExecutionLogStatus,
     PrivacyRequestStatus,
 )
