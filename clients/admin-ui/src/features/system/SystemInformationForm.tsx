@@ -152,7 +152,7 @@ const SystemInformationForm = ({
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
-    const systemBody = transformFormValuesToSystem(values, features);
+    const systemBody = transformFormValuesToSystem(values);
 
     const handleResult = (
       result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
@@ -221,7 +221,7 @@ const SystemInformationForm = ({
               {features.dictionaryService ? (
                 <CustomSelect
                   id="vendor"
-                  name="meta.vendor.id"
+                  name="vendor_id"
                   label="Vendor"
                   placeholder="Select a vendor"
                   singleValueBlock
