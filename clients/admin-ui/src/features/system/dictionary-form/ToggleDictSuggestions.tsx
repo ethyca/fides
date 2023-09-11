@@ -22,7 +22,7 @@ export const DictSuggestionToggle = () => {
 
   const form = useFormikContext<FormValues>();
 
-  const vendorId: string | undefined = form.values?.meta?.vendor?.id;
+  const { vendor_id: vendorId } = form.values;
   const { plus: isPlusEnabled, dictionaryService: isDictionaryServiceEnabled } =
     useFeatures();
   const isShowingSuggestions = useAppSelector(selectSuggestions);
@@ -32,7 +32,6 @@ export const DictSuggestionToggle = () => {
 
   return (
     <Menu>
-      {/* @ts-ignore */}
       <MenuButton
         bg={
           isShowingSuggestions === "showing" ? "complimentary.500" : "gray.100"
