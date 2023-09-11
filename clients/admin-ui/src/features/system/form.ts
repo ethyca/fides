@@ -87,6 +87,8 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
       ? formValues.privacy_declarations
       : [],
     vendor_id: formValues.vendor_id,
+    ingress: formValues.ingress,
+    egress: formValues.egress,
   };
 
   if (!formValues.processes_personal_data) {
