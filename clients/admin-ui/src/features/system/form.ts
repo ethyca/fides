@@ -88,7 +88,7 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
       : [],
     vendor_id: formValues.vendor_id,
     ingress: formValues.ingress,
-    egress: formValues.egress
+    egress: formValues.egress,
   };
 
   if (!formValues.processes_personal_data) {
