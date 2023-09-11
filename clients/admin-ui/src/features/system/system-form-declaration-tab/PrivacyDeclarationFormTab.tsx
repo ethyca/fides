@@ -303,20 +303,22 @@ const PrivacyDeclarationFormTab = ({
           {...dataProps}
         />
       </PrivacyDeclarationFormModal>
-      <PrivacyDeclarationFormModal
-        isOpen={showDictionaryModal}
-        onClose={handleCloseDictModal}
-        isCentered
-        heading="Compass suggestions"
-      >
-        <PrivacyDeclarationDictModalComponents
-          alreadyHasDataUses={system.privacy_declarations.length > 0}
-          allDataUses={dataProps.allDataUses}
-          onCancel={handleCloseDictModal}
-          onAccept={handleAcceptDictSuggestions}
-          vendorId={Number(system.vendor_id)}
-        />
-      </PrivacyDeclarationFormModal>
+      {system.vendor_id ? (
+        <PrivacyDeclarationFormModal
+          isOpen={showDictionaryModal}
+          onClose={handleCloseDictModal}
+          isCentered
+          heading="Compass suggestions"
+        >
+          <PrivacyDeclarationDictModalComponents
+            alreadyHasDataUses={system.privacy_declarations.length > 0}
+            allDataUses={dataProps.allDataUses}
+            onCancel={handleCloseDictModal}
+            onAccept={handleAcceptDictSuggestions}
+            vendorId={Number(system.vendor_id)}
+          />
+        </PrivacyDeclarationFormModal>
+      ) : null}
     </Stack>
   );
 };
