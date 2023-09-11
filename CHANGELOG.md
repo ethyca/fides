@@ -17,8 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.19.1...main)
 
-### Added
+### Changed
 
+- Refactor how multiplatform builds are handled [#4024](https://github.com/ethyca/fides/pull/4024)
 - Added new Performance-related nox commands and included them as part of the CI suite [#3997](https://github.com/ethyca/fides/pull/3997)
 - Added dictionary suggestions for data uses [4035](https://github.com/ethyca/fides/pull/4035)
 
