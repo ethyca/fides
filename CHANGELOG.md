@@ -22,6 +22,9 @@ The types of changes are:
 - Refactor how multiplatform builds are handled [#4024](https://github.com/ethyca/fides/pull/4024)
 - Added new Performance-related nox commands and included them as part of the CI suite [#3997](https://github.com/ethyca/fides/pull/3997)
 - Added dictionary suggestions for data uses [4035](https://github.com/ethyca/fides/pull/4035)
+- Privacy notice regions now render human readable names instead of country codes [#4029](https://github.com/ethyca/fides/pull/4029)
+- Privacy notice templates are disabled by default [#4010](https://github.com/ethyca/fides/pull/4010)
+- Admin UI now shows all privacy notices with an indicator of whether they apply to any systems [#4010](https://github.com/ethyca/fides/pull/4010)
 
 ## [2.19.1](https://github.com/ethyca/fides/compare/2.19.0...2.19.1)
 
@@ -34,9 +37,6 @@ The types of changes are:
 - System history UI with diff modal [#4021](https://github.com/ethyca/fides/pull/4021)
 - Relax system legal basis for transfers to be any string [#4049](https://github.com/ethyca/fides/pull/4049)
 
-### Changed
-
-- Privacy notice regions now render human readable names instead of country codes [#4029](https://github.com/ethyca/fides/pull/4029)
 
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 
@@ -67,8 +67,6 @@ The types of changes are:
 - Removed deprecated fields from the taxonomy editor [#3909](https://github.com/ethyca/fides/pull/3909)
 - Bump PyMSSQL version and remove workarounds [#3996](https://github.com/ethyca/fides/pull/3996)
 - Removed reset suggestions button [#4007](https://github.com/ethyca/fides/pull/4007)
-- Privacy notice templates are disabled by default [#4010](https://github.com/ethyca/fides/pull/4010)
-- Admin UI now shows all privacy notices with an indicator of whether they apply to any systems [#4010](https://github.com/ethyca/fides/pull/4010)
 
 ## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
 
