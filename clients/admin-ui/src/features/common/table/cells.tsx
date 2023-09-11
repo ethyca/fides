@@ -11,7 +11,7 @@ import ConfirmationModal from "common/ConfirmationModal";
 import React, { ChangeEvent } from "react";
 import { CellProps } from "react-table";
 
-import ClipboardButton from "../ClipboardButton";
+import ClipboardButton from "~/features/common/ClipboardButton";
 
 export const TitleCell = <T extends object>({
   value,
