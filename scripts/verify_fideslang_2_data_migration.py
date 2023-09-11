@@ -22,6 +22,7 @@ from fides.api.schemas.privacy_request import PrivacyRequestCreate, Identity, Co
 from fides.config import CONFIG
 from fides.core.api_helpers import get_server_resource
 from fides.core.push import push
+from fides.core.utils import get_db_engine
 
 DATABASE_URL = CONFIG.database.sync_database_uri
 AUTH_HEADER = CONFIG.user.auth_header
@@ -161,18 +162,30 @@ def create_outdated_objects() -> None:
     we want for testing the migration.
     """
 
-    # We need two separate pushes here because of server-side validation
-    taxonomy_1 = fideslang.models.Taxonomy(
-        data_category=[orphaned_data_category, fideslang_1_category],
-        data_use=[fideslang_1_use],
+    # The push order is deliberate here!
+    push(
+        url=SERVER_URL,
+        headers=AUTH_HEADER,
+        taxonomy=fideslang.models.Taxonomy(
+            data_category=[orphaned_data_category, fideslang_1_category],
+            data_use=[fideslang_1_use],
+        ),
     )
-    taxonomy_2 = fideslang.models.Taxonomy(
-        dataset=[old_dataset],
-        system=[old_system],
-        policy=[old_policy],
+    push(
+        url=SERVER_URL,
+        headers=AUTH_HEADER,
+        taxonomy=fideslang.models.Taxonomy(
+            system=[old_system],
+        ),
     )
-    push(url=SERVER_URL, headers=AUTH_HEADER, taxonomy=taxonomy_1)
-    push(url=SERVER_URL, headers=AUTH_HEADER, taxonomy=taxonomy_2)
+    push(
+        url=SERVER_URL,
+        headers=AUTH_HEADER,
+        taxonomy=fideslang.models.Taxonomy(
+            dataset=[old_dataset],
+            policy=[old_policy],
+        ),
+    )
 
     # Create Privacy Notice
     response = requests.post(
@@ -295,6 +308,27 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
         consent_response.json()["consent"][0]["data_use"]
         == "functional.service.improve"
     )
+
+    privacy_request_result = get_db_engine(DATABASE_URL).execute(
+        "select id, status, consent_preferences from privacyrequest;"
+    )
+    for r in privacy_request_result:
+        result = r["consent_preferences"][0]["data_use"]
+        assert result == "functional.service.improve", result
+
+    consent_request_result = get_db_engine(DATABASE_URL).execute(
+        "select id, preferences, privacy_request_id from consentrequest;"
+    )
+    for r in consent_request_result:
+        result = r["preferences"][0]["data_use"]
+        assert result == "functional.service.improve", result
+
+    consent_result = get_db_engine(DATABASE_URL).execute(
+        "select id, data_use, opt_in from consent;"
+    )
+    for r in consent_result:
+        result = r["data_use"]
+        assert result == "functional.service.improve", result
     print("> Verified Consent.")
 
 
