@@ -81,6 +81,11 @@ type EnableCellProps<T extends object> = CellProps<T, boolean> & {
   onToggle: (data: boolean) => Promise<any>;
   title: string;
   message: string;
+  /**
+   * Disables the toggle. Can also pass a prop on `column`.
+   * If either are true, then the toggle is disabled.
+   */
+  isDisabled?: boolean;
 };
 
 export const EnableCell = <T extends object>({
@@ -89,6 +94,7 @@ export const EnableCell = <T extends object>({
   onToggle,
   title,
   message,
+  isDisabled,
 }: EnableCellProps<T>) => {
   const modal = useDisclosure();
   const handlePatch = async ({ enable }: { enable: boolean }) => {
@@ -118,7 +124,7 @@ export const EnableCell = <T extends object>({
          * https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/59837
          */
         // @ts-ignore
-        disabled={column.disabled}
+        disabled={isDisabled || column.disabled}
         onChange={handleToggle}
       />
       <ConfirmationModal
