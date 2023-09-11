@@ -90,13 +90,8 @@ export const transformFormValuesToSystem = (
     privacy_declarations: formValues.processes_personal_data
       ? formValues.privacy_declarations
       : [],
+    vendor_id: formValues.vendor_id,
   };
-
-  if (features.plus) {
-    if (features.dictionaryService) {
-      payload.vendor_id = formValues.vendor_id;
-    }
-  }
 
   if (!formValues.processes_personal_data) {
     return payload;
