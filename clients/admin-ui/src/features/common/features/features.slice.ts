@@ -156,7 +156,7 @@ export const useFeatures = (): Features => {
   const dictionaryService = plusHealth
     ? !!plusHealth.dictionary.enabled
     : false;
-  const fidesCloud = plusHealth ? !!plusHealth.fides_cloud.enabled : false;
+  const fidesCloud = plusHealth ? !!plusHealth?.fides_cloud?.enabled : false;
 
   const systemsCount = allSystems?.length ?? 0;
 
