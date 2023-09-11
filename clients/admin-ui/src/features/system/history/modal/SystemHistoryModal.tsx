@@ -48,7 +48,7 @@ interface Props {
 }
 
 const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
-  <Modal isOpen={isOpen} onClose={onClose} size="3xl">
+  <Modal isOpen={isOpen} onClose={onClose} size="4xl">
     <ModalOverlay />
     <ModalContent>
       <ModalHeader
