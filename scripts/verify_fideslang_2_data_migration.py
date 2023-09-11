@@ -4,7 +4,7 @@ for moving users to Fideslang 2.0, found in Fides release 2.20
 
 The steps to run the script are as follows:
 1. In a terminal, run `nox -s teardown -- volumes ; nox -s dev` to get the server running
-2. In a separate terminal, run `nox -s shell`, and then `fides user login ; fides push ; python scripts/verify_fideslang_2_data_migration.py`
+2. In a separate terminal, run `nox -s shell`, and then `fides user login ; fides push`
 3. You can run `python scripts/verify_fideslang_2_data_migration.py -h` to understand how to invoke script
 """
 import argparse
@@ -16,7 +16,7 @@ import fideslang
 import requests
 from alembic import command
 
-from fides.api.db.database import get_alembic_config
+from fides.api.db.database import get_alembic_config, reset_db, migrate_db
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeRegion
 from fides.api.schemas.privacy_request import PrivacyRequestCreate, Identity, Consent
 from fides.config import CONFIG
@@ -28,7 +28,8 @@ AUTH_HEADER = CONFIG.user.auth_header
 SERVER_URL = CONFIG.cli.server_url
 DOWN_REVISION = "708a780b01ba"
 PRIVACY_NOTICE_ID = ""  # Guido forgive me, this gets mutated later
-PRIVACY_REQUEST_ID = ""  # Guido forgive me, this gets mutated later
+CONSENT_REQUEST_ID = ""  # Guido forgive me, this gets mutated later
+CONSENT_CODE = "1234"
 
 print(f"Using Server URL: {SERVER_URL}")
 
@@ -112,13 +113,6 @@ old_notice = PrivacyNoticeCreation(
     enforcement_level="system_wide",
 )
 
-old_request = PrivacyRequestCreate(
-    external_id="oldrequest@pm.me",
-    policy_key="default_access_policy",
-    identity=Identity(email="test@pm.me"),
-    consent_preferences=Consent(data_use="improve.system", opt_in=True)
-)
-
 # This is used to test updating Policy Rules
 old_policy = fideslang.models.Policy(
     fides_key="old_policy",
@@ -139,6 +133,89 @@ old_policy = fideslang.models.Policy(
         )
     ],
 )
+
+
+def reload_objects() -> None:
+    """
+    Good luck :D
+
+    Downgrades the database to the previous migration,
+    loads the "outdated" objects into the database, and then
+    migrates back up to 'head'
+    """
+    alembic_config = get_alembic_config(DATABASE_URL)
+
+    print(f"> Rolling back one migration to: {DOWN_REVISION}")
+    command.downgrade(alembic_config, DOWN_REVISION)
+
+    print("> Seeding the database with 'outdated' Taxonomy objects")
+    create_outdated_objects()
+
+    print("Upgrading database to migration revision: head")
+    command.upgrade(alembic_config, "head")
+
+
+def create_outdated_objects() -> None:
+    """
+    Make a smattering of requests to get our DB into the state
+    we want for testing the migration.
+    """
+
+    # We need two separate pushes here because of server-side validation
+    taxonomy_1 = fideslang.models.Taxonomy(
+        data_category=[orphaned_data_category, fideslang_1_category],
+        data_use=[fideslang_1_use],
+    )
+    taxonomy_2 = fideslang.models.Taxonomy(
+        dataset=[old_dataset],
+        system=[old_system],
+        policy=[old_policy],
+    )
+    push(url=SERVER_URL, headers=AUTH_HEADER, taxonomy=taxonomy_1)
+    push(url=SERVER_URL, headers=AUTH_HEADER, taxonomy=taxonomy_2)
+
+    # Create Privacy Notice
+    response = requests.post(
+        url=f"{SERVER_URL}/api/v1/privacy-notice",
+        headers=AUTH_HEADER,
+        allow_redirects=True,
+        data=json.dumps([old_notice.dict()]),
+    )
+    assert response.ok, f"Failed to Create Privacy Notice: {response.text}"
+    global PRIVACY_NOTICE_ID  # I'm so sorry
+    PRIVACY_NOTICE_ID = response.json()[0]["id"]  # Please forgive me
+
+    # Create a Consent Request
+    response = requests.post(
+        url=f"{SERVER_URL}/api/v1/consent-request",
+        allow_redirects=True,
+        data=json.dumps({"email": "user@example.com"}),
+    )
+    global CONSENT_REQUEST_ID
+    CONSENT_REQUEST_ID = response.json()["consent_request_id"]
+
+    # Create a Privacy Request from a Consent request?
+    response = requests.patch(
+        url=f"{SERVER_URL}/api/v1/consent-request/{CONSENT_REQUEST_ID}/preferences",
+        allow_redirects=True,
+        data=json.dumps(
+            {
+                "code": CONSENT_CODE,
+                "consent": [
+                    {
+                        "data_use": "improve.system",
+                        "opt_in": True,
+                        "has_gpc_flag": False,
+                        "conflicts_with_gpc": False,
+                    }
+                ],
+                "executable_options": [
+                    {"data_use": "improve.system", "executable": True}
+                ],
+            }
+        ),
+    )
+    assert response.ok, response.text
 
 
 def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
@@ -204,76 +281,25 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
     assert privacy_notice_response["data_uses"] == ["functional.service.improve"]
     print("> Verified Privacy Notices.")
 
-    # Verify Privacy Requests
-    privacy_request_response = requests.get(
-        url=f"{SERVER_URL}/api/v1/privacy-request?id={PRIVACY_REQUEST_ID}",
-        headers=AUTH_HEADER,
+    # Verify Consent
+    consent_response = requests.post(
+        url=f"{SERVER_URL}/api/v1/consent-request/{CONSENT_REQUEST_ID}/verify",
         allow_redirects=True,
-    ).json()
+        data=json.dumps(
+            {
+                "code": CONSENT_CODE,
+            }
+        ),
+    )
     assert (
-        privacy_request_response["consent_prefences"][0] == "functional.service.improve"
-    ) privacy_request_response.text
-    print("> Verified Privacy Requests.")
-
-
-def create_outdated_objects() -> None:
-    # We need two separate pushes here because of server-side validation
-    taxonomy_1 = fideslang.models.Taxonomy(
-        data_category=[orphaned_data_category, fideslang_1_category],
-        data_use=[fideslang_1_use],
+        consent_response.json()["consent"][0]["data_use"]
+        == "functional.service.improve"
     )
-    taxonomy_2 = fideslang.models.Taxonomy(
-        dataset=[old_dataset],
-        system=[old_system],
-        policy=[old_policy],
-    )
-    push(url=SERVER_URL, headers=AUTH_HEADER, taxonomy=taxonomy_1)
-    push(url=SERVER_URL, headers=AUTH_HEADER, taxonomy=taxonomy_2)
-
-    # Create Privacy Notice
-    response = requests.post(
-        url=f"{SERVER_URL}/api/v1/privacy-notice",
-        headers=AUTH_HEADER,
-        allow_redirects=True,
-        data=json.dumps([old_notice.dict()]),
-    )
-    assert response.ok, f"Failed to Create Privacy Notice: {response.text}"
-    global PRIVACY_NOTICE_ID  # I'm so sorry
-    PRIVACY_NOTICE_ID = response.json()[0]["id"]  # Please forgive me
-
-    response = requests.post(
-        url=f"{SERVER_URL}/api/v1/privacy-request",
-        headers=AUTH_HEADER,
-        allow_redirects=True,
-        data=json.dumps([old_request.dict()]),
-    )
-    assert response.ok, f"Failed to Create Privacy Request: {response.text}"
-    assert len(response.json()["succeeded"]) > 0, response.text
-    global PRIVACY_REQUEST_ID  # I'm so sorry
-    PRIVACY_REQUEST_ID = response.json()["succeeded"][0]["id"]  # Please forgive me
-
-
-def reload_objects() -> None:
-    """
-    Good luck :D
-    """
-    print("> Running Fideslang 2.0 Data Migration Test Script...")
-
-    # Populate some variables
-    alembic_config = get_alembic_config(DATABASE_URL)
-    print(f"> Rolling back one migration to: {DOWN_REVISION}")
-    command.downgrade(alembic_config, DOWN_REVISION)
-
-    # Seed the database with objects we know will change
-    print("> Seeding the database with 'outdated' Taxonomy objects")
-    create_outdated_objects()
-
-    # Migrate to HEAD
-    print("Upgrading database to migration revision: head")
-    command.upgrade(alembic_config, "head")
+    print("> Verified Consent.")
 
 
 if __name__ == "__main__":
+    print("> Running Fideslang 2.0 Data Migration Test Script...")
     parser = argparse.ArgumentParser(
         description="Verify the Fideslang 2.0 Data Migrations"
     )
@@ -290,7 +316,6 @@ if __name__ == "__main__":
     if args.reload:
         reload_objects()
 
-    # Verify that the expected changes happened to our objects
     print("> Verifying Data Migration Updates...")
     verify_migration(server_url=SERVER_URL, auth_header=AUTH_HEADER)
 

@@ -327,7 +327,7 @@ def update_consent(bind: Connection, data_use_map: Dict[str, str]) -> None:
         bind.execute(
             update_label_query,
             {
-                "provided_identity_id": row["provided_identity_id"],
+                "key": row["provided_identity_id"],
                 "old_use": row["data_use"],
                 "updated_label": updated_use,
             },
