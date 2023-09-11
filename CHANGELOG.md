@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.19.1...main)
 
+### Added
+- Initial page for configuring consent [#4069](https://github.com/ethyca/fides/pull/4069)
+
 ### Changed
 
 - Refactor how multiplatform builds are handled [#4024](https://github.com/ethyca/fides/pull/4024)
