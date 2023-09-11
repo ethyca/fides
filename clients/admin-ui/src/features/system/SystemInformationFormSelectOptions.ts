@@ -7,10 +7,15 @@ export const legalBasisForProfilingOptions = [
   label: opt,
 }));
 
+// Backend technically allows any string
 export const legalBasisForTransferOptions = [
   {
     value: "Adequacy Decision",
     label: "Adequacy decision",
+  },
+  {
+    value: "Supplementary measures",
+    label: "Supplementary measures",
   },
   {
     value: "SCCs",

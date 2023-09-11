@@ -38,3 +38,16 @@ export type DictCookie = {
   vendor_id: string;
   domains: string;
 };
+
+export type DictDataUse = {
+  vendor_id: string;
+  vendor_name: string;
+  data_use: string;
+  data_categories: string[];
+  features: string[];
+  legal_basis_for_processing: string;
+  retention_period: number;
+  purpose: number;
+  special_purpose: number;
+  cookies: any[];
+};
