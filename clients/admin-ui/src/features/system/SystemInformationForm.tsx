@@ -152,7 +152,7 @@ const SystemInformationForm = ({
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
-    const systemBody = transformFormValuesToSystem(values, features);
+    const systemBody = transformFormValuesToSystem(values);
 
     const handleResult = (
       result: { data: {} } | { error: FetchBaseQueryError | SerializedError }

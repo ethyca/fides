@@ -2,7 +2,6 @@ import {
   CustomFieldsFormValues,
   CustomFieldValues,
 } from "~/features/common/custom-fields";
-import { Features } from "~/features/common/features";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import { DataProtectionImpactAssessment, System } from "~/types/api";
 
@@ -64,10 +63,7 @@ export const transformSystemToFormValues = (
   };
 };
 
-export const transformFormValuesToSystem = (
-  formValues: FormValues,
-  features: Features
-): System => {
+export const transformFormValuesToSystem = (formValues: FormValues): System => {
   const key = formValues.fides_key
     ? formValues.fides_key
     : formatKey(formValues.name!);
