@@ -25,6 +25,7 @@ The types of changes are:
 - Privacy notice regions now render human readable names instead of country codes [#4029](https://github.com/ethyca/fides/pull/4029)
 - Privacy notice templates are disabled by default [#4010](https://github.com/ethyca/fides/pull/4010)
 - Admin UI now shows all privacy notices with an indicator of whether they apply to any systems [#4010](https://github.com/ethyca/fides/pull/4010)
+- Add case-insensitive privacy experience region filtering [#4058](https://github.com/ethyca/fides/pull/4058)
 
 ## [2.19.1](https://github.com/ethyca/fides/compare/2.19.0...2.19.1)
 
