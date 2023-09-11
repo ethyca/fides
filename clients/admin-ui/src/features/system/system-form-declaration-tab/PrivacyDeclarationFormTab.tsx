@@ -314,7 +314,7 @@ const PrivacyDeclarationFormTab = ({
           allDataUses={dataProps.allDataUses}
           onCancel={handleCloseDictModal}
           onAccept={handleAcceptDictSuggestions}
-          vendorId={system.vendor_id ? system.vendor_id : undefined}
+          vendorId={Number(system.vendor_id)}
         />
       </PrivacyDeclarationFormModal>
     </Stack>
