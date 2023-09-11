@@ -63,7 +63,7 @@ const DNSRecordsPage: NextPage = () => {
         </Heading>
         <Box maxWidth="600px">
           <Text marginBottom={2} fontSize="md">
-            Set the follow record on your DNS provider to continue.
+            Set the following record on your DNS provider to continue.
           </Text>
           <Text mb={10} fontSize="sm">
             Please visit{" "}

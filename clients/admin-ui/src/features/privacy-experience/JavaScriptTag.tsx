@@ -34,7 +34,7 @@ const JavaScriptTag = () => {
     }
   );
 
-  const FIDES_JS_SCRIPT_TAG = useMemo(
+  const fidesJsScriptTag = useMemo(
     () =>
       isFidesCloud && isSuccess && fidesCloudConfig?.privacy_center_url
         ? FIDES_JS_SCRIPT_TEMPLATE.replace(
@@ -80,8 +80,8 @@ const JavaScriptTag = () => {
                 path.
               </Text>
               <Code display="flex" p={0}>
-                <Text p={4}>{FIDES_JS_SCRIPT_TAG}</Text>
-                <ClipboardButton copyText={FIDES_JS_SCRIPT_TAG} />
+                <Text p={4}>{fidesJsScriptTag}</Text>
+                <ClipboardButton copyText={fidesJsScriptTag} />
               </Code>
               <Text>
                 Optionally, you can enable Google Tag Manager for managing tags
