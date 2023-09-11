@@ -313,6 +313,8 @@ def update_consent(bind: Connection, data_use_map: Dict[str, str]) -> None:
     """
     Update Consent objects in the database.
     """
+
+    # Update the Consent table
     existing_consents: ResultProxy = bind.execute(
         text("SELECT provided_identity_id, data_use FROM consent;")
     )
@@ -333,6 +335,52 @@ def update_consent(bind: Connection, data_use_map: Dict[str, str]) -> None:
             },
         )
 
+    # Update the Privacy Request Table
+    existing_privacy_requests: ResultProxy = bind.execute(
+        text("select id, status, consent_preferences from privacyrequest;")
+    )
+
+    for row in existing_privacy_requests:
+        # Update data categories at the top level
+        preferences: List[Dict] = row["consent_preferences"]
+
+        if preferences:
+            for index, preference in enumerate(preferences):
+                preferences[index]["data_use"] = _replace_matching_data_label(
+                    data_label=preference["data_use"], data_label_map=data_use_map
+                )
+
+        update_pr_query: TextClause = text(
+            "UPDATE privacyrequest SET consent_preferences= :updated_preferences WHERE id= :id"
+        )
+        bind.execute(
+            update_pr_query,
+            {"id": row["id"], "updated_preferences": json.dumps(preferences)},
+        )
+
+    # Update the Consent Request Table
+    existing_consent_requests: ResultProxy = bind.execute(
+        text("select id, preferences from consentrequest;")
+    )
+
+    for row in existing_consent_requests:
+        # Update data categories at the top level
+        preferences: List[Dict] = row["preferences"]
+
+        if preferences:
+            for index, preference in enumerate(preferences):
+                preferences[index]["data_use"] = _replace_matching_data_label(
+                    data_label=preference["data_use"], data_label_map=data_use_map
+                )
+
+        update_collections_query: TextClause = text(
+            "UPDATE consentrequest SET preferences= :updated_preferences WHERE id= :id"
+        )
+        bind.execute(
+            update_collections_query,
+            {"id": row["id"], "updated_preferences": json.dumps(preferences)},
+        )
+
 
 def upgrade() -> None:
     """
@@ -345,10 +393,6 @@ def upgrade() -> None:
     logger.info("Removing old default data categories and data uses")
     bind.execute(text("DELETE FROM ctl_data_uses WHERE is_default = TRUE;"))
     bind.execute(text("DELETE FROM ctl_data_categories WHERE is_default = TRUE;"))
-
-    logger.info("Upgrading Taxonomy Items for Fideslang 2.0")
-    update_data_label_tables(bind, data_use_upgrades, "ctl_data_uses")
-    update_data_label_tables(bind, data_category_upgrades, "ctl_data_categories")
 
     logger.info("Upgrading Privacy Declarations for Fideslang 2.0")
     update_privacy_declarations(bind, data_use_upgrades, data_category_upgrades)
@@ -367,6 +411,10 @@ def upgrade() -> None:
 
     logger.info("Updating Consent")
     update_consent(bind, data_use_upgrades)
+
+    logger.info("Upgrading Taxonomy Items for Fideslang 2.0")
+    update_data_label_tables(bind, data_use_upgrades, "ctl_data_uses")
+    update_data_label_tables(bind, data_category_upgrades, "ctl_data_categories")
 
 
 def downgrade() -> None:

@@ -309,6 +309,13 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
         == "functional.service.improve"
     )
 
+    consent_result = get_db_engine(DATABASE_URL).execute(
+        "select id, data_use, opt_in from consent;"
+    )
+    for r in consent_result:
+        result = r["data_use"]
+        assert result == "functional.service.improve", result
+
     privacy_request_result = get_db_engine(DATABASE_URL).execute(
         "select id, status, consent_preferences from privacyrequest;"
     )
@@ -321,13 +328,6 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
     )
     for r in consent_request_result:
         result = r["preferences"][0]["data_use"]
-        assert result == "functional.service.improve", result
-
-    consent_result = get_db_engine(DATABASE_URL).execute(
-        "select id, data_use, opt_in from consent;"
-    )
-    for r in consent_result:
-        result = r["data_use"]
         assert result == "functional.service.improve", result
     print("> Verified Consent.")
 
