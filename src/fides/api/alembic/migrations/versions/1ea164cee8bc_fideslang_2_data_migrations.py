@@ -365,7 +365,7 @@ def upgrade() -> None:
     logger.info("Updating Privacy Notices")
     update_privacy_notices(bind, data_use_upgrades)
 
-    logger.info("Updating Privacy Requests")
+    logger.info("Updating Consent")
     update_consent(bind, data_use_upgrades)
 
 
