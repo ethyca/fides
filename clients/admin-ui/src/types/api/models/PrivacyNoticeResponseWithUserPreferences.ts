@@ -33,6 +33,7 @@ export type PrivacyNoticeResponseWithUserPreferences = {
   version: number;
   privacy_notice_history_id: string;
   cookies: Array<Cookies>;
+  systems_applicable?: boolean;
   default_preference: UserConsentPreference;
   current_preference?: UserConsentPreference;
   outdated_preference?: UserConsentPreference;
