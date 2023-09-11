@@ -182,15 +182,6 @@ const PrivacyDeclarationFormTab = ({
     setCurrentDeclaration(declarationToEdit);
   };
 
-  const handleAcceptDictSuggestions = (suggestions: DictDataUse[]) => {
-    const newDeclarations = suggestions.map((du) =>
-      transformDictDataUseToDeclaration(du)
-    );
-
-    handleSave(newDeclarations);
-    handleCloseDictModal();
-  };
-
   const handleSubmit = async (values: PrivacyDeclarationResponse) => {
     handleCloseForm();
     if (currentDeclaration) {
