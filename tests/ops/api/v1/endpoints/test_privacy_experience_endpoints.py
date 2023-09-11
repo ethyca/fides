@@ -456,6 +456,7 @@ class TestGetPrivacyExperiences:
             "marketing.advertising",
             "third_party_sharing",
         ]
+        assert notices[0]["systems_applicable"] is True
         assert system.privacy_declarations[0].data_use == "marketing.advertising"
 
     @pytest.mark.usefixtures(

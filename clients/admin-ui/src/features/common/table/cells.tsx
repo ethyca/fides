@@ -46,7 +46,8 @@ export const MapCell = <T extends object>({
 
 export const MultiTagCell = <T extends object>({
   value,
-}: CellProps<T, string[]>) => {
+  map,
+}: CellProps<T, string[]> & { map?: Map<string, string> }) => {
   // If we are over a certain number, render an "..." instead of all of the tags
   const maxNum = 8;
   // eslint-disable-next-line no-nested-ternary
@@ -67,10 +68,9 @@ export const MultiTagCell = <T extends object>({
           backgroundColor="primary.400"
           color="white"
           mr={idx === value.length - 1 ? 0 : 3}
-          textTransform="uppercase"
           mb={2}
         >
-          {v.replace(/_/g, "-")}
+          {map && map.get(v) ? map.get(v) : v.replace(/_/g, "-")}
         </Tag>
       ))}
     </Box>
@@ -81,6 +81,11 @@ type EnableCellProps<T extends object> = CellProps<T, boolean> & {
   onToggle: (data: boolean) => Promise<any>;
   title: string;
   message: string;
+  /**
+   * Disables the toggle. Can also pass a prop on `column`.
+   * If either are true, then the toggle is disabled.
+   */
+  isDisabled?: boolean;
 };
 
 export const EnableCell = <T extends object>({
@@ -89,6 +94,7 @@ export const EnableCell = <T extends object>({
   onToggle,
   title,
   message,
+  isDisabled,
 }: EnableCellProps<T>) => {
   const modal = useDisclosure();
   const handlePatch = async ({ enable }: { enable: boolean }) => {
@@ -118,7 +124,7 @@ export const EnableCell = <T extends object>({
          * https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/59837
          */
         // @ts-ignore
-        disabled={column.disabled}
+        disabled={isDisabled || column.disabled}
         onChange={handleToggle}
       />
       <ConfirmationModal
