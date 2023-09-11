@@ -92,7 +92,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     title: "Consent",
     routes: [
       {
-        title: "Configure",
+        title: "Configure consent",
         path: routes.CONFIGURE_CONSENT_ROUTE,
         requiresFlag: "configureConsent",
         requiresPlus: true,

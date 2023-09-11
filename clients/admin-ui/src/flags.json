@@ -22,7 +22,8 @@
     "description": "Page to configure vendors and cookies for consent",
     "development": true,
     "test": true,
-    "production": false
+    "production": false,
+    "userCannotModify": true
   },
   "standaloneConnections": {
     "description": "Allow the creation of standalone connections for testing",
