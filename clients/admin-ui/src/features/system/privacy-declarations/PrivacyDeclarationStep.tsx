@@ -30,6 +30,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
     allDataCategories: allEnabledDataCategories,
     allDataUses: allEnabledDataUses,
     allDataSubject: allEnabledDataSubjects,
+    cookies: system.cookies,
   };
 
   return (

@@ -15,11 +15,29 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.19.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.19.1...main)
+
+### Changed
+
+- Refactor how multiplatform builds are handled [#4024](https://github.com/ethyca/fides/pull/4024)
+- Added new Performance-related nox commands and included them as part of the CI suite [#3997](https://github.com/ethyca/fides/pull/3997)
+- Added dictionary suggestions for data uses [4035](https://github.com/ethyca/fides/pull/4035)
+
+## [2.19.1](https://github.com/ethyca/fides/compare/2.19.0...2.19.1)
+
+### Fixed
+
+- re-enable custom fields for new data use form [#4050](https://github.com/ethyca/fides/pull/4050)
+
+### Added
+
+- System history UI with diff modal [#4021](https://github.com/ethyca/fides/pull/4021)
+- Relax system legal basis for transfers to be any string [#4049](https://github.com/ethyca/fides/pull/4049)
 
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 
 ### Added
+
 - Add dictionary suggestions [#3937](https://github.com/ethyca/fides/pull/3937), [#3988](https://github.com/ethyca/fides/pull/3988)
 - Added new endpoints for healthchecks [#3947](https://github.com/ethyca/fides/pull/3947)
 - Added vendor list dropdown [#3857](https://github.com/ethyca/fides/pull/3857)
@@ -36,6 +54,7 @@ The types of changes are:
 - Fixed a bug where some fields were not saving correctly on the system form [#3975](https://github.com/ethyca/fides/pull/3975)
 - Changed "retention period" field in privacy declaration form from number input to text input  [#3980](https://github.com/ethyca/fides/pull/3980)
 - Fixed issue where unsaved changes modal appears incorrectly [#4005](https://github.com/ethyca/fides/pull/4005)
+- Fixed banner resurfacing after user consent for pre-fetch experience [#4009](https://github.com/ethyca/fides/pull/4009)
 
 ### Changed
 

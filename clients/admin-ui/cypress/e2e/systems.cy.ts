@@ -26,7 +26,7 @@ describe("System management page", () => {
     });
 
     it("doesn't display the vendor dropdown", () => {
-      cy.getByTestId("input-meta.vendor.id").should("not.exist");
+      cy.getByTestId("input-vendor_id").should("not.exist");
     });
   });
 

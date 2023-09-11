@@ -216,6 +216,52 @@ def minimal_config_startup(session: nox.Session) -> None:
     session.run(*start_command, external=True)
 
 
+#################
+## Performance ##
+#################
+@nox.session()
+def performance_tests(session: nox.Session) -> None:
+    """Compose the various performance checks into a single uber-test."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True, silent=True)
+    samples = 2
+    for i in range(samples):
+        session.log(f"Sample {i + 1} of {samples}")
+        load_tests(session)
+        docker_stats(session)
+
+
+@nox.session()
+def docker_stats(session: nox.Session) -> None:
+    """
+    Use the builtin `docker stats` command to show resource usage.
+
+    Run this _last_ to get a better worst-case scenario
+    """
+    session.run(
+        "docker",
+        "stats",
+        "--no-stream",
+        "--format",
+        "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}",
+        external=True,
+    )
+
+
+@nox.session()
+def load_tests(session: nox.Session) -> None:
+    """
+    Load test the application.
+
+    Requires a Rust/Cargo installation and then `cargo install drill`
+
+    https://github.com/fcsonline/drill
+    """
+    session.run(
+        "drill", "-b", "noxfiles/drill.yml", "--quiet", "--stats", external=True
+    )
+
+
 ############
 ## Pytest ##
 ############
