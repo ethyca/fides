@@ -1,4 +1,4 @@
-import { Button, useDisclosure } from "@fidesui/react";
+import { Box, Button, useDisclosure } from "@fidesui/react";
 
 import AddModal from "./AddModal";
 
@@ -9,14 +9,16 @@ const AddCookie = () => {
   };
   return (
     <>
-      <Button onClick={modal.onOpen}>Add cookie</Button>
+      <Button onClick={modal.onOpen} data-testid="add-cookie-btn">
+        Add cookie
+      </Button>
       <AddModal
         isOpen={modal.isOpen}
         onClose={modal.onClose}
         title="Add a cookie"
         onSuggestionClick={handleSuggestions}
       >
-        TODO
+        <Box data-testid="add-cookie-modal-content">TODO</Box>
       </AddModal>
     </>
   );

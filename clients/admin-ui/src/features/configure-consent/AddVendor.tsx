@@ -1,4 +1,4 @@
-import { Button, useDisclosure } from "@fidesui/react";
+import { Box, Button, useDisclosure } from "@fidesui/react";
 
 import AddModal from "./AddModal";
 
@@ -9,14 +9,16 @@ const AddVendor = () => {
   };
   return (
     <>
-      <Button onClick={modal.onOpen}>Add vendor</Button>
+      <Button onClick={modal.onOpen} data-testid="add-vendor-btn">
+        Add vendor
+      </Button>
       <AddModal
         isOpen={modal.isOpen}
         onClose={modal.onClose}
         title="Add a vendor"
         onSuggestionClick={handleSuggestions}
       >
-        TODO
+        <Box data-testid="add-vendor-modal-content">TODO</Box>
       </AddModal>
     </>
   );
