@@ -34,6 +34,10 @@ The types of changes are:
 - System history UI with diff modal [#4021](https://github.com/ethyca/fides/pull/4021)
 - Relax system legal basis for transfers to be any string [#4049](https://github.com/ethyca/fides/pull/4049)
 
+### Changed
+
+- Privacy notice regions now render human readable names instead of country codes [#4029](https://github.com/ethyca/fides/pull/4029)
+
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 
 ### Added
