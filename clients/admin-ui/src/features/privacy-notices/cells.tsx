@@ -2,7 +2,8 @@ import { Badge, TagProps, Tooltip } from "@fidesui/react";
 import React from "react";
 import { CellProps } from "react-table";
 
-import { EnableCell, MapCell } from "~/features/common/table/";
+import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
+import { EnableCell, MapCell, MultiTagCell } from "~/features/common/table/";
 import { MECHANISM_MAP } from "~/features/privacy-notices/constants";
 import { usePatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
 import { PrivacyNoticeResponse } from "~/types/api";
@@ -33,6 +34,10 @@ const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
         "This privacy notice cannot be enabled because the linked data use has not been assigned to a system",
     },
   };
+
+export const LocationCell = (
+  cellProps: CellProps<PrivacyNoticeResponse, string[]>
+) => <MultiTagCell map={PRIVACY_NOTICE_REGION_MAP} {...cellProps} />;
 
 export const EnablePrivacyNoticeCell = (
   cellProps: CellProps<PrivacyNoticeResponse, boolean>

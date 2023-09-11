@@ -5,6 +5,7 @@ import {
 } from "cypress/support/stubs";
 
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
 import { RoleRegistryEnum } from "~/types/api";
 
 const DATA_SALES_NOTICE_ID = "pri_132bb3ba-fa1e-4a3f-9f06-c19e3fee49da";
@@ -220,7 +221,8 @@ describe("Privacy notices", () => {
         });
         cy.getByTestId("input-internal_description").should("have.value", "");
         notice.regions.forEach((region) => {
-          cy.getSelectValueContainer("input-regions").contains(region);
+          const regionName = PRIVACY_NOTICE_REGION_MAP.get(region);
+          cy.getSelectValueContainer("input-regions").contains(regionName);
         });
         [
           "displayed_in_overlay",
@@ -331,7 +333,10 @@ describe("Privacy notices", () => {
       cy.getByTestId("input-internal_description").type(
         notice.internal_description
       );
-      cy.selectOption("input-regions", notice.regions[0]);
+      cy.selectOption(
+        "input-regions",
+        PRIVACY_NOTICE_REGION_MAP.get(notice.regions[0])
+      );
       cy.getByTestId("input-displayed_in_api").click();
 
       cy.getByTestId("save-btn").click();
