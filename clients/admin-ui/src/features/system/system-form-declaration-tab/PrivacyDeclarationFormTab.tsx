@@ -75,11 +75,11 @@ const PrivacyDeclarationFormTab = ({
 
   const unassignedCookies = system.cookies
     ? system.cookies.filter(
-      (c) =>
-        assignedCookies.filter(
-          (assigned) => assigned && assigned.name === c.name
-        ).length === 0
-    )
+        (c) =>
+          assignedCookies.filter(
+            (assigned) => assigned && assigned.name === c.name
+          ).length === 0
+      )
     : undefined;
 
   const checkAlreadyExists = (values: PrivacyDeclarationResponse) => {
