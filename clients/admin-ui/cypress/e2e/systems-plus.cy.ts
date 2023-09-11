@@ -34,14 +34,10 @@ describe("System management with Plus features", () => {
 
     it("can switch entries", () => {
       cy.selectOption("input-vendor_id", "Aniview LTD");
-      cy.getSelectValueContainer("input-vendor_id").contains(
-        "Aniview LTD"
-      );
+      cy.getSelectValueContainer("input-vendor_id").contains("Aniview LTD");
 
       cy.selectOption("input-vendor_id", "Jaduda GmbH");
-      cy.getSelectValueContainer("input-vendor_id").contains(
-        "Jaduda GmbH"
-      );
+      cy.getSelectValueContainer("input-vendor_id").contains("Jaduda GmbH");
     });
   });
 
