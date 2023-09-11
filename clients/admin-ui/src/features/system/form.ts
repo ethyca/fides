@@ -94,9 +94,7 @@ export const transformFormValuesToSystem = (
 
   if (features.plus) {
     if (features.dictionaryService) {
-      if (!("vendor" in payload)) {
       payload.vendor_id = formValues.vendor_id;
-      }
     }
   }
 
