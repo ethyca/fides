@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.19.1b0.post0.dev9"
+    "version": "2.19.1b0.post0.dev10"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -19389,6 +19389,11 @@
             "items": {
               "$ref": "#/components/schemas/Cookies"
             }
+          },
+          "systems_applicable": {
+            "title": "Systems Applicable",
+            "type": "boolean",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -19502,6 +19507,11 @@
             "items": {
               "$ref": "#/components/schemas/Cookies"
             }
+          },
+          "systems_applicable": {
+            "title": "Systems Applicable",
+            "type": "boolean",
+            "default": false
           },
           "default_preference": {
             "$ref": "#/components/schemas/UserConsentPreference"
