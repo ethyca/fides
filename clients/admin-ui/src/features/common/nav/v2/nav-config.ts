@@ -101,14 +101,12 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Privacy notices",
         path: routes.PRIVACY_NOTICES_ROUTE,
-        requiresFlag: "privacyNotices",
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
       {
         title: "Privacy experience",
         path: routes.PRIVACY_EXPERIENCE_ROUTE,
-        requiresFlag: "privacyExperience",
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
       },
