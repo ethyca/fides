@@ -75,11 +75,11 @@ const PrivacyDeclarationFormTab = ({
 
   const unassignedCookies = system.cookies
     ? system.cookies.filter(
-        (c) =>
-          assignedCookies.filter(
-            (assigned) => assigned && assigned.name === c.name
-          ).length === 0
-      )
+      (c) =>
+        assignedCookies.filter(
+          (assigned) => assigned && assigned.name === c.name
+        ).length === 0
+    )
     : undefined;
 
   const checkAlreadyExists = (values: PrivacyDeclarationResponse) => {
@@ -264,7 +264,7 @@ const PrivacyDeclarationFormTab = ({
           dictAvailable={features.dictionaryService}
           handleAdd={handleOpenNewForm}
           handleDictSuggestion={handleOpenDictModal}
-          vendorSelected={!!system.meta.vendor}
+          vendorSelected={!!system.vendor_id}
         />
       ) : (
         <PrivacyDeclarationDisplayGroup
@@ -314,7 +314,7 @@ const PrivacyDeclarationFormTab = ({
           allDataUses={dataProps.allDataUses}
           onCancel={handleCloseDictModal}
           onAccept={handleAcceptDictSuggestions}
-          vendorId={system.meta?.vendor?.id ? system.meta.vendor.id : undefined}
+          vendorId={system.vendor_id ? system.vendor_id : undefined}
         />
       </PrivacyDeclarationFormModal>
     </Stack>
