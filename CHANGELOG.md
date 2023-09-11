@@ -27,6 +27,7 @@ The types of changes are:
 ### Fixed
 
 - re-enable custom fields for new data use form [#4050](https://github.com/ethyca/fides/pull/4050)
+- fix issue with saving source and destination systems [#4065](https://github.com/ethyca/fides/pull/4065)
 
 ### Added
 

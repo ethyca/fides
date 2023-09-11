@@ -90,6 +90,9 @@ export const transformFormValuesToSystem = (
     privacy_declarations: formValues.processes_personal_data
       ? formValues.privacy_declarations
       : [],
+    vendor_id: formValues.vendor_id,
+    ingress: formValues.ingress,
+    egress: formValues.egress,
   };
 
   if (features.plus) {
