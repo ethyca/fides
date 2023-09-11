@@ -15,12 +15,22 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.19.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.19.1...main)
 
 ### Added
 
 - Added new Performance-related nox commands and included them as part of the CI suite [#3997](https://github.com/ethyca/fides/pull/3997)
 - Added dictionary suggestions for data uses [4035](https://github.com/ethyca/fides/pull/4035)
+
+## [2.19.1](https://github.com/ethyca/fides/compare/2.19.0...2.19.1)
+
+### Fixed
+
+- re-enable custom fields for new data use form [#4050](https://github.com/ethyca/fides/pull/4050)
+
+### Added
+
+- System history UI with diff modal [#4021](https://github.com/ethyca/fides/pull/4021)
 - Relax system legal basis for transfers to be any string [#4049](https://github.com/ethyca/fides/pull/4049)
 
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
