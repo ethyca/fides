@@ -271,10 +271,16 @@ const plusApi = baseApi.injectEndpoints({
       providesTags: ["Dictionary"],
     }),
     getSystemHistory: build.query<
-      Page_SystemHistoryResponse_,
-      { system_key: string }
+      SystemHistoryResponse,
+      { system_key: string; page?: number; size?: number }
     >({
-      query: (params) => ({ url: `plus/system/${params.system_key}/history` }),
+      query: (params) => ({
+        url: `plus/system/${params.system_key}/history`,
+        params: {
+          page: params.page,
+          size: params.size,
+        },
+      }),
       providesTags: () => ["System History"],
     }),
   }),
