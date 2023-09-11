@@ -104,7 +104,7 @@ const updateCookie = async (
     return { ...oldCookie, tcString: "" };
   }
 
-  const tcSavePrefs: TcfSavePreferences = {
+  const tcStringPreferences: TcfSavePreferences = {
     purpose_preferences: experience.tcf_purposes?.map((purpose) => ({
       id: purpose.id,
       preference: getInitialPreference(purpose),
@@ -129,9 +129,13 @@ const updateCookie = async (
       id: vendor.id,
       preference: getInitialPreference(vendor),
     })),
+    system_preferences: experience.tcf_systems?.map((system) => ({
+      id: system.id,
+      preference: getInitialPreference(system),
+    })),
   };
 
-  const tcString = await generateTcString(tcSavePrefs);
+  const tcString = await generateTcString({ tcStringPreferences, experience });
   return { ...oldCookie, tcString };
 };
 

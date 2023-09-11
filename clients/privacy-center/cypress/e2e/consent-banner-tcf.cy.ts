@@ -1,4 +1,9 @@
-import { CONSENT_COOKIE_NAME } from "fides-js";
+/* eslint-disable no-underscore-dangle */
+import {
+  CONSENT_COOKIE_NAME,
+  PrivacyExperience,
+  UserConsentPreference,
+} from "fides-js";
 import { stubConfig } from "../support/stubs";
 
 const PURPOSE_1 = {
@@ -60,6 +65,86 @@ describe("Fides-js TCF", () => {
           tcfEnabled: true,
         },
         experience: experience.items[0],
+      });
+    });
+  });
+
+  describe("banner appears when it should", () => {
+    const setAllTcfToValue = (
+      experience: PrivacyExperience,
+      value: UserConsentPreference | undefined
+    ): PrivacyExperience => {
+      const purposes = experience.tcf_purposes?.map((p) => ({
+        ...p,
+        current_preference: value,
+      }));
+      const specialPurposes = experience.tcf_special_purposes?.map((p) => ({
+        ...p,
+        current_preference: value,
+      }));
+      const features = experience.tcf_features?.map((f) => ({
+        ...f,
+        current_preference: value,
+      }));
+      const specialFeatures = experience.tcf_special_features?.map((f) => ({
+        ...f,
+        current_preference: value,
+      }));
+      const vendors = experience.tcf_vendors?.map((v) => ({
+        ...v,
+        current_preference: value,
+      }));
+      const systems = experience.tcf_systems?.map((s) => ({
+        ...s,
+        current_preference: value,
+      }));
+      return {
+        ...experience,
+        tcf_purposes: purposes,
+        tcf_special_purposes: specialPurposes,
+        tcf_features: features,
+        tcf_special_features: specialFeatures,
+        tcf_vendors: vendors,
+        tcf_systems: systems,
+      };
+    };
+    it("banner should not appear if everything already has a preference", () => {
+      cy.fixture("consent/experience_tcf.json").then((payload) => {
+        const experience = payload.items[0];
+        const updatedExperience = setAllTcfToValue(
+          experience,
+          UserConsentPreference.OPT_IN
+        );
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+          },
+          experience: updatedExperience,
+        });
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("div#fides-banner").should("not.exist");
+        });
+      });
+    });
+    it("should render the banner if there is even one preference that is not set", () => {
+      cy.fixture("consent/experience_tcf.json").then((payload) => {
+        const experience = payload.items[0];
+        const updatedExperience = setAllTcfToValue(
+          experience,
+          UserConsentPreference.OPT_IN
+        );
+        updatedExperience.tcf_purposes![0].current_preference = undefined;
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+          },
+          experience: updatedExperience,
+        });
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("div#fides-banner");
+        });
       });
     });
   });
@@ -279,6 +364,112 @@ describe("Fides-js TCF", () => {
             ]);
           });
         });
+      });
+    });
+  });
+
+  describe("cmp api", () => {
+    beforeEach(() => {
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+      });
+      cy.get("#fides-modal-link").click();
+    });
+
+    it("can receive a cmpuishown event", () => {
+      cy.get("@TCFEvent")
+        .its("firstCall.args")
+        .then(([tcData, success]) => {
+          expect(success).to.eql(true);
+          expect(tcData.eventStatus === "cmpuishown");
+        });
+    });
+
+    describe("setting fields", () => {
+      it("can opt in to all and set legitimate interests", () => {
+        cy.getByTestId("consent-modal").within(() => {
+          cy.get("button").contains("Opt in to all").click();
+        });
+        cy.get("@TCFEvent")
+          .its("lastCall.args")
+          .then(([tcData, success]) => {
+            expect(success).to.eql(true);
+            expect(tcData.eventStatus).to.eql("useractioncomplete");
+            expect(tcData.purpose.consents).to.eql({
+              [PURPOSE_1.id]: true,
+              [PURPOSE_2.id]: true,
+              [PURPOSE_3.id]: true,
+              [PURPOSE_4.id]: true,
+              1: false,
+              2: false,
+              3: false,
+              5: false,
+              8: false,
+            });
+            expect(tcData.purpose.legitimateInterests).to.eql({
+              [PURPOSE_5.id]: true,
+              1: false,
+            });
+            expect(tcData.vendor.consents).to.eql({
+              1: false,
+              [VENDOR_2.id]: true,
+            });
+            expect(tcData.vendor.legitimateInterests).to.eql({});
+          });
+      });
+
+      it("can handle inappropriate legint purposes", () => {
+        cy.fixture("consent/experience_tcf.json").then((payload) => {
+          const experience: PrivacyExperience = payload.items[0];
+          // Set purpose with id 4 to LegInt which is not allowed!
+          experience.tcf_purposes![1].legal_bases = ["Legitimate interests"];
+          // Set the corresponding embedded vendor purpose too
+          experience.tcf_vendors![0].purposes![0].legal_bases = [
+            "Legitimate interests",
+          ];
+          stubConfig({
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+            },
+            experience,
+          });
+        });
+        // Since we've changed windows, redeclare the stub too
+        cy.window().then((win) => {
+          win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent2"));
+        });
+        cy.get("#fides-modal-link").click();
+        cy.getByTestId("consent-modal").within(() => {
+          cy.get("button").contains("Opt in to all").click();
+        });
+        cy.get("@TCFEvent2")
+          .its("lastCall.args")
+          .then(([tcData, success]) => {
+            expect(success).to.eql(true);
+            expect(tcData.eventStatus).to.eql("useractioncomplete");
+            expect(tcData.purpose.consents).to.eql({
+              4: false,
+              [PURPOSE_2.id]: true,
+              [PURPOSE_3.id]: true,
+              [PURPOSE_4.id]: true,
+              1: false,
+              2: false,
+              3: false,
+              5: false,
+              8: false,
+            });
+            expect(tcData.purpose.legitimateInterests).to.eql({
+              // No id 4 here!
+              [PURPOSE_5.id]: true,
+              1: false,
+            });
+            expect(tcData.vendor.consents).to.eql({
+              1: false,
+              [VENDOR_2.id]: true,
+            });
+            expect(tcData.vendor.legitimateInterests).to.eql({});
+          });
       });
     });
   });

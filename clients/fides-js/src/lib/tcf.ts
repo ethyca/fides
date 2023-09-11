@@ -15,19 +15,48 @@ import {
 import { makeStub } from "./tcf/stub";
 import { transformUserPreferenceToBoolean } from "./consent-utils";
 import gvlJson from "./tcf/gvl.json";
-import { TcfSavePreferences } from "./tcf/types";
+import {
+  LegalBasisForProcessingEnum,
+  TCFPurposeRecord,
+  TcfSavePreferences,
+} from "./tcf/types";
 import { vendorIsGvl } from "./tcf/vendors";
+import { PrivacyExperience } from "./consent-types";
 
 const CMP_ID = 12; // TODO: hardcode our unique CMP ID after certification
 const CMP_VERSION = 1;
+const FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6];
+
+const purposeHasLegalBasis = ({
+  id,
+  purposes,
+  legalBasis,
+}: {
+  id: number;
+  purposes: TCFPurposeRecord[] | undefined;
+  legalBasis: LegalBasisForProcessingEnum;
+}) => {
+  if (!purposes) {
+    return false;
+  }
+  const purpose = purposes.filter((p) => p.id === id)[0];
+  if (!purpose) {
+    return false;
+  }
+  return purpose.legal_bases?.includes(legalBasis);
+};
 
 /**
  * Generate TC String based on TCF-related info from privacy experience.
  * Called when there is either a FidesInitialized or FidesUpdated event
  */
-export const generateTcString = async (
-  tcStringPreferences?: TcfSavePreferences
-): Promise<string> => {
+export const generateTcString = async ({
+  experience,
+  tcStringPreferences,
+}: {
+  tcStringPreferences?: TcfSavePreferences;
+  experience: PrivacyExperience;
+}): Promise<string> => {
   // Creates a new TC string based on an old GVL version
   // (https://vendor-list.consensu.org/v2/archives/vendor-list-v1.json)
   // due to TCF library not yet supporting latest GVL (https://vendor-list.consensu.org/v3/vendor-list.json).
@@ -45,7 +74,6 @@ export const generateTcString = async (
   tcModel.consentScreen = 1; // todo- On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
 
   if (tcStringPreferences) {
-    // todo- when we set vendorLegitimateInterests, make sure we never set purposes 1, 3, 4, 5 and 6
     if (
       tcStringPreferences.vendor_preferences &&
       tcStringPreferences.vendor_preferences.length > 0
@@ -56,6 +84,31 @@ export const generateTcString = async (
         );
         if (consented && vendorIsGvl(vendorPreference)) {
           tcModel.vendorConsents.set(+vendorPreference.id);
+          const thisVendor = experience.tcf_vendors?.filter(
+            (v) => v.id === vendorPreference.id
+          )[0];
+          const vendorPurposes = thisVendor?.purposes;
+          // Handle the case where a vendor has forbidden legint purposes set
+          let skipSetLegInt = false;
+          if (vendorPurposes) {
+            const legIntPurposeIds = vendorPurposes
+              .filter((p) =>
+                p.legal_bases?.includes(
+                  LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
+                )
+              )
+              .map((p) => p.id);
+            if (
+              legIntPurposeIds.filter((id) =>
+                FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id)
+              ).length
+            ) {
+              skipSetLegInt = true;
+            }
+          }
+          if (!skipSetLegInt) {
+            tcModel.vendorLegitimateInterests.set(+vendorPreference.id);
+          }
         }
       });
     }
@@ -70,7 +123,27 @@ export const generateTcString = async (
           purposePreference.preference
         );
         if (consented) {
-          tcModel.purposeConsents.set(+purposePreference.id);
+          const id = +purposePreference.id;
+          if (
+            purposeHasLegalBasis({
+              id,
+              purposes: experience.tcf_purposes,
+              legalBasis: LegalBasisForProcessingEnum.CONSENT,
+            })
+          ) {
+            tcModel.purposeConsents.set(id);
+          }
+          if (
+            purposeHasLegalBasis({
+              id,
+              purposes: experience.tcf_purposes,
+              legalBasis: LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS,
+            }) &&
+            // per the IAB, make sure we never set purposes 1, 3, 4, 5, or 6
+            !FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id)
+          ) {
+            tcModel.purposeLegitimateInterests.set(id);
+          }
         }
       });
     }

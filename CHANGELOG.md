@@ -18,7 +18,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.19.0...main)
 
 ### Added
-
+- TCF modal now supports setting legitimate interest fields [#4037](https://github.com/ethyca/fides/pull/4037)
 - Added new Performance-related nox commands and included them as part of the CI suite [#3997](https://github.com/ethyca/fides/pull/3997)
 - Added dictionary suggestions for data uses [4035](https://github.com/ethyca/fides/pull/4035)
 
