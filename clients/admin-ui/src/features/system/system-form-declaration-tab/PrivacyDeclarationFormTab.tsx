@@ -264,7 +264,7 @@ const PrivacyDeclarationFormTab = ({
           dictAvailable={features.dictionaryService}
           handleAdd={handleOpenNewForm}
           handleDictSuggestion={handleOpenDictModal}
-          vendorSelected={!!system.meta.vendor}
+          vendorSelected={!!system.meta?.vendor}
         />
       ) : (
         <PrivacyDeclarationDisplayGroup
