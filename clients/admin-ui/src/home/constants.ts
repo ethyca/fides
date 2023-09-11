@@ -1,5 +1,6 @@
 import {
   ADD_SYSTEMS_ROUTE,
+  CONFIGURE_CONSENT_ROUTE,
   DATAMAP_ROUTE,
   PRIVACY_REQUESTS_ROUTE,
   SYSTEM_ROUTE,
@@ -16,6 +17,7 @@ export enum ModuleCardKeys {
   VIEW_SYSTEMS = 2,
   REVIEW_PRIVACY_REQUESTS = 3,
   VIEW_MAP = 4,
+  CONFIGURE_CONSENT = 5,
 }
 
 export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
@@ -66,5 +68,16 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     title: "RP",
     scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REVIEW],
     requiresConnections: true,
+  },
+  {
+    color: "green",
+    description: "Configure consent",
+    href: `${CONFIGURE_CONSENT_ROUTE}`,
+    key: ModuleCardKeys.CONFIGURE_CONSENT,
+    name: "Configure consent",
+    sortOrder: 5,
+    title: "CC",
+    scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+    requiresFlag: "configureConsent",
   },
 ];
