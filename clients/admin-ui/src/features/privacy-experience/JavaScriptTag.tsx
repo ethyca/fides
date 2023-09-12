@@ -79,7 +79,12 @@ const JavaScriptTag = () => {
                 bracketed component with your privacy center&apos;s hostname and
                 path.
               </Text>
-              <Code display="flex" p={0}>
+              <Code
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                p={0}
+              >
                 <Text p={4}>{fidesJsScriptTag}</Text>
                 <ClipboardButton copyText={fidesJsScriptTag} />
               </Code>
@@ -88,7 +93,12 @@ const JavaScriptTag = () => {
                 on your website by including the script tag below along with the
                 Fides.js tag. Place it below the Fides.js script tag.
               </Text>
-              <Code display="flex" p={0}>
+              <Code
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                p={0}
+              >
                 <Text p={4}>{FIDES_GTM_SCRIPT_TAG}</Text>
                 <ClipboardButton copyText={FIDES_GTM_SCRIPT_TAG} />
               </Code>
