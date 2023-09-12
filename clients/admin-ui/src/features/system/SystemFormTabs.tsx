@@ -255,7 +255,8 @@ const SystemFormTabs = ({
           <Box px={6} paddingBottom={6}>
             <Text fontSize="sm" lineHeight={5} fontWeight="medium">
               All changes to this system are tracked here in this audit table by
-              date and by user.
+              date and by user. You can inspect the changes by selecting any of
+              the events listed.
             </Text>
           </Box>
           <SystemHistoryTable system={activeSystem} />
