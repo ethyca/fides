@@ -36,8 +36,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
   },
   {
     color: "orange",
-    description:
-      "As your organization grows you can continue adding systems to your Fides data map.",
+    description: "Add third party applications and databases to your data map",
     href: `${ADD_SYSTEMS_ROUTE}`,
     key: ModuleCardKeys.ADD_SYSTEMS,
     name: "Add systems",
@@ -71,10 +70,11 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
   },
   {
     color: "green",
-    description: "Configure consent",
+    description:
+      "Manage consent notices and experiences for all domains in your organization",
     href: `${CONFIGURE_CONSENT_ROUTE}`,
     key: ModuleCardKeys.CONFIGURE_CONSENT,
-    name: "Configure consent",
+    name: "Manage consent",
     sortOrder: 5,
     title: "CC",
     scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
