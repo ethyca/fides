@@ -186,6 +186,32 @@ def update_data_label_tables(
         )
 
 
+def update_rule_targets(bind: Connection, data_label_map: Dict[str, str]) -> None:
+    """Upgrade ruletargets to use the new data categories."""
+
+    existing_rule_targets: ResultProxy = bind.execute(
+        text("SELECT id, data_category FROM ruletarget;")
+    )
+
+    for row in existing_rule_targets:
+        data_category = row["data_category"]
+
+        if not data_category:
+            continue
+
+        updated_category: str = _replace_matching_data_label(
+            data_category, data_label_map
+        )
+
+        update_data_category_query: TextClause = text(
+            "UPDATE ruletarget SET data_category = :updated_category WHERE id= :target_id"
+        )
+        bind.execute(
+            update_data_category_query,
+            {"target_id": row["id"], "updated_category": updated_category},
+        )
+
+
 def update_datasets_data_categories(
     bind: Connection, data_label_map: Dict[str, str]
 ) -> None:
@@ -408,6 +434,9 @@ def upgrade() -> None:
 
     logger.info("Updating Consent")
     update_consent(bind, data_use_upgrades)
+
+    logger.info("Updating Rule Targets")
+    update_rule_targets(bind, data_category_upgrades)
 
     logger.info("Upgrading Taxonomy Items for Fideslang 2.0")
     update_data_label_tables(bind, data_use_upgrades, "ctl_data_uses")

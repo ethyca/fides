@@ -16,9 +16,8 @@ import fideslang
 import requests
 from alembic import command
 
-from fides.api.db.database import get_alembic_config, reset_db, migrate_db
+from fides.api.db.database import get_alembic_config
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeRegion
-from fides.api.schemas.privacy_request import PrivacyRequestCreate, Identity, Consent
 from fides.config import CONFIG
 from fides.core.api_helpers import get_server_resource
 from fides.core.push import push
@@ -31,6 +30,25 @@ DOWN_REVISION = "708a780b01ba"
 PRIVACY_NOTICE_ID = ""  # Guido forgive me, this gets mutated later
 CONSENT_REQUEST_ID = ""  # Guido forgive me, this gets mutated later
 CONSENT_CODE = "1234"
+
+data_category_upgrades: Dict[str, str] = {
+    "user.financial.account_number": "user.financial.bank_account",
+    "user.credentials": "user.authorization.credentials",
+    "user.browsing_history": "user.behavior.browsing_history",
+    "user.media_consumption": "user.behavior.media_consumption",
+    "user.search_history": "user.behavior.search_history",
+    "user.organization": "user.contact.organization",
+    "user.non_specific_age": "user.demographic.age_range",
+    "user.date_of_birth": "user.demographic.date_of_birth",
+    "user.gender": "user.demographic.gender",
+    "user.political_opinion": "user.demographic.political_opinion",
+    "user.profiling": "user.demographic.profile",
+    "user.race": "user.demographic.race_ethnicity",
+    "user.religious_belief": "user.demographic.religious_belief",
+    "user.sexual_orientation": "user.demographic.sexual_orientation",
+    "user.genetic": "user.health_and_medical.genetic",
+    "user.observed": "user.behavior",
+}
 
 print(f"Using Server URL: {SERVER_URL}")
 
@@ -331,9 +349,19 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
         assert result == "functional.service.improve", result
     print("> Verified Consent.")
 
+    # Verify Rule Target
+    rule_target_result = get_db_engine(DATABASE_URL).execute(
+        "select data_category from ruletarget;"
+    )
+    for res in rule_target_result:
+        data_category = res["data_category"]
+        assert data_category not in data_category_upgrades.keys()
+    print("> Verified Rule Targets.")
+
 
 if __name__ == "__main__":
     print("> Running Fideslang 2.0 Data Migration Test Script...")
+
     parser = argparse.ArgumentParser(
         description="Verify the Fideslang 2.0 Data Migrations"
     )
