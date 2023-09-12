@@ -24,9 +24,14 @@ The types of changes are:
 - Added dictionary suggestions for data uses [4035](https://github.com/ethyca/fides/pull/4035)
 - Privacy notice regions now render human readable names instead of country codes [#4029](https://github.com/ethyca/fides/pull/4029)
 - Privacy notice templates are disabled by default [#4010](https://github.com/ethyca/fides/pull/4010)
+- Added optional "skip_processing" flag to collections for DSR processing [#4047](https://github.com/ethyca/fides/pull/4047)
 - Admin UI now shows all privacy notices with an indicator of whether they apply to any systems [#4010](https://github.com/ethyca/fides/pull/4010)
 - Add case-insensitive privacy experience region filtering [#4058](https://github.com/ethyca/fides/pull/4058)
-- Added optional "skip_processing" flag to collections for DSR processing [#4047](https://github.com/ethyca/fides/pull/4047)
+- Adds check for fetch before loading fetch polyfill for fides.js [#4074](https://github.com/ethyca/fides/pull/4074)
+
+### Fixed
+
+- Ensures that fides.js toggles are not hidden by other CSS libs [#4075](https://github.com/ethyca/fides/pull/4075)
 
 ## [2.19.1](https://github.com/ethyca/fides/compare/2.19.0...2.19.1)
 
