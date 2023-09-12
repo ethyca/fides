@@ -74,7 +74,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceSecrets,
     MessagingServiceType,
 )
-from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 from fides.api.schemas.storage.storage import (
     FileNaming,
     S3AuthMethod,
@@ -1302,6 +1302,24 @@ def privacy_request_with_consent_policy(
         db,
         consent_policy,
     )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_with_custom_fields(db: Session, policy: Policy) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+    )
+    privacy_request.persist_custom_privacy_request_fields(
+        db=db,
+        custom_privacy_request_fields={
+            "first_name": CustomPrivacyRequestField(label="First name", value="John"),
+            "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
+        },
+    )
+    privacy_request.save(db)
     yield privacy_request
     privacy_request.delete(db)
 

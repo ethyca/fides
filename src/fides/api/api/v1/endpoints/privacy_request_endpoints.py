@@ -1279,8 +1279,9 @@ def approve_privacy_request(
         privacy_request.reviewed_by = user_id
         # for now, the reviewer will be marked as the approver of the custom privacy request fields
         # this is to make it flexible in the future if we want to allow a different user to approve
-        privacy_request.custom_privacy_request_fields_approved_at = now
-        privacy_request.custom_privacy_request_fields_approved_by = user_id
+        if privacy_request.custom_fields:  # type: ignore[attr-defined]
+            privacy_request.custom_privacy_request_fields_approved_at = now
+            privacy_request.custom_privacy_request_fields_approved_by = user_id
         privacy_request.save(db=db)
         AuditLog.create(
             db=db,

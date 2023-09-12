@@ -5,7 +5,7 @@ import {
   GreenCheckCircleIcon,
   Text,
 } from "@fidesui/react";
-import { PrivacyRequestEntity } from "privacy-requests/types";
+import { ExecutionLog, PrivacyRequestEntity } from "privacy-requests/types";
 import React from "react";
 
 import { ExecutionLogStatus } from "~/types/api";
@@ -17,15 +17,17 @@ type ActivityTimelineProps = {
   setEventDetails: (d: EventData) => void;
 };
 
-const hasUnresolvedError = (entries) => {
-  const groupedByCollection = {};
+const hasUnresolvedError = (entries: ExecutionLog[]) => {
+  const groupedByCollection: {
+    [key: string]: ExecutionLog;
+  } = {};
 
   // Group the entries by collection_name and keep only the latest entry for each collection.
   entries.forEach((entry) => {
     const { collection_name: collectionName, updated_at: updatedAt } = entry;
     if (
       !groupedByCollection[collectionName] ||
-      new Date(groupedByCollection[collectionName].updatedAt) <
+      new Date(groupedByCollection[collectionName].updated_at) <
         new Date(updatedAt)
     ) {
       groupedByCollection[collectionName] = entry;

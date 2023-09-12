@@ -57,6 +57,9 @@ from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.external_https import SecondPartyResponseFormat, WebhookJWE
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.redis_cache import (
+    CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
+)
 from fides.api.schemas.redis_cache import Identity, IdentityBase
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (
@@ -339,7 +342,10 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                 )
 
     def cache_custom_privacy_request_fields(
-        self, custom_privacy_request_fields: Optional[Dict[str, Any]] = None
+        self,
+        custom_privacy_request_fields: Optional[
+            Dict[str, CustomPrivacyRequestFieldSchema]
+        ] = None,
     ) -> None:
         """Sets each of the custom privacy request fields values under their own key in the cache"""
         if not custom_privacy_request_fields:
@@ -354,7 +360,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                 if item is not None:
                     cache.set_with_autoexpire(
                         get_custom_privacy_request_field_cache_key(self.id, key),
-                        item["value"],
+                        item.value,
                     )
         else:
             logger.info(
@@ -383,22 +389,24 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                 )
 
     def persist_custom_privacy_request_fields(
-        self, db: Session, custom_privacy_request_fields: Dict[str, Any]
+        self,
+        db: Session,
+        custom_privacy_request_fields: Dict[str, CustomPrivacyRequestFieldSchema],
     ) -> None:
         if not custom_privacy_request_fields:
             return
 
         if CONFIG.execution.allow_custom_privacy_request_field_collection:
             for key, item in custom_privacy_request_fields.items():
-                if item["value"]:
-                    hashed_value = CustomPrivacyRequestField.hash_value(item["value"])
+                if item.value:
+                    hashed_value = CustomPrivacyRequestField.hash_value(item.value)
                     CustomPrivacyRequestField.create(
                         db=db,
                         data={
                             "privacy_request_id": self.id,
                             "field_name": key,
-                            "field_label": item["label"],
-                            "encrypted_value": {"value": item["value"]},
+                            "field_label": item.label,
+                            "encrypted_value": {"value": item.value},
                             "hashed_value": hashed_value,
                         },
                     )
