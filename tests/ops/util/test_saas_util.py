@@ -433,6 +433,15 @@ class TestAssignPlaceholders:
             == None
         )
 
+    def test_replacing_with_object_values(self):
+        assert (
+            assign_placeholders(
+                "{<all_object_fields>}",
+                {"all_object_fields": {"age": 28, "name": "Bob"}},
+            )
+            == '{"age": 28, "name": "Bob"}'
+        )
+
 
 class TestUnflattenDict:
     def test_empty_dict(self):
