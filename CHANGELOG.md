@@ -29,6 +29,10 @@ The types of changes are:
 ### Added
 - Adds check for fetch before loading fetch polyfill for fides.js [#4074](https://github.com/ethyca/fides/pull/4074)
 
+### Fixed
+
+- Ensures that fides.js toggles are not hidden by other CSS libs [#4075](https://github.com/ethyca/fides/pull/4075)
+
 ## [2.19.1](https://github.com/ethyca/fides/compare/2.19.0...2.19.1)
 
 ### Fixed
