@@ -15,20 +15,6 @@
       "identity_inputs": {
         "email": "required"
       },
-      "custom_privacy_request_fields": {
-        "first_name": {
-          "label": "First name",
-          "required": true
-        },
-        "last_name": {
-          "label": "Last name",
-          "required": false
-        },
-        "order_id": {
-          "label": "Order ID",
-          "required": true
-        }
-      },
       "confirmButtonText": "Continue",
       "cancelButtonText": "Cancel"
     },

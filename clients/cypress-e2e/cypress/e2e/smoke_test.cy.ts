@@ -18,6 +18,7 @@ describe("Smoke test", () => {
     cy.getByTestId("card").contains("Access your data").click();
     cy.getByTestId("privacy-request-form").within(() => {
       cy.get("input#email").type("jenny@example.com");
+      cy.get("input#first_name").type("Jenny");
       cy.get("button").contains("Continue").click();
     });
 

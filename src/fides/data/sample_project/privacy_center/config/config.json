@@ -21,11 +21,7 @@
         },
         "last_name": {
           "label": "Last name",
-          "required": true
-        },
-        "order_id": {
-          "label": "Order ID",
-          "required": true
+          "required": false
         }
       }
     },
