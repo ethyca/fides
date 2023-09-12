@@ -97,7 +97,7 @@ const usePrivacyRequestForm = ({
       const body = [
         {
           identity: {
-            email: email,
+            email,
             phone_number: phone,
             // enable this when name field is supported on the server
             // name: values.name

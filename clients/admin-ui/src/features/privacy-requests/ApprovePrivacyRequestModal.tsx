@@ -33,7 +33,6 @@ const ApprovePrivacyRequestModal = ({
 }: ApproveModalProps) => {
   const {
     identity,
-    identity_verified_at: identityVerifiedAt,
     custom_privacy_request_fields: customPrivacyRequestFields,
   } = subjectRequest;
   const handleSubmit = useCallback(() => {
@@ -52,7 +51,7 @@ const ApprovePrivacyRequestModal = ({
             Are you sure you want to approve this privacy request?
           </Text>
           <UnorderedList>
-            {identity.email && identityVerifiedAt && (
+            {identity.email && (
               <ListItem>
                 <Flex alignItems="flex-start">
                   <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
@@ -64,7 +63,7 @@ const ApprovePrivacyRequestModal = ({
                 </Flex>
               </ListItem>
             )}
-            {identity.phone_number && customPrivacyRequestFields && (
+            {identity.phone_number && (
               <ListItem>
                 <Flex alignItems="flex-start">
                   <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
