@@ -16,8 +16,8 @@ from fides.api.util.api_router import APIRouter
 from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import censor_config
-from fides.config.utils import load_updated_cors_domains
 from fides.config import get_config as get_app_config
+from fides.config.utils import load_updated_cors_domains
 
 router = APIRouter(tags=["Config"], prefix=urls.V1_URL_PREFIX)
 
