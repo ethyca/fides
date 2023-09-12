@@ -15,12 +15,19 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.19.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.19.2...main)
 
 ### Added
 
 - Added new Performance-related nox commands and included them as part of the CI suite [#3997](https://github.com/ethyca/fides/pull/3997)
 - Added dictionary suggestions for data uses [4035](https://github.com/ethyca/fides/pull/4035)
+
+
+
+## [2.19.2](https://github.com/ethyca/fides/compare/2.19.1...2.19.2)
+
+### Added
+- Adds check for fetch before loading fetch polyfill for fides.js [#4074](https://github.com/ethyca/fides/pull/4074)
 
 ## [2.19.1](https://github.com/ethyca/fides/compare/2.19.0...2.19.1)
 
@@ -142,7 +149,7 @@ The types of changes are:
 - Privacy center and fides-js now pass in `Unescape-Safestr` as a header so that special characters can be rendered properly [#3706](https://github.com/ethyca/fides/pull/3706)
 - Fixed ValidationError for saving PrivacyPreferences [#3719](https://github.com/ethyca/fides/pull/3719)
 - Fixed issue preventing ConnectionConfigs with duplicate names from saving [#3770](https://github.com/ethyca/fides/pull/3770)
-- Fixed creating and editing manual integrations [#3772](https://github.com/ethyca/fides/pull/3772) 
+- Fixed creating and editing manual integrations [#3772](https://github.com/ethyca/fides/pull/3772)
 - Fix lingering integration artifacts by cascading deletes from System [#3771](https://github.com/ethyca/fides/pull/3771)
 
 ### Developer Experience
