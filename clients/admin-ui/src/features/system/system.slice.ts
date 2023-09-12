@@ -207,7 +207,7 @@ export const selectActiveClassifySystemFidesKey = createSelector(
   (state) => state.activeClassifySystemFidesKey
 );
 
-const emptySelectAllSystems: System[] = [];
+const emptySelectAllSystems: SystemResponse[] = [];
 export const selectAllSystems = createSelector(
   [(RootState) => RootState, systemApi.endpoints.getAllSystems.select()],
   (RootState, { data }) => data || emptySelectAllSystems

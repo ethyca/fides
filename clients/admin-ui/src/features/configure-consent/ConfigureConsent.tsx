@@ -1,20 +1,11 @@
-import {
-  Box,
-  ButtonGroup,
-  Center,
-  Heading,
-  List,
-  ListItem,
-  Spinner,
-  Text,
-  VStack,
-} from "@fidesui/react";
+import { ButtonGroup, Center, Spinner, Text, VStack } from "@fidesui/react";
 
 import EmptyTableState from "~/features/common/table/EmptyTableState";
 import { useGetAllSystemsQuery } from "~/features/system";
 
 import AddCookie from "./AddCookie";
 import AddVendor from "./AddVendor";
+import VendorCookieTable from "./VendorCookieTable";
 
 const AddButtons = ({ includeCookies }: { includeCookies?: boolean }) => (
   <ButtonGroup size="sm" colorScheme="primary">
@@ -53,18 +44,7 @@ const ConfigureConsent = () => {
     );
   }
 
-  return (
-    // TODO(fides#4054): make this into a table
-    <Box>
-      <Heading size="md">Systems</Heading>
-      <List>
-        {allSystems.map((system) => (
-          <ListItem key={system.fides_key}>{system.name}</ListItem>
-        ))}
-      </List>
-      <AddButtons includeCookies />
-    </Box>
-  );
+  return <VendorCookieTable />;
 };
 
 export default ConfigureConsent;
