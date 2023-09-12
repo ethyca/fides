@@ -1,7 +1,7 @@
 """adding custom privacy request field table
 
 Revision ID: ad2e3f9a6850
-Revises: 093bb28a8270
+Revises: 192f23f4c968
 Create Date: 2023-09-06 20:09:10.188690
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "ad2e3f9a6850"
-down_revision = "093bb28a8270"
+down_revision = "192f23f4c968"
 branch_labels = None
 depends_on = None
 
