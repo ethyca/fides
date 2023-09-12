@@ -305,7 +305,7 @@ class TestShouldOptIntoService:
 
         privacy_request_with_consent_policy.consent_preferences = [
             {"data_use": "marketing.advertising", "opt_in": True},
-            {"data_use": "improve", "opt_in": False},
+            {"data_use": "functional", "opt_in": False},
         ]
         collapsed_opt_in_preference, filtered_preferences = should_opt_in_to_service(
             system, privacy_request_with_consent_policy

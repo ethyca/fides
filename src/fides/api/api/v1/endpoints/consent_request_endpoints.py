@@ -264,7 +264,7 @@ def consent_request_verify(
                     "highlight": False,
                 },
                 {
-                    "data_use": "improve",
+                    "data_use": "functional",
                     "data_use_description": "We may use some of your personal information to collect analytics about "
                     "how you use our products & services, in order to improve our service.",
                     "opt_in": False,
