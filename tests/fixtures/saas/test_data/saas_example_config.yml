@@ -292,19 +292,25 @@ saas_config:
     - name: internal_information
       requests:
         read:
-          - method: POST
-            path: /v1/internal?first_name=<custom_privacy_request_fields.first_name>
-            body: |
-              {
-                "last_name": "<custom_privacy_request_fields.last_name>"
-                "order_id": "<custom_privacy_request_fields.order_id?>"
-              }
+          method: POST
+          path: /v1/internal/
+          param_values:
+            - name: placeholder
+              identity: email
+          query_params:
+            - name: first_name
+              value: <custom_privacy_request_fields.first_name>
+          body: |
+            {
+              "last_name": "<custom_privacy_request_fields.last_name>",
+              "order_id": "<custom_privacy_request_fields.order_id?>"
+            }
         update:
-          - method: POST
-            path: /v1/internal/
-            body: |
-              {
-                "user_info": {
-                  <custom_privacy_request_fields>
-                }
+          method: POST
+          path: /v1/internal/
+          body: |
+            {
+              "user_info": {
+                <custom_privacy_request_fields>
               }
+            }
