@@ -321,7 +321,6 @@ class TestPatchApplicationConfig:
             [*cors_middleware[1], *payload["security"]["cors_origins"]]
         )
 
-        # this should look exactly like the payload - no additional properties
 
     def test_patch_application_config_invalid_notification_type(
         self,
