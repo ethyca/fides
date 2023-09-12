@@ -320,7 +320,6 @@ def update_consent(bind: Connection, data_use_map: Dict[str, str]) -> None:
     )
 
     for row in existing_consents:
-        # Update data categories at the top level
         updated_use: str = _replace_matching_data_label(row["data_use"], data_use_map)
 
         update_label_query: TextClause = text(
@@ -337,11 +336,10 @@ def update_consent(bind: Connection, data_use_map: Dict[str, str]) -> None:
 
     # Update the Privacy Request Table
     existing_privacy_requests: ResultProxy = bind.execute(
-        text("select id, status, consent_preferences from privacyrequest;")
+        text("select id, consent_preferences from privacyrequest;")
     )
 
     for row in existing_privacy_requests:
-        # Update data categories at the top level
         preferences: List[Dict] = row["consent_preferences"]
 
         if preferences:
@@ -364,7 +362,6 @@ def update_consent(bind: Connection, data_use_map: Dict[str, str]) -> None:
     )
 
     for row in existing_consent_requests:
-        # Update data categories at the top level
         preferences: List[Dict] = row["preferences"]
 
         if preferences:
@@ -373,11 +370,11 @@ def update_consent(bind: Connection, data_use_map: Dict[str, str]) -> None:
                     data_label=preference["data_use"], data_label_map=data_use_map
                 )
 
-        update_collections_query: TextClause = text(
+        update_cr_query: TextClause = text(
             "UPDATE consentrequest SET preferences= :updated_preferences WHERE id= :id"
         )
         bind.execute(
-            update_collections_query,
+            update_cr_query,
             {"id": row["id"], "updated_preferences": json.dumps(preferences)},
         )
 

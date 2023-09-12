@@ -53,8 +53,7 @@ class PrivacyRequestDRPStatusResponse(FidesSchema):
 
 class Consent(FidesSchema):
     """
-    Schema for consent.
-    TODO: What is consent in this situation? Are these hardcoded values that come from the frontend implementation?
+    Deprecated: This used to be populated and sent to the server by a `config.json` in the UI
     """
 
     data_use: str
@@ -66,8 +65,7 @@ class Consent(FidesSchema):
 
 class ConsentReport(Consent):
     """
-    Schema for reporting Consent requests.
-    TODO: What is a consent report
+    Keeps record of each of the preferences that have been recorded via ConsentReporting endpoints.
     """
 
     id: str
