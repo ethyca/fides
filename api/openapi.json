@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.19.0"
+    "version": "2.19.1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -16687,17 +16687,6 @@
         "type": "string",
         "description": "The model for describing the legal basis under which profiling is performed"
       },
-      "LegalBasisForTransfersEnum": {
-        "title": "LegalBasisForTransfersEnum",
-        "enum": [
-          "Adequacy Decision",
-          "SCCs",
-          "BCRs",
-          "Other"
-        ],
-        "type": "string",
-        "description": "The model for describing the legal basis under which data is transferred"
-      },
       "MSSQLDocsSchema": {
         "title": "MSSQLDocsSchema",
         "required": [
@@ -17592,6 +17581,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -17625,6 +17619,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -17660,6 +17659,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -17693,6 +17697,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -17728,6 +17737,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -17761,6 +17775,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -17796,6 +17815,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -17829,6 +17853,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -17864,6 +17893,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -17897,6 +17931,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -17932,6 +17971,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -17965,6 +18009,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -18000,6 +18049,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -18033,6 +18087,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -18068,6 +18127,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -18101,6 +18165,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -18136,6 +18205,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -18169,6 +18243,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -18211,6 +18290,11 @@
             "title": "Size",
             "minimum": 1.0,
             "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },
@@ -18244,6 +18328,11 @@
           "size": {
             "title": "Size",
             "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
             "type": "integer"
           }
         }
@@ -21387,9 +21476,10 @@
             "default": false
           },
           "legal_basis_for_transfers": {
+            "title": "Legal Basis For Transfers",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/LegalBasisForTransfersEnum"
+              "type": "string"
             },
             "description": "The legal basis (or bases) under which the data is transferred."
           },
@@ -21653,9 +21743,10 @@
             "default": false
           },
           "legal_basis_for_transfers": {
+            "title": "Legal Basis For Transfers",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/LegalBasisForTransfersEnum"
+              "type": "string"
             },
             "description": "The legal basis (or bases) under which the data is transferred."
           },
