@@ -69,6 +69,7 @@ The types of changes are:
 - Removed deprecated fields from the taxonomy editor [#3909](https://github.com/ethyca/fides/pull/3909)
 - Bump PyMSSQL version and remove workarounds [#3996](https://github.com/ethyca/fides/pull/3996)
 - Removed reset suggestions button [#4007](https://github.com/ethyca/fides/pull/4007)
+- Admin ui supports fides cloud config API [#4034](https://github.com/ethyca/fides/pull/4034)
 
 ### Security
 - Resolve custom integration upload RCE vulnerability [CVE-2023-41319](https://github.com/ethyca/fides/security/advisories/GHSA-p6p2-qq95-vq5h)

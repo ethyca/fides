@@ -21,6 +21,7 @@ const ALL_SCOPES = [
   ScopeRegistryEnum.ORGANIZATION_UPDATE,
   ScopeRegistryEnum.PRIVACY_NOTICE_READ,
   ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ,
+  ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ,
 ];
 
 describe("configureNavGroups", () => {
@@ -146,6 +147,40 @@ describe("configureNavGroups", () => {
           { title: "Manage datasets", path: routes.DATASET_ROUTE },
         ],
       });
+    });
+  });
+
+  describe("fides cloud", () => {
+    it("shows dns records page when fides cloud is enabled", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+        flags: undefined,
+        hasPlus: true,
+        hasFidesCloud: true,
+      });
+
+      expect(
+        navGroups[4].children
+          .map((c) => c.title)
+          .find((title) => title === "DNS Records")
+      ).toEqual("DNS Records");
+    });
+
+    it("does not show dns records page when fides cloud is disabled", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+        flags: undefined,
+        hasPlus: true,
+        hasFidesCloud: false,
+      });
+
+      expect(
+        navGroups[4].children
+          .map((c) => c.title)
+          .find((title) => title === "DNS Records")
+      ).toEqual(undefined);
     });
   });
 

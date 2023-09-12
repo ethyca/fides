@@ -1,6 +1,7 @@
 import {
   Button,
   Code,
+  Link,
   Modal,
   ModalBody,
   ModalContent,
@@ -10,17 +11,39 @@ import {
   Text,
   useDisclosure,
 } from "@fidesui/react";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
+import { useFeatures } from "~/features/common/features";
 import { CopyIcon } from "~/features/common/Icon";
+import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 
-const SCRIPT_TAG =
-  '<script src="https://{privacy-center-hostname-and-path}/fides.js"></script>';
+const PRIVACY_CENTER_HOSTNAME_TEMPLATE = "{privacy-center-hostname-and-path}";
+const FIDES_JS_SCRIPT_TEMPLATE = `<script src="https://${PRIVACY_CENTER_HOSTNAME_TEMPLATE}/fides.js"></script>`;
+const FIDES_GTM_SCRIPT_TAG = "<script>Fides.gtm()</script>";
 
 const JavaScriptTag = () => {
   const modal = useDisclosure();
   const initialRef = useRef(null);
+  const { fidesCloud: isFidesCloud } = useFeatures();
+
+  const { data: fidesCloudConfig, isSuccess } = useGetFidesCloudConfigQuery(
+    undefined,
+    {
+      skip: !isFidesCloud,
+    }
+  );
+
+  const fidesJsScriptTag = useMemo(
+    () =>
+      isFidesCloud && isSuccess && fidesCloudConfig?.privacy_center_url
+        ? FIDES_JS_SCRIPT_TEMPLATE.replace(
+            PRIVACY_CENTER_HOSTNAME_TEMPLATE,
+            fidesCloudConfig.privacy_center_url
+          )
+        : FIDES_JS_SCRIPT_TEMPLATE,
+    [fidesCloudConfig?.privacy_center_url, isFidesCloud, isSuccess]
+  );
 
   return (
     <>
@@ -57,12 +80,28 @@ const JavaScriptTag = () => {
                 path.
               </Text>
               <Code display="flex" p={0}>
-                <Text p={4}>{SCRIPT_TAG}</Text>
-                <ClipboardButton copyText={SCRIPT_TAG} />
+                <Text p={4}>{fidesJsScriptTag}</Text>
+                <ClipboardButton copyText={fidesJsScriptTag} />
+              </Code>
+              <Text>
+                Optionally, you can enable Google Tag Manager for managing tags
+                on your website by including the script tag below along with the
+                Fides.js tag. Place it below the Fides.js script tag.
+              </Text>
+              <Code display="flex" p={0}>
+                <Text p={4}>{FIDES_GTM_SCRIPT_TAG}</Text>
+                <ClipboardButton copyText={FIDES_GTM_SCRIPT_TAG} />
               </Code>
               <Text>
                 For more information about adding a JavaScript tag to your
-                website, visit our docs.
+                website, please visit{" "}
+                <Link
+                  color="complimentary.500"
+                  href="https://docs.ethyca.com/tutorials/consent-management-configuration/install-fides#install-fidesjs-script-on-your-website"
+                  isExternal
+                >
+                  docs.ethyca.com
+                </Link>
               </Text>
             </Stack>
           </ModalBody>

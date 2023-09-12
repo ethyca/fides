@@ -22,7 +22,7 @@ import {
 
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
 
-interface FidesObject {
+export interface FidesObject {
   id?: string;
   name?: string;
 }
