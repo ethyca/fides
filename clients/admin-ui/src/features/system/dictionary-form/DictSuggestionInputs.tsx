@@ -23,6 +23,7 @@ import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { selectDictEntry } from "~/features/plus/plus.slice";
 import { DictEntry } from "~/features/plus/types";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
+import type { FormValues } from "~/features/system/form";
 
 const useDictSuggestion = (
   fieldName: string,
@@ -43,9 +44,8 @@ const useDictSuggestion = (
   const [preSuggestionValue, setPreSuggestionValue] = useState(
     field.value ?? ""
   );
-  const { values } = useFormikContext();
-  // @ts-ignore
-  const vendorId = values?.meta?.vendor?.id;
+  const { values } = useFormikContext<FormValues>();
+  const { vendor_id: vendorId } = values;
   const dictEntry = useAppSelector(selectDictEntry(vendorId || ""));
   const isShowingSuggestions = useAppSelector(selectSuggestions);
   const inputRef = useRef();

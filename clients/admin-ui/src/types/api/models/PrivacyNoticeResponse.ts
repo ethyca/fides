@@ -31,4 +31,5 @@ export type PrivacyNoticeResponse = {
   version: number;
   privacy_notice_history_id: string;
   cookies: Array<Cookies>;
+  systems_applicable?: boolean;
 };

@@ -70,7 +70,7 @@ def _filter_experiences_by_region_or_country(
     if not region:
         return experience_query
 
-    region = escape(region)
+    region: str = escape(region).replace("-", "_").lower()
     country: str = region.split("_")[0]
 
     overlay: Optional[

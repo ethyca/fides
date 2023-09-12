@@ -296,6 +296,15 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             )
         ).all()
 
+    @property
+    def systems_applicable(self) -> bool:
+        """Return if any systems overlap with this notice's data uses"""
+        db = Session.object_session(self)
+        for system in db.query(System):
+            if self.applies_to_system(system):
+                return True
+        return False
+
     @classmethod
     def create(
         cls: Type[PrivacyNotice],
