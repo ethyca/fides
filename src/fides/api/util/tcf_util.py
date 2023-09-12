@@ -203,30 +203,6 @@ def _add_top_level_record_to_purpose_or_feature_section(
     return matching_purpose_or_feature_map[top_level_tcf_record.id]
 
 
-def _clone_top_level_record_then_add_legal_bases(
-    top_level_tcf_record: TCFPurposeOrFeature,
-    legal_basis_for_processing: Optional[str],
-) -> TCFPurposeOrFeature:
-    """Clone the top-level TCF record, then add legal bases to the top level record and replace legal bases
-    on the cloned record.
-
-    Embedded records beneath the system should only have the legal_bases that apply to that particular system,
-    while the top-level purpose or special purpose has all relevant legal bases for that purpose.  This may be a contrived
-    issue but doing this to account for configurations on custom systems.
-
-    """
-    embedded_tcf_record: TCFPurposeOrFeature = top_level_tcf_record.copy()
-
-    # Append to the existing legal_bases on the top-level record if applicable for purpose and special purpose sections.
-    # The top-level record is updated in-place
-    _extend_legal_bases(top_level_tcf_record, legal_basis_for_processing, replace=False)
-
-    # Override legal_bases on the embedded purpose or special purpose record
-    _extend_legal_bases(embedded_tcf_record, legal_basis_for_processing, replace=True)
-
-    return embedded_tcf_record
-
-
 def _embed_purpose_or_feature_under_system(
     embedded_tcf_record: TCFPurposeOrFeature,
     system_section: Union[List[TCFPurposeRecord], List[TCFFeatureRecord]],
@@ -317,6 +293,9 @@ def build_purpose_or_feature_section_and_update_system_map(
             relevant_uses_or_features=relevant_uses_or_features,
             is_purpose_type=is_purpose_section,
         )
+        legal_basis_for_processing: Optional[str] = privacy_declaration_row[
+            "legal_basis_for_processing"
+        ]
 
         for attribute in relevant_use_or_features:
             # Add top-level entry to purpose or feature section if applicable
@@ -345,23 +324,30 @@ def build_purpose_or_feature_section_and_update_system_map(
                     ),  # Has_vendor_id will let us separate data into two sections: "tcf_vendors" and "tcf_systems"
                 )
 
-            # Add the purpose or feature to the System purposes or System features lists
-            embedded_purpose_or_feature_record: TCFPurposeOrFeature = (
-                _clone_top_level_record_then_add_legal_bases(
-                    top_level_tcf_record,
-                    privacy_declaration_row.legal_basis_for_processing,
-                )
+            # Copy top level purpose or feature record to preserve its initial state to use for embedded record
+            embedded_tcf_record: TCFPurposeOrFeature = top_level_tcf_record.copy()
+
+            # Override legal_bases on the embedded purpose or special purpose record
+            _extend_legal_bases(
+                embedded_tcf_record, legal_basis_for_processing, replace=True
             )
 
+            # Embed the purpose/feature under the system if it doesn't exist, and/or consolidate legal bases
             _embed_purpose_or_feature_under_system(
-                embedded_tcf_record=embedded_purpose_or_feature_record,
+                embedded_tcf_record=embedded_tcf_record,
                 system_section=getattr(
                     system_map[system_identifier], tcf_component_name
                 ),
-                legal_basis_for_processing=privacy_declaration_row.legal_basis_for_processing,
+                legal_basis_for_processing=legal_basis_for_processing,
             )
 
-            # Do the reverse, and nest the system beneath the purpose or feature
+            # Append to the existing legal_bases on the top-level record if applicable for purpose
+            # and special purpose sections. The top-level record is updated in-place
+            _extend_legal_bases(
+                top_level_tcf_record, legal_basis_for_processing, replace=False
+            )
+
+            # Finally, nest the system beneath this top level tcf record
             _embed_system_under_purpose_or_feature(
                 top_level_tcf_record=top_level_tcf_record,
                 matching_purpose_or_feature_map=matching_purpose_or_feature_map,

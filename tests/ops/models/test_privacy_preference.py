@@ -1375,7 +1375,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
                 "name": "Collect data for content performance",
                 "system_id": system_with_no_uses.id,
                 "data_categories": ["user.device.cookie_id"],
-                "data_use": "marketing.advertising.ad_serving",
+                "data_use": "marketing.advertising.serving",
                 "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "legal_basis_for_processing": "Consent",
@@ -1408,7 +1408,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
                 "name": "Collect data for content performance",
                 "system_id": system_with_no_uses.id,
                 "data_categories": ["user.device.cookie_id"],
-                "data_use": "marketing.advertising.ad_serving",
+                "data_use": "marketing.advertising.serving",
                 "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "legal_basis_for_processing": "Consent",
@@ -1438,7 +1438,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
         )
 
         decl.features = ["Match and combine offline data sources"]
-        decl.data_use = "marketing.advertising.ad_serving"
+        decl.data_use = "marketing.advertising.serving"
         decl.legal_basis_for_processing = "Consent"
         decl.save(db)
 
@@ -1450,7 +1450,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
         # Add special feature that we're not saving preference for
         decl = system.privacy_declarations[0]
         decl.features = ["Actively scan device characteristics for identification"]
-        decl.data_use = "marketing.advertising.ad_serving"
+        decl.data_use = "marketing.advertising.serving"
         decl.legal_basis_for_processing = "Consent"
         decl.save(db)
 
@@ -1484,7 +1484,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
                 "name": "Collect data for content performance",
                 "system_id": system_with_no_uses.id,
                 "data_categories": ["user.device.cookie_id"],
-                "data_use": "marketing.advertising.ad_serving",
+                "data_use": "marketing.advertising.serving",
                 "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "dataset_references": None,

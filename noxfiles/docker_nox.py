@@ -2,6 +2,7 @@
 from typing import Callable, Dict, List, Optional, Tuple
 
 import nox
+
 from constants_nox import (
     DEV_TAG_SUFFIX,
     IMAGE,

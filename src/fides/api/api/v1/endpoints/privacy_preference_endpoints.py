@@ -394,7 +394,10 @@ def persist_tcf_preferences(
         ],
     ) -> CurrentPrivacyPreference:
         """Internal helper method for dynamically saving a preference against a specific TCF component
-        in the database"""
+        in the database where applicable
+
+        Currently, we don't attempt to propagate these preferences to third party systems.
+        """
         (
             _,
             current_preference,
@@ -412,11 +415,22 @@ def persist_tcf_preferences(
         )
         return current_preference
 
-    # Save TCF preferences individually in the database, with respect to purpose, special purpose, vendor,
-    # feature, special feature, and/or system id.
-    # Currently, we don't attempt to propagate these preferences to third party systems.
+    # If applicable, loop through all the lists of TCF components and save each preference individually: with respect
+    # to purposes, special purposes, vendors, features, special features, and/or systems.
     for tcf_preference_field, field_name in TCF_PREFERENCES_FIELD_MAPPING.items():
-        for preference in getattr(request_data, tcf_preference_field):
+        # If no preferences were saved for this TCF component, this will be an empty
+        # list, and nothing will be saved to the db.
+        saved_preferences: List[
+            Union[
+                TCFPurposeSave,
+                TCFSpecialPurposeSave,
+                TCFVendorSave,
+                TCFFeatureSave,
+                TCFSpecialFeatureSave,
+            ]
+        ] = getattr(request_data, tcf_preference_field)
+
+        for preference in saved_preferences:
             upserted_current_preferences.append(
                 save_tcf_preference(
                     preference_request=preference,

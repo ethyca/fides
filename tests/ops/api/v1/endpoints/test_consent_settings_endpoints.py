@@ -19,8 +19,7 @@ class TestGetConsentSettings:
 
     def test_get_consent_settings_unauthenticated(self, api_client: TestClient, url):
         response = api_client.get(url, headers={})
-        # This is a public endpoint
-        assert 200 == response.status_code
+        assert 401 == response.status_code
 
     @pytest.mark.parametrize(
         "role,expected_status",
@@ -29,7 +28,7 @@ class TestGetConsentSettings:
             ("contributor", HTTP_200_OK),
             ("viewer_and_approver", HTTP_200_OK),
             ("viewer", HTTP_200_OK),
-            ("approver", HTTP_200_OK),
+            ("approver", HTTP_403_FORBIDDEN),
         ],
     )
     def test_get_consent_settings_with_roles(

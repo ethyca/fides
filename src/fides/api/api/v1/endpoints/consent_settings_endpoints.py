@@ -19,6 +19,7 @@ router = APIRouter(tags=["Consent Settings"], prefix=urls.V1_URL_PREFIX)
 
 @router.get(
     urls.CONSENT_SETTINGS,
+    dependencies=[Security(verify_oauth_client, scopes=[scopes.CONSENT_SETTINGS_READ])],
     response_model=ConsentSettingsResponseSchema,
 )
 def get_consent_settings(*, db: Session = Depends(deps.get_db)) -> ConsentSettings:

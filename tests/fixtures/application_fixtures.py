@@ -90,6 +90,7 @@ from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
 from fides.api.util.data_category import DataCategory
+from fides.api.util.tcf_util import get_tcf_contents
 from fides.config import CONFIG
 from fides.config.helpers import load_file
 
@@ -2724,3 +2725,8 @@ def tcf_system(db: Session) -> System:
 
     db.refresh(system)
     return system
+
+
+@pytest.fixture(autouse=True)
+def clear_tcf_cache() -> None:
+    get_tcf_contents.cache_clear()

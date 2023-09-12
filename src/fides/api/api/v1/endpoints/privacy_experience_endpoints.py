@@ -2,7 +2,9 @@ import uuid
 from html import escape, unescape
 from typing import Dict, List, Optional
 
-from fastapi import Depends, HTTPException, Request, Response
+from fastapi import Depends, HTTPException
+from fastapi import Query as FastAPIQuery
+from fastapi import Request, Response
 from fastapi_pagination import Page, Params
 from fastapi_pagination import paginate as fastapi_paginate
 from fastapi_pagination.bases import AbstractPage
@@ -70,27 +72,27 @@ def _filter_experiences_by_region_or_country(
     if not region:
         return experience_query
 
-    region: str = escape(region).replace("-", "_").lower()
-    country: str = region.split("_")[0]
+    cleaned_region: str = escape(region).replace("-", "_").lower()
+    country: str = cleaned_region.split("_")[0]
 
     overlay: Optional[
         PrivacyExperience
     ] = PrivacyExperience.get_experience_by_region_and_component(
-        db, region, ComponentType.overlay
+        db, cleaned_region, ComponentType.overlay
     ) or PrivacyExperience.get_experience_by_region_and_component(
         db, country, ComponentType.overlay
     )
     privacy_center: Optional[
         PrivacyExperience
     ] = PrivacyExperience.get_experience_by_region_and_component(
-        db, region, ComponentType.privacy_center
+        db, cleaned_region, ComponentType.privacy_center
     ) or PrivacyExperience.get_experience_by_region_and_component(
         db, country, ComponentType.privacy_center
     )
     tcf_overlay: Optional[
         PrivacyExperience
     ] = PrivacyExperience.get_experience_by_region_and_component(
-        db, region, ComponentType.tcf_overlay
+        db, cleaned_region, ComponentType.tcf_overlay
     ) or PrivacyExperience.get_experience_by_region_and_component(
         db, country, ComponentType.tcf_overlay
     )
@@ -125,7 +127,7 @@ def privacy_experience_list(
     show_disabled: Optional[bool] = True,
     region: Optional[str] = None,
     component: Optional[ComponentType] = None,
-    has_notices: Optional[bool] = None,
+    content_required: Optional[bool] = FastAPIQuery(default=None, alias="has_notices"),
     has_config: Optional[bool] = None,
     fides_user_device_id: Optional[str] = None,
     systems_applicable: Optional[bool] = False,
@@ -144,7 +146,7 @@ def privacy_experience_list(
     :param show_disabled: If False, returns only enabled Experiences and Notices
     :param region: Return the Experiences for the given region
     :param component: Returns Experiences of the given component type
-    :param has_notices: Return if the Experience has content
+    :param content_required: Return if the Experience has content. (Alias for has_notices query_param)
     :param has_config: If True, returns Experiences with copy. If False, returns just Experiences without copy.
     :param fides_user_device_id: Supplement the response with current saved preferences of the given user
     :param systems_applicable: Only return embedded Notices associated with systems.
@@ -153,7 +155,6 @@ def privacy_experience_list(
     :return:
     """
     logger.info("Finding all Privacy Experiences with pagination params '{}'", params)
-    content_required: bool = bool(has_notices)  # Renaming confusing query param
     fides_user_provided_identity: Optional[ProvidedIdentity] = None
     if fides_user_device_id:
         try:
@@ -183,8 +184,8 @@ def privacy_experience_list(
         )
 
     if component is not None:
-        # If searching for "overlay" - return both overlay types: the regular overlay and the TCF Overlay,
-        # for ease with frontend querying
+        # Intentionally relaxes what is returned when querying for "overlay", by returning both types of overlays.
+        # This way the frontend doesn't have to know which type of overlay, regular or tcf, just that it is an overlay.
         component_search_map: Dict = {
             ComponentType.overlay: [ComponentType.overlay, ComponentType.tcf_overlay]
         }
