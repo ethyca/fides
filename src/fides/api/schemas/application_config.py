@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Pattern
 
-from pydantic import Extra, root_validator, validator
+from pydantic import AnyUrl, Extra, Field, root_validator, validator
 
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.messaging.messaging import MessagingServiceType
@@ -67,6 +67,20 @@ class ExecutionApplicationConfig(FidesSchema):
         extra = Extra.forbid
 
 
+class SecurityApplicationConfig(FidesSchema):
+    cors_origins: List[AnyUrl] = Field(
+        default_factory=list,
+        description="A list of client addresses allowed to communicate with the Fides webserver.",
+    )
+    cors_origin_regex: Optional[Pattern] = Field(
+        default=None,
+        description="A regex pattern used to set the CORS origin allowlist.",
+    )
+
+    class Config:
+        extra = Extra.forbid
+
+
 class ApplicationConfig(FidesSchema):
     """
     Application config settings update body is an arbitrary dict (JSON object)
@@ -79,6 +93,7 @@ class ApplicationConfig(FidesSchema):
     storage: Optional[StorageApplicationConfig]
     notifications: Optional[NotificationApplicationConfig]
     execution: Optional[ExecutionApplicationConfig]
+    security: Optional[SecurityApplicationConfig]
 
     @root_validator(pre=True)
     def validate_not_empty(cls, values: Dict) -> Dict:

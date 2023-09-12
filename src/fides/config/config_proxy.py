@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, List, Optional, Pattern
 
+from pydantic import AnyUrl
 from sqlalchemy.orm import Session
 
 from fides.api.models.application_config import ApplicationConfig
@@ -60,6 +61,13 @@ class StorageSettingsProxy(ConfigProxyBase):
     active_default_storage_type: StorageType
 
 
+class SecuritySettingsProxy(ConfigProxyBase):
+    prefix = "security"
+
+    cors_origins: List[AnyUrl]
+    cors_origins_regex: Optional[Pattern]
+
+
 class ConfigProxy:
     """
     ConfigProxy instances allow access to "resolved" config properties
@@ -85,3 +93,4 @@ class ConfigProxy:
         self.notifications = NotificationSettingsProxy(db)
         self.execution = ExecutionSettingsProxy(db)
         self.storage = StorageSettingsProxy(db)
+        self.security = SecuritySettingsProxy(db)
