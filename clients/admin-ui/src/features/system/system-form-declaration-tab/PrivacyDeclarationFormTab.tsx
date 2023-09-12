@@ -256,7 +256,7 @@ const PrivacyDeclarationFormTab = ({
   }, [system.fides_key]);
 
   return (
-    <Stack spacing={6}>
+    <Stack spacing={6} data-testid="data-use-tab">
       {system.privacy_declarations.length === 0 ? (
         <EmptyTableState
           title="You don't have a data use set up for this system yet."

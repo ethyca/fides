@@ -1,4 +1,5 @@
 import {
+  // stubDictSystemCrud,
   stubPlus,
   stubSystemCrud,
   stubTaxonomyEntities,
@@ -42,6 +43,40 @@ describe("System management with Plus features", () => {
       cy.getSelectValueContainer("input-meta.vendor.id").contains(
         "Jaduda GmbH"
       );
+    });
+
+    it("can populate from dictionary", () => {
+      // stubDictSystemCrud();
+      cy.wait("@getSystems");
+      cy.selectOption("input-meta.vendor.id", "Anzu Virtual Reality LTD");
+      cy.getByTestId("dict-suggestions-btn").click();
+      cy.getByTestId("toggle-dict-suggestions").click();
+      cy.getByTestId("save-btn").click();
+      cy.intercept({ method: "PUT", url: "/api/v1/system*" }).as(
+        "putDictSystem"
+      );
+      cy.wait("@putDictSystem");
+      // cy.intercept({ method: "GET", url: "/api/v1/system*" }).as(
+      //   "getDictSystem"
+      // );
+      // cy.wait("@getDictSystem");
+      cy.getByTestId("input-dpo").should("have.value", "info.anzu.io");
+    });
+
+    // some DictSuggestionTextInputs don't get populated right, causing
+    // the form to be mistakenly marked as dirty and the "unsaved changes"
+    // modal to pop up incorrectly when switching tabs
+    it("can switch between tabs after populating from dictionary", () => {
+      cy.wait("@getSystem");
+      cy.selectOption("input-meta.vendor.id", "Anzu Virtual Reality LTD");
+      cy.getByTestId("dict-suggestions-btn").click();
+      cy.getByTestId("toggle-dict-suggestions").click();
+      cy.getByTestId("save-btn").click();
+      cy.wait("@putDictSystem");
+      cy.wait("@getDictSystem");
+      cy.getByTestId("input-dpo").should("have.value", "info@anzu.io");
+      cy.getByTestId("tab-Data uses").click();
+      cy.getByTestId("data-use-tab").should("exist");
     });
   });
 

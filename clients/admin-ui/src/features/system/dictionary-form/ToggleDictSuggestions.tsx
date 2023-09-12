@@ -59,9 +59,11 @@ export const DictSuggestionToggle = () => {
               : "gray.200",
         }}
         disabled={!vendorId}
+        data-testid="dict-suggestions-btn"
       />
       <MenuList>
         <MenuItem
+          data-testid="toggle-dict-suggestions"
           onClick={() => {
             dispatch(toggleSuggestions());
           }}

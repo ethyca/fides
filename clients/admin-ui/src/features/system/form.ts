@@ -60,6 +60,9 @@ export const transformSystemToFormValues = (
     },
     customFieldValues,
     privacy_policy: system.privacy_policy ? system.privacy_policy : "",
+    data_security_practices: system.data_security_practices
+      ? system.data_security_practices
+      : "",
     data_stewards: dataStewards,
   };
 };
