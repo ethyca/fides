@@ -11,7 +11,7 @@ import {
   Spacer,
 } from "@fidesui/react";
 
-import { SystemHistory } from "~/types/api/models/SystemHistory";
+import { SystemHistoryResponse } from "~/types/api";
 
 import SelectedHistoryProvider from "./SelectedHistoryContext";
 import SystemDataForm from "./SystemDataForm";
@@ -42,13 +42,13 @@ const getBadges = (before: Record<string, any>, after: Record<string, any>) => {
 };
 
 interface Props {
-  selectedHistory: SystemHistory;
+  selectedHistory: SystemHistoryResponse;
   isOpen: boolean;
   onClose: () => void;
 }
 
 const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
-  <Modal isOpen={isOpen} onClose={onClose} size="3xl">
+  <Modal isOpen={isOpen} onClose={onClose} size="4xl">
     <ModalOverlay />
     <ModalContent>
       <ModalHeader

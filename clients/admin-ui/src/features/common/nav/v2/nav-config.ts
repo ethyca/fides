@@ -9,6 +9,7 @@ export type NavConfigRoute = {
   exact?: boolean;
   requiresPlus?: boolean;
   requiresFlag?: FlagNames;
+  requiresFidesCloud?: boolean;
   /** This route is only available if the user has ANY of these scopes */
   scopes: ScopeRegistryEnum[];
   /** Child routes which will be rendered in the side nav */
@@ -158,6 +159,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
       {
+        title: "DNS Records",
+        path: routes.DNS_RECORDS_ROUTE,
+        requiresPlus: true,
+        requiresFidesCloud: true,
+        scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
+      },
+      {
         title: "About Fides",
         path: routes.ABOUT_ROUTE,
         scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features
@@ -238,6 +246,7 @@ interface ConfigureNavProps {
   config: NavConfigGroup[];
   userScopes: ScopeRegistryEnum[];
   hasPlus?: boolean;
+  hasFidesCloud?: boolean;
   flags?: Record<string, boolean>;
 }
 
@@ -246,6 +255,7 @@ const configureNavRoute = ({
   hasPlus,
   flags,
   userScopes,
+  hasFidesCloud,
   navGroupTitle,
 }: Omit<ConfigureNavProps, "config"> & {
   route: NavConfigRoute;
@@ -254,6 +264,12 @@ const configureNavRoute = ({
   // If the target route would require plus in a non-plus environment,
   // exclude it from the group.
   if (route.requiresPlus && !hasPlus) {
+    return undefined;
+  }
+
+  // If the target route would require fides cloud in a non-fides-cloud environment,
+  // exclude it from the group.
+  if (route.requiresFidesCloud && !hasFidesCloud) {
     return undefined;
   }
 
@@ -277,6 +293,7 @@ const configureNavRoute = ({
         userScopes,
         hasPlus,
         flags,
+        hasFidesCloud,
         navGroupTitle,
       });
       if (configuredChildRoute) {
@@ -299,10 +316,10 @@ export const configureNavGroups = ({
   config,
   userScopes,
   hasPlus = false,
+  hasFidesCloud = false,
   flags,
 }: ConfigureNavProps): NavGroup[] => {
   const navGroups: NavGroup[] = [];
-
   config.forEach((group) => {
     // if no nav routes are scoped for the user or all require plus
     if (
@@ -324,6 +341,7 @@ export const configureNavGroups = ({
         hasPlus,
         flags,
         userScopes,
+        hasFidesCloud,
         navGroupTitle: group.title,
       });
       if (routeConfig) {

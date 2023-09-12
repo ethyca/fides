@@ -14,8 +14,7 @@ import React, { useState } from "react";
 import NextArrow from "~/features/common/Icon/NextArrow";
 import PrevArrow from "~/features/common/Icon/PrevArrow";
 import { useGetSystemHistoryQuery } from "~/features/plus/plus.slice";
-import { PrivacyDeclaration } from "~/types/api";
-import { SystemHistory } from "~/types/api/models/SystemHistory";
+import { PrivacyDeclaration, SystemHistoryResponse } from "~/types/api";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
 import SystemHistoryModal from "./modal/SystemHistoryModal";
@@ -82,13 +81,12 @@ const SystemHistoryTable = ({ system }: Props) => {
     size: itemsPerPage,
   });
   const [isModalOpen, setModalOpen] = useState(false);
-  const [selectedHistory, setSelectedHistory] = useState<SystemHistory | null>(
-    null
-  );
+  const [selectedHistory, setSelectedHistory] =
+    useState<SystemHistoryResponse | null>(null);
 
   const systemHistories = data?.items || [];
 
-  const openModal = (history: SystemHistory) => {
+  const openModal = (history: SystemHistoryResponse) => {
     // Align the privacy_declarations arrays
     const beforePrivacyDeclarations =
       history?.before?.privacy_declarations || [];
@@ -123,7 +121,7 @@ const SystemHistoryTable = ({ system }: Props) => {
     setSelectedHistory(null);
   };
 
-  const describeSystemChange = (history: SystemHistory) => {
+  const describeSystemChange = (history: SystemHistoryResponse) => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { edited_by, before, after, created_at } = history;
 

@@ -142,6 +142,7 @@ class PrivacyNoticeResponse(PrivacyNoticeWithId):
     version: float
     privacy_notice_history_id: str
     cookies: List[CookieSchema]
+    systems_applicable: bool = False
 
 
 class PrivacyNoticeResponseWithUserPreferences(PrivacyNoticeResponse):

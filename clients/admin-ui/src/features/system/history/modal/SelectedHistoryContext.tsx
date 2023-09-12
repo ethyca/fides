@@ -1,11 +1,11 @@
 import React, { createContext, ReactNode, useContext, useMemo } from "react";
 
-import { SystemHistory } from "~/types/api/models/SystemHistory";
+import { SystemHistoryResponse } from "~/types/api";
 
 type FormType = "before" | "after";
 
 interface SelectedHistoryContextProps {
-  selectedHistory: SystemHistory | null;
+  selectedHistory: SystemHistoryResponse | null;
   formType: FormType;
 }
 
@@ -16,7 +16,7 @@ export const useSelectedHistory = () => useContext(SelectedHistoryContext)!;
 
 interface SelectedHistoryProviderProps {
   children: ReactNode;
-  selectedHistory: SystemHistory | null;
+  selectedHistory: SystemHistoryResponse | null;
   formType: FormType;
 }
 
