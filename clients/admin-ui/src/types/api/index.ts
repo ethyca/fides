@@ -51,6 +51,7 @@ export type { ClassifyStatusUpdatePayload } from "./models/ClassifyStatusUpdateP
 export type { ClassifySystem } from "./models/ClassifySystem";
 export type { ClientConfig } from "./models/ClientConfig";
 export type { ClientCreatedResponse } from "./models/ClientCreatedResponse";
+export type { CloudConfig } from "./models/CloudConfig";
 export { ClusterHealth } from "./models/ClusterHealth";
 export type { CollectionAddressResponse } from "./models/CollectionAddressResponse";
 export type { CollectionMeta } from "./models/CollectionMeta";
@@ -133,6 +134,7 @@ export type { ExternalDatasetReference } from "./models/ExternalDatasetReference
 export type { fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds } from "./models/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds";
 export type { fides__api__schemas__policy__Policy } from "./models/fides__api__schemas__policy__Policy";
 export type { fides__connectors__models__KeyfileCreds } from "./models/fides__connectors__models__KeyfileCreds";
+export type { FidesCloudStatus } from "./models/FidesCloudStatus";
 export type { FidesDatasetReference } from "./models/FidesDatasetReference";
 export type { FidesDocsSchema } from "./models/FidesDocsSchema";
 export type { fideslang__models__Policy } from "./models/fideslang__models__Policy";
@@ -208,6 +210,7 @@ export type { Page_PrivacyNoticeResponse_ } from "./models/Page_PrivacyNoticeRes
 export type { Page_RuleResponseWithTargets_ } from "./models/Page_RuleResponseWithTargets_";
 export type { Page_RuleTarget_ } from "./models/Page_RuleTarget_";
 export type { Page_StorageDestinationResponse_ } from "./models/Page_StorageDestinationResponse_";
+export type { Page_SystemHistoryResponse_ } from "./models/Page_SystemHistoryResponse_";
 export type { Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__ } from "./models/Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__";
 export type { Page_UserResponse_ } from "./models/Page_UserResponse_";
 export type { ParamValue } from "./models/ParamValue";
@@ -289,6 +292,7 @@ export { StorageType } from "./models/StorageType";
 export { StorageTypeApiAccepted } from "./models/StorageTypeApiAccepted";
 export type { Strategy } from "./models/Strategy";
 export type { System } from "./models/System";
+export type { SystemHistoryResponse } from "./models/SystemHistoryResponse";
 export type { SystemMetadata } from "./models/SystemMetadata";
 export type { SystemResponse } from "./models/SystemResponse";
 export type { SystemScanHistory } from "./models/SystemScanHistory";

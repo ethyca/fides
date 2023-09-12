@@ -9,4 +9,5 @@ export type Page_Dataset_ = {
   total: number;
   page: number;
   size: number;
+  pages?: number;
 };
