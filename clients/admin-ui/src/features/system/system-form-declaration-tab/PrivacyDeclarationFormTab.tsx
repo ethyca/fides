@@ -233,13 +233,12 @@ const PrivacyDeclarationFormTab = ({
     handleCloseDictModal();
   };
 
-  const handleSubmit = (values: PrivacyDeclarationResponse) => {
+  const handleSubmit = async (values: PrivacyDeclarationResponse) => {
     handleCloseForm();
     if (currentDeclaration) {
-      handleEditDeclaration(currentDeclaration, values);
-    } else {
-      handleCreateDeclaration(values);
+      return handleEditDeclaration(currentDeclaration, values);
     }
+    return handleCreateDeclaration(values);
   };
 
   const handleDelete = async (
@@ -265,7 +264,7 @@ const PrivacyDeclarationFormTab = ({
           dictAvailable={features.dictionaryService}
           handleAdd={handleOpenNewForm}
           handleDictSuggestion={handleOpenDictModal}
-          vendorSelected={!!system.meta.vendor}
+          vendorSelected={!!system.vendor_id}
         />
       ) : (
         <PrivacyDeclarationDisplayGroup
@@ -300,23 +299,26 @@ const PrivacyDeclarationFormTab = ({
           initialValues={currentDeclaration}
           onSubmit={handleSubmit}
           onCancel={handleCloseForm}
+          includeCustomFields={includeCustomFields}
           {...dataProps}
         />
       </PrivacyDeclarationFormModal>
-      <PrivacyDeclarationFormModal
-        isOpen={showDictionaryModal}
-        onClose={handleCloseDictModal}
-        isCentered
-        heading="Compass suggestions"
-      >
-        <PrivacyDeclarationDictModalComponents
-          alreadyHasDataUses={system.privacy_declarations.length > 0}
-          allDataUses={dataProps.allDataUses}
-          onCancel={handleCloseDictModal}
-          onAccept={handleAcceptDictSuggestions}
-          vendorId={system.meta?.vendor?.id ? system.meta.vendor.id : undefined}
-        />
-      </PrivacyDeclarationFormModal>
+      {system.vendor_id ? (
+        <PrivacyDeclarationFormModal
+          isOpen={showDictionaryModal}
+          onClose={handleCloseDictModal}
+          isCentered
+          heading="Compass suggestions"
+        >
+          <PrivacyDeclarationDictModalComponents
+            alreadyHasDataUses={system.privacy_declarations.length > 0}
+            allDataUses={dataProps.allDataUses}
+            onCancel={handleCloseDictModal}
+            onAccept={handleAcceptDictSuggestions}
+            vendorId={Number(system.vendor_id)}
+          />
+        </PrivacyDeclarationFormModal>
+      ) : null}
     </Stack>
   );
 };

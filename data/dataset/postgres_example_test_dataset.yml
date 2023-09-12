@@ -215,6 +215,8 @@ dataset:
             data_categories: [system.operations]
 
       - name: visit
+        fides_meta:
+          skip_processing: True
         fields:
           - name: email
             data_categories: [user.contact.email]
