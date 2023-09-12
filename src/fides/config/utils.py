@@ -67,7 +67,6 @@ CONFIG_KEY_ALLOWLIST = {
     ],
     "security": [
         "cors_origins",
-        "cors_origin_regex",
         "encoding",
         "oauth_access_token_expire_minutes",
     ],

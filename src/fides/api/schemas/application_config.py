@@ -72,10 +72,6 @@ class SecurityApplicationConfig(FidesSchema):
         default_factory=list,
         description="A list of client addresses allowed to communicate with the Fides webserver.",
     )
-    cors_origin_regex: Optional[Pattern] = Field(
-        default=None,
-        description="A regex pattern used to set the CORS origin allowlist.",
-    )
 
     class Config:
         extra = Extra.forbid

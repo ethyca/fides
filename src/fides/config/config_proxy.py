@@ -65,7 +65,6 @@ class SecuritySettingsProxy(ConfigProxyBase):
     prefix = "security"
 
     cors_origins: List[AnyUrl]
-    cors_origins_regex: Optional[Pattern]
 
 
 class ConfigProxy:
