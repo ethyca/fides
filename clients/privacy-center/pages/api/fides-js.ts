@@ -135,12 +135,12 @@ export default async function handler(
   const script = `
   (function () {
     // This polyfill service adds a fetch polyfill only when needed, depending on browser making the request 
-    if (window.fetch) {} else {
+    if (!window.fetch) {
       var script = document.createElement('script');
       script.src = 'https://polyfill.io/v3/polyfill.min.js?features=fetch';
       document.head.appendChild(script);
     }
-    
+
     // Include generic fides.js script
     ${fidesJS}
 
