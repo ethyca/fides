@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Optional, Pattern
+from typing import Any, List, Optional
 
 from pydantic import AnyUrl
 from sqlalchemy.orm import Session

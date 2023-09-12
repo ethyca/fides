@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Dict, List, Optional, Pattern
+from typing import Dict, List, Optional
 
 from pydantic import AnyUrl, Extra, Field, root_validator, validator
 
