@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import Any
+from starlette.middleware.cors import CORSMiddleware
+
+from typing import Any, Generator
 
 import pytest
 from sqlalchemy.orm import Session
@@ -11,6 +13,24 @@ from fides.api.oauth.roles import CONTRIBUTOR, OWNER, VIEWER
 from fides.api.schemas.storage.storage import StorageType
 from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
+from fides.api.main import app
+
+
+@pytest.fixture(scope="function")
+def cors_middleware() -> Generator:
+    cors_middleware = None
+
+    for mw in app.user_middleware:
+        if mw.cls is CORSMiddleware:
+            cors_middleware = mw
+
+    assert cors_middleware is not None
+
+    initial_cors_domains = [*cors_middleware.options.get("allow_origins")]
+
+    yield cors_middleware, initial_cors_domains
+
+    cors_middleware.options["allow_origins"] = initial_cors_domains
 
 
 class TestPatchApplicationConfig:
@@ -31,6 +51,13 @@ class TestPatchApplicationConfig:
             "execution": {
                 "subject_identity_verification_required": True,
                 "require_manual_request_approval": True,
+            },
+            "security": {
+                "cors_origins": [
+                    "http://acme1.example.com",
+                    "http://acme2.example.com",
+                    "http://acme3.example.com",
+                ]
             },
         }
 
@@ -170,6 +197,7 @@ class TestPatchApplicationConfig:
         assert db_settings.api_set["storage"] == payload["storage"]
         assert db_settings.api_set["execution"] == payload["execution"]
         assert db_settings.api_set["notifications"] == payload["notifications"]
+        assert db_settings.api_set["security"] == payload["security"]
 
         # try PATCHing a single property
         updated_payload = {"storage": {"active_default_storage_type": "local"}}
@@ -190,6 +218,7 @@ class TestPatchApplicationConfig:
         # but other properties were not impacted
         assert db_settings.api_set["execution"] == payload["execution"]
         assert db_settings.api_set["notifications"] == payload["notifications"]
+        assert db_settings.api_set["security"] == payload["security"]
 
         # try PATCHing multiple properties in the same nested object
         updated_payload = {
@@ -223,6 +252,7 @@ class TestPatchApplicationConfig:
             response_settings["notifications"]["send_request_receipt_notification"]
             is True
         )
+        assert db_settings.api_set["security"] == payload["security"]
 
         db.refresh(db_settings)
         # ensure property was updated on backend
@@ -244,6 +274,7 @@ class TestPatchApplicationConfig:
             db_settings.api_set["notifications"]["send_request_receipt_notification"]
             is True
         )
+        assert db_settings.api_set["security"] == payload["security"]
 
     def test_patch_application_config_notifications_properties(
         self,
@@ -269,6 +300,29 @@ class TestPatchApplicationConfig:
         # this should look exactly like the payload - no additional properties
         assert db_settings.api_set["notifications"] == payload["notifications"]
         assert "execution" not in db_settings.api_set
+
+    def test_patch_application_config_updates_cors_domains_in_middleware(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        payload,
+        cors_middleware,
+        db: Session,
+    ):
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 200
+        
+        assert set(cors_middleware[0].options["allow_origins"]) == set(
+            [*cors_middleware[1], *payload["security"]["cors_origins"]]
+        )
+
+        # this should look exactly like the payload - no additional properties
 
     def test_patch_application_config_invalid_notification_type(
         self,
@@ -297,7 +351,16 @@ class TestGetApplicationConfigApiSet:
 
     @pytest.fixture(scope="function")
     def payload(self):
-        return {"storage": {"active_default_storage_type": StorageType.s3.value}}
+        return {
+            "storage": {"active_default_storage_type": StorageType.s3.value},
+            "security": {
+                "cors_origins": [
+                    "http://acme1.example.com",
+                    "http://acme2.example.com",
+                    "http://acme3.example.com",
+                ]
+            },
+        }
 
     @pytest.fixture(scope="function")
     def payload_single_notification_property(self):
@@ -361,6 +424,7 @@ class TestGetApplicationConfigApiSet:
             response_settings["storage"]["active_default_storage_type"]
             == payload["storage"]["active_default_storage_type"]
         )
+        assert response_settings["security"] == payload["security"]
 
         # now PATCH in a single notification property
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
@@ -410,6 +474,13 @@ class TestDeleteApplicationConfig:
             "execution": {
                 "subject_identity_verification_required": True,
                 "require_manual_request_approval": True,
+            },
+            "security": {
+                "cors_origins": [
+                    "http://acme1.example.com",
+                    "http://acme2.example.com",
+                    "http://acme3.example.com",
+                ]
             },
         }
 
@@ -538,6 +609,33 @@ class TestDeleteApplicationConfig:
         assert response.status_code == 200
         response_settings = response.json()
         assert response_settings == {}
+
+    def test_reset_removes_all_cors_domain_from_middleware(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db: Session,
+        cors_middleware,
+        payload,
+    ):
+        assert len(cors_middleware[1]) > 0
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 200
+
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        response = api_client.delete(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+
+        assert len(cors_middleware[0].options.get("allow_origins")) == 0
 
 
 class TestGetConnections:

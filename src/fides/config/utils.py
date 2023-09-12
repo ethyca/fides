@@ -1,4 +1,7 @@
 from os import getenv
+from typing import List
+
+from starlette.middleware.cors import CORSMiddleware
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 DEFAULT_CONFIG_PATH_ENV_VAR = "FIDES__CONFIG_PATH"
@@ -81,3 +84,17 @@ CONFIG_KEY_ALLOWLIST = {
         "active_default_storage_type",
     ],
 }
+
+
+def load_updated_cors_domains(domains: List[str], resetDomains=False) -> None:
+    from fides.api.main import app
+
+    for mw in app.user_middleware:
+        if mw.cls is CORSMiddleware:
+            if resetDomains:
+                mw.options["allow_origins"] = domains
+                break
+
+            origins = set(mw.options.get("allow_origins", []))
+            origins.update([str(domain) for domain in domains])
+            mw.options["allow_origins"] = list(origins)
