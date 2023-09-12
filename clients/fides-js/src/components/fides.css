@@ -354,7 +354,7 @@ div#fides-modal .fides-modal-button-group {
   --offset: 0.1em;
   --diameter: 1em;
 
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   justify-content: space-around;
 
