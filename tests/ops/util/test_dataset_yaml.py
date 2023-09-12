@@ -394,6 +394,8 @@ skip_processing_invalid_yaml = """dataset:
 
 class TestConvertDatasetToGraphSkipProcessing:
     def test_collection_skip_processing(self):
+        """A skip_processing flag at collection > fides_meta causes the collection
+        to be ignored in convert_dataset_to_graph"""
         dataset = __to_dataset__(skip_processing_yaml)
         ds = Dataset.parse_obj(dataset)
         converted_dataset = convert_dataset_to_graph(ds, "ignore")
@@ -404,7 +406,7 @@ class TestConvertDatasetToGraphSkipProcessing:
         assert DatasetGraph(converted_dataset)
 
     def test_invalid_collection_skip_processing(self):
-        """Skipping a collection that shouldn't be skipped is not picked in convert_dataset_to_graph, but
+        """Skipping a collection that shouldn't be skipped is not picked up in convert_dataset_to_graph, but
         downstream when DatasetGraph is instantiated"""
         dataset = __to_dataset__(skip_processing_invalid_yaml)
         ds = Dataset.parse_obj(dataset)

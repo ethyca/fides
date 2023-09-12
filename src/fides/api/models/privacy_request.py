@@ -532,8 +532,8 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     ) -> Optional[CheckpointActionRequired]:
         """Get details about the failed step (access or erasure) and collection that triggered failure.
 
-        The failed step lets us know if we should resume privacy request execution from the "access" or the "erasure"
-        portion of the privacy request flow.
+        If DSR processing failed within the graph, this will let us know if we should resume privacy request execution
+        from the "access" or "erasure" portion of the privacy request flow.
         """
         return get_action_required_details(cached_key=f"EN_FAILED_LOCATION__{self.id}")
 

@@ -1732,12 +1732,20 @@ def _process_privacy_request_restart(
     failed_collection: Optional[CollectionAddress],
     db: Session,
 ) -> PrivacyRequestResponse:
-    logger.info(
-        "Restarting failed privacy request '{}' from '{} step, 'collection '{}'",
-        privacy_request.id,
-        failed_step,
-        failed_collection,
-    )
+    """If failed_step and failed_collection are provided, restart the DSR within that step. Otherwise,
+    restart the privacy request from the beginning."""
+    if failed_step and failed_collection:
+        logger.info(
+            "Restarting failed privacy request '{}' from '{} step, 'collection '{}'",
+            privacy_request.id,
+            failed_step,
+            failed_collection,
+        )
+    else:
+        logger.info(
+            "Restarting failed privacy request '{}' from the beginning",
+            privacy_request.id,
+        )
 
     privacy_request.status = PrivacyRequestStatus.in_processing
     privacy_request.save(db=db)
