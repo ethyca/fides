@@ -102,7 +102,7 @@ describe("Smoke test", () => {
         cy.getRadio("false").should("not.be.checked");
       }
     );
-    cy.getByTestId(`consent-item-improve`).within(() => {
+    cy.getByTestId(`consent-item-functional`).within(() => {
       cy.contains("Product Analytics");
       cy.getRadio("true").should("be.checked");
       cy.getRadio("false").should("not.be.checked");
