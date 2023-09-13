@@ -305,7 +305,7 @@ class TestShouldOptIntoService:
 
         privacy_request_with_consent_policy.consent_preferences = [
             {"data_use": "marketing.advertising", "opt_in": True},
-            {"data_use": "improve", "opt_in": False},
+            {"data_use": "functional", "opt_in": False},
         ]
         collapsed_opt_in_preference, filtered_preferences = should_opt_in_to_service(
             system, privacy_request_with_consent_policy
@@ -931,7 +931,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     name="B",
                     regions=["it"],
                     consent_mechanism=ConsentMechanism.opt_in,
-                    data_uses=["improve"],
+                    data_uses=["functional"],
                     enforcement_level=EnforcementLevel.frontend,
                     disabled=True,
                     displayed_in_overlay=True,
@@ -955,7 +955,7 @@ class TestUpsertPrivacyNoticeTemplates:
         assert second_template.name == "B"
         assert second_template.regions == [PrivacyNoticeRegion.it]
         assert second_template.consent_mechanism == ConsentMechanism.opt_in
-        assert second_template.data_uses == ["improve"]
+        assert second_template.data_uses == ["functional"]
         assert second_template.enforcement_level == EnforcementLevel.frontend
         assert second_template.disabled
 
@@ -979,7 +979,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     name="C",
                     regions=["it"],
                     consent_mechanism=ConsentMechanism.opt_out,
-                    data_uses=["improve"],
+                    data_uses=["functional"],
                     enforcement_level=EnforcementLevel.system_wide,
                     disabled=False,
                     displayed_in_overlay=True,
@@ -1018,7 +1018,7 @@ class TestUpsertPrivacyNoticeTemplates:
         assert third_template.name == "C"
         assert third_template.regions == [PrivacyNoticeRegion.it]
         assert third_template.consent_mechanism == ConsentMechanism.opt_out
-        assert third_template.data_uses == ["improve"]
+        assert third_template.data_uses == ["functional"]
         assert third_template.enforcement_level == EnforcementLevel.system_wide
         assert not third_template.disabled
 
@@ -1196,7 +1196,6 @@ class TestValidateDataUses:
                 name="New data use",
                 description="A test data use",
                 parent_key=None,
-                is_default=True,
             ).dict(),
         )
 

@@ -18,6 +18,7 @@ describe("Smoke test", () => {
     cy.getByTestId("card").contains("Access your data").click();
     cy.getByTestId("privacy-request-form").within(() => {
       cy.get("input#email").type("jenny@example.com");
+      cy.get("input#first_name").type("Jenny");
       cy.get("button").contains("Continue").click();
     });
 
@@ -102,7 +103,7 @@ describe("Smoke test", () => {
         cy.getRadio("false").should("not.be.checked");
       }
     );
-    cy.getByTestId(`consent-item-improve`).within(() => {
+    cy.getByTestId(`consent-item-functional`).within(() => {
       cy.contains("Product Analytics");
       cy.getRadio("true").should("be.checked");
       cy.getRadio("false").should("not.be.checked");

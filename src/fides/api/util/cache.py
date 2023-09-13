@@ -202,6 +202,13 @@ def get_identity_cache_key(privacy_request_id: str, identity_attribute: str) -> 
     return f"id-{privacy_request_id}-identity-{identity_attribute}"
 
 
+def get_custom_privacy_request_field_cache_key(
+    privacy_request_id: str, custom_privacy_request_field: str
+) -> str:
+    """Return the key at which to save this PrivacyRequest's custom field"""
+    return f"id-{privacy_request_id}-custom-privacy-request-field-{custom_privacy_request_field}"
+
+
 def get_drp_request_body_cache_key(
     privacy_request_id: str, identity_attribute: str
 ) -> str:

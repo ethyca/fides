@@ -75,7 +75,7 @@ const RequestTable = ({ revealPII }: RequestTableProps) => {
       <Table size="sm" data-testid="privacy-request-table">
         <Thead>
           <Tr>
-            <Th px={0}>
+            <Th px={2}>
               <Checkbox
                 aria-label="Select all"
                 isChecked={checkAll}

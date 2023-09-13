@@ -256,6 +256,7 @@ def privacy_request_csv_download(
             "Status",
             "Request Type",
             "Subject Identity",
+            "Custom Privacy Request Fields",
             "Time Received",
             "Reviewed By",
             "Request ID",
@@ -284,6 +285,7 @@ def privacy_request_csv_download(
                 pr.status.value if pr.status else None,
                 pr.policy.rules[0].action_type if len(pr.policy.rules) > 0 else None,
                 pr.get_persisted_identity().dict(),
+                pr.get_persisted_custom_privacy_request_fields(),
                 pr.created_at,
                 pr.reviewed_by,
                 pr.id,
@@ -551,6 +553,7 @@ def get_request_status(
     action_type: Optional[ActionType] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
+    include_custom_privacy_request_fields: Optional[bool] = False,
     download_csv: Optional[bool] = False,
     sort_field: str = "created_at",
     sort_direction: ColumnSort = ColumnSort.DESC,
@@ -601,15 +604,17 @@ def get_request_status(
         PrivacyRequest.execution_and_audit_logs_by_dataset = property(lambda self: None)
 
     paginated = paginate(query, params)
-    if include_identities:
-        # Conditionally include the cached identity data in the response if
-        # it is explicitly requested
-        for item in paginated.items:  # type: ignore
+
+    for item in paginated.items:  # type: ignore
+        if include_identities:
             item.identity = item.get_persisted_identity().dict()
-            attach_resume_instructions(item)
-    else:
-        for item in paginated.items:  # type: ignore
-            attach_resume_instructions(item)
+
+        if include_custom_privacy_request_fields:
+            item.custom_privacy_request_fields = (
+                item.get_persisted_custom_privacy_request_fields()
+            )
+
+        attach_resume_instructions(item)
 
     return paginated
 
@@ -1260,9 +1265,15 @@ def approve_privacy_request(
 
     def _approve_request(privacy_request: PrivacyRequest) -> None:
         """Method for how to process requests - approved"""
+        now = datetime.utcnow()
         privacy_request.status = PrivacyRequestStatus.approved
-        privacy_request.reviewed_at = datetime.utcnow()
+        privacy_request.reviewed_at = now
         privacy_request.reviewed_by = user_id
+        # for now, the reviewer will be marked as the approver of the custom privacy request fields
+        # this is to make it flexible in the future if we want to allow a different user to approve
+        if privacy_request.custom_fields:  # type: ignore[attr-defined]
+            privacy_request.custom_privacy_request_fields_approved_at = now
+            privacy_request.custom_privacy_request_fields_approved_by = user_id
         privacy_request.save(db=db)
         AuditLog.create(
             db=db,
@@ -1650,6 +1661,10 @@ def create_privacy_request_func(
             privacy_request.persist_identity(
                 db=db, identity=privacy_request_data.identity
             )
+            privacy_request.persist_custom_privacy_request_fields(
+                db=db,
+                custom_privacy_request_fields=privacy_request_data.custom_privacy_request_fields,
+            )
             for privacy_preference in privacy_preferences:
                 privacy_preference.privacy_request_id = privacy_request.id
                 privacy_preference.save(db=db)
@@ -1660,6 +1675,7 @@ def create_privacy_request_func(
                 privacy_request_data.identity,
                 privacy_request_data.encryption_key,
                 None,
+                privacy_request_data.custom_privacy_request_fields,
             )
 
             check_and_dispatch_error_notifications(db=db)
@@ -1720,6 +1736,8 @@ def create_privacy_request_func(
         else:
             created.append(privacy_request)
 
+    # TODO: Don't return a 200 if there are failed requests, or at least not
+    # if there are zero successful ones
     return BulkPostPrivacyRequests(
         succeeded=created,
         failed=failed,
