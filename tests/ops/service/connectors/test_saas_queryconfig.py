@@ -14,6 +14,10 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.service.connectors.saas_query_config import SaaSQueryConfig
+from fides.api.util.saas_util import (
+    CUSTOM_PRIVACY_REQUEST_FIELDS,
+    FIDESOPS_GROUPED_INPUTS,
+)
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import generate_node
 
@@ -606,6 +610,70 @@ class TestSaaSQueryConfig:
             read_request,
         )
         assert len(prepared_requests) == 0
+
+    @mock.patch(
+        "fides.api.models.privacy_request.PrivacyRequest.get_cached_custom_privacy_request_fields"
+    )
+    @mock.patch(
+        "fides.api.models.privacy_request.PrivacyRequest.get_cached_identity_data"
+    )
+    def test_custom_privacy_request_fields(
+        self,
+        mock_identity_data: Mock,
+        mock_custom_privacy_request_fields: Mock,
+        policy,
+        erasure_policy_string_rewrite,
+        combined_traversal,
+        saas_example_connection_config,
+    ):
+        mock_identity_data.return_value = {"email": "customer-1@example.com"}
+        mock_custom_privacy_request_fields.return_value = {
+            "first_name": "John",
+            "last_name": "Doe",
+        }
+        saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+
+        internal_information = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "internal_information")
+        ]
+
+        config = SaaSQueryConfig(
+            internal_information,
+            endpoints,
+            {},
+            privacy_request=PrivacyRequest(id="123"),
+        )
+
+        read_request: SaaSRequestParams = config.generate_requests(
+            {
+                FIDESOPS_GROUPED_INPUTS: [],
+                "email": ["customer-1@example.com"],
+                CUSTOM_PRIVACY_REQUEST_FIELDS: {
+                    "first_name": "John",
+                    "last_name": "Doe",
+                },
+            },
+            policy,
+            endpoints["internal_information"].requests.read,
+        )[0]
+        assert read_request.method == HTTPMethod.POST.value
+        assert read_request.path == "/v1/internal/"
+        assert read_request.query_params == {"first_name": "John"}
+        assert json.loads(read_request.body) == {
+            "last_name": "Doe",
+            "order_id": None,
+        }
+
+        update_request: SaaSRequestParams = config.generate_update_stmt(
+            {}, erasure_policy_string_rewrite, privacy_request
+        )
+        update_request.method == HTTPMethod.POST.value
+        assert update_request.path == "/v1/internal/"
+        assert update_request.query_params == {}
+        assert json.loads(update_request.body) == {
+            "user_info": {"first_name": "John", "last_name": "Doe"}
+        }
 
 
 class TestGenerateProductList:
