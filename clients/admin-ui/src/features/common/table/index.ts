@@ -9,3 +9,4 @@ export {
 } from "./cells";
 export { FidesTable } from "./FidesTable";
 export { FidesTableFooter } from "./FidesTableFooter";
+export * from "./grouped";

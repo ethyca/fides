@@ -1,10 +1,8 @@
 import { Box, Table, Tbody, Td, Text, Tr } from "@fidesui/react";
 import React, { useContext } from "react";
 
-import {
-  GRAY_BACKGROUND,
-  SYSTEM_FIDES_KEY_COLUMN_ID,
-} from "~/features/datamap/constants";
+import { GRAY_BACKGROUND } from "~/features/common/table";
+import { SYSTEM_FIDES_KEY_COLUMN_ID } from "~/features/datamap/constants";
 import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
 import { SetSelectedSystemId } from "~/features/datamap/types";
 

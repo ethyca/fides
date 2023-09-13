@@ -1,18 +1,8 @@
 import { Box, Text, Th, Thead, Tr } from "@fidesui/react";
 import { HeaderGroup } from "react-table";
 
-import { GRAY_BACKGROUND } from "~/features/datamap/constants";
+import { GRAY_BACKGROUND, HeaderSpacer } from "~/features/common/table";
 import type { DatamapRow } from "~/features/datamap/datamap.slice";
-
-const HeaderSpacer = () => (
-  <Th
-    padding={0}
-    margin={0}
-    width={4}
-    borderBottomColor="gray.200"
-    boxSizing="border-box"
-  />
-);
 
 interface DatamapHeadersProps {
   headerGroups: HeaderGroup<DatamapRow>[];

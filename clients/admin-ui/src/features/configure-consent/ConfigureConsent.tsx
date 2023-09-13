@@ -1,18 +1,10 @@
-import { ButtonGroup, Center, Spinner, Text, VStack } from "@fidesui/react";
+import { Center, Spinner, Text, VStack } from "@fidesui/react";
 
 import EmptyTableState from "~/features/common/table/EmptyTableState";
 import { useGetAllSystemsQuery } from "~/features/system";
 
-import AddCookie from "./AddCookie";
-import AddVendor from "./AddVendor";
+import AddButtons from "./AddButtons";
 import VendorCookieTable from "./VendorCookieTable";
-
-const AddButtons = ({ includeCookies }: { includeCookies?: boolean }) => (
-  <ButtonGroup size="sm" colorScheme="primary">
-    <AddVendor />
-    {includeCookies ? <AddCookie /> : null}
-  </ButtonGroup>
-);
 
 const EmptyStateContent = () => (
   <VStack spacing={4} alignItems="start">

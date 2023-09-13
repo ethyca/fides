@@ -1,59 +1,43 @@
-import { Box, Table, Tbody, Tr, Td, Text, Thead, Th } from "@fidesui/react";
+import {
+  Box,
+  HStack,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "@fidesui/react";
 import { useMemo } from "react";
 import {
   Column,
   useFlexLayout,
+  useGlobalFilter,
   useGroupBy,
   useResizeColumns,
   useTable,
 } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
-import { PaddedCell } from "~/features/common/table";
+import {
+  GRAY_BACKGROUND,
+  HeaderSpacer,
+  PaddedCell,
+} from "~/features/common/table";
+import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
 import { selectAllSystems } from "~/features/system";
-import { Cookies, DataUse, SystemResponse } from "~/types/api";
-import { GRAY_BACKGROUND } from "~/features/datamap/constants";
 
-interface CookieBySystem {
-  id: SystemResponse["fides_key"];
-  name: SystemResponse["name"];
-  dataUse?: string;
-  cookie?: Cookies;
-}
+import AddButtons from "./AddButtons";
+import { DataUseCell } from "./cells";
+import { CookieBySystem, transformSystemsToCookies } from "./vendor-transform";
 
 const VendorCookieTable = () => {
   const systems = useAppSelector(selectAllSystems);
-  const cookiesBySystem = useMemo(() => {
-    const cookiesList: CookieBySystem[] = [];
-    systems.forEach((system) => {
-      let addedCookie = false;
-      const cookiesWithDataUse = system.privacy_declarations
-        .map((dec) => ({ cookies: dec.cookies, dataUse: dec.data_use }))
-        .flat();
-      if (cookiesWithDataUse.length) {
-        cookiesWithDataUse.forEach((cookieWithDataUse) => {
-          const { dataUse, cookies } = cookieWithDataUse;
-          cookies?.forEach((cookie) => {
-            addedCookie = true;
-            cookiesList.push({
-              cookie,
-              name: system.name,
-              id: system.fides_key,
-              dataUse,
-            });
-          });
-        });
-      }
-      // If there were no cookies, we still want to add the system by itself
-      // to the table
-      if (!addedCookie) {
-        cookiesList.push({ name: system.name, id: system.fides_key });
-      }
-    });
-    return cookiesList;
-  }, [systems]);
-
-  console.log({ cookiesBySystem });
+  const cookiesBySystem = useMemo(
+    () => transformSystemsToCookies(systems),
+    [systems]
+  );
 
   const columns: Column<CookieBySystem>[] = useMemo(
     () => [
@@ -61,9 +45,7 @@ const VendorCookieTable = () => {
         Header: "Vendor",
         accessor: "name",
         Cell: PaddedCell,
-        aggregate: (names) => {
-          return names[0];
-        },
+        aggregate: (names) => names[0],
       },
       {
         Header: "Id",
@@ -71,21 +53,14 @@ const VendorCookieTable = () => {
       },
       {
         Header: "Cookie name",
-        accessor: (d) => (d.cookie ? d.cookie.name : "None"),
+        accessor: (d) => (d.cookie ? d.cookie.name : "N/A"),
         Cell: PaddedCell,
       },
       {
         Header: "Data use",
-        accessor: "dataUse",
-        Cell: PaddedCell,
-        aggregate: (uses) => {
-          return uses.join(", ");
-        },
-      },
-      {
-        Header: "Cookie path",
-        accessor: (d) => (d.cookie ? d.cookie.path : "None"),
-        Cell: PaddedCell,
+        accessor: (d) => d.dataUse ?? "N/A",
+        Cell: DataUseCell,
+        aggregate: (uses) => uses.join(", "),
       },
     ],
     []
@@ -96,10 +71,11 @@ const VendorCookieTable = () => {
       columns,
       data: cookiesBySystem,
       initialState: {
-        groupBy: ["id", "name", "Cookie name"],
+        groupBy: ["id"],
         hiddenColumns: ["id"],
       },
     },
+    useGlobalFilter,
     useGroupBy,
     useFlexLayout,
     useResizeColumns
@@ -109,6 +85,14 @@ const VendorCookieTable = () => {
 
   return (
     <Box boxSize="100%" overflow="auto">
+      <HStack mt={2} mb={4} justifyContent="space-between">
+        <GlobalFilter
+          globalFilter={tableInstance.state.globalFilter}
+          setGlobalFilter={tableInstance.setGlobalFilter}
+          placeholder="Search"
+        />
+        <AddButtons includeCookies />
+      </HStack>
       <Table {...getTableProps()} size="sm" data-testid="datamap-table">
         <Thead
           position="sticky"
@@ -121,6 +105,7 @@ const VendorCookieTable = () => {
             const { key, ...headerProps } = headerGroup.getHeaderGroupProps();
             return (
               <Tr key={key} {...headerProps} height="inherit">
+                <HeaderSpacer />
                 {headerGroup.headers.map((column, index) => {
                   const { key: columnKey, ...columnHeaderProps } =
                     column.getHeaderProps();
@@ -161,6 +146,7 @@ const VendorCookieTable = () => {
                     </Th>
                   );
                 })}
+                <HeaderSpacer />
               </Tr>
             );
           })}
@@ -250,18 +236,6 @@ const VendorCookieTable = () => {
       </Table>
     </Box>
   );
-  //   return (
-  //     <FidesTable<CookieBySystem>
-  //       columns={columns}
-  //       data={cookiesBySystem}
-  //       customHooks={[useGroupBy]}
-  //       tableOptions={{
-  //         initialState: {
-  //           groupBy: ["id"],
-  //         },
-  //       }}
-  //     />
-  //   );
 };
 
 export default VendorCookieTable;
