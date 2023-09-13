@@ -213,10 +213,7 @@ dataset:
               primary_key: True
           - name: opened
             data_categories: [system.operations]
-
       - name: visit
-        fides_meta:
-          skip_processing: True
         fields:
           - name: email
             data_categories: [user.contact.email]

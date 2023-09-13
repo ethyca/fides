@@ -590,12 +590,13 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
 
 @pytest.mark.integration
 class TestSkipMarkedCollections:
-    def build_postgres_dataset_graph_with_skipped_collection(
+    def _build_postgres_dataset_graph_with_skipped_collection(
         self,
         example_datasets,
         integration_config,
         skipped_collection_name: Optional[str],
     ):
+        """test helper"""
         dataset_postgres = Dataset(**example_datasets[0])
         if skipped_collection_name:
             skipped_collection = next(
@@ -620,7 +621,7 @@ class TestSkipMarkedCollections:
     ) -> None:
         """Sanity check - nothing marked as skipped. All collections expected in results."""
 
-        postgres_graph = self.build_postgres_dataset_graph_with_skipped_collection(
+        postgres_graph = self._build_postgres_dataset_graph_with_skipped_collection(
             example_datasets, integration_postgres_config, skipped_collection_name=None
         )
 
@@ -650,7 +651,7 @@ class TestSkipMarkedCollections:
     ) -> None:
         """Mark the login collection as skipped.  This collection has no downstream dependencies, so skipping is fine!"""
 
-        postgres_graph = self.build_postgres_dataset_graph_with_skipped_collection(
+        postgres_graph = self._build_postgres_dataset_graph_with_skipped_collection(
             example_datasets,
             integration_postgres_config,
             skipped_collection_name="login",
@@ -688,7 +689,7 @@ class TestSkipMarkedCollections:
         )
 
         with pytest.raises(common_exceptions.ValidationError):
-            postgres_graph = self.build_postgres_dataset_graph_with_skipped_collection(
+            postgres_graph = self._build_postgres_dataset_graph_with_skipped_collection(
                 example_datasets,
                 integration_postgres_config,
                 skipped_collection_name="address",
