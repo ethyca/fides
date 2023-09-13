@@ -31,40 +31,40 @@ def upgrade():
     )
 
     for row in existing_systems:
-        # Locate system > meta > vendor > id if it exists!
+        if row["vendor_id"]:
+            logger.warning(
+                "Skipped migrating system > meta > vendor > id for system {} as vendor_id already exists",
+                row["id"],
+            )
+            continue
+
+        # Locate system > meta > vendor > id if it exists and is in correct format
         meta: Optional[Dict] = row["meta"] or {}
-        if not meta:
+        if not isinstance(meta, dict):
             continue
 
         meta_vendor: Optional[Dict] = meta.get("vendor", {})
-        meta_vendor_id: Optional[str] = None
+        meta_vendor_id: Optional[str] = (
+            meta_vendor.get("id", None)
+            if isinstance(meta_vendor, dict)
+            else None  # Just double checking here
+        )
+        if not meta_vendor_id:
+            continue
 
-        if isinstance(meta_vendor, dict):  # Just double checking
-            meta_vendor_id = meta_vendor.get("id", None)
-
-        existing_vendor_id: Optional[str] = row["vendor_id"]
-
-        # Don't replace it if a value already exists!
-        if meta_vendor_id:
-            if existing_vendor_id:
-                logger.warning(
-                    "Skipped migrating system > meta > vendor > id for system {}",
-                    row["id"],
-                )
-            else:
-                # Also remove the vendor key altogether here
-                meta.pop("vendor")
-                update_vendor_id_query: TextClause = text(
-                    "UPDATE ctl_systems SET vendor_id= :meta_vendor_id, meta=:updated_meta WHERE id= :id"
-                )
-                bind.execute(
-                    update_vendor_id_query,
-                    {
-                        "id": row["id"],
-                        "meta_vendor_id": meta_vendor_id,
-                        "updated_meta": json.dumps(meta),
-                    },
-                )
+        # Migrate vendor_id, and remove "vendor" key from "meta" while we're here
+        meta.pop("vendor")
+        update_vendor_id_query: TextClause = text(
+            "UPDATE ctl_systems SET vendor_id= :meta_vendor_id, meta=:updated_meta WHERE id= :id"
+        )
+        bind.execute(
+            update_vendor_id_query,
+            {
+                "id": row["id"],
+                "meta_vendor_id": str(meta_vendor_id),
+                "updated_meta": json.dumps(meta),
+            },
+        )
 
 
 def downgrade():
