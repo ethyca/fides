@@ -33,6 +33,7 @@ const GroupedTableBody = <T extends object>({
           ml={4}
           mr={4}
           key={row.groupByVal}
+          data-testid={`grouped-row-${row.groupByVal}`}
         >
           <Td
             colSpan={row.cells.length}
@@ -109,6 +110,7 @@ const GroupedTableBody = <T extends object>({
                   borderBottom="none"
                   borderColor="gray.200"
                   padding={0}
+                  data-testid={`subrow-${cellKey}`}
                 >
                   {cell.render("Cell")}
                 </Td>
