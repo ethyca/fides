@@ -11,9 +11,9 @@ const RequestModal: React.FC<RequestModalProps> = ({
   onClose,
   children,
 }) => (
-  <Modal isOpen={isOpen} onClose={onClose}>
+  <Modal isOpen={isOpen} onClose={onClose} isCentered>
     <ModalOverlay />
-    <ModalContent top={[0, "205px"]} maxWidth="464px" mx={5} my={3}>
+    <ModalContent maxWidth="464px" mx={5} my={3}>
       {children}
     </ModalContent>
   </Modal>

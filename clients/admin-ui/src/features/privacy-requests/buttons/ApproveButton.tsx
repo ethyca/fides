@@ -44,6 +44,7 @@ const ApproveButton = forwardRef<ApproveButtonProps, "button">(
           isLoading={isLoading}
           onClose={handleClose}
           onApproveRequest={handleApproveRequest}
+          subjectRequest={subjectRequest}
         />
       </>
     );
