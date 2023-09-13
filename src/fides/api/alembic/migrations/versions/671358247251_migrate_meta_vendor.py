@@ -6,15 +6,15 @@ Create Date: 2023-09-13 20:52:58.425483
 
 """
 import json
-from typing import Optional, Dict
+from typing import Dict, Optional
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
+from loguru import logger
 
 # revision identifiers, used by Alembic.
 from sqlalchemy import text
-from sqlalchemy.engine import ResultProxy, Connection
+from sqlalchemy.engine import Connection, ResultProxy
 from sqlalchemy.sql.elements import TextClause
 
 revision = "671358247251"
@@ -45,20 +45,26 @@ def upgrade():
         existing_vendor_id: Optional[str] = row["vendor_id"]
 
         # Don't replace it if a value already exists!
-        if meta_vendor_id and not existing_vendor_id:
-            # Also remove the vendor key altogether here
-            meta.pop("vendor")
-            update_vendor_id_query: TextClause = text(
-                "UPDATE ctl_systems SET vendor_id= :meta_vendor_id, meta=:updated_meta WHERE id= :id"
-            )
-            bind.execute(
-                update_vendor_id_query,
-                {
-                    "id": row["id"],
-                    "meta_vendor_id": meta_vendor_id,
-                    "updated_meta": json.dumps(meta),
-                },
-            )
+        if meta_vendor_id:
+            if existing_vendor_id:
+                logger.warning(
+                    "Skipped migrating system > meta > vendor > id for system {}",
+                    row["id"],
+                )
+            else:
+                # Also remove the vendor key altogether here
+                meta.pop("vendor")
+                update_vendor_id_query: TextClause = text(
+                    "UPDATE ctl_systems SET vendor_id= :meta_vendor_id, meta=:updated_meta WHERE id= :id"
+                )
+                bind.execute(
+                    update_vendor_id_query,
+                    {
+                        "id": row["id"],
+                        "meta_vendor_id": meta_vendor_id,
+                        "updated_meta": json.dumps(meta),
+                    },
+                )
 
 
 def downgrade():
