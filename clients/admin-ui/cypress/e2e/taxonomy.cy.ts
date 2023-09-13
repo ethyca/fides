@@ -104,7 +104,7 @@ describe("Taxonomy management page", () => {
         {
           tab: "Data Uses",
           name: "Improve the capability",
-          key: "improve",
+          key: "functional",
           description: "Improve the product, service, application or system.",
           parentKey: "",
           isParent: true,
