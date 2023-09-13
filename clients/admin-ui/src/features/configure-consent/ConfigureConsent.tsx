@@ -16,17 +16,20 @@ import { useGetAllSystemsQuery } from "~/features/system";
 import AddCookie from "./AddCookie";
 import AddVendor from "./AddVendor";
 
-const AddButtons = () => (
+const AddButtons = ({ includeCookies }: { includeCookies?: boolean }) => (
   <ButtonGroup size="sm" colorScheme="primary">
     <AddVendor />
-    <AddCookie />
+    {includeCookies ? <AddCookie /> : null}
   </ButtonGroup>
 );
 
 const EmptyStateContent = () => (
   <VStack spacing={4} alignItems="start">
-    <Text>TODO</Text>
-    <AddButtons />
+    <Text>
+      To manage consent, please add your first vendor. A vendor is a third-party
+      SaaS application that processes personal data for varying purposes.
+    </Text>
+    <AddButtons includeCookies={false} />
   </VStack>
 );
 
@@ -44,7 +47,7 @@ const ConfigureConsent = () => {
   if (!allSystems || allSystems.length === 0) {
     return (
       <EmptyTableState
-        title="No cookies or vendors have been added yet"
+        title="It looks like it's your first time here!"
         description={<EmptyStateContent />}
       />
     );
@@ -59,7 +62,7 @@ const ConfigureConsent = () => {
           <ListItem key={system.fides_key}>{system.name}</ListItem>
         ))}
       </List>
-      <AddButtons />
+      <AddButtons includeCookies />
     </Box>
   );
 };
