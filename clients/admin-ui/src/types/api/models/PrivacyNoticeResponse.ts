@@ -16,8 +16,8 @@ export type PrivacyNoticeResponse = {
   description?: string;
   internal_description?: string;
   origin?: string;
-  regions?: Array<PrivacyNoticeRegion>;
-  consent_mechanism?: ConsentMechanism;
+  regions: Array<PrivacyNoticeRegion>;
+  consent_mechanism: ConsentMechanism;
   data_uses?: Array<string>;
   enforcement_level?: EnforcementLevel;
   disabled?: boolean;

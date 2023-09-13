@@ -54,26 +54,20 @@ export const PrivacyNoticesTable = () => {
         Cell: TitleCell,
       },
       {
-        Header: "Description",
-        accessor: "description",
-        Cell: WrappedCell,
-      },
-      {
         Header: "Mechanism",
         accessor: "consent_mechanism",
         Cell: MechanismCell,
       },
       { Header: "Locations", accessor: "regions", Cell: LocationCell },
-      { Header: "Created", accessor: "created_at", Cell: DateCell },
       { Header: "Last update", accessor: "updated_at", Cell: DateCell },
+      {
+        Header: "Status",
+        Cell: PrivacyNoticeStatusCell,
+      },
       {
         Header: "Enable",
         accessor: "disabled",
         Cell: EnablePrivacyNoticeCell,
-      },
-      {
-        Header: "Status",
-        Cell: PrivacyNoticeStatusCell,
       },
     ];
     // Only render the "Enable" column with toggle if user has permission to toggle

@@ -9,35 +9,72 @@ import { usePatchPrivacyNoticesMutation } from "~/features/privacy-notices/priva
 import { PrivacyNoticeResponse } from "~/types/api";
 
 export const MechanismCell = (
-  cellProps: CellProps<typeof MECHANISM_MAP, string>
-) => <MapCell map={MECHANISM_MAP} {...cellProps} />;
+  cellProps: CellProps<PrivacyNoticeResponse, string>
+) => {
+  const tagValue = MECHANISM_MAP.get(cellProps.row.original.consent_mechanism);
+  return (
+    <Badge
+      size="sm"
+      width="fit-content"
+      data-testid="status-badge"
+      textTransform="uppercase"
+      fontWeight="400"
+      color="gray.600"
+      px={2}
+    >
+      {tagValue}
+    </Badge>
+  )
+}
+{/* <MapCell map={MECHANISM_MAP} {...cellProps} />; */ }
 
 type TagNames = "available" | "enabled" | "inactive";
 
 const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
-  {
-    available: {
-      backgroundColor: "orange.100",
-      color: "orange.800",
-      tooltip:
-        "This notice is associated with a system + data use and can be enabled",
-    },
-    enabled: {
-      backgroundColor: "green.100",
-      color: "green.800",
-      tooltip: "This notice is active and available for consumers",
-    },
-    inactive: {
-      backgroundColor: "gray.100",
-      color: "gray.800",
-      tooltip:
-        "This privacy notice cannot be enabled because the linked data use has not been assigned to a system",
-    },
-  };
+{
+  available: {
+    backgroundColor: "orange.100",
+    color: "orange.800",
+    tooltip:
+      "This notice is associated with a system + data use and can be enabled",
+  },
+  enabled: {
+    backgroundColor: "green.100",
+    color: "green.800",
+    tooltip: "This notice is active and available for consumers",
+  },
+  inactive: {
+    backgroundColor: "gray.100",
+    color: "gray.800",
+    tooltip:
+      "This privacy notice cannot be enabled because the linked data use has not been assigned to a system",
+  },
+};
 
 export const LocationCell = (
   cellProps: CellProps<PrivacyNoticeResponse, string[]>
-) => <MultiTagCell map={PRIVACY_NOTICE_REGION_MAP} {...cellProps} />;
+) => {
+  const regions = cellProps.row.original.regions;
+  let tagValue = undefined;
+  if (regions.length > 1) {
+    tagValue = regions.length + " locations";
+  } else {
+    tagValue = PRIVACY_NOTICE_REGION_MAP.get(regions[0]);
+  }
+  return (
+    <Badge
+      size="sm"
+      width="fit-content"
+      data-testid="status-badge"
+      textTransform="uppercase"
+      fontWeight="400"
+      color="gray.600"
+      px={2}
+    >
+      {tagValue}
+    </Badge>
+  )
+}
 
 export const EnablePrivacyNoticeCell = (
   cellProps: CellProps<PrivacyNoticeResponse, boolean>
@@ -95,7 +132,8 @@ export const PrivacyNoticeStatusCell = (
         {...tagProps}
         data-testid="status-badge"
         textTransform="uppercase"
-        fontWeight="600"
+        fontWeight="400"
+        color="gray.600"
         px={2}
       >
         {tagValue}
