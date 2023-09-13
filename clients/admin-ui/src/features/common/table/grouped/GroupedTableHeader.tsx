@@ -17,7 +17,7 @@ interface Props<T extends object> {
   headerGroups: HeaderGroup<T>[];
 }
 
-const GroupedHeader = <T extends object>({ headerGroups }: Props<T>) => (
+const GroupedTableHeader = <T extends object>({ headerGroups }: Props<T>) => (
   <Thead
     position="sticky"
     top="0px"
@@ -77,4 +77,4 @@ const GroupedHeader = <T extends object>({ headerGroups }: Props<T>) => (
   </Thead>
 );
 
-export default GroupedHeader;
+export default GroupedTableHeader;

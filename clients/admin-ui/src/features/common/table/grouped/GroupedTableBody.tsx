@@ -1,21 +1,21 @@
 import { Tbody, Td, Text, Tr } from "@fidesui/react";
-import { Row, UseGroupByRowProps, UseTableInstanceProps } from "react-table";
+import { Row, UseTableInstanceProps } from "react-table";
 
 import { GRAY_BACKGROUND } from "./constants";
 
 type Props<T extends object> = {
-  heading?: string;
-  titleKey: keyof UseGroupByRowProps<T>;
-  onRowClick: (row: Row<T>) => void;
+  rowHeading?: string;
+  renderRowSubheading: (row: Row<T>) => string;
+  onSubrowClick?: (row: Row<T>) => void;
 } & Pick<UseTableInstanceProps<T>, "getTableBodyProps" | "rows" | "prepareRow">;
 
 const GroupedTableBody = <T extends object>({
-  heading,
-  titleKey,
+  rowHeading,
+  renderRowSubheading,
   rows,
   prepareRow,
   getTableBodyProps,
-  onRowClick,
+  onSubrowClick,
 }: Props<T>) => (
   <Tbody backgroundColor={GRAY_BACKGROUND} {...getTableBodyProps()}>
     {rows.map((row) => {
@@ -26,7 +26,6 @@ const GroupedTableBody = <T extends object>({
           {...row.getRowProps()}
           borderTopLeftRadius="6px"
           borderTopRightRadius="6px"
-          height="70px"
           backgroundColor="gray.50"
           borderWidth="1px"
           borderBottom="none"
@@ -41,7 +40,7 @@ const GroupedTableBody = <T extends object>({
             width="auto"
             paddingX={2}
           >
-            {heading ? (
+            {rowHeading ? (
               <Text
                 fontSize="xs"
                 lineHeight={4}
@@ -51,7 +50,7 @@ const GroupedTableBody = <T extends object>({
                 pb={2}
                 pt={1}
               >
-                {heading}
+                {rowHeading}
               </Text>
             ) : null}
 
@@ -60,8 +59,10 @@ const GroupedTableBody = <T extends object>({
               lineHeight={5}
               fontWeight="bold"
               color="gray.600"
+              mb={1}
             >
-              {row[titleKey]}
+              {renderRowSubheading(row)}
+              {/* {row[titleKey]} */}
             </Text>
           </Td>
         </Tr>
@@ -87,14 +88,9 @@ const GroupedTableBody = <T extends object>({
             _hover={{
               bg: "gray.50",
             }}
-            cursor="pointer"
+            cursor={onSubrowClick ? "pointer" : undefined}
             backgroundColor="white"
-            onClick={() => onRowClick(subRow)}
-            // onClick={() => {
-            //   if (subRow.values[SYSTEM_FIDES_KEY_COLUMN_ID]) {
-            //     setSelectedSystemId(subRow.values[SYSTEM_FIDES_KEY_COLUMN_ID]);
-            //   }
-            // }}
+            onClick={onSubrowClick ? () => onSubrowClick(subRow) : undefined}
             ml={4}
             mr={4}
             _last={{
