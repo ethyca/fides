@@ -1,4 +1,5 @@
 import {
+  Badge,
   Box,
   Flex,
   Switch,
@@ -48,13 +49,17 @@ export const MapCell = <T extends object>({
   value,
   backgroundColor,
 }: MapCellProps<T>) => (
-  <Tag
+  <Badge
     size="sm"
-    backgroundColor={backgroundColor || "primary.400"}
-    color="white"
+    width="fit-content"
+    data-testid="status-badge"
+    textTransform="uppercase"
+    fontWeight="400"
+    color="gray.600"
+    px={2}
   >
     {map.get(value) ?? value}
-  </Tag>
+  </Badge>
 );
 
 export const MultiTagCell = <T extends object>({

@@ -3,53 +3,37 @@ import React from "react";
 import { CellProps } from "react-table";
 
 import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
-import { EnableCell } from "~/features/common/table/";
+import { EnableCell, MapCell } from "~/features/common/table/";
 import { MECHANISM_MAP } from "~/features/privacy-notices/constants";
 import { usePatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
 import { PrivacyNoticeResponse } from "~/types/api";
 
 export const MechanismCell = (
-  cellProps: CellProps<PrivacyNoticeResponse, string>
-) => {
-  const { row } = cellProps;
-  const tagValue = MECHANISM_MAP.get(row.original.consent_mechanism);
-  return (
-    <Badge
-      size="sm"
-      width="fit-content"
-      data-testid="status-badge"
-      textTransform="uppercase"
-      fontWeight="400"
-      color="gray.600"
-      px={2}
-    >
-      {tagValue}
-    </Badge>
-  );
-};
+  cellProps: CellProps<typeof MECHANISM_MAP, string>
+) => <MapCell map={MECHANISM_MAP} {...cellProps} />;
 
 type TagNames = "available" | "enabled" | "inactive";
 
 const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
-  {
-    available: {
-      backgroundColor: "orange.100",
-      color: "orange.800",
-      tooltip:
-        "This notice is associated with a system + data use and can be enabled",
-    },
-    enabled: {
-      backgroundColor: "green.100",
-      color: "green.800",
-      tooltip: "This notice is active and available for consumers",
-    },
-    inactive: {
-      backgroundColor: "gray.100",
-      color: "gray.800",
-      tooltip:
-        "This privacy notice cannot be enabled because the linked data use has not been assigned to a system",
-    },
-  };
+{
+  available: {
+    backgroundColor: "orange.100",
+    color: "orange.800",
+    tooltip:
+      "This notice is associated with a system + data use and can be enabled",
+  },
+  enabled: {
+    backgroundColor: "green.100",
+    color: "green.800",
+    tooltip: "This notice is active and available for consumers",
+  },
+  inactive: {
+    backgroundColor: "gray.100",
+    color: "gray.800",
+    tooltip:
+      "This privacy notice cannot be enabled because the linked data use has not been assigned to a system",
+  },
+};
 
 export const LocationCell = (
   cellProps: CellProps<PrivacyNoticeResponse, string>
