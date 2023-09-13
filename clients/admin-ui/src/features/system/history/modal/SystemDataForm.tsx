@@ -29,7 +29,7 @@ const SystemDataForm: React.FC<SystemDataFormProps> = ({ initialValues }) => {
             <SystemDataGroup heading="System details">
               {features.dictionaryService ? (
                 <SystemDataTextField
-                  name="meta.vendor.id"
+                  name="vendor_id"
                   label="Vendor"
                   tooltip="Select the vendor that matches the system"
                 />
