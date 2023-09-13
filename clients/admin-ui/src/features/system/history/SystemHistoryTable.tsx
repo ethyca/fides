@@ -11,6 +11,7 @@ import {
 import _ from "lodash";
 import React, { useState } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import NextArrow from "~/features/common/Icon/NextArrow";
 import PrevArrow from "~/features/common/Icon/PrevArrow";
 import {
@@ -22,7 +23,6 @@ import { PrivacyDeclaration, SystemHistoryResponse } from "~/types/api";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
 import SystemHistoryModal from "./modal/SystemHistoryModal";
-import { useAppSelector } from "~/app/hooks";
 
 interface Props {
   system: SystemResponse;
@@ -76,11 +76,8 @@ function alignArrays(
   return [alignedBefore, alignedAfter];
 }
 
-const lookupVendorLabel = (vendor_id: string, options: DictOption[]) => {
-  return (
-    options.find((option) => option.value === vendor_id)?.label ?? vendor_id
-  );
-};
+const lookupVendorLabel = (vendor_id: string, options: DictOption[]) =>
+  options.find((option) => option.value === vendor_id)?.label ?? vendor_id;
 
 const itemsPerPage = 10;
 
@@ -94,9 +91,9 @@ const SystemHistoryTable = ({ system }: Props) => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedHistory, setSelectedHistory] =
     useState<SystemHistoryResponse | null>(null);
+  const dictionaryOptions = useAppSelector(selectAllDictEntries);
 
   const systemHistories = data?.items || [];
-  const dictionaryOptions = useAppSelector(selectAllDictEntries);
 
   const openModal = (history: SystemHistoryResponse) => {
     // Align the privacy_declarations arrays
