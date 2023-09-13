@@ -1,14 +1,4 @@
-import {
-  Box,
-  HStack,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-} from "@fidesui/react";
+import { Box, HStack, Table, Tbody, Td, Text, Tr } from "@fidesui/react";
 import { useMemo } from "react";
 import {
   Column,
@@ -20,11 +10,8 @@ import {
 } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
-import {
-  GRAY_BACKGROUND,
-  HeaderSpacer,
-  PaddedCell,
-} from "~/features/common/table";
+import { PaddedCell } from "~/features/common/table";
+import GroupedHeader from "~/features/common/table/grouped/GroupedHeader";
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
 import { selectAllSystems } from "~/features/system";
 
@@ -94,64 +81,8 @@ const VendorCookieTable = () => {
         <AddButtons includeCookies />
       </HStack>
       <Table {...getTableProps()} size="sm" data-testid="datamap-table">
-        <Thead
-          position="sticky"
-          top="0px"
-          height="36px"
-          zIndex={10}
-          backgroundColor={GRAY_BACKGROUND}
-        >
-          {headerGroups.map((headerGroup) => {
-            const { key, ...headerProps } = headerGroup.getHeaderGroupProps();
-            return (
-              <Tr key={key} {...headerProps} height="inherit">
-                <HeaderSpacer />
-                {headerGroup.headers.map((column, index) => {
-                  const { key: columnKey, ...columnHeaderProps } =
-                    column.getHeaderProps();
-                  return (
-                    <Th
-                      key={columnKey}
-                      {...columnHeaderProps}
-                      title={`${column.Header}`}
-                      textTransform="none"
-                      px={2}
-                      display="flex"
-                      alignItems="center"
-                      borderLeftWidth={index === 0 ? "1px" : ""}
-                      borderRightWidth="1px"
-                      borderColor="gray.200"
-                    >
-                      <Text
-                        whiteSpace="nowrap"
-                        textOverflow="ellipsis"
-                        overflow="hidden"
-                        mr={1}
-                      >
-                        {column.render("Header")}
-                      </Text>
-                      {column.canResize && (
-                        <Box
-                          {...column.getResizerProps()}
-                          position="absolute"
-                          top={0}
-                          right={0}
-                          width={2}
-                          height="100%"
-                          css={{
-                            touchAction: ":none",
-                          }}
-                        />
-                      )}
-                    </Th>
-                  );
-                })}
-                <HeaderSpacer />
-              </Tr>
-            );
-          })}
-        </Thead>
-        <Tbody backgroundColor={GRAY_BACKGROUND} {...getTableBodyProps()}>
+        <GroupedHeader<CookieBySystem> headerGroups={headerGroups} />
+        <Tbody {...getTableBodyProps()}>
           {rows.map((row) => {
             prepareRow(row);
 
