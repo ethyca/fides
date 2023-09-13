@@ -327,7 +327,7 @@ def load_default_dsr_policies() -> None:
         excluded_data_categories = [
             "user.financial",
             "user.payment",
-            "user.authorization.credentials",
+            "user.authorization",
         ]
         all_data_categories = [
             str(category.fides_key) for category in DEFAULT_TAXONOMY.data_category
