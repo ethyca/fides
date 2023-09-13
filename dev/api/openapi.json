@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.19.2b1.post0.dev5"
+    "version": "2.19.2b1.post0.dev6"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -9058,6 +9058,16 @@
           {
             "required": false,
             "schema": {
+              "title": "Include Custom Privacy Request Fields",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "include_custom_privacy_request_fields",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
               "title": "Download Csv",
               "type": "boolean",
               "default": false
@@ -14771,6 +14781,23 @@
         ],
         "description": "An enumeration."
       },
+      "CustomPrivacyRequestField": {
+        "title": "CustomPrivacyRequestField",
+        "required": [
+          "label"
+        ],
+        "type": "object",
+        "properties": {
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "description": "Schema for custom privacy request fields."
+      },
       "DBActions": {
         "title": "DBActions",
         "enum": [
@@ -19752,6 +19779,13 @@
           "identity": {
             "$ref": "#/components/schemas/Identity"
           },
+          "custom_privacy_request_fields": {
+            "title": "Custom Privacy Request Fields",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CustomPrivacyRequestField"
+            }
+          },
           "policy_key": {
             "title": "Policy Key",
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
@@ -19910,6 +19944,10 @@
               "type": "string"
             }
           },
+          "custom_privacy_request_fields": {
+            "title": "Custom Privacy Request Fields",
+            "type": "object"
+          },
           "policy": {
             "$ref": "#/components/schemas/PolicyResponse"
           },
@@ -19923,6 +19961,15 @@
           "days_left": {
             "title": "Days Left",
             "type": "integer"
+          },
+          "custom_privacy_request_fields_approved_by": {
+            "title": "Custom Privacy Request Fields Approved By",
+            "type": "string"
+          },
+          "custom_privacy_request_fields_approved_at": {
+            "title": "Custom Privacy Request Fields Approved At",
+            "type": "string",
+            "format": "date-time"
           }
         },
         "description": "Schema to check the status of a PrivacyRequest"
@@ -20045,6 +20092,10 @@
               "type": "string"
             }
           },
+          "custom_privacy_request_fields": {
+            "title": "Custom Privacy Request Fields",
+            "type": "object"
+          },
           "policy": {
             "$ref": "#/components/schemas/PolicyResponse"
           },
@@ -20058,6 +20109,15 @@
           "days_left": {
             "title": "Days Left",
             "type": "integer"
+          },
+          "custom_privacy_request_fields_approved_by": {
+            "title": "Custom Privacy Request Fields Approved By",
+            "type": "string"
+          },
+          "custom_privacy_request_fields_approved_at": {
+            "title": "Custom Privacy Request Fields Approved At",
+            "type": "string",
+            "format": "date-time"
           },
           "results": {
             "title": "Results",
