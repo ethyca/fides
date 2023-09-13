@@ -63,7 +63,6 @@ const GroupedTableBody = <T extends object>({
               mb={1}
             >
               {renderRowSubheading(row)}
-              {/* {row[titleKey]} */}
             </Text>
           </Td>
         </Tr>

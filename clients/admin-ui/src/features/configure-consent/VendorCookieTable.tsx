@@ -48,7 +48,6 @@ const VendorCookieTable = () => {
         Header: "Data use",
         accessor: (d) => d.dataUse ?? "N/A",
         Cell: DataUseCell,
-        aggregate: (uses) => uses.join(", "),
       },
     ],
     []

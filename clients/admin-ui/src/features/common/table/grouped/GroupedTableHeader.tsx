@@ -3,7 +3,7 @@ import { HeaderGroup } from "react-table";
 
 import { GRAY_BACKGROUND } from "./constants";
 
-export const HeaderSpacer = () => (
+const HeaderSpacer = () => (
   <Th
     padding={0}
     margin={0}
