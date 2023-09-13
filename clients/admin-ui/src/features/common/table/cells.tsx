@@ -41,14 +41,9 @@ export const DateCell = <T extends object>({ value }: CellProps<T, string>) =>
 
 type MapCellProps<T extends object> = CellProps<T, string> & {
   map: Map<string, string>;
-  backgroundColor?: string;
 };
 
-export const MapCell = <T extends object>({
-  map,
-  value,
-  backgroundColor,
-}: MapCellProps<T>) => (
+export const MapCell = <T extends object>({ map, value }: MapCellProps<T>) => (
   <Badge
     size="sm"
     width="fit-content"
