@@ -6,7 +6,6 @@ import {
   FidesTable,
   FidesTableFooter,
   TitleCell,
-  WrappedCell,
 } from "common/table";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
