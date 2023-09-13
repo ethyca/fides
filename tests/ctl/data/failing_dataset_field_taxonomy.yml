@@ -14,7 +14,7 @@ dataset:
           - name: political_opinion
             description: User's political opinion
             data_categories:
-              - user.political_opinion
+              - user.demographic.political_opinion
             data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
 system:
   - fides_key: customer_data_sharing_system
@@ -42,7 +42,7 @@ policy:
         data_categories:
           matches: ANY
           values:
-            - user.political_opinion
+            - user.demographic.political_opinion
         data_uses:
           matches: ANY
           values:

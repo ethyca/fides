@@ -25,6 +25,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     can_run_checkpoint,
 )
+from fides.api.schemas.privacy_request import CustomPrivacyRequestField
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.manual_connector import ManualAction
 from fides.api.util.cache import FidesopsRedis, get_identity_cache_key
@@ -812,3 +813,95 @@ def test_privacy_request_error_notification(db, policy):
     ).all()
 
     assert len(unsent_errors) == 1
+
+
+class TestPrivacyRequestCustomFieldFunctions:
+    """Fides has two settings around custom privacy request fields:
+
+    - CONFIG.execution.allow_custom_privacy_request_field_collection - whether or not to store custom privacy request fields in the database
+    - CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution - whether or not to use custom privacy request fields in request execution
+
+    These two constraints are enforced by controlling the behavior of
+    the cache and persist functions on the PrivacyRequest model.
+    """
+
+    def test_cache_custom_privacy_request_fields(self):
+        CONFIG.execution.allow_custom_privacy_request_field_collection = True
+        CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = True
+        privacy_request = PrivacyRequest(id=str(uuid4()))
+        privacy_request.cache_custom_privacy_request_fields(
+            custom_privacy_request_fields={
+                "first_name": CustomPrivacyRequestField(
+                    label="First name", value="John"
+                ),
+                "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
+            }
+        )
+        assert privacy_request.get_cached_custom_privacy_request_fields() == {
+            "first_name": "John",
+            "last_name": "Doe",
+        }
+
+    def test_cache_custom_privacy_request_fields_collection_disabled(self):
+        """Custom privacy request fields should not be cached if collection is disabled"""
+        CONFIG.execution.allow_custom_privacy_request_field_collection = False
+        privacy_request = PrivacyRequest(id=str(uuid4()))
+        privacy_request.cache_custom_privacy_request_fields(
+            custom_privacy_request_fields={
+                "first_name": CustomPrivacyRequestField(
+                    label="First name", value="John"
+                ),
+                "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
+            }
+        )
+        assert privacy_request.get_cached_custom_privacy_request_fields() == {}
+
+    def test_cache_custom_privacy_request_fields_collection_enabled_use_disabled(self):
+        """Custom privacy request fields should not be cached if use is disabled"""
+        CONFIG.execution.allow_custom_privacy_request_field_collection = True
+        CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = (
+            False
+        )
+        privacy_request = PrivacyRequest(id=str(uuid4()))
+        privacy_request.cache_custom_privacy_request_fields(
+            custom_privacy_request_fields={
+                "first_name": CustomPrivacyRequestField(
+                    label="First name", value="John"
+                ),
+                "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
+            }
+        )
+        assert privacy_request.get_cached_custom_privacy_request_fields() == {}
+
+    def test_persist_custom_privacy_request_fields(self, db, privacy_request):
+        CONFIG.execution.allow_custom_privacy_request_field_collection = True
+        CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = True
+        privacy_request.persist_custom_privacy_request_fields(
+            db=db,
+            custom_privacy_request_fields={
+                "first_name": CustomPrivacyRequestField(
+                    label="First name", value="John"
+                ),
+                "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
+            },
+        )
+        assert privacy_request.get_persisted_custom_privacy_request_fields() == {
+            "first_name": {"label": "First name", "value": "John"},
+            "last_name": {"label": "Last name", "value": "Doe"},
+        }
+
+    def test_persist_custom_privacy_request_fields_collection_disabled(
+        self, db, privacy_request
+    ):
+        """Custom privacy request fields should not be persisted if collection is disabled"""
+        CONFIG.execution.allow_custom_privacy_request_field_collection = False
+        privacy_request.persist_custom_privacy_request_fields(
+            db=db,
+            custom_privacy_request_fields={
+                "first_name": CustomPrivacyRequestField(
+                    label="First name", value="John"
+                ),
+                "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
+            },
+        )
+        assert privacy_request.get_persisted_custom_privacy_request_fields() == {}

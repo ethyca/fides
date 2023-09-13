@@ -61,4 +61,4 @@ dataset:
             fides_meta:
               identity: email
           - name: ccn
-            data_categories: [user.financial.account_number]
+            data_categories: [user.financial.bank_account]

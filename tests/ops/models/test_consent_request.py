@@ -40,7 +40,7 @@ def test_consent(db):
 
     consent_data_2 = {
         "provided_identity_id": provided_identity.id,
-        "data_use": "user.browsing_history",
+        "data_use": "user.behavior.browsing_history",
         "opt_in": False,
     }
     consent_2 = Consent.create(db, data=consent_data_2)
@@ -74,7 +74,7 @@ def test_consent_with_gpc(db):
 
     consent_data_2 = {
         "provided_identity_id": provided_identity.id,
-        "data_use": "user.browsing_history",
+        "data_use": "user.behavior.browsing_history",
         "opt_in": False,
     }
     consent_2 = Consent.create(db, data=consent_data_2)

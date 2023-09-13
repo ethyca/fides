@@ -1733,7 +1733,7 @@ class TestSystemUpdate:
         "update_declarations",
         [
             (
-                [  # update a dec matching one existing dec
+                [  # Check 1: update a dec matching one existing dec
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
                         data_categories=[],
@@ -1745,7 +1745,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                [  # add a new single dec with same data use
+                [  # Check 2: add a new single dec with same data use
                     models.PrivacyDeclaration(
                         name="declaration-name-1",
                         data_categories=[],
@@ -1757,7 +1757,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                [  # add a new single dec with same data use, no name
+                [  # Check 3: add a new single dec with same data use, no name
                     models.PrivacyDeclaration(
                         name="",
                         data_categories=[],
@@ -1769,7 +1769,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # update 2 privacy declarations both matching existing decs
+                # Check 4: update 2 privacy declarations both matching existing decs
                 [
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
@@ -1790,7 +1790,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # update 2 privacy declarations, one with matching name and data use, other only data use
+                # Check 5: update 2 privacy declarations, one with matching name and data use, other only data use
                 [
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
@@ -1811,7 +1811,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # update 2 privacy declarations, one with matching name and data use, other only data use but same data use
+                # Check 6: update 2 privacy declarations, one with matching name and data use, other only data use but same data use
                 [
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
@@ -1832,7 +1832,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # update 2 privacy declarations, one with only matching data use, other totally new
+                # Check 7: update 2 privacy declarations, one with only matching data use, other totally new
                 [
                     models.PrivacyDeclaration(
                         name="declaration-name-1",
@@ -1853,7 +1853,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # add 2 new privacy declarations
+                # Check 8: add 2 new privacy declarations
                 [
                     models.PrivacyDeclaration(
                         name="declaration-name",
@@ -1866,7 +1866,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
                         data_categories=[],
-                        data_use="improve",
+                        data_use="functional",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1874,7 +1874,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # add 2 new privacy declarations, same data uses as existing decs but no names
+                # Check 9: add 2 new privacy declarations, same data uses as existing decs but no names
                 [
                     models.PrivacyDeclaration(
                         name="",
@@ -1895,7 +1895,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # specify no declarations, declarations should be cleared off the system
+                # Check 10: specify no declarations, declarations should be cleared off the system
                 []
             ),
         ],
@@ -2181,7 +2181,11 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
+
+        #  Set fields for default labels
         manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         result = _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
@@ -2202,7 +2206,11 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
+
+        #  Set fields for default labels
         manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         result = _api.upsert(
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
@@ -2230,7 +2238,10 @@ class TestDefaultTaxonomyCrud:
             headers=test_config.user.auth_header,
         )
 
+        #  Set fields for default labels
         manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         result = _api.update(
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
@@ -2244,8 +2255,12 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
-        manifest.is_default = True
         second_item = manifest.copy()
+
+        #  Set fields for default labels
+        manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         second_item.is_default = False
 
         _api.create(
@@ -2347,6 +2362,7 @@ class TestCrudActiveProperty:
         )  # cast resource to extended model
         resource.fides_key = resource.fides_key + "_test_create_active_false"
         resource.is_default = False
+        resource.version_added = None
         resource.active = False
         json_resource = resource.json(exclude_none=True)
         token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]

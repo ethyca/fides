@@ -49,11 +49,11 @@ dataset:
               data_type: integer
           - name: note
           - name: gender
-            data_categories: [user.gender]
+            data_categories: [user.demographic.gender]
             fidesops_meta:
               data_type: string
           - name: date_of_birth
-            data_categories: [user.date_of_birth]
+            data_categories: [user.demographic.date_of_birth]
             fidesops_meta:
               data_type: string
           - name: company_name
