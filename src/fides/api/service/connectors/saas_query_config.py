@@ -307,8 +307,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 0
             ]
 
-        logger.info(param_values)
-
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
             self.action, self.collection_name, self.current_request, param_values  # type: ignore

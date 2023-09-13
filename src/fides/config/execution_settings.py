@@ -35,11 +35,11 @@ class ExecutionSettings(FidesSettings):
         default=1, description="The delays between retries in seconds."
     )
     allow_custom_privacy_request_field_collection: bool = Field(
-        default=True,
+        default=False,
         description="Allows the collection of custom privacy request fields from incoming privacy requests.",
     )
     allow_custom_privacy_request_fields_in_request_execution: bool = Field(
-        default=True,
+        default=False,
         description="Allows custom privacy request fields to be used in request execution.",
     )
 

@@ -34,7 +34,7 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fides.api.cryptography.cryptographic_util import hash_with_salt
+from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.base_class import JSONTypeOverride
 from fides.api.db.util import EnumColumn
@@ -984,11 +984,11 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         value: str,
         encoding: str = "UTF-8",
     ) -> str:
-        """Utility function to hash a user's password with a generated salt"""
-        SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
+        """Utility function to hash the value with a generated salt"""
+        salt = generate_salt()
         hashed_value = hash_with_salt(
             value.encode(encoding),
-            SALT.encode(encoding),
+            salt.encode(encoding),
         )
         return hashed_value
 
@@ -1058,11 +1058,11 @@ class CustomPrivacyRequestField(Base):
         value: str,
         encoding: str = "UTF-8",
     ) -> str:
-        """Utility function to hash a user's password with a generated salt"""
-        SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
+        """Utility function to hash the value with a generated salt"""
+        salt = generate_salt()
         hashed_value = hash_with_salt(
             value.encode(encoding),
-            SALT.encode(encoding),
+            salt.encode(encoding),
         )
         return hashed_value
 
