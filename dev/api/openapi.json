@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.19.2b1.post0.dev4"
+    "version": "2.19.2b1.post0.dev5"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5019,7 +5019,7 @@
                 "highlight": false
               },
               {
-                "data_use": "improve",
+                "data_use": "functional",
                 "data_use_description": "We may use some of your personal information to collect analytics about how you use our products & services, in order to improve our service.",
                 "opt_in": false
               }
@@ -14166,7 +14166,7 @@
             "default": false
           }
         },
-        "description": "Schema for consent."
+        "description": "Deprecated: This used to be populated and sent to the server by a `config.json` in the UI"
       },
       "ConsentMechanism": {
         "title": "ConsentMechanism",
@@ -14310,7 +14310,7 @@
             "format": "date-time"
           }
         },
-        "description": "Schema for reporting Consent requests."
+        "description": "Keeps record of each of the preferences that have been recorded via ConsentReporting endpoints."
       },
       "ConsentReportingSchema": {
         "title": "ConsentReportingSchema",
@@ -14787,6 +14787,28 @@
         ],
         "type": "object",
         "properties": {
+          "version_added": {
+            "title": "Version Added",
+            "type": "string",
+            "description": "The version of Fideslang in which this label was added."
+          },
+          "version_deprecated": {
+            "title": "Version Deprecated",
+            "type": "string",
+            "description": "The version of Fideslang in which this label was deprecated."
+          },
+          "replaced_by": {
+            "title": "Replaced By",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string",
+            "description": "The new name, if applicable, for this label after deprecation."
+          },
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean",
+            "description": "Denotes whether the resource is part of the default taxonomy or not.",
+            "default": false
+          },
           "fides_key": {
             "title": "Fides Key",
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
@@ -14821,12 +14843,6 @@
             "title": "Parent Key",
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
-          },
-          "is_default": {
-            "title": "Is Default",
-            "type": "boolean",
-            "description": "Denotes whether the resource is part of the default taxonomy or not.",
-            "default": false
           },
           "active": {
             "title": "Active",
@@ -14901,6 +14917,28 @@
         ],
         "type": "object",
         "properties": {
+          "version_added": {
+            "title": "Version Added",
+            "type": "string",
+            "description": "The version of Fideslang in which this label was added."
+          },
+          "version_deprecated": {
+            "title": "Version Deprecated",
+            "type": "string",
+            "description": "The version of Fideslang in which this label was deprecated."
+          },
+          "replaced_by": {
+            "title": "Replaced By",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string",
+            "description": "The new name, if applicable, for this label after deprecation."
+          },
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean",
+            "description": "Denotes whether the resource is part of the default taxonomy or not.",
+            "default": false
+          },
           "fides_key": {
             "title": "Fides Key",
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
@@ -14936,12 +14974,6 @@
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
-          "is_default": {
-            "title": "Is Default",
-            "type": "boolean",
-            "description": "Denotes whether the resource is part of the default taxonomy or not.",
-            "default": false
-          },
           "active": {
             "title": "Active",
             "type": "boolean",
@@ -14968,6 +15000,28 @@
         ],
         "type": "object",
         "properties": {
+          "version_added": {
+            "title": "Version Added",
+            "type": "string",
+            "description": "The version of Fideslang in which this label was added."
+          },
+          "version_deprecated": {
+            "title": "Version Deprecated",
+            "type": "string",
+            "description": "The version of Fideslang in which this label was deprecated."
+          },
+          "replaced_by": {
+            "title": "Replaced By",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string",
+            "description": "The new name, if applicable, for this label after deprecation."
+          },
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean",
+            "description": "Denotes whether the resource is part of the default taxonomy or not.",
+            "default": false
+          },
           "fides_key": {
             "title": "Fides Key",
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
@@ -15011,12 +15065,6 @@
             "title": "Automated Decisions Or Profiling",
             "type": "boolean",
             "description": "A boolean value to annotate whether or not automated decisions/profiling exists for the data subject."
-          },
-          "is_default": {
-            "title": "Is Default",
-            "type": "boolean",
-            "description": "Denotes whether the resource is part of the default taxonomy or not.",
-            "default": false
           },
           "active": {
             "title": "Active",
@@ -15089,6 +15137,28 @@
         ],
         "type": "object",
         "properties": {
+          "version_added": {
+            "title": "Version Added",
+            "type": "string",
+            "description": "The version of Fideslang in which this label was added."
+          },
+          "version_deprecated": {
+            "title": "Version Deprecated",
+            "type": "string",
+            "description": "The version of Fideslang in which this label was deprecated."
+          },
+          "replaced_by": {
+            "title": "Replaced By",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string",
+            "description": "The new name, if applicable, for this label after deprecation."
+          },
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean",
+            "description": "Denotes whether the resource is part of the default taxonomy or not.",
+            "default": false
+          },
           "fides_key": {
             "title": "Fides Key",
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
@@ -15160,12 +15230,6 @@
             "type": "string",
             "description": "Deprecated. A url pointing to the legitimate interest impact assessment. Required if the legal bases used is legitimate interest.",
             "format": "uri"
-          },
-          "is_default": {
-            "title": "Is Default",
-            "type": "boolean",
-            "description": "Denotes whether the resource is part of the default taxonomy or not.",
-            "default": false
           },
           "active": {
             "title": "Active",
@@ -16750,7 +16814,7 @@
             "type": "object"
           }
         },
-        "description": "Surface how to retrieve or mask data in a database-agnostic way\n\n\"locators\" are similar to the SQL \"WHERE\" information.\n\"get\" contains a list of fields that should be retrieved from the source\n\"update\" is a dictionary of fields and the replacement value/masking strategy"
+        "description": "Surface how to retrieve or mask data in a database-agnostic way\n\n- 'locators' are similar to the SQL \"WHERE\" information.\n- 'get' contains a list of fields that should be retrieved from the source\n- 'update' is a dictionary of fields and the replacement value/masking strategy"
       },
       "ManualWebhookData": {
         "title": "ManualWebhookData",
