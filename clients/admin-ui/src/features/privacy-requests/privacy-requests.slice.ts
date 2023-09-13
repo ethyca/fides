@@ -1,4 +1,4 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
@@ -346,7 +346,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: params,
       }),
-      invalidatesTags: ["Configuration Settings"],
+      invalidatesTags: ["Configuration Settings"]
     }),
     getConfigurationSettings: build.query<
       MessagingConfigResponse | StorageConfigResponse,
@@ -355,8 +355,9 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       query: () => ({
         url: `/config`,
         method: "GET",
+        params: {api_set: true }
       }),
-      providesTags: ["Configuration Settings"],
+      providesTags: ["Configuration Settings"]
     }),
     getActiveStorage: build.query<any, void>({
       query: () => ({
@@ -459,15 +460,20 @@ export const {
   useCreateTestConnectionMessageMutation,
 } = privacyRequestApi;
 
-const EMPTY_CORS_DOMAINS = { domains: [] } as { domains: string[] };
+
+
+
+
+const EMPTY_CORS_DOMAINS={domains:[]} as {domains: string[]} ;
 export const selectCORSDomains = () =>
   createSelector(
-    [
-      (state) => state,
-      privacyRequestApi.endpoints.getConfigurationSettings.select(),
-    ],
-    (state, { data }) =>
-      data?.security?.cors_origins
-        ? { domains: data.security.cors_origins }
-        : EMPTY_CORS_DOMAINS
+    [(state) => state, privacyRequestApi.endpoints.getConfigurationSettings.select()],
+    (state, { data }) => {
+
+      return data?.security?.cors_origins ?
+      {domains: data.security.cors_origins}
+      : EMPTY_CORS_DOMAINS;
+    }
   );
+
+
