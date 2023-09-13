@@ -3,6 +3,7 @@ import React from "react";
 import { CellProps } from "react-table";
 
 import { GlobeIcon } from "~/features/common/Icon";
+import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
 import { EnableCell, MultiTagCell } from "~/features/common/table/";
 import { ExperienceConfigResponse } from "~/types/api";
 
@@ -27,7 +28,7 @@ export const LocationCell = ({
       </Flex>
     );
   }
-  return <MultiTagCell row={row} {...rest} />;
+  return <MultiTagCell map={PRIVACY_NOTICE_REGION_MAP} row={row} {...rest} />;
 };
 
 export const EnablePrivacyExperienceCell = (

@@ -15,11 +15,35 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.19.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.19.1...main)
+
+### Changed
+
+- Refactor how multiplatform builds are handled [#4024](https://github.com/ethyca/fides/pull/4024)
+- Added new Performance-related nox commands and included them as part of the CI suite [#3997](https://github.com/ethyca/fides/pull/3997)
+- Added dictionary suggestions for data uses [4035](https://github.com/ethyca/fides/pull/4035)
+- Privacy notice regions now render human readable names instead of country codes [#4029](https://github.com/ethyca/fides/pull/4029)
+- Privacy notice templates are disabled by default [#4010](https://github.com/ethyca/fides/pull/4010)
+- Admin UI now shows all privacy notices with an indicator of whether they apply to any systems [#4010](https://github.com/ethyca/fides/pull/4010)
+- Add case-insensitive privacy experience region filtering [#4058](https://github.com/ethyca/fides/pull/4058)
+- Adds check for fetch before loading fetch polyfill for fides.js [#4074](https://github.com/ethyca/fides/pull/4074)
+
+### Fixed
+
+- Ensures that fides.js toggles are not hidden by other CSS libs [#4075](https://github.com/ethyca/fides/pull/4075)
+
+## [2.19.1](https://github.com/ethyca/fides/compare/2.19.0...2.19.1)
+
+### Fixed
+
+- re-enable custom fields for new data use form [#4050](https://github.com/ethyca/fides/pull/4050)
+- fix issue with saving source and destination systems [#4065](https://github.com/ethyca/fides/pull/4065)
 
 ### Added
 
-- Added new Performance-related nox commands and included them as part of the CI suite [#3997](https://github.com/ethyca/fides/pull/3997)
+- System history UI with diff modal [#4021](https://github.com/ethyca/fides/pull/4021)
+- Relax system legal basis for transfers to be any string [#4049](https://github.com/ethyca/fides/pull/4049)
+
 
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 
@@ -50,6 +74,10 @@ The types of changes are:
 - Removed deprecated fields from the taxonomy editor [#3909](https://github.com/ethyca/fides/pull/3909)
 - Bump PyMSSQL version and remove workarounds [#3996](https://github.com/ethyca/fides/pull/3996)
 - Removed reset suggestions button [#4007](https://github.com/ethyca/fides/pull/4007)
+- Admin ui supports fides cloud config API [#4034](https://github.com/ethyca/fides/pull/4034)
+
+### Security
+- Resolve custom integration upload RCE vulnerability [CVE-2023-41319](https://github.com/ethyca/fides/security/advisories/GHSA-p6p2-qq95-vq5h)
 
 ## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
 

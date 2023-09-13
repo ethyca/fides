@@ -132,6 +132,7 @@ class TestGetPrivacyNotices:
         # assert all 3 notices are in response since we're not filtering
         assert data["total"] == 3
         assert len(data["items"]) == 3
+        assert [d["systems_applicable"] for d in data["items"]] == [False, False, True]
 
         # now test that setting the param to true works
         resp = api_client.get(
@@ -146,6 +147,7 @@ class TestGetPrivacyNotices:
         # assert only 1 notice is in response since we're filtering for systems_applicable=true
         assert data["total"] == 1
         assert len(data["items"]) == 1
+        assert data["items"][0]["systems_applicable"] is True
 
         # now test that disabling the filter works the same as the default
         resp = api_client.get(
@@ -180,6 +182,7 @@ class TestGetPrivacyNotices:
             assert "enforcement_level" in notice_detail
             assert "privacy_notice_history_id" in notice_detail
             assert notice_detail["privacy_notice_history_id"] is not None
+            assert "systems_applicable" in notice_detail
 
     @pytest.mark.usefixtures(
         "privacy_notice",
@@ -757,6 +760,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
@@ -829,6 +833,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
@@ -852,6 +857,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
@@ -922,6 +928,7 @@ class TestGetPrivacyNoticesByDataUse:
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
                             displayed_in_overlay=True,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
@@ -943,6 +950,7 @@ class TestGetPrivacyNoticesByDataUse:
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
                             displayed_in_overlay=True,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
@@ -967,6 +975,7 @@ class TestGetPrivacyNoticesByDataUse:
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
                             displayed_in_overlay=True,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
@@ -1039,6 +1048,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
@@ -1176,6 +1186,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
@@ -1201,6 +1212,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[],
                         ),
                         PrivacyNoticeResponse(
@@ -1222,6 +1234,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[],
                         ),
                         PrivacyNoticeResponse(
@@ -1243,6 +1256,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[],
                         ),
                     ],

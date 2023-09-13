@@ -1061,7 +1061,12 @@ class TestSystemUpdate:
             uses_profiling=True,
             legal_basis_for_profiling=["Authorised by law", "Contract"],
             does_international_transfers=True,
-            legal_basis_for_transfers=["Adequacy Decision", "BCRs"],
+            legal_basis_for_transfers=[
+                "Adequacy Decision",
+                "BCRs",
+                "Supplementary Measures",
+                "Unknown legal basis",
+            ],
             requires_data_protection_assessments=True,
             dpa_location="https://www.example.com/dpa",
             dpa_progress="pending",
@@ -1491,7 +1496,12 @@ class TestSystemUpdate:
         assert system.uses_profiling is True
         assert system.legal_basis_for_profiling == ["Authorised by law", "Contract"]
         assert system.does_international_transfers is True
-        assert system.legal_basis_for_transfers == ["Adequacy Decision", "BCRs"]
+        assert system.legal_basis_for_transfers == [
+            "Adequacy Decision",
+            "BCRs",
+            "Supplementary Measures",
+            "Unknown legal basis",
+        ]
         assert system.requires_data_protection_assessments is True
         assert system.dpa_location == "https://www.example.com/dpa"
         assert system.dpa_progress == "pending"
