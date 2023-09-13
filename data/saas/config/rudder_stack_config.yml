@@ -55,9 +55,10 @@ saas_config:
       body: |
         {
           "regulationType": "suppress_with_delete",
-            "destinationIds": [
-              "27OeyCriZ4vGFiOFPihSMgr0Nt1"
-            ],
+            # "destinationIds": [
+            #   "27OeyCriZ4vGFiOFPihSMgr0Nt1"
+            # ],      Commenting this out for now, the destination ID should not be required for the opt out action
+            # see https://www.rudderstack.com/docs/api/data-regulation-api/#request-body
              "users": [
             {
                "userId": "<user_id_value>",
