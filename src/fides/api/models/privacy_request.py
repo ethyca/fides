@@ -985,10 +985,10 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         encoding: str = "UTF-8",
     ) -> str:
         """Utility function to hash the value with a generated salt"""
-        salt = generate_salt()
+        SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
         hashed_value = hash_with_salt(
             value.encode(encoding),
-            salt.encode(encoding),
+            SALT.encode(encoding),
         )
         return hashed_value
 
