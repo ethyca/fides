@@ -1728,6 +1728,8 @@ def create_privacy_request_func(
         else:
             created.append(privacy_request)
 
+    # TODO: Don't return a 200 if there are failed requests, or at least not
+    # if there are zero successful ones
     return BulkPostPrivacyRequests(
         succeeded=created,
         failed=failed,

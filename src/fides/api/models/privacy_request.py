@@ -86,11 +86,12 @@ EXECUTION_CHECKPOINTS = [
 
 
 class ManualAction(FidesSchema):
-    """Surface how to retrieve or mask data in a database-agnostic way
+    """
+    Surface how to retrieve or mask data in a database-agnostic way
 
-    "locators" are similar to the SQL "WHERE" information.
-    "get" contains a list of fields that should be retrieved from the source
-    "update" is a dictionary of fields and the replacement value/masking strategy
+    - 'locators' are similar to the SQL "WHERE" information.
+    - 'get' contains a list of fields that should be retrieved from the source
+    - 'update' is a dictionary of fields and the replacement value/masking strategy
     """
 
     locators: Dict[str, Any]
