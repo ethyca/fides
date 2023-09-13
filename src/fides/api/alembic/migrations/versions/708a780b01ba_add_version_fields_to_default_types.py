@@ -1,7 +1,7 @@
 """add version fields to default types
 
 Revision ID: 708a780b01ba
-Revises: 3038667ba898
+Revises: 192f23f4c968
 Create Date: 2023-08-17 12:29:04.855626
 
 """
