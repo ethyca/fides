@@ -31,9 +31,6 @@ describe("Consent configuration", () => {
       }).as("getEmptySystems");
       cy.visit(CONFIGURE_CONSENT_ROUTE);
       cy.getByTestId("empty-state");
-      cy.getByTestId("add-cookie-btn").click();
-      cy.getByTestId("add-cookie-modal-content");
-      //   click outside of modal to exit
       cy.get("body").click(0, 0);
       cy.getByTestId("add-vendor-btn").click();
       cy.getByTestId("add-vendor-modal-content");
