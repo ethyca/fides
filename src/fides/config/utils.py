@@ -95,6 +95,4 @@ def load_updated_cors_domains(domains: List[str], resetDomains=False) -> None:
                 mw.options["allow_origins"] = domains
                 break
 
-            origins = set(mw.options.get("allow_origins", []))
-            origins.update([str(domain) for domain in domains])
-            mw.options["allow_origins"] = list(origins)
+            mw.options["allow_origins"] = [str(domain) for domain in domains]

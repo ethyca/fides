@@ -18,6 +18,7 @@ from starlette.background import BackgroundTask
 from uvicorn import Config, Server
 
 import fides
+from fides.api.api.deps import get_api_session
 from fides.api.app_setup import (
     check_redis,
     create_fides_app,
@@ -44,6 +45,8 @@ from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.logger import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
+from fides.config.config_proxy import ConfigProxy
+from fides.config.utils import load_updated_cors_domains
 
 IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 
@@ -257,6 +260,10 @@ async def setup_server() -> None:
     log_startup()
 
     await run_database_startup()
+
+    db = get_api_session()
+    config_proxy = ConfigProxy(db)
+    load_updated_cors_domains(config_proxy.security.cors_origins)
 
     check_redis()
 

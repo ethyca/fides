@@ -316,11 +316,10 @@ class TestPatchApplicationConfig:
             json=payload,
         )
         assert response.status_code == 200
-        
+
         assert set(cors_middleware[0].options["allow_origins"]) == set(
             [*cors_middleware[1], *payload["security"]["cors_origins"]]
         )
-
 
     def test_patch_application_config_invalid_notification_type(
         self,
