@@ -32,6 +32,7 @@ The types of changes are:
 - Admin UI now shows all privacy notices with an indicator of whether they apply to any systems [#4010](https://github.com/ethyca/fides/pull/4010)
 - Add case-insensitive privacy experience region filtering [#4058](https://github.com/ethyca/fides/pull/4058)
 - Adds check for fetch before loading fetch polyfill for fides.js [#4074](https://github.com/ethyca/fides/pull/4074)
+- Updated to support Fideslang 2.0, including data migrations [#3933](https://github.com/ethyca/fides/pull/3933)
 
 ### Fixed
 
