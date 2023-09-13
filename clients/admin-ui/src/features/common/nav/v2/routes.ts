@@ -14,6 +14,7 @@ export const PRIVACY_REQUESTS_CONFIGURATION_ROUTE = `${PRIVACY_REQUESTS_ROUTE}/c
 // Consent group
 export const PRIVACY_EXPERIENCE_ROUTE = "/consent/privacy-experience";
 export const PRIVACY_NOTICES_ROUTE = "/consent/privacy-notices";
+export const CONFIGURE_CONSENT_ROUTE = "/consent/configure";
 
 // Management group
 export const USER_MANAGEMENT_ROUTE = "/user-management";

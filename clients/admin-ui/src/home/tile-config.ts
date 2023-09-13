@@ -6,12 +6,14 @@ export const configureTiles = ({
   config,
   userScopes,
   hasPlus = false,
+  flags,
 }: {
   config: ModuleCardConfig[];
   userScopes: ScopeRegistryEnum[];
   hasPlus?: boolean;
   hasSystems?: boolean;
   hasConnections?: boolean;
+  flags: Record<string, boolean>;
 }): ModuleCardConfig[] => {
   let filteredConfig = config;
 
@@ -30,5 +32,14 @@ export const configureTiles = ({
       filteredByScope.push(moduleConfig);
     }
   });
-  return filteredByScope;
+
+  const filteredByFlag: ModuleCardConfig[] = [];
+  filteredByScope.forEach((moduleConfig) => {
+    if (!moduleConfig.requiresFlag) {
+      filteredByFlag.push(moduleConfig);
+    } else if (flags[moduleConfig.requiresFlag]) {
+      filteredByFlag.push(moduleConfig);
+    }
+  });
+  return filteredByFlag;
 };
