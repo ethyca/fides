@@ -111,7 +111,7 @@ describe("configureTiles", () => {
         userScopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
         flags: { configureConsent: true },
       });
-      expect(tiles.map((t) => t.name)).toEqual(["Configure consent"]);
+      expect(tiles.map((t) => t.name)).toEqual(["Manage consent"]);
     });
   });
 });
