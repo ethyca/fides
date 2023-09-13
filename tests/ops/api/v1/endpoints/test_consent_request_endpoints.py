@@ -954,7 +954,7 @@ class TestSaveConsent:
                 "conflicts_with_gpc": False,
             },
             {
-                "data_use": "improve",
+                "data_use": "functional",
                 "data_use_description": None,
                 "opt_in": True,
             },
@@ -973,7 +973,7 @@ class TestSaveConsent:
             "policy_key": consent_policy.key,  # Optional policy_key supplied,
             "executable_options": [
                 {"data_use": "marketing.advertising", "executable": True},
-                {"data_use": "improve", "executable": False},
+                {"data_use": "functional", "executable": False},
             ],
             "browser_identity": {"ga_client_id": "test_ga_client_id"},
         }
@@ -992,7 +992,7 @@ class TestSaveConsent:
                 "conflicts_with_gpc": False,
             },
             {
-                "data_use": "improve",
+                "data_use": "functional",
                 "data_use_description": None,
                 "opt_in": False,
                 "has_gpc_flag": False,
@@ -1071,7 +1071,7 @@ class TestSaveConsent:
             "policy_key": consent_policy.key,  # Optional policy_key supplied,
             "executable_options": [
                 {"data_use": "marketing.advertising", "executable": True},
-                {"data_use": "improve", "executable": False},
+                {"data_use": "functional", "executable": False},
             ],
             "browser_identity": {"ga_client_id": "test_ga_client_id"},
         }
