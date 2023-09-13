@@ -183,6 +183,7 @@ class TestCreatePrivacyRequest:
         db,
         api_client: TestClient,
         policy,
+        allow_custom_privacy_request_field_collection_enabled,
     ):
         TEST_EMAIL = "test@example.com"
         TEST_CUSTOM_FIELDS = {
@@ -2118,6 +2119,7 @@ class TestApprovePrivacyRequest:
         generate_auth_header,
         user,
         privacy_request_with_custom_fields,
+        allow_custom_privacy_request_field_collection_enabled,
     ):
         privacy_request = privacy_request_with_custom_fields
         privacy_request.status = PrivacyRequestStatus.pending

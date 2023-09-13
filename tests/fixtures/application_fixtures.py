@@ -2388,3 +2388,11 @@ def privacy_notice_france(db: Session) -> Generator:
     )
 
     yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def allow_custom_privacy_request_field_collection_enabled():
+    original_value = CONFIG.execution.allow_custom_privacy_request_field_collection
+    CONFIG.execution.allow_custom_privacy_request_field_collection = True
+    yield
+    CONFIG.notifications.send_request_review_notification = original_value
