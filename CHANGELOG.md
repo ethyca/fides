@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Initial page for configuring consent [#4069](https://github.com/ethyca/fides/pull/4069)
+- Vendor cookie table for configuring consent [#4082](https://github.com/ethyca/fides/pull/4082)
 
 ### Changed
 
