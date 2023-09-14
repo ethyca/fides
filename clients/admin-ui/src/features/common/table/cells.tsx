@@ -31,6 +31,14 @@ export const WrappedCell = <T extends object>({
   value,
 }: CellProps<T, string>) => <Text whiteSpace="normal">{value}</Text>;
 
+export const PaddedCell = <T extends object>({
+  value,
+}: CellProps<T, string>) => (
+  <Text whiteSpace="normal" p={2}>
+    {value}
+  </Text>
+);
+
 export const ClipboardCell = <T extends object>({
   value,
 }: CellProps<T, string>) => (
