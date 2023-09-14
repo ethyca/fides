@@ -70,7 +70,7 @@ const ConfigureSystem: NextPage = () => {
     }
   }, [router, toast]);
 
-  if (isLoading || isDictionaryLoading) {
+  if (isLoading && isDictionaryLoading) {
     return (
       <Layout title="Systems">
         <Spinner />
@@ -93,7 +93,7 @@ const ConfigureSystem: NextPage = () => {
           </BreadcrumbItem>
         </Breadcrumb>
       </Box>
-      {!system ? (
+      {!system && !isLoading && !isDictionaryLoading ? (
         <Text data-testid="system-not-found">
           Could not find a system with id {systemId}
         </Text>
