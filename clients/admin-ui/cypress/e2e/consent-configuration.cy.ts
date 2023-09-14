@@ -1,4 +1,8 @@
-import { stubPlus, stubSystemCrud } from "cypress/support/stubs";
+import {
+  stubPlus,
+  stubSystemCrud,
+  stubTaxonomyEntities,
+} from "cypress/support/stubs";
 
 import { CONFIGURE_CONSENT_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
@@ -40,6 +44,7 @@ describe("Consent configuration", () => {
   describe("with existing systems", () => {
     beforeEach(() => {
       stubSystemCrud();
+      stubTaxonomyEntities();
       stubPlus(true);
       cy.intercept("GET", "/api/v1/system", {
         fixture: "systems/systems.json",
@@ -48,10 +53,23 @@ describe("Consent configuration", () => {
     });
 
     it("can render existing systems and cookies", () => {
-      // TODO: flesh out this test once we have our table
-      cy.getByTestId("configure-consent-page").contains(
-        "Demo Analytics System"
+      // One row per system and one subrow per cookie
+      cy.getByTestId("grouped-row-demo_analytics_system");
+      cy.getByTestId("grouped-row-demo_marketing_system");
+      cy.getByTestId("grouped-row-fidesctl_system");
+
+      // One subrow per cookie. Should have corresponding data use
+      cy.getByTestId("subrow-cell_0_Cookie name").contains("N/A");
+      cy.getByTestId("subrow-cell_0_Data use").contains("N/A");
+      cy.getByTestId("subrow-cell_1_Cookie name").contains("_ga");
+      cy.getByTestId("subrow-cell_1_Data use").contains(
+        "Advertising, Marketing or Promotion"
       );
+      cy.getByTestId("subrow-cell_2_Cookie name").contains("cookie");
+      cy.getByTestId("subrow-cell_2_Data use").contains("System");
+      cy.getByTestId("subrow-cell_3_Cookie name").contains("cookie2");
+      cy.getByTestId("subrow-cell_3_Data use").contains("System");
+
       cy.getByTestId("add-cookie-btn");
       cy.getByTestId("add-vendor-btn");
     });

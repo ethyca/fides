@@ -1,8 +1,7 @@
 import { Box, Text, Th, Thead, Tr } from "@fidesui/react";
 import { HeaderGroup } from "react-table";
 
-import { GRAY_BACKGROUND } from "~/features/datamap/constants";
-import type { DatamapRow } from "~/features/datamap/datamap.slice";
+import { GRAY_BACKGROUND } from "./constants";
 
 const HeaderSpacer = () => (
   <Th
@@ -14,11 +13,11 @@ const HeaderSpacer = () => (
   />
 );
 
-interface DatamapHeadersProps {
-  headerGroups: HeaderGroup<DatamapRow>[];
+interface Props<T extends object> {
+  headerGroups: HeaderGroup<T>[];
 }
 
-const DatamapHeaders: React.FC<DatamapHeadersProps> = ({ headerGroups }) => (
+const GroupedTableHeader = <T extends object>({ headerGroups }: Props<T>) => (
   <Thead
     position="sticky"
     top="0px"
@@ -78,4 +77,4 @@ const DatamapHeaders: React.FC<DatamapHeadersProps> = ({ headerGroups }) => (
   </Thead>
 );
 
-export default DatamapHeaders;
+export default GroupedTableHeader;
