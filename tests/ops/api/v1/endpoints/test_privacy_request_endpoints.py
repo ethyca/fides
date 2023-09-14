@@ -2942,8 +2942,11 @@ class TestBulkRestartFromFailure:
         ]
         assert sorted(failed_ids) == sorted(data)
 
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
     def test_restart_from_failure_no_stopped_step(
-        self, api_client, url, generate_auth_header, db, privacy_requests
+        self, submit_mock, api_client, url, generate_auth_header, db, privacy_requests
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
         data = [privacy_requests[0].id]
@@ -2954,13 +2957,20 @@ class TestBulkRestartFromFailure:
         response = api_client.post(url, json=data, headers=auth_header)
 
         assert response.status_code == 200
-        assert response.json()["succeeded"] == []
+        db.refresh(privacy_requests[0])
+        assert privacy_requests[0].status == PrivacyRequestStatus.in_processing
+        assert response.json()["failed"] == []
 
-        failed_ids = [
-            x["data"]["privacy_request_id"] for x in response.json()["failed"]
-        ]
+        succeeded_ids = [x["id"] for x in response.json()["succeeded"]]
 
-        assert privacy_requests[0].id in failed_ids
+        assert privacy_requests[0].id in succeeded_ids
+
+        # Just restarted from the beginning
+        submit_mock.assert_called_with(
+            privacy_request_id=privacy_requests[0].id,
+            from_step=None,
+            from_webhook_id=None,
+        )
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -3035,7 +3045,8 @@ class TestBulkRestartFromFailure:
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_requests
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-        data = [privacy_requests[0].id, privacy_requests[1].id]
+        bad_test_id = "bad_test_id"
+        data = [privacy_requests[0].id, bad_test_id]
         privacy_requests[0].status = PrivacyRequestStatus.error
         privacy_requests[0].save(db)
 
@@ -3043,9 +3054,6 @@ class TestBulkRestartFromFailure:
             step=CurrentStep.access,
             collection=CollectionAddress("test_dataset", "test_collection"),
         )
-
-        privacy_requests[1].status = PrivacyRequestStatus.error
-        privacy_requests[1].save(db)
 
         response = api_client.post(url, json=data, headers=auth_header)
         assert response.status_code == 200
@@ -3059,7 +3067,7 @@ class TestBulkRestartFromFailure:
         ]
 
         assert privacy_requests[0].id in succeeded_ids
-        assert privacy_requests[1].id in failed_ids
+        assert bad_test_id in failed_ids
 
         submit_mock.assert_called_with(
             privacy_request_id=privacy_requests[0].id,
@@ -3099,18 +3107,26 @@ class TestRestartFromFailure:
             == f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = in_processing."
         )
 
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
     def test_restart_from_failure_no_stopped_step(
-        self, api_client, url, generate_auth_header, db, privacy_request
+        self, submit_mock, api_client, url, generate_auth_header, db, privacy_request
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
         privacy_request.status = PrivacyRequestStatus.error
         privacy_request.save(db)
 
         response = api_client.post(url, headers=auth_header)
-        assert response.status_code == 400
-        assert (
-            response.json()["detail"]
-            == f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection."
+        assert response.status_code == 200
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+        submit_mock.assert_called_with(
+            privacy_request_id=privacy_request.id,
+            from_step=None,
+            from_webhook_id=None,
         )
 
         privacy_request.delete(db)
