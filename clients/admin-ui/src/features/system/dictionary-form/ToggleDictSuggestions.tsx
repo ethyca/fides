@@ -15,17 +15,14 @@ import {
   selectSuggestions,
   toggleSuggestions,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
-
-import { useResetSuggestionContext } from "./dict-suggestion.context";
+import type { FormValues } from "~/features/system/form";
 
 export const DictSuggestionToggle = () => {
   const dispatch = useAppDispatch();
 
-  const form = useFormikContext();
-  const context = useResetSuggestionContext();
+  const form = useFormikContext<FormValues>();
 
-  // @ts-ignore
-  const vendorId = form.values?.meta?.vendor?.id;
+  const { vendor_id: vendorId } = form.values;
   const { plus: isPlusEnabled, dictionaryService: isDictionaryServiceEnabled } =
     useFeatures();
   const isShowingSuggestions = useAppSelector(selectSuggestions);
@@ -35,7 +32,6 @@ export const DictSuggestionToggle = () => {
 
   return (
     <Menu>
-      {/* @ts-ignore */}
       <MenuButton
         bg={
           isShowingSuggestions === "showing" ? "complimentary.500" : "gray.100"
@@ -75,20 +71,7 @@ export const DictSuggestionToggle = () => {
             lineHeight={4}
             fontWeight="medium"
           >
-            {isShowingSuggestions === "showing" ? "Hide" : "Show"} Suggestions
-          </Text>
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            if (context?.callbacks) {
-              context.callbacks.forEach((cb) => {
-                cb?.callback();
-              });
-            }
-          }}
-        >
-          <Text fontSize="xs" lineHeight={4} fontWeight="medium">
-            Reset Suggestions
+            {isShowingSuggestions === "showing" ? "Hide" : "Show"} suggestions
           </Text>
         </MenuItem>
       </MenuList>

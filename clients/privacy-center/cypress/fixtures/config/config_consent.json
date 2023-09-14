@@ -34,7 +34,7 @@
           "cookieKeys": ["tracking"]
         },
         {
-          "fidesDataUseKey": "improve",
+          "fidesDataUseKey": "functional",
           "name": "Test improve",
           "description": "",
           "url": "https://example.com/privacy#analytics",

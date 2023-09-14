@@ -132,6 +132,7 @@ class TestGetPrivacyNotices:
         # assert all 3 notices are in response since we're not filtering
         assert data["total"] == 3
         assert len(data["items"]) == 3
+        assert [d["systems_applicable"] for d in data["items"]] == [False, False, True]
 
         # now test that setting the param to true works
         resp = api_client.get(
@@ -146,6 +147,7 @@ class TestGetPrivacyNotices:
         # assert only 1 notice is in response since we're filtering for systems_applicable=true
         assert data["total"] == 1
         assert len(data["items"]) == 1
+        assert data["items"][0]["systems_applicable"] is True
 
         # now test that disabling the filter works the same as the default
         resp = api_client.get(
@@ -180,6 +182,7 @@ class TestGetPrivacyNotices:
             assert "enforcement_level" in notice_detail
             assert "privacy_notice_history_id" in notice_detail
             assert notice_detail["privacy_notice_history_id"] is not None
+            assert "systems_applicable" in notice_detail
 
     @pytest.mark.usefixtures(
         "privacy_notice",
@@ -757,6 +760,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
@@ -829,6 +833,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
@@ -852,6 +857,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
@@ -922,6 +928,7 @@ class TestGetPrivacyNoticesByDataUse:
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
                             displayed_in_overlay=True,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
@@ -943,6 +950,7 @@ class TestGetPrivacyNoticesByDataUse:
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
                             displayed_in_overlay=True,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
@@ -967,6 +975,7 @@ class TestGetPrivacyNoticesByDataUse:
                             version=1.0,
                             privacy_notice_history_id="placeholder_id",
                             displayed_in_overlay=True,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
@@ -1039,6 +1048,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
@@ -1144,7 +1154,7 @@ class TestGetPrivacyNoticesByDataUse:
                             PrivacyNoticeRegion.us_va,
                         ],
                         consent_mechanism=ConsentMechanism.opt_in,
-                        data_uses=["essential.service.operations.support.optimization"],
+                        data_uses=["essential.service.operations.improve"],
                         enforcement_level=EnforcementLevel.system_wide,
                         created_at=NOW,
                         updated_at=NOW,
@@ -1176,12 +1186,13 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
                         )
                     ],
-                    "essential.service.operations.support.optimization": [
+                    "essential.service.operations.improve": [
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-4",
                             name=f"{PRIVACY_NOTICE_NAME}-4",
@@ -1192,9 +1203,7 @@ class TestGetPrivacyNoticesByDataUse:
                                 PrivacyNoticeRegion.us_va,
                             ],
                             consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=[
-                                "essential.service.operations.support.optimization"
-                            ],
+                            data_uses=["essential.service.operations.improve"],
                             enforcement_level=EnforcementLevel.system_wide,
                             created_at=NOW,
                             updated_at=NOW,
@@ -1203,6 +1212,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[],
                         ),
                         PrivacyNoticeResponse(
@@ -1224,6 +1234,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[],
                         ),
                         PrivacyNoticeResponse(
@@ -1245,6 +1256,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_overlay=True,
                             displayed_in_privacy_center=False,
                             displayed_in_api=False,
+                            systems_applicable=True,
                             cookies=[],
                         ),
                     ],
@@ -2277,14 +2289,14 @@ class TestPatchPrivacyNotices:
         patch_privacy_notice_payload_updated_data_use = (
             patch_privacy_notice_payload.copy()
         )
-        patch_privacy_notice_payload_updated_data_use["data_uses"] = ["improve"]
+        patch_privacy_notice_payload_updated_data_use["data_uses"] = ["functional"]
         # ensure we are not disabling privacy notice, because that will bypass validation
         patch_privacy_notice_payload_updated_data_use["disabled"] = False
 
         patch_privacy_notice_us_ca_updated_data_use = (
             patch_privacy_notice_payload_us_ca_provide.copy()
         )
-        patch_privacy_notice_us_ca_updated_data_use["data_uses"] = ["improve"]
+        patch_privacy_notice_us_ca_updated_data_use["data_uses"] = ["functional"]
 
         resp = api_client.patch(
             url,
@@ -2297,12 +2309,14 @@ class TestPatchPrivacyNotices:
         assert resp.status_code == 422
         assert (
             resp.json()["detail"]
-            == "Privacy Notice 'my notice's name' has already assigned data use 'improve' to region 'PrivacyNoticeRegion.us_ca'"
+            == "Privacy Notice 'my notice's name' has already assigned data use 'functional' to region 'PrivacyNoticeRegion.us_ca'"
         )
 
         # conflict with parent/child data uses within region
         # we make the two patch payload items have parent/child data uses, they should fail
-        patch_privacy_notice_us_ca_updated_data_use["data_uses"] = ["improve.system"]
+        patch_privacy_notice_us_ca_updated_data_use["data_uses"] = [
+            "functional.service.improve"
+        ]
 
         resp = api_client.patch(
             url,

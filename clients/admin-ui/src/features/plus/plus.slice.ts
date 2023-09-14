@@ -20,18 +20,20 @@ import {
   ClassifyRequestPayload,
   ClassifyStatusUpdatePayload,
   ClassifySystem,
+  CloudConfig,
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
   CustomFieldWithId,
   GenerateTypes,
   HealthCheck,
+  Page_SystemHistoryResponse_,
   ResourceTypes,
   SystemScannerStatus,
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
 
-import { DictEntry, Page } from "./types";
+import { DictDataUse, DictEntry, Page } from "./types";
 
 interface ScanParams {
   classify?: boolean;
@@ -250,6 +252,37 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Dictionary"],
     }),
+    getFidesCloudConfig: build.query<CloudConfig, void>({
+      query: () => ({
+        url: `plus/fides-cloud`,
+        method: "GET",
+      }),
+      providesTags: ["Fides Cloud Config"],
+    }),
+    getDictionaryDataUses: build.query<
+      Page<DictDataUse>,
+      { vendor_id: number }
+    >({
+      query: ({ vendor_id }) => ({
+        params: { size: 1000 },
+        url: `plus/dictionary/data-use-declarations/${vendor_id}`,
+        method: "GET",
+      }),
+      providesTags: ["Dictionary"],
+    }),
+    getSystemHistory: build.query<
+      Page_SystemHistoryResponse_,
+      { system_key: string; page?: number; size?: number }
+    >({
+      query: (params) => ({
+        url: `plus/system/${params.system_key}/history`,
+        params: {
+          page: params.page,
+          size: params.size,
+        },
+      }),
+      providesTags: () => ["System History"],
+    }),
   }),
 });
 
@@ -275,6 +308,9 @@ export const {
   useGetAllCustomFieldDefinitionsQuery,
   useGetAllowListQuery,
   useGetAllDictionaryEntriesQuery,
+  useGetFidesCloudConfigQuery,
+  useGetDictionaryDataUsesQuery,
+  useGetSystemHistoryQuery,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
@@ -382,7 +418,7 @@ export const selectAllCustomFieldDefinitions = createSelector(
   ({ data }) => data || emptySelectAllCustomFields
 );
 
-type DictOption = {
+export type DictOption = {
   label: string;
   value: string;
   descriptiong?: string;
@@ -407,14 +443,23 @@ export const selectAllDictEntries = createSelector(
 );
 
 const EMPTY_DICT_ENTRY = undefined;
-export const selectDictEntry = (vendorId: number) =>
+export const selectDictEntry = (vendorId: string) =>
   createSelector(
     [(state) => state, plusApi.endpoints.getAllDictionaryEntries.select()],
     (state, { data }) => {
-      const dictEntry = data?.items.find(
-        (d) => d.id.toString() === vendorId.toString()
-      );
+      const dictEntry = data?.items.find((d) => d.id.toString() === vendorId);
 
       return dictEntry || EMPTY_DICT_ENTRY;
     }
+  );
+
+const EMPTY_DATA_USES: DictDataUse[] = [];
+
+export const selectDictDataUses = (vendorId: number) =>
+  createSelector(
+    [
+      (state) => state,
+      plusApi.endpoints.getDictionaryDataUses.select({ vendor_id: vendorId }),
+    ],
+    (state, { data }) => (data ? data.items : EMPTY_DATA_USES)
   );

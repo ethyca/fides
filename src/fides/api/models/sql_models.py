@@ -37,7 +37,9 @@ from fides.api.db.base_class import FidesBase as FideslibBase
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
-from fides.config import CONFIG
+from fides.config import get_config
+
+CONFIG = get_config()
 
 
 class FidesBase(FideslibBase):
@@ -151,8 +153,13 @@ class DataCategory(Base, FidesBase):
     __tablename__ = "ctl_data_categories"
 
     parent_key = Column(Text)
-    is_default = Column(BOOLEAN, default=False)
     active = Column(BOOLEAN, default=True, nullable=False)
+
+    # Default Fields
+    is_default = Column(BOOLEAN, default=False)
+    version_added = Column(Text)
+    version_deprecated = Column(Text)
+    replaced_by = Column(Text)
 
     @classmethod
     def from_fideslang_obj(
@@ -177,8 +184,13 @@ class DataQualifier(Base, FidesBase):
     __tablename__ = "ctl_data_qualifiers"
 
     parent_key = Column(Text)
-    is_default = Column(BOOLEAN, default=False)
     active = Column(BOOLEAN, default=True, nullable=False)
+
+    # Default Fields
+    is_default = Column(BOOLEAN, default=False)
+    version_added = Column(Text)
+    version_deprecated = Column(Text)
+    replaced_by = Column(Text)
 
 
 class DataSubject(Base, FidesBase):
@@ -189,8 +201,13 @@ class DataSubject(Base, FidesBase):
     __tablename__ = "ctl_data_subjects"
     rights = Column(JSON, nullable=True)
     automated_decisions_or_profiling = Column(BOOLEAN, nullable=True)
-    is_default = Column(BOOLEAN, default=False)
     active = Column(BOOLEAN, default=True, nullable=False)
+
+    # Default Fields
+    is_default = Column(BOOLEAN, default=False)
+    version_added = Column(Text)
+    version_deprecated = Column(Text)
+    replaced_by = Column(Text)
 
 
 class DataUse(Base, FidesBase):
@@ -214,8 +231,13 @@ class DataUse(Base, FidesBase):
     legitimate_interest_impact_assessment = Column(
         String, nullable=True
     )  # Deprecated in favor of PrivacyDeclaration.legal_basis_for_processing
-    is_default = Column(BOOLEAN, default=False)
     active = Column(BOOLEAN, default=True, nullable=False)
+
+    # Default Fields
+    is_default = Column(BOOLEAN, default=False)
+    version_added = Column(Text)
+    version_deprecated = Column(Text)
+    replaced_by = Column(Text)
 
     @staticmethod
     def get_parent_uses_from_key(data_use_key: str) -> Set[str]:
@@ -359,9 +381,9 @@ class System(Base, FidesBase):
     )
     reason_for_exemption = Column(String)
     uses_profiling = Column(BOOLEAN(), server_default="f", nullable=False)
-    legal_basis_for_profiling = Column(String)
+    legal_basis_for_profiling = Column(ARRAY(String), server_default="{}")
     does_international_transfers = Column(BOOLEAN(), server_default="f", nullable=False)
-    legal_basis_for_transfers = Column(String)
+    legal_basis_for_transfers = Column(ARRAY(String), server_default="{}")
     requires_data_protection_assessments = Column(
         BOOLEAN(), server_default="f", nullable=False
     )
@@ -400,6 +422,8 @@ class System(Base, FidesBase):
     cookies = relationship(
         "Cookies", back_populates="system", lazy="selectin", uselist=True, viewonly=True
     )
+
+    user_id = Column(String, nullable=True)
 
     @classmethod
     def get_data_uses(

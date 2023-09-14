@@ -136,7 +136,7 @@ const RequestRow = ({
       height="36px"
       data-testid={`privacy-request-row-${request.status}`}
     >
-      <Td px={0}>
+      <Td px={2}>
         <Checkbox
           aria-label="Select request"
           isChecked={!!isChecked}

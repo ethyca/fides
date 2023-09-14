@@ -19,7 +19,7 @@ const EmptyTableState = ({ title, description, button }: Props) => (
     data-testid="empty-state"
   >
     <WarningTwoIcon alignSelf="start" color="blue.400" mt={0.5} />
-    <Box>
+    <Box flexGrow={1}>
       <Text fontWeight="bold" fontSize="sm" mb={1}>
         {title}
       </Text>

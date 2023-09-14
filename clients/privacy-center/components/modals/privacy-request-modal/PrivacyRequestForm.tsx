@@ -32,6 +32,16 @@ import {
 import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
 
+type KnownKeys = {
+  name: string;
+  email: string;
+  phone: string;
+};
+
+type FormValues = KnownKeys & {
+  [key: string]: any;
+};
+
 const usePrivacyRequestForm = ({
   onClose,
   action,
@@ -47,12 +57,17 @@ const usePrivacyRequestForm = ({
 }) => {
   const settings = useSettings();
   const identityInputs = action?.identity_inputs ?? defaultIdentityInput;
+  const customPrivacyRequestFields =
+    action?.custom_privacy_request_fields ?? {};
   const toast = useToast();
-  const formik = useFormik({
+  const formik = useFormik<FormValues>({
     initialValues: {
       name: "",
       email: "",
       phone: "",
+      ...Object.fromEntries(
+        Object.keys(customPrivacyRequestFields).map((key) => [key, ""])
+      ),
     },
     onSubmit: async (values) => {
       if (!action) {
@@ -60,14 +75,34 @@ const usePrivacyRequestForm = ({
         return;
       }
 
+      const { email, phone, name, ...customPrivacyRequestFieldValues } = values;
+
+      // add the label to each custom privacy request field
+      const transformedCustomPrivacyRequestFields = Object.keys(
+        customPrivacyRequestFieldValues
+      ).length
+        ? Object.fromEntries(
+            Object.entries(customPrivacyRequestFieldValues).map(
+              ([key, value]) => [
+                key,
+                {
+                  label: action.custom_privacy_request_fields?.[key]?.label,
+                  value,
+                },
+              ]
+            )
+          )
+        : null;
+
       const body = [
         {
           identity: {
-            email: values.email,
-            phone_number: values.phone,
+            email,
+            phone_number: phone,
             // enable this when name field is supported on the server
             // name: values.name
           },
+          custom_privacy_request_fields: transformedCustomPrivacyRequestFields,
           policy_key: action.policy_key,
         },
       ];
@@ -167,10 +202,20 @@ const usePrivacyRequestForm = ({
           return true;
         }
       ),
+      ...Object.fromEntries(
+        Object.entries(customPrivacyRequestFields).map(
+          ([key, { label, required }]) => [
+            key,
+            required
+              ? Yup.string().required(`${label} is required`)
+              : Yup.string().notRequired(),
+          ]
+        )
+      ),
     }),
   });
 
-  return { ...formik, identityInputs };
+  return { ...formik, identityInputs, customPrivacyRequestFields };
 };
 
 type PrivacyRequestFormProps = {
@@ -208,6 +253,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
     dirty,
     resetForm,
     identityInputs,
+    customPrivacyRequestFields,
   } = usePrivacyRequestForm({
     onClose,
     action,
@@ -303,6 +349,25 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 <FormErrorMessage>{errors.phone}</FormErrorMessage>
               </FormControl>
             ) : null}
+            {Object.entries(customPrivacyRequestFields).map(([key, item]) => (
+              <FormControl
+                key={key}
+                id={key}
+                isInvalid={touched[key] && Boolean(errors[key])}
+                isRequired={item.required}
+              >
+                <FormLabel fontSize="sm">{item.label}</FormLabel>
+                <Input
+                  id={key}
+                  name={key}
+                  focusBorderColor="primary.500"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values[key]}
+                />
+                <FormErrorMessage>{errors[key]}</FormErrorMessage>
+              </FormControl>
+            ))}
           </Stack>
         </ModalBody>
 

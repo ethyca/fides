@@ -9,4 +9,5 @@ export type Page_ExperienceConfigResponse_ = {
   total: number;
   page: number;
   size: number;
+  pages?: number;
 };

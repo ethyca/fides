@@ -6,7 +6,6 @@ import {
   ConsentOption,
   FidesConfig,
   constructFidesRegionString,
-  CONSENT_COOKIE_NAME,
   fetchExperience,
 } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
@@ -82,15 +81,8 @@ export default async function handler(
     environment.settings.IS_PREFETCH_ENABLED
   ) {
     const fidesRegionString = constructFidesRegionString(geolocation);
+
     if (fidesRegionString) {
-      let fidesUserDeviceId = "";
-      if (Object.keys(req.cookies).length) {
-        const fidesCookie = req.cookies[CONSENT_COOKIE_NAME];
-        if (fidesCookie) {
-          fidesUserDeviceId =
-            JSON.parse(fidesCookie)?.identity?.fides_user_device_id;
-        }
-      }
       if (environment.settings.DEBUG) {
         console.log("Fetching relevant experiences from server-side...");
       }
@@ -98,8 +90,8 @@ export default async function handler(
         fidesRegionString,
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
           environment.settings.FIDES_API_URL,
-        fidesUserDeviceId,
-        environment.settings.DEBUG
+        environment.settings.DEBUG,
+        null
       );
     }
   }
@@ -143,10 +135,12 @@ export default async function handler(
   const script = `
   (function () {
     // This polyfill service adds a fetch polyfill only when needed, depending on browser making the request 
-    var script = document.createElement('script');
-    script.src = 'https://polyfill.io/v3/polyfill.min.js?features=fetch';
-    document.head.appendChild(script);
-    
+    if (!window.fetch) {
+      var script = document.createElement('script');
+      script.src = 'https://polyfill.io/v3/polyfill.min.js?features=fetch';
+      document.head.appendChild(script);
+    }
+
     // Include generic fides.js script
     ${fidesJS}
 

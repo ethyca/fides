@@ -130,17 +130,17 @@ export type SystemResponse = {
    */
   uses_profiling?: boolean;
   /**
-   * The legal basis for performing profiling that has a legal effect.
+   * The legal basis (or bases) for performing profiling that has a legal effect.
    */
-  legal_basis_for_profiling?: LegalBasisForProfilingEnum;
+  legal_basis_for_profiling?: Array<LegalBasisForProfilingEnum>;
   /**
    * Whether this system transfers data to other countries or international organizations.
    */
   does_international_transfers?: boolean;
   /**
-   * The legal basis under which the data is transferred.
+   * The legal basis (or bases) under which the data is transferred.
    */
-  legal_basis_for_transfers?: LegalBasisForTransfersEnum;
+  legal_basis_for_transfers?: Array<LegalBasisForTransfersEnum>;
   /**
    * Whether this system requires data protection impact assessments.
    */
@@ -198,4 +198,6 @@ export type SystemResponse = {
    */
   data_stewards?: Array<UserResponse>;
   cookies?: Array<Cookies>;
+  created_by?: string;
+  created_at: string;
 };

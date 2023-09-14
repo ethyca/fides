@@ -19,9 +19,9 @@ export type DictEntry = {
   dpo: string;
   legal_address: string;
   international_transfers: boolean;
-  legal_basis_for_transfers?: string;
+  legal_basis_for_transfers?: string[];
   uses_profiling: boolean;
-  legal_basis_for_profiling?: string;
+  legal_basis_for_profiling?: string[];
   data_security_practices?: string;
   tags?: string;
   logo?: string;
@@ -37,4 +37,17 @@ export type DictCookie = {
   purposes: string;
   vendor_id: string;
   domains: string;
+};
+
+export type DictDataUse = {
+  vendor_id: string;
+  vendor_name: string;
+  data_use: string;
+  data_categories: string[];
+  features: string[];
+  legal_basis_for_processing: string;
+  retention_period: number;
+  purpose: number;
+  special_purpose: number;
+  cookies: any[];
 };

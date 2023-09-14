@@ -2,6 +2,7 @@
 """Integration tests for the API module."""
 import json
 import typing
+from datetime import datetime
 from json import loads
 from typing import Dict, List
 
@@ -463,9 +464,9 @@ class TestSystemCreate:
             exempt_from_privacy_regulations=False,
             reason_for_exemption=None,
             uses_profiling=True,
-            legal_basis_for_profiling="Authorised by law",
+            legal_basis_for_profiling=["Authorised by law", "Contract"],
             does_international_transfers=True,
-            legal_basis_for_transfers="Binding corporate rules",
+            legal_basis_for_transfers=["Adequacy Decision", "BCRs"],
             requires_data_protection_assessments=True,
             dpa_location="https://www.example.com/dpa",
             dpa_progress="pending",
@@ -615,9 +616,12 @@ class TestSystemCreate:
 
         for field in SystemResponse.__fields__:
             system_val = getattr(system, field)
-            if isinstance(system_val, typing.Hashable):
+            if isinstance(system_val, typing.Hashable) and not isinstance(
+                system_val, datetime
+            ):
                 assert system_val == json_results[field]
         assert len(json_results["privacy_declarations"]) == 2
+        assert json_results["created_at"]
 
         for i, decl in enumerate(system.privacy_declarations):
             for field in PrivacyDeclarationResponse.__fields__:
@@ -634,9 +638,9 @@ class TestSystemCreate:
         assert system.exempt_from_privacy_regulations is False
         assert system.reason_for_exemption is None
         assert system.uses_profiling is True
-        assert system.legal_basis_for_profiling == "Authorised by law"
+        assert system.legal_basis_for_profiling == ["Authorised by law", "Contract"]
         assert system.does_international_transfers is True
-        assert system.legal_basis_for_transfers == "Binding corporate rules"
+        assert system.legal_basis_for_transfers == ["Adequacy Decision", "BCRs"]
         assert system.requires_data_protection_assessments is True
         assert system.dpa_location == "https://www.example.com/dpa"
         assert system.dpa_progress == "pending"
@@ -720,8 +724,6 @@ class TestSystemCreate:
             "joint_controller",
             "joint_controller_info",
             "legal_address",
-            "legal_basis_for_profiling",
-            "legal_basis_for_transfers",
             "legal_name",
             "meta",
             "name",
@@ -751,6 +753,8 @@ class TestSystemCreate:
             "cookies",
             "dataset_references",
             "data_stewards",
+            "legal_basis_for_profiling",
+            "legal_basis_for_transfers",
             "responsibility",
         ]
         for field in expected_empty_list:
@@ -938,7 +942,7 @@ class TestSystemCreate:
     async def test_system_create_invalid_legal_basis_for_profiling(
         self, generate_auth_header, test_config, system_create_request_body
     ):
-        system_create_request_body.legal_basis_for_profiling = "bad_basis"
+        system_create_request_body.legal_basis_for_profiling = ["bad_basis"]
         auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
 
         result = _api.create(
@@ -952,6 +956,7 @@ class TestSystemCreate:
         assert result.json()["detail"][0]["loc"] == [
             "body",
             "legal_basis_for_profiling",
+            0,
         ]
 
 
@@ -1054,9 +1059,14 @@ class TestSystemUpdate:
             exempt_from_privacy_regulations=False,
             reason_for_exemption=None,
             uses_profiling=True,
-            legal_basis_for_profiling="Authorised by law",
+            legal_basis_for_profiling=["Authorised by law", "Contract"],
             does_international_transfers=True,
-            legal_basis_for_transfers="Binding corporate rules",
+            legal_basis_for_transfers=[
+                "Adequacy Decision",
+                "BCRs",
+                "Supplementary Measures",
+                "Unknown legal basis",
+            ],
             requires_data_protection_assessments=True,
             dpa_location="https://www.example.com/dpa",
             dpa_progress="pending",
@@ -1484,9 +1494,14 @@ class TestSystemUpdate:
         assert system.exempt_from_privacy_regulations is False
         assert system.reason_for_exemption is None
         assert system.uses_profiling is True
-        assert system.legal_basis_for_profiling == "Authorised by law"
+        assert system.legal_basis_for_profiling == ["Authorised by law", "Contract"]
         assert system.does_international_transfers is True
-        assert system.legal_basis_for_transfers == "Binding corporate rules"
+        assert system.legal_basis_for_transfers == [
+            "Adequacy Decision",
+            "BCRs",
+            "Supplementary Measures",
+            "Unknown legal basis",
+        ]
         assert system.requires_data_protection_assessments is True
         assert system.dpa_location == "https://www.example.com/dpa"
         assert system.dpa_progress == "pending"
@@ -1524,10 +1539,13 @@ class TestSystemUpdate:
         json_results = result.json()
         for field in SystemResponse.__fields__:
             system_val = getattr(system, field)
-            if isinstance(system_val, typing.Hashable):
+            if isinstance(system_val, typing.Hashable) and not isinstance(
+                system_val, datetime
+            ):
                 assert system_val == json_results[field]
         assert len(json_results["privacy_declarations"]) == 1
         assert json_results["data_stewards"] == []
+        assert json_results["created_at"]
 
         for i, decl in enumerate(system.privacy_declarations):
             for field in PrivacyDeclarationResponse.__fields__:
@@ -1715,7 +1733,7 @@ class TestSystemUpdate:
         "update_declarations",
         [
             (
-                [  # update a dec matching one existing dec
+                [  # Check 1: update a dec matching one existing dec
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
                         data_categories=[],
@@ -1727,7 +1745,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                [  # add a new single dec with same data use
+                [  # Check 2: add a new single dec with same data use
                     models.PrivacyDeclaration(
                         name="declaration-name-1",
                         data_categories=[],
@@ -1739,7 +1757,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                [  # add a new single dec with same data use, no name
+                [  # Check 3: add a new single dec with same data use, no name
                     models.PrivacyDeclaration(
                         name="",
                         data_categories=[],
@@ -1751,7 +1769,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # update 2 privacy declarations both matching existing decs
+                # Check 4: update 2 privacy declarations both matching existing decs
                 [
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
@@ -1772,7 +1790,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # update 2 privacy declarations, one with matching name and data use, other only data use
+                # Check 5: update 2 privacy declarations, one with matching name and data use, other only data use
                 [
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
@@ -1793,7 +1811,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # update 2 privacy declarations, one with matching name and data use, other only data use but same data use
+                # Check 6: update 2 privacy declarations, one with matching name and data use, other only data use but same data use
                 [
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
@@ -1814,7 +1832,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # update 2 privacy declarations, one with only matching data use, other totally new
+                # Check 7: update 2 privacy declarations, one with only matching data use, other totally new
                 [
                     models.PrivacyDeclaration(
                         name="declaration-name-1",
@@ -1835,7 +1853,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # add 2 new privacy declarations
+                # Check 8: add 2 new privacy declarations
                 [
                     models.PrivacyDeclaration(
                         name="declaration-name",
@@ -1848,7 +1866,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
                         data_categories=[],
-                        data_use="improve",
+                        data_use="functional",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1856,7 +1874,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # add 2 new privacy declarations, same data uses as existing decs but no names
+                # Check 9: add 2 new privacy declarations, same data uses as existing decs but no names
                 [
                     models.PrivacyDeclaration(
                         name="",
@@ -1877,7 +1895,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # specify no declarations, declarations should be cleared off the system
+                # Check 10: specify no declarations, declarations should be cleared off the system
                 []
             ),
         ],
@@ -2163,7 +2181,11 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
+
+        #  Set fields for default labels
         manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         result = _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
@@ -2184,7 +2206,11 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
+
+        #  Set fields for default labels
         manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         result = _api.upsert(
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
@@ -2212,7 +2238,10 @@ class TestDefaultTaxonomyCrud:
             headers=test_config.user.auth_header,
         )
 
+        #  Set fields for default labels
         manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         result = _api.update(
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
@@ -2226,8 +2255,12 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
-        manifest.is_default = True
         second_item = manifest.copy()
+
+        #  Set fields for default labels
+        manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         second_item.is_default = False
 
         _api.create(
@@ -2329,6 +2362,7 @@ class TestCrudActiveProperty:
         )  # cast resource to extended model
         resource.fides_key = resource.fides_key + "_test_create_active_false"
         resource.is_default = False
+        resource.version_added = None
         resource.active = False
         json_resource = resource.json(exclude_none=True)
         token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]

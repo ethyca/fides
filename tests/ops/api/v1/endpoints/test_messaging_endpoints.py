@@ -812,6 +812,7 @@ class TestGetMessagingConfigs:
                 }
             ],
             "page": 1,
+            "pages": 1,
             "size": PAGE_SIZE,
             "total": 1,
         }
@@ -1472,14 +1473,15 @@ class TestGetActiveDefaultMessagingConfig:
         """
 
         error_message = "Unknown notification_service_type"
+        response_error = "Invalid notification_service_type configured."
         auth_header = generate_auth_header([MESSAGING_READ])
-        api_client.get(
+        response = api_client.get(
             url,
             headers=auth_header,
         )
 
-        assert "ERROR" in loguru_caplog.text
-        assert error_message in loguru_caplog.text
+        assert response.status_code == 400
+        assert response.json().get("detail") == response_error
 
     @pytest.mark.usefixtures("notification_service_type_mailgun")
     def test_get_active_default_config(
