@@ -8,6 +8,7 @@ import {
   Heading,
   IconButton,
   Link,
+  Spinner,
   Text,
   useToast,
 } from "@fidesui/react";
@@ -38,9 +39,6 @@ const CORSConfigurationPage: NextPage = () => {
     useCreateConfigurationSettingsMutation();
 
   const toast = useToast();
-  if (isLoadingGetQuery) {
-    return <div>loading</div>;
-  }
 
   const handleSubmit = async (
     values: FormValues,
@@ -94,75 +92,84 @@ const CORSConfigurationPage: NextPage = () => {
             for more information on how to configure CORS domains.
           </Text>
         </Box>
+
         <Box maxW="600px">
           <FormSection title="CORS Domains">
-            <Formik<FormValues>
-              initialValues={corsOrigins}
-              enableReinitialize
-              onSubmit={handleSubmit}
-            >
-              {({ dirty, values, isValid }) => (
-                <Form>
-                  <FieldArray
-                    name="cors_origins"
-                    render={(arrayHelpers) => (
-                      <Flex flexDir="column">
-                        {values.cors_origins!.map(
-                          (_: string, index: number) => (
-                            <Flex flexDir="row" key={index} my={3}>
-                              <CustomTextInput
-                                variant="stacked"
-                                name={`cors_origins[${index}]`}
-                              />
+            {isLoadingGetQuery || isLoadingPatchMutation ? (
+              <Flex justifyContent="center">
+                <Spinner />
+              </Flex>
+            ) : (
+              <Formik<FormValues>
+                initialValues={corsOrigins}
+                enableReinitialize
+                onSubmit={handleSubmit}
+              >
+                {({ dirty, values, isValid }) => (
+                  <Form>
+                    <FieldArray
+                      name="cors_origins"
+                      render={(arrayHelpers) => (
+                        <Flex flexDir="column">
+                          {values.cors_origins!.map(
+                            (_: string, index: number) => (
+                              <Flex flexDir="row" key={index} my={3}>
+                                <CustomTextInput
+                                  variant="stacked"
+                                  name={`cors_origins[${index}]`}
+                                />
 
-                              <IconButton
-                                ml={8}
-                                aria-label="delete-cors-domain"
-                                variant="outline"
-                                zIndex={2}
-                                size="sm"
-                                onClick={() => {
-                                  arrayHelpers.remove(index);
-                                }}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </Flex>
-                          )
-                        )}
+                                <IconButton
+                                  ml={8}
+                                  aria-label="delete-cors-domain"
+                                  variant="outline"
+                                  zIndex={2}
+                                  size="sm"
+                                  onClick={() => {
+                                    arrayHelpers.remove(index);
+                                  }}
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Flex>
+                            )
+                          )}
 
-                        <Flex justifyContent="center" mt={3}>
-                          <Button
-                            aria-label="add-cors-domain"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              arrayHelpers.push("");
-                            }}
-                            rightIcon={<AddIcon />}
-                          >
-                            Add CORS domain
-                          </Button>
+                          <Flex justifyContent="center" mt={3}>
+                            <Button
+                              aria-label="add-cors-domain"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                arrayHelpers.push("");
+                              }}
+                              rightIcon={<AddIcon />}
+                            >
+                              Add CORS domain
+                            </Button>
+                          </Flex>
                         </Flex>
-                      </Flex>
-                    )}
-                  />
+                      )}
+                    />
 
-                  <Box mt={6}>
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      size="sm"
-                      isDisabled={isLoadingPatchMutation || !dirty || !isValid}
-                      isLoading={isLoadingPatchMutation}
-                      data-testid="save-btn"
-                    >
-                      Save
-                    </Button>
-                  </Box>
-                </Form>
-              )}
-            </Formik>
+                    <Box mt={6}>
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        size="sm"
+                        isDisabled={
+                          isLoadingPatchMutation || !dirty || !isValid
+                        }
+                        isLoading={isLoadingPatchMutation}
+                        data-testid="save-btn"
+                      >
+                        Save
+                      </Button>
+                    </Box>
+                  </Form>
+                )}
+              </Formik>
+            )}
           </FormSection>
         </Box>
       </Box>
