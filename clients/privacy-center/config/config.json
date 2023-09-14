@@ -4,6 +4,9 @@
   "description_subtext": [],
   "addendum": [],
   "logo_path": "/logo.svg",
+  "logo_url": "https://fid.es",
+  "privacy_policy_url": "https://fid.es/privacy",
+  "privacy_policy_url_text": "Privacy Policy",
   "favicon_path": "/favicon.ico",
   "actions": [
     {
