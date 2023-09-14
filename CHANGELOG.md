@@ -17,9 +17,6 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.20.0...main)
 
-### Changed
-- Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
-
 ## [2.20.0](https://github.com/ethyca/fides/compare/2.19.1...2.20.0)
 
 ### Added
@@ -38,6 +35,7 @@ The types of changes are:
 - Adds check for fetch before loading fetch polyfill for fides.js [#4074](https://github.com/ethyca/fides/pull/4074)
 - Updated to support Fideslang 2.0, including data migrations [#3933](https://github.com/ethyca/fides/pull/3933)
 - Disable notices that are not systems applicable to support new UI [#4094](https://github.com/ethyca/fides/issues/4094)
+- Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
 
 ### Fixed
 
