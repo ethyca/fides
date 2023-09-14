@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.19.2b1.post0.dev11"
+    "version": "2.19.2b1.post0.dev12"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13926,6 +13926,11 @@
             "items": {
               "type": "string"
             }
+          },
+          "skip_processing": {
+            "title": "Skip Processing",
+            "type": "boolean",
+            "default": false
           }
         },
         "description": "Collection-level specific annotations used for query traversal"
@@ -15828,6 +15833,11 @@
           },
           "requests": {
             "$ref": "#/components/schemas/SaaSRequestMap"
+          },
+          "skip_processing": {
+            "title": "Skip Processing",
+            "type": "boolean",
+            "default": false
           },
           "after": {
             "title": "After",
