@@ -27,6 +27,7 @@ export type Config = {
   server_url_development?: string;
   server_url_production?: string;
   logo_path: string;
+  logo_url: string;
   favicon_path?: string;
   actions: PrivacyRequestOption[];
   includeConsent?: boolean;
