@@ -28,13 +28,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           justifyContent="center"
           alignItems="center"
         >
-          {config.logo_url ? (
-            <a href={config.logo_url}>
-              <Logo logo_path={config.logo_path} />
-            </a>
-          ) : (
-            <Logo logo_path={config.logo_path} />
-          )}
+          <Logo src={config.logo_path} href={config.logo_url} />
         </Flex>
       </header>
       <div>{children}</div>
