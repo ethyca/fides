@@ -16,7 +16,7 @@ from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.policy import PolicyResponse as PolicySchema
-from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 from fides.api.schemas.user import PrivacyRequestReviewer
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
 from fides.config import CONFIG
@@ -52,7 +52,9 @@ class PrivacyRequestDRPStatusResponse(FidesSchema):
 
 
 class Consent(FidesSchema):
-    """Schema for consent."""
+    """
+    Deprecated: This used to be populated and sent to the server by a `config.json` in the UI
+    """
 
     data_use: str
     data_use_description: Optional[str] = None
@@ -62,7 +64,9 @@ class Consent(FidesSchema):
 
 
 class ConsentReport(Consent):
-    """Schema for reporting Consent requests."""
+    """
+    Keeps record of each of the preferences that have been recorded via ConsentReporting endpoints.
+    """
 
     id: str
     identity: Identity
@@ -78,6 +82,7 @@ class PrivacyRequestCreate(FidesSchema):
     finished_processing_at: Optional[datetime]
     requested_at: Optional[datetime]
     identity: Identity
+    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
     policy_key: FidesKey
     encryption_key: Optional[str] = None
     consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
@@ -195,10 +200,13 @@ class PrivacyRequestResponse(FidesSchema):
     # about our PII structure than is explicitly stored in the cache on request
     # creation.
     identity: Optional[Dict[str, Optional[str]]]
+    custom_privacy_request_fields: Optional[Dict[str, Any]]
     policy: PolicySchema
     action_required_details: Optional[CheckpointActionRequiredDetails] = None
     resume_endpoint: Optional[str]
     days_left: Optional[int]
+    custom_privacy_request_fields_approved_by: Optional[str]
+    custom_privacy_request_fields_approved_at: Optional[datetime]
 
     class Config:
         """Set orm_mode and use_enum_values"""

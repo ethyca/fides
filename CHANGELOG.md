@@ -15,7 +15,16 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.19.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.20.0...main)
+
+### Changed
+- Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
+
+## [2.20.0](https://github.com/ethyca/fides/compare/2.19.1...2.20.0)
+
+### Added
+- Initial page for configuring consent [#4069](https://github.com/ethyca/fides/pull/4069)
+- Vendor cookie table for configuring consent [#4082](https://github.com/ethyca/fides/pull/4082)
 
 ### Changed
 
@@ -24,13 +33,18 @@ The types of changes are:
 - Added dictionary suggestions for data uses [4035](https://github.com/ethyca/fides/pull/4035)
 - Privacy notice regions now render human readable names instead of country codes [#4029](https://github.com/ethyca/fides/pull/4029)
 - Privacy notice templates are disabled by default [#4010](https://github.com/ethyca/fides/pull/4010)
+- Added optional "skip_processing" flag to collections for DSR processing [#4047](https://github.com/ethyca/fides/pull/4047)
 - Admin UI now shows all privacy notices with an indicator of whether they apply to any systems [#4010](https://github.com/ethyca/fides/pull/4010)
 - Add case-insensitive privacy experience region filtering [#4058](https://github.com/ethyca/fides/pull/4058)
 - Adds check for fetch before loading fetch polyfill for fides.js [#4074](https://github.com/ethyca/fides/pull/4074)
+- Updated to support Fideslang 2.0, including data migrations [#3933](https://github.com/ethyca/fides/pull/3933)
+- Disable notices that are not systems applicable to support new UI [#4094](https://github.com/ethyca/fides/issues/4094)
 
 ### Fixed
 
 - Ensures that fides.js toggles are not hidden by other CSS libs [#4075](https://github.com/ethyca/fides/pull/4075)
+- Migrate system > meta > vendor > id to system > meta [#4088](https://github.com/ethyca/fides/pull/4088)
+- Enable toggles in various tables now render an error toast if an error occurs [#4095](https://github.com/ethyca/fides/pull/4095)
 
 ## [2.19.1](https://github.com/ethyca/fides/compare/2.19.0...2.19.1)
 
@@ -158,7 +172,7 @@ The types of changes are:
 - Privacy center and fides-js now pass in `Unescape-Safestr` as a header so that special characters can be rendered properly [#3706](https://github.com/ethyca/fides/pull/3706)
 - Fixed ValidationError for saving PrivacyPreferences [#3719](https://github.com/ethyca/fides/pull/3719)
 - Fixed issue preventing ConnectionConfigs with duplicate names from saving [#3770](https://github.com/ethyca/fides/pull/3770)
-- Fixed creating and editing manual integrations [#3772](https://github.com/ethyca/fides/pull/3772) 
+- Fixed creating and editing manual integrations [#3772](https://github.com/ethyca/fides/pull/3772)
 - Fix lingering integration artifacts by cascading deletes from System [#3771](https://github.com/ethyca/fides/pull/3771)
 
 ### Developer Experience

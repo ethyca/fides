@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from itertools import product
 from typing import Any, Dict, List, Literal, Optional, TypeVar
 
@@ -20,6 +19,7 @@ from fides.api.util import saas_util
 from fides.api.util.collection_util import Row, merge_dicts
 from fides.api.util.saas_util import (
     ALL_OBJECT_FIELDS,
+    CUSTOM_PRIVACY_REQUEST_FIELDS,
     FIDESOPS_GROUPED_INPUTS,
     MASKED_OBJECT_FIELDS,
     PRIVACY_REQUEST_ID,
@@ -298,6 +298,15 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         if self.privacy_request:
             param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
 
+        custom_privacy_request_fields = input_data.get(CUSTOM_PRIVACY_REQUEST_FIELDS)
+        if (
+            isinstance(custom_privacy_request_fields, list)
+            and len(custom_privacy_request_fields) > 0
+        ):
+            param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields[
+                0
+            ]
+
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
             self.action, self.collection_name, self.current_request, param_values  # type: ignore
@@ -361,6 +370,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         collection_name: str = self.node.address.collection
         collection_values: Dict[str, Row] = {collection_name: row}
         identity_data: Dict[str, Any] = privacy_request.get_cached_identity_data()
+        custom_privacy_request_fields: Dict[
+            str, Any
+        ] = privacy_request.get_cached_custom_privacy_request_fields()
 
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
@@ -389,6 +401,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         if self.privacy_request:
             param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
+
+        param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields
 
         # remove any row values for fields marked as read-only, these will be omitted from all update maps
         for field_path, field in self.field_map().items():
@@ -421,14 +435,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         A utility that, based on the provided param values and update request,
         generates the `SaaSRequestParams` that are to be used in request execution
         """
-
-        # removes outer {} wrapper from body for greater flexibility in custom body config
-        param_values[MASKED_OBJECT_FIELDS] = json.dumps(
-            param_values[MASKED_OBJECT_FIELDS]
-        )[1:-1]
-        param_values[ALL_OBJECT_FIELDS] = json.dumps(param_values[ALL_OBJECT_FIELDS])[
-            1:-1
-        ]
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(

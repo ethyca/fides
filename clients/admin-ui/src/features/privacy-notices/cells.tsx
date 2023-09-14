@@ -3,7 +3,7 @@ import React from "react";
 import { CellProps } from "react-table";
 
 import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
-import { EnableCell, MapCell, MultiTagCell } from "~/features/common/table/";
+import { EnableCell, MapCell } from "~/features/common/table/";
 import { MECHANISM_MAP } from "~/features/privacy-notices/constants";
 import { usePatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
 import { PrivacyNoticeResponse } from "~/types/api";
@@ -36,8 +36,30 @@ const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
   };
 
 export const LocationCell = (
-  cellProps: CellProps<PrivacyNoticeResponse, string[]>
-) => <MultiTagCell map={PRIVACY_NOTICE_REGION_MAP} {...cellProps} />;
+  cellProps: CellProps<PrivacyNoticeResponse, string>
+) => {
+  const { row } = cellProps;
+  const region = row.original.regions ? row.original.regions : ["No locations"];
+  let tagValue;
+  if (region.length > 1) {
+    tagValue = `${region.length} locations`;
+  } else {
+    tagValue = PRIVACY_NOTICE_REGION_MAP.get(region[0]);
+  }
+  return (
+    <Badge
+      size="sm"
+      width="fit-content"
+      data-testid="status-badge"
+      textTransform="uppercase"
+      fontWeight="400"
+      color="gray.600"
+      px={2}
+    >
+      {tagValue}
+    </Badge>
+  );
+};
 
 export const EnablePrivacyNoticeCell = (
   cellProps: CellProps<PrivacyNoticeResponse, boolean>
@@ -45,14 +67,13 @@ export const EnablePrivacyNoticeCell = (
   const [patchNoticeMutationTrigger] = usePatchPrivacyNoticesMutation();
 
   const { row } = cellProps;
-  const onToggle = async (toggle: boolean) => {
-    await patchNoticeMutationTrigger([
+  const onToggle = async (toggle: boolean) =>
+    patchNoticeMutationTrigger([
       {
         id: row.original.id,
         disabled: !toggle,
       },
     ]);
-  };
 
   const { systems_applicable: systemsApplicable, disabled: noticeIsDisabled } =
     row.original;
@@ -95,7 +116,8 @@ export const PrivacyNoticeStatusCell = (
         {...tagProps}
         data-testid="status-badge"
         textTransform="uppercase"
-        fontWeight="600"
+        fontWeight="400"
+        color="gray.600"
         px={2}
       >
         {tagValue}

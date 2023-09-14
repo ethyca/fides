@@ -11,7 +11,7 @@
       "opt_in": false
     },
     {
-      "data_use": "improve",
+      "data_use": "functional",
       "description": "Product Analytics",
       "opt_in": true
     }

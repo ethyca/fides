@@ -13,6 +13,7 @@ from pydantic import ValidationError
 from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session
 
+from fides.api import common_exceptions
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
@@ -494,6 +495,84 @@ def test_create_and_process_access_request_postgres(
     pr.delete(db=db)
     assert not pr in db  # Check that `pr` has been expunged from the session
     assert ExecutionLog.get(db, object_id=log_id).privacy_request_id == pr_id
+
+
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+@pytest.mark.usefixtures(
+    "postgres_example_test_dataset_config_skipped_login_collection",
+    "postgres_integration_db",
+    "cache",
+)
+def test_create_and_process_access_request_with_valid_skipped_collection(
+    db,
+    policy,
+    run_privacy_request_task,
+):
+    customer_email = "customer-1@example.com"
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
+
+    results = pr.get_results()
+    assert len(results.keys()) == 10
+
+    assert "login" not in results.keys()
+
+    result_key_prefix = f"EN_{pr.id}__access_request__postgres_example_test_dataset:"
+    customer_key = result_key_prefix + "customer"
+    assert results[customer_key][0]["email"] == customer_email
+
+    assert AuditLog.filter(
+        db=db,
+        conditions=(
+            (AuditLog.privacy_request_id == pr.id)
+            & (AuditLog.action == AuditLogAction.finished)
+        ),
+    ).first()
+
+
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+@pytest.mark.usefixtures(
+    "postgres_example_test_dataset_config_skipped_address_collection",
+    "postgres_integration_db",
+    "cache",
+)
+def test_create_and_process_access_request_with_invalid_skipped_collection(
+    db,
+    policy,
+    run_privacy_request_task,
+):
+    customer_email = "customer-1@example.com"
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
+
+    results = pr.get_results()
+    assert len(results.keys()) == 0
+
+    db.refresh(pr)
+
+    assert pr.status == PrivacyRequestStatus.error
 
 
 @pytest.mark.integration

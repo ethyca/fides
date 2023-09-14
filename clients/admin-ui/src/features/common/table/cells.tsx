@@ -1,10 +1,12 @@
 import {
+  Badge,
   Box,
   Flex,
   Switch,
   Tag,
   Text,
   useDisclosure,
+  useToast,
   WarningIcon,
 } from "@fidesui/react";
 import ConfirmationModal from "common/ConfirmationModal";
@@ -12,6 +14,10 @@ import React, { ChangeEvent } from "react";
 import { CellProps } from "react-table";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { RTKResult } from "~/types/errors";
+
+import { errorToastParams } from "../toast";
 
 export const TitleCell = <T extends object>({
   value,
@@ -24,6 +30,14 @@ export const TitleCell = <T extends object>({
 export const WrappedCell = <T extends object>({
   value,
 }: CellProps<T, string>) => <Text whiteSpace="normal">{value}</Text>;
+
+export const PaddedCell = <T extends object>({
+  value,
+}: CellProps<T, string>) => (
+  <Text whiteSpace="normal" p={2}>
+    {value}
+  </Text>
+);
 
 export const ClipboardCell = <T extends object>({
   value,
@@ -40,21 +54,20 @@ export const DateCell = <T extends object>({ value }: CellProps<T, string>) =>
 
 type MapCellProps<T extends object> = CellProps<T, string> & {
   map: Map<string, string>;
-  backgroundColor?: string;
 };
 
-export const MapCell = <T extends object>({
-  map,
-  value,
-  backgroundColor,
-}: MapCellProps<T>) => (
-  <Tag
+export const MapCell = <T extends object>({ map, value }: MapCellProps<T>) => (
+  <Badge
     size="sm"
-    backgroundColor={backgroundColor || "primary.400"}
-    color="white"
+    width="fit-content"
+    data-testid="status-badge"
+    textTransform="uppercase"
+    fontWeight="400"
+    color="gray.600"
+    px={2}
   >
     {map.get(value) ?? value}
-  </Tag>
+  </Badge>
 );
 
 export const MultiTagCell = <T extends object>({
@@ -91,7 +104,7 @@ export const MultiTagCell = <T extends object>({
 };
 
 type EnableCellProps<T extends object> = CellProps<T, boolean> & {
-  onToggle: (data: boolean) => Promise<any>;
+  onToggle: (data: boolean) => Promise<RTKResult>;
   title: string;
   message: string;
   /**
@@ -110,8 +123,12 @@ export const EnableCell = <T extends object>({
   isDisabled,
 }: EnableCellProps<T>) => {
   const modal = useDisclosure();
+  const toast = useToast();
   const handlePatch = async ({ enable }: { enable: boolean }) => {
-    await onToggle(enable);
+    const result = await onToggle(enable);
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    }
   };
 
   const handleToggle = async (event: ChangeEvent<HTMLInputElement>) => {

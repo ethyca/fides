@@ -11,9 +11,14 @@ import {
 import _ from "lodash";
 import React, { useState } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import NextArrow from "~/features/common/Icon/NextArrow";
 import PrevArrow from "~/features/common/Icon/PrevArrow";
-import { useGetSystemHistoryQuery } from "~/features/plus/plus.slice";
+import {
+  DictOption,
+  selectAllDictEntries,
+  useGetSystemHistoryQuery,
+} from "~/features/plus/plus.slice";
 import { PrivacyDeclaration, SystemHistoryResponse } from "~/types/api";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
@@ -71,6 +76,9 @@ function alignArrays(
   return [alignedBefore, alignedAfter];
 }
 
+const lookupVendorLabel = (vendor_id: string, options: DictOption[]) =>
+  options.find((option) => option.value === vendor_id)?.label ?? vendor_id;
+
 const itemsPerPage = 10;
 
 const SystemHistoryTable = ({ system }: Props) => {
@@ -83,6 +91,7 @@ const SystemHistoryTable = ({ system }: Props) => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedHistory, setSelectedHistory] =
     useState<SystemHistoryResponse | null>(null);
+  const dictionaryOptions = useAppSelector(selectAllDictEntries);
 
   const systemHistories = data?.items || [];
 
@@ -105,6 +114,17 @@ const SystemHistoryTable = ({ system }: Props) => {
       ...history?.after,
       privacy_declarations: alignedAfter,
     };
+
+    if (dictionaryOptions) {
+      alignedBeforeInitialValues.vendor_id = lookupVendorLabel(
+        alignedBeforeInitialValues.vendor_id,
+        dictionaryOptions
+      );
+      alignedAfterInitialValues.vendor_id = lookupVendorLabel(
+        alignedAfterInitialValues.vendor_id,
+        dictionaryOptions
+      );
+    }
 
     setSelectedHistory({
       before: alignedBeforeInitialValues,

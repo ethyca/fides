@@ -3,6 +3,7 @@ export {
   EnableCell,
   MapCell,
   MultiTagCell,
+  PaddedCell,
   TitleCell,
   WrappedCell,
 } from "./cells";

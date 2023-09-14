@@ -1,6 +1,7 @@
 import {
   Flex,
   Heading,
+  Link,
   Text,
   Stack,
   useToast,
@@ -205,6 +206,19 @@ const Home: NextPage = () => {
             {paragraph}
           </Text>
         ))}
+        {config.privacy_policy_url && config.privacy_policy_url_text ? (
+          <Link
+            fontSize={["small", "medium"]}
+            fontWeight="medium"
+            textAlign="center"
+            textDecoration="underline"
+            color="gray.600"
+            href={config.privacy_policy_url}
+            isExternal
+          >
+            {config.privacy_policy_url_text}
+          </Link>
+        ) : null}
       </Stack>
       <PrivacyRequestModal
         isOpen={isPrivacyModalOpen}
