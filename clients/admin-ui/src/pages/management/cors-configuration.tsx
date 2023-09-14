@@ -23,18 +23,17 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
-  selectCORSDomains,
+  CORSOrigins,
+  selectCORSOrigins,
   useCreateConfigurationSettingsMutation,
   useGetConfigurationSettingsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
-type FormValues = {
-  domains: string[];
-};
+type FormValues = CORSOrigins;
 
 const CORSConfigurationPage: NextPage = () => {
   const { isLoading: isLoadingGetQuery } = useGetConfigurationSettingsQuery();
-  const corsDomains = useAppSelector(selectCORSDomains());
+  const corsOrigins = useAppSelector(selectCORSOrigins());
   const [patchConfigSettingsTrigger, { isLoading: isLoadingPatchMutation }] =
     useCreateConfigurationSettingsMutation();
 
@@ -64,12 +63,11 @@ const CORSConfigurationPage: NextPage = () => {
       }
     };
 
-    const payload = {
+    const result = await patchConfigSettingsTrigger({
       security: {
-        cors_origins: values.domains,
+        cors_origins: values.cors_origins,
       },
-    };
-    const result = await patchConfigSettingsTrigger(payload);
+    });
 
     handleResult(result);
   };
@@ -99,37 +97,39 @@ const CORSConfigurationPage: NextPage = () => {
         <Box maxW="600px">
           <FormSection title="CORS Domains">
             <Formik<FormValues>
-              initialValues={corsDomains}
+              initialValues={corsOrigins}
               enableReinitialize
               onSubmit={handleSubmit}
             >
               {({ dirty, values, isValid }) => (
                 <Form>
                   <FieldArray
-                    name="domains"
+                    name="cors_origins"
                     render={(arrayHelpers) => (
                       <Flex flexDir="column">
-                        {values.domains.map((_: string, index: number) => (
-                          <Flex flexDir="row" key={index} my={3}>
-                            <CustomTextInput
-                              variant="stacked"
-                              name={`domains[${index}]`}
-                            />
+                        {values.cors_origins!.map(
+                          (_: string, index: number) => (
+                            <Flex flexDir="row" key={index} my={3}>
+                              <CustomTextInput
+                                variant="stacked"
+                                name={`cors_origins[${index}]`}
+                              />
 
-                            <IconButton
-                              ml={8}
-                              aria-label="delete-cors-domain"
-                              variant="outline"
-                              zIndex={2}
-                              size="sm"
-                              onClick={() => {
-                                arrayHelpers.remove(index);
-                              }}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Flex>
-                        ))}
+                              <IconButton
+                                ml={8}
+                                aria-label="delete-cors-domain"
+                                variant="outline"
+                                zIndex={2}
+                                size="sm"
+                                onClick={() => {
+                                  arrayHelpers.remove(index);
+                                }}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Flex>
+                          )
+                        )}
 
                         <Flex justifyContent="center" mt={3}>
                           <Button

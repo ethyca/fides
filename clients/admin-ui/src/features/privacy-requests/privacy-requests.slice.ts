@@ -1,4 +1,5 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { narrow } from "narrow-minded";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
@@ -354,13 +355,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Configuration Settings"],
     }),
-    getConfigurationSettings: build.query<
-      | ApplicationConfig
-      | MessagingConfigResponse
-      | StorageConfigResponse
-      | SecurityApplicationConfig,
-      void
-    >({
+    getConfigurationSettings: build.query<Record<string, any>, void>({
       query: () => ({
         url: `/config`,
         method: "GET",
@@ -469,17 +464,29 @@ export const {
   useCreateTestConnectionMessageMutation,
 } = privacyRequestApi;
 
-const EMPTY_CORS_DOMAINS = { domains: [] } as { domains: string[] };
-export const selectCORSDomains = () =>
+export type CORSOrigins = Pick<SecurityApplicationConfig, "cors_origins">;
+const EMPTY_CORS_DOMAINS: CORSOrigins = {
+  cors_origins: [],
+};
+export const selectCORSOrigins = () =>
   createSelector(
     [
       (state) => state,
       privacyRequestApi.endpoints.getConfigurationSettings.select(),
     ],
-    (state, { data }) => {
-      // the type checker was having a really hard time with `data`
-      const properlyTypedData = data as ApplicationConfig;
-      const domains = properlyTypedData?.security?.cors_origins;
-      return domains ? { domains } : EMPTY_CORS_DOMAINS;
+    (_, { data }) => {
+      const hasCorsOrigins = narrow(
+        {
+          security: {
+            cors_origins: ["string"],
+          },
+        },
+        data
+      );
+
+      const corsOrigins: CORSOrigins = {
+        cors_origins: data?.security?.cors_origins,
+      };
+      return hasCorsOrigins ? corsOrigins : EMPTY_CORS_DOMAINS;
     }
   );
