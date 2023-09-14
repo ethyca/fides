@@ -21,6 +21,7 @@ The types of changes are:
 
 ### Added
 - Initial page for configuring consent [#4069](https://github.com/ethyca/fides/pull/4069)
+- CORS configuration page [#4073](https://github.com/ethyca/fides/pull/4073)
 
 ### Changed
 
