@@ -62,6 +62,16 @@ export const transformSystemToFormValues = (
     data_security_practices: system.data_security_practices
       ? system.data_security_practices
       : "",
+    // these fields require membership in their enums and won't let you assign them a blank string normally
+    // they're transformed back into appropriate systems on submission by transformFormValuesToSystem below
+    //@ts-ignore
+    legal_basis_for_profiling: system.legal_basis_for_profiling
+      ? system.legal_basis_for_profiling
+      : "",
+    //@ts-ignore
+    legal_basis_for_profiling: system.legal_basis_for_profiling
+      ? system.legal_basis_for_profiling
+      : "",
     data_stewards: dataStewards,
   };
 };

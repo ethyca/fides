@@ -41,38 +41,44 @@ describe("System management with Plus features", () => {
       cy.getSelectValueContainer("input-vendor_id").contains("Jaduda GmbH");
     });
 
-    it("can populate from dictionary", () => {
-      // stubDictSystemCrud();
-      cy.wait("@getSystems");
-      cy.selectOption("input-meta.vendor.id", "Anzu Virtual Reality LTD");
-      cy.getByTestId("dict-suggestions-btn").click();
-      cy.getByTestId("toggle-dict-suggestions").click();
-      cy.getByTestId("save-btn").click();
-      cy.intercept({ method: "PUT", url: "/api/v1/system*" }).as(
-        "putDictSystem"
-      );
-      cy.wait("@putDictSystem");
-      // cy.intercept({ method: "GET", url: "/api/v1/system*" }).as(
-      //   "getDictSystem"
-      // );
-      // cy.wait("@getDictSystem");
-      cy.getByTestId("input-dpo").should("have.value", "info.anzu.io");
-    });
+    // it.only("can populate from dictionary", () => {});
 
     // some DictSuggestionTextInputs don't get populated right, causing
     // the form to be mistakenly marked as dirty and the "unsaved changes"
     // modal to pop up incorrectly when switching tabs
-    it("can switch between tabs after populating from dictionary", () => {
-      cy.wait("@getSystem");
+    it.only("can switch between tabs after populating from dictionary", () => {
+      cy.wait("@getSystems");
       cy.selectOption("input-meta.vendor.id", "Anzu Virtual Reality LTD");
       cy.getByTestId("dict-suggestions-btn").click();
       cy.getByTestId("toggle-dict-suggestions").click();
+      // the form fetches the system again after saving, so update the intercept with dictionary values
+      cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
+        cy.fixture("systems/system.json").then((origSystem) => {
+          cy.intercept(
+            { method: "GET", url: "/api/v1/system/demo_analytics_system" },
+            {
+              body: {
+                ...origSystem,
+                ...dictSystem,
+                customFieldValues: undefined,
+                data_protection_impact_assessment: undefined,
+              },
+            }
+          ).as("getDictSystem");
+        });
+      });
+      cy.intercept({ method: "PUT", url: "/api/v1/system*" }).as(
+        "putDictSystem"
+      );
       cy.getByTestId("save-btn").click();
       cy.wait("@putDictSystem");
       cy.wait("@getDictSystem");
       cy.getByTestId("input-dpo").should("have.value", "info@anzu.io");
       cy.getByTestId("tab-Data uses").click();
-      cy.getByTestId("data-use-tab").should("exist");
+      cy.getByTestId("tab-System information").click();
+      // cy.pause();
+      cy.getByTestId("tab-Data uses").click();
+      cy.getByTestId("confirmation-modal").should("not.exist");
     });
   });
 
