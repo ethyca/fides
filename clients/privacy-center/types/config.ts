@@ -42,7 +42,6 @@ export type Config = {
   consent?: ConsentConfig;
   privacy_policy_url?: string;
   privacy_policy_url_text?: string;
-  privacy_policy_visible?: boolean;
 };
 
 export type LegacyConsentConfig = {

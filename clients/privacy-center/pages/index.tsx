@@ -188,13 +188,6 @@ const Home: NextPage = () => {
               {paragraph}
             </Text>
           ))}
-          {config.privacy_policy_visible &&
-          config.privacy_policy_url &&
-          config.privacy_policy_url_text ? (
-            <Link href={config.privacy_policy_url} isExternal>
-              {config.privacy_policy_url_text}
-            </Link>
-          ) : null}
         </Stack>
         <Flex m={-2} flexDirection={["column", "column", "row"]}>
           {content}
@@ -213,6 +206,18 @@ const Home: NextPage = () => {
             {paragraph}
           </Text>
         ))}
+        {config.privacy_policy_url &&
+        config.privacy_policy_url_text ? (
+          <Link
+            fontSize={["small", "medium"]}
+            fontWeight="medium"
+            textAlign="center"
+            textDecoration="underline"
+            color="gray.600"
+            href={config.privacy_policy_url} isExternal>
+            {config.privacy_policy_url_text}
+          </Link>
+        ) : null}
       </Stack>
       <PrivacyRequestModal
         isOpen={isPrivacyModalOpen}
