@@ -418,7 +418,7 @@ export const selectAllCustomFieldDefinitions = createSelector(
   ({ data }) => data || emptySelectAllCustomFields
 );
 
-type DictOption = {
+export type DictOption = {
   label: string;
   value: string;
   descriptiong?: string;

@@ -58,7 +58,7 @@ const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
         borderBottom="1px solid #E2E8F0"
       >
         <Heading size="xs">
-          <span style={{ verticalAlign: "middle" }}>Diff review</span>
+          <span style={{ verticalAlign: "middle" }}>Change detail</span>
           {selectedHistory && (
             <>
               {getBadges(selectedHistory.before, selectedHistory.after).map(

@@ -7,16 +7,16 @@ import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
 import { useFeatures } from "~/features/common/features";
+import {
+  DirtyFormConfirmationModal,
+  useIsAnyFormDirty,
+} from "~/features/common/hooks/useIsAnyFormDirty";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
 import { System, SystemResponse } from "~/types/api";
 
-import {
-  DirtyFormConfirmationModal,
-  useIsAnyFormDirty,
-} from "../common/hooks/useIsAnyFormDirty";
 import SystemHistoryTable from "./history/SystemHistoryTable";
 import {
   selectActiveSystem,
