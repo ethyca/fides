@@ -240,6 +240,7 @@ class Endpoint(BaseModel):
 
     name: str
     requests: SaaSRequestMap
+    skip_processing: bool = False
     after: List[FidesCollectionKey] = []
     erase_after: List[FidesCollectionKey] = []
 
@@ -411,6 +412,7 @@ class SaaSConfig(SaaSConfigBase):
                         name=endpoint.name,
                         fields=fields,
                         grouped_inputs=grouped_inputs,
+                        skip_processing=endpoint.skip_processing,  # Sets this value for use when datasets are merged. If True, this will be later be removed.
                         after={
                             CollectionAddress(*s.split(".")) for s in endpoint.after
                         },
