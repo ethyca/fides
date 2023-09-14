@@ -230,7 +230,12 @@ def _embed_purpose_or_feature_under_system(
             replace=False,
         )
         return
+
     # Nest new cloned TCF purpose or feature record beneath system otherwise
+    # ensuring it has the appropriate legal basis
+    _extend_legal_bases(
+        embedded_tcf_record, legal_basis_for_processing, replace=True
+    )
     system_section.append(embedded_tcf_record)  # type: ignore[arg-type]
 
 
@@ -324,17 +329,9 @@ def build_purpose_or_feature_section_and_update_system_map(
                     ),  # Has_vendor_id will let us separate data into two sections: "tcf_vendors" and "tcf_systems"
                 )
 
-            # Copy top level purpose or feature record to preserve its initial state to use for embedded record
-            embedded_tcf_record: TCFPurposeOrFeature = top_level_tcf_record.copy()
-
-            # Override legal_bases on the embedded purpose or special purpose record
-            _extend_legal_bases(
-                embedded_tcf_record, legal_basis_for_processing, replace=True
-            )
-
             # Embed the purpose/feature under the system if it doesn't exist, and/or consolidate legal bases
             _embed_purpose_or_feature_under_system(
-                embedded_tcf_record=embedded_tcf_record,
+                embedded_tcf_record=top_level_tcf_record.copy(),
                 system_section=getattr(
                     system_map[system_identifier], tcf_component_name
                 ),
@@ -382,7 +379,6 @@ def _extend_legal_bases(
     purpose_record.legal_bases.sort()
 
 
-@lru_cache()
 def get_tcf_contents(
     db: Session,
 ) -> TCFExperienceContents:

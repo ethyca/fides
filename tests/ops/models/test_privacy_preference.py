@@ -1425,9 +1425,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
     def test_determine_relevant_systems_for_tcf_feature(self, db, system):
         # Add feature that we don't have a preference for
         decl = system.privacy_declarations[0]
-        decl.features = [
-            "Receive and use automatically-sent device characteristics for identification"
-        ]
+        decl.features = ["Link different devices"]
         decl.save(db)
 
         assert (
@@ -1437,7 +1435,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
             == []
         )
 
-        decl.features = ["Match and combine offline data sources"]
+        decl.features = ["Match and combine data from other data sources"]
         decl.data_use = "marketing.advertising.serving"
         decl.legal_basis_for_processing = "Consent"
         decl.save(db)

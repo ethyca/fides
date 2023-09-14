@@ -287,9 +287,9 @@ class TestTCFContents:
         declaration.data_use = "functional.storage"  # needs a GVL data use for features to show up. Feature must be linked to a GVL data use.
         declaration.legal_basis_for_processing = "Consent"  # Needed to be applicable
         declaration.features = [
-            "Receive and use automatically-sent device characteristics for identification",
+            "Identify devices based on information transmitted automatically",
             "unknown feature",
-            "Receive and use automatically-sent device characteristics for identification",  # Ensuring this doesn't show up twice
+            "Identify devices based on information transmitted automatically",  # Ensuring this doesn't show up twice
         ]
         declaration.save(db)
 
@@ -302,7 +302,7 @@ class TestTCFContents:
         assert tcf_contents.tcf_features[0].id == 3
         assert (
             tcf_contents.tcf_features[0].name
-            == "Receive and use automatically-sent device characteristics for identification"
+            == "Identify devices based on information transmitted automatically"
         )
 
         assert len(tcf_contents.tcf_vendors[0].features) == 1

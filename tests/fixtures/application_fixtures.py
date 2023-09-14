@@ -2751,8 +2751,3 @@ def tcf_system(db: Session) -> System:
 
     db.refresh(system)
     return system
-
-
-@pytest.fixture(autouse=True)
-def clear_tcf_cache() -> None:
-    get_tcf_contents.cache_clear()
