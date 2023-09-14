@@ -72,7 +72,7 @@ def _replace_matching_data_label(
     Helper function to do string replacement for updated fides_keys.
     """
     for old, new in data_label_map.items():
-        if data_label.startswith(old):
+        if data_label and data_label.startswith(old):
             return data_label.replace(old, new)
 
     return data_label
