@@ -17,9 +17,6 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.20.0...main)
 
-### Fixed
-- Enable toggles in various tables now render an error toast if an error occurs [#4095](https://github.com/ethyca/fides/pull/4095)
-
 ## [2.20.0](https://github.com/ethyca/fides/compare/2.19.1...2.20.0)
 
 ### Added
@@ -42,6 +39,7 @@ The types of changes are:
 
 - Ensures that fides.js toggles are not hidden by other CSS libs [#4075](https://github.com/ethyca/fides/pull/4075)
 - Migrate system > meta > vendor > id to system > meta [#4088](https://github.com/ethyca/fides/pull/4088)
+- Enable toggles in various tables now render an error toast if an error occurs [#4095](https://github.com/ethyca/fides/pull/4095)
 
 ## [2.19.1](https://github.com/ethyca/fides/compare/2.19.0...2.19.1)
 
