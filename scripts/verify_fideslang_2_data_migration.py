@@ -94,7 +94,8 @@ old_system = fideslang.models.System(
             fides_key="privacy_annotations",
             type="system",
             data_categories=["user.observed"],  # new key = user.behavior
-        )
+        ),
+        fideslang.models.DataFlow(fides_key="test_key", type="system"),
     ],
     egress=[
         fideslang.models.DataFlow(

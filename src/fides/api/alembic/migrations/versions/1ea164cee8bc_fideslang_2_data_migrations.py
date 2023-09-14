@@ -268,7 +268,7 @@ def update_system_ingress_egress_data_categories(
         egress = row["egress"]
 
         # Do a blunt find/replace
-        if ingress:
+        if ingress and ingress.get("data_categories"):
             for item in ingress:
                 item["data_categories"] = [
                     _replace_matching_data_label(category, data_label_map)
@@ -283,7 +283,7 @@ def update_system_ingress_egress_data_categories(
                 {"system_id": row["id"], "updated_ingress": json.dumps(ingress)},
             )
 
-        if egress:
+        if egress and egress.get("data_categories"):
             for item in egress:
                 item["data_categories"] = [
                     _replace_matching_data_label(category, data_label_map)
