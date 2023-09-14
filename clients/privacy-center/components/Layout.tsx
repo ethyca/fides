@@ -1,4 +1,4 @@
-import { Flex, Image } from "@fidesui/react";
+import { Flex } from "@fidesui/react";
 import React from "react";
 import Head from "next/head";
 import Logo from "~/components/Logo";
@@ -30,10 +30,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         >
           {config.logo_url ? (
             <a href={config.logo_url}>
-              <Logo />
+              <Logo logo_path={config.logo_path} />
             </a>
           ) : (
-            <Logo />
+            <Logo logo_path={config.logo_path} />
           )}
         </Flex>
       </header>
