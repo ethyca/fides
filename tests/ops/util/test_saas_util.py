@@ -328,6 +328,120 @@ class TestAssignPlaceholders:
             == "|leaveithere|"
         )
 
+    def test_json_string_with_mandatory_placeholder(self):
+        json_str = '{"name": "<name>", "age": <age>}'
+        assert (
+            assign_placeholders(json_str, {"name": "John", "age": 30})
+            == '{"name": "John", "age": 30}'
+        )
+
+    def test_json_string_with_missing_mandatory_placeholder(self):
+        json_str = '{"name": "<name>", "age": <age>}'
+        assert assign_placeholders(json_str, {"name": "John"}) is None
+
+    def test_json_string_with_optional_placeholder(self):
+        json_str = '{"name": "<name>", "address": "<address?>"}'
+        assert (
+            assign_placeholders(json_str, {"name": "John"})
+            == '{"name": "John", "address": null}'
+        )
+        assert (
+            assign_placeholders(json_str, {"name": "John", "address": "123 Main St"})
+            == '{"name": "John", "address": "123 Main St"}'
+        )
+
+    def test_json_string_with_mixed_placeholders(self):
+        json_str = '{"name": "<name>", "age": <age>, "address": "<address?>"}'
+        assert (
+            assign_placeholders(json_str, {"name": "John", "age": 30})
+            == '{"name": "John", "age": 30, "address": null}'
+        )
+        assert (
+            assign_placeholders(
+                json_str, {"name": "John", "age": 30, "address": "123 Main St"}
+            )
+            == '{"name": "John", "age": 30, "address": "123 Main St"}'
+        )
+
+    def test_json_string_with_nested_placeholders(self):
+        json_str = '{"user": {"name": "<name>", "age": <age>, "credentials": {"token": "<token?>", "expiry": "<expiry?>"}}}'
+        params = {
+            "name": "John",
+            "age": 30,
+            "token": "abc123",
+        }
+        assert (
+            assign_placeholders(json_str, params)
+            == '{"user": {"name": "John", "age": 30, "credentials": {"token": "abc123", "expiry": null}}}'
+        )
+
+    def test_complex_json_string(self):
+        json_str = '{"users": [{"name": "<name1>"}, {"name": "<name2?>"}], "metadata": {"count": <count>}}'
+        params = {"name1": "John", "count": 2}
+        assert (
+            assign_placeholders(json_str, params)
+            == '{"users": [{"name": "John"}, {"name": null}], "metadata": {"count": 2}}'
+        )
+
+    def test_dot_delimited_placeholder(self):
+        assert (
+            assign_placeholders(
+                '{"user": {"name": "<user.name>"}}', {"user": {"name": "Alice"}}
+            )
+            == '{"user": {"name": "Alice"}}'
+        )
+
+    def test_dot_delimited_placeholder_with_int(self):
+        assert (
+            assign_placeholders('{"user": {"age": <user.age>}}', {"user": {"age": 30}})
+            == '{"user": {"age": 30}}'
+        )
+
+    def test_multiple_dot_delimited_placeholders(self):
+        assert (
+            assign_placeholders(
+                '{"user": {"name": "<user.name>", "age": <user.age>}}',
+                {"user": {"name": "Bob", "age": 25}},
+            )
+            == '{"user": {"name": "Bob", "age": 25}}'
+        )
+
+    def test_optional_dot_delimited_placeholder_present(self):
+        assert (
+            assign_placeholders(
+                '{"user": {"name": "<user.name?>", "age": <user.age>}}',
+                {"user": {"name": "Eve", "age": 28}},
+            )
+            == '{"user": {"name": "Eve", "age": 28}}'
+        )
+
+    def test_optional_dot_delimited_placeholder_missing(self):
+        assert (
+            assign_placeholders(
+                '{"user": {"name": "<user.name?>", "age": <user.age>}}',
+                {"user": {"age": 28}},
+            )
+            == '{"user": {"name": null, "age": 28}}'
+        )
+
+    def test_dot_delimited_placeholder_missing(self):
+        assert (
+            assign_placeholders(
+                '{"user": {"name": "<user.name>", "age": <user.age>}}',
+                {"user": {"age": 28}},
+            )
+            == None
+        )
+
+    def test_replacing_with_object_values(self):
+        assert (
+            assign_placeholders(
+                "{<all_object_fields>}",
+                {"all_object_fields": {"age": 28, "name": "Bob"}},
+            )
+            == '{"age": 28, "name": "Bob"}'
+        )
+
 
 class TestUnflattenDict:
     def test_empty_dict(self):

@@ -136,7 +136,7 @@ dataset:
                   field: address.id
                   direction: to
           - name: ccn
-            data_categories: [user.financial.account_number]
+            data_categories: [user.financial.bank_account]
           - name: code
             data_categories: [user.financial]
           - name: customer_id
@@ -213,7 +213,6 @@ dataset:
               primary_key: True
           - name: opened
             data_categories: [system.operations]
-
       - name: visit
         fields:
           - name: email

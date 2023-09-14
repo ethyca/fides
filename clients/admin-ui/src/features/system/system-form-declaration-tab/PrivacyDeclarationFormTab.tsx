@@ -264,7 +264,7 @@ const PrivacyDeclarationFormTab = ({
           dictAvailable={features.dictionaryService}
           handleAdd={handleOpenNewForm}
           handleDictSuggestion={handleOpenDictModal}
-          vendorSelected={!!system.meta.vendor}
+          vendorSelected={!!system.vendor_id}
         />
       ) : (
         <PrivacyDeclarationDisplayGroup
@@ -303,20 +303,22 @@ const PrivacyDeclarationFormTab = ({
           {...dataProps}
         />
       </PrivacyDeclarationFormModal>
-      <PrivacyDeclarationFormModal
-        isOpen={showDictionaryModal}
-        onClose={handleCloseDictModal}
-        isCentered
-        heading="Compass suggestions"
-      >
-        <PrivacyDeclarationDictModalComponents
-          alreadyHasDataUses={system.privacy_declarations.length > 0}
-          allDataUses={dataProps.allDataUses}
-          onCancel={handleCloseDictModal}
-          onAccept={handleAcceptDictSuggestions}
-          vendorId={system.meta?.vendor?.id ? system.meta.vendor.id : undefined}
-        />
-      </PrivacyDeclarationFormModal>
+      {system.vendor_id ? (
+        <PrivacyDeclarationFormModal
+          isOpen={showDictionaryModal}
+          onClose={handleCloseDictModal}
+          isCentered
+          heading="Compass suggestions"
+        >
+          <PrivacyDeclarationDictModalComponents
+            alreadyHasDataUses={system.privacy_declarations.length > 0}
+            allDataUses={dataProps.allDataUses}
+            onCancel={handleCloseDictModal}
+            onAccept={handleAcceptDictSuggestions}
+            vendorId={Number(system.vendor_id)}
+          />
+        </PrivacyDeclarationFormModal>
+      ) : null}
     </Stack>
   );
 };

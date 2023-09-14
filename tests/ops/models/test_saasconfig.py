@@ -4,8 +4,10 @@ import pytest
 from fideslang import FidesDatasetReference
 from pydantic import ValidationError
 
+from fides.api import common_exceptions
 from fides.api.common_exceptions import ValidationError as FidesopsValidationError
 from fides.api.graph.config import CollectionAddress, FieldAddress
+from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.saas.saas_config import (
     ConnectorParam,
@@ -196,6 +198,37 @@ def test_saas_config_ignore_errors_param(saas_example_config: Dict[str, Dict]):
     assert 401 in tickets_endpoint.requests.read[0].ignore_errors
     assert 403 in tickets_endpoint.requests.read[0].ignore_errors
     assert 404 in tickets_endpoint.requests.read[0].ignore_errors
+
+
+@pytest.mark.unit_saas
+def test_skip_processing(
+    saas_example_dataset_config,
+    saas_example_connection_config,
+    saas_external_example_dataset_config,
+):
+    """
+    Collection with "skip_processing" is removed when graphs are merged.  DatasetGraph construction fails when
+    removed element is references.
+    """
+    merged_graph = saas_example_dataset_config.get_graph()
+    merged_graph_external = saas_external_example_dataset_config.get_graph()
+    assert "skipped_collection" not in [
+        collection.name for collection in merged_graph.collections
+    ]
+    assert DatasetGraph(merged_graph, merged_graph_external)
+
+    saas_example_dataset_config.connection_config.saas_config["endpoints"][0][
+        "requests"
+    ]["read"]["param_values"][0]["references"][0]["field"] = "skipped_collection.id"
+    merged_graph = saas_example_dataset_config.get_graph()
+
+    with pytest.raises(common_exceptions.ValidationError) as exc:
+        assert DatasetGraph(merged_graph, merged_graph_external)
+
+    assert (
+        exc.value.message
+        == "Referred to object saas_connector_example:skipped_collection:id does not exist"
+    )
 
 
 @pytest.mark.unit_saas

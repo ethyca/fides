@@ -18,17 +18,12 @@
     "test": true,
     "production": false
   },
-  "privacyNotices": {
-    "description": "Page to configure consent privacy notices",
+  "configureConsent": {
+    "description": "Page to configure vendors and cookies for consent",
     "development": true,
     "test": true,
-    "production": true
-  },
-  "privacyExperience": {
-    "description": "Page to configure consent privacy experiences",
-    "development": true,
-    "test": true,
-    "production": true
+    "production": false,
+    "userCannotModify": true
   },
   "standaloneConnections": {
     "description": "Allow the creation of standalone connections for testing",

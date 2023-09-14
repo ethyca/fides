@@ -717,7 +717,7 @@ class TestPrivacyNoticeModel:
                     PrivacyNotice(
                         name="pn_1",
                         notice_key="pn_1",
-                        data_uses=["improve"],
+                        data_uses=["functional"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     )
                 ],
@@ -728,7 +728,7 @@ class TestPrivacyNoticeModel:
                     PrivacyNotice(
                         name="pn_2",
                         notice_key="pn_2",
-                        data_uses=["improve"],
+                        data_uses=["functional"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     ),
                     PrivacyNotice(
@@ -761,7 +761,7 @@ class TestPrivacyNoticeModel:
                     PrivacyNotice(
                         name="pn_2",
                         notice_key="pn_2",
-                        data_uses=["improve"],
+                        data_uses=["functional"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     )
                 ],
@@ -780,7 +780,7 @@ class TestPrivacyNoticeModel:
                     PrivacyNotice(
                         name="pn_1",
                         notice_key="pn_1",
-                        data_uses=["improve"],
+                        data_uses=["functional"],
                         regions=[PrivacyNoticeRegion.us_va],
                     )
                 ],

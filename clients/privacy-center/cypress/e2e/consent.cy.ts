@@ -222,7 +222,7 @@ describe("Consent settings", () => {
         cy.contains("Test advertising.first_party");
         cy.getRadio().should("not.be.checked");
       });
-      cy.getByTestId(`consent-item-improve`).within(() => {
+      cy.getByTestId(`consent-item-functional`).within(() => {
         cy.getRadio().should("be.checked");
       });
 
@@ -288,7 +288,7 @@ describe("Consent settings", () => {
       cy.getByTestId(`consent-item-advertising`).within(() => {
         cy.getRadio("false").check({ force: true });
       });
-      cy.getByTestId(`consent-item-improve`).within(() => {
+      cy.getByTestId(`consent-item-functional`).within(() => {
         cy.getRadio("false").check({ force: true });
       });
       cy.getByTestId("save-btn").click();

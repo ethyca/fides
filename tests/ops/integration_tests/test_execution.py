@@ -1,11 +1,13 @@
 import uuid
+from typing import Optional
 from unittest import mock
 
 import pytest
-from fideslang.models import Dataset
+from fideslang.models import CollectionMeta, Dataset
 from pydantic import ValidationError
 from sqlalchemy.exc import InvalidRequestError
 
+from fides.api import common_exceptions
 from fides.api.db.session import get_db_session
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
@@ -48,6 +50,7 @@ def mongo_postgres_dataset_graph(
     example_datasets, integration_postgres_config, integration_mongodb_config
 ):
     dataset_postgres = Dataset(**example_datasets[0])
+
     graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
     dataset_mongo = Dataset(**example_datasets[1])
     mongo_graph = convert_dataset_to_graph(
@@ -315,7 +318,7 @@ class TestDeleteCollection:
 
 
 @pytest.mark.integration
-class TestSkipDisabledCollection:
+class TestSkipCollectionDueToDisabledConnectionConfig:
     @pytest.mark.asyncio
     async def test_skip_collection_new_request(
         self,
@@ -583,6 +586,123 @@ class TestSkipDisabledCollection:
         read_connection_config.save(db)
         logs = get_sorted_execution_logs(db, pr)
         assert len(logs) == 22
+
+
+@pytest.mark.integration
+class TestSkipMarkedCollections:
+    def _build_postgres_dataset_graph_with_skipped_collection(
+        self,
+        example_datasets,
+        integration_config,
+        skipped_collection_name: Optional[str],
+    ):
+        """test helper"""
+        dataset_postgres = Dataset(**example_datasets[0])
+        if skipped_collection_name:
+            skipped_collection = next(
+                col
+                for col in dataset_postgres.collections
+                if col.name == skipped_collection_name
+            )
+            skipped_collection.fides_meta = CollectionMeta
+            skipped_collection.fides_meta.skip_processing = True
+
+        graph = convert_dataset_to_graph(dataset_postgres, integration_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        return dataset_graph
+
+    @pytest.mark.asyncio
+    async def test_no_collections_marked_as_skipped(
+        self,
+        db,
+        policy,
+        example_datasets,
+        integration_postgres_config,
+    ) -> None:
+        """Sanity check - nothing marked as skipped. All collections expected in results."""
+
+        postgres_graph = self._build_postgres_dataset_graph_with_skipped_collection(
+            example_datasets, integration_postgres_config, skipped_collection_name=None
+        )
+
+        privacy_request = PrivacyRequest(
+            id=f"test_postgres_access_request_task_{uuid.uuid4()}"
+        )
+
+        results = await graph_task.run_access_request(
+            privacy_request,
+            policy,
+            postgres_graph,
+            [integration_postgres_config],
+            {"email": "customer-1@example.com"},
+            db,
+        )
+
+        assert len(results) == len(example_datasets[0]["collections"])
+        assert "login" not in results
+
+    @pytest.mark.asyncio
+    async def test_collection_marked_as_skipped_with_nothing_downstream(
+        self,
+        db,
+        policy,
+        example_datasets,
+        integration_postgres_config,
+    ) -> None:
+        """Mark the login collection as skipped.  This collection has no downstream dependencies, so skipping is fine!"""
+
+        postgres_graph = self._build_postgres_dataset_graph_with_skipped_collection(
+            example_datasets,
+            integration_postgres_config,
+            skipped_collection_name="login",
+        )
+
+        privacy_request = PrivacyRequest(
+            id=f"test_postgres_access_request_task_{uuid.uuid4()}"
+        )
+
+        results = await graph_task.run_access_request(
+            privacy_request,
+            policy,
+            postgres_graph,
+            [integration_postgres_config],
+            {"email": "customer-1@example.com"},
+            db,
+        )
+
+        assert len(results) == len(example_datasets[0]["collections"]) - 1
+        assert "login" not in results
+
+    @pytest.mark.asyncio
+    async def test_collection_marked_as_skipped_with_dependencies(
+        self,
+        db,
+        policy,
+        example_datasets,
+        integration_postgres_config,
+    ) -> None:
+        """Mark the address collection as skipped.  Many collections are marked as relying on this collection so this fails
+        early when building the DatasetGraph"""
+
+        privacy_request = PrivacyRequest(
+            id=f"test_postgres_access_request_task_{uuid.uuid4()}"
+        )
+
+        with pytest.raises(common_exceptions.ValidationError):
+            postgres_graph = self._build_postgres_dataset_graph_with_skipped_collection(
+                example_datasets,
+                integration_postgres_config,
+                skipped_collection_name="address",
+            )
+
+            await graph_task.run_access_request(
+                privacy_request,
+                policy,
+                postgres_graph,
+                [integration_postgres_config],
+                {"email": "customer-1@example.com"},
+                db,
+            )
 
 
 @pytest.mark.integration

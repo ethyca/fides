@@ -9,4 +9,5 @@ export type Page_PolicyWebhookResponse_ = {
   total: number;
   page: number;
   size: number;
+  pages?: number;
 };

@@ -2,7 +2,6 @@ import {
   CustomFieldsFormValues,
   CustomFieldValues,
 } from "~/features/common/custom-fields";
-import { Features } from "~/features/common/features";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import { DataProtectionImpactAssessment, System } from "~/types/api";
 
@@ -67,10 +66,7 @@ export const transformSystemToFormValues = (
   };
 };
 
-export const transformFormValuesToSystem = (
-  formValues: FormValues,
-  features: Features
-): System => {
+export const transformFormValuesToSystem = (formValues: FormValues): System => {
   const key = formValues.fides_key
     ? formValues.fides_key
     : formatKey(formValues.name!);
@@ -93,23 +89,10 @@ export const transformFormValuesToSystem = (
     privacy_declarations: formValues.processes_personal_data
       ? formValues.privacy_declarations
       : [],
+    vendor_id: formValues.vendor_id,
+    ingress: formValues.ingress,
+    egress: formValues.egress,
   };
-
-  if (features.plus) {
-    if (!payload.meta) {
-      payload.meta = {};
-    }
-
-    if (features.dictionaryService && formValues?.meta?.vendor?.id) {
-      if (!("vendor" in payload.meta)) {
-        payload.meta.vendor = {};
-      }
-      payload.meta.vendor = {
-        ...payload.meta.vendor,
-        id: formValues.meta.vendor.id,
-      };
-    }
-  }
 
   if (!formValues.processes_personal_data) {
     return payload;

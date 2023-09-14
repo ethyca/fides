@@ -19,6 +19,7 @@ describe("configureTiles", () => {
       config: MODULE_CARD_ITEMS,
       hasPlus: false,
       userScopes: ALL_SCOPES_FOR_TILES,
+      flags: {},
     });
 
     expect(tiles.filter((t) => t.href === "/datamap").length).toEqual(0);
@@ -29,6 +30,7 @@ describe("configureTiles", () => {
       config: MODULE_CARD_ITEMS,
       hasPlus: true,
       userScopes: ALL_SCOPES_FOR_TILES,
+      flags: {},
     });
     expect(tiles.filter((t) => t.href === "/datamap").length).toEqual(1);
   });
@@ -38,6 +40,7 @@ describe("configureTiles", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
         userScopes: [],
+        flags: {},
       });
 
       expect(tiles.length).toEqual(0);
@@ -48,6 +51,7 @@ describe("configureTiles", () => {
         config: MODULE_CARD_ITEMS,
         // irrelevant scope
         userScopes: [ScopeRegistryEnum.DATABASE_RESET],
+        flags: {},
       });
       expect(tiles.length).toEqual(0);
     });
@@ -56,6 +60,7 @@ describe("configureTiles", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
         userScopes: [ScopeRegistryEnum.SYSTEM_CREATE],
+        flags: {},
       });
       expect(tiles.map((t) => t.name)).toEqual(["Add systems"]);
     });
@@ -65,6 +70,7 @@ describe("configureTiles", () => {
         config: MODULE_CARD_ITEMS,
         hasPlus: true,
         userScopes: [ScopeRegistryEnum.DATAMAP_READ],
+        flags: {},
       });
       expect(tiles.map((t) => t.name)).toEqual(["View data map"]);
     });
@@ -73,6 +79,7 @@ describe("configureTiles", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
         userScopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REVIEW],
+        flags: {},
       });
       expect(tiles.map((t) => t.name)).toEqual(["Review privacy requests"]);
     });
@@ -84,8 +91,27 @@ describe("configureTiles", () => {
           ScopeRegistryEnum.PRIVACY_REQUEST_REVIEW,
           ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
         ],
+        flags: {},
       });
       expect(tiles.map((t) => t.name)).toEqual(["Review privacy requests"]);
+    });
+
+    it("can filter by feature flag", () => {
+      const tiles = configureTiles({
+        config: MODULE_CARD_ITEMS,
+        userScopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+        flags: {},
+      });
+      expect(tiles.length).toEqual(0);
+    });
+
+    it("can show based on feature flag", () => {
+      const tiles = configureTiles({
+        config: MODULE_CARD_ITEMS,
+        userScopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+        flags: { configureConsent: true },
+      });
+      expect(tiles.map((t) => t.name)).toEqual(["Manage consent"]);
     });
   });
 });

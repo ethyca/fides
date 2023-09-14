@@ -5,6 +5,7 @@ import {
 } from "cypress/support/stubs";
 
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
 import { RoleRegistryEnum } from "~/types/api";
 
 const DATA_SALES_NOTICE_ID = "pri_132bb3ba-fa1e-4a3f-9f06-c19e3fee49da";
@@ -59,11 +60,7 @@ describe("Privacy notices", () => {
           cy.assumeRole(role);
           cy.visit(PRIVACY_NOTICES_ROUTE);
           cy.wait("@getNotices");
-          cy.getByTestId("toggle-Enable")
-            .first()
-            .within(() => {
-              cy.get("span").should("have.attr", "data-disabled");
-            });
+          cy.getByTestId("toggle-Enable").should("not.exist");
         }
       );
     });
@@ -79,15 +76,6 @@ describe("Privacy notices", () => {
         }
       );
     });
-  });
-
-  it("can show an empty state", () => {
-    cy.intercept("GET", "/api/v1/privacy-notice*", {
-      body: { items: [], page: 1, size: 10, total: 0 },
-    }).as("getEmptyNotices");
-    cy.visit(PRIVACY_NOTICES_ROUTE);
-    cy.wait("@getEmptyNotices");
-    cy.getByTestId("empty-state");
   });
 
   describe("table", () => {
@@ -175,6 +163,43 @@ describe("Privacy notices", () => {
         // redux should requery after invalidation
         cy.wait("@getNotices");
       });
+
+      it("can render a tag based on systems_applicable", () => {
+        // Enabled and has applicable systems
+        cy.getByTestId("row-Essential").within(() => {
+          cy.getByTestId("status-badge").contains("enabled");
+        });
+        // Disabled but has applicable systems
+        cy.getByTestId("row-Data Sales").within(() => {
+          cy.getByTestId("status-badge").contains("available");
+        });
+        // Disabled and has no applicable systems
+        cy.getByTestId("row-Advertising").within(() => {
+          cy.getByTestId("status-badge").contains("inactive");
+        });
+        // Enabled but has no applicable systems.
+        // Note: this state should not be possible via only the frontend,
+        // but could happen if directly hitting the API
+        cy.getByTestId("row-Analytics").within(() => {
+          cy.getByTestId("status-badge").contains("inactive");
+        });
+      });
+
+      it("can show an error if disable toggle fails", () => {
+        cy.intercept("PATCH", "/api/v1/privacy-notice*", {
+          statusCode: 422,
+          body: {
+            detail:
+              "Privacy Notice 'Analytics test' has already assigned notice key 'analytics' to region 'PrivacyNoticeRegion.ie'",
+          },
+        }).as("patchNoticesError");
+        cy.getByTestId("row-Data Sales").within(() => {
+          cy.getByTestId("toggle-Enable").click();
+        });
+        cy.wait("@patchNoticesError").then(() => {
+          cy.getByTestId("toast-error-msg");
+        });
+      });
     });
   });
 
@@ -212,7 +237,8 @@ describe("Privacy notices", () => {
         });
         cy.getByTestId("input-internal_description").should("have.value", "");
         notice.regions.forEach((region) => {
-          cy.getSelectValueContainer("input-regions").contains(region);
+          const regionName = PRIVACY_NOTICE_REGION_MAP.get(region);
+          cy.getSelectValueContainer("input-regions").contains(regionName);
         });
         [
           "displayed_in_overlay",
@@ -323,7 +349,10 @@ describe("Privacy notices", () => {
       cy.getByTestId("input-internal_description").type(
         notice.internal_description
       );
-      cy.selectOption("input-regions", notice.regions[0]);
+      cy.selectOption(
+        "input-regions",
+        PRIVACY_NOTICE_REGION_MAP.get(notice.regions[0])
+      );
       cy.getByTestId("input-displayed_in_api").click();
 
       cy.getByTestId("save-btn").click();

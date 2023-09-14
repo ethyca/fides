@@ -395,7 +395,7 @@ def erasure_policy_complete_mask(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.gender").value,
+            "data_category": DataCategory("user.demographic.gender").value,
             "rule_id": user_gender_rule.id,
         },
     )
@@ -567,7 +567,7 @@ def erasure_policy_complete_mask(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.date_of_birth").value,
+            "data_category": DataCategory("user.demographic.date_of_birth").value,
             "rule_id": user_date_of_birth_rule.id,
         },
     )

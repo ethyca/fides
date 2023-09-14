@@ -6,6 +6,14 @@ export type IdentityInputs = {
   phone?: string;
 };
 
+export type CustomPrivacyRequestFields = Record<
+  string,
+  {
+    label: string;
+    required: boolean;
+  }
+>;
+
 export type LegacyConfig = {
   title: string;
   description: string;
@@ -71,6 +79,7 @@ export type PrivacyRequestOption = {
   confirmButtonText?: string;
   cancelButtonText?: string;
   identity_inputs?: IdentityInputs;
+  custom_privacy_request_fields?: CustomPrivacyRequestFields;
 };
 
 export type ConfigConsentOption = {

@@ -90,7 +90,7 @@
     "active": true
   },
   {
-    "fides_key": "improve",
+    "fides_key": "functional",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "Improve the capability",
@@ -105,12 +105,30 @@
     "active": true
   },
   {
-    "fides_key": "improve.system",
+    "version_added": "2.0.0",
+    "version_deprecated": null,
+    "replaced_by": null,
+    "is_default": true,
+    "fides_key": "functional.service",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Service",
+    "description": "Functions relating to provided services, products, applications or systems.",
+    "parent_key": "functional",
+    "legal_basis": null,
+    "special_category": null,
+    "recipients": null,
+    "legitimate_interest": null,
+    "legitimate_interest_impact_assessment": null,
+    "active": true
+  },
+  {
+    "fides_key": "functional.service.improve",
     "organization_fides_key": "default_organization",
     "tags": null,
     "name": "System",
     "description": "The source system, product, service or application being improved.",
-    "parent_key": "improve",
+    "parent_key": "functional.service",
     "legal_basis": null,
     "special_category": null,
     "recipients": null,

@@ -830,7 +830,7 @@ class TestFilterResults:
                         "id",
                     ),
                 ],
-                "user.financial.account_number": [
+                "user.financial.bank_account": [
                     FieldPath(
                         "ccn",
                     )
@@ -935,7 +935,7 @@ class TestFilterResults:
                         "_id",
                     )
                 ],
-                "user.date_of_birth": [
+                "user.demographic.date_of_birth": [
                     FieldPath(
                         "birthday",
                     )
@@ -945,7 +945,7 @@ class TestFilterResults:
                         "customer_id",
                     )
                 ],
-                "user.gender": [
+                "user.demographic.gender": [
                     FieldPath(
                         "gender",
                     )

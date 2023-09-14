@@ -11,11 +11,15 @@ import {
 import _ from "lodash";
 import React, { useState } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import NextArrow from "~/features/common/Icon/NextArrow";
 import PrevArrow from "~/features/common/Icon/PrevArrow";
-import { useGetSystemHistoryQuery } from "~/features/plus/plus.slice";
-import { PrivacyDeclaration } from "~/types/api";
-import { SystemHistory } from "~/types/api/models/SystemHistory";
+import {
+  DictOption,
+  selectAllDictEntries,
+  useGetSystemHistoryQuery,
+} from "~/features/plus/plus.slice";
+import { PrivacyDeclaration, SystemHistoryResponse } from "~/types/api";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
 import SystemHistoryModal from "./modal/SystemHistoryModal";
@@ -72,6 +76,9 @@ function alignArrays(
   return [alignedBefore, alignedAfter];
 }
 
+const lookupVendorLabel = (vendor_id: string, options: DictOption[]) =>
+  options.find((option) => option.value === vendor_id)?.label ?? vendor_id;
+
 const itemsPerPage = 10;
 
 const SystemHistoryTable = ({ system }: Props) => {
@@ -82,13 +89,13 @@ const SystemHistoryTable = ({ system }: Props) => {
     size: itemsPerPage,
   });
   const [isModalOpen, setModalOpen] = useState(false);
-  const [selectedHistory, setSelectedHistory] = useState<SystemHistory | null>(
-    null
-  );
+  const [selectedHistory, setSelectedHistory] =
+    useState<SystemHistoryResponse | null>(null);
+  const dictionaryOptions = useAppSelector(selectAllDictEntries);
 
   const systemHistories = data?.items || [];
 
-  const openModal = (history: SystemHistory) => {
+  const openModal = (history: SystemHistoryResponse) => {
     // Align the privacy_declarations arrays
     const beforePrivacyDeclarations =
       history?.before?.privacy_declarations || [];
@@ -108,6 +115,17 @@ const SystemHistoryTable = ({ system }: Props) => {
       privacy_declarations: alignedAfter,
     };
 
+    if (dictionaryOptions) {
+      alignedBeforeInitialValues.vendor_id = lookupVendorLabel(
+        alignedBeforeInitialValues.vendor_id,
+        dictionaryOptions
+      );
+      alignedAfterInitialValues.vendor_id = lookupVendorLabel(
+        alignedAfterInitialValues.vendor_id,
+        dictionaryOptions
+      );
+    }
+
     setSelectedHistory({
       before: alignedBeforeInitialValues,
       after: alignedAfterInitialValues,
@@ -123,7 +141,7 @@ const SystemHistoryTable = ({ system }: Props) => {
     setSelectedHistory(null);
   };
 
-  const describeSystemChange = (history: SystemHistory) => {
+  const describeSystemChange = (history: SystemHistoryResponse) => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { edited_by, before, after, created_at } = history;
 

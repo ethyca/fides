@@ -26,7 +26,7 @@ describe("System management page", () => {
     });
 
     it("doesn't display the vendor dropdown", () => {
-      cy.getByTestId("input-meta.vendor.id").should("not.exist");
+      cy.getByTestId("input-vendor_id").should("not.exist");
     });
   });
 
@@ -341,8 +341,8 @@ describe("System management page", () => {
       });
 
       // edit the existing declaration
-      cy.getByTestId("accordion-header-improve.system").click();
-      cy.getByTestId("improve.system-form").within(() => {
+      cy.getByTestId("accordion-header-functional.service.improve").click();
+      cy.getByTestId("functional.service.improve-form").within(() => {
         cy.getByTestId("input-data_subjects").type(`customer{enter}`);
         cy.getByTestId("save-btn").click();
       });
@@ -459,12 +459,14 @@ describe("System management page", () => {
         cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
       });
-      // "improve.system" and "Store system data." are already being used
+      // "functional.service.improve" and "Store system data." are already being used
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").click();
       cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
       cy.getByTestId("new-declaration-form").within(() => {
-        cy.getByTestId("input-data_use").type(`improve.system{enter}`);
+        cy.getByTestId("input-data_use").type(
+          `functional.service.improve{enter}`
+        );
         cy.getByTestId("input-name").type(`Store system data.{enter}`);
         cy.getByTestId("input-data_categories").type(`user.biometric{enter}`);
         cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
@@ -494,12 +496,14 @@ describe("System management page", () => {
       cy.getByTestId("add-btn").click();
       cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
 
-      cy.getByTestId(`accordion-header-improve.system`);
+      cy.getByTestId(`accordion-header-functional.service.improve`);
       cy.getByTestId(`accordion-header-advertising`).click();
 
-      // try to change 'advertising' to 'improve.system' and make their names match
+      // try to change 'advertising' to 'functional.service.improve' and make their names match
       cy.getByTestId("advertising-form").within(() => {
-        cy.getByTestId("input-data_use").type(`improve.system{enter}`);
+        cy.getByTestId("input-data_use").type(
+          `functional.service.improve{enter}`
+        );
         cy.getByTestId("input-name").clear().type(`Store system data.{enter}`);
         cy.getByTestId("save-btn").click();
       });
@@ -512,13 +516,15 @@ describe("System management page", () => {
         cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
       });
-      // "improve.system" and "Store system data." are already being used
-      // use "improve.system" again but a different name
+      // "functional.service.improve" and "Store system data." are already being used
+      // use "functional.service.improve" again but a different name
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").click();
       cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
       cy.getByTestId("new-declaration-form").within(() => {
-        cy.getByTestId("input-data_use").type(`improve.system{enter}`);
+        cy.getByTestId("input-data_use").type(
+          `functional.service.improve{enter}`
+        );
         cy.getByTestId("input-name").type(`A different description.{enter}`);
         cy.getByTestId("input-data_categories").type(`user.biometric{enter}`);
         cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
@@ -583,7 +589,7 @@ describe("System management page", () => {
 
       // Edit the existing data use
       cy.getByTestId("privacy-declaration-accordion").within(() => {
-        cy.getByTestId("accordion-header-improve.system").click();
+        cy.getByTestId("accordion-header-functional.service.improve").click();
         // Add a data subject
         cy.getByTestId("input-data_subjects").type(`citizen{enter}`);
         cy.getByTestId("save-btn").click();
@@ -634,15 +640,18 @@ describe("System management page", () => {
       });
 
       it.skip("deletes an accordion privacy declaration", () => {
-        cy.getByTestId("accordion-header-improve.system").click();
-        cy.getByTestId("improve.system-form").within(() => {
+        cy.getByTestId("accordion-header-functional.service.improve").click();
+        cy.getByTestId("functional.service.improve-form").within(() => {
           cy.getByTestId("delete-btn").click();
         });
         cy.getByTestId("continue-btn").click();
         cy.wait("@putFidesSystem").then((interception) => {
           const { body } = interception.request;
           expect(body.privacy_declarations.length).to.eql(1);
-          expect(body.privacy_declarations[0].data_use !== "improve.system");
+          expect(
+            body.privacy_declarations[0].data_use !==
+              "functional.service.improve"
+          );
         });
         cy.getByTestId("toast-success-msg").contains("Data use deleted");
       });

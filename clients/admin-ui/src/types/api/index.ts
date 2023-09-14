@@ -27,6 +27,7 @@ export type { Body_upload_data_api_v1_storage__request_id__post } from "./models
 export type { BulkPostPrivacyRequests } from "./models/BulkPostPrivacyRequests";
 export type { BulkPutConnectionConfiguration } from "./models/BulkPutConnectionConfiguration";
 export type { BulkPutDataset } from "./models/BulkPutDataset";
+export type { BulkPutMessagingTemplateResponse } from "./models/BulkPutMessagingTemplateResponse";
 export type { BulkPutPolicyResponse } from "./models/BulkPutPolicyResponse";
 export type { BulkPutRuleResponse } from "./models/BulkPutRuleResponse";
 export type { BulkPutRuleTargetResponse } from "./models/BulkPutRuleTargetResponse";
@@ -50,6 +51,7 @@ export type { ClassifyStatusUpdatePayload } from "./models/ClassifyStatusUpdateP
 export type { ClassifySystem } from "./models/ClassifySystem";
 export type { ClientConfig } from "./models/ClientConfig";
 export type { ClientCreatedResponse } from "./models/ClientCreatedResponse";
+export type { CloudConfig } from "./models/CloudConfig";
 export { ClusterHealth } from "./models/ClusterHealth";
 export type { CollectionAddressResponse } from "./models/CollectionAddressResponse";
 export type { CollectionMeta } from "./models/CollectionMeta";
@@ -84,6 +86,7 @@ export type { CustomFieldDefinitionResponse } from "./models/CustomFieldDefiniti
 export type { CustomFieldDefinitionWithId } from "./models/CustomFieldDefinitionWithId";
 export type { CustomFieldWithId } from "./models/CustomFieldWithId";
 export type { DatabaseConfig } from "./models/DatabaseConfig";
+export type { DatabaseHealthCheck } from "./models/DatabaseHealthCheck";
 export type { DataCategory } from "./models/DataCategory";
 export type { DataFlow } from "./models/DataFlow";
 export type { DataProtectionImpactAssessment } from "./models/DataProtectionImpactAssessment";
@@ -131,6 +134,7 @@ export type { ExternalDatasetReference } from "./models/ExternalDatasetReference
 export type { fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds } from "./models/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds";
 export type { fides__api__schemas__policy__Policy } from "./models/fides__api__schemas__policy__Policy";
 export type { fides__connectors__models__KeyfileCreds } from "./models/fides__connectors__models__KeyfileCreds";
+export type { FidesCloudStatus } from "./models/FidesCloudStatus";
 export type { FidesDatasetReference } from "./models/FidesDatasetReference";
 export type { FidesDocsSchema } from "./models/FidesDocsSchema";
 export type { fideslang__models__Policy } from "./models/fideslang__models__Policy";
@@ -178,6 +182,8 @@ export type { MessagingServiceDetailsMailgun } from "./models/MessagingServiceDe
 export type { MessagingServiceDetailsTwilioEmail } from "./models/MessagingServiceDetailsTwilioEmail";
 export type { MessagingServiceSecretsMailchimpTransactionalDocs } from "./models/MessagingServiceSecretsMailchimpTransactionalDocs";
 export { MessagingServiceType } from "./models/MessagingServiceType";
+export type { MessagingTemplateRequest } from "./models/MessagingTemplateRequest";
+export type { MessagingTemplateResponse } from "./models/MessagingTemplateResponse";
 export type { MongoDBDocsSchema } from "./models/MongoDBDocsSchema";
 export type { MSSQLDocsSchema } from "./models/MSSQLDocsSchema";
 export type { MySQLDocsSchema } from "./models/MySQLDocsSchema";
@@ -204,6 +210,7 @@ export type { Page_PrivacyNoticeResponse_ } from "./models/Page_PrivacyNoticeRes
 export type { Page_RuleResponseWithTargets_ } from "./models/Page_RuleResponseWithTargets_";
 export type { Page_RuleTarget_ } from "./models/Page_RuleTarget_";
 export type { Page_StorageDestinationResponse_ } from "./models/Page_StorageDestinationResponse_";
+export type { Page_SystemHistoryResponse_ } from "./models/Page_SystemHistoryResponse_";
 export type { Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__ } from "./models/Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__";
 export type { Page_UserResponse_ } from "./models/Page_UserResponse_";
 export type { ParamValue } from "./models/ParamValue";
@@ -285,6 +292,7 @@ export { StorageType } from "./models/StorageType";
 export { StorageTypeApiAccepted } from "./models/StorageTypeApiAccepted";
 export type { Strategy } from "./models/Strategy";
 export type { System } from "./models/System";
+export type { SystemHistoryResponse } from "./models/SystemHistoryResponse";
 export type { SystemMetadata } from "./models/SystemMetadata";
 export type { SystemResponse } from "./models/SystemResponse";
 export type { SystemScanHistory } from "./models/SystemScanHistory";
@@ -322,3 +330,4 @@ export type { Violation } from "./models/Violation";
 export type { ViolationAttributes } from "./models/ViolationAttributes";
 export { WebhookDirection } from "./models/WebhookDirection";
 export type { WebhookOrder } from "./models/WebhookOrder";
+export type { WorkerHealthCheck } from "./models/WorkerHealthCheck";
