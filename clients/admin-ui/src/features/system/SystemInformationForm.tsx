@@ -193,9 +193,6 @@ const SystemInformationForm = ({
     createSystemMutationResult.isLoading ||
     customFields.isLoading;
 
-  // console.log(passedInSystem);
-  console.log(initialValues);
-
   return (
     <Formik
       initialValues={initialValues}
@@ -204,8 +201,6 @@ const SystemInformationForm = ({
       validationSchema={ValidationSchema}
     >
       {({ dirty, values, isValid }) => {
-        console.log(dirty);
-        console.log(values);
         return (
           <Form>
             <FormGuard id="SystemInfoTab" name="System Info" />
