@@ -69,7 +69,6 @@ const CORSConfigurationPage: NextPage = () => {
         cors_origins: values.domains,
       },
     };
-    // @ts-ignore
     const result = await patchConfigSettingsTrigger(payload);
 
     handleResult(result);

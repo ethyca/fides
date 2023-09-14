@@ -2,8 +2,10 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
+  ApplicationConfig,
   BulkPostPrivacyRequests,
   PrivacyRequestNotificationInfo,
+  SecurityApplicationConfig,
 } from "~/types/api";
 
 import type { RootState } from "../../app/store";
@@ -340,7 +342,10 @@ export const privacyRequestApi = baseApi.injectEndpoints({
     }),
     createConfigurationSettings: build.mutation<
       any,
-      MessagingConfigResponse | StorageConfigResponse
+      | ApplicationConfig
+      | MessagingConfigResponse
+      | StorageConfigResponse
+      | SecurityApplicationConfig
     >({
       query: (params) => ({
         url: `/config`,
@@ -350,7 +355,10 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       invalidatesTags: ["Configuration Settings"],
     }),
     getConfigurationSettings: build.query<
-      MessagingConfigResponse | StorageConfigResponse,
+      | ApplicationConfig
+      | MessagingConfigResponse
+      | StorageConfigResponse
+      | SecurityApplicationConfig,
       void
     >({
       query: () => ({
@@ -469,8 +477,9 @@ export const selectCORSDomains = () =>
       privacyRequestApi.endpoints.getConfigurationSettings.select(),
     ],
     (state, { data }) => {
-      // @ts-ignore
-      const domains = data?.security?.cors_origins;
+      // the type checker was having a really hard time with `data`
+      const properlyTypedData = data as ApplicationConfig;
+      const domains = properlyTypedData?.security?.cors_origins;
       return domains ? { domains } : EMPTY_CORS_DOMAINS;
     }
   );
