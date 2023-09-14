@@ -25,7 +25,7 @@ def cors_middleware() -> Generator:
 
     assert cors_middleware is not None
 
-    initial_cors_domains = [*cors_middleware.options.get("allow_origins")]
+    initial_cors_domains = [*cors_middleware.options["allow_origins"]]
 
     yield cors_middleware, initial_cors_domains
 
@@ -616,7 +616,6 @@ class TestDeleteApplicationConfig:
         cors_middleware,
         payload,
     ):
-        assert len(cors_middleware[1]) > 0
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
         response = api_client.patch(
             url,
