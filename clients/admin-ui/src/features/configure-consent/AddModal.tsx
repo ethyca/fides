@@ -20,10 +20,12 @@ const AddModal = ({
   isOpen,
   onClose,
   onSuggestionClick,
+  suggestionsDisabled,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
   title: string;
   children: ReactNode;
   onSuggestionClick: () => void;
+  suggestionsDisabled?: boolean;
 }) => {
   const features = useFeatures();
 
@@ -33,14 +35,18 @@ const AddModal = ({
       onClose={onClose}
       isCentered
       scrollBehavior="inside"
-      size="3xl"
+      size="lg"
     >
       <ModalOverlay />
       <ModalContent textAlign="left" p={0}>
         <ModalHeader p={0}>
           <Box
+            backgroundColor="gray.50"
             px={6}
             py={4}
+            border="1px"
+            borderColor="gray.200"
+            borderTopRadius={6}
             display="flex"
             justifyContent="space-between"
             alignItems="center"
@@ -55,6 +61,7 @@ const AddModal = ({
                 variant="outline"
                 borderColor="gray.200"
                 onClick={onSuggestionClick}
+                isDisabled={suggestionsDisabled}
               />
             ) : null}
           </Box>
