@@ -200,8 +200,7 @@ const SystemInformationForm = ({
       onSubmit={handleSubmit}
       validationSchema={ValidationSchema}
     >
-      {({ dirty, values, isValid }) => {
-        return (
+      {({ dirty, values, isValid }) => (
           <Form>
             <FormGuard id="SystemInfoTab" name="System Info" />
             <Stack spacing={0} maxWidth={{ base: "100%", lg: "70%" }}>
@@ -517,8 +516,7 @@ const SystemInformationForm = ({
             </Box>
             {children}
           </Form>
-        );
-      }}
+        )}
     </Formik>
   );
 };
