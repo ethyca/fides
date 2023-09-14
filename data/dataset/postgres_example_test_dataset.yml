@@ -213,7 +213,6 @@ dataset:
               primary_key: True
           - name: opened
             data_categories: [system.operations]
-
       - name: visit
         fields:
           - name: email
