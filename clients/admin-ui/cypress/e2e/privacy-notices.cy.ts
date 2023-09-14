@@ -184,6 +184,22 @@ describe("Privacy notices", () => {
           cy.getByTestId("status-badge").contains("inactive");
         });
       });
+
+      it("can show an error if disable toggle fails", () => {
+        cy.intercept("PATCH", "/api/v1/privacy-notice*", {
+          statusCode: 422,
+          body: {
+            detail:
+              "Privacy Notice 'Analytics test' has already assigned notice key 'analytics' to region 'PrivacyNoticeRegion.ie'",
+          },
+        }).as("patchNoticesError");
+        cy.getByTestId("row-Data Sales").within(() => {
+          cy.getByTestId("toggle-Enable").click();
+        });
+        cy.wait("@patchNoticesError").then(() => {
+          cy.getByTestId("toast-error-msg");
+        });
+      });
     });
   });
 

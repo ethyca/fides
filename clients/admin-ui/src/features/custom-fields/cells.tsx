@@ -66,12 +66,11 @@ export const EnableCustomFieldCell = (
     useUpdateCustomFieldDefinitionMutation();
   const { row } = cellProps;
 
-  const onToggle = async (toggle: boolean) => {
-    await updateCustomFieldDefinitionTrigger({
+  const onToggle = async (toggle: boolean) =>
+    updateCustomFieldDefinitionTrigger({
       ...row.original,
       active: toggle,
     });
-  };
 
   return (
     <EnableCell<CustomFieldDefinition>
