@@ -1,6 +1,7 @@
 import {
   Flex,
   Heading,
+  Link,
   Text,
   Stack,
   useToast,
@@ -187,6 +188,13 @@ const Home: NextPage = () => {
               {paragraph}
             </Text>
           ))}
+          {config.privacy_policy_visible &&
+          config.privacy_policy_url &&
+          config.privacy_policy_url_text ? (
+            <Link href={config.privacy_policy_url} isExternal>
+              {config.privacy_policy_url_text}
+            </Link>
+          ) : null}
         </Stack>
         <Flex m={-2} flexDirection={["column", "column", "row"]}>
           {content}

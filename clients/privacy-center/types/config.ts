@@ -27,11 +27,14 @@ export type Config = {
   server_url_development?: string;
   server_url_production?: string;
   logo_path: string;
-  logo_url: string;
+  logo_url?: string;
   favicon_path?: string;
   actions: PrivacyRequestOption[];
   includeConsent?: boolean;
   consent?: ConsentConfig;
+  privacy_policy_url?: string;
+  privacy_policy_url_text?: string;
+  privacy_policy_visible?: boolean;
 };
 
 export type LegacyConsentConfig = {
