@@ -1,6 +1,7 @@
 import { Flex, Image } from "@fidesui/react";
 import React from "react";
 import Head from "next/head";
+import Logo from "~/components/Logo";
 
 import { useConfig } from "~/features/common/config.slice";
 import { useStyles } from "~/features/common/styles.slice";
@@ -27,13 +28,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           justifyContent="center"
           alignItems="center"
         >
-          <Image
-            src={config.logo_path}
-            margin="8px"
-            height="68px"
-            alt="Logo"
-            data-testid="logo"
-          />
+          {config.logo_url ? (
+            <a href={config.logo_url}>
+              <Logo />
+            </a>
+          ) : (
+            <Logo />
+          )}
         </Flex>
       </header>
       <div>{children}</div>
