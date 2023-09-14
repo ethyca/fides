@@ -26,19 +26,23 @@ describe("System management with Plus features", () => {
     });
 
     it("can display the vendor list dropdown", () => {
-      cy.getSelectValueContainer("input-vendor_id");
+      cy.getSelectValueContainer("input-meta.vendor.id");
     });
 
     it("contains dictionary entries", () => {
-      cy.selectOption("input-vendor_id", "Aniview LTD");
+      cy.selectOption("input-meta.vendor.id", "Aniview LTD");
     });
 
     it("can switch entries", () => {
-      cy.selectOption("input-vendor_id", "Aniview LTD");
-      cy.getSelectValueContainer("input-vendor_id").contains("Aniview LTD");
+      cy.selectOption("input-meta.vendor.id", "Aniview LTD");
+      cy.getSelectValueContainer("input-meta.vendor.id").contains(
+        "Aniview LTD"
+      );
 
-      cy.selectOption("input-vendor_id", "Jaduda GmbH");
-      cy.getSelectValueContainer("input-vendor_id").contains("Jaduda GmbH");
+      cy.selectOption("input-meta.vendor.id", "Jaduda GmbH");
+      cy.getSelectValueContainer("input-meta.vendor.id").contains(
+        "Jaduda GmbH"
+      );
     });
 
     // some DictSuggestionTextInputs don't get populated right, causing
