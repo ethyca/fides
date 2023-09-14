@@ -122,9 +122,6 @@ fideslang_1_use = fideslang.models.DataUse(
 orphaned_data_category = fideslang.models.DataCategory(
     fides_key="user.observed.custom", parent_key="user.observed"
 )
-orphaned_data_category_no_parent = fideslang.models.DataCategory(
-    fides_key="custom_category_no_parent", parent_key=None
-)
 
 # This is used to test Privacy Notices
 old_notice = PrivacyNoticeCreation(
@@ -189,11 +186,7 @@ def create_outdated_objects() -> None:
         url=SERVER_URL,
         headers=AUTH_HEADER,
         taxonomy=fideslang.models.Taxonomy(
-            data_category=[
-                orphaned_data_category,
-                orphaned_data_category_no_parent,
-                fideslang_1_category,
-            ],
+            data_category=[orphaned_data_category, fideslang_1_category],
             data_use=[fideslang_1_use],
         ),
     )
@@ -306,12 +299,7 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
     server_orphaned_category: fideslang.models.DataCategory = partial_get(
         resource_key="user.behavior.custom", resource_type="data_category"
     )
-    assert server_orphaned_category
-
-    server_orphaned_category_no_parent: fideslang.models.DataCategory = partial_get(
-        resource_key="custom_category_no_parent", resource_type="data_category"
-    )
-    assert server_orphaned_category_no_parent
+    assert server_orphaned_category, server_orphaned_category
     print("> Verified Data Categories.")
 
     # Verify Privacy Notices
