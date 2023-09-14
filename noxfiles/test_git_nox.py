@@ -50,6 +50,11 @@ class TestGitNox:
                 "2.17.1b0",
             ),  # ensure rc version check is robust with numerical sort
             (
+                "main",
+                ["2.9.0", "2.19.1rc0", "2.19.2b1", "2.16.0rc0"],
+                "2.19.2b2",
+            ),  # ensure we still increment well when using rc version check
+            (
                 "some-test-feature-branch",
                 ["2.18.0", "2.17.0rc1", "2.19.0rc0"],
                 "2.18.1a0",
