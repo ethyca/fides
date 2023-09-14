@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.20.0...main)
 
+### Fixed
+- Enable toggles in various tables now render an error toast if an error occurs [#4095](https://github.com/ethyca/fides/pull/4095)
+
 ## [2.20.0](https://github.com/ethyca/fides/compare/2.19.1...2.20.0)
 
 ### Added
