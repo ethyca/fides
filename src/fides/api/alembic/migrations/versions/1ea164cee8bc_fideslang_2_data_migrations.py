@@ -270,10 +270,11 @@ def update_system_ingress_egress_data_categories(
         # Do a blunt find/replace
         if ingress:
             for item in ingress:
-                item["data_categories"] = [
-                    _replace_matching_data_label(category, data_label_map)
-                    for category in item.get("data_categories")
-                ]
+                if item["data_categories"]:
+                    item["data_categories"] = [
+                        _replace_matching_data_label(category, data_label_map)
+                        for category in item["data_categories"]
+                    ]
 
             update_ingress_query: TextClause = text(
                 "UPDATE ctl_systems SET ingress = :updated_ingress WHERE id= :system_id"
@@ -285,10 +286,11 @@ def update_system_ingress_egress_data_categories(
 
         if egress:
             for item in egress:
-                item["data_categories"] = [
-                    _replace_matching_data_label(category, data_label_map)
-                    for category in item.get("data_categories")
-                ]
+                if item["data_categories"]:
+                    item["data_categories"] = [
+                        _replace_matching_data_label(category, data_label_map)
+                        for category in item["data_categories"]
+                    ]
 
             update_egress_query: TextClause = text(
                 "UPDATE ctl_systems SET egress = :updated_egress WHERE id= :system_id"
