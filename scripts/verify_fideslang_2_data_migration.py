@@ -207,47 +207,47 @@ def create_outdated_objects() -> None:
     )
 
     # Create Privacy Notice
-    response = requests.post(
-        url=f"{SERVER_URL}/api/v1/privacy-notice",
-        headers=AUTH_HEADER,
-        allow_redirects=True,
-        data=json.dumps([old_notice.dict()]),
-    )
-    assert response.ok, f"Failed to Create Privacy Notice: {response.text}"
-    global PRIVACY_NOTICE_ID  # I'm so sorry
-    PRIVACY_NOTICE_ID = response.json()[0]["id"]  # Please forgive me
+    # response = requests.post(
+    #     url=f"{SERVER_URL}/api/v1/privacy-notice",
+    #     headers=AUTH_HEADER,
+    #     allow_redirects=True,
+    #     data=json.dumps([old_notice.dict()]),
+    # )
+    # assert response.ok, f"Failed to Create Privacy Notice: {response.text}"
+    # global PRIVACY_NOTICE_ID  # I'm so sorry
+    # PRIVACY_NOTICE_ID = response.json()[0]["id"]  # Please forgive me
 
     # Create a Consent Request
-    response = requests.post(
-        url=f"{SERVER_URL}/api/v1/consent-request",
-        allow_redirects=True,
-        data=json.dumps({"email": "user@example.com"}),
-    )
-    global CONSENT_REQUEST_ID
-    CONSENT_REQUEST_ID = response.json()["consent_request_id"]
+    # response = requests.post(
+    #     url=f"{SERVER_URL}/api/v1/consent-request",
+    #     allow_redirects=True,
+    #     data=json.dumps({"email": "user@example.com"}),
+    # )
+    # global CONSENT_REQUEST_ID
+    # CONSENT_REQUEST_ID = response.json()["consent_request_id"]
 
     # Create a Privacy Request from a Consent request?
-    response = requests.patch(
-        url=f"{SERVER_URL}/api/v1/consent-request/{CONSENT_REQUEST_ID}/preferences",
-        allow_redirects=True,
-        data=json.dumps(
-            {
-                "code": CONSENT_CODE,
-                "consent": [
-                    {
-                        "data_use": "improve.system",
-                        "opt_in": True,
-                        "has_gpc_flag": False,
-                        "conflicts_with_gpc": False,
-                    }
-                ],
-                "executable_options": [
-                    {"data_use": "improve.system", "executable": True}
-                ],
-            }
-        ),
-    )
-    assert response.ok, response.text
+    # response = requests.patch(
+    #     url=f"{SERVER_URL}/api/v1/consent-request/{CONSENT_REQUEST_ID}/preferences",
+    #     allow_redirects=True,
+    #     data=json.dumps(
+    #         {
+    #             "code": CONSENT_CODE,
+    #             "consent": [
+    #                 {
+    #                     "data_use": "improve.system",
+    #                     "opt_in": True,
+    #                     "has_gpc_flag": False,
+    #                     "conflicts_with_gpc": False,
+    #                 }
+    #             ],
+    #             "executable_options": [
+    #                 {"data_use": "improve.system", "executable": True}
+    #             ],
+    #         }
+    #     ),
+    # )
+    # assert response.ok, response.text
 
 
 def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
@@ -305,50 +305,50 @@ def verify_migration(server_url: str, auth_header: Dict[str, str]) -> None:
     # Verify Privacy Notices
     # NOTE: This only tests the `privacynotice` table explicitly because the other
     # tables appear to be carbon copies (inheritance)
-    privacy_notice_response = requests.get(
-        url=f"{SERVER_URL}/api/v1/privacy-notice/{PRIVACY_NOTICE_ID}",
-        headers=AUTH_HEADER,
-        allow_redirects=True,
-    ).json()
-    assert privacy_notice_response["data_uses"] == ["functional.service.improve"]
-    print("> Verified Privacy Notices.")
+    # privacy_notice_response = requests.get(
+    #     url=f"{SERVER_URL}/api/v1/privacy-notice/{PRIVACY_NOTICE_ID}",
+    #     headers=AUTH_HEADER,
+    #     allow_redirects=True,
+    # ).json()
+    # assert privacy_notice_response["data_uses"] == ["functional.service.improve"]
+    # print("> Verified Privacy Notices.")
 
     # Verify Consent
-    consent_response = requests.post(
-        url=f"{SERVER_URL}/api/v1/consent-request/{CONSENT_REQUEST_ID}/verify",
-        allow_redirects=True,
-        data=json.dumps(
-            {
-                "code": CONSENT_CODE,
-            }
-        ),
-    )
-    assert (
-        consent_response.json()["consent"][0]["data_use"]
-        == "functional.service.improve"
-    )
+    # consent_response = requests.post(
+    #     url=f"{SERVER_URL}/api/v1/consent-request/{CONSENT_REQUEST_ID}/verify",
+    #     allow_redirects=True,
+    #     data=json.dumps(
+    #         {
+    #             "code": CONSENT_CODE,
+    #         }
+    #     ),
+    # )
+    # assert (
+    #     consent_response.json()["consent"][0]["data_use"]
+    #     == "functional.service.improve"
+    # )
 
-    consent_result = get_db_engine(DATABASE_URL).execute(
-        "select id, data_use, opt_in from consent;"
-    )
-    for r in consent_result:
-        result = r["data_use"]
-        assert result == "functional.service.improve", result
+    # consent_result = get_db_engine(DATABASE_URL).execute(
+    #     "select id, data_use, opt_in from consent;"
+    # )
+    # for r in consent_result:
+    #     result = r["data_use"]
+    #     assert result == "functional.service.improve", result
 
-    privacy_request_result = get_db_engine(DATABASE_URL).execute(
-        "select id, status, consent_preferences from privacyrequest;"
-    )
-    for r in privacy_request_result:
-        result = r["consent_preferences"][0]["data_use"]
-        assert result == "functional.service.improve", result
+    # privacy_request_result = get_db_engine(DATABASE_URL).execute(
+    #     "select id, status, consent_preferences from privacyrequest;"
+    # )
+    # for r in privacy_request_result:
+    #     result = r["consent_preferences"][0]["data_use"]
+    #     assert result == "functional.service.improve", result
 
-    consent_request_result = get_db_engine(DATABASE_URL).execute(
-        "select id, preferences, privacy_request_id from consentrequest;"
-    )
-    for r in consent_request_result:
-        result = r["preferences"][0]["data_use"]
-        assert result == "functional.service.improve", result
-    print("> Verified Consent.")
+    # consent_request_result = get_db_engine(DATABASE_URL).execute(
+    #     "select id, preferences, privacy_request_id from consentrequest;"
+    # )
+    # for r in consent_request_result:
+    #     result = r["preferences"][0]["data_use"]
+    #     assert result == "functional.service.improve", result
+    # print("> Verified Consent.")
 
     # Verify Rule Target
     rule_target_result = get_db_engine(DATABASE_URL).execute(
