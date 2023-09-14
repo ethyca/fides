@@ -37,12 +37,11 @@ export const EnablePrivacyExperienceCell = (
   const [patchExperienceMutationTrigger] = usePatchExperienceConfigMutation();
 
   const { row } = cellProps;
-  const onToggle = async (toggle: boolean) => {
-    await patchExperienceMutationTrigger({
+  const onToggle = async (toggle: boolean) =>
+    patchExperienceMutationTrigger({
       id: row.original.id,
       disabled: !toggle,
     });
-  };
 
   const { regions } = row.original;
   const multipleRegions = regions ? regions.length > 1 : false;
