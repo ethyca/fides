@@ -8,8 +8,8 @@ import {
   Heading,
   IconButton,
   Link,
-  Spinner,
   Text,
+  Spinner,
   useToast,
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
@@ -19,6 +19,7 @@ import type { NextPage } from "next";
 
 import { useAppSelector } from "~/app/hooks";
 import FormSection from "~/features/common/form/FormSection";
+import DocsLink from "~/features/common/DocsLink";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
@@ -82,13 +83,7 @@ const CORSConfigurationPage: NextPage = () => {
           </Text>
           <Text mb={10} fontSize="sm">
             Please visit{" "}
-            <Link
-              color="complimentary.500"
-              href="https://docs.ethyca.com"
-              isExternal
-            >
-              docs.ethyca.com
-            </Link>{" "}
+            <DocsLink href="https://docs.ethyca.com">docs.ethyca.com</DocsLink>{" "}
             for more information on how to configure CORS domains.
           </Text>
         </Box>
