@@ -232,9 +232,7 @@ def _embed_purpose_or_feature_under_system(
 
     # Nest new cloned TCF purpose or feature record beneath system otherwise
     # ensuring it has the appropriate legal basis
-    _extend_legal_bases(
-        embedded_tcf_record, legal_basis_for_processing, replace=True
-    )
+    _extend_legal_bases(embedded_tcf_record, legal_basis_for_processing, replace=True)
     system_section.append(embedded_tcf_record)  # type: ignore[arg-type]
 
 

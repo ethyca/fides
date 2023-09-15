@@ -90,7 +90,6 @@ from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
 from fides.api.util.data_category import DataCategory
-from fides.api.util.tcf_util import get_tcf_contents
 from fides.config import CONFIG
 from fides.config.helpers import load_file
 
