@@ -17,7 +17,7 @@ from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import censor_config
 from fides.config import get_config as get_app_config
-from fides.config.utils import load_updated_cors_domains
+from fides.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Config"], prefix=urls.V1_URL_PREFIX)
 
@@ -63,11 +63,7 @@ def update_settings(
     logger.info("Updating application settings")
     update_config: ApplicationConfig = ApplicationConfig.update_api_set(db, pruned_data)
 
-    if (
-        "security" in pruned_data.keys()
-        and "cors_origins" in pruned_data.get("security").keys()
-    ):
-        load_updated_cors_domains(pruned_data["security"]["cors_origins"], request.app)
+    ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
 
     return update_config.api_set
 
@@ -81,6 +77,7 @@ def update_settings(
 def reset_settings(
     *,
     db: Session = Depends(deps.get_db),
+    request: Request,
 ) -> dict:
     """
     Resets the global application settings record.
@@ -91,6 +88,8 @@ def reset_settings(
     logger.info("Resetting api-set application settings")
     update_config: Optional[ApplicationConfig] = ApplicationConfig.clear_api_set(db)
 
-    load_updated_cors_domains([], resetDomains=True)
+    ConfigProxy(db).load_current_cors_domains_into_middleware(
+        request.app, resetDomains=True
+    )
 
     return update_config.api_set if update_config else {}

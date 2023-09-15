@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from typing import Any, List, Optional
 
+from fastapi.applications import FastAPI
 from pydantic import AnyUrl
 from sqlalchemy.orm import Session
+from starlette.middleware.cors import CORSMiddleware
 
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.schemas.storage.storage import StorageType
@@ -93,3 +95,16 @@ class ConfigProxy:
         self.execution = ExecutionSettingsProxy(db)
         self.storage = StorageSettingsProxy(db)
         self.security = SecuritySettingsProxy(db)
+
+    def load_current_cors_domains_into_middleware(
+        self, app: FastAPI, resetDomains: bool = False
+    ) -> None:
+        for mw in app.user_middleware:
+            if mw.cls is CORSMiddleware:
+                if resetDomains:
+                    mw.options["allow_origins"] = self.security.cors_origins
+                    break
+
+                mw.options["allow_origins"] = [
+                    str(domain) for domain in self.security.cors_origins
+                ]

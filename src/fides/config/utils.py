@@ -1,7 +1,6 @@
 from os import getenv
 from typing import List
 
-from fastapi.applications import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
@@ -85,15 +84,3 @@ CONFIG_KEY_ALLOWLIST = {
         "active_default_storage_type",
     ],
 }
-
-
-def load_updated_cors_domains(
-    domains: List[str], app: FastAPI, resetDomains=False
-) -> None:
-    for mw in app.user_middleware:
-        if mw.cls is CORSMiddleware:
-            if resetDomains:
-                mw.options["allow_origins"] = domains
-                break
-
-            mw.options["allow_origins"] = [str(domain) for domain in domains]

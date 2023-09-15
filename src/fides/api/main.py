@@ -46,7 +46,6 @@ from fides.api.util.logger import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
 from fides.config.config_proxy import ConfigProxy
-from fides.config.utils import load_updated_cors_domains
 
 IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 
@@ -262,8 +261,7 @@ async def setup_server() -> None:
     await run_database_startup()
 
     db = get_api_session()
-    config_proxy = ConfigProxy(db)
-    load_updated_cors_domains(config_proxy.security.cors_origins, app)
+    ConfigProxy(db).load_current_cors_domains_into_middleware(app)
 
     check_redis()
 
