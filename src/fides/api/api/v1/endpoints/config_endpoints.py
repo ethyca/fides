@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.params import Security
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -49,6 +49,7 @@ def get_config(
 def update_settings(
     *,
     db: Session = Depends(deps.get_db),
+    request: Request,
     data: ApplicationConfigSchema,
 ) -> ApplicationConfigSchema:
     """
@@ -66,7 +67,7 @@ def update_settings(
         "security" in pruned_data.keys()
         and "cors_origins" in pruned_data.get("security").keys()
     ):
-        load_updated_cors_domains(pruned_data["security"]["cors_origins"])
+        load_updated_cors_domains(pruned_data["security"]["cors_origins"], request.app)
 
     return update_config.api_set
 

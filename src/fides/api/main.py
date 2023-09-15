@@ -263,7 +263,7 @@ async def setup_server() -> None:
 
     db = get_api_session()
     config_proxy = ConfigProxy(db)
-    load_updated_cors_domains(config_proxy.security.cors_origins)
+    load_updated_cors_domains(config_proxy.security.cors_origins, app)
 
     check_redis()
 
