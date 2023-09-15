@@ -261,7 +261,7 @@ const plusApi = baseApi.injectEndpoints({
     }),
     getDictionaryDataUses: build.query<
       Page<DictDataUse>,
-      { vendor_id: number }
+      { vendor_id: string }
     >({
       query: ({ vendor_id }) => ({
         params: { size: 1000 },
@@ -455,7 +455,7 @@ export const selectDictEntry = (vendorId: string) =>
 
 const EMPTY_DATA_USES: DictDataUse[] = [];
 
-export const selectDictDataUses = (vendorId: number) =>
+export const selectDictDataUses = (vendorId: string) =>
   createSelector(
     [
       (state) => state,

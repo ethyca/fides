@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import EmptyTableState from "~/features/system/dictionary-data-uses/EmptyTableState";
+import { transformDictDataUseToDeclaration } from "~/features/system/dictionary-form/helpers";
 import { useUpdateSystemMutation } from "~/features/system/system.slice";
 import {
   PrivacyDeclarationDisplayGroup,
@@ -96,36 +97,6 @@ const PrivacyDeclarationFormTab = ({
       return true;
     }
     return false;
-  };
-
-  const transformDictDataUseToDeclaration = (
-    dataUse: DictDataUse
-  ): PrivacyDeclarationResponse => {
-    // fix "Legitimate Interests" capitalization for API
-    const legalBasisForProcessing =
-      dataUse.legal_basis_for_processing === "Legitimate Interests"
-        ? "Legitimate interests"
-        : dataUse.legal_basis_for_processing;
-
-    // some data categories are nested on the backend, flatten them
-    // https://github.com/ethyca/fides-services/issues/100
-    const dataCategories = dataUse.data_categories.flatMap((dc) =>
-      dc.split(",")
-    );
-
-    return {
-      data_use: dataUse.data_use,
-      data_categories: dataCategories,
-      features: dataUse.features,
-      // @ts-ignore
-      legal_basis_for_processing: legalBasisForProcessing,
-      retention_period: `${dataUse.retention_period}`,
-      cookies: dataUse.cookies.map((c) => ({
-        name: c.identifier,
-        domain: c.domains,
-        path: "/",
-      })),
-    };
   };
 
   const handleSave = async (
@@ -315,7 +286,7 @@ const PrivacyDeclarationFormTab = ({
             allDataUses={dataProps.allDataUses}
             onCancel={handleCloseDictModal}
             onAccept={handleAcceptDictSuggestions}
-            vendorId={Number(system.vendor_id)}
+            vendorId={system.vendor_id}
           />
         </PrivacyDeclarationFormModal>
       ) : null}
