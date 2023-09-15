@@ -10,15 +10,13 @@ import { Dataset, GenerateTypes } from "~/types/api";
 
 import {
   setActiveDatasetFidesKey,
-  useGetAllFilteredDatasetsQuery,
+  useGetAllDatasetsQuery,
 } from "./dataset.slice";
 
-const DatasetsTable = () => {
+const DatasetTable = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { data: datasets } = useGetAllFilteredDatasetsQuery({
-    onlyUnlinkedDatasets: false,
-  });
+  const { data: datasets } = useGetAllDatasetsQuery();
   const features = useFeatures();
   usePollForClassifications({
     resourceType: GenerateTypes.DATASETS,
@@ -88,4 +86,4 @@ const DatasetsTable = () => {
   );
 };
 
-export default DatasetsTable;
+export default DatasetTable;
