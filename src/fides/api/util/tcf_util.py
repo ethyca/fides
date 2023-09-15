@@ -1,5 +1,4 @@
 from enum import Enum
-from functools import lru_cache
 from typing import Callable, Dict, List, Optional, Set, Tuple, Type, Union
 
 from fideslang.gvl import (
