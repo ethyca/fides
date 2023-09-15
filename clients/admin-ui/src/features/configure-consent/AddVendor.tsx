@@ -6,7 +6,7 @@ import {
   useToast,
   VStack,
 } from "@fidesui/react";
-import { FieldArray, Form, Formik, FormikHelpers } from "formik";
+import { Form, Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
@@ -18,32 +18,12 @@ import {
   useGetAllDictionaryEntriesQuery,
 } from "~/features/plus/plus.slice";
 import { useCreateSystemMutation } from "~/features/system";
-import { PrivacyDeclaration } from "~/types/api";
 
 import { getErrorMessage, isErrorResult } from "../common/helpers";
 import { errorToastParams, successToastParams } from "../common/toast";
 import AddModal from "./AddModal";
-import DataUseBlock from "./DataUseBlock";
-
-interface MinimalPrivacyDeclaration {
-  name: string;
-  data_use: PrivacyDeclaration["data_use"];
-  data_categories: PrivacyDeclaration["data_categories"];
-  cookies: string[];
-}
-
-interface FormValues {
-  name: string;
-  vendor_id?: number;
-  privacy_declarations: MinimalPrivacyDeclaration[];
-}
-
-const EMPTY_DECLARATION: MinimalPrivacyDeclaration = {
-  name: "",
-  data_use: "",
-  data_categories: ["user"],
-  cookies: [],
-};
+import { EMPTY_DECLARATION, FormValues } from "./constants";
+import DataUsesForm from "./DataUsesForm";
 
 const initialValues: FormValues = {
   name: "",
@@ -74,8 +54,13 @@ const AddVendor = () => {
 
   const [createSystemMutationTrigger] = useCreateSystemMutation();
 
-  const handleSuggestions = () => {
-    /* TODO */
+  const handleSuggestions = ({
+    setFieldValue,
+  }: Pick<FormikHelpers<FormValues>, "setFieldValue">) => {
+    setFieldValue("privacy_declarations", [
+      EMPTY_DECLARATION,
+      EMPTY_DECLARATION,
+    ]);
   };
 
   const handleSubmit = async (
@@ -122,12 +107,14 @@ const AddVendor = () => {
         onSubmit={handleSubmit}
         validationSchema={validationSchema}
       >
-        {({ dirty, values, isValid, errors }) => (
+        {({ dirty, values, isValid, setFieldValue, resetForm }) => (
           <AddModal
             isOpen={modal.isOpen}
             onClose={modal.onClose}
             title="Add a vendor"
-            onSuggestionClick={handleSuggestions}
+            onSuggestionClick={() => {
+              handleSuggestions({ setFieldValue });
+            }}
             suggestionsDisabled={values.vendor_id == null}
           >
             <Box data-testid="add-vendor-modal-content">
@@ -156,45 +143,21 @@ const AddVendor = () => {
                       variant="stacked"
                     />
                   )}
-                  <FieldArray
-                    name="privacy_declarations"
-                    render={(arrayHelpers) => {
-                      console.log({ values, dirty, isValid, errors });
-                      return (
-                        <>
-                          {values.privacy_declarations.map(
-                            (declaration, idx) => (
-                              <DataUseBlock
-                                key={declaration.data_use || idx}
-                                index={idx}
-                              />
-                            )
-                          )}
-                          <Button
-                            size="xs"
-                            variant="ghost"
-                            colorScheme="complimentary"
-                            onClick={() => {
-                              arrayHelpers.push(EMPTY_DECLARATION);
-                            }}
-                            disabled={
-                              values.privacy_declarations[
-                                values.privacy_declarations.length - 1
-                              ].data_use === EMPTY_DECLARATION.data_use
-                            }
-                          >
-                            Add data use +
-                          </Button>
-                        </>
-                      );
-                    }}
-                  />
+                  <DataUsesForm />
                   <ButtonGroup
                     size="sm"
                     width="100%"
                     justifyContent="space-between"
                   >
-                    <Button variant="outline">Cancel</Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        modal.onClose();
+                        resetForm();
+                      }}
+                    >
+                      Cancel
+                    </Button>
                     <Button
                       type="submit"
                       variant="primary"
