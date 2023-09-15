@@ -45,6 +45,7 @@ The types of changes are:
 - Ensures that fides.js toggles are not hidden by other CSS libs [#4075](https://github.com/ethyca/fides/pull/4075)
 - Migrate system > meta > vendor > id to system > meta [#4088](https://github.com/ethyca/fides/pull/4088)
 - Enable toggles in various tables now render an error toast if an error occurs [#4095](https://github.com/ethyca/fides/pull/4095)
+- Fixed a bug where an unsaved changes notification modal would appear even without unsaved changes [#4095](https://github.com/ethyca/fides/pull/4070)
 
 ## [2.19.1](https://github.com/ethyca/fides/compare/2.19.0...2.19.1)
 
