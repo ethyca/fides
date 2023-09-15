@@ -7,6 +7,7 @@ import {
   VStack,
 } from "@fidesui/react";
 import { Form, Formik, FormikHelpers } from "formik";
+import { useState } from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
@@ -53,15 +54,7 @@ const AddVendor = () => {
   const dictionaryOptions = useAppSelector(selectAllDictEntries);
 
   const [createSystemMutationTrigger] = useCreateSystemMutation();
-
-  const handleSuggestions = ({
-    setFieldValue,
-  }: Pick<FormikHelpers<FormValues>, "setFieldValue">) => {
-    setFieldValue("privacy_declarations", [
-      EMPTY_DECLARATION,
-      EMPTY_DECLARATION,
-    ]);
-  };
+  const [isShowingSuggestions, setIsShowingSuggestions] = useState(false);
 
   const handleSubmit = async (
     values: FormValues,
@@ -76,9 +69,15 @@ const AddVendor = () => {
         }));
         return { ...dec, cookies: transformedCookies };
       });
+
+    const name =
+      dictionaryOptions.find((o) => o.value === values.vendor_id)?.label ??
+      values.name;
+
     const payload = {
       ...values,
-      fides_key: formatKey(values.name),
+      name,
+      fides_key: formatKey(name),
       system_type: "",
       privacy_declarations: transformedDeclarations,
     };
@@ -107,13 +106,13 @@ const AddVendor = () => {
         onSubmit={handleSubmit}
         validationSchema={validationSchema}
       >
-        {({ dirty, values, isValid, setFieldValue, resetForm }) => (
+        {({ dirty, values, isValid, resetForm }) => (
           <AddModal
             isOpen={modal.isOpen}
             onClose={modal.onClose}
             title="Add a vendor"
             onSuggestionClick={() => {
-              handleSuggestions({ setFieldValue });
+              setIsShowingSuggestions(true);
             }}
             suggestionsDisabled={values.vendor_id == null}
           >
@@ -143,7 +142,7 @@ const AddVendor = () => {
                       variant="stacked"
                     />
                   )}
-                  <DataUsesForm />
+                  <DataUsesForm showSuggestions={isShowingSuggestions} />
                   <ButtonGroup
                     size="sm"
                     width="100%"

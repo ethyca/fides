@@ -1,6 +1,6 @@
 import { PrivacyDeclaration } from "~/types/api";
 
-interface MinimalPrivacyDeclaration {
+export interface MinimalPrivacyDeclaration {
   name: string;
   data_use: PrivacyDeclaration["data_use"];
   data_categories: PrivacyDeclaration["data_categories"];
@@ -9,7 +9,7 @@ interface MinimalPrivacyDeclaration {
 
 export interface FormValues {
   name: string;
-  vendor_id?: number;
+  vendor_id?: string;
   privacy_declarations: MinimalPrivacyDeclaration[];
 }
 

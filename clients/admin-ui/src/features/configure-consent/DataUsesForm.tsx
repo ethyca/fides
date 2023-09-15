@@ -1,5 +1,6 @@
 import { Button, VStack } from "@fidesui/react";
 import { FieldArray, useFormikContext } from "formik";
+import { useEffect } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -7,8 +8,17 @@ import {
   CustomSelect,
 } from "~/features/common/form/inputs";
 import { selectDataUseOptions } from "~/features/data-use/data-use.slice";
+import {
+  selectDictDataUses,
+  useGetDictionaryDataUsesQuery,
+} from "~/features/plus/plus.slice";
+import { transformDictDataUseToDeclaration } from "~/features/system/dictionary-form/helpers";
 
-import { EMPTY_DECLARATION, FormValues } from "./constants";
+import {
+  EMPTY_DECLARATION,
+  FormValues,
+  MinimalPrivacyDeclaration,
+} from "./constants";
 
 const DataUseBlock = ({ index }: { index: number }) => {
   const dataUseOptions = useAppSelector(selectDataUseOptions);
@@ -39,8 +49,29 @@ const DataUseBlock = ({ index }: { index: number }) => {
   );
 };
 
-const DataUsesForm = () => {
-  const { values } = useFormikContext<FormValues>();
+const DataUsesForm = ({ showSuggestions }: { showSuggestions: boolean }) => {
+  const { values, setFieldValue } = useFormikContext<FormValues>();
+  const { vendor_id: vendorId } = values;
+  useGetDictionaryDataUsesQuery(
+    { vendor_id: vendorId as string },
+    { skip: !showSuggestions || vendorId == null }
+  );
+  const dictDataUses = useAppSelector(selectDictDataUses(vendorId || ""));
+
+  useEffect(() => {
+    if (showSuggestions && values.vendor_id && dictDataUses?.length) {
+      const declarations: MinimalPrivacyDeclaration[] = dictDataUses
+        .map((d) => transformDictDataUseToDeclaration(d))
+        .map((d) => ({
+          name: d.name ?? "",
+          data_use: d.data_use,
+          data_categories: d.data_categories,
+          // TODO: fix this, we don't want to lose cookie info!
+          cookies: d.cookies?.map((c) => c.name) || [],
+        }));
+      setFieldValue("privacy_declarations", declarations);
+    }
+  }, [showSuggestions, values.vendor_id, dictDataUses, setFieldValue]);
   return (
     <FieldArray
       name="privacy_declarations"
