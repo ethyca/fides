@@ -16,6 +16,7 @@ export interface FormValues {
 export const EMPTY_DECLARATION: MinimalPrivacyDeclaration = {
   name: "",
   data_use: "",
+  // TODO(fides#4059): data categories will eventually be optional
   data_categories: ["user"],
   cookies: [],
 };

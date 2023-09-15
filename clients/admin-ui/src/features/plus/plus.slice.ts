@@ -421,7 +421,7 @@ export const selectAllCustomFieldDefinitions = createSelector(
 export type DictOption = {
   label: string;
   value: string;
-  descriptiong?: string;
+  description?: string;
 };
 
 const EMPTY_DICT_ENTRIES: DictOption[] = [];
@@ -432,13 +432,13 @@ export const selectAllDictEntries = createSelector(
   ],
   (RootState, { data }) =>
     data
-      ? (data.items
+      ? data.items
           .map((d) => ({
             label: d.display_name ? d.display_name : d.legal_name,
             value: d.id,
             description: d.description ? d.description : undefined,
           }))
-          .sort((a, b) => (a.label > b.label ? 1 : -1)) as DictOption[])
+          .sort((a, b) => (a.label > b.label ? 1 : -1))
       : EMPTY_DICT_ENTRIES
 );
 

@@ -29,16 +29,11 @@ import DataUsesForm from "./DataUsesForm";
 const initialValues: FormValues = {
   name: "",
   vendor_id: undefined,
-  // TODO(fides#4059): data categories will eventually be optional
   privacy_declarations: [EMPTY_DECLARATION],
 };
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("Vendor name"),
-});
-
-const DictionaryValidationSchema = Yup.object().shape({
-  vendor_id: Yup.string().required().label("Vendor"),
 });
 
 const AddVendor = () => {
@@ -91,10 +86,6 @@ const AddVendor = () => {
     modal.onClose();
   };
 
-  const validationSchema = hasDictionary
-    ? DictionaryValidationSchema
-    : ValidationSchema;
-
   return (
     <>
       <Button onClick={modal.onOpen} data-testid="add-vendor-btn">
@@ -104,7 +95,7 @@ const AddVendor = () => {
         initialValues={initialValues}
         enableReinitialize
         onSubmit={handleSubmit}
-        validationSchema={validationSchema}
+        validationSchema={ValidationSchema}
       >
         {({ dirty, values, isValid, resetForm }) => (
           <AddModal
@@ -130,18 +121,17 @@ const AddVendor = () => {
                       tooltip="Select the vendor that matches the system"
                       isCustomOption
                       variant="stacked"
-                      isRequired
                     />
-                  ) : (
-                    <CustomTextInput
-                      id="name"
-                      name="name"
-                      isRequired
-                      label="Vendor name"
-                      tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                      variant="stacked"
-                    />
-                  )}
+                  ) : null}
+                  <CustomTextInput
+                    id="name"
+                    name="name"
+                    isRequired
+                    label="Vendor name"
+                    tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                    variant="stacked"
+                  />
+
                   <DataUsesForm showSuggestions={isShowingSuggestions} />
                   <ButtonGroup
                     size="sm"

@@ -20,8 +20,15 @@ import {
   MinimalPrivacyDeclaration,
 } from "./constants";
 
-const DataUseBlock = ({ index }: { index: number }) => {
+const DataUseBlock = ({
+  index,
+  isSuggestion,
+}: {
+  index: number;
+  isSuggestion: boolean;
+}) => {
   const dataUseOptions = useAppSelector(selectDataUseOptions);
+  const textColor = isSuggestion ? "complimentary.500" : "gray.800";
   return (
     <VStack
       width="100%"
@@ -37,6 +44,7 @@ const DataUseBlock = ({ index }: { index: number }) => {
         name={`privacy_declarations.${index}.data_use`}
         options={dataUseOptions}
         variant="stacked"
+        textColor={textColor}
       />
       <CustomCreatableSelect
         label="Cookie names"
@@ -44,6 +52,7 @@ const DataUseBlock = ({ index }: { index: number }) => {
         options={[]}
         variant="stacked"
         isMulti
+        textColor={textColor}
       />
     </VStack>
   );
@@ -78,7 +87,11 @@ const DataUsesForm = ({ showSuggestions }: { showSuggestions: boolean }) => {
       render={(arrayHelpers) => (
         <>
           {values.privacy_declarations.map((declaration, idx) => (
-            <DataUseBlock key={declaration.data_use || idx} index={idx} />
+            <DataUseBlock
+              key={declaration.data_use || idx}
+              index={idx}
+              isSuggestion={showSuggestions}
+            />
           ))}
           <Button
             size="xs"
