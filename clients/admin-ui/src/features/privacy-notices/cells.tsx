@@ -67,14 +67,13 @@ export const EnablePrivacyNoticeCell = (
   const [patchNoticeMutationTrigger] = usePatchPrivacyNoticesMutation();
 
   const { row } = cellProps;
-  const onToggle = async (toggle: boolean) => {
-    await patchNoticeMutationTrigger([
+  const onToggle = async (toggle: boolean) =>
+    patchNoticeMutationTrigger([
       {
         id: row.original.id,
         disabled: !toggle,
       },
     ]);
-  };
 
   const { systems_applicable: systemsApplicable, disabled: noticeIsDisabled } =
     row.original;
