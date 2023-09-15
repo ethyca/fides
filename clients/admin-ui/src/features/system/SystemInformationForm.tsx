@@ -221,7 +221,7 @@ const SystemInformationForm = ({
               {features.dictionaryService ? (
                 <CustomSelect
                   id="vendor"
-                  name="meta.vendor.id"
+                  name="vendor_id"
                   label="Vendor"
                   placeholder="Select a vendor"
                   singleValueBlock

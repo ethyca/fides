@@ -69,8 +69,8 @@ export const transformSystemToFormValues = (
       ? system.legal_basis_for_profiling
       : "",
     // @ts-ignore
-    legal_basis_for_profiling: system.legal_basis_for_profiling
-      ? system.legal_basis_for_profiling
+    legal_basis_for_transfers: system.legal_basis_for_transfers
+      ? system.legal_basis_for_transfers
       : "",
     data_stewards: dataStewards,
   };

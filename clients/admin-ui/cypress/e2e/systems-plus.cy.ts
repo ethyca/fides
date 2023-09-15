@@ -1,5 +1,4 @@
 import {
-  // stubDictSystemCrud,
   stubPlus,
   stubSystemCrud,
   stubTaxonomyEntities,
@@ -26,23 +25,19 @@ describe("System management with Plus features", () => {
     });
 
     it("can display the vendor list dropdown", () => {
-      cy.getSelectValueContainer("input-meta.vendor.id");
+      cy.getSelectValueContainer("input-vendor_id");
     });
 
     it("contains dictionary entries", () => {
-      cy.selectOption("input-meta.vendor.id", "Aniview LTD");
+      cy.selectOption("input-vendor_id", "Aniview LTD");
     });
 
     it("can switch entries", () => {
-      cy.selectOption("input-meta.vendor.id", "Aniview LTD");
-      cy.getSelectValueContainer("input-meta.vendor.id").contains(
-        "Aniview LTD"
-      );
+      cy.selectOption("input-vendor_id", "Aniview LTD");
+      cy.getSelectValueContainer("input-vendor_id").contains("Aniview LTD");
 
-      cy.selectOption("input-meta.vendor.id", "Jaduda GmbH");
-      cy.getSelectValueContainer("input-meta.vendor.id").contains(
-        "Jaduda GmbH"
-      );
+      cy.selectOption("input-vendor_id", "Jaduda GmbH");
+      cy.getSelectValueContainer("input-vendor_id").contains("Jaduda GmbH");
     });
 
     // some DictSuggestionTextInputs don't get populated right, causing
@@ -50,7 +45,7 @@ describe("System management with Plus features", () => {
     // modal to pop up incorrectly when switching tabs
     it("can switch between tabs after populating from dictionary", () => {
       cy.wait("@getSystems");
-      cy.selectOption("input-meta.vendor.id", "Anzu Virtual Reality LTD");
+      cy.selectOption("input-vendor_id", "Anzu Virtual Reality LTD");
       cy.getByTestId("dict-suggestions-btn").click();
       cy.getByTestId("toggle-dict-suggestions").click();
       // the form fetches the system again after saving, so update the intercept with dictionary values
