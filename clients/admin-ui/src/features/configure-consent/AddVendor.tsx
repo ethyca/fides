@@ -12,7 +12,10 @@ import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import {
+  CustomCreatableSelect,
+  CustomTextInput,
+} from "~/features/common/form/inputs";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import {
   selectAllDictEntries,
@@ -34,6 +37,10 @@ const initialValues: FormValues = {
 
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("Vendor name"),
+});
+
+const DictionaryValidationSchema = Yup.object().shape({
+  vendor_id: Yup.string().required().label("Vendor"),
 });
 
 const AddVendor = () => {
@@ -65,12 +72,20 @@ const AddVendor = () => {
         return { ...dec, cookies: transformedCookies };
       });
 
-    const name =
-      dictionaryOptions.find((o) => o.value === values.vendor_id)?.label ??
-      values.name;
+    // We use vendor_id to potentially store a new system name
+    // so now we need to clear out vendor_id if it's not a system in the dictionary
+    const vendor = dictionaryOptions.find((o) => o.value === values.vendor_id);
+    const vendorId = vendor ? vendor.value : undefined;
+    let { name } = values;
+    if (vendor) {
+      name = vendor.label;
+    } else if (values.vendor_id) {
+      // This is the case where the user created their own vendor name
+      name = values.vendor_id;
+    }
 
     const payload = {
-      ...values,
+      vendor_id: vendorId,
       name,
       fides_key: formatKey(name),
       system_type: "",
@@ -86,6 +101,10 @@ const AddVendor = () => {
     modal.onClose();
   };
 
+  const validationSchema = hasDictionary
+    ? DictionaryValidationSchema
+    : ValidationSchema;
+
   return (
     <>
       <Button onClick={modal.onOpen} data-testid="add-vendor-btn">
@@ -95,7 +114,7 @@ const AddVendor = () => {
         initialValues={initialValues}
         enableReinitialize
         onSubmit={handleSubmit}
-        validationSchema={ValidationSchema}
+        validationSchema={validationSchema}
       >
         {({ dirty, values, isValid, resetForm }) => (
           <AddModal
@@ -111,7 +130,7 @@ const AddVendor = () => {
               <Form>
                 <VStack alignItems="start">
                   {hasDictionary ? (
-                    <CustomSelect
+                    <CustomCreatableSelect
                       id="vendor"
                       name="vendor_id"
                       label="Vendor"
@@ -121,17 +140,18 @@ const AddVendor = () => {
                       tooltip="Select the vendor that matches the system"
                       isCustomOption
                       variant="stacked"
+                      isRequired
                     />
-                  ) : null}
-                  <CustomTextInput
-                    id="name"
-                    name="name"
-                    isRequired
-                    label="Vendor name"
-                    tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                    variant="stacked"
-                  />
-
+                  ) : (
+                    <CustomTextInput
+                      id="name"
+                      name="name"
+                      isRequired
+                      label="Vendor name"
+                      tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                      variant="stacked"
+                    />
+                  )}
                   <DataUsesForm showSuggestions={isShowingSuggestions} />
                   <ButtonGroup
                     size="sm"

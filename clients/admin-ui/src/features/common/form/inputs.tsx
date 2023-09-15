@@ -367,7 +367,10 @@ const CreatableSelectInput = ({
   const field = { ...initialField, value };
   const selected = Array.isArray(field.value)
     ? field.value.map((v) => ({ label: v, value: v }))
-    : { label: field.value, value: field.value };
+    : options.find((o) => o.value === field.value) ?? {
+        label: field.value,
+        value: field.value,
+      };
 
   const { setFieldValue, touched, setTouched } = useFormikContext();
 
