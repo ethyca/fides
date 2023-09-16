@@ -290,12 +290,13 @@ def evaluate_dataset_reference(
             dataset.fides_key,
         )
 
+        data_qualifier = str(dataset.data_qualifier) if dataset.data_qualifier else ""
         dataset_result_violations = evaluate_policy_rule(
             taxonomy=taxonomy,
             policy_rule=policy_rule,
             data_subjects=[str(x) for x in privacy_declaration.data_subjects],
             data_categories=[str(x) for x in dataset.data_categories],
-            data_qualifier=dataset.data_qualifier,
+            data_qualifier=data_qualifier,
             data_use=privacy_declaration.data_use,
             declaration_violation_message=dataset_violation_message,
         )
@@ -371,12 +372,17 @@ def evaluate_privacy_declaration(
         )
     )
 
+    data_qualifier = (
+        str(privacy_declaration.data_qualifier)
+        if privacy_declaration.data_qualifier
+        else ""
+    )
     declaration_result_violations = evaluate_policy_rule(
         taxonomy=taxonomy,
         policy_rule=policy_rule,
         data_subjects=[str(x) for x in privacy_declaration.data_subjects],
         data_categories=[str(x) for x in privacy_declaration.data_categories],
-        data_qualifier=privacy_declaration.data_qualifier,
+        data_qualifier=data_qualifier,
         data_use=privacy_declaration.data_use,
         declaration_violation_message=declaration_violation_message,
     )

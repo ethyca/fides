@@ -67,20 +67,20 @@ def _filter_experiences_by_region_or_country(
     if not region:
         return experience_query
 
-    region: str = escape(region).replace("-", "_").lower()
-    country: str = region.split("_")[0]
+    formatted_region: str = escape(region).replace("-", "_").lower()
+    country: str = formatted_region.split("_")[0]
 
     overlay: Optional[
         PrivacyExperience
     ] = PrivacyExperience.get_experience_by_region_and_component(
-        db, region, ComponentType.overlay
+        db, formatted_region, ComponentType.overlay
     ) or PrivacyExperience.get_experience_by_region_and_component(
         db, country, ComponentType.overlay
     )
     privacy_center: Optional[
         PrivacyExperience
     ] = PrivacyExperience.get_experience_by_region_and_component(
-        db, region, ComponentType.privacy_center
+        db, formatted_region, ComponentType.privacy_center
     ) or PrivacyExperience.get_experience_by_region_and_component(
         db, country, ComponentType.privacy_center
     )
