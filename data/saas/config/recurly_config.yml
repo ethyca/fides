@@ -3,12 +3,17 @@ saas_config:
   name: Recurly
   type: recurly
   description: A sample schema representing the Recurly connector for Fides
-  version: 0.1.0
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/recurly
+  version: 0.1.1
 
   connector_params:
     - name: domain
       default_value: v3.recurly.com
+      description: The URL for your Recurly instance
+      label: Domain
     - name: username
+      description: Your Recurly API key
+      label: API key
 
   client_config:
     protocol: https

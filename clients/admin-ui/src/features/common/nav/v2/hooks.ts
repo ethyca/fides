@@ -19,6 +19,7 @@ export const useNav = ({ path }: { path: string }) => {
         config: NAV_CONFIG,
         hasPlus: features.plus,
         flags: features.flags,
+        hasFidesCloud: features.fidesCloud,
         userScopes,
       }),
     [features, userScopes]

@@ -49,11 +49,11 @@ dataset:
               data_type: integer
           - name: note
           - name: gender
-            data_categories: [user.gender]
+            data_categories: [user.demographic.gender]
             fidesops_meta:
               data_type: string
           - name: date_of_birth
-            data_categories: [user.date_of_birth]
+            data_categories: [user.demographic.date_of_birth]
             fidesops_meta:
               data_type: string
           - name: company_name
@@ -403,31 +403,3 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: integer
-          - name: page_info
-            fidesops_meta:
-              data_type: object
-            fields:
-              - name: start_cursor
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: end_cursor
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: has_next_page
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: boolean
-          - name: version
-            fidesops_meta:
-              data_type: object
-            fields:
-              - name: min
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: integer
-              - name: max
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: integer

@@ -58,6 +58,7 @@ import {
   buildCookieConsentForExperiences,
   FidesCookie,
   isNewFidesCookie,
+  updateExperienceFromCookieConsent,
 } from "./lib/cookie";
 import {
   PrivacyExperience,
@@ -206,6 +207,7 @@ const init = async ({
   // If saved preferences are detected, immediately initialize from local cache,
   // and then continue geolocating, etc.
   const hasExistingCookie = !isNewFidesCookie(cookie);
+
   if (hasExistingCookie) {
     _Fides.consent = cookie.consent;
     _Fides.fides_meta = cookie.fides_meta;
@@ -214,6 +216,10 @@ const init = async ({
     _Fides.geolocation = geolocation;
     _Fides.options = options;
     _Fides.initialized = true;
+    if (experience) {
+      // at this point, pre-fetched experience contains no user consent, so we populate with the Fides cookie
+      updateExperienceFromCookieConsent(experience, cookie, options.debug);
+    }
     dispatchFidesEvent("FidesInitialized", cookie, options.debug);
     dispatchFidesEvent("FidesUpdated", cookie, options.debug);
   }
@@ -247,8 +253,8 @@ const init = async ({
       effectiveExperience = await fetchExperience(
         fidesRegionString,
         options.fidesApiUrl,
-        cookie.identity.fides_user_device_id,
-        options.debug
+        options.debug,
+        cookie.identity.fides_user_device_id
       );
     }
 
@@ -310,12 +316,14 @@ _Fides = {
   options: {
     debug: true,
     isOverlayEnabled: false,
+    isPrefetchEnabled: false,
     isGeolocationEnabled: false,
     geolocationApiUrl: "",
     overlayParentId: null,
     modalLinkId: null,
     privacyCenterUrl: "",
     fidesApiUrl: "",
+    serverSideFidesApiUrl: "",
     tcfEnabled: false,
   },
   fides_meta: {},

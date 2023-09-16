@@ -6,6 +6,7 @@
  * An enumeration.
  */
 export enum PrivacyNoticeRegion {
+  US = "us",
   US_AL = "us_al",
   US_AK = "us_ak",
   US_AZ = "us_az",
@@ -90,4 +91,18 @@ export enum PrivacyNoticeRegion {
   IS = "is",
   NO = "no",
   LI = "li",
+  CA = "ca",
+  CA_AB = "ca_ab",
+  CA_BC = "ca_bc",
+  CA_MB = "ca_mb",
+  CA_NB = "ca_nb",
+  CA_NL = "ca_nl",
+  CA_NS = "ca_ns",
+  CA_ON = "ca_on",
+  CA_PE = "ca_pe",
+  CA_QC = "ca_qc",
+  CA_SK = "ca_sk",
+  CA_NT = "ca_nt",
+  CA_NU = "ca_nu",
+  CA_YT = "ca_yt",
 }

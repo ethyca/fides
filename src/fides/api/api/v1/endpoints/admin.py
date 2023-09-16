@@ -1,12 +1,11 @@
 from enum import Enum
 from typing import Dict
 
-from fastapi import Security
+from fastapi import HTTPException, Security, status
 
 from fides.api.api.v1.endpoints import API_PREFIX
 from fides.api.db.database import configure_db, reset_db
 from fides.api.oauth.utils import verify_oauth_client_prod
-from fides.api.util import errors
 from fides.api.util.api_router import APIRouter
 from fides.common.api import scope_registry
 from fides.config import CONFIG
@@ -26,6 +25,7 @@ class DBActions(str, Enum):
     dependencies=[
         Security(verify_oauth_client_prod, scopes=[scope_registry.DATABASE_RESET])
     ],
+    status_code=status.HTTP_200_OK,
 )
 async def db_action(action: DBActions) -> Dict:
     """
@@ -35,8 +35,9 @@ async def db_action(action: DBActions) -> Dict:
 
     if action == DBActions.reset:
         if not CONFIG.dev_mode:
-            raise errors.FunctionalityNotConfigured(
-                "unable to reset fides database outside of dev_mode."
+            raise HTTPException(
+                status_code=status.HTTP_501_NOT_IMPLEMENTED,
+                detail="Resetting the application database outside of dev_mode is not supported.",
             )
 
         reset_db(CONFIG.database.sync_database_uri)

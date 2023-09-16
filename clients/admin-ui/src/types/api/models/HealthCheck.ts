@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { DictionaryStatus } from "./DictionaryStatus";
+import type { FidesCloudStatus } from "./FidesCloudStatus";
 import type { SystemScannerStatus } from "./SystemScannerStatus";
 
 /**
@@ -12,4 +14,6 @@ export type HealthCheck = {
   fidesplus_version: string;
   fidesplus_server: string;
   system_scanner: SystemScannerStatus;
+  dictionary: DictionaryStatus;
+  fides_cloud: FidesCloudStatus;
 };

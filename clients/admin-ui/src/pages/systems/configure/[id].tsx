@@ -16,6 +16,7 @@ import { useAppDispatch } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
 import {
   setActiveSystem,
   useGetSystemByFidesKeyQuery,
@@ -39,6 +40,7 @@ const ConfigureSystem: NextPage = () => {
   const { data: system, isLoading } = useGetSystemByFidesKeyQuery(systemId, {
     skip: !systemId,
   });
+  const { isLoading: isDictionaryLoading } = useGetAllDictionaryEntriesQuery();
 
   useEffect(() => {
     dispatch(setActiveSystem(system));
@@ -68,7 +70,7 @@ const ConfigureSystem: NextPage = () => {
     }
   }, [router, toast]);
 
-  if (isLoading) {
+  if (isLoading && isDictionaryLoading) {
     return (
       <Layout title="Systems">
         <Spinner />
@@ -91,7 +93,7 @@ const ConfigureSystem: NextPage = () => {
           </BreadcrumbItem>
         </Breadcrumb>
       </Box>
-      {!system ? (
+      {!system && !isLoading && !isDictionaryLoading ? (
         <Text data-testid="system-not-found">
           Could not find a system with id {systemId}
         </Text>

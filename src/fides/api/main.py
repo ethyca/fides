@@ -5,13 +5,15 @@ import os
 import sys
 from datetime import datetime, timezone
 from logging import WARNING
+from time import perf_counter
 from typing import Callable, Optional
 from urllib.parse import unquote
 
 from fastapi import HTTPException, Request, Response, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
+from pyinstrument import Profiler
 from starlette.background import BackgroundTask
 from uvicorn import Config, Server
 
@@ -48,6 +50,21 @@ IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 VERSION = fides.__version__
 
 app = create_fides_app()
+
+if CONFIG.dev_mode:
+
+    @app.middleware("http")
+    async def profile_request(request: Request, call_next: Callable) -> Response:
+        profiling = request.headers.get("profile-request", False)
+        if profiling:
+            profiler = Profiler(interval=0.001, async_mode="enabled")
+            profiler.start()
+            await call_next(request)
+            profiler.stop()
+            logger.debug("Request Profiled!")
+            return HTMLResponse(profiler.output_text(timeline=True))
+
+        return await call_next(request)
 
 
 @app.middleware("http")
@@ -232,6 +249,8 @@ async def setup_server() -> None:
     **NOTE**: The order of operations here _is_ deliberate
     and must be maintained.
     """
+    start_time = perf_counter()
+    logger.info("Starting server setup...")
     if not CONFIG.dev_mode:
         sys.tracebacklimit = 0
 
@@ -262,7 +281,9 @@ async def setup_server() -> None:
     if not CONFIG.logging.serialization:
         logger.info(FIDES_ASCII_ART)
 
-    logger.info(f"Fides startup complete! v{VERSION}")
+    logger.info("Fides startup complete! v{}", VERSION)
+    startup_time = round(perf_counter() - start_time, 3)
+    logger.info("Server setup completed in {} seconds", startup_time)
 
 
 def start_webserver(port: int = 8080) -> None:

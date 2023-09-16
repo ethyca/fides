@@ -106,6 +106,7 @@ class TestGetPolicyPreExecutionWebhooks:
             ],
             "total": 2,
             "page": 1,
+            "pages": 1,
             "size": 50,
         }
 
@@ -174,6 +175,7 @@ class TestGetPolicyPostExecutionWebhooks:
             ],
             "total": 2,
             "page": 1,
+            "pages": 1,
             "size": 50,
         }
 

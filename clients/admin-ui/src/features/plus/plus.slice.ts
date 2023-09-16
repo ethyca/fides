@@ -20,16 +20,20 @@ import {
   ClassifyRequestPayload,
   ClassifyStatusUpdatePayload,
   ClassifySystem,
+  CloudConfig,
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
   CustomFieldWithId,
   GenerateTypes,
   HealthCheck,
+  Page_SystemHistoryResponse_,
   ResourceTypes,
   SystemScannerStatus,
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
+
+import { DictDataUse, DictEntry, Page } from "./types";
 
 interface ScanParams {
   classify?: boolean;
@@ -241,6 +245,44 @@ const plusApi = baseApi.injectEndpoints({
       transformResponse: (list: CustomFieldDefinitionWithId[]) =>
         list.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")),
     }),
+    getAllDictionaryEntries: build.query<Page<DictEntry>, void>({
+      query: () => ({
+        params: { size: 1000 },
+        url: `plus/dictionary/system`,
+      }),
+      providesTags: ["Dictionary"],
+    }),
+    getFidesCloudConfig: build.query<CloudConfig, void>({
+      query: () => ({
+        url: `plus/fides-cloud`,
+        method: "GET",
+      }),
+      providesTags: ["Fides Cloud Config"],
+    }),
+    getDictionaryDataUses: build.query<
+      Page<DictDataUse>,
+      { vendor_id: number }
+    >({
+      query: ({ vendor_id }) => ({
+        params: { size: 1000 },
+        url: `plus/dictionary/data-use-declarations/${vendor_id}`,
+        method: "GET",
+      }),
+      providesTags: ["Dictionary"],
+    }),
+    getSystemHistory: build.query<
+      Page_SystemHistoryResponse_,
+      { system_key: string; page?: number; size?: number }
+    >({
+      query: (params) => ({
+        url: `plus/system/${params.system_key}/history`,
+        params: {
+          page: params.page,
+          size: params.size,
+        },
+      }),
+      providesTags: () => ["System History"],
+    }),
   }),
 });
 
@@ -265,6 +307,10 @@ export const {
   useUpsertCustomFieldMutation,
   useGetAllCustomFieldDefinitionsQuery,
   useGetAllowListQuery,
+  useGetAllDictionaryEntriesQuery,
+  useGetFidesCloudConfigQuery,
+  useGetDictionaryDataUsesQuery,
+  useGetSystemHistoryQuery,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
@@ -371,3 +417,49 @@ export const selectAllCustomFieldDefinitions = createSelector(
   plusApi.endpoints.getAllCustomFieldDefinitions.select(),
   ({ data }) => data || emptySelectAllCustomFields
 );
+
+export type DictOption = {
+  label: string;
+  value: string;
+  descriptiong?: string;
+};
+
+const EMPTY_DICT_ENTRIES: DictOption[] = [];
+export const selectAllDictEntries = createSelector(
+  [
+    (RootState) => RootState,
+    plusApi.endpoints.getAllDictionaryEntries.select(),
+  ],
+  (RootState, { data }) =>
+    data
+      ? (data.items
+          .map((d) => ({
+            label: d.display_name ? d.display_name : d.legal_name,
+            value: d.id,
+            description: d.description ? d.description : undefined,
+          }))
+          .sort((a, b) => (a.label > b.label ? 1 : -1)) as DictOption[])
+      : EMPTY_DICT_ENTRIES
+);
+
+const EMPTY_DICT_ENTRY = undefined;
+export const selectDictEntry = (vendorId: string) =>
+  createSelector(
+    [(state) => state, plusApi.endpoints.getAllDictionaryEntries.select()],
+    (state, { data }) => {
+      const dictEntry = data?.items.find((d) => d.id.toString() === vendorId);
+
+      return dictEntry || EMPTY_DICT_ENTRY;
+    }
+  );
+
+const EMPTY_DATA_USES: DictDataUse[] = [];
+
+export const selectDictDataUses = (vendorId: number) =>
+  createSelector(
+    [
+      (state) => state,
+      plusApi.endpoints.getDictionaryDataUses.select({ vendor_id: vendorId }),
+    ],
+    (state, { data }) => (data ? data.items : EMPTY_DATA_USES)
+  );

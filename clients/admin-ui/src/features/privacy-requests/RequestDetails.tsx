@@ -52,7 +52,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
 
       <Flex alignItems="center">
         <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
-          Request Type:
+          Request type:
         </Text>
         <Box mr={1} mb={4}>
           <RequestType rules={policy.rules} />
@@ -68,12 +68,14 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           </Tag>
         </Box>
       </Flex>
-      <Flex alignItems="flex-start">
-        <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
+      <Flex alignItems="center">
+        <Text mb={0} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
           Status:
         </Text>
-        <HStack spacing="16px">
-          <RequestStatusBadge status={status} />
+        <HStack spacing="8px">
+          <Flex>
+            <RequestStatusBadge status={status} />
+          </Flex>
           <ButtonGroup isAttached variant="outline" borderRadius="md">
             {status === "error" && (
               <ReprocessButton

@@ -31,6 +31,7 @@ DATA_USE = "data_use"
 DATASET = "dataset"
 DELETE = "delete"
 ENCRYPTION = "encryption"
+MESSAGING_TEMPLATE = "messaging-template"
 EVALUATION = "evaluation"
 EXEC = "exec"
 FIDES_TAXONOMY = "fides_taxonomy"
@@ -147,6 +148,7 @@ MASKING_READ = f"{MASKING}:{READ}"
 MESSAGING_CREATE_OR_UPDATE = f"{MESSAGING}:{CREATE_OR_UPDATE}"
 MESSAGING_DELETE = f"{MESSAGING}:{DELETE}"
 MESSAGING_READ = f"{MESSAGING}:{READ}"
+MESSAGING_TEMPLATE_UPDATE = f"{MESSAGING_TEMPLATE}:{UPDATE}"
 
 ORGANIZATION_CREATE = f"{ORGANIZATION}:{CREATE}"
 ORGANIZATION_READ = f"{ORGANIZATION}:{READ}"
@@ -281,6 +283,7 @@ SCOPE_DOCS = {
     DATASET_DELETE: "Delete datasets",
     DATASET_READ: "View datasets",
     ENCRYPTION_EXEC: "Encrypt data",
+    MESSAGING_TEMPLATE_UPDATE: "Update messaging templates",
     EVALUATION_CREATE: "Create evaluation",
     EVALUATION_READ: "Read evaluations",
     EVALUATION_DELETE: "Delete evaluations",

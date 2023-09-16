@@ -8,11 +8,15 @@ import type { Cookies } from "./Cookies";
 import type { DataFlow } from "./DataFlow";
 import type { DataProtectionImpactAssessment } from "./DataProtectionImpactAssessment";
 import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
+import type { LegalBasisForProfilingEnum } from "./LegalBasisForProfilingEnum";
+import type { LegalBasisForTransfersEnum } from "./LegalBasisForTransfersEnum";
 import type { PrivacyDeclarationResponse } from "./PrivacyDeclarationResponse";
 import type { SystemMetadata } from "./SystemMetadata";
+import type { UserResponse } from "./UserResponse";
 
 /**
- * Extension of base pydantic model to include `privacy_declarations.id` fields in responses
+ * Extension of base pydantic model to include additional fields like `privacy_declarations`, connection_config fields
+ * and cookies in responses
  */
 export type SystemResponse = {
   /**
@@ -53,13 +57,7 @@ export type SystemResponse = {
    */
   system_type: string;
   /**
-   *
-   * The model defining the responsibility or role over
-   * the system that processes personal data.
-   *
-   * Used to identify whether the organization is a
-   * Controller, Processor, or Sub-Processor of the data
-   *
+   * Deprecated. The responsibility or role over the system that processes personal data
    */
   data_responsibility_title?: DataResponsibilityTitle;
   /**
@@ -75,7 +73,7 @@ export type SystemResponse = {
    */
   privacy_declarations: Array<PrivacyDeclarationResponse>;
   /**
-   *
+   * Deprecated.
    * The contact details information model.
    *
    * Used to capture contact information for controllers, used
@@ -87,7 +85,7 @@ export type SystemResponse = {
    */
   joint_controller?: ContactDetails;
   /**
-   * An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1.
+   * Deprecated. An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1.
    */
   third_country_transfers?: Array<string>;
   /**
@@ -95,7 +93,7 @@ export type SystemResponse = {
    */
   administrating_department?: string;
   /**
-   *
+   * Deprecated.
    * The DataProtectionImpactAssessment (DPIA) resource model.
    *
    * Contains information in regard to the data protection
@@ -108,12 +106,98 @@ export type SystemResponse = {
    */
   data_protection_impact_assessment?: DataProtectionImpactAssessment;
   /**
+   * The unique identifier for the vendor that's associated with this system.
+   */
+  vendor_id?: string;
+  /**
+   * Referenced Dataset fides keys used by the system.
+   */
+  dataset_references?: Array<string>;
+  /**
+   * This toggle indicates whether the system stores or processes personal data.
+   */
+  processes_personal_data?: boolean;
+  /**
+   * This toggle indicates whether the system is exempt from privacy regulation if they do process personal data.
+   */
+  exempt_from_privacy_regulations?: boolean;
+  /**
+   * The reason that the system is exempt from privacy regulation.
+   */
+  reason_for_exemption?: string;
+  /**
+   * Whether the vendor uses data to profile a consumer in a way that has a legal effect.
+   */
+  uses_profiling?: boolean;
+  /**
+   * The legal basis (or bases) for performing profiling that has a legal effect.
+   */
+  legal_basis_for_profiling?: Array<LegalBasisForProfilingEnum>;
+  /**
+   * Whether this system transfers data to other countries or international organizations.
+   */
+  does_international_transfers?: boolean;
+  /**
+   * The legal basis (or bases) under which the data is transferred.
+   */
+  legal_basis_for_transfers?: Array<LegalBasisForTransfersEnum>;
+  /**
+   * Whether this system requires data protection impact assessments.
+   */
+  requires_data_protection_assessments?: boolean;
+  /**
+   * Location where the DPAs or DIPAs can be found.
+   */
+  dpa_location?: string;
+  /**
+   * The optional status of a Data Protection Impact Assessment
+   */
+  dpa_progress?: string;
+  /**
+   * A URL that points to the System's publicly accessible privacy policy.
+   */
+  privacy_policy?: string;
+  /**
+   * The legal name for the business represented by the system.
+   */
+  legal_name?: string;
+  /**
+   * The legal address for the business represented by the system.
+   */
+  legal_address?: string;
+  /**
+   *
+   * The model defining the responsibility or role over
+   * the system that processes personal data.
+   *
+   * Used to identify whether the organization is a
+   * Controller, Processor, or Sub-Processor of the data
+   *
+   */
+  responsibility?: Array<DataResponsibilityTitle>;
+  /**
+   * The official privacy contact address or DPO.
+   */
+  dpo?: string;
+  /**
+   * The party or parties that share the responsibility for processing personal data.
+   */
+  joint_controller_info?: string;
+  /**
+   * The data security practices employed by this system.
+   */
+  data_security_practices?: string;
+  /**
    *
    * Describes the returned schema for a ConnectionConfiguration.
    *
-   * Do *NOT* add "secrets" to this schema.
-   *
    */
   connection_configs?: ConnectionConfigurationResponse;
+  /**
+   * System managers of the current system
+   */
+  data_stewards?: Array<UserResponse>;
   cookies?: Array<Cookies>;
+  created_by?: string;
+  created_at: string;
 };

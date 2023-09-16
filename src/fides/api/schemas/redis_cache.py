@@ -1,5 +1,5 @@
 import uuid
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import EmailStr, Extra, validator
 
@@ -42,3 +42,10 @@ class Identity(IdentityBase):
             return v
         uuid.UUID(v, version=4)
         return v
+
+
+class CustomPrivacyRequestField(FidesSchema):
+    """Schema for custom privacy request fields."""
+
+    label: str
+    value: Any

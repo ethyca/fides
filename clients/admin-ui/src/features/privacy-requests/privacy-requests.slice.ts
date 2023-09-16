@@ -52,6 +52,7 @@ export function mapFiltersToSearchParams({
 
   return {
     include_identities: "true",
+    include_custom_privacy_request_fields: "true",
     ...(status && status.length > 0 ? { status: status.join("&status=") } : {}),
     ...(id ? { request_id: id } : {}),
     ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
