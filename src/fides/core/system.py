@@ -101,8 +101,9 @@ def get_organization(
         )
         raise SystemExit(1)
 
-    assert isinstance(server_organization, Organization)
-    return server_organization
+    parsed_organization = Organization.parse_obj(server_organization)
+    assert isinstance(parsed_organization, Organization)
+    return parsed_organization
 
 
 def generate_aws_systems(
