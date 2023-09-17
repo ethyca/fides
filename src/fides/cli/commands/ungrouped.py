@@ -1,5 +1,4 @@
 """Contains all of the ungrouped CLI commands for fides."""
-from datetime import datetime, timezone
 from typing import Optional
 
 import rich_click as click
@@ -13,12 +12,7 @@ from fides.cli.options import (
     resource_type_argument,
     verbose_flag,
 )
-from fides.cli.utils import (
-    FIDES_ASCII_ART,
-    check_server,
-    send_init_analytics,
-    with_analytics,
-)
+from fides.cli.utils import FIDES_ASCII_ART, check_server
 from fides.common.utils import (
     echo_green,
     echo_red,
@@ -41,7 +35,6 @@ from fides.core.utils import git_is_dirty
 @click.pass_context
 @resource_type_argument
 @fides_key_argument
-@with_analytics
 def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     Delete an object from the server.
@@ -65,7 +58,6 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
 @click.pass_context
 @resource_type_argument
 @fides_key_argument
-@with_analytics
 def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     View an object from the server.
@@ -85,7 +77,6 @@ def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None
 @click.command(name="ls")  # type: ignore
 @click.pass_context
 @resource_type_argument
-@with_analytics
 @click.option(
     "--verbose", "-v", is_flag=True, help="Displays the entire object list as YAML."
 )
@@ -120,34 +111,23 @@ def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> Non
 @click.command()  # type: ignore
 @click.pass_context
 @click.argument("fides_dir", default=".", type=click.Path(exists=True))
-@click.option(
-    "--opt-in", is_flag=True, help="Automatically opt-in to anonymous usage analytics."
-)
-def init(ctx: click.Context, fides_dir: str, opt_in: bool) -> None:
+def init(ctx: click.Context, fides_dir: str) -> None:
     """
     Initializes a Fides instance by creating the default directory and
     configuration file if not present.
     """
-
-    executed_at = datetime.now(timezone.utc)
     config = ctx.obj["CONFIG"]
 
     click.echo(FIDES_ASCII_ART)
     click.echo("Initializing fides...")
 
-    config, config_path = create_and_update_config_file(
-        config, fides_dir, opt_in=opt_in
-    )
-
+    config, _ = create_and_update_config_file(config, fides_dir)
     print_divider()
-
-    send_init_analytics(config.user.analytics_opt_out, config_path, executed_at)
     echo_green("fides initialization complete.")
 
 
 @click.command()
 @click.pass_context
-@with_analytics
 def status(ctx: click.Context) -> None:
     """
     Check Fides server availability.
@@ -179,7 +159,6 @@ def webserver(ctx: click.Context, port: int = 8080) -> None:
 
 @click.command()
 @click.pass_context
-@with_analytics
 def worker(ctx: click.Context) -> None:
     """
     Start a Celery worker for the Fides webserver.
@@ -199,7 +178,6 @@ def worker(ctx: click.Context) -> None:
     help="Print any diffs between the local & server objects",
 )
 @manifests_dir_argument
-@with_analytics
 def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
     Parse local manifest files and upload them to the server.
@@ -241,7 +219,6 @@ def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     is_flag=True,
     help="Do not upload objects or results to the Fides webserver.",
 )
-@with_analytics
 def evaluate(
     ctx: click.Context,
     manifests_dir: str,
@@ -300,7 +277,6 @@ def evaluate(
 @click.pass_context
 @manifests_dir_argument
 @verbose_flag
-@with_analytics
 def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None:
     """
     Parse all Fides objects located in the supplied directory.
@@ -319,7 +295,6 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
     default=None,
     help="Pulls all locally missing resources from the server into this file.",
 )
-@with_analytics
 def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -> None:
     """
     Update local resource files based on the state of the objects on the server.

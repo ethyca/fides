@@ -17,7 +17,6 @@ from fides.cli.utils import (
     handle_bigquery_config_options,
     handle_database_credentials_options,
     handle_okta_credentials_options,
-    with_analytics,
 )
 from fides.core import dataset as _dataset
 from fides.core import system as _system
@@ -45,7 +44,6 @@ def generate_dataset(ctx: click.Context) -> None:
 @credentials_id_option
 @connection_string_option
 @include_null_flag
-@with_analytics
 def generate_dataset_db(
     ctx: click.Context,
     output_filename: str,
@@ -84,7 +82,6 @@ def generate_dataset_gcp(ctx: click.Context) -> None:
 @credentials_id_option
 @click.option("--keyfile-path", type=str)
 @include_null_flag
-@with_analytics
 def generate_dataset_bigquery(
     ctx: click.Context,
     dataset_name: str,
@@ -127,7 +124,6 @@ def generate_dataset_aws(ctx: click.Context) -> None:
 @aws_secret_access_key_option
 @aws_region_option
 @include_null_flag
-@with_analytics
 def generate_dataset_dynamodb(
     ctx: click.Context,
     output_filename: str,
@@ -173,7 +169,6 @@ def generate_system(ctx: click.Context) -> None:
 @okta_token_option
 @include_null_flag
 @organization_fides_key_option
-@with_analytics
 def generate_system_okta(
     ctx: click.Context,
     output_filename: str,
@@ -214,7 +209,6 @@ def generate_system_okta(
 @aws_region_option
 @include_null_flag
 @organization_fides_key_option
-@with_analytics
 def generate_system_aws(
     ctx: click.Context,
     output_filename: str,

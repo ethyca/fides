@@ -18,10 +18,6 @@ from fides.api.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fides.api.db.session import get_db_session
-from fides.api.graph.analytics_events import (
-    failed_graph_analytics_event,
-    fideslog_graph_failure,
-)
 from fides.api.graph.config import CollectionAddress, GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.audit_log import AuditLog, AuditLogAction
@@ -415,10 +411,6 @@ async def run_privacy_request(
 
         except BaseException as exc:  # pylint: disable=broad-except
             privacy_request.error_processing(db=session)
-            # Send analytics to Fideslog
-            await fideslog_graph_failure(
-                failed_graph_analytics_event(privacy_request, exc)
-            )
             # If dev mode, log traceback
             _log_exception(exc, CONFIG.dev_mode)
             return
@@ -463,9 +455,6 @@ async def run_privacy_request(
             except (IdentityNotFoundException, MessageDispatchException) as e:
                 privacy_request.error_processing(db=session)
                 # If dev mode, log traceback
-                await fideslog_graph_failure(
-                    failed_graph_analytics_event(privacy_request, e)
-                )
                 _log_exception(e, CONFIG.dev_mode)
                 return
         privacy_request.finished_processing_at = datetime.utcnow()
