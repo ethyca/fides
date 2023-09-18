@@ -361,6 +361,8 @@ const CreatableSelectInput = ({
   isMulti,
   disableMenu,
   textColor,
+  isCustomOption,
+  singleValueBlock,
 }: { fieldName: string } & Omit<CreatableSelectProps, "label">) => {
   const [initialField] = useField(fieldName);
   const value: string[] | string = initialField.value ?? [];
@@ -393,9 +395,21 @@ const CreatableSelectInput = ({
       ? handleChangeMulti(newValue as MultiValue<Option>)
       : handleChangeSingle(newValue as SingleValue<Option>);
 
-  const components = disableMenu
-    ? { Menu: () => null, DropdownIndicator: () => null }
-    : undefined;
+  const components: SelectComponentsConfig<
+    Option,
+    boolean,
+    GroupBase<Option>
+  > = {};
+  const emptyComponent = () => null;
+
+  if (disableMenu) {
+    components.Menu = emptyComponent;
+    components.DropdownIndicator = emptyComponent;
+  }
+
+  if (isCustomOption) {
+    components.Option = CustomOption;
+  }
 
   return (
     <CreatableSelect
@@ -449,6 +463,18 @@ const CreatableSelectInput = ({
           width: 3,
           height: 3,
         }),
+        singleValue: singleValueBlock
+          ? (provided) => ({
+              ...provided,
+              fontSize: "12px",
+              background: "gray.200",
+              color: textColor ?? "gray.600",
+              fontWeight: "400",
+              borderRadius: "2px",
+              py: 1,
+              px: 2,
+            })
+          : (provided) => ({ ...provided, color: textColor }),
       }}
       components={components}
       isSearchable={isSearchable}
