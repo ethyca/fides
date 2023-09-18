@@ -72,10 +72,11 @@ import {
 import {
   constructFidesRegionString,
   debugLog,
-  experienceIsValidAndHasNotices,
+  experienceIsValid,
   experienceHasNotices,
   transformConsentToFidesUserPreference,
   validateOptions,
+  isEmptyExperience,
 } from "./lib/consent-utils";
 import { dispatchFidesEvent } from "./lib/events";
 import { fetchExperience } from "./services/fides/api";
@@ -217,7 +218,7 @@ const init = async ({
     _Fides.geolocation = geolocation;
     _Fides.options = options;
     _Fides.initialized = true;
-    if (experienceHasNotices(experience)) {
+    if (experience && !isEmptyExperience(experience)) {
       // at this point, pre-fetched experience contains no user consent, so we populate with the Fides cookie
       updateExperienceFromCookieConsent(
         experience as PrivacyExperience,
@@ -254,7 +255,7 @@ const init = async ({
         `User location could not be obtained. Skipping overlay initialization.`
       );
       shouldInitOverlay = false;
-    } else if (!experienceHasNotices(experience)) {
+    } else if (!experience || isEmptyExperience(experience)) {
       effectiveExperience = await fetchExperience(
         fidesRegionString,
         options.fidesApiUrl,
@@ -263,7 +264,7 @@ const init = async ({
       );
     }
 
-    if (experienceIsValidAndHasNotices(effectiveExperience, options)) {
+    if (experienceIsValid(effectiveExperience, options)) {
       // Overwrite cookie consent with experience-based consent values
       cookie.consent = buildCookieConsentForExperiences(
         effectiveExperience as PrivacyExperience,

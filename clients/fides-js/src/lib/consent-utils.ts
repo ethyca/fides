@@ -2,6 +2,7 @@ import { ConsentContext } from "./consent-context";
 import {
   ComponentType,
   ConsentMechanism,
+  EmptyExperience,
   FidesOptions,
   GpcStatus,
   PrivacyExperience,
@@ -27,20 +28,24 @@ export const debugLog = (
 };
 
 /**
+ * Returns true if privacy experience is null or empty
+ */
+export const isEmptyExperience = (obj: unknown): obj is EmptyExperience =>
+  typeof obj === "object" && obj != null && Object.keys(obj).length === 0;
+
+/**
  * Returns true if privacy experience has notices
  */
 export const experienceHasNotices = (
   experience: PrivacyExperience | undefined | {}
-): boolean => {
-  if (experience && Object.keys(experience).length >= 0) {
-    const privacyExperience = experience as PrivacyExperience;
-    return Boolean(
-      privacyExperience.privacy_notices &&
-        privacyExperience.privacy_notices.length > 0
-    );
-  }
-  return false;
-};
+): boolean =>
+  Boolean(
+    experience &&
+      !isEmptyExperience(experience) &&
+      // fixme: how to tell ts that privacy_notices exists on experience?
+      experience.privacy_notices &&
+      experience.privacy_notices.length > 0
+  );
 
 /**
  * Construct user location str to be ingested by Fides API
@@ -155,7 +160,7 @@ export const validateOptions = (options: FidesOptions): boolean => {
 /**
  * Determines whether experience is valid and relevant notices exist within the experience
  */
-export const experienceIsValidAndHasNotices = (
+export const experienceIsValid = (
   effectiveExperience: PrivacyExperience | undefined | {},
   options: FidesOptions
 ): boolean => {
