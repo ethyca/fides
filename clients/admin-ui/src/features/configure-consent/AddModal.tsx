@@ -72,6 +72,7 @@ const AddModal = ({
                 borderColor="gray.200"
                 onClick={onSuggestionClick}
                 isDisabled={suggestionsState === "disabled"}
+                data-testid="sparkle-btn"
               />
             ) : null}
           </Box>

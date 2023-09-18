@@ -678,7 +678,7 @@ export const CustomCreatableSelect = ({
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
-        <Box width="100%">
+        <Box width="100%" data-testid={`input-${field.name}`}>
           <CreatableSelectInput
             fieldName={field.name}
             options={options}

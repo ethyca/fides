@@ -111,6 +111,7 @@ const DataUsesForm = ({ showSuggestions }: { showSuggestions: boolean }) => {
                 values.privacy_declarations.length - 1
               ]?.data_use === EMPTY_DECLARATION.data_use
             }
+            data-testid="add-data-use-btn"
           >
             Add data use +
           </Button>
