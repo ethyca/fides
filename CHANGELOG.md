@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.20.0...main)
 
+### Added
+- Initial TCF Backend Support [#3804](https://github.com/ethyca/fides/pull/3804)
+
 ### Changed
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
 

@@ -23,7 +23,7 @@ router = APIRouter(tags=["Consent Settings"], prefix=urls.V1_URL_PREFIX)
     response_model=ConsentSettingsResponseSchema,
 )
 def get_consent_settings(*, db: Session = Depends(deps.get_db)) -> ConsentSettings:
-    """Public endpoint that returns organization-wide consent settings."""
+    """Endpoint that returns organization-wide consent settings."""
     logger.info("Getting organization-wide consent settings")
     return ConsentSettings.get_or_create_with_defaults(db)
 
