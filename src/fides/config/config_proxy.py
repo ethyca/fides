@@ -103,9 +103,18 @@ class ConfigProxy:
         """
         for mw in app.user_middleware:
             if mw.cls is CORSMiddleware:
-                mw.options["allow_origins"] = [
-                    str(domain)
-                    for domain in set(
-                        [*mw.options["allow_origins"], *self.security.cors_origins]
-                    )
-                ]
+                current_middleware_domains = (
+                    mw.options["allow_origins"]
+                    if mw.options["allow_origins"] is not None
+                    else []
+                )
+                current_config_proxy_domains = (
+                    self.security.cors_origins
+                    if self.security.cors_origins is not None
+                    else []
+                )
+                patch_domains = set(
+                    [*current_middleware_domains, *current_config_proxy_domains]
+                )
+
+                mw.options["allow_origins"] = [str(domain) for domain in patch_domains]

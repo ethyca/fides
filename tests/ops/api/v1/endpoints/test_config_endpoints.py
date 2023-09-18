@@ -630,8 +630,15 @@ class TestDeleteApplicationConfig:
             headers=auth_header,
         )
         assert response.status_code == 200
+        # Check the app config direcitly to make sure it's reset and
+        # by proxy check that the CORS domains are reset.
+        # The middleware isn't checked directly because it's
+        # possible that the config set will still have some 
+        # domains and when the `api_set` is reset the middleware
+        # will still have the `config_set` domains loaded in.
+        assert ApplicationConfig.get_api_set(db) == {}
+        
 
-        assert len(cors_middleware[0].options.get("allow_origins")) == 0
 
 
 class TestGetConnections:
