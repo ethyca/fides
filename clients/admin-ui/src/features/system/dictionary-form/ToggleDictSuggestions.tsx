@@ -22,7 +22,8 @@ export const DictSuggestionToggle = () => {
 
   const form = useFormikContext<FormValues>();
 
-  const { vendor_id: vendorId } = form.values;
+  const vendorId = form.values.vendor_id;
+
   const { plus: isPlusEnabled, dictionaryService: isDictionaryServiceEnabled } =
     useFeatures();
   const isShowingSuggestions = useAppSelector(selectSuggestions);
@@ -58,9 +59,11 @@ export const DictSuggestionToggle = () => {
               : "gray.200",
         }}
         disabled={!vendorId}
+        data-testid="dict-suggestions-btn"
       />
       <MenuList>
         <MenuItem
+          data-testid="toggle-dict-suggestions"
           onClick={() => {
             dispatch(toggleSuggestions());
           }}
