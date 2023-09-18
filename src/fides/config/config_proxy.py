@@ -96,15 +96,13 @@ class ConfigProxy:
         self.storage = StorageSettingsProxy(db)
         self.security = SecuritySettingsProxy(db)
 
-    def load_current_cors_domains_into_middleware(
-        self, app: FastAPI, resetDomains: bool = False
-    ) -> None:
+    def load_current_cors_domains_into_middleware(self, app: FastAPI) -> None:
+        """
+        Util function that loads the current CORS domains from
+        `ConfigProxy` into the  `CORSMiddleware` at runtime.
+        """
         for mw in app.user_middleware:
             if mw.cls is CORSMiddleware:
-                if resetDomains:
-                    mw.options["allow_origins"] = self.security.cors_origins
-                    break
-
                 mw.options["allow_origins"] = [
                     str(domain) for domain in self.security.cors_origins
                 ]
