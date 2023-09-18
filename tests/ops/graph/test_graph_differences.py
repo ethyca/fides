@@ -2,7 +2,6 @@ from typing import Any, Dict
 
 import pytest
 
-from fides.api.graph.analytics_events import prepare_rerun_graph_analytics_event
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,

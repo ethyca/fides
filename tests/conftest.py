@@ -599,15 +599,6 @@ def run_privacy_request_task(celery_session_app):
     ]
 
 
-@pytest.fixture(autouse=True, scope="session")
-def analytics_opt_out():
-    """Disable sending analytics when running tests."""
-    original_value = CONFIG.user.analytics_opt_out
-    CONFIG.user.analytics_opt_out = True
-    yield
-    CONFIG.user.analytics_opt_out = original_value
-
-
 @pytest.fixture
 def automatically_approved(db):
     """Do not require manual request approval"""

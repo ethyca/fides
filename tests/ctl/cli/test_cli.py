@@ -34,9 +34,7 @@ def test_cli_runner() -> Generator:
 
 @pytest.mark.integration
 def test_init(test_cli_runner: CliRunner) -> None:
-    result = test_cli_runner.invoke(
-        cli, ["init"], env={"FIDES__USER__ANALYTICS_OPT_OUT": "true"}
-    )
+    result = test_cli_runner.invoke(cli, ["init"])
     print(result.output)
     assert result.exit_code == 0
 
@@ -64,17 +62,13 @@ def test_local_flag_invalid_command(test_cli_runner: CliRunner) -> None:
 class TestView:
     @pytest.mark.unit
     def test_view_config(self, test_cli_runner: CliRunner) -> None:
-        result = test_cli_runner.invoke(
-            cli, ["view", "config"], env={"FIDES__USER__ANALYTICS_OPT_OUT": "true"}
-        )
+        result = test_cli_runner.invoke(cli, ["view", "config"])
         print(result.output)
         assert result.exit_code == 0
 
     @pytest.mark.unit
     def test_view_credentials(self, test_cli_runner: CliRunner) -> None:
-        result = test_cli_runner.invoke(
-            cli, ["view", "credentials"], env={"FIDES__USER__ANALYTICS_OPT_OUT": "true"}
-        )
+        result = test_cli_runner.invoke(cli, ["view", "credentials"])
         print(result.output)
         assert result.exit_code == 0
 

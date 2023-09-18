@@ -58,7 +58,6 @@ from fides.api.models.privacy_request import (
     PrivacyRequestStatus,
     ProvidedIdentity,
 )
-from fides.api.models.registration import UserRegistration
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.sql_models import System
@@ -2008,31 +2007,6 @@ def short_redis_cache_expiration():
     )
     yield CONFIG
     CONFIG.redis.default_ttl_seconds = original_value
-
-
-@pytest.fixture(scope="function")
-def user_registration_opt_out(db: Session) -> UserRegistration:
-    """Adds a UserRegistration record with `opt_in` as False."""
-    return create_user_registration(db, opt_in=False)
-
-
-@pytest.fixture(scope="function")
-def user_registration_opt_in(db: Session) -> UserRegistration:
-    """Adds a UserRegistration record with `opt_in` as True."""
-    return create_user_registration(db, opt_in=True)
-
-
-def create_user_registration(db: Session, opt_in: bool = False) -> UserRegistration:
-    """Adds a UserRegistration record."""
-    return UserRegistration.create(
-        db=db,
-        data={
-            "user_email": "user@example.com",
-            "user_organization": "Example Org.",
-            "analytics_id": "example-analytics-id",
-            "opt_in": opt_in,
-        },
-    )
 
 
 @pytest.fixture(scope="function")
