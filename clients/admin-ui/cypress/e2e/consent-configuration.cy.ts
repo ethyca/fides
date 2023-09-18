@@ -198,6 +198,7 @@ describe("Consent configuration", () => {
         stubPlus(true);
         cy.visit(CONFIGURE_CONSENT_ROUTE);
       });
+
       it.only("can fill in dictionary suggestions", () => {
         cy.getByTestId("add-vendor-btn").click();
         cy.getByTestId("input-vendor_id")
@@ -207,6 +208,53 @@ describe("Consent configuration", () => {
           .click();
         cy.getByTestId("sparkle-btn").click();
         cy.wait("@getDictionaryDeclarations");
+        // TODO: fix when taxonomy fixes are in
+        // cy.getSelectValueContainer(
+        //   "input-privacy_declarations.0.data_use"
+        // ).contains("marketing.advertising.profiling");
+        ["av_*", "aniC", "2_C_*"].forEach((cookieName) => {
+          cy.getByTestId("input-privacy_declarations.0.cookieNames").contains(
+            cookieName
+          );
+        });
+
+        // Also check one that shouldn't have any cookies
+        cy.getByTestId("input-privacy_declarations.3.cookieNames").contains(
+          "Select..."
+        );
+        // There should be 13 declarations (but start from 0, so 12)
+        cy.getByTestId("input-privacy_declarations.12.cookieNames");
+      });
+
+      it("can create a vendor that is not in the dictionary", () => {
+        cy.getByTestId("add-vendor-btn").click();
+        cy.getByTestId("input-vendor_id").type("custom vendor{enter}");
+        cy.selectOption("input-privacy_declarations.0.data_use", "advertising");
+        cy.getByTestId("input-privacy_declarations.0.cookieNames")
+          .find(".custom-creatable-select__input-container")
+          .type("test{enter}");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@postSystem").then((interception) => {
+          const { body } = interception.request;
+          expect(body).to.eql({
+            name: "custom vendor",
+            fides_key: "custom_vendor",
+            system_type: "",
+            privacy_declarations: [
+              {
+                name: "",
+                data_use: "advertising",
+                data_categories: ["user"],
+                cookies: [
+                  {
+                    name: "test",
+                    path: "/",
+                  },
+                ],
+              },
+            ],
+          });
+        });
       });
     });
   });
