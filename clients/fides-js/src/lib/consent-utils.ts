@@ -140,7 +140,7 @@ export const validateOptions = (options: FidesOptions): boolean => {
  * Determines whether experience is valid and relevant notices exist within the experience
  */
 export const experienceIsValid = (
-  effectiveExperience: PrivacyExperience | undefined | null,
+  effectiveExperience: PrivacyExperience | undefined,
   options: FidesOptions
 ): boolean => {
   if (!effectiveExperience) {

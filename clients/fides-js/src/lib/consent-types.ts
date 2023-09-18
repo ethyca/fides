@@ -3,8 +3,8 @@ export interface FidesConfig {
   consent?: LegacyConsentConfig;
   // Set the "experience" to be used for this Fides.js instance -- overrides the "legacy" config.
   // If set, Fides.js will fetch neither experience config nor user geolocation.
-  // If not set, Fides.js will fetch its own experience config.
-  experience?: PrivacyExperience;
+  // If not set or is empty, Fides.js will attempt to fetch its own experience config.
+  experience?: PrivacyExperience | {};
   // Set the geolocation for this Fides.js instance. If *not* set, Fides.js will fetch its own geolocation.
   geolocation?: UserGeolocation;
   // Global options for this Fides.js instance. Fides provides defaults for all props except privacyCenterUrl

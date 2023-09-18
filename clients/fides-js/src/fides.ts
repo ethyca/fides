@@ -85,7 +85,7 @@ import { resolveConsentValue } from "./lib/consent-value";
 
 export type Fides = {
   consent: CookieKeyConsent;
-  experience?: PrivacyExperience;
+  experience?: PrivacyExperience | {};
   geolocation?: UserGeolocation;
   options: FidesOptions;
   fides_meta: CookieMeta;
@@ -135,7 +135,7 @@ const automaticallyApplyGPCPreferences = (
   debug: boolean,
   effectiveExperience?: PrivacyExperience | null
 ) => {
-  if (!effectiveExperience || !effectiveExperience.privacy_notices) {
+  if (!effectiveExperience ||!effectiveExperience.privacy_notices) {
     return;
   }
 
@@ -216,16 +216,16 @@ const init = async ({
     _Fides.geolocation = geolocation;
     _Fides.options = options;
     _Fides.initialized = true;
-    if (experience) {
+    if (experience && Object.keys(experience).length >= 0) {
       // at this point, pre-fetched experience contains no user consent, so we populate with the Fides cookie
-      updateExperienceFromCookieConsent(experience, cookie, options.debug);
+      updateExperienceFromCookieConsent(experience as PrivacyExperience, cookie, options.debug);
     }
     dispatchFidesEvent("FidesInitialized", cookie, options.debug);
     dispatchFidesEvent("FidesUpdated", cookie, options.debug);
   }
 
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
-  let effectiveExperience: PrivacyExperience | undefined | null = experience;
+  let effectiveExperience: PrivacyExperience | undefined | {} = experience;
   let fidesRegionString: string | null = null;
 
   if (shouldInitOverlay) {
@@ -259,12 +259,12 @@ const init = async ({
     }
 
     if (
-      effectiveExperience &&
-      experienceIsValid(effectiveExperience, options)
+      effectiveExperience && Object.keys(effectiveExperience).length >= 0 &&
+      experienceIsValid(effectiveExperience as PrivacyExperience, options)
     ) {
       // Overwrite cookie consent with experience-based consent values
       cookie.consent = buildCookieConsentForExperiences(
-        effectiveExperience,
+        effectiveExperience as PrivacyExperience,
         context,
         options.debug
       );
@@ -280,13 +280,15 @@ const init = async ({
     }
   }
   if (shouldInitOverlay) {
-    automaticallyApplyGPCPreferences(
-      cookie,
-      fidesRegionString,
-      options.fidesApiUrl,
-      options.debug,
-      effectiveExperience
-    );
+    if (effectiveExperience && Object.keys(effectiveExperience).length >= 0) {
+      automaticallyApplyGPCPreferences(
+          cookie,
+          fidesRegionString,
+          options.fidesApiUrl,
+          options.debug,
+          effectiveExperience as PrivacyExperience
+      );
+    }
   }
 
   // Initialize the window.Fides object
