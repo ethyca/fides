@@ -70,11 +70,18 @@ const AddVendor = () => {
     const transformedDeclarations = values.privacy_declarations
       .filter((dec) => dec.data_use !== EMPTY_DECLARATION.data_use)
       .map((dec) => {
-        const transformedCookies = dec.cookies.map((name) => ({
-          name,
-          path: "/",
-        }));
-        return { ...dec, cookies: transformedCookies };
+        // `cookieNames` is only a temporary field to help with the form
+        // At this point, we should see if we need to transform `cookieNames`,
+        // or if we can work with `cookies` directly.
+        let transformedCookies = dec.cookies;
+        if (dec.cookies.length === 0) {
+          transformedCookies = dec.cookieNames.map((name) => ({
+            name,
+            path: "/",
+          }));
+        }
+        const { cookieNames, ...rest } = dec;
+        return { ...rest, cookies: transformedCookies };
       });
 
     // We use vendor_id to potentially store a new system name

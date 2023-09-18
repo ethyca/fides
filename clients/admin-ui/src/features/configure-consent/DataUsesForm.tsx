@@ -29,6 +29,7 @@ const DataUseBlock = ({
 }) => {
   const dataUseOptions = useAppSelector(selectDataUseOptions);
   const textColor = isSuggestion ? "complimentary.500" : "gray.800";
+
   return (
     <VStack
       width="100%"
@@ -48,7 +49,7 @@ const DataUseBlock = ({
       />
       <CustomCreatableSelect
         label="Cookie names"
-        name={`privacy_declarations.${index}.cookies`}
+        name={`privacy_declarations.${index}.cookieNames`}
         options={[]}
         variant="stacked"
         isMulti
@@ -75,8 +76,8 @@ const DataUsesForm = ({ showSuggestions }: { showSuggestions: boolean }) => {
           name: d.name ?? "",
           data_use: d.data_use,
           data_categories: d.data_categories,
-          // TODO: fix this, we don't want to lose cookie info!
-          cookies: d.cookies?.map((c) => c.name) || [],
+          cookieNames: d.cookies?.map((c) => c.name) || [],
+          cookies: d.cookies ?? [],
         }));
       setFieldValue("privacy_declarations", declarations);
     }
