@@ -476,12 +476,12 @@ class TestCachePausedLocation:
 
 
 class TestCacheManualInput:
-    def test_cache_manual_input(self, privacy_request):
+    def test_cache_manual_access_input(self, privacy_request):
         manual_data = [{"id": 1, "name": "Jane"}, {"id": 2, "name": "Hank"}]
 
-        privacy_request.cache_manual_input(paused_location, manual_data)
+        privacy_request.cache_manual_access_input(paused_location, manual_data)
         assert (
-            privacy_request.get_manual_input(
+            privacy_request.get_manual_access_input(
                 paused_location,
             )
             == manual_data
@@ -489,10 +489,10 @@ class TestCacheManualInput:
 
     def test_cache_empty_manual_input(self, privacy_request):
         manual_data = []
-        privacy_request.cache_manual_input(paused_location, manual_data)
+        privacy_request.cache_manual_access_input(paused_location, manual_data)
 
         assert (
-            privacy_request.get_manual_input(
+            privacy_request.get_manual_access_input(
                 paused_location,
             )
             == []
@@ -500,7 +500,7 @@ class TestCacheManualInput:
 
     def test_no_manual_data_in_cache(self, privacy_request):
         assert (
-            privacy_request.get_manual_input(
+            privacy_request.get_manual_access_input(
                 paused_location,
             )
             is None
@@ -613,14 +613,16 @@ class TestCacheEmailConnectorTemplateContents:
 class TestCacheManualWebhookInput:
     def test_cache_manual_webhook_input(self, privacy_request, access_manual_webhook):
         with pytest.raises(NoCachedManualWebhookEntry):
-            privacy_request.get_manual_webhook_input_strict(access_manual_webhook)
+            privacy_request.get_manual_webhook_access_input_strict(
+                access_manual_webhook
+            )
 
         privacy_request.cache_manual_webhook_input(
             manual_webhook=access_manual_webhook,
             input_data={"email": "customer-1@example.com", "last_name": "Customer"},
         )
 
-        assert privacy_request.get_manual_webhook_input_strict(
+        assert privacy_request.get_manual_webhook_access_input_strict(
             access_manual_webhook
         ) == {
             "email": "customer-1@example.com",
@@ -633,7 +635,7 @@ class TestCacheManualWebhookInput:
             input_data={},
         )
 
-        assert privacy_request.get_manual_webhook_input_strict(
+        assert privacy_request.get_manual_webhook_access_input_strict(
             access_manual_webhook
         ) == {
             "email": None,
@@ -648,7 +650,7 @@ class TestCacheManualWebhookInput:
             },
         )
 
-        assert privacy_request.get_manual_webhook_input_strict(
+        assert privacy_request.get_manual_webhook_access_input_strict(
             access_manual_webhook
         ) == {
             "email": "customer-1@example.com",
@@ -697,7 +699,9 @@ class TestCacheManualWebhookInput:
         access_manual_webhook.save(db)
 
         with pytest.raises(ManualWebhookFieldsUnset):
-            privacy_request.get_manual_webhook_input_strict(access_manual_webhook)
+            privacy_request.get_manual_webhook_access_input_strict(
+                access_manual_webhook
+            )
 
     def test_fields_removed_from_webhook_definition(
         self, db, privacy_request, access_manual_webhook
@@ -715,7 +719,9 @@ class TestCacheManualWebhookInput:
         access_manual_webhook.save(db)
 
         with pytest.raises(ValidationError):
-            privacy_request.get_manual_webhook_input_strict(access_manual_webhook)
+            privacy_request.get_manual_webhook_access_input_strict(
+                access_manual_webhook
+            )
 
     def test_non_strict_retrieval_from_cache(
         self, db, privacy_request, access_manual_webhook

@@ -76,13 +76,13 @@ from fides.common.api.scope_registry import (
 )
 from fides.common.api.v1.urn_registry import (
     CONNECTION_DATASETS,
-    PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_MANUAL_ERASURE,
     PRIVACY_REQUEST_MANUAL_INPUT,
+    PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
@@ -3582,7 +3582,7 @@ class TestUploadManualWebhookInputs:
         access_manual_webhook,
         integration_manual_webhook_config,
     ):
-        return V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        return V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request_requires_input.id,
             connection_key=integration_manual_webhook_config.key,
         )
@@ -3610,7 +3610,7 @@ class TestUploadManualWebhookInputs:
         access_manual_webhook,
         integration_manual_webhook_config,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id="bad_privacy_request",
             connection_key=integration_manual_webhook_config.key,
         )
@@ -3629,7 +3629,7 @@ class TestUploadManualWebhookInputs:
         payload,
         privacy_request_requires_input,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request_requires_input.id,
             connection_key="bad_connection_key",
         )
@@ -3649,7 +3649,7 @@ class TestUploadManualWebhookInputs:
         privacy_request_requires_input,
         integration_manual_webhook_config,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request_requires_input.id,
             connection_key=integration_manual_webhook_config.key,
         )
@@ -3688,7 +3688,7 @@ class TestUploadManualWebhookInputs:
         integration_manual_webhook_config,
         access_manual_webhook,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request.id,
             connection_key=integration_manual_webhook_config.key,
         )
@@ -3716,7 +3716,7 @@ class TestUploadManualWebhookInputs:
         assert response.json() is None
 
         assert (
-            privacy_request_requires_input.get_manual_webhook_input_strict(
+            privacy_request_requires_input.get_manual_webhook_access_input_strict(
                 access_manual_webhook
             )
             == payload
@@ -3732,7 +3732,7 @@ class TestGetManualWebhookInputs:
         access_manual_webhook,
         integration_manual_webhook_config,
     ):
-        return V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        return V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request_requires_input.id,
             connection_key=integration_manual_webhook_config.key,
         )
@@ -3758,7 +3758,7 @@ class TestGetManualWebhookInputs:
         access_manual_webhook,
         integration_manual_webhook_config,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id="bad_privacy_request",
             connection_key=integration_manual_webhook_config.key,
         )
@@ -3776,7 +3776,7 @@ class TestGetManualWebhookInputs:
         generate_auth_header,
         privacy_request_requires_input,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request_requires_input.id,
             connection_key="bad_connection_key",
         )
@@ -3795,7 +3795,7 @@ class TestGetManualWebhookInputs:
         privacy_request_requires_input,
         integration_manual_webhook_config,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request_requires_input.id,
             connection_key=integration_manual_webhook_config.key,
         )
@@ -3815,7 +3815,7 @@ class TestGetManualWebhookInputs:
         integration_manual_webhook_config,
         access_manual_webhook,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request.id,
             connection_key=integration_manual_webhook_config.key,
         )
