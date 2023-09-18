@@ -20,17 +20,18 @@ import {
   ClassifyRequestPayload,
   ClassifyStatusUpdatePayload,
   ClassifySystem,
+  CloudConfig,
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
   CustomFieldWithId,
   GenerateTypes,
   HealthCheck,
+  Page_SystemHistoryResponse_,
   ResourceTypes,
   SystemScannerStatus,
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
-import { SystemHistoryResponse } from "~/types/api/models/SystemHistoryResponse";
 
 import { DictDataUse, DictEntry, Page } from "./types";
 
@@ -251,6 +252,13 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Dictionary"],
     }),
+    getFidesCloudConfig: build.query<CloudConfig, void>({
+      query: () => ({
+        url: `plus/fides-cloud`,
+        method: "GET",
+      }),
+      providesTags: ["Fides Cloud Config"],
+    }),
     getDictionaryDataUses: build.query<
       Page<DictDataUse>,
       { vendor_id: number }
@@ -263,10 +271,16 @@ const plusApi = baseApi.injectEndpoints({
       providesTags: ["Dictionary"],
     }),
     getSystemHistory: build.query<
-      SystemHistoryResponse,
-      { system_key: string }
+      Page_SystemHistoryResponse_,
+      { system_key: string; page?: number; size?: number }
     >({
-      query: (params) => ({ url: `plus/system/${params.system_key}/history` }),
+      query: (params) => ({
+        url: `plus/system/${params.system_key}/history`,
+        params: {
+          page: params.page,
+          size: params.size,
+        },
+      }),
       providesTags: () => ["System History"],
     }),
   }),
@@ -294,6 +308,7 @@ export const {
   useGetAllCustomFieldDefinitionsQuery,
   useGetAllowListQuery,
   useGetAllDictionaryEntriesQuery,
+  useGetFidesCloudConfigQuery,
   useGetDictionaryDataUsesQuery,
   useGetSystemHistoryQuery,
 } = plusApi;
@@ -403,7 +418,7 @@ export const selectAllCustomFieldDefinitions = createSelector(
   ({ data }) => data || emptySelectAllCustomFields
 );
 
-type DictOption = {
+export type DictOption = {
   label: string;
   value: string;
   descriptiong?: string;

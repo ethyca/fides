@@ -575,7 +575,7 @@ class TestPrivacyExperience:
         privacy_notice_us_ca_provide.update(
             db=db,
             data={
-                "data_uses": ["improve"],
+                "data_uses": ["functional"],
                 "enforcement_level": EnforcementLevel.frontend,
             },
         )

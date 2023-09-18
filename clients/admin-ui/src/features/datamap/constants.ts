@@ -6,8 +6,6 @@ export const CELL_SIZE = 20;
 
 export const DATA_CATEGORY_COLUMN_ID = "unioned_data_categories";
 
-export const GRAY_BACKGROUND = "#F7F7F7";
-
 export const ItemTypes = {
   DraggableColumnListItem: "DraggableColumnListItem",
 };

@@ -372,8 +372,11 @@ div#fides-modal .fides-modal-button-group {
 .fides-toggle .fides-toggle-display {
   --offset: 0.1em;
   --diameter: 1em;
-
-  display: inline-flex;
+  /**
+  Because we have a "hidden" attr on this toggle element, some CSS libs customers use may include a global
+  display: none on the hidden attr. To prevent our toggles from being hidden we use !important here
+  **/
+  display: inline-flex !important;
   align-items: center;
   justify-content: space-around;
 

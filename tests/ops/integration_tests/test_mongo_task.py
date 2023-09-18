@@ -531,8 +531,8 @@ async def test_object_querying_mongo(
     )
 
     target_categories = {
-        "user.gender",
-        "user.date_of_birth",
+        "user.demographic.gender",
+        "user.demographic.date_of_birth",
     }
     filtered_results = filter_data_categories(
         access_request_results,
@@ -848,7 +848,7 @@ async def test_array_querying_mongo(
         {
             "path": "mongo_test:customer_details:birthday",
             "field_name": "birthday",
-            "data_categories": ["user.date_of_birth"],
+            "data_categories": ["user.demographic.date_of_birth"],
         },
         {
             "path": "mongo_test:customer_details:children",
@@ -873,7 +873,7 @@ async def test_array_querying_mongo(
         {
             "path": "mongo_test:customer_details:gender",
             "field_name": "gender",
-            "data_categories": ["user.gender"],
+            "data_categories": ["user.demographic.gender"],
         },
         {
             "path": "mongo_test:customer_details:workplace_info.direct_reports",
@@ -930,7 +930,7 @@ async def test_array_querying_mongo(
         {
             "path": "mongo_test:conversations:thread.ccn",
             "field_name": "thread.ccn",
-            "data_categories": ["user.financial.account_number"],
+            "data_categories": ["user.financial.bank_account"],
         },
     ]
 
@@ -1015,7 +1015,7 @@ async def test_array_querying_mongo(
         {
             "path": "mongo_test:payment_card:ccn",
             "field_name": "ccn",
-            "data_categories": ["user.financial.account_number"],
+            "data_categories": ["user.financial.bank_account"],
         },
         {
             "path": "mongo_test:payment_card:code",

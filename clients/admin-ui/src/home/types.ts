@@ -1,3 +1,4 @@
+import { FlagNames } from "~/features/common/features";
 import { ScopeRegistryEnum } from "~/types/api";
 
 type ModuleCard = {
@@ -15,4 +16,5 @@ export interface ModuleCardConfig extends ModuleCard {
   requiresConnections?: boolean;
   requiresPlus?: boolean;
   scopes: ScopeRegistryEnum[];
+  requiresFlag?: FlagNames;
 }

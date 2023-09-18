@@ -1,21 +1,24 @@
 """Add tcf columns
 
 Revision ID: 66df7d9b8103
-Revises: 093bb28a8270
+Revises: f17f92237383
 Create Date: 2023-08-23 21:12:43.651877
 
+This is a large migration, but in short, we are expanding our existing tables that let us save preferences against
+privacy notices to allow us to also save preferences against TCF components.  Every TCF attribute gets its own column.
 """
 import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "66df7d9b8103"
-down_revision = "093bb28a8270"
+down_revision = "f17f92237383"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
+    # Add new consent settings table!
     op.create_table(
         "consentsettings",
         sa.Column("id", sa.String(length=255), nullable=False),
@@ -37,6 +40,9 @@ def upgrade():
     op.create_index(
         op.f("ix_consentsettings_id"), "consentsettings", ["id"], unique=False
     )
+    # Add TCF components to CurrentPrivacy Preference table: these allow you to store the last saved preference
+    # for a given user across TCF versions and across time
+
     op.add_column(
         "currentprivacypreference", sa.Column("tcf_version", sa.String(), nullable=True)
     )
@@ -60,6 +66,8 @@ def upgrade():
     op.add_column(
         "currentprivacypreference", sa.Column("system", sa.String(), nullable=True)
     )
+    # Make privacy notice id and privacy notice history id nullable, as the CurrentPrivacyPreference table
+    # is being expanded to save preferences against multiple constructs, not just privacy notices
     op.alter_column(
         "currentprivacypreference",
         "privacy_notice_id",
@@ -72,6 +80,9 @@ def upgrade():
         existing_type=sa.VARCHAR(),
         nullable=True,
     )
+    # Create unique constraints between the identity for a fides device and a TCF component in
+    # the currentprivacypreference table.  We want this table to store only one preference of each type per fides user device.
+
     op.create_unique_constraint(
         "fides_user_device_identity_feature",
         "currentprivacypreference",
@@ -102,6 +113,9 @@ def upgrade():
         "currentprivacypreference",
         ["fides_user_device_provided_identity_id", "vendor"],
     )
+    # Create unique constraints between a provided identity (like an email/phone) and a TCF component in
+    # the currentprivacypreference table.  We want this table to store only one preference of each type per provided identity.
+
     op.create_unique_constraint(
         "identity_feature",
         "currentprivacypreference",
@@ -132,6 +146,7 @@ def upgrade():
         "currentprivacypreference",
         ["provided_identity_id", "vendor"],
     )
+    # Now we index these columns to make it easier to retrieve the latest preference or filter in the future
     op.create_index(
         op.f("ix_currentprivacypreference_feature"),
         "currentprivacypreference",
@@ -168,6 +183,10 @@ def upgrade():
         ["vendor"],
         unique=False,
     )
+
+    # Similar to the above, add columns to the existing "last served notice" table to be able to store when a
+    # a TCF component was last served to a given user
+
     op.add_column(
         "lastservednotice", sa.Column("tcf_version", sa.String(), nullable=True)
     )
@@ -181,6 +200,9 @@ def upgrade():
     )
     op.add_column("lastservednotice", sa.Column("vendor", sa.String(), nullable=True))
     op.add_column("lastservednotice", sa.Column("system", sa.String(), nullable=True))
+
+    # Relax a criteria that we had to have a privacy notice id and privacy notice history id to store that consent
+    # was served. The Last Served Notice table is now shared with TCF components.
     op.alter_column(
         "lastservednotice",
         "privacy_notice_id",
@@ -193,36 +215,9 @@ def upgrade():
         existing_type=sa.VARCHAR(),
         nullable=True,
     )
-    op.create_index(
-        op.f("ix_lastservednotice_feature"),
-        "lastservednotice",
-        ["feature"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_lastservednotice_purpose"),
-        "lastservednotice",
-        ["purpose"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_lastservednotice_special_feature"),
-        "lastservednotice",
-        ["special_feature"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_lastservednotice_special_purpose"),
-        "lastservednotice",
-        ["special_purpose"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_lastservednotice_system"), "lastservednotice", ["system"], unique=False
-    )
-    op.create_index(
-        op.f("ix_lastservednotice_vendor"), "lastservednotice", ["vendor"], unique=False
-    )
+
+    # Add unique constraints between a fides user device id and the tcf component.  For each device and particular TCF
+    # component, we want exactly one record stored in this table.  This records the last time consent was served!
     op.create_unique_constraint(
         "last_served_fides_user_device_identity_feature",
         "lastservednotice",
@@ -253,6 +248,8 @@ def upgrade():
         "lastservednotice",
         ["fides_user_device_provided_identity_id", "vendor"],
     )
+    # Add unique constraints between a provided identity like an email/phone and the tcf component.  For each provided identity
+    # and particular TCF component, we want exactly one record stored in this table.  This records the last time consent was served!
     op.create_unique_constraint(
         "last_served_identity_feature",
         "lastservednotice",
@@ -283,14 +280,39 @@ def upgrade():
         "lastservednotice",
         ["provided_identity_id", "vendor"],
     )
-    op.drop_index("ix_messagingtemplate_id", table_name="messaging_template")
-    op.drop_index("ix_messagingtemplate_key", table_name="messaging_template")
+    # Lastly, let's index these new TCF columns on the LastServedNotice table
     op.create_index(
-        op.f("ix_messaging_template_id"), "messaging_template", ["id"], unique=False
+        op.f("ix_lastservednotice_feature"),
+        "lastservednotice",
+        ["feature"],
+        unique=False,
     )
     op.create_index(
-        op.f("ix_messaging_template_key"), "messaging_template", ["key"], unique=True
+        op.f("ix_lastservednotice_purpose"),
+        "lastservednotice",
+        ["purpose"],
+        unique=False,
     )
+    op.create_index(
+        op.f("ix_lastservednotice_special_feature"),
+        "lastservednotice",
+        ["special_feature"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_lastservednotice_special_purpose"),
+        "lastservednotice",
+        ["special_purpose"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_lastservednotice_system"), "lastservednotice", ["system"], unique=False
+    )
+    op.create_index(
+        op.f("ix_lastservednotice_vendor"), "lastservednotice", ["vendor"], unique=False
+    )
+    # Add new TCF columns to the PrivacyPreferenceHistory table to let us save each time consent is served
+    # against a TCF component.
     op.add_column(
         "privacypreferencehistory", sa.Column("feature", sa.Integer(), nullable=True)
     )
@@ -314,12 +336,14 @@ def upgrade():
     op.add_column(
         "privacypreferencehistory", sa.Column("tcf_version", sa.String(), nullable=True)
     )
+    # Relax criteria so we can save privacy preference history against more than just privacy notices.
     op.alter_column(
         "privacypreferencehistory",
         "privacy_notice_history_id",
         existing_type=sa.VARCHAR(),
         nullable=True,
     )
+    # Index the new TCF columns to make them easier to search and filter on
     op.create_index(
         op.f("ix_privacypreferencehistory_feature"),
         "privacypreferencehistory",
@@ -356,6 +380,8 @@ def upgrade():
         ["vendor"],
         unique=False,
     )
+    # Add new TCF columns to the ServedNoticeHistory table.  This lets us record every time TCF components
+    # are served to an end user.s
     op.add_column(
         "servednoticehistory", sa.Column("feature", sa.Integer(), nullable=True)
     )
@@ -377,12 +403,14 @@ def upgrade():
     op.add_column(
         "servednoticehistory", sa.Column("tcf_version", sa.String(), nullable=True)
     )
+    # Relax constraints so we can persist that TCF components were served. Not just privacy notices.
     op.alter_column(
         "servednoticehistory",
         "privacy_notice_history_id",
         existing_type=sa.VARCHAR(),
         nullable=True,
     )
+    # Index the new TCF columns in ServedNoticeHistory
     op.create_index(
         op.f("ix_servednoticehistory_feature"),
         "servednoticehistory",
@@ -478,14 +506,7 @@ def downgrade():
     op.drop_column("privacypreferencehistory", "special_feature")
     op.drop_column("privacypreferencehistory", "purpose")
     op.drop_column("privacypreferencehistory", "feature")
-    op.drop_index(op.f("ix_messaging_template_key"), table_name="messaging_template")
-    op.drop_index(op.f("ix_messaging_template_id"), table_name="messaging_template")
-    op.create_index(
-        "ix_messagingtemplate_key", "messaging_template", ["key"], unique=False
-    )
-    op.create_index(
-        "ix_messagingtemplate_id", "messaging_template", ["id"], unique=False
-    )
+
     op.drop_constraint(
         "last_served_identity_vendor", "lastservednotice", type_="unique"
     )

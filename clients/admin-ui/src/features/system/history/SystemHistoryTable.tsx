@@ -1,10 +1,28 @@
-import { Table, Tbody, Td, Thead, Tr } from "@fidesui/react";
+import {
+  Button,
+  Flex,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Thead,
+  Tr,
+} from "@fidesui/react";
 import _ from "lodash";
-import React from "react";
+import React, { useState } from "react";
 
-import { useGetSystemHistoryQuery } from "~/features/plus/plus.slice";
-import { SystemHistory } from "~/types/api/models/SystemHistory";
+import { useAppSelector } from "~/app/hooks";
+import NextArrow from "~/features/common/Icon/NextArrow";
+import PrevArrow from "~/features/common/Icon/PrevArrow";
+import {
+  DictOption,
+  selectAllDictEntries,
+  useGetSystemHistoryQuery,
+} from "~/features/plus/plus.slice";
+import { PrivacyDeclaration, SystemHistoryResponse } from "~/types/api";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
+
+import SystemHistoryModal from "./modal/SystemHistoryModal";
 
 interface Props {
   system: SystemResponse;
@@ -34,15 +52,96 @@ const formatDateAndTime = (dateString: string) => {
   return { formattedTime, formattedDate };
 };
 
+function alignArrays(
+  before: PrivacyDeclaration[],
+  after: PrivacyDeclaration[]
+) {
+  const allNames = new Set([...before, ...after].map((item) => item.data_use));
+  const alignedBefore: PrivacyDeclaration[] = [];
+  const alignedAfter: PrivacyDeclaration[] = [];
+
+  allNames.forEach((data_use) => {
+    const firstItem = before.find((item) => item.data_use === data_use) || {
+      data_use: "",
+      data_categories: [],
+    };
+    const secondItem = after.find((item) => item.data_use === data_use) || {
+      data_use: "",
+      data_categories: [],
+    };
+    alignedBefore.push(firstItem);
+    alignedAfter.push(secondItem);
+  });
+
+  return [alignedBefore, alignedAfter];
+}
+
+const lookupVendorLabel = (vendor_id: string, options: DictOption[]) =>
+  options.find((option) => option.value === vendor_id)?.label ?? vendor_id;
+
+const itemsPerPage = 10;
+
 const SystemHistoryTable = ({ system }: Props) => {
-  // Fetch system history data
+  const [currentPage, setCurrentPage] = useState(1);
   const { data } = useGetSystemHistoryQuery({
     system_key: system.fides_key,
+    page: currentPage,
+    size: itemsPerPage,
   });
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [selectedHistory, setSelectedHistory] =
+    useState<SystemHistoryResponse | null>(null);
+  const dictionaryOptions = useAppSelector(selectAllDictEntries);
 
   const systemHistories = data?.items || [];
 
-  const describeSystemChange = (history: SystemHistory) => {
+  const openModal = (history: SystemHistoryResponse) => {
+    // Align the privacy_declarations arrays
+    const beforePrivacyDeclarations =
+      history?.before?.privacy_declarations || [];
+    const afterPrivacyDeclarations = history?.after?.privacy_declarations || [];
+    const [alignedBefore, alignedAfter] = alignArrays(
+      beforePrivacyDeclarations,
+      afterPrivacyDeclarations
+    );
+
+    // Create new initialValues objects with the aligned arrays
+    const alignedBeforeInitialValues = {
+      ...history?.before,
+      privacy_declarations: alignedBefore,
+    };
+    const alignedAfterInitialValues = {
+      ...history?.after,
+      privacy_declarations: alignedAfter,
+    };
+
+    if (dictionaryOptions) {
+      alignedBeforeInitialValues.vendor_id = lookupVendorLabel(
+        alignedBeforeInitialValues.vendor_id,
+        dictionaryOptions
+      );
+      alignedAfterInitialValues.vendor_id = lookupVendorLabel(
+        alignedAfterInitialValues.vendor_id,
+        dictionaryOptions
+      );
+    }
+
+    setSelectedHistory({
+      before: alignedBeforeInitialValues,
+      after: alignedAfterInitialValues,
+      edited_by: history.edited_by,
+      system_id: history.system_id,
+      created_at: history.created_at,
+    });
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedHistory(null);
+  };
+
+  const describeSystemChange = (history: SystemHistoryResponse) => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { edited_by, before, after, created_at } = history;
 
@@ -146,58 +245,106 @@ const SystemHistoryTable = ({ system }: Props) => {
 
   const { formattedTime, formattedDate } = formatDateAndTime(system.created_at);
 
+  const totalPages = data ? Math.ceil(data.total / itemsPerPage) : 0;
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   return (
-    <Table style={{ marginLeft: "24px" }}>
-      <Thead>
-        <Tr>
-          <Td
-            style={{
-              paddingTop: 16,
-              paddingBottom: 16,
-              paddingLeft: 16,
-              fontSize: 12,
-              borderTop: "1px solid #E2E8F0",
-              borderLeft: "1px solid #E2E8F0",
-              borderRight: "1px solid #E2E8F0",
-              background: "#F7FAFC",
-            }}
-          >
-            System created
-            {system.created_by && (
-              <>
-                {" "}
-                by <b>{system.created_by}</b>{" "}
-              </>
-            )}{" "}
-            on {formattedDate} at {formattedTime}
-          </Td>
-        </Tr>
-      </Thead>
-      <Tbody>
-        {systemHistories.map((history: SystemHistory, index: number) => {
-          const description = describeSystemChange(history);
-          return (
-            <Tr
-              // eslint-disable-next-line react/no-array-index-key
-              key={index}
+    <>
+      <Table ml="24px">
+        <Thead>
+          <Tr>
+            <Td
+              p="16px"
+              fontSize="12px"
+              border="1px solid #E2E8F0"
+              background="#F7FAFC"
             >
-              <Td
-                style={{
-                  paddingTop: 10,
-                  paddingBottom: 10,
-                  paddingLeft: 16,
-                  fontSize: 12,
-                  borderLeft: "1px solid #E2E8F0",
-                  borderRight: "1px solid #E2E8F0",
-                }}
+              System created
+              {system.created_by && (
+                <>
+                  {" "}
+                  by <b>{system.created_by}</b>{" "}
+                </>
+              )}{" "}
+              on {formattedDate} at {formattedTime}
+            </Td>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {systemHistories.map((history, index) => {
+            const description = describeSystemChange(history);
+            return (
+              <Tr
+                // eslint-disable-next-line react/no-array-index-key
+                key={index}
+                onClick={() => openModal(history)}
+                style={{ cursor: "pointer" }}
               >
-                {description}
-              </Td>
-            </Tr>
-          );
-        })}
-      </Tbody>
-    </Table>
+                <Td
+                  pt="10px"
+                  pb="10px"
+                  pl="16px"
+                  fontSize="12px"
+                  border="1px solid #E2E8F0"
+                >
+                  {description}
+                </Td>
+              </Tr>
+            );
+          })}
+        </Tbody>
+      </Table>
+      {(data?.total || 0) > 10 && (
+        <Flex
+          alignItems="center"
+          justifyContent="flex-start"
+          marginTop="12px"
+          marginLeft="24px"
+        >
+          <Text fontSize="xs" lineHeight={4} fontWeight="600" paddingX={2}>
+            {(currentPage - 1) * itemsPerPage + 1} -{" "}
+            {Math.min(currentPage * itemsPerPage, data?.total || 0)} of{" "}
+            {data?.total || 0}
+          </Text>
+          <Button
+            size="xs"
+            width="24px"
+            variant="outline"
+            paddingX={0}
+            marginRight={2}
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+          >
+            <PrevArrow />
+          </Button>
+          <Button
+            size="xs"
+            variant="outline"
+            paddingX={0}
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages || totalPages === 0}
+          >
+            <NextArrow />
+          </Button>
+        </Flex>
+      )}
+      <SystemHistoryModal
+        selectedHistory={selectedHistory!}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+      />
+    </>
   );
 };
 

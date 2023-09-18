@@ -19,7 +19,8 @@
       "created_at": "2023-05-30T23:36:47.187827+00:00",
       "updated_at": "2023-05-30T23:36:47.187827+00:00",
       "version": 1.0,
-      "privacy_notice_history_id": "pri_8a692d8c-bbb6-45d2-86d5-7eec0d28494d"
+      "privacy_notice_history_id": "pri_8a692d8c-bbb6-45d2-86d5-7eec0d28494d",
+      "systems_applicable": true
     },
     {
       "name": "Advertising",
@@ -31,7 +32,7 @@
       "consent_mechanism": "opt_in",
       "data_uses": ["advertising.first_party.contextual"],
       "enforcement_level": "system_wide",
-      "disabled": false,
+      "disabled": true,
       "has_gpc_flag": false,
       "displayed_in_privacy_center": false,
       "displayed_in_overlay": true,
@@ -40,7 +41,8 @@
       "created_at": "2023-05-30T23:36:47.184580+00:00",
       "updated_at": "2023-05-30T23:36:47.184580+00:00",
       "version": 1.0,
-      "privacy_notice_history_id": "pri_b8632470-5ec8-426e-9380-5094dd7f449b"
+      "privacy_notice_history_id": "pri_b8632470-5ec8-426e-9380-5094dd7f449b",
+      "systems_applicable": false
     },
     {
       "name": "Analytics",
@@ -61,7 +63,8 @@
       "created_at": "2023-05-30T23:36:47.181187+00:00",
       "updated_at": "2023-05-30T23:36:47.181187+00:00",
       "version": 1.0,
-      "privacy_notice_history_id": "pri_457e6ccc-89f7-4bed-a6d6-9bdc8ceafda8"
+      "privacy_notice_history_id": "pri_457e6ccc-89f7-4bed-a6d6-9bdc8ceafda8",
+      "systems_applicable": false
     },
     {
       "name": "Functional",
@@ -71,7 +74,7 @@
       "origin": null,
       "regions": ["fr", "ie"],
       "consent_mechanism": "opt_in",
-      "data_uses": ["improve.system"],
+      "data_uses": ["functional.service.improve"],
       "enforcement_level": "system_wide",
       "disabled": false,
       "has_gpc_flag": false,
@@ -82,7 +85,8 @@
       "created_at": "2023-05-30T23:36:47.176146+00:00",
       "updated_at": "2023-05-30T23:36:47.176146+00:00",
       "version": 1.0,
-      "privacy_notice_history_id": "pri_3b47b205-2de7-4bd4-ac36-cdb162f4701e"
+      "privacy_notice_history_id": "pri_3b47b205-2de7-4bd4-ac36-cdb162f4701e",
+      "systems_applicable": true
     },
     {
       "name": "Essential",
@@ -103,7 +107,8 @@
       "created_at": "2023-05-30T23:36:47.158555+00:00",
       "updated_at": "2023-05-30T23:36:47.158555+00:00",
       "version": 1.0,
-      "privacy_notice_history_id": "pri_e8c9a8b0-7c23-456f-ad5f-c592cf69522d"
+      "privacy_notice_history_id": "pri_e8c9a8b0-7c23-456f-ad5f-c592cf69522d",
+      "systems_applicable": true
     }
   ],
   "total": 5,

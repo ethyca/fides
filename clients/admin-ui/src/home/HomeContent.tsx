@@ -11,7 +11,7 @@ import { MODULE_CARD_ITEMS } from "./constants";
 import { configureTiles } from "./tile-config";
 
 const HomeContent: React.FC = () => {
-  const { plus } = useFeatures();
+  const { plus, flags } = useFeatures();
   const userScopes = useAppSelector(selectThisUsersScopes);
 
   const list = useMemo(
@@ -20,8 +20,9 @@ const HomeContent: React.FC = () => {
         config: MODULE_CARD_ITEMS,
         hasPlus: plus,
         userScopes,
+        flags,
       }),
-    [plus, userScopes]
+    [plus, userScopes, flags]
   );
 
   return (

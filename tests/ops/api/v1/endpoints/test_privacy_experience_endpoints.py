@@ -186,19 +186,31 @@ class TestGetPrivacyExperiences:
         assert resp.status_code == 200
         assert resp.json()["total"] == 0
 
-        resp = api_client.get(
+        def assert_france_experience_and_notices_returned(resp):
+            assert resp.status_code == 200
+            assert resp.json()["total"] == 1
+            data = resp.json()
+            assert len(data["items"]) == 1
+            assert {exp["id"] for exp in data["items"]} == {
+                privacy_experience_privacy_center_france.id
+            }
+            assert len(data["items"][0]["privacy_notices"]) == 1
+            assert data["items"][0]["privacy_notices"][0]["regions"] == ["fr"]
+            assert (
+                data["items"][0]["privacy_notices"][0]["id"] == privacy_notice_france.id
+            )
+
+        response = api_client.get(
             url + "?region=fr_idg",
         )  # There are no experiences with "fr_idg" so we fell back to searching for "fr"
-        assert resp.status_code == 200
-        assert resp.json()["total"] == 1
-        data = resp.json()
-        assert len(data["items"]) == 1
-        assert {exp["id"] for exp in data["items"]} == {
-            privacy_experience_privacy_center_france.id
-        }
-        assert len(data["items"][0]["privacy_notices"]) == 1
-        assert data["items"][0]["privacy_notices"][0]["regions"] == ["fr"]
-        assert data["items"][0]["privacy_notices"][0]["id"] == privacy_notice_france.id
+
+        assert_france_experience_and_notices_returned(response)
+
+        response = api_client.get(
+            url + "?region=FR-IDG",
+        )  # Case insensitive and hyphens also work here -"
+
+        assert_france_experience_and_notices_returned(response)
 
     def test_get_privacy_experiences_components_filter(
         self,
@@ -374,27 +386,39 @@ class TestGetPrivacyExperiences:
         privacy_notice_us_co_third_party_sharing,
     ):
         """Region filter propagates through to the notices too"""
+
+        def assert_expected_filtered_region_response(data):
+            assert data["total"] == 1
+            assert len(data["items"]) == 1
+
+            assert data["items"][0]["id"] == privacy_experience_privacy_center.id
+            assert data["items"][0]["region"] == "us_co"
+
+            notices = data["items"][0]["privacy_notices"]
+            assert len(notices) == 2
+            assert notices[0]["regions"] == ["us_co"]
+            assert notices[0]["id"] == privacy_notice_us_co_third_party_sharing.id
+            assert notices[0]["displayed_in_privacy_center"]
+
+            assert notices[1]["regions"] == ["us_ca", "us_co"]
+            assert notices[1]["id"] == privacy_notice.id
+            assert notices[1]["displayed_in_privacy_center"]
+
+        # Filter on exact match region
         resp = api_client.get(
             url + "?has_notices=True&region=us_co",
         )
         assert resp.status_code == 200
-        data = resp.json()
+        response_json = resp.json()
 
-        assert data["total"] == 1
-        assert len(data["items"]) == 1
+        assert_expected_filtered_region_response(response_json)
 
-        assert data["items"][0]["id"] == privacy_experience_privacy_center.id
-        assert data["items"][0]["region"] == "us_co"
-
-        notices = data["items"][0]["privacy_notices"]
-        assert len(notices) == 2
-        assert notices[0]["regions"] == ["us_co"]
-        assert notices[0]["id"] == privacy_notice_us_co_third_party_sharing.id
-        assert notices[0]["displayed_in_privacy_center"]
-
-        assert notices[1]["regions"] == ["us_ca", "us_co"]
-        assert notices[1]["id"] == privacy_notice.id
-        assert notices[1]["displayed_in_privacy_center"]
+        # Filter on upper case and hyphens
+        resp = api_client.get(
+            url + "?has_notices=True&region=US-CO",
+        )
+        assert resp.status_code == 200
+        assert_expected_filtered_region_response(resp.json())
 
     @pytest.mark.usefixtures(
         "privacy_notice_us_co_provide_service_operations",  # not displayed in overlay or privacy center
@@ -450,6 +474,7 @@ class TestGetPrivacyExperiences:
             "marketing.advertising",
             "third_party_sharing",
         ]
+        assert notices[0]["systems_applicable"] is True
         assert system.privacy_declarations[0].data_use == "marketing.advertising"
 
     @pytest.mark.usefixtures(
