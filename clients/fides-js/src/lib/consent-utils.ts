@@ -27,6 +27,22 @@ export const debugLog = (
 };
 
 /**
+ * Returns true if privacy experience has notices
+ */
+export const experienceHasNotices = (
+  experience: PrivacyExperience | undefined | {}
+): boolean => {
+  if (experience && Object.keys(experience).length >= 0) {
+    const privacyExperience = experience as PrivacyExperience;
+    return Boolean(
+      privacyExperience.privacy_notices &&
+        privacyExperience.privacy_notices.length > 0
+    );
+  }
+  return false;
+};
+
+/**
  * Construct user location str to be ingested by Fides API
  * Returns null if geolocation cannot be constructed by provided params, e.g. us_ca
  */
@@ -139,30 +155,18 @@ export const validateOptions = (options: FidesOptions): boolean => {
 /**
  * Determines whether experience is valid and relevant notices exist within the experience
  */
-export const experienceIsValid = (
-  effectiveExperience: PrivacyExperience | undefined,
+export const experienceIsValidAndHasNotices = (
+  effectiveExperience: PrivacyExperience | undefined | {},
   options: FidesOptions
 ): boolean => {
-  if (!effectiveExperience) {
+  if (!experienceHasNotices(effectiveExperience)) {
     debugLog(
       options.debug,
-      `No relevant experience found. Skipping overlay initialization.`
+      `Privacy experience has no notices. Skipping overlay initialization.`
     );
     return false;
   }
-  if (
-    !(
-      effectiveExperience.privacy_notices &&
-      effectiveExperience.privacy_notices.length > 0
-    )
-  ) {
-    debugLog(
-      options.debug,
-      `No relevant notices in the privacy experience. Skipping overlay initialization.`,
-      effectiveExperience
-    );
-    return false;
-  }
+  // @ts-ignore
   if (effectiveExperience.component !== ComponentType.OVERLAY) {
     debugLog(
       options.debug,
@@ -170,6 +174,7 @@ export const experienceIsValid = (
     );
     return false;
   }
+  // @ts-ignore
   if (!effectiveExperience.experience_config) {
     debugLog(
       options.debug,

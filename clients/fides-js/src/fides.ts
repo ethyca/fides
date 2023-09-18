@@ -72,7 +72,8 @@ import {
 import {
   constructFidesRegionString,
   debugLog,
-  experienceIsValid,
+  experienceIsValidAndHasNotices,
+  experienceHasNotices,
   transformConsentToFidesUserPreference,
   validateOptions,
 } from "./lib/consent-utils";
@@ -133,7 +134,7 @@ const automaticallyApplyGPCPreferences = (
   fidesRegionString: string | null,
   fidesApiUrl: string,
   debug: boolean,
-  effectiveExperience?: PrivacyExperience | null
+  effectiveExperience?: PrivacyExperience
 ) => {
   if (!effectiveExperience || !effectiveExperience.privacy_notices) {
     return;
@@ -216,7 +217,7 @@ const init = async ({
     _Fides.geolocation = geolocation;
     _Fides.options = options;
     _Fides.initialized = true;
-    if (experience && Object.keys(experience).length >= 0) {
+    if (experienceHasNotices(experience)) {
       // at this point, pre-fetched experience contains no user consent, so we populate with the Fides cookie
       updateExperienceFromCookieConsent(
         experience as PrivacyExperience,
@@ -253,7 +254,7 @@ const init = async ({
         `User location could not be obtained. Skipping overlay initialization.`
       );
       shouldInitOverlay = false;
-    } else if (!effectiveExperience) {
+    } else if (!experienceHasNotices(experience)) {
       effectiveExperience = await fetchExperience(
         fidesRegionString,
         options.fidesApiUrl,
@@ -262,11 +263,7 @@ const init = async ({
       );
     }
 
-    if (
-      effectiveExperience &&
-      Object.keys(effectiveExperience).length >= 0 &&
-      experienceIsValid(effectiveExperience as PrivacyExperience, options)
-    ) {
+    if (experienceIsValidAndHasNotices(effectiveExperience, options)) {
       // Overwrite cookie consent with experience-based consent values
       cookie.consent = buildCookieConsentForExperiences(
         effectiveExperience as PrivacyExperience,
@@ -285,7 +282,7 @@ const init = async ({
     }
   }
   if (shouldInitOverlay) {
-    if (effectiveExperience && Object.keys(effectiveExperience).length >= 0) {
+    if (experienceHasNotices(effectiveExperience)) {
       automaticallyApplyGPCPreferences(
         cookie,
         fidesRegionString,
