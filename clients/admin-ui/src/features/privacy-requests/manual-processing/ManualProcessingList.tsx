@@ -102,7 +102,7 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
     actionTypes,
     uploadManualWebhookAccessData,
     uploadManualWebhookErasureData
-  );
+  ) as ActionConfig;
 
   const handleCompleteDSRClick = async () => {
     try {
