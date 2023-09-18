@@ -1,7 +1,4 @@
 from os import getenv
-from typing import List
-
-from starlette.middleware.cors import CORSMiddleware
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 DEFAULT_CONFIG_PATH_ENV_VAR = "FIDES__CONFIG_PATH"

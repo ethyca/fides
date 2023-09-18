@@ -88,8 +88,6 @@ def reset_settings(
     logger.info("Resetting api-set application settings")
     update_config: Optional[ApplicationConfig] = ApplicationConfig.clear_api_set(db)
 
-    ConfigProxy(db).load_current_cors_domains_into_middleware(
-        request.app, resetDomains=True
-    )
+    ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
 
     return update_config.api_set if update_config else {}
