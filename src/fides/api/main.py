@@ -258,10 +258,7 @@ async def setup_server() -> None:
 
     log_startup()
 
-    await run_database_startup()
-
-    db = get_api_session()
-    ConfigProxy(db).load_current_cors_domains_into_middleware(app)
+    await run_database_startup(app)
 
     check_redis()
 

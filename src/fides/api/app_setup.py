@@ -46,6 +46,7 @@ from fides.api.util.endpoint_utils import fides_limiter
 from fides.api.util.errors import FidesError
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 VERSION = fides.__version__
 
@@ -138,7 +139,7 @@ def log_startup() -> None:
         CONFIG.log_all_config_values()
 
 
-async def run_database_startup() -> None:
+async def run_database_startup(app: FastAPI) -> None:
     """
     Perform all relevant database startup activities/configuration for the
     application webserver.
@@ -169,6 +170,15 @@ async def run_database_startup() -> None:
         raise FidesError(
             f"Error occurred writing config settings to database: {str(e)}"
         )
+    finally:
+        db.close()
+
+    logger.info("Loading CORS domains from ConfigProxy...")
+    try:
+        ConfigProxy(db).load_current_cors_domains_into_middleware(app)
+    except Exception as e:
+        logger.error("Error occured while loading CORS domains: {}", str(e))
+        raise FidesError(f"Error occured while loading CORS domains: {str(e)}")
     finally:
         db.close()
 
