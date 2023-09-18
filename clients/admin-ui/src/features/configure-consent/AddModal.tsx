@@ -14,18 +14,20 @@ import { ReactNode } from "react";
 import { useFeatures } from "~/features/common/features";
 import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
 
+type SuggestionsState = "showing" | "disabled";
+
 const AddModal = ({
   title,
   children,
   isOpen,
   onClose,
   onSuggestionClick,
-  suggestionsDisabled,
+  suggestionsState,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
   title: string;
   children: ReactNode;
   onSuggestionClick: () => void;
-  suggestionsDisabled?: boolean;
+  suggestionsState?: SuggestionsState;
 }) => {
   const features = useFeatures();
 
@@ -56,12 +58,20 @@ const AddModal = ({
             </Heading>
             {features.dictionaryService ? (
               <IconButton
-                icon={<SparkleIcon />}
+                icon={
+                  <SparkleIcon
+                    color={
+                      suggestionsState === "showing"
+                        ? "complimentary.500"
+                        : undefined
+                    }
+                  />
+                }
                 aria-label="See compass suggestions"
                 variant="outline"
                 borderColor="gray.200"
                 onClick={onSuggestionClick}
-                isDisabled={suggestionsDisabled}
+                isDisabled={suggestionsState === "disabled"}
               />
             ) : null}
           </Box>

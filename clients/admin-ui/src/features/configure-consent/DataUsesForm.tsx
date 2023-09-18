@@ -1,4 +1,4 @@
-import { Button, VStack } from "@fidesui/react";
+import { Button, Spinner, VStack } from "@fidesui/react";
 import { FieldArray, useFormikContext } from "formik";
 import { useEffect } from "react";
 
@@ -61,7 +61,7 @@ const DataUseBlock = ({
 const DataUsesForm = ({ showSuggestions }: { showSuggestions: boolean }) => {
   const { values, setFieldValue } = useFormikContext<FormValues>();
   const { vendor_id: vendorId } = values;
-  useGetDictionaryDataUsesQuery(
+  const { isLoading } = useGetDictionaryDataUsesQuery(
     { vendor_id: vendorId as string },
     { skip: !showSuggestions || vendorId == null }
   );
@@ -81,6 +81,11 @@ const DataUsesForm = ({ showSuggestions }: { showSuggestions: boolean }) => {
       setFieldValue("privacy_declarations", declarations);
     }
   }, [showSuggestions, values.vendor_id, dictDataUses, setFieldValue]);
+
+  if (isLoading) {
+    return <Spinner size="sm" alignSelf="center" />;
+  }
+
   return (
     <FieldArray
       name="privacy_declarations"

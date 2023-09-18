@@ -58,6 +58,11 @@ const AddVendor = () => {
   const [createSystemMutationTrigger] = useCreateSystemMutation();
   const [isShowingSuggestions, setIsShowingSuggestions] = useState(false);
 
+  const handleCloseModal = () => {
+    modal.onClose();
+    setIsShowingSuggestions(false);
+  };
+
   const handleSubmit = async (
     values: FormValues,
     helpers: FormikHelpers<FormValues>
@@ -98,7 +103,7 @@ const AddVendor = () => {
     }
     toast(successToastParams("Vendor successfully added!"));
     helpers.resetForm();
-    modal.onClose();
+    handleCloseModal();
   };
 
   const validationSchema = hasDictionary
@@ -116,72 +121,80 @@ const AddVendor = () => {
         onSubmit={handleSubmit}
         validationSchema={validationSchema}
       >
-        {({ dirty, values, isValid, resetForm }) => (
-          <AddModal
-            isOpen={modal.isOpen}
-            onClose={modal.onClose}
-            title="Add a vendor"
-            onSuggestionClick={() => {
-              setIsShowingSuggestions(true);
-            }}
-            suggestionsDisabled={values.vendor_id == null}
-          >
-            <Box data-testid="add-vendor-modal-content">
-              <Form>
-                <VStack alignItems="start">
-                  {hasDictionary ? (
-                    <CustomCreatableSelect
-                      id="vendor"
-                      name="vendor_id"
-                      label="Vendor"
-                      placeholder="Select a vendor"
-                      singleValueBlock
-                      options={dictionaryOptions}
-                      tooltip="Select the vendor that matches the system"
-                      isCustomOption
-                      variant="stacked"
-                      isRequired
-                    />
-                  ) : (
-                    <CustomTextInput
-                      id="name"
-                      name="name"
-                      isRequired
-                      label="Vendor name"
-                      tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                      variant="stacked"
-                    />
-                  )}
-                  <DataUsesForm showSuggestions={isShowingSuggestions} />
-                  <ButtonGroup
-                    size="sm"
-                    width="100%"
-                    justifyContent="space-between"
-                  >
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        modal.onClose();
-                        resetForm();
-                      }}
+        {({ dirty, values, isValid, resetForm }) => {
+          let suggestionsState;
+          if (values.vendor_id == null) {
+            suggestionsState = "disabled" as const;
+          } else if (isShowingSuggestions) {
+            suggestionsState = "showing" as const;
+          }
+          return (
+            <AddModal
+              isOpen={modal.isOpen}
+              onClose={modal.onClose}
+              title="Add a vendor"
+              onSuggestionClick={() => {
+                setIsShowingSuggestions(true);
+              }}
+              suggestionsState={suggestionsState}
+            >
+              <Box data-testid="add-vendor-modal-content">
+                <Form>
+                  <VStack alignItems="start">
+                    {hasDictionary ? (
+                      <CustomCreatableSelect
+                        id="vendor"
+                        name="vendor_id"
+                        label="Vendor"
+                        placeholder="Select a vendor"
+                        singleValueBlock
+                        options={dictionaryOptions}
+                        tooltip="Select the vendor that matches the system"
+                        isCustomOption
+                        variant="stacked"
+                        isRequired
+                      />
+                    ) : (
+                      <CustomTextInput
+                        id="name"
+                        name="name"
+                        isRequired
+                        label="Vendor name"
+                        tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                        variant="stacked"
+                      />
+                    )}
+                    <DataUsesForm showSuggestions={isShowingSuggestions} />
+                    <ButtonGroup
+                      size="sm"
+                      width="100%"
+                      justifyContent="space-between"
                     >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      isDisabled={isLoading || !dirty || !isValid}
-                      isLoading={isLoading}
-                      data-testid="save-btn"
-                    >
-                      Save vendor
-                    </Button>
-                  </ButtonGroup>
-                </VStack>
-              </Form>
-            </Box>
-          </AddModal>
-        )}
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          handleCloseModal();
+                          resetForm();
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        isDisabled={isLoading || !dirty || !isValid}
+                        isLoading={isLoading}
+                        data-testid="save-btn"
+                      >
+                        Save vendor
+                      </Button>
+                    </ButtonGroup>
+                  </VStack>
+                </Form>
+              </Box>
+            </AddModal>
+          );
+        }}
       </Formik>
     </>
   );
