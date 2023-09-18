@@ -26,19 +26,16 @@ import * as Yup from "yup";
 
 import { ManualInputData } from "./types";
 
-type ManualProcessingDetailProps = {
+type ManualAccessProcessingDetailProps = {
   connectorName: string;
   data: ManualInputData;
   isSubmitting: boolean;
   onSaveClick: (params: PatchUploadManualWebhookDataRequest) => void;
 };
 
-const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
-  connectorName,
-  data,
-  isSubmitting = false,
-  onSaveClick,
-}) => {
+const ManualAccessProcessingDetail: React.FC<
+  ManualAccessProcessingDetailProps
+> = ({ connectorName, data, isSubmitting = false, onSaveClick }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const firstField = useRef(null);
 
@@ -101,12 +98,12 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
             <DrawerContent>
               <DrawerCloseButton />
               <DrawerHeader color="gray.900">
-                <Text fontSize="xl" mb={4}>
+                <Text fontSize="xl" mb={8}>
                   {connectorName}
                 </Text>
                 <Divider />
-                <Text fontSize="md" mt="8">
-                  PII Requirements
+                <Text fontSize="md" mt="4">
+                  Manual access
                 </Text>
                 <Box mt="8px">
                   <Text color="gray.700" fontSize="sm" fontWeight="normal">
@@ -115,7 +112,7 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
                   </Text>
                 </Box>
               </DrawerHeader>
-              <DrawerBody mt="24px">
+              <DrawerBody>
                 <Form id="manual-detail-form" noValidate>
                   <VStack align="stretch" gap="16px">
                     {Object.entries(data.fields).map(([key], index) => (
@@ -180,4 +177,4 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
   );
 };
 
-export default ManualProcessingDetail;
+export default ManualAccessProcessingDetail;

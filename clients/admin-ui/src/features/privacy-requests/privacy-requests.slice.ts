@@ -15,7 +15,7 @@ import {
   ConfigStorageDetailsRequest,
   ConfigStorageSecretsDetailsRequest,
   DenyPrivacyRequest,
-  GetUpdloadedManualWebhookDataRequest,
+  GetUploadedManualWebhookDataRequest,
   MessagingConfigResponse,
   PatchUploadManualWebhookDataRequest,
   PrivacyRequestEntity,
@@ -305,12 +305,20 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         return cloneResponse;
       },
     }),
-    getUploadedManualWebhookData: build.query<
+    getUploadedManualAccessWebhookData: build.query<
       any,
-      GetUpdloadedManualWebhookDataRequest
+      GetUploadedManualWebhookDataRequest
     >({
       query: (params) => ({
         url: `privacy-request/${params.privacy_request_id}/access_manual_webhook/${params.connection_key}`,
+      }),
+    }),
+    getUploadedManualErasureWebhookData: build.query<
+      any,
+      GetUploadedManualWebhookDataRequest
+    >({
+      query: (params) => ({
+        url: `privacy-request/${params.privacy_request_id}/erasure_manual_webhook/${params.connection_key}`,
       }),
     }),
     resumePrivacyRequestFromRequiresInput: build.mutation<any, string>({
@@ -412,12 +420,22 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         body: params,
       }),
     }),
-    uploadManualWebhookData: build.mutation<
+    uploadManualAccessWebhookData: build.mutation<
       any,
       PatchUploadManualWebhookDataRequest
     >({
       query: (params) => ({
         url: `privacy-request/${params.privacy_request_id}/access_manual_webhook/${params.connection_key}`,
+        method: "PATCH",
+        body: params.body,
+      }),
+    }),
+    uploadManualErasureWebhookData: build.mutation<
+      any,
+      PatchUploadManualWebhookDataRequest
+    >({
+      query: (params) => ({
+        url: `privacy-request/${params.privacy_request_id}/erasure_manual_webhook/${params.connection_key}`,
         method: "PATCH",
         body: params.body,
       }),
@@ -431,11 +449,11 @@ export const {
   useDenyRequestMutation,
   useGetAllPrivacyRequestsQuery,
   useGetNotificationQuery,
-  useGetUploadedManualWebhookDataQuery,
   useResumePrivacyRequestFromRequiresInputMutation,
   useRetryMutation,
   useSaveNotificationMutation,
-  useUploadManualWebhookDataMutation,
+  useUploadManualAccessWebhookDataMutation,
+  useUploadManualErasureWebhookDataMutation,
   useGetStorageDetailsQuery,
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,

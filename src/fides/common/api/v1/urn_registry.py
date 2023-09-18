@@ -107,8 +107,11 @@ PRIVACY_REQUEST_MANUAL_ERASURE = "/privacy-request/{privacy_request_id}/erasure_
 PRIVACY_REQUEST_NOTIFICATIONS = "/privacy-request/notification"
 PRIVACY_REQUEST_RETRY = "/privacy-request/{privacy_request_id}/retry"
 REQUEST_PREVIEW = "/privacy-request/preview"
-PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT = (
+PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT = (
     "/privacy-request/{privacy_request_id}/access_manual_webhook/{connection_key}"
+)
+PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT = (
+    "/privacy-request/{privacy_request_id}/erasure_manual_webhook/{connection_key}"
 )
 PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT = (
     "/privacy-request/{privacy_request_id}/resume_from_requires_input"
