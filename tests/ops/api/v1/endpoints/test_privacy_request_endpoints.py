@@ -3989,7 +3989,7 @@ class TestResumePrivacyRequestFromRequiresInput:
         privacy_request_requires_input,
     ):
         auth_header = generate_auth_header([PRIVACY_REQUEST_CALLBACK_RESUME])
-        privacy_request_requires_input.cache_manual_webhook_input(
+        privacy_request_requires_input.cache_manual_webhook_access_input(
             access_manual_webhook,
             {},
         )

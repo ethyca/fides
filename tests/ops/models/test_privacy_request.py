@@ -611,13 +611,15 @@ class TestCacheEmailConnectorTemplateContents:
 
 
 class TestCacheManualWebhookInput:
-    def test_cache_manual_webhook_input(self, privacy_request, access_manual_webhook):
+    def test_cache_manual_webhook_access_input(
+        self, privacy_request, access_manual_webhook
+    ):
         with pytest.raises(NoCachedManualWebhookEntry):
             privacy_request.get_manual_webhook_access_input_strict(
                 access_manual_webhook
             )
 
-        privacy_request.cache_manual_webhook_input(
+        privacy_request.cache_manual_webhook_access_input(
             manual_webhook=access_manual_webhook,
             input_data={"email": "customer-1@example.com", "last_name": "Customer"},
         )
@@ -630,7 +632,7 @@ class TestCacheManualWebhookInput:
         }
 
     def test_cache_no_fields_supplied(self, privacy_request, access_manual_webhook):
-        privacy_request.cache_manual_webhook_input(
+        privacy_request.cache_manual_webhook_access_input(
             manual_webhook=access_manual_webhook,
             input_data={},
         )
@@ -643,7 +645,7 @@ class TestCacheManualWebhookInput:
         }, "Missing fields persisted as None"
 
     def test_cache_some_fields_supplied(self, privacy_request, access_manual_webhook):
-        privacy_request.cache_manual_webhook_input(
+        privacy_request.cache_manual_webhook_access_input(
             manual_webhook=access_manual_webhook,
             input_data={
                 "email": "customer-1@example.com",
@@ -661,7 +663,7 @@ class TestCacheManualWebhookInput:
         self, privacy_request, access_manual_webhook
     ):
         with pytest.raises(ValidationError):
-            privacy_request.cache_manual_webhook_input(
+            privacy_request.cache_manual_webhook_access_input(
                 manual_webhook=access_manual_webhook,
                 input_data={
                     "email": "customer-1@example.com",
@@ -678,7 +680,7 @@ class TestCacheManualWebhookInput:
         access_manual_webhook.save(db)
 
         with pytest.raises(ValidationError):
-            privacy_request.cache_manual_webhook_input(
+            privacy_request.cache_manual_webhook_access_input(
                 manual_webhook=access_manual_webhook,
                 input_data={"email": "customer-1@example.com", "last_name": "Customer"},
             )
@@ -688,7 +690,7 @@ class TestCacheManualWebhookInput:
     ):
         """Test the use case where new fields have been added to the webhook definition
         since the webhook data was saved to the privacy request"""
-        privacy_request.cache_manual_webhook_input(
+        privacy_request.cache_manual_webhook_access_input(
             manual_webhook=access_manual_webhook,
             input_data={"last_name": "Customer", "email": "jane@example.com"},
         )
@@ -708,7 +710,7 @@ class TestCacheManualWebhookInput:
     ):
         """Test the use case where fields have been removed from the webhook definition
         since the webhook data was saved to the privacy request"""
-        privacy_request.cache_manual_webhook_input(
+        privacy_request.cache_manual_webhook_access_input(
             manual_webhook=access_manual_webhook,
             input_data={"last_name": "Customer", "email": "jane@example.com"},
         )
@@ -727,7 +729,7 @@ class TestCacheManualWebhookInput:
         self, db, privacy_request, access_manual_webhook
     ):
         """Test non-strict retrieval, we ignore extra fields saved and serialize missing fields as None"""
-        privacy_request.cache_manual_webhook_input(
+        privacy_request.cache_manual_webhook_access_input(
             manual_webhook=access_manual_webhook,
             input_data={"email": "customer-1@example.com", "last_name": "Customer"},
         )

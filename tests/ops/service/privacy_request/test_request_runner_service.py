@@ -2138,7 +2138,7 @@ class TestPrivacyRequestsManualWebhooks:
         privacy_request_requires_input: PrivacyRequest,
         db,
     ):
-        privacy_request_requires_input.cache_manual_webhook_input(
+        privacy_request_requires_input.cache_manual_webhook_access_input(
             access_manual_webhook,
             {"email": "customer-1@example.com"},
         )
@@ -2167,7 +2167,7 @@ class TestPrivacyRequestsManualWebhooks:
         privacy_request_requires_input: PrivacyRequest,
         db,
     ):
-        privacy_request_requires_input.cache_manual_webhook_input(
+        privacy_request_requires_input.cache_manual_webhook_access_input(
             access_manual_webhook,
             {},
         )
