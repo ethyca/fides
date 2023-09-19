@@ -62,13 +62,11 @@ describe("Consent configuration", () => {
       cy.getByTestId("subrow-cell_0_Cookie name").contains("N/A");
       cy.getByTestId("subrow-cell_0_Data use").contains("N/A");
       cy.getByTestId("subrow-cell_1_Cookie name").contains("_ga");
-      cy.getByTestId("subrow-cell_1_Data use").contains(
-        "Advertising, Marketing or Promotion"
-      );
+      cy.getByTestId("subrow-cell_1_Data use").contains("advertising");
       cy.getByTestId("subrow-cell_2_Cookie name").contains("cookie");
-      cy.getByTestId("subrow-cell_2_Data use").contains("System");
+      cy.getByTestId("subrow-cell_2_Data use").contains("Improve Service");
       cy.getByTestId("subrow-cell_3_Cookie name").contains("cookie2");
-      cy.getByTestId("subrow-cell_3_Data use").contains("System");
+      cy.getByTestId("subrow-cell_3_Data use").contains("Improve Service");
 
       cy.getByTestId("add-cookie-btn");
       cy.getByTestId("add-vendor-btn");
