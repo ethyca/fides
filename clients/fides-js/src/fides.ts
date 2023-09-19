@@ -68,6 +68,7 @@ import {
   ConsentMethod,
   SaveConsentPreference,
   ConsentMechanism,
+  EmptyExperience,
 } from "./lib/consent-types";
 import {
   constructFidesRegionString,
@@ -75,6 +76,7 @@ import {
   experienceIsValid,
   transformConsentToFidesUserPreference,
   validateOptions,
+  isPrivacyExperience,
 } from "./lib/consent-utils";
 import { dispatchFidesEvent } from "./lib/events";
 import { fetchExperience } from "./services/fides/api";
@@ -85,7 +87,7 @@ import { resolveConsentValue } from "./lib/consent-value";
 
 export type Fides = {
   consent: CookieKeyConsent;
-  experience?: PrivacyExperience;
+  experience?: PrivacyExperience | EmptyExperience;
   geolocation?: UserGeolocation;
   options: FidesOptions;
   fides_meta: CookieMeta;
@@ -133,7 +135,7 @@ const automaticallyApplyGPCPreferences = (
   fidesRegionString: string | null,
   fidesApiUrl: string,
   debug: boolean,
-  effectiveExperience?: PrivacyExperience | null
+  effectiveExperience?: PrivacyExperience
 ) => {
   if (!effectiveExperience || !effectiveExperience.privacy_notices) {
     return;
@@ -216,7 +218,7 @@ const init = async ({
     _Fides.geolocation = geolocation;
     _Fides.options = options;
     _Fides.initialized = true;
-    if (experience) {
+    if (isPrivacyExperience(experience)) {
       // at this point, pre-fetched experience contains no user consent, so we populate with the Fides cookie
       updateExperienceFromCookieConsent(experience, cookie, options.debug);
     }
@@ -225,7 +227,7 @@ const init = async ({
   }
 
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
-  let effectiveExperience: PrivacyExperience | undefined | null = experience;
+  let effectiveExperience = experience;
   let fidesRegionString: string | null = null;
 
   if (shouldInitOverlay) {
@@ -249,7 +251,8 @@ const init = async ({
         `User location could not be obtained. Skipping overlay initialization.`
       );
       shouldInitOverlay = false;
-    } else if (!effectiveExperience) {
+      // if the experience object is null or empty from the server, we should fetch client side
+    } else if (!isPrivacyExperience(experience)) {
       effectiveExperience = await fetchExperience(
         fidesRegionString,
         options.fidesApiUrl,
@@ -258,13 +261,10 @@ const init = async ({
       );
     }
 
-    if (
-      effectiveExperience &&
-      experienceIsValid(effectiveExperience, options)
-    ) {
+    if (experienceIsValid(effectiveExperience, options)) {
       // Overwrite cookie consent with experience-based consent values
       cookie.consent = buildCookieConsentForExperiences(
-        effectiveExperience,
+        effectiveExperience as PrivacyExperience,
         context,
         options.debug
       );
@@ -279,7 +279,7 @@ const init = async ({
       }
     }
   }
-  if (shouldInitOverlay) {
+  if (shouldInitOverlay && isPrivacyExperience(effectiveExperience)) {
     automaticallyApplyGPCPreferences(
       cookie,
       fidesRegionString,
