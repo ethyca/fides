@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.20.0...main)
 
+### Added
+- "Add a vendor" flow to configuring consent page [#4107](https://github.com/ethyca/fides/pull/4107)
+
 ### Changed
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
 

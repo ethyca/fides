@@ -1,0 +1,598 @@
+{
+  "items": [
+    {
+      "vendor_id": "780",
+      "vendor_name": "Aniview LTD",
+      "data_use": "marketing.advertising.profiling",
+      "data_categories": [
+        "user.device.ip_address",
+        "user.device",
+        "user.sensor",
+        "user.user_sensor",
+        "user.telemetry",
+        "user.device.cookie_id",
+        "user.device.device_id",
+        "user.device.cookie",
+        "user.behavior.purchase_history",
+        "user.behavior",
+        "user.behavior.browsing_history",
+        "user.behavior.media_consumption",
+        "user.behavior.search_history",
+        "user.social",
+        "user.location.imprecise"
+      ],
+      "features": [
+        "Receive and use automatically-sent device characteristics for identification"
+      ],
+      "legal_basis_for_processing": "Consent",
+      "retention_period": 4320,
+      "purpose": 3,
+      "special_purpose": null,
+      "cookies": [
+        {
+          "identifier": "av_*",
+          "type": "web",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "**"
+        },
+        {
+          "identifier": "aniC",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        },
+        {
+          "identifier": "2_C_*",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        }
+      ]
+    },
+    {
+      "vendor_id": "780",
+      "vendor_name": "Aniview LTD",
+      "data_use": "functional.storage",
+      "data_categories": [
+        "user.device.ip_address",
+        "user.device",
+        "user.sensor",
+        "user.user_sensor",
+        "user.telemetry",
+        "user.device.cookie_id",
+        "user.device.device_id",
+        "user.device.cookie",
+        "user.behavior.purchase_history",
+        "user.behavior",
+        "user.behavior.browsing_history",
+        "user.behavior.media_consumption",
+        "user.behavior.search_history",
+        "user.social",
+        "user.location.imprecise"
+      ],
+      "features": [
+        "Receive and use automatically-sent device characteristics for identification"
+      ],
+      "legal_basis_for_processing": "Consent",
+      "retention_period": 4320,
+      "purpose": 1,
+      "special_purpose": null,
+      "cookies": [
+        {
+          "identifier": "av_*",
+          "type": "web",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "**"
+        },
+        {
+          "identifier": "aniC",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        },
+        {
+          "identifier": "2_C_*",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        }
+      ]
+    },
+    {
+      "vendor_id": "780",
+      "vendor_name": "Aniview LTD",
+      "data_use": "analytics.reporting.ad_performance",
+      "data_categories": [
+        "user.device.ip_address",
+        "user.device",
+        "user.sensor",
+        "user.user_sensor",
+        "user.telemetry",
+        "user.device.cookie_id",
+        "user.device.device_id",
+        "user.device.cookie",
+        "user.behavior.purchase_history",
+        "user.behavior",
+        "user.behavior.browsing_history",
+        "user.behavior.media_consumption",
+        "user.behavior.search_history",
+        "user.social",
+        "user.location.imprecise"
+      ],
+      "features": [
+        "Receive and use automatically-sent device characteristics for identification"
+      ],
+      "legal_basis_for_processing": "Consent",
+      "retention_period": 4320,
+      "purpose": 7,
+      "special_purpose": null,
+      "cookies": [
+        {
+          "identifier": "av_*",
+          "type": "web",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "**"
+        },
+        {
+          "identifier": "aniC",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        },
+        {
+          "identifier": "2_C_*",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        }
+      ]
+    },
+    {
+      "vendor_id": "780",
+      "vendor_name": "Aniview LTD",
+      "data_use": "analytics.reporting.campaign_insights",
+      "data_categories": [
+        "user.device.ip_address",
+        "user.device",
+        "user.sensor",
+        "user.user_sensor",
+        "user.telemetry",
+        "user.device.cookie_id",
+        "user.device.device_id",
+        "user.device.cookie",
+        "user.behavior.purchase_history",
+        "user.behavior",
+        "user.behavior.browsing_history",
+        "user.behavior.media_consumption",
+        "user.behavior.search_history",
+        "user.social",
+        "user.location.imprecise"
+      ],
+      "features": [
+        "Receive and use automatically-sent device characteristics for identification"
+      ],
+      "legal_basis_for_processing": "Consent",
+      "retention_period": 4320,
+      "purpose": 9,
+      "special_purpose": null,
+      "cookies": []
+    },
+    {
+      "vendor_id": "780",
+      "vendor_name": "Aniview LTD",
+      "data_use": "marketing.advertising.first_party.targeted",
+      "data_categories": [
+        "user.device.ip_address",
+        "user.device",
+        "user.sensor",
+        "user.user_sensor",
+        "user.telemetry",
+        "user.device.cookie_id",
+        "user.device.device_id",
+        "user.device.cookie",
+        "user.behavior.purchase_history",
+        "user.behavior",
+        "user.behavior.browsing_history",
+        "user.behavior.media_consumption",
+        "user.behavior.search_history",
+        "user.social",
+        "user.location.imprecise"
+      ],
+      "features": [
+        "Receive and use automatically-sent device characteristics for identification"
+      ],
+      "legal_basis_for_processing": "Consent",
+      "retention_period": 4320,
+      "purpose": 4,
+      "special_purpose": null,
+      "cookies": [
+        {
+          "identifier": "av_*",
+          "type": "web",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "**"
+        },
+        {
+          "identifier": "aniC",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        },
+        {
+          "identifier": "2_C_*",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        }
+      ]
+    },
+    {
+      "vendor_id": "780",
+      "vendor_name": "Aniview LTD",
+      "data_use": "functional.service.improve",
+      "data_categories": [
+        "user.device.ip_address",
+        "user.device",
+        "user.sensor",
+        "user.user_sensor",
+        "user.telemetry",
+        "user.device.cookie_id",
+        "user.device.device_id",
+        "user.device.cookie",
+        "user.behavior.purchase_history",
+        "user.behavior",
+        "user.behavior.browsing_history",
+        "user.behavior.media_consumption",
+        "user.behavior.search_history",
+        "user.social",
+        "user.location.imprecise"
+      ],
+      "features": [
+        "Receive and use automatically-sent device characteristics for identification"
+      ],
+      "legal_basis_for_processing": "Consent",
+      "retention_period": 4320,
+      "purpose": 10,
+      "special_purpose": null,
+      "cookies": []
+    },
+    {
+      "vendor_id": "780",
+      "vendor_name": "Aniview LTD",
+      "data_use": "analytics.reporting.content_performance",
+      "data_categories": [
+        "user.device.ip_address",
+        "user.device",
+        "user.sensor",
+        "user.user_sensor",
+        "user.telemetry",
+        "user.device.cookie_id",
+        "user.device.device_id",
+        "user.device.cookie",
+        "user.behavior.purchase_history",
+        "user.behavior",
+        "user.behavior.browsing_history",
+        "user.behavior.media_consumption",
+        "user.behavior.search_history",
+        "user.social",
+        "user.location.imprecise"
+      ],
+      "features": [
+        "Receive and use automatically-sent device characteristics for identification"
+      ],
+      "legal_basis_for_processing": "Consent",
+      "retention_period": 4320,
+      "purpose": 8,
+      "special_purpose": null,
+      "cookies": []
+    },
+    {
+      "vendor_id": "780",
+      "vendor_name": "Aniview LTD",
+      "data_use": "essential.fraud_detection",
+      "data_categories": [
+        "user.device.ip_address",
+        "user.device",
+        "user.sensor",
+        "user.user_sensor",
+        "user.telemetry",
+        "user.device.cookie_id",
+        "user.device.device_id",
+        "user.device.cookie",
+        "user.behavior.purchase_history",
+        "user.behavior",
+        "user.behavior.browsing_history",
+        "user.behavior.media_consumption",
+        "user.behavior.search_history",
+        "user.social",
+        "user.location.imprecise"
+      ],
+      "features": [
+        "Receive and use automatically-sent device characteristics for identification"
+      ],
+      "legal_basis_for_processing": "Legitimate Interests",
+      "retention_period": 4320,
+      "purpose": null,
+      "special_purpose": 1,
+      "cookies": []
+    },
+    {
+      "vendor_id": "780",
+      "vendor_name": "Aniview LTD",
+      "data_use": "essential.service.security",
+      "data_categories": [
+        "user.device.ip_address",
+        "user.device",
+        "user.sensor",
+        "user.user_sensor",
+        "user.telemetry",
+        "user.device.cookie_id",
+        "user.device.device_id",
+        "user.device.cookie",
+        "user.behavior.purchase_history",
+        "user.behavior",
+        "user.behavior.browsing_history",
+        "user.behavior.media_consumption",
+        "user.behavior.search_history",
+        "user.social",
+        "user.location.imprecise"
+      ],
+      "features": [
+        "Receive and use automatically-sent device characteristics for identification"
+      ],
+      "legal_basis_for_processing": "Legitimate Interests",
+      "retention_period": 4320,
+      "purpose": null,
+      "special_purpose": 1,
+      "cookies": []
+    },
+    {
+      "vendor_id": "780",
+      "vendor_name": "Aniview LTD",
+      "data_use": "marketing.advertising.negative_targeting",
+      "data_categories": [
+        "user.device.ip_address",
+        "user.device",
+        "user.sensor",
+        "user.user_sensor",
+        "user.telemetry",
+        "user.device.cookie_id",
+        "user.device.device_id",
+        "user.device.cookie",
+        "user.behavior.purchase_history",
+        "user.behavior",
+        "user.behavior.browsing_history",
+        "user.behavior.media_consumption",
+        "user.behavior.search_history",
+        "user.social",
+        "user.location.imprecise"
+      ],
+      "features": [
+        "Receive and use automatically-sent device characteristics for identification"
+      ],
+      "legal_basis_for_processing": "Consent",
+      "retention_period": 4320,
+      "purpose": 2,
+      "special_purpose": null,
+      "cookies": [
+        {
+          "identifier": "av_*",
+          "type": "web",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "**"
+        },
+        {
+          "identifier": "aniC",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        },
+        {
+          "identifier": "2_C_*",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        }
+      ]
+    },
+    {
+      "vendor_id": "780",
+      "vendor_name": "Aniview LTD",
+      "data_use": "marketing.advertising.first_party.contextual",
+      "data_categories": [
+        "user.device.ip_address",
+        "user.device",
+        "user.sensor",
+        "user.user_sensor",
+        "user.telemetry",
+        "user.device.cookie_id",
+        "user.device.device_id",
+        "user.device.cookie",
+        "user.behavior.purchase_history",
+        "user.behavior",
+        "user.behavior.browsing_history",
+        "user.behavior.media_consumption",
+        "user.behavior.search_history",
+        "user.social",
+        "user.location.imprecise"
+      ],
+      "features": [
+        "Receive and use automatically-sent device characteristics for identification"
+      ],
+      "legal_basis_for_processing": "Consent",
+      "retention_period": 4320,
+      "purpose": 2,
+      "special_purpose": null,
+      "cookies": [
+        {
+          "identifier": "av_*",
+          "type": "web",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "**"
+        },
+        {
+          "identifier": "aniC",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        },
+        {
+          "identifier": "2_C_*",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        }
+      ]
+    },
+    {
+      "vendor_id": "780",
+      "vendor_name": "Aniview LTD",
+      "data_use": "marketing.advertising.frequency_capping",
+      "data_categories": [
+        "user.device.ip_address",
+        "user.device",
+        "user.sensor",
+        "user.user_sensor",
+        "user.telemetry",
+        "user.device.cookie_id",
+        "user.device.device_id",
+        "user.device.cookie",
+        "user.behavior.purchase_history",
+        "user.behavior",
+        "user.behavior.browsing_history",
+        "user.behavior.media_consumption",
+        "user.behavior.search_history",
+        "user.social",
+        "user.location.imprecise"
+      ],
+      "features": [
+        "Receive and use automatically-sent device characteristics for identification"
+      ],
+      "legal_basis_for_processing": "Consent",
+      "retention_period": 4320,
+      "purpose": 2,
+      "special_purpose": null,
+      "cookies": [
+        {
+          "identifier": "av_*",
+          "type": "web",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "**"
+        },
+        {
+          "identifier": "aniC",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        },
+        {
+          "identifier": "2_C_*",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        }
+      ]
+    },
+    {
+      "vendor_id": "780",
+      "vendor_name": "Aniview LTD",
+      "data_use": "marketing.advertising.third_party.targeted",
+      "data_categories": [
+        "user.device.ip_address",
+        "user.device",
+        "user.sensor",
+        "user.user_sensor",
+        "user.telemetry",
+        "user.device.cookie_id",
+        "user.device.device_id",
+        "user.device.cookie",
+        "user.behavior.purchase_history",
+        "user.behavior",
+        "user.behavior.browsing_history",
+        "user.behavior.media_consumption",
+        "user.behavior.search_history",
+        "user.social",
+        "user.location.imprecise"
+      ],
+      "features": [
+        "Receive and use automatically-sent device characteristics for identification"
+      ],
+      "legal_basis_for_processing": "Consent",
+      "retention_period": 4320,
+      "purpose": 4,
+      "special_purpose": null,
+      "cookies": [
+        {
+          "identifier": "av_*",
+          "type": "web",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "**"
+        },
+        {
+          "identifier": "aniC",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        },
+        {
+          "identifier": "2_C_*",
+          "type": "cookie",
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "vendor_id": "780",
+          "domains": "*.aniview.com*.aniview.com"
+        }
+      ]
+    }
+  ],
+  "total": 13,
+  "page": 1,
+  "size": 1000,
+  "pages": 1
+}

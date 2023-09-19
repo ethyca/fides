@@ -261,7 +261,7 @@ const plusApi = baseApi.injectEndpoints({
     }),
     getDictionaryDataUses: build.query<
       Page<DictDataUse>,
-      { vendor_id: number }
+      { vendor_id: string }
     >({
       query: ({ vendor_id }) => ({
         params: { size: 1000 },
@@ -421,7 +421,7 @@ export const selectAllCustomFieldDefinitions = createSelector(
 export type DictOption = {
   label: string;
   value: string;
-  descriptiong?: string;
+  description?: string;
 };
 
 const EMPTY_DICT_ENTRIES: DictOption[] = [];
@@ -432,13 +432,13 @@ export const selectAllDictEntries = createSelector(
   ],
   (RootState, { data }) =>
     data
-      ? (data.items
+      ? data.items
           .map((d) => ({
             label: d.display_name ? d.display_name : d.legal_name,
             value: d.id,
             description: d.description ? d.description : undefined,
           }))
-          .sort((a, b) => (a.label > b.label ? 1 : -1)) as DictOption[])
+          .sort((a, b) => (a.label > b.label ? 1 : -1))
       : EMPTY_DICT_ENTRIES
 );
 
@@ -455,7 +455,7 @@ export const selectDictEntry = (vendorId: string) =>
 
 const EMPTY_DATA_USES: DictDataUse[] = [];
 
-export const selectDictDataUses = (vendorId: number) =>
+export const selectDictDataUses = (vendorId: string) =>
   createSelector(
     [
       (state) => state,
