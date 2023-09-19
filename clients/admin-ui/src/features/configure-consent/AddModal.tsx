@@ -37,7 +37,7 @@ const AddModal = ({
       onClose={onClose}
       isCentered
       scrollBehavior="inside"
-      size="lg"
+      size="xl"
     >
       <ModalOverlay />
       <ModalContent textAlign="left" p={0}>
