@@ -102,6 +102,10 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
     vendor_id: formValues.vendor_id,
     ingress: formValues.ingress,
     egress: formValues.egress,
+    meta: formValues.meta,
+    fidesctl_meta: formValues.fidesctl_meta,
+    organization_fides_key: formValues.organization_fides_key,
+    dpa_progress: formValues.dpa_progress,
   };
 
   if (!formValues.processes_personal_data) {
