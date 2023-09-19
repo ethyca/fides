@@ -2,6 +2,7 @@ import { ConsentContext } from "./consent-context";
 import {
   ComponentType,
   ConsentMechanism,
+  EmptyExperience,
   FidesOptions,
   GpcStatus,
   PrivacyExperience,
@@ -25,6 +26,21 @@ export const debugLog = (
     // eslint-disable-next-line no-console
     console.log(...args);
   }
+};
+
+/**
+ * Returns true if privacy experience is null or empty
+ */
+export const isPrivacyExperience = (
+  obj: PrivacyExperience | undefined | EmptyExperience
+): obj is PrivacyExperience => {
+  if (!obj) {
+    return false;
+  }
+  if ("id" in obj) {
+    return true;
+  }
+  return false;
 };
 
 /**
@@ -141,13 +157,13 @@ export const validateOptions = (options: FidesOptions): boolean => {
  * Determines whether experience is valid and relevant notices exist within the experience
  */
 export const experienceIsValid = (
-  effectiveExperience: PrivacyExperience | undefined | null,
+  effectiveExperience: PrivacyExperience | undefined | EmptyExperience,
   options: FidesOptions
 ): boolean => {
-  if (!effectiveExperience) {
+  if (!isPrivacyExperience(effectiveExperience)) {
     debugLog(
       options.debug,
-      `No relevant experience found. Skipping overlay initialization.`
+      "No relevant experience found. Skipping overlay initialization."
     );
     return false;
   }
@@ -170,8 +186,7 @@ export const experienceIsValid = (
   ) {
     debugLog(
       options.debug,
-      `No relevant notices in the privacy experience. Skipping overlay initialization.`,
-      effectiveExperience
+      `Privacy experience has no notices. Skipping overlay initialization.`
     );
     return false;
   }
