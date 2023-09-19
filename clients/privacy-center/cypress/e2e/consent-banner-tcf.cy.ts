@@ -40,11 +40,11 @@ const VENDOR_2 = {
 };
 const STACK_1 = {
   id: 7,
-  name: "Personalised ads display, ad measurement, and audience insights",
+  name: "Selection of personalised advertising, advertising measurement, and audience research",
 };
 const STACK_2 = {
   id: 28,
-  name: "Personalised ads and content display",
+  name: "Selection of personalised advertising and content",
 };
 const FEATURE_1 = {
   id: 1,
@@ -156,15 +156,10 @@ describe("Fides-js TCF", () => {
 
     it("can render purposes in the initial layer as a stack", () => {
       cy.get("span").contains(STACK_1.name);
-      cy.get("span").contains(STACK_2.name);
+      cy.get("span").contains(PURPOSE_3.name);
 
       cy.get("span").contains(STACK_1.name).click();
       [PURPOSE_1.id, PURPOSE_2.id, PURPOSE_4.id, PURPOSE_5.id].forEach((id) => {
-        cy.get("li").contains(`Purpose ${id}`);
-      });
-
-      cy.get("span").contains(STACK_1.name).click();
-      [PURPOSE_5.id, PURPOSE_1.id, PURPOSE_3.id].forEach((id) => {
         cy.get("li").contains(`Purpose ${id}`);
       });
     });
