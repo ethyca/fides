@@ -19,6 +19,13 @@ The types of changes are:
 
 ### Added
 - Initial TCF Backend Support [#3804](https://github.com/ethyca/fides/pull/3804)
+- Add initial layer to TCF modal [#3956](https://github.com/ethyca/fides/pull/3956)
+- Support for rendering in the TCF modal whether or not a vendor is part of the GVL [#3972](https://github.com/ethyca/fides/pull/3972)
+- Features and legal bases dropdown for TCF modal [#3995](https://github.com/ethyca/fides/pull/3995)
+- TCF CMP stub API [#4000](https://github.com/ethyca/fides/pull/4000)
+- Fides-js can now display preliminary TCF data [#3879](https://github.com/ethyca/fides/pull/3879)
+- Fides-js can persist TCF preferences to the backend [#3887](https://github.com/ethyca/fides/pull/3887)
+- TCF modal now supports setting legitimate interest fields [#4037](https://github.com/ethyca/fides/pull/4037)
 
 ### Changed
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
@@ -121,6 +128,7 @@ The types of changes are:
 - Simplified the file structure for HTML DSR packages [#3848](https://github.com/ethyca/fides/pull/3848)
 - Simplified the database health check to improve `/health` performance [#3884](https://github.com/ethyca/fides/pull/3884)
 - Changed max width of form components in "system information" form tab [#3864](https://github.com/ethyca/fides/pull/3864)
+- Refactored `fides.js` components so that they can take data structures that are not necessarily privacy notices [#3870](https://github.com/ethyca/fides/pull/3870)
 - Remove manual system selection screen [#3865](https://github.com/ethyca/fides/pull/3865)
 - System and integration identifiers are now auto-generated [#3868](https://github.com/ethyca/fides/pull/3868)
 

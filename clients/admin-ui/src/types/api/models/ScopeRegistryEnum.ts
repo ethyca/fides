@@ -31,6 +31,8 @@ export enum ScopeRegistryEnum {
   CONNECTION_TYPE_READ = "connection_type:read",
   CONNECTOR_TEMPLATE_REGISTER = "connector_template:register",
   CONSENT_READ = "consent:read",
+  CONSENT_SETTINGS_READ = "consent_settings:read",
+  CONSENT_SETTINGS_UPDATE = "consent_settings:update",
   CTL_DATASET_CREATE = "ctl_dataset:create",
   CTL_DATASET_DELETE = "ctl_dataset:delete",
   CTL_DATASET_READ = "ctl_dataset:read",

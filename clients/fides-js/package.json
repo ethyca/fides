@@ -26,6 +26,8 @@
     "directory": "clients/fides-js"
   },
   "dependencies": {
+    "@iabtechlabtcf/cmpapi": "^1.5.8",
+    "@iabtechlabtcf/core": "^1.5.7",
     "a11y-dialog": "^7.5.2",
     "preact": "^10.13.2",
     "react": "^17.0.2",
@@ -35,6 +37,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^5.0.0",
+    "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@types/node": "^18.16.3",
     "@types/uuid": "^9.0.1",
