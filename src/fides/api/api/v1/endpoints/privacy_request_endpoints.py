@@ -1382,7 +1382,7 @@ def upload_manual_webhook_access_data(
     if not privacy_request.status == PrivacyRequestStatus.requires_input:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid access manual webhook upload request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
+            detail=f"Invalid manual webhook access upload request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
     try:
@@ -1429,7 +1429,7 @@ def upload_manual_webhook_erasure_data(
     if not privacy_request.status == PrivacyRequestStatus.requires_input:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid manual erasure webhook upload request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
+            detail=f"Invalid manual webhook erasure upload request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
     try:
@@ -1548,7 +1548,7 @@ def view_uploaded_manual_webhook_data(
     if not privacy_request.status == PrivacyRequestStatus.requires_input:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid access manual webhook upload request: privacy request "
+            detail=f"Invalid manual webhook access upload request: privacy request "
             f"'{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
@@ -1606,7 +1606,7 @@ def view_uploaded_erasure_manual_webhook_data(
     if not privacy_request.status == PrivacyRequestStatus.requires_input:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid erasure manual webhook upload request: privacy request "
+            detail=f"Invalid manual webhook erasure upload request: privacy request "
             f"'{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
@@ -1626,7 +1626,7 @@ def view_uploaded_erasure_manual_webhook_data(
         NoCachedManualWebhookEntry,
     ) as exc:
         logger.info(exc)
-        data = privacy_request.get_erasure_manual_webhook_input_non_strict(
+        data = privacy_request.get_manual_webhook_erasure_input_non_strict(
             manual_webhook=manual_webhook
         )
         checked = False

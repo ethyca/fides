@@ -650,7 +650,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
         """
         cache: FidesopsRedis = get_cache()
-        parsed_data = manual_webhook.fields_schema.parse_obj(input_data)
+        parsed_data = manual_webhook.erasure_fields_schema.parse_obj(input_data)
 
         cache.set_encoded_object(
             f"WEBHOOK_MANUAL_ERASURE_INPUT__{self.id}__{manual_webhook.id}",
@@ -699,10 +699,12 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         )
 
         if cached_results:
-            data: Dict[str, Any] = manual_webhook.fields_schema.parse_obj(
+            data: Dict[str, Any] = manual_webhook.erasure_fields_schema.parse_obj(
                 cached_results
             ).dict(exclude_unset=True)
-            if set(data.keys()) != set(manual_webhook.fields_schema.__fields__.keys()):
+            if set(data.keys()) != set(
+                manual_webhook.erasure_fields_schema.__fields__.keys()
+            ):
                 raise ManualWebhookFieldsUnset(
                     f"Fields unset for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
                 )
@@ -728,7 +730,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             ).dict()
         return manual_webhook.empty_fields_dict
 
-    def get_erasure_manual_webhook_input_non_strict(
+    def get_manual_webhook_erasure_input_non_strict(
         self, manual_webhook: AccessManualWebhook
     ) -> Dict[str, Any]:
         """Retrieves manual webhook fields saved to the privacy request in non-strict mode.
@@ -740,7 +742,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             privacy_request=self, manual_webhook=manual_webhook
         )
         if cached_results:
-            return manual_webhook.fields_non_strict_schema.parse_obj(
+            return manual_webhook.erasure_fields_non_strict_schema.parse_obj(
                 cached_results
             ).dict()
         return manual_webhook.empty_fields_dict

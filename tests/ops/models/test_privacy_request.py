@@ -610,7 +610,7 @@ class TestCacheEmailConnectorTemplateContents:
         ]
 
 
-class TestCacheManualWebhookInput:
+class TestCacheManualWebhookAccessInput:
     def test_cache_manual_webhook_access_input(
         self, privacy_request, access_manual_webhook
     ):
@@ -744,12 +744,156 @@ class TestCacheManualWebhookInput:
         ]
         access_manual_webhook.save(db)
 
-        overlap_input = privacy_request.get_manual_webhook_input_non_strict(
+        overlap_input = privacy_request.get_manual_webhook_access_input_non_strict(
             access_manual_webhook
         )
         assert overlap_input == {
             "first_name": None,
             "last_name": "Customer",
+            "phone": None,
+        }, "Ignores 'email' field saved to privacy request"
+
+
+class TestCacheManualWebhookErasureInput:
+    def test_cache_manual_webhook_erasure_input(
+        self, privacy_request, access_manual_webhook
+    ):
+        with pytest.raises(NoCachedManualWebhookEntry):
+            privacy_request.get_manual_webhook_erasure_input_strict(
+                access_manual_webhook
+            )
+
+        privacy_request.cache_manual_webhook_erasure_input(
+            manual_webhook=access_manual_webhook,
+            input_data={"email": False, "last_name": True},
+        )
+
+        assert privacy_request.get_manual_webhook_erasure_input_strict(
+            access_manual_webhook
+        ) == {
+            "email": False,
+            "last_name": True,
+        }
+
+    def test_cache_no_fields_supplied(self, privacy_request, access_manual_webhook):
+        privacy_request.cache_manual_webhook_erasure_input(
+            manual_webhook=access_manual_webhook,
+            input_data={},
+        )
+
+        assert privacy_request.get_manual_webhook_erasure_input_strict(
+            access_manual_webhook
+        ) == {
+            "email": None,
+            "last_name": None,
+        }, "Missing fields persisted as None"
+
+    def test_cache_some_fields_supplied(self, privacy_request, access_manual_webhook):
+        privacy_request.cache_manual_webhook_erasure_input(
+            manual_webhook=access_manual_webhook,
+            input_data={
+                "email": False,
+            },
+        )
+
+        assert privacy_request.get_manual_webhook_erasure_input_strict(
+            access_manual_webhook
+        ) == {
+            "email": False,
+            "last_name": None,
+        }, "Missing fields saved as None"
+
+    def test_cache_extra_fields_not_in_webhook_specs(
+        self, privacy_request, access_manual_webhook
+    ):
+        with pytest.raises(ValidationError):
+            privacy_request.cache_manual_webhook_erasure_input(
+                manual_webhook=access_manual_webhook,
+                input_data={
+                    "email": False,
+                    "bad_field": "not_specified",
+                },
+            )
+
+    def test_cache_manual_webhook_no_fields_defined(
+        self, db, privacy_request, access_manual_webhook
+    ):
+        access_manual_webhook.fields = (
+            None  # Specifically testing the None case to cover our bases
+        )
+        access_manual_webhook.save(db)
+
+        with pytest.raises(ValidationError):
+            privacy_request.cache_manual_webhook_erasure_input(
+                manual_webhook=access_manual_webhook,
+                input_data={"email": False, "last_name": True},
+            )
+
+    def test_fields_added_to_webhook_definition(
+        self, db, privacy_request, access_manual_webhook
+    ):
+        """Test the use case where new fields have been added to the webhook definition
+        since the webhook data was saved to the privacy request"""
+        privacy_request.cache_manual_webhook_erasure_input(
+            manual_webhook=access_manual_webhook,
+            input_data={"last_name": True, "email": False},
+        )
+
+        access_manual_webhook.fields.append(
+            {"pii_field": "Phone", "dsr_package_label": "phone"}
+        )
+        access_manual_webhook.save(db)
+
+        with pytest.raises(ManualWebhookFieldsUnset):
+            privacy_request.get_manual_webhook_erasure_input_strict(
+                access_manual_webhook
+            )
+
+    def test_fields_removed_from_webhook_definition(
+        self, db, privacy_request, access_manual_webhook
+    ):
+        """Test the use case where fields have been removed from the webhook definition
+        since the webhook data was saved to the privacy request"""
+        privacy_request.cache_manual_webhook_erasure_input(
+            manual_webhook=access_manual_webhook,
+            input_data={"last_name": True, "email": False},
+        )
+
+        access_manual_webhook.fields = [
+            {"pii_field": "last_name", "dsr_package_label": "last_name"}
+        ]
+        access_manual_webhook.save(db)
+
+        with pytest.raises(ValidationError):
+            privacy_request.get_manual_webhook_erasure_input_strict(
+                access_manual_webhook
+            )
+
+    def test_non_strict_retrieval_from_cache(
+        self, db, privacy_request, access_manual_webhook
+    ):
+        """Test non-strict retrieval, we ignore extra fields saved and serialize missing fields as None"""
+        privacy_request.cache_manual_webhook_erasure_input(
+            manual_webhook=access_manual_webhook,
+            input_data={"email": False, "last_name": True},
+        )
+
+        access_manual_webhook.fields = [  # email field deleted
+            {"pii_field": "First Name", "dsr_package_label": "first_name"},  # New Field
+            {
+                "pii_field": "Last Name",
+                "dsr_package_label": "last_name",
+            },  # Existing Field
+            {"pii_field": "Phone", "dsr_package_label": "phone"},  # New Field
+        ]
+        access_manual_webhook.save(db)
+
+        overlap_input = privacy_request.get_manual_webhook_erasure_input_non_strict(
+            access_manual_webhook
+        )
+        assert overlap_input == {
+            "first_name": None,
+            "last_name": True,
             "phone": None,
         }, "Ignores 'email' field saved to privacy request"
 
