@@ -36,6 +36,7 @@ The types of changes are:
 - Updated to support Fideslang 2.0, including data migrations [#3933](https://github.com/ethyca/fides/pull/3933)
 - Disable notices that are not systems applicable to support new UI [#4094](https://github.com/ethyca/fides/issues/4094)
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
+- Allows CDN to cache empty experience responses from fides.js API  [#4113](https://github.com/ethyca/fides/pull/4113)
 
 ### Fixed
 
