@@ -106,7 +106,7 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
     fidesctl_meta: formValues.fidesctl_meta,
     registry_id: formValues.registry_id,
     organization_fides_key: formValues.organization_fides_key,
-    dpa_progress: formValues.dpa_progress
+    dpa_progress: formValues.dpa_progress,
   };
 
   if (!formValues.processes_personal_data) {
