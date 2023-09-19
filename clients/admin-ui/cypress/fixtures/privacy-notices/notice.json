@@ -6,7 +6,7 @@
   "origin": null,
   "regions": ["fr", "ie"],
   "consent_mechanism": "notice_only",
-  "data_uses": ["provide.service"],
+  "data_uses": ["essential"],
   "enforcement_level": "not_applicable",
   "disabled": false,
   "has_gpc_flag": false,
