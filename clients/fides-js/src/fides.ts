@@ -68,6 +68,7 @@ import {
   ConsentMethod,
   SaveConsentPreference,
   ConsentMechanism,
+  EmptyExperience,
 } from "./lib/consent-types";
 import {
   constructFidesRegionString,
@@ -231,7 +232,8 @@ const init = async ({
   }
 
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
-  let effectiveExperience: PrivacyExperience | undefined | {} = experience;
+  let effectiveExperience: PrivacyExperience | undefined | EmptyExperience =
+    experience;
   let fidesRegionString: string | null = null;
 
   if (shouldInitOverlay) {

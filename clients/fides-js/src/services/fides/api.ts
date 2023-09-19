@@ -1,5 +1,6 @@
 import {
   ComponentType,
+  EmptyExperience,
   LastServedNoticeSchema,
   NoticesServedRequest,
   PrivacyExperience,
@@ -22,7 +23,7 @@ export const fetchExperience = async (
   fidesApiUrl: string,
   debug: boolean,
   fidesUserDeviceId?: string | null
-): Promise<PrivacyExperience | {}> => {
+): Promise<PrivacyExperience | EmptyExperience> => {
   debugLog(
     debug,
     `Fetching experience for userId: ${fidesUserDeviceId} in location: ${userLocationString}`

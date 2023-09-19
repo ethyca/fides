@@ -37,12 +37,11 @@ export const isEmptyExperience = (obj: unknown): obj is EmptyExperience =>
  * Returns true if privacy experience has notices
  */
 export const experienceHasNotices = (
-  experience: PrivacyExperience | undefined | {}
+  experience: PrivacyExperience | undefined | EmptyExperience
 ): boolean =>
   Boolean(
     experience &&
       !isEmptyExperience(experience) &&
-      // fixme: how to tell ts that privacy_notices exists on experience?
       experience.privacy_notices &&
       experience.privacy_notices.length > 0
   );
@@ -161,17 +160,16 @@ export const validateOptions = (options: FidesOptions): boolean => {
  * Determines whether experience is valid and relevant notices exist within the experience
  */
 export const experienceIsValid = (
-  effectiveExperience: PrivacyExperience | undefined | {},
+  effectiveExperience: PrivacyExperience | undefined | EmptyExperience,
   options: FidesOptions
 ): boolean => {
-  if (!experienceHasNotices(effectiveExperience)) {
+  if (!effectiveExperience || !experienceHasNotices(effectiveExperience)) {
     debugLog(
       options.debug,
       `Privacy experience has no notices. Skipping overlay initialization.`
     );
     return false;
   }
-  // @ts-ignore
   if (effectiveExperience.component !== ComponentType.OVERLAY) {
     debugLog(
       options.debug,
@@ -179,7 +177,6 @@ export const experienceIsValid = (
     );
     return false;
   }
-  // @ts-ignore
   if (!effectiveExperience.experience_config) {
     debugLog(
       options.debug,

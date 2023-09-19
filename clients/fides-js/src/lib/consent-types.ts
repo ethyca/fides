@@ -1,4 +1,4 @@
-export type EmptyExperience = {};
+export type EmptyExperience = Record<PropertyKey, never>;
 
 export interface FidesConfig {
   // Set the consent defaults from a "legacy" Privacy Center config.json.
