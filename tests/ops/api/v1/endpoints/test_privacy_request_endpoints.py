@@ -3974,7 +3974,7 @@ class TestGetManualWebhookAccessInputs:
         response = api_client.get(url, headers=auth_header)
         assert (
             response.json()["detail"]
-            == f"Invalid manual webhook erasure upload request: privacy request '{privacy_request.id}' status = in_processing."
+            == f"Invalid manual webhook access upload request: privacy request '{privacy_request.id}' status = in_processing."
         )
 
     def test_no_manual_webhook_data_exists(
