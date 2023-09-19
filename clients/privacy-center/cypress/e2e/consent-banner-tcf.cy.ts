@@ -42,10 +42,6 @@ const STACK_1 = {
   id: 7,
   name: "Selection of personalised advertising, advertising measurement, and audience research",
 };
-const STACK_2 = {
-  id: 28,
-  name: "Selection of personalised advertising and content",
-};
 const FEATURE_1 = {
   id: 1,
   name: "Match and combine offline data sources",
