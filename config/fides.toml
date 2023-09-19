@@ -16,7 +16,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "1030e9a8a35b0b14fb2d9335ee8f5116" # string
+analytics_id = "93865fb6e2ac40f153b3b3d0c5c8434f" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -117,6 +117,13 @@ task_retry_count = 0 # integer
 
 # The delays between retries in seconds.
 task_retry_delay = 1 # integer
+
+# Allows the collection of custom privacy request fields from incoming
+# privacy requests.
+allow_custom_privacy_request_field_collection = false # boolean
+
+# Allows custom privacy request fields to be used in request execution.
+allow_custom_privacy_request_fields_in_request_execution = false # boolean
 
 #-------------#
 #-- LOGGING --#
