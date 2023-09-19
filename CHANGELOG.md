@@ -35,6 +35,7 @@ The types of changes are:
 ### Fixed
 - Ensures that fides.js toggles are not hidden by other CSS libs [#4075](https://github.com/ethyca/fides/pull/4075)
 - Avoid un-optimized query pattern in bulk `GET /system` endpoint [#4120](https://github.com/ethyca/fides/pull/4120)
+- Allows CDN to cache empty experience responses from fides.js API  [#4113](https://github.com/ethyca/fides/pull/4113)
 
 ## [2.19.1](https://github.com/ethyca/fides/compare/2.19.0...2.19.1)
 

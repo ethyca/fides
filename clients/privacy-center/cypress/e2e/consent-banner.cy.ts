@@ -48,7 +48,7 @@ const stubConfig = (
           : Object.assign(config.consent, consent),
       experience:
         experience === OVERRIDE.EMPTY
-          ? undefined
+          ? {}
           : Object.assign(config.experience, experience),
       geolocation:
         geolocation === OVERRIDE.EMPTY
