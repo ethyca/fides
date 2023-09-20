@@ -318,7 +318,7 @@ class TestPatchApplicationConfig:
         assert response.status_code == 200
 
         assert set(cors_middleware[0].options["allow_origins"]) == set(
-            [*cors_middleware[1], *payload["security"]["cors_origins"]]
+            payload["security"]["cors_origins"]
         )
 
     def test_patch_application_config_invalid_notification_type(
@@ -633,12 +633,10 @@ class TestDeleteApplicationConfig:
         # Check the app config direcitly to make sure it's reset and
         # by proxy check that the CORS domains are reset.
         # The middleware isn't checked directly because it's
-        # possible that the config set will still have some 
+        # possible that the config set will still have some
         # domains and when the `api_set` is reset the middleware
         # will still have the `config_set` domains loaded in.
         assert ApplicationConfig.get_api_set(db) == {}
-        
-
 
 
 class TestGetConnections:
