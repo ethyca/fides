@@ -24,7 +24,7 @@ interface Props {
   allDataUses: DataUse[];
   onCancel: () => void;
   onAccept: (suggestions: DictDataUse[]) => void;
-  vendorId: number;
+  vendorId: string;
 }
 
 const PrivacyDeclarationDictModalComponents = ({
