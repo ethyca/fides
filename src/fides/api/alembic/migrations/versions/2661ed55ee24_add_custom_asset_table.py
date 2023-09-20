@@ -31,16 +31,14 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column(
-            "asset_type", sa.Enum("fides_css", name="customassettype"), nullable=False
-        ),
+        sa.Column("key", sa.Enum("fides_css", name="customassettype"), nullable=False),
         sa.Column("content", sa.Text(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_plus_custom_asset_asset_type"),
+        op.f("ix_plus_custom_asset_key"),
         "plus_custom_asset",
-        ["asset_type"],
+        ["key"],
         unique=True,
     )
     op.create_index(
@@ -50,7 +48,5 @@ def upgrade():
 
 def downgrade():
     op.drop_index(op.f("ix_plus_custom_asset_id"), table_name="plus_custom_asset")
-    op.drop_index(
-        op.f("ix_plus_custom_asset_asset_type"), table_name="plus_custom_asset"
-    )
+    op.drop_index(op.f("ix_plus_custom_asset_key"), table_name="plus_custom_asset")
     op.drop_table("plus_custom_asset")
