@@ -152,6 +152,7 @@ const init = async (config: FidesConfig) => {
   }
   const updatedFides = await initialize({
     ...config,
+    experience: _Fides.experience,
     cookie,
     renderOverlay,
     updateCookie: (oldCookie, experience) =>
@@ -191,6 +192,7 @@ _Fides = {
   },
   fides_meta: {},
   identity: {},
+  tcfConsent: {},
   gtm,
   init,
   initialized: false,

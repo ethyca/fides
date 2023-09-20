@@ -83,7 +83,12 @@ const init = async (config: FidesConfig) => {
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
     dispatchFidesEvent("FidesUpdated", cookie, config.options.debug);
   }
-  const updatedFides = await initialize({ ...config, cookie, renderOverlay });
+  const updatedFides = await initialize({
+    ...config,
+    experience: _Fides.experience,
+    cookie,
+    renderOverlay,
+  });
   Object.assign(_Fides, updatedFides);
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial
@@ -116,6 +121,7 @@ _Fides = {
   },
   fides_meta: {},
   identity: {},
+  tcfConsent: {},
   gtm,
   init,
   initialized: false,
