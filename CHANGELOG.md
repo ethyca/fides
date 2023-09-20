@@ -18,6 +18,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.20.0...main)
 
 ### Added
+- "Add a vendor" flow to configuring consent page [#4107](https://github.com/ethyca/fides/pull/4107)
 - Initial TCF Backend Support [#3804](https://github.com/ethyca/fides/pull/3804)
 - Add initial layer to TCF modal [#3956](https://github.com/ethyca/fides/pull/3956)
 - Support for rendering in the TCF modal whether or not a vendor is part of the GVL [#3972](https://github.com/ethyca/fides/pull/3972)
@@ -29,9 +30,11 @@ The types of changes are:
 
 ### Changed
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
+- Refactored `fides.js` components so that they can take data structures that are not necessarily privacy notices [#3870](https://github.com/ethyca/fides/pull/3870)
 
 ### Fixed
 - Allows CDN to cache empty experience responses from fides.js API  [#4113](https://github.com/ethyca/fides/pull/4113)
+- Avoid un-optimized query pattern in bulk `GET /system` endpoint [#4120](https://github.com/ethyca/fides/pull/4120)
 
 ## [2.20.0](https://github.com/ethyca/fides/compare/2.19.1...2.20.0)
 
@@ -128,7 +131,6 @@ The types of changes are:
 - Simplified the file structure for HTML DSR packages [#3848](https://github.com/ethyca/fides/pull/3848)
 - Simplified the database health check to improve `/health` performance [#3884](https://github.com/ethyca/fides/pull/3884)
 - Changed max width of form components in "system information" form tab [#3864](https://github.com/ethyca/fides/pull/3864)
-- Refactored `fides.js` components so that they can take data structures that are not necessarily privacy notices [#3870](https://github.com/ethyca/fides/pull/3870)
 - Remove manual system selection screen [#3865](https://github.com/ethyca/fides/pull/3865)
 - System and integration identifiers are now auto-generated [#3868](https://github.com/ethyca/fides/pull/3868)
 
