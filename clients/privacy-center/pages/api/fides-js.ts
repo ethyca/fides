@@ -85,25 +85,19 @@ export default async function handler(
     environment.settings.IS_OVERLAY_ENABLED &&
     environment.settings.IS_PREFETCH_ENABLED
   ) {
-    if (tcfEnabled) {
-      console.warn(
-        "TCF mode is not currently compatible with prefetching, skipping prefetching..."
-      );
-    } else {
-      const fidesRegionString = constructFidesRegionString(geolocation);
+    const fidesRegionString = constructFidesRegionString(geolocation);
 
-      if (fidesRegionString) {
-        if (environment.settings.DEBUG) {
-          console.log("Fetching relevant experiences from server-side...");
-        }
-        experience = await fetchExperience(
-          fidesRegionString,
-          environment.settings.SERVER_SIDE_FIDES_API_URL ||
-            environment.settings.FIDES_API_URL,
-          environment.settings.DEBUG,
-          null
-        );
+    if (fidesRegionString) {
+      if (environment.settings.DEBUG) {
+        console.log("Fetching relevant experiences from server-side...");
       }
+      experience = await fetchExperience(
+        fidesRegionString,
+        environment.settings.SERVER_SIDE_FIDES_API_URL ||
+          environment.settings.FIDES_API_URL,
+        environment.settings.DEBUG,
+        null
+      );
     }
   }
 
