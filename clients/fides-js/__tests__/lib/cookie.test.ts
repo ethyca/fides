@@ -20,7 +20,13 @@ import {
   PrivacyExperience,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
-import { TcfCookieConsent, TcfSavePreferences } from "~/lib/tcf/types";
+import {
+  TCFPurposeRecord,
+  TCFVendorRecord,
+  TcfCookieConsent,
+  TcfExperienceRecords,
+  TcfSavePreferences,
+} from "../../src/lib/tcf/types";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
@@ -382,28 +388,239 @@ describe("transformTcfPreferencesToCookieKeys", () => {
 });
 
 describe("updateExperienceFromCookieConsent", () => {
+  const baseCookie = makeFidesCookie();
+
+  // Notice test data
+  const notices = [
+    { notice_key: "one" },
+    { notice_key: "two" },
+    { notice_key: "three" },
+  ] as PrivacyExperience["privacy_notices"];
+  const experienceWithNotices = {
+    privacy_notices: notices,
+  } as PrivacyExperience;
+
+  // TCF test data
+  const purposeRecords = [
+    { id: 1 },
+    { id: 2 },
+    { id: 3 },
+  ] as TCFPurposeRecord[];
+  const featureRecords = [
+    { id: 4 },
+    { id: 5 },
+    { id: 6 },
+  ] as TCFPurposeRecord[];
+  const vendorRecords = [
+    { id: "1111" },
+    { id: "ctl_test_system" },
+  ] as TCFVendorRecord[];
+  const experienceWithTcf = {
+    tcf_purposes: purposeRecords,
+    tcf_special_purposes: purposeRecords,
+    tcf_features: featureRecords,
+    tcf_special_features: featureRecords,
+    tcf_vendors: vendorRecords,
+    tcf_systems: vendorRecords,
+  } as unknown as PrivacyExperience;
+
   describe("notices", () => {
-    const notices = [
-      { notice_key: "one" },
-      { notice_key: "two" },
-      { notice_key: "three" },
-    ] as PrivacyExperience["privacy_notices"];
     it("can handle an empty cookie", () => {
-      const experience = { privacy_notices: notices } as PrivacyExperience;
-      const cookie = { consent: {}, tcfConsent: {} } as FidesCookie;
+      const cookie = { ...baseCookie, consent: {} };
       const updatedExperience = updateExperienceFromCookieConsent({
-        experience,
+        experience: experienceWithNotices,
         cookie,
       });
-      const results = updatedExperience.privacy_notices?.map((n) => ({
-        notice_key: n.notice_key,
-        current_preference: n.current_preference,
-      }));
-      expect(results).toEqual([
+      expect(updatedExperience.privacy_notices).toEqual([
         { notice_key: "one", current_preference: undefined },
         { notice_key: "two", current_preference: undefined },
         { notice_key: "three", current_preference: undefined },
       ]);
+    });
+
+    it("can handle updating preferences", () => {
+      const cookie = { ...baseCookie, consent: { one: true, two: false } };
+      const updatedExperience = updateExperienceFromCookieConsent({
+        experience: experienceWithNotices,
+        cookie,
+      });
+      expect(updatedExperience.privacy_notices).toEqual([
+        { notice_key: "one", current_preference: UserConsentPreference.OPT_IN },
+        {
+          notice_key: "two",
+          current_preference: UserConsentPreference.OPT_OUT,
+        },
+        { notice_key: "three", current_preference: undefined },
+      ]);
+    });
+
+    it("can handle when cookie has values not in the experience", () => {
+      const cookie = {
+        ...baseCookie,
+        consent: { one: true, two: false, fake: true },
+      };
+      const updatedExperience = updateExperienceFromCookieConsent({
+        experience: experienceWithNotices,
+        cookie,
+      });
+      expect(updatedExperience.privacy_notices).toEqual([
+        { notice_key: "one", current_preference: UserConsentPreference.OPT_IN },
+        {
+          notice_key: "two",
+          current_preference: UserConsentPreference.OPT_OUT,
+        },
+        { notice_key: "three", current_preference: undefined },
+      ]);
+    });
+  });
+
+  describe("tcf", () => {
+    it("can handle an empty tcf cookie", () => {
+      const updatedExperience = updateExperienceFromCookieConsent({
+        experience: experienceWithTcf,
+        cookie: baseCookie,
+      });
+      expect(updatedExperience.tcf_purposes).toEqual([
+        { id: 1, current_preference: undefined },
+        {
+          id: 2,
+          current_preference: undefined,
+        },
+        { id: 3, current_preference: undefined },
+      ]);
+    });
+
+    it("can handle updating preferences", () => {
+      const cookie = {
+        ...baseCookie,
+        tcfConsent: {
+          purpose_preferences: {
+            1: true,
+            2: false,
+          },
+          system_preferences: {
+            1111: true,
+            ctl_test_system: false,
+          },
+        },
+      };
+      const updatedExperience = updateExperienceFromCookieConsent({
+        experience: experienceWithTcf,
+        cookie,
+      });
+      expect(updatedExperience.tcf_purposes).toEqual([
+        { id: 1, current_preference: UserConsentPreference.OPT_IN },
+        {
+          id: 2,
+          current_preference: UserConsentPreference.OPT_OUT,
+        },
+        { id: 3, current_preference: undefined },
+      ]);
+      expect(updatedExperience.tcf_systems).toEqual([
+        { id: "1111", current_preference: UserConsentPreference.OPT_IN },
+        {
+          id: "ctl_test_system",
+          current_preference: UserConsentPreference.OPT_OUT,
+        },
+      ]);
+      // The rest should be undefined
+      const keys: Array<keyof TcfExperienceRecords> = [
+        "tcf_special_purposes",
+        "tcf_features",
+        "tcf_special_features",
+        "tcf_vendors",
+      ];
+      keys.forEach((key) => {
+        updatedExperience[key]?.forEach((f) => {
+          expect(f.current_preference).toEqual(undefined);
+        });
+      });
+    });
+
+    it("can handle when cookie has values not in the experience", () => {
+      const cookie = {
+        ...baseCookie,
+        tcfConsent: {
+          purpose_preferences: {
+            1: true,
+            2: false,
+            555: false,
+          },
+        },
+      };
+      const updatedExperience = updateExperienceFromCookieConsent({
+        experience: experienceWithTcf,
+        cookie,
+      });
+      expect(updatedExperience.tcf_purposes).toEqual([
+        { id: 1, current_preference: UserConsentPreference.OPT_IN },
+        {
+          id: 2,
+          current_preference: UserConsentPreference.OPT_OUT,
+        },
+        { id: 3, current_preference: undefined },
+      ]);
+
+      // The rest should be undefined
+      const keys: Array<keyof TcfExperienceRecords> = [
+        "tcf_special_purposes",
+        "tcf_features",
+        "tcf_special_features",
+        "tcf_vendors",
+        "tcf_systems",
+      ];
+      keys.forEach((key) => {
+        updatedExperience[key]?.forEach((f) => {
+          expect(f.current_preference).toEqual(undefined);
+        });
+      });
+    });
+  });
+  it("can handle both notices and tcf", () => {
+    const experience = { ...experienceWithNotices, ...experienceWithTcf };
+    const cookie = {
+      ...baseCookie,
+      consent: { one: true, two: false },
+      tcfConsent: {
+        purpose_preferences: {
+          1: true,
+          2: false,
+        },
+      },
+    };
+    const updatedExperience = updateExperienceFromCookieConsent({
+      experience,
+      cookie,
+    });
+    expect(updatedExperience.privacy_notices).toEqual([
+      { notice_key: "one", current_preference: UserConsentPreference.OPT_IN },
+      {
+        notice_key: "two",
+        current_preference: UserConsentPreference.OPT_OUT,
+      },
+      { notice_key: "three", current_preference: undefined },
+    ]);
+    expect(updatedExperience.tcf_purposes).toEqual([
+      { id: 1, current_preference: UserConsentPreference.OPT_IN },
+      {
+        id: 2,
+        current_preference: UserConsentPreference.OPT_OUT,
+      },
+      { id: 3, current_preference: undefined },
+    ]);
+
+    // The rest should be undefined
+    const keys: Array<keyof TcfExperienceRecords> = [
+      "tcf_special_purposes",
+      "tcf_features",
+      "tcf_special_features",
+      "tcf_vendors",
+      "tcf_systems",
+    ];
+    keys.forEach((key) => {
+      updatedExperience[key]?.forEach((f) => {
+        expect(f.current_preference).toEqual(undefined);
+      });
     });
   });
 });

@@ -1,17 +1,8 @@
-import { PrivacyExperience } from "../consent-types";
-import { TcfModelType } from "./types";
+import { TcfExperienceRecords, TcfModelType } from "./types";
 
 export const TCF_COOKIE_KEY_TO_EXPERIENCE_KEY: {
   cookieKey: TcfModelType;
-  experienceKey: keyof Pick<
-    PrivacyExperience,
-    | "tcf_purposes"
-    | "tcf_special_purposes"
-    | "tcf_features"
-    | "tcf_special_features"
-    | "tcf_vendors"
-    | "tcf_systems"
-  >;
+  experienceKey: keyof TcfExperienceRecords;
 }[] = [
   { cookieKey: "purpose_preferences", experienceKey: "tcf_purposes" },
   {

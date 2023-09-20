@@ -17,11 +17,7 @@ import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "./consent-utils";
-import type {
-  TcfCookieConsent,
-  TcfModelType,
-  TcfSavePreferences,
-} from "./tcf/types";
+import type { TcfCookieConsent, TcfSavePreferences } from "./tcf/types";
 import { TCF_COOKIE_KEY_TO_EXPERIENCE_KEY } from "./tcf/constants";
 
 /**
@@ -291,19 +287,21 @@ export const updateExperienceFromCookieConsent = ({
     tcf_systems: experience.tcf_systems,
   };
 
-  TCF_COOKIE_KEY_TO_EXPERIENCE_KEY.forEach(({ cookieKey, experienceKey }) => {
-    const cookieConsent = cookie.tcfConsent[cookieKey] ?? {};
-    // @ts-ignore the array map should ensure we will get the right record type
-    tcfEntities[experienceKey] = experience[experienceKey]?.map((p) => {
-      const preference = Object.hasOwn(cookieConsent, p.id)
-        ? transformConsentToFidesUserPreference(
-            Boolean(cookieConsent[p.id]),
-            ConsentMechanism.OPT_IN
-          )
-        : undefined;
-      return { ...p, current_preference: preference };
+  if (cookie.tcfConsent) {
+    TCF_COOKIE_KEY_TO_EXPERIENCE_KEY.forEach(({ cookieKey, experienceKey }) => {
+      const cookieConsent = cookie.tcfConsent[cookieKey] ?? {};
+      // @ts-ignore the array map should ensure we will get the right record type
+      tcfEntities[experienceKey] = experience[experienceKey]?.map((p) => {
+        const preference = Object.hasOwn(cookieConsent, p.id)
+          ? transformConsentToFidesUserPreference(
+              Boolean(cookieConsent[p.id]),
+              ConsentMechanism.OPT_IN
+            )
+          : undefined;
+        return { ...p, current_preference: preference };
+      });
     });
-  });
+  }
 
   if (debug) {
     debugLog(

@@ -1,4 +1,5 @@
 import type {
+  PrivacyExperience,
   PrivacyPreferencesRequest,
   UserConsentPreference,
 } from "../consent-types";
@@ -135,6 +136,16 @@ export type TcfSavePreferences = Pick<
   | "special_feature_preferences"
   | "vendor_preferences"
   | "system_preferences"
+>;
+
+export type TcfExperienceRecords = Pick<
+  PrivacyExperience,
+  | "tcf_purposes"
+  | "tcf_special_purposes"
+  | "tcf_features"
+  | "tcf_special_features"
+  | "tcf_vendors"
+  | "tcf_systems"
 >;
 
 type TcfCookieKeyConsent = {
