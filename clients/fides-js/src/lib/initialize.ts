@@ -38,6 +38,7 @@ import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
+import { TcfCookieConsent } from "./tcf/types";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -46,6 +47,7 @@ export type Fides = {
   tcString?: string | undefined;
   options: FidesOptions;
   fides_meta: CookieMeta;
+  tcfConsent: TcfCookieConsent;
   gtm: typeof gtm;
   identity: CookieIdentity;
   init: (config: FidesConfig) => Promise<void>;
@@ -166,11 +168,11 @@ export const getInitialFides = ({
   let updatedExperience = experience;
   if (isPrivacyExperience(experience)) {
     // at this point, pre-fetched experience contains no user consent, so we populate with the Fides cookie
-    updatedExperience = updateExperienceFromCookieConsent(
+    updatedExperience = updateExperienceFromCookieConsent({
       experience,
       cookie,
-      options.debug
-    );
+      debug: options.debug,
+    });
   }
 
   return {
@@ -178,6 +180,7 @@ export const getInitialFides = ({
     fides_meta: cookie.fides_meta,
     identity: cookie.identity,
     experience: updatedExperience,
+    tcfConsent: cookie.tcfConsent,
     geolocation,
     options,
     initialized: true,

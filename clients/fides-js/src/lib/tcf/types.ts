@@ -137,6 +137,21 @@ export type TcfSavePreferences = Pick<
   | "system_preferences"
 >;
 
+type TcfCookieKeyConsent = {
+  [id: string | number]: boolean | undefined;
+};
+
+export interface TcfCookieConsent {
+  purpose_preferences?: TcfCookieKeyConsent;
+  special_purpose_preferences?: TcfCookieKeyConsent;
+  feature_preferences?: TcfCookieKeyConsent;
+  special_feature_preferences?: TcfCookieKeyConsent;
+  vendor_preferences?: TcfCookieKeyConsent;
+  system_preferences?: TcfCookieKeyConsent;
+}
+
+export type TcfModelType = keyof TcfCookieConsent;
+
 export enum LegalBasisForProcessingEnum {
   CONSENT = "Consent",
   CONTRACT = "Contract",

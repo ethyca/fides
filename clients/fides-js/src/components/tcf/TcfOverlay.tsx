@@ -30,7 +30,10 @@ import { updateConsentPreferences } from "../../lib/preferences";
 import { ConsentMethod, PrivacyExperience } from "../../lib/consent-types";
 import TcfModalContent from "./TcfModalContent";
 import { generateTcString } from "../../lib/tcf";
-import { FidesCookie } from "../../lib/cookie";
+import {
+  FidesCookie,
+  transformTcfPreferencesToCookieKeys,
+} from "../../lib/cookie";
 
 const resolveConsentValueFromTcfModel = (
   model: TCFPurposeRecord | TCFFeatureRecord | TCFVendorRecord
@@ -140,12 +143,16 @@ const updateCookie = async (
   oldCookie: FidesCookie,
   tcf: TcfSavePreferences,
   experience: PrivacyExperience
-) => {
+): Promise<FidesCookie> => {
   const tcString = await generateTcString({
     tcStringPreferences: tcf,
     experience,
   });
-  return { ...oldCookie, tcString };
+  return {
+    ...oldCookie,
+    tcString,
+    tcfConsent: transformTcfPreferencesToCookieKeys(tcf),
+  };
 };
 
 const TcfOverlay: FunctionComponent<OverlayProps> = ({
