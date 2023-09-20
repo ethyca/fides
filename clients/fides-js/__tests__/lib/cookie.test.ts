@@ -10,9 +10,17 @@ import {
   makeFidesCookie,
   removeCookiesFromBrowser,
   saveFidesCookie,
+  transformTcfPreferencesToCookieKeys,
+  updateExperienceFromCookieConsent,
 } from "../../src/lib/cookie";
 import type { ConsentContext } from "../../src/lib/consent-context";
-import { Cookies, LegacyConsentConfig } from "../../src/lib/consent-types";
+import {
+  Cookies,
+  LegacyConsentConfig,
+  PrivacyExperience,
+  UserConsentPreference,
+} from "../../src/lib/consent-types";
+import { TcfCookieConsent, TcfSavePreferences } from "~/lib/tcf/types";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
@@ -63,6 +71,7 @@ describe("makeFidesCookie", () => {
       identity: {
         fides_user_device_id: MOCK_UUID,
       },
+      tcfConsent: {},
     });
   });
 
@@ -322,4 +331,79 @@ describe("removeCookiesFromBrowser", () => {
       });
     }
   );
+});
+
+describe("transformTcfPreferencesToCookieKeys", () => {
+  it("can handle empty preferences", () => {
+    const preferences: TcfSavePreferences = { purpose_preferences: [] };
+    const expected: TcfCookieConsent = {
+      purpose_preferences: {},
+      special_purpose_preferences: {},
+      feature_preferences: {},
+      special_feature_preferences: {},
+      vendor_preferences: {},
+      system_preferences: {},
+    };
+    expect(transformTcfPreferencesToCookieKeys(preferences)).toEqual(expected);
+  });
+
+  it("can transform", () => {
+    const preferences: TcfSavePreferences = {
+      purpose_preferences: [
+        { id: 1, preference: UserConsentPreference.OPT_IN },
+      ],
+      special_purpose_preferences: [
+        { id: 23, preference: UserConsentPreference.OPT_OUT },
+      ],
+      feature_preferences: [
+        { id: 1, preference: UserConsentPreference.OPT_IN },
+        { id: 2, preference: UserConsentPreference.OPT_OUT },
+      ],
+      special_feature_preferences: [
+        { id: 1, preference: UserConsentPreference.OPT_IN },
+      ],
+      vendor_preferences: [
+        { id: "1111", preference: UserConsentPreference.OPT_OUT },
+      ],
+      system_preferences: [
+        { id: "ctl_test_system", preference: UserConsentPreference.OPT_IN },
+      ],
+    };
+    const expected: TcfCookieConsent = {
+      purpose_preferences: { 1: true },
+      special_purpose_preferences: { 23: false },
+      feature_preferences: { 1: true, 2: false },
+      special_feature_preferences: { 1: true },
+      vendor_preferences: { 1111: false },
+      system_preferences: { ctl_test_system: true },
+    };
+    expect(transformTcfPreferencesToCookieKeys(preferences)).toEqual(expected);
+  });
+});
+
+describe("updateExperienceFromCookieConsent", () => {
+  describe("notices", () => {
+    const notices = [
+      { notice_key: "one" },
+      { notice_key: "two" },
+      { notice_key: "three" },
+    ] as PrivacyExperience["privacy_notices"];
+    it("can handle an empty cookie", () => {
+      const experience = { privacy_notices: notices } as PrivacyExperience;
+      const cookie = { consent: {}, tcfConsent: {} } as FidesCookie;
+      const updatedExperience = updateExperienceFromCookieConsent({
+        experience,
+        cookie,
+      });
+      const results = updatedExperience.privacy_notices?.map((n) => ({
+        notice_key: n.notice_key,
+        current_preference: n.current_preference,
+      }));
+      expect(results).toEqual([
+        { notice_key: "one", current_preference: undefined },
+        { notice_key: "two", current_preference: undefined },
+        { notice_key: "three", current_preference: undefined },
+      ]);
+    });
+  });
 });
