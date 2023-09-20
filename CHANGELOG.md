@@ -19,9 +19,18 @@ The types of changes are:
 
 ### Added
 - "Add a vendor" flow to configuring consent page [#4107](https://github.com/ethyca/fides/pull/4107)
+- Initial TCF Backend Support [#3804](https://github.com/ethyca/fides/pull/3804)
+- Add initial layer to TCF modal [#3956](https://github.com/ethyca/fides/pull/3956)
+- Support for rendering in the TCF modal whether or not a vendor is part of the GVL [#3972](https://github.com/ethyca/fides/pull/3972)
+- Features and legal bases dropdown for TCF modal [#3995](https://github.com/ethyca/fides/pull/3995)
+- TCF CMP stub API [#4000](https://github.com/ethyca/fides/pull/4000)
+- Fides-js can now display preliminary TCF data [#3879](https://github.com/ethyca/fides/pull/3879)
+- Fides-js can persist TCF preferences to the backend [#3887](https://github.com/ethyca/fides/pull/3887)
+- TCF modal now supports setting legitimate interest fields [#4037](https://github.com/ethyca/fides/pull/4037)
 
 ### Changed
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
+- Refactored `fides.js` components so that they can take data structures that are not necessarily privacy notices [#3870](https://github.com/ethyca/fides/pull/3870)
 
 ### Fixed
 - Allows CDN to cache empty experience responses from fides.js API  [#4113](https://github.com/ethyca/fides/pull/4113)
