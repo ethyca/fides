@@ -15,7 +15,7 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.20.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.20.1...main)
 
 ### Added
 - "Add a vendor" flow to configuring consent page [#4107](https://github.com/ethyca/fides/pull/4107)
@@ -34,6 +34,11 @@ The types of changes are:
 
 ### Fixed
 - Allows CDN to cache empty experience responses from fides.js API  [#4113](https://github.com/ethyca/fides/pull/4113)
+
+## [2.20.1](https://github.com/ethyca/fides/compare/2.20.0...2.20.1)
+
+### Fixed
+
 - Avoid un-optimized query pattern in bulk `GET /system` endpoint [#4120](https://github.com/ethyca/fides/pull/4120)
 
 ## [2.20.0](https://github.com/ethyca/fides/compare/2.19.1...2.20.0)
