@@ -151,7 +151,7 @@ describe("configureNavGroups", () => {
   });
 
   describe("fides cloud", () => {
-    it("shows dns records page when fides cloud is enabled", () => {
+    it("shows domain records page when fides cloud is enabled", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
         userScopes: ALL_SCOPES,
@@ -163,11 +163,11 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[4].children
           .map((c) => c.title)
-          .find((title) => title === "DNS Records")
-      ).toEqual("DNS Records");
+          .find((title) => title === "Domain records")
+      ).toEqual("Domain Records");
     });
 
-    it("does not show dns records page when fides cloud is disabled", () => {
+    it("does not show domain records page when fides cloud is disabled", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
         userScopes: ALL_SCOPES,
@@ -179,7 +179,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[4].children
           .map((c) => c.title)
-          .find((title) => title === "DNS Records")
+          .find((title) => title === "Domain records")
       ).toEqual(undefined);
     });
   });
