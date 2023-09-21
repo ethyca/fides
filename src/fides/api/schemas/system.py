@@ -20,9 +20,25 @@ class PrivacyDeclarationResponse(PrivacyDeclaration):
     cookies: Optional[List[Cookies]] = []
 
 
-class SystemResponse(System):
-    """Extension of base pydantic model to include additional fields like `privacy_declarations`, connection_config fields
-    and cookies in responses"""
+class BasicSystemResponse(System):
+    """
+    Extension of base pydantic model to include additional fields on the DB model that
+    are relevant in API responses.
+
+    This is still meant to be a "lightweight" model that does not reference relationships
+    that may require additional querying beyond the `System` db table.
+    """
+
+    created_at: datetime
+
+
+class SystemResponse(BasicSystemResponse):
+    """Extension of base pydantic response model to include additional relationship fields that
+    may require extra DB queries, like `privacy_declarations`, connection_config fields and cookies.
+
+    This response model is generally useful for an API that returns a detailed view of _single_
+    System record. Attempting to return bulk results with this model can lead to n+1 query issues.
+    """
 
     privacy_declarations: Sequence[PrivacyDeclarationResponse] = Field(  # type: ignore[assignment]
         description=PrivacyDeclarationResponse.__doc__,
@@ -37,8 +53,6 @@ class SystemResponse(System):
     )
 
     cookies: Optional[List[Cookies]] = []
-
-    created_at: datetime
 
 
 class SystemHistoryResponse(BaseModel):

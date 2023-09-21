@@ -2,6 +2,7 @@ import { ConsentContext } from "./consent-context";
 import {
   ComponentType,
   ConsentMechanism,
+  EmptyExperience,
   FidesOptions,
   GpcStatus,
   PrivacyExperience,
@@ -10,6 +11,7 @@ import {
   UserGeolocation,
   VALID_ISO_3166_LOCATION_REGEX,
 } from "./consent-types";
+import { TCFPurposeRecord } from "./tcf/types";
 
 /**
  * Wrapper around 'console.log' that only logs output when the 'debug' banner
@@ -24,6 +26,21 @@ export const debugLog = (
     // eslint-disable-next-line no-console
     console.log(...args);
   }
+};
+
+/**
+ * Returns true if privacy experience is null or empty
+ */
+export const isPrivacyExperience = (
+  obj: PrivacyExperience | undefined | EmptyExperience
+): obj is PrivacyExperience => {
+  if (!obj) {
+    return false;
+  }
+  if ("id" in obj) {
+    return true;
+  }
+  return false;
 };
 
 /**
@@ -140,17 +157,28 @@ export const validateOptions = (options: FidesOptions): boolean => {
  * Determines whether experience is valid and relevant notices exist within the experience
  */
 export const experienceIsValid = (
-  effectiveExperience: PrivacyExperience | undefined | null,
+  effectiveExperience: PrivacyExperience | undefined | EmptyExperience,
   options: FidesOptions
 ): boolean => {
-  if (!effectiveExperience) {
+  if (!isPrivacyExperience(effectiveExperience)) {
     debugLog(
       options.debug,
-      `No relevant experience found. Skipping overlay initialization.`
+      "No relevant experience found. Skipping overlay initialization."
     );
     return false;
   }
   if (
+    effectiveExperience.component !== ComponentType.OVERLAY &&
+    effectiveExperience.component !== ComponentType.TCF_OVERLAY
+  ) {
+    debugLog(
+      options.debug,
+      "No experience found with overlay component. Skipping overlay initialization."
+    );
+    return false;
+  }
+  if (
+    effectiveExperience.component === ComponentType.OVERLAY &&
     !(
       effectiveExperience.privacy_notices &&
       effectiveExperience.privacy_notices.length > 0
@@ -158,18 +186,11 @@ export const experienceIsValid = (
   ) {
     debugLog(
       options.debug,
-      `No relevant notices in the privacy experience. Skipping overlay initialization.`,
-      effectiveExperience
+      `Privacy experience has no notices. Skipping overlay initialization.`
     );
     return false;
   }
-  if (effectiveExperience.component !== ComponentType.OVERLAY) {
-    debugLog(
-      options.debug,
-      "No experience found with overlay component. Skipping overlay initialization."
-    );
-    return false;
-  }
+  // TODO: add condition for not rendering TCF
   if (!effectiveExperience.experience_config) {
     debugLog(
       options.debug,
@@ -181,15 +202,57 @@ export const experienceIsValid = (
   return true;
 };
 
+/** Returns true if a list of records has any current preference at all */
+const hasCurrentPreference = (
+  records: Pick<TCFPurposeRecord, "current_preference">[] | undefined
+) => {
+  if (!records || records.length === 0) {
+    return false;
+  }
+  return records.some((record) => record.current_preference);
+};
+
+const hasActionNeededTcfPreference = (
+  records: Pick<TCFPurposeRecord, "current_preference">[] | undefined
+) => {
+  if (!records || records.length === 0) {
+    return false;
+  }
+  return records.some((record) => record.current_preference == null);
+};
+
+/**
+ * Returns true if the user has any saved TCF preferences
+ */
+export const hasSavedTcfPreferences = (experience: PrivacyExperience) =>
+  hasCurrentPreference(experience.tcf_purposes) ||
+  hasCurrentPreference(experience.tcf_special_purposes) ||
+  hasCurrentPreference(experience.tcf_features) ||
+  hasCurrentPreference(experience.tcf_special_features) ||
+  hasCurrentPreference(experience.tcf_vendors) ||
+  hasCurrentPreference(experience.tcf_systems);
+
+export const hasActionNeededTcfPreferences = (experience: PrivacyExperience) =>
+  hasActionNeededTcfPreference(experience.tcf_purposes) ||
+  hasActionNeededTcfPreference(experience.tcf_special_purposes) ||
+  hasActionNeededTcfPreference(experience.tcf_features) ||
+  hasActionNeededTcfPreference(experience.tcf_special_features) ||
+  hasActionNeededTcfPreference(experience.tcf_vendors) ||
+  hasActionNeededTcfPreference(experience.tcf_systems);
+
 /**
  * Returns true if there are notices in the experience that require a user preference
  */
-export const hasActionNeededNotices = (experience: PrivacyExperience) =>
-  Boolean(
+export const hasActionNeededNotices = (experience: PrivacyExperience) => {
+  if (experience.component === ComponentType.TCF_OVERLAY) {
+    return hasActionNeededTcfPreferences(experience);
+  }
+  return Boolean(
     experience?.privacy_notices?.some(
       (notice) => notice.current_preference == null
     )
   );
+};
 
 export const getGpcStatusFromNotice = ({
   value,

@@ -326,7 +326,7 @@ describe("Privacy notices", () => {
         consent_mechanism: "opt_in",
         enforcement_level: "system_wide",
         has_gpc_flag: true,
-        data_uses: ["advertising"],
+        data_uses: ["analytics"],
         internal_description: "our very important notice, do not touch",
         regions: ["us_ca"],
         displayed_in_privacy_center: true,

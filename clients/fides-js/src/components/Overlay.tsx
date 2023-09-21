@@ -1,78 +1,100 @@
-import { h, FunctionComponent } from "preact";
+import { h, FunctionComponent, VNode } from "preact";
 import { useEffect, useState, useCallback, useMemo } from "preact/hooks";
 import {
-  ConsentMechanism,
-  ConsentMethod,
   FidesOptions,
   PrivacyExperience,
-  PrivacyNotice,
-  SaveConsentPreference,
   ServingComponent,
 } from "../lib/consent-types";
-import ConsentBanner from "./ConsentBanner";
 
-import { updateConsentPreferences } from "../lib/preferences";
-import {
-  debugLog,
-  hasActionNeededNotices,
-  transformConsentToFidesUserPreference,
-} from "../lib/consent-utils";
-import { FidesCookie } from "../lib/cookie";
+import { debugLog, hasActionNeededNotices } from "../lib/consent-utils";
 
 import "./fides.css";
 import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
-import { useConsentServed, useHasMounted } from "../lib/hooks";
-import ConsentButtons from "./ConsentButtons";
+import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
+import {
+  FidesCookie,
+  getOrMakeFidesCookie,
+  isNewFidesCookie,
+} from "../lib/cookie";
 
-export interface OverlayProps {
+interface RenderBannerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: () => void;
+  onManagePreferencesClick: () => void;
+}
+
+interface RenderModalContent {
+  onClose: () => void;
+}
+
+interface Props {
   options: FidesOptions;
   experience: PrivacyExperience;
   cookie: FidesCookie;
-  fidesRegionString: string;
+  renderBanner: (props: RenderBannerProps) => VNode | null;
+  renderModalContent: (props: RenderModalContent) => VNode;
 }
 
-const Overlay: FunctionComponent<OverlayProps> = ({
+/**
+ * Overlay doesn't always have the most up to date cookie. For the most part,
+ * we prefer the cookie on the DOM, except when that cookie doesn't exist yet,
+ * in which case we want the cookie object that was passed into this component.
+ */
+const getLatestCookie = (cookieFromParam: FidesCookie) => {
+  const latestCookie = getOrMakeFidesCookie();
+  return isNewFidesCookie(latestCookie) ? cookieFromParam : latestCookie;
+};
+
+const Overlay: FunctionComponent<Props> = ({
   experience,
   options,
-  fidesRegionString,
   cookie,
+  renderBanner,
+  renderModalContent,
 }) => {
   const delayBannerMilliseconds = 100;
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
 
-  const initialEnabledNoticeKeys = useMemo(
-    () => Object.keys(cookie.consent).filter((key) => cookie.consent[key]),
-    [cookie.consent]
-  );
-
-  const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
-    Array<PrivacyNotice["notice_key"]>
-  >(initialEnabledNoticeKeys);
+  const dispatchCloseEvent = useCallback(() => {
+    dispatchFidesEvent(
+      "FidesModalClosed",
+      getLatestCookie(cookie),
+      options.debug
+    );
+  }, [cookie, options.debug]);
 
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
     role: "dialog",
     title: experience?.experience_config?.title || "",
+    onClose: dispatchCloseEvent,
   });
 
   const handleOpenModal = useCallback(() => {
     if (instance) {
       instance.show();
-      dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
-        servingComponent: ServingComponent.OVERLAY,
-      });
+      dispatchFidesEvent(
+        "FidesUIShown",
+        getLatestCookie(cookie),
+        options.debug,
+        {
+          servingComponent: ServingComponent.OVERLAY,
+        }
+      );
     }
   }, [instance, cookie, options.debug]);
 
   const handleCloseModal = useCallback(() => {
     if (instance) {
       instance.hide();
+      dispatchCloseEvent();
     }
-  }, [instance]);
+  }, [instance, dispatchCloseEvent]);
 
   useEffect(() => {
     const delayBanner = setTimeout(() => {
@@ -112,60 +134,13 @@ const Overlay: FunctionComponent<OverlayProps> = ({
   );
 
   useEffect(() => {
+    const eventCookie = getLatestCookie(cookie);
     if (showBanner && bannerIsOpen) {
-      dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+      dispatchFidesEvent("FidesUIShown", eventCookie, options.debug, {
         servingComponent: ServingComponent.BANNER,
       });
     }
   }, [showBanner, cookie, options.debug, bannerIsOpen]);
-
-  const privacyNotices = useMemo(
-    () => experience.privacy_notices ?? [],
-    [experience.privacy_notices]
-  );
-
-  const isAllNoticeOnly = privacyNotices.every(
-    (n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY
-  );
-
-  const { servedNotices } = useConsentServed({
-    notices: privacyNotices,
-    options,
-    userGeography: fidesRegionString,
-    acknowledgeMode: isAllNoticeOnly,
-    privacyExperienceId: experience.id,
-  });
-
-  const handleUpdatePreferences = useCallback(
-    (enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>) => {
-      const consentPreferencesToSave = privacyNotices.map((notice) => {
-        const userPreference = transformConsentToFidesUserPreference(
-          enabledPrivacyNoticeKeys.includes(notice.notice_key),
-          notice.consent_mechanism
-        );
-        return new SaveConsentPreference(notice, userPreference);
-      });
-      updateConsentPreferences({
-        consentPreferencesToSave,
-        experienceId: experience.id,
-        fidesApiUrl: options.fidesApiUrl,
-        consentMethod: ConsentMethod.button,
-        userLocationString: fidesRegionString,
-        cookie,
-        servedNotices,
-      });
-      // Make sure our draft state also updates
-      setDraftEnabledNoticeKeys(enabledPrivacyNoticeKeys);
-    },
-    [
-      privacyNotices,
-      cookie,
-      fidesRegionString,
-      experience.id,
-      options.fidesApiUrl,
-      servedNotices,
-    ]
-  );
 
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();
@@ -183,48 +158,24 @@ const Overlay: FunctionComponent<OverlayProps> = ({
 
   return (
     <div>
-      {showBanner ? (
-        <ConsentBanner
-          experience={experience.experience_config}
-          bannerIsOpen={bannerIsOpen}
-          onClose={() => {
-            setBannerIsOpen(false);
-          }}
-          buttonGroup={
-            <ConsentButtons
-              experience={experience}
-              onManagePreferencesClick={handleManagePreferencesClick}
-              enabledKeys={draftEnabledNoticeKeys}
-              onSave={(keys) => {
-                handleUpdatePreferences(keys);
-                setBannerIsOpen(false);
-              }}
-              isAcknowledge={isAllNoticeOnly}
-            />
-          }
-        />
-      ) : null}
+      {showBanner
+        ? renderBanner({
+            isOpen: bannerIsOpen,
+            onClose: () => {
+              setBannerIsOpen(false);
+            },
+            onSave: () => {
+              setBannerIsOpen(false);
+            },
+            onManagePreferencesClick: handleManagePreferencesClick,
+          })
+        : null}
       <ConsentModal
         attributes={attributes}
         experience={experience.experience_config}
-        enabledNoticeKeys={draftEnabledNoticeKeys}
-        onChange={setDraftEnabledNoticeKeys}
-        notices={privacyNotices}
-        onClose={handleCloseModal}
-        buttonGroup={
-          <ConsentButtons
-            experience={experience}
-            enabledKeys={draftEnabledNoticeKeys}
-            isInModal
-            onSave={(keys) => {
-              handleUpdatePreferences(keys);
-              handleCloseModal();
-            }}
-            isAcknowledge={isAllNoticeOnly}
-          />
-        }
-        options={options}
-      />
+      >
+        {renderModalContent({ onClose: handleCloseModal })}
+      </ConsentModal>
     </div>
   );
 };

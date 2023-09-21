@@ -1,6 +1,7 @@
 import { Center, Spinner, Text, VStack } from "@fidesui/react";
 
 import EmptyTableState from "~/features/common/table/EmptyTableState";
+import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 import { useGetAllSystemsQuery } from "~/features/system";
 
 import AddButtons from "./AddButtons";
@@ -18,6 +19,7 @@ const EmptyStateContent = () => (
 
 const ConfigureConsent = () => {
   const { data: allSystems, isLoading } = useGetAllSystemsQuery();
+  useGetAllDataUsesQuery();
 
   if (isLoading) {
     return (

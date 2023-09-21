@@ -50,7 +50,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
-from fides.api.schemas.system import SystemResponse
+from fides.api.schemas.system import BasicSystemResponse, SystemResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
     connection_status,
@@ -361,7 +361,7 @@ async def create(
             scopes=[SYSTEM_READ],
         )
     ],
-    response_model=List[SystemResponse],
+    response_model=List[BasicSystemResponse],
     name="List",
 )
 async def ls(  # pylint: disable=invalid-name
