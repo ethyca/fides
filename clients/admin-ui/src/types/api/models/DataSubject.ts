@@ -47,4 +47,8 @@ export type DataSubject = {
    * Indicates whether the resource is currently 'active'.
    */
   active?: boolean;
+  /**
+   * This is for tracking when the daulft entity was added
+   */
+  version_added?: string;
 };

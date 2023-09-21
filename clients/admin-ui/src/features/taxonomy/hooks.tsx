@@ -78,6 +78,7 @@ const transformTaxonomyBaseToInitialValues = (
   description: t.description ?? "",
   parent_key: t.parent_key ?? "",
   is_default: t.is_default ?? false,
+  version_added: t.version_added ?? "",
   customFieldValues,
 });
 

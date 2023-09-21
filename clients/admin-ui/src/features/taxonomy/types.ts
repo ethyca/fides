@@ -15,6 +15,7 @@ export interface TaxonomyEntity {
   parent_key?: string;
   is_default?: boolean;
   active?: boolean;
+  version_added?: string;
 }
 
 export interface Labels {
