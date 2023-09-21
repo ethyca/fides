@@ -8,7 +8,7 @@ from fides.api.db.util import EnumColumn
 
 
 class CustomAssetType(str, Enum):
-    fides_css = "fides_css"
+    fides_css = "fides.css"
 
 
 class CustomAsset(Base):

@@ -31,7 +31,7 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("key", sa.Enum("fides_css", name="customassettype"), nullable=False),
+        sa.Column("key", sa.Enum("fides.css", name="customassettype"), nullable=False),
         sa.Column("content", sa.Text(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )

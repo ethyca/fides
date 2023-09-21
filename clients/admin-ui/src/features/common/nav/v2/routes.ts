@@ -24,4 +24,3 @@ export const ABOUT_ROUTE = "/management/about";
 export const CUSTOM_FIELDS_ROUTE = "/management/custom-fields";
 export const EMAIL_TEMPLATES_ROUTE = "/management/email-templates";
 export const DNS_RECORDS_ROUTE = "/management/dns-records";
-export const CUSTOM_ASSETS_ROUTE = "/management/custom-assets";

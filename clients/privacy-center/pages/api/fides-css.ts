@@ -10,7 +10,7 @@ async function fetchFidesCss(): Promise<string> {
   const fidesUrl =
     environment.settings.SERVER_SIDE_FIDES_API_URL ||
     environment.settings.FIDES_API_URL;
-  const response = await fetch(`${fidesUrl}/plus/custom-asset/fides_css`);
+  const response = await fetch(`${fidesUrl}/plus/custom-asset/fides.css`);
   if (!response.ok) {
     throw new Error("Failed to fetch CSS");
   }

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import {
   Box,
   Button,
@@ -12,9 +13,10 @@ import {
   useToast,
 } from "@fidesui/react";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
+import DocsLink from "~/features/common/DocsLink";
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useUpdateCustomAssetMutation } from "~/features/plus/plus.slice";
@@ -32,6 +34,7 @@ const CustomAssetUploadModal: React.FC<RequestModalProps> = ({
   testId = "custom-asset-modal",
   assetKey,
 }) => {
+  const initialRef = useRef(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const toast = useToast();
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -74,13 +77,35 @@ const CustomAssetUploadModal: React.FC<RequestModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+    <Modal
+      initialFocusRef={initialRef}
+      isOpen={isOpen}
+      onClose={onClose}
+      size="2xl"
+    >
       <ModalOverlay />
       <ModalContent textAlign="left" p={2} data-testid={testId}>
-        <ModalHeader>Upload custom asset</ModalHeader>
+        <ModalHeader tabIndex={-1} ref={initialRef}>
+          Upload stylesheet
+        </ModalHeader>
         <ModalBody>
           <Text fontSize="sm" mb={4}>
-            Drag and drop your CSS file here, or click to browse your files.
+            To customize the appearance of your consumer-facing sites, you can
+            upload a CSS stylesheet. This stylesheet will be applied to your
+            consent experiences, including TCF v2.2. For additional guidance and
+            information, please visit our{" "}
+            <DocsLink href="https://fid.es/customize-styles" isExternal>
+              documentation site
+            </DocsLink>
+            . If you wish to download the "fides.css" template, simply click{" "}
+            <DocsLink
+              href="https://raw.githubusercontent.com/ethyca/fides/main/clients/fides-js/src/components/fides.css"
+              isExternal
+            >
+              here
+            </DocsLink>
+            . This template can serve as a helpful starting point for your
+            customization efforts.
           </Text>
           <Box
             {...getRootProps()}
