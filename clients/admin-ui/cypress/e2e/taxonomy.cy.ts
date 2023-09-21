@@ -78,6 +78,8 @@ describe("Taxonomy management page", () => {
           description: "description",
           parent_key: undefined,
           version_added: "2.0.0",
+          version_deprecated: "",
+          replaced_by: "",
         },
       };
       cy.intercept("PUT", "/api/v1/data_category*", taxonomyPayload).as(
@@ -292,6 +294,8 @@ describe("Taxonomy management page", () => {
             strategy: "INCLUDE",
           },
           version_added: "2.0.0",
+          version_deprecated: "",
+          replaced_by: "",
         };
         expect(body).to.eql(expected);
       });
