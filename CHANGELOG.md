@@ -31,6 +31,7 @@ The types of changes are:
 ### Changed
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
 - Refactored `fides.js` components so that they can take data structures that are not necessarily privacy notices [#3870](https://github.com/ethyca/fides/pull/3870)
+- Removed `TCF_ENABLED` environment variable from the privacy center in favor of dynamically figuring out which `fides-js` bundle to send [#4131](https://github.com/ethyca/fides/pull/4131)
 
 ### Fixed
 - Allows CDN to cache empty experience responses from fides.js API  [#4113](https://github.com/ethyca/fides/pull/4113)
