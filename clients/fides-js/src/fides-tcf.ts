@@ -64,7 +64,12 @@ import {
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
-import { FidesCookie, hasSavedTcfPreferences, isNewFidesCookie } from "./fides";
+import {
+  FidesCookie,
+  hasSavedTcfPreferences,
+  isNewFidesCookie,
+  transformTcfPreferencesToCookieKeys,
+} from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
 import { TCFPurposeRecord, TcfSavePreferences } from "./lib/tcf/types";
 
@@ -136,7 +141,8 @@ const updateCookie = async (
   };
 
   const tcString = await generateTcString({ tcStringPreferences, experience });
-  return { ...oldCookie, tc_string: tcString };
+  const tcfConsent = transformTcfPreferencesToCookieKeys(tcStringPreferences);
+  return { ...oldCookie, tc_string: tcString, tcf_consent: tcfConsent };
 };
 
 /**

@@ -11,6 +11,7 @@ import {
   removeCookiesFromBrowser,
   saveFidesCookie,
   transformTcfPreferencesToCookieKeys,
+  updateCookieFromNoticePreferences,
   updateExperienceFromCookieConsent,
 } from "../../src/lib/cookie";
 import type { ConsentContext } from "../../src/lib/consent-context";
@@ -18,6 +19,8 @@ import {
   Cookies,
   LegacyConsentConfig,
   PrivacyExperience,
+  PrivacyNotice,
+  SaveConsentPreference,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
 import {
@@ -622,5 +625,27 @@ describe("updateExperienceFromCookieConsent", () => {
         expect(f.current_preference).toEqual(undefined);
       });
     });
+  });
+});
+
+describe("updateCookieFromNoticePreferences", () => {
+  it("can receive an updated cookie obj based on notice preferences", async () => {
+    const cookie = makeFidesCookie();
+    const notices = [
+      { notice_key: "one", current_preference: UserConsentPreference.OPT_IN },
+      { notice_key: "two", current_preference: UserConsentPreference.OPT_OUT },
+    ] as PrivacyNotice[];
+    const preferences = notices.map(
+      (n) =>
+        new SaveConsentPreference(
+          n,
+          n.current_preference ?? UserConsentPreference.OPT_OUT
+        )
+    );
+    const updatedCookie = await updateCookieFromNoticePreferences(
+      cookie,
+      preferences
+    );
+    expect(updatedCookie.consent).toEqual({ one: true, two: false });
   });
 });
