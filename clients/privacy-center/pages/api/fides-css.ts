@@ -1,43 +1,76 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
+import { promises as fsPromises } from "fs";
 
-let cachedCss: string | null = null;
+let cachedFidesCss: string | null = null;
 let lastFetched: number | null = null;
 const CACHE_DURATION = 3600 * 1000; // Cache for 1 hour
 
-async function fetchFidesCss(): Promise<string> {
+async function loadDefaultFidesCss(): Promise<string> {
+  const fidesCssBuffer = await fsPromises.readFile("public/lib/fides.css");
+  return fidesCssBuffer.toString();
+}
+
+async function refreshFidesCss(): Promise<string> {
   const environment = await loadPrivacyCenterEnvironment();
   const fidesUrl =
     environment.settings.SERVER_SIDE_FIDES_API_URL ||
     environment.settings.FIDES_API_URL;
   const response = await fetch(`${fidesUrl}/plus/custom-asset/fides.css`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch CSS");
-  }
   const data = await response.text();
+
+  if (!response.ok || !data) {
+    console.warn(
+      "Failed to fetch custom fides.css or received empty data. Using default fides.css"
+    );
+    return loadDefaultFidesCss();
+  }
+
   return data;
 }
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+/**
+ * @swagger
+ * /fides.css:
+ *   get:
+ *     description: Returns the custom "fides.css" file. If not available, the default "fides.css" is returned. The response is cached for an hour.
+ *     parameters:
+ *       - in: query
+ *         name: refresh
+ *         description: Forces a refresh of the cached CSS.
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved "fides.css".
+ *         content:
+ *           text/css:
+ *             schema:
+ *               type: string
+ */
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   const currentTime = Date.now();
-
   const shouldRefresh = "refresh" in req.query;
 
-  // If no CSS is cached, the cache has expired, or the refresh parameter is present, fetch new CSS
+  // If fides.css isn't cached, the cache has expired, or the refresh parameter is present, refresh fides.css
   if (
-    !cachedCss ||
+    !cachedFidesCss ||
     (lastFetched && currentTime - lastFetched > CACHE_DURATION) ||
     shouldRefresh
   ) {
     try {
-      cachedCss = await fetchFidesCss();
+      cachedFidesCss = await refreshFidesCss();
       lastFetched = currentTime;
     } catch (error) {
-      // Handle fetch error (e.g., return cached CSS even if it's stale)
-      console.error("Error fetching Fides CSS:", error);
+      // Return cached fides.css even if it's stale
+      console.error("Error refreshing fides.css:", error);
     }
   }
 
   res.setHeader("Content-Type", "text/css");
-  res.send(cachedCss || "");
-};
+  res.send(cachedFidesCss);
+}

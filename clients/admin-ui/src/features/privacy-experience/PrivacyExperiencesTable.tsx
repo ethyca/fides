@@ -21,6 +21,7 @@ import {
   useGetAllExperienceConfigsQuery,
 } from "~/features/privacy-experience/privacy-experience.slice";
 import { ExperienceConfigResponse, ScopeRegistryEnum } from "~/types/api";
+import { CustomAssetTypes } from "~/types/api/models/CustomAssetTypes";
 
 import CustomAssetUploadButton from "../custom-assets/CustomAssetUploadButton";
 import JavaScriptTag from "./JavaScriptTag";
@@ -99,7 +100,7 @@ const PrivacyExperiencesTable = () => {
       <Box alignSelf="end">
         <JavaScriptTag />
         <Restrict scopes={[ScopeRegistryEnum.CUSTOM_ASSET_UPDATE]}>
-          <CustomAssetUploadButton assetKey="fides.css" />
+          <CustomAssetUploadButton assetType={CustomAssetTypes.FIDES_CSS} />
         </Restrict>
       </Box>
       <FidesTable<ExperienceConfigResponse>

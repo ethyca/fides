@@ -3,12 +3,12 @@ import React from "react";
 
 import CustomAssetUploadModal from "./CustomAssetUploadModal";
 
-interface CustomAssetUploadButtonProps {
-  assetKey: string;
-}
+type CustomAssetUploadButtonProps = {
+  assetType: string;
+};
 
 const CustomAssetUploadButton: React.FC<CustomAssetUploadButtonProps> = ({
-  assetKey,
+  assetType,
 }) => {
   const uploadCustomAssetModal = useDisclosure();
 
@@ -25,7 +25,7 @@ const CustomAssetUploadButton: React.FC<CustomAssetUploadButtonProps> = ({
       <CustomAssetUploadModal
         isOpen={uploadCustomAssetModal.isOpen}
         onClose={uploadCustomAssetModal.onClose}
-        assetKey={assetKey}
+        assetType={assetType}
       />
     </>
   );

@@ -90,10 +90,9 @@ const CustomAssetUploadModal: React.FC<RequestModalProps> = ({
         </ModalHeader>
         <ModalBody>
           <Text fontSize="sm" mb={4}>
-            To customize the appearance of your consumer-facing sites, you can
-            upload a CSS stylesheet. This stylesheet will be applied to your
-            consent experiences, including TCF v2.2. For additional guidance and
-            information, please visit our{" "}
+            To customize the appearance of your consent experiences, including
+            TCF v2.2, you can upload a CSS stylesheet. For additional guidance
+            and information, please visit our{" "}
             <DocsLink href="https://fid.es/customize-styles" isExternal>
               documentation site
             </DocsLink>
