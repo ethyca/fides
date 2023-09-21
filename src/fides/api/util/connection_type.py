@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import Any, Set
 
 import yaml
@@ -170,19 +171,37 @@ def get_connection_types(
             ]
         )
 
+        start = time.monotonic()
         for item in saas_types:
+            template_start = time.monotonic()
             connector_template = ConnectorRegistry.get_connector_template(item)
+            template_loaded = time.monotonic()
+            map_entry = ConnectionSystemTypeMap(
+                identifier=item,
+                type=SystemType.saas,
+                human_readable=connector_template.human_readable,
+                encoded_icon=connector_template.icon,
+                authorization_required=connector_template.authorization_required,
+                user_guide=connector_template.user_guide,
+            )
+            map_entry_created = time.monotonic()
             if connector_template is not None:
-                connection_system_types.append(
-                    ConnectionSystemTypeMap(
-                        identifier=item,
-                        type=SystemType.saas,
-                        human_readable=connector_template.human_readable,
-                        encoded_icon=connector_template.icon,
-                        authorization_required=connector_template.authorization_required,
-                        user_guide=connector_template.user_guide,
-                    )
-                )
+                connection_system_types.append(map_entry)
+            map_entry_added = time.monotonic()
+            print(
+                f"took {map_entry_added - map_entry_created} for adding map entry of {item}"
+            )
+            print(
+                f"took {map_entry_created - template_loaded} for creating map entry {item}"
+            )
+            print(
+                f"took {template_loaded - template_start} for loading template {item}"
+            )
+            print(
+                f"took {map_entry_added - template_start} for full template operation {item}"
+            )
+
+        print(f"took {time.monotonic() - start} for all templates")
 
     if (
         system_type == SystemType.manual or system_type is None
