@@ -1,14 +1,13 @@
 import base64
 import json
 import re
-from datetime import datetime, timezone
+from datetime import datetime
 from os.path import dirname, join
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 from fideslang.models import LegalBasisForProcessingEnum
 from pydantic import Field, NonNegativeInt, PositiveInt, root_validator, validator
 
-from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
@@ -31,26 +30,26 @@ FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6]
 class TCModel(FidesSchema):
     _gvl: Dict = {}
 
-    isServiceSpecific: bool = Field(
+    is_service_specific: bool = Field(
         default=False,
         description="Whether the signals encoded in this TC String were from site-specific storage `true` versus "
         "‘global’ consensu.org shared storage `false`. A string intended to be stored in global/shared "
         "scope but the CMP is unable to store due to a user agent not accepting third-party cookies "
         "would be considered site-specific `true`.",
     )
-    supportOOB: bool = Field(
+    support_oob: bool = Field(
         default=True,
         description="Whether or not this publisher supports OOB signaling.  On Global TC String OOB Vendors Disclosed "
         "will be included if the publish wishes to no allow these vendors they should set this to false.",
     )
-    useNonStandardTexts: bool = Field(
+    use_non_standard_texts: bool = Field(
         default=False,
         description="Non-standard stacks means that a CMP is using publisher-customized stack descriptions. Stacks "
         "(in terms of purposes in a stack) are pre-set by the IAB. As are titles. Descriptions are pre-set, "
         "but publishers can customize them. If they do, they need to set this bit to indicate that they've "
         "customized descriptions.",
     )
-    purposeOneTreatment: bool = Field(
+    purpose_one_treatment: bool = Field(
         default=False,
         description="`false` There is no special Purpose 1 status. Purpose 1 was disclosed normally (consent) as "
         "expected by Policy.  `true`Purpose 1 not disclosed at all. CMPs use PublisherCC to indicate the "
@@ -59,101 +58,101 @@ class TCModel(FidesSchema):
         "CMP encounters a global scope string with `purposeOneTreatment=true` then that string should be "
         "considered invalid and the CMP must re-establish transparency and consent.",
     )
-    publisherCountryCode: str = "AA"
+    publisher_country_code: str = "AA"
     version: int = 2
-    consentScreen: PositiveInt = Field(
+    consent_screen: PositiveInt = Field(
         default=1,
         description="The screen number is CMP and CmpVersion specific, and is for logging proof of consent. "
         "(For example, a CMP could keep records so that a publisher can request information about the "
         "context in which consent was gathered.)",
     )
-    policyVersion: NonNegativeInt = Field(
+    policy_version: NonNegativeInt = Field(
         default=4,
         description="From the corresponding field in the GVL that was used for obtaining consent. A new policy version "
         "invalidates existing strings and requires CMPs to re-establish transparency and consent from users.",
     )
-    consentLanguage: str = "EN"
-    cmpId: NonNegativeInt = Field(
+    consent_language: str = "EN"
+    cmp_id: NonNegativeInt = Field(
         default=0,
         description="A unique ID will be assigned to each Consent Manager Provider (CMP) from the iab.",
     )
-    cmpVersion: PositiveInt = Field(
+    cmp_version: PositiveInt = Field(
         default=1,
         description="Each change to an operating CMP should receive a new version number, for logging proof of "
         "consent. CmpVersion defined by each CMP.",
     )
-    vendorListVersion: NonNegativeInt = Field(
+    vendor_list_version: NonNegativeInt = Field(
         default=0,
         description="Version of the GVL used to create this TCModel. "
         "Global Vendor List versions will be released periodically.",
     )
-    numCustomPurposes: int = 0
+    num_custom_purposes: int = 0
 
-    created: int = None  # TODO make sure date is in the correct format
-    lastUpdated: int = None  # TODO make sure date is in the correct format
+    created: int = None
+    last_updated: int = None
 
-    specialFeatureOptins: List = Field(
+    special_feature_optins: List = Field(
         default=[],
         description="The TCF designates certain Features as special, that is, a CMP must afford the user a means to "
         "opt in to their use. These Special Features are published and numbered in the GVL separately from "
         "normal Features. Provides for up to 12 special features.",
     )
 
-    purposeConsents: List = Field(
+    purpose_consents: List = Field(
         default=[],
         description="Renamed from `PurposesAllowed` in TCF v1.1. The user’s consent value for each Purpose established "
         "on the legal basis of consent. Purposes are published in the Global Vendor List (see. [[GVL]]).",
     )
 
-    purposeLegitimateInterests: List = Field(
+    purpose_legitimate_interests: List = Field(
         default=[],
         description="The user’s permission for each Purpose established on the legal basis of legitimate interest. "
         "If the user has exercised right-to-object for a purpose.",
     )
 
-    publisherConsents: List = Field(
+    publisher_consents: List = Field(
         default=[],
         description="The user’s consent value for each Purpose established on the legal basis of consent, for the "
         "publisher.  Purposes are published in the Global Vendor List.",
     )
 
-    publisherLegitimateInterests: List = Field(
+    publisher_legitimate_interests: List = Field(
         default=[],
         description="The user’s permission for each Purpose established on the legal basis of legitimate interest.  "
         "If the user has exercised right-to-object for a purpose.",
     )
 
-    publisherCustomConsents: List = Field(
+    publisher_custom_consents: List = Field(
         default=[],
         description="The user’s consent value for each Purpose established on the legal basis of consent, for the "
         "publisher.  Purposes are published in the Global Vendor List.",
     )
 
-    publisherCustomLegitimateInterests: List = Field(
+    publisher_custom_legitimate_interests: List = Field(
         default=[],
         description="The user’s permission for each Purpose established on the legal basis of legitimate interest.  "
         "If the user has exercised right-to-object for a purpose that is established in the publisher's "
         "custom purposes.",
     )
 
-    customPurposes: Dict = Field(
+    custom_purposes: Dict = Field(
         default={},
         description="Set by a publisher if they wish to collect consent "
         "and LI Transparency for purposes outside of the TCF",
     )
 
-    vendorConsents: List[int] = Field(
+    vendor_consents: List[int] = Field(
         default=[],
         description="Each [[Vendor]] is keyed by id. Their consent value is true if it is in the Vector",
     )
 
-    vendorLegitimateInterests: List[int] = Field(
+    vendor_legitimate_interests: List[int] = Field(
         default=[],
         description="Each [[Vendor]] is keyed by id. Whether their Legitimate Interests Disclosures have been "
         "established is stored as boolean.",
     )
 
-    vendorsDisclosed: List = Field(
+    vendors_disclosed: List = Field(
         default=[],
         description=" The value included for disclosed vendors signals which vendors have been disclosed to the user "
         "in the interface surfaced by the CMP. This section content is required when writing a TC string "
@@ -163,68 +162,73 @@ class TCModel(FidesSchema):
         "prior interactions with this device/user agent.",
     )
 
-    vendorsAllowed: List = Field(
+    vendors_allowed: List = Field(
         default=[],
         description="Signals which vendors the publisher permits to use OOB legal bases.",
     )
 
-    publisherRestrictions: List = Field(
+    publisher_restrictions: List = Field(
         default=[],
     )
 
-    maxVendorConsent: Optional[int] = 0
-    isVendorConsentRangeEncoding: int = 0
-    maxVendorLI: Optional[int] = 0
-    isVendorLIRangeEncoding: int = 0
-    numPubRestrictions: int = 0
+    max_vendor_consent: Optional[int] = 0
+    is_vendor_consent_range_encoding: int = 0
+    max_vendor_li: Optional[int] = 0
+    is_vendor_li_range_encoding: int = 0
+    num_pub_restrictions: int = 0
 
-    @validator("publisherCountryCode")
-    def check_publisher_country_code(cls, publisherCountryCode: str) -> str:
-        """Validates that a publisherCountryCode is an upper-cased two letter string"""
-        upper_case_country_code = publisherCountryCode.upper()
-        """Validate the only one exercise action is provided"""
+    @validator("publisher_country_code")
+    def check_publisher_country_code(cls, publisher_country_code: str) -> str:
+        """Validates that a publisher_country_code is an upper-cased two letter string"""
+        upper_case_country_code = publisher_country_code.upper()
         pattern = r"^[A-Z]{2}$"
         if not re.match(pattern, upper_case_country_code):
             raise ValueError(
-                "publisherCountryCode must be a length-2 string of alpha characters"
+                "publisher_country_code must be a length-2 string of alpha characters"
             )
 
         return upper_case_country_code
 
-    @validator("consentLanguage")
-    def check_consent_language(cls, consentLanguage: str) -> str:
+    @validator("consent_language")
+    def check_consent_language(cls, consent_language: str) -> str:
         """Forces consent language to be upper cased and no longer than 2 characters"""
-        return consentLanguage.upper()[:2]
+        consent_language = consent_language.upper()[:2]
+        if len(consent_language) < 2:
+            raise ValueError("Consent language is less than two characters")
+        return consent_language
 
-    @validator("purposeLegitimateInterests")
+    @validator("purpose_legitimate_interests")
     def filter_purpose_legitimate_interests(
-        cls, purposeLegitimateInterests: List[int]
+        cls, purpose_legitimate_interests: List[int]
     ) -> List[int]:
-        """Purpose 1 is never allowed to be true for legitimate interest As of TCF v2.2 purposes 3,4,5 & 6 are
-        not allowed to be true for LI"""
+        """Purpose 1 is never allowed to be true for legitimate interest
+        As of TCF v2.2 purposes 3,4,5 & 6 are not allowed to be true.
+        """
         forbidden_l_i_legitimate_interests = [1, 3, 4, 5, 6]
         return [
             li
-            for li in purposeLegitimateInterests
+            for li in purpose_legitimate_interests
             if li not in forbidden_l_i_legitimate_interests
         ]
 
     @root_validator
     def temp_max_vendor_ids(cls, values: Dict) -> Dict:
-        vendor_consents = values.get("vendorConsents")
+        """Temporarily compute the lengths of the vendor consents and vendor legitimate interests fields"""
+        vendor_consents = values.get("vendor_consents")
         if vendor_consents:
-            values["maxVendorConsent"] = max(
+            values["max_vendor_consent"] = max(
                 [int(vendor_id) for vendor_id in vendor_consents]
             )
 
-        vendor_li = values.get("vendorLegitimateInterests")
+        vendor_li = values.get("vendor_legitimate_interests")
         if vendor_li:
-            values["maxVendorLI"] = max([int(vendor_id) for vendor_id in vendor_li])
+            values["max_vendor_li"] = max([int(vendor_id) for vendor_id in vendor_li])
 
         return values
 
 
 def transform_user_preference_to_boolean(preference: UserConsentPreference) -> bool:
+    """Convert opt_in/acknowledge preferences to True and opt_out/other preferences to False"""
     return preference in [
         UserConsentPreference.opt_in,
         UserConsentPreference.acknowledge,
@@ -234,6 +238,7 @@ def transform_user_preference_to_boolean(preference: UserConsentPreference) -> b
 def _build_vendor_consents_and_legitimate_interests(
     vendors: List[TCFVendorRecord], gvl_vendor_ids: List[str]
 ):
+    """Construct the vendor_consents and vendor_legitimate_interests sections"""
     vendor_consents: List[int] = []
     vendor_legitimate_interests: List[int] = []
 
@@ -261,6 +266,8 @@ def _build_vendor_consents_and_legitimate_interests(
 
 
 def _build_purpose_consent_and_legitimate_interests(purposes: List[TCFPurposeRecord]):
+    """Construct the purpose_consents and purpose_legitimate_interests sections"""
+
     purpose_consents: List[int] = []
     purpose_legitimate_interests: List[int] = []
 
@@ -278,6 +285,7 @@ def _build_purpose_consent_and_legitimate_interests(purposes: List[TCFPurposeRec
 
 
 def _build_special_feature_opt_ins(special_features: List[TCFFeatureRecord]):
+    """Construct the special_feature_opt_ins section"""
     special_feature_opt_ins: List[int] = []
     for special_feature in special_features:
         special_feature_opt_ins.append(special_feature.id)
@@ -286,14 +294,17 @@ def _build_special_feature_opt_ins(special_features: List[TCFFeatureRecord]):
 
 
 def get_epoch_time():
-    # TODO not sure why adding this extra 0 to the epoch time is necessary for it to decode property
-    # Matches this: Math.round(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate())/100)
+    """Calculate the epoch time to be used for both created and updated_at
+
+    TODO not sure why adding this extra 0 to the epoch time is necessary for it to decode properly
+    Matches this: Math.round(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate())/100)
+    """
     return int(datetime.utcnow().date().strftime("%s") + "0")
 
 
 def build_tc_model(db, preference: UserConsentPreference):
     """
-    Helper for building a TC object for an accept-all or reject-all string
+    Helper for building a TCModel which is the basis for building an accept-all or reject-all string
     """
     with open(load_file([GVL_JSON_PATH]), "r", encoding="utf-8") as file:
         gvl = json.load(file)
@@ -318,23 +329,24 @@ def build_tc_model(db, preference: UserConsentPreference):
         tcf_contents.tcf_special_features
     )
 
+    # Use the same date for created and lastUpdated
     current_time = get_epoch_time()
 
     tc_model = TCModel(
         _gvl=gvl,
-        cmpId=CMP_ID,
-        vendorListVersion=gvl.get("vendorListVersion"),
-        policyVersion=gvl.get("tcfPolicyVersion"),
-        cmpVersion=CMP_VERSION,
-        consentScreen=CONSENT_SCREEN,
-        vendorsDisclosed=internal_gvl_vendor_ids,
+        cmp_id=CMP_ID,
+        vendor_list_version=gvl.get("vendorListVersion"),
+        policy_version=gvl.get("tcfPolicyVersion"),
+        cmp_version=CMP_VERSION,
+        consent_screen=CONSENT_SCREEN,
+        vendors_disclosed=internal_gvl_vendor_ids,
         created=current_time,
-        lastUpdated=current_time,
-        vendorConsents=vendor_consents,
-        vendorLegitimateInterests=vendor_legitimate_interests,
-        purposeConsents=purpose_consents,
-        purposeLegitimateInterests=purpose_legitimate_interests,  # TODO https://github.com/InteractiveAdvertisingBureau/iabtcf-es/blob/master/modules/core/src/encoder/SemanticPreEncoder.ts#L38
-        specialFeatureOptins=special_feature_opt_ins,
+        last_updated=current_time,
+        vendor_consents=vendor_consents,
+        vendor_legitimate_interests=vendor_legitimate_interests,
+        purpose_consents=purpose_consents,
+        purpose_legitimate_interests=purpose_legitimate_interests,  # TODO https://github.com/InteractiveAdvertisingBureau/iabtcf-es/blob/master/modules/core/src/encoder/SemanticPreEncoder.ts#L38
+        special_feature_optins=special_feature_opt_ins,
     )
 
     consented: bool = transform_user_preference_to_boolean(preference)
@@ -346,72 +358,73 @@ def build_tc_model(db, preference: UserConsentPreference):
     return tc_model
 
 
-def get_utc_now():
-    return datetime.now(timezone.utc)
-
-
-def build_tc_string(model):
-    core_string = {
+def build_tc_string(model: TCModel) -> str:
+    """Construct a core TC string"""
+    field_to_num_bits_mapping: Dict[str, int] = {
         "version": 6,
         "created": 36,
-        "lastUpdated": 36,
-        "cmpId": 12,
-        "cmpVersion": 12,
-        "consentScreen": 6,
-        "consentLanguage": 12,
-        "vendorListVersion": 12,
-        "policyVersion": 6,
-        "isServiceSpecific": 1,
-        "useNonStandardTexts": 1,
-        "specialFeatureOptins": 12,
-        "purposeConsents": 24,
-        "purposeLegitimateInterests": 24,
-        "purposeOneTreatment": 1,
-        "publisherCountryCode": 12,
-        "maxVendorConsent": 16,
-        "isVendorConsentRangeEncoding": 1,
-        "vendorConsents": getattr(model, "maxVendorConsent"),
-        "maxVendorLI": 16,
-        "isVendorLIRangeEncoding": 1,
-        "vendorLegitimateInterests": getattr(model, "maxVendorLI"),
-        "numPubRestrictions": 12,
+        "last_updated": 36,
+        "cmp_id": 12,
+        "cmp_version": 12,
+        "consent_screen": 6,
+        "consent_language": 12,
+        "vendor_list_version": 12,
+        "policy_version": 6,
+        "is_service_specific": 1,
+        "use_non_standard_texts": 1,
+        "special_feature_optins": 12,
+        "purpose_consents": 24,
+        "purpose_legitimate_interests": 24,
+        "purpose_one_treatment": 1,
+        "publisher_country_code": 12,
+        "max_vendor_consent": 16,
+        "is_vendor_consent_range_encoding": 1,
+        "vendor_consents": getattr(model, "max_vendor_consent"),
+        "max_vendor_li": 16,
+        "is_vendor_li_range_encoding": 1,
+        "vendor_legitimate_interests": getattr(model, "max_vendor_li"),
+        "num_pub_restrictions": 12,
     }
 
     total_bits = ""
-    for field, num_bits in core_string.items():
-        val = getattr(model, field)
+    for field, num_bits in field_to_num_bits_mapping.items():
+        tc_value = getattr(model, field)
 
-        if isinstance(val, bool):
-            val = 1 if val else 0
+        if isinstance(tc_value, bool):
+            tc_value = 1 if tc_value else 0
 
-        if field in ["consentLanguage", "publisherCountryCode"]:
-            first_letter = ord(val[0]) - ord("A")
-            second_letter = ord(val[1]) - ord("A")
+        if isinstance(tc_value, str):
+            bit_components = ""
+            bit_allocation = int(num_bits / len(tc_value))
+            for char in tc_value:
+                converted_num = convert_letter_to_number(char)
+                bit_components += format(converted_num, f"0{bit_allocation}b")
 
-            first_bit_components = format(first_letter, f"0{6}b")
-            second_bit_components = format(second_letter, f"0{6}b")
-            bit_components = first_bit_components + second_bit_components
-
-        elif isinstance(val, list):
+        elif isinstance(tc_value, list):
             bit_components = ""
             for i in range(1, num_bits + 1):
-                bit_components += "1" if i in val else "0"
+                bit_components += "1" if i in tc_value else "0"
 
         else:
-            bit_components = format(val, f"0{num_bits}b")
+            bit_components = format(tc_value, f"0{num_bits}b")
 
         total_bits += bit_components
 
     return base64.urlsafe_b64encode(bitstring_to_bytes(total_bits)).decode()
 
 
-def bitstring_to_bytes(bitstr: str):
-    """Add the 0's at the end"""
-    LEAST_COMMON_MULTIPLE = 24  # 6 (basis for base 64) and 8 (one byte)
-    padding = len(bitstr) % LEAST_COMMON_MULTIPLE
-    new_bits = "0" * (LEAST_COMMON_MULTIPLE - padding)
+def convert_letter_to_number(letter: str):
+    """A->0, Z->25"""
+    return ord(letter) - ord("A")
 
+
+def bitstring_to_bytes(bitstr: str) -> bytes:
+    """Convert a string of 0's and 1's to bytes, padded to both work with base64
+    and bit->byte conversion"""
+    least_common_multiple = 24  # 6 bits (basis for base 64) and 8 bits (one byte)
+    padding: int = len(bitstr) % least_common_multiple
+    new_bits: str = "0" * (least_common_multiple - padding)
     bitstr += new_bits
 
-    integer_val = int(bitstr, 2)
+    integer_val: int = int(bitstr, 2)
     return integer_val.to_bytes((len(bitstr)) // 8, byteorder="big")

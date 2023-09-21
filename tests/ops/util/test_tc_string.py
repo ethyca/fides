@@ -162,79 +162,79 @@ class TestHashExperience:
 class TestBuildTCModel:
     def test_invalid_cmp_id(self):
         with pytest.raises(ValidationError):
-            TCModel(cmpId=-1)
+            TCModel(cmp_id=-1)
 
-        m = TCModel(cmpId="100")  # This can be coerced to an integer
-        assert m.cmpId == 100
+        m = TCModel(cmp_id="100")  # This can be coerced to an integer
+        assert m.cmp_id == 100
 
-        m = TCModel(cmpId=1.11)
-        assert m.cmpId == 1
+        m = TCModel(cmp_id=1.11)
+        assert m.cmp_id == 1
 
     def test_invalid_vendor_list_version(self):
         with pytest.raises(ValidationError):
-            TCModel(vendorListVersion=-1)
+            TCModel(vendor_list_version=-1)
 
-        m = TCModel(vendorListVersion="100")  # This can be coerced to an integer
-        assert m.vendorListVersion == 100
+        m = TCModel(vendor_list_version="100")  # This can be coerced to an integer
+        assert m.vendor_list_version == 100
 
-        m = TCModel(vendorListVersion=1.11)
-        assert m.vendorListVersion == 1
+        m = TCModel(vendor_list_version=1.11)
+        assert m.vendor_list_version == 1
 
-    def test_invalid_policyversion(self):
+    def test_invalid_policy_version(self):
         with pytest.raises(ValidationError):
-            TCModel(policyVersion=-1)
+            TCModel(policy_version=-1)
 
-        m = TCModel(policyVersion="100")  # This can be coerced to an integer
-        assert m.policyVersion == 100
+        m = TCModel(policy_version="100")  # This can be coerced to an integer
+        assert m.policy_version == 100
 
-        m = TCModel(policyVersion=1.11)
-        assert m.policyVersion == 1  # Coerced to closed integer
+        m = TCModel(policy_version=1.11)
+        assert m.policy_version == 1  # Coerced to closed integer
 
-    def test_invalid_cmpVersion(self):
+    def test_invalid_cmp_version(self):
         with pytest.raises(ValidationError):
-            TCModel(cmpVersion=-1)
-
-        with pytest.raises(ValidationError):
-            TCModel(cmpVersion=0)
-
-        m = TCModel(cmpVersion="100")  # This can be coerced to an integer
-        assert m.cmpVersion == 100
-
-        m = TCModel(cmpVersion=1.11)
-        assert m.cmpVersion == 1  # Coerced to closed integer
-
-    def test_invalid_publisherCountryCode(self):
-        with pytest.raises(ValidationError):
-            TCModel(publisherCountryCode="USA")
+            TCModel(cmp_version=-1)
 
         with pytest.raises(ValidationError):
-            TCModel(publisherCountryCode="^^")
+            TCModel(cmp_version=0)
 
-        m = TCModel(publisherCountryCode="aa")
-        assert m.publisherCountryCode == "AA"
+        m = TCModel(cmp_version="100")  # This can be coerced to an integer
+        assert m.cmp_version == 100
+
+        m = TCModel(cmp_version=1.11)
+        assert m.cmp_version == 1  # Coerced to closed integer
+
+    def test_invalid_publisher_country_code(self):
+        with pytest.raises(ValidationError):
+            TCModel(publisher_country_code="USA")
+
+        with pytest.raises(ValidationError):
+            TCModel(publisher_country_code="^^")
+
+        m = TCModel(publisher_country_code="aa")
+        assert m.publisher_country_code == "AA"
 
     def test_filter_purpose_legitimate_interests(self):
-        m = TCModel(purposeLegitimateInterests=[1, 2, 3, 4, 7])
-        assert m.purposeLegitimateInterests == [2, 7]
+        m = TCModel(purpose_legitimate_interests=[1, 2, 3, 4, 7])
+        assert m.purpose_legitimate_interests == [2, 7]
 
     def test_consent_language(self):
-        m = TCModel(consentLanguage="English")
-        assert m.consentLanguage == "EN"
+        m = TCModel(consent_language="English")
+        assert m.consent_language == "EN"
 
     def test_build_tc_string_captify_accept_all(self, db, captify_technologies_system):
         model = build_tc_model(db, UserConsentPreference.opt_in)
 
-        assert model.cmpId == 12
-        assert model.vendorListVersion == 18
-        assert model.policyVersion == 4
-        assert model.cmpVersion == 1
-        assert model.consentScreen == 1
+        assert model.cmp_id == 12
+        assert model.vendor_list_version == 18
+        assert model.policy_version == 4
+        assert model.cmp_version == 1
+        assert model.consent_screen == 1
 
-        assert model.vendorConsents == [2]
-        assert model.vendorLegitimateInterests == []
-        assert model.purposeConsents == [1, 2, 3, 4, 7, 9, 10]
-        assert model.purposeLegitimateInterests == []
-        assert model.specialFeatureOptins == [2]
+        assert model.vendor_consents == [2]
+        assert model.vendor_legitimate_interests == []
+        assert model.purpose_consents == [1, 2, 3, 4, 7, 9, 10]
+        assert model.purpose_legitimate_interests == []
+        assert model.special_feature_optins == [2]
 
         tc_str = build_tc_string(model)
         decoded = decode_v2(tc_str)
@@ -323,17 +323,17 @@ class TestBuildTCModel:
     def test_build_tc_string_emerse_accept_all(self, db, emerse_system):
         model = build_tc_model(db, UserConsentPreference.opt_in)
 
-        assert model.cmpId == 12
-        assert model.vendorListVersion == 18
-        assert model.policyVersion == 4
-        assert model.cmpVersion == 1
-        assert model.consentScreen == 1
+        assert model.cmp_id == 12
+        assert model.vendor_list_version == 18
+        assert model.policy_version == 4
+        assert model.cmp_version == 1
+        assert model.consent_screen == 1
 
-        assert model.purposeConsents == [1, 3, 4]
-        assert model.purposeLegitimateInterests == [2, 7, 8, 9]
-        assert model.vendorConsents == [8]
-        assert model.vendorLegitimateInterests == [8]
-        assert model.specialFeatureOptins == []
+        assert model.purpose_consents == [1, 3, 4]
+        assert model.purpose_legitimate_interests == [2, 7, 8, 9]
+        assert model.vendor_consents == [8]
+        assert model.vendor_legitimate_interests == [8]
+        assert model.special_feature_optins == []
 
         # Build the TC string and then decode it
         tc_str = build_tc_string(model)
