@@ -301,7 +301,9 @@ def build_tc_model(db: Session, preference: UserConsentPreference) -> TCModel:
     with open(load_file([GVL_JSON_PATH]), "r", encoding="utf-8") as file:
         gvl = json.load(file)
 
-    internal_gvl_vendor_ids = [int(vendor_id) for vendor_id in gvl.get("vendors", {})]
+    internal_gvl_vendor_ids: list[int] = [
+        int(vendor_id) for vendor_id in gvl.get("vendors", {})
+    ]
     tcf_contents: TCFExperienceContents = get_tcf_contents(db)
 
     consented: bool = transform_user_preference_to_boolean(preference)

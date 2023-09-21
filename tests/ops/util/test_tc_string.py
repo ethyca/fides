@@ -1,5 +1,6 @@
 import uuid
 
+from datetime import datetime
 import pytest
 from iab_tcf import decode_v2
 from pydantic import ValidationError
@@ -277,6 +278,7 @@ class TestBuildTCModel:
         decoded = decode_v2(tc_str)
 
         assert decoded.version == 2
+        assert datetime.utcnow().date() == decoded.created.date()
         assert decoded.cmp_id == 12
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
@@ -356,6 +358,10 @@ class TestBuildTCModel:
         assert decoded.consented_vendors == {1: False, 2: True}
         assert decoded.interests_vendors == {}
         assert decoded.pub_restriction_entries == []
+
+        assert len(decoded.oob_disclosed_vendors) == 4176
+        assert sum(decoded.oob_disclosed_vendors.values()) == 701
+        assert decoded.oob_disclosed_vendors[4176]
 
     @pytest.mark.usefixtures("emerse_system")
     def test_build_tc_string_emerse_accept_all(self, db):
@@ -475,6 +481,10 @@ class TestBuildTCModel:
             8: True,
         }
         assert decoded.pub_restriction_entries == []
+
+        assert len(decoded.oob_disclosed_vendors) == 4176
+        assert sum(decoded.oob_disclosed_vendors.values()) == 701
+        assert decoded.oob_disclosed_vendors[4176]
 
     @pytest.mark.usefixtures("skimbit_system")
     def test_build_tc_string_skimbit_accept_all(self, db):
@@ -625,6 +635,10 @@ class TestBuildTCModel:
 
         assert decoded.pub_restriction_entries == []
 
+        assert len(decoded.oob_disclosed_vendors) == 4176
+        assert sum(decoded.oob_disclosed_vendors.values()) == 701
+        assert decoded.oob_disclosed_vendors[4176]
+
     @pytest.mark.parametrize(
         "system_fixture",
         [("captify_technologies_system"), ("emerse_system"), ("skimbit_system")],
@@ -649,6 +663,8 @@ class TestBuildTCModel:
         decoded = decode_v2(tc_str)
 
         assert decoded.version == 2
+        assert datetime.utcnow().date() == decoded.created.date()
+        assert datetime.utcnow().date() == decoded.last_updated.date()
         assert decoded.cmp_id == 12
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
@@ -728,3 +744,6 @@ class TestBuildTCModel:
         assert decoded.consented_vendors == {}
         assert decoded.interests_vendors == {}
         assert decoded.pub_restriction_entries == []
+        assert len(decoded.oob_disclosed_vendors) == 4176
+        assert sum(decoded.oob_disclosed_vendors.values()) == 701
+        assert decoded.oob_disclosed_vendors[4176]
