@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import {
   CONSENT_COOKIE_NAME,
+  FidesCookie,
   PrivacyExperience,
   UserConsentPreference,
 } from "fides-js";
@@ -264,6 +265,7 @@ describe("Fides-js TCF", () => {
 
     describe("saving preferences", () => {
       it("can opt in to all", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
           cy.wait("@patchPrivacyPreference").then((interception) => {
@@ -290,7 +292,39 @@ describe("Fides-js TCF", () => {
             ]);
           });
         });
+        // Verify the cookie on save
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const cookieKeyConsent: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          [
+            PURPOSE_1.id,
+            PURPOSE_2.id,
+            PURPOSE_3.id,
+            PURPOSE_4.id,
+            PURPOSE_5.id,
+          ].forEach((pid) => {
+            expect(cookieKeyConsent.tcf_consent.purpose_preferences)
+              .property(`${pid}`)
+              .is.eql(true);
+          });
+          expect(cookieKeyConsent.tcf_consent.special_purpose_preferences)
+            .property(`${SPECIAL_PURPOSE_1.id}`)
+            .is.eql(true);
+          [FEATURE_1.id, FEATURE_2.id].forEach((fid) => {
+            expect(cookieKeyConsent.tcf_consent.feature_preferences)
+              .property(`${fid}`)
+              .is.eql(true);
+          });
+          expect(cookieKeyConsent.tcf_consent.vendor_preferences)
+            .property(`${VENDOR_2.id}`)
+            .is.eql(true);
+          expect(cookieKeyConsent.tcf_consent.system_preferences)
+            .property(`${VENDOR_1.id}`)
+            .is.eql(true);
+        });
       });
+
       it("can opt out of all", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt out of all").click();
@@ -317,6 +351,37 @@ describe("Fides-js TCF", () => {
               { id: VENDOR_1.id, preference: "opt_out" },
             ]);
           });
+        });
+        // Verify the cookie on save
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const cookieKeyConsent: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          [
+            PURPOSE_1.id,
+            PURPOSE_2.id,
+            PURPOSE_3.id,
+            PURPOSE_4.id,
+            PURPOSE_5.id,
+          ].forEach((pid) => {
+            expect(cookieKeyConsent.tcf_consent.purpose_preferences)
+              .property(`${pid}`)
+              .is.eql(false);
+          });
+          expect(cookieKeyConsent.tcf_consent.special_purpose_preferences)
+            .property(`${SPECIAL_PURPOSE_1.id}`)
+            .is.eql(false);
+          [FEATURE_1.id, FEATURE_2.id].forEach((fid) => {
+            expect(cookieKeyConsent.tcf_consent.feature_preferences)
+              .property(`${fid}`)
+              .is.eql(false);
+          });
+          expect(cookieKeyConsent.tcf_consent.vendor_preferences)
+            .property(`${VENDOR_2.id}`)
+            .is.eql(false);
+          expect(cookieKeyConsent.tcf_consent.system_preferences)
+            .property(`${VENDOR_1.id}`)
+            .is.eql(false);
         });
       });
 
@@ -354,6 +419,37 @@ describe("Fides-js TCF", () => {
               { id: VENDOR_1.id, preference: "opt_out" },
             ]);
           });
+        });
+        // Verify the cookie on save
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const cookieKeyConsent: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          [PURPOSE_2.id, PURPOSE_3.id, PURPOSE_4.id, PURPOSE_5.id].forEach(
+            (pid) => {
+              expect(cookieKeyConsent.tcf_consent.purpose_preferences)
+                .property(`${pid}`)
+                .is.eql(true);
+            }
+          );
+          expect(cookieKeyConsent.tcf_consent.purpose_preferences)
+            .property(`${PURPOSE_1.id}`)
+            .is.eql(false);
+          expect(cookieKeyConsent.tcf_consent.special_purpose_preferences)
+            .property(`${SPECIAL_PURPOSE_1.id}`)
+            .is.eql(false);
+          expect(cookieKeyConsent.tcf_consent.feature_preferences)
+            .property(`${FEATURE_1.id}`)
+            .is.eql(true);
+          expect(cookieKeyConsent.tcf_consent.feature_preferences)
+            .property(`${FEATURE_2.id}`)
+            .is.eql(false);
+          expect(cookieKeyConsent.tcf_consent.vendor_preferences)
+            .property(`${VENDOR_2.id}`)
+            .is.eql(true);
+          expect(cookieKeyConsent.tcf_consent.system_preferences)
+            .property(`${VENDOR_1.id}`)
+            .is.eql(false);
         });
       });
     });
