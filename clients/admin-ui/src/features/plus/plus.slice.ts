@@ -34,6 +34,7 @@ import {
 } from "~/types/api";
 
 import { DictDataUse, DictEntry, Page } from "./types";
+import { UploadCustomAsset } from "~/types/api/models/UploadCustomAsset";
 
 interface ScanParams {
   classify?: boolean;
@@ -283,6 +284,19 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["System History"],
     }),
+    updateCustomAsset: build.mutation<void, UploadCustomAsset>({
+      query: ({ assetKey, file }) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        return {
+          url: `plus/custom-asset/${assetKey}`,
+          method: "PUT",
+          body: formData,
+        };
+      },
+      invalidatesTags: () => ["Custom Assets"],
+    }),
   }),
 });
 
@@ -311,6 +325,7 @@ export const {
   useGetFidesCloudConfigQuery,
   useGetDictionaryDataUsesQuery,
   useGetSystemHistoryQuery,
+  useUpdateCustomAssetMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =

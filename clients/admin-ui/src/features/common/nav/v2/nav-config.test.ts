@@ -22,6 +22,7 @@ const ALL_SCOPES = [
   ScopeRegistryEnum.PRIVACY_NOTICE_READ,
   ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ,
   ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ,
+  ScopeRegistryEnum.CUSTOM_ASSET_UPDATE,
 ];
 
 describe("configureNavGroups", () => {

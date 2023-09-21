@@ -166,6 +166,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
       },
       {
+        title: "Custom assets",
+        path: routes.CUSTOM_ASSETS_ROUTE,
+        requiresPlus: true,
+        // requiresFidesCloud: true,
+        scopes: [ScopeRegistryEnum.CUSTOM_ASSET_UPDATE],
+      },
+      {
         title: "About Fides",
         path: routes.ABOUT_ROUTE,
         scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features

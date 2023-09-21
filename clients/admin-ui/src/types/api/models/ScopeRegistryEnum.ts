@@ -42,6 +42,7 @@ export enum ScopeRegistryEnum {
   CTL_POLICY_READ = "ctl_policy:read",
   CTL_POLICY_UPDATE = "ctl_policy:update",
   CURRENT_PRIVACY_PREFERENCE_READ = "current-privacy-preference:read",
+  CUSTOM_ASSET_UPDATE = "custom_asset:update",
   CUSTOM_FIELD_CREATE = "custom_field:create",
   CUSTOM_FIELD_DELETE = "custom_field:delete",
   CUSTOM_FIELD_READ = "custom_field:read",
