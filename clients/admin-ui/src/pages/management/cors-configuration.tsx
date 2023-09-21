@@ -25,18 +25,21 @@ import Layout from "~/features/common/Layout";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   CORSOrigins,
+  selectApplicationConfig,
   selectCORSOrigins,
-  useCreateConfigurationSettingsMutation,
   useGetConfigurationSettingsQuery,
+  usePutConfigurationSettingsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
+import { ApplicationConfig } from "~/types/api";
 
 type FormValues = CORSOrigins;
 
 const CORSConfigurationPage: NextPage = () => {
   const { isLoading: isLoadingGetQuery } = useGetConfigurationSettingsQuery();
   const corsOrigins = useAppSelector(selectCORSOrigins());
-  const [patchConfigSettingsTrigger, { isLoading: isLoadingPatchMutation }] =
-    useCreateConfigurationSettingsMutation();
+  const applicationConfig = useAppSelector(selectApplicationConfig());
+  const [putConfigSettingsTrigger, { isLoading: isLoadingPutMutation }] =
+    usePutConfigurationSettingsMutation();
 
   const toast = useToast();
 
@@ -61,11 +64,19 @@ const CORSConfigurationPage: NextPage = () => {
       }
     };
 
-    const result = await patchConfigSettingsTrigger({
+    const payloadOrigins =
+      values.cors_origins && values.cors_origins.length > 0
+        ? values.cors_origins
+        : undefined;
+
+    const payload: ApplicationConfig = {
+      ...applicationConfig,
       security: {
-        cors_origins: values.cors_origins,
+        cors_origins: payloadOrigins,
       },
-    });
+    };
+
+    const result = await putConfigSettingsTrigger(payload);
 
     handleResult(result);
   };
@@ -89,7 +100,7 @@ const CORSConfigurationPage: NextPage = () => {
 
         <Box maxW="600px">
           <FormSection title="CORS Domains">
-            {isLoadingGetQuery || isLoadingPatchMutation ? (
+            {isLoadingGetQuery || isLoadingPutMutation ? (
               <Flex justifyContent="center">
                 <Spinner />
               </Flex>
@@ -151,10 +162,8 @@ const CORSConfigurationPage: NextPage = () => {
                         type="submit"
                         variant="primary"
                         size="sm"
-                        isDisabled={
-                          isLoadingPatchMutation || !dirty || !isValid
-                        }
-                        isLoading={isLoadingPatchMutation}
+                        isDisabled={isLoadingPutMutation || !dirty || !isValid}
+                        isLoading={isLoadingPutMutation}
                         data-testid="save-btn"
                       >
                         Save

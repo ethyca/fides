@@ -341,7 +341,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Notification"],
     }),
-    createConfigurationSettings: build.mutation<
+    patchConfigurationSettings: build.mutation<
       any,
       | ApplicationConfig
       | MessagingConfigResponse
@@ -351,6 +351,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       query: (params) => ({
         url: `/config`,
         method: "PATCH",
+        body: params,
+      }),
+      invalidatesTags: ["Configuration Settings"],
+    }),
+    putConfigurationSettings: build.mutation<
+      ApplicationConfig,
+      ApplicationConfig
+    >({
+      query: (params) => ({
+        url: `/config`,
+        method: "PUT",
         body: params,
       }),
       invalidatesTags: ["Configuration Settings"],
@@ -454,7 +465,8 @@ export const {
   useGetStorageDetailsQuery,
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,
-  useCreateConfigurationSettingsMutation,
+  usePatchConfigurationSettingsMutation,
+  usePutConfigurationSettingsMutation,
   useGetConfigurationSettingsQuery,
   useGetMessagingConfigurationDetailsQuery,
   useGetActiveMessagingProviderQuery,
@@ -489,4 +501,13 @@ export const selectCORSOrigins = () =>
       };
       return hasCorsOrigins ? corsOrigins : EMPTY_CORS_DOMAINS;
     }
+  );
+
+export const selectApplicationConfig = () =>
+  createSelector(
+    [
+      (state) => state,
+      privacyRequestApi.endpoints.getConfigurationSettings.select(),
+    ],
+    (_, { data }) => data as ApplicationConfig
   );
