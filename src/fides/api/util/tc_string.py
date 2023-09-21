@@ -3,10 +3,10 @@ import json
 import re
 from datetime import datetime
 from os.path import dirname, join
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from fideslang.models import LegalBasisForProcessingEnum
-from pydantic import Field, NonNegativeInt, PositiveInt, root_validator, validator
+from pydantic import Field, NonNegativeInt, PositiveInt, validator
 
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
@@ -25,6 +25,19 @@ CMP_ID: int = 12  # TODO: hardcode our unique CMP ID after certification
 CMP_VERSION = 1
 CONSENT_SCREEN = 1  # TODO On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
 FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6]
+
+
+class TCField(FidesSchema):
+    """Schema to represent a field within a TC string segment"""
+
+    field_name: str = Field(description="Field name")
+    bits: int = Field(
+        description="The number of bits that should be used to represent this value"
+    )
+    value_override: Optional[Any] = Field(
+        description="The value that should be used instead of a "
+        "value of the same name on the TCModel"
+    )
 
 
 class TCModel(FidesSchema):
@@ -171,11 +184,7 @@ class TCModel(FidesSchema):
         default=[],
     )
 
-    max_vendor_consent: Optional[int] = 0
-    is_vendor_consent_range_encoding: int = 0
-    max_vendor_li: Optional[int] = 0
-    is_vendor_li_range_encoding: int = 0
-    num_pub_restrictions: int = 0
+    num_pub_restrictions: int = 0  # Hardcoded here for now
 
     @validator("publisher_country_code")
     def check_publisher_country_code(cls, publisher_country_code: str) -> str:
@@ -211,21 +220,6 @@ class TCModel(FidesSchema):
             if li not in forbidden_l_i_legitimate_interests
         ]
 
-    @root_validator
-    def temp_max_vendor_ids(cls, values: Dict) -> Dict:
-        """Temporarily compute the lengths of the vendor consents and vendor legitimate interests fields"""
-        vendor_consents = values.get("vendor_consents")
-        if vendor_consents:
-            values["max_vendor_consent"] = max(
-                [int(vendor_id) for vendor_id in vendor_consents]
-            )
-
-        vendor_li = values.get("vendor_legitimate_interests")
-        if vendor_li:
-            values["max_vendor_li"] = max([int(vendor_id) for vendor_id in vendor_li])
-
-        return values
-
 
 def transform_user_preference_to_boolean(preference: UserConsentPreference) -> bool:
     """Convert opt_in/acknowledge preferences to True and opt_out/other preferences to False"""
@@ -236,7 +230,7 @@ def transform_user_preference_to_boolean(preference: UserConsentPreference) -> b
 
 
 def _build_vendor_consents_and_legitimate_interests(
-    vendors: List[TCFVendorRecord], gvl_vendor_ids: List[str]
+    vendors: List[TCFVendorRecord], gvl_vendor_ids: List[int]
 ):
     """Construct the vendor_consents and vendor_legitimate_interests sections
     Only add the vendor id to the vendor consents list if one of its purposes
@@ -246,7 +240,7 @@ def _build_vendor_consents_and_legitimate_interests(
     vendor_legitimate_interests: List[int] = []
 
     for vendor in vendors:
-        if vendor.id not in gvl_vendor_ids:
+        if int(vendor.id) not in gvl_vendor_ids:
             continue
 
         consent_purpose_ids = [
@@ -318,7 +312,7 @@ def build_tc_model(db, preference: UserConsentPreference):
     with open(load_file([GVL_JSON_PATH]), "r", encoding="utf-8") as file:
         gvl = json.load(file)
 
-    internal_gvl_vendor_ids = list(gvl.get("vendors", {}).keys())
+    internal_gvl_vendor_ids = [int(vendor_id) for vendor_id in gvl.get("vendors", {})]
     tcf_contents: TCFExperienceContents = get_tcf_contents(db)
 
     consented: bool = transform_user_preference_to_boolean(preference)
@@ -364,59 +358,34 @@ def build_tc_model(db, preference: UserConsentPreference):
     return tc_model
 
 
-def build_tc_string(model: TCModel) -> str:
-    """Construct a core TC string"""
-    field_to_num_bits_mapping: Dict[str, int] = {
-        "version": 6,
-        "created": 36,
-        "last_updated": 36,
-        "cmp_id": 12,
-        "cmp_version": 12,
-        "consent_screen": 6,
-        "consent_language": 12,
-        "vendor_list_version": 12,
-        "policy_version": 6,
-        "is_service_specific": 1,
-        "use_non_standard_texts": 1,
-        "special_feature_optins": 12,
-        "purpose_consents": 24,
-        "purpose_legitimate_interests": 24,
-        "purpose_one_treatment": 1,
-        "publisher_country_code": 12,
-        "max_vendor_consent": 16,
-        "is_vendor_consent_range_encoding": 1,
-        "vendor_consents": getattr(model, "max_vendor_consent"),
-        "max_vendor_li": 16,
-        "is_vendor_li_range_encoding": 1,
-        "vendor_legitimate_interests": getattr(model, "max_vendor_li"),
-        "num_pub_restrictions": 12,
-    }
-
+def get_bits_for_section(fields: List[TCField], tc_model: TCModel) -> str:
     total_bits = ""
-    for field, num_bits in field_to_num_bits_mapping.items():
-        tc_value = getattr(model, field)
+    for field in fields:
+        field_value: Any = (
+            field.value_override
+            if field.value_override is not None
+            else getattr(tc_model, field.field_name)
+        )
 
-        if isinstance(tc_value, bool):
-            tc_value = 1 if tc_value else 0
+        if isinstance(field_value, bool):
+            field_value = 1 if field_value else 0
 
-        if isinstance(tc_value, str):
-            bit_components = ""
-            bit_allocation = int(num_bits / len(tc_value))
-            for char in tc_value:
+        bit_components = ""
+        if isinstance(field_value, str):
+            bit_allocation = int(field.bits / len(field_value))
+            for char in field_value:
                 converted_num = convert_letter_to_number(char)
                 bit_components += format(converted_num, f"0{bit_allocation}b")
 
-        elif isinstance(tc_value, list):
-            bit_components = ""
-            for i in range(1, num_bits + 1):
-                bit_components += "1" if i in tc_value else "0"
+        elif isinstance(field_value, list):
+            for i in range(1, field.bits + 1):
+                bit_components += "1" if i in field_value else "0"
 
         else:
-            bit_components = format(tc_value, f"0{num_bits}b")
+            bit_components = format(field_value, f"0{field.bits}b")
 
         total_bits += bit_components
-
-    return base64.urlsafe_b64encode(bitstring_to_bytes(total_bits)).decode()
+    return total_bits
 
 
 def convert_letter_to_number(letter: str):
@@ -434,3 +403,85 @@ def bitstring_to_bytes(bitstr: str) -> bytes:
 
     integer_val: int = int(bitstr, 2)
     return integer_val.to_bytes((len(bitstr)) // 8, byteorder="big")
+
+
+def get_max_vendor_id(vendor_list: List[int]) -> int:
+    if not vendor_list:
+        return 0
+
+    return max([int(vendor_id) for vendor_id in vendor_list])
+
+
+def build_tc_string(model: TCModel) -> str:
+    """Construct a core TC string"""
+
+    core_string: str = build_core_string(model)
+    vendors_disclosed_string: str = build_disclosed_vendors_string(model)
+
+    return core_string + "." + vendors_disclosed_string
+
+
+def build_core_string(model: TCModel):
+    """
+    Build
+    :param model:
+    :return:
+    """
+    max_vendor_consents: int = get_max_vendor_id(model.vendor_consents)
+    max_vendor_li: int = get_max_vendor_id(model.vendor_legitimate_interests)
+
+    core_fields: list = [
+        TCField(field_name="version", bits=6),
+        TCField(field_name="created", bits=36),
+        TCField(field_name="last_updated", bits=36),
+        TCField(field_name="cmp_id", bits=12),
+        TCField(field_name="cmp_version", bits=12),
+        TCField(field_name="consent_screen", bits=6),
+        TCField(field_name="consent_language", bits=12),
+        TCField(field_name="vendor_list_version", bits=12),
+        TCField(field_name="policy_version", bits=6),
+        TCField(field_name="is_service_specific", bits=1),
+        TCField(field_name="use_non_standard_texts", bits=1),
+        TCField(field_name="special_feature_optins", bits=12),
+        TCField(field_name="purpose_consents", bits=24),
+        TCField(field_name="purpose_legitimate_interests", bits=24),
+        TCField(field_name="purpose_one_treatment", bits=1),
+        TCField(field_name="publisher_country_code", bits=12),
+        TCField(
+            field_name="max_vendor_consent", bits=16, value_override=max_vendor_consents
+        ),
+        TCField(
+            field_name="is_vendor_consent_range_encoding", bits=1, value_override=0
+        ),  # Using bitfield
+        TCField(field_name="vendor_consents", bits=max_vendor_consents),
+        TCField(field_name="max_vendor_li", bits=16, value_override=max_vendor_li),
+        TCField(
+            field_name="is_vendor_li_range_encoding", bits=1, value_override=0
+        ),  # Using bitfield
+        TCField(field_name="vendor_legitimate_interests", bits=max_vendor_li),
+        TCField(field_name="num_pub_restrictions", bits=12),
+    ]
+
+    core_bits: str = get_bits_for_section(core_fields, model)
+    return base64.urlsafe_b64encode(bitstring_to_bytes(core_bits)).decode()
+
+
+def build_disclosed_vendors_string(model: TCModel) -> str:
+    """Build the Optional Disclosed Vendors" section of the TC String"""
+    max_vendor_id: int = get_max_vendor_id(model.vendors_disclosed)
+
+    disclosed_vendor_fields: list = [
+        TCField(field_name="segment_type", bits=3, value_override=1),
+        TCField(field_name="max_vendor_id", bits=16, value_override=max_vendor_id),
+        TCField(
+            field_name="is_range_encoding", bits=1, value_override=0
+        ),  # Using Bitfield encoding
+        TCField(
+            field_name="vendors_disclosed",
+            bits=max_vendor_id,
+            value_override=model.vendors_disclosed,
+        ),
+    ]
+
+    disclosed_vendor_bits: str = get_bits_for_section(disclosed_vendor_fields, model)
+    return base64.urlsafe_b64encode(bitstring_to_bytes(disclosed_vendor_bits)).decode()
