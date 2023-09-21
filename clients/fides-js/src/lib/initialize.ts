@@ -262,8 +262,12 @@ export const initialize = async ({
       isPrivacyExperience(effectiveExperience) &&
       experienceIsValid(effectiveExperience, options)
     ) {
-      // eslint-disable-next-line no-param-reassign
-      cookie = await updateCookie(cookie, effectiveExperience, options.debug);
+      const updatedCookie = await updateCookie(
+        cookie,
+        effectiveExperience,
+        options.debug
+      );
+      Object.assign(cookie, updatedCookie);
 
       if (shouldInitOverlay) {
         await initOverlay({

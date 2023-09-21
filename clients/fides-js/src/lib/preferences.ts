@@ -79,8 +79,8 @@ export const updateConsentPreferences = async ({
   patchUserPreferenceToFidesServer(privacyPreferenceCreate, fidesApiUrl, debug);
 
   // 2. Update the cookie object based on new preferences
-  // eslint-disable-next-line no-param-reassign
-  cookie = await updateCookie(cookie);
+  const updatedCookie = await updateCookie(cookie);
+  Object.assign(cookie, updatedCookie);
 
   // 3. Update the window.Fides object
   debugLog(debug, "Updating window.Fides");
