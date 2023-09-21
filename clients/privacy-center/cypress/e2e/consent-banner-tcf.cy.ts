@@ -464,4 +464,88 @@ describe("Fides-js TCF", () => {
       });
     });
   });
+
+  describe("cookie interactions", () => {
+    it("can initialize preferences from a cookie", () => {
+      /**
+       * The default from the fixture is that
+       *   - all purposes are opted in
+       *   - all special purposes are opted in
+       *   - feature 1 is opted out, feature 2 has no preference
+       *   - all vendors are opted in
+       *   - all systems are opted in
+       *
+       * We'll change at least one value from each entity type in the cookie
+       */
+      const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+      const CREATED_DATE = "2022-12-24T12:00:00.000Z";
+      const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
+      const cookie = {
+        identity: { fides_user_device_id: uuid },
+        fides_meta: {
+          version: "0.9.0",
+          createdAt: CREATED_DATE,
+          updatedAt: UPDATED_DATE,
+        },
+        consent: {},
+        tcfConsent: {
+          purpose_preferences: { [PURPOSE_1.id]: false, [PURPOSE_2.id]: true },
+          special_purpose_preferences: { [SPECIAL_PURPOSE_1.id]: false },
+          feature_preferences: { [FEATURE_1.id]: true, [FEATURE_2.id]: true },
+          system_preferences: { [VENDOR_1.id]: false },
+          vendor_preferences: { [VENDOR_2.id]: false },
+        },
+      };
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+          },
+          experience: experience.items[0],
+        });
+      });
+      // Open the modal and move to the second layer
+      cy.get("#fides-modal-link").click();
+      cy.getByTestId("fides-modal-content").within(() => {
+        cy.get("#fides-banner-button-secondary")
+          .contains("Manage preferences")
+          .click();
+      });
+
+      // Verify the toggles
+      // Purposes
+      cy.getByTestId(`toggle-${PURPOSE_1.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      cy.getByTestId(`toggle-${SPECIAL_PURPOSE_1.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+      // also verify that a purpose that was not part of the cookie is also opted out
+      // (since it should have no current_preference, and default behavior is opt out)
+      cy.getByTestId(`toggle-${PURPOSE_3.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+      // Features
+      cy.get("#fides-tab-Features").click();
+      cy.getByTestId(`toggle-${FEATURE_1.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      cy.getByTestId(`toggle-${FEATURE_2.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      // Vendors
+      cy.get("#fides-tab-Vendors").click();
+      cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+      cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+    });
+  });
 });
