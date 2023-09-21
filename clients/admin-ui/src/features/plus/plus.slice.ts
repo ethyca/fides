@@ -286,13 +286,10 @@ const plusApi = baseApi.injectEndpoints({
     }),
     updateCustomAsset: build.mutation<void, UploadCustomAsset>({
       query: ({ assetKey, file }) => {
-        const formData = new FormData();
-        formData.append("file", file);
-
         return {
           url: `plus/custom-asset/${assetKey}`,
           method: "PUT",
-          body: formData,
+          body: file,
         };
       },
       invalidatesTags: () => ["Custom Assets"],
