@@ -37,7 +37,6 @@ export interface PrivacyCenterSettings {
   SERVER_SIDE_FIDES_API_URL: string | null; // e.g. http://fides:8080/api/v1
   CONFIG_CSS_URL: string; // e.g. file:///app/config/config.css
   CONFIG_JSON_URL: string; // e.g. file:///app/config/config.json
-  TCF_ENABLED?: boolean; // whether we should render the TCF modal. Fallback for Fides server value of if TCF is enabled
 
   // Fides.js options
   DEBUG: boolean; // whether console logs are enabled for consent components
@@ -67,7 +66,6 @@ export type PrivacyCenterClientSettings = Pick<
   | "OVERLAY_PARENT_ID"
   | "MODAL_LINK_ID"
   | "PRIVACY_CENTER_URL"
-  | "TCF_ENABLED"
 >;
 
 export type Styles = string;
@@ -285,9 +283,6 @@ export const loadPrivacyCenterEnvironment =
       PRIVACY_CENTER_URL:
         process.env.FIDES_PRIVACY_CENTER__PRIVACY_CENTER_URL ||
         "http://localhost:3000",
-      TCF_ENABLED: process.env.FIDES_PRIVACY_CENTER__TCF_ENABLED
-        ? process.env.FIDES_PRIVACY_CENTER__TCF_ENABLED === "true"
-        : false,
     };
 
     // Load configuration file (if it exists)
@@ -309,7 +304,6 @@ export const loadPrivacyCenterEnvironment =
       OVERLAY_PARENT_ID: settings.OVERLAY_PARENT_ID,
       MODAL_LINK_ID: settings.MODAL_LINK_ID,
       PRIVACY_CENTER_URL: settings.PRIVACY_CENTER_URL,
-      TCF_ENABLED: settings.TCF_ENABLED,
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present
