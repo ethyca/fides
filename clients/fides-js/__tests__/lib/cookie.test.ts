@@ -77,7 +77,7 @@ describe("makeFidesCookie", () => {
       identity: {
         fides_user_device_id: MOCK_UUID,
       },
-      tcfConsent: {},
+      tcf_consent: {},
     });
   });
 
@@ -493,7 +493,7 @@ describe("updateExperienceFromCookieConsent", () => {
     it("can handle updating preferences", () => {
       const cookie = {
         ...baseCookie,
-        tcfConsent: {
+        tcf_consent: {
           purpose_preferences: {
             1: true,
             2: false,
@@ -540,7 +540,7 @@ describe("updateExperienceFromCookieConsent", () => {
     it("can handle when cookie has values not in the experience", () => {
       const cookie = {
         ...baseCookie,
-        tcfConsent: {
+        tcf_consent: {
           purpose_preferences: {
             1: true,
             2: false,
@@ -581,7 +581,7 @@ describe("updateExperienceFromCookieConsent", () => {
     const cookie = {
       ...baseCookie,
       consent: { one: true, two: false },
-      tcfConsent: {
+      tcf_consent: {
         purpose_preferences: {
           1: true,
           2: false,

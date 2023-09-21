@@ -56,8 +56,8 @@ export interface FidesCookie {
   consent: CookieKeyConsent;
   identity: CookieIdentity;
   fides_meta: CookieMeta;
-  tcString?: string;
-  tcfConsent: TcfCookieConsent;
+  tc_string?: string;
+  tcf_consent: TcfCookieConsent;
 }
 
 /**
@@ -113,7 +113,7 @@ export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
       createdAt: now.toISOString(),
       updatedAt: "",
     },
-    tcfConsent: {},
+    tcf_consent: {},
   };
 };
 
@@ -287,9 +287,9 @@ export const updateExperienceFromCookieConsent = ({
     tcf_systems: experience.tcf_systems,
   };
 
-  if (cookie.tcfConsent) {
+  if (cookie.tcf_consent) {
     TCF_COOKIE_KEY_TO_EXPERIENCE_KEY.forEach(({ cookieKey, experienceKey }) => {
-      const cookieConsent = cookie.tcfConsent[cookieKey] ?? {};
+      const cookieConsent = cookie.tcf_consent[cookieKey] ?? {};
       // @ts-ignore the array map should ensure we will get the right record type
       tcfEntities[experienceKey] = experience[experienceKey]?.map((p) => {
         const preference = Object.hasOwn(cookieConsent, p.id)

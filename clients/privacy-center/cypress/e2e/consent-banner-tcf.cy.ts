@@ -488,7 +488,7 @@ describe("Fides-js TCF", () => {
           updatedAt: UPDATED_DATE,
         },
         consent: {},
-        tcfConsent: {
+        tcf_consent: {
           purpose_preferences: { [PURPOSE_1.id]: false, [PURPOSE_2.id]: true },
           special_purpose_preferences: { [SPECIAL_PURPOSE_1.id]: false },
           feature_preferences: { [FEATURE_1.id]: true, [FEATURE_2.id]: true },

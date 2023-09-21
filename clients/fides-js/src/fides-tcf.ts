@@ -98,10 +98,10 @@ const getInitialPreference = (
 const updateCookie = async (
   oldCookie: FidesCookie,
   experience: PrivacyExperience
-) => {
+): Promise<FidesCookie> => {
   // First check if the user has never consented before
   if (!hasSavedTcfPreferences(experience)) {
-    return { ...oldCookie, tcString: "" };
+    return { ...oldCookie, tc_string: "" };
   }
 
   const tcStringPreferences: TcfSavePreferences = {
@@ -136,7 +136,7 @@ const updateCookie = async (
   };
 
   const tcString = await generateTcString({ tcStringPreferences, experience });
-  return { ...oldCookie, tcString };
+  return { ...oldCookie, tc_string: tcString };
 };
 
 /**
@@ -192,7 +192,7 @@ _Fides = {
   },
   fides_meta: {},
   identity: {},
-  tcfConsent: {},
+  tcf_consent: {},
   gtm,
   init,
   initialized: false,

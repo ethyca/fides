@@ -122,7 +122,7 @@ _Fides = {
   },
   fides_meta: {},
   identity: {},
-  tcfConsent: {},
+  tcf_consent: {},
   gtm,
   init,
   initialized: false,

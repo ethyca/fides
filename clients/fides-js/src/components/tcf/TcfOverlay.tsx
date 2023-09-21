@@ -150,8 +150,8 @@ const updateCookie = async (
   });
   return {
     ...oldCookie,
-    tcString,
-    tcfConsent: transformTcfPreferencesToCookieKeys(tcf),
+    tc_string: tcString,
+    tcf_consent: transformTcfPreferencesToCookieKeys(tcf),
   };
 };
 

@@ -186,26 +186,26 @@ export const tcf = () => {
   // Initialize api with TC str, we don't yet show UI, so we use false
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
   window.addEventListener("FidesInitialized", (event) => {
-    const { tcString } = event.detail;
+    const { tc_string: tcString } = event.detail;
     cmpApi.update(tcString ?? null, false);
   });
   // UI is visible
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--tc-string-needs-update
   // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--new-user--no-tc-string
   window.addEventListener("FidesUIShown", (event) => {
-    const { tcString } = event.detail;
+    const { tc_string: tcString } = event.detail;
     cmpApi.update(tcString ?? null, true);
   });
   // UI is no longer visible
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
   window.addEventListener("FidesModalClosed", (event) => {
-    const { tcString } = event.detail;
+    const { tc_string: tcString } = event.detail;
     cmpApi.update(tcString ?? null, false);
   });
   // User preference collected
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--tc-string-needs-update
   window.addEventListener("FidesUpdated", (event) => {
-    const { tcString } = event.detail;
+    const { tc_string: tcString } = event.detail;
     cmpApi.update(tcString ?? null, false);
   });
 };
