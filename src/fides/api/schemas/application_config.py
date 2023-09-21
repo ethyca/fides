@@ -68,8 +68,8 @@ class ExecutionApplicationConfig(FidesSchema):
 
 
 class SecurityApplicationConfig(FidesSchema):
-    cors_origins: List[AnyUrl] = Field(
-        default_factory=list,
+    cors_origins: Optional[List[AnyUrl]] = Field(
+        default=None,
         description="A list of client addresses allowed to communicate with the Fides webserver.",
     )
 
