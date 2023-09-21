@@ -2,9 +2,10 @@ import { Button, useDisclosure } from "@fidesui/react";
 import React from "react";
 
 import CustomAssetUploadModal from "./CustomAssetUploadModal";
+import { CustomAssetType } from "~/types/api/models/CustomAssetType";
 
 type CustomAssetUploadButtonProps = {
-  assetType: string;
+  assetType: CustomAssetType;
 };
 
 const CustomAssetUploadButton: React.FC<CustomAssetUploadButtonProps> = ({

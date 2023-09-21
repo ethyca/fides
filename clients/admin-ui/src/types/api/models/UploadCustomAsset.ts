@@ -1,4 +1,6 @@
+import { CustomAssetType } from "./CustomAssetType";
+
 export type UploadCustomAsset = {
-  assetKey: string;
+  assetType: CustomAssetType;
   file: File;
 };

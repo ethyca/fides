@@ -285,11 +285,11 @@ const plusApi = baseApi.injectEndpoints({
       providesTags: () => ["System History"],
     }),
     updateCustomAsset: build.mutation<void, UploadCustomAsset>({
-      query: ({ assetKey, file }) => ({
-          url: `plus/custom-asset/${assetKey}`,
-          method: "PUT",
-          body: file,
-        }),
+      query: ({ assetType, file }) => ({
+        url: `plus/custom-asset/${assetType}`,
+        method: "PUT",
+        body: file,
+      }),
       invalidatesTags: () => ["Custom Assets"],
     }),
   }),

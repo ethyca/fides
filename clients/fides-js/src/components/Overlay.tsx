@@ -147,7 +147,7 @@ const Overlay: FunctionComponent<Props> = ({
     link.rel = "stylesheet";
     link.href = cssUrl.href;
     document.head.appendChild(link);
-  }, []);
+  }, [options.privacyCenterUrl]);
 
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();

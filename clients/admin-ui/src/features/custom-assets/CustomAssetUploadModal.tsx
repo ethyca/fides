@@ -20,19 +20,20 @@ import DocsLink from "~/features/common/DocsLink";
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useUpdateCustomAssetMutation } from "~/features/plus/plus.slice";
+import { CustomAssetType } from "~/types/api/models/CustomAssetType";
 
 type RequestModalProps = {
   isOpen: boolean;
   onClose: () => void;
   testId?: string;
-  assetKey: string;
+  assetType: CustomAssetType;
 };
 
 const CustomAssetUploadModal: React.FC<RequestModalProps> = ({
   isOpen,
   onClose,
   testId = "custom-asset-modal",
-  assetKey,
+  assetType,
 }) => {
   const initialRef = useRef(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -56,7 +57,7 @@ const CustomAssetUploadModal: React.FC<RequestModalProps> = ({
   const handleSubmit = async () => {
     if (uploadedFile) {
       try {
-        await updateCustomAsset({ assetKey, file: uploadedFile }).unwrap();
+        await updateCustomAsset({ assetType, file: uploadedFile }).unwrap();
         toast(successToastParams("Custom asset uploaded successfully"));
       } catch (error) {
         toast(errorToastParams(getErrorMessage(error as FetchBaseQueryError)));
