@@ -182,6 +182,14 @@ class PrivacyExperienceWithId(PrivacyExperience):
     id: str
 
 
+class ExperienceMeta(FidesSchema):
+    """Supplements experience with developer-friendly keys"""
+
+    version_hash: Optional[str]
+    accept_all_tcstring: Optional[str]
+    reject_all_tcstring: Optional[str]
+
+
 class PrivacyExperienceResponse(PrivacyExperienceWithId):
     """
     An API representation of a PrivacyExperience used for response payloads
@@ -217,3 +225,4 @@ class PrivacyExperienceResponse(PrivacyExperienceWithId):
     experience_config: Optional[ExperienceConfigResponse] = Field(
         description="The Experience copy or language"
     )
+    meta: ExperienceMeta
