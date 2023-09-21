@@ -8,6 +8,9 @@ USER_PERMISSIONS = "/user/{user_id}/permission"
 # Config URLs
 CONFIG = "/config"
 
+# Consent Settings Endpoints
+CONSENT_SETTINGS = "/consent-settings"
+
 # Consent request URLs
 CONSENT_REQUEST = "/consent-request"
 CONSENT_REQUEST_PREFERENCES = "/consent-request/preferences"

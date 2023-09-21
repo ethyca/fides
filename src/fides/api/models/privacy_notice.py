@@ -459,15 +459,13 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
     def calculate_relevant_systems(self, db: Session) -> List[FidesKey]:
         """Method to cache the relevant systems at the time to store on PrivacyPreferenceHistory for record keeping
 
-        Provided the notice's enforcement level is "system_wide" - a system is relevant if
-        their data use is an exact match or a child of the notice's data use.
+        A system is relevant if their data use is an exact match or a child of the notice's data use.
         """
         relevant_systems: List[FidesKey] = []
-        if self.enforcement_level == EnforcementLevel.system_wide:
-            for system in db.query(System):
-                if self.applies_to_system(system):
-                    relevant_systems.append(system.fides_key)
-                    continue
+        for system in db.query(System):
+            if self.applies_to_system(system):
+                relevant_systems.append(system.fides_key)
+                continue
         return relevant_systems
 
 

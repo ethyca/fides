@@ -68,6 +68,11 @@ export default async function handler(
     }));
   }
 
+  // DEFER: The Fides server controls whether or not TCF is enabled, and so we
+  // should prefetch that value here. Until the endpoint is ready, we use an
+  // environment variable
+  const tcfEnabled = environment.settings.TCF_ENABLED;
+
   // Check if a geolocation was provided via headers or query param
   const geolocation = await lookupGeolocation(req);
 
@@ -80,19 +85,25 @@ export default async function handler(
     environment.settings.IS_OVERLAY_ENABLED &&
     environment.settings.IS_PREFETCH_ENABLED
   ) {
-    const fidesRegionString = constructFidesRegionString(geolocation);
-
-    if (fidesRegionString) {
-      if (environment.settings.DEBUG) {
-        console.log("Fetching relevant experiences from server-side...");
-      }
-      experience = await fetchExperience(
-        fidesRegionString,
-        environment.settings.SERVER_SIDE_FIDES_API_URL ||
-          environment.settings.FIDES_API_URL,
-        environment.settings.DEBUG,
-        null
+    if (tcfEnabled) {
+      console.warn(
+        "TCF mode is not currently compatible with prefetching, skipping prefetching..."
       );
+    } else {
+      const fidesRegionString = constructFidesRegionString(geolocation);
+
+      if (fidesRegionString) {
+        if (environment.settings.DEBUG) {
+          console.log("Fetching relevant experiences from server-side...");
+        }
+        experience = await fetchExperience(
+          fidesRegionString,
+          environment.settings.SERVER_SIDE_FIDES_API_URL ||
+            environment.settings.FIDES_API_URL,
+          environment.settings.DEBUG,
+          null
+        );
+      }
     }
   }
 
@@ -111,10 +122,10 @@ export default async function handler(
       modalLinkId: environment.settings.MODAL_LINK_ID,
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
       fidesApiUrl: environment.settings.FIDES_API_URL,
+      tcfEnabled,
       serverSideFidesApiUrl:
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
         environment.settings.FIDES_API_URL,
-      tcfEnabled: environment.settings.TCF_ENABLED,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -127,7 +138,10 @@ export default async function handler(
       "Bundling generic fides.js & Privacy Center configuration together..."
     );
   }
-  const fidesJSBuffer = await fsPromises.readFile("public/lib/fides.js");
+  const fidesJsFile = tcfEnabled
+    ? "public/lib/fides-tcf.js"
+    : "public/lib/fides.js";
+  const fidesJSBuffer = await fsPromises.readFile(fidesJsFile);
   const fidesJS: string = fidesJSBuffer.toString();
   if (!fidesJS || fidesJS === "") {
     throw new Error("Unable to load latest fides.js script from server!");

@@ -13,7 +13,6 @@ from sqlalchemy import text
 from sqlalchemy.engine import Connection, ResultProxy
 from sqlalchemy.sql.elements import TextClause
 
-
 # revision identifiers, used by Alembic.
 from fides.api.models.sql_models import DataUse
 

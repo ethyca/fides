@@ -37,6 +37,7 @@ export interface PrivacyCenterSettings {
   SERVER_SIDE_FIDES_API_URL: string | null; // e.g. http://fides:8080/api/v1
   CONFIG_CSS_URL: string; // e.g. file:///app/config/config.css
   CONFIG_JSON_URL: string; // e.g. file:///app/config/config.json
+  TCF_ENABLED?: boolean; // whether we should render the TCF modal. Fallback for Fides server value of if TCF is enabled
 
   // Fides.js options
   DEBUG: boolean; // whether console logs are enabled for consent components
@@ -47,7 +48,6 @@ export interface PrivacyCenterSettings {
   OVERLAY_PARENT_ID: string | null; // (optional) ID of the parent DOM element where the overlay should be inserted
   MODAL_LINK_ID: string | null; // (optional) ID of the DOM element that should trigger the consent modal
   PRIVACY_CENTER_URL: string; // e.g. http://localhost:3000
-  TCF_ENABLED: boolean; // whether we should render the TCF modal
 }
 
 /**

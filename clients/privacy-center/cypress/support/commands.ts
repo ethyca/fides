@@ -181,6 +181,14 @@ declare global {
   interface Window {
     fidesConfig?: FidesConfig;
     dataLayer?: Array<any>;
+    __tcfapi: (
+      command: string,
+      version: number,
+      // DEFER: tcData should be type TCData from the IAB's TCF library.
+      // Once we are importing that library, replace this `any` type.
+      callback: (tcData: any, success: boolean) => void,
+      parameter?: number | string
+    ) => void;
   }
 }
 
