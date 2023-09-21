@@ -11,7 +11,8 @@ from fides.api.api.v1.endpoints.privacy_experience_endpoints import (
 )
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.sql_models import PrivacyDeclaration, System
-from fides.api.util.tc_string import TCModel, build_tc_model, build_tc_string
+from fides.api.util.tcf.tc_model import build_tc_model
+from fides.api.util.tcf.tc_string import TCModel, build_tc_string
 
 
 @pytest.fixture(scope="function")

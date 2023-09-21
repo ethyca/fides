@@ -1,12 +1,12 @@
-import base64
 import json
 import re
 from datetime import datetime
 from os.path import dirname, join
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from fideslang.models import LegalBasisForProcessingEnum
 from pydantic import Field, NonNegativeInt, PositiveInt, validator
+from sqlalchemy.orm import Session
 
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
@@ -16,7 +16,7 @@ from fides.config.helpers import load_file
 
 GVL_JSON_PATH = join(
     dirname(__file__),
-    "../../../../clients/fides-js/src/lib/tcf",
+    "../../../../../clients/fides-js/src/lib/tcf",
     "gvl.json",
 )
 
@@ -25,19 +25,6 @@ CMP_ID: int = 12  # TODO: hardcode our unique CMP ID after certification
 CMP_VERSION = 1
 CONSENT_SCREEN = 1  # TODO On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
 FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6]
-
-
-class TCField(FidesSchema):
-    """Schema to represent a field within a TC string segment"""
-
-    field_name: str = Field(description="Field name")
-    bits: int = Field(
-        description="The number of bits that should be used to represent this value"
-    )
-    value_override: Optional[Any] = Field(
-        description="The value that should be used instead of a "
-        "value of the same name on the TCModel"
-    )
 
 
 class TCModel(FidesSchema):
@@ -101,8 +88,8 @@ class TCModel(FidesSchema):
     )
     num_custom_purposes: int = 0
 
-    created: int = None
-    last_updated: int = None
+    created: Optional[int] = None
+    last_updated: Optional[int] = None
 
     special_feature_optins: List = Field(
         default=[],
@@ -221,17 +208,9 @@ class TCModel(FidesSchema):
         ]
 
 
-def transform_user_preference_to_boolean(preference: UserConsentPreference) -> bool:
-    """Convert opt_in/acknowledge preferences to True and opt_out/other preferences to False"""
-    return preference in [
-        UserConsentPreference.opt_in,
-        UserConsentPreference.acknowledge,
-    ]
-
-
 def _build_vendor_consents_and_legitimate_interests(
     vendors: List[TCFVendorRecord], gvl_vendor_ids: List[int]
-):
+) -> Tuple[List, List]:
     """Construct the vendor_consents and vendor_legitimate_interests sections
     Only add the vendor id to the vendor consents list if one of its purposes
     has a consent legal basis, same for legitimate interests.
@@ -267,7 +246,9 @@ def _build_vendor_consents_and_legitimate_interests(
     return vendor_consents, vendor_legitimate_interests
 
 
-def _build_purpose_consent_and_legitimate_interests(purposes: List[TCFPurposeRecord]):
+def _build_purpose_consent_and_legitimate_interests(
+    purposes: List[TCFPurposeRecord],
+) -> Tuple[List, List]:
     """Construct the purpose_consents and purpose_legitimate_interests sections"""
 
     purpose_consents: List[int] = []
@@ -286,7 +267,7 @@ def _build_purpose_consent_and_legitimate_interests(purposes: List[TCFPurposeRec
     return purpose_consents, purpose_legitimate_interests
 
 
-def _build_special_feature_opt_ins(special_features: List[TCFFeatureRecord]):
+def _build_special_feature_opt_ins(special_features: List[TCFFeatureRecord]) -> List:
     """Construct the special_feature_opt_ins section"""
     special_feature_opt_ins: List[int] = []
     for special_feature in special_features:
@@ -295,7 +276,7 @@ def _build_special_feature_opt_ins(special_features: List[TCFFeatureRecord]):
     return special_feature_opt_ins
 
 
-def get_epoch_time():
+def _get_epoch_time() -> int:
     """Calculate the epoch time to be used for both created and updated_at
 
     TODO not sure why adding this extra 0 to the epoch time is necessary for it to decode properly
@@ -304,10 +285,18 @@ def get_epoch_time():
     return int(datetime.utcnow().date().strftime("%s") + "0")
 
 
-def build_tc_model(db, preference: UserConsentPreference):
+def transform_user_preference_to_boolean(preference: UserConsentPreference) -> bool:
+    """Convert opt_in/acknowledge preferences to True and opt_out/other preferences to False"""
+    return preference in [
+        UserConsentPreference.opt_in,
+        UserConsentPreference.acknowledge,
+    ]
+
+
+def build_tc_model(db: Session, preference: UserConsentPreference) -> TCModel:
     """
-    Helper for building a TCModel which is the basis for building an accept-all or reject-all string,
-    depending on a single "preference"
+    Helper for building a TCModel that contains the information to build
+    an accept-all or reject-all string, depending on the supplied preference.
     """
     with open(load_file([GVL_JSON_PATH]), "r", encoding="utf-8") as file:
         gvl = json.load(file)
@@ -334,7 +323,7 @@ def build_tc_model(db, preference: UserConsentPreference):
     )
 
     # Use the same date for created and lastUpdated
-    current_time: int = get_epoch_time()
+    current_time: int = _get_epoch_time()
 
     tc_model = TCModel(
         _gvl=gvl,
@@ -356,132 +345,3 @@ def build_tc_model(db, preference: UserConsentPreference):
     )
 
     return tc_model
-
-
-def get_bits_for_section(fields: List[TCField], tc_model: TCModel) -> str:
-    total_bits = ""
-    for field in fields:
-        field_value: Any = (
-            field.value_override
-            if field.value_override is not None
-            else getattr(tc_model, field.field_name)
-        )
-
-        if isinstance(field_value, bool):
-            field_value = 1 if field_value else 0
-
-        bit_components = ""
-        if isinstance(field_value, str):
-            bit_allocation = int(field.bits / len(field_value))
-            for char in field_value:
-                converted_num = convert_letter_to_number(char)
-                bit_components += format(converted_num, f"0{bit_allocation}b")
-
-        elif isinstance(field_value, list):
-            for i in range(1, field.bits + 1):
-                bit_components += "1" if i in field_value else "0"
-
-        else:
-            bit_components = format(field_value, f"0{field.bits}b")
-
-        total_bits += bit_components
-    return total_bits
-
-
-def convert_letter_to_number(letter: str):
-    """A->0, Z->25"""
-    return ord(letter) - ord("A")
-
-
-def bitstring_to_bytes(bitstr: str) -> bytes:
-    """Convert a string of 0's and 1's to bytes, padded to both work with base64
-    and bit->byte conversion"""
-    least_common_multiple = 24  # 6 bits (basis for base 64) and 8 bits (one byte)
-    padding: int = len(bitstr) % least_common_multiple
-    new_bits: str = "0" * (least_common_multiple - padding)
-    bitstr += new_bits
-
-    integer_val: int = int(bitstr, 2)
-    return integer_val.to_bytes((len(bitstr)) // 8, byteorder="big")
-
-
-def get_max_vendor_id(vendor_list: List[int]) -> int:
-    if not vendor_list:
-        return 0
-
-    return max([int(vendor_id) for vendor_id in vendor_list])
-
-
-def build_tc_string(model: TCModel) -> str:
-    """Construct a core TC string"""
-
-    core_string: str = build_core_string(model)
-    vendors_disclosed_string: str = build_disclosed_vendors_string(model)
-
-    return core_string + "." + vendors_disclosed_string
-
-
-def build_core_string(model: TCModel):
-    """
-    Build
-    :param model:
-    :return:
-    """
-    max_vendor_consents: int = get_max_vendor_id(model.vendor_consents)
-    max_vendor_li: int = get_max_vendor_id(model.vendor_legitimate_interests)
-
-    core_fields: list = [
-        TCField(field_name="version", bits=6),
-        TCField(field_name="created", bits=36),
-        TCField(field_name="last_updated", bits=36),
-        TCField(field_name="cmp_id", bits=12),
-        TCField(field_name="cmp_version", bits=12),
-        TCField(field_name="consent_screen", bits=6),
-        TCField(field_name="consent_language", bits=12),
-        TCField(field_name="vendor_list_version", bits=12),
-        TCField(field_name="policy_version", bits=6),
-        TCField(field_name="is_service_specific", bits=1),
-        TCField(field_name="use_non_standard_texts", bits=1),
-        TCField(field_name="special_feature_optins", bits=12),
-        TCField(field_name="purpose_consents", bits=24),
-        TCField(field_name="purpose_legitimate_interests", bits=24),
-        TCField(field_name="purpose_one_treatment", bits=1),
-        TCField(field_name="publisher_country_code", bits=12),
-        TCField(
-            field_name="max_vendor_consent", bits=16, value_override=max_vendor_consents
-        ),
-        TCField(
-            field_name="is_vendor_consent_range_encoding", bits=1, value_override=0
-        ),  # Using bitfield
-        TCField(field_name="vendor_consents", bits=max_vendor_consents),
-        TCField(field_name="max_vendor_li", bits=16, value_override=max_vendor_li),
-        TCField(
-            field_name="is_vendor_li_range_encoding", bits=1, value_override=0
-        ),  # Using bitfield
-        TCField(field_name="vendor_legitimate_interests", bits=max_vendor_li),
-        TCField(field_name="num_pub_restrictions", bits=12),
-    ]
-
-    core_bits: str = get_bits_for_section(core_fields, model)
-    return base64.urlsafe_b64encode(bitstring_to_bytes(core_bits)).decode()
-
-
-def build_disclosed_vendors_string(model: TCModel) -> str:
-    """Build the Optional Disclosed Vendors" section of the TC String"""
-    max_vendor_id: int = get_max_vendor_id(model.vendors_disclosed)
-
-    disclosed_vendor_fields: list = [
-        TCField(field_name="segment_type", bits=3, value_override=1),
-        TCField(field_name="max_vendor_id", bits=16, value_override=max_vendor_id),
-        TCField(
-            field_name="is_range_encoding", bits=1, value_override=0
-        ),  # Using Bitfield encoding
-        TCField(
-            field_name="vendors_disclosed",
-            bits=max_vendor_id,
-            value_override=model.vendors_disclosed,
-        ),
-    ]
-
-    disclosed_vendor_bits: str = get_bits_for_section(disclosed_vendor_fields, model)
-    return base64.urlsafe_b64encode(bitstring_to_bytes(disclosed_vendor_bits)).decode()
