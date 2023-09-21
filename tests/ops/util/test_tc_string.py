@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 
 from fides.api.api.v1.endpoints.privacy_experience_endpoints import (
     _build_experience_dict,
-    embed_experience_details,
     hash_experience,
 )
 from fides.api.models.privacy_notice import UserConsentPreference
@@ -15,8 +14,6 @@ from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.util.tc_string import TCModel, build_tc_model, build_tc_string
 
 
-# Comparison string opt in to all for Captify
-# "CPyZhwAPyZhwAAMABBENDUCEAPLAAAAAAAAAABEAAAAA.IgoNV_H__bX9v8X7_6ft0eY1f9_j77uQxBhfJs-4F3LvW_JwX_2E7NF36tq4KmRoEu3ZBIUNtHJnUTVmxaokVrzHsak2cpTNKJ-BkkHMRe2dYCF5vm5tjeQKZ5_p_d3f52T_97dv-39z33913v3d9f-_1-Pjde5_9H_v_fRfb-_If9_7-_8v8_t_rk2_eT1__9-_____-_______2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ"
 @pytest.fixture(scope="function")
 def captify_technologies_system(db: Session) -> System:
     """Add system that only has purposes with Consent legal basis"""
@@ -133,6 +130,44 @@ def emerse_system(db: Session) -> System:
     return system
 
 
+@pytest.fixture
+def skimbit_system(db):
+    """Add system that only has purposes with LI legal basis"""
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"skimbit{uuid.uuid4()}",
+            "vendor_id": "46",
+            "name": f"Skimbit (Skimlinks, Taboola)",
+            "description": "Skimbit, a Taboola company, specializes in data-driven advertising and provides tools for brands and advertisers to analyze customer behavior and deliver targeted and personalized ads.",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    # Add Legitimate Interest-related Purposes
+    for data_use in [
+        "analytics.reporting.ad_performance",  # Purpose 7
+        "analytics.reporting.content_performance",  # Purpose 8
+        "functional.service.improve",  # Purpose 10
+        "essential.service.security"  # Special Purpose 1
+        "essential.fraud_detection",  # Special Purpose 1
+        "marketing.advertising.serving",  # Special Purpose 2
+    ]:
+        # Includes Feature 3
+        PrivacyDeclaration.create(
+            db=db,
+            data={
+                "system_id": system.id,
+                "data_use": data_use,
+                "legal_basis_for_processing": "Legitimate interests",
+                "features": [
+                    "Identify devices based on information transmitted automatically"
+                ],
+            },
+        )
+
+
 class TestHashExperience:
     def test_hash_experience(
         self, db, tcf_system, privacy_experience_france_tcf_overlay
@@ -221,7 +256,8 @@ class TestBuildTCModel:
         m = TCModel(consent_language="English")
         assert m.consent_language == "EN"
 
-    def test_build_tc_string_captify_accept_all(self, db, captify_technologies_system):
+    @pytest.mark.usefixtures("captify_technologies_system")
+    def test_build_tc_string_captify_accept_all(self, db):
         model = build_tc_model(db, UserConsentPreference.opt_in)
 
         assert model.cmp_id == 12
@@ -320,7 +356,8 @@ class TestBuildTCModel:
         assert decoded.interests_vendors == {}
         assert decoded.pub_restriction_entries == []
 
-    def test_build_tc_string_emerse_accept_all(self, db, emerse_system):
+    @pytest.mark.usefixtures("emerse_system")
+    def test_build_tc_string_emerse_accept_all(self, db):
         model = build_tc_model(db, UserConsentPreference.opt_in)
 
         assert model.cmp_id == 12
@@ -436,4 +473,257 @@ class TestBuildTCModel:
             7: False,
             8: True,
         }
+        assert decoded.pub_restriction_entries == []
+
+    @pytest.mark.usefixtures("skimbit_system")
+    def test_build_tc_string_skimbit_accept_all(self, db):
+        model = build_tc_model(db, UserConsentPreference.opt_in)
+
+        assert model.cmp_id == 12
+        assert model.vendor_list_version == 18
+        assert model.policy_version == 4
+        assert model.cmp_version == 1
+        assert model.consent_screen == 1
+
+        assert model.purpose_consents == []
+        assert model.purpose_legitimate_interests == [7, 8, 10]
+        assert model.vendor_consents == []
+        assert model.vendor_legitimate_interests == [46]
+        assert model.special_feature_optins == []
+
+        # Build the TC string and then decode it
+        tc_str = build_tc_string(model)
+        decoded = decode_v2(tc_str)
+
+        assert decoded.version == 2
+        assert decoded.cmp_id == 12
+        assert decoded.cmp_version == 1
+        assert decoded.consent_screen == 1
+        assert decoded.consent_language == b"EN"
+        assert decoded.vendor_list_version == 18
+        assert decoded.tcf_policy_version == 4
+        assert decoded.is_service_specific is False
+        assert decoded.use_non_standard_stacks is False
+        assert decoded.special_features_optin == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+        }
+        assert decoded.purposes_consent == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+        }
+        assert decoded.purposes_legitimate_interests == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: True,
+            8: True,
+            9: False,
+            10: True,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+        }
+        assert decoded.purpose_one_treatment is False
+        assert decoded.publisher_cc == b"AA"
+        assert decoded.consented_vendors == {}
+        assert decoded.interests_vendors == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+            25: False,
+            26: False,
+            27: False,
+            28: False,
+            29: False,
+            30: False,
+            31: False,
+            32: False,
+            33: False,
+            34: False,
+            35: False,
+            36: False,
+            37: False,
+            38: False,
+            39: False,
+            40: False,
+            41: False,
+            42: False,
+            43: False,
+            44: False,
+            45: False,
+            46: True,
+        }
+
+        assert decoded.pub_restriction_entries == []
+
+    @pytest.mark.parametrize(
+        "system_fixture",
+        [("captify_technologies_system"), ("emerse_system"), ("skimbit_system")],
+    )
+    def test_build_tc_string_generic_reject_all(self, system_fixture, db):
+        model = build_tc_model(db, UserConsentPreference.opt_out)
+
+        assert model.cmp_id == 12
+        assert model.vendor_list_version == 18
+        assert model.policy_version == 4
+        assert model.cmp_version == 1
+        assert model.consent_screen == 1
+
+        assert model.purpose_consents == []
+        assert model.purpose_legitimate_interests == []
+        assert model.vendor_consents == []
+        assert model.vendor_legitimate_interests == []
+        assert model.special_feature_optins == []
+
+        # Build the TC string and then decode it
+        tc_str = build_tc_string(model)
+        decoded = decode_v2(tc_str)
+
+        assert decoded.version == 2
+        assert decoded.cmp_id == 12
+        assert decoded.cmp_version == 1
+        assert decoded.consent_screen == 1
+        assert decoded.consent_language == b"EN"
+        assert decoded.vendor_list_version == 18
+        assert decoded.tcf_policy_version == 4
+        assert decoded.is_service_specific is False
+        assert decoded.use_non_standard_stacks is False
+        assert decoded.special_features_optin == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+        }
+        assert decoded.purposes_consent == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+        }
+        assert decoded.purposes_legitimate_interests == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+        }
+        assert decoded.purpose_one_treatment is False
+        assert decoded.publisher_cc == b"AA"
+        assert decoded.consented_vendors == {}
+        assert decoded.interests_vendors == {}
         assert decoded.pub_restriction_entries == []

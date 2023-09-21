@@ -238,7 +238,10 @@ def transform_user_preference_to_boolean(preference: UserConsentPreference) -> b
 def _build_vendor_consents_and_legitimate_interests(
     vendors: List[TCFVendorRecord], gvl_vendor_ids: List[str]
 ):
-    """Construct the vendor_consents and vendor_legitimate_interests sections"""
+    """Construct the vendor_consents and vendor_legitimate_interests sections
+    Only add the vendor id to the vendor consents list if one of its purposes
+    has a consent legal basis, same for legitimate interests.
+    """
     vendor_consents: List[int] = []
     vendor_legitimate_interests: List[int] = []
 
@@ -246,8 +249,13 @@ def _build_vendor_consents_and_legitimate_interests(
         if vendor.id not in gvl_vendor_ids:
             continue
 
-        # TODO shouldn't this only happen if legal basis is consent?
-        vendor_consents.append(int(vendor.id))
+        consent_purpose_ids = [
+            purpose.id
+            for purpose in vendor.purposes
+            if LegalBasisForProcessingEnum.CONSENT.value in purpose.legal_bases
+        ]
+        if consent_purpose_ids:
+            vendor_consents.append(int(vendor.id))
 
         leg_int_purpose_ids = [
             purpose.id
@@ -304,14 +312,16 @@ def get_epoch_time():
 
 def build_tc_model(db, preference: UserConsentPreference):
     """
-    Helper for building a TCModel which is the basis for building an accept-all or reject-all string
+    Helper for building a TCModel which is the basis for building an accept-all or reject-all string,
+    depending on a single "preference"
     """
     with open(load_file([GVL_JSON_PATH]), "r", encoding="utf-8") as file:
         gvl = json.load(file)
 
     internal_gvl_vendor_ids = list(gvl.get("vendors", {}).keys())
-
     tcf_contents: TCFExperienceContents = get_tcf_contents(db)
+
+    consented: bool = transform_user_preference_to_boolean(preference)
 
     (
         vendor_consents,
@@ -330,7 +340,7 @@ def build_tc_model(db, preference: UserConsentPreference):
     )
 
     # Use the same date for created and lastUpdated
-    current_time = get_epoch_time()
+    current_time: int = get_epoch_time()
 
     tc_model = TCModel(
         _gvl=gvl,
@@ -342,18 +352,14 @@ def build_tc_model(db, preference: UserConsentPreference):
         vendors_disclosed=internal_gvl_vendor_ids,
         created=current_time,
         last_updated=current_time,
-        vendor_consents=vendor_consents,
-        vendor_legitimate_interests=vendor_legitimate_interests,
-        purpose_consents=purpose_consents,
-        purpose_legitimate_interests=purpose_legitimate_interests,  # TODO https://github.com/InteractiveAdvertisingBureau/iabtcf-es/blob/master/modules/core/src/encoder/SemanticPreEncoder.ts#L38
-        special_feature_optins=special_feature_opt_ins,
+        vendor_consents=vendor_consents if consented else [],
+        vendor_legitimate_interests=vendor_legitimate_interests if consented else [],
+        purpose_consents=purpose_consents if consented else [],
+        purpose_legitimate_interests=purpose_legitimate_interests
+        if consented
+        else [],  # TODO https://github.com/InteractiveAdvertisingBureau/iabtcf-es/blob/master/modules/core/src/encoder/SemanticPreEncoder.ts#L38
+        special_feature_optins=special_feature_opt_ins if consented else [],
     )
-
-    consented: bool = transform_user_preference_to_boolean(preference)
-
-    if not consented:
-        # TODO Reject all path
-        return
 
     return tc_model
 
