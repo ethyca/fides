@@ -3,16 +3,17 @@ import json
 import re
 from datetime import datetime, timezone
 from os.path import dirname, join
-from typing import Union, List, Dict, Optional
+from typing import Dict, List, Optional, Union
 
-from fides.api.schemas.tcf import TCFVendorRecord, TCFPurposeRecord, TCFFeatureRecord
-from fides.config.helpers import load_file
 from fideslang.models import LegalBasisForProcessingEnum
-from pydantic import Field, NonNegativeInt, PositiveInt, validator, root_validator
+from pydantic import Field, NonNegativeInt, PositiveInt, root_validator, validator
 
-from fides.api.models.privacy_experience import PrivacyExperience, ComponentType
+from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
+from fides.api.util.tcf_util import TCFExperienceContents, get_tcf_contents
+from fides.config.helpers import load_file
 
 GVL_JSON_PATH = join(
     dirname(__file__),
@@ -240,22 +241,21 @@ def _build_vendor_consents_and_legitimate_interests(
         if vendor.id not in gvl_vendor_ids:
             continue
 
+        # TODO shouldn't this only happen if legal basis is consent?
         vendor_consents.append(int(vendor.id))
 
         leg_int_purpose_ids = [
-            purpose
+            purpose.id
             for purpose in vendor.purposes
             if LegalBasisForProcessingEnum.LEGITIMATE_INTEREST.value
             in purpose.legal_bases
         ]
 
         # Ensure vendor doesn't have forbidden legint purpose set
-        if not bool(
+        if leg_int_purpose_ids and not bool(
             set(leg_int_purpose_ids) & set(FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS)
         ):
-            continue
-
-        vendor_legitimate_interests.append(int(vendor.id))
+            vendor_legitimate_interests.append(int(vendor.id))
 
     return vendor_consents, vendor_legitimate_interests
 
@@ -285,9 +285,13 @@ def _build_special_feature_opt_ins(special_features: List[TCFFeatureRecord]):
     return special_feature_opt_ins
 
 
-def build_tc_model(
-    expanded_privacy_experience: PrivacyExperience, preference: UserConsentPreference
-):
+def get_epoch_time():
+    # TODO not sure why adding this extra 0 to the epoch time is necessary for it to decode property
+    # Matches this: Math.round(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate())/100)
+    return int(datetime.utcnow().date().strftime("%s") + "0")
+
+
+def build_tc_model(db, preference: UserConsentPreference):
     """
     Helper for building a TC object for an accept-all or reject-all string
     """
@@ -296,27 +300,25 @@ def build_tc_model(
 
     internal_gvl_vendor_ids = list(gvl.get("vendors", {}).keys())
 
-    # TODO not sure why adding this extra 0 to the epoch time is necessary for it to decode property
-    # Matches this: Math.round(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate())/100)
-    current_time = int(datetime.utcnow().date().strftime("%s") + "0")
+    tcf_contents: TCFExperienceContents = get_tcf_contents(db)
 
     (
         vendor_consents,
         vendor_legitimate_interests,
     ) = _build_vendor_consents_and_legitimate_interests(
-        expanded_privacy_experience.tcf_vendors, internal_gvl_vendor_ids
+        tcf_contents.tcf_vendors, internal_gvl_vendor_ids
     )
 
     (
         purpose_consents,
         purpose_legitimate_interests,
-    ) = _build_purpose_consent_and_legitimate_interests(
-        expanded_privacy_experience.tcf_purposes
-    )
+    ) = _build_purpose_consent_and_legitimate_interests(tcf_contents.tcf_purposes)
 
     special_feature_opt_ins = _build_special_feature_opt_ins(
-        expanded_privacy_experience.tcf_special_features
+        tcf_contents.tcf_special_features
     )
+
+    current_time = get_epoch_time()
 
     tc_model = TCModel(
         _gvl=gvl,
@@ -400,13 +402,16 @@ def build_tc_string(model):
 
         total_bits += bit_components
 
-    return base64.urlsafe_b64encode(bitstring_to_bytes(total_bits))
+    return base64.urlsafe_b64encode(bitstring_to_bytes(total_bits)).decode()
 
 
-def bitstring_to_bytes(s):
+def bitstring_to_bytes(bitstr: str):
     """Add the 0's at the end"""
-    while len(s) % 8 != 0:
-        s += "0"
+    LEAST_COMMON_MULTIPLE = 24  # 6 (basis for base 64) and 8 (one byte)
+    padding = len(bitstr) % LEAST_COMMON_MULTIPLE
+    new_bits = "0" * (LEAST_COMMON_MULTIPLE - padding)
 
-    integer_val = int(s, 2)
-    return integer_val.to_bytes((len(s) + 7) // 8, byteorder="big")
+    bitstr += new_bits
+
+    integer_val = int(bitstr, 2)
+    return integer_val.to_bytes((len(bitstr)) // 8, byteorder="big")
