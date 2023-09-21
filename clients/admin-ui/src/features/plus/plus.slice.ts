@@ -32,9 +32,9 @@ import {
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
+import { UploadCustomAsset } from "~/types/api/models/UploadCustomAsset";
 
 import { DictDataUse, DictEntry, Page } from "./types";
-import { UploadCustomAsset } from "~/types/api/models/UploadCustomAsset";
 
 interface ScanParams {
   classify?: boolean;
