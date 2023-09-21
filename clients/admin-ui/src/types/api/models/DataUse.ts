@@ -56,7 +56,7 @@ export type DataUse = {
    */
   active?: boolean;
   /**
-   * This is for tracking when the daulft entity was added
+   * This is for tracking when the default entity was added
    */
   version_added?: string;
 };
