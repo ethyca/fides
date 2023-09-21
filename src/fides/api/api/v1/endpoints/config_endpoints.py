@@ -46,7 +46,7 @@ def get_config(
     response_model=ApplicationConfigSchema,
     response_model_exclude_unset=True,
 )
-def update_settings(
+def patch_settings(
     *,
     db: Session = Depends(deps.get_db),
     request: Request,
@@ -65,6 +65,32 @@ def update_settings(
 
     ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
 
+    return update_config.api_set
+
+
+@router.put(
+    urls.CONFIG,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[scopes.CONFIG_UPDATE])],
+    response_model=ApplicationConfigSchema,
+    response_model_exclude_unset=True,
+)
+def put_settings(
+    *,
+    db: Session = Depends(deps.get_db),
+    data: ApplicationConfigSchema,
+) -> ApplicationConfigSchema:
+    """
+    Updates the global application settings record.
+
+    The record will look exactly as it is provided, i.e. true PUT behavior.
+    """
+    logger.info("Updating application settings")
+    update_config: ApplicationConfig = ApplicationConfig.update_api_set(
+        db,
+        data.dict(exclude_none=True),
+        merge_updates=False,
+    )
     return update_config.api_set
 
 
