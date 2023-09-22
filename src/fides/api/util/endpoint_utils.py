@@ -5,7 +5,6 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from fastapi import HTTPException
 from fideslang import FidesModelType
-from fideslang.models import DataCategory, DataQualifier, DataSubject, DataUse
 from slowapi import Limiter
 from slowapi.util import get_remote_address  # type: ignore
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,21 +28,7 @@ from fides.common.api.scope_registry import (
 from fides.config import CONFIG
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
-    models_with_default_field,
-)
-
-# Because of the aliasing & skips, isort puts these last
-from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
-    DataCategory as SQLDataCategory,
-)
-from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
-    DataUse as SQLDataUse,
-)
-from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
-    DataQualifier as SQLDataQualifier,
-)
-from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
-    DataSubject as SQLDataSubject,
+    ModelWithDefaultField,
 )
 
 API_PREFIX = "/api/v1"
@@ -83,14 +68,14 @@ async def forbid_if_editing_is_default(
     """
     Raise a forbidden error if the user is trying modify the `is_default` field
     """
-    if sql_model in models_with_default_field:
+    if isinstance(sql_model, ModelWithDefaultField):
         resource = await get_resource(sql_model, fides_key, async_session)
 
         assert isinstance(
-            resource, (SQLDataCategory, SQLDataQualifier, SQLDataSubject, SQLDataUse)
+            resource, ModelWithDefaultField
         ), "Provided Resource is not the right type!"
         assert isinstance(
-            payload, (DataCategory, DataQualifier, DataSubject, DataUse)
+            payload, ModelWithDefaultField
         ), "Provided Payload is not the right type!"
 
         if resource.is_default != payload.is_default:
@@ -104,7 +89,7 @@ async def forbid_if_default(
     Raise a forbidden error if the user is trying to operate on a resource
     with `is_default=True`
     """
-    if sql_model in models_with_default_field:
+    if isinstance(sql_model, ModelWithDefaultField):
         resource = await get_resource(sql_model, fides_key, async_session)
         if resource.is_default:
             raise errors.ForbiddenError(sql_model.__name__, fides_key)
@@ -117,7 +102,7 @@ async def forbid_if_editing_any_is_default(
     Raise a forbidden error if any of the existing resources' `is_default`
     field is being modified, or if there is a new resource with `is_default=True`
     """
-    if sql_model in models_with_default_field:
+    if isinstance(sql_model, ModelWithDefaultField):
         fides_keys = [resource["fides_key"] for resource in resources]
         existing_resources = {
             r.fides_key: r

@@ -103,7 +103,7 @@ async def verify_oauth_client_for_system_from_fides_key(
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
     system_auth_data: SystemAuthContainer = Depends(_get_system_from_fides_key),
-) -> Union[str, System]:
+) -> str:
     """
     Verifies that the access token provided in the authorization header contains the necessary scopes to be
     able to access the System from the given *fides_key* in the path parameter.
@@ -119,6 +119,7 @@ async def verify_oauth_client_for_system_from_fides_key(
         security_scopes=security_scopes,
         db=db,
     )
+    assert isinstance(system, str)
     return system
 
 

@@ -30,6 +30,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
+from typing_extensions import Protocol, runtime_checkable
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base
@@ -551,11 +552,10 @@ sql_model_map: Dict = {
     "evaluation": Evaluation,
 }
 
-models_with_default_field = [
-    sql_model
-    for sql_model in sql_model_map.values()
-    if hasattr(sql_model, "is_default")
-]
+
+@runtime_checkable
+class ModelWithDefaultField(Protocol):
+    is_default: bool
 
 
 class AllowedTypes(str, EnumType):

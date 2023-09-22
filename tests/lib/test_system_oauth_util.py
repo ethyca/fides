@@ -47,7 +47,7 @@ class TestHasSystemPermissions:
             CONFIG.security.app_encryption_key,
         )  # Note token doesn't have system on it, but the user is an owner
 
-        await verify_oauth_client_for_system_from_request_body(
+        response = await verify_oauth_client_for_system_from_request_body(
             security_scopes=SecurityScopes(scopes=[SYSTEM_UPDATE]),
             authorization=token,
             db=db,
@@ -56,7 +56,7 @@ class TestHasSystemPermissions:
             ),
         )
 
-        assert True
+        assert response == system.fides_key
 
     async def test_viewer_role_alone_cannot_update_system(
         self, viewer_user, db, system
