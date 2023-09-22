@@ -537,7 +537,7 @@ def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
             and saas_config.get("consent_requests")
         ):
             consent_datasets.append(
-                dataset_config.get_dataset_with_stubbed_collection()
+                dataset_config.get_dataset_with_stubbed_collection()  # type: ignore[arg-type, assignment]
             )
 
     return DatasetGraph(*consent_datasets)
