@@ -12,21 +12,23 @@ async function loadDefaultFidesCss(): Promise<string> {
 }
 
 async function refreshFidesCss(): Promise<string> {
-  const environment = await loadPrivacyCenterEnvironment();
-  const fidesUrl =
-    environment.settings.SERVER_SIDE_FIDES_API_URL ||
-    environment.settings.FIDES_API_URL;
-  const response = await fetch(`${fidesUrl}/plus/custom-asset/fides.css`);
-  const data = await response.text();
+  try {
+    const environment = await loadPrivacyCenterEnvironment();
+    const fidesUrl =
+      environment.settings.SERVER_SIDE_FIDES_API_URL ||
+      environment.settings.FIDES_API_URL;
+    const response = await fetch(`${fidesUrl}/plus/custom-asset/fides.css`);
+    const data = await response.text();
 
-  if (!response.ok || !data) {
-    console.warn(
-      "Failed to fetch custom fides.css or received empty data. Using default fides.css"
-    );
+    if (!response.ok || !data) {
+      throw new Error();
+    }
+
+    return data;
+  } catch (error) {
+    console.warn("Failed to fetch custom fides.css. Using default fides.css.");
     return loadDefaultFidesCss();
   }
-
-  return data;
 }
 
 /**
