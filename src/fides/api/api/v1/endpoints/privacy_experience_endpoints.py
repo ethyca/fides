@@ -267,34 +267,30 @@ def embed_experience_details(
         db, fides_user_provided_identity
     )
 
-    # Add fetched TCF contents to the Privacy Experience if applicable
-    for component in TCF_COMPONENT_MAPPING:
-        setattr(privacy_experience, component, getattr(tcf_contents, component))
-
     has_tcf_contents: bool = any(
         getattr(tcf_contents, component) for component in TCF_COMPONENT_MAPPING
     )
+
+    # Add fetched TCF contents to the Privacy Experience if applicable
+    for component in TCF_COMPONENT_MAPPING:
+        setattr(privacy_experience, component, getattr(tcf_contents, component))
 
     if tcf_contents:
         version_hash = build_tcf_version_hash(tcf_contents)
         privacy_experience.meta = {
             "version_hash": version_hash,
-            "accept_all": {
-                "tc_string": build_tc_string(
-                    tcf_contents, UserConsentPreference.opt_in
-                ),
-                "mobile_data": build_tc_data_for_mobile(
-                    tcf_contents, UserConsentPreference.opt_in
-                ),
-            },
-            "reject_all": {
-                "tc_string": build_tc_string(
-                    tcf_contents, UserConsentPreference.opt_out
-                ),
-                "mobile_data": build_tc_data_for_mobile(
-                    tcf_contents, UserConsentPreference.opt_out
-                ),
-            },
+            "accept_all_tc_string": build_tc_string(
+                tcf_contents, UserConsentPreference.opt_in
+            ),
+            "accept_all_tc_mobile_data": build_tc_data_for_mobile(
+                tcf_contents, UserConsentPreference.opt_in
+            ),
+            "reject_all_tc_string": build_tc_string(
+                tcf_contents, UserConsentPreference.opt_out
+            ),
+            "reject_all_tc_mobile_data": build_tc_data_for_mobile(
+                tcf_contents, UserConsentPreference.opt_out
+            ),
         }
 
     privacy_notices: List[

@@ -251,8 +251,10 @@ class ExperienceMeta(FidesSchema):
     """Supplements experience with developer-friendly keys"""
 
     version_hash: Optional[str] = None
-    accept_all: Optional[TCStringDetails] = None
-    reject_all: Optional[TCStringDetails] = None
+    accept_all_tc_string: Optional[str] = None
+    accept_all_tc_mobile_data: Optional[TCMobileData] = None
+    reject_all_tc_string: Optional[str] = None
+    reject_all_tc_mobile_data: Optional[TCMobileData] = None
 
 
 class PrivacyExperienceResponse(PrivacyExperienceWithId):
