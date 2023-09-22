@@ -50,6 +50,10 @@ const FEATURE_2 = {
   id: 2,
   name: "Link different devices",
 };
+const SPECIAL_FEATURE_1 = {
+  id: 1,
+  name: "Use precise geolocation data",
+};
 
 describe("Fides-js TCF", () => {
   beforeEach(() => {
@@ -184,18 +188,18 @@ describe("Fides-js TCF", () => {
         cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
           cy.get("input").should("be.checked");
         });
-        cy.getByTestId("toggle-Special purposes").within(() => {
-          cy.get("input").should("be.checked");
-        });
-        cy.getByTestId(`toggle-${SPECIAL_PURPOSE_1.name}`).within(() => {
-          cy.get("input").should("be.checked");
-        });
+        cy.get(".fides-notice-toggle-header").contains("Special purposes");
+        cy.get(".fides-notice-toggle-title").contains(SPECIAL_PURPOSE_1.name);
+        cy.getByTestId("toggle-Special purposes").should("not.exist");
+        cy.getByTestId(`toggle-${SPECIAL_PURPOSE_1.name}`).should("not.exist");
 
         cy.get("#fides-tab-Features").click();
-        cy.getByTestId(`toggle-${FEATURE_1.name}`).within(() => {
-          cy.get("input").should("not.be.checked");
-        });
-        cy.getByTestId(`toggle-${FEATURE_2.name}`).within(() => {
+        cy.get(".fides-notice-toggle-header").contains("Features");
+        cy.get(".fides-notice-toggle-title").contains(FEATURE_1.name);
+        cy.get(".fides-notice-toggle-title").contains(FEATURE_2.name);
+        cy.getByTestId(`toggle-${FEATURE_1.name}`).should("not.exist");
+        cy.getByTestId(`toggle-${FEATURE_2.name}`).should("not.exist");
+        cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).within(() => {
           cy.get("input").should("not.be.checked");
         });
 
@@ -275,12 +279,10 @@ describe("Fides-js TCF", () => {
               { id: PURPOSE_4.id, preference: "opt_in" },
               { id: PURPOSE_2.id, preference: "opt_in" },
             ]);
-            expect(body.special_purpose_preferences).to.eql([
-              { id: SPECIAL_PURPOSE_1.id, preference: "opt_in" },
-            ]);
-            expect(body.feature_preferences).to.eql([
-              { id: FEATURE_1.id, preference: "opt_in" },
-              { id: FEATURE_2.id, preference: "opt_in" },
+            expect(body.special_purpose_preferences).to.eql(undefined);
+            expect(body.feature_preferences).to.eql(undefined);
+            expect(body.special_feature_preferences).to.eql([
+              { id: SPECIAL_FEATURE_1.id, preference: "opt_in" },
             ]);
             expect(body.vendor_preferences).to.eql([
               { id: VENDOR_2.id, preference: "opt_in" },
@@ -303,12 +305,10 @@ describe("Fides-js TCF", () => {
               { id: PURPOSE_4.id, preference: "opt_out" },
               { id: PURPOSE_2.id, preference: "opt_out" },
             ]);
-            expect(body.special_purpose_preferences).to.eql([
-              { id: SPECIAL_PURPOSE_1.id, preference: "opt_out" },
-            ]);
-            expect(body.feature_preferences).to.eql([
-              { id: FEATURE_1.id, preference: "opt_out" },
-              { id: FEATURE_2.id, preference: "opt_out" },
+            expect(body.special_purpose_preferences).to.eql(undefined);
+            expect(body.feature_preferences).to.eql(undefined);
+            expect(body.special_feature_preferences).to.eql([
+              { id: SPECIAL_FEATURE_1.id, preference: "opt_out" },
             ]);
             expect(body.vendor_preferences).to.eql([
               { id: VENDOR_2.id, preference: "opt_out" },
@@ -323,10 +323,9 @@ describe("Fides-js TCF", () => {
       it("can opt in to some and opt out of others", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.getByTestId(`toggle-${PURPOSE_1.name}`).click();
-          cy.getByTestId(`toggle-${SPECIAL_PURPOSE_1.name}`).click();
 
           cy.get("#fides-tab-Features").click();
-          cy.getByTestId(`toggle-${FEATURE_1.name}`).click();
+          cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).click();
 
           cy.get("#fides-tab-Vendors").click();
           cy.getByTestId(`toggle-${VENDOR_1.name}`).click();
@@ -340,12 +339,10 @@ describe("Fides-js TCF", () => {
               { id: PURPOSE_4.id, preference: "opt_in" },
               { id: PURPOSE_2.id, preference: "opt_in" },
             ]);
-            expect(body.special_purpose_preferences).to.eql([
-              { id: SPECIAL_PURPOSE_1.id, preference: "opt_out" },
-            ]);
-            expect(body.feature_preferences).to.eql([
-              { id: FEATURE_1.id, preference: "opt_in" },
-              { id: FEATURE_2.id, preference: "opt_out" },
+            expect(body.special_purpose_preferences).to.eql(undefined);
+            expect(body.feature_preferences).to.eql(undefined);
+            expect(body.special_feature_preferences).to.eql([
+              { id: SPECIAL_FEATURE_1.id, preference: "opt_in" },
             ]);
             expect(body.vendor_preferences).to.eql([
               { id: VENDOR_2.id, preference: "opt_in" },
