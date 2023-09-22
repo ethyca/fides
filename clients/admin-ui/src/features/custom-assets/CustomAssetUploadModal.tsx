@@ -58,7 +58,8 @@ const CustomAssetUploadModal: React.FC<RequestModalProps> = ({
     if (uploadedFile) {
       try {
         await updateCustomAsset({ assetType, file: uploadedFile }).unwrap();
-        toast(successToastParams("Custom asset uploaded successfully"));
+        toast(successToastParams("Stylesheet uploaded successfully"));
+        onClose();
       } catch (error) {
         toast(errorToastParams(getErrorMessage(error as FetchBaseQueryError)));
       } finally {
