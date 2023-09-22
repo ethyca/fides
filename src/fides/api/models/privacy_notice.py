@@ -202,8 +202,7 @@ class PrivacyNoticeBase:
         if not isinstance(name, str):
             raise Exception("Privacy notice keys must be generated from a string.")
         notice_key: str = re.sub(r"\s+", "_", name.lower().strip())
-        FidesKey.validate(notice_key)
-        return notice_key
+        return FidesKey(FidesKey.validate(notice_key))
 
     def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
         """

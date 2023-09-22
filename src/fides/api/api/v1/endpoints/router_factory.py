@@ -8,7 +8,8 @@ Mostly used for `ctl`-related objects.
 from typing import Dict, List
 
 from fastapi import Depends, HTTPException, Response, Security, status
-from fideslang import Dataset, FidesModelType
+from fideslang import FidesModelType
+from fideslang.models import Dataset
 from fideslang.validation import FidesKey
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,7 +26,7 @@ from fides.api.db.crud import (
 from fides.api.db.ctl_session import get_async_db
 from fides.api.models.sql_models import (
     DataCategory,
-    models_with_default_field,
+    ModelWithDefaultField,
     sql_model_map,
 )
 from fides.api.oauth.utils import verify_oauth_client_prod
@@ -143,7 +144,7 @@ def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         sql_model = sql_model_map[model_type]
         if isinstance(resource, Dataset):
             await validate_data_categories(resource, db)
-        if sql_model in models_with_default_field and resource.is_default:
+        if isinstance(sql_model, ModelWithDefaultField) and resource.is_default:
             raise errors.ForbiddenError(model_type, resource.fides_key)
         return await create_resource(sql_model, resource.dict(), db)
 
