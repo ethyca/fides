@@ -2,7 +2,7 @@
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from fideslang import DEFAULT_TAXONOMY
+from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.validation import FidesKey
 from sqlalchemy import Column
