@@ -60,7 +60,7 @@ def patch_settings(
     """
 
     pruned_data = data.dict(exclude_none=True)
-    logger.info("Updating application settings")
+    logger.info("PATCHing application settings")
     update_config: ApplicationConfig = ApplicationConfig.update_api_set(db, pruned_data)
 
     ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
@@ -78,6 +78,7 @@ def patch_settings(
 def put_settings(
     *,
     db: Session = Depends(deps.get_db),
+    request: Request,
     data: ApplicationConfigSchema,
 ) -> ApplicationConfigSchema:
     """
@@ -85,12 +86,15 @@ def put_settings(
 
     The record will look exactly as it is provided, i.e. true PUT behavior.
     """
-    logger.info("Updating application settings")
+    pruned_data = data.dict(exclude_none=True)
+    logger.info("PUTing application settings")
     update_config: ApplicationConfig = ApplicationConfig.update_api_set(
         db,
-        data.dict(exclude_none=True),
+        pruned_data,
         merge_updates=False,
     )
+
+    ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
     return update_config.api_set
 
 
