@@ -78,9 +78,9 @@ const transformTaxonomyBaseToInitialValues = (
   description: t.description ?? "",
   parent_key: t.parent_key ?? "",
   is_default: t.is_default ?? false,
-  version_added: t.version_added ?? "",
-  version_deprecated: t.version_deprecated ?? "",
-  replaced_by: t.replaced_by ?? "",
+  version_added: t.version_added ?? null,
+  version_deprecated: t.version_deprecated ?? null,
+  replaced_by: t.replaced_by ?? null,
   customFieldValues,
 });
 
@@ -348,7 +348,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
         // @ts-ignore for the same reason as above
         entity.rights.length
           ? // @ts-ignore for the same reason as above
-            { values: entity.rights, strategy: entity.strategy }
+          { values: entity.rights, strategy: entity.strategy }
           : undefined,
       automatic_decisions_or_profiling: !!(
         entity.automated_decisions_or_profiling?.toString() === "true"
