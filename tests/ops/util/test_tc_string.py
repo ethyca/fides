@@ -6,13 +6,14 @@ from iab_tcf import decode_v2
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from fides.api.api.v1.endpoints.privacy_experience_endpoints import (
-    _build_experience_dict,
-    hash_experience,
-)
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.sql_models import PrivacyDeclaration, System
-from fides.api.util.tcf.tc_model import build_tc_model
+from fides.api.util.tcf.tc_model import (
+    TCFVersionHash,
+    _build_tcf_version_hash_model,
+    build_tc_model,
+    build_tcf_version_hash,
+)
 from fides.api.util.tcf.tc_string import TCModel, build_tc_string
 from fides.api.util.tcf_util import get_tcf_contents
 
@@ -171,30 +172,104 @@ def skimbit_system(db):
         )
 
 
-class TestHashExperience:
-    def test_hash_experience(
-        self, db, tcf_system, privacy_experience_france_tcf_overlay
+class TestHashTCFExperience:
+    @pytest.mark.usefixtures("tcf_system", "privacy_experience_france_tcf_overlay")
+    def test_build_tcf_version_hash_model(self, db):
+        tcf_contents = get_tcf_contents(db)
+        version_hash_model = _build_tcf_version_hash_model(tcf_contents=tcf_contents)
+        assert version_hash_model == TCFVersionHash(
+            policy_version=4,
+            purpose_consents=[8],
+            purpose_legitimate_interests=[],
+            special_feature_optins=[],
+            vendor_consents=[],
+            vendor_legitimate_interests=[],
+        )
+
+        version_hash = build_tcf_version_hash(tcf_contents)
+        assert version_hash == "75fb2dafef58"
+
+    @pytest.mark.usefixtures("captify_technologies_system")
+    def test_build_tcf_version_hash_removing_declaration(
+        self, db, captify_technologies_system
     ):
-        # These ids will change each time the fixture is creating them, so setting them here
-        privacy_experience_france_tcf_overlay.experience_config.experience_config_history_id = (
-            "test_experience_config_history_id"
+        tcf_contents = get_tcf_contents(db)
+        version_hash_model = _build_tcf_version_hash_model(tcf_contents=tcf_contents)
+        assert version_hash_model == TCFVersionHash(
+            policy_version=4,
+            purpose_consents=[1, 2, 3, 4, 7, 9, 10],
+            purpose_legitimate_interests=[],
+            special_feature_optins=[2],
+            vendor_consents=[2],
+            vendor_legitimate_interests=[],
         )
-        privacy_experience_france_tcf_overlay.id = "test_experience_id"
 
-        hashed = "224edc90c8a349e60defde4d06e798c2ccc0ff699cabfe2cc8e37669217533b1"
+        version_hash = build_tcf_version_hash(tcf_contents)
+        assert version_hash == "eaab1c195073"
 
-        built_experience_dict_1 = _build_experience_dict(
-            db, privacy_experience_france_tcf_overlay
+        # Remove the privacy declaration corresponding to purpose 1
+        for decl in captify_technologies_system.privacy_declarations:
+            if decl.data_use == "functional.storage":
+                decl.delete(db)
+
+        # Recalculate version hash model and version
+        tcf_contents = get_tcf_contents(db)
+        version_hash_model = _build_tcf_version_hash_model(tcf_contents=tcf_contents)
+        assert version_hash_model == TCFVersionHash(
+            policy_version=4,
+            purpose_consents=[2, 3, 4, 7, 9, 10],
+            purpose_legitimate_interests=[],
+            special_feature_optins=[2],
+            vendor_consents=[2],
+            vendor_legitimate_interests=[],
         )
-        built_experience_dict_2 = _build_experience_dict(
-            db, privacy_experience_france_tcf_overlay
+
+        version_hash = build_tcf_version_hash(tcf_contents)
+        assert version_hash == "77ed45ac8d43"
+
+    def test_build_tcf_version_hash_adding_data_use(self, db, emerse_system):
+        tcf_contents = get_tcf_contents(db)
+        version_hash_model = _build_tcf_version_hash_model(tcf_contents=tcf_contents)
+        assert version_hash_model == TCFVersionHash(
+            policy_version=4,
+            purpose_consents=[1, 3, 4],
+            purpose_legitimate_interests=[2, 7, 8, 9],
+            special_feature_optins=[],
+            vendor_consents=[8],
+            vendor_legitimate_interests=[8],
         )
-        assert built_experience_dict_1 == built_experience_dict_2
 
-        first_hashed_dict = hash_experience(db, privacy_experience_france_tcf_overlay)
-        second_hashed_dict = hash_experience(db, privacy_experience_france_tcf_overlay)
+        version_hash = build_tcf_version_hash(tcf_contents)
+        assert version_hash == "a2e85860c68b"
 
-        assert first_hashed_dict == second_hashed_dict == hashed
+        # Adding privacy declaration for purpose 10
+        PrivacyDeclaration.create(
+            db=db,
+            data={
+                "system_id": emerse_system.id,
+                "data_use": "functional.service.improve",
+                "legal_basis_for_processing": "Consent",
+                "features": [
+                    "Match and combine data from other data sources",  # Feature 1
+                    "Link different devices",  # Feature 2
+                ],
+            },
+        )
+
+        # Recalculate version hash model and version
+        tcf_contents = get_tcf_contents(db)
+        version_hash_model = _build_tcf_version_hash_model(tcf_contents=tcf_contents)
+        assert version_hash_model == TCFVersionHash(
+            policy_version=4,
+            purpose_consents=[1, 3, 4, 10],
+            purpose_legitimate_interests=[2, 7, 8, 9],
+            special_feature_optins=[],
+            vendor_consents=[8],
+            vendor_legitimate_interests=[8],
+        )
+
+        version_hash = build_tcf_version_hash(tcf_contents)
+        assert version_hash == "73c0762c9442"
 
 
 class TestBuildTCModel:

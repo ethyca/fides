@@ -1,3 +1,4 @@
+import hashlib
 import json
 import re
 from datetime import datetime
@@ -5,13 +6,19 @@ from os.path import dirname, join
 from typing import Dict, List, Optional, Tuple
 
 from fideslang.models import LegalBasisForProcessingEnum
-from pydantic import Field, NonNegativeInt, PositiveInt, validator
-from sqlalchemy.orm import Session
+from pydantic import (
+    Extra,
+    Field,
+    NonNegativeInt,
+    PositiveInt,
+    root_validator,
+    validator,
+)
 
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
-from fides.api.util.tcf_util import TCFExperienceContents, get_tcf_contents
+from fides.api.util.tcf_util import TCFExperienceContents
 from fides.config.helpers import load_file
 
 GVL_JSON_PATH = join(
@@ -356,3 +363,48 @@ def build_tc_model(
     )
 
     return tc_model
+
+
+class TCFVersionHash(FidesSchema):
+    """Minimal subset of the TCF experience details surfacing
+    when consent should be resurfaced"""
+
+    policy_version: int
+    purpose_consents: List[int]
+    purpose_legitimate_interests: List[int]
+    special_feature_optins: List[int]
+    vendor_consents: List[int]
+    vendor_legitimate_interests: List[int]
+
+    @root_validator()
+    @classmethod
+    def sort_lists(cls, values: Dict) -> Dict:
+        """Verify lists are sorted ascending for repeatability"""
+        for field, val in values.items():
+            if isinstance(val, list):
+                values[field] = sorted(val)
+        return values
+
+    class Config:
+        extra = Extra.ignore
+
+
+def _build_tcf_version_hash_model(
+    tcf_contents: TCFExperienceContents,
+) -> TCFVersionHash:
+    """Given tcf_contents, constructs the TCFVersionHash model containing
+    the raw contents to build the version_hash"""
+    model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
+
+    tcf_version_hash_schema: TCFVersionHash = TCFVersionHash(**model.dict())
+    return tcf_version_hash_schema
+
+
+def build_tcf_version_hash(tcf_contents: TCFExperienceContents) -> str:
+    """Returns a 12-character version hash for TCF that should only change
+    if there are updates to vendors, purposes, and special features sections or legal basis.
+    """
+    tcf_version_hash_model: TCFVersionHash = _build_tcf_version_hash_model(tcf_contents)
+    json_str: str = json.dumps(tcf_version_hash_model.dict(), sort_keys=True)
+    hashed_val: str = hashlib.sha256(json_str.encode()).hexdigest()
+    return hashed_val[:12]  # Shortening string for usability, collision risk is low

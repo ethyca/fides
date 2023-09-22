@@ -12,7 +12,7 @@ from fides.api.util.tcf_util import TCFExperienceContents
 class TCField(FidesSchema):
     """Schema to represent a field within a TC string segment"""
 
-    field_name: str = Field(description="Field name")
+    name: str = Field(description="Field name")
     bits: int = Field(
         description="The number of bits that should be used to represent this value"
     )
@@ -29,7 +29,7 @@ def get_bits_for_section(fields: List[TCField], tc_model: TCModel) -> str:
         field_value: Any = (
             field.value_override
             if field.value_override is not None
-            else getattr(tc_model, field.field_name)
+            else getattr(tc_model, field.name)
         )
 
         if isinstance(field_value, bool):
@@ -101,35 +101,33 @@ def build_core_string(model: TCModel) -> str:
     max_vendor_li: int = _get_max_vendor_id(model.vendor_legitimate_interests)
 
     core_fields: list = [
-        TCField(field_name="version", bits=6),
-        TCField(field_name="created", bits=36),
-        TCField(field_name="last_updated", bits=36),
-        TCField(field_name="cmp_id", bits=12),
-        TCField(field_name="cmp_version", bits=12),
-        TCField(field_name="consent_screen", bits=6),
-        TCField(field_name="consent_language", bits=12),
-        TCField(field_name="vendor_list_version", bits=12),
-        TCField(field_name="policy_version", bits=6),
-        TCField(field_name="is_service_specific", bits=1),
-        TCField(field_name="use_non_standard_texts", bits=1),
-        TCField(field_name="special_feature_optins", bits=12),
-        TCField(field_name="purpose_consents", bits=24),
-        TCField(field_name="purpose_legitimate_interests", bits=24),
-        TCField(field_name="purpose_one_treatment", bits=1),
-        TCField(field_name="publisher_country_code", bits=12),
+        TCField(name="version", bits=6),
+        TCField(name="created", bits=36),
+        TCField(name="last_updated", bits=36),
+        TCField(name="cmp_id", bits=12),
+        TCField(name="cmp_version", bits=12),
+        TCField(name="consent_screen", bits=6),
+        TCField(name="consent_language", bits=12),
+        TCField(name="vendor_list_version", bits=12),
+        TCField(name="policy_version", bits=6),
+        TCField(name="is_service_specific", bits=1),
+        TCField(name="use_non_standard_texts", bits=1),
+        TCField(name="special_feature_optins", bits=12),
+        TCField(name="purpose_consents", bits=24),
+        TCField(name="purpose_legitimate_interests", bits=24),
+        TCField(name="purpose_one_treatment", bits=1),
+        TCField(name="publisher_country_code", bits=12),
+        TCField(name="max_vendor_consent", bits=16, value_override=max_vendor_consents),
         TCField(
-            field_name="max_vendor_consent", bits=16, value_override=max_vendor_consents
-        ),
-        TCField(
-            field_name="is_vendor_consent_range_encoding", bits=1, value_override=0
+            name="is_vendor_consent_range_encoding", bits=1, value_override=0
         ),  # Using bitfield
-        TCField(field_name="vendor_consents", bits=max_vendor_consents),
-        TCField(field_name="max_vendor_li", bits=16, value_override=max_vendor_li),
+        TCField(name="vendor_consents", bits=max_vendor_consents),
+        TCField(name="max_vendor_li", bits=16, value_override=max_vendor_li),
         TCField(
-            field_name="is_vendor_li_range_encoding", bits=1, value_override=0
+            name="is_vendor_li_range_encoding", bits=1, value_override=0
         ),  # Using bitfield
-        TCField(field_name="vendor_legitimate_interests", bits=max_vendor_li),
-        TCField(field_name="num_pub_restrictions", bits=12),
+        TCField(name="vendor_legitimate_interests", bits=max_vendor_li),
+        TCField(name="num_pub_restrictions", bits=12),
     ]
 
     core_bits: str = get_bits_for_section(core_fields, model)
@@ -141,13 +139,13 @@ def build_disclosed_vendors_string(model: TCModel) -> str:
     max_vendor_id: int = _get_max_vendor_id(model.vendors_disclosed)
 
     disclosed_vendor_fields: list = [
-        TCField(field_name="segment_type", bits=3, value_override=1),
-        TCField(field_name="max_vendor_id", bits=16, value_override=max_vendor_id),
+        TCField(name="segment_type", bits=3, value_override=1),
+        TCField(name="max_vendor_id", bits=16, value_override=max_vendor_id),
         TCField(
-            field_name="is_range_encoding", bits=1, value_override=0
+            name="is_range_encoding", bits=1, value_override=0
         ),  # Using Bitfield encoding
         TCField(
-            field_name="vendors_disclosed",
+            name="vendors_disclosed",
             bits=max_vendor_id,
             value_override=model.vendors_disclosed,
         ),

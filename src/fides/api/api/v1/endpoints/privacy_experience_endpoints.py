@@ -37,6 +37,7 @@ from fides.api.util.consent_util import (
 )
 from fides.api.util.endpoint_utils import fides_limiter, transform_fields
 from fides.api.util.tcf.tc_mobile_data import build_tc_data_for_mobile
+from fides.api.util.tcf.tc_model import build_tcf_version_hash
 from fides.api.util.tcf.tc_string import build_tc_string
 from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING, TCFExperienceContents
 from fides.common.api.v1 import urn_registry as urls
@@ -270,18 +271,30 @@ def embed_experience_details(
     for component in TCF_COMPONENT_MAPPING:
         setattr(privacy_experience, component, getattr(tcf_contents, component))
 
+    has_tcf_contents: bool = any(
+        getattr(tcf_contents, component) for component in TCF_COMPONENT_MAPPING
+    )
+
     if tcf_contents:
-        version_hash = hash_experience(db, privacy_experience)
+        version_hash = build_tcf_version_hash(tcf_contents)
         privacy_experience.meta = {
             "version_hash": version_hash,
             "accept_all": {
-                "tc_string": build_tc_string(tcf_contents, UserConsentPreference.opt_in),
-                "mobile_data": build_tc_data_for_mobile(tcf_contents, UserConsentPreference.opt_in)
+                "tc_string": build_tc_string(
+                    tcf_contents, UserConsentPreference.opt_in
+                ),
+                "mobile_data": build_tc_data_for_mobile(
+                    tcf_contents, UserConsentPreference.opt_in
+                ),
             },
             "reject_all": {
-                "tc_string": build_tc_string(tcf_contents, UserConsentPreference.opt_out),
-                "mobile_data": build_tc_data_for_mobile(tcf_contents, UserConsentPreference.opt_out)
-            }
+                "tc_string": build_tc_string(
+                    tcf_contents, UserConsentPreference.opt_out
+                ),
+                "mobile_data": build_tc_data_for_mobile(
+                    tcf_contents, UserConsentPreference.opt_out
+                ),
+            },
         }
 
     privacy_notices: List[
@@ -302,65 +315,4 @@ def embed_experience_details(
     # Add Privacy Notices to the Experience if applicable
     privacy_experience.privacy_notices = privacy_notices
 
-    return has_contents(tcf_contents, privacy_notices)
-
-
-def has_contents(
-    tcf_contents: TCFExperienceContents, privacy_notices: List[PrivacyNotice]
-) -> bool:
-    has_tcf_contents: bool = any(
-        getattr(tcf_contents, component) for component in TCF_COMPONENT_MAPPING
-    )
-
-    has_privacy_notice_contents: bool = bool(privacy_notices)
-
-    return has_privacy_notice_contents or has_tcf_contents
-
-
-def hash_experience(db: Session, experience: PrivacyExperience) -> Optional[str]:
-    """Creates a hash of the privacy experience"""
-    experience_dict: Dict = _build_experience_dict(db, experience)
-    if not experience_dict:
-        return None
-
-    json_str: str = json.dumps(experience_dict, sort_keys=True)
-    hashed_val: str = hashlib.sha256(json_str.encode()).hexdigest()
-    return hashed_val
-
-
-def _build_experience_dict(db: Session, experience: PrivacyExperience) -> Dict:
-    """Builds a dict with meaningful, repeatable pieces from the privacy experience"""
-    tcf_contents: TCFExperienceContents = experience.get_related_tcf_contents(db, None)
-    privacy_notices: List[PrivacyNotice] = experience.get_related_privacy_notices(
-        db,
-        show_disabled=False,
-        systems_applicable=True,
-        fides_user_provided_identity=None,
-    )
-
-    if not has_contents(tcf_contents, privacy_notices):
-        return {}
-
-    region_content: Dict = {
-        "experience_config_history_id": experience.experience_config.experience_config_history_id
-        if experience.experience_config
-        else None,
-        "privacy_experience_id": experience.id,
-        "privacy_notice_history_ids": [
-            notice.privacy_notice_history_id for notice in privacy_notices
-        ].sort(),
-    }
-
-    # Add fetched TCF contents to the Privacy Experience if applicable
-    for component in TCF_COMPONENT_MAPPING:
-        tcf_component_detail_list = getattr(tcf_contents, component)
-        region_content[component] = (
-            [
-                dict(sorted(tcf_component.dict().items()))
-                for tcf_component in tcf_component_detail_list
-            ]
-            if tcf_component_detail_list
-            else None
-        )
-
-    return region_content
+    return bool(privacy_notices) or has_tcf_contents

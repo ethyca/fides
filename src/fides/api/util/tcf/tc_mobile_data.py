@@ -12,14 +12,14 @@ CMP_SDK_ID = 1000000  # TODO pass in SDK ID
 CMP_SDK_VERSION = 1
 
 
-def build_tc_data_for_mobile(tcf_contents: TCFExperienceContents, consent_preference: UserConsentPreference) -> TCMobileData:
+def build_tc_data_for_mobile(
+    tcf_contents: TCFExperienceContents, consent_preference: UserConsentPreference
+) -> TCMobileData:
     """Build TC Data for Mobile App"""
     tc_model: TCModel = build_tc_model(tcf_contents, consent_preference)
 
-    def build_binary_string(field_name: str, num_bits: int):
-        return get_bits_for_section(
-            [TCField(field_name=field_name, bits=num_bits)], tc_model
-        )
+    def build_binary_string(name: str, num_bits: int):
+        return get_bits_for_section([TCField(name=name, bits=num_bits)], tc_model)
 
     max_vendor_consents: int = _get_max_vendor_id(tc_model.vendor_consents)
     max_vendor_li: int = _get_max_vendor_id(tc_model.vendor_legitimate_interests)
