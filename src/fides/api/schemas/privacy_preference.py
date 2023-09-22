@@ -86,6 +86,9 @@ class PrivacyPreferencesRequest(FidesSchema):
 
     browser_identity: Identity
     code: Optional[SafeStr]
+    tc_string: Optional[str] = Field(
+        description="If supplied, _preferences fields will be ignored"
+    )
     preferences: conlist(ConsentOptionCreate, max_items=200) = []  # type: ignore
     purpose_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
     special_purpose_preferences: conlist(TCFSpecialPurposeSave, max_items=200) = []  # type: ignore

@@ -219,10 +219,13 @@ def _build_vendor_consents_and_legitimate_interests(
     vendor_legitimate_interests: List[int] = []
 
     for vendor in vendors:
-        if int(vendor.id) not in gvl_vendor_ids:
+        try:
+            if int(vendor.id) not in gvl_vendor_ids:
+                continue
+        except ValueError:
             continue
 
-        consent_purpose_ids = [
+        consent_purpose_ids: List[int] = [
             purpose.id
             for purpose in vendor.purposes
             if LegalBasisForProcessingEnum.CONSENT.value in purpose.legal_bases
@@ -230,7 +233,7 @@ def _build_vendor_consents_and_legitimate_interests(
         if consent_purpose_ids:
             vendor_consents.append(int(vendor.id))
 
-        leg_int_purpose_ids = [
+        leg_int_purpose_ids: List[int] = [
             purpose.id
             for purpose in vendor.purposes
             if LegalBasisForProcessingEnum.LEGITIMATE_INTEREST.value
@@ -293,7 +296,9 @@ def transform_user_preference_to_boolean(preference: UserConsentPreference) -> b
     ]
 
 
-def build_tc_model(db: Session, preference: UserConsentPreference) -> TCModel:
+def build_tc_model(
+    tcf_contents: TCFExperienceContents, preference: Optional[UserConsentPreference]
+) -> TCModel:
     """
     Helper for building a TCModel that contains the information to build
     an accept-all or reject-all string, depending on the supplied preference.
@@ -304,7 +309,11 @@ def build_tc_model(db: Session, preference: UserConsentPreference) -> TCModel:
     internal_gvl_vendor_ids: list[int] = [
         int(vendor_id) for vendor_id in gvl.get("vendors", {})
     ]
-    tcf_contents: TCFExperienceContents = get_tcf_contents(db)
+
+    if not preference:
+        raise Exception(
+            "Preference must be specified. Only accept or reject-all strings are currently supported."
+        )
 
     consented: bool = transform_user_preference_to_boolean(preference)
 

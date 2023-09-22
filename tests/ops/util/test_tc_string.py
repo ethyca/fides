@@ -1,6 +1,6 @@
 import uuid
-
 from datetime import datetime
+
 import pytest
 from iab_tcf import decode_v2
 from pydantic import ValidationError
@@ -14,6 +14,7 @@ from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.util.tcf.tc_model import build_tc_model
 from fides.api.util.tcf.tc_string import TCModel, build_tc_string
+from fides.api.util.tcf_util import get_tcf_contents
 
 
 @pytest.fixture(scope="function")
@@ -260,7 +261,8 @@ class TestBuildTCModel:
 
     @pytest.mark.usefixtures("captify_technologies_system")
     def test_build_tc_string_captify_accept_all(self, db):
-        model = build_tc_model(db, UserConsentPreference.opt_in)
+        tcf_contents = get_tcf_contents(db)
+        model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
 
         assert model.cmp_id == 12
         assert model.vendor_list_version == 18
@@ -274,7 +276,7 @@ class TestBuildTCModel:
         assert model.purpose_legitimate_interests == []
         assert model.special_feature_optins == [2]
 
-        tc_str = build_tc_string(model)
+        tc_str = build_tc_string(tcf_contents, UserConsentPreference.opt_in)
         decoded = decode_v2(tc_str)
 
         assert decoded.version == 2
@@ -365,7 +367,8 @@ class TestBuildTCModel:
 
     @pytest.mark.usefixtures("emerse_system")
     def test_build_tc_string_emerse_accept_all(self, db):
-        model = build_tc_model(db, UserConsentPreference.opt_in)
+        tcf_contents = get_tcf_contents(db)
+        model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
 
         assert model.cmp_id == 12
         assert model.vendor_list_version == 18
@@ -380,7 +383,7 @@ class TestBuildTCModel:
         assert model.special_feature_optins == []
 
         # Build the TC string and then decode it
-        tc_str = build_tc_string(model)
+        tc_str = build_tc_string(tcf_contents, UserConsentPreference.opt_in)
         decoded = decode_v2(tc_str)
 
         assert decoded.version == 2
@@ -488,7 +491,8 @@ class TestBuildTCModel:
 
     @pytest.mark.usefixtures("skimbit_system")
     def test_build_tc_string_skimbit_accept_all(self, db):
-        model = build_tc_model(db, UserConsentPreference.opt_in)
+        tcf_contents = get_tcf_contents(db)
+        model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
 
         assert model.cmp_id == 12
         assert model.vendor_list_version == 18
@@ -503,7 +507,7 @@ class TestBuildTCModel:
         assert model.special_feature_optins == []
 
         # Build the TC string and then decode it
-        tc_str = build_tc_string(model)
+        tc_str = build_tc_string(tcf_contents, UserConsentPreference.opt_in)
         decoded = decode_v2(tc_str)
 
         assert decoded.version == 2
@@ -644,7 +648,8 @@ class TestBuildTCModel:
         [("captify_technologies_system"), ("emerse_system"), ("skimbit_system")],
     )
     def test_build_tc_string_generic_reject_all(self, system_fixture, db):
-        model = build_tc_model(db, UserConsentPreference.opt_out)
+        tcf_contents = get_tcf_contents(db)
+        model = build_tc_model(tcf_contents, UserConsentPreference.opt_out)
 
         assert model.cmp_id == 12
         assert model.vendor_list_version == 18
@@ -659,7 +664,7 @@ class TestBuildTCModel:
         assert model.special_feature_optins == []
 
         # Build the TC string and then decode it
-        tc_str = build_tc_string(model)
+        tc_str = build_tc_string(tcf_contents, UserConsentPreference.opt_out)
         decoded = decode_v2(tc_str)
 
         assert decoded.version == 2

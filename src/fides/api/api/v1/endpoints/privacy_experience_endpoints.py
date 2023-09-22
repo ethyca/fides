@@ -25,7 +25,7 @@ from fides.api.models.privacy_experience import (
     PrivacyExperience,
     PrivacyExperienceConfig,
 )
-from fides.api.models.privacy_notice import PrivacyNotice
+from fides.api.models.privacy_notice import PrivacyNotice, UserConsentPreference
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.schemas.privacy_experience import PrivacyExperienceResponse
 from fides.api.util.api_router import APIRouter
@@ -36,6 +36,8 @@ from fides.api.util.consent_util import (
     get_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, transform_fields
+from fides.api.util.tcf.tc_mobile_data import build_tc_data_for_mobile
+from fides.api.util.tcf.tc_string import build_tc_string
 from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING, TCFExperienceContents
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
@@ -235,9 +237,6 @@ def privacy_experience_list(
                 fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
             )
 
-        version_hash = hash_experience(db, privacy_experience)
-        privacy_experience.meta = {"version_hash": version_hash}
-
         results.append(privacy_experience)
 
     return fastapi_paginate(results, params=params)
@@ -270,6 +269,20 @@ def embed_experience_details(
     # Add fetched TCF contents to the Privacy Experience if applicable
     for component in TCF_COMPONENT_MAPPING:
         setattr(privacy_experience, component, getattr(tcf_contents, component))
+
+    if tcf_contents:
+        version_hash = hash_experience(db, privacy_experience)
+        mobile_data = build_tc_data_for_mobile(tcf_contents)
+        privacy_experience.meta = {
+            "version_hash": version_hash,
+            "accept_all_tc_string": build_tc_string(
+                tcf_contents, UserConsentPreference.opt_in
+            ),
+            "reject_all_tc_string": build_tc_string(
+                tcf_contents, UserConsentPreference.opt_out
+            ),
+            "tc_data_for_mobile": mobile_data,
+        }
 
     privacy_notices: List[
         PrivacyNotice

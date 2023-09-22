@@ -3,8 +3,10 @@ from typing import Any, List, Optional
 
 from pydantic import Field
 
+from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.util.tcf.tc_model import TCModel
+from fides.api.util.tcf.tc_model import TCModel, build_tc_model
+from fides.api.util.tcf_util import TCFExperienceContents
 
 
 class TCField(FidesSchema):
@@ -20,7 +22,7 @@ class TCField(FidesSchema):
     )
 
 
-def _get_bits_for_section(fields: List[TCField], tc_model: TCModel) -> str:
+def get_bits_for_section(fields: List[TCField], tc_model: TCModel) -> str:
     """Construct a representation of the fields supplied in bits for a given section."""
     total_bits = ""
     for field in fields:
@@ -76,11 +78,14 @@ def _get_max_vendor_id(vendor_list: List[int]) -> int:
     return max(int(vendor_id) for vendor_id in vendor_list)
 
 
-def build_tc_string(model: TCModel) -> str:
-    """Construct a core TC string
+def build_tc_string(
+    tcf_contents: TCFExperienceContents, preference: Optional[UserConsentPreference]
+) -> str:
+    """Construct a core accept all or reject all TC string
 
     Currently only core and vendors_disclosed sections are supported.
     """
+    model: TCModel = build_tc_model(tcf_contents, preference)
 
     core_string: str = build_core_string(model)
     vendors_disclosed_string: str = build_disclosed_vendors_string(model)
@@ -127,7 +132,7 @@ def build_core_string(model: TCModel) -> str:
         TCField(field_name="num_pub_restrictions", bits=12),
     ]
 
-    core_bits: str = _get_bits_for_section(core_fields, model)
+    core_bits: str = get_bits_for_section(core_fields, model)
     return base64.urlsafe_b64encode(_convert_bitstring_to_bytes(core_bits)).decode()
 
 
@@ -148,7 +153,7 @@ def build_disclosed_vendors_string(model: TCModel) -> str:
         ),
     ]
 
-    disclosed_vendor_bits: str = _get_bits_for_section(disclosed_vendor_fields, model)
+    disclosed_vendor_bits: str = get_bits_for_section(disclosed_vendor_fields, model)
     return base64.urlsafe_b64encode(
         _convert_bitstring_to_bytes(disclosed_vendor_bits)
     ).decode()
