@@ -74,6 +74,7 @@ describe("Taxonomy management page", () => {
           name: "name",
           description: "description",
           parent_key: undefined,
+          version_added: "2.0.0",
         },
       };
       cy.intercept("PUT", "/api/v1/data_category*", taxonomyPayload).as(
@@ -285,6 +286,7 @@ describe("Taxonomy management page", () => {
             values: rightValues,
             strategy: "INCLUDE",
           },
+          version_added: "2.0.0",
         };
         expect(body).to.eql(expected);
       });
