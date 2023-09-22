@@ -27,6 +27,7 @@ The types of changes are:
 - Fides-js can now display preliminary TCF data [#3879](https://github.com/ethyca/fides/pull/3879)
 - Fides-js can persist TCF preferences to the backend [#3887](https://github.com/ethyca/fides/pull/3887)
 - TCF modal now supports setting legitimate interest fields [#4037](https://github.com/ethyca/fides/pull/4037)
+- Button to view how many vendors and to open the vendor tab in the TCF modal [#4144](https://github.com/ethyca/fides/pull/4144)
 
 ### Changed
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
