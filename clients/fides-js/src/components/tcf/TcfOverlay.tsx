@@ -191,8 +191,8 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     const systemCount = experience.tcf_systems
       ? experience.tcf_systems.length
       : 0;
-    const vendorCount = experience.tcf_systems
-      ? experience.tcf_systems.length
+    const vendorCount = experience.tcf_vendors
+      ? experience.tcf_vendors.length
       : 0;
     return systemCount + vendorCount;
   }, [experience]);
