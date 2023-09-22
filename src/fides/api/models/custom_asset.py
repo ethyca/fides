@@ -1,13 +1,12 @@
-from enum import Enum
+import enum
 
-from sqlalchemy import Column, Text
+from sqlalchemy import Column, Enum, Text
 from sqlalchemy.ext.declarative import declared_attr
 
 from fides.api.db.base_class import Base
-from fides.api.db.util import EnumColumn
 
 
-class CustomAssetType(str, Enum):
+class CustomAssetType(enum.Enum):
     fides_css = "fides.css"
 
 
@@ -16,5 +15,5 @@ class CustomAsset(Base):
     def __tablename__(self) -> str:
         return "plus_custom_asset"
 
-    key = Column(EnumColumn(CustomAssetType), index=True, unique=True, nullable=False)
+    key = Column(Enum(*[e.value for e in CustomAssetType]), index=True, nullable=False)
     content = Column(Text, nullable=False)
