@@ -30,6 +30,7 @@ The types of changes are:
 
 ### Changed
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
+- CORS configuration page [#4073](https://github.com/ethyca/fides/pull/4073)
 - Refactored `fides.js` components so that they can take data structures that are not necessarily privacy notices [#3870](https://github.com/ethyca/fides/pull/3870)
 
 ### Fixed
