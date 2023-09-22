@@ -15,5 +15,9 @@ class CustomAsset(Base):
     def __tablename__(self) -> str:
         return "plus_custom_asset"
 
-    key = Column(Enum(*[e.value for e in CustomAssetType]), index=True, nullable=False)
+    key = Column(
+        Enum(*[e.value for e in CustomAssetType], name="customassettype"),
+        index=True,
+        nullable=False,
+    )
     content = Column(Text, nullable=False)
