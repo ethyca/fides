@@ -35,6 +35,7 @@ The types of changes are:
 ### Fixed
 - Allows CDN to cache empty experience responses from fides.js API  [#4113](https://github.com/ethyca/fides/pull/4113)
 - added version_added, version_deprecated, and replaced_by to data use, data subject, and data category APIs [#4135](https://github.com/ethyca/fides/pull/4135)
+- Update fides.js to not fetch experience client-side if pre-fetched experience is empty [#4149](https://github.com/ethyca/fides/pull/4149)
 
 ## [2.20.1](https://github.com/ethyca/fides/compare/2.20.0...2.20.1)
 
