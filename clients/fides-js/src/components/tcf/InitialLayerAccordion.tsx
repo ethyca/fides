@@ -1,4 +1,4 @@
-import { VNode, h } from "preact";
+import { h } from "preact";
 import { useDisclosure } from "../../lib/hooks";
 import { TCFPurposeRecord } from "~/lib/tcf/types";
 
@@ -15,11 +15,9 @@ const InitialLayerAccordion = ({
   title,
   description,
   purposes,
-  managePreferencesLink,
 }: {
   title: string;
   description: string;
-  managePreferencesLink: VNode;
   purposes?: Array<TCFPurposeRecord>;
 }) => {
   const { isOpen, getButtonProps, getDisclosureProps, onToggle } =
@@ -69,7 +67,6 @@ const InitialLayerAccordion = ({
             </ul>
           </div>
         ) : null}
-        {managePreferencesLink}
       </div>
     </div>
   );

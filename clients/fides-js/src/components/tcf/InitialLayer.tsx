@@ -1,4 +1,4 @@
-import { VNode, h } from "preact";
+import { h } from "preact";
 import { useMemo } from "preact/hooks";
 import { PrivacyExperience } from "../../lib/consent-types";
 
@@ -12,13 +12,7 @@ import InitialLayerAccordion from "./InitialLayerAccordion";
 
 const STACKS: Record<string, Stack> = GVL_JSON.stacks;
 
-const InitialLayer = ({
-  experience,
-  managePreferencesLink,
-}: {
-  experience: PrivacyExperience;
-  managePreferencesLink: VNode;
-}) => {
+const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
   const purposeIds = useMemo(
     () =>
       experience.tcf_purposes ? experience.tcf_purposes.map((p) => p.id) : [],
@@ -86,7 +80,6 @@ const InitialLayer = ({
               title={s.name}
               description={s.description}
               purposes={stackPurposes}
-              managePreferencesLink={managePreferencesLink}
             />
           );
         })}
@@ -97,7 +90,6 @@ const InitialLayer = ({
             key={p.id}
             title={p.name}
             description={p.description}
-            managePreferencesLink={managePreferencesLink}
           />
         ))}
       </div>
@@ -105,10 +97,8 @@ const InitialLayer = ({
         {specialFeatures.map((sf) => (
           <InitialLayerAccordion
             key={sf.id}
-            // TODO: features are still being worked on in the backend
-            title={sf.name || ""}
-            description=""
-            managePreferencesLink={managePreferencesLink}
+            title={sf.name}
+            description={sf.description}
           />
         ))}
       </div>

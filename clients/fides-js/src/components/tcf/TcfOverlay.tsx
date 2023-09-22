@@ -249,19 +249,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             onClose={onClose}
             experience={experienceConfig}
           >
-            <InitialLayer
-              experience={experience}
-              managePreferencesLink={
-                <button
-                  type="button"
-                  onClick={onManagePreferencesClick}
-                  className="fides-link-button"
-                >
-                  {experience.experience_config
-                    ?.privacy_preferences_link_label || ""}
-                </button>
-              }
-            />
+            <InitialLayer experience={experience} />
             <button
               type="button"
               className="fides-link-button"
