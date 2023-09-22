@@ -164,7 +164,7 @@ describe("configureNavGroups", () => {
         navGroups[4].children
           .map((c) => c.title)
           .find((title) => title === "Domain records")
-      ).toEqual("Domain Records");
+      ).toEqual("Domain records");
     });
 
     it("does not show domain records page when fides cloud is disabled", () => {
