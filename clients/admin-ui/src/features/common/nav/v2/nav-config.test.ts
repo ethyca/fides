@@ -202,9 +202,9 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1].children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "CORS Configuration")
+          .find((c) => c.title === "CORS configuration")
       ).toEqual({
-        title: "CORS Configuration",
+        title: "CORS configuration",
         path: routes.CORS_CONFIGURATION_ROUTE,
       });
     });
@@ -224,7 +224,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1].children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "CORS Configuration")
+          .find((c) => c.title === "CORS configuration")
       ).toEqual(undefined);
     });
 
@@ -243,7 +243,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1]?.children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "CORS Configuration")
+          .find((c) => c.title === "CORS configuration")
       ).toEqual(undefined);
     });
   });
