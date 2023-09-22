@@ -32,6 +32,7 @@ import {
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
+import { UploadCustomAsset } from "~/types/api/models/UploadCustomAsset";
 
 import { DictDataUse, DictEntry, Page } from "./types";
 
@@ -283,6 +284,14 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["System History"],
     }),
+    updateCustomAsset: build.mutation<void, UploadCustomAsset>({
+      query: ({ assetType, file }) => ({
+        url: `plus/custom-asset/${assetType}`,
+        method: "PUT",
+        body: file,
+      }),
+      invalidatesTags: () => ["Custom Assets"],
+    }),
   }),
 });
 
@@ -311,6 +320,7 @@ export const {
   useGetFidesCloudConfigQuery,
   useGetDictionaryDataUsesQuery,
   useGetSystemHistoryQuery,
+  useUpdateCustomAssetMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =

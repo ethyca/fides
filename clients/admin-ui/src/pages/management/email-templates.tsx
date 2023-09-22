@@ -18,10 +18,10 @@ const EmailTemplates: NextPage = () => {
   }
 
   return (
-    <Layout title="Email Templates">
+    <Layout title="Email templates">
       <Box data-testid="email-templates">
         <Heading marginBottom={2} fontSize="2xl">
-          Email Templates
+          Email templates
         </Heading>
         <Box maxWidth="720px">
           <Text fontSize="sm">
