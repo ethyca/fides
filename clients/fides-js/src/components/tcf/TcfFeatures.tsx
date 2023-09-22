@@ -5,35 +5,39 @@ import { PrivacyExperience } from "../../lib/consent-types";
 import type { UpdateEnabledIds } from "./TcfOverlay";
 import DataUseToggle from "../DataUseToggle";
 
-const FeatureBlock = ({
-  label,
-  allFeatures,
-  enabledIds,
+const TcfFeatures = ({
+  allSpecialFeatures,
+  enabledSpecialFeatureIds,
   onChange,
 }: {
-  label: string;
-  allFeatures: TCFFeatureRecord[] | undefined;
-  enabledIds: string[];
-  onChange: (newIds: string[]) => void;
+  allSpecialFeatures: PrivacyExperience["tcf_special_features"];
+  enabledSpecialFeatureIds: string[];
+  onChange: (payload: UpdateEnabledIds) => void;
 }) => {
-  if (!allFeatures || allFeatures.length === 0) {
+  const modelType = "specialFeatures";
+  const label = "Special features";
+  const handleChange = (newIds: string[]) => {
+    onChange({ newEnabledIds: newIds, modelType });
+  };
+  if (!allSpecialFeatures || allSpecialFeatures.length === 0) {
     return null;
   }
 
-  const allChecked = allFeatures.length === enabledIds.length;
+  const allChecked =
+    allSpecialFeatures.length === enabledSpecialFeatureIds.length;
   const handleToggle = (feature: TCFFeatureRecord) => {
     const featureId = `${feature.id}`;
-    if (enabledIds.indexOf(featureId) !== -1) {
-      onChange(enabledIds.filter((e) => e !== featureId));
+    if (enabledSpecialFeatureIds.indexOf(featureId) !== -1) {
+      handleChange(enabledSpecialFeatureIds.filter((e) => e !== featureId));
     } else {
-      onChange([...enabledIds, featureId]);
+      handleChange([...enabledSpecialFeatureIds, featureId]);
     }
   };
   const handleToggleAll = () => {
     if (allChecked) {
-      onChange([]);
+      handleChange([]);
     } else {
-      onChange(allFeatures.map((f) => `${f.id}`));
+      handleChange(allSpecialFeatures.map((f) => `${f.id}`));
     }
   };
 
@@ -45,7 +49,7 @@ const FeatureBlock = ({
         checked={allChecked}
         isHeader
       />
-      {allFeatures.map((f) => {
+      {allSpecialFeatures.map((f) => {
         const vendors = [...(f.vendors || []), ...(f.systems || [])];
         return (
           <DataUseToggle
@@ -53,7 +57,7 @@ const FeatureBlock = ({
             onToggle={() => {
               handleToggle(f);
             }}
-            checked={enabledIds.indexOf(`${f.id}`) !== -1}
+            checked={enabledSpecialFeatureIds.indexOf(`${f.id}`) !== -1}
           >
             <div>
               <p className="fides-tcf-toggle-content">{f.description}</p>
@@ -76,38 +80,5 @@ const FeatureBlock = ({
     </div>
   );
 };
-
-const TcfFeatures = ({
-  allFeatures,
-  allSpecialFeatures,
-  enabledFeatureIds,
-  enabledSpecialFeatureIds,
-  onChange,
-}: {
-  allFeatures: PrivacyExperience["tcf_features"];
-  allSpecialFeatures: PrivacyExperience["tcf_special_features"];
-  enabledFeatureIds: string[];
-  enabledSpecialFeatureIds: string[];
-  onChange: (payload: UpdateEnabledIds) => void;
-}) => (
-  <div>
-    <FeatureBlock
-      label="Features"
-      allFeatures={allFeatures}
-      enabledIds={enabledFeatureIds}
-      onChange={(newEnabledIds) =>
-        onChange({ newEnabledIds, modelType: "features" })
-      }
-    />
-    <FeatureBlock
-      label="Special features"
-      allFeatures={allSpecialFeatures}
-      enabledIds={enabledSpecialFeatureIds}
-      onChange={(newEnabledIds) =>
-        onChange({ newEnabledIds, modelType: "specialFeatures" })
-      }
-    />
-  </div>
-);
 
 export default TcfFeatures;

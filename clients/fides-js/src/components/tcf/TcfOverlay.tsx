@@ -70,8 +70,6 @@ const getEnabledIds = (modelList: TcfModels) => {
 
 export interface EnabledIds {
   purposes: string[];
-  specialPurposes: string[];
-  features: string[];
   specialFeatures: string[];
   vendors: string[];
   systems: string[];
@@ -114,14 +112,6 @@ const createTcfSavePayload = ({
     modelList: experience.tcf_purposes,
     enabledIds: enabledIds.purposes,
   }) as TCFPurposeSave[],
-  special_purpose_preferences: transformTcfModelToTcfSave({
-    modelList: experience.tcf_special_purposes,
-    enabledIds: enabledIds.specialPurposes,
-  }) as TCFSpecialPurposeSave[],
-  feature_preferences: transformTcfModelToTcfSave({
-    modelList: experience.tcf_features,
-    enabledIds: enabledIds.features,
-  }) as TCFFeatureSave[],
   special_feature_preferences: transformTcfModelToTcfSave({
     modelList: experience.tcf_special_features,
     enabledIds: enabledIds.specialFeatures,
@@ -157,8 +147,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   const initialEnabledIds: EnabledIds = useMemo(() => {
     const {
       tcf_purposes: purposes,
-      tcf_special_purposes: specialPurposes,
-      tcf_features: features,
       tcf_special_features: specialFeatures,
       tcf_vendors: vendors,
       tcf_systems: systems,
@@ -166,8 +154,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
 
     return {
       purposes: getEnabledIds(purposes),
-      specialPurposes: getEnabledIds(specialPurposes),
-      features: getEnabledIds(features),
       specialFeatures: getEnabledIds(specialFeatures),
       vendors: getEnabledIds(vendors),
       systems: getEnabledIds(systems),

@@ -42,8 +42,6 @@ export const TcfConsentButtons = ({
   const handleAcceptAll = () => {
     const allIds: EnabledIds = {
       purposes: getAllIds(experience.tcf_purposes),
-      specialPurposes: getAllIds(experience.tcf_special_purposes),
-      features: getAllIds(experience.tcf_features),
       specialFeatures: getAllIds(experience.tcf_special_features),
       vendors: getAllIds(experience.tcf_vendors),
       systems: getAllIds(experience.tcf_systems),
@@ -53,8 +51,6 @@ export const TcfConsentButtons = ({
   const handleRejectAll = () => {
     const emptyIds: EnabledIds = {
       purposes: [],
-      specialPurposes: [],
-      features: [],
       specialFeatures: [],
       vendors: [],
       systems: [],

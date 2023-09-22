@@ -165,10 +165,6 @@ export const generateTcString = async ({
       );
     }
 
-    // note that we cannot set consent for special purposes nor features because the IAB policy states
-    // the user is not given choice by a CMP.
-    // See https://iabeurope.eu/iab-europe-transparency-consent-framework-policies/
-    // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/issues/63#issuecomment-581798996
     encodedString = TCString.encode(tcModel);
   }
   return Promise.resolve(encodedString);

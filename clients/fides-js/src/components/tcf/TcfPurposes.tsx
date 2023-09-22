@@ -100,21 +100,16 @@ const PurposeBlock = ({
 
 const TcfPurposes = ({
   allPurposes,
-  allSpecialPurposes,
   enabledPurposeIds,
-  enabledSpecialPurposeIds,
   onChange,
 }: {
   allPurposes: PrivacyExperience["tcf_purposes"];
-  allSpecialPurposes: PrivacyExperience["tcf_special_purposes"];
   enabledPurposeIds: string[];
-  enabledSpecialPurposeIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
 }) => {
   const { filtered, legalBasisFilter, setLegalBasisFilter } =
     useLegalBasisDropdown({
       allPurposes,
-      allSpecialPurposes,
     });
 
   return (
@@ -129,14 +124,6 @@ const TcfPurposes = ({
         enabledIds={enabledPurposeIds}
         onChange={(newEnabledIds) =>
           onChange({ newEnabledIds, modelType: "purposes" })
-        }
-      />
-      <PurposeBlock
-        label="Special purposes"
-        allPurposes={filtered.specialPurposes as TCFPurposeRecord[]}
-        enabledIds={enabledSpecialPurposeIds}
-        onChange={(newEnabledIds) =>
-          onChange({ newEnabledIds, modelType: "specialPurposes" })
         }
       />
     </div>

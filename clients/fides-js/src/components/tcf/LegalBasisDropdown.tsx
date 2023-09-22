@@ -15,7 +15,7 @@ export const useLegalBasisDropdown = ({
   allSpecialPurposes,
 }: {
   allPurposes: Pick<TCFPurposeRecord, "legal_bases">[] | undefined;
-  allSpecialPurposes: Pick<TCFPurposeRecord, "legal_bases">[] | undefined;
+  allSpecialPurposes?: Pick<TCFPurposeRecord, "legal_bases">[] | undefined;
 }) => {
   const [legalBasisFilter, setLegalBasisFilter] = useState(
     LegalBasisForProcessingEnum.CONSENT

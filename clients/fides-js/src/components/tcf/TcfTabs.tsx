@@ -24,9 +24,7 @@ const TcfTabs = ({
       content: (
         <TcfPurposes
           allPurposes={experience.tcf_purposes}
-          allSpecialPurposes={experience.tcf_special_purposes}
           enabledPurposeIds={enabledIds.purposes}
-          enabledSpecialPurposeIds={enabledIds.specialPurposes}
           onChange={onChange}
         />
       ),
@@ -35,9 +33,7 @@ const TcfTabs = ({
       name: "Features",
       content: (
         <TcfFeatures
-          allFeatures={experience.tcf_features}
           allSpecialFeatures={experience.tcf_special_features}
-          enabledFeatureIds={enabledIds.features}
           enabledSpecialFeatureIds={enabledIds.specialFeatures}
           onChange={onChange}
         />

@@ -109,16 +109,6 @@ const updateCookie = async (
       id: purpose.id,
       preference: getInitialPreference(purpose),
     })),
-    special_purpose_preferences: experience.tcf_special_purposes?.map(
-      (purpose) => ({
-        id: purpose.id,
-        preference: getInitialPreference(purpose),
-      })
-    ),
-    feature_preferences: experience.tcf_features?.map((feature) => ({
-      id: feature.id,
-      preference: getInitialPreference(feature),
-    })),
     special_feature_preferences: experience.tcf_special_features?.map(
       (feature) => ({
         id: feature.id,
