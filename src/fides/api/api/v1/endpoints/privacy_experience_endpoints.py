@@ -34,7 +34,11 @@ from fides.api.util.consent_util import (
     get_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, transform_fields
-from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING, TCFExperienceContents
+from fides.api.util.tcf_util import (
+    TCF_COMPONENT_MAPPING,
+    TCFExperienceContents,
+    load_gvl,
+)
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
 
@@ -264,6 +268,9 @@ def embed_experience_details(
     has_tcf_contents: bool = any(
         getattr(tcf_contents, component) for component in TCF_COMPONENT_MAPPING
     )
+    if has_tcf_contents:
+        privacy_experience.gvl = load_gvl()
+
     # Add fetched TCF contents to the Privacy Experience if applicable
     for component in TCF_COMPONENT_MAPPING:
         setattr(privacy_experience, component, getattr(tcf_contents, component))
