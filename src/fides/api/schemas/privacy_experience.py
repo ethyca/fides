@@ -242,13 +242,17 @@ class TCMobileData(FidesSchema):
     iab_tcf_publisher_custom_purposes_legitimate_interests: Optional[str]
 
 
+class TCStringDetails(FidesSchema):
+    tc_string: Optional[str] = None
+    mobile_data: Optional[TCMobileData] = None
+
+
 class ExperienceMeta(FidesSchema):
     """Supplements experience with developer-friendly keys"""
 
     version_hash: Optional[str] = None
-    accept_all_tc_string: Optional[str] = None
-    reject_all_tc_string: Optional[str] = None
-    tc_data_for_mobile: Optional[TCMobileData] = None
+    accept_all: Optional[TCStringDetails] = None
+    reject_all: Optional[TCStringDetails] = None
 
 
 class PrivacyExperienceResponse(PrivacyExperienceWithId):
