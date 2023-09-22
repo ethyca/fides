@@ -1,9 +1,9 @@
-import { h, render } from "preact";
+import { ContainerNode } from "preact";
 
 import { ComponentType } from "./consent-types";
 import { debugLog } from "./consent-utils";
 
-import Overlay, { OverlayProps } from "../components/Overlay";
+import { OverlayProps } from "../components/types";
 
 /**
  * Initialize the Fides Consent overlay components.
@@ -15,7 +15,10 @@ export const initOverlay = async ({
   fidesRegionString,
   cookie,
   options,
-}: OverlayProps): Promise<void> => {
+  renderOverlay,
+}: OverlayProps & {
+  renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
+}): Promise<void> => {
   debugLog(options.debug, "Initializing Fides consent overlays...");
 
   async function renderFidesOverlay(): Promise<void> {
@@ -39,15 +42,13 @@ export const initOverlay = async ({
         document.body.prepend(parentElem);
       }
 
-      if (experience.component === ComponentType.OVERLAY) {
+      if (
+        experience.component === ComponentType.OVERLAY ||
+        experience.component === ComponentType.TCF_OVERLAY
+      ) {
         // Render the Overlay to the DOM!
-        render(
-          <Overlay
-            options={options}
-            experience={experience}
-            cookie={cookie}
-            fidesRegionString={fidesRegionString}
-          />,
+        renderOverlay(
+          { experience, fidesRegionString, cookie, options },
           parentElem
         );
         debugLog(options.debug, "Fides overlay is now showing!");

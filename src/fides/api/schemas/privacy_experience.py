@@ -9,6 +9,7 @@ from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_notice import PrivacyNoticeResponseWithUserPreferences
+from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
 from fides.api.util.endpoint_utils import human_friendly_list
 
 
@@ -188,6 +189,31 @@ class PrivacyExperienceResponse(PrivacyExperienceWithId):
 
     created_at: datetime
     updated_at: datetime
-    show_banner: Optional[bool]
-    privacy_notices: Optional[List[PrivacyNoticeResponseWithUserPreferences]]
-    experience_config: Optional[ExperienceConfigResponse]
+    show_banner: Optional[bool] = Field(
+        description="Whether the experience should show a banner",
+    )
+    privacy_notices: Optional[List[PrivacyNoticeResponseWithUserPreferences]] = Field(
+        description="The Privacy Notices associated with this experience, if applicable"
+    )
+    tcf_purposes: Optional[List[TCFPurposeRecord]] = Field(
+        description="For TCF Experiences, the TCF Purposes that appear on your Systems"
+    )
+    tcf_special_purposes: Optional[List[TCFPurposeRecord]] = Field(
+        description="For TCF Experiences, the TCF Special Purposes that appear on your Systems"
+    )
+    tcf_vendors: Optional[List[TCFVendorRecord]] = Field(
+        description="For TCF Experiences, the TCF Vendors associated with your Systems"
+    )
+    tcf_features: Optional[List[TCFFeatureRecord]] = Field(
+        description="For TCF Experiences, the TCF Features that appear on your Systems"
+    )
+    tcf_special_features: Optional[List[TCFFeatureRecord]] = Field(
+        description="For TCF Experiences, the TCF Special Features that appear on your Systems"
+    )
+    tcf_systems: Optional[List[TCFVendorRecord]] = Field(
+        description="For TCF Experiences, Systems with TCF components that do not have an official vendor id "
+        "(identified by system id)"
+    )
+    experience_config: Optional[ExperienceConfigResponse] = Field(
+        description="The Experience copy or language"
+    )

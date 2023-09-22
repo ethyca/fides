@@ -3,6 +3,7 @@ from fides.api.api.v1.endpoints import (
     connection_endpoints,
     connection_type_endpoints,
     consent_request_endpoints,
+    consent_settings_endpoints,
     dataset_endpoints,
     drp_endpoints,
     encryption_endpoints,
@@ -20,6 +21,7 @@ from fides.api.api.v1.endpoints import (
     privacy_request_endpoints,
     registration_endpoints,
     saas_config_endpoints,
+    served_notice_endpoints,
     storage_endpoints,
     user_endpoints,
     user_permission_endpoints,
@@ -29,6 +31,7 @@ from fides.api.util.api_router import APIRouter
 api_router = APIRouter()
 api_router.include_router(config_endpoints.router)
 api_router.include_router(connection_type_endpoints.router)
+api_router.include_router(consent_settings_endpoints.router)
 api_router.include_router(connection_endpoints.router)
 api_router.include_router(consent_request_endpoints.router)
 api_router.include_router(dataset_endpoints.router)
@@ -51,3 +54,4 @@ api_router.include_router(user_endpoints.router)
 api_router.include_router(user_permission_endpoints.router)
 api_router.include_router(manual_webhook_endpoints.router)
 api_router.include_router(registration_endpoints.router)
+api_router.include_router(served_notice_endpoints.router)

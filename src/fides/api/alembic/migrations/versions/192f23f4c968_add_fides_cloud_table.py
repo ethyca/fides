@@ -1,7 +1,7 @@
 """add fides cloud table
 
 Revision ID: 192f23f4c968
-Revises: 3038667ba898
+Revises: 093bb28a8270
 Create Date: 2023-09-01 17:28:22.099543
 
 """

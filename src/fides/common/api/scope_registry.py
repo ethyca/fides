@@ -18,6 +18,7 @@ CONNECTION = "connection"
 CONNECTION_TYPE = "connection_type"
 CONNECTOR_TEMPLATE = "connector_template"
 CONSENT = "consent"
+CONSENT_SETTINGS = "consent_settings"
 CREATE = "create"
 CREATE_OR_UPDATE = "create_or_update"
 CTL_DATASET = "ctl_dataset"
@@ -92,6 +93,9 @@ CONNECTION_AUTHORIZE = f"{CONNECTION}:{AUTHORIZE}"
 CONNECTION_TYPE_READ = f"{CONNECTION_TYPE}:{READ}"
 
 CONSENT_READ = f"{CONSENT}:{READ}"
+
+CONSENT_SETTINGS_READ = f"{CONSENT_SETTINGS}:{READ}"
+CONSENT_SETTINGS_UPDATE = f"{CONSENT_SETTINGS}:{UPDATE}"
 
 CTL_DATASET_CREATE = f"{CTL_DATASET}:{CREATE}"
 CTL_DATASET_READ = f"{CTL_DATASET}:{READ}"
@@ -253,6 +257,8 @@ SCOPE_DOCS = {
     CONNECTION_TYPE_READ: "View types of connections",
     CONNECTOR_TEMPLATE_REGISTER: "Register a connector template",
     CONSENT_READ: "Read consent preferences",
+    CONSENT_SETTINGS_READ: "Read org-wide consent settings",
+    CONSENT_SETTINGS_UPDATE: "Update org-wide consent settings",
     CTL_DATASET_CREATE: "Create a ctl dataset",
     CTL_DATASET_READ: "Read ctl datasets",
     CTL_DATASET_DELETE: "Delete a ctl dataset",

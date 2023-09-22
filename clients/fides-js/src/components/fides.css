@@ -44,6 +44,8 @@
   --fides-overlay-row-hover-color: var(--fides-overlay-hover-color);
   /* Badge */
   --fides-overlay-badge-background-color: #718096;
+  /* Select */
+  --fides-overlay-select-border-color: #e2e8f0;
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
@@ -314,6 +316,23 @@ div#fides-modal .fides-modal-button-group {
   background: var(--fides-overlay-hover-color);
 }
 
+.fides-back-button {
+  position: absolute;
+  top: 0.5em;
+  left: 0.2em;
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--fides-overlay-background-dark-color);
+  border-radius: var(--fides-overlay-button-border-radius);
+  display: flex;
+  padding: 0.4em;
+  align-items: center;
+}
+
+.fides-back-button > svg {
+  margin-right: 0.6em;
+}
+
 .fides-modal-notices {
   margin-bottom: 1em;
 }
@@ -432,6 +451,7 @@ div#fides-modal .fides-modal-button-group {
 /* Disclosure */
 
 .fides-disclosure-hidden {
+  display: flex;
   visibility: hidden;
   height: 0px;
   margin-top: 0px;
@@ -459,12 +479,22 @@ div#fides-modal .fides-modal-button-group {
   background-color: var(--fides-overlay-row-hover-color);
 }
 
-.fides-notice-toggle .disclosure-visible {
-  padding-left: 0.5em;
+.fides-notice-toggle .fides-disclosure-visible {
+  padding-inline: 0.5em;
+}
+
+.fides-notice-toggle p {
+  margin: 0;
+  margin-bottom: 1.1em;
 }
 
 .fides-notice-toggle-expanded {
   background-color: var(--fides-overlay-row-hover-color);
+}
+
+.fides-notice-toggle-header {
+  text-transform: uppercase;
+  font-weight: 600;
 }
 
 /* GPC */
@@ -616,4 +646,53 @@ div#fides-modal .fides-modal-button-group {
 .fides-flex-center {
   display: flex;
   align-items: center;
+}
+
+/* TCF toggles */
+.fides-tcf-toggle-content {
+  margin-right: 60px;
+  font-size: 0.9em;
+  font-weight: 400;
+}
+
+.fides-tcf-purpose-vendor-title {
+  font-weight: 500;
+}
+
+.fides-tcf-illustration {
+  font-size: 0.9em;
+  padding: 0.8em;
+  padding-right: 60px;
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-tcf-purpose-vendor {
+  padding: 0.8em;
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-tcf-purpose-vendor-list {
+  font-weight: 400;
+  padding-left: 0;
+  list-style: none;
+  margin-left: 0;
+}
+
+/* Link button */
+.fides-link-button {
+  border: none;
+  color: var(--fides-overlay-primary-color);
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* Dropdown */
+
+.fides-select-dropdown {
+  display: block;
+  width: 100%;
+  border-radius: var(--fides-overlay-component-border-radius);
+  padding: 0.4em;
+  border: 1px solid var(--fides-overlay-select-border-color);
 }

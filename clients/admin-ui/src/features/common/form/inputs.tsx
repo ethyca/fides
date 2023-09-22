@@ -63,6 +63,7 @@ export interface CustomInputProps {
   tooltip?: string;
   variant?: Variant;
   isRequired?: boolean;
+  textColor?: string;
 }
 
 // We allow `undefined` here and leave it up to each component that uses this field
@@ -196,6 +197,7 @@ export interface SelectProps {
   singleValueBlock?: boolean;
   isFormikOnChange?: boolean;
   isCustomOption?: boolean;
+  textColor?: string;
 }
 
 export const SelectInput = ({
@@ -211,6 +213,7 @@ export const SelectInput = ({
   menuPosition = "absolute",
   onChange,
   isCustomOption,
+  textColor,
 }: { fieldName: string; isMulti?: boolean; onChange?: any } & Omit<
   SelectProps,
   "label"
@@ -302,6 +305,7 @@ export const SelectInput = ({
           display: "flex",
           height: "16px",
           alignItems: "center",
+          color: textColor,
         }),
         multiValue: (provided) => ({
           ...provided,
@@ -330,7 +334,7 @@ export const SelectInput = ({
               py: 1,
               px: 2,
             })
-          : undefined,
+          : (provided) => ({ ...provided, color: textColor }),
       }}
       components={Object.keys(components).length > 0 ? components : undefined}
       isSearchable={isSearchable}
@@ -356,13 +360,19 @@ const CreatableSelectInput = ({
   isClearable,
   isMulti,
   disableMenu,
+  textColor,
+  isCustomOption,
+  singleValueBlock,
 }: { fieldName: string } & Omit<CreatableSelectProps, "label">) => {
   const [initialField] = useField(fieldName);
   const value: string[] | string = initialField.value ?? [];
   const field = { ...initialField, value };
   const selected = Array.isArray(field.value)
     ? field.value.map((v) => ({ label: v, value: v }))
-    : { label: field.value, value: field.value };
+    : options.find((o) => o.value === field.value) ?? {
+        label: field.value,
+        value: field.value,
+      };
 
   const { setFieldValue, touched, setTouched } = useFormikContext();
 
@@ -385,9 +395,21 @@ const CreatableSelectInput = ({
       ? handleChangeMulti(newValue as MultiValue<Option>)
       : handleChangeSingle(newValue as SingleValue<Option>);
 
-  const components = disableMenu
-    ? { Menu: () => null, DropdownIndicator: () => null }
-    : undefined;
+  const components: SelectComponentsConfig<
+    Option,
+    boolean,
+    GroupBase<Option>
+  > = {};
+  const emptyComponent = () => null;
+
+  if (disableMenu) {
+    components.Menu = emptyComponent;
+    components.DropdownIndicator = emptyComponent;
+  }
+
+  if (isCustomOption) {
+    components.Option = CustomOption;
+  }
 
   return (
     <CreatableSelect
@@ -423,6 +445,7 @@ const CreatableSelectInput = ({
           display: "flex",
           height: "16px",
           alignItems: "center",
+          color: textColor,
         }),
         multiValue: (provided) => ({
           ...provided,
@@ -440,6 +463,18 @@ const CreatableSelectInput = ({
           width: 3,
           height: 3,
         }),
+        singleValue: singleValueBlock
+          ? (provided) => ({
+              ...provided,
+              fontSize: "12px",
+              background: "gray.200",
+              color: textColor ?? "gray.600",
+              fontWeight: "400",
+              borderRadius: "2px",
+              py: 1,
+              px: 2,
+            })
+          : (provided) => ({ ...provided, color: textColor }),
       }}
       components={components}
       isSearchable={isSearchable}
@@ -537,6 +572,7 @@ export const CustomSelect = ({
   onChange,
   isFormikOnChange,
   isCustomOption,
+  textColor,
   ...props
 }: SelectProps & StringField) => {
   const [field, meta] = useField(props);
@@ -566,6 +602,7 @@ export const CustomSelect = ({
                 singleValueBlock={singleValueBlock}
                 menuPosition={props.menuPosition}
                 onChange={!isFormikOnChange ? onChange : undefined}
+                textColor={textColor}
               />
               <ErrorMessage
                 isInvalid={isInvalid}
@@ -608,6 +645,7 @@ export const CustomSelect = ({
             isDisabled={isDisabled}
             isCustomOption={isCustomOption}
             menuPosition={props.menuPosition}
+            textColor={textColor}
           />
         </Box>
         <ErrorMessage
@@ -627,6 +665,7 @@ export const CustomCreatableSelect = ({
   size = "sm",
   tooltip,
   variant = "inline",
+  textColor,
   ...props
 }: CreatableSelectProps & StringArrayField) => {
   const [initialField, meta] = useField(props);
@@ -645,6 +684,7 @@ export const CustomCreatableSelect = ({
                 options={options}
                 size={size}
                 isSearchable={isSearchable}
+                textColor={textColor}
                 {...props}
               />
               <ErrorMessage
@@ -668,12 +708,13 @@ export const CustomCreatableSelect = ({
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
-        <Box width="100%">
+        <Box width="100%" data-testid={`input-${field.name}`}>
           <CreatableSelectInput
             fieldName={field.name}
             options={options}
             size={size}
             isSearchable={isSearchable}
+            textColor={textColor}
             {...props}
           />
         </Box>

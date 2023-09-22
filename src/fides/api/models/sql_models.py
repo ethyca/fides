@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Set, Type, TypeVar
 from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.models import Dataset as FideslangDataset
 from pydantic import BaseModel
-from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
+from sqlalchemy import BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
     ForeignKey,
@@ -25,11 +25,12 @@ from sqlalchemy import (
     cast,
     type_coerce,
 )
-from sqlalchemy.dialects.postgresql import BYTEA
+from sqlalchemy.dialects.postgresql import ARRAY, BYTEA
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
+from typing_extensions import Protocol, runtime_checkable
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base
@@ -551,11 +552,10 @@ sql_model_map: Dict = {
     "evaluation": Evaluation,
 }
 
-models_with_default_field = [
-    sql_model
-    for _, sql_model in sql_model_map.items()
-    if hasattr(sql_model, "is_default")
-]
+
+@runtime_checkable
+class ModelWithDefaultField(Protocol):
+    is_default: bool
 
 
 class AllowedTypes(str, EnumType):
