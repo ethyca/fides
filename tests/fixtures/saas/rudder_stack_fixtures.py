@@ -43,7 +43,8 @@ def rudder_stack_identity_email(saas_config):
 def rudder_stack_external_references(saas_config) -> Dict[str, Any]:
     return {
         "user_id": pydash.get(saas_config, "rudder_stack.user_id")
-        or secrets["user_id"]
+        # or secrets["user_id"]
+        or "543256"
     }
 
 
@@ -129,15 +130,14 @@ def reset_rudder_stack_data(
         path="/v2/regulations",
         body=json.dumps({
             "regulationType": "suppress",
-            "destinationIds": [
-                "27OeyCriZ4vGFiOFPihSMgr0Nt1"
-            ],
+            # "destinationIds": [
+            #     "27OeyCriZ4vGFiOFPihSMgr0Nt1"
+            # ],
             "users": [
-                {
-                    "userId": "12345",
-                    "phone": "+123456789",
-                    "email": rudder_stack_identity_email
-                }
+              {
+                  "userId": "543256",
+                  "email": "ethyca.email@email.com"
+              }
             ]
         }),
     )

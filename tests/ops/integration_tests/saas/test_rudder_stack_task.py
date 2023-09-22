@@ -120,14 +120,14 @@ async def test_rudder_stack_consent_request_task_new_workflow(
         }],
         body=json.dumps({
             "regulationType": "suppress",
-            "destinationIds": [
-                "27OeyCriZ4vGFiOFPihSMgr0Nt1"
-            ],
+            # "destinationIds": [
+            #     "27OeyCriZ4vGFiOFPihSMgr0Nt1"
+            # ],
             "users": [
                 {
-                    "userId": "54321",
-                    "phone": "+123456789",
-                    "email": rudder_stack_identity_email
+                  "userId": "543256",
+                  "phone": "+123456789",
+                  "email": rudder_stack_identity_email
                 }
             ]
         }),
