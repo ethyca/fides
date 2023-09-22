@@ -8,12 +8,13 @@ class TestCustomAsset:
         CustomAsset.create_or_update(
             db,
             data={
-                "key": CustomAssetType.fides_css.value,
+                "key": CustomAssetType.fides_css.name,
+                "filename": CustomAssetType.fides_css.value,
                 "content": "--fides-overlay-primary-color: #00ff00;",
             },
         )
         custom_asset = CustomAsset.get_by(
-            db, field="key", value=CustomAssetType.fides_css.value
+            db, field="key", value=CustomAssetType.fides_css.name
         )
         assert custom_asset is not None
         assert custom_asset.content == "--fides-overlay-primary-color: #00ff00;"

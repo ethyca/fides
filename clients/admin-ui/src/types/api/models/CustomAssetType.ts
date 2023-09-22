@@ -3,5 +3,5 @@
  */
 export enum CustomAssetType {
   /** The stylesheet for the Privacy Experience modal */
-  FIDES_CSS = "fides.css",
+  FIDES_CSS = "fides_css",
 }
