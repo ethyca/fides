@@ -12,15 +12,22 @@ const PurposeToggle = ({
   purpose,
   onToggle,
   checked,
+  includeToggle = true,
 }: {
   purpose: TCFPurposeRecord;
   onToggle: () => void;
   checked: boolean;
+  includeToggle?: boolean;
 }) => {
   const dataUse = { key: purpose.name, name: purpose.name };
   const vendors = [...(purpose.vendors || []), ...(purpose.systems || [])];
   return (
-    <DataUseToggle dataUse={dataUse} checked={checked} onToggle={onToggle}>
+    <DataUseToggle
+      dataUse={dataUse}
+      checked={checked}
+      onToggle={onToggle}
+      includeToggle={includeToggle}
+    >
       <div>
         <p className="fides-tcf-toggle-content">{purpose.description}</p>
         <p className="fides-tcf-illustration fides-background-dark">
@@ -48,11 +55,13 @@ const PurposeBlock = ({
   allPurposes,
   enabledIds,
   onChange,
+  hideToggles,
 }: {
   label: string;
   allPurposes: TCFPurposeRecord[] | undefined;
   enabledIds: string[];
   onChange: (newIds: string[]) => void;
+  hideToggles?: boolean;
 }) => {
   if (!allPurposes || allPurposes.length === 0) {
     return null;
@@ -84,6 +93,7 @@ const PurposeBlock = ({
         onToggle={handleToggleAll}
         checked={allChecked}
         isHeader
+        includeToggle={!hideToggles}
       />
       {allPurposes.map((p) => (
         <PurposeToggle
@@ -92,6 +102,7 @@ const PurposeBlock = ({
             handleToggle(p);
           }}
           checked={enabledIds.indexOf(`${p.id}`) !== -1}
+          includeToggle={!hideToggles}
         />
       ))}
     </div>
@@ -138,6 +149,7 @@ const TcfPurposes = ({
         onChange={(newEnabledIds) =>
           onChange({ newEnabledIds, modelType: "specialPurposes" })
         }
+        hideToggles
       />
     </div>
   );
