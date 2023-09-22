@@ -92,21 +92,20 @@ const CustomAssetUploadModal: React.FC<RequestModalProps> = ({
         </ModalHeader>
         <ModalBody>
           <Text fontSize="sm" mb={4}>
-            To customize the appearance of your consent experiences, including
-            TCF v2.2, you can upload a CSS stylesheet. For additional guidance
-            and information, please visit our{" "}
-            <DocsLink href="https://fid.es/customize-styles" isExternal>
-              documentation site
-            </DocsLink>
-            . If you wish to download the "fides.css" template, simply click{" "}
+            To customize the appearance of your consent experiences, you may
+            upload a CSS stylesheet. To download a template as a helpful
+            starting point, click{" "}
             <DocsLink
               href="https://raw.githubusercontent.com/ethyca/fides/main/clients/fides-js/src/components/fides.css"
               isExternal
             >
               here
             </DocsLink>
-            . This template can serve as a helpful starting point for your
-            customization efforts.
+            .{" "}
+            <DocsLink href="https://fid.es/customize-styles" isExternal>
+              Learn more
+            </DocsLink>
+            .
           </Text>
           <Box
             {...getRootProps()}
