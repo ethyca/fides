@@ -101,7 +101,7 @@ const CORSConfigurationPage: NextPage = () => {
         </Box>
 
         <Box maxW="600px">
-          <FormSection title="CORS Domains">
+          <FormSection title="CORS domains">
             {isLoadingGetQuery || isLoadingPutMutation ? (
               <Flex justifyContent="center">
                 <Spinner />
