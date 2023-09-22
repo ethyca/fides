@@ -226,16 +226,12 @@ const hasActionNeededTcfPreference = (
  */
 export const hasSavedTcfPreferences = (experience: PrivacyExperience) =>
   hasCurrentPreference(experience.tcf_purposes) ||
-  hasCurrentPreference(experience.tcf_special_purposes) ||
-  hasCurrentPreference(experience.tcf_features) ||
   hasCurrentPreference(experience.tcf_special_features) ||
   hasCurrentPreference(experience.tcf_vendors) ||
   hasCurrentPreference(experience.tcf_systems);
 
 export const hasActionNeededTcfPreferences = (experience: PrivacyExperience) =>
   hasActionNeededTcfPreference(experience.tcf_purposes) ||
-  hasActionNeededTcfPreference(experience.tcf_special_purposes) ||
-  hasActionNeededTcfPreference(experience.tcf_features) ||
   hasActionNeededTcfPreference(experience.tcf_special_features) ||
   hasActionNeededTcfPreference(experience.tcf_vendors) ||
   hasActionNeededTcfPreference(experience.tcf_systems);
