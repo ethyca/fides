@@ -93,7 +93,9 @@ const CORSConfigurationPage: NextPage = () => {
           </Text>
           <Text mb={10} fontSize="sm">
             Please visit{" "}
-            <DocsLink href="https://docs.ethyca.com">docs.ethyca.com</DocsLink>{" "}
+            <DocsLink href="https://fid.es/cors-configuration">
+              docs.ethyca.com
+            </DocsLink>{" "}
             for more information on how to configure CORS domains.
           </Text>
         </Box>
