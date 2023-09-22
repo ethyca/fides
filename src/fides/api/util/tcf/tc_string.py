@@ -3,10 +3,8 @@ from typing import Any, List, Optional
 
 from pydantic import Field
 
-from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.util.tcf.tc_model import TCModel, build_tc_model
-from fides.api.util.tcf_util import TCFExperienceContents
+from fides.api.util.tcf.tc_model import TCModel
 
 
 class TCField(FidesSchema):

@@ -29,7 +29,6 @@ from fides.api.util.tcf_util import (
     TCF_COMPONENT_MAPPING,
     ConsentRecordType,
     TCFExperienceContents,
-    get_tcf_contents,
 )
 
 BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
@@ -224,6 +223,8 @@ class PrivacyExperience(Base):
     tcf_features: List = []
     tcf_special_features: List = []
     tcf_systems: List = []
+    # TCF Developer-Friendly Meta added at runtime as the result of build_tc_data_for_mobile
+    meta: Dict = {}
 
     # Attribute that is cached on the PrivacyExperience object by "get_should_show_banner", calculated at runtime
     show_banner: bool

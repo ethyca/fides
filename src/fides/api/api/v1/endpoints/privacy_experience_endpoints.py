@@ -23,7 +23,7 @@ from fides.api.models.privacy_experience import (
     PrivacyExperience,
     PrivacyExperienceConfig,
 )
-from fides.api.models.privacy_notice import PrivacyNotice, UserConsentPreference
+from fides.api.models.privacy_notice import PrivacyNotice
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.schemas.privacy_experience import PrivacyExperienceResponse
 from fides.api.util.api_router import APIRouter

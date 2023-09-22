@@ -1,12 +1,10 @@
-from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.privacy_experience import TCMobileData
-from fides.api.util.tcf.tc_model import TCModel, build_tc_model
+from fides.api.util.tcf.tc_model import TCModel
 from fides.api.util.tcf.tc_string import (
     TCField,
     _get_max_vendor_id,
     get_bits_for_section,
 )
-from fides.api.util.tcf_util import TCFExperienceContents
 
 CMP_SDK_ID = 1000000  # TODO pass in SDK ID
 CMP_SDK_VERSION = 1
@@ -15,7 +13,7 @@ CMP_SDK_VERSION = 1
 def build_tc_data_for_mobile(tc_model: TCModel) -> TCMobileData:
     """Build TC Data for Mobile App"""
 
-    def build_binary_string(name: str, num_bits: int):
+    def build_binary_string(name: str, num_bits: int) -> str:
         return get_bits_for_section([TCField(name=name, bits=num_bits)], tc_model)
 
     max_vendor_consents: int = _get_max_vendor_id(tc_model.vendor_consents)
