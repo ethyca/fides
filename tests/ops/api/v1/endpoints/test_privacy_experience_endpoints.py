@@ -594,6 +594,12 @@ class TestGetPrivacyExperiences:
 
         assert resp["privacy_notices"][0]["current_served"] is None
         assert resp["privacy_notices"][0]["outdated_served"] is None
+        meta = resp["meta"]
+        assert not meta["version_hash"]
+        assert not meta["accept_all_tc_string"]
+        assert not meta["accept_all_tc_mobile_data"]
+        assert not meta["reject_all_tc_string"]
+        assert not meta["reject_all_tc_mobile_data"]
 
     @pytest.mark.usefixtures(
         "privacy_notice_us_ca_provide",
@@ -679,6 +685,12 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["tcf_special_purposes"] == []
         assert resp.json()["items"][0]["tcf_special_features"] == []
         assert resp.json()["items"][0]["tcf_systems"] == []
+        meta = resp.json()["items"][0]["meta"]
+        assert not meta["version_hash"]
+        assert not meta["accept_all_tc_string"]
+        assert not meta["accept_all_tc_mobile_data"]
+        assert not meta["reject_all_tc_string"]
+        assert not meta["reject_all_tc_mobile_data"]
 
     @pytest.mark.usefixtures(
         "privacy_experience_france_overlay",
@@ -703,6 +715,12 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["tcf_special_purposes"] == []
         assert resp.json()["items"][0]["tcf_special_features"] == []
         assert resp.json()["items"][0]["tcf_systems"] == []
+        meta = resp.json()["items"][0]["meta"]
+        assert not meta["version_hash"]
+        assert not meta["accept_all_tc_string"]
+        assert not meta["accept_all_tc_mobile_data"]
+        assert not meta["reject_all_tc_string"]
+        assert not meta["reject_all_tc_mobile_data"]
 
         # Has notices = True flag will keep this experience from appearing altogether
         resp = api_client.get(
@@ -775,6 +793,12 @@ class TestGetTCFPrivacyExperiences:
             is None
         )
         assert resp.json()["items"][0]["tcf_systems"] == []
+        meta = resp.json()["items"][0]["meta"]
+        assert meta["version_hash"] == "75fb2dafef58"
+        assert meta["accept_all_tc_string"]
+        assert meta["accept_all_tc_mobile_data"]
+        assert meta["reject_all_tc_string"]
+        assert meta["reject_all_tc_mobile_data"]
 
     @pytest.mark.usefixtures(
         "privacy_experience_france_overlay",

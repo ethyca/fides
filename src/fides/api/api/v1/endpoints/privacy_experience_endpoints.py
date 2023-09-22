@@ -1,5 +1,3 @@
-import hashlib
-import json
 import uuid
 from html import escape, unescape
 from typing import Dict, List, Optional
@@ -36,9 +34,7 @@ from fides.api.util.consent_util import (
     get_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, transform_fields
-from fides.api.util.tcf.tc_mobile_data import build_tc_data_for_mobile
-from fides.api.util.tcf.tc_model import build_tcf_version_hash
-from fides.api.util.tcf.tc_string import build_tc_string
+from fides.api.util.tcf.experience_meta import build_experience_tcf_meta
 from fides.api.util.tcf_util import (
     TCF_COMPONENT_MAPPING,
     TCFExperienceContents,
@@ -267,33 +263,19 @@ def embed_experience_details(
     """
     # Reset any temporary cached items just in case
     privacy_experience.privacy_notices = []
+    privacy_experience.meta = {}
     for component in TCF_COMPONENT_MAPPING:
         setattr(privacy_experience, component, [])
 
-    privacy_experience.update_with_tcf_contents(
+    updated_contents = privacy_experience.update_with_tcf_contents(
         db, base_tcf_contents, fides_user_provided_identity
     )
-    has_tcf_contents: bool = any(
-        getattr(base_tcf_contents, component) for component in TCF_COMPONENT_MAPPING
+    has_tcf_contents: bool = any(  # Using "updated_contents" intentionally
+        getattr(updated_contents, component) for component in TCF_COMPONENT_MAPPING
     )
 
     if has_tcf_contents:
-        version_hash = build_tcf_version_hash(base_tcf_contents)
-        privacy_experience.meta = {
-            "version_hash": version_hash,
-            "accept_all_tc_string": build_tc_string(
-                base_tcf_contents, UserConsentPreference.opt_in
-            ),
-            "accept_all_tc_mobile_data": build_tc_data_for_mobile(
-                base_tcf_contents, UserConsentPreference.opt_in
-            ),
-            "reject_all_tc_string": build_tc_string(
-                base_tcf_contents, UserConsentPreference.opt_out
-            ),
-            "reject_all_tc_mobile_data": build_tc_data_for_mobile(
-                base_tcf_contents, UserConsentPreference.opt_out
-            ),
-        }
+        privacy_experience.meta = build_experience_tcf_meta(base_tcf_contents)
 
     privacy_notices: List[
         PrivacyNotice

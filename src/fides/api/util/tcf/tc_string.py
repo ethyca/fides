@@ -78,15 +78,11 @@ def _get_max_vendor_id(vendor_list: List[int]) -> int:
     return max(int(vendor_id) for vendor_id in vendor_list)
 
 
-def build_tc_string(
-    tcf_contents: TCFExperienceContents, preference: Optional[UserConsentPreference]
-) -> str:
-    """Construct a core accept all or reject all TC string
+def build_tc_string(model: TCModel) -> str:
+    """Construct a TC String from the given TCModel
 
     Currently only core and vendors_disclosed sections are supported.
     """
-    model: TCModel = build_tc_model(tcf_contents, preference)
-
     core_string: str = build_core_string(model)
     vendors_disclosed_string: str = build_disclosed_vendors_string(model)
 

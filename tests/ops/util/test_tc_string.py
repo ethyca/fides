@@ -8,12 +8,11 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.sql_models import PrivacyDeclaration, System
-from fides.api.util.tcf.tc_model import (
-    TCFVersionHash,
+from fides.api.util.tcf.experience_meta import (
     _build_tcf_version_hash_model,
-    build_tc_model,
     build_tcf_version_hash,
 )
+from fides.api.util.tcf.tc_model import TCFVersionHash, build_tc_model
 from fides.api.util.tcf.tc_string import TCModel, build_tc_string
 from fides.api.util.tcf_util import get_tcf_contents
 
@@ -351,7 +350,7 @@ class TestBuildTCModel:
         assert model.purpose_legitimate_interests == []
         assert model.special_feature_optins == [2]
 
-        tc_str = build_tc_string(tcf_contents, UserConsentPreference.opt_in)
+        tc_str = build_tc_string(model)
         decoded = decode_v2(tc_str)
 
         assert decoded.version == 2
@@ -458,7 +457,7 @@ class TestBuildTCModel:
         assert model.special_feature_optins == []
 
         # Build the TC string and then decode it
-        tc_str = build_tc_string(tcf_contents, UserConsentPreference.opt_in)
+        tc_str = build_tc_string(model)
         decoded = decode_v2(tc_str)
 
         assert decoded.version == 2
@@ -582,7 +581,8 @@ class TestBuildTCModel:
         assert model.special_feature_optins == []
 
         # Build the TC string and then decode it
-        tc_str = build_tc_string(tcf_contents, UserConsentPreference.opt_in)
+        tc_str = build_tc_string(model)
+
         decoded = decode_v2(tc_str)
 
         assert decoded.version == 2
@@ -739,7 +739,7 @@ class TestBuildTCModel:
         assert model.special_feature_optins == []
 
         # Build the TC string and then decode it
-        tc_str = build_tc_string(tcf_contents, UserConsentPreference.opt_out)
+        tc_str = build_tc_string(model)
         decoded = decode_v2(tc_str)
 
         assert decoded.version == 2

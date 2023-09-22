@@ -1,4 +1,3 @@
-import hashlib
 import json
 import re
 from datetime import datetime
@@ -387,24 +386,3 @@ class TCFVersionHash(FidesSchema):
 
     class Config:
         extra = Extra.ignore
-
-
-def _build_tcf_version_hash_model(
-    tcf_contents: TCFExperienceContents,
-) -> TCFVersionHash:
-    """Given tcf_contents, constructs the TCFVersionHash model containing
-    the raw contents to build the version_hash"""
-    model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
-
-    tcf_version_hash_schema: TCFVersionHash = TCFVersionHash(**model.dict())
-    return tcf_version_hash_schema
-
-
-def build_tcf_version_hash(tcf_contents: TCFExperienceContents) -> str:
-    """Returns a 12-character version hash for TCF that should only change
-    if there are updates to vendors, purposes, and special features sections or legal basis.
-    """
-    tcf_version_hash_model: TCFVersionHash = _build_tcf_version_hash_model(tcf_contents)
-    json_str: str = json.dumps(tcf_version_hash_model.dict(), sort_keys=True)
-    hashed_val: str = hashlib.sha256(json_str.encode()).hexdigest()
-    return hashed_val[:12]  # Shortening string for usability, collision risk is low
