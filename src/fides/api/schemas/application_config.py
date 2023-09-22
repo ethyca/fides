@@ -94,7 +94,9 @@ class ApplicationConfig(FidesSchema):
     @root_validator(pre=True)
     def validate_not_empty(cls, values: Dict) -> Dict:
         if not values:
-            raise ValueError("Config body cannot be empty!")
+            raise ValueError(
+                "Config body cannot be empty. DELETE endpoint can be used to null out application config."
+            )
         return values
 
     class Config:

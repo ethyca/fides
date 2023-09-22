@@ -197,7 +197,7 @@ class ApplicationConfig(Base):
         if config_record:
             api_prop = get(config_record.api_set, config_property)
             if api_prop is None:
-                logger.info(f"No API-set {config_property} property found")
+                logger.debug(f"No API-set {config_property} property found")
                 return get(config_record.config_set, config_property, default_value)
             return api_prop
         logger.warning("No config record found!")
