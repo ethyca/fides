@@ -17,7 +17,7 @@ async function refreshFidesCss(): Promise<string> {
     const fidesUrl =
       environment.settings.SERVER_SIDE_FIDES_API_URL ||
       environment.settings.FIDES_API_URL;
-    const response = await fetch(`${fidesUrl}/plus/custom-asset/fides.css`);
+    const response = await fetch(`${fidesUrl}/plus/custom-asset/fides_css`);
     const data = await response.text();
 
     if (!response.ok || !data) {
