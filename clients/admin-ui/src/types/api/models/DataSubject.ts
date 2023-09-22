@@ -54,9 +54,9 @@ export type DataSubject = {
   /**
    * This is for tracking when the default entity was deprecated
    */
-  version_deprecated?: string
+  version_deprecated?: string;
   /**
    * This is for tracking which default entity was used to replace this resource
-   */;
+   */
   replaced_by?: string;
 };

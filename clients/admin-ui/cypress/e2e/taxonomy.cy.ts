@@ -295,7 +295,7 @@ describe("Taxonomy management page", () => {
           },
           version_added: "2.0.0",
           version_deprecated: null,
-          replaced_by: null
+          replaced_by: null,
         };
         expect(body).to.eql(expected);
       });
