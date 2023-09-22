@@ -85,7 +85,7 @@ const CORSConfigurationPage: NextPage = () => {
     <Layout title="CORS Configuration">
       <Box data-testid="cors-configuration">
         <Heading marginBottom={4} fontSize="2xl">
-          CORS Configuration
+          CORS configuration
         </Heading>
         <Box maxWidth="600px">
           <Text marginBottom={2} fontSize="md">

@@ -166,7 +166,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
       },
       {
-        title: "CORS Configuration",
+        title: "CORS configuration",
         path: routes.CORS_CONFIGURATION_ROUTE,
         requiresPlus: true,
         requiresFidesCloud: false,
