@@ -11,24 +11,19 @@ async function loadDefaultFidesCss(): Promise<string> {
   return fidesCssBuffer.toString();
 }
 
-async function refreshFidesCss(): Promise<string> {
-  try {
-    const environment = await loadPrivacyCenterEnvironment();
-    const fidesUrl =
-      environment.settings.SERVER_SIDE_FIDES_API_URL ||
-      environment.settings.FIDES_API_URL;
-    const response = await fetch(`${fidesUrl}/plus/custom-asset/fides_css`);
-    const data = await response.text();
+async function fetchCustomFidesCss(): Promise<string> {
+  const environment = await loadPrivacyCenterEnvironment();
+  const fidesUrl =
+    environment.settings.SERVER_SIDE_FIDES_API_URL ||
+    environment.settings.FIDES_API_URL;
+  const response = await fetch(`${fidesUrl}/plus/custom-asset/fides_css`);
+  const data = await response.text();
 
-    if (!response.ok || !data) {
-      throw new Error();
-    }
-
-    return data;
-  } catch (error) {
-    console.warn("Failed to fetch custom fides.css. Using default fides.css.");
-    return loadDefaultFidesCss();
+  if (!response.ok || !data) {
+    throw new Error("Custom stylesheet not found");
   }
+
+  return data;
 }
 
 /**
@@ -65,11 +60,13 @@ export default async function handler(
     shouldRefresh
   ) {
     try {
-      cachedFidesCss = await refreshFidesCss();
+      cachedFidesCss = await fetchCustomFidesCss();
       lastFetched = currentTime;
     } catch (error) {
-      // Return cached fides.css even if it's stale
-      console.error("Error refreshing fides.css:", error);
+      console.warn("Unable to retrieve custom fides.css: ", error);
+      if (!cachedFidesCss) {
+        cachedFidesCss = await loadDefaultFidesCss();
+      }
     }
   }
 
