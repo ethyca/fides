@@ -4,7 +4,7 @@ Contains utility functions that set up the application webserver.
 # pylint: disable=too-many-branches
 from logging import DEBUG
 from os.path import dirname, join
-from typing import List, Optional, Pattern, Union
+from typing import List, Optional, Pattern
 
 from fastapi import APIRouter, FastAPI
 from loguru import logger
