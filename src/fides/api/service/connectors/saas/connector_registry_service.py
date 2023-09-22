@@ -77,10 +77,9 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
                 user_guide = config_dict.get("user_guide")
                 authentication = config_dict["client_config"].get("authentication")
                 authorization_required = (
-                    authentication.get("strategy")
+                    authentication
+                    and authentication.get("strategy")
                     == OAuth2AuthorizationCodeAuthenticationStrategy.name
-                    if authentication
-                    else False
                 )
 
                 try:
@@ -164,10 +163,9 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         config = SaaSConfig(**load_config_from_string(template.config))
         authentication = config.client_config.authentication
         authorization_required = (
-            authentication.strategy
+            authentication
+            and authentication.strategy
             == OAuth2AuthorizationCodeAuthenticationStrategy.name
-            if authentication
-            else False
         )
 
         connector_template = ConnectorTemplate(
