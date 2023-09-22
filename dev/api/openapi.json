@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.20.2b0.post0.dev2"
+    "version": "2.20.2b0.post0.dev3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -4029,6 +4029,53 @@
           }
         ]
       },
+      "put": {
+        "tags": [
+          "Config"
+        ],
+        "summary": "Put Settings",
+        "description": "Updates the global application settings record.\n\nThe record will look exactly as it is provided, i.e. true PUT behavior.",
+        "operationId": "put_settings_api_v1_config_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicationConfig"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationConfig"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "config:update"
+            ]
+          }
+        ]
+      },
       "delete": {
         "tags": [
           "Config"
@@ -4061,9 +4108,9 @@
         "tags": [
           "Config"
         ],
-        "summary": "Update Settings",
+        "summary": "Patch Settings",
         "description": "Updates the global application settings record.\n\nOnly keys provided will be updated, others will be unaffected,\ni.e. true PATCH behavior.",
-        "operationId": "update_settings_api_v1_config_patch",
+        "operationId": "patch_settings_api_v1_config_patch",
         "requestBody": {
           "content": {
             "application/json": {
@@ -13557,6 +13604,9 @@
           },
           "execution": {
             "$ref": "#/components/schemas/ExecutionApplicationConfig"
+          },
+          "security": {
+            "$ref": "#/components/schemas/SecurityApplicationConfig"
           }
         },
         "additionalProperties": false,
@@ -21731,6 +21781,22 @@
           "webhook:read"
         ],
         "description": "An enumeration."
+      },
+      "SecurityApplicationConfig": {
+        "title": "SecurityApplicationConfig",
+        "type": "object",
+        "properties": {
+          "cors_origins": {
+            "title": "Cors Origins",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A list of client addresses allowed to communicate with the Fides webserver."
+          }
+        },
+        "additionalProperties": false,
+        "description": "A base template for all other Fides Schemas to inherit from."
       },
       "ServingComponent": {
         "title": "ServingComponent",
