@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import copy
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
@@ -308,23 +309,32 @@ class PrivacyExperience(Base):
 
         return notices
 
-    def get_related_tcf_contents(
-        self, db: Session, fides_user_provided_identity: Optional[ProvidedIdentity]
+    def update_with_tcf_contents(
+        self,
+        db: Session,
+        base_tcf_contents: TCFExperienceContents,
+        fides_user_provided_identity: Optional[ProvidedIdentity],
     ) -> TCFExperienceContents:
         """Returns the contents of a TCF experience supplemented with any previous records of
         a user being served TCF components and/or consenting to any of the individual TCF components
         """
         if self.component == ComponentType.tcf_overlay:
-            tcf_contents: TCFExperienceContents = get_tcf_contents(db)
+            tcf_contents = copy(base_tcf_contents)
 
+            # Fetch previously saved records for the current user
             for tcf_component, field_name in TCF_COMPONENT_MAPPING.items():
-                for record in getattr(tcf_contents, tcf_component):
+                for record in getattr(base_tcf_contents, tcf_component):
                     cache_saved_and_served_on_consent_record(
                         db,
                         record,
                         fides_user_provided_identity=fides_user_provided_identity,
                         record_type=field_name,
                     )
+
+            # Add fetched TCF contents to the Privacy Experience if applicable
+            for component in TCF_COMPONENT_MAPPING:
+                setattr(self, component, getattr(base_tcf_contents, component))
+
             return tcf_contents
         return TCFExperienceContents()
 

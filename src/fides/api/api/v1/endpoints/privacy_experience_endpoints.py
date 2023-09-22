@@ -39,7 +39,11 @@ from fides.api.util.endpoint_utils import fides_limiter, transform_fields
 from fides.api.util.tcf.tc_mobile_data import build_tc_data_for_mobile
 from fides.api.util.tcf.tc_model import build_tcf_version_hash
 from fides.api.util.tcf.tc_string import build_tc_string
-from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING, TCFExperienceContents
+from fides.api.util.tcf_util import (
+    TCF_COMPONENT_MAPPING,
+    TCFExperienceContents,
+    get_tcf_contents,
+)
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
 
@@ -210,6 +214,8 @@ def privacy_experience_list(
 
     results: List[PrivacyExperience] = []
     should_unescape: Optional[str] = request.headers.get(UNESCAPE_SAFESTR_HEADER)
+    base_tcf_contents: TCFExperienceContents = get_tcf_contents(db)
+
     for privacy_experience in experience_query.order_by(
         PrivacyExperience.created_at.desc()
     ):
@@ -220,6 +226,7 @@ def privacy_experience_list(
             systems_applicable=systems_applicable,
             fides_user_provided_identity=fides_user_provided_identity,
             should_unescape=should_unescape,
+            base_tcf_contents=base_tcf_contents,
         )
 
         if content_required and not content_exists:
@@ -250,6 +257,7 @@ def embed_experience_details(
     systems_applicable: Optional[bool],
     fides_user_provided_identity: Optional[ProvidedIdentity],
     should_unescape: Optional[str],
+    base_tcf_contents: TCFExperienceContents,
 ) -> bool:
     """
     Embed the contents of the PrivacyExperience at runtime. Adds Privacy Notices or TCF contents if applicable.
@@ -262,34 +270,28 @@ def embed_experience_details(
     for component in TCF_COMPONENT_MAPPING:
         setattr(privacy_experience, component, [])
 
-    # Fetch the base TCF Contents
-    tcf_contents: TCFExperienceContents = privacy_experience.get_related_tcf_contents(
-        db, fides_user_provided_identity
+    privacy_experience.update_with_tcf_contents(
+        db, base_tcf_contents, fides_user_provided_identity
     )
-
     has_tcf_contents: bool = any(
-        getattr(tcf_contents, component) for component in TCF_COMPONENT_MAPPING
+        getattr(base_tcf_contents, component) for component in TCF_COMPONENT_MAPPING
     )
 
-    # Add fetched TCF contents to the Privacy Experience if applicable
-    for component in TCF_COMPONENT_MAPPING:
-        setattr(privacy_experience, component, getattr(tcf_contents, component))
-
-    if tcf_contents:
-        version_hash = build_tcf_version_hash(tcf_contents)
+    if has_tcf_contents:
+        version_hash = build_tcf_version_hash(base_tcf_contents)
         privacy_experience.meta = {
             "version_hash": version_hash,
             "accept_all_tc_string": build_tc_string(
-                tcf_contents, UserConsentPreference.opt_in
+                base_tcf_contents, UserConsentPreference.opt_in
             ),
             "accept_all_tc_mobile_data": build_tc_data_for_mobile(
-                tcf_contents, UserConsentPreference.opt_in
+                base_tcf_contents, UserConsentPreference.opt_in
             ),
             "reject_all_tc_string": build_tc_string(
-                tcf_contents, UserConsentPreference.opt_out
+                base_tcf_contents, UserConsentPreference.opt_out
             ),
             "reject_all_tc_mobile_data": build_tc_data_for_mobile(
-                tcf_contents, UserConsentPreference.opt_out
+                base_tcf_contents, UserConsentPreference.opt_out
             ),
         }
 

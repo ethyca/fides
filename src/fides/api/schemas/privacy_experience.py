@@ -242,11 +242,6 @@ class TCMobileData(FidesSchema):
     iab_tcf_publisher_custom_purposes_legitimate_interests: Optional[str]
 
 
-class TCStringDetails(FidesSchema):
-    tc_string: Optional[str] = None
-    mobile_data: Optional[TCMobileData] = None
-
-
 class ExperienceMeta(FidesSchema):
     """Supplements experience with developer-friendly keys"""
 
@@ -292,4 +287,4 @@ class PrivacyExperienceResponse(PrivacyExperienceWithId):
     experience_config: Optional[ExperienceConfigResponse] = Field(
         description="The Experience copy or language"
     )
-    meta: ExperienceMeta
+    meta: Optional[ExperienceMeta] = None
