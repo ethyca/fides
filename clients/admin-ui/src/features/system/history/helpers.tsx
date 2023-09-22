@@ -173,7 +173,8 @@ export const assignSystemNames = (
   history: SystemHistoryResponse,
   systems: SystemResponse[]
 ): SystemHistoryResponse => {
-  const transformList = (list: any[]): string[] => list.map((item) => {
+  const transformList = (list: any[]): string[] =>
+    list.map((item) => {
       const system = systems.find((s) => s.fides_key === item.fides_key);
       return system && system.name ? system.name : item.fides_key;
     });
