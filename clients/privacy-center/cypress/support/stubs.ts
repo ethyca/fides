@@ -22,10 +22,10 @@ export enum OVERRIDE {
 }
 
 const setNewConfig = (baseConfigObj: any, newConfig: any): any => {
-  if (newConfig == OVERRIDE.EMPTY) {
+  if (newConfig === OVERRIDE.EMPTY) {
     return {};
   }
-  if (newConfig == OVERRIDE.UNDEFINED) {
+  if (newConfig === OVERRIDE.UNDEFINED) {
     return undefined;
   }
   return Object.assign(baseConfigObj, newConfig);
