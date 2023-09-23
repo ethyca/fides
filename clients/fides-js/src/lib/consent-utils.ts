@@ -29,14 +29,24 @@ export const debugLog = (
 };
 
 /**
- * Returns true if privacy experience is null or empty
+ * Returns true if the provided input is a valid PrivacyExperience object.
+ * 
+ * This includes the special case where the input is an empty object ({}), which
+ * is a valid response when the API does not find a PrivacyExperience configured
+ * for the given geolocation.
  */
 export const isPrivacyExperience = (
   obj: PrivacyExperience | undefined | EmptyExperience
 ): obj is PrivacyExperience => {
-  if (!obj) {
+  // Return false for all non-object types
+  if (!obj || typeof obj !== "object") {
     return false;
   }
+  // Treat an empty object ({}) as a valid experience
+  if (Object.keys(obj).length == 0) {
+    return true;
+  }
+  // Require at least an "id" field to be considered an experience
   if ("id" in obj) {
     return true;
   }
