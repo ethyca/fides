@@ -1,12 +1,12 @@
 import {
   ComponentType,
   CONSENT_COOKIE_NAME,
-  ConsentMethod,
   ConsentMechanism,
-  UserConsentPreference,
+  ConsentMethod,
+  ConsentOptionCreate,
   FidesCookie,
   LastServedNoticeSchema,
-  ConsentOptionCreate,
+  UserConsentPreference,
 } from "fides-js";
 
 import { mockPrivacyNotice } from "../support/mocks";
@@ -49,7 +49,7 @@ describe("Consent banner", () => {
             options: {
               isOverlayEnabled: false,
             },
-            experience: OVERRIDE.EMPTY,
+            experience: OVERRIDE.UNDEFINED,
           },
           {},
           {}
@@ -681,7 +681,7 @@ describe("Consent banner", () => {
     describe("when experience is not provided, and valid geolocation is provided", () => {
       beforeEach(() => {
         stubConfig({
-          experience: OVERRIDE.EMPTY,
+          experience: OVERRIDE.UNDEFINED,
           geolocation: {
             country: "US",
             location: "US-CA",
@@ -712,7 +712,7 @@ describe("Consent banner", () => {
     describe("when experience is provided, and geolocation is not provided", () => {
       beforeEach(() => {
         stubConfig({
-          geolocation: OVERRIDE.EMPTY,
+          geolocation: OVERRIDE.UNDEFINED,
           options: {
             isGeolocationEnabled: true,
             geolocationApiUrl: "https://some-geolocation-url.com",
@@ -738,13 +738,61 @@ describe("Consent banner", () => {
       });
     });
 
+    describe("when experience is empty, and geolocation is not provided", () => {
+      beforeEach(() => {
+        stubConfig({
+          geolocation: OVERRIDE.UNDEFINED,
+          experience: OVERRIDE.EMPTY,
+          options: {
+            isGeolocationEnabled: true,
+            geolocationApiUrl: "https://some-geolocation-url.com",
+          },
+        });
+      });
+
+      it("does fetches geolocation and does not render the banner", () => {
+        // we still need geolocation because it is needed to save consent preference
+        cy.wait("@getGeolocation");
+        cy.get("div#fides-banner").should("not.exist");
+        cy.contains("button", "Accept Test").should("not.exist");
+      });
+      it("does not render modal link", () => {
+        cy.get("#fides-modal-link").should("not.be.visible");
+      });
+    });
+
+    describe("when experience is empty, and geolocation is provided", () => {
+      beforeEach(() => {
+        stubConfig({
+          geolocation: {
+            country: "US",
+            location: "US-CA",
+            region: "CA",
+          },
+          experience: OVERRIDE.EMPTY,
+          options: {
+            isGeolocationEnabled: true,
+            geolocationApiUrl: "https://some-geolocation-url.com",
+          },
+        });
+      });
+
+      it("does not geolocate and does not render the banner", () => {
+        cy.get("div#fides-banner").should("not.exist");
+        cy.contains("button", "Accept Test").should("not.exist");
+      });
+      it("does not render modal link", () => {
+        cy.get("#fides-modal-link").should("not.be.visible");
+      });
+    });
+
     describe("when neither experience nor geolocation is provided, but geolocationApiUrl is defined", () => {
       describe("when geolocation is successful", () => {
         beforeEach(() => {
           const geoLocationUrl = "https://some-geolocation-api.com";
           stubConfig({
-            experience: OVERRIDE.EMPTY,
-            geolocation: OVERRIDE.EMPTY,
+            experience: OVERRIDE.UNDEFINED,
+            geolocation: OVERRIDE.UNDEFINED,
             options: {
               isGeolocationEnabled: true,
               geolocationApiUrl: geoLocationUrl,
@@ -780,8 +828,8 @@ describe("Consent banner", () => {
           };
           stubConfig(
             {
-              experience: OVERRIDE.EMPTY,
-              geolocation: OVERRIDE.EMPTY,
+              experience: OVERRIDE.UNDEFINED,
+              geolocation: OVERRIDE.UNDEFINED,
               options: {
                 isGeolocationEnabled: true,
                 geolocationApiUrl: "https://some-geolocation-api.com",
@@ -805,7 +853,7 @@ describe("Consent banner", () => {
     describe("when experience is not provided, and geolocation is invalid", () => {
       beforeEach(() => {
         stubConfig({
-          experience: OVERRIDE.EMPTY,
+          experience: OVERRIDE.UNDEFINED,
           geolocation: {
             country: "US",
             location: "",
@@ -842,8 +890,8 @@ describe("Consent banner", () => {
     describe("when experience is not provided, and geolocation is not provided, but geolocation is disabled", () => {
       beforeEach(() => {
         stubConfig({
-          experience: OVERRIDE.EMPTY,
-          geolocation: OVERRIDE.EMPTY,
+          experience: OVERRIDE.UNDEFINED,
+          geolocation: OVERRIDE.UNDEFINED,
           options: {
             isGeolocationEnabled: false,
           },

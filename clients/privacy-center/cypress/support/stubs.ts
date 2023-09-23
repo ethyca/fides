@@ -18,6 +18,7 @@ export const stubIdVerification = () => {
 export enum OVERRIDE {
   // signals that we should override entire prop with undefined
   EMPTY = "Empty",
+  UNDEFINED = "Undefined",
 }
 
 interface FidesConfigTesting {
@@ -40,19 +41,21 @@ export const stubConfig = (
   cy.fixture("consent/test_banner_options.json").then((config) => {
     const updatedConfig = {
       consent:
-        consent === OVERRIDE.EMPTY
+        consent === OVERRIDE.UNDEFINED
           ? undefined
           : Object.assign(config.consent, consent),
       experience:
         experience === OVERRIDE.EMPTY
           ? {}
+          : experience === OVERRIDE.UNDEFINED
+          ? undefined
           : Object.assign(config.experience, experience),
       geolocation:
-        geolocation === OVERRIDE.EMPTY
+        geolocation === OVERRIDE.UNDEFINED
           ? undefined
           : Object.assign(config.geolocation, geolocation),
       options:
-        options === OVERRIDE.EMPTY
+        options === OVERRIDE.UNDEFINED
           ? undefined
           : Object.assign(config.options, options),
     };
