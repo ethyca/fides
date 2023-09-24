@@ -42,10 +42,12 @@ export const isPrivacyExperience = (
   if (!obj || typeof obj !== "object") {
     return false;
   }
+
   // Treat an empty object ({}) as a valid experience
-  if (Object.keys(obj).length == 0) {
+  if (Object.keys(obj).length === 0) {
     return true;
   }
+
   // Require at least an "id" field to be considered an experience
   if ("id" in obj) {
     return true;
