@@ -235,9 +235,9 @@ export const initialize = async ({
         `User location could not be obtained. Skipping overlay initialization.`
       );
       shouldInitOverlay = false;
-      // An empty experience (e.g. {}) is expected when 1. pre-fetch is enabled, and 2. the location has no associated
-      // experience. We should not fetch experiences again in this case. We only fetch experiences if it's undefined.
-    } else if (!experience) {
+    } else if (!isPrivacyExperience(effectiveExperience)) {
+      // If no effective PrivacyExperience was pre-fetched, fetch one now from
+      // the Fides API using the current region string
       effectiveExperience = await fetchExperience(
         fidesRegionString,
         options.fidesApiUrl,
