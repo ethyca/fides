@@ -88,8 +88,16 @@ describe("isPrivacyExperience", () => {
     { label: "an object", obj: { foo: "bar" }, expected: false },
     { label: "a string", obj: "foo", expected: false },
     { label: "an empty object", obj: {}, expected: true },
-    { label: "an object with 'id'", obj: { id: "123456", foo: "bar" }, expected: true },
-    { label: "a full 'experience' object", obj: MOCK_EXPERIENCE, expected: true },
+    {
+      label: "an object with 'id'",
+      obj: { id: "123456", foo: "bar" },
+      expected: true,
+    },
+    {
+      label: "a full 'experience' object",
+      obj: MOCK_EXPERIENCE,
+      expected: true,
+    },
   ])("returns $expected when input is $label", ({ obj, expected }) => {
     expect(isPrivacyExperience(obj as any)).toBe(expected);
   });

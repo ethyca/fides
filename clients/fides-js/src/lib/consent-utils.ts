@@ -30,7 +30,7 @@ export const debugLog = (
 
 /**
  * Returns true if the provided input is a valid PrivacyExperience object.
- * 
+ *
  * This includes the special case where the input is an empty object ({}), which
  * is a valid response when the API does not find a PrivacyExperience configured
  * for the given geolocation.
