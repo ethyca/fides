@@ -150,29 +150,33 @@ describe("Fides-js TCF", () => {
   });
 
   describe("initial layer", () => {
-    beforeEach(() => {
-      cy.get("#fides-modal-link").click();
+    it("can render purposes in the initial layer as a stack", () => {
+      cy.get("div#fides-banner").within(() => {
+        cy.get("span").contains(STACK_1.name);
+        cy.get("span").contains(PURPOSE_3.name);
+
+        cy.get("span").contains(STACK_1.name).click();
+        [PURPOSE_1.id, PURPOSE_2.id, PURPOSE_4.id, PURPOSE_5.id].forEach(
+          (id) => {
+            cy.get("li").contains(`Purpose ${id}`);
+          }
+        );
+      });
     });
 
-    it("can render purposes in the initial layer as a stack", () => {
-      cy.get("span").contains(STACK_1.name);
-      cy.get("span").contains(PURPOSE_3.name);
-
-      cy.get("span").contains(STACK_1.name).click();
-      [PURPOSE_1.id, PURPOSE_2.id, PURPOSE_4.id, PURPOSE_5.id].forEach((id) => {
-        cy.get("li").contains(`Purpose ${id}`);
+    it("can open the modal", () => {
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
       });
+      cy.get("#fides-tab-Purposes");
     });
   });
 
   describe("second layer", () => {
     beforeEach(() => {
       cy.get("#fides-modal-link").click();
-      cy.getByTestId("fides-modal-content").within(() => {
-        cy.get("#fides-banner-button-secondary")
-          .contains("Manage preferences")
-          .click();
-      });
     });
 
     describe("rendering the TCF modal", () => {

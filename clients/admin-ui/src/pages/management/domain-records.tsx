@@ -15,7 +15,7 @@ type CNAMERecord = {
   data: string;
 } & FidesObject;
 
-const DNSRecordsPage: NextPage = () => {
+const DomainRecordsPage: NextPage = () => {
   const columns: Column<CNAMERecord>[] = useMemo(
     () => [
       {
@@ -56,10 +56,10 @@ const DNSRecordsPage: NextPage = () => {
   }
 
   return (
-    <Layout title="DNS Records">
-      <Box data-testid="dns-records">
+    <Layout title="Domain records">
+      <Box data-testid="domain-records">
         <Heading marginBottom={4} fontSize="2xl">
-          DNS Records
+          Domain records
         </Heading>
         <Box maxWidth="600px">
           <Text marginBottom={2} fontSize="md">
@@ -69,12 +69,12 @@ const DNSRecordsPage: NextPage = () => {
             Please visit{" "}
             <Link
               color="complimentary.500"
-              href="https://docs.ethyca.com"
+              href="https://fid.es/manage-dns"
               isExternal
             >
               docs.ethyca.com
             </Link>{" "}
-            for more information on how to configure DNS records.
+            for more information on how to configure Domain records.
           </Text>
           <FidesTable<CNAMERecord> columns={columns} data={data} />
         </Box>
@@ -82,4 +82,4 @@ const DNSRecordsPage: NextPage = () => {
     </Layout>
   );
 };
-export default DNSRecordsPage;
+export default DomainRecordsPage;
