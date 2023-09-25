@@ -22,6 +22,7 @@ The types of changes are:
 ### Fixed
 
 - Avoid un-optimized query pattern in bulk `GET /system` endpoint [#4120](https://github.com/ethyca/fides/pull/4120)
+- Update fides.js to not fetch experience client-side if pre-fetched experience is empty [#4149](https://github.com/ethyca/fides/pull/4149)
 
 ## [2.20.0](https://github.com/ethyca/fides/compare/2.19.1...2.20.0)
 

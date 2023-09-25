@@ -84,6 +84,7 @@ export default async function handler(
 
     if (fidesRegionString) {
       if (environment.settings.DEBUG) {
+        // eslint-disable-next-line no-console
         console.log("Fetching relevant experiences from server-side...");
       }
       experience = await fetchExperience(
