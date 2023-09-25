@@ -616,6 +616,7 @@ def create_default_experience_config(
 
 
 EEA_COUNTRIES: List[PrivacyNoticeRegion] = [
+    PrivacyNoticeRegion.eea,
     PrivacyNoticeRegion.be,
     PrivacyNoticeRegion.bg,
     PrivacyNoticeRegion.cz,
