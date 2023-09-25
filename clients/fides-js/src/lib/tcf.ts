@@ -6,15 +6,9 @@
  */
 
 import { CmpApi } from "@iabtechlabtcf/cmpapi";
-import {
-  TCModel,
-  TCString,
-  GVL,
-  VersionOrVendorList,
-} from "@iabtechlabtcf/core";
+import { TCModel, TCString, GVL } from "@iabtechlabtcf/core";
 import { makeStub } from "./tcf/stub";
 import { transformUserPreferenceToBoolean } from "./consent-utils";
-import gvlJson from "./tcf/gvl.json";
 import {
   LegalBasisForProcessingEnum,
   TCFPurposeRecord,
@@ -62,7 +56,7 @@ export const generateTcString = async ({
   // due to TCF library not yet supporting latest GVL (https://vendor-list.consensu.org/v3/vendor-list.json).
   // We'll need to update this with our own hosted GVL once the lib is updated
   // https://github.com/InteractiveAdvertisingBureau/iabtcf-es/pull/389
-  const tcModel = new TCModel(new GVL(gvlJson as VersionOrVendorList));
+  const tcModel = new TCModel(new GVL(experience.gvl));
 
   let encodedString = "";
 
@@ -82,7 +76,7 @@ export const generateTcString = async ({
         const consented = transformUserPreferenceToBoolean(
           vendorPreference.preference
         );
-        if (consented && vendorIsGvl(vendorPreference)) {
+        if (consented && vendorIsGvl(vendorPreference, experience.gvl)) {
           tcModel.vendorConsents.set(+vendorPreference.id);
           const thisVendor = experience.tcf_vendors?.filter(
             (v) => v.id === vendorPreference.id
