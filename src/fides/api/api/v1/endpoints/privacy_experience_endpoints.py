@@ -135,6 +135,7 @@ def privacy_experience_list(
     has_config: Optional[bool] = None,
     fides_user_device_id: Optional[str] = None,
     systems_applicable: Optional[bool] = False,
+    include_gvl: Optional[bool] = False,
     request: Request,  # required for rate limiting
     response: Response,  # required for rate limiting
 ) -> AbstractPage[PrivacyExperience]:
@@ -154,6 +155,7 @@ def privacy_experience_list(
     :param has_config: If True, returns Experiences with copy. If False, returns just Experiences without copy.
     :param fides_user_device_id: Supplement the response with current saved preferences of the given user
     :param systems_applicable: Only return embedded Notices associated with systems.
+    :param include_gvl: Embeds gvl.json in the response provided we also have TCF content
     :param request:
     :param response:
     :return:
@@ -219,6 +221,7 @@ def privacy_experience_list(
             systems_applicable=systems_applicable,
             fides_user_provided_identity=fides_user_provided_identity,
             should_unescape=should_unescape,
+            include_gvl=include_gvl,
         )
 
         if content_required and not content_exists:
@@ -249,6 +252,7 @@ def embed_experience_details(
     systems_applicable: Optional[bool],
     fides_user_provided_identity: Optional[ProvidedIdentity],
     should_unescape: Optional[str],
+    include_gvl: Optional[bool],
 ) -> bool:
     """
     Embed the contents of the PrivacyExperience at runtime. Adds Privacy Notices or TCF contents if applicable.
@@ -268,7 +272,7 @@ def embed_experience_details(
     has_tcf_contents: bool = any(
         getattr(tcf_contents, component) for component in TCF_COMPONENT_MAPPING
     )
-    if has_tcf_contents:
+    if has_tcf_contents and include_gvl:
         privacy_experience.gvl = load_gvl()
 
     # Add fetched TCF contents to the Privacy Experience if applicable
