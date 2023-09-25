@@ -10,11 +10,13 @@ const FeatureBlock = ({
   allFeatures,
   enabledIds,
   onChange,
+  hideToggles,
 }: {
   label: string;
   allFeatures: TCFFeatureRecord[] | undefined;
   enabledIds: string[];
   onChange: (newIds: string[]) => void;
+  hideToggles?: boolean;
 }) => {
   if (!allFeatures || allFeatures.length === 0) {
     return null;
@@ -44,6 +46,7 @@ const FeatureBlock = ({
         onToggle={handleToggleAll}
         checked={allChecked}
         isHeader
+        includeToggle={!hideToggles}
       />
       {allFeatures.map((f) => {
         const vendors = [...(f.vendors || []), ...(f.systems || [])];
@@ -54,6 +57,7 @@ const FeatureBlock = ({
               handleToggle(f);
             }}
             checked={enabledIds.indexOf(`${f.id}`) !== -1}
+            includeToggle={!hideToggles}
           >
             <div>
               <p className="fides-tcf-toggle-content">{f.description}</p>
@@ -98,6 +102,7 @@ const TcfFeatures = ({
       onChange={(newEnabledIds) =>
         onChange({ newEnabledIds, modelType: "features" })
       }
+      hideToggles
     />
     <FeatureBlock
       label="Special features"
