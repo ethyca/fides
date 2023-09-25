@@ -1,12 +1,14 @@
 """
 Contains utility functions that set up the application webserver.
 """
+# pylint: disable=too-many-branches
 from logging import DEBUG
 from os.path import dirname, join
-from typing import List, Optional, Pattern, Union
+from typing import List, Optional, Pattern
 
 from fastapi import APIRouter, FastAPI
 from loguru import logger
+from pydantic import AnyUrl
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore
@@ -48,6 +50,7 @@ from fides.api.util.endpoint_utils import fides_limiter
 from fides.api.util.errors import FidesError
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 VERSION = fides.__version__
 
@@ -74,7 +77,7 @@ PRIVACY_EXPERIENCE_CONFIGS_PATH = join(
 
 
 def create_fides_app(
-    cors_origins: Union[str, List[str]] = CONFIG.security.cors_origins,
+    cors_origins: List[AnyUrl] = CONFIG.security.cors_origins,
     cors_origin_regex: Optional[Pattern] = CONFIG.security.cors_origin_regex,
     routers: List = ROUTERS,
     app_version: str = VERSION,
@@ -140,7 +143,7 @@ def log_startup() -> None:
         CONFIG.log_all_config_values()
 
 
-async def run_database_startup() -> None:
+async def run_database_startup(app: FastAPI) -> None:
     """
     Perform all relevant database startup activities/configuration for the
     application webserver.
@@ -171,6 +174,15 @@ async def run_database_startup() -> None:
         raise FidesError(
             f"Error occurred writing config settings to database: {str(e)}"
         )
+    finally:
+        db.close()
+
+    logger.info("Loading CORS domains from ConfigProxy...")
+    try:
+        ConfigProxy(db).load_current_cors_domains_into_middleware(app)
+    except Exception as e:
+        logger.error("Error occured while loading CORS domains: {}", str(e))
+        raise FidesError(f"Error occured while loading CORS domains: {str(e)}")
     finally:
         db.close()
 

@@ -1,4 +1,4 @@
-import { h, FunctionComponent, VNode } from "preact";
+import { h, FunctionComponent, ComponentChildren } from "preact";
 import { getConsentContext } from "../lib/consent-context";
 import { ExperienceConfig } from "../lib/consent-types";
 import CloseButton from "./CloseButton";
@@ -8,14 +8,14 @@ interface BannerProps {
   experience: ExperienceConfig;
   onClose: () => void;
   bannerIsOpen: boolean;
-  buttonGroup: VNode;
+  children: ComponentChildren;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
   experience,
-  buttonGroup,
   onClose,
   bannerIsOpen,
+  children,
 }) => {
   const showGpcBadge = getConsentContext().globalPrivacyControl;
   return (
@@ -45,7 +45,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
           >
             {experience.description}
           </div>
-          {buttonGroup}
+          {children}
         </div>
       </div>
     </div>

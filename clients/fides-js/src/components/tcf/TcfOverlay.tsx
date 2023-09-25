@@ -31,6 +31,7 @@ import { ConsentMethod, PrivacyExperience } from "../../lib/consent-types";
 import TcfModalContent from "./TcfModalContent";
 import { generateTcString } from "../../lib/tcf";
 import { FidesCookie } from "../../lib/cookie";
+import InitialLayer from "./InitialLayer";
 
 const resolveConsentValueFromTcfModel = (
   model: TCFPurposeRecord | TCFFeatureRecord | TCFVendorRecord
@@ -226,17 +227,29 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             bannerIsOpen={isOpen}
             onClose={onClose}
             experience={experienceConfig}
-            buttonGroup={
-              <TcfConsentButtons
-                experience={experience}
-                onManagePreferencesClick={onManagePreferencesClick}
-                onSave={(keys) => {
-                  handleUpdateAllPreferences(keys);
-                  onSave();
-                }}
-              />
-            }
-          />
+          >
+            <InitialLayer
+              experience={experience}
+              managePreferencesLink={
+                <button
+                  type="button"
+                  onClick={onManagePreferencesClick}
+                  className="fides-link-button"
+                >
+                  {experience.experience_config
+                    ?.privacy_preferences_link_label || ""}
+                </button>
+              }
+            />
+            <TcfConsentButtons
+              experience={experience}
+              onManagePreferencesClick={onManagePreferencesClick}
+              onSave={(keys) => {
+                handleUpdateAllPreferences(keys);
+                onSave();
+              }}
+            />
+          </ConsentBanner>
         ) : null
       }
       renderModalContent={({ onClose }) => (

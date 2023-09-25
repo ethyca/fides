@@ -4,10 +4,11 @@ This script is a utility for interactively annotating data categories in the dat
 from typing import List, Union
 
 import click
-from fideslang import FidesModel, manifests
+from fideslang import manifests
 from fideslang.manifests import ingest_manifests
-from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesKey
-from fideslang.validation import FidesValidationError
+from fideslang.models import Dataset, DatasetCollection, DatasetField
+from fideslang.parse import parse_dict
+from fideslang.validation import FidesKey, FidesValidationError
 
 from fides.common.utils import echo_green
 from fides.config import FidesConfig
@@ -43,7 +44,7 @@ def get_data_categories_annotation(
     dataset_member: Union[Dataset, DatasetCollection, DatasetField],
     valid_categories: List[str],
     validate: bool = True,
-) -> List[str]:
+) -> List[FidesKey]:
     """
     Request the user's input to supply a list of data categories
 
@@ -80,7 +81,7 @@ def get_data_categories_annotation(
                 dataset_member, valid_categories
             )
 
-    return user_response
+    return [FidesKey(value) for value in user_response]
 
 
 def annotate_dataset(
@@ -106,8 +107,11 @@ def annotate_dataset(
     """
     output_dataset = []
 
-    datasets = ingest_manifests(dataset_file)["dataset"]
-    resources = api_helpers.list_server_resources(
+    datasets = [
+        Dataset.parse_obj(dataset)
+        for dataset in ingest_manifests(dataset_file)["dataset"]
+    ]
+    raw_resources = api_helpers.list_server_resources(
         url=str(config.cli.server_url),
         resource_type=resource_type,
         headers=config.user.auth_header
@@ -115,22 +119,22 @@ def annotate_dataset(
         exclude_keys=[],
     )
 
-    if not resources:
+    if not raw_resources:
         click.secho(
             "No server resources were found.",
             fg="red",
         )
         return
 
-    existing_categories: List[str] = [
-        resource.fides_key
-        if isinstance(resource, FidesModel)
-        else resource["fides_key"]
-        for resource in resources
+    resources = [
+        parse_dict(resource_type=resource_type, resource=resource)
+        for resource in raw_resources
     ]
 
+    existing_categories: List[str] = [resource.fides_key for resource in resources]
+
     for dataset in datasets:
-        current_dataset = Dataset(**dataset)
+        current_dataset = Dataset.parse_obj(dataset)
         try:
             click.secho(f"\n####\nAnnotating Dataset: [{current_dataset.name}]")
 

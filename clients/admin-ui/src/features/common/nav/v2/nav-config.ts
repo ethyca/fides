@@ -166,6 +166,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
       },
       {
+        title: "CORS configuration",
+        path: routes.CORS_CONFIGURATION_ROUTE,
+        requiresPlus: true,
+        requiresFidesCloud: false,
+        scopes: [
+          ScopeRegistryEnum.CONFIG_READ,
+          ScopeRegistryEnum.CONFIG_UPDATE,
+        ],
+      },
+      {
         title: "About Fides",
         path: routes.ABOUT_ROUTE,
         scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features

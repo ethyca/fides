@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 from fideslang.models import Cookies, PrivacyDeclaration, System
 from pydantic import Field
@@ -40,7 +40,7 @@ class SystemResponse(BasicSystemResponse):
     System record. Attempting to return bulk results with this model can lead to n+1 query issues.
     """
 
-    privacy_declarations: List[PrivacyDeclarationResponse] = Field(
+    privacy_declarations: Sequence[PrivacyDeclarationResponse] = Field(  # type: ignore[assignment]
         description=PrivacyDeclarationResponse.__doc__,
     )
 
