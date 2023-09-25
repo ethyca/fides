@@ -18,4 +18,6 @@ Override basic theme colors by uncommenting and editing those below
   --chakra-colors-primary-800: #A85936;
   /* Button border color */
   --chakra-colors-complimentary-500: #A85936;
+  /* respect new line breaks \n */
+  white-space: pre-line;
 }

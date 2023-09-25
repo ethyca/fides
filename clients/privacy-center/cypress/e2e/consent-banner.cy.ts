@@ -1,12 +1,12 @@
 import {
   ComponentType,
   CONSENT_COOKIE_NAME,
-  ConsentMethod,
   ConsentMechanism,
-  UserConsentPreference,
+  ConsentMethod,
+  ConsentOptionCreate,
   FidesCookie,
   LastServedNoticeSchema,
-  ConsentOptionCreate,
+  UserConsentPreference,
 } from "fides-js";
 
 import { mockPrivacyNotice } from "../support/mocks";
@@ -26,17 +26,20 @@ describe("Consent banner", () => {
           },
         });
       });
+
       it("sets Fides.consent object with default consent based on legacy consent", () => {
         cy.window().its("Fides").its("consent").should("eql", {
           data_sales: true,
           tracking: false,
         });
       });
+
       it("does not render banner", () => {
         cy.waitUntilFidesInitialized().then(() => {
           cy.get("div#fides-banner").should("not.exist");
         });
       });
+
       it("does not render modal link", () => {
         cy.get("#fides-modal-link").should("not.be.visible");
       });
@@ -49,22 +52,25 @@ describe("Consent banner", () => {
             options: {
               isOverlayEnabled: false,
             },
-            experience: OVERRIDE.EMPTY,
+            experience: OVERRIDE.UNDEFINED,
           },
           {},
           {}
         );
       });
+
       it("sets Fides.consent object with default consent based on legacy consent", () => {
         cy.window().its("Fides").its("consent").should("eql", {
           data_sales: true,
           tracking: false,
         });
       });
+
       it("does not render banner", () => {
         cy.get("div#fides-banner").should("not.exist");
         cy.contains("button", "Accept Test").should("not.exist");
       });
+
       it("does not render modal link", () => {
         cy.get("#fides-modal-link").should("not.be.visible");
       });
@@ -81,6 +87,7 @@ describe("Consent banner", () => {
           },
         });
       });
+
       it("should render the expected HTML banner", () => {
         cy.get("div#fides-banner").within(() => {
           cy.get(
@@ -111,6 +118,7 @@ describe("Consent banner", () => {
           });
         });
       });
+
       it("renders modal link", () => {
         cy.get("#fides-modal-link").should("be.visible");
       });
@@ -429,6 +437,7 @@ describe("Consent banner", () => {
           preference: "acknowledge",
         },
       ];
+
       beforeEach(() => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         stubConfig({
@@ -495,6 +504,7 @@ describe("Consent banner", () => {
           },
         });
       });
+
       it("sends GPC consent override downstream to Fides API", () => {
         // check that consent was sent to Fides API
         let generatedUserDeviceId: string;
@@ -584,6 +594,7 @@ describe("Consent banner", () => {
           },
         });
       });
+
       it("does not set user consent preference automatically", () => {
         // timeout means API call not made, which is expected
         cy.on("fail", (error) => {
@@ -673,6 +684,7 @@ describe("Consent banner", () => {
         cy.get("div#fides-banner").should("not.exist");
         cy.contains("button", "Accept Test").should("not.exist");
       });
+
       it("does not render modal link", () => {
         cy.get("#fides-modal-link").should("not.be.visible");
       });
@@ -681,7 +693,7 @@ describe("Consent banner", () => {
     describe("when experience is not provided, and valid geolocation is provided", () => {
       beforeEach(() => {
         stubConfig({
-          experience: OVERRIDE.EMPTY,
+          experience: OVERRIDE.UNDEFINED,
           geolocation: {
             country: "US",
             location: "US-CA",
@@ -704,6 +716,7 @@ describe("Consent banner", () => {
           );
         });
       });
+
       it("renders modal link", () => {
         cy.get("#fides-modal-link").should("be.visible");
       });
@@ -712,7 +725,7 @@ describe("Consent banner", () => {
     describe("when experience is provided, and geolocation is not provided", () => {
       beforeEach(() => {
         stubConfig({
-          geolocation: OVERRIDE.EMPTY,
+          geolocation: OVERRIDE.UNDEFINED,
           options: {
             isGeolocationEnabled: true,
             geolocationApiUrl: "https://some-geolocation-url.com",
@@ -733,8 +746,59 @@ describe("Consent banner", () => {
           );
         });
       });
+
       it("renders modal link", () => {
         cy.get("#fides-modal-link").should("be.visible");
+      });
+    });
+
+    describe("when experience is empty, and geolocation is not provided", () => {
+      beforeEach(() => {
+        stubConfig({
+          geolocation: OVERRIDE.UNDEFINED,
+          experience: OVERRIDE.EMPTY,
+          options: {
+            isGeolocationEnabled: true,
+            geolocationApiUrl: "https://some-geolocation-url.com",
+          },
+        });
+      });
+
+      it("does fetches geolocation and does not render the banner", () => {
+        // we still need geolocation because it is needed to save consent preference
+        cy.wait("@getGeolocation");
+        cy.get("div#fides-banner").should("not.exist");
+        cy.contains("button", "Accept Test").should("not.exist");
+      });
+
+      it("does not render modal link", () => {
+        cy.get("#fides-modal-link").should("not.be.visible");
+      });
+    });
+
+    describe("when experience is empty, and geolocation is provided", () => {
+      beforeEach(() => {
+        stubConfig({
+          geolocation: {
+            country: "US",
+            location: "US-CA",
+            region: "CA",
+          },
+          experience: OVERRIDE.EMPTY,
+          options: {
+            isGeolocationEnabled: true,
+            geolocationApiUrl: "https://some-geolocation-url.com",
+          },
+        });
+      });
+
+      it("does not geolocate and does not render the banner", () => {
+        cy.get("div#fides-banner").should("not.exist");
+        cy.contains("button", "Accept Test").should("not.exist");
+      });
+
+      it("does not render modal link", () => {
+        cy.get("#fides-modal-link").should("not.be.visible");
       });
     });
 
@@ -743,8 +807,8 @@ describe("Consent banner", () => {
         beforeEach(() => {
           const geoLocationUrl = "https://some-geolocation-api.com";
           stubConfig({
-            experience: OVERRIDE.EMPTY,
-            geolocation: OVERRIDE.EMPTY,
+            experience: OVERRIDE.UNDEFINED,
+            geolocation: OVERRIDE.UNDEFINED,
             options: {
               isGeolocationEnabled: true,
               geolocationApiUrl: geoLocationUrl,
@@ -767,6 +831,7 @@ describe("Consent banner", () => {
             );
           });
         });
+
         it("shows the modal link", () => {
           cy.get("#fides-modal-link").should("be.visible");
         });
@@ -780,8 +845,8 @@ describe("Consent banner", () => {
           };
           stubConfig(
             {
-              experience: OVERRIDE.EMPTY,
-              geolocation: OVERRIDE.EMPTY,
+              experience: OVERRIDE.UNDEFINED,
+              geolocation: OVERRIDE.UNDEFINED,
               options: {
                 isGeolocationEnabled: true,
                 geolocationApiUrl: "https://some-geolocation-api.com",
@@ -790,11 +855,13 @@ describe("Consent banner", () => {
             mockFailedGeolocationCall
           );
         });
+
         it("does not render banner", () => {
           cy.wait("@getGeolocation");
           cy.get("div#fides-banner").should("not.exist");
           cy.contains("button", "Accept Test").should("not.exist");
         });
+
         it("hides the modal link", () => {
           cy.get("#fides-modal-link").should("not.be.visible");
         });
@@ -805,7 +872,7 @@ describe("Consent banner", () => {
     describe("when experience is not provided, and geolocation is invalid", () => {
       beforeEach(() => {
         stubConfig({
-          experience: OVERRIDE.EMPTY,
+          experience: OVERRIDE.UNDEFINED,
           geolocation: {
             country: "US",
             location: "",
@@ -842,8 +909,8 @@ describe("Consent banner", () => {
     describe("when experience is not provided, and geolocation is not provided, but geolocation is disabled", () => {
       beforeEach(() => {
         stubConfig({
-          experience: OVERRIDE.EMPTY,
-          geolocation: OVERRIDE.EMPTY,
+          experience: OVERRIDE.UNDEFINED,
+          geolocation: OVERRIDE.UNDEFINED,
           options: {
             isGeolocationEnabled: false,
           },
@@ -1017,6 +1084,7 @@ describe("Consent banner", () => {
         },
       });
     });
+
     // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
     // register listeners for these window events
     it("emits both a FidesInitialized and FidesUpdated event when initialized", () => {
@@ -1135,6 +1203,7 @@ describe("Consent banner", () => {
         });
     });
   });
+
   describe("when listening for fides.js events with existing cookie", () => {
     describe("when overlay is enabled and legacy notices exist", () => {
       beforeEach(() => {
@@ -1165,6 +1234,7 @@ describe("Consent banner", () => {
           },
         });
       });
+
       // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
       // register listeners for these window events
       it("first event reflects legacy consent from cookie, second event reflects new experiences consent", () => {
@@ -1200,6 +1270,7 @@ describe("Consent banner", () => {
           });
       });
     });
+
     describe("when overlay is enabled and legacy notices do not exist", () => {
       beforeEach(() => {
         const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
@@ -1228,6 +1299,7 @@ describe("Consent banner", () => {
           consent: { options: [] },
         });
       });
+
       it("first event reflects legacy cookie consent, second event reflects new experiences consent", () => {
         cy.window()
           .its("Fides")
@@ -1259,6 +1331,7 @@ describe("Consent banner", () => {
           });
       });
     });
+
     describe("when overlay is disabled and legacy notices do not exist", () => {
       beforeEach(() => {
         const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
@@ -1287,6 +1360,7 @@ describe("Consent banner", () => {
           consent: { options: [] },
         });
       });
+
       // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
       // register listeners for these window events
       it("all events should reflect existing legacy cookie values", () => {
@@ -1319,6 +1393,7 @@ describe("Consent banner", () => {
           });
       });
     });
+
     describe("when overlay is disabled and legacy notices exist", () => {
       beforeEach(() => {
         const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
@@ -1346,6 +1421,7 @@ describe("Consent banner", () => {
           },
         });
       });
+
       // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
       // register listeners for these window events
       it("all events should reflect legacy consent from cookie", () => {
@@ -1387,6 +1463,7 @@ describe("Consent banner", () => {
         win.navigator.globalPrivacyControl = true;
       });
     });
+
     it("renders the proper gpc indicator", () => {
       stubConfig({
         experience: {

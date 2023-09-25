@@ -131,8 +131,6 @@ export type TCFVendorSave = {
 export type TcfSavePreferences = Pick<
   PrivacyPreferencesRequest,
   | "purpose_preferences"
-  | "special_purpose_preferences"
-  | "feature_preferences"
   | "special_feature_preferences"
   | "vendor_preferences"
   | "system_preferences"
@@ -154,8 +152,6 @@ type TcfCookieKeyConsent = {
 
 export interface TcfCookieConsent {
   purpose_preferences?: TcfCookieKeyConsent;
-  special_purpose_preferences?: TcfCookieKeyConsent;
-  feature_preferences?: TcfCookieKeyConsent;
   special_feature_preferences?: TcfCookieKeyConsent;
   vendor_preferences?: TcfCookieKeyConsent;
   system_preferences?: TcfCookieKeyConsent;

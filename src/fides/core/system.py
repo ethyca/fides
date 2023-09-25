@@ -100,7 +100,10 @@ def get_organization(
             )
         )
         raise SystemExit(1)
-    return server_organization
+
+    parsed_organization = Organization.parse_obj(server_organization)
+    assert isinstance(parsed_organization, Organization)
+    return parsed_organization
 
 
 def generate_aws_systems(
@@ -164,6 +167,7 @@ def generate_system_aws(
         url=url,
         headers=headers,
     )
+    assert organization
     aws_systems = generate_aws_systems(organization, aws_config=aws_config)
 
     write_system_manifest(
@@ -210,6 +214,7 @@ def generate_system_okta(
         url=url,
         headers=headers,
     )
+    assert organization
 
     okta_systems = asyncio.run(
         generate_okta_systems(organization=organization, okta_config=okta_config)
@@ -237,9 +242,15 @@ def get_all_server_systems(
         for resource in ls_response.json()
         if resource["fides_key"] not in exclude_system_keys
     ]
-    system_list = get_server_resources(
-        url=url, resource_type="system", headers=headers, existing_keys=system_keys
-    )
+
+    # The validation here is required to guarantee the return type
+    system_list = [
+        System.validate(x)
+        for x in get_server_resources(
+            url=url, resource_type="system", headers=headers, existing_keys=system_keys
+        )
+    ]
+
     return system_list
 
 
@@ -362,7 +373,11 @@ def scan_system_aws(
     """
 
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
-    manifest_systems = manifest_taxonomy.system if manifest_taxonomy else []
+    manifest_systems = (
+        manifest_taxonomy.system
+        if manifest_taxonomy and manifest_taxonomy.system
+        else []
+    )
     server_systems = get_all_server_systems(
         url=url, headers=headers, exclude_systems=manifest_systems
     )
@@ -376,6 +391,7 @@ def scan_system_aws(
         url=url,
         headers=headers,
     )
+    assert organization
 
     aws_systems = generate_aws_systems(organization=organization, aws_config=aws_config)
 
@@ -408,7 +424,11 @@ def scan_system_okta(
     """
 
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
-    manifest_systems = manifest_taxonomy.system if manifest_taxonomy else []
+    manifest_systems = (
+        manifest_taxonomy.system
+        if manifest_taxonomy and manifest_taxonomy.system
+        else []
+    )
     server_systems = get_all_server_systems(
         url=url, headers=headers, exclude_systems=manifest_systems
     )
@@ -421,6 +441,7 @@ def scan_system_okta(
         url=url,
         headers=headers,
     )
+    assert organization
 
     okta_systems = asyncio.run(
         generate_okta_systems(organization=organization, okta_config=okta_config)

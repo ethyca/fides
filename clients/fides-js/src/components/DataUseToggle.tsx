@@ -16,6 +16,7 @@ const DataUseToggle = ({
   gpcBadge,
   disabled,
   isHeader,
+  includeToggle = true,
 }: {
   dataUse: DataUse;
   checked: boolean;
@@ -25,6 +26,7 @@ const DataUseToggle = ({
   gpcBadge?: VNode;
   disabled?: boolean;
   isHeader?: boolean;
+  includeToggle?: boolean;
 }) => {
   const {
     isOpen,
@@ -70,14 +72,15 @@ const DataUseToggle = ({
           </span>
           {gpcBadge}
         </span>
-
-        <Toggle
-          name={dataUse.name || ""}
-          id={dataUse.key}
-          checked={checked}
-          onChange={onToggle}
-          disabled={disabled}
-        />
+        {includeToggle ? (
+          <Toggle
+            name={dataUse.name || ""}
+            id={dataUse.key}
+            checked={checked}
+            onChange={onToggle}
+            disabled={disabled}
+          />
+        ) : null}
       </div>
       {children ? <div {...getDisclosureProps()}>{children}</div> : null}
     </div>

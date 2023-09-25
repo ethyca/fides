@@ -2,9 +2,9 @@
 Reusable utilities meant to make repetitive api-related tasks easier.
 """
 
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
-from fideslang import FidesModel
+from fideslang.models import FidesModel
 from fideslang.parse import parse_dict
 from fideslang.validation import FidesKey
 from requests import Response
@@ -25,7 +25,7 @@ def get_server_resources(
     If the resource does not exist on the server, an error will _not_ be thrown.
     Instead, an empty object will be stored and then filtered out.
     """
-    server_resources: List[FidesModel] = list(
+    raw_server_resources = list(
         filter(
             None,
             [
@@ -39,6 +39,11 @@ def get_server_resources(
             ],
         )
     )
+    server_resources: List[FidesModel] = [
+        parse_dict(resource_type=resource_type, resource=resource, from_server=True)
+        for resource in raw_server_resources
+    ]
+
     return server_resources
 
 
@@ -47,8 +52,7 @@ def get_server_resource(
     resource_type: str,
     resource_key: str,
     headers: Dict[str, str],
-    raw: bool = False,
-) -> Union[FidesModel, Dict]:
+) -> Dict:
     """
     Attempt to get a given resource from the server.
 
@@ -67,20 +71,14 @@ def get_server_resource(
         )
     )
 
-    server_resource: Optional[FidesModel] = (
+    raw_server_resource: Optional[Dict] = (
         raw_server_response.json()
         if raw_server_response.status_code >= 200
         and raw_server_response.status_code <= 299
         else None
     )
-    if not raw and server_resource:
-        server_resource = parse_dict(
-            resource_type=resource_type,
-            resource=raw_server_response.json(),
-            from_server=True,
-        )
 
-    return server_resource or {}
+    return raw_server_resource or {}
 
 
 def list_server_resources(
@@ -88,8 +86,7 @@ def list_server_resources(
     headers: Dict[str, str],
     resource_type: str,
     exclude_keys: List[str],
-    raw: bool = False,
-) -> Optional[Union[List[FidesModel], List[Dict]]]:
+) -> Optional[List[Dict]]:
     """
     Get a list of resources from the server and return them as parsed objects.
 
@@ -98,7 +95,7 @@ def list_server_resources(
     response: Response = check_response_auth(
         api.ls(url=url, resource_type=resource_type, headers=headers)
     )
-    server_resources = (
+    raw_server_resources: Optional[List[Dict]] = (
         [
             resource
             for resource in response.json()
@@ -108,14 +105,4 @@ def list_server_resources(
         else []
     )
 
-    if not raw and server_resources:
-        server_resources = [
-            parse_dict(
-                resource_type=resource_type,
-                resource=resource_dict,
-                from_server=True,
-            )
-            for resource_dict in server_resources
-        ]
-
-    return server_resources
+    return raw_server_resources
