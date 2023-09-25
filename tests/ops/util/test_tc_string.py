@@ -133,7 +133,7 @@ def emerse_system(db: Session) -> System:
     return system
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def skimbit_system(db):
     """Add system that only has purposes with LI legal basis"""
     system = System.create(
@@ -169,6 +169,7 @@ def skimbit_system(db):
                 ],
             },
         )
+    return system
 
 
 class TestHashTCFExperience:
@@ -711,6 +712,121 @@ class TestBuildTCModel:
             45: False,
             46: True,
         }
+
+        assert decoded.pub_restriction_entries == []
+
+        assert len(decoded.oob_disclosed_vendors) == 4176
+        assert sum(decoded.oob_disclosed_vendors.values()) == 701
+        assert decoded.oob_disclosed_vendors[4176]
+
+    def test_build_tc_string_not_vendor(self, db, skimbit_system):
+        """
+        Test where we have a system in Fides that has a vendor id that came from our dictionary,
+        not the GVL, so the vendor itself shouldn't show up in the string. It's purposes still do,
+        but it is removed from the vendor_* and  *_vendors sections
+        """
+        skimbit_system.vendor_id = "dictionary_id"
+        skimbit_system.save(db)
+
+        tcf_contents = get_tcf_contents(db)
+        model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
+
+        assert model.cmp_id == 12
+        assert model.vendor_list_version == 18
+        assert model.policy_version == 4
+        assert model.cmp_version == 1
+        assert model.consent_screen == 1
+
+        assert model.purpose_consents == []
+        assert model.purpose_legitimate_interests == [7, 8, 10]
+        assert model.vendor_consents == []
+        assert model.vendor_legitimate_interests == []  # This is the primary change
+        assert model.special_feature_optins == []
+
+        # Build the TC string and then decode it
+        tc_str = build_tc_string(model)
+
+        decoded = decode_v2(tc_str)
+
+        assert decoded.version == 2
+        assert decoded.cmp_id == 12
+        assert decoded.cmp_version == 1
+        assert decoded.consent_screen == 1
+        assert decoded.consent_language == b"EN"
+        assert decoded.vendor_list_version == 18
+        assert decoded.tcf_policy_version == 4
+        assert decoded.is_service_specific is False
+        assert decoded.use_non_standard_stacks is False
+        assert decoded.special_features_optin == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+        }
+        assert decoded.purposes_consent == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+        }
+        assert decoded.purposes_legitimate_interests == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: True,
+            8: True,
+            9: False,
+            10: True,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+        }
+        assert decoded.purpose_one_treatment is False
+        assert decoded.publisher_cc == b"AA"
+        assert decoded.consented_vendors == {}
+        assert decoded.interests_vendors == {}  # This is the other primary change
 
         assert decoded.pub_restriction_entries == []
 
