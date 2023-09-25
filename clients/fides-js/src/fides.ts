@@ -251,8 +251,9 @@ const init = async ({
         `User location could not be obtained. Skipping overlay initialization.`
       );
       shouldInitOverlay = false;
-      // if the experience object is null or empty from the server, we should fetch client side
-    } else if (!isPrivacyExperience(experience)) {
+      // If no effective PrivacyExperience was pre-fetched, fetch one now from
+      // the Fides API using the current region string
+    } else if (!isPrivacyExperience(effectiveExperience)) {
       effectiveExperience = await fetchExperience(
         fidesRegionString,
         options.fidesApiUrl,

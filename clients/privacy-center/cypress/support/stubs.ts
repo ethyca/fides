@@ -1,3 +1,11 @@
+import {
+  LegacyConsentConfig,
+  PrivacyExperience,
+  UserGeolocation,
+  FidesOptions,
+  FidesEndpointPaths,
+} from "fides-js";
+
 import { API_URL } from "./constants";
 
 export const stubIdVerification = () => {

@@ -53,20 +53,6 @@ export const isPrivacyExperience = (
   }
   return false;
 };
-// typeof obj === "object" && obj != null && Object.keys(obj).length === 0;
-
-// /**
-//  * Returns true if privacy experience has notices
-//  */
-// export const experienceHasNotices = (
-//   experience: PrivacyExperience | undefined | EmptyExperience
-// ): boolean =>
-//   Boolean(
-//     experience &&
-//       !isEmptyExperience(experience) &&
-//       experience.privacy_notices &&
-//       experience.privacy_notices.length > 0
-//   );
 
 /**
  * Construct user location str to be ingested by Fides API
