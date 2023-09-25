@@ -115,14 +115,6 @@ const createTcfSavePayload = ({
     modelList: experience.tcf_purposes,
     enabledIds: enabledIds.purposes,
   }) as TCFPurposeSave[],
-  special_purpose_preferences: transformTcfModelToTcfSave({
-    modelList: experience.tcf_special_purposes,
-    enabledIds: enabledIds.specialPurposes,
-  }) as TCFSpecialPurposeSave[],
-  feature_preferences: transformTcfModelToTcfSave({
-    modelList: experience.tcf_features,
-    enabledIds: enabledIds.features,
-  }) as TCFFeatureSave[],
   special_feature_preferences: transformTcfModelToTcfSave({
     modelList: experience.tcf_special_features,
     enabledIds: enabledIds.specialFeatures,
