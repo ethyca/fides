@@ -315,7 +315,7 @@ class PrivacyExperience(Base):
         db: Session,
         base_tcf_contents: TCFExperienceContents,
         fides_user_provided_identity: Optional[ProvidedIdentity],
-    ) -> TCFExperienceContents:
+    ) -> bool:
         """Returns the contents of a TCF experience supplemented with any previous records of
         a user being served TCF components and/or consenting to any of the individual TCF components
         """
@@ -324,7 +324,7 @@ class PrivacyExperience(Base):
 
             # Fetch previously saved records for the current user
             for tcf_component, field_name in TCF_COMPONENT_MAPPING.items():
-                for record in getattr(base_tcf_contents, tcf_component):
+                for record in getattr(tcf_contents, tcf_component):
                     cache_saved_and_served_on_consent_record(
                         db,
                         record,
@@ -332,12 +332,18 @@ class PrivacyExperience(Base):
                         record_type=field_name,
                     )
 
-            # Add fetched TCF contents to the Privacy Experience if applicable
-            for component in TCF_COMPONENT_MAPPING:
-                setattr(self, component, getattr(base_tcf_contents, component))
+            has_tcf_contents: bool = any(
+                getattr(tcf_contents, component) for component in TCF_COMPONENT_MAPPING
+            )
 
-            return tcf_contents
-        return TCFExperienceContents()
+            if has_tcf_contents:
+                # Add fetched TCF contents to the Privacy Experience if applicable
+                for component in TCF_COMPONENT_MAPPING:
+                    setattr(self, component, getattr(tcf_contents, component))
+
+                return True
+
+        return False
 
     @staticmethod
     def create_default_experience_for_region(

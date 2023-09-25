@@ -136,6 +136,7 @@ def privacy_experience_list(
     has_config: Optional[bool] = None,
     fides_user_device_id: Optional[str] = None,
     systems_applicable: Optional[bool] = False,
+    include_meta: Optional[bool] = False,
     request: Request,  # required for rate limiting
     response: Response,  # required for rate limiting
 ) -> AbstractPage[PrivacyExperience]:
@@ -155,6 +156,7 @@ def privacy_experience_list(
     :param has_config: If True, returns Experiences with copy. If False, returns just Experiences without copy.
     :param fides_user_device_id: Supplement the response with current saved preferences of the given user
     :param systems_applicable: Only return embedded Notices associated with systems.
+    :param include_meta: If True, returns TCF Experience meta if applicable
     :param request:
     :param response:
     :return:
@@ -222,6 +224,7 @@ def privacy_experience_list(
             systems_applicable=systems_applicable,
             fides_user_provided_identity=fides_user_provided_identity,
             should_unescape=should_unescape,
+            include_meta=include_meta,
             base_tcf_contents=base_tcf_contents,
         )
 
@@ -253,6 +256,7 @@ def embed_experience_details(
     systems_applicable: Optional[bool],
     fides_user_provided_identity: Optional[ProvidedIdentity],
     should_unescape: Optional[str],
+    include_meta: Optional[bool],
     base_tcf_contents: TCFExperienceContents,
 ) -> bool:
     """
@@ -267,14 +271,13 @@ def embed_experience_details(
     for component in TCF_COMPONENT_MAPPING:
         setattr(privacy_experience, component, [])
 
-    updated_contents = privacy_experience.update_with_tcf_contents(
+    # Updates Privacy Experience in-place with TCF Contents if applicable, and then returns
+    # if TCF contents exist
+    has_tcf_contents: bool = privacy_experience.update_with_tcf_contents(
         db, base_tcf_contents, fides_user_provided_identity
     )
-    has_tcf_contents: bool = any(  # Using "updated_contents" intentionally
-        getattr(updated_contents, component) for component in TCF_COMPONENT_MAPPING
-    )
 
-    if has_tcf_contents:
+    if has_tcf_contents and include_meta:
         privacy_experience.meta = build_experience_tcf_meta(base_tcf_contents)
 
     privacy_notices: List[

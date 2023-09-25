@@ -668,7 +668,7 @@ class TestGetTCFPrivacyExperiences:
         settings.update(db=db, data={"tcf_enabled": False})
 
         resp = api_client.get(
-            url + "?region=fr&component=overlay",
+            url + "?region=fr&component=overlay&include_meta=True",
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
@@ -702,7 +702,7 @@ class TestGetTCFPrivacyExperiences:
         settings = ConsentSettings.get_or_create_with_defaults(db)
         settings.update(db=db, data={"tcf_enabled": True})
         resp = api_client.get(
-            url + "?region=fr&component=overlay",
+            url + "?region=fr&component=overlay&include_meta=True",
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
@@ -749,7 +749,7 @@ class TestGetTCFPrivacyExperiences:
         settings.update(db=db, data={"tcf_enabled": True})
         resp = api_client.get(
             url
-            + "?region=fr&component=overlay&fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f&has_notices=True",
+            + "?region=fr&component=overlay&fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f&has_notices=True&include_meta=True",
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
