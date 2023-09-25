@@ -277,6 +277,7 @@ export type { SaaSRequest } from "./models/SaaSRequest";
 export type { SaaSRequestMap } from "./models/SaaSRequestMap";
 export type { SaaSSchema } from "./models/SaaSSchema";
 export { ScopeRegistryEnum } from "./models/ScopeRegistryEnum";
+export type { SecurityApplicationConfig } from "./models/SecurityApplicationConfig";
 export { ServiceHealth } from "./models/ServiceHealth";
 export { ServingComponent } from "./models/ServingComponent";
 export type { SnowflakeDocsSchema } from "./models/SnowflakeDocsSchema";
