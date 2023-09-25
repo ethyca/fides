@@ -18,7 +18,18 @@ export const stubIdVerification = () => {
 export enum OVERRIDE {
   // signals that we should override entire prop with undefined
   EMPTY = "Empty",
+  UNDEFINED = "Undefined",
 }
+
+const setNewConfig = (baseConfigObj: any, newConfig: any): any => {
+  if (newConfig === OVERRIDE.EMPTY) {
+    return {};
+  }
+  if (newConfig === OVERRIDE.UNDEFINED) {
+    return undefined;
+  }
+  return Object.assign(baseConfigObj, newConfig);
+};
 
 interface FidesConfigTesting {
   // We don't need all required props to override the default config
@@ -39,22 +50,10 @@ export const stubConfig = (
 ) => {
   cy.fixture("consent/test_banner_options.json").then((config) => {
     const updatedConfig = {
-      consent:
-        consent === OVERRIDE.EMPTY
-          ? undefined
-          : Object.assign(config.consent, consent),
-      experience:
-        experience === OVERRIDE.EMPTY
-          ? {}
-          : Object.assign(config.experience, experience),
-      geolocation:
-        geolocation === OVERRIDE.EMPTY
-          ? undefined
-          : Object.assign(config.geolocation, geolocation),
-      options:
-        options === OVERRIDE.EMPTY
-          ? undefined
-          : Object.assign(config.options, options),
+      consent: setNewConfig(config.consent, consent),
+      experience: setNewConfig(config.experience, experience),
+      geolocation: setNewConfig(config.geolocation, geolocation),
+      options: setNewConfig(config.options, options),
     };
     // We conditionally stub these APIs because we need the exact API urls, which can change or not even exist
     // depending on the specific test case.
