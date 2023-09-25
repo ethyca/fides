@@ -60,7 +60,7 @@ const TcfTabs = ({
       ),
     },
   ];
-  // const [activeTabIndex, setActiveTabIndex] = useState(0);
+
   const inputRefs = [
     useRef<HTMLButtonElement>(null),
     useRef<HTMLButtonElement>(null),
