@@ -4,8 +4,19 @@
     <title>fides-js script demo page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <script src="/fides-js"></script>
+    <!-- 
+      Pass along any params to the fides.js script. For example, visiting
+      http://localhost:3000/fides-js-demo.html?geolocation=fr-id
+      will pass a geolocation query param to fides.js
+    -->
+    <script>
+      (function () {
+        const params = window.location.search;
+        const src = `/fides.js${params ?? ""}`;
 
+        document.write('<script src="' + src + '"><\/script>');
+      })();
+    </script>
     <style>
       body {
         max-width: 800px;
