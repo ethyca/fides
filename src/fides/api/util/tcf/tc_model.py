@@ -5,14 +5,7 @@ from os.path import dirname, join
 from typing import Dict, List, Optional, Tuple
 
 from fideslang.models import LegalBasisForProcessingEnum
-from pydantic import (
-    Extra,
-    Field,
-    NonNegativeInt,
-    PositiveInt,
-    root_validator,
-    validator,
-)
+from pydantic import Field, NonNegativeInt, PositiveInt, validator
 
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
@@ -20,6 +13,7 @@ from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorR
 from fides.api.util.tcf_util import TCFExperienceContents
 from fides.config.helpers import load_file
 
+# TODO replace with a load_gvl() call after https://github.com/ethyca/fides/pull/4143 is merged
 GVL_JSON_PATH = join(
     dirname(__file__),
     "../../../../../clients/fides-js/src/lib/tcf",
@@ -30,10 +24,13 @@ GVL_JSON_PATH = join(
 CMP_ID: int = 12  # TODO: hardcode our unique CMP ID after certification
 CMP_VERSION = 1
 CONSENT_SCREEN = 1  # TODO On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
+
 FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6]
 
 
 class TCModel(FidesSchema):
+    """Base internal TC schema to store and validate key details from which to later build the TC String"""
+
     _gvl: Dict = {}
 
     is_service_specific: bool = Field(
@@ -46,7 +43,7 @@ class TCModel(FidesSchema):
     support_oob: bool = Field(
         default=True,
         description="Whether or not this publisher supports OOB signaling.  On Global TC String OOB Vendors Disclosed "
-        "will be included if the publish wishes to no allow these vendors they should set this to false.",
+        "will be included if the publish wishes to not allow these vendors they should set this to false.",
     )
     use_non_standard_texts: bool = Field(
         default=False,
@@ -58,7 +55,7 @@ class TCModel(FidesSchema):
     purpose_one_treatment: bool = Field(
         default=False,
         description="`false` There is no special Purpose 1 status. Purpose 1 was disclosed normally (consent) as "
-        "expected by Policy.  `true`Purpose 1 not disclosed at all. CMPs use PublisherCC to indicate the "
+        "expected by Policy.  `true` Purpose 1 not disclosed at all. CMPs use PublisherCC to indicate the "
         "publisher’s country of establishment to help Vendors determine whether the vendor requires Purpose "
         "1 consent. In global scope TC strings, this field must always have a value of `false`. When a "
         "CMP encounters a global scope string with `purposeOneTreatment=true` then that string should be "
@@ -107,7 +104,7 @@ class TCModel(FidesSchema):
     purpose_consents: List = Field(
         default=[],
         description="Renamed from `PurposesAllowed` in TCF v1.1. The user’s consent value for each Purpose established "
-        "on the legal basis of consent. Purposes are published in the Global Vendor List (see. [[GVL]]).",
+        "on the legal basis of consent. Purposes are published in the Global Vendor List.",
     )
 
     purpose_legitimate_interests: List = Field(
@@ -124,21 +121,21 @@ class TCModel(FidesSchema):
 
     publisher_legitimate_interests: List = Field(
         default=[],
-        description="The user’s permission for each Purpose established on the legal basis of legitimate interest.  "
-        "If the user has exercised right-to-object for a purpose.",
+        description="The user’s permission for each Purpose established on the legal basis of legitimate interest, for "
+        "the publisher. If the user has exercised right-to-object for a purpose.",
     )
 
     publisher_custom_consents: List = Field(
         default=[],
-        description="The user’s consent value for each Purpose established on the legal basis of consent, for the "
-        "publisher.  Purposes are published in the Global Vendor List.",
+        description="The user’s consent value for each custom Purpose established on the legal basis of consent, "
+        "for the publisher.  Purposes are published in the Global Vendor List.",
     )
 
     publisher_custom_legitimate_interests: List = Field(
         default=[],
-        description="The user’s permission for each Purpose established on the legal basis of legitimate interest.  "
-        "If the user has exercised right-to-object for a purpose that is established in the publisher's "
-        "custom purposes.",
+        description="The user’s permission for each custom Purpose established on the legal basis of legitimate "
+        "interest.  If the user has exercised right-to-object for a purpose that is established in "
+        "the publisher's custom purposes.",
     )
 
     custom_purposes: Dict = Field(
@@ -149,12 +146,12 @@ class TCModel(FidesSchema):
 
     vendor_consents: List[int] = Field(
         default=[],
-        description="Each [[Vendor]] is keyed by id. Their consent value is true if it is in the Vector",
+        description="Each Vendor is keyed by id. Their consent value is true if it is in the Vector",
     )
 
     vendor_legitimate_interests: List[int] = Field(
         default=[],
-        description="Each [[Vendor]] is keyed by id. Whether their Legitimate Interests Disclosures have been "
+        description="Each Vendor is keyed by id. Whether their Legitimate Interests Disclosures have been "
         "established is stored as boolean.",
     )
 
@@ -182,7 +179,7 @@ class TCModel(FidesSchema):
     @validator("publisher_country_code")
     def check_publisher_country_code(cls, publisher_country_code: str) -> str:
         """Validates that a publisher_country_code is an upper-cased two letter string"""
-        upper_case_country_code = publisher_country_code.upper()
+        upper_case_country_code: str = publisher_country_code.upper()
         pattern = r"^[A-Z]{2}$"
         if not re.match(pattern, upper_case_country_code):
             raise ValueError(
@@ -206,11 +203,10 @@ class TCModel(FidesSchema):
         """Purpose 1 is never allowed to be true for legitimate interest
         As of TCF v2.2 purposes 3,4,5 & 6 are not allowed to be true.
         """
-        forbidden_l_i_legitimate_interests = [1, 3, 4, 5, 6]
         return [
             li
             for li in purpose_legitimate_interests
-            if li not in forbidden_l_i_legitimate_interests
+            if li not in FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS
         ]
 
 
@@ -288,8 +284,8 @@ def _build_special_feature_opt_ins(special_features: List[TCFFeatureRecord]) -> 
 def _get_epoch_time() -> int:
     """Calculate the epoch time to be used for both created and updated_at
 
-    TODO not sure why adding this extra 0 to the epoch time is necessary for it to decode properly
     Matches this: Math.round(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate())/100)
+    Had to add an extra "0" to get it to match.
     """
     return int(datetime.utcnow().date().strftime("%s") + "0")
 
@@ -306,7 +302,7 @@ def build_tc_model(
     tcf_contents: TCFExperienceContents, preference: Optional[UserConsentPreference]
 ) -> TCModel:
     """
-    Helper for building a TCModel that contains the information to build
+    Helper for building a TCModel that contains the prerequisite information to build
     an accept-all or reject-all string, depending on the supplied preference.
     """
     with open(load_file([GVL_JSON_PATH]), "r", encoding="utf-8") as file:
@@ -317,8 +313,9 @@ def build_tc_model(
     ]
 
     if not preference:
+        # Dev-level error
         raise Exception(
-            "Preference must be specified. Only accept or reject-all strings are currently supported."
+            "Overall preference must be specified. Only accept or reject-all strings are currently supported."
         )
 
     consented: bool = transform_user_preference_to_boolean(preference)
@@ -339,50 +336,24 @@ def build_tc_model(
         tcf_contents.tcf_special_features
     )
 
-    # Use the same date for created and lastUpdated
     current_time: int = _get_epoch_time()
 
     tc_model = TCModel(
-        _gvl=gvl,
-        cmp_id=CMP_ID,
-        vendor_list_version=gvl.get("vendorListVersion"),
-        policy_version=gvl.get("tcfPolicyVersion"),
-        cmp_version=CMP_VERSION,
-        consent_screen=CONSENT_SCREEN,
-        vendors_disclosed=internal_gvl_vendor_ids,
+        _gvl=gvl,  # Private field
         created=current_time,
         last_updated=current_time,
+        cmp_id=CMP_ID,
+        cmp_version=CMP_VERSION,
+        consent_screen=CONSENT_SCREEN,
+        vendor_list_version=gvl.get("vendorListVersion"),
+        policy_version=gvl.get("tcfPolicyVersion"),
+        special_feature_optins=special_feature_opt_ins if consented else [],
+        purpose_consents=purpose_consents if consented else [],
+        purpose_legitimate_interests=purpose_legitimate_interests if consented else [],
+        # TODO https://github.com/InteractiveAdvertisingBureau/iabtcf-es/blob/master/modules/core/src/encoder/SemanticPreEncoder.ts#L38
         vendor_consents=vendor_consents if consented else [],
         vendor_legitimate_interests=vendor_legitimate_interests if consented else [],
-        purpose_consents=purpose_consents if consented else [],
-        purpose_legitimate_interests=purpose_legitimate_interests
-        if consented
-        else [],  # TODO https://github.com/InteractiveAdvertisingBureau/iabtcf-es/blob/master/modules/core/src/encoder/SemanticPreEncoder.ts#L38
-        special_feature_optins=special_feature_opt_ins if consented else [],
+        vendors_disclosed=internal_gvl_vendor_ids,
     )
 
     return tc_model
-
-
-class TCFVersionHash(FidesSchema):
-    """Minimal subset of the TCF experience details surfacing
-    when consent should be resurfaced"""
-
-    policy_version: int
-    purpose_consents: List[int]
-    purpose_legitimate_interests: List[int]
-    special_feature_optins: List[int]
-    vendor_consents: List[int]
-    vendor_legitimate_interests: List[int]
-
-    @root_validator()
-    @classmethod
-    def sort_lists(cls, values: Dict) -> Dict:
-        """Verify lists are sorted ascending for repeatability"""
-        for field, val in values.items():
-            if isinstance(val, list):
-                values[field] = sorted(val)
-        return values
-
-    class Config:
-        extra = Extra.ignore

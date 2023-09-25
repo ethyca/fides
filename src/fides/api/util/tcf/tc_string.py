@@ -1,10 +1,16 @@
 import base64
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 
 from pydantic import Field
 
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.util.tcf.tc_model import TCModel
+
+# Number of bits allowed for certain sections that are used in multiple places
+USE_NON_STANDARD_TEXT_BITS = 1
+SPECIAL_FEATURE_BITS = 12
+PURPOSE_CONSENTS_BITS = 24
+PURPOSE_LEGITIMATE_INTERESTS_BITS = 24
 
 
 class TCField(FidesSchema):
@@ -15,39 +21,53 @@ class TCField(FidesSchema):
         description="The number of bits that should be used to represent this value"
     )
     value_override: Optional[Any] = Field(
-        description="The value that should be used instead of a "
-        "value of the same name on the TCModel"
+        description="The value that should be used instead of the field on the TC model"
     )
 
 
 def get_bits_for_section(fields: List[TCField], tc_model: TCModel) -> str:
     """Construct a representation of the fields supplied in bits for a given section."""
-    total_bits = ""
+
+    def _convert_val_to_bitstring(val: Union[str, list, int], num_bits: int) -> str:
+        """Internal helper to take a string, list of integers, or integer, and convert it to a bitstring"""
+        bit_components: str = ""
+
+        if isinstance(val, str):
+            # Used for things like publisher country code and consent_language.
+            # There are two letters, represented by 12 bits total, so we convert
+            # the letters to numbers, and they are represented by 6 bits apiece
+            bit_allocation = int(num_bits / len(val))
+            for char in val:
+                converted_num: int = _convert_letter_to_number(char)
+                bit_components += format(converted_num, f"0{bit_allocation}b")
+            return bit_components
+
+        if isinstance(val, list):
+            # List of integers expected.  Bitstring should be the length of the
+            # maximum integer in the list
+            for i in range(1, num_bits + 1):
+                bit_components += "1" if i in val else "0"
+            return bit_components
+
+        # Converts an integer to bits, padding to use the specified number of bits
+        return format(val, f"0{num_bits}b")
+
+    total_bits: str = ""
     for field in fields:
+        # Either fetch the field of the same name off of the TCModel for encoding,
+        # or use the value override, if supplied.
         field_value: Any = (
             field.value_override
             if field.value_override is not None
             else getattr(tc_model, field.name)
         )
 
+        # Cleanup before building bit strings by converting bools to ints
         if isinstance(field_value, bool):
-            field_value = 1 if field_value else 0
+            field_value = int(field_value)
 
-        bit_components = ""
-        if isinstance(field_value, str):
-            bit_allocation = int(field.bits / len(field_value))
-            for char in field_value:
-                converted_num = _convert_letter_to_number(char)
-                bit_components += format(converted_num, f"0{bit_allocation}b")
-
-        elif isinstance(field_value, list):
-            for i in range(1, field.bits + 1):
-                bit_components += "1" if i in field_value else "0"
-
-        else:
-            bit_components = format(field_value, f"0{field.bits}b")
-
-        total_bits += bit_components
+        # Converting field value to bitstring of specified length and add that onto the string we're building
+        total_bits += _convert_val_to_bitstring(field_value, field.bits)
     return total_bits
 
 
@@ -89,11 +109,14 @@ def build_tc_string(model: TCModel) -> str:
 
 def build_core_string(model: TCModel) -> str:
     """
-    Build the "core" TC String.
+    Build the "core" TC String
+
+    https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20Consent%20string%20and%20vendor%20list%20formats%20v2.md#the-core-string
     """
     max_vendor_consents: int = _get_max_vendor_id(model.vendor_consents)
     max_vendor_li: int = _get_max_vendor_id(model.vendor_legitimate_interests)
 
+    # List of core fields.  Order is intentional!
     core_fields: list = [
         TCField(name="version", bits=6),
         TCField(name="created", bits=36),
@@ -105,10 +128,12 @@ def build_core_string(model: TCModel) -> str:
         TCField(name="vendor_list_version", bits=12),
         TCField(name="policy_version", bits=6),
         TCField(name="is_service_specific", bits=1),
-        TCField(name="use_non_standard_texts", bits=1),
-        TCField(name="special_feature_optins", bits=12),
-        TCField(name="purpose_consents", bits=24),
-        TCField(name="purpose_legitimate_interests", bits=24),
+        TCField(name="use_non_standard_texts", bits=USE_NON_STANDARD_TEXT_BITS),
+        TCField(name="special_feature_optins", bits=SPECIAL_FEATURE_BITS),
+        TCField(name="purpose_consents", bits=PURPOSE_CONSENTS_BITS),
+        TCField(
+            name="purpose_legitimate_interests", bits=PURPOSE_LEGITIMATE_INTERESTS_BITS
+        ),
         TCField(name="purpose_one_treatment", bits=1),
         TCField(name="publisher_country_code", bits=12),
         TCField(name="max_vendor_consent", bits=16, value_override=max_vendor_consents),
@@ -129,11 +154,17 @@ def build_core_string(model: TCModel) -> str:
 
 
 def build_disclosed_vendors_string(model: TCModel) -> str:
-    """Build the Optional Disclosed Vendors" section of the TC String"""
+    """Build the Optional Disclosed Vendors" section of the TC String
+
+    https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20Consent%20string%20and%20vendor%20list%20formats%20v2.md#disclosed-vendors
+    """
     max_vendor_id: int = _get_max_vendor_id(model.vendors_disclosed)
 
+    # List of disclosed vendor fields.  Order is intentional!
     disclosed_vendor_fields: list = [
-        TCField(name="segment_type", bits=3, value_override=1),
+        TCField(
+            name="segment_type", bits=3, value_override=1
+        ),  # 1 for Disclosed Vendors section
         TCField(name="max_vendor_id", bits=16, value_override=max_vendor_id),
         TCField(
             name="is_range_encoding", bits=1, value_override=0

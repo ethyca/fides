@@ -316,8 +316,12 @@ class PrivacyExperience(Base):
         base_tcf_contents: TCFExperienceContents,
         fides_user_provided_identity: Optional[ProvidedIdentity],
     ) -> bool:
-        """Returns the contents of a TCF experience supplemented with any previous records of
-        a user being served TCF components and/or consenting to any of the individual TCF components
+        """
+        Supplements the given TCF experience in-place with TCF contents at runtime, and returns whether
+        TCF contents exist.
+
+        The TCF experience is determined by systems in the data map as well as any previous records
+        of a user being served TCF components and/or consenting to any individual TCF components.
         """
         if self.component == ComponentType.tcf_overlay:
             tcf_contents = copy(base_tcf_contents)
@@ -332,15 +336,15 @@ class PrivacyExperience(Base):
                         record_type=field_name,
                     )
 
-            has_tcf_contents: bool = any(
-                getattr(tcf_contents, component) for component in TCF_COMPONENT_MAPPING
-            )
+            has_tcf_contents: bool = False
+            for component in TCF_COMPONENT_MAPPING:
+                tcf_contents_for_component = getattr(tcf_contents, component)
+                if bool(tcf_contents_for_component):
+                    has_tcf_contents = True
+                # Add TCF contents to the privacy experience where applicable
+                setattr(self, component, tcf_contents_for_component)
 
             if has_tcf_contents:
-                # Add fetched TCF contents to the Privacy Experience if applicable
-                for component in TCF_COMPONENT_MAPPING:
-                    setattr(self, component, getattr(tcf_contents, component))
-
                 return True
 
         return False

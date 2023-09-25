@@ -28,6 +28,7 @@ The types of changes are:
 - Fides-js can persist TCF preferences to the backend [#3887](https://github.com/ethyca/fides/pull/3887)
 - TCF modal now supports setting legitimate interest fields [#4037](https://github.com/ethyca/fides/pull/4037)
 - TCF overlay description updates[#4051] https://github.com/ethyca/fides/pull/4151
+- Added developer-friendly TCF information under Experience meta 
 
 ### Changed
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)

@@ -186,68 +186,83 @@ BinaryChoice = Literal[0, 1]
 
 
 class TCMobileData(FidesSchema):
-    iab_tcf_cmp_sdk_id: Optional[int] = Field(
+    """Pre-parsed TC data and TC string for a CMP SDK:
+
+    https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#in-app-details
+    """
+
+    IABTCF_CmpSdkID: Optional[int] = Field(
         description="The unsigned integer ID of CMP SDK"
     )
-    iab_tcf_cmp_sdk_version: Optional[int] = Field(
+    IABTCF_CmpSdkVersion: Optional[int] = Field(
         description="The unsigned integer version number of CMP SDK"
     )
-    iab_tcf_policy_version: Optional[int] = Field(
+    IABTCF_PolicyVersion: Optional[int] = Field(
         description="The unsigned integer representing the version of the TCF that these consents adhere to."
     )
-    iab_tcf_gdpr_applies: Optional[BinaryChoice] = Field(
-        description="GDPR applies in current context"
+    IABTCF_gdprApplies: Optional[BinaryChoice] = Field(
+        description="1: GDPR applies in current context, 0 - GDPR does not apply in current context, None=undetermined"
     )
-    iab_tcf_publisher_cc: Optional[str] = Field(
+    IABTCF_PublisherCC: Optional[str] = Field(
         default="AA", description="Two-letter ISO 3166-1 alpha-2 code"
     )
-    iab_tcf_purpose_one_treatment: Optional[BinaryChoice] = Field(
+    IABTCF_PurposeOneTreatment: Optional[BinaryChoice] = Field(
         description="Vendors can use this value to determine whether consent for purpose one is required. 0: "
         "no special treatment. 1: purpose one not disclosed"
     )
-    iab_tcf_use_non_standard_texts: Optional[BinaryChoice] = Field(
-        description="1 - CMP uses customized statck descriptions and/or modified or supplemented standard illustrations"
+    IABTCF_UseNonStandardTexts: Optional[BinaryChoice] = Field(
+        description="1 - CMP uses customized stack descriptions and/or modified or supplemented standard illustrations."
+        "0 - CMP did not use a non-standard stack desc. and/or modified or supplemented Illustrations"
     )
-    iab_tcf_tc_string: Optional[str] = Field(description="Fully encoded TC string")
-    iab_tcf_vendor_consents: Optional[str] = Field(
+    IABTCF_TCString: Optional[str] = Field(description="Fully encoded TC string")
+    IABTCF_VendorConsents: Optional[str] = Field(
         description="Binary string: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the "
         "consent status for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is consent "
         "true for vendor ID 1"
     )
-    iab_tcf_vendor_legitimate_interests: Optional[str] = Field(
+    IABTCF_VendorLegitimateInterests: Optional[str] = Field(
         description="Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the "
         "legitimate interest status for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is "
         "legitimate interest established true for vendor ID 1"
     )
-    iab_tcf_purpose_consents: Optional[str] = Field(
+    IABTCF_PurposeConsents: Optional[str] = Field(
         description="Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the "
         "consent status for purpose ID n+1; false and true respectively. eg. '1' at index 0 is consent "
         "true for purpose ID 1"
     )
-    iab_tcf_purpose_legitimate_interests: Optional[str] = Field(
+    IABTCF_PurposeLegitimateInterests: Optional[str] = Field(
         description="Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the"
         " legitimate interest status for purpose ID n+1; false and true respectively. eg. '1' at index 0 "
         "is legitimate interest established true for purpose ID 1"
     )
-    iab_tcf_special_feature_opt_ins: Optional[str] = Field(
+    IABTCF_SpecialFeaturesOptIns: Optional[str] = Field(
         description="Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates "
         "the opt-in status for special feature ID n+1; false and true respectively. eg. '1' at index 0 is "
         "opt-in true for special feature ID 1"
     )
-    iab_tcf_publisher_restrictions: Dict[str, str] = {}
-    iab_tcf_publisher_consent: Optional[str]
-    iab_tcf_publisher_legitimate_interests: Optional[str]
-    iab_tcf_publisher_custom_purposes_consents: Optional[str]
-    iab_tcf_publisher_custom_purposes_legitimate_interests: Optional[str]
+    # IABTCF_PublisherRestrictions{ID}  # TODO this field has dynamic keys.  Add when we start surfacing publisher restrictions
+    IABTCF_PublisherConsent: Optional[str] = None
+    IABTCF_PublisherLegitimateInterests: Optional[str] = None
+    IABTCF_PublisherCustomPurposesConsents: Optional[str] = None
+    IABTCF_PublisherCustomPurposesLegitimateInterests: Optional[str] = None
 
 
 class ExperienceMeta(FidesSchema):
-    """Supplements experience with developer-friendly keys"""
+    """Supplements experience with developer-friendly meta information"""
 
-    version_hash: Optional[str] = None
-    accept_all_tc_string: Optional[str] = None
+    version_hash: Optional[str] = Field(
+        description="A hashed value that can be compared to previously-fetched "
+        "hash values to determine if the Experience has meaningfully changed"
+    )
+    accept_all_tc_string: Optional[str] = Field(
+        description="The TC string corresponding to a user opting in to all "
+        "available options"
+    )
     accept_all_tc_mobile_data: Optional[TCMobileData] = None
-    reject_all_tc_string: Optional[str] = None
+    reject_all_tc_string: Optional[str] = Field(
+        description="The TC string corresponding to a user opting out of all "
+        "available options"
+    )
     reject_all_tc_mobile_data: Optional[TCMobileData] = None
 
 
