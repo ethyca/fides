@@ -258,7 +258,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                 goToVendorTab();
               }}
             >
-              View our {numVendors} partner{numVendors > 1 ? "s" : ""}
+              View our {numVendors} partner{numVendors === 1 ? "" : "s"}
             </button>
             <TcfConsentButtons
               experience={experience}
