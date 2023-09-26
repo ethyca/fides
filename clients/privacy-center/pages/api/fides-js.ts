@@ -9,7 +9,7 @@ import {
   fetchExperience,
 } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
-import { LOCATION_HEADERS } from "~/common/geolocation";
+import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 
 // one hour, how long the client should cache fides.js for
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
@@ -135,8 +135,7 @@ export default async function handler(
   const tcfEnabled = environment.settings.TCF_ENABLED;
 
   // Check if a geolocation was provided via headers or query param
-  // const geolocation = await lookupGeolocation(req);
-  const geolocation = { country: "FI", location: "FI-18", region: "18" };
+  const geolocation = await lookupGeolocation(req);
 
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
