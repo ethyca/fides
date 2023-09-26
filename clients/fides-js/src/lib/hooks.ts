@@ -4,6 +4,7 @@ import {
   FidesOptions,
   LastServedNoticeSchema,
   NoticesServedRequest,
+  PrivacyExperience,
   PrivacyNotice,
   ServingComponent,
 } from "./consent-types";
@@ -64,22 +65,29 @@ export const useDisclosure = ({ id }: { id: string }) => {
   };
 };
 
+const extractIds = <T extends { id: string | number }[]>(
+  modelList?: T
+): any[] => {
+  if (!modelList) return [];
+  return modelList.map((model) => model.id);
+};
+
 export const useConsentServed = ({
   notices,
   options,
   userGeography,
-  privacyExperienceId,
+  privacyExperience,
   acknowledgeMode,
 }: {
   notices: PrivacyNotice[];
   options: FidesOptions;
   userGeography?: string;
-  privacyExperienceId?: string;
+  privacyExperience: PrivacyExperience;
   acknowledgeMode?: boolean;
 }) => {
-  const [servedNotices, setServedNotices] = useState<
-    LastServedNoticeSchema[] | undefined
-  >(undefined);
+  const [servedNotices, setServedNotices] = useState<LastServedNoticeSchema[]>(
+    []
+  );
 
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
@@ -93,12 +101,22 @@ export const useConsentServed = ({
       }
       const request: NoticesServedRequest = {
         browser_identity: event.detail.identity,
-        privacy_experience_id: privacyExperienceId,
+        privacy_experience_id: privacyExperience.id,
         user_geography: userGeography,
         acknowledge_mode: acknowledgeMode,
         privacy_notice_history_ids: notices.map(
           (n) => n.privacy_notice_history_id
         ),
+        tcf_purposes: extractIds(privacyExperience?.tcf_purposes),
+        tcf_special_purposes: extractIds(
+          privacyExperience?.tcf_special_purposes
+        ),
+        tcf_vendors: extractIds(privacyExperience?.tcf_vendors),
+        tcf_features: extractIds(privacyExperience?.tcf_features),
+        tcf_special_features: extractIds(
+          privacyExperience?.tcf_special_features
+        ),
+        tcf_systems: extractIds(privacyExperience?.tcf_systems),
         serving_component: event.detail.extraDetails.servingComponent,
       };
       const result = await patchNoticesServed({
@@ -110,7 +128,7 @@ export const useConsentServed = ({
         setServedNotices(result);
       }
     },
-    [notices, options, acknowledgeMode, privacyExperienceId, userGeography]
+    [notices, options, acknowledgeMode, privacyExperience, userGeography]
   );
 
   useEffect(() => {

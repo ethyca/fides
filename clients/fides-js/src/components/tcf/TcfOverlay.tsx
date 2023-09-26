@@ -27,11 +27,17 @@ import type {
 } from "../../lib/tcf/types";
 
 import { updateConsentPreferences } from "../../lib/preferences";
-import { ConsentMethod, PrivacyExperience } from "../../lib/consent-types";
+import {
+  ConsentMechanism,
+  ConsentMethod,
+  LastServedNoticeSchema,
+  PrivacyExperience,
+} from "../../lib/consent-types";
 import TcfModalContent from "./TcfModalContent";
 import { generateTcString } from "../../lib/tcf";
 import { FidesCookie } from "../../lib/cookie";
 import InitialLayer from "./InitialLayer";
+import { useConsentServed } from "../../lib/hooks";
 
 const resolveConsentValueFromTcfModel = (
   model: TCFPurposeRecord | TCFFeatureRecord | TCFVendorRecord
@@ -83,12 +89,40 @@ export interface UpdateEnabledIds {
   modelType: keyof EnabledIds;
 }
 
+type Category = "purpose" | "special_feature" | "vendor" | "system";
+type NoticeSubMap = {
+  [key: string]: string | number;
+};
+
+type NoticeMap = Record<Category, NoticeSubMap>;
+
+const noticeMap = (servedNotices: LastServedNoticeSchema[]): NoticeMap => {
+  const map: NoticeMap = {
+    purpose: {},
+    special_feature: {},
+    vendor: {},
+    system: {},
+  };
+
+  servedNotices.forEach((notice) => {
+    (Object.keys(map) as Category[]).forEach((key) => {
+      const value = notice[key as keyof LastServedNoticeSchema];
+      if (value !== null)
+        map[key][String(value)] = notice.served_notice_history_id;
+    });
+  });
+
+  return map;
+};
+
 const transformTcfModelToTcfSave = ({
   modelList,
   enabledIds,
+  noticeSubMap,
 }: {
   modelList: TcfModels;
   enabledIds: string[];
+  noticeSubMap: NoticeSubMap;
 }): TcfSave[] | null => {
   if (!modelList) {
     return [];
@@ -100,6 +134,7 @@ const transformTcfModelToTcfSave = ({
     return {
       id: model.id,
       preference,
+      served_notice_history_id: noticeSubMap[String(model.id)],
     };
   }) as TcfSave[];
 };
@@ -107,27 +142,36 @@ const transformTcfModelToTcfSave = ({
 const createTcfSavePayload = ({
   experience,
   enabledIds,
+  servedNotices,
 }: {
   experience: PrivacyExperience;
   enabledIds: EnabledIds;
-}): TcfSavePreferences => ({
-  purpose_preferences: transformTcfModelToTcfSave({
-    modelList: experience.tcf_purposes,
-    enabledIds: enabledIds.purposes,
-  }) as TCFPurposeSave[],
-  special_feature_preferences: transformTcfModelToTcfSave({
-    modelList: experience.tcf_special_features,
-    enabledIds: enabledIds.specialFeatures,
-  }) as TCFSpecialFeatureSave[],
-  vendor_preferences: transformTcfModelToTcfSave({
-    modelList: experience.tcf_vendors,
-    enabledIds: enabledIds.vendors,
-  }) as TCFVendorSave[],
-  system_preferences: transformTcfModelToTcfSave({
-    modelList: experience.tcf_systems,
-    enabledIds: enabledIds.systems,
-  }) as TCFVendorSave[],
-});
+  servedNotices: LastServedNoticeSchema[];
+}): TcfSavePreferences => {
+  const servedNoticeMap = noticeMap(servedNotices);
+  return {
+    purpose_preferences: transformTcfModelToTcfSave({
+      modelList: experience.tcf_purposes,
+      enabledIds: enabledIds.purposes,
+      noticeSubMap: servedNoticeMap["purpose"],
+    }) as TCFPurposeSave[],
+    special_feature_preferences: transformTcfModelToTcfSave({
+      modelList: experience.tcf_special_features,
+      enabledIds: enabledIds.specialFeatures,
+      noticeSubMap: servedNoticeMap["special_feature"],
+    }) as TCFSpecialFeatureSave[],
+    vendor_preferences: transformTcfModelToTcfSave({
+      modelList: experience.tcf_vendors,
+      enabledIds: enabledIds.vendors,
+      noticeSubMap: servedNoticeMap["vendor"],
+    }) as TCFVendorSave[],
+    system_preferences: transformTcfModelToTcfSave({
+      modelList: experience.tcf_systems,
+      enabledIds: enabledIds.systems,
+      noticeSubMap: servedNoticeMap["system"],
+    }) as TCFVendorSave[],
+  };
+};
 
 const updateCookie = async (
   oldCookie: FidesCookie,
@@ -182,9 +226,30 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     [draftIds]
   );
 
+  const privacyNotices = useMemo(
+    () => experience.privacy_notices ?? [],
+    [experience.privacy_notices]
+  );
+
+  const isAllNoticeOnly = privacyNotices.every(
+    (n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY
+  );
+
+  const { servedNotices } = useConsentServed({
+    notices: privacyNotices,
+    options,
+    userGeography: fidesRegionString,
+    acknowledgeMode: isAllNoticeOnly,
+    privacyExperience: experience,
+  });
+
   const handleUpdateAllPreferences = useCallback(
-    (enabledIds: EnabledIds) => {
-      const tcf = createTcfSavePayload({ experience, enabledIds });
+    (enabledIds: EnabledIds, servedNotices: LastServedNoticeSchema[]) => {
+      const tcf = createTcfSavePayload({
+        experience,
+        enabledIds,
+        servedNotices,
+      });
       updateConsentPreferences({
         consentPreferencesToSave: [],
         experienceId: experience.id,
@@ -193,7 +258,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         userLocationString: fidesRegionString,
         cookie,
         debug: options.debug,
-        servedNotices: null, // TODO: served notices
+        servedNotices: null,
         tcf,
         updateCookie: (oldCookie) => updateCookie(oldCookie, tcf, experience),
       });
@@ -237,7 +302,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               experience={experience}
               onManagePreferencesClick={onManagePreferencesClick}
               onSave={(keys) => {
-                handleUpdateAllPreferences(keys);
+                handleUpdateAllPreferences(keys, servedNotices);
                 onSave();
               }}
             />
@@ -250,7 +315,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           draftIds={draftIds}
           onChange={handleUpdateDraftState}
           onSave={(keys) => {
-            handleUpdateAllPreferences(keys);
+            handleUpdateAllPreferences(keys, servedNotices);
             onClose();
           }}
         />

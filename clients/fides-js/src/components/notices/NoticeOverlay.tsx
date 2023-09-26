@@ -56,7 +56,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     options,
     userGeography: fidesRegionString,
     acknowledgeMode: isAllNoticeOnly,
-    privacyExperienceId: experience.id,
+    privacyExperience: experience,
   });
 
   const handleUpdatePreferences = useCallback(
