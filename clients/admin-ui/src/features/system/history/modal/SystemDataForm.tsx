@@ -163,7 +163,7 @@ const SystemDataForm: React.FC<SystemDataFormProps> = ({ initialValues }) => {
               initialValues.privacy_declarations.map(
                 (_: PrivacyDeclaration, index: number) => (
                   <>
-                    <SystemDataGroup heading="Data use declaration">
+                    <SystemDataGroup heading="Data use">
                       <SystemDataTextField
                         label="Declaration name (optional)"
                         name={`privacy_declarations[${index}].name`}
