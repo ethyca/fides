@@ -31,6 +31,7 @@ import { ConsentMethod, PrivacyExperience } from "../../lib/consent-types";
 import TcfModalContent from "./TcfModalContent";
 import { generateTcString } from "../../lib/tcf";
 import { FidesCookie } from "../../lib/cookie";
+import InitialLayer from "./InitialLayer";
 
 const resolveConsentValueFromTcfModel = (
   model: TCFPurposeRecord | TCFFeatureRecord | TCFVendorRecord
@@ -114,14 +115,6 @@ const createTcfSavePayload = ({
     modelList: experience.tcf_purposes,
     enabledIds: enabledIds.purposes,
   }) as TCFPurposeSave[],
-  special_purpose_preferences: transformTcfModelToTcfSave({
-    modelList: experience.tcf_special_purposes,
-    enabledIds: enabledIds.specialPurposes,
-  }) as TCFSpecialPurposeSave[],
-  feature_preferences: transformTcfModelToTcfSave({
-    modelList: experience.tcf_features,
-    enabledIds: enabledIds.features,
-  }) as TCFFeatureSave[],
   special_feature_preferences: transformTcfModelToTcfSave({
     modelList: experience.tcf_special_features,
     enabledIds: enabledIds.specialFeatures,
@@ -226,17 +219,29 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             bannerIsOpen={isOpen}
             onClose={onClose}
             experience={experienceConfig}
-            buttonGroup={
-              <TcfConsentButtons
-                experience={experience}
-                onManagePreferencesClick={onManagePreferencesClick}
-                onSave={(keys) => {
-                  handleUpdateAllPreferences(keys);
-                  onSave();
-                }}
-              />
-            }
-          />
+          >
+            <InitialLayer
+              experience={experience}
+              managePreferencesLink={
+                <button
+                  type="button"
+                  onClick={onManagePreferencesClick}
+                  className="fides-link-button"
+                >
+                  {experience.experience_config
+                    ?.privacy_preferences_link_label || ""}
+                </button>
+              }
+            />
+            <TcfConsentButtons
+              experience={experience}
+              onManagePreferencesClick={onManagePreferencesClick}
+              onSave={(keys) => {
+                handleUpdateAllPreferences(keys);
+                onSave();
+              }}
+            />
+          </ConsentBanner>
         ) : null
       }
       renderModalContent={({ onClose }) => (

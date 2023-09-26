@@ -304,7 +304,25 @@
           ]
         }
       ],
-      "tcf_special_features": [],
+      "tcf_special_features": [
+        {
+          "default_preference": "opt_out",
+          "current_preference": null,
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "id": 1,
+          "name": "Use precise geolocation data",
+          "description": "With your acceptance, your precise location (within a radius of less than 500 metres) may be used in support of the purposes explained in this notice.",
+          "vendors": [],
+          "systems": [
+            {
+              "id": "ctl_5ac0f598-7c7f-4712-95ec-f9bb6d88feb6",
+              "name": "test"
+            }
+          ]
+        }
+      ],
       "gvl": {
         "gvlSpecificationVersion": "3",
         "vendorListVersion": 19,

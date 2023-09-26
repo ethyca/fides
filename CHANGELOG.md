@@ -15,7 +15,7 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.20.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.20.2...main)
 
 ### Added
 - "Add a vendor" flow to configuring consent page [#4107](https://github.com/ethyca/fides/pull/4107)
@@ -31,12 +31,20 @@ The types of changes are:
 
 ### Changed
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
+- CORS configuration page [#4073](https://github.com/ethyca/fides/pull/4073)
 - Refactored `fides.js` components so that they can take data structures that are not necessarily privacy notices [#3870](https://github.com/ethyca/fides/pull/3870)
 - Use hosted GVL.json from the backend [#4159](https://github.com/ethyca/fides/pull/4159)
+- Features and Special Purposes in the TCF modal do not render toggles [#4139](https://github.com/ethyca/fides/pull/4139)
+- Moved the initial TCF layer to the banner [#4142](https://github.com/ethyca/fides/pull/4142)
 
 ### Fixed
 - Allows CDN to cache empty experience responses from fides.js API  [#4113](https://github.com/ethyca/fides/pull/4113)
+
+## [2.20.2](https://github.com/ethyca/fides/compare/2.20.1...2.20.2)
+
+### Fixed 
 - added version_added, version_deprecated, and replaced_by to data use, data subject, and data category APIs [#4135](https://github.com/ethyca/fides/pull/4135)
+- Update fides.js to not fetch experience client-side if pre-fetched experience is empty [#4149](https://github.com/ethyca/fides/pull/4149)
 
 ## [2.20.1](https://github.com/ethyca/fides/compare/2.20.0...2.20.1)
 

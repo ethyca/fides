@@ -131,8 +131,6 @@ export type TCFVendorSave = {
 export type TcfSavePreferences = Pick<
   PrivacyPreferencesRequest,
   | "purpose_preferences"
-  | "special_purpose_preferences"
-  | "feature_preferences"
   | "special_feature_preferences"
   | "vendor_preferences"
   | "system_preferences"
