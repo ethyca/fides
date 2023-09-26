@@ -6,11 +6,6 @@ export const TCF_COOKIE_KEY_TO_EXPERIENCE_KEY: {
 }[] = [
   { cookieKey: "purpose_preferences", experienceKey: "tcf_purposes" },
   {
-    cookieKey: "special_purpose_preferences",
-    experienceKey: "tcf_special_purposes",
-  },
-  { cookieKey: "feature_preferences", experienceKey: "tcf_features" },
-  {
     cookieKey: "special_feature_preferences",
     experienceKey: "tcf_special_features",
   },

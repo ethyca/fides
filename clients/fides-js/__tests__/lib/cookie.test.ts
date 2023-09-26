@@ -347,8 +347,6 @@ describe("transformTcfPreferencesToCookieKeys", () => {
     const preferences: TcfSavePreferences = { purpose_preferences: [] };
     const expected: TcfCookieConsent = {
       purpose_preferences: {},
-      special_purpose_preferences: {},
-      feature_preferences: {},
       special_feature_preferences: {},
       vendor_preferences: {},
       system_preferences: {},
@@ -361,15 +359,9 @@ describe("transformTcfPreferencesToCookieKeys", () => {
       purpose_preferences: [
         { id: 1, preference: UserConsentPreference.OPT_IN },
       ],
-      special_purpose_preferences: [
-        { id: 23, preference: UserConsentPreference.OPT_OUT },
-      ],
-      feature_preferences: [
-        { id: 1, preference: UserConsentPreference.OPT_IN },
-        { id: 2, preference: UserConsentPreference.OPT_OUT },
-      ],
       special_feature_preferences: [
         { id: 1, preference: UserConsentPreference.OPT_IN },
+        { id: 2, preference: UserConsentPreference.OPT_OUT },
       ],
       vendor_preferences: [
         { id: "1111", preference: UserConsentPreference.OPT_OUT },
@@ -380,9 +372,7 @@ describe("transformTcfPreferencesToCookieKeys", () => {
     };
     const expected: TcfCookieConsent = {
       purpose_preferences: { 1: true },
-      special_purpose_preferences: { 23: false },
-      feature_preferences: { 1: true, 2: false },
-      special_feature_preferences: { 1: true },
+      special_feature_preferences: { 1: true, 2: false },
       vendor_preferences: { 1111: false },
       system_preferences: { ctl_test_system: true },
     };

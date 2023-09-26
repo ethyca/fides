@@ -7,6 +7,7 @@ import type {
   TCFFeatureSave,
   TCFSpecialFeatureSave,
   TCFVendorSave,
+  GVLJson,
 } from "./tcf/types";
 
 export type EmptyExperience = Record<PropertyKey, never>;
@@ -15,8 +16,8 @@ export interface FidesConfig {
   // Set the consent defaults from a "legacy" Privacy Center config.json.
   consent?: LegacyConsentConfig;
   // Set the "experience" to be used for this Fides.js instance -- overrides the "legacy" config.
-  // If set, Fides.js will fetch neither experience config nor user geolocation.
-  // If not set or is empty, Fides.js will attempt to fetch its own experience config.
+  // If defined or is empty, Fides.js will not fetch experience config.
+  // If undefined, Fides.js will attempt to fetch its own experience config.
   experience?: PrivacyExperience | EmptyExperience;
   // Set the geolocation for this Fides.js instance. If *not* set, Fides.js will fetch its own geolocation.
   geolocation?: UserGeolocation;
@@ -85,6 +86,7 @@ export type PrivacyExperience = {
   tcf_systems?: Array<TCFVendorRecord>;
   tcf_features?: Array<TCFFeatureRecord>;
   tcf_special_features?: Array<TCFFeatureRecord>;
+  gvl?: GVLJson;
 };
 
 export type ExperienceConfig = {

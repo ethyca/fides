@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.params import Security
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -17,6 +17,7 @@ from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import censor_config
 from fides.config import get_config as get_app_config
+from fides.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Config"], prefix=urls.V1_URL_PREFIX)
 
@@ -45,9 +46,10 @@ def get_config(
     response_model=ApplicationConfigSchema,
     response_model_exclude_unset=True,
 )
-def update_settings(
+def patch_settings(
     *,
     db: Session = Depends(deps.get_db),
+    request: Request,
     data: ApplicationConfigSchema,
 ) -> ApplicationConfigSchema:
     """
@@ -56,10 +58,43 @@ def update_settings(
     Only keys provided will be updated, others will be unaffected,
     i.e. true PATCH behavior.
     """
-    logger.info("Updating application settings")
+
+    pruned_data = data.dict(exclude_none=True)
+    logger.info("PATCHing application settings")
+    update_config: ApplicationConfig = ApplicationConfig.update_api_set(db, pruned_data)
+
+    ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
+
+    return update_config.api_set
+
+
+@router.put(
+    urls.CONFIG,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[scopes.CONFIG_UPDATE])],
+    response_model=ApplicationConfigSchema,
+    response_model_exclude_unset=True,
+)
+def put_settings(
+    *,
+    db: Session = Depends(deps.get_db),
+    request: Request,
+    data: ApplicationConfigSchema,
+) -> ApplicationConfigSchema:
+    """
+    Updates the global application settings record.
+
+    The record will look exactly as it is provided, i.e. true PUT behavior.
+    """
+    pruned_data = data.dict(exclude_none=True)
+    logger.info("PUTing application settings")
     update_config: ApplicationConfig = ApplicationConfig.update_api_set(
-        db, data.dict(exclude_none=True)
+        db,
+        pruned_data,
+        merge_updates=False,
     )
+
+    ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
     return update_config.api_set
 
 
@@ -72,6 +107,7 @@ def update_settings(
 def reset_settings(
     *,
     db: Session = Depends(deps.get_db),
+    request: Request,
 ) -> dict:
     """
     Resets the global application settings record.
@@ -81,4 +117,7 @@ def reset_settings(
     """
     logger.info("Resetting api-set application settings")
     update_config: Optional[ApplicationConfig] = ApplicationConfig.clear_api_set(db)
+
+    ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
+
     return update_config.api_set if update_config else {}

@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Type
+from typing import Any, List, Optional, Sequence, Type
 
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from fideslang.validation import FidesKey
@@ -25,7 +25,9 @@ def validate_data_categories_against_db(
         logger.info(
             "No data categories in the database: reverting to default data categories."
         )
-        defined_data_categories = list(DefaultTaxonomyDataCategories.__members__.keys())
+        defined_data_categories = [
+            FidesKey(key) for key in DefaultTaxonomyDataCategories.__members__.keys()
+        ]
 
     class DataCategoryValidationMixin(BaseModel):
         @validator("data_categories", check_fields=False, allow_reuse=True)
@@ -36,17 +38,17 @@ def validate_data_categories_against_db(
             return _valid_data_categories(v, defined_data_categories)
 
     class FieldDataCategoryValidation(DatasetField, DataCategoryValidationMixin):
-        fields: Optional[List["FieldDataCategoryValidation"]]
+        fields: Optional[List["FieldDataCategoryValidation"]]  # type: ignore[assignment]
 
     FieldDataCategoryValidation.update_forward_refs()
 
     class CollectionDataCategoryValidation(
         DatasetCollection, DataCategoryValidationMixin
     ):
-        fields: List[FieldDataCategoryValidation] = []
+        fields: Sequence[FieldDataCategoryValidation] = []  # type: ignore[assignment]
 
     class DatasetDataCategoryValidation(Dataset, DataCategoryValidationMixin):
-        collections: List[CollectionDataCategoryValidation]
+        collections: Sequence[CollectionDataCategoryValidation]  # type: ignore[assignment]
 
     DatasetDataCategoryValidation(**dataset.dict())
 

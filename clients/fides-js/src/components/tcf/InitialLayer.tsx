@@ -1,24 +1,14 @@
-import { VNode, h } from "preact";
+import { h } from "preact";
 import { useMemo } from "preact/hooks";
 import { PrivacyExperience } from "../../lib/consent-types";
 
 import {
-  Stack,
   createStacks,
   getIdsNotRepresentedInStacks,
 } from "../../lib/tcf/stacks";
-import GVL_JSON from "../../lib/tcf/gvl.json";
 import InitialLayerAccordion from "./InitialLayerAccordion";
 
-const STACKS: Record<string, Stack> = GVL_JSON.stacks;
-
-const InitialLayer = ({
-  experience,
-  managePreferencesLink,
-}: {
-  experience: PrivacyExperience;
-  managePreferencesLink: VNode;
-}) => {
+const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
   const purposeIds = useMemo(
     () =>
       experience.tcf_purposes ? experience.tcf_purposes.map((p) => p.id) : [],
@@ -33,15 +23,16 @@ const InitialLayer = ({
     [experience.tcf_special_features]
   );
 
-  const stacks = useMemo(
-    () =>
-      createStacks({
-        purposeIds,
-        specialFeatureIds,
-        stacks: STACKS,
-      }),
-    [purposeIds, specialFeatureIds]
-  );
+  const stacks = useMemo(() => {
+    if (!experience.gvl) {
+      return [];
+    }
+    return createStacks({
+      purposeIds,
+      specialFeatureIds,
+      stacks: experience.gvl.stacks,
+    });
+  }, [purposeIds, specialFeatureIds, experience.gvl]);
 
   const purposes = useMemo(() => {
     if (!experience.tcf_purposes) {
@@ -86,7 +77,6 @@ const InitialLayer = ({
               title={s.name}
               description={s.description}
               purposes={stackPurposes}
-              managePreferencesLink={managePreferencesLink}
             />
           );
         })}
@@ -97,7 +87,6 @@ const InitialLayer = ({
             key={p.id}
             title={p.name}
             description={p.description}
-            managePreferencesLink={managePreferencesLink}
           />
         ))}
       </div>
@@ -105,10 +94,8 @@ const InitialLayer = ({
         {specialFeatures.map((sf) => (
           <InitialLayerAccordion
             key={sf.id}
-            // TODO: features are still being worked on in the backend
-            title={sf.name || ""}
-            description=""
-            managePreferencesLink={managePreferencesLink}
+            title={sf.name}
+            description={sf.description}
           />
         ))}
       </div>

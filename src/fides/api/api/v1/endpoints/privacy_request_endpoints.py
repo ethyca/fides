@@ -4,7 +4,7 @@ import csv
 import io
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Union
+from typing import Any, Callable, DefaultDict, Dict, List, Literal, Optional, Set, Union
 
 import sqlalchemy
 from fastapi import Body, Depends, HTTPException, Security
@@ -124,13 +124,14 @@ from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_VIEW_DATA,
 )
 from fides.common.api.v1.urn_registry import (
-    PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_MANUAL_ERASURE,
     PRIVACY_REQUEST_MANUAL_INPUT,
+    PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
+    PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
@@ -936,11 +937,11 @@ def resume_privacy_request_with_manual_input(
     if paused_step == CurrentStep.access:
         validate_manual_input(manual_rows, paused_collection, dataset_graph)
         logger.info(
-            "Caching manual input for privacy request '{}', collection: '{}'",
+            "Caching manual access input for privacy request '{}', collection: '{}'",
             privacy_request_id,
             paused_collection,
         )
-        privacy_request.cache_manual_input(paused_collection, manual_rows)
+        privacy_request.cache_manual_access_input(paused_collection, manual_rows)
 
     elif paused_step == CurrentStep.erasure:
         logger.info(
@@ -1351,26 +1352,13 @@ def deny_privacy_request(
     )
 
 
-@router.patch(
-    PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
-    status_code=HTTP_200_OK,
-    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_UPLOAD_DATA])],
-    response_model=None,
-)
-def upload_manual_webhook_data(
-    *,
-    connection_config: ConnectionConfig = Depends(_get_connection_config),
+def _handle_manual_webhook_input(
+    action: Literal["access", "erasure"],
+    connection_config: ConnectionConfig,
     privacy_request_id: str,
-    db: Session = Depends(deps.get_db),
+    db: Session,
     input_data: Dict[str, Any],
 ) -> None:
-    """Upload manual input for the privacy request for the fields defined on the access manual webhook.
-    The data collected here is not included in the graph but uploaded directly to the user at the end
-    of privacy request execution.
-
-    Because a 'manual_webhook' ConnectionConfig has one AccessManualWebhook associated with it,
-    we are using the ConnectionConfig key as the AccessManualWebhook identifier here.
-    """
     privacy_request: PrivacyRequest = get_privacy_request_or_error(
         db, privacy_request_id
     )
@@ -1381,20 +1369,79 @@ def upload_manual_webhook_data(
     if not privacy_request.status == PrivacyRequestStatus.requires_input:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid access manual webhook upload request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
+            detail=f"Invalid manual webhook {action} upload request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
     try:
-        privacy_request.cache_manual_webhook_input(access_manual_webhook, input_data)
+        getattr(privacy_request, f"cache_manual_webhook_{action}_input")(
+            access_manual_webhook, input_data
+        )
     except PydanticValidationError as exc:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.errors()
         )
 
     logger.info(
-        "Input saved for access manual webhook '{}' for privacy_request '{}'.",
+        "{} input saved for manual webhook '{}' for privacy_request '{}'.",
+        action.capitalize(),
         access_manual_webhook,
         privacy_request,
+    )
+
+
+@router.patch(
+    PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_UPLOAD_DATA])],
+    response_model=None,
+)
+def upload_manual_webhook_access_data(
+    *,
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+    privacy_request_id: str,
+    db: Session = Depends(deps.get_db),
+    input_data: Dict[str, Any],
+) -> None:
+    """Upload manual access input for the privacy request for the fields defined on the access manual webhook.
+    The data collected here is not included in the graph but uploaded directly to the user at the end
+    of privacy request execution.
+
+    Because a 'manual_webhook' ConnectionConfig has one AccessManualWebhook associated with it,
+    we are using the ConnectionConfig key as the AccessManualWebhook identifier here.
+    """
+    _handle_manual_webhook_input(
+        action="access",
+        connection_config=connection_config,
+        privacy_request_id=privacy_request_id,
+        db=db,
+        input_data=input_data,
+    )
+
+
+@router.patch(
+    PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_UPLOAD_DATA])],
+    response_model=None,
+)
+def upload_manual_webhook_erasure_data(
+    *,
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+    privacy_request_id: str,
+    db: Session = Depends(deps.get_db),
+    input_data: Dict[str, Any],
+) -> None:
+    """Upload manual erasure input for the privacy request for the fields defined on the access manual webhook.
+
+    Because a 'manual_webhook' ConnectionConfig has one AccessManualWebhook associated with it,
+    we are using the ConnectionConfig key as the AccessManualWebhook identifier here.
+    """
+    _handle_manual_webhook_input(
+        action="erasure",
+        connection_config=connection_config,
+        privacy_request_id=privacy_request_id,
+        db=db,
+        input_data=input_data,
     )
 
 
@@ -1469,7 +1516,7 @@ def privacy_request_data_transfer(
 
 
 @router.get(
-    PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
+    PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_VIEW_DATA])],
     response_model=Optional[ManualWebhookData],
@@ -1498,7 +1545,7 @@ def view_uploaded_manual_webhook_data(
     if not privacy_request.status == PrivacyRequestStatus.requires_input:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid access manual webhook upload request: privacy request "
+            detail=f"Invalid manual webhook access upload request: privacy request "
             f"'{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
@@ -1508,7 +1555,7 @@ def view_uploaded_manual_webhook_data(
             connection_config.key,
             privacy_request.id,
         )
-        data: Dict[str, Any] = privacy_request.get_manual_webhook_input_strict(
+        data: Dict[str, Any] = privacy_request.get_manual_webhook_access_input_strict(
             access_manual_webhook
         )
         checked = True
@@ -1518,8 +1565,66 @@ def view_uploaded_manual_webhook_data(
         NoCachedManualWebhookEntry,
     ) as exc:
         logger.info(exc)
-        data = privacy_request.get_manual_webhook_input_non_strict(
+        data = privacy_request.get_manual_webhook_access_input_non_strict(
             manual_webhook=access_manual_webhook
+        )
+        checked = False
+
+    return ManualWebhookData(checked=checked, fields=data)
+
+
+@router.get(
+    PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_VIEW_DATA])],
+    response_model=Optional[ManualWebhookData],
+)
+def view_uploaded_erasure_manual_webhook_data(
+    *,
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+    privacy_request_id: str,
+    db: Session = Depends(deps.get_db),
+) -> Optional[ManualWebhookData]:
+    """
+    View uploaded erasure data for this privacy request for the given manual webhook
+
+    If no data exists for this webhook, we just return all fields as None.
+    If we have missing or extra fields saved, we'll just return the overlap between what is saved and what is defined on the webhook.
+
+    If checked=False, data must be reviewed before submission. The privacy request should not be submitted as-is.
+    """
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+    manual_webhook: AccessManualWebhook = get_access_manual_webhook_or_404(
+        connection_config
+    )
+
+    if not privacy_request.status == PrivacyRequestStatus.requires_input:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid manual webhook erasure upload request: privacy request "
+            f"'{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
+        )
+
+    try:
+        logger.info(
+            "Retrieving erasure input data for manual webhook '{}' for privacy request '{}'.",
+            connection_config.key,
+            privacy_request.id,
+        )
+        data: Dict[str, Any] = privacy_request.get_manual_webhook_erasure_input_strict(
+            manual_webhook
+        )
+        checked = True
+    except (
+        PydanticValidationError,
+        ManualWebhookFieldsUnset,
+        NoCachedManualWebhookEntry,
+    ) as exc:
+        logger.info(exc)
+        data = privacy_request.get_manual_webhook_erasure_input_non_strict(
+            manual_webhook=manual_webhook
         )
         checked = False
 
@@ -1555,7 +1660,15 @@ def resume_privacy_request_from_requires_input(
     )
     try:
         for manual_webhook in access_manual_webhooks:
-            privacy_request.get_manual_webhook_input_strict(manual_webhook)
+            # check the access or erasure cache based on the privacy request's action type
+            if privacy_request.policy.get_rules_for_action(
+                action_type=ActionType.access
+            ):
+                privacy_request.get_manual_webhook_access_input_strict(manual_webhook)
+            if privacy_request.policy.get_rules_for_action(
+                action_type=ActionType.erasure
+            ):
+                privacy_request.get_manual_webhook_erasure_input_strict(manual_webhook)
     except (
         NoCachedManualWebhookEntry,
         PydanticValidationError,

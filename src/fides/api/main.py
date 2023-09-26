@@ -256,7 +256,7 @@ async def setup_server() -> None:
 
     log_startup()
 
-    await run_database_startup()
+    await run_database_startup(app)
 
     check_redis()
 
