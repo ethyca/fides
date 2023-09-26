@@ -8,6 +8,7 @@ import {
 
 import { debugLog, hasActionNeededNotices } from "../lib/consent-utils";
 
+import "./fides.css";
 import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
@@ -140,14 +141,6 @@ const Overlay: FunctionComponent<Props> = ({
       });
     }
   }, [showBanner, cookie, options.debug, bannerIsOpen]);
-
-  useEffect(() => {
-    const cssUrl = new URL("fides.css", options.privacyCenterUrl);
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = cssUrl.href;
-    document.head.appendChild(link);
-  }, [options.privacyCenterUrl]);
 
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();

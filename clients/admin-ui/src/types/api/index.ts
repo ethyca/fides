@@ -82,6 +82,7 @@ export type { CreateConnectionConfigurationWithSecrets } from "./models/CreateCo
 export type { CurrentPrivacyPreferenceReportingSchema } from "./models/CurrentPrivacyPreferenceReportingSchema";
 export type { CurrentPrivacyPreferenceSchema } from "./models/CurrentPrivacyPreferenceSchema";
 export { CurrentStep } from "./models/CurrentStep";
+export { CustomAssetType } from "./models/CustomAssetType";
 export type { CustomField } from "./models/CustomField";
 export type { CustomFieldDefinition } from "./models/CustomFieldDefinition";
 export type { CustomFieldDefinitionResponse } from "./models/CustomFieldDefinitionResponse";

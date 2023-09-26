@@ -9,9 +9,64 @@ import {
   fetchExperience,
 } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
-import { lookupGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
+import { LOCATION_HEADERS } from "~/common/geolocation";
 
-const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
+// one hour, how long the client should cache fides.js for
+const FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
+// one hour, how long until the custom-fides.css is refreshed
+const CUSTOM_FIDES_CSS_TTL_MS = 3600 * 1000;
+
+let cachedCustomFidesCss: string = "";
+let lastFetched: number = 0;
+
+async function fetchCustomFidesCss(
+  req: NextApiRequest
+): Promise<string | null> {
+  const currentTime = Date.now();
+  const shouldRefresh = "refresh" in req.query;
+  if (
+    !cachedCustomFidesCss ||
+    (lastFetched && currentTime - lastFetched > CUSTOM_FIDES_CSS_TTL_MS) ||
+    shouldRefresh
+  ) {
+    try {
+      const environment = await loadPrivacyCenterEnvironment();
+      const fidesUrl =
+        environment.settings.SERVER_SIDE_FIDES_API_URL ||
+        environment.settings.FIDES_API_URL;
+      const response = await fetch(
+        `${fidesUrl}/plus/custom-asset/custom-fides.css`
+      );
+      const data = await response.text();
+
+      console.log("Successfully retrieved custom-fides.css");
+
+      if (!response.ok) {
+        console.error(
+          "Error fetching custom-fides.css:",
+          response.status,
+          response.statusText,
+          data
+        );
+        throw new Error(`HTTP error occurred. Status: ${response.status}`);
+      }
+
+      if (!data) {
+        throw new Error("No data returned by the server");
+      }
+
+      cachedCustomFidesCss = data;
+      lastFetched = currentTime;
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Error during fetch operation:", error.message);
+      } else {
+        console.error("Unknown error occurred:", error);
+      }
+    }
+  }
+  return cachedCustomFidesCss;
+}
 
 /**
  * @swagger
@@ -26,6 +81,12 @@ const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
  *         schema:
  *           type: string
  *         example: US-CA
+ *       - in: query
+ *         name: refresh
+ *         required: false
+ *         description: Signals fides.js to use the latest custom-fides.css (if available)
+ *         schema:
+ *           type: boolean
  *       - in: header
  *         name: CloudFront-Viewer-Country
  *         required: false
@@ -74,7 +135,8 @@ export default async function handler(
   const tcfEnabled = environment.settings.TCF_ENABLED;
 
   // Check if a geolocation was provided via headers or query param
-  const geolocation = await lookupGeolocation(req);
+  // const geolocation = await lookupGeolocation(req);
+  const geolocation = { country: "FI", location: "FI-18", region: "18" };
 
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
@@ -146,6 +208,9 @@ export default async function handler(
   if (!fidesJS || fidesJS === "") {
     throw new Error("Unable to load latest fides.js script from server!");
   }
+
+  const customFidesCss = await fetchCustomFidesCss(req);
+
   const script = `
   (function () {
     // This polyfill service adds a fetch polyfill only when needed, depending on browser making the request 
@@ -157,6 +222,11 @@ export default async function handler(
 
     // Include generic fides.js script
     ${fidesJS}
+
+    // Include custom-fides.css
+    const style = document.createElement('style');
+    style.innerHTML = ${JSON.stringify(customFidesCss)};
+    document.head.append(style);
 
     // Initialize fides.js with custom config
     var fidesConfig = ${fidesConfigJSON};

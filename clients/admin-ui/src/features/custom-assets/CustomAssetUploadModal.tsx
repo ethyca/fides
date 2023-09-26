@@ -12,12 +12,11 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import React, { useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 import DocsLink from "~/features/common/DocsLink";
-import { getErrorMessage } from "~/features/common/helpers";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useUpdateCustomAssetMutation } from "~/features/plus/plus.slice";
 import { CustomAssetType } from "~/types/api/models/CustomAssetType";
@@ -56,15 +55,16 @@ const CustomAssetUploadModal: React.FC<RequestModalProps> = ({
 
   const handleSubmit = async () => {
     if (uploadedFile) {
-      try {
-        await updateCustomAsset({ assetType, file: uploadedFile }).unwrap();
-        toast(successToastParams("Stylesheet uploaded successfully"));
-        onClose();
-      } catch (error) {
-        toast(errorToastParams(getErrorMessage(error as FetchBaseQueryError)));
-      } finally {
-        setUploadedFile(null);
+      const result = await updateCustomAsset({
+        assetType,
+        file: uploadedFile,
+      });
+      if (isErrorResult(result)) {
+        toast(errorToastParams(getErrorMessage(result.error)));
+        return;
       }
+      toast(successToastParams("Stylesheet uploaded successfully"));
+      onClose();
     }
   };
 

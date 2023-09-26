@@ -2,4 +2,4 @@ from enum import Enum
 
 
 class CustomAssetType(Enum):
-    fides_css = "fides.css"
+    custom_fides_css = "custom-fides.css"
