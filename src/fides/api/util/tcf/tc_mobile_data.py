@@ -31,7 +31,7 @@ def build_tc_data_for_mobile(tc_model: TCModel) -> TCMobileData:
         IABTCF_CmpSdkID=tc_model.cmp_id,
         IABTCF_CmpSdkVersion=tc_model.cmp_version,
         IABTCF_PolicyVersion=tc_model.policy_version,
-        IABTCF_gdprApplies=1,  # TODO make this dynamic
+        IABTCF_gdprApplies=1,
         IABTCF_PublisherCC=tc_model.publisher_country_code,
         IABTCF_PurposeOneTreatment=tc_model.purpose_one_treatment,
         IABTCF_UseNonStandardTexts=int(

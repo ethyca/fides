@@ -202,17 +202,12 @@ class TCModel(FidesSchema):
 
     @root_validator()
     @classmethod
-    def root_validation(cls, values: Dict) -> Dict:
-        """Several operations in the root_validator:
+    def vendor_legal_basis_validation(cls, values: Dict) -> Dict:
+        """Multiple operations in the root_validator:
 
-        - Add all the vendor ids in the GVL to vendors_disclosed if none specified
         - Remove any vendor ids from vendor_consents if the legal basis is not allowed
         - Remove any vendor ids from vendor_legitimate_interests if the legal basis is not allowed
         """
-        values["vendors_disclosed"] = values.get("vendors_disclosed") or [
-            int(vendor_id) for vendor_id in gvl.get("vendors", {})
-        ]
-
         is_service_specific: Optional[bool] = values.get("is_service_specific")
 
         values["vendor_consents"] = _validate_vendor_legal_basis_fields(
@@ -351,6 +346,21 @@ def _build_special_feature_opt_ins(
     return special_feature_opt_ins
 
 
+def _build_vendors_disclosed(vendors: List[TCFVendorRecord]) -> List[int]:
+    """
+    Returns the vendor ids that we surface in the TCF Experience, provided they show up in the GVL.
+
+    The DisclosedVendors is an optional TC String segment that records which vendors have been disclosed to a
+    given user by a CMP. It may be used by a CMP while storing TC Strings, but must not be included in the TC String
+    when returned by the CMP API."""
+    all_vendor_ids: List[str] = [vendor_id for vendor_id in gvl.get("vendors", {})]
+    return [
+        int(vendor.id)
+        for vendor in vendors
+        if str.isdigit(vendor.id) and vendor.id in all_vendor_ids
+    ]
+
+
 def _get_epoch_time() -> int:
     """Calculate the epoch time to be used for both created and updated_at
 
@@ -412,6 +422,7 @@ def convert_tcf_contents_to_tc_model(
         purpose_legitimate_interests=purpose_legitimate_interests if consented else [],
         vendor_consents=vendor_consents if consented else [],
         vendor_legitimate_interests=vendor_legitimate_interests if consented else [],
+        vendors_disclosed=_build_vendors_disclosed(tcf_contents.tcf_vendors),
     )
 
     return tc_model

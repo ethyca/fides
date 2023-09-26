@@ -379,13 +379,6 @@ class TestBuildTCModel:
         m = TCModel(consent_language="English")
         assert m.consent_language == "EN"
 
-    def test_vendors_disclosed(self):
-        m = TCModel(vendors_disclosed=[1, 2])
-        assert m.vendors_disclosed == [1, 2]
-
-        m = TCModel()
-        assert m.vendors_disclosed != []
-
     @pytest.mark.usefixtures("captify_technologies_system")
     def test_build_tc_string_captify_accept_all(self, db):
         tcf_contents = get_tcf_contents(db)
@@ -490,9 +483,7 @@ class TestBuildTCModel:
         assert decoded.interests_vendors == {}
         assert decoded.pub_restriction_entries == []
 
-        assert len(decoded.oob_disclosed_vendors) == 4176
-        assert sum(decoded.oob_disclosed_vendors.values()) == 703
-        assert decoded.oob_disclosed_vendors[4176]
+        assert (decoded.oob_disclosed_vendors) == {1: False, 2: True}
 
     @pytest.mark.usefixtures("emerse_system")
     def test_build_tc_string_emerse_accept_all(self, db):
@@ -616,9 +607,16 @@ class TestBuildTCModel:
         }
         assert decoded.pub_restriction_entries == []
 
-        assert len(decoded.oob_disclosed_vendors) == 4176
-        assert sum(decoded.oob_disclosed_vendors.values()) == 703
-        assert decoded.oob_disclosed_vendors[4176]
+        assert decoded.oob_disclosed_vendors == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: True,
+        }
 
     @pytest.mark.usefixtures("skimbit_system")
     def test_build_tc_string_skimbit_accept_all(self, db):
@@ -773,9 +771,268 @@ class TestBuildTCModel:
 
         assert decoded.pub_restriction_entries == []
 
-        assert len(decoded.oob_disclosed_vendors) == 4176
-        assert sum(decoded.oob_disclosed_vendors.values()) == 703
-        assert decoded.oob_disclosed_vendors[4176]
+        assert decoded.oob_disclosed_vendors == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+            25: False,
+            26: False,
+            27: False,
+            28: False,
+            29: False,
+            30: False,
+            31: False,
+            32: False,
+            33: False,
+            34: False,
+            35: False,
+            36: False,
+            37: False,
+            38: False,
+            39: False,
+            40: False,
+            41: False,
+            42: False,
+            43: False,
+            44: False,
+            45: False,
+            46: True,
+        }
+
+    @pytest.mark.usefixtures(
+        "skimbit_system", "emerse_system", "captify_technologies_system"
+    )
+    def test_build_tc_string_three_systems_accept_all(self, db):
+        """Do a test combining three gvl systems, and assert data is combined as expected"""
+        tcf_contents = get_tcf_contents(db)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_in
+        )
+
+        assert model.cmp_id == 12
+        assert model.vendor_list_version == 19
+        assert model.policy_version == 4
+        assert model.cmp_version == 1
+        assert model.consent_screen == 1
+
+        assert model.purpose_consents == [1, 2, 3, 4, 7, 9, 10]
+        assert model.purpose_legitimate_interests == [2, 7, 8, 9, 10]
+        assert model.vendor_consents == [2, 8]
+        assert model.vendor_legitimate_interests == [8, 46]
+        assert model.special_feature_optins == [2]
+
+        # Build the TC string and then decode it
+        tc_str = build_tc_string(model)
+
+        decoded = decode_v2(tc_str)
+
+        assert decoded.version == 2
+        assert decoded.cmp_id == 12
+        assert decoded.cmp_version == 1
+        assert decoded.consent_screen == 1
+        assert decoded.consent_language == b"EN"
+        assert decoded.vendor_list_version == 19
+        assert decoded.tcf_policy_version == 4
+        assert decoded.is_service_specific is False
+        assert decoded.use_non_standard_stacks is False
+        assert decoded.special_features_optin == {
+            1: False,
+            2: True,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+        }
+        assert decoded.purposes_consent == {
+            1: True,
+            2: True,
+            3: True,
+            4: True,
+            5: False,
+            6: False,
+            7: True,
+            8: False,
+            9: True,
+            10: True,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+        }
+        assert decoded.purposes_legitimate_interests == {
+            1: False,
+            2: True,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: True,
+            8: True,
+            9: True,
+            10: True,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+        }
+        assert decoded.purpose_one_treatment is False
+        assert decoded.publisher_cc == b"AA"
+        assert decoded.consented_vendors == {
+            1: False,
+            2: True,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: True,
+        }
+        assert decoded.interests_vendors == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: True,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+            25: False,
+            26: False,
+            27: False,
+            28: False,
+            29: False,
+            30: False,
+            31: False,
+            32: False,
+            33: False,
+            34: False,
+            35: False,
+            36: False,
+            37: False,
+            38: False,
+            39: False,
+            40: False,
+            41: False,
+            42: False,
+            43: False,
+            44: False,
+            45: False,
+            46: True,
+        }
+
+        assert decoded.pub_restriction_entries == []
+
+        assert decoded.oob_disclosed_vendors == {
+            1: False,
+            2: True,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: True,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+            25: False,
+            26: False,
+            27: False,
+            28: False,
+            29: False,
+            30: False,
+            31: False,
+            32: False,
+            33: False,
+            34: False,
+            35: False,
+            36: False,
+            37: False,
+            38: False,
+            39: False,
+            40: False,
+            41: False,
+            42: False,
+            43: False,
+            44: False,
+            45: False,
+            46: True,
+        }
 
     def test_build_tc_string_not_vendor(self, db, skimbit_system):
         """
@@ -890,15 +1147,20 @@ class TestBuildTCModel:
 
         assert decoded.pub_restriction_entries == []
 
-        assert len(decoded.oob_disclosed_vendors) == 4176
-        assert sum(decoded.oob_disclosed_vendors.values()) == 703
-        assert decoded.oob_disclosed_vendors[4176]
+        assert decoded.oob_disclosed_vendors == {}
 
     @pytest.mark.parametrize(
-        "system_fixture",
-        [("captify_technologies_system"), ("emerse_system"), ("skimbit_system")],
+        "system_fixture,vendor_id",
+        [
+            ("captify_technologies_system", 2),
+            ("emerse_system", 8),
+            ("skimbit_system", 46),
+        ],
     )
-    def test_build_tc_string_generic_reject_all(self, system_fixture, db):
+    def test_build_tc_string_generic_reject_all(
+        self, system_fixture, vendor_id, db, request
+    ):
+        request.getfixturevalue(system_fixture)
         tcf_contents = get_tcf_contents(db)
         model = convert_tcf_contents_to_tc_model(
             tcf_contents, UserConsentPreference.opt_out
@@ -1002,9 +1264,12 @@ class TestBuildTCModel:
         assert decoded.consented_vendors == {}
         assert decoded.interests_vendors == {}
         assert decoded.pub_restriction_entries == []
-        assert len(decoded.oob_disclosed_vendors) == 4176
-        assert sum(decoded.oob_disclosed_vendors.values()) == 703
-        assert decoded.oob_disclosed_vendors[4176]
+
+        assert tcf_contents.tcf_vendors
+
+        decoded.oob_disclosed_vendors = {
+            num: num == vendor_id for num in range(1, vendor_id + 1)
+        }
 
 
 class TestBuildTCMobileData:
