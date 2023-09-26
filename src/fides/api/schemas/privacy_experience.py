@@ -301,4 +301,5 @@ class PrivacyExperienceResponse(PrivacyExperienceWithId):
     experience_config: Optional[ExperienceConfigResponse] = Field(
         description="The Experience copy or language"
     )
+    gvl: Optional[Dict] = None
     meta: Optional[ExperienceMeta] = None

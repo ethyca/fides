@@ -3,6 +3,7 @@ import { useState } from "preact/hooks";
 import {
   EmbeddedLineItem,
   EmbeddedPurpose,
+  GVLJson,
   TCFVendorRecord,
 } from "../../lib/tcf/types";
 import { PrivacyExperience } from "../../lib/consent-types";
@@ -85,12 +86,14 @@ const TcfVendors = ({
   enabledVendorIds,
   enabledSystemIds,
   onChange,
+  gvl,
 }: {
   allVendors: PrivacyExperience["tcf_vendors"];
   allSystems: PrivacyExperience["tcf_systems"];
   enabledVendorIds: string[];
   enabledSystemIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
+  gvl?: GVLJson;
 }) => {
   const [isFiltered, setIsFiltered] = useState(false);
 
@@ -129,7 +132,7 @@ const TcfVendors = ({
   };
 
   const vendorsToDisplay = isFiltered
-    ? vendors.filter((v) => vendorIsGvl(v))
+    ? vendors.filter((v) => vendorIsGvl(v, gvl))
     : vendors;
 
   return (
@@ -142,7 +145,7 @@ const TcfVendors = ({
             handleToggle(vendor);
           }}
           checked={enabledIds.indexOf(vendor.id) !== -1}
-          badge={vendorIsGvl(vendor) ? "GVL" : undefined}
+          badge={vendorIsGvl(vendor, gvl) ? "GVL" : undefined}
         >
           <div>
             <p>{vendor.description}</p>

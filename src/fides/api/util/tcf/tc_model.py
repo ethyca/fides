@@ -1,7 +1,5 @@
-import json
 import re
 from datetime import datetime
-from os.path import dirname, join
 from typing import Dict, List, Optional, Tuple
 
 from fideslang.models import LegalBasisForProcessingEnum
@@ -10,16 +8,7 @@ from pydantic import Field, NonNegativeInt, PositiveInt, validator
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
-from fides.api.util.tcf_util import TCFExperienceContents
-from fides.config.helpers import load_file
-
-# TODO replace with a load_gvl() call after https://github.com/ethyca/fides/pull/4143 is merged
-GVL_JSON_PATH = join(
-    dirname(__file__),
-    "../../../../../clients/fides-js/src/lib/tcf",
-    "gvl.json",
-)
-
+from fides.api.util.tcf_util import TCFExperienceContents, load_gvl
 
 CMP_ID: int = 12  # TODO: hardcode our unique CMP ID after certification
 CMP_VERSION = 1
@@ -305,8 +294,7 @@ def build_tc_model(
     Helper for building a TCModel that contains the prerequisite information to build
     an accept-all or reject-all string, depending on the supplied preference.
     """
-    with open(load_file([GVL_JSON_PATH]), "r", encoding="utf-8") as file:
-        gvl = json.load(file)
+    gvl: Dict = load_gvl()
 
     internal_gvl_vendor_ids: list[int] = [
         int(vendor_id) for vendor_id in gvl.get("vendors", {})

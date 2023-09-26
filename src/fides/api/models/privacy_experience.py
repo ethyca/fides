@@ -223,6 +223,7 @@ class PrivacyExperience(Base):
     tcf_features: List = []
     tcf_special_features: List = []
     tcf_systems: List = []
+    gvl: Optional[Dict] = {}
     # TCF Developer-Friendly Meta added at runtime as the result of build_tc_data_for_mobile
     meta: Dict = {}
 

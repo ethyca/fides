@@ -358,7 +358,7 @@ class TestBuildTCModel:
         model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
 
         assert model.cmp_id == 12
-        assert model.vendor_list_version == 18
+        assert model.vendor_list_version == 19
         assert model.policy_version == 4
         assert model.cmp_version == 1
         assert model.consent_screen == 1
@@ -378,7 +378,7 @@ class TestBuildTCModel:
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
-        assert decoded.vendor_list_version == 18
+        assert decoded.vendor_list_version == 19
         assert decoded.tcf_policy_version == 4
         assert decoded.is_service_specific is False
         assert decoded.use_non_standard_stacks is False
@@ -455,7 +455,7 @@ class TestBuildTCModel:
         assert decoded.pub_restriction_entries == []
 
         assert len(decoded.oob_disclosed_vendors) == 4176
-        assert sum(decoded.oob_disclosed_vendors.values()) == 701
+        assert sum(decoded.oob_disclosed_vendors.values()) == 703
         assert decoded.oob_disclosed_vendors[4176]
 
     @pytest.mark.usefixtures("emerse_system")
@@ -464,7 +464,7 @@ class TestBuildTCModel:
         model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
 
         assert model.cmp_id == 12
-        assert model.vendor_list_version == 18
+        assert model.vendor_list_version == 19
         assert model.policy_version == 4
         assert model.cmp_version == 1
         assert model.consent_screen == 1
@@ -484,7 +484,7 @@ class TestBuildTCModel:
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
-        assert decoded.vendor_list_version == 18
+        assert decoded.vendor_list_version == 19
         assert decoded.tcf_policy_version == 4
         assert decoded.is_service_specific is False
         assert decoded.use_non_standard_stacks is False
@@ -579,7 +579,7 @@ class TestBuildTCModel:
         assert decoded.pub_restriction_entries == []
 
         assert len(decoded.oob_disclosed_vendors) == 4176
-        assert sum(decoded.oob_disclosed_vendors.values()) == 701
+        assert sum(decoded.oob_disclosed_vendors.values()) == 703
         assert decoded.oob_disclosed_vendors[4176]
 
     @pytest.mark.usefixtures("skimbit_system")
@@ -588,7 +588,7 @@ class TestBuildTCModel:
         model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
 
         assert model.cmp_id == 12
-        assert model.vendor_list_version == 18
+        assert model.vendor_list_version == 19
         assert model.policy_version == 4
         assert model.cmp_version == 1
         assert model.consent_screen == 1
@@ -609,7 +609,7 @@ class TestBuildTCModel:
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
-        assert decoded.vendor_list_version == 18
+        assert decoded.vendor_list_version == 19
         assert decoded.tcf_policy_version == 4
         assert decoded.is_service_specific is False
         assert decoded.use_non_standard_stacks is False
@@ -734,7 +734,7 @@ class TestBuildTCModel:
         assert decoded.pub_restriction_entries == []
 
         assert len(decoded.oob_disclosed_vendors) == 4176
-        assert sum(decoded.oob_disclosed_vendors.values()) == 701
+        assert sum(decoded.oob_disclosed_vendors.values()) == 703
         assert decoded.oob_disclosed_vendors[4176]
 
     def test_build_tc_string_not_vendor(self, db, skimbit_system):
@@ -750,7 +750,7 @@ class TestBuildTCModel:
         model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
 
         assert model.cmp_id == 12
-        assert model.vendor_list_version == 18
+        assert model.vendor_list_version == 19
         assert model.policy_version == 4
         assert model.cmp_version == 1
         assert model.consent_screen == 1
@@ -771,7 +771,7 @@ class TestBuildTCModel:
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
-        assert decoded.vendor_list_version == 18
+        assert decoded.vendor_list_version == 19
         assert decoded.tcf_policy_version == 4
         assert decoded.is_service_specific is False
         assert decoded.use_non_standard_stacks is False
@@ -849,7 +849,7 @@ class TestBuildTCModel:
         assert decoded.pub_restriction_entries == []
 
         assert len(decoded.oob_disclosed_vendors) == 4176
-        assert sum(decoded.oob_disclosed_vendors.values()) == 701
+        assert sum(decoded.oob_disclosed_vendors.values()) == 703
         assert decoded.oob_disclosed_vendors[4176]
 
     @pytest.mark.parametrize(
@@ -861,7 +861,7 @@ class TestBuildTCModel:
         model = build_tc_model(tcf_contents, UserConsentPreference.opt_out)
 
         assert model.cmp_id == 12
-        assert model.vendor_list_version == 18
+        assert model.vendor_list_version == 19
         assert model.policy_version == 4
         assert model.cmp_version == 1
         assert model.consent_screen == 1
@@ -883,7 +883,7 @@ class TestBuildTCModel:
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
-        assert decoded.vendor_list_version == 18
+        assert decoded.vendor_list_version == 19
         assert decoded.tcf_policy_version == 4
         assert decoded.is_service_specific is False
         assert decoded.use_non_standard_stacks is False
@@ -959,7 +959,7 @@ class TestBuildTCModel:
         assert decoded.interests_vendors == {}
         assert decoded.pub_restriction_entries == []
         assert len(decoded.oob_disclosed_vendors) == 4176
-        assert sum(decoded.oob_disclosed_vendors.values()) == 701
+        assert sum(decoded.oob_disclosed_vendors.values()) == 703
         assert decoded.oob_disclosed_vendors[4176]
 
 

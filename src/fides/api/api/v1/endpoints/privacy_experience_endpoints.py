@@ -39,6 +39,7 @@ from fides.api.util.tcf_util import (
     TCF_COMPONENT_MAPPING,
     TCFExperienceContents,
     get_tcf_contents,
+    load_gvl,
 )
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
@@ -136,6 +137,7 @@ def privacy_experience_list(
     has_config: Optional[bool] = None,
     fides_user_device_id: Optional[str] = None,
     systems_applicable: Optional[bool] = False,
+    include_gvl: Optional[bool] = False,
     include_meta: Optional[bool] = False,
     request: Request,  # required for rate limiting
     response: Response,  # required for rate limiting
@@ -156,6 +158,7 @@ def privacy_experience_list(
     :param has_config: If True, returns Experiences with copy. If False, returns just Experiences without copy.
     :param fides_user_device_id: Supplement the response with current saved preferences of the given user
     :param systems_applicable: Only return embedded Notices associated with systems.
+    :param include_gvl: Embeds gvl.json in the response provided we also have TCF content
     :param include_meta: If True, returns TCF Experience meta if applicable
     :param request:
     :param response:
@@ -225,6 +228,7 @@ def privacy_experience_list(
             systems_applicable=systems_applicable,
             fides_user_provided_identity=fides_user_provided_identity,
             should_unescape=should_unescape,
+            include_gvl=include_gvl,
             include_meta=include_meta,
             base_tcf_contents=base_tcf_contents,
         )
@@ -257,6 +261,7 @@ def embed_experience_details(
     systems_applicable: Optional[bool],
     fides_user_provided_identity: Optional[ProvidedIdentity],
     should_unescape: Optional[str],
+    include_gvl: Optional[bool],
     include_meta: Optional[bool],
     base_tcf_contents: TCFExperienceContents,
 ) -> bool:
@@ -269,6 +274,7 @@ def embed_experience_details(
     # Reset any temporary cached items just in case
     privacy_experience.privacy_notices = []
     privacy_experience.meta = {}
+    privacy_experience.gvl = {}
     for component in TCF_COMPONENT_MAPPING:
         setattr(privacy_experience, component, [])
 
@@ -278,8 +284,11 @@ def embed_experience_details(
         db, base_tcf_contents, fides_user_provided_identity
     )
 
-    if has_tcf_contents and include_meta:
-        privacy_experience.meta = build_experience_tcf_meta(base_tcf_contents)
+    if has_tcf_contents:
+        if include_meta:
+            privacy_experience.meta = build_experience_tcf_meta(base_tcf_contents)
+        if include_gvl:
+            privacy_experience.gvl = load_gvl()
 
     privacy_notices: List[
         PrivacyNotice

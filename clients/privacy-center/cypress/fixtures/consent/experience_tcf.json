@@ -304,7 +304,83 @@
           ]
         }
       ],
-      "tcf_special_features": []
+      "tcf_special_features": [
+        {
+          "default_preference": "opt_out",
+          "current_preference": null,
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "id": 1,
+          "name": "Use precise geolocation data",
+          "description": "With your acceptance, your precise location (within a radius of less than 500 metres) may be used in support of the purposes explained in this notice.",
+          "vendors": [],
+          "systems": [
+            {
+              "id": "ctl_5ac0f598-7c7f-4712-95ec-f9bb6d88feb6",
+              "name": "test"
+            }
+          ]
+        }
+      ],
+      "gvl": {
+        "gvlSpecificationVersion": "3",
+        "vendorListVersion": 19,
+        "tcfPolicyVersion": 4,
+        "lastUpdated": "2023-09-21T16:07:34Z",
+        "purposes": {
+          "1": {
+            "id": 1,
+            "name": "Store and/or access information on a device",
+            "description": "Cookies, device or similar online identifiers (e.g. login-based identifiers, randomly assigned identifiers, network based identifiers) together with other information (e.g. browser type and information, language, screen size, supported technologies etc.) can be stored or read on your device to recognise it each time it connects to an app or to a website, for one or several of the purposes presented here. ",
+            "illustrations": [
+              "Most purposes explained in this notice rely on the storage or accessing of information from your device when you use an app or visit a website. For example, a vendor or publisher might need to store a cookie on your device during your first visit on a website, to be able to recognise your device during your next visits (by accessing this cookie each time)."
+            ]
+          }
+        },
+        "specialPurposes": {},
+        "features": {},
+        "specialFeatures": {},
+        "vendors": {
+          "2": {
+            "id": 2,
+            "name": "Captify Technologies Limited",
+            "purposes": [1],
+            "legIntPurposes": [],
+            "flexiblePurposes": [],
+            "specialPurposes": [],
+            "features": [],
+            "specialFeatures": [],
+            "cookieMaxAgeSeconds": 31536000,
+            "usesCookies": true,
+            "cookieRefresh": true,
+            "usesNonCookieAccess": true,
+            "dataRetention": {
+              "stdRetention": 365,
+              "purposes": {},
+              "specialPurposes": {}
+            },
+            "urls": [
+              {
+                "langId": "en",
+                "privacy": "https://www.captifytechnologies.com/privacy-notice/",
+                "legIntClaim": "https://www.captifytechnologies.com/privacy-notice/"
+              }
+            ],
+            "dataDeclaration": [],
+            "deviceStorageDisclosureUrl": "https://static.cpx.to/gvl/deviceStorageDisclosure.json"
+          }
+        },
+        "stacks": {
+          "7": {
+            "id": 7,
+            "purposes": [2, 4, 7, 9],
+            "specialFeatures": [],
+            "name": "Selection of personalised advertising, advertising measurement, and audience research",
+            "description": "Advertising can be personalised based on your profile. Advertising performance can be measured. Reports can be generated based on your activity and those of others."
+          }
+        }
+      }
     }
   ],
   "total": 1,

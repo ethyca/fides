@@ -23,5 +23,5 @@ export const TAXONOMY_ROUTE = "/taxonomy";
 export const ABOUT_ROUTE = "/management/about";
 export const CUSTOM_FIELDS_ROUTE = "/management/custom-fields";
 export const EMAIL_TEMPLATES_ROUTE = "/management/email-templates";
-export const DNS_RECORDS_ROUTE = "/management/dns-records";
+export const DOMAIN_RECORDS_ROUTE = "/management/domain-records";
 export const CORS_CONFIGURATION_ROUTE = "/management/cors-configuration";
