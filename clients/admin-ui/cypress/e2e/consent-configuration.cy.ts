@@ -68,8 +68,6 @@ describe("Consent configuration", () => {
       cy.getByTestId("subrow-cell_2_Data use").contains("Improve Service");
       cy.getByTestId("subrow-cell_3_Cookie name").contains("cookie2");
       cy.getByTestId("subrow-cell_3_Data use").contains("Improve Service");
-
-      cy.getByTestId("add-cookie-btn");
       cy.getByTestId("add-vendor-btn");
     });
   });
