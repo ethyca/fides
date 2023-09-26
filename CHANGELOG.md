@@ -37,6 +37,7 @@ The types of changes are:
 - Use hosted GVL.json from the backend [#4159](https://github.com/ethyca/fides/pull/4159)
 - Features and Special Purposes in the TCF modal do not render toggles [#4139](https://github.com/ethyca/fides/pull/4139)
 - Moved the initial TCF layer to the banner [#4142](https://github.com/ethyca/fides/pull/4142)
+- Misc copy changes for the system history table and modal [#4146](https://github.com/ethyca/fides/pull/4146)
 
 ### Fixed
 - Allows CDN to cache empty experience responses from fides.js API  [#4113](https://github.com/ethyca/fides/pull/4113)
