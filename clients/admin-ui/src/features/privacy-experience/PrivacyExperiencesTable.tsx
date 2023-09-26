@@ -9,6 +9,7 @@ import React, { useMemo } from "react";
 import { Column } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
+import CustomAssetUploadButton from "~/features/custom-assets/CustomAssetUploadButton";
 import {
   ComponentCell,
   EnablePrivacyExperienceCell,
@@ -23,7 +24,6 @@ import {
 import { ExperienceConfigResponse, ScopeRegistryEnum } from "~/types/api";
 import { CustomAssetType } from "~/types/api/models/CustomAssetType";
 
-import CustomAssetUploadButton from "../custom-assets/CustomAssetUploadButton";
 import JavaScriptTag from "./JavaScriptTag";
 
 const PrivacyExperiencesTable = () => {
@@ -100,7 +100,9 @@ const PrivacyExperiencesTable = () => {
       <Box alignSelf="end">
         <JavaScriptTag />
         <Restrict scopes={[ScopeRegistryEnum.CUSTOM_ASSET_UPDATE]}>
-          <CustomAssetUploadButton assetType={CustomAssetType.FIDES_CSS} />
+          <CustomAssetUploadButton
+            assetType={CustomAssetType.CUSTOM_FIDES_CSS}
+          />
         </Restrict>
       </Box>
       <FidesTable<ExperienceConfigResponse>

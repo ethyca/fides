@@ -1,7 +1,10 @@
+/* istanbul ignore file */
+/* tslint:disable */
+/* eslint-disable */
+
 /**
- * List of supported custom asset file names
+ * An enumeration.
  */
 export enum CustomAssetType {
-  /** The stylesheet for the Privacy Experience modal */
-  FIDES_CSS = "fides_css",
+  CUSTOM_FIDES_CSS = "custom-fides.css",
 }

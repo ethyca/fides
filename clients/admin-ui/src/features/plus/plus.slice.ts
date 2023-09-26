@@ -21,6 +21,7 @@ import {
   ClassifyStatusUpdatePayload,
   ClassifySystem,
   CloudConfig,
+  CustomAssetType,
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
   CustomFieldWithId,
@@ -32,7 +33,6 @@ import {
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
-import { UploadCustomAsset } from "~/types/api/models/UploadCustomAsset";
 
 import { DictDataUse, DictEntry, Page } from "./types";
 
@@ -284,7 +284,10 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["System History"],
     }),
-    updateCustomAsset: build.mutation<void, UploadCustomAsset>({
+    updateCustomAsset: build.mutation<
+      void,
+      { assetType: CustomAssetType; file: File }
+    >({
       query: ({ assetType, file }) => ({
         url: `plus/custom-asset/${assetType}`,
         method: "PUT",
