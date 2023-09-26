@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.20.2b0.post0.dev12"
+    "version": "2.20.2b0.post0.dev13"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -7922,7 +7922,7 @@
           "Privacy Experience"
         ],
         "summary": "Privacy Experience List",
-        "description": "Public endpoint that returns a list of PrivacyExperience records for individual regions with\nrelevant privacy notices or tcf contents embedded in the response.\n\n'show_disabled' query params are passed along to further filter\nnotices as well.\n\n:param db:\n:param params:\n:param show_disabled: If False, returns only enabled Experiences and Notices\n:param region: Return the Experiences for the given region\n:param component: Returns Experiences of the given component type\n:param content_required: Return if the Experience has content. (Alias for has_notices query_param)\n:param has_config: If True, returns Experiences with copy. If False, returns just Experiences without copy.\n:param fides_user_device_id: Supplement the response with current saved preferences of the given user\n:param systems_applicable: Only return embedded Notices associated with systems.\n:param request:\n:param response:\n:return:",
+        "description": "Public endpoint that returns a list of PrivacyExperience records for individual regions with\nrelevant privacy notices or tcf contents embedded in the response.\n\n'show_disabled' query params are passed along to further filter\nnotices as well.\n\n:param db:\n:param params:\n:param show_disabled: If False, returns only enabled Experiences and Notices\n:param region: Return the Experiences for the given region\n:param component: Returns Experiences of the given component type\n:param content_required: Return if the Experience has content. (Alias for has_notices query_param)\n:param has_config: If True, returns Experiences with copy. If False, returns just Experiences without copy.\n:param fides_user_device_id: Supplement the response with current saved preferences of the given user\n:param systems_applicable: Only return embedded Notices associated with systems.\n:param include_gvl: Embeds gvl.json in the response provided we also have TCF content\n:param request:\n:param response:\n:return:",
         "operationId": "privacy_experience_list_api_v1_privacy_experience_get",
         "parameters": [
           {
@@ -7987,6 +7987,16 @@
               "default": false
             },
             "name": "systems_applicable",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Include Gvl",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "include_gvl",
             "in": "query"
           },
           {
@@ -19684,6 +19694,10 @@
               "$ref": "#/components/schemas/TCFVendorRecord"
             },
             "description": "For TCF Experiences, Systems with TCF components that do not have an official vendor id (identified by system id)"
+          },
+          "gvl": {
+            "title": "Gvl",
+            "type": "object"
           }
         },
         "additionalProperties": false,
