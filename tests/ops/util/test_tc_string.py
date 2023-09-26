@@ -16,7 +16,7 @@ from fides.api.util.tcf.experience_meta import (
 from fides.api.util.tcf.tc_mobile_data import build_tc_data_for_mobile
 from fides.api.util.tcf.tc_model import CMP_ID, convert_tcf_contents_to_tc_model
 from fides.api.util.tcf.tc_string import TCModel, build_tc_string
-from fides.api.util.tcf_util import get_tcf_contents
+from fides.api.util.tcf.tcf_experience_contents import get_tcf_contents
 
 
 @pytest.fixture(scope="function")

@@ -25,7 +25,7 @@ from fides.api.models.privacy_preference import (
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
-from fides.api.util.tcf_util import (
+from fides.api.util.tcf.tcf_experience_contents import (
     TCF_COMPONENT_MAPPING,
     ConsentRecordType,
     TCFExperienceContents,

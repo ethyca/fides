@@ -35,7 +35,7 @@ from fides.api.util.consent_util import (
 )
 from fides.api.util.endpoint_utils import fides_limiter, transform_fields
 from fides.api.util.tcf.experience_meta import build_experience_tcf_meta
-from fides.api.util.tcf_util import (
+from fides.api.util.tcf.tcf_experience_contents import (
     TCF_COMPONENT_MAPPING,
     TCFExperienceContents,
     get_tcf_contents,

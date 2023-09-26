@@ -29,7 +29,10 @@ from fides.api.schemas.tcf import (
     TCFSpecialPurposeSave,
     TCFVendorSave,
 )
-from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING, TCFComponentType
+from fides.api.util.tcf.tcf_experience_contents import (
+    TCF_COMPONENT_MAPPING,
+    TCFComponentType,
+)
 
 # Maps the sections in the request body for saving various TCF preferences
 # against the specific database column name on which these preferences are saved
