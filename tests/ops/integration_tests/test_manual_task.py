@@ -58,7 +58,7 @@ async def test_postgres_with_manual_input_access_request_task(
     assert paused_details.action_needed[0].update is None
 
     # Mock user retrieving storage unit data by adding manual data to cache
-    privacy_request.cache_manual_input(
+    privacy_request.cache_manual_access_input(
         CollectionAddress.from_string("manual_example:storage_unit"),
         [{"box_id": 5, "email": "customer-1@example.com"}],
     )
@@ -91,7 +91,7 @@ async def test_postgres_with_manual_input_access_request_task(
     assert paused_details.action_needed[0].update is None
 
     # Add manual filing cabinet data from the user
-    privacy_request.cache_manual_input(
+    privacy_request.cache_manual_access_input(
         CollectionAddress.from_string("manual_example:filing_cabinet"),
         [{"id": 1, "authorized_user": "Jane Doe", "payment_card_id": "pay_bbb-bbb"}],
     )
@@ -250,7 +250,7 @@ async def test_no_manual_input_found(
 
     # Mock user retrieving storage unit data by adding manual data to cache,
     # In this case, no data was found in the storage unit, so we pass in an empty list.
-    privacy_request.cache_manual_input(
+    privacy_request.cache_manual_access_input(
         CollectionAddress.from_string("manual_example:storage_unit"),
         [],
     )
@@ -273,7 +273,7 @@ async def test_no_manual_input_found(
     assert paused_details.step == CurrentStep.access
 
     # No filing cabinet input found
-    privacy_request.cache_manual_input(
+    privacy_request.cache_manual_access_input(
         CollectionAddress.from_string("manual_example:filing_cabinet"),
         [],
     )

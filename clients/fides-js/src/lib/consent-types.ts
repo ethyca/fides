@@ -7,6 +7,7 @@ import type {
   TCFFeatureSave,
   TCFSpecialFeatureSave,
   TCFVendorSave,
+  GVLJson,
 } from "./tcf/types";
 
 export type EmptyExperience = Record<PropertyKey, never>;
@@ -85,6 +86,7 @@ export type PrivacyExperience = {
   tcf_systems?: Array<TCFVendorRecord>;
   tcf_features?: Array<TCFFeatureRecord>;
   tcf_special_features?: Array<TCFFeatureRecord>;
+  gvl?: GVLJson;
 };
 
 export type ExperienceConfig = {

@@ -40,6 +40,7 @@ export const fetchExperience = async (
     has_notices: "true",
     has_config: "true",
     systems_applicable: "true",
+    include_gvl: "true",
   };
   if (fidesUserDeviceId) {
     params.fides_user_device_id = fidesUserDeviceId;
