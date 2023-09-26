@@ -33,6 +33,7 @@ The types of changes are:
 - CORS configuration page [#4073](https://github.com/ethyca/fides/pull/4073)
 - Refactored `fides.js` components so that they can take data structures that are not necessarily privacy notices [#3870](https://github.com/ethyca/fides/pull/3870)
 - Moved the initial TCF layer to the banner [#4142](https://github.com/ethyca/fides/pull/4142)
+- Misc copy changes for the system history table and modal [#4146](https://github.com/ethyca/fides/pull/4146)
 
 ### Fixed
 - Allows CDN to cache empty experience responses from fides.js API  [#4113](https://github.com/ethyca/fides/pull/4113)
