@@ -50,7 +50,7 @@ class TestGetPrivacyExperiences:
     ):
         unescape_header = {"Unescape-Safestr": "true"}
 
-        resp = api_client.get(url, headers=unescape_header)
+        resp = api_client.get(url + "?include_gvl=True", headers=unescape_header)
         assert resp.status_code == 200
         data = resp.json()
 
@@ -64,6 +64,9 @@ class TestGetPrivacyExperiences:
         assert resp["component"] == "privacy_center"
         assert resp["region"] == "us_co"
         assert resp["show_banner"] is False
+        assert (
+            resp["gvl"] == {}
+        )  # This query param has no affect on a non-TCF experience
         # Assert experience config is nested
         experience_config = resp["experience_config"]
         assert experience_config["title"] == "Control your privacy"
@@ -662,11 +665,12 @@ class TestGetTCFPrivacyExperiences:
         settings.update(db=db, data={"tcf_enabled": False})
 
         resp = api_client.get(
-            url + "?region=fr&component=overlay",
+            url + "?region=fr&component=overlay&include_gvl=True",
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
         assert resp.json()["items"][0]["id"] == privacy_experience_france_overlay.id
+        assert resp.json()["items"][0]["gvl"] == {}
         assert resp.json()["items"][0]["component"] == ComponentType.overlay.value
         assert len(resp.json()["items"][0]["privacy_notices"]) == 1
         assert (
@@ -690,7 +694,7 @@ class TestGetTCFPrivacyExperiences:
         settings = ConsentSettings.get_or_create_with_defaults(db)
         settings.update(db=db, data={"tcf_enabled": True})
         resp = api_client.get(
-            url + "?region=fr&component=overlay",
+            url + "?region=fr&component=overlay&include_gvl=True",
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
@@ -703,6 +707,7 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["tcf_special_purposes"] == []
         assert resp.json()["items"][0]["tcf_special_features"] == []
         assert resp.json()["items"][0]["tcf_systems"] == []
+        assert resp.json()["items"][0]["gvl"] == {}
 
         # Has notices = True flag will keep this experience from appearing altogether
         resp = api_client.get(
@@ -731,7 +736,7 @@ class TestGetTCFPrivacyExperiences:
         settings.update(db=db, data={"tcf_enabled": True})
         resp = api_client.get(
             url
-            + "?region=fr&component=overlay&fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f&has_notices=True",
+            + "?region=fr&component=overlay&fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f&has_notices=True&include_gvl=True",
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
@@ -775,6 +780,7 @@ class TestGetTCFPrivacyExperiences:
             is None
         )
         assert resp.json()["items"][0]["tcf_systems"] == []
+        assert resp.json()["items"][0]["gvl"]["gvlSpecificationVersion"] == 3
 
     @pytest.mark.usefixtures(
         "privacy_experience_france_overlay",

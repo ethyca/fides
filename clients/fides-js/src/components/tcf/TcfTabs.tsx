@@ -56,6 +56,7 @@ const TcfTabs = ({
           enabledVendorIds={enabledIds.vendors}
           enabledSystemIds={enabledIds.systems}
           onChange={onChange}
+          gvl={experience.gvl}
         />
       ),
     },
