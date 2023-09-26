@@ -86,6 +86,7 @@ export default async function handler(
     environment.settings.IS_PREFETCH_ENABLED
   ) {
     if (tcfEnabled) {
+      // eslint-disable-next-line no-console
       console.warn(
         "TCF mode is not currently compatible with prefetching, skipping prefetching..."
       );
@@ -94,6 +95,7 @@ export default async function handler(
 
       if (fidesRegionString) {
         if (environment.settings.DEBUG) {
+          // eslint-disable-next-line no-console
           console.log("Fetching relevant experiences from server-side...");
         }
         experience = await fetchExperience(

@@ -59,7 +59,7 @@ type Variant = "inline" | "stacked" | "block";
 
 export interface CustomInputProps {
   disabled?: boolean;
-  label: string;
+  label?: string;
   tooltip?: string;
   variant?: Variant;
   isRequired?: boolean;
@@ -506,7 +506,9 @@ export const CustomTextInput = ({
     return (
       <FormControl isInvalid={isInvalid} isRequired={isRequired}>
         <Grid templateColumns="1fr 3fr">
-          <Label htmlFor={props.id || props.name}>{label}</Label>
+          {label ? (
+            <Label htmlFor={props.id || props.name}>{label}</Label>
+          ) : null}
           <Flex alignItems="center">
             <Flex flexDir="column" flexGrow={1} mr="2">
               <TextInput
@@ -531,12 +533,14 @@ export const CustomTextInput = ({
   return (
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
-        <Flex alignItems="center">
-          <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
-            {label}
-          </Label>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-        </Flex>
+        {label ? (
+          <Flex alignItems="center">
+            <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
+              {label}
+            </Label>
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Flex>
+        ) : null}
         <TextInput
           {...field}
           isDisabled={disabled}
