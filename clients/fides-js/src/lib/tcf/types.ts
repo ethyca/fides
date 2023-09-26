@@ -1,3 +1,4 @@
+import type { GVL } from "@iabtechlabtcf/core";
 import type {
   PrivacyPreferencesRequest,
   UserConsentPreference,
@@ -145,3 +146,17 @@ export enum LegalBasisForProcessingEnum {
   PUBLIC_INTEREST = "Public interest",
   LEGITIMATE_INTERESTS = "Legitimate interests",
 }
+
+export type GVLJson = Pick<
+  GVL,
+  | "gvlSpecificationVersion"
+  | "vendorListVersion"
+  | "tcfPolicyVersion"
+  | "lastUpdated"
+  | "stacks"
+  | "purposes"
+  | "specialPurposes"
+  | "features"
+  | "specialFeatures"
+  | "vendors"
+>;
