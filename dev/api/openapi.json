@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.20.3b0.post0.dev1"
+    "version": "2.20.3b0.post0.dev2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -9988,9 +9988,136 @@
         "tags": [
           "Privacy Requests"
         ],
-        "summary": "Upload Manual Webhook Data",
-        "description": "Upload manual input for the privacy request for the fields defined on the access manual webhook.\nThe data collected here is not included in the graph but uploaded directly to the user at the end\nof privacy request execution.\n\nBecause a 'manual_webhook' ConnectionConfig has one AccessManualWebhook associated with it,\nwe are using the ConnectionConfig key as the AccessManualWebhook identifier here.",
-        "operationId": "upload_manual_webhook_data_api_v1_privacy_request__privacy_request_id__access_manual_webhook__connection_key__patch",
+        "summary": "Upload Manual Webhook Access Data",
+        "description": "Upload manual access input for the privacy request for the fields defined on the access manual webhook.\nThe data collected here is not included in the graph but uploaded directly to the user at the end\nof privacy request execution.\n\nBecause a 'manual_webhook' ConnectionConfig has one AccessManualWebhook associated with it,\nwe are using the ConnectionConfig key as the AccessManualWebhook identifier here.",
+        "operationId": "upload_manual_webhook_access_data_api_v1_privacy_request__privacy_request_id__access_manual_webhook__connection_key__patch",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Privacy Request Id",
+              "type": "string"
+            },
+            "name": "privacy_request_id",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Connection Key",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "name": "connection_key",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Input Data",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:upload_data"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/privacy-request/{privacy_request_id}/erasure_manual_webhook/{connection_key}": {
+      "get": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "View Uploaded Erasure Manual Webhook Data",
+        "description": "View uploaded erasure data for this privacy request for the given manual webhook\n\nIf no data exists for this webhook, we just return all fields as None.\nIf we have missing or extra fields saved, we'll just return the overlap between what is saved and what is defined on the webhook.\n\nIf checked=False, data must be reviewed before submission. The privacy request should not be submitted as-is.",
+        "operationId": "view_uploaded_erasure_manual_webhook_data_api_v1_privacy_request__privacy_request_id__erasure_manual_webhook__connection_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Privacy Request Id",
+              "type": "string"
+            },
+            "name": "privacy_request_id",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Connection Key",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "name": "connection_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManualWebhookData"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:view_data"
+            ]
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Upload Manual Webhook Erasure Data",
+        "description": "Upload manual erasure input for the privacy request for the fields defined on the access manual webhook.\n\nBecause a 'manual_webhook' ConnectionConfig has one AccessManualWebhook associated with it,\nwe are using the ConnectionConfig key as the AccessManualWebhook identifier here.",
+        "operationId": "upload_manual_webhook_erasure_data_api_v1_privacy_request__privacy_request_id__erasure_manual_webhook__connection_key__patch",
         "parameters": [
           {
             "required": true,
