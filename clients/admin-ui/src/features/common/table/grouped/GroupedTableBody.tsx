@@ -6,12 +6,14 @@ import { GRAY_BACKGROUND } from "./constants";
 type Props<T extends object> = {
   rowHeading?: string;
   renderRowSubheading: (row: Row<T>) => string;
+  renderOverflowMenu?: (row: Row<T>) => React.ReactNode;
   onSubrowClick?: (row: Row<T>) => void;
 } & Pick<UseTableInstanceProps<T>, "getTableBodyProps" | "rows" | "prepareRow">;
 
 const GroupedTableBody = <T extends object>({
   rowHeading,
   renderRowSubheading,
+  renderOverflowMenu,
   rows,
   prepareRow,
   getTableBodyProps,
@@ -65,6 +67,9 @@ const GroupedTableBody = <T extends object>({
               {renderRowSubheading(row)}
             </Text>
           </Td>
+          <Td />
+          <Td />
+          <Td>{renderOverflowMenu ? renderOverflowMenu(row) : null}</Td>
         </Tr>
       );
 
