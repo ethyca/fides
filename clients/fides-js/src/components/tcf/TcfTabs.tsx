@@ -1,5 +1,5 @@
 import { h } from "preact";
-import { useRef, useState } from "preact/hooks";
+import { useRef } from "preact/hooks";
 import TcfPurposes from "./TcfPurposes";
 import { PrivacyExperience } from "../../lib/consent-types";
 import type { EnabledIds, UpdateEnabledIds } from "./TcfOverlay";
@@ -13,10 +13,14 @@ const TcfTabs = ({
   experience,
   enabledIds,
   onChange,
+  activeTabIndex,
+  onTabChange,
 }: {
   experience: PrivacyExperience;
   enabledIds: EnabledIds;
   onChange: (payload: UpdateEnabledIds) => void;
+  activeTabIndex: number;
+  onTabChange: (tabIndex: number) => void;
 }) => {
   const tcfTabs = [
     {
@@ -57,7 +61,7 @@ const TcfTabs = ({
       ),
     },
   ];
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
+
   const inputRefs = [
     useRef<HTMLButtonElement>(null),
     useRef<HTMLButtonElement>(null),
@@ -76,7 +80,7 @@ const TcfTabs = ({
         activeTabIndex === 0 ? tcfTabs.length - 1 : activeTabIndex - 1;
     }
     if (newActiveTab != null) {
-      setActiveTabIndex(newActiveTab);
+      onTabChange(newActiveTab);
       inputRefs[newActiveTab].current?.focus();
     }
   };
@@ -89,7 +93,7 @@ const TcfTabs = ({
               id={`fides-tab-${name}`}
               aria-selected={idx === activeTabIndex}
               onClick={() => {
-                setActiveTabIndex(idx);
+                onTabChange(idx);
               }}
               role="tab"
               type="button"
