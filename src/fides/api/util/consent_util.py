@@ -616,7 +616,6 @@ def create_default_experience_config(
 
 
 EEA_COUNTRIES: List[PrivacyNoticeRegion] = [
-    PrivacyNoticeRegion.eea,
     PrivacyNoticeRegion.be,
     PrivacyNoticeRegion.bg,
     PrivacyNoticeRegion.cz,
@@ -651,6 +650,7 @@ EEA_COUNTRIES: List[PrivacyNoticeRegion] = [
     PrivacyNoticeRegion.no,
     PrivacyNoticeRegion["is"],
     PrivacyNoticeRegion.li,
+    PrivacyNoticeRegion.eea,  # Catch-all region - can query this Experience directly to get a generic TCF experience
 ]
 
 
