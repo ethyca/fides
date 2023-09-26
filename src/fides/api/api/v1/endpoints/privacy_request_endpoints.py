@@ -4,7 +4,7 @@ import csv
 import io
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Union
+from typing import Any, Callable, DefaultDict, Dict, List, Literal, Optional, Set, Union
 
 import sqlalchemy
 from fastapi import Body, Depends, HTTPException, Security
@@ -1352,6 +1352,43 @@ def deny_privacy_request(
     )
 
 
+def _handle_manual_webhook_input(
+    action: Literal["access", "erasure"],
+    connection_config: ConnectionConfig,
+    privacy_request_id: str,
+    db: Session,
+    input_data: Dict[str, Any],
+) -> None:
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+    access_manual_webhook: AccessManualWebhook = get_access_manual_webhook_or_404(
+        connection_config
+    )
+
+    if not privacy_request.status == PrivacyRequestStatus.requires_input:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid manual webhook {action} upload request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
+        )
+
+    try:
+        getattr(privacy_request, f"cache_manual_webhook_{action}_input")(
+            access_manual_webhook, input_data
+        )
+    except PydanticValidationError as exc:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.errors()
+        )
+
+    logger.info(
+        "{} input saved for manual webhook '{}' for privacy_request '{}'.",
+        action.capitalize(),
+        access_manual_webhook,
+        privacy_request,
+    )
+
+
 @router.patch(
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     status_code=HTTP_200_OK,
@@ -1372,32 +1409,12 @@ def upload_manual_webhook_access_data(
     Because a 'manual_webhook' ConnectionConfig has one AccessManualWebhook associated with it,
     we are using the ConnectionConfig key as the AccessManualWebhook identifier here.
     """
-    privacy_request: PrivacyRequest = get_privacy_request_or_error(
-        db, privacy_request_id
-    )
-    access_manual_webhook: AccessManualWebhook = get_access_manual_webhook_or_404(
-        connection_config
-    )
-
-    if not privacy_request.status == PrivacyRequestStatus.requires_input:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid manual webhook access upload request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
-        )
-
-    try:
-        privacy_request.cache_manual_webhook_access_input(
-            access_manual_webhook, input_data
-        )
-    except PydanticValidationError as exc:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.errors()
-        )
-
-    logger.info(
-        "Access input saved for manual webhook '{}' for privacy_request '{}'.",
-        access_manual_webhook,
-        privacy_request,
+    _handle_manual_webhook_input(
+        action="access",
+        connection_config=connection_config,
+        privacy_request_id=privacy_request_id,
+        db=db,
+        input_data=input_data,
     )
 
 
@@ -1419,32 +1436,12 @@ def upload_manual_webhook_erasure_data(
     Because a 'manual_webhook' ConnectionConfig has one AccessManualWebhook associated with it,
     we are using the ConnectionConfig key as the AccessManualWebhook identifier here.
     """
-    privacy_request: PrivacyRequest = get_privacy_request_or_error(
-        db, privacy_request_id
-    )
-    access_manual_webhook: AccessManualWebhook = get_access_manual_webhook_or_404(
-        connection_config
-    )
-
-    if not privacy_request.status == PrivacyRequestStatus.requires_input:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid manual webhook erasure upload request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
-        )
-
-    try:
-        privacy_request.cache_manual_webhook_erasure_input(
-            access_manual_webhook, input_data
-        )
-    except PydanticValidationError as exc:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.errors()
-        )
-
-    logger.info(
-        "Erasure input saved for manual webhook '{}' for privacy_request '{}'.",
-        access_manual_webhook,
-        privacy_request,
+    _handle_manual_webhook_input(
+        action="erasure",
+        connection_config=connection_config,
+        privacy_request_id=privacy_request_id,
+        db=db,
+        input_data=input_data,
     )
 
 
