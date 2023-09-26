@@ -1,7 +1,12 @@
-import { TCFVendorRecord } from "./types";
-import GVL_JSON from "./gvl.json";
+import { GVLJson, TCFVendorRecord } from "./types";
 
-const GVL_VENDOR_IDS = Object.keys(GVL_JSON.vendors);
-
-export const vendorIsGvl = (vendor: Pick<TCFVendorRecord, "id">) =>
-  GVL_VENDOR_IDS.indexOf(vendor.id) !== -1;
+export const vendorIsGvl = (
+  vendor: Pick<TCFVendorRecord, "id">,
+  gvl: GVLJson | undefined
+) => {
+  if (!gvl) {
+    return false;
+  }
+  const vendorIds = Object.keys(gvl.vendors);
+  return vendorIds.indexOf(vendor.id) !== -1;
+};

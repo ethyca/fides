@@ -1,4 +1,6 @@
+import json
 from enum import Enum
+from os.path import dirname, join
 from typing import Callable, Dict, List, Optional, Set, Tuple, Type, Union
 
 from fideslang.gvl import (
@@ -14,6 +16,7 @@ from fideslang.gvl import (
 from fideslang.gvl.models import Feature, Purpose
 from fideslang.models import LegalBasisForProcessingEnum
 from fideslang.validation import FidesKey
+from loguru import logger
 from sqlalchemy.engine.row import Row  # type:ignore[import]
 from sqlalchemy.orm import Query, Session
 
@@ -27,6 +30,16 @@ from fides.api.schemas.tcf import (
     TCFPurposeRecord,
     TCFVendorRecord,
 )
+from fides.config.helpers import load_file
+
+_gvl: Optional[Dict] = None
+
+GVL_PATH = join(
+    dirname(__file__),
+    "../../data",
+    "gvl.json",
+)
+
 
 TCFPurposeOrFeature = Union[TCFPurposeRecord, TCFFeatureRecord]
 
@@ -614,3 +627,15 @@ def systems_that_match_system_id(
             )
         }
     )
+
+
+def load_gvl() -> Dict:
+    global _gvl  # pylint: disable=W0603
+    if _gvl is None:
+        with open(load_file([GVL_PATH]), "r", encoding="utf-8") as file:
+            logger.info("Loading GVL from file")
+            _gvl = json.load(file)
+            return _gvl
+
+    logger.info("Loading GVL from memory")
+    return _gvl
