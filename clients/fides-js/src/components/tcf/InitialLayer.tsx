@@ -3,14 +3,10 @@ import { useMemo } from "preact/hooks";
 import { PrivacyExperience } from "../../lib/consent-types";
 
 import {
-  Stack,
   createStacks,
   getIdsNotRepresentedInStacks,
 } from "../../lib/tcf/stacks";
-import GVL_JSON from "../../lib/tcf/gvl.json";
 import InitialLayerAccordion from "./InitialLayerAccordion";
-
-const STACKS: Record<string, Stack> = GVL_JSON.stacks;
 
 const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
   const purposeIds = useMemo(
@@ -27,15 +23,16 @@ const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
     [experience.tcf_special_features]
   );
 
-  const stacks = useMemo(
-    () =>
-      createStacks({
-        purposeIds,
-        specialFeatureIds,
-        stacks: STACKS,
-      }),
-    [purposeIds, specialFeatureIds]
-  );
+  const stacks = useMemo(() => {
+    if (!experience.gvl) {
+      return [];
+    }
+    return createStacks({
+      purposeIds,
+      specialFeatureIds,
+      stacks: experience.gvl.stacks,
+    });
+  }, [purposeIds, specialFeatureIds, experience.gvl]);
 
   const purposes = useMemo(() => {
     if (!experience.tcf_purposes) {
