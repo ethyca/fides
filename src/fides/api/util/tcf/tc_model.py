@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 from fideslang.models import LegalBasisForProcessingEnum
-from pydantic import Field, NonNegativeInt, PositiveInt, validator
+from pydantic import Field, NonNegativeInt, PositiveInt, root_validator, validator
 
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
@@ -15,6 +15,7 @@ CMP_VERSION = 1
 CONSENT_SCREEN = 1  # TODO On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
 
 FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6]
+gvl: Dict = load_gvl()
 
 
 class TCModel(FidesSchema):
@@ -159,6 +160,7 @@ class TCModel(FidesSchema):
         description="Signals which vendors the publisher permits to use OOB legal bases.",
     )
 
+    # TODO: no way to set this currently
     publisher_restrictions: List = Field(
         default=[],
     )
@@ -198,22 +200,99 @@ class TCModel(FidesSchema):
             if li not in FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS
         ]
 
+    @root_validator()
+    @classmethod
+    def root_validation(cls, values: Dict) -> Dict:
+        """Several operations in the root_validator:
+
+        - Add all the vendor ids in the GVL to vendors_disclosed if none specified
+        - Remove any vendor ids from vendor_consents if the legal basis is not allowed
+        - Remove any vendor ids from vendor_legitimate_interests if the legal basis is not allowed
+        """
+        values["vendors_disclosed"] = values.get("vendors_disclosed") or [
+            int(vendor_id) for vendor_id in gvl.get("vendors", {})
+        ]
+
+        is_service_specific: Optional[bool] = values.get("is_service_specific")
+
+        values["vendor_consents"] = _validate_vendor_legal_basis_fields(
+            values.get("vendor_consents", []),
+            corresponding_gvl_key="purposes",
+            is_service_specific=is_service_specific,
+        )
+
+        values["vendor_legitimate_interests"] = _validate_vendor_legal_basis_fields(
+            values.get("vendor_legitimate_interests", []),
+            corresponding_gvl_key="legIntPurposes",
+            is_service_specific=is_service_specific,
+        )
+
+        return values
+
+
+def _validate_vendor_legal_basis_fields(
+    vendor_list: List[int],
+    corresponding_gvl_key: str,
+    is_service_specific: Optional[bool],
+) -> List[int]:
+    """Helper for looping through legal basis vendor lists and removing vendors where the legal basis
+    is not permitted"""
+    to_remove: List[int] = []
+    for vendor_id in vendor_list:
+        vendor_record: Optional[Dict] = gvl.get("vendors", {}).get(str(vendor_id))
+
+        if not vendor_record:
+            # This vendor isn't in the GVLvalues.get("is_service_specific")
+            # , we've got to remove it!
+            to_remove.append(vendor_id)
+            continue
+
+        if vendor_record.get(corresponding_gvl_key):
+            # The vendor has the matching legal basis, so this is fine!
+            continue
+
+        if (
+            corresponding_gvl_key == "legIntPurposes"
+            and not vendor_record.get("purposes")
+            and vendor_record.get("specialPurposes")
+        ):
+            # While vendor record is missing legIntPurposes, it has specialPurposes, so this is fine!
+            # Vendors only declaring special purposes must have their legitimate interest vendor bit set.
+            continue
+
+        if not is_service_specific or not vendor_record.get("flexiblePurposes"):
+            # Either this is a globally scoped string, in which cases flexible purposes don't have an effect,
+            # or there are no flexible purposes at all.  We have to remove the vendor from the legal bases list.
+            to_remove.append(vendor_id)
+            continue
+
+        # TODO once adding publisher_restrictions to the TCModel are supported, check if there is a publisher
+        # restriction value that would enable this vendor to have the override preferred basis.
+        # For now, assume there are no restrictions defined:
+        to_remove.append(vendor_id)
+
+    return [v_id for v_id in vendor_list if v_id not in to_remove]
+
 
 def _build_vendor_consents_and_legitimate_interests(
-    vendors: List[TCFVendorRecord], gvl_vendor_ids: List[int]
+    vendors: List[TCFVendorRecord],
 ) -> Tuple[List, List]:
     """Construct the vendor_consents and vendor_legitimate_interests sections
     Only add the vendor id to the vendor consents list if one of its purposes
     has a consent legal basis, same for legitimate interests.
+
+    Later, in the TCModel construction, we validate if the vendor is allowed to have
+    this legal basis
     """
     vendor_consents: List[int] = []
     vendor_legitimate_interests: List[int] = []
 
     for vendor in vendors:
         try:
-            if int(vendor.id) not in gvl_vendor_ids:
-                continue
+            int(vendor.id)
         except ValueError:
+            # Early check that filters out non-integer vendor ids.  Later we'll run a separate
+            # check that ensures this id is also in the gvl.
             continue
 
         consent_purpose_ids: List[int] = [
@@ -261,7 +340,9 @@ def _build_purpose_consent_and_legitimate_interests(
     return purpose_consents, purpose_legitimate_interests
 
 
-def _build_special_feature_opt_ins(special_features: List[TCFFeatureRecord]) -> List:
+def _build_special_feature_opt_ins(
+    special_features: List[TCFFeatureRecord],
+) -> List[int]:
     """Construct the special_feature_opt_ins section"""
     special_feature_opt_ins: List[int] = []
     for special_feature in special_features:
@@ -287,19 +368,13 @@ def transform_user_preference_to_boolean(preference: UserConsentPreference) -> b
     ]
 
 
-def build_tc_model(
+def convert_tcf_contents_to_tc_model(
     tcf_contents: TCFExperienceContents, preference: Optional[UserConsentPreference]
 ) -> TCModel:
     """
-    Helper for building a TCModel that contains the prerequisite information to build
+    Helper for building a TCModel from TCFExperienceContents that contains the prerequisite information to build
     an accept-all or reject-all string, depending on the supplied preference.
     """
-    gvl: Dict = load_gvl()
-
-    internal_gvl_vendor_ids: list[int] = [
-        int(vendor_id) for vendor_id in gvl.get("vendors", {})
-    ]
-
     if not preference:
         # Dev-level error
         raise Exception(
@@ -311,23 +386,20 @@ def build_tc_model(
     (
         vendor_consents,
         vendor_legitimate_interests,
-    ) = _build_vendor_consents_and_legitimate_interests(
-        tcf_contents.tcf_vendors, internal_gvl_vendor_ids
-    )
+    ) = _build_vendor_consents_and_legitimate_interests(tcf_contents.tcf_vendors)
 
     (
         purpose_consents,
         purpose_legitimate_interests,
     ) = _build_purpose_consent_and_legitimate_interests(tcf_contents.tcf_purposes)
 
-    special_feature_opt_ins = _build_special_feature_opt_ins(
+    special_feature_opt_ins: List[int] = _build_special_feature_opt_ins(
         tcf_contents.tcf_special_features
     )
 
     current_time: int = _get_epoch_time()
 
     tc_model = TCModel(
-        _gvl=gvl,  # Private field
         created=current_time,
         last_updated=current_time,
         cmp_id=CMP_ID,
@@ -338,10 +410,8 @@ def build_tc_model(
         special_feature_optins=special_feature_opt_ins if consented else [],
         purpose_consents=purpose_consents if consented else [],
         purpose_legitimate_interests=purpose_legitimate_interests if consented else [],
-        # TODO https://github.com/InteractiveAdvertisingBureau/iabtcf-es/blob/master/modules/core/src/encoder/SemanticPreEncoder.ts#L38
         vendor_consents=vendor_consents if consented else [],
         vendor_legitimate_interests=vendor_legitimate_interests if consented else [],
-        vendors_disclosed=internal_gvl_vendor_ids,
     )
 
     return tc_model

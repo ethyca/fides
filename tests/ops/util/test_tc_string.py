@@ -14,7 +14,7 @@ from fides.api.util.tcf.experience_meta import (
     build_tcf_version_hash,
 )
 from fides.api.util.tcf.tc_mobile_data import build_tc_data_for_mobile
-from fides.api.util.tcf.tc_model import CMP_ID, build_tc_model
+from fides.api.util.tcf.tc_model import CMP_ID, convert_tcf_contents_to_tc_model
 from fides.api.util.tcf.tc_string import TCModel, build_tc_string
 from fides.api.util.tcf_util import get_tcf_contents
 
@@ -348,14 +348,50 @@ class TestBuildTCModel:
         m = TCModel(purpose_legitimate_interests=[1, 2, 3, 4, 7])
         assert m.purpose_legitimate_interests == [2, 7]
 
+    def test_filter_invalid_vendor_legal_basis(self):
+        m = TCModel(
+            vendor_consents=[56]
+        )  # This vendor has no purposes, and shouldn't be in this list
+        assert m.vendor_consents == []
+
+        m = TCModel(
+            vendor_legitimate_interests=[56]
+        )  # This vendor doesn't have leg int purposes, but it does have
+        # special purposes, which allows it to show up here
+        assert m.vendor_legitimate_interests == [56]
+
+        m = TCModel(
+            vendor_legitimate_interests=[66]
+        )  # This vendor doesn't have leg int purposes, or special purposes. It does have flexible purposes,
+        # but this isn't an option right now, as is_service_specific is False
+        assert m.vendor_legitimate_interests == []
+
+        m = TCModel(
+            vendor_legitimate_interests=[66], is_service_specific=True
+        )  # This vendor doesn't have leg int purposes, or special purposes. It does have flexible purposes,
+        # and is_service_specific, but we don't yet support setting publisher restrictions
+        assert m.vendor_legitimate_interests == []
+
+        m = TCModel(vendor_consents=[1231323])
+        assert m.vendor_consents == []
+
     def test_consent_language(self):
         m = TCModel(consent_language="English")
         assert m.consent_language == "EN"
 
+    def test_vendors_disclosed(self):
+        m = TCModel(vendors_disclosed=[1, 2])
+        assert m.vendors_disclosed == [1, 2]
+
+        m = TCModel()
+        assert m.vendors_disclosed != []
+
     @pytest.mark.usefixtures("captify_technologies_system")
     def test_build_tc_string_captify_accept_all(self, db):
         tcf_contents = get_tcf_contents(db)
-        model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_in
+        )
 
         assert model.cmp_id == 12
         assert model.vendor_list_version == 19
@@ -461,7 +497,9 @@ class TestBuildTCModel:
     @pytest.mark.usefixtures("emerse_system")
     def test_build_tc_string_emerse_accept_all(self, db):
         tcf_contents = get_tcf_contents(db)
-        model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_in
+        )
 
         assert model.cmp_id == 12
         assert model.vendor_list_version == 19
@@ -585,7 +623,9 @@ class TestBuildTCModel:
     @pytest.mark.usefixtures("skimbit_system")
     def test_build_tc_string_skimbit_accept_all(self, db):
         tcf_contents = get_tcf_contents(db)
-        model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_in
+        )
 
         assert model.cmp_id == 12
         assert model.vendor_list_version == 19
@@ -747,7 +787,9 @@ class TestBuildTCModel:
         skimbit_system.save(db)
 
         tcf_contents = get_tcf_contents(db)
-        model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_in
+        )
 
         assert model.cmp_id == 12
         assert model.vendor_list_version == 19
@@ -858,7 +900,9 @@ class TestBuildTCModel:
     )
     def test_build_tc_string_generic_reject_all(self, system_fixture, db):
         tcf_contents = get_tcf_contents(db)
-        model = build_tc_model(tcf_contents, UserConsentPreference.opt_out)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_out
+        )
 
         assert model.cmp_id == 12
         assert model.vendor_list_version == 19
@@ -967,7 +1011,9 @@ class TestBuildTCMobileData:
     @pytest.mark.usefixtures("captify_technologies_system")
     def test_build_accept_all_tc_data_for_mobile_consent_purposes_only(self, db):
         tcf_contents = get_tcf_contents(db)
-        model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_in
+        )
 
         tc_mobile_data = build_tc_data_for_mobile(model)
 
@@ -996,7 +1042,9 @@ class TestBuildTCMobileData:
     @pytest.mark.usefixtures("captify_technologies_system")
     def test_build_reject_all_tc_data_for_mobile_consent_purposes_only(self, db):
         tcf_contents = get_tcf_contents(db)
-        model = build_tc_model(tcf_contents, UserConsentPreference.opt_out)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_out
+        )
 
         tc_mobile_data = build_tc_data_for_mobile(model)
 
@@ -1027,7 +1075,9 @@ class TestBuildTCMobileData:
         self, db
     ):
         tcf_contents = get_tcf_contents(db)
-        model = build_tc_model(tcf_contents, UserConsentPreference.opt_in)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_in
+        )
 
         tc_mobile_data = build_tc_data_for_mobile(model)
 
@@ -1061,7 +1111,9 @@ class TestBuildTCMobileData:
         self, db
     ):
         tcf_contents = get_tcf_contents(db)
-        model = build_tc_model(tcf_contents, UserConsentPreference.opt_out)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_out
+        )
 
         tc_mobile_data = build_tc_data_for_mobile(model)
 
