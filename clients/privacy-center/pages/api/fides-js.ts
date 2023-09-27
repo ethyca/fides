@@ -16,57 +16,13 @@ const FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
 // one hour, how long until the custom-fides.css is refreshed
 const CUSTOM_FIDES_CSS_TTL_MS = 3600 * 1000;
 
+// a cache of the custom stylesheet retrieved from the /custom-asset endpoint
 let cachedCustomFidesCss: string = "";
+// millisecond timestamp of when the custom stylesheet was last retrieved
+// used to determine when to refresh the contents
 let lastFetched: number = 0;
-
-async function fetchCustomFidesCss(
-  req: NextApiRequest
-): Promise<string | null> {
-  const currentTime = Date.now();
-  const shouldRefresh = "refresh" in req.query;
-  if (
-    !cachedCustomFidesCss ||
-    (lastFetched && currentTime - lastFetched > CUSTOM_FIDES_CSS_TTL_MS) ||
-    shouldRefresh
-  ) {
-    try {
-      const environment = await loadPrivacyCenterEnvironment();
-      const fidesUrl =
-        environment.settings.SERVER_SIDE_FIDES_API_URL ||
-        environment.settings.FIDES_API_URL;
-      const response = await fetch(
-        `${fidesUrl}/plus/custom-asset/custom-fides.css`
-      );
-      const data = await response.text();
-
-      console.log("Successfully retrieved custom-fides.css");
-
-      if (!response.ok) {
-        console.error(
-          "Error fetching custom-fides.css:",
-          response.status,
-          response.statusText,
-          data
-        );
-        throw new Error(`HTTP error occurred. Status: ${response.status}`);
-      }
-
-      if (!data) {
-        throw new Error("No data returned by the server");
-      }
-
-      cachedCustomFidesCss = data;
-      lastFetched = currentTime;
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error during fetch operation:", error.message);
-      } else {
-        console.error("Unknown error occurred:", error);
-      }
-    }
-  }
-  return cachedCustomFidesCss;
-}
+// used to disable auto-refreshing if the /custom-asset endpoint is unreachable
+let autoRefresh: boolean = true;
 
 /**
  * @swagger
@@ -222,13 +178,16 @@ export default async function handler(
     }
 
     // Include generic fides.js script
-    ${fidesJS}
-
-    // Include custom-fides.css
+    ${fidesJS}${
+    customFidesCss
+      ? `
+    // Include custom fides.css styles
     const style = document.createElement('style');
     style.innerHTML = ${JSON.stringify(customFidesCss)};
     document.head.append(style);
-
+    `
+      : ""
+  }
     // Initialize fides.js with custom config
     var fidesConfig = ${fidesConfigJSON};
     window.Fides.init(fidesConfig);
@@ -248,4 +207,54 @@ export default async function handler(
     .setHeader("Cache-Control", stringify(cacheHeaders))
     .setHeader("Vary", LOCATION_HEADERS)
     .send(script);
+}
+
+async function fetchCustomFidesCss(
+  req: NextApiRequest
+): Promise<string | null> {
+  const currentTime = Date.now();
+  const forceRefresh = "refresh" in req.query;
+  if (
+    (!cachedCustomFidesCss ||
+      (lastFetched && currentTime - lastFetched > CUSTOM_FIDES_CSS_TTL_MS)) &&
+    (forceRefresh || autoRefresh)
+  ) {
+    try {
+      const environment = await loadPrivacyCenterEnvironment();
+      const fidesUrl =
+        environment.settings.SERVER_SIDE_FIDES_API_URL ||
+        environment.settings.FIDES_API_URL;
+      const response = await fetch(
+        `${fidesUrl}/plus/custom-asset/custom-fides.css`
+      );
+      const data = await response.text();
+
+      if (!response.ok) {
+        console.error(
+          "Error fetching custom-fides.css:",
+          response.status,
+          response.statusText,
+          data
+        );
+        throw new Error(`HTTP error occurred. Status: ${response.status}`);
+      }
+
+      if (!data) {
+        throw new Error("No data returned by the server");
+      }
+
+      console.log("Successfully retrieved custom-fides.css");
+      autoRefresh = true;
+      cachedCustomFidesCss = data;
+      lastFetched = currentTime;
+    } catch (error) {
+      autoRefresh = false; // /custom-asset endpoint unreachable stop auto-refresh
+      if (error instanceof Error) {
+        console.error("Error during fetch operation:", error.message);
+      } else {
+        console.error("Unknown error occurred:", error);
+      }
+    }
+  }
+  return cachedCustomFidesCss;
 }
