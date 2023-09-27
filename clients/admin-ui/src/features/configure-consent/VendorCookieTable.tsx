@@ -127,8 +127,7 @@ const VendorCookieTable = () => {
   };
 
   const renderOverflowMenu = (row: Row<CookieBySystem>) => (
-    <>
-      <Menu>
+    <Menu>
         <MenuButton
           as={IconButton}
           aria-label="Show vendor options"
@@ -152,7 +151,6 @@ const VendorCookieTable = () => {
           </MenuItem>
         </MenuList>
       </Menu>
-    </>
   );
 
   return (

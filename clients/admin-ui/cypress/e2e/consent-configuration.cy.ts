@@ -748,7 +748,7 @@ describe("Consent configuration", () => {
       cy.visit(CONFIGURE_CONSENT_ROUTE);
     });
 
-    it.only("can add cookies to a vendor", () => {
+    it("can add cookies to a vendor", () => {
       cy.getByTestId("configure-demo_marketing_system").click();
       cy.getByTestId("edit-demo_marketing_system").click();
       cy.getByTestId("input-privacy_declarations.0.cookieNames")
