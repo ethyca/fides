@@ -6,7 +6,10 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  MoreIcon,
   Table,
+  Text,
+  useDisclosure,
   useToast,
 } from "@fidesui/react";
 import { useMemo, useState } from "react";
@@ -21,8 +24,8 @@ import {
 } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
+import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { EllipsisIcon } from "~/features/common/Icon/EllipsisIcon";
 import { PaddedCell } from "~/features/common/table";
 import GroupedTableBody from "~/features/common/table/grouped/GroupedTableBody";
 import GroupedTableHeader from "~/features/common/table/grouped/GroupedTableHeader";
@@ -45,6 +48,12 @@ const VendorCookieTable = () => {
   const [systemToEdit, setSystemToEdit] = useState<System | undefined>(
     undefined
   );
+
+  const {
+    isOpen: isDeleteModalOpen,
+    onOpen: onDeleteModalOpen,
+    onClose: onDeleteModalClose,
+  } = useDisclosure();
 
   const columns: Column<CookieBySystem>[] = useMemo(
     () => [
@@ -108,30 +117,47 @@ const VendorCookieTable = () => {
   };
 
   const renderOverflowMenu = (row: Row<CookieBySystem>) => (
-    <Menu>
-      <MenuButton
-        as={IconButton}
-        aria-label="Show vendor options"
-        icon={<EllipsisIcon />}
-        size="xs"
-        variant="outline"
-        data-testid="configure-vendor"
+    <>
+      <Menu>
+        <MenuButton
+          as={IconButton}
+          aria-label="Show vendor options"
+          icon={<MoreIcon />}
+          size="xs"
+          variant="outline"
+          data-testid="configure-vendor"
+        />
+        <MenuList>
+          <MenuItem
+            data-testid="edit-vendor"
+            onClick={() => handleEdit(row.values.id)}
+          >
+            Manage cookies
+          </MenuItem>
+          <MenuItem data-testid="delete-vendor" onClick={onDeleteModalOpen}>
+            Delete
+          </MenuItem>
+        </MenuList>
+      </Menu>
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={onDeleteModalClose}
+        onConfirm={() => handleDelete(row.values.id)}
+        title={`Delete ${row.values.name ?? row.values.fides_key}`}
+        message={
+          <>
+            <Text>
+              This will delete the vendor{" "}
+              <Text color="complimentary.500" as="span" fontWeight="bold">
+                {row.values.name ?? row.values.fides_key}
+              </Text>{" "}
+              and all its cookies.
+            </Text>
+            <Text>Are you sure you want to continue?</Text>
+          </>
+        }
       />
-      <MenuList>
-        <MenuItem
-          data-testid="edit-vendor"
-          onClick={() => handleEdit(row.values.id)}
-        >
-          Manage cookies
-        </MenuItem>
-        <MenuItem
-          data-testid="delete-vendor"
-          onClick={() => handleDelete(row.values.id)}
-        >
-          Delete
-        </MenuItem>
-      </MenuList>
-    </Menu>
+    </>
   );
 
   return (

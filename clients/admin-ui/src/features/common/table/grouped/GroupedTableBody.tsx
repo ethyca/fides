@@ -1,4 +1,4 @@
-import { Tbody, Td, Text, Tr } from "@fidesui/react";
+import { Stack, Tbody, Td, Text, Tr } from "@fidesui/react";
 import { Row, UseTableInstanceProps } from "react-table";
 
 import { GRAY_BACKGROUND } from "./constants";
@@ -38,38 +38,40 @@ const GroupedTableBody = <T extends object>({
           data-testid={`grouped-row-${row.groupByVal}`}
         >
           <Td
+            display="flex"
+            justifyContent="space-between"
             colSpan={row.cells.length}
             {...row.cells[0].getCellProps()}
             width="auto"
             paddingX={2}
           >
-            {rowHeading ? (
-              <Text
-                fontSize="xs"
-                lineHeight={4}
-                fontWeight="500"
-                color="gray.600"
-                textTransform="uppercase"
-                pb={2}
-                pt={1}
-              >
-                {rowHeading}
-              </Text>
-            ) : null}
+            <Stack>
+              {rowHeading ? (
+                <Text
+                  fontSize="xs"
+                  lineHeight={4}
+                  fontWeight="500"
+                  color="gray.600"
+                  textTransform="uppercase"
+                  pb={2}
+                  pt={1}
+                >
+                  {rowHeading}
+                </Text>
+              ) : null}
 
-            <Text
-              fontSize="sm"
-              lineHeight={5}
-              fontWeight="bold"
-              color="gray.600"
-              mb={1}
-            >
-              {renderRowSubheading(row)}
-            </Text>
+              <Text
+                fontSize="sm"
+                lineHeight={5}
+                fontWeight="bold"
+                color="gray.600"
+                mb={1}
+              >
+                {renderRowSubheading(row)}
+              </Text>
+            </Stack>
+            {renderOverflowMenu ? renderOverflowMenu(row) : null}
           </Td>
-          <Td />
-          <Td />
-          <Td>{renderOverflowMenu ? renderOverflowMenu(row) : null}</Td>
         </Tr>
       );
 
