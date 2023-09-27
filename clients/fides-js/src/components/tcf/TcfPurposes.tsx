@@ -30,9 +30,12 @@ const PurposeToggle = ({
     >
       <div>
         <p className="fides-tcf-toggle-content">{purpose.description}</p>
-        <p className="fides-tcf-illustration fides-background-dark">
-          {purpose.illustrations[0]}
-        </p>
+        {purpose.illustrations.map((illustration) => (
+          <p className="fides-tcf-illustration fides-background-dark">
+            {illustration}
+          </p>
+        ))}
+
         {vendors.length ? (
           <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
             <span className="fides-tcf-purpose-vendor-title">
