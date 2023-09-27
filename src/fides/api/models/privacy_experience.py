@@ -223,6 +223,7 @@ class PrivacyExperience(Base):
     tcf_features: List = []
     tcf_special_features: List = []
     tcf_systems: List = []
+    gvl: Optional[Dict] = {}
 
     # Attribute that is cached on the PrivacyExperience object by "get_should_show_banner", calculated at runtime
     show_banner: bool

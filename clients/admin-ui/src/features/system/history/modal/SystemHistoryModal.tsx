@@ -18,7 +18,12 @@ import SystemDataForm from "./SystemDataForm";
 
 const getBadges = (before: Record<string, any>, after: Record<string, any>) => {
   const badges = [];
-  const specialFields = new Set(["egress", "ingress", "privacy_declarations"]);
+  const specialFields = new Set([
+    "egress",
+    "ingress",
+    "privacy_declarations",
+    "vendor_id",
+  ]);
 
   if (before.egress || after.egress || before.ingress || after.ingress) {
     badges.push("Data Flow");

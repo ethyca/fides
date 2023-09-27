@@ -172,6 +172,15 @@ describe("Fides-js TCF", () => {
       });
       cy.get("#fides-tab-Purposes");
     });
+
+    it("can open the modal from vendor information", () => {
+      cy.get("div#fides-banner").within(() => {
+        cy.get("button").contains("View our 2 partners").click();
+      });
+      cy.get("#fides-tab-Vendors");
+      cy.getByTestId(`toggle-${VENDOR_1.name}`);
+      cy.getByTestId(`toggle-${VENDOR_2.name}`);
+    });
   });
 
   describe("second layer", () => {
