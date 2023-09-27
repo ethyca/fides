@@ -128,29 +128,29 @@ const VendorCookieTable = () => {
 
   const renderOverflowMenu = (row: Row<CookieBySystem>) => (
     <Menu>
-        <MenuButton
-          as={IconButton}
-          aria-label="Show vendor options"
-          icon={<MoreIcon />}
-          size="xs"
-          variant="outline"
-          data-testid={`configure-${row.values.id}`}
-        />
-        <MenuList>
-          <MenuItem
-            data-testid={`edit-${row.values.id}`}
-            onClick={() => handleEdit(row.values.id)}
-          >
-            Manage cookies
-          </MenuItem>
-          <MenuItem
-            data-testid={`delete-${row.values.id}`}
-            onClick={() => handleOpenDeleteModal(row.values.id)}
-          >
-            Delete
-          </MenuItem>
-        </MenuList>
-      </Menu>
+      <MenuButton
+        as={IconButton}
+        aria-label="Show vendor options"
+        icon={<MoreIcon />}
+        size="xs"
+        variant="outline"
+        data-testid={`configure-${row.values.id}`}
+      />
+      <MenuList>
+        <MenuItem
+          data-testid={`edit-${row.values.id}`}
+          onClick={() => handleEdit(row.values.id)}
+        >
+          Manage cookies
+        </MenuItem>
+        <MenuItem
+          data-testid={`delete-${row.values.id}`}
+          onClick={() => handleOpenDeleteModal(row.values.id)}
+        >
+          Delete
+        </MenuItem>
+      </MenuList>
+    </Menu>
   );
 
   return (
