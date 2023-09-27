@@ -28,16 +28,17 @@ import type {
 
 import { updateConsentPreferences } from "../../lib/preferences";
 import {
-  ConsentMechanism,
+  ButtonType,
   ConsentMethod,
   LastServedNoticeSchema,
   PrivacyExperience,
 } from "../../lib/consent-types";
-import TcfModalContent from "./TcfModalContent";
 import { generateTcString } from "../../lib/tcf";
 import { FidesCookie } from "../../lib/cookie";
 import InitialLayer from "./InitialLayer";
-import { useConsentServed } from "../../lib/hooks";
+import TcfTabs from "./TcfTabs";
+import Button from "../Button";
+import { useConsentServed } from "~/lib/hooks";
 
 const resolveConsentValueFromTcfModel = (
   model: TCFPurposeRecord | TCFFeatureRecord | TCFVendorRecord
@@ -218,6 +219,16 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     [experience]
   );
 
+  const numVendors = useMemo(() => {
+    const systemCount = experience.tcf_systems
+      ? experience.tcf_systems.length
+      : 0;
+    const vendorCount = experience.tcf_vendors
+      ? experience.tcf_vendors.length
+      : 0;
+    return systemCount + vendorCount;
+  }, [experience]);
+
   const handleUpdateDraftState = useCallback(
     ({ newEnabledIds, modelType }: UpdateEnabledIds) => {
       const updated = { ...draftIds, [modelType]: newEnabledIds };
@@ -258,11 +269,17 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     [cookie, experience, fidesRegionString, options]
   );
 
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+
   if (!experience.experience_config) {
     debugLog(options.debug, "No experience config found");
     return null;
   }
   const experienceConfig = experience.experience_config;
+
+  const goToVendorTab = () => {
+    setActiveTabIndex(2);
+  };
 
   return (
     <Overlay
@@ -276,19 +293,17 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             onClose={onClose}
             experience={experienceConfig}
           >
-            <InitialLayer
-              experience={experience}
-              managePreferencesLink={
-                <button
-                  type="button"
-                  onClick={onManagePreferencesClick}
-                  className="fides-link-button"
-                >
-                  {experience.experience_config
-                    ?.privacy_preferences_link_label || ""}
-                </button>
-              }
-            />
+            <InitialLayer experience={experience} />
+            <button
+              type="button"
+              className="fides-link-button"
+              onClick={() => {
+                onManagePreferencesClick();
+                goToVendorTab();
+              }}
+            >
+              View our {numVendors} partner{numVendors === 1 ? "" : "s"}
+            </button>
             <TcfConsentButtons
               experience={experience}
               onManagePreferencesClick={onManagePreferencesClick}
@@ -300,17 +315,34 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           </ConsentBanner>
         ) : null
       }
-      renderModalContent={({ onClose }) => (
-        <TcfModalContent
-          experience={experience}
-          draftIds={draftIds}
-          onChange={handleUpdateDraftState}
-          onSave={(keys) => {
-            handleUpdateAllPreferences(keys, servedNotices);
-            onClose();
-          }}
-        />
-      )}
+      renderModalContent={({ onClose }) => {
+        const onSave = (keys: EnabledIds) => {
+          handleUpdateAllPreferences(keys, servedNotices);
+          onClose();
+        };
+        return (
+          <div>
+            <TcfTabs
+              experience={experience}
+              enabledIds={draftIds}
+              onChange={handleUpdateDraftState}
+              activeTabIndex={activeTabIndex}
+              onTabChange={setActiveTabIndex}
+            />
+            <TcfConsentButtons
+              experience={experience}
+              onSave={onSave}
+              firstButton={
+                <Button
+                  buttonType={ButtonType.SECONDARY}
+                  label={experience.experience_config?.save_button_label}
+                  onClick={() => onSave(draftIds)}
+                />
+              }
+            />
+          </div>
+        );
+      }}
     />
   );
 };
