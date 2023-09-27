@@ -226,20 +226,11 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     [draftIds]
   );
 
-  const privacyNotices = useMemo(
-    () => experience.privacy_notices ?? [],
-    [experience.privacy_notices]
-  );
-
-  const isAllNoticeOnly = privacyNotices.every(
-    (n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY
-  );
-
   const { servedNotices } = useConsentServed({
-    notices: privacyNotices,
+    notices: [],
     options,
     userGeography: fidesRegionString,
-    acknowledgeMode: isAllNoticeOnly,
+    acknowledgeMode: false,
     privacyExperience: experience,
   });
 
