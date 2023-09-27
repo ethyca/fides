@@ -5,6 +5,7 @@ import {
   EmbeddedPurpose,
   GVLJson,
   TCFVendorRecord,
+  VendorUrl,
 } from "../../lib/tcf/types";
 import { PrivacyExperience } from "../../lib/consent-types";
 import { UpdateEnabledIds } from "./TcfOverlay";
@@ -14,6 +15,7 @@ import { vendorIsGvl } from "../../lib/tcf/vendors";
 import LegalBasisDropdown, {
   useLegalBasisDropdown,
 } from "./LegalBasisDropdown";
+import ExternalLink from "../ExternalLink";
 
 const FILTERS = [{ name: "All vendors" }, { name: "GVL vendors" }];
 
@@ -138,30 +140,47 @@ const TcfVendors = ({
   return (
     <div>
       <FilterButtons filters={FILTERS} onChange={handleFilter} />
-      {vendorsToDisplay.map((vendor) => (
-        <DataUseToggle
-          dataUse={{ key: vendor.id, name: vendor.name }}
-          onToggle={() => {
-            handleToggle(vendor);
-          }}
-          checked={enabledIds.indexOf(vendor.id) !== -1}
-          badge={vendorIsGvl(vendor, gvl) ? "GVL" : undefined}
-        >
-          <div>
-            <p>{vendor.description}</p>
-            <PurposeVendorDetails
-              purposes={vendor.purposes}
-              specialPurposes={vendor.special_purposes}
-            />
+      {vendorsToDisplay.map((vendor) => {
+        const gvlVendor = vendorIsGvl(vendor, gvl);
+        // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
+        const url: VendorUrl = gvlVendor?.urls.find(
+          (u: VendorUrl) => u.langId === "en"
+        );
+        return (
+          <DataUseToggle
+            dataUse={{ key: vendor.id, name: vendor.name }}
+            onToggle={() => {
+              handleToggle(vendor);
+            }}
+            checked={enabledIds.indexOf(vendor.id) !== -1}
+            badge={gvlVendor ? "IAB TCF" : undefined}
+          >
+            <div>
+              {vendor.description ? <p>{vendor.description}</p> : null}
+              <div>
+                {url?.privacy ? (
+                  <ExternalLink href={url.privacy}>Privacy policy</ExternalLink>
+                ) : null}
+                {url?.legIntClaim ? (
+                  <ExternalLink href={url.legIntClaim}>
+                    Legitimate interest disclosure
+                  </ExternalLink>
+                ) : null}
+              </div>
+              <PurposeVendorDetails
+                purposes={vendor.purposes}
+                specialPurposes={vendor.special_purposes}
+              />
 
-            <VendorDetails label="Features" lineItems={vendor.features} />
-            <VendorDetails
-              label="Special features"
-              lineItems={vendor.special_features}
-            />
-          </div>
-        </DataUseToggle>
-      ))}
+              <VendorDetails label="Features" lineItems={vendor.features} />
+              <VendorDetails
+                label="Special features"
+                lineItems={vendor.special_features}
+              />
+            </div>
+          </DataUseToggle>
+        );
+      })}
     </div>
   );
 };

@@ -688,6 +688,14 @@ div#fides-modal .fides-modal-button-group {
   cursor: pointer;
 }
 
+/* Link */
+.fides-external-link {
+  color: var(--fides-overlay-primary-color);
+  font-weight: 500;
+  font-size: 0.9em;
+  margin-right: 1em;
+}
+
 /* Dropdown */
 
 .fides-select-dropdown {

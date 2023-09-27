@@ -158,3 +158,9 @@ export type GVLJson = Pick<
   | "specialFeatures"
   | "vendors"
 >;
+
+export interface VendorUrl {
+  langId: string;
+  privacy?: string;
+  legIntClaim?: string;
+}
