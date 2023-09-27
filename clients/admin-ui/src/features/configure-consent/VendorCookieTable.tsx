@@ -48,6 +48,9 @@ const VendorCookieTable = () => {
   const [systemToEdit, setSystemToEdit] = useState<System | undefined>(
     undefined
   );
+  const [systemToDelete, setSystemToDelete] = useState<System | undefined>(
+    undefined
+  );
 
   const {
     isOpen: isDeleteModalOpen,
@@ -109,10 +112,17 @@ const VendorCookieTable = () => {
     } else {
       toast(successToastParams("Successfully deleted vendor"));
     }
+    onDeleteModalClose();
+  };
+
+  const handleOpenDeleteModal = (systemFidesKey: string) => {
+    const system = systems.find((s) => systemFidesKey === s.fides_key);
+    setSystemToDelete(system);
+    onDeleteModalOpen();
   };
 
   const handleEdit = (systemFidesKey: string) => {
-    const system = systems.filter((s) => systemFidesKey === s.fides_key)[0];
+    const system = systems.find((s) => systemFidesKey === s.fides_key);
     setSystemToEdit(system);
   };
 
@@ -125,38 +135,23 @@ const VendorCookieTable = () => {
           icon={<MoreIcon />}
           size="xs"
           variant="outline"
-          data-testid="configure-vendor"
+          data-testid={`configure-${row.values.id}`}
         />
         <MenuList>
           <MenuItem
-            data-testid="edit-vendor"
+            data-testid={`edit-${row.values.id}`}
             onClick={() => handleEdit(row.values.id)}
           >
             Manage cookies
           </MenuItem>
-          <MenuItem data-testid="delete-vendor" onClick={onDeleteModalOpen}>
+          <MenuItem
+            data-testid={`delete-${row.values.id}`}
+            onClick={() => handleOpenDeleteModal(row.values.id)}
+          >
             Delete
           </MenuItem>
         </MenuList>
       </Menu>
-      <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={onDeleteModalClose}
-        onConfirm={() => handleDelete(row.values.id)}
-        title={`Delete ${row.values.name ?? row.values.fides_key}`}
-        message={
-          <>
-            <Text>
-              This will delete the vendor{" "}
-              <Text color="complimentary.500" as="span" fontWeight="bold">
-                {row.values.name ?? row.values.fides_key}
-              </Text>{" "}
-              and all its cookies.
-            </Text>
-            <Text>Are you sure you want to continue?</Text>
-          </>
-        }
-      />
     </>
   );
 
@@ -172,6 +167,24 @@ const VendorCookieTable = () => {
         <AddVendor
           passedInSystem={systemToEdit}
           onCloseModal={() => setSystemToEdit(undefined)}
+        />
+        <ConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={onDeleteModalClose}
+          onConfirm={() => handleDelete(systemToDelete!.fides_key)}
+          title={`Delete ${systemToDelete?.name ?? systemToDelete?.fides_key}`}
+          message={
+            <>
+              <Text>
+                This will delete the vendor{" "}
+                <Text color="complimentary.500" as="span" fontWeight="bold">
+                  {systemToDelete?.name ?? systemToDelete?.fides_key}
+                </Text>{" "}
+                and all its cookies.
+              </Text>
+              <Text>Are you sure you want to continue?</Text>
+            </>
+          }
         />
       </HStack>
       <Table {...getTableProps()} size="sm" data-testid="datamap-table">
