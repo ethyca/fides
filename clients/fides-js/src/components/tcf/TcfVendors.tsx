@@ -1,5 +1,6 @@
 import { h } from "preact";
 import { useState } from "preact/hooks";
+import { Vendor } from "@iabtechlabtcf/core";
 import {
   EmbeddedLineItem,
   EmbeddedPurpose,
@@ -17,7 +18,7 @@ import LegalBasisDropdown, {
 } from "./LegalBasisDropdown";
 import ExternalLink from "../ExternalLink";
 
-const FILTERS = [{ name: "All vendors" }, { name: "GVL vendors" }];
+const FILTERS = [{ name: "All vendors" }, { name: "IAB TCF vendors" }];
 
 const VendorDetails = ({
   label,
@@ -80,6 +81,23 @@ const PurposeVendorDetails = ({
       />
     </div>
   );
+};
+
+const StorageDisclosure = ({ vendor }: { vendor: Vendor }) => {
+  const { name, usesCookies, usesNonCookieAccess, cookieMaxAgeSeconds } =
+    vendor;
+  let disclosure = "";
+  if (usesCookies) {
+    const days = cookieMaxAgeSeconds
+      ? (cookieMaxAgeSeconds / 60 / 60 / 24).toFixed(2)
+      : 0;
+    disclosure = `${name} stores cookies with a maximum duration of about ${days} Day(s) (${cookieMaxAgeSeconds} Second(s)).`;
+  }
+  if (usesNonCookieAccess) {
+    disclosure = `${disclosure} This vendor also uses other methods like "local storage" to store and access information on your device.`;
+  }
+
+  return <p>{disclosure}</p>;
 };
 
 const TcfVendors = ({
@@ -156,7 +174,7 @@ const TcfVendors = ({
             badge={gvlVendor ? "IAB TCF" : undefined}
           >
             <div>
-              {vendor.description ? <p>{vendor.description}</p> : null}
+              {gvlVendor ? <StorageDisclosure vendor={gvlVendor} /> : null}
               <div>
                 {url?.privacy ? (
                   <ExternalLink href={url.privacy}>Privacy policy</ExternalLink>
