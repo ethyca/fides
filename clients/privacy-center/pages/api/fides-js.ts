@@ -166,6 +166,7 @@ export default async function handler(
     throw new Error("Unable to load latest fides.js script from server!");
   }
 
+  /* eslint-disable @typescript-eslint/no-use-before-define */
   const customFidesCss = await fetchCustomFidesCss(req);
 
   const script = `
