@@ -45,8 +45,9 @@ export const TcfConsentButtons = ({
       specialPurposes: getAllIds(experience.tcf_special_purposes),
       features: getAllIds(experience.tcf_features),
       specialFeatures: getAllIds(experience.tcf_special_features),
-      vendors: getAllIds(experience.tcf_vendors),
-      systems: getAllIds(experience.tcf_systems),
+      // TODO: separate these out once the backend can handle it
+      vendorsConsent: getAllIds(experience.tcf_vendors),
+      vendorsLegint: getAllIds(experience.tcf_vendors),
     };
     onSave(allIds);
   };
@@ -56,8 +57,8 @@ export const TcfConsentButtons = ({
       specialPurposes: [],
       features: [],
       specialFeatures: [],
-      vendors: [],
-      systems: [],
+      vendorsConsent: [],
+      vendorsLegint: [],
     };
     onSave(emptyIds);
   };

@@ -15,6 +15,7 @@ import { TcfConsentButtons } from "./TcfConsentButtons";
 import { OverlayProps } from "../types";
 
 import {
+  LegalBasisForProcessingEnum,
   type TCFFeatureRecord,
   type TCFFeatureSave,
   type TCFPurposeRecord,
@@ -31,6 +32,7 @@ import {
   ButtonType,
   ConsentMethod,
   PrivacyExperience,
+  UserConsentPreference,
 } from "../../lib/consent-types";
 import { generateTcString } from "../../lib/tcf";
 import {
@@ -41,6 +43,7 @@ import InitialLayer from "./InitialLayer";
 import TcfTabs from "./TcfTabs";
 import Button from "../Button";
 import VendorInfoBanner from "./VendorInfoBanner";
+import { vendorRecordsWithLegalBasis } from "../../lib/tcf/vendors";
 
 const resolveConsentValueFromTcfModel = (
   model: TCFPurposeRecord | TCFFeatureRecord | TCFVendorRecord
@@ -78,6 +81,25 @@ const getEnabledIds = (modelList: TcfModels) => {
     .map((model) => `${model.id}`);
 };
 
+const getVendorEnabledIds = (
+  modelList: TCFVendorRecord[] | undefined,
+  legalBasis: LegalBasisForProcessingEnum
+) => {
+  if (!modelList) {
+    return [];
+  }
+  const records = vendorRecordsWithLegalBasis(modelList, legalBasis);
+  if (legalBasis === LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS) {
+    // TODO: the backend should eventually return legint fields with a default proference of OPT_IN
+    const modifiedRecords = records.map((record) => ({
+      ...record,
+      default_preference: UserConsentPreference.OPT_IN,
+    }));
+    return getEnabledIds(modifiedRecords);
+  }
+  return getEnabledIds(records);
+};
+
 export interface EnabledIds {
   purposes: string[];
   specialPurposes: string[];
@@ -85,7 +107,7 @@ export interface EnabledIds {
   specialFeatures: string[];
   vendorsConsent: string[];
   vendorsLegint: string[];
-  systems: string[];
+  // systems: string[];
 }
 
 export interface UpdateEnabledIds {
@@ -120,26 +142,49 @@ const createTcfSavePayload = ({
 }: {
   experience: PrivacyExperience;
   enabledIds: EnabledIds;
-}): TcfSavePreferences => ({
-  purpose_preferences: transformTcfModelToTcfSave({
-    modelList: experience.tcf_purposes,
-    enabledIds: enabledIds.purposes,
-  }) as TCFPurposeSave[],
-  special_feature_preferences: transformTcfModelToTcfSave({
-    modelList: experience.tcf_special_features,
-    enabledIds: enabledIds.specialFeatures,
-  }) as TCFSpecialFeatureSave[],
-  vendor_preferences: transformTcfModelToTcfSave({
-    modelList: experience.tcf_vendors,
-    // TODO: once the backend is storing this, we should send vendorsConsent
-    // and vendorsLegint to separate fields.
-    enabledIds: enabledIds.vendorsConsent,
-  }) as TCFVendorSave[],
-  system_preferences: transformTcfModelToTcfSave({
-    modelList: experience.tcf_systems,
-    enabledIds: enabledIds.systems,
-  }) as TCFVendorSave[],
-});
+}): TcfSavePreferences => {
+  const systemIds = experience.tcf_systems
+    ? experience.tcf_systems.map((s) => s.id)
+    : [];
+  // TODO: separate these out once the backend can support it
+  const enabledSystemIds: string[] = [];
+  const enabledVendorIds: string[] = [];
+  enabledIds.vendorsConsent.forEach((id) => {
+    if (systemIds.includes(id)) {
+      enabledSystemIds.push(id);
+    } else {
+      enabledVendorIds.push(id);
+    }
+  });
+  enabledIds.vendorsLegint.forEach((id) => {
+    if (systemIds.includes(id)) {
+      enabledSystemIds.push(id);
+    } else {
+      enabledVendorIds.push(id);
+    }
+  });
+
+  return {
+    purpose_preferences: transformTcfModelToTcfSave({
+      modelList: experience.tcf_purposes,
+      enabledIds: enabledIds.purposes,
+    }) as TCFPurposeSave[],
+    special_feature_preferences: transformTcfModelToTcfSave({
+      modelList: experience.tcf_special_features,
+      enabledIds: enabledIds.specialFeatures,
+    }) as TCFSpecialFeatureSave[],
+    vendor_preferences: transformTcfModelToTcfSave({
+      modelList: experience.tcf_vendors,
+      // TODO: once the backend is storing this, we should send vendorsConsent
+      // and vendorsLegint to separate fields.
+      enabledIds: enabledVendorIds,
+    }) as TCFVendorSave[],
+    system_preferences: transformTcfModelToTcfSave({
+      modelList: experience.tcf_systems,
+      enabledIds: enabledSystemIds,
+    }) as TCFVendorSave[],
+  };
+};
 
 const updateCookie = async (
   oldCookie: FidesCookie,
@@ -173,15 +218,21 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       tcf_systems: systems,
     } = experience;
 
+    const vendorsAndSystems = [...(vendors || []), ...(systems || [])];
+
     return {
       purposes: getEnabledIds(purposes),
       specialPurposes: getEnabledIds(specialPurposes),
       features: getEnabledIds(features),
       specialFeatures: getEnabledIds(specialFeatures),
-      // TODO: make this right
-      vendorsConsent: getEnabledIds(vendors),
-      vendorsLegint: getEnabledIds(vendors),
-      systems: getEnabledIds(systems),
+      vendorsConsent: getVendorEnabledIds(
+        vendorsAndSystems,
+        LegalBasisForProcessingEnum.CONSENT
+      ),
+      vendorsLegint: getVendorEnabledIds(
+        vendorsAndSystems,
+        LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
+      ),
     };
   }, [experience]);
 
