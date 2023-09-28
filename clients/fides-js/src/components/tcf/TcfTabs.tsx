@@ -5,6 +5,7 @@ import { PrivacyExperience } from "../../lib/consent-types";
 import type { EnabledIds, UpdateEnabledIds } from "./TcfOverlay";
 import TcfFeatures from "./TcfFeatures";
 import TcfVendors from "./TcfVendors";
+import InfoBox from "../InfoBox";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";
@@ -26,38 +27,59 @@ const TcfTabs = ({
     {
       name: "Purposes",
       content: (
-        <TcfPurposes
-          allPurposes={experience.tcf_purposes}
-          allSpecialPurposes={experience.tcf_special_purposes}
-          enabledPurposeIds={enabledIds.purposes}
-          enabledSpecialPurposeIds={enabledIds.specialPurposes}
-          onChange={onChange}
-        />
+        <div>
+          <InfoBox title="Transparency & Consent Framework">
+            The purposes for which your personal data is being collected are
+            detailed here. You can choose to opt in or opt out of any of these
+            purposes.
+          </InfoBox>
+          <TcfPurposes
+            allPurposes={experience.tcf_purposes}
+            allSpecialPurposes={experience.tcf_special_purposes}
+            enabledPurposeIds={enabledIds.purposes}
+            enabledSpecialPurposeIds={enabledIds.specialPurposes}
+            onChange={onChange}
+          />
+        </div>
       ),
     },
     {
       name: "Features",
       content: (
-        <TcfFeatures
-          allFeatures={experience.tcf_features}
-          allSpecialFeatures={experience.tcf_special_features}
-          enabledFeatureIds={enabledIds.features}
-          enabledSpecialFeatureIds={enabledIds.specialFeatures}
-          onChange={onChange}
-        />
+        <div>
+          <InfoBox title="Transparency & Consent Framework">
+            The features for which your personal data is being collected are
+            detailed here. You can choose to opt in or opt out of any of these
+            purposes.
+          </InfoBox>
+          <TcfFeatures
+            allFeatures={experience.tcf_features}
+            allSpecialFeatures={experience.tcf_special_features}
+            enabledFeatureIds={enabledIds.features}
+            enabledSpecialFeatureIds={enabledIds.specialFeatures}
+            onChange={onChange}
+          />
+        </div>
       ),
     },
     {
       name: "Vendors",
       content: (
-        <TcfVendors
-          allSystems={experience.tcf_systems}
-          allVendors={experience.tcf_vendors}
-          enabledVendorIds={enabledIds.vendors}
-          enabledSystemIds={enabledIds.systems}
-          onChange={onChange}
-          gvl={experience.gvl}
-        />
+        <div>
+          <InfoBox title="Transparency & Consent Framework">
+            The features for which your personal data is being collected are
+            detailed here. You can choose to opt in or opt out of any of these
+            purposes.
+          </InfoBox>
+          <TcfVendors
+            allSystems={experience.tcf_systems}
+            allVendors={experience.tcf_vendors}
+            enabledVendorIds={enabledIds.vendors}
+            enabledSystemIds={enabledIds.systems}
+            onChange={onChange}
+            gvl={experience.gvl}
+          />
+        </div>
       ),
     },
   ];

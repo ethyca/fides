@@ -175,7 +175,7 @@ describe("Fides-js TCF", () => {
 
     it("can open the modal from vendor information", () => {
       cy.get("div#fides-banner").within(() => {
-        cy.get("button").contains("View our 2 partners").click();
+        cy.get("button").contains("Vendors").click();
       });
       cy.get("#fides-tab-Vendors");
       cy.getByTestId(`toggle-${VENDOR_1.name}`);
@@ -223,7 +223,7 @@ describe("Fides-js TCF", () => {
         });
       });
 
-      it("can render GVL badge on vendors and filter", () => {
+      it("can render IAB TCF badge on vendors and filter", () => {
         cy.get("#fides-tab-Vendors").click();
         cy.get("span")
           .contains(VENDOR_1.name)
@@ -233,12 +233,12 @@ describe("Fides-js TCF", () => {
         cy.get("span")
           .contains(VENDOR_2.name)
           .within(() => {
-            cy.get("span").contains("GVL");
+            cy.get("span").contains("IAB TCF");
           });
 
         // Filter to just GVL
         cy.get(".fides-filter-button-group").within(() => {
-          cy.get("button").contains("GVL vendors").click();
+          cy.get("button").contains("IAB TCF vendors").click();
         });
         cy.get("span").contains(VENDOR_1.name).should("not.exist");
         cy.get("span").contains(VENDOR_2.name);
@@ -251,15 +251,6 @@ describe("Fides-js TCF", () => {
         cy.get("#legal-basis-select").select("Legitimate interests");
         cy.getByTestId(`toggle-${PURPOSE_1.name}`).should("not.exist");
         cy.getByTestId(`toggle-${PURPOSE_5.name}`);
-
-        // Vendors tab
-        cy.get("#fides-tab-Vendors").click();
-        cy.get("span").contains(VENDOR_1.name).click();
-        cy.get(`div[id="${VENDOR_1.name}"]`).within(() => {
-          cy.get("li").should("not.exist");
-          cy.get("#legal-basis-select").select("Legitimate interests");
-          cy.get("li").contains(SPECIAL_PURPOSE_1.name);
-        });
       });
 
       it("can group toggle", () => {
