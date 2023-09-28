@@ -6,9 +6,27 @@ import {
   TCFVendorRecord,
 } from "../../lib/tcf/types";
 
-const VendorInfo = ({ label, count }: { label: string; count: number }) => (
+const VendorInfo = ({
+  label,
+  count,
+  onClick,
+}: {
+  label: string;
+  count: number;
+  onClick?: () => void;
+}) => (
   <div className="fides-flex-center">
-    <span className="fides-vendor-info-label">{label}</span>{" "}
+    {onClick ? (
+      <button
+        type="button"
+        className="fides-link-button fides-vendor-info-label"
+        onClick={onClick}
+      >
+        {label}
+      </button>
+    ) : (
+      <span className="fides-vendor-info-label">{label}</span>
+    )}{" "}
     <span className="fides-notice-badge">{count}</span>
   </div>
 );
@@ -39,7 +57,6 @@ const VendorInfoBanner = ({
 }) => {
   const counts = useMemo(() => {
     const { tcf_systems: systems = [], tcf_vendors: vendors = [] } = experience;
-    console.log({ systems, vendors });
     // total count
     const total = systems.length + vendors.length;
 
@@ -70,19 +87,16 @@ const VendorInfoBanner = ({
 
   return (
     <div className="fides-background-dark fides-vendor-info">
-      <VendorInfo label="Vendors" count={counts.total} />
+      <VendorInfo
+        label="Vendors"
+        count={counts.total}
+        onClick={goToVendorTab}
+      />
       <VendorInfo label="Vendors who use consent" count={counts.consent} />
       <VendorInfo
         label="Vendors who use legitimate interest"
         count={counts.legint}
       />
-      <button
-        type="button"
-        className="fides-link-button"
-        onClick={goToVendorTab}
-      >
-        View our partner{counts.total === 1 ? "" : "s"}
-      </button>
     </div>
   );
 };

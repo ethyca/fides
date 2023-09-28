@@ -699,10 +699,11 @@ div#fides-modal .fides-modal-button-group {
 /* Link button */
 .fides-link-button {
   border: none;
-  color: var(--fides-overlay-primary-color);
   background: none;
   padding: 0;
   cursor: pointer;
+  text-decoration: underline;
+  color: var(--fides-overlay-body-font-color);
 }
 
 /* Link */
