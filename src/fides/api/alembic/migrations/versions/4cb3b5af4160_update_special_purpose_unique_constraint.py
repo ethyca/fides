@@ -1,4 +1,4 @@
-"""update_special_feature_unique_constraint
+"""update_special_purpose_unique_constraint
 
 Revision ID: 4cb3b5af4160
 Revises: 8c54e1e5bdc4
