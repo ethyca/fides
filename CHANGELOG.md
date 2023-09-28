@@ -31,6 +31,7 @@ The types of changes are:
 - TCF modal now supports setting legitimate interest fields [#4037](https://github.com/ethyca/fides/pull/4037)
 - Embed the GVL in the GET Experiences response [#4143](https://github.com/ethyca/fides/pull/4143)
 - Button to view how many vendors and to open the vendor tab in the TCF modal [#4144](https://github.com/ethyca/fides/pull/4144)
+- "Edit vendor" flow to configuring consent page [#4162](https://github.com/ethyca/fides/pull/4162)
 
 ### Changed
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)

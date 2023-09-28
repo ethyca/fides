@@ -358,6 +358,7 @@ const CreatableSelectInput = ({
   size,
   isSearchable,
   isClearable,
+  isDisabled,
   isMulti,
   disableMenu,
   textColor,
@@ -424,6 +425,7 @@ const CreatableSelectInput = ({
       value={selected}
       size={size}
       classNamePrefix="custom-creatable-select"
+      isDisabled={isDisabled}
       chakraStyles={{
         container: (provided) => ({
           ...provided,
