@@ -14,16 +14,16 @@ import Overlay from "../Overlay";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import { OverlayProps } from "../types";
 
-import type {
-  TCFFeatureRecord,
-  TCFFeatureSave,
-  TCFPurposeRecord,
-  TCFPurposeSave,
-  TCFSpecialFeatureSave,
-  TCFSpecialPurposeSave,
-  TCFVendorRecord,
-  TCFVendorSave,
-  TcfSavePreferences,
+import {
+  type TCFFeatureRecord,
+  type TCFFeatureSave,
+  type TCFPurposeRecord,
+  type TCFPurposeSave,
+  type TCFSpecialFeatureSave,
+  type TCFSpecialPurposeSave,
+  type TCFVendorRecord,
+  type TCFVendorSave,
+  type TcfSavePreferences,
 } from "../../lib/tcf/types";
 
 import { updateConsentPreferences } from "../../lib/preferences";
@@ -83,7 +83,8 @@ export interface EnabledIds {
   specialPurposes: string[];
   features: string[];
   specialFeatures: string[];
-  vendors: string[];
+  vendorsConsent: string[];
+  vendorsLegint: string[];
   systems: string[];
 }
 
@@ -130,7 +131,9 @@ const createTcfSavePayload = ({
   }) as TCFSpecialFeatureSave[],
   vendor_preferences: transformTcfModelToTcfSave({
     modelList: experience.tcf_vendors,
-    enabledIds: enabledIds.vendors,
+    // TODO: once the backend is storing this, we should send vendorsConsent
+    // and vendorsLegint to separate fields.
+    enabledIds: enabledIds.vendorsConsent,
   }) as TCFVendorSave[],
   system_preferences: transformTcfModelToTcfSave({
     modelList: experience.tcf_systems,
@@ -175,7 +178,9 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       specialPurposes: getEnabledIds(specialPurposes),
       features: getEnabledIds(features),
       specialFeatures: getEnabledIds(specialFeatures),
-      vendors: getEnabledIds(vendors),
+      // TODO: make this right
+      vendorsConsent: getEnabledIds(vendors),
+      vendorsLegint: getEnabledIds(vendors),
       systems: getEnabledIds(systems),
     };
   }, [experience]);
