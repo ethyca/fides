@@ -24,6 +24,7 @@ const ALL_SCOPES = [
   ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ,
   ScopeRegistryEnum.CONFIG_READ,
   ScopeRegistryEnum.CONFIG_UPDATE,
+  ScopeRegistryEnum.CUSTOM_ASSET_UPDATE,
 ];
 
 describe("configureNavGroups", () => {
