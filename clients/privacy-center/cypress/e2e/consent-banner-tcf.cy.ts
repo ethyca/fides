@@ -223,7 +223,7 @@ describe("Fides-js TCF", () => {
         });
       });
 
-      it("can render GVL badge on vendors and filter", () => {
+      it("can render IAB TCF badge on vendors and filter", () => {
         cy.get("#fides-tab-Vendors").click();
         cy.get("span")
           .contains(VENDOR_1.name)
@@ -233,12 +233,12 @@ describe("Fides-js TCF", () => {
         cy.get("span")
           .contains(VENDOR_2.name)
           .within(() => {
-            cy.get("span").contains("GVL");
+            cy.get("span").contains("IAB TCF");
           });
 
         // Filter to just GVL
         cy.get(".fides-filter-button-group").within(() => {
-          cy.get("button").contains("GVL vendors").click();
+          cy.get("button").contains("IAB TCF vendors").click();
         });
         cy.get("span").contains(VENDOR_1.name).should("not.exist");
         cy.get("span").contains(VENDOR_2.name);
