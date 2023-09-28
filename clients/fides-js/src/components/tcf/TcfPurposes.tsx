@@ -39,7 +39,7 @@ const PurposeToggle = ({
         {vendors.length ? (
           <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
             <span className="fides-tcf-purpose-vendor-title">
-              Vendors we use for this purpose
+              Vendors we use for this purpose ({vendors.length})
             </span>
             <ul className="fides-tcf-purpose-vendor-list">
               {vendors.map((v) => (

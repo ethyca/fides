@@ -64,7 +64,7 @@ const FeatureBlock = ({
               {vendors.length ? (
                 <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
                   <span className="fides-tcf-purpose-vendor-title">
-                    Vendors we use for this feature
+                    Vendors we use for this feature ({vendors.length})
                   </span>
                   <ul className="fides-tcf-purpose-vendor-list">
                     {vendors.map((v) => (
