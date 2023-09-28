@@ -2,12 +2,14 @@ import { h } from "preact";
 import { useState } from "preact/hooks";
 import { Vendor } from "@iabtechlabtcf/core";
 import {
-  DataRetention,
+  GvlDataRetention,
   EmbeddedLineItem,
   EmbeddedPurpose,
   GVLJson,
+  GvlDataCategories,
   TCFVendorRecord,
-  VendorUrl,
+  GvlVendorUrl,
+  GvlDataDeclarations,
 } from "../../lib/tcf/types";
 import { PrivacyExperience } from "../../lib/consent-types";
 import { UpdateEnabledIds } from "./TcfOverlay";
@@ -74,7 +76,7 @@ const PurposeVendorDetails = ({
     return null;
   }
   // @ts-ignore our TCF lib does not have GVL v3 types yet
-  const dataRetention: DataRetention | undefined = gvlVendor?.dataRetention;
+  const dataRetention: GvlDataRetention | undefined = gvlVendor?.dataRetention;
 
   return (
     <div>
@@ -91,6 +93,41 @@ const PurposeVendorDetails = ({
         }
       />
     </div>
+  );
+};
+
+const DataCategories = ({
+  gvlVendor,
+  dataCategories,
+}: {
+  gvlVendor: Vendor | undefined;
+  dataCategories: GvlDataCategories | undefined;
+}) => {
+  if (!gvlVendor || !dataCategories) {
+    return null;
+  }
+
+  // @ts-ignore this type doesn't exist in v2.2 but does in v3
+  const declarations: GvlDataDeclarations = gvlVendor.dataDeclaration;
+
+  return (
+    <table className="fides-vendor-details-table">
+      <thead>
+        <tr>
+          <th>Data categories</th>
+        </tr>
+      </thead>
+      <tbody>
+        {declarations.map((id) => {
+          const category = dataCategories[id];
+          return (
+            <tr key={id}>
+              <td>{category.name}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
   );
 };
 
@@ -180,9 +217,12 @@ const TcfVendors = ({
       {vendorsToDisplay.map((vendor) => {
         const gvlVendor = vendorIsGvl(vendor, gvl);
         // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
-        const url: VendorUrl = gvlVendor?.urls.find(
-          (u: VendorUrl) => u.langId === "en"
+        const url: GvlVendorUrl | undefined = gvlVendor?.urls.find(
+          (u: GvlVendorUrl) => u.langId === "en"
         );
+        const dataCategories: GvlDataCategories | undefined =
+          // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
+          gvl?.dataCategories;
         return (
           <DataUseToggle
             dataUse={{ key: vendor.id, name: vendor.name }}
@@ -214,6 +254,10 @@ const TcfVendors = ({
               <VendorDetails
                 label="Special features"
                 lineItems={vendor.special_features}
+              />
+              <DataCategories
+                gvlVendor={gvlVendor}
+                dataCategories={dataCategories}
               />
             </div>
           </DataUseToggle>
