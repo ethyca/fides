@@ -65,10 +65,16 @@ export const useDisclosure = ({ id }: { id: string }) => {
   };
 };
 
+/**
+ * Extracts the id value of each object in the list and returns a list
+ * of IDs, either strings or numbers based on the IDs' type.
+ */
 const extractIds = <T extends { id: string | number }[]>(
   modelList?: T
 ): any[] => {
-  if (!modelList) return [];
+  if (!modelList) {
+    return [];
+  }
   return modelList.map((model) => model.id);
 };
 
@@ -92,13 +98,18 @@ export const useConsentServed = ({
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
       // Only send notices-served request when we show via the modal since that
-      // is the only time we show all notices
+      // is the only time we show all notices.
+      // When TCF is enabled, report notices served as soon as the banner is shown
       if (
         !event.detail.extraDetails ||
-        event.detail.extraDetails.servingComponent !== ServingComponent.OVERLAY
+        (event.detail.extraDetails.servingComponent !==
+          ServingComponent.OVERLAY &&
+          event.detail.extraDetails.servingComponent !==
+            ServingComponent.TCF_BANNER)
       ) {
         return;
       }
+
       const request: NoticesServedRequest = {
         browser_identity: event.detail.identity,
         privacy_experience_id: privacyExperience.id,

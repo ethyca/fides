@@ -34,6 +34,7 @@ interface Props {
   options: FidesOptions;
   experience: PrivacyExperience;
   cookie: FidesCookie;
+  onOpen: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
   renderModalContent: (props: RenderModalContent) => VNode;
 }
@@ -43,7 +44,7 @@ interface Props {
  * we prefer the cookie on the DOM, except when that cookie doesn't exist yet,
  * in which case we want the cookie object that was passed into this component.
  */
-const getLatestCookie = (cookieFromParam: FidesCookie) => {
+export const getLatestCookie = (cookieFromParam: FidesCookie) => {
   const latestCookie = getOrMakeFidesCookie();
   return isNewFidesCookie(latestCookie) ? cookieFromParam : latestCookie;
 };
@@ -52,6 +53,7 @@ const Overlay: FunctionComponent<Props> = ({
   experience,
   options,
   cookie,
+  onOpen,
   renderBanner,
   renderModalContent,
 }) => {
@@ -78,14 +80,7 @@ const Overlay: FunctionComponent<Props> = ({
   const handleOpenModal = useCallback(() => {
     if (instance) {
       instance.show();
-      dispatchFidesEvent(
-        "FidesUIShown",
-        getLatestCookie(cookie),
-        options.debug,
-        {
-          servingComponent: ServingComponent.OVERLAY,
-        }
-      );
+      onOpen();
     }
   }, [instance, cookie, options.debug]);
 
@@ -132,15 +127,6 @@ const Overlay: FunctionComponent<Props> = ({
     () => experience.show_banner && hasActionNeededNotices(experience),
     [experience]
   );
-
-  useEffect(() => {
-    const eventCookie = getLatestCookie(cookie);
-    if (showBanner && bannerIsOpen) {
-      dispatchFidesEvent("FidesUIShown", eventCookie, options.debug, {
-        servingComponent: ServingComponent.BANNER,
-      });
-    }
-  }, [showBanner, cookie, options.debug, bannerIsOpen]);
 
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();

@@ -5,6 +5,7 @@ import {
   ConsentMethod,
   PrivacyNotice,
   SaveConsentPreference,
+  ServingComponent,
 } from "../../lib/consent-types";
 import ConsentBanner from "../ConsentBanner";
 
@@ -16,11 +17,12 @@ import {
 } from "../../lib/consent-utils";
 
 import "../fides.css";
-import Overlay from "../Overlay";
+import Overlay, { getLatestCookie } from "../Overlay";
 import { NoticeConsentButtons } from "../ConsentButtons";
 import NoticeToggles from "./NoticeToggles";
 import { OverlayProps } from "../types";
 import { useConsentServed } from "../../lib/hooks";
+import { dispatchFidesEvent } from "../../fides";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   experience,
@@ -96,15 +98,29 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   }
   const experienceConfig = experience.experience_config;
 
+  const dispatchOpenBannerEvent = () => {
+    dispatchFidesEvent("FidesUIShown", getLatestCookie(cookie), options.debug, {
+      servingComponent: ServingComponent.BANNER,
+    });
+  };
+
+  const dispatchOpenOverlayEvent = () => {
+    dispatchFidesEvent("FidesUIShown", getLatestCookie(cookie), options.debug, {
+      servingComponent: ServingComponent.OVERLAY,
+    });
+  };
+
   return (
     <Overlay
       options={options}
       experience={experience}
       cookie={cookie}
+      onOpen={dispatchOpenOverlayEvent}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) =>
         showBanner ? (
           <ConsentBanner
             bannerIsOpen={isOpen}
+            onOpen={dispatchOpenBannerEvent}
             onClose={onClose}
             experience={experienceConfig}
           >

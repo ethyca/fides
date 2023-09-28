@@ -10,7 +10,7 @@ import {
 } from "../../lib/consent-utils";
 
 import "../fides.css";
-import Overlay from "../Overlay";
+import Overlay, { getLatestCookie } from "../Overlay";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import { OverlayProps } from "../types";
 
@@ -32,14 +32,16 @@ import {
   ConsentMethod,
   LastServedNoticeSchema,
   PrivacyExperience,
+  ServingComponent,
 } from "../../lib/consent-types";
 import { generateTcString } from "../../lib/tcf";
 import { FidesCookie } from "../../lib/cookie";
 import InitialLayer from "./InitialLayer";
 import TcfTabs from "./TcfTabs";
 import Button from "../Button";
-import { useConsentServed } from "~/lib/hooks";
+import { useConsentServed } from "../../lib/hooks";
 import VendorInfoBanner from "./VendorInfoBanner";
+import { dispatchFidesEvent } from "../../fides";
 
 const resolveConsentValueFromTcfModel = (
   model: TCFPurposeRecord | TCFFeatureRecord | TCFVendorRecord
@@ -272,15 +274,29 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     setActiveTabIndex(2);
   };
 
+  const dispatchOpenBannerEvent = () => {
+    dispatchFidesEvent("FidesUIShown", getLatestCookie(cookie), options.debug, {
+      servingComponent: ServingComponent.TCF_BANNER,
+    });
+  };
+
+  const dispatchOpenOverlayEvent = () => {
+    dispatchFidesEvent("FidesUIShown", getLatestCookie(cookie), options.debug, {
+      servingComponent: ServingComponent.TCF_OVERLAY,
+    });
+  };
+
   return (
     <Overlay
       options={options}
       experience={experience}
       cookie={cookie}
+      onOpen={dispatchOpenOverlayEvent}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) =>
         showBanner ? (
           <ConsentBanner
             bannerIsOpen={isOpen}
+            onOpen={dispatchOpenBannerEvent}
             onClose={onClose}
             experience={experienceConfig}
           >
