@@ -48,7 +48,7 @@ const VendorDetails = ({
             <tr key={item.id}>
               <td>{item.name}</td>
               {dataRetention ? (
-                <td>{retention == null ? "N/A" : retention}</td>
+                <td>{retention == null ? "N/A" : `${retention} day(s)`}</td>
               ) : null}
             </tr>
           );
