@@ -68,8 +68,6 @@ describe("Consent configuration", () => {
       cy.getByTestId("subrow-cell_2_Data use").contains("Improve Service");
       cy.getByTestId("subrow-cell_3_Cookie name").contains("cookie2");
       cy.getByTestId("subrow-cell_3_Data use").contains("Improve Service");
-
-      cy.getByTestId("add-cookie-btn");
       cy.getByTestId("add-vendor-btn");
     });
   });
@@ -676,6 +674,98 @@ describe("Consent configuration", () => {
             ],
           });
         });
+      });
+    });
+  });
+
+  describe("deleting a vendor", () => {
+    beforeEach(() => {
+      stubSystemCrud();
+      stubTaxonomyEntities();
+      stubVendorList();
+      cy.intercept("GET", "/api/v1/system", {
+        fixture: "systems/systems.json",
+      }).as("getSystems");
+      stubPlus(true, {
+        core_fides_version: "1.9.6",
+        fidesplus_server: "healthy",
+        fidesplus_version: "1.9.6",
+        system_scanner: {
+          enabled: false,
+          cluster_health: null,
+          cluster_error: null,
+        },
+        dictionary: {
+          enabled: false,
+          service_health: null,
+          service_error: null,
+        },
+        fides_cloud: {
+          enabled: false,
+        },
+      });
+      cy.visit(CONFIGURE_CONSENT_ROUTE);
+    });
+
+    it("can delete a vendor", () => {
+      cy.getByTestId("configure-demo_analytics_system").click();
+      cy.getByTestId("delete-demo_analytics_system").click();
+      cy.getByTestId("continue-btn").click();
+      cy.wait("@deleteSystem").then((interception) => {
+        const { url } = interception.request;
+        expect(url).to.contain("demo_analytics_system");
+      });
+      cy.getByTestId("toast-success-msg");
+    });
+  });
+
+  describe("editing a vendor", () => {
+    beforeEach(() => {
+      stubSystemCrud();
+      stubTaxonomyEntities();
+      stubVendorList();
+      cy.intercept("GET", "/api/v1/system", {
+        fixture: "systems/systems.json",
+      }).as("getSystems");
+      stubPlus(true, {
+        core_fides_version: "1.9.6",
+        fidesplus_server: "healthy",
+        fidesplus_version: "1.9.6",
+        system_scanner: {
+          enabled: false,
+          cluster_health: null,
+          cluster_error: null,
+        },
+        dictionary: {
+          enabled: false,
+          service_health: null,
+          service_error: null,
+        },
+        fides_cloud: {
+          enabled: false,
+        },
+      });
+      cy.visit(CONFIGURE_CONSENT_ROUTE);
+    });
+
+    it("can add cookies to a vendor", () => {
+      cy.getByTestId("configure-demo_marketing_system").click();
+      cy.getByTestId("edit-demo_marketing_system").click();
+      cy.getByTestId("input-privacy_declarations.0.cookieNames")
+        .find(".custom-creatable-select__input-container")
+        .type("test{enter}");
+      cy.getByTestId("save-btn").click();
+      cy.wait("@putSystem").then((interception) => {
+        const { body } = interception.request;
+        expect(body.privacy_declarations[0].cookies).to.eql([
+          {
+            name: "_ga",
+          },
+          {
+            name: "test",
+            path: "/",
+          },
+        ]);
       });
     });
   });

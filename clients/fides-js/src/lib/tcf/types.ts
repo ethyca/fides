@@ -1,5 +1,6 @@
 import type { GVL } from "@iabtechlabtcf/core";
 import type {
+  PrivacyExperience,
   PrivacyPreferencesRequest,
   UserConsentPreference,
 } from "../consent-types";
@@ -136,6 +137,29 @@ export type TcfSavePreferences = Pick<
   | "system_preferences"
 >;
 
+export type TcfExperienceRecords = Pick<
+  PrivacyExperience,
+  | "tcf_purposes"
+  | "tcf_special_purposes"
+  | "tcf_features"
+  | "tcf_special_features"
+  | "tcf_vendors"
+  | "tcf_systems"
+>;
+
+type TcfCookieKeyConsent = {
+  [id: string | number]: boolean | undefined;
+};
+
+export interface TcfCookieConsent {
+  purpose_preferences?: TcfCookieKeyConsent;
+  special_feature_preferences?: TcfCookieKeyConsent;
+  vendor_preferences?: TcfCookieKeyConsent;
+  system_preferences?: TcfCookieKeyConsent;
+}
+
+export type TcfModelType = keyof TcfCookieConsent;
+
 export enum LegalBasisForProcessingEnum {
   CONSENT = "Consent",
   CONTRACT = "Contract",
@@ -158,3 +182,23 @@ export type GVLJson = Pick<
   | "specialFeatures"
   | "vendors"
 >;
+
+// GVL types—we should be able to get these from the library at some point,
+// but since they are on GVL 2.2, the types aren't quite right for GVL 3.
+export interface GvlVendorUrl {
+  langId: string;
+  privacy?: string;
+  legIntClaim?: string;
+}
+export interface GvlDataRetention {
+  stdRetention: number;
+  purposes: Record<number, number>;
+  specialPurposes: Record<number, number>;
+}
+interface GvlDataCategory {
+  id: number;
+  name: string;
+  description: string;
+}
+export type GvlDataCategories = Record<number, GvlDataCategory>;
+export type GvlDataDeclarations = number[];

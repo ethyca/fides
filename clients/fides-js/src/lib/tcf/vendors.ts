@@ -5,8 +5,7 @@ export const vendorIsGvl = (
   gvl: GVLJson | undefined
 ) => {
   if (!gvl) {
-    return false;
+    return undefined;
   }
-  const vendorIds = Object.keys(gvl.vendors);
-  return vendorIds.indexOf(vendor.id) !== -1;
+  return gvl.vendors[vendor.id];
 };
