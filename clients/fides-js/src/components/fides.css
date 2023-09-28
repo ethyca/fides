@@ -657,7 +657,7 @@ div#fides-modal .fides-modal-button-group {
 }
 
 .fides-tcf-purpose-vendor-title {
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .fides-tcf-illustration {
@@ -677,6 +677,22 @@ div#fides-modal .fides-modal-button-group {
   padding-left: 0;
   list-style: none;
   margin-left: 0;
+}
+
+/* Vendor purpose table */
+.fides-vendor-details-table {
+  width: 100%;
+  margin-bottom: 1em;
+}
+
+.fides-vendor-details-table th,
+.fides-vendor-details-table td {
+  padding: 0.5em 1em;
+  text-align: left;
+}
+
+.fides-vendor-details-table td {
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
 }
 
 /* Link button */

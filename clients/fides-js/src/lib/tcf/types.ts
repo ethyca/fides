@@ -159,8 +159,15 @@ export type GVLJson = Pick<
   | "vendors"
 >;
 
+// GVL types—we should be able to get these from the library at some point,
+// but since they are on GVL 2.2, the types aren't quite right for GVL 3.
 export interface VendorUrl {
   langId: string;
   privacy?: string;
   legIntClaim?: string;
+}
+export interface DataRetention {
+  stdRetention: number;
+  purposes: Record<number, number>;
+  specialPurposes: Record<number, number>;
 }
