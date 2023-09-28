@@ -131,7 +131,7 @@ const AddVendor = ({
       vendor_id: vendorId,
       name: passedInSystem ? passedInSystem.name : newName,
       fides_key: passedInSystem ? passedInSystem.fides_key : formatKey(newName),
-      system_type: "",
+      system_type: passedInSystem ? passedInSystem.system_type : "",
       privacy_declarations: transformedDeclarations,
     };
 

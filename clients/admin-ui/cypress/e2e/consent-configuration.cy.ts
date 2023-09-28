@@ -767,7 +767,6 @@ describe("Consent configuration", () => {
           },
         ]);
       });
-      cy.pause();
     });
   });
 });
