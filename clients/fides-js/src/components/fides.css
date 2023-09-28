@@ -724,7 +724,6 @@ div#fides-modal .fides-modal-button-group {
 }
 
 /* Vendor info (initial layer) */
-
 .fides-vendor-info div {
   margin-right: 2em;
 }
@@ -738,4 +737,16 @@ div#fides-modal .fides-modal-button-group {
 .fides-vendor-info-label {
   font-weight: 600;
   font-size: 1em;
+}
+
+/* Info box */
+.fides-info-box {
+  background-color: var(--fides-overlay-background-dark-color);
+  border-radius: var(--fides-overlay-component-border-radius);
+  padding: 1.1em;
+  margin-bottom: 1em;
+}
+
+.fides-info-box p {
+  margin: 0;
 }
