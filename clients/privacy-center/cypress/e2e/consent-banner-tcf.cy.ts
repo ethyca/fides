@@ -323,14 +323,9 @@ describe("Fides-js TCF", () => {
               .property(`${pid}`)
               .is.eql(true);
           });
-          expect(cookieKeyConsent.tcf_consent.special_purpose_preferences)
-            .property(`${SPECIAL_PURPOSE_1.id}`)
+          expect(cookieKeyConsent.tcf_consent.special_feature_preferences)
+            .property(`${SPECIAL_FEATURE_1.id}`)
             .is.eql(true);
-          [FEATURE_1.id, FEATURE_2.id].forEach((fid) => {
-            expect(cookieKeyConsent.tcf_consent.feature_preferences)
-              .property(`${fid}`)
-              .is.eql(true);
-          });
           expect(cookieKeyConsent.tcf_consent.vendor_preferences)
             .property(`${VENDOR_2.id}`)
             .is.eql(true);
@@ -381,14 +376,9 @@ describe("Fides-js TCF", () => {
               .property(`${pid}`)
               .is.eql(false);
           });
-          expect(cookieKeyConsent.tcf_consent.special_purpose_preferences)
-            .property(`${SPECIAL_PURPOSE_1.id}`)
+          expect(cookieKeyConsent.tcf_consent.special_feature_preferences)
+            .property(`${SPECIAL_FEATURE_1.id}`)
             .is.eql(false);
-          [FEATURE_1.id, FEATURE_2.id].forEach((fid) => {
-            expect(cookieKeyConsent.tcf_consent.feature_preferences)
-              .property(`${fid}`)
-              .is.eql(false);
-          });
           expect(cookieKeyConsent.tcf_consent.vendor_preferences)
             .property(`${VENDOR_2.id}`)
             .is.eql(false);
@@ -445,15 +435,9 @@ describe("Fides-js TCF", () => {
           expect(cookieKeyConsent.tcf_consent.purpose_preferences)
             .property(`${PURPOSE_1.id}`)
             .is.eql(false);
-          expect(cookieKeyConsent.tcf_consent.special_purpose_preferences)
-            .property(`${SPECIAL_PURPOSE_1.id}`)
-            .is.eql(false);
-          expect(cookieKeyConsent.tcf_consent.feature_preferences)
-            .property(`${FEATURE_1.id}`)
+          expect(cookieKeyConsent.tcf_consent.special_feature_preferences)
+            .property(`${SPECIAL_FEATURE_1.id}`)
             .is.eql(true);
-          expect(cookieKeyConsent.tcf_consent.feature_preferences)
-            .property(`${FEATURE_2.id}`)
-            .is.eql(false);
           expect(cookieKeyConsent.tcf_consent.vendor_preferences)
             .property(`${VENDOR_2.id}`)
             .is.eql(true);
