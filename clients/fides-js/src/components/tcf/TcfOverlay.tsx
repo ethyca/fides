@@ -33,7 +33,10 @@ import {
   PrivacyExperience,
 } from "../../lib/consent-types";
 import { generateTcString } from "../../lib/tcf";
-import { FidesCookie } from "../../lib/cookie";
+import {
+  FidesCookie,
+  transformTcfPreferencesToCookieKeys,
+} from "../../lib/cookie";
 import InitialLayer from "./InitialLayer";
 import TcfTabs from "./TcfTabs";
 import Button from "../Button";
@@ -139,12 +142,16 @@ const updateCookie = async (
   oldCookie: FidesCookie,
   tcf: TcfSavePreferences,
   experience: PrivacyExperience
-) => {
+): Promise<FidesCookie> => {
   const tcString = await generateTcString({
     tcStringPreferences: tcf,
     experience,
   });
-  return { ...oldCookie, tcString };
+  return {
+    ...oldCookie,
+    tc_string: tcString,
+    tcf_consent: transformTcfPreferencesToCookieKeys(tcf),
+  };
 };
 
 const TcfOverlay: FunctionComponent<OverlayProps> = ({

@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import {
   CONSENT_COOKIE_NAME,
+  FidesCookie,
   PrivacyExperience,
   UserConsentPreference,
 } from "fides-js";
@@ -272,6 +273,7 @@ describe("Fides-js TCF", () => {
 
     describe("saving preferences", () => {
       it("can opt in to all", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
           cy.wait("@patchPrivacyPreference").then((interception) => {
@@ -296,7 +298,34 @@ describe("Fides-js TCF", () => {
             ]);
           });
         });
+        // Verify the cookie on save
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const cookieKeyConsent: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          [
+            PURPOSE_1.id,
+            PURPOSE_2.id,
+            PURPOSE_3.id,
+            PURPOSE_4.id,
+            PURPOSE_5.id,
+          ].forEach((pid) => {
+            expect(cookieKeyConsent.tcf_consent.purpose_preferences)
+              .property(`${pid}`)
+              .is.eql(true);
+          });
+          expect(cookieKeyConsent.tcf_consent.special_feature_preferences)
+            .property(`${SPECIAL_FEATURE_1.id}`)
+            .is.eql(true);
+          expect(cookieKeyConsent.tcf_consent.vendor_preferences)
+            .property(`${VENDOR_2.id}`)
+            .is.eql(true);
+          expect(cookieKeyConsent.tcf_consent.system_preferences)
+            .property(`${VENDOR_1.id}`)
+            .is.eql(true);
+        });
       });
+
       it("can opt out of all", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt out of all").click();
@@ -321,6 +350,32 @@ describe("Fides-js TCF", () => {
               { id: VENDOR_1.id, preference: "opt_out" },
             ]);
           });
+        });
+        // Verify the cookie on save
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const cookieKeyConsent: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          [
+            PURPOSE_1.id,
+            PURPOSE_2.id,
+            PURPOSE_3.id,
+            PURPOSE_4.id,
+            PURPOSE_5.id,
+          ].forEach((pid) => {
+            expect(cookieKeyConsent.tcf_consent.purpose_preferences)
+              .property(`${pid}`)
+              .is.eql(false);
+          });
+          expect(cookieKeyConsent.tcf_consent.special_feature_preferences)
+            .property(`${SPECIAL_FEATURE_1.id}`)
+            .is.eql(false);
+          expect(cookieKeyConsent.tcf_consent.vendor_preferences)
+            .property(`${VENDOR_2.id}`)
+            .is.eql(false);
+          expect(cookieKeyConsent.tcf_consent.system_preferences)
+            .property(`${VENDOR_1.id}`)
+            .is.eql(false);
         });
       });
 
@@ -355,6 +410,31 @@ describe("Fides-js TCF", () => {
               { id: VENDOR_1.id, preference: "opt_out" },
             ]);
           });
+        });
+        // Verify the cookie on save
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const cookieKeyConsent: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          [PURPOSE_2.id, PURPOSE_3.id, PURPOSE_4.id, PURPOSE_5.id].forEach(
+            (pid) => {
+              expect(cookieKeyConsent.tcf_consent.purpose_preferences)
+                .property(`${pid}`)
+                .is.eql(true);
+            }
+          );
+          expect(cookieKeyConsent.tcf_consent.purpose_preferences)
+            .property(`${PURPOSE_1.id}`)
+            .is.eql(false);
+          expect(cookieKeyConsent.tcf_consent.special_feature_preferences)
+            .property(`${SPECIAL_FEATURE_1.id}`)
+            .is.eql(true);
+          expect(cookieKeyConsent.tcf_consent.vendor_preferences)
+            .property(`${VENDOR_2.id}`)
+            .is.eql(true);
+          expect(cookieKeyConsent.tcf_consent.system_preferences)
+            .property(`${VENDOR_1.id}`)
+            .is.eql(false);
         });
       });
     });
@@ -462,6 +542,78 @@ describe("Fides-js TCF", () => {
             });
             expect(tcData.vendor.legitimateInterests).to.eql({});
           });
+      });
+    });
+  });
+
+  describe("cookie interactions", () => {
+    it("can initialize preferences from a cookie", () => {
+      /**
+       * The default from the fixture is that
+       *   - all purposes are opted in
+       *   - all special purposes are opted in
+       *   - feature 1 is opted out, feature 2 has no preference
+       *   - all vendors are opted in
+       *   - all systems are opted in
+       *
+       * We'll change at least one value from each entity type in the cookie
+       */
+      const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+      const CREATED_DATE = "2022-12-24T12:00:00.000Z";
+      const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
+      const cookie = {
+        identity: { fides_user_device_id: uuid },
+        fides_meta: {
+          version: "0.9.0",
+          createdAt: CREATED_DATE,
+          updatedAt: UPDATED_DATE,
+        },
+        consent: {},
+        tcf_consent: {
+          purpose_preferences: { [PURPOSE_1.id]: false, [PURPOSE_2.id]: true },
+          special_feature_preferences: { [SPECIAL_FEATURE_1.id]: true },
+          system_preferences: { [VENDOR_1.id]: false },
+          vendor_preferences: { [VENDOR_2.id]: false },
+        },
+      };
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+          },
+          experience: experience.items[0],
+        });
+      });
+      // Open the modal
+      cy.get("#fides-modal-link").click();
+
+      // Verify the toggles
+      // Purposes
+      cy.getByTestId(`toggle-${PURPOSE_1.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      // also verify that a purpose that was not part of the cookie is also opted out
+      // (since it should have no current_preference, and default behavior is opt out)
+      cy.getByTestId(`toggle-${PURPOSE_3.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+      // Features
+      cy.get("#fides-tab-Features").click();
+      cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      // Vendors
+      cy.get("#fides-tab-Vendors").click();
+      cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+      cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
       });
     });
   });

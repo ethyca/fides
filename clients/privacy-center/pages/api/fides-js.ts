@@ -7,6 +7,7 @@ import {
   FidesConfig,
   constructFidesRegionString,
   fetchExperience,
+  ComponentType,
 } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
@@ -85,11 +86,6 @@ export default async function handler(
     }));
   }
 
-  // DEFER: The Fides server controls whether or not TCF is enabled, and so we
-  // should prefetch that value here. Until the endpoint is ready, we use an
-  // environment variable
-  const tcfEnabled = environment.settings.TCF_ENABLED;
-
   // Check if a geolocation was provided via headers or query param
   const geolocation = await lookupGeolocation(req);
 
@@ -102,29 +98,29 @@ export default async function handler(
     environment.settings.IS_OVERLAY_ENABLED &&
     environment.settings.IS_PREFETCH_ENABLED
   ) {
-    if (tcfEnabled) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        "TCF mode is not currently compatible with prefetching, skipping prefetching..."
-      );
-    } else {
-      const fidesRegionString = constructFidesRegionString(geolocation);
+    const fidesRegionString = constructFidesRegionString(geolocation);
 
-      if (fidesRegionString) {
-        if (environment.settings.DEBUG) {
-          // eslint-disable-next-line no-console
-          console.log("Fetching relevant experiences from server-side...");
-        }
-        experience = await fetchExperience(
-          fidesRegionString,
-          environment.settings.SERVER_SIDE_FIDES_API_URL ||
-            environment.settings.FIDES_API_URL,
-          environment.settings.DEBUG,
-          null
-        );
+    if (fidesRegionString) {
+      if (environment.settings.DEBUG) {
+        // eslint-disable-next-line no-console
+        console.log("Fetching relevant experiences from server-side...");
       }
+      experience = await fetchExperience(
+        fidesRegionString,
+        environment.settings.SERVER_SIDE_FIDES_API_URL ||
+          environment.settings.FIDES_API_URL,
+        environment.settings.DEBUG,
+        null
+      );
     }
   }
+
+  // We determine server-side whether or not to send the TCF bundle, which is based
+  // on whether or not the experience is marked as TCF. This means for TCF, we *must*
+  // be able to prefetch the experience.
+  const tcfEnabled = experience
+    ? experience.component === ComponentType.TCF_OVERLAY
+    : false;
 
   // Create the FidesConfig JSON that will be used to initialize fides.js
   const fidesConfig: FidesConfig = {

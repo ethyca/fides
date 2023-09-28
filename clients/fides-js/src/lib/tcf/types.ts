@@ -1,5 +1,6 @@
 import type { GVL } from "@iabtechlabtcf/core";
 import type {
+  PrivacyExperience,
   PrivacyPreferencesRequest,
   UserConsentPreference,
 } from "../consent-types";
@@ -135,6 +136,29 @@ export type TcfSavePreferences = Pick<
   | "vendor_preferences"
   | "system_preferences"
 >;
+
+export type TcfExperienceRecords = Pick<
+  PrivacyExperience,
+  | "tcf_purposes"
+  | "tcf_special_purposes"
+  | "tcf_features"
+  | "tcf_special_features"
+  | "tcf_vendors"
+  | "tcf_systems"
+>;
+
+type TcfCookieKeyConsent = {
+  [id: string | number]: boolean | undefined;
+};
+
+export interface TcfCookieConsent {
+  purpose_preferences?: TcfCookieKeyConsent;
+  special_feature_preferences?: TcfCookieKeyConsent;
+  vendor_preferences?: TcfCookieKeyConsent;
+  system_preferences?: TcfCookieKeyConsent;
+}
+
+export type TcfModelType = keyof TcfCookieConsent;
 
 export enum LegalBasisForProcessingEnum {
   CONSENT = "Consent",
