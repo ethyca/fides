@@ -10,9 +10,20 @@ import {
   ComponentType,
 } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
-import { lookupGeolocation, LOCATION_HEADERS } from "~/common/geolocation";
+import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 
-const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
+// one hour, how long the client should cache fides.js for
+const FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
+// one hour, how long until the custom-fides.css is refreshed
+const CUSTOM_FIDES_CSS_TTL_MS = 3600 * 1000;
+
+// a cache of the custom stylesheet retrieved from the /custom-asset endpoint
+let cachedCustomFidesCss: string = "";
+// millisecond timestamp of when the custom stylesheet was last retrieved
+// used to determine when to refresh the contents
+let lastFetched: number = 0;
+// used to disable auto-refreshing if the /custom-asset endpoint is unreachable
+let autoRefresh: boolean = true;
 
 /**
  * @swagger
@@ -27,6 +38,12 @@ const FIDES_JS_MAX_AGE_SECONDS = 60 * 60; // one hour
  *         schema:
  *           type: string
  *         example: US-CA
+ *       - in: query
+ *         name: refresh
+ *         required: false
+ *         description: Signals fides.js to use the latest custom-fides.css (if available)
+ *         schema:
+ *           type: boolean
  *       - in: header
  *         name: CloudFront-Viewer-Country
  *         required: false
@@ -144,6 +161,10 @@ export default async function handler(
   if (!fidesJS || fidesJS === "") {
     throw new Error("Unable to load latest fides.js script from server!");
   }
+
+  /* eslint-disable @typescript-eslint/no-use-before-define */
+  const customFidesCss = await fetchCustomFidesCss(req);
+
   const script = `
   (function () {
     // This polyfill service adds a fetch polyfill only when needed, depending on browser making the request 
@@ -154,8 +175,16 @@ export default async function handler(
     }
 
     // Include generic fides.js script
-    ${fidesJS}
-
+    ${fidesJS}${
+    customFidesCss
+      ? `
+    // Include custom fides.css styles
+    const style = document.createElement('style');
+    style.innerHTML = ${JSON.stringify(customFidesCss)};
+    document.head.append(style);
+    `
+      : ""
+  }
     // Initialize fides.js with custom config
     var fidesConfig = ${fidesConfigJSON};
     window.Fides.init(fidesConfig);
@@ -175,4 +204,54 @@ export default async function handler(
     .setHeader("Cache-Control", stringify(cacheHeaders))
     .setHeader("Vary", LOCATION_HEADERS)
     .send(script);
+}
+
+async function fetchCustomFidesCss(
+  req: NextApiRequest
+): Promise<string | null> {
+  const currentTime = Date.now();
+  const forceRefresh = "refresh" in req.query;
+  if (
+    (!cachedCustomFidesCss ||
+      (lastFetched && currentTime - lastFetched > CUSTOM_FIDES_CSS_TTL_MS)) &&
+    (forceRefresh || autoRefresh)
+  ) {
+    try {
+      const environment = await loadPrivacyCenterEnvironment();
+      const fidesUrl =
+        environment.settings.SERVER_SIDE_FIDES_API_URL ||
+        environment.settings.FIDES_API_URL;
+      const response = await fetch(
+        `${fidesUrl}/plus/custom-asset/custom-fides.css`
+      );
+      const data = await response.text();
+
+      if (!response.ok) {
+        console.error(
+          "Error fetching custom-fides.css:",
+          response.status,
+          response.statusText,
+          data
+        );
+        throw new Error(`HTTP error occurred. Status: ${response.status}`);
+      }
+
+      if (!data) {
+        throw new Error("No data returned by the server");
+      }
+
+      console.log("Successfully retrieved custom-fides.css");
+      autoRefresh = true;
+      cachedCustomFidesCss = data;
+      lastFetched = currentTime;
+    } catch (error) {
+      autoRefresh = false; // /custom-asset endpoint unreachable stop auto-refresh
+      if (error instanceof Error) {
+        console.error("Error during fetch operation:", error.message);
+      } else {
+        console.error("Unknown error occurred:", error);
+      }
+    }
+  }
+  return cachedCustomFidesCss;
 }
