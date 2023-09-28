@@ -9,16 +9,12 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: external_id
-            data_categories: [user.unique_id]
-            fidesops_meta:
-              data_type: string
-              read_only: True
           - name: braze_id
             data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
               primary_key: True
+              read_only: True
           - name: first_name
             data_categories: [user.name]
             fidesops_meta:
