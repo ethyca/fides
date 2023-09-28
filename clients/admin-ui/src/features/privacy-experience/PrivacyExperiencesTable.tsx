@@ -1,6 +1,6 @@
 import { Box, Button, Flex, Spinner, Stack } from "@fidesui/react";
 import { PRIVACY_EXPERIENCE_ROUTE, SYSTEM_ROUTE } from "common/nav/v2/routes";
-import { useHasPermission } from "common/Restrict";
+import Restrict, { useHasPermission } from "common/Restrict";
 import { DateCell, FidesTable } from "common/table";
 import EmptyTableState from "common/table/EmptyTableState";
 import NextLink from "next/link";
@@ -9,6 +9,7 @@ import React, { useMemo } from "react";
 import { Column } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
+import CustomAssetUploadButton from "~/features/custom-assets/CustomAssetUploadButton";
 import {
   ComponentCell,
   EnablePrivacyExperienceCell,
@@ -21,6 +22,7 @@ import {
   useGetAllExperienceConfigsQuery,
 } from "~/features/privacy-experience/privacy-experience.slice";
 import { ExperienceConfigResponse, ScopeRegistryEnum } from "~/types/api";
+import { CustomAssetType } from "~/types/api/models/CustomAssetType";
 
 import JavaScriptTag from "./JavaScriptTag";
 
@@ -94,9 +96,14 @@ const PrivacyExperiencesTable = () => {
     );
   }
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} width="70%">
       <Box alignSelf="end">
         <JavaScriptTag />
+        <Restrict scopes={[ScopeRegistryEnum.CUSTOM_ASSET_UPDATE]}>
+          <CustomAssetUploadButton
+            assetType={CustomAssetType.CUSTOM_FIDES_CSS}
+          />
+        </Restrict>
       </Box>
       <FidesTable<ExperienceConfigResponse>
         columns={columns}

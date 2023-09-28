@@ -22,6 +22,7 @@ export const baseApi = createApi({
     "Classify Instances Datasets",
     "Classify Instances Systems",
     "Connection Type",
+    "Custom Assets",
     "Custom Field Definition",
     "Custom Fields",
     "Data Categories",
