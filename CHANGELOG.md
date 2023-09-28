@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.20.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.21.0...main)
+
+## [2.21.0](https://github.com/ethyca/fides/compare/2.20.2...2.21.0)
 
 ### Added
 - "Add a vendor" flow to configuring consent page [#4107](https://github.com/ethyca/fides/pull/4107)
