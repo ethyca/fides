@@ -317,6 +317,22 @@ div.fides-modal-content {
   background-color: rgba(0, 0, 0, 0.25);
 }
 
+/*Fides Embed*/
+div#fides-embed-container .fides-modal-container,
+div#fides-embed-container .fides-modal-overlay {
+  position: initial;
+  display: inline;
+}
+
+div#fides-embed-container .fides-modal-content {
+  position: initial;
+  transform: none;
+}
+
+div#fides-embed-container .fides-close-button {
+  display: none;
+}
+
 .fides-modal-container {
   z-index: 2;
   display: flex;

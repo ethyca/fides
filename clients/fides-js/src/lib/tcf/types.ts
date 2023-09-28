@@ -208,7 +208,7 @@ export type TcfModels =
   | TCFVendorLegitimateInterestsRecord[]
   | undefined;
 
-type TcfCookieKeyConsent = {
+export type TcfCookieKeyConsent = {
   [id: string | number]: boolean | undefined;
 };
 

@@ -1,5 +1,6 @@
 import { h, FunctionComponent, Fragment } from "preact";
 import { useState, useCallback, useMemo } from "preact/hooks";
+import { TCModel, TCString, Vector } from "@iabtechlabtcf/core";
 import ConsentBanner from "../ConsentBanner";
 import PrivacyPolicyLink from "../PrivacyPolicyLink";
 
@@ -17,6 +18,8 @@ import { OverlayProps } from "../types";
 
 import type {
   EnabledIds,
+  TcfCookieConsent,
+  TcfCookieKeyConsent,
   TCFFeatureRecord,
   TCFFeatureSave,
   TCFPurposeConsentRecord,
@@ -47,6 +50,7 @@ import TcfTabs from "./TcfTabs";
 import Button from "../Button";
 import VendorInfoBanner from "./VendorInfoBanner";
 import { dispatchFidesEvent } from "../../lib/events";
+import { TCF_KEY_MAP } from "../../lib/tcf/constants";
 
 const resolveConsentValueFromTcfModel = (
   model:
@@ -81,6 +85,32 @@ const getEnabledIds = (modelList: TcfModels) => {
     })
     .filter((model) => model.consentValue)
     .map((model) => `${model.id}`);
+};
+
+export const transformTcStringToCookieKeys = (
+  tcString: string,
+  debug: boolean
+): TcfCookieConsent => {
+  const tcModel: TCModel = TCString.decode(tcString || "");
+
+  const cookieKeys: TcfCookieConsent = {};
+
+  // map tc model key to cookie key
+  TCF_KEY_MAP.forEach(({ tcfModelKey, cookieKey }) => {
+    if (tcfModelKey) {
+      const items: TcfCookieKeyConsent = {};
+      (tcModel[tcfModelKey] as Vector).forEach((consented, id) => {
+        items[id] = consented;
+      });
+      cookieKeys[cookieKey] = items;
+    }
+  });
+  debugLog(
+    debug,
+    `Generated cookie.tcf_consent from explicit tc string.`,
+    cookieKeys
+  );
+  return cookieKeys;
 };
 
 export interface UpdateEnabledIds {
@@ -244,6 +274,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         experienceId: experience.id,
         fidesApiUrl: options.fidesApiUrl,
         consentMethod: ConsentMethod.button,
+        fidesDisableSaveApi: options.fidesDisableSaveApi,
         userLocationString: fidesRegionString,
         cookie,
         debug: options.debug,

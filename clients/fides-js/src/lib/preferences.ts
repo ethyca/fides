@@ -29,6 +29,7 @@ export const updateConsentPreferences = async ({
   experienceId,
   fidesApiUrl,
   consentMethod,
+  fidesDisableSaveApi,
   userLocationString,
   cookie,
   debug = false,
@@ -40,6 +41,7 @@ export const updateConsentPreferences = async ({
   experienceId: string;
   fidesApiUrl: string;
   consentMethod: ConsentMethod;
+  fidesDisableSaveApi: boolean;
   userLocationString?: string;
   cookie: FidesCookie;
   debug?: boolean;
@@ -67,16 +69,22 @@ export const updateConsentPreferences = async ({
       : undefined;
 
   // 1. Save preferences to Fides API
-  debugLog(debug, "Saving preferences to Fides API");
-  const privacyPreferenceCreate: PrivacyPreferencesRequest = {
-    browser_identity: cookie.identity,
-    preferences: fidesUserPreferences,
-    privacy_experience_id: experienceId,
-    user_geography: userLocationString,
-    method: consentMethod,
-    ...(tcf ?? []),
-  };
-  patchUserPreferenceToFidesServer(privacyPreferenceCreate, fidesApiUrl, debug);
+  if (!fidesDisableSaveApi) {
+    debugLog(debug, "Saving preferences to Fides API");
+    const privacyPreferenceCreate: PrivacyPreferencesRequest = {
+      browser_identity: cookie.identity,
+      preferences: fidesUserPreferences,
+      privacy_experience_id: experienceId,
+      user_geography: userLocationString,
+      method: consentMethod,
+      ...(tcf ?? []),
+    };
+    patchUserPreferenceToFidesServer(
+      privacyPreferenceCreate,
+      fidesApiUrl,
+      debug
+    );
+  }
 
   // 2. Update the cookie object based on new preferences
   const updatedCookie = await updateCookie(cookie);

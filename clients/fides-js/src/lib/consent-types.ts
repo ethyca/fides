@@ -62,7 +62,18 @@ export type FidesOptions = {
   serverSideFidesApiUrl: string;
 
   // Whether we should show the TCF modal
-  tcfEnabled?: boolean;
+  tcfEnabled: boolean;
+
+  // Whether we should "embed" the fides.js overlay UI (ie. “Layer 2”) into a web page instead of as a pop-up
+  // overlay, and never render the banner (ie. “Layer 1”).
+  fidesEmbed: boolean;
+
+  // Whether we should disable saving consent preferences to the Fides API.
+  fidesDisableSaveApi: boolean;
+
+  // An explicitly passed-in TC string that supersedes the cookie, and prevents any API calls to fetch
+  // experiences / preferences. Only available when TCF is enabled. Optional.
+  fidesTcString: string | null;
 };
 
 export class SaveConsentPreference {

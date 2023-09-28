@@ -4,6 +4,7 @@ import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
 import { getConsentContext } from "./consent-context";
 import {
+  buildTcfEntitiesFromCookie,
   CookieIdentity,
   CookieKeyConsent,
   CookieMeta,
@@ -85,11 +86,13 @@ const automaticallyApplyGPCPreferences = ({
   cookie,
   fidesRegionString,
   fidesApiUrl,
+  fidesDisableSaveApi,
   effectiveExperience,
 }: {
   cookie: FidesCookie;
   fidesRegionString: string | null;
   fidesApiUrl: string;
+  fidesDisableSaveApi: boolean;
   effectiveExperience?: PrivacyExperience;
 }) => {
   if (!effectiveExperience || !effectiveExperience.privacy_notices) {
@@ -131,6 +134,7 @@ const automaticallyApplyGPCPreferences = ({
       experienceId: effectiveExperience.id,
       fidesApiUrl,
       consentMethod: ConsentMethod.gpc,
+      fidesDisableSaveApi,
       userLocationString: fidesRegionString || undefined,
       cookie,
       updateCookie: (oldCookie) =>
@@ -172,10 +176,10 @@ export const getInitialFides = ({
   cookie: FidesCookie;
 } & FidesConfig): Partial<Fides> | null => {
   const hasExistingCookie = !isNewFidesCookie(cookie);
-  if (!hasExistingCookie) {
+  if (!hasExistingCookie && !options.fidesTcString) {
+    // A TC str can be injected and take effect even if the user has no previous Fides Cookie
     return null;
   }
-
   let updatedExperience = experience;
   if (isPrivacyExperience(experience)) {
     // at this point, pre-fetched experience contains no user consent, so we populate with the Fides cookie
@@ -221,7 +225,8 @@ export const initialize = async ({
   updateCookie: (
     oldCookie: FidesCookie,
     experience: PrivacyExperience,
-    debug?: boolean
+    debug?: boolean,
+    tc_str_override_set?: boolean
   ) => Promise<FidesCookie>;
 } & FidesConfig): Promise<Partial<Fides>> => {
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
@@ -243,6 +248,8 @@ export const initialize = async ({
       options
     );
 
+    let fetchedClientSideExperience = false;
+
     if (!fidesRegionString) {
       debugLog(
         options.debug,
@@ -250,6 +257,7 @@ export const initialize = async ({
       );
       shouldInitOverlay = false;
     } else if (!isPrivacyExperience(effectiveExperience)) {
+      fetchedClientSideExperience = true;
       // If no effective PrivacyExperience was pre-fetched, fetch one now from
       // the Fides API using the current region string
       effectiveExperience = await fetchExperience(
@@ -264,10 +272,30 @@ export const initialize = async ({
       isPrivacyExperience(effectiveExperience) &&
       experienceIsValid(effectiveExperience, options)
     ) {
+      if (options.fidesTcString && fetchedClientSideExperience) {
+        // if tc str was explicitly passed in, we need to override the client-side-fetched experience with consent from the cookie
+        // we don't update cookie because it already has been overridden by the injected fidesTcString
+        debugLog(
+          options.debug,
+          "Overriding preferences from client-side fetched experience with cookie tc_string consent",
+          cookie.tc_string
+        );
+        const tcfEntities = buildTcfEntitiesFromCookie(
+          effectiveExperience,
+          cookie
+        );
+        Object.assign(effectiveExperience, tcfEntities);
+      }
       const updatedCookie = await updateCookie(
         cookie,
         effectiveExperience,
-        options.debug
+        options.debug,
+        Boolean(options.fidesTcString)
+      );
+      debugLog(
+        options.debug,
+        "Updated cookie based on experience",
+        updatedCookie
       );
       Object.assign(cookie, updatedCookie);
 
@@ -287,6 +315,7 @@ export const initialize = async ({
       cookie,
       fidesRegionString,
       fidesApiUrl: options.fidesApiUrl,
+      fidesDisableSaveApi: options.fidesDisableSaveApi,
       effectiveExperience,
     });
   }
