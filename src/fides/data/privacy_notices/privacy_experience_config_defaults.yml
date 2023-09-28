@@ -32,11 +32,9 @@ privacy_experience_configs:
   banner_enabled: enabled_where_required
   component: tcf_overlay
   description: |
-    We use cookies and similar methods to recognize visitors and remember their preferences. We may also use these technologies to gauge the effectiveness of advertising campaigns, target advertisements, and analyze website traffic. Some of these technologies are essential for ensuring the proper functioning of the service or website and cannot be disabled, while others are optional but serve to enhance the user experience in various ways.
+    We use cookies and similar methods to recognize visitors and remember their preferences. We may also use these technologies to gauge the effectiveness of advertising campaigns, target advertisements, and analyze website traffic. Some of these technologies are essential for ensuring the proper functioning of the service or website and cannot be disabled, while others are optional but serve to enhance the user experience in various ways.  
 
-    We, along with our partners, store and/or access information on a user's device, including but not limited to IP addresses, unique identifiers, and browsing data stored in cookies, in order to process personal data. You have the option to accept or manage your preferences at any time by selecting the 'Manage Preferences' option.
-
-    Please be aware that these choices will be communicated to our partners and may impact your browsing experience or the personalization of content.
+    We, in collaboration with our partners, store and/or access information on a user's device, including but not limited to IP addresses, unique identifiers, and browsing data stored in cookies, in order to process personal data. You have the option to manage your preferences or review instances where our partners assert a legitimate interest in utilizing your data, by selecting the 'Manage Preferences' option located in the page's footer.
   disabled: false
   is_default: true
   privacy_policy_link_label: Privacy Policy
