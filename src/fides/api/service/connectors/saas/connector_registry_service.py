@@ -25,6 +25,9 @@ from fides.api.schemas.connection_configuration.saas_config_template_values impo
 )
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.schemas.saas.saas_config import SaaSConfig
+from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
+    OAuth2AuthorizationCodeAuthenticationStrategy,
+)
 from fides.api.util.saas_util import (
     encode_file_contents,
     load_config,
@@ -71,6 +74,13 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
                 config_dict = load_config(config_file)
                 connector_type = config_dict["type"]
                 human_readable = config_dict["name"]
+                user_guide = config_dict.get("user_guide")
+                authentication = config_dict["client_config"].get("authentication")
+                authorization_required = (
+                    authentication is not None
+                    and authentication.get("strategy")
+                    == OAuth2AuthorizationCodeAuthenticationStrategy.name
+                )
 
                 try:
                     icon = encode_file_contents(f"data/saas/icon/{connector_type}.svg")
@@ -91,6 +101,8 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
                         ),
                         icon=icon,
                         human_readable=human_readable,
+                        authorization_required=authorization_required,
+                        user_guide=user_guide,
                     )
                 except Exception:
                     logger.exception("Unable to load {} connector", connector_type)
@@ -147,11 +159,22 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         Registers a custom connector template by converting it to a ConnectorTemplate
         and adding it to the loader's template dictionary.
         """
+
+        config = SaaSConfig(**load_config_from_string(template.config))
+        authentication = config.client_config.authentication
+        authorization_required = (
+            authentication is not None
+            and authentication.strategy
+            == OAuth2AuthorizationCodeAuthenticationStrategy.name
+        )
+
         connector_template = ConnectorTemplate(
             config=template.config,
             dataset=template.dataset,
             icon=template.icon,
             human_readable=template.name,
+            authorization_required=authorization_required,
+            user_guide=config.user_guide,
         )
 
         # register the template in the loader's template dictionary

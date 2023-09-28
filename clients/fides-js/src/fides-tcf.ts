@@ -64,7 +64,12 @@ import {
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
-import { FidesCookie, hasSavedTcfPreferences, isNewFidesCookie } from "./fides";
+import {
+  FidesCookie,
+  hasSavedTcfPreferences,
+  isNewFidesCookie,
+  transformTcfPreferencesToCookieKeys,
+} from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
 import { TCFPurposeRecord, TcfSavePreferences } from "./lib/tcf/types";
 
@@ -98,10 +103,10 @@ const getInitialPreference = (
 const updateCookie = async (
   oldCookie: FidesCookie,
   experience: PrivacyExperience
-) => {
+): Promise<FidesCookie> => {
   // First check if the user has never consented before
   if (!hasSavedTcfPreferences(experience)) {
-    return { ...oldCookie, tcString: "" };
+    return { ...oldCookie, tc_string: "" };
   }
 
   const tcStringPreferences: TcfSavePreferences = {
@@ -126,7 +131,8 @@ const updateCookie = async (
   };
 
   const tcString = await generateTcString({ tcStringPreferences, experience });
-  return { ...oldCookie, tcString };
+  const tcfConsent = transformTcfPreferencesToCookieKeys(tcStringPreferences);
+  return { ...oldCookie, tc_string: tcString, tcf_consent: tcfConsent };
 };
 
 /**
@@ -140,12 +146,13 @@ const init = async (config: FidesConfig) => {
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
     dispatchFidesEvent("FidesUpdated", cookie, config.options.debug);
   }
+  const experience = initialFides?.experience ?? config.experience;
   const updatedFides = await initialize({
     ...config,
+    experience,
     cookie,
     renderOverlay,
-    updateCookie: (oldCookie, experience) =>
-      updateCookie(oldCookie, experience),
+    updateCookie,
   });
   Object.assign(_Fides, updatedFides);
 
@@ -181,6 +188,7 @@ _Fides = {
   },
   fides_meta: {},
   identity: {},
+  tcf_consent: {},
   gtm,
   init,
   initialized: false,

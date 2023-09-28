@@ -13,11 +13,7 @@ import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
-import {
-  FidesCookie,
-  getOrMakeFidesCookie,
-  isNewFidesCookie,
-} from "../lib/cookie";
+import { FidesCookie } from "../lib/cookie";
 
 interface RenderBannerProps {
   isOpen: boolean;
@@ -38,16 +34,6 @@ interface Props {
   renderModalContent: (props: RenderModalContent) => VNode;
 }
 
-/**
- * Overlay doesn't always have the most up to date cookie. For the most part,
- * we prefer the cookie on the DOM, except when that cookie doesn't exist yet,
- * in which case we want the cookie object that was passed into this component.
- */
-const getLatestCookie = (cookieFromParam: FidesCookie) => {
-  const latestCookie = getOrMakeFidesCookie();
-  return isNewFidesCookie(latestCookie) ? cookieFromParam : latestCookie;
-};
-
 const Overlay: FunctionComponent<Props> = ({
   experience,
   options,
@@ -61,11 +47,7 @@ const Overlay: FunctionComponent<Props> = ({
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
 
   const dispatchCloseEvent = useCallback(() => {
-    dispatchFidesEvent(
-      "FidesModalClosed",
-      getLatestCookie(cookie),
-      options.debug
-    );
+    dispatchFidesEvent("FidesModalClosed", cookie, options.debug);
   }, [cookie, options.debug]);
 
   const { instance, attributes } = useA11yDialog({
@@ -78,14 +60,9 @@ const Overlay: FunctionComponent<Props> = ({
   const handleOpenModal = useCallback(() => {
     if (instance) {
       instance.show();
-      dispatchFidesEvent(
-        "FidesUIShown",
-        getLatestCookie(cookie),
-        options.debug,
-        {
-          servingComponent: ServingComponent.OVERLAY,
-        }
-      );
+      dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+        servingComponent: ServingComponent.OVERLAY,
+      });
     }
   }, [instance, cookie, options.debug]);
 
@@ -134,7 +111,7 @@ const Overlay: FunctionComponent<Props> = ({
   );
 
   useEffect(() => {
-    const eventCookie = getLatestCookie(cookie);
+    const eventCookie = cookie;
     if (showBanner && bannerIsOpen) {
       dispatchFidesEvent("FidesUIShown", eventCookie, options.debug, {
         servingComponent: ServingComponent.BANNER,

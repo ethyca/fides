@@ -33,10 +33,14 @@ import {
   PrivacyExperience,
 } from "../../lib/consent-types";
 import { generateTcString } from "../../lib/tcf";
-import { FidesCookie } from "../../lib/cookie";
+import {
+  FidesCookie,
+  transformTcfPreferencesToCookieKeys,
+} from "../../lib/cookie";
 import InitialLayer from "./InitialLayer";
 import TcfTabs from "./TcfTabs";
 import Button from "../Button";
+import VendorInfoBanner from "./VendorInfoBanner";
 
 const resolveConsentValueFromTcfModel = (
   model: TCFPurposeRecord | TCFFeatureRecord | TCFVendorRecord
@@ -138,12 +142,16 @@ const updateCookie = async (
   oldCookie: FidesCookie,
   tcf: TcfSavePreferences,
   experience: PrivacyExperience
-) => {
+): Promise<FidesCookie> => {
   const tcString = await generateTcString({
     tcStringPreferences: tcf,
     experience,
   });
-  return { ...oldCookie, tcString };
+  return {
+    ...oldCookie,
+    tc_string: tcString,
+    tcf_consent: transformTcfPreferencesToCookieKeys(tcf),
+  };
 };
 
 const TcfOverlay: FunctionComponent<OverlayProps> = ({
@@ -178,16 +186,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     () => experience.show_banner && hasActionNeededNotices(experience),
     [experience]
   );
-
-  const numVendors = useMemo(() => {
-    const systemCount = experience.tcf_systems
-      ? experience.tcf_systems.length
-      : 0;
-    const vendorCount = experience.tcf_vendors
-      ? experience.tcf_vendors.length
-      : 0;
-    return systemCount + vendorCount;
-  }, [experience]);
 
   const handleUpdateDraftState = useCallback(
     ({ newEnabledIds, modelType }: UpdateEnabledIds) => {
@@ -242,16 +240,13 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             experience={experienceConfig}
           >
             <InitialLayer experience={experience} />
-            <button
-              type="button"
-              className="fides-link-button"
-              onClick={() => {
+            <VendorInfoBanner
+              experience={experience}
+              goToVendorTab={() => {
                 onManagePreferencesClick();
                 goToVendorTab();
               }}
-            >
-              View our {numVendors} partner{numVendors === 1 ? "" : "s"}
-            </button>
+            />
             <TcfConsentButtons
               experience={experience}
               onManagePreferencesClick={onManagePreferencesClick}
