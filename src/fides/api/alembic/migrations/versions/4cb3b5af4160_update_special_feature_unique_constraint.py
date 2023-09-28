@@ -1,7 +1,7 @@
 """update_special_feature_unique_constraint
 
 Revision ID: 4cb3b5af4160
-Revises: 66df7d9b8103
+Revises: 8c54e1e5bdc4
 Create Date: 2023-09-27 22:58:43.064996
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "4cb3b5af4160"
-down_revision = "66df7d9b8103"
+down_revision = "8c54e1e5bdc4"
 branch_labels = None
 depends_on = None
 
