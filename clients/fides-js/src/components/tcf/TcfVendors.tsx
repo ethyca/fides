@@ -84,14 +84,22 @@ const PurposeVendorDetails = ({
 };
 
 const StorageDisclosure = ({ vendor }: { vendor: Vendor }) => {
-  const { name, usesCookies, usesNonCookieAccess, cookieMaxAgeSeconds } =
-    vendor;
+  const {
+    name,
+    usesCookies,
+    usesNonCookieAccess,
+    cookieMaxAgeSeconds,
+    cookieRefresh,
+  } = vendor;
   let disclosure = "";
   if (usesCookies) {
     const days = cookieMaxAgeSeconds
-      ? (cookieMaxAgeSeconds / 60 / 60 / 24).toFixed(2)
+      ? Math.ceil(cookieMaxAgeSeconds / 60 / 60 / 24)
       : 0;
-    disclosure = `${name} stores cookies with a maximum duration of about ${days} Day(s) (${cookieMaxAgeSeconds} Second(s)).`;
+    disclosure = `${name} stores cookies with a maximum duration of about ${days} Day(s).`;
+  }
+  if (cookieRefresh) {
+    disclosure = `${disclosure} These cookies may be refreshed.`;
   }
   if (usesNonCookieAccess) {
     disclosure = `${disclosure} This vendor also uses other methods like "local storage" to store and access information on your device.`;
