@@ -39,6 +39,7 @@ import InitialLayer from "./InitialLayer";
 import TcfTabs from "./TcfTabs";
 import Button from "../Button";
 import { useConsentServed } from "~/lib/hooks";
+import VendorInfoBanner from "./VendorInfoBanner";
 
 const resolveConsentValueFromTcfModel = (
   model: TCFPurposeRecord | TCFFeatureRecord | TCFVendorRecord
@@ -219,16 +220,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     [experience]
   );
 
-  const numVendors = useMemo(() => {
-    const systemCount = experience.tcf_systems
-      ? experience.tcf_systems.length
-      : 0;
-    const vendorCount = experience.tcf_vendors
-      ? experience.tcf_vendors.length
-      : 0;
-    return systemCount + vendorCount;
-  }, [experience]);
-
   const handleUpdateDraftState = useCallback(
     ({ newEnabledIds, modelType }: UpdateEnabledIds) => {
       const updated = { ...draftIds, [modelType]: newEnabledIds };
@@ -294,16 +285,13 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             experience={experienceConfig}
           >
             <InitialLayer experience={experience} />
-            <button
-              type="button"
-              className="fides-link-button"
-              onClick={() => {
+            <VendorInfoBanner
+              experience={experience}
+              goToVendorTab={() => {
                 onManagePreferencesClick();
                 goToVendorTab();
               }}
-            >
-              View our {numVendors} partner{numVendors === 1 ? "" : "s"}
-            </button>
+            />
             <TcfConsentButtons
               experience={experience}
               onManagePreferencesClick={onManagePreferencesClick}

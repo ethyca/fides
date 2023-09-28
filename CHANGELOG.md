@@ -15,7 +15,12 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.20.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.21.0...main)
+
+### Changed
+- Various improvements to the TCF modal such as vendor storage disclosures, vendor counts, privacy policies, etc. [#4167](https://github.com/ethyca/fides/pull/4167)
+
+## [2.21.0](https://github.com/ethyca/fides/compare/2.20.2...2.21.0)
 
 ### Added
 - "Add a vendor" flow to configuring consent page [#4107](https://github.com/ethyca/fides/pull/4107)
@@ -29,6 +34,7 @@ The types of changes are:
 - TCF modal now supports setting legitimate interest fields [#4037](https://github.com/ethyca/fides/pull/4037)
 - Embed the GVL in the GET Experiences response [#4143](https://github.com/ethyca/fides/pull/4143)
 - Button to view how many vendors and to open the vendor tab in the TCF modal [#4144](https://github.com/ethyca/fides/pull/4144)
+- "Edit vendor" flow to configuring consent page [#4162](https://github.com/ethyca/fides/pull/4162)
 
 ### Changed
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
@@ -41,6 +47,7 @@ The types of changes are:
 
 ### Fixed
 - Allows CDN to cache empty experience responses from fides.js API  [#4113](https://github.com/ethyca/fides/pull/4113)
+- Fixed `identity_special_purpose` unique constraint definition [#4174](https://github.com/ethyca/fides/pull/4174/files)
 
 ## [2.20.2](https://github.com/ethyca/fides/compare/2.20.1...2.20.2)
 
@@ -48,6 +55,7 @@ The types of changes are:
 - added version_added, version_deprecated, and replaced_by to data use, data subject, and data category APIs [#4135](https://github.com/ethyca/fides/pull/4135)
 - Update fides.js to not fetch experience client-side if pre-fetched experience is empty [#4149](https://github.com/ethyca/fides/pull/4149)
 - Erasure privacy requests now pause for input if there are any manual process integrations [#4115](https://github.com/ethyca/fides/pull/4115)
+- Caching the values of authorization_required and user_guide on the connector templates to improve performance [#4128](https://github.com/ethyca/fides/pull/4128)
 
 ## [2.20.1](https://github.com/ethyca/fides/compare/2.20.0...2.20.1)
 
