@@ -658,6 +658,8 @@ div#fides-modal .fides-modal-button-group {
 
 .fides-tcf-purpose-vendor-title {
   font-weight: 600;
+  display: flex;
+  justify-content: space-between;
 }
 
 .fides-tcf-illustration {
