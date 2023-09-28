@@ -19,13 +19,15 @@ const countVendorRecordsWithLegalBasis = (
 ) =>
   records.filter((record) => {
     const { purposes, special_purposes: specialPurposes } = record;
-    const hasConsentPurposes = purposes?.filter((purpose) =>
+    const hasApplicablePurposes = purposes?.filter((purpose) =>
       purpose.legal_bases?.includes(legalBasis)
     );
-    const hasConsentSpecialPurposes = specialPurposes?.filter((purpose) =>
+    const hasApplicableSpecialPurposes = specialPurposes?.filter((purpose) =>
       purpose.legal_bases?.includes(legalBasis)
     );
-    return hasConsentPurposes || hasConsentSpecialPurposes;
+    return (
+      hasApplicablePurposes?.length || hasApplicableSpecialPurposes?.length
+    );
   }).length;
 
 const VendorInfoBanner = ({
@@ -37,6 +39,7 @@ const VendorInfoBanner = ({
 }) => {
   const counts = useMemo(() => {
     const { tcf_systems: systems = [], tcf_vendors: vendors = [] } = experience;
+    console.log({ systems, vendors });
     // total count
     const total = systems.length + vendors.length;
 
