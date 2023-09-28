@@ -11,6 +11,7 @@ import {
   Cookies,
   LegacyConsentConfig,
   PrivacyExperience,
+  SaveConsentPreference,
 } from "./consent-types";
 import {
   debugLog,
@@ -376,4 +377,24 @@ export const removeCookiesFromBrowser = (cookies: Cookies[]) => {
       domain: cookie.domain,
     });
   });
+};
+
+/**
+ * Update cookie based on consent preferences to save
+ */
+export const updateCookieFromNoticePreferences = async (
+  oldCookie: FidesCookie,
+  consentPreferencesToSave: SaveConsentPreference[]
+): Promise<FidesCookie> => {
+  const noticeMap = new Map<string, boolean>(
+    consentPreferencesToSave.map(({ notice, consentPreference }) => [
+      notice.notice_key,
+      transformUserPreferenceToBoolean(consentPreference),
+    ])
+  );
+  const consentCookieKey: CookieKeyConsent = Object.fromEntries(noticeMap);
+  return {
+    ...oldCookie,
+    consent: consentCookieKey,
+  };
 };

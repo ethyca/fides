@@ -21,6 +21,7 @@ import { NoticeConsentButtons } from "../ConsentButtons";
 import NoticeToggles from "./NoticeToggles";
 import { OverlayProps } from "../types";
 import { useConsentServed } from "../../lib/hooks";
+import { updateCookieFromNoticePreferences } from "../../lib/cookie";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   experience,
@@ -76,6 +77,11 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         userLocationString: fidesRegionString,
         cookie,
         servedNotices,
+        updateCookie: (oldCookie) =>
+          updateCookieFromNoticePreferences(
+            oldCookie,
+            consentPreferencesToSave
+          ),
       });
       // Make sure our draft state also updates
       setDraftEnabledNoticeKeys(enabledPrivacyNoticeKeys);

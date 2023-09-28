@@ -48,8 +48,12 @@ import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 
-import { isNewFidesCookie } from "./lib/cookie";
-import { FidesConfig } from "./lib/consent-types";
+import {
+  FidesCookie,
+  buildCookieConsentForExperiences,
+  isNewFidesCookie,
+} from "./lib/cookie";
+import { FidesConfig, PrivacyExperience } from "./lib/consent-types";
 
 import { dispatchFidesEvent } from "./lib/events";
 
@@ -61,6 +65,7 @@ import {
 import type { Fides } from "./lib/initialize";
 
 import { renderOverlay } from "./lib/renderOverlay";
+import { getConsentContext } from "./lib/consent-context";
 
 declare global {
   interface Window {
@@ -71,6 +76,20 @@ declare global {
 // The global Fides object; this is bound to window.Fides if available
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
+
+const updateCookie = async (
+  oldCookie: FidesCookie,
+  experience: PrivacyExperience,
+  debug?: boolean
+): Promise<FidesCookie> => {
+  const context = getConsentContext();
+  const consent = buildCookieConsentForExperiences(
+    experience,
+    context,
+    !!debug
+  );
+  return { ...oldCookie, consent };
+};
 
 /**
  * Initialize the global Fides object with the given configuration values
@@ -89,6 +108,7 @@ const init = async (config: FidesConfig) => {
     experience,
     cookie,
     renderOverlay,
+    updateCookie,
   });
   Object.assign(_Fides, updatedFides);
 
