@@ -693,7 +693,7 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
             name="fides_user_device_identity_purpose",
         ),
         UniqueConstraint(
-            "provided_identity_id", "purpose", name="identity_special_purpose"
+            "provided_identity_id", "special_purpose", name="identity_special_purpose"
         ),
         UniqueConstraint(
             "fides_user_device_provided_identity_id",
