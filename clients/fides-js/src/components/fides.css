@@ -705,3 +705,20 @@ div#fides-modal .fides-modal-button-group {
   padding: 0.4em;
   border: 1px solid var(--fides-overlay-select-border-color);
 }
+
+/* Vendor info (initial layer) */
+
+.fides-vendor-info div {
+  margin-right: 2em;
+}
+
+.fides-vendor-info {
+  display: flex;
+  padding: 1.1em;
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-vendor-info-label {
+  font-weight: 600;
+  font-size: 1em;
+}
