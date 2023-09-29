@@ -28,8 +28,10 @@ const TcfTabs = ({
       name: "Purposes",
       content: (
         <div>
-          <InfoBox title="">
-          You can review and and exercise your right to consent to specific purposes by using the filter to switch between Consent and Legitimate Interest below.
+          <InfoBox>
+            You can review and and exercise your right to consent to specific
+            purposes by using the filter to switch between Consent and
+            Legitimate Interest below.
           </InfoBox>
           <TcfPurposes
             allPurposes={experience.tcf_purposes}
@@ -45,8 +47,9 @@ const TcfTabs = ({
       name: "Features",
       content: (
         <div>
-          <InfoBox title="">
-            You can review the list of features and exercise your right to consent to special features below.
+          <InfoBox>
+            You can review the list of features and exercise your right to
+            consent to special features below.
           </InfoBox>
           <TcfFeatures
             allFeatures={experience.tcf_features}
@@ -62,8 +65,11 @@ const TcfTabs = ({
       name: "Vendors",
       content: (
         <div>
-          <InfoBox title="">
-          You may review the list of vendors and the purposes or features of processing they individually declare below. You have the right to exercise you consent for each vendor based on the legal basis they assert."
+          <InfoBox>
+            You may review the list of vendors and the purposes or features of
+            processing they individually declare below. You have the right to
+            exercise you consent for each vendor based on the legal basis they
+            assert.
           </InfoBox>
           <TcfVendors
             allSystems={experience.tcf_systems}
