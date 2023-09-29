@@ -32,10 +32,13 @@ def braze_user_update(
             privacy_request_id = row_param_values[PRIVACY_REQUEST_ID]
             all_object_fields["email"] = f"{privacy_request_id}@company.com"
 
-        update_body = {"attributes": [{dumps(all_object_fields)}]}
+        update_body = dumps({"attributes": [all_object_fields]})
         client.send(
             SaaSRequestParams(
-                method=HTTPMethod.PUT, path="/users/track", body=update_body
+                method=HTTPMethod.POST,
+                headers={"Content-Type": "application/json"},
+                path="/users/track",
+                body=update_body,
             )
         )
         rows_updated += 1
