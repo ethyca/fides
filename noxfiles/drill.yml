@@ -3,8 +3,8 @@
 
 concurrency: 1 # How many instances of the `plan` get run concurrently
 base: 'http://localhost:8080'
-iterations: 2 # How many times to run the plan
-rampup: 2 # The number of seconds between starting concurrent runs
+iterations: 5 # How many times to run the plan
+rampup: 1 # The number of seconds between starting concurrent runs
 
 # This plan is run in its entirety, sequentially, for each iteration
 plan:
@@ -26,11 +26,15 @@ plan:
     request:
       method: GET
       url: /api/v1/privacy-experience
+    tags:
+      - privacy-experience
 
   - name: Get Privacy-Experience [Include GVL]
     request:
       method: GET
       url: /api/v1/privacy-experience?include_gvl=1
+    tags:
+      - privacy-experience
 
   - name: Get Data Use
     request:
