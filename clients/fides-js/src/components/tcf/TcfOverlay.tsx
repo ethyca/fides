@@ -10,7 +10,7 @@ import {
 } from "../../lib/consent-utils";
 
 import "../fides.css";
-import Overlay, { getLatestCookie } from "../Overlay";
+import Overlay from "../Overlay";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import { OverlayProps } from "../types";
 
@@ -282,13 +282,13 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   };
 
   const dispatchOpenBannerEvent = () => {
-    dispatchFidesEvent("FidesUIShown", getLatestCookie(cookie), options.debug, {
+    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
       servingComponent: ServingComponent.TCF_BANNER,
     });
   };
 
   const dispatchOpenOverlayEvent = () => {
-    dispatchFidesEvent("FidesUIShown", getLatestCookie(cookie), options.debug, {
+    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
       servingComponent: ServingComponent.TCF_OVERLAY,
     });
   };

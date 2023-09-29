@@ -17,7 +17,7 @@ import {
 } from "../../lib/consent-utils";
 
 import "../fides.css";
-import Overlay, { getLatestCookie } from "../Overlay";
+import Overlay from "../Overlay";
 import { NoticeConsentButtons } from "../ConsentButtons";
 import NoticeToggles from "./NoticeToggles";
 import { OverlayProps } from "../types";
