@@ -16,7 +16,7 @@ import { TcfConsentButtons } from "./TcfConsentButtons";
 import { OverlayProps } from "../types";
 
 import {
-  EnabledIds,
+  type EnabledIds,
   LegalBasisForProcessingEnum,
   type TCFFeatureRecord,
   type TCFFeatureSave,
@@ -169,7 +169,7 @@ const createTcfSavePayload = ({
     vendor_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_vendors,
       // TODO: once the backend is storing this, we should send vendorsConsent
-      // and vendorsLegint to separate fields.
+      // and vendorsLegint to separate fields (fidesplus1128)
       enabledIds: enabledVendorIds,
     }) as TCFVendorSave[],
     system_preferences: transformTcfModelToTcfSave({
@@ -288,7 +288,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   const handleUpdateAllPreferences = useCallback(
     (enabledIds: EnabledIds) => {
       const tcf = createTcfSavePayload({ experience, enabledIds });
-      console.log({ tcf });
       updateConsentPreferences({
         consentPreferencesToSave: [],
         experienceId: experience.id,
