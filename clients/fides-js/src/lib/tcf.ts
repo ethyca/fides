@@ -95,9 +95,9 @@ export const generateTcString = async ({
             ) {
               skipSetLegInt = true;
             }
-          }
-          if (!skipSetLegInt) {
-            tcModel.vendorLegitimateInterests.set(+vendorId);
+            if (!skipSetLegInt) {
+              tcModel.vendorLegitimateInterests.set(+vendorId);
+            }
           }
         });
       }
