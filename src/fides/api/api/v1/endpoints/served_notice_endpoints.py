@@ -32,7 +32,10 @@ from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter
-from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING, ConsentRecordType
+from fides.api.util.tcf.tcf_experience_contents import (
+    TCF_COMPONENT_MAPPING,
+    ConsentRecordType,
+)
 from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST_NOTICES_SERVED,
     NOTICES_SERVED,
