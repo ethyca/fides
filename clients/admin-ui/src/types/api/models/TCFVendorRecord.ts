@@ -8,7 +8,7 @@ import type { TCFDataCategoryRecord } from "./TCFDataCategoryRecord";
 import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
- * Schema for a TCF Vendor: returned in the TCF Overlay Experience
+ * Schema for a TCF Vendor or system: returned in the TCF Overlay Experience
  */
 export type TCFVendorRecord = {
   default_preference?: UserConsentPreference;

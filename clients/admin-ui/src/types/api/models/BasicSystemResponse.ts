@@ -2,25 +2,22 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConnectionConfigurationResponse } from "./ConnectionConfigurationResponse";
 import type { ContactDetails } from "./ContactDetails";
-import type { Cookies } from "./Cookies";
 import type { DataFlow } from "./DataFlow";
 import type { DataProtectionImpactAssessment } from "./DataProtectionImpactAssessment";
 import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
 import type { LegalBasisForProfilingEnum } from "./LegalBasisForProfilingEnum";
-import type { PrivacyDeclarationResponse } from "./PrivacyDeclarationResponse";
+import type { PrivacyDeclaration } from "./PrivacyDeclaration";
 import type { SystemMetadata } from "./SystemMetadata";
-import type { UserResponse } from "./UserResponse";
 
 /**
- * Extension of base pydantic response model to include additional relationship fields that
- * may require extra DB queries, like `privacy_declarations`, connection_config fields and cookies.
+ * Extension of base pydantic model to include additional fields on the DB model that
+ * are relevant in API responses.
  *
- * This response model is generally useful for an API that returns a detailed view of _single_
- * System record. Attempting to return bulk results with this model can lead to n+1 query issues.
+ * This is still meant to be a "lightweight" model that does not reference relationships
+ * that may require additional querying beyond the `System` db table.
  */
-export type SystemResponse = {
+export type BasicSystemResponse = {
   /**
    * A unique key used to identify this resource.
    */
@@ -71,9 +68,14 @@ export type SystemResponse = {
    */
   ingress?: Array<DataFlow>;
   /**
-   * Extension of base pydantic model to include DB `id` field in the response
+   *
+   * The PrivacyDeclaration resource model.
+   *
+   * States a function of a system, and describes how it relates
+   * to the privacy data types.
+   *
    */
-  privacy_declarations: Array<PrivacyDeclarationResponse>;
+  privacy_declarations: Array<PrivacyDeclaration>;
   /**
    * Deprecated.
    * The contact details information model.
@@ -190,15 +192,4 @@ export type SystemResponse = {
    */
   data_security_practices?: string;
   created_at: string;
-  /**
-   *
-   * Describes the returned schema for a ConnectionConfiguration.
-   *
-   */
-  connection_configs?: ConnectionConfigurationResponse;
-  /**
-   * System managers of the current system
-   */
-  data_stewards?: Array<UserResponse>;
-  cookies?: Array<Cookies>;
 };

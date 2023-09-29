@@ -7,7 +7,6 @@ import type { DataFlow } from "./DataFlow";
 import type { DataProtectionImpactAssessment } from "./DataProtectionImpactAssessment";
 import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
 import type { LegalBasisForProfilingEnum } from "./LegalBasisForProfilingEnum";
-import type { LegalBasisForTransfersEnum } from "./LegalBasisForTransfersEnum";
 import type { PrivacyDeclaration } from "./PrivacyDeclaration";
 import type { SystemMetadata } from "./SystemMetadata";
 
@@ -143,7 +142,7 @@ export type System = {
   /**
    * The legal basis (or bases) under which the data is transferred.
    */
-  legal_basis_for_transfers?: Array<LegalBasisForTransfersEnum>;
+  legal_basis_for_transfers?: Array<string>;
   /**
    * Whether this system requires data protection impact assessments.
    */
