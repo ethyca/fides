@@ -20,6 +20,11 @@ import ExternalLink from "../ExternalLink";
 
 const FILTERS = [{ name: "All vendors" }, { name: "IAB TCF vendors" }];
 
+interface Retention {
+  mapping: Record<number, number>;
+  default: number;
+}
+
 const VendorDetails = ({
   label,
   lineItems,
@@ -27,7 +32,7 @@ const VendorDetails = ({
 }: {
   label: string;
   lineItems: EmbeddedLineItem[] | undefined;
-  dataRetention?: Record<number, number>;
+  dataRetention?: Retention;
 }) => {
   if (!lineItems || lineItems.length === 0) {
     return null;
@@ -43,7 +48,10 @@ const VendorDetails = ({
       </thead>
       <tbody>
         {lineItems.map((item) => {
-          const retention = dataRetention ? dataRetention[item.id] : undefined;
+          let retention: string | number = "N/A";
+          if (dataRetention) {
+            retention = dataRetention.mapping[item.id] ?? dataRetention.default;
+          }
           return (
             <tr key={item.id}>
               <td>{item.name}</td>
@@ -83,13 +91,25 @@ const PurposeVendorDetails = ({
       <VendorDetails
         label="Purposes"
         lineItems={purposes as EmbeddedLineItem[]}
-        dataRetention={dataRetention ? dataRetention.purposes : undefined}
+        dataRetention={
+          dataRetention
+            ? {
+                mapping: dataRetention.purposes,
+                default: dataRetention.stdRetention,
+              }
+            : undefined
+        }
       />
       <VendorDetails
         label="Special purposes"
         lineItems={specialPurposes as EmbeddedLineItem[]}
         dataRetention={
-          dataRetention ? dataRetention.specialPurposes : undefined
+          dataRetention
+            ? {
+                mapping: dataRetention.specialPurposes,
+                default: dataRetention.stdRetention,
+              }
+            : undefined
         }
       />
     </div>
