@@ -1,5 +1,6 @@
 import { h, FunctionComponent } from "preact";
 import { useState, useCallback, useMemo } from "preact/hooks";
+import { TCString } from "@iabtechlabtcf/core";
 import ConsentBanner from "../ConsentBanner";
 
 import {
@@ -15,6 +16,7 @@ import { TcfConsentButtons } from "./TcfConsentButtons";
 import { OverlayProps } from "../types";
 
 import {
+  EnabledIds,
   LegalBasisForProcessingEnum,
   type TCFFeatureRecord,
   type TCFFeatureSave,
@@ -90,7 +92,7 @@ const getVendorEnabledIds = (
   }
   const records = vendorRecordsWithLegalBasis(modelList, legalBasis);
   if (legalBasis === LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS) {
-    // TODO: the backend should eventually return legint fields with a default proference of OPT_IN
+    // TODO: the backend should eventually return legint fields with a default preference of OPT_IN
     const modifiedRecords = records.map((record) => ({
       ...record,
       default_preference: UserConsentPreference.OPT_IN,
@@ -99,16 +101,6 @@ const getVendorEnabledIds = (
   }
   return getEnabledIds(records);
 };
-
-export interface EnabledIds {
-  purposes: string[];
-  specialPurposes: string[];
-  features: string[];
-  specialFeatures: string[];
-  vendorsConsent: string[];
-  vendorsLegint: string[];
-  // systems: string[];
-}
 
 export interface UpdateEnabledIds {
   newEnabledIds: string[];
@@ -143,10 +135,11 @@ const createTcfSavePayload = ({
   experience: PrivacyExperience;
   enabledIds: EnabledIds;
 }): TcfSavePreferences => {
+  // Because systems were combined with vendors to make the UI easier to work with,
+  // we need to separate them out now (the backend treats them as separate entities).
   const systemIds = experience.tcf_systems
     ? experience.tcf_systems.map((s) => s.id)
     : [];
-  // TODO: separate these out once the backend can support it
   const enabledSystemIds: string[] = [];
   const enabledVendorIds: string[] = [];
   enabledIds.vendorsConsent.forEach((id) => {
@@ -188,11 +181,20 @@ const createTcfSavePayload = ({
 
 const updateCookie = async (
   oldCookie: FidesCookie,
+  /**
+   * `tcf` and `enabledIds` should represent the same data, where `tcf` is what is
+   * sent to the backend, and `enabledIds` is what the FE uses. They have diverged
+   * because the backend has not implemented separate vendor legint/consents yet.
+   * Therefore, we need both entities right now, but eventually we should be able to
+   * only use one. In other words, `enabledIds` has a field for `vendorsConsent` and
+   * `vendorsLegint` but `tcf` only has `vendors`.
+   */
   tcf: TcfSavePreferences,
+  enabledIds: EnabledIds,
   experience: PrivacyExperience
 ): Promise<FidesCookie> => {
   const tcString = await generateTcString({
-    tcStringPreferences: tcf,
+    tcStringPreferences: enabledIds,
     experience,
   });
   return {
@@ -219,22 +221,54 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     } = experience;
 
     const vendorsAndSystems = [...(vendors || []), ...(systems || [])];
+    let vendorsConsent = getVendorEnabledIds(
+      vendorsAndSystems,
+      LegalBasisForProcessingEnum.CONSENT
+    );
+    let vendorsLegint = getVendorEnabledIds(
+      vendorsAndSystems,
+      LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
+    );
+
+    // Initialize vendor values from the TC string if it's available. The cookie only
+    // stores what the backend has, while the TC string has a little more right now.
+    // (fidesplus#1128)
+    if (cookie.tc_string && cookie.tc_string !== "") {
+      const tcModel = TCString.decode(cookie.tc_string || "");
+      vendorsConsent = [];
+      vendorsLegint = [];
+      tcModel.vendorConsents.forEach((consented, id) => {
+        if (consented) {
+          vendorsConsent.push(`${id}`);
+        }
+      });
+      tcModel.vendorLegitimateInterests.forEach((consented, id) => {
+        if (consented) {
+          vendorsLegint.push(`${id}`);
+        }
+      });
+      // but we still need to join system data to this
+      const systemConsents = getVendorEnabledIds(
+        systems,
+        LegalBasisForProcessingEnum.CONSENT
+      );
+      const systemLegints = getVendorEnabledIds(
+        systems,
+        LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
+      );
+      vendorsConsent = [...vendorsConsent, ...systemConsents];
+      vendorsLegint = [...vendorsLegint, ...systemLegints];
+    }
 
     return {
       purposes: getEnabledIds(purposes),
       specialPurposes: getEnabledIds(specialPurposes),
       features: getEnabledIds(features),
       specialFeatures: getEnabledIds(specialFeatures),
-      vendorsConsent: getVendorEnabledIds(
-        vendorsAndSystems,
-        LegalBasisForProcessingEnum.CONSENT
-      ),
-      vendorsLegint: getVendorEnabledIds(
-        vendorsAndSystems,
-        LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
-      ),
+      vendorsConsent,
+      vendorsLegint,
     };
-  }, [experience]);
+  }, [experience, cookie]);
 
   const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
 
@@ -254,6 +288,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   const handleUpdateAllPreferences = useCallback(
     (enabledIds: EnabledIds) => {
       const tcf = createTcfSavePayload({ experience, enabledIds });
+      console.log({ tcf });
       updateConsentPreferences({
         consentPreferencesToSave: [],
         experienceId: experience.id,
@@ -264,7 +299,8 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         debug: options.debug,
         servedNotices: null, // TODO: served notices
         tcf,
-        updateCookie: (oldCookie) => updateCookie(oldCookie, tcf, experience),
+        updateCookie: (oldCookie) =>
+          updateCookie(oldCookie, tcf, enabledIds, experience),
       });
       setDraftIds(enabledIds);
     },

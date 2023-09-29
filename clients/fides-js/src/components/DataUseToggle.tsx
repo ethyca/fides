@@ -38,7 +38,6 @@ const DataUseToggle = ({
   } = useDisclosure({
     id: dataUse.key,
   });
-  console.log({ secondToggle });
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.code === "Space" || event.code === "Enter") {

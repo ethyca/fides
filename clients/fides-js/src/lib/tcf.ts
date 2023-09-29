@@ -8,11 +8,11 @@
 import { CmpApi } from "@iabtechlabtcf/cmpapi";
 import { TCModel, TCString, GVL } from "@iabtechlabtcf/core";
 import { makeStub } from "./tcf/stub";
-import { transformUserPreferenceToBoolean } from "./consent-utils";
+
 import {
+  EnabledIds,
   LegalBasisForProcessingEnum,
   TCFPurposeRecord,
-  TcfSavePreferences,
 } from "./tcf/types";
 import { vendorIsGvl } from "./tcf/vendors";
 import { PrivacyExperience } from "./consent-types";
@@ -48,7 +48,7 @@ export const generateTcString = async ({
   experience,
   tcStringPreferences,
 }: {
-  tcStringPreferences?: TcfSavePreferences;
+  tcStringPreferences?: EnabledIds;
   experience: PrivacyExperience;
 }): Promise<string> => {
   let encodedString = "";
@@ -64,94 +64,82 @@ export const generateTcString = async ({
 
     if (tcStringPreferences) {
       if (
-        tcStringPreferences.vendor_preferences &&
-        tcStringPreferences.vendor_preferences.length > 0
+        tcStringPreferences.vendorsConsent &&
+        tcStringPreferences.vendorsConsent.length > 0
       ) {
-        tcStringPreferences.vendor_preferences.forEach((vendorPreference) => {
-          const consented = transformUserPreferenceToBoolean(
-            vendorPreference.preference
-          );
-          if (consented && vendorIsGvl(vendorPreference, experience.gvl)) {
-            tcModel.vendorConsents.set(+vendorPreference.id);
-            const thisVendor = experience.tcf_vendors?.filter(
-              (v) => v.id === vendorPreference.id
-            )[0];
-            const vendorPurposes = thisVendor?.purposes;
-            // Handle the case where a vendor has forbidden legint purposes set
-            let skipSetLegInt = false;
-            if (vendorPurposes) {
-              const legIntPurposeIds = vendorPurposes
-                .filter((p) =>
-                  p.legal_bases?.includes(
-                    LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
-                  )
+        tcStringPreferences.vendorsConsent.forEach((vendorId) => {
+          if (vendorIsGvl({ id: vendorId }, experience.gvl)) {
+            tcModel.vendorConsents.set(+vendorId);
+          }
+        });
+        tcStringPreferences.vendorsLegint.forEach((vendorId) => {
+          const thisVendor = experience.tcf_vendors?.filter(
+            (v) => v.id === vendorId
+          )[0];
+
+          const vendorPurposes = thisVendor?.purposes;
+          // Handle the case where a vendor has forbidden legint purposes set
+          let skipSetLegInt = false;
+          if (vendorPurposes) {
+            const legIntPurposeIds = vendorPurposes
+              .filter((p) =>
+                p.legal_bases?.includes(
+                  LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
                 )
-                .map((p) => p.id);
-              if (
-                legIntPurposeIds.filter((id) =>
-                  FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id)
-                ).length
-              ) {
-                skipSetLegInt = true;
-              }
+              )
+              .map((p) => p.id);
+            if (
+              legIntPurposeIds.filter((id) =>
+                FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id)
+              ).length
+            ) {
+              skipSetLegInt = true;
             }
-            if (!skipSetLegInt) {
-              tcModel.vendorLegitimateInterests.set(+vendorPreference.id);
-            }
+          }
+          if (!skipSetLegInt) {
+            tcModel.vendorLegitimateInterests.set(+vendorId);
           }
         });
       }
 
       // Set purpose consent on tcModel
       if (
-        tcStringPreferences.purpose_preferences &&
-        tcStringPreferences.purpose_preferences.length > 0
+        tcStringPreferences.purposes &&
+        tcStringPreferences.purposes.length > 0
       ) {
-        tcStringPreferences.purpose_preferences.forEach((purposePreference) => {
-          const consented = transformUserPreferenceToBoolean(
-            purposePreference.preference
-          );
-          if (consented) {
-            const id = +purposePreference.id;
-            if (
-              purposeHasLegalBasis({
-                id,
-                purposes: experience.tcf_purposes,
-                legalBasis: LegalBasisForProcessingEnum.CONSENT,
-              })
-            ) {
-              tcModel.purposeConsents.set(id);
-            }
-            if (
-              purposeHasLegalBasis({
-                id,
-                purposes: experience.tcf_purposes,
-                legalBasis: LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS,
-              }) &&
-              // per the IAB, make sure we never set purposes 1, 3, 4, 5, or 6
-              !FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id)
-            ) {
-              tcModel.purposeLegitimateInterests.set(id);
-            }
+        tcStringPreferences.purposes.forEach((purposeId) => {
+          const id = +purposeId;
+          if (
+            purposeHasLegalBasis({
+              id,
+              purposes: experience.tcf_purposes,
+              legalBasis: LegalBasisForProcessingEnum.CONSENT,
+            })
+          ) {
+            tcModel.purposeConsents.set(id);
+          }
+          if (
+            purposeHasLegalBasis({
+              id,
+              purposes: experience.tcf_purposes,
+              legalBasis: LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS,
+            }) &&
+            // per the IAB, make sure we never set purposes 1, 3, 4, 5, or 6
+            !FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id)
+          ) {
+            tcModel.purposeLegitimateInterests.set(id);
           }
         });
       }
 
       // Set special feature opt-ins on tcModel
       if (
-        tcStringPreferences.special_feature_preferences &&
-        tcStringPreferences.special_feature_preferences.length > 0
+        tcStringPreferences.specialFeatures &&
+        tcStringPreferences.specialFeatures.length > 0
       ) {
-        tcStringPreferences.special_feature_preferences.forEach(
-          (specialFeaturePreference) => {
-            const consented = transformUserPreferenceToBoolean(
-              specialFeaturePreference.preference
-            );
-            if (consented) {
-              tcModel.specialFeatureOptins.set(+specialFeaturePreference.id);
-            }
-          }
-        );
+        tcStringPreferences.specialFeatures.forEach((id) => {
+          tcModel.specialFeatureOptins.set(+id);
+        });
       }
 
       // note that we cannot set consent for special purposes nor features because the IAB policy states
