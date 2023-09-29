@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.21.0rc0.post0.dev8"
+    "version": "2.21.0rc0.post0.dev9"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -7922,7 +7922,7 @@
           "Privacy Experience"
         ],
         "summary": "Privacy Experience List",
-        "description": "Public endpoint that returns a list of PrivacyExperience records for individual regions with\nrelevant privacy notices or tcf contents embedded in the response.\n\n'show_disabled' query params are passed along to further filter\nnotices as well.\n\n:param db:\n:param params:\n:param show_disabled: If False, returns only enabled Experiences and Notices\n:param region: Return the Experiences for the given region\n:param component: Returns Experiences of the given component type\n:param content_required: Return if the Experience has content. (Alias for has_notices query_param)\n:param has_config: If True, returns Experiences with copy. If False, returns just Experiences without copy.\n:param fides_user_device_id: Supplement the response with current saved preferences of the given user\n:param systems_applicable: Only return embedded Notices associated with systems.\n:param include_gvl: Embeds gvl.json in the response provided we also have TCF content\n:param request:\n:param response:\n:return:",
+        "description": "Public endpoint that returns a list of PrivacyExperience records for individual regions with\nrelevant privacy notices or tcf contents embedded in the response.\n\n'show_disabled' query params are passed along to further filter\nnotices as well.\n\n:param db:\n:param params:\n:param show_disabled: If False, returns only enabled Experiences and Notices\n:param region: Return the Experiences for the given region\n:param component: Returns Experiences of the given component type\n:param content_required: Return if the Experience has content. (Alias for has_notices query_param)\n:param has_config: If True, returns Experiences with copy. If False, returns just Experiences without copy.\n:param fides_user_device_id: Supplement the response with current saved preferences of the given user\n:param systems_applicable: Only return embedded Notices associated with systems.\n:param include_gvl: Embeds gvl.json in the response provided we also have TCF content\n:param include_meta: If True, returns TCF Experience meta if applicable\n:param request:\n:param response:\n:return:",
         "operationId": "privacy_experience_list_api_v1_privacy_experience_get",
         "parameters": [
           {
@@ -7997,6 +7997,16 @@
               "default": false
             },
             "name": "include_gvl",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Include Meta",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "include_meta",
             "in": "query"
           },
           {
@@ -17023,6 +17033,34 @@
         "additionalProperties": false,
         "description": "Updating ExperienceConfig. Note that component cannot be updated once its created"
       },
+      "ExperienceMeta": {
+        "title": "ExperienceMeta",
+        "type": "object",
+        "properties": {
+          "version_hash": {
+            "title": "Version Hash",
+            "type": "string",
+            "description": "A hashed value that can be compared to previously-fetched hash values to determine if the Experience has meaningfully changed"
+          },
+          "accept_all_tc_string": {
+            "title": "Accept All Tc String",
+            "type": "string",
+            "description": "The TC string corresponding to a user opting in to all available options"
+          },
+          "accept_all_tc_mobile_data": {
+            "$ref": "#/components/schemas/TCMobileData"
+          },
+          "reject_all_tc_string": {
+            "title": "Reject All Tc String",
+            "type": "string",
+            "description": "The TC string corresponding to a user opting out of all available options"
+          },
+          "reject_all_tc_mobile_data": {
+            "$ref": "#/components/schemas/TCMobileData"
+          }
+        },
+        "description": "Supplements experience with developer-friendly meta information"
+      },
       "ExtendedIdentityTypes": {
         "title": "ExtendedIdentityTypes",
         "required": [
@@ -19825,6 +19863,9 @@
           "gvl": {
             "title": "Gvl",
             "type": "object"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ExperienceMeta"
           }
         },
         "additionalProperties": false,
@@ -20063,6 +20104,7 @@
           "us_wv",
           "us_wi",
           "us_wy",
+          "eea",
           "be",
           "bg",
           "cz",
@@ -20460,6 +20502,11 @@
           "code": {
             "title": "Code",
             "type": "string"
+          },
+          "tc_string": {
+            "title": "Tc String",
+            "type": "string",
+            "description": "If supplied, *_preferences fields will be ignored in favor of this TC string. Saves preferencesagainst purposes, special features, and vendors."
           },
           "preferences": {
             "title": "Preferences",
@@ -23255,6 +23302,107 @@
           }
         },
         "description": "Base schema for saving preferences with respect to a TCF Vendor or a System\nTODO: TCF Add validation for allowable vendors (in GVL or dictionary?)"
+      },
+      "TCMobileData": {
+        "title": "TCMobileData",
+        "type": "object",
+        "properties": {
+          "IABTCF_CmpSdkID": {
+            "title": "Iabtcf Cmpsdkid",
+            "type": "integer",
+            "description": "The unsigned integer ID of CMP SDK"
+          },
+          "IABTCF_CmpSdkVersion": {
+            "title": "Iabtcf Cmpsdkversion",
+            "type": "integer",
+            "description": "The unsigned integer version number of CMP SDK"
+          },
+          "IABTCF_PolicyVersion": {
+            "title": "Iabtcf Policyversion",
+            "type": "integer",
+            "description": "The unsigned integer representing the version of the TCF that these consents adhere to."
+          },
+          "IABTCF_gdprApplies": {
+            "title": "Iabtcf Gdprapplies",
+            "enum": [
+              0,
+              1
+            ],
+            "type": "integer",
+            "description": "1: GDPR applies in current context, 0 - GDPR does not apply in current context, None=undetermined"
+          },
+          "IABTCF_PublisherCC": {
+            "title": "Iabtcf Publishercc",
+            "type": "string",
+            "description": "Two-letter ISO 3166-1 alpha-2 code",
+            "default": "AA"
+          },
+          "IABTCF_PurposeOneTreatment": {
+            "title": "Iabtcf Purposeonetreatment",
+            "enum": [
+              0,
+              1
+            ],
+            "type": "integer",
+            "description": "Vendors can use this value to determine whether consent for purpose one is required. 0: no special treatment. 1: purpose one not disclosed"
+          },
+          "IABTCF_UseNonStandardTexts": {
+            "title": "Iabtcf Usenonstandardtexts",
+            "enum": [
+              0,
+              1
+            ],
+            "type": "integer",
+            "description": "1 - CMP uses customized stack descriptions and/or modified or supplemented standard illustrations.0 - CMP did not use a non-standard stack desc. and/or modified or supplemented Illustrations"
+          },
+          "IABTCF_TCString": {
+            "title": "Iabtcf Tcstring",
+            "type": "string",
+            "description": "Fully encoded TC string"
+          },
+          "IABTCF_VendorConsents": {
+            "title": "Iabtcf Vendorconsents",
+            "type": "string",
+            "description": "Binary string: The '0' or '1' at position n \u2013 where n's indexing begins at 0 \u2013 indicates the consent status for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is consent true for vendor ID 1"
+          },
+          "IABTCF_VendorLegitimateInterests": {
+            "title": "Iabtcf Vendorlegitimateinterests",
+            "type": "string",
+            "description": "Binary String: The '0' or '1' at position n \u2013 where n's indexing begins at 0 \u2013 indicates the legitimate interest status for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is legitimate interest established true for vendor ID 1"
+          },
+          "IABTCF_PurposeConsents": {
+            "title": "Iabtcf Purposeconsents",
+            "type": "string",
+            "description": "Binary String: The '0' or '1' at position n \u2013 where n's indexing begins at 0 \u2013 indicates the consent status for purpose ID n+1; false and true respectively. eg. '1' at index 0 is consent true for purpose ID 1"
+          },
+          "IABTCF_PurposeLegitimateInterests": {
+            "title": "Iabtcf Purposelegitimateinterests",
+            "type": "string",
+            "description": "Binary String: The '0' or '1' at position n \u2013 where n's indexing begins at 0 \u2013 indicates the legitimate interest status for purpose ID n+1; false and true respectively. eg. '1' at index 0 is legitimate interest established true for purpose ID 1"
+          },
+          "IABTCF_SpecialFeaturesOptIns": {
+            "title": "Iabtcf Specialfeaturesoptins",
+            "type": "string",
+            "description": "Binary String: The '0' or '1' at position n \u2013 where n's indexing begins at 0 \u2013 indicates the opt-in status for special feature ID n+1; false and true respectively. eg. '1' at index 0 is opt-in true for special feature ID 1"
+          },
+          "IABTCF_PublisherConsent": {
+            "title": "Iabtcf Publisherconsent",
+            "type": "string"
+          },
+          "IABTCF_PublisherLegitimateInterests": {
+            "title": "Iabtcf Publisherlegitimateinterests",
+            "type": "string"
+          },
+          "IABTCF_PublisherCustomPurposesConsents": {
+            "title": "Iabtcf Publishercustompurposesconsents",
+            "type": "string"
+          },
+          "IABTCF_PublisherCustomPurposesLegitimateInterests": {
+            "title": "Iabtcf Publishercustompurposeslegitimateinterests",
+            "type": "string"
+          }
+        },
+        "description": "Pre-parsed TC data and TC string for a CMP SDK:\n\nhttps://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#in-app-details"
       },
       "TestMessagingStatusMessage": {
         "title": "TestMessagingStatusMessage",
