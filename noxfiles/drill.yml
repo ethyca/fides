@@ -1,33 +1,59 @@
 # This file is used by "drill", a load testing utility
 # https://github.com/fcsonline/drill
 
-concurrency: 1 # How many instances of the `plan` get run concurrently
+concurrency: 5 # How many instances of the `plan` get run concurrently
 base: 'http://localhost:8080'
-iterations: 1 # The webserver shows performance issues quickly, so we only need 10 iterations
-rampup: 2 # The number of seconds between concurrent runsThe serial steps to running this plan
+iterations: 10 # The webserver shows performance issues quickly, so we only need 10 iterations
+rampup: 2 # The number of seconds between starting concurrent runs
 
-# Sequential stress-test plan
+# This plan is run in its entirety, sequentially, for each iteration
 plan:
   - name: Health Check
     request:
       method: GET
       url: /health
 
-  - name: Worker Health Check
-    request:
-      method: GET
-      url: /health/workers
-
-  - name: Database Health Check
-    request:
-      method: GET
-      url: /health/database
-
   - name: Login
+    assign: login
     request:
       method: POST
       body: '{"username": "root_user", "password": "VGVzdHBhc3N3b3JkMSE="}'
       headers:
         Content-Type: 'application/json'
       url: /api/v1/login
-      assign: login
+
+  - name: Get Privacy-Experience [Basic]
+    request:
+      method: GET
+      url: /api/v1/privacy-experience
+
+  - name: Get Privacy-Experience [Include GVL]
+    request:
+      method: GET
+      url: /api/v1/privacy-experience?include_gvl=1
+
+  - name: Get Data Privacy Types
+    request:
+      method: GET
+      headers:
+        Authorization: "Bearer {{ login.body.token_data.access_token }}"
+      url: /api/v1/{{ item }}
+    with_items:
+      - data_use
+      - data_category
+      - data_subject
+      - data_qualifier
+
+  - name: Get Systems
+    request:
+      method: GET
+      headers:
+        Authorization: "Bearer {{ login.body.token_data.access_token }}"
+      url: /api/v1/system
+
+  - name: Get Datasets
+    request:
+      method: GET
+      headers:
+        Authorization: "Bearer {{ login.body.token_data.access_token }}"
+      url: /api/v1/dataset
