@@ -390,6 +390,33 @@ class TestUnflattenDict:
             "A": {"B": {"C": 1, "D": 2}}
         }
 
+    def test_response_with_object_fields_specified(self):
+        assert unflatten_dict(
+            {
+                "address.email": "2a3aaa22b2ccce15ef7a1e94ee@email.com",
+                "address.name": "MASKED",
+                "metadata": {"age": "24", "place": "Bedrock"},
+                "return_path": "",
+                "substitution_data": {
+                    "favorite_color": "SparkPost Orange",
+                    "job": "Software Engineer",
+                },
+                "tags": ["greeting", "prehistoric", "fred", "flintstone"],
+            }
+        ) == {
+            "address": {
+                "email": "2a3aaa22b2ccce15ef7a1e94ee@email.com",
+                "name": "MASKED",
+            },
+            "metadata": {"age": "24", "place": "Bedrock"},
+            "return_path": "",
+            "substitution_data": {
+                "favorite_color": "SparkPost Orange",
+                "job": "Software Engineer",
+            },
+            "tags": ["greeting", "prehistoric", "fred", "flintstone"],
+        }
+
     def test_none_separator(self):
         with pytest.raises(IndexError):
             unflatten_dict({"": "1"}, separator=None)
