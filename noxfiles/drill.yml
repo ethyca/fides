@@ -1,16 +1,33 @@
 # This file is used by "drill", a load testing utility
+# https://github.com/fcsonline/drill
 
-concurrency: 4
+concurrency: 1 # How many instances of the `plan` get run concurrently
 base: 'http://localhost:8080'
-# There is a rate-limiter on the webserver, default is set to 2000 requests/min
-iterations: 400
-rampup: 3
+iterations: 1 # The webserver shows performance issues quickly, so we only need 10 iterations
+rampup: 2 # The number of seconds between concurrent runsThe serial steps to running this plan
 
+# Sequential stress-test plan
 plan:
   - name: Health Check
     request:
+      method: GET
       url: /health
 
   - name: Worker Health Check
     request:
+      method: GET
       url: /health/workers
+
+  - name: Database Health Check
+    request:
+      method: GET
+      url: /health/database
+
+  - name: Login
+    request:
+      method: POST
+      body: '{"username": "root_user", "password": "VGVzdHBhc3N3b3JkMSE="}'
+      headers:
+        Content-Type: 'application/json'
+      url: /api/v1/login
+      assign: login
