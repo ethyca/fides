@@ -13,6 +13,11 @@ import type { TCFVendorSave } from "./TCFVendorSave";
 
 /**
  * Request body for creating PrivacyPreferences.
+ *
+ *
+ * "preferences" key reserved for saving preferences against a privacy notice.
+ *
+ * New *_preferences fields are used for saving preferences against various tcf components.
  */
 export type PrivacyPreferencesRequest = {
   browser_identity: Identity;

@@ -55,4 +55,5 @@ export type PrivacyExperienceResponse = {
    * For TCF Experiences, Systems with TCF components that do not have an official vendor id (identified by system id)
    */
   tcf_systems?: Array<TCFVendorRecord>;
+  gvl?: any;
 };
