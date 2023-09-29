@@ -12,6 +12,7 @@ defusedxml==0.7.1
 expandvars==0.9.0
 fastapi[all]==0.89.1
 fastapi-caching[redis]==0.3.0
+fastapi-cache2==0.2.1
 fastapi-pagination[sqlalchemy]==0.11.4
 fideslang==2.1.0
 fideslog==1.2.10
@@ -41,7 +42,7 @@ PyMySQL==1.0.2
 pymssql==2.2.8
 python-jose[cryptography]==3.3.0
 pyyaml==6.0.1
-redis==3.5.3
+redis==4.6.0
 rich-click==1.6.1
 sendgrid==6.9.7
 slowapi==0.1.8
