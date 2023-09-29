@@ -1,9 +1,9 @@
 # This file is used by "drill", a load testing utility
 # https://github.com/fcsonline/drill
 
-concurrency: 5 # How many instances of the `plan` get run concurrently
+concurrency: 1 # How many instances of the `plan` get run concurrently
 base: 'http://localhost:8080'
-iterations: 10 # The webserver shows performance issues quickly, so we only need 10 iterations
+iterations: 2 # How many times to run the plan
 rampup: 2 # The number of seconds between starting concurrent runs
 
 # This plan is run in its entirety, sequentially, for each iteration
@@ -32,17 +32,33 @@ plan:
       method: GET
       url: /api/v1/privacy-experience?include_gvl=1
 
-  - name: Get Data Privacy Types
+  - name: Get Data Use
     request:
       method: GET
       headers:
         Authorization: "Bearer {{ login.body.token_data.access_token }}"
-      url: /api/v1/{{ item }}
-    with_items:
-      - data_use
-      - data_category
-      - data_subject
-      - data_qualifier
+      url: /api/v1/data_use
+
+  - name: Get Data Category
+    request:
+      method: GET
+      headers:
+        Authorization: "Bearer {{ login.body.token_data.access_token }}"
+      url: /api/v1/data_category
+
+  - name: Get Data Qualifier
+    request:
+      method: GET
+      headers:
+        Authorization: "Bearer {{ login.body.token_data.access_token }}"
+      url: /api/v1/data_qualifier
+
+  - name: Get Data Subject
+    request:
+      method: GET
+      headers:
+        Authorization: "Bearer {{ login.body.token_data.access_token }}"
+      url: /api/v1/data_subject
 
   - name: Get Systems
     request:
