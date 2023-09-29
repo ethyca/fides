@@ -3,12 +3,13 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
-from fideslang import DEFAULT_TAXONOMY
+from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra, root_validator
 
 from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.schemas import Msg
+from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
 
@@ -125,7 +126,7 @@ class ConsentPreferencesByUser(BaseModel):
             preference.data_use = next(
                 (
                     data_use.name
-                    for data_use in DEFAULT_TAXONOMY.data_use
+                    for data_use in DEFAULT_TAXONOMY.data_use or []
                     if data_use.fides_key == preference.data_use
                 ),
                 preference.data_use,
@@ -144,6 +145,8 @@ class ConsentEmailFulfillmentBodyParams(BaseModel):
 
 
 class ErasureRequestBodyParams(BaseModel):
+    """Body params required to send batched user erasure requests by email"""
+
     controller: str
     third_party_vendor_name: str
     identities: List[str]
@@ -170,10 +173,15 @@ class FidesopsMessage(
 
 
 class EmailForActionType(BaseModel):
-    """Email details that depend on action type"""
+    """
+    Represents email details for a specific action type, including subject and body.
+    Template variables may be included if provided for the given action type and can be
+    used by the downstream mailing service to customize messages, if supported.
+    """
 
     subject: str
     body: str
+    template_variables: Optional[Dict[str, Any]] = {}
 
 
 class MessagingServiceDetails(Enum):
@@ -405,3 +413,21 @@ class MessagingConfigStatusMessage(BaseModel):
 
     config_status: Optional[MessagingConfigStatus] = None
     detail: Optional[str] = None
+
+
+class MessagingTemplateBase(BaseModel):
+    key: str
+    content: Dict[str, Any]
+
+
+class MessagingTemplateRequest(MessagingTemplateBase):
+    pass
+
+
+class MessagingTemplateResponse(MessagingTemplateBase):
+    label: str
+
+
+class BulkPutMessagingTemplateResponse(BulkResponse):
+    succeeded: List[MessagingTemplateResponse]
+    failed: List[BulkUpdateFailed]

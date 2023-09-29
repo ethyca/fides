@@ -5,13 +5,15 @@ import os
 import sys
 from datetime import datetime, timezone
 from logging import WARNING
+from time import perf_counter
 from typing import Callable, Optional
 from urllib.parse import unquote
 
 from fastapi import HTTPException, Request, Response, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
+from pyinstrument import Profiler
 from starlette.background import BackgroundTask
 from uvicorn import Config, Server
 
@@ -30,7 +32,7 @@ from fides.api.schemas.analytics import Event, ExtraData
 from fides.api.service.privacy_request.email_batch_service import (
     initiate_scheduled_batch_email_send,
 )
-from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.ui import (
     get_admin_index_as_response,
     get_path_to_admin_ui_file,
@@ -48,6 +50,21 @@ IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 VERSION = fides.__version__
 
 app = create_fides_app()
+
+if CONFIG.dev_mode:
+
+    @app.middleware("http")
+    async def profile_request(request: Request, call_next: Callable) -> Response:
+        profiling = request.headers.get("profile-request", False)
+        if profiling:
+            profiler = Profiler(interval=0.001, async_mode="enabled")
+            profiler.start()
+            await call_next(request)
+            profiler.stop()
+            logger.debug("Request Profiled!")
+            return HTMLResponse(profiler.output_text(timeline=True))
+
+        return await call_next(request)
 
 
 @app.middleware("http")
@@ -232,17 +249,21 @@ async def setup_server() -> None:
     **NOTE**: The order of operations here _is_ deliberate
     and must be maintained.
     """
+    start_time = perf_counter()
+    logger.info("Starting server setup...")
     if not CONFIG.dev_mode:
         sys.tracebacklimit = 0
 
     log_startup()
 
-    await run_database_startup()
+    await run_database_startup(app)
 
     check_redis()
 
     if not scheduler.running:
         scheduler.start()
+    if not async_scheduler.running:
+        async_scheduler.start()
 
     initiate_scheduled_batch_email_send()
 
@@ -262,7 +283,9 @@ async def setup_server() -> None:
     if not CONFIG.logging.serialization:
         logger.info(FIDES_ASCII_ART)
 
-    logger.info(f"Fides startup complete! v{VERSION}")
+    logger.info("Fides startup complete! v{}", VERSION)
+    startup_time = round(perf_counter() - start_time, 3)
+    logger.info("Server setup completed in {} seconds", startup_time)
 
 
 def start_webserver(port: int = 8080) -> None:

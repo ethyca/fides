@@ -19,8 +19,8 @@ describe("Taxonomy management with Plus features", () => {
     key: "user",
   };
   const RESOURCE_CHILD = {
-    label: "Biometric Data",
-    key: "user.biometric",
+    label: "Job Title",
+    key: "user.job_title",
   };
 
   const navigateToEditor = () => {

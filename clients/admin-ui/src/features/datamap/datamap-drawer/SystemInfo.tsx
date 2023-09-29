@@ -104,7 +104,7 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
         >
           {({ isSubmitting, dirty, isValid }) => (
             <Form>
-              <FormGuard id="SystemInfo" name="System Info" />
+              <FormGuard id="SystemInfoDrawer" name="System Info" />
               <Box marginTop={3}>
                 <CustomTextInput
                   label="System name"

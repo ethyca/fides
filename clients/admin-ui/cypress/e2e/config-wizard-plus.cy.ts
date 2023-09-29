@@ -37,10 +37,19 @@ describe("Config wizard with plus settings", () => {
       stubPlus(true, {
         core_fides_version: "1.9.6",
         fidesplus_server: "healthy",
+        fidesplus_version: "1.9.6",
         system_scanner: {
           enabled: false,
           cluster_health: null,
           cluster_error: null,
+        },
+        dictionary: {
+          enabled: true,
+          service_health: null,
+          service_error: null,
+        },
+        fides_cloud: {
+          enabled: false,
         },
       });
       cy.visit(ADD_SYSTEMS_ROUTE);
@@ -56,10 +65,19 @@ describe("Config wizard with plus settings", () => {
       stubPlus(true, {
         core_fides_version: "1.9.6",
         fidesplus_server: "healthy",
+        fidesplus_version: "1.9.6",
         system_scanner: {
           enabled: true,
           cluster_health: ClusterHealth.UNHEALTHY,
           cluster_error: null,
+        },
+        dictionary: {
+          enabled: true,
+          service_health: null,
+          service_error: null,
+        },
+        fides_cloud: {
+          enabled: false,
         },
       });
       cy.visit(ADD_SYSTEMS_ROUTE);

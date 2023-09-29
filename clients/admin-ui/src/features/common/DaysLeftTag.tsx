@@ -42,7 +42,12 @@ const DaysLeftTag = ({ daysLeft, includeText, status }: DaysLeftTagProps) => {
   const text = includeText ? `${daysLeft} days left` : daysLeft;
 
   return (
-    <Tag backgroundColor={backgroundColor} color="white">
+    <Tag
+      backgroundColor={backgroundColor}
+      color="white"
+      fontWeight="medium"
+      fontSize="sm"
+    >
       {text}
     </Tag>
   );

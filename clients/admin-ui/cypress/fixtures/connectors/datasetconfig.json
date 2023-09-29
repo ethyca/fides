@@ -495,7 +495,7 @@
               {
                 "name": "ccn",
                 "description": null,
-                "data_categories": ["user.financial.account_number"],
+                "data_categories": ["user.financial.bank_account"],
                 "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "retention": null,
                 "fides_meta": null,

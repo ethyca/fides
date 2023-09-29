@@ -1,22 +1,17 @@
 # pylint: disable=protected-access
 import os
 from abc import ABC, abstractmethod
-from ast import AST, AnnAssign
-from operator import getitem
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type
+from typing import Dict, Iterable, List, Optional, Type
 from zipfile import ZipFile
 
-from AccessControl.ZopeGuards import safe_builtins
 from fideslang.models import Dataset
 from loguru import logger
 from packaging.version import Version
 from packaging.version import parse as parse_version
-from RestrictedPython import compile_restricted
-from RestrictedPython.transformer import RestrictingNodeTransformer
 from sqlalchemy.orm import Session
 
 from fides.api.api.deps import get_api_session
-from fides.api.common_exceptions import FidesopsException, ValidationError
+from fides.api.common_exceptions import ValidationError
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -30,6 +25,9 @@ from fides.api.schemas.connection_configuration.saas_config_template_values impo
 )
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.schemas.saas.saas_config import SaaSConfig
+from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
+    OAuth2AuthorizationCodeAuthenticationStrategy,
+)
 from fides.api.util.saas_util import (
     encode_file_contents,
     load_config,
@@ -41,7 +39,6 @@ from fides.api.util.saas_util import (
     replace_version,
 )
 from fides.api.util.unsafe_file_util import verify_svg, verify_zip
-from fides.config import CONFIG
 
 
 class ConnectorTemplateLoader(ABC):
@@ -77,6 +74,13 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
                 config_dict = load_config(config_file)
                 connector_type = config_dict["type"]
                 human_readable = config_dict["name"]
+                user_guide = config_dict.get("user_guide")
+                authentication = config_dict["client_config"].get("authentication")
+                authorization_required = (
+                    authentication is not None
+                    and authentication.get("strategy")
+                    == OAuth2AuthorizationCodeAuthenticationStrategy.name
+                )
 
                 try:
                     icon = encode_file_contents(f"data/saas/icon/{connector_type}.svg")
@@ -96,8 +100,9 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
                             f"data/saas/dataset/{connector_type}_dataset.yml"
                         ),
                         icon=icon,
-                        functions=None,
                         human_readable=human_readable,
+                        authorization_required=authorization_required,
+                        user_guide=user_guide,
                     )
                 except Exception:
                     logger.exception("Unable to load {} connector", connector_type)
@@ -151,23 +156,26 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         template: CustomConnectorTemplate,
     ) -> None:
         """
-        Registers a custom connector template by converting it to a ConnectorTemplate,
-        registering any custom functions, and adding it to the loader's template dictionary.
+        Registers a custom connector template by converting it to a ConnectorTemplate
+        and adding it to the loader's template dictionary.
         """
+
+        config = SaaSConfig(**load_config_from_string(template.config))
+        authentication = config.client_config.authentication
+        authorization_required = (
+            authentication is not None
+            and authentication.strategy
+            == OAuth2AuthorizationCodeAuthenticationStrategy.name
+        )
+
         connector_template = ConnectorTemplate(
             config=template.config,
             dataset=template.dataset,
             icon=template.icon,
-            functions=template.functions,
             human_readable=template.name,
+            authorization_required=authorization_required,
+            user_guide=config.user_guide,
         )
-
-        # register custom functions if available
-        if template.functions:
-            register_custom_functions(template.functions)
-            logger.info(
-                f"Loaded functions from the custom connector template '{template.key}'"
-            )
 
         # register the template in the loader's template dictionary
         CustomConnectorTemplateLoader.get_connector_templates()[
@@ -220,13 +228,6 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                     raise ValidationError(
                         "Multiple svg files found, only one is allowed."
                     )
-            elif info.filename.endswith(".py"):
-                if not function_contents:
-                    function_contents = file_contents
-                else:
-                    raise ValidationError(
-                        "Multiple Python (.py) files found, only one is allowed."
-                    )
 
         if not config_contents:
             raise ValidationError("Zip file does not contain a config.yml file.")
@@ -266,7 +267,6 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             config=config_contents,
             dataset=dataset_contents,
             icon=icon_contents,
-            functions=function_contents,
             replaceable=replaceable,
         )
 
@@ -447,80 +447,3 @@ def update_saas_instance(
     connection_config.update_saas_config(db, SaaSConfig(**config_from_template))
 
     upsert_dataset_config_from_template(db, connection_config, template, template_vals)
-
-
-def register_custom_functions(script: str) -> None:
-    """
-    Registers custom functions by executing the given script in a restricted environment.
-
-    The script is compiled and executed with RestrictedPython, which is designed to reduce
-    the risk of executing untrusted code. It provides a set of safe builtins to prevent
-    malicious or unintended behavior.
-
-    Args:
-        script (str): The Python script containing the custom functions to be registered.
-
-    Raises:
-        FidesopsException: If allow_custom_connector_functions is disabled.
-        SyntaxError: If the script contains a syntax error or uses restricted language features.
-        Exception: If an exception occurs during the execution of the script.
-    """
-
-    if CONFIG.security.allow_custom_connector_functions:
-        restricted_code = compile_restricted(
-            script, "<string>", "exec", policy=CustomRestrictingNodeTransformer
-        )
-        safe_builtins["__import__"] = custom_guarded_import
-        safe_builtins["_getitem_"] = getitem
-        safe_builtins["staticmethod"] = staticmethod
-
-        # pylint: disable=exec-used
-        exec(
-            restricted_code,
-            {
-                "__metaclass__": type,
-                "__name__": "restricted_module",
-                "__builtins__": safe_builtins,
-            },
-        )
-    else:
-        raise FidesopsException(
-            message="The import of connector templates with custom functions is disabled by the 'security.allow_custom_connector_functions' setting."
-        )
-
-
-class CustomRestrictingNodeTransformer(RestrictingNodeTransformer):
-    """
-    Custom node transformer class that extends RestrictedPython's RestrictingNodeTransformer
-    to allow the use of type annotations (AnnAssign) in restricted code.
-    """
-
-    def visit_AnnAssign(self, node: AnnAssign) -> AST:
-        return self.node_contents_visit(node)
-
-
-def custom_guarded_import(
-    name: str,
-    _globals: Optional[dict] = None,
-    _locals: Optional[dict] = None,
-    fromlist: Optional[Tuple[str, ...]] = None,
-    level: int = 0,
-) -> Any:
-    """
-    A custom import function that prevents the import of certain potentially unsafe modules.
-    """
-    if name in [
-        "os",
-        "sys",
-        "subprocess",
-        "shutil",
-        "socket",
-        "importlib",
-        "tempfile",
-        "glob",
-    ]:
-        # raising SyntaxError to be consistent with exceptions thrown from other guarded functions
-        raise SyntaxError(f"Import of '{name}' module is not allowed.")
-    if fromlist is None:
-        fromlist = ()
-    return __import__(name, _globals, _locals, fromlist, level)

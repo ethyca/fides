@@ -134,6 +134,8 @@ export type Features = {
   systemsCount: number;
   connectionsCount: number;
   dataFlowScanning: boolean;
+  dictionaryService: boolean;
+  fidesCloud: boolean;
 
   flags: FlagsFor<FlagConfig>;
 };
@@ -151,6 +153,10 @@ export const useFeatures = (): Features => {
   const dataFlowScanning = plusHealth
     ? !!plusHealth.system_scanner.enabled
     : false;
+  const dictionaryService = plusHealth
+    ? !!plusHealth.dictionary.enabled
+    : false;
+  const fidesCloud = plusHealth ? !!plusHealth?.fides_cloud?.enabled : false;
 
   const systemsCount = allSystems?.length ?? 0;
 
@@ -165,6 +171,8 @@ export const useFeatures = (): Features => {
     systemsCount,
     connectionsCount,
     dataFlowScanning,
+    dictionaryService,
+    fidesCloud,
     flags,
   };
 };

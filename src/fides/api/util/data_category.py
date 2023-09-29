@@ -1,7 +1,7 @@
 from enum import Enum as EnumType
 from typing import List, Type
 
-from fideslang import DEFAULT_TAXONOMY
+from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
 from sqlalchemy.orm import Session
 
@@ -37,6 +37,6 @@ def _validate_data_category(
     valid_categories = get_data_categories_from_db(db=db)
     if data_category not in valid_categories:
         raise common_exceptions.DataCategoryNotSupported(
-            f"The data category {data_category} is not supported."
+            f"The data category '{data_category}' was not found in the database, and is therefore not valid for use here."
         )
     return data_category

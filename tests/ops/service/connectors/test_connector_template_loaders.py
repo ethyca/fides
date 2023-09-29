@@ -16,7 +16,6 @@ from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     CustomConnectorTemplateLoader,
     FileConnectorTemplateLoader,
-    register_custom_functions,
 )
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
@@ -113,7 +112,6 @@ class TestCustomConnectorTemplateLoader:
         self,
         replaceable_planet_express_config,
         planet_express_dataset,
-        planet_express_functions,
         planet_express_icon,
     ) -> BytesIO:
         return create_zip_file(
@@ -121,7 +119,6 @@ class TestCustomConnectorTemplateLoader:
                 "config.yml": replaceable_planet_express_config,
                 "dataset.yml": planet_express_dataset,
                 "icon.svg": planet_express_icon,
-                "functions.py": planet_express_functions,
             }
         )
 
@@ -135,8 +132,6 @@ class TestCustomConnectorTemplateLoader:
         )
 
     def test_custom_connector_template_loader_no_templates(self):
-        CONFIG.security.allow_custom_connector_functions = True
-
         connector_templates = CustomConnectorTemplateLoader.get_connector_templates()
         assert connector_templates == {}
 
@@ -148,10 +143,7 @@ class TestCustomConnectorTemplateLoader:
         mock_all: MagicMock,
         planet_express_dataset,
         planet_express_icon,
-        planet_express_functions,
     ):
-        CONFIG.security.allow_custom_connector_functions = True
-
         mock_all.return_value = [
             CustomConnectorTemplate(
                 key="planet_express",
@@ -159,131 +151,11 @@ class TestCustomConnectorTemplateLoader:
                 config="planet_express_config",
                 dataset=planet_express_dataset,
                 icon=planet_express_icon,
-                functions=planet_express_functions,
             )
         ]
 
-        # verify the custom functions aren't loaded if the template is invalid
         connector_templates = CustomConnectorTemplateLoader.get_connector_templates()
         assert connector_templates == {}
-
-        with pytest.raises(NoSuchSaaSRequestOverrideException):
-            SaaSRequestOverrideFactory.get_override(
-                "planet_express_user_access", SaaSRequestType.READ
-            )
-
-        # assert the strategy was not registered
-        authentication_strategies = AuthenticationStrategy.get_strategies()
-        assert "planet_express" not in [
-            strategy.name for strategy in authentication_strategies
-        ]
-
-    @mock.patch(
-        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
-    )
-    def test_custom_connector_template_loader_invalid_functions(
-        self,
-        mock_all: MagicMock,
-        planet_express_config,
-        planet_express_dataset,
-        planet_express_icon,
-    ):
-        CONFIG.security.allow_custom_connector_functions = True
-
-        # save custom connector template to the database
-        mock_all.return_value = [
-            CustomConnectorTemplate(
-                key="planet_express",
-                name="Planet Express",
-                config=planet_express_config,
-                dataset=planet_express_dataset,
-                icon=planet_express_icon,
-                functions="planet_express_functions",
-            )
-        ]
-
-        # verify nothing is loaded if the custom functions fail to load
-        connector_templates = CustomConnectorTemplateLoader.get_connector_templates()
-        assert connector_templates == {}
-
-    @mock.patch(
-        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
-    )
-    def test_custom_connector_template_loader_custom_connector_functions_disabled(
-        self,
-        mock_all: MagicMock,
-        planet_express_config,
-        planet_express_dataset,
-        planet_express_icon,
-        planet_express_functions,
-    ):
-        CONFIG.security.allow_custom_connector_functions = False
-
-        mock_all.return_value = [
-            CustomConnectorTemplate(
-                key="planet_express",
-                name="Planet Express",
-                config=planet_express_config,
-                dataset=planet_express_dataset,
-                icon=planet_express_icon,
-                functions=planet_express_functions,
-            )
-        ]
-
-        # load custom connector templates from the database
-        connector_templates = CustomConnectorTemplateLoader.get_connector_templates()
-        assert connector_templates == {}
-
-        with pytest.raises(NoSuchSaaSRequestOverrideException):
-            SaaSRequestOverrideFactory.get_override(
-                "planet_express_user_access", SaaSRequestType.READ
-            )
-
-        # assert the strategy was not registered
-        authentication_strategies = AuthenticationStrategy.get_strategies()
-        assert "planet_express" not in [
-            strategy.name for strategy in authentication_strategies
-        ]
-
-    @mock.patch(
-        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
-    )
-    def test_custom_connector_template_loader_custom_connector_functions_disabled_custom_functions(
-        self,
-        mock_all: MagicMock,
-        planet_express_config,
-        planet_express_dataset,
-        planet_express_icon,
-    ):
-        """
-        A connector template with no custom functions should still be loaded
-        even if allow_custom_connector_functions is set to false
-        """
-
-        CONFIG.security.allow_custom_connector_functions = False
-
-        # save custom connector template to the database
-        mock_all.return_value = [
-            CustomConnectorTemplate(
-                key="planet_express",
-                name="Planet Express",
-                config=planet_express_config,
-                dataset=planet_express_dataset,
-                icon=planet_express_icon,
-                functions=None,
-            )
-        ]
-
-        # load custom connector templates from the database
-        connector_templates = CustomConnectorTemplateLoader.get_connector_templates()
-        assert connector_templates == {
-            "planet_express": ConnectorTemplate(
-                config=planet_express_config,
-                dataset=planet_express_dataset,
-                icon=planet_express_icon,
-                human_readable="Planet Express",
-            )
-        }
 
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
@@ -294,10 +166,7 @@ class TestCustomConnectorTemplateLoader:
         planet_express_config,
         planet_express_dataset,
         planet_express_icon,
-        planet_express_functions,
     ):
-        CONFIG.security.allow_custom_connector_functions = True
-
         mock_all.return_value = [
             CustomConnectorTemplate(
                 key="planet_express",
@@ -305,7 +174,6 @@ class TestCustomConnectorTemplateLoader:
                 config=planet_express_config,
                 dataset=planet_express_dataset,
                 icon=planet_express_icon,
-                functions=planet_express_functions,
             )
         ]
 
@@ -318,21 +186,11 @@ class TestCustomConnectorTemplateLoader:
                 config=planet_express_config,
                 dataset=planet_express_dataset,
                 icon=planet_express_icon,
-                functions=planet_express_functions,
                 human_readable="Planet Express",
+                authorization_required=False,
+                user_guide=None,
             )
         }
-
-        # assert the request override was registered
-        SaaSRequestOverrideFactory.get_override(
-            "planet_express_user_access", SaaSRequestType.READ
-        )
-
-        # assert the strategy was registered
-        authentication_strategies = AuthenticationStrategy.get_strategies()
-        assert "planet_express" in [
-            strategy.name for strategy in authentication_strategies
-        ]
 
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
@@ -343,10 +201,7 @@ class TestCustomConnectorTemplateLoader:
         planet_express_config,
         planet_express_dataset,
         planet_express_icon,
-        planet_express_functions,
     ):
-        CONFIG.security.allow_custom_connector_functions = True
-
         mock_all.return_value = [
             CustomConnectorTemplate(
                 key="planet_express",
@@ -354,7 +209,6 @@ class TestCustomConnectorTemplateLoader:
                 config=planet_express_config,
                 dataset=planet_express_dataset,
                 icon=planet_express_icon,
-                functions=planet_express_functions,
             )
         ]
 
@@ -375,7 +229,47 @@ class TestCustomConnectorTemplateLoader:
         planet_express_config,
         planet_express_dataset,
         planet_express_icon,
+    ):
+        db = MagicMock()
+
+        CustomConnectorTemplateLoader.save_template(
+            db,
+            ZipFile(
+                create_zip_file(
+                    {
+                        "config.yml": planet_express_config,
+                        "dataset.yml": planet_express_dataset,
+                        "icon.svg": planet_express_icon,
+                    }
+                )
+            ),
+        )
+
+        # verify that a connector template can updated with no issue
+        CustomConnectorTemplateLoader.save_template(
+            db,
+            ZipFile(
+                create_zip_file(
+                    {
+                        "config.yml": planet_express_config,
+                        "dataset.yml": planet_express_dataset,
+                        "icon.svg": planet_express_icon,
+                    }
+                )
+            ),
+        )
+        assert mock_create_or_update.call_count == 2
+
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
+    )
+    def test_custom_connector_save_template_with_functions(
+        self,
+        mock_create_or_update: MagicMock,
+        planet_express_config,
+        planet_express_dataset,
         planet_express_functions,
+        planet_express_icon,
     ):
         db = MagicMock()
 
@@ -393,45 +287,21 @@ class TestCustomConnectorTemplateLoader:
             ),
         )
 
-        # verify that a connector template can updated with no issue
-        CustomConnectorTemplateLoader.save_template(
-            db,
-            ZipFile(
-                create_zip_file(
-                    {
-                        "config.yml": planet_express_config,
-                        "dataset.yml": planet_express_dataset,
-                        "functions.py": planet_express_functions,
-                        "icon.svg": planet_express_icon,
-                    }
-                )
-            ),
-        )
-        assert mock_create_or_update.call_count == 2
-
-    def test_custom_connector_template_loader_disallowed_modules(
-        self,
-        planet_express_config,
-        planet_express_dataset,
-        planet_express_icon,
-    ):
-        CONFIG.security.allow_custom_connector_functions = True
-
-        with pytest.raises(SyntaxError) as exc:
-            CustomConnectorTemplateLoader.save_template(
-                MagicMock(),
-                ZipFile(
-                    create_zip_file(
-                        {
-                            "config.yml": planet_express_config,
-                            "dataset.yml": planet_express_dataset,
-                            "functions.py": "import os",
-                            "icon.svg": planet_express_icon,
-                        }
-                    )
-                ),
+        # assert the request override was ignored
+        with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
+            SaaSRequestOverrideFactory.get_override(
+                "planet_express_user_access", SaaSRequestType.UPDATE
             )
-        assert "Import of 'os' module is not allowed." == str(exc.value)
+        assert (
+            f"Custom SaaS override 'planet_express_user_access' does not exist."
+            in str(exc.value)
+        )
+
+        # assert the strategy was ignored
+        authentication_strategies = AuthenticationStrategy.get_strategies()
+        assert "planet_express" not in [
+            strategy.name for strategy in authentication_strategies
+        ]
 
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
@@ -510,6 +380,8 @@ class TestCustomConnectorTemplateLoader:
                 config=planet_express_config,
                 dataset=planet_express_dataset,
                 human_readable="Planet Express",
+                authorization_required=False,
+                user_guide=None,
             )
         }
         mock_delete.assert_not_called()
@@ -553,6 +425,8 @@ class TestCustomConnectorTemplateLoader:
                 config=zendesk_config,
                 dataset=zendesk_dataset,
                 human_readable="Zendesk",
+                authorization_required=False,
+                user_guide="https://docs.ethyca.com/user-guides/integrations/saas-integrations/zendesk",
             )
         }
         mock_delete.assert_not_called()
@@ -614,16 +488,3 @@ class TestCustomConnectorTemplateLoader:
         config_contents = mock_create_or_update.call_args.kwargs["data"]["config"]
         custom_config = load_config_from_string(config_contents)
         assert custom_config["version"] == "0.0.0"
-
-
-class TestRegisterCustomFunctions:
-    def test_function_loader(self):
-        """Verify that all override implementations can be loaded by RestrictedPython"""
-
-        overrides_path = "src/fides/api/service/saas_request/override_implementations"
-
-        for filename in os.listdir(overrides_path):
-            if filename.endswith(".py") and filename != "__init__.py":
-                file_path = os.path.join(overrides_path, filename)
-                with open(file_path, "r") as file:
-                    register_custom_functions(file.read())

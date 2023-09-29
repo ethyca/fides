@@ -29,13 +29,14 @@ from fides.api.db.system import (
     validate_privacy_declarations,
 )
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.sql_models import System  # type:ignore[attr-defined]
 from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key,
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )
-from fides.api.oauth.utils import verify_oauth_client_prod
+from fides.api.oauth.utils import get_current_user, verify_oauth_client_prod
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
 from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
@@ -49,7 +50,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
-from fides.api.schemas.system import SystemResponse
+from fides.api.schemas.system import BasicSystemResponse, SystemResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
     connection_status,
@@ -247,13 +248,14 @@ async def update(
     ),  # Security dependency defined here instead of the path operation decorator so we have access to the request body
     # to be able to look up the system as well as return a value
     db: AsyncSession = Depends(get_async_db),
+    current_user: FidesUser = Depends(get_current_user),
 ) -> Dict:
     """
     Update a System by the fides_key extracted from the request body.  Defined outside of the crud routes
     to add additional "system manager" permission checks.
     """
     await validate_privacy_declarations(db, resource)
-    return await update_system(resource, db)
+    return await update_system(resource, db, current_user.id if current_user else None)
 
 
 @SYSTEM_ROUTER.post(
@@ -272,8 +274,11 @@ async def upsert(
     resources: List[SystemSchema],
     response: Response,
     db: AsyncSession = Depends(get_async_db),
+    current_user: FidesUser = Depends(get_current_user),
 ) -> Dict:
-    inserted, updated = await upsert_system(resources, db)
+    inserted, updated = await upsert_system(
+        resources, db, current_user.id if current_user else None
+    )
     response.status_code = (
         status.HTTP_201_CREATED if inserted > 0 else response.status_code
     )
@@ -339,12 +344,13 @@ async def delete(
 async def create(
     resource: SystemSchema,
     db: AsyncSession = Depends(get_async_db),
+    current_user: FidesUser = Depends(get_current_user),
 ) -> Dict:
     """
     Override `System` create/POST to handle `.privacy_declarations` defined inline,
     for backward compatibility and ease of use for API users.
     """
-    return await create_system(resource, db)
+    return await create_system(resource, db, current_user.id if current_user else None)
 
 
 @SYSTEM_ROUTER.get(
@@ -355,7 +361,7 @@ async def create(
             scopes=[SYSTEM_READ],
         )
     ],
-    response_model=List[SystemResponse],
+    response_model=List[BasicSystemResponse],
     name="List",
 )
 async def ls(  # pylint: disable=invalid-name

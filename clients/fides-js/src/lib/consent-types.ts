@@ -1,10 +1,24 @@
+import type {
+  TCFPurposeRecord,
+  TCFVendorRecord,
+  TCFFeatureRecord,
+  TCFPurposeSave,
+  TCFSpecialPurposeSave,
+  TCFFeatureSave,
+  TCFSpecialFeatureSave,
+  TCFVendorSave,
+  GVLJson,
+} from "./tcf/types";
+
+export type EmptyExperience = Record<PropertyKey, never>;
+
 export interface FidesConfig {
   // Set the consent defaults from a "legacy" Privacy Center config.json.
   consent?: LegacyConsentConfig;
   // Set the "experience" to be used for this Fides.js instance -- overrides the "legacy" config.
-  // If set, Fides.js will fetch neither experience config nor user geolocation.
-  // If not set, Fides.js will fetch its own experience config.
-  experience?: PrivacyExperience;
+  // If defined or is empty, Fides.js will not fetch experience config.
+  // If undefined, Fides.js will attempt to fetch its own experience config.
+  experience?: PrivacyExperience | EmptyExperience;
   // Set the geolocation for this Fides.js instance. If *not* set, Fides.js will fetch its own geolocation.
   geolocation?: UserGeolocation;
   // Global options for this Fides.js instance. Fides provides defaults for all props except privacyCenterUrl
@@ -21,6 +35,9 @@ export type FidesOptions = {
   // Whether or not the banner should be globally enabled
   isOverlayEnabled: boolean;
 
+  // Whether we should pre-fetch geolocation and experience server-side
+  isPrefetchEnabled: boolean;
+
   // Whether user geolocation should be enabled. Requires geolocationApiUrl
   isGeolocationEnabled: boolean;
 
@@ -36,8 +53,11 @@ export type FidesOptions = {
   // URL for the Fides API, used to fetch and save consent preferences. Required.
   fidesApiUrl: string;
 
+  // URL for Server-side Fides API, used to fetch geolocation and consent preference. Optional.
+  serverSideFidesApiUrl: string;
+
   // Whether we should show the TCF modal
-  tcfEnabled: boolean;
+  tcfEnabled?: boolean;
 };
 
 export class SaveConsentPreference {
@@ -60,6 +80,13 @@ export type PrivacyExperience = {
   updated_at: string;
   show_banner?: boolean;
   privacy_notices?: Array<PrivacyNotice>;
+  tcf_purposes?: Array<TCFPurposeRecord>;
+  tcf_special_purposes?: Array<TCFPurposeRecord>;
+  tcf_vendors?: Array<TCFVendorRecord>;
+  tcf_systems?: Array<TCFVendorRecord>;
+  tcf_features?: Array<TCFFeatureRecord>;
+  tcf_special_features?: Array<TCFFeatureRecord>;
+  gvl?: GVLJson;
 };
 
 export type ExperienceConfig = {
@@ -137,6 +164,7 @@ export enum UserConsentPreference {
 export enum ComponentType {
   OVERLAY = "overlay",
   PRIVACY_CENTER = "privacy_center",
+  TCF_OVERLAY = "tcf_overlay",
 }
 
 export enum BannerEnabled {
@@ -173,7 +201,13 @@ export enum ConsentMethod {
 export type PrivacyPreferencesRequest = {
   browser_identity: Identity;
   code?: string;
-  preferences: Array<ConsentOptionCreate>;
+  preferences?: Array<ConsentOptionCreate>;
+  purpose_preferences?: Array<TCFPurposeSave>;
+  special_purpose_preferences?: Array<TCFSpecialPurposeSave>;
+  vendor_preferences?: Array<TCFVendorSave>;
+  system_preferences?: Array<TCFVendorSave>;
+  feature_preferences?: Array<TCFFeatureSave>;
+  special_feature_preferences?: Array<TCFSpecialFeatureSave>;
   policy_key?: string; // Will use default consent policy if not supplied
   privacy_experience_id?: string;
   user_geography?: string;
@@ -214,6 +248,7 @@ export enum ServingComponent {
   OVERLAY = "overlay",
   BANNER = "banner",
   PRIVACY_CENTER = "privacy_center",
+  TCF_OVERLAY = "tcf_overlay",
 }
 /**
  * Request body when indicating that notices were served in the UI

@@ -9,6 +9,7 @@ export type NavConfigRoute = {
   exact?: boolean;
   requiresPlus?: boolean;
   requiresFlag?: FlagNames;
+  requiresFidesCloud?: boolean;
   /** This route is only available if the user has ANY of these scopes */
   scopes: ScopeRegistryEnum[];
   /** Child routes which will be rendered in the side nav */
@@ -86,31 +87,29 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresFlag: "privacyRequestsConfiguration",
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
+    ],
+  },
+  {
+    title: "Consent",
+    routes: [
       {
-        title: "Consent",
-        path: routes.CONSENT_ROUTE,
-        requiresFlag: "privacyNotices",
+        title: "Configure consent",
+        path: routes.CONFIGURE_CONSENT_ROUTE,
+        requiresFlag: "configureConsent",
         requiresPlus: true,
-        scopes: [
-          ScopeRegistryEnum.PRIVACY_NOTICE_READ,
-          ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ,
-        ],
-        routes: [
-          {
-            title: "Privacy notices",
-            path: routes.PRIVACY_NOTICES_ROUTE,
-            requiresFlag: "privacyNotices",
-            requiresPlus: true,
-            scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
-          },
-          {
-            title: "Privacy experience",
-            path: routes.PRIVACY_EXPERIENCE_ROUTE,
-            requiresFlag: "privacyExperience",
-            requiresPlus: true,
-            scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
-          },
-        ],
+        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+      },
+      {
+        title: "Privacy notices",
+        path: routes.PRIVACY_NOTICES_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+      },
+      {
+        title: "Privacy experience",
+        path: routes.PRIVACY_EXPERIENCE_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
       },
     ],
   },
@@ -155,6 +154,28 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresPlus: true,
       },
       {
+        title: "Email templates",
+        path: routes.EMAIL_TEMPLATES_ROUTE,
+        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
+      },
+      {
+        title: "Domain records",
+        path: routes.DOMAIN_RECORDS_ROUTE,
+        requiresPlus: true,
+        requiresFidesCloud: true,
+        scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
+      },
+      {
+        title: "CORS configuration",
+        path: routes.CORS_CONFIGURATION_ROUTE,
+        requiresPlus: true,
+        requiresFidesCloud: false,
+        scopes: [
+          ScopeRegistryEnum.CONFIG_READ,
+          ScopeRegistryEnum.CONFIG_UPDATE,
+        ],
+      },
+      {
         title: "About Fides",
         path: routes.ABOUT_ROUTE,
         scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features
@@ -182,6 +203,13 @@ export type NavGroup = {
   children: Array<NavGroupChild>;
 };
 
+/** If all routes in the group require plus and plus is not running then return true */
+const navAllGroupReqsPlus = (group: NavConfigGroup, hasPlus: boolean) => {
+  if (group.routes.every((route) => route.requiresPlus) && !hasPlus) {
+    return true;
+  }
+  return false;
+};
 /**
  * If a group contains only routes that the user cannot access, return false.
  * An empty list of scopes is a special case where any scope works.
@@ -228,6 +256,7 @@ interface ConfigureNavProps {
   config: NavConfigGroup[];
   userScopes: ScopeRegistryEnum[];
   hasPlus?: boolean;
+  hasFidesCloud?: boolean;
   flags?: Record<string, boolean>;
 }
 
@@ -236,6 +265,7 @@ const configureNavRoute = ({
   hasPlus,
   flags,
   userScopes,
+  hasFidesCloud,
   navGroupTitle,
 }: Omit<ConfigureNavProps, "config"> & {
   route: NavConfigRoute;
@@ -244,6 +274,12 @@ const configureNavRoute = ({
   // If the target route would require plus in a non-plus environment,
   // exclude it from the group.
   if (route.requiresPlus && !hasPlus) {
+    return undefined;
+  }
+
+  // If the target route would require fides cloud in a non-fides-cloud environment,
+  // exclude it from the group.
+  if (route.requiresFidesCloud && !hasFidesCloud) {
     return undefined;
   }
 
@@ -267,6 +303,7 @@ const configureNavRoute = ({
         userScopes,
         hasPlus,
         flags,
+        hasFidesCloud,
         navGroupTitle,
       });
       if (configuredChildRoute) {
@@ -289,12 +326,16 @@ export const configureNavGroups = ({
   config,
   userScopes,
   hasPlus = false,
+  hasFidesCloud = false,
   flags,
 }: ConfigureNavProps): NavGroup[] => {
   const navGroups: NavGroup[] = [];
-
   config.forEach((group) => {
-    if (!navGroupInScope(group, userScopes)) {
+    // if no nav routes are scoped for the user or all require plus
+    if (
+      !navGroupInScope(group, userScopes) ||
+      navAllGroupReqsPlus(group, hasPlus)
+    ) {
       return;
     }
 
@@ -310,6 +351,7 @@ export const configureNavGroups = ({
         hasPlus,
         flags,
         userScopes,
+        hasFidesCloud,
         navGroupTitle: group.title,
       });
       if (routeConfig) {

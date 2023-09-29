@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from fastapi import Depends, Security
 from fastapi_pagination import Page, Params
@@ -28,8 +28,14 @@ from fides.api.models.messaging import (
     default_messaging_config_name,
     get_schema_for_secrets,
 )
+from fides.api.models.messaging_template import (
+    DEFAULT_MESSAGING_TEMPLATES,
+    MessagingTemplate,
+)
 from fides.api.oauth.utils import verify_oauth_client
+from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import (
+    BulkPutMessagingTemplateResponse,
     MessagingActionType,
     MessagingConfigRequest,
     MessagingConfigRequestBase,
@@ -37,6 +43,8 @@ from fides.api.schemas.messaging.messaging import (
     MessagingConfigStatus,
     MessagingConfigStatusMessage,
     MessagingServiceType,
+    MessagingTemplateRequest,
+    MessagingTemplateResponse,
     TestMessagingStatusMessage,
 )
 from fides.api.schemas.messaging.messaging_secrets_docs_only import (
@@ -47,6 +55,7 @@ from fides.api.service.messaging.message_dispatch_service import dispatch_messag
 from fides.api.service.messaging.messaging_crud_service import (
     create_or_update_messaging_config,
     delete_messaging_config,
+    get_all_messaging_templates,
     get_messaging_config_by_key,
     update_messaging_config,
 )
@@ -56,6 +65,7 @@ from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
     MESSAGING_READ,
+    MESSAGING_TEMPLATE_UPDATE,
 )
 from fides.common.api.v1.urn_registry import (
     MESSAGING_ACTIVE_DEFAULT,
@@ -66,6 +76,7 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
     MESSAGING_STATUS,
+    MESSAGING_TEMPLATES,
     MESSAGING_TEST,
     V1_URL_PREFIX,
 )
@@ -159,7 +170,13 @@ def get_active_default_config(*, db: Session = Depends(deps.get_db)) -> Messagin
     Retrieves the active default messaging config.
     """
     logger.info("Finding active default messaging config")
-    messaging_config = MessagingConfig.get_active_default(db)
+    try:
+        messaging_config = MessagingConfig.get_active_default(db)
+    except ValueError:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Invalid notification_service_type configured.",
+        )
     if not messaging_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -478,3 +495,72 @@ def send_test_message(
             status_code=400, detail=f"There was an error sending the test message: {e}"
         )
     return {"details": "Test message successfully sent"}
+
+
+@router.get(
+    MESSAGING_TEMPLATES,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
+    response_model=List[MessagingTemplateResponse],
+)
+def get_messaging_templates(
+    *, db: Session = Depends(deps.get_db)
+) -> List[MessagingTemplateResponse]:
+    """Returns the available messaging templates, augments the models with labels to be used in the UI."""
+    return [
+        MessagingTemplateResponse(
+            key=template.key,
+            content=template.content,
+            label=DEFAULT_MESSAGING_TEMPLATES.get(template.key, {}).get("label", None),
+        )
+        for template in get_all_messaging_templates(db=db)
+    ]
+
+
+@router.put(
+    MESSAGING_TEMPLATES,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
+)
+def update_messaging_templates(
+    templates: List[MessagingTemplateRequest], *, db: Session = Depends(deps.get_db)
+) -> BulkPutMessagingTemplateResponse:
+    """Updates the messaging templates and reverts empty subject or body values to the default values."""
+
+    succeeded = []
+    failed = []
+
+    for template in templates:
+        key = template.key
+        content = template.content
+
+        try:
+            default_template = DEFAULT_MESSAGING_TEMPLATES.get(key)
+            if not default_template:
+                raise ValueError("Invalid template key.")
+
+            content["subject"] = (
+                content["subject"] or default_template["content"]["subject"]
+            )
+            content["body"] = content["body"] or default_template["content"]["body"]
+
+            MessagingTemplate.create_or_update(
+                db, data={"key": key, "content": content}
+            )
+
+            succeeded.append(
+                MessagingTemplateResponse(
+                    key=key,
+                    content=content,
+                    label=default_template.get("label"),
+                )
+            )
+
+        except ValueError as e:
+            failed.append(BulkUpdateFailed(message=str(e), data=template))
+        except Exception:
+            failed.append(
+                BulkUpdateFailed(
+                    message="Unexpected error updating template.", data=template
+                )
+            )
+
+    return BulkPutMessagingTemplateResponse(succeeded=succeeded, failed=failed)

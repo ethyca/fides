@@ -34,6 +34,7 @@ import {
 export interface PrivacyCenterSettings {
   // Privacy center settings
   FIDES_API_URL: string; // e.g. http://localhost:8080/api/v1
+  SERVER_SIDE_FIDES_API_URL: string | null; // e.g. http://fides:8080/api/v1
   CONFIG_CSS_URL: string; // e.g. file:///app/config/config.css
   CONFIG_JSON_URL: string; // e.g. file:///app/config/config.json
 
@@ -42,10 +43,10 @@ export interface PrivacyCenterSettings {
   GEOLOCATION_API_URL: string; // e.g. http://location-cdn.com
   IS_GEOLOCATION_ENABLED: boolean; // whether we should use geolocation to drive privacy experience
   IS_OVERLAY_ENABLED: boolean; // whether we should render privacy-experience-driven components
+  IS_PREFETCH_ENABLED: boolean | false; // (optional) whether we should pre-fetch geolocation and experience server-side
   OVERLAY_PARENT_ID: string | null; // (optional) ID of the parent DOM element where the overlay should be inserted
   MODAL_LINK_ID: string | null; // (optional) ID of the DOM element that should trigger the consent modal
   PRIVACY_CENTER_URL: string; // e.g. http://localhost:3000
-  TCF_ENABLED: boolean; // whether we should render the TCF modal
 }
 
 /**
@@ -56,14 +57,15 @@ export interface PrivacyCenterSettings {
 export type PrivacyCenterClientSettings = Pick<
   PrivacyCenterSettings,
   | "FIDES_API_URL"
+  | "SERVER_SIDE_FIDES_API_URL"
   | "DEBUG"
   | "GEOLOCATION_API_URL"
   | "IS_GEOLOCATION_ENABLED"
   | "IS_OVERLAY_ENABLED"
+  | "IS_PREFETCH_ENABLED"
   | "OVERLAY_PARENT_ID"
   | "MODAL_LINK_ID"
   | "PRIVACY_CENTER_URL"
-  | "TCF_ENABLED"
 >;
 
 export type Styles = string;
@@ -250,6 +252,8 @@ export const loadPrivacyCenterEnvironment =
       FIDES_API_URL:
         process.env.FIDES_PRIVACY_CENTER__FIDES_API_URL ||
         "http://localhost:8080/api/v1",
+      SERVER_SIDE_FIDES_API_URL:
+        process.env.FIDES_PRIVACY_CENTER__SERVER_SIDE_FIDES_API_URL || null,
       CONFIG_JSON_URL:
         process.env.FIDES_PRIVACY_CENTER__CONFIG_JSON_URL ||
         "file:///app/config/config.json",
@@ -264,6 +268,9 @@ export const loadPrivacyCenterEnvironment =
       IS_OVERLAY_ENABLED: process.env.FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED
         ? process.env.FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED === "true"
         : false,
+      IS_PREFETCH_ENABLED: process.env.FIDES_PRIVACY_CENTER__IS_PREFETCH_ENABLED
+        ? process.env.FIDES_PRIVACY_CENTER__IS_PREFETCH_ENABLED === "true"
+        : false,
       IS_GEOLOCATION_ENABLED: process.env
         .FIDES_PRIVACY_CENTER__IS_GEOLOCATION_ENABLED
         ? process.env.FIDES_PRIVACY_CENTER__IS_GEOLOCATION_ENABLED === "true"
@@ -276,9 +283,6 @@ export const loadPrivacyCenterEnvironment =
       PRIVACY_CENTER_URL:
         process.env.FIDES_PRIVACY_CENTER__PRIVACY_CENTER_URL ||
         "http://localhost:3000",
-      TCF_ENABLED: process.env.FIDES_PRIVACY_CENTER__TCF_ENABLED
-        ? process.env.FIDES_PRIVACY_CENTER__TCF_ENABLED === "true"
-        : false,
     };
 
     // Load configuration file (if it exists)
@@ -290,14 +294,16 @@ export const loadPrivacyCenterEnvironment =
     // Load client settings (ensuring we only pass-along settings that are safe for the client)
     const clientSettings: PrivacyCenterClientSettings = {
       FIDES_API_URL: settings.FIDES_API_URL,
+      SERVER_SIDE_FIDES_API_URL:
+        settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
       DEBUG: settings.DEBUG,
       IS_OVERLAY_ENABLED: settings.IS_OVERLAY_ENABLED,
+      IS_PREFETCH_ENABLED: settings.IS_PREFETCH_ENABLED,
       IS_GEOLOCATION_ENABLED: settings.IS_GEOLOCATION_ENABLED,
       GEOLOCATION_API_URL: settings.GEOLOCATION_API_URL,
       OVERLAY_PARENT_ID: settings.OVERLAY_PARENT_ID,
       MODAL_LINK_ID: settings.MODAL_LINK_ID,
       PRIVACY_CENTER_URL: settings.PRIVACY_CENTER_URL,
-      TCF_ENABLED: settings.TCF_ENABLED,
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present

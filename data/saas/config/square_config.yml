@@ -3,11 +3,15 @@ saas_config:
   name: Square
   type: square
   description: A sample schema representing the Square connector for Fides
-  version: 0.0.3
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/square
+  version: 0.0.4
 
   connector_params:
     - name: domain
+      description: Your Square URL
     - name: access_token
+      label: Access token
+      description: Your Square Access Token
       sensitive: True
 
   client_config:

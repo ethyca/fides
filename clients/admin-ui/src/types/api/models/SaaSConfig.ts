@@ -34,4 +34,5 @@ export type SaaSConfig = {
   data_protection_request?: SaaSRequest;
   rate_limit_config?: RateLimitConfig;
   consent_requests?: ConsentRequestMap;
+  user_guide?: string;
 };

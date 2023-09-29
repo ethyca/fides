@@ -21,6 +21,10 @@ const ALL_SCOPES = [
   ScopeRegistryEnum.ORGANIZATION_UPDATE,
   ScopeRegistryEnum.PRIVACY_NOTICE_READ,
   ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ,
+  ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ,
+  ScopeRegistryEnum.CONFIG_READ,
+  ScopeRegistryEnum.CONFIG_UPDATE,
+  ScopeRegistryEnum.CUSTOM_ASSET_UPDATE,
 ];
 
 describe("configureNavGroups", () => {
@@ -149,6 +153,102 @@ describe("configureNavGroups", () => {
     });
   });
 
+  describe("fides cloud", () => {
+    it("shows domain records page when fides cloud is enabled", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+        flags: undefined,
+        hasPlus: true,
+        hasFidesCloud: true,
+      });
+
+      expect(
+        navGroups[4].children
+          .map((c) => c.title)
+          .find((title) => title === "Domain records")
+      ).toEqual("Domain records");
+    });
+
+    it("does not show domain records page when fides cloud is disabled", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+        flags: undefined,
+        hasPlus: true,
+        hasFidesCloud: false,
+      });
+
+      expect(
+        navGroups[4].children
+          .map((c) => c.title)
+          .find((title) => title === "Domain records")
+      ).toEqual(undefined);
+    });
+  });
+
+  describe("fides plus", () => {
+    it("shows cors management when plus and scopes are enabled", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: [
+          ScopeRegistryEnum.CONFIG_READ,
+          ScopeRegistryEnum.CONFIG_UPDATE,
+        ],
+        flags: undefined,
+        hasPlus: true,
+        hasFidesCloud: false,
+      });
+
+      expect(
+        navGroups[1].children
+          .map((c) => ({ title: c.title, path: c.path }))
+          .find((c) => c.title === "CORS configuration")
+      ).toEqual({
+        title: "CORS configuration",
+        path: routes.CORS_CONFIGURATION_ROUTE,
+      });
+    });
+
+    it("hide cors management when plus is disabled", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: [
+          ScopeRegistryEnum.CONFIG_READ,
+          ScopeRegistryEnum.CONFIG_UPDATE,
+        ],
+        flags: undefined,
+        hasPlus: false,
+        hasFidesCloud: false,
+      });
+
+      expect(
+        navGroups[1].children
+          .map((c) => ({ title: c.title, path: c.path }))
+          .find((c) => c.title === "CORS configuration")
+      ).toEqual(undefined);
+    });
+
+    it("hide cors management when scopes are wrong", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: [
+          ScopeRegistryEnum.ALLOW_LIST_CREATE,
+          ScopeRegistryEnum.ALLOW_LIST_UPDATE,
+        ],
+        flags: undefined,
+        hasPlus: true,
+        hasFidesCloud: false,
+      });
+
+      expect(
+        navGroups[1]?.children
+          .map((c) => ({ title: c.title, path: c.path }))
+          .find((c) => c.title === "CORS configuration")
+      ).toEqual(undefined);
+    });
+  });
+
   describe("configure by feature flags", () => {
     it("excludes feature flagged routes when disabled", () => {
       const navGroups = configureNavGroups({
@@ -162,6 +262,7 @@ describe("configureNavGroups", () => {
         children: [
           { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
           { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
+          { title: "Email templates", path: routes.EMAIL_TEMPLATES_ROUTE },
           { title: "About Fides", path: routes.ABOUT_ROUTE },
         ],
       });
@@ -182,6 +283,10 @@ describe("configureNavGroups", () => {
           { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
           { title: "Organization", path: routes.ORGANIZATION_MANAGEMENT_ROUTE },
           { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
+          {
+            title: "Email templates",
+            path: routes.EMAIL_TEMPLATES_ROUTE,
+          },
           { title: "About Fides", path: routes.ABOUT_ROUTE },
         ],
       });
@@ -235,24 +340,18 @@ describe("findActiveNav", () => {
         path: routes.DATASTORE_CONNECTION_ROUTE,
       },
     },
-    // Nested side nav child
     {
       path: routes.PRIVACY_EXPERIENCE_ROUTE,
       expected: {
-        title: "Privacy requests",
-        // this _might_ not be the right thing to expect, but it at least works intuitively
-        // since then both the Consent route and the Privacy experience route will be marked as "active"
-        // since they both start with "/consent". if we see weird behavior with which nav is active
-        // we may need to revisit the logic in `findActiveNav`
-        path: routes.CONSENT_ROUTE,
+        title: "Consent",
+        path: routes.PRIVACY_EXPERIENCE_ROUTE,
       },
     },
-    // Parent side nav
     {
-      path: routes.CONSENT_ROUTE,
+      path: routes.PRIVACY_NOTICES_ROUTE,
       expected: {
-        title: "Privacy requests",
-        path: routes.CONSENT_ROUTE,
+        title: "Consent",
+        path: routes.PRIVACY_NOTICES_ROUTE,
       },
     },
   ] as const;

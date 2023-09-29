@@ -7,11 +7,19 @@ import {
   resolveLegacyConsentValue,
 } from "./consent-value";
 import {
+  ConsentMechanism,
   Cookies,
   LegacyConsentConfig,
   PrivacyExperience,
+  SaveConsentPreference,
 } from "./consent-types";
-import { debugLog } from "./consent-utils";
+import {
+  debugLog,
+  transformConsentToFidesUserPreference,
+  transformUserPreferenceToBoolean,
+} from "./consent-utils";
+import type { TcfCookieConsent, TcfSavePreferences } from "./tcf/types";
+import { TCF_COOKIE_KEY_TO_EXPERIENCE_KEY } from "./tcf/constants";
 
 /**
  * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
@@ -49,6 +57,8 @@ export interface FidesCookie {
   consent: CookieKeyConsent;
   identity: CookieIdentity;
   fides_meta: CookieMeta;
+  tc_string?: string;
+  tcf_consent: TcfCookieConsent;
 }
 
 /**
@@ -104,6 +114,7 @@ export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
       createdAt: now.toISOString(),
       updatedAt: "",
     },
+    tcf_consent: {},
   };
 };
 
@@ -242,6 +253,84 @@ export const buildCookieConsentForExperiences = (
 };
 
 /**
+ * Updates prefetched experience, based on:
+ * 1) experience: pre-fetched experience-based consent configuration that does not contain user preference.
+ * 2) cookie: cookie containing user preference.
+ *
+ * Returns updated experience with user preferences.
+ */
+export const updateExperienceFromCookieConsent = ({
+  experience,
+  cookie,
+  debug,
+}: {
+  experience: PrivacyExperience;
+  cookie: FidesCookie;
+  debug?: boolean;
+}): PrivacyExperience => {
+  const noticesWithConsent = experience.privacy_notices?.map((notice) => {
+    const preference = Object.hasOwn(cookie.consent, notice.notice_key)
+      ? transformConsentToFidesUserPreference(
+          Boolean(cookie.consent[notice.notice_key]),
+          notice.consent_mechanism
+        )
+      : undefined;
+    return { ...notice, current_preference: preference };
+  });
+
+  // Handle the TCF case, which has many keys to query
+  const tcfEntities = {
+    tcf_purposes: experience.tcf_purposes,
+    tcf_special_purposes: experience.tcf_special_purposes,
+    tcf_features: experience.tcf_features,
+    tcf_special_features: experience.tcf_special_features,
+    tcf_vendors: experience.tcf_vendors,
+    tcf_systems: experience.tcf_systems,
+  };
+
+  if (cookie.tcf_consent) {
+    TCF_COOKIE_KEY_TO_EXPERIENCE_KEY.forEach(({ cookieKey, experienceKey }) => {
+      const cookieConsent = cookie.tcf_consent[cookieKey] ?? {};
+      // @ts-ignore the array map should ensure we will get the right record type
+      tcfEntities[experienceKey] = experience[experienceKey]?.map((p) => {
+        const preference = Object.hasOwn(cookieConsent, p.id)
+          ? transformConsentToFidesUserPreference(
+              Boolean(cookieConsent[p.id]),
+              ConsentMechanism.OPT_IN
+            )
+          : undefined;
+        return { ...p, current_preference: preference };
+      });
+    });
+  }
+
+  if (debug) {
+    debugLog(
+      debug,
+      `Returning updated pre-fetched experience with user consent.`,
+      experience
+    );
+  }
+  return { ...experience, ...tcfEntities, privacy_notices: noticesWithConsent };
+};
+
+export const transformTcfPreferencesToCookieKeys = (
+  tcfPreferences: TcfSavePreferences
+): TcfCookieConsent => {
+  const cookieKeys: TcfCookieConsent = {};
+  TCF_COOKIE_KEY_TO_EXPERIENCE_KEY.forEach(({ cookieKey }) => {
+    const preferences = tcfPreferences[cookieKey] ?? [];
+    cookieKeys[cookieKey] = Object.fromEntries(
+      preferences.map((pref) => [
+        pref.id,
+        transformUserPreferenceToBoolean(pref.preference),
+      ])
+    );
+  });
+  return cookieKeys;
+};
+
+/**
  * Generate the *default* consent preferences for this session, based on:
  * 1) config: current legacy consent configuration, which defines the options and their
  *    default values (e.g. "data_sales" => true)
@@ -288,4 +377,24 @@ export const removeCookiesFromBrowser = (cookies: Cookies[]) => {
       domain: cookie.domain,
     });
   });
+};
+
+/**
+ * Update cookie based on consent preferences to save
+ */
+export const updateCookieFromNoticePreferences = async (
+  oldCookie: FidesCookie,
+  consentPreferencesToSave: SaveConsentPreference[]
+): Promise<FidesCookie> => {
+  const noticeMap = new Map<string, boolean>(
+    consentPreferencesToSave.map(({ notice, consentPreference }) => [
+      notice.notice_key,
+      transformUserPreferenceToBoolean(consentPreference),
+    ])
+  );
+  const consentCookieKey: CookieKeyConsent = Object.fromEntries(noticeMap);
+  return {
+    ...oldCookie,
+    consent: consentCookieKey,
+  };
 };

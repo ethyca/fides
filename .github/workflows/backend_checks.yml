@@ -106,6 +106,44 @@ jobs:
       - name: Run Static Check
         run: nox -s ${{ matrix.session_name }}
 
+  ##################
+  ## Performance ##
+  ##################
+  Performance-Checks:
+    needs: Check-Container-Startup
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install Rust/Cargo
+        run: curl -y https://sh.rustup.rs -sSf | sh
+
+      - name: Install Drill
+        run: cargo install drill
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run Performance Tests
+        run: nox -s performance_tests
+
   #################
   ## Misc Checks ##
   #################

@@ -10,6 +10,22 @@ import type { SpecialCategoriesEnum } from "./SpecialCategoriesEnum";
  */
 export type DataUse = {
   /**
+   * The version of Fideslang in which this label was added.
+   */
+  version_added?: string;
+  /**
+   * The version of Fideslang in which this label was deprecated.
+   */
+  version_deprecated?: string;
+  /**
+   * The new name, if applicable, for this label after deprecation.
+   */
+  replaced_by?: string;
+  /**
+   * Denotes whether the resource is part of the default taxonomy or not.
+   */
+  is_default?: boolean;
+  /**
    * A unique key used to identify this resource.
    */
   fides_key: string;
@@ -28,29 +44,25 @@ export type DataUse = {
   description?: string;
   parent_key?: string;
   /**
-   * The legal basis category of which the data use falls under. This field is used as part of the creation of an exportable data map.
+   * Deprecated. The legal basis category of which the data use falls under. This field is used as part of the creation of an exportable data map.
    */
   legal_basis?: LegalBasisEnum;
   /**
-   * The special category for processing of which the data use falls under. This field is used as part of the creation of an exportable data map.
+   * Deprecated. The special category for processing of which the data use falls under. This field is used as part of the creation of an exportable data map.
    */
   special_category?: SpecialCategoriesEnum;
   /**
-   * An array of recipients when sharing personal data outside of your organization.
+   * Deprecated. An array of recipients when sharing personal data outside of your organization.
    */
   recipients?: Array<string>;
   /**
-   * A boolean representation of if the legal basis used is `Legitimate Interest`. Validated at run time and looks for a `legitimate_interest_impact_assessment` to exist if true.
+   * Deprecated. A boolean representation of if the legal basis used is `Legitimate Interest`. Validated at run time and looks for a `legitimate_interest_impact_assessment` to exist if true.
    */
   legitimate_interest?: boolean;
   /**
-   * A url pointing to the legitimate interest impact assessment. Required if the legal bases used is legitimate interest.
+   * Deprecated. A url pointing to the legitimate interest impact assessment. Required if the legal bases used is legitimate interest.
    */
   legitimate_interest_impact_assessment?: string;
-  /**
-   * Denotes whether the resource is part of the default taxonomy or not.
-   */
-  is_default?: boolean;
   /**
    * Indicates whether the resource is currently 'active'.
    */

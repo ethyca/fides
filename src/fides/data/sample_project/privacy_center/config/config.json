@@ -4,6 +4,9 @@
   "description_subtext": [],
   "addendum": [],
   "logo_path": "https://ethyca-cdn-harpocrates.s3.amazonaws.com/assets/cookiehouse_assets/logo.svg",
+  "logo_url": "https://fid.es",
+  "privacy_policy_url": "https://fid.es/privacy",
+  "privacy_policy_url_text": "Privacy Policy",
   "actions": [
     {
       "policy_key": "default_access_policy",
@@ -13,6 +16,16 @@
       "description_subtext": [],
       "identity_inputs": {
         "email": "required"
+      },
+      "custom_privacy_request_fields": {
+        "first_name": {
+          "label": "First name",
+          "required": true
+        },
+        "last_name": {
+          "label": "Last name",
+          "required": false
+        }
       }
     },
     {
@@ -68,7 +81,7 @@
           "executable": false
         },
         {
-          "fidesDataUseKey": "improve",
+          "fidesDataUseKey": "functional",
           "name": "Product Analytics",
           "description": "We may use some of your personal information to collect analytics about how you use our products & services.",
           "url": "https://example.com/privacy#analytics",

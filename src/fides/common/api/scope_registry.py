@@ -18,6 +18,7 @@ CONNECTION = "connection"
 CONNECTION_TYPE = "connection_type"
 CONNECTOR_TEMPLATE = "connector_template"
 CONSENT = "consent"
+CONSENT_SETTINGS = "consent_settings"
 CREATE = "create"
 CREATE_OR_UPDATE = "create_or_update"
 CTL_DATASET = "ctl_dataset"
@@ -31,6 +32,7 @@ DATA_USE = "data_use"
 DATASET = "dataset"
 DELETE = "delete"
 ENCRYPTION = "encryption"
+MESSAGING_TEMPLATE = "messaging-template"
 EVALUATION = "evaluation"
 EXEC = "exec"
 FIDES_TAXONOMY = "fides_taxonomy"
@@ -92,6 +94,9 @@ CONNECTION_TYPE_READ = f"{CONNECTION_TYPE}:{READ}"
 
 CONSENT_READ = f"{CONSENT}:{READ}"
 
+CONSENT_SETTINGS_READ = f"{CONSENT_SETTINGS}:{READ}"
+CONSENT_SETTINGS_UPDATE = f"{CONSENT_SETTINGS}:{UPDATE}"
+
 CTL_DATASET_CREATE = f"{CTL_DATASET}:{CREATE}"
 CTL_DATASET_READ = f"{CTL_DATASET}:{READ}"
 CTL_DATASET_UPDATE = f"{CTL_DATASET}:{UPDATE}"
@@ -147,6 +152,7 @@ MASKING_READ = f"{MASKING}:{READ}"
 MESSAGING_CREATE_OR_UPDATE = f"{MESSAGING}:{CREATE_OR_UPDATE}"
 MESSAGING_DELETE = f"{MESSAGING}:{DELETE}"
 MESSAGING_READ = f"{MESSAGING}:{READ}"
+MESSAGING_TEMPLATE_UPDATE = f"{MESSAGING_TEMPLATE}:{UPDATE}"
 
 ORGANIZATION_CREATE = f"{ORGANIZATION}:{CREATE}"
 ORGANIZATION_READ = f"{ORGANIZATION}:{READ}"
@@ -251,6 +257,8 @@ SCOPE_DOCS = {
     CONNECTION_TYPE_READ: "View types of connections",
     CONNECTOR_TEMPLATE_REGISTER: "Register a connector template",
     CONSENT_READ: "Read consent preferences",
+    CONSENT_SETTINGS_READ: "Read org-wide consent settings",
+    CONSENT_SETTINGS_UPDATE: "Update org-wide consent settings",
     CTL_DATASET_CREATE: "Create a ctl dataset",
     CTL_DATASET_READ: "Read ctl datasets",
     CTL_DATASET_DELETE: "Delete a ctl dataset",
@@ -281,6 +289,7 @@ SCOPE_DOCS = {
     DATASET_DELETE: "Delete datasets",
     DATASET_READ: "View datasets",
     ENCRYPTION_EXEC: "Encrypt data",
+    MESSAGING_TEMPLATE_UPDATE: "Update messaging templates",
     EVALUATION_CREATE: "Create evaluation",
     EVALUATION_READ: "Read evaluations",
     EVALUATION_DELETE: "Delete evaluations",

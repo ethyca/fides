@@ -1,5 +1,6 @@
 import {
   ComponentType,
+  EmptyExperience,
   LastServedNoticeSchema,
   NoticesServedRequest,
   PrivacyExperience,
@@ -20,9 +21,9 @@ export enum FidesEndpointPaths {
 export const fetchExperience = async (
   userLocationString: string,
   fidesApiUrl: string,
-  fidesUserDeviceId: string,
-  debug: boolean
-): Promise<PrivacyExperience | null> => {
+  debug: boolean,
+  fidesUserDeviceId?: string | null
+): Promise<PrivacyExperience | EmptyExperience> => {
   debugLog(
     debug,
     `Fetching experience for userId: ${fidesUserDeviceId} in location: ${userLocationString}`
@@ -32,15 +33,19 @@ export const fetchExperience = async (
     mode: "cors",
     headers: [["Unescape-Safestr", "true"]],
   };
-  const params = new URLSearchParams({
+  let params: any = {
     show_disabled: "false",
     region: userLocationString,
     component: ComponentType.OVERLAY,
     has_notices: "true",
     has_config: "true",
     systems_applicable: "true",
-    fides_user_device_id: fidesUserDeviceId,
-  });
+    include_gvl: "true",
+  };
+  if (fidesUserDeviceId) {
+    params.fides_user_device_id = fidesUserDeviceId;
+  }
+  params = new URLSearchParams(params);
   const response = await fetch(
     `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
     fetchOptions
@@ -48,25 +53,19 @@ export const fetchExperience = async (
   if (!response.ok) {
     debugLog(
       debug,
-      "Error getting experience from Fides API, returning null. Response:",
+      "Error getting experience from Fides API, returning {}. Response:",
       response
     );
-    return null;
+    return {};
   }
   try {
     const body = await response.json();
-    const experience = body.items && body.items[0];
-    if (!experience) {
-      debugLog(
-        debug,
-        "No relevant experience found from Fides API, returning null. Response:",
-        body
-      );
-      return null;
-    }
+    // returning empty obj instead of undefined ensures we can properly cache on server-side for locations
+    // that have no relevant experiences
+    const experience = (body.items && body.items[0]) ?? {};
     debugLog(
       debug,
-      "Got experience response from Fides API, returning:",
+      "Got experience response from Fides API, returning: ",
       experience
     );
     return experience;
@@ -76,7 +75,7 @@ export const fetchExperience = async (
       "Error parsing experience response body from Fides API, returning {}. Response:",
       response
     );
-    return null;
+    return {};
   }
 };
 

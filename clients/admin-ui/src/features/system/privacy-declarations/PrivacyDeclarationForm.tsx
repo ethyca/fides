@@ -5,24 +5,20 @@
 import {
   Box,
   BoxProps,
-  Button,
-  ButtonGroup,
   GreenCheckCircleIcon,
   Heading,
   Stack,
   Text,
-  useDisclosure,
 } from "@fidesui/react";
 import {
   CustomFieldsList,
   CustomFieldValues,
   useCustomFields,
 } from "common/custom-fields";
-import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
+import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
-import ConfirmationModal from "~/features/common/ConfirmationModal";
 import {
   CustomCreatableSelect,
   CustomSelect,
@@ -87,7 +83,6 @@ export const PrivacyDeclarationFormComponents = ({
   allDataCategories,
   allDataSubjects,
   allDatasets,
-  onDelete,
   privacyDeclarationId,
   includeCookies,
   includeCustomFields,
@@ -97,23 +92,12 @@ export const PrivacyDeclarationFormComponents = ({
     includeCookies?: boolean;
     includeCustomFields?: boolean;
   }) => {
-  const { dirty, isSubmitting, isValid, initialValues } =
-    useFormikContext<FormValues>();
-  const deleteModal = useDisclosure();
-
   const datasetOptions = allDatasets
     ? allDatasets.map((d) => ({
         label: d.name ?? d.fides_key,
         value: d.fides_key,
       }))
     : [];
-
-  const handleDelete = async () => {
-    await onDelete(transformFormValueToDeclaration(initialValues));
-    deleteModal.onClose();
-  };
-
-  const deleteDisabled = initialValues.data_use === "";
 
   return (
     <Stack spacing={4}>
@@ -148,6 +132,7 @@ export const PrivacyDeclarationFormComponents = ({
         tooltip="What type of data is your system processing? This could be various types of user or system data."
         isMulti
         variant="stacked"
+        isDisabled
       />
       <CustomSelect
         name="data_subjects"
@@ -159,6 +144,7 @@ export const PrivacyDeclarationFormComponents = ({
         tooltip="Whose data are you processing? This could be customers, employees or any other type of user in your system."
         isMulti
         variant="stacked"
+        isDisabled
       />
       {includeCookies ? (
         <CustomCreatableSelect
@@ -186,33 +172,6 @@ export const PrivacyDeclarationFormComponents = ({
           resourceFidesKey={privacyDeclarationId}
         />
       ) : null}
-      <ButtonGroup size="sm" display="flex" justifyContent="space-between">
-        <Button
-          variant="outline"
-          onClick={deleteModal.onOpen}
-          disabled={deleteDisabled}
-          data-testid="delete-btn"
-        >
-          Delete
-        </Button>
-        <Button
-          type="submit"
-          colorScheme="primary"
-          disabled={!dirty || !isValid}
-          isLoading={isSubmitting}
-          data-testid="save-btn"
-        >
-          Save
-        </Button>
-      </ButtonGroup>
-      <ConfirmationModal
-        onConfirm={handleDelete}
-        title="Delete data use"
-        message="Are you sure you want to delete this data use? This action can't be undone."
-        isOpen={deleteModal.isOpen}
-        onClose={deleteModal.onClose}
-        isCentered
-      />
     </Stack>
   );
 };

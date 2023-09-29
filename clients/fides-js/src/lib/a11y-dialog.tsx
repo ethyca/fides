@@ -20,8 +20,9 @@ interface Props {
   role: "dialog" | "alertdialog";
   id: string;
   title: string;
+  onClose?: () => void;
 }
-export const useA11yDialog = ({ role, id }: Props) => {
+export const useA11yDialog = ({ role, id, onClose }: Props) => {
   const { instance, container: ref } = useA11yDialogInstance();
   const isAlertDialog = role === "alertdialog";
   const titleId = `${id}-title`;
@@ -29,6 +30,9 @@ export const useA11yDialog = ({ role, id }: Props) => {
   const handleClose = useCallback(() => {
     if (instance) {
       instance.hide();
+    }
+    if (onClose) {
+      onClose();
     }
   }, [instance]);
 

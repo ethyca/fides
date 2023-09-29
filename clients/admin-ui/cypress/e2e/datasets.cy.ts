@@ -100,7 +100,6 @@ describe("Dataset", () => {
         "have.value",
         "User's unique ID"
       );
-      cy.getByTestId("input-data_qualifier").should("contain", "Identified");
       cy.getByTestId("selected-categories").children().should("have.length", 1);
       cy.getByTestId("taxonomy-entity-user.unique_id");
     });
@@ -118,7 +117,6 @@ describe("Dataset", () => {
         "have.value",
         "User information"
       );
-      cy.getByTestId("input-data_qualifier").should("contain", "Identified");
       cy.getByTestId("selected-categories").children().should("have.length", 0);
     });
 
@@ -135,19 +133,6 @@ describe("Dataset", () => {
       cy.getByTestId("input-description").should(
         "have.value",
         "Data collected about users for our analytics system."
-      );
-      cy.getByTestId("input-retention").should(
-        "have.value",
-        "30 days after account deletion"
-      );
-      cy.getByTestId("input-data_qualifier").should("contain", "Identified");
-      cy.getByTestId("input-third_country_transfers").should(
-        "contain",
-        "Canada"
-      );
-      cy.getByTestId("input-third_country_transfers").should(
-        "contain",
-        "United Kingdom"
       );
       cy.getByTestId("selected-categories").children().should("have.length", 0);
     });
@@ -538,8 +523,8 @@ describe("Dataset", () => {
         "data-checked"
       );
       // the children of selected parents should be disabled
-      cy.getByTestId("checkbox-Credentials").click();
-      cy.get("[data-testid='checkbox-Password'] > span").should(
+      cy.getByTestId("checkbox-Authorization Information").click();
+      cy.get("[data-testid='checkbox-Account password'] > span").should(
         "have.attr",
         "data-checked"
       );
@@ -547,11 +532,15 @@ describe("Dataset", () => {
         "have.attr",
         "data-disabled"
       );
+      cy.get("[data-testid='checkbox-Password'] > span").should(
+        "have.attr",
+        "data-disabled"
+      );
       cy.getByTestId("data-category-done-btn").click();
       const expectedSelected = [
         "system.authentication",
         "system.operations",
-        "user.credentials",
+        "user.authorization",
       ];
       expectedSelected.forEach((e) => {
         cy.getByTestId("selected-categories").should("contain", e);

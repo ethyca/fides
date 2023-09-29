@@ -119,7 +119,7 @@ describe("Privacy experiences", () => {
         cy.get("td").first().contains("Global");
       });
       cy.getByTestId(`row-${DISABLED_EXPERIENCE_ID}`).within(() => {
-        cy.get("td").first().contains("us-ca");
+        cy.get("td").first().contains("California (USA)");
       });
     });
 

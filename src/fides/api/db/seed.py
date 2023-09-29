@@ -3,7 +3,7 @@ Provides functions that seed the application with data.
 """
 from typing import Dict, List, Optional
 
-from fideslang import DEFAULT_TAXONOMY
+from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from loguru import logger as log
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
@@ -327,7 +327,7 @@ def load_default_dsr_policies() -> None:
         excluded_data_categories = [
             "user.financial",
             "user.payment",
-            "user.credentials",
+            "user.authorization",
         ]
         all_data_categories = [
             str(category.fides_key) for category in DEFAULT_TAXONOMY.data_category

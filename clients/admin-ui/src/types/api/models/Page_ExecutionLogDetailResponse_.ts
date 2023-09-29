@@ -9,4 +9,5 @@ export type Page_ExecutionLogDetailResponse_ = {
   total: number;
   page: number;
   size: number;
+  pages?: number;
 };

@@ -57,8 +57,16 @@ def access_manual_webhook(db, integration_manual_webhook_config) -> ConnectionCo
 
 
 @pytest.fixture(scope="function")
-def cached_input(privacy_request_requires_input, access_manual_webhook):
-    privacy_request_requires_input.cache_manual_webhook_input(
+def cached_access_input(privacy_request_requires_input, access_manual_webhook):
+    privacy_request_requires_input.cache_manual_webhook_access_input(
         access_manual_webhook,
         {"email": "customer-1@example.com", "last_name": "McCustomer"},
+    )
+
+
+@pytest.fixture(scope="function")
+def cached_erasure_input(privacy_request_requires_input, access_manual_webhook):
+    privacy_request_requires_input.cache_manual_webhook_erasure_input(
+        access_manual_webhook,
+        {"email": False, "last_name": True},
     )

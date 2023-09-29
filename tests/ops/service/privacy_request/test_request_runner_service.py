@@ -13,6 +13,7 @@ from pydantic import ValidationError
 from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session
 
+from fides.api import common_exceptions
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
@@ -494,6 +495,84 @@ def test_create_and_process_access_request_postgres(
     pr.delete(db=db)
     assert not pr in db  # Check that `pr` has been expunged from the session
     assert ExecutionLog.get(db, object_id=log_id).privacy_request_id == pr_id
+
+
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+@pytest.mark.usefixtures(
+    "postgres_example_test_dataset_config_skipped_login_collection",
+    "postgres_integration_db",
+    "cache",
+)
+def test_create_and_process_access_request_with_valid_skipped_collection(
+    db,
+    policy,
+    run_privacy_request_task,
+):
+    customer_email = "customer-1@example.com"
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
+
+    results = pr.get_results()
+    assert len(results.keys()) == 10
+
+    assert "login" not in results.keys()
+
+    result_key_prefix = f"EN_{pr.id}__access_request__postgres_example_test_dataset:"
+    customer_key = result_key_prefix + "customer"
+    assert results[customer_key][0]["email"] == customer_email
+
+    assert AuditLog.filter(
+        db=db,
+        conditions=(
+            (AuditLog.privacy_request_id == pr.id)
+            & (AuditLog.action == AuditLogAction.finished)
+        ),
+    ).first()
+
+
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+@pytest.mark.usefixtures(
+    "postgres_example_test_dataset_config_skipped_address_collection",
+    "postgres_integration_db",
+    "cache",
+)
+def test_create_and_process_access_request_with_invalid_skipped_collection(
+    db,
+    policy,
+    run_privacy_request_task,
+):
+    customer_email = "customer-1@example.com"
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
+
+    results = pr.get_results()
+    assert len(results.keys()) == 0
+
+    db.refresh(pr)
+
+    assert pr.status == PrivacyRequestStatus.error
 
 
 @pytest.mark.integration
@@ -1993,7 +2072,7 @@ class TestPrivacyRequestsManualWebhooks:
 
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     @mock.patch("fides.api.service.privacy_request.request_runner_service.run_erasure")
-    def test_manual_input_not_required_for_erasure_only_policies(
+    def test_manual_input_required_for_erasure_only_policies(
         self,
         mock_erasure,
         mock_upload,
@@ -2003,7 +2082,7 @@ class TestPrivacyRequestsManualWebhooks:
         run_privacy_request_task,
         db,
     ):
-        """Manual inputs are not tied to policies, but shouldn't hold up request if only erasures are requested"""
+        """Manual inputs are not tied to policies, but should still hold up a request even for erasure requests."""
         customer_email = "customer-1@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
@@ -2018,11 +2097,9 @@ class TestPrivacyRequestsManualWebhooks:
             data,
         )
         db.refresh(pr)
-        assert (
-            pr.status == PrivacyRequestStatus.complete
-        )  # Privacy request not put in "requires_input" state
+        assert pr.status == PrivacyRequestStatus.requires_input
         assert not mock_upload.called  # erasure only request, no data uploaded
-        assert mock_erasure.called
+        assert not mock_erasure.called
 
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_pass_on_manually_added_input(
@@ -2034,7 +2111,7 @@ class TestPrivacyRequestsManualWebhooks:
         run_privacy_request_task,
         privacy_request_requires_input: PrivacyRequest,
         db,
-        cached_input,
+        cached_access_input,
     ):
         run_privacy_request_task.delay(privacy_request_requires_input.id).get(
             timeout=PRIVACY_REQUEST_TASK_TIMEOUT
@@ -2059,7 +2136,7 @@ class TestPrivacyRequestsManualWebhooks:
         privacy_request_requires_input: PrivacyRequest,
         db,
     ):
-        privacy_request_requires_input.cache_manual_webhook_input(
+        privacy_request_requires_input.cache_manual_webhook_access_input(
             access_manual_webhook,
             {"email": "customer-1@example.com"},
         )
@@ -2088,7 +2165,7 @@ class TestPrivacyRequestsManualWebhooks:
         privacy_request_requires_input: PrivacyRequest,
         db,
     ):
-        privacy_request_requires_input.cache_manual_webhook_input(
+        privacy_request_requires_input.cache_manual_webhook_access_input(
             access_manual_webhook,
             {},
         )

@@ -103,8 +103,16 @@ class StorageConfigNotFoundException(BaseException):
     """Custom Exception - StorageConfig Not Found"""
 
 
+class SystemNotFound(BaseException):
+    """System Not Found"""
+
+
 class PrivacyNoticeHistoryNotFound(BaseException):
     """PrivacyNoticeHistory Not Found"""
+
+
+class ConsentHistorySaveError(BaseException):
+    """PrivacyPreferenceHistory or ServedNoticeHistory Save Error"""
 
 
 class IdentityNotFoundException(BaseException):

@@ -1,4 +1,5 @@
 import json
+from typing import Any, Dict, List
 from unittest import mock
 from unittest.mock import Mock, patch
 
@@ -16,11 +17,13 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
+    MessagingTemplateResponse,
 )
 from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
     MESSAGING_READ,
+    MESSAGING_TEMPLATE_UPDATE,
 )
 from fides.common.api.v1.urn_registry import (
     MESSAGING_ACTIVE_DEFAULT,
@@ -31,6 +34,7 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
     MESSAGING_STATUS,
+    MESSAGING_TEMPLATES,
     MESSAGING_TEST,
     V1_URL_PREFIX,
 )
@@ -808,6 +812,7 @@ class TestGetMessagingConfigs:
                 }
             ],
             "page": 1,
+            "pages": 1,
             "size": PAGE_SIZE,
             "total": 1,
         }
@@ -1468,14 +1473,15 @@ class TestGetActiveDefaultMessagingConfig:
         """
 
         error_message = "Unknown notification_service_type"
+        response_error = "Invalid notification_service_type configured."
         auth_header = generate_auth_header([MESSAGING_READ])
-        api_client.get(
+        response = api_client.get(
             url,
             headers=auth_header,
         )
 
-        assert "ERROR" in loguru_caplog.text
-        assert error_message in loguru_caplog.text
+        assert response.status_code == 400
+        assert response.json().get("detail") == response_error
 
     @pytest.mark.usefixtures("notification_service_type_mailgun")
     def test_get_active_default_config(
@@ -1828,7 +1834,7 @@ class TestGetMessagingStatus:
         assert MessagingServiceType.twilio_text.value in (response.detail)
 
 
-class TestTestMesage:
+class TestTestMessage:
     @pytest.fixture
     def url(self):
         return f"{V1_URL_PREFIX}{MESSAGING_TEST}"
@@ -1879,3 +1885,159 @@ class TestTestMesage:
         )
         assert response.status_code == 400
         assert mock_dispatch_message.called
+
+
+class TestGetMessagingTemplates:
+    @pytest.fixture
+    def url(self) -> str:
+        return V1_URL_PREFIX + MESSAGING_TEMPLATES
+
+    def test_get_messaging_templates_unauthorized(
+        self, url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_get_messaging_templates_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[MESSAGING_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_get_messaging_templates(
+        self, url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+
+        # Validate the response conforms to the expected model
+        [MessagingTemplateResponse(**item) for item in response.json()]
+
+
+class TestPutMessagingTemplates:
+    @pytest.fixture
+    def url(self) -> str:
+        return V1_URL_PREFIX + MESSAGING_TEMPLATES
+
+    @pytest.fixture
+    def payload(self) -> List[Dict[str, Any]]:
+        return [
+            {
+                "key": "subject_identity_verification",
+                "content": {
+                    "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. You have {{minutes}} minutes.",
+                    "subject": "Your code is {{code}}",
+                },
+            },
+        ]
+
+    def test_put_messaging_templates_unauthorized(
+        self, url, api_client: TestClient, generate_auth_header, payload
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert response.status_code == 403
+
+    def test_put_messaging_templates_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header, payload
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[MESSAGING_READ])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert response.status_code == 403
+
+    def test_put_messaging_templates(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        payload,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert response.status_code == 200
+        assert response.json() == {
+            "succeeded": [
+                {
+                    "key": "subject_identity_verification",
+                    "content": {
+                        "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. You have {{minutes}} minutes.",
+                        "subject": "Your code is {{code}}",
+                    },
+                    "label": "Subject identity verification",
+                }
+            ],
+            "failed": [],
+        }
+
+    def test_put_messaging_templates_missing_values(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        """Verify templates with empty subject/body values are reverted to their default values."""
+        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
+        response = api_client.put(
+            url,
+            headers=auth_header,
+            json=[
+                {
+                    "key": "subject_identity_verification",
+                    "content": {
+                        "body": None,
+                        "subject": None,
+                    },
+                },
+            ],
+        )
+        assert response.status_code == 200
+        assert response.json() == {
+            "succeeded": [
+                {
+                    "key": "subject_identity_verification",
+                    "content": {
+                        "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. This code will expire in {{minutes}} minutes.",
+                        "subject": "Your one-time code is {{code}}",
+                    },
+                    "label": "Subject identity verification",
+                }
+            ],
+            "failed": [],
+        }
+
+    def test_put_messaging_templates_invalid_key(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
+        response = api_client.put(
+            url,
+            headers=auth_header,
+            json=[
+                {
+                    "key": "invalid_key",
+                    "content": {
+                        "body": None,
+                        "subject": None,
+                    },
+                },
+            ],
+        )
+        assert response.status_code == 200
+        assert response.json() == {
+            "succeeded": [],
+            "failed": [
+                {
+                    "message": "Invalid template key.",
+                    "data": {
+                        "key": "invalid_key",
+                        "content": {"body": None, "subject": None},
+                    },
+                }
+            ],
+        }

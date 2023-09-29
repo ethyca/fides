@@ -1,0 +1,49 @@
+{
+  "items": [
+    {
+      "id": "780",
+      "legal_name": "Aniview LTD",
+      "privacy_policy": "https://www.aniview.com/privacy-policy/",
+      "dpo": "support@aniview.com",
+      "legal_address": "Maetzler Rechtsanwalts GmbH &amp;;Schellinggasse 3/10;Co KG;Schellinggasse 3/10;Vienna",
+      "international_transfers": true,
+      "legal_basis_for_transfers": "'Adequacy Decision', 'SCCs'",
+      "uses_profiling": false,
+      "legal_basis_for_profiling": null,
+      "data_security_practices": null,
+      "tags": null,
+      "logo": null,
+      "cookies": []
+    },
+    {
+      "id": "733",
+      "legal_name": "Anzu Virtual Reality LTD",
+      "privacy_policy": "https://www.anzu.io/privacy-policy",
+      "dpo": "info@anzu.io",
+      "legal_address": "Anzu Virtual Reality LTD;Keizerkarelweg 390;Amstelveen;1181 RK Amstelveen;Netherlands",
+      "international_transfers": true,
+      "legal_basis_for_transfers": "'Adequacy Decision', 'SCCs'",
+      "uses_profiling": false,
+      "legal_basis_for_profiling": null,
+      "data_security_practices": null,
+      "tags": null,
+      "logo": null,
+      "cookies": []
+    },
+    {
+      "id": "252",
+      "legal_name": "Jaduda GmbH",
+      "privacy_policy": "https://www.splicky.com/en/web/privacy-delivery",
+      "dpo": "info@jaduda.com",
+      "legal_address": "Jaduda GmbH;Körtestraße 10;Berlin;10967;Germany",
+      "international_transfers": true,
+      "legal_basis_for_transfers": "'Adequacy Decision', 'SCCs', 'Supplementary measures'",
+      "uses_profiling": false,
+      "legal_basis_for_profiling": null,
+      "data_security_practices": null,
+      "tags": null,
+      "logo": null,
+      "cookies": []
+    }
+  ]
+}

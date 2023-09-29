@@ -1174,7 +1174,7 @@ def system_provide_service_operations_support_optimization(db: Session) -> Syste
             "name": "Optimize and improve support operations in order to provide the service",
             "system_id": system_provide_service_operations_support_optimization.id,
             "data_categories": ["user.device.cookie_id"],
-            "data_use": "essential.service.operations.support.optimization",
+            "data_use": "essential.service.operations.improve",
             "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,

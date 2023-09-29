@@ -84,7 +84,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                         self.exact,
                         self.case_sensitive,
                         filter_value,  # type: ignore
-                        pydash.get(item, self.field),
+                        self._get_nested_values(item, self.field),
                     )
                 ]
             return (
@@ -93,7 +93,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                     self.exact,
                     self.case_sensitive,
                     filter_value,  # type: ignore
-                    pydash.get(data, self.field),
+                    self._get_nested_values(data, self.field),
                 )
                 else []
             )
@@ -154,3 +154,40 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
 
         # base case, compare filter_value to a single string
         return filter_value == target if exact else filter_value in target
+
+    def _get_nested_values(self, data: Dict[str, Any], path: str) -> Any:
+        """
+        Extracts nested values from a dictionary based on a dot-separated path string.
+
+        This function handles cases where the path leads to a list of dictionaries.
+        Instead of returning the list, it iterates through each dictionary in the list,
+        applies the remaining path, and returns a flattened list of the results.
+
+        Parameters:
+        data (dict): The dictionary from which to extract the value.
+        path (str): The dot-separated string path indicating the nested value.
+
+        Returns:
+        The value(s) at the nested path within the dictionary. If the path
+        leads to a list of dictionaries, it returns a flattened list of values.
+
+        Raises:
+        KeyError: If the path does not exist in the dictionary.
+
+        Example:
+        For a dictionary {"a": {"b": [{"c": 1}, {"c": 2}]}} and path "a.b.c", the function
+        returns [1, 2].
+        """
+        components = path.split(".")
+        value = data[components[0]]
+        if len(components) > 1:
+            if isinstance(value, dict):
+                return self._get_nested_values(value, ".".join(components[1:]))
+            if isinstance(value, list):
+                return pydash.flatten(
+                    [
+                        self._get_nested_values(item, ".".join(components[1:]))
+                        for item in value
+                    ]
+                )
+        return value

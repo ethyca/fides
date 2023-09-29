@@ -10,6 +10,7 @@ import type { SaaSRequestMap } from "./SaaSRequestMap";
 export type Endpoint = {
   name: string;
   requests: SaaSRequestMap;
+  skip_processing?: boolean;
   after?: Array<string>;
   erase_after?: Array<string>;
 };

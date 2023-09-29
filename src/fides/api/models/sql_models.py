@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Set, Type, TypeVar
 from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.models import Dataset as FideslangDataset
 from pydantic import BaseModel
-from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
+from sqlalchemy import BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
     ForeignKey,
@@ -25,11 +25,12 @@ from sqlalchemy import (
     cast,
     type_coerce,
 )
-from sqlalchemy.dialects.postgresql import BYTEA
+from sqlalchemy.dialects.postgresql import ARRAY, BYTEA
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
+from typing_extensions import Protocol, runtime_checkable
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base
@@ -37,7 +38,9 @@ from fides.api.db.base_class import FidesBase as FideslibBase
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
-from fides.config import CONFIG
+from fides.config import get_config
+
+CONFIG = get_config()
 
 
 class FidesBase(FideslibBase):
@@ -151,8 +154,13 @@ class DataCategory(Base, FidesBase):
     __tablename__ = "ctl_data_categories"
 
     parent_key = Column(Text)
-    is_default = Column(BOOLEAN, default=False)
     active = Column(BOOLEAN, default=True, nullable=False)
+
+    # Default Fields
+    is_default = Column(BOOLEAN, default=False)
+    version_added = Column(Text)
+    version_deprecated = Column(Text)
+    replaced_by = Column(Text)
 
     @classmethod
     def from_fideslang_obj(
@@ -177,8 +185,13 @@ class DataQualifier(Base, FidesBase):
     __tablename__ = "ctl_data_qualifiers"
 
     parent_key = Column(Text)
-    is_default = Column(BOOLEAN, default=False)
     active = Column(BOOLEAN, default=True, nullable=False)
+
+    # Default Fields
+    is_default = Column(BOOLEAN, default=False)
+    version_added = Column(Text)
+    version_deprecated = Column(Text)
+    replaced_by = Column(Text)
 
 
 class DataSubject(Base, FidesBase):
@@ -189,8 +202,13 @@ class DataSubject(Base, FidesBase):
     __tablename__ = "ctl_data_subjects"
     rights = Column(JSON, nullable=True)
     automated_decisions_or_profiling = Column(BOOLEAN, nullable=True)
-    is_default = Column(BOOLEAN, default=False)
     active = Column(BOOLEAN, default=True, nullable=False)
+
+    # Default Fields
+    is_default = Column(BOOLEAN, default=False)
+    version_added = Column(Text)
+    version_deprecated = Column(Text)
+    replaced_by = Column(Text)
 
 
 class DataUse(Base, FidesBase):
@@ -201,13 +219,26 @@ class DataUse(Base, FidesBase):
     __tablename__ = "ctl_data_uses"
 
     parent_key = Column(Text)
-    legal_basis = Column(Text)
-    special_category = Column(Text)
-    recipients = Column(ARRAY(String))
-    legitimate_interest = Column(BOOLEAN, nullable=True)
-    legitimate_interest_impact_assessment = Column(String, nullable=True)
-    is_default = Column(BOOLEAN, default=False)
+    legal_basis = Column(
+        Text
+    )  # Deprecated in favor of PrivacyDeclaration.legal_basis_for_processing
+    special_category = Column(
+        Text
+    )  # Deprecated in favor of PrivacyDeclaration.special_category_legal_basis
+    recipients = Column(
+        ARRAY(String)
+    )  # Deprecated in favor of PrivacyDeclaration.third_parties
+    legitimate_interest = Column(BOOLEAN, nullable=True)  # Deprecated
+    legitimate_interest_impact_assessment = Column(
+        String, nullable=True
+    )  # Deprecated in favor of PrivacyDeclaration.legal_basis_for_processing
     active = Column(BOOLEAN, default=True, nullable=False)
+
+    # Default Fields
+    is_default = Column(BOOLEAN, default=False)
+    version_added = Column(Text)
+    version_deprecated = Column(Text)
+    replaced_by = Column(Text)
 
     @staticmethod
     def get_parent_uses_from_key(data_use_key: str) -> Set[str]:
@@ -240,12 +271,18 @@ class Dataset(Base, FidesBase):
 
     meta = Column(JSON)
     data_categories = Column(ARRAY(String))
-    data_qualifier = Column(String)
+    data_qualifier = Column(String)  # Deprecated
     collections = Column(JSON)
     fides_meta = Column(JSON)
-    joint_controller = Column(PGEncryptedString, nullable=True)
-    retention = Column(String)
-    third_country_transfers = Column(ARRAY(String))
+    joint_controller = Column(
+        PGEncryptedString, nullable=True
+    )  # Deprecated in favor of Systems.joint_controller_info
+    retention = Column(
+        String
+    )  # Deprecated in favor of PrivacyDeclaration.retention_period
+    third_country_transfers = Column(
+        ARRAY(String)
+    )  # Deprecated in favor of Systems.does_international_transfers
 
     @classmethod
     def create_from_dataset_dict(cls, db: Session, dataset: dict) -> "Dataset":
@@ -321,13 +358,45 @@ class System(Base, FidesBase):
     meta = Column(JSON)
     fidesctl_meta = Column(JSON)
     system_type = Column(String)
-    data_responsibility_title = Column(String)
-    joint_controller = Column(PGEncryptedString, nullable=True)
-    third_country_transfers = Column(ARRAY(String))
+    joint_controller = Column(
+        PGEncryptedString, nullable=True
+    )  # Deprecated in favor of System.joint_controller_info
+    data_responsibility_title = Column(
+        String
+    )  # Deprecated in favor of System.responsibility
+    third_country_transfers = Column(
+        ARRAY(String)
+    )  # Deprecated in favor of System.does_international_transfers
     administrating_department = Column(String)
-    data_protection_impact_assessment = Column(JSON)
+    data_protection_impact_assessment = Column(
+        JSON
+    )  # Deprecated in favor of System.requires_data_protection_assessments, System.dpa_location, and System.dpa_progress
     egress = Column(JSON)
     ingress = Column(JSON)
+
+    vendor_id = Column(String)
+    dataset_references = Column(ARRAY(String), server_default="{}", nullable=False)
+    processes_personal_data = Column(BOOLEAN(), server_default="t", nullable=False)
+    exempt_from_privacy_regulations = Column(
+        BOOLEAN(), server_default="f", nullable=False
+    )
+    reason_for_exemption = Column(String)
+    uses_profiling = Column(BOOLEAN(), server_default="f", nullable=False)
+    legal_basis_for_profiling = Column(ARRAY(String), server_default="{}")
+    does_international_transfers = Column(BOOLEAN(), server_default="f", nullable=False)
+    legal_basis_for_transfers = Column(ARRAY(String), server_default="{}")
+    requires_data_protection_assessments = Column(
+        BOOLEAN(), server_default="f", nullable=False
+    )
+    dpa_location = Column(String)
+    dpa_progress = Column(String)
+    privacy_policy = Column(String)
+    legal_name = Column(String)
+    legal_address = Column(String)
+    responsibility = Column(ARRAY(String), server_default="{}")
+    dpo = Column(String)
+    joint_controller_info = Column(String)
+    data_security_practices = Column(String)
 
     privacy_declarations = relationship(
         "PrivacyDeclaration",
@@ -336,7 +405,7 @@ class System(Base, FidesBase):
         lazy="selectin",
     )
 
-    users = relationship(
+    data_stewards = relationship(
         "FidesUser",
         secondary="systemmanager",
         back_populates="systems",
@@ -354,6 +423,8 @@ class System(Base, FidesBase):
     cookies = relationship(
         "Cookies", back_populates="system", lazy="selectin", uselist=True, viewonly=True
     )
+
+    user_id = Column(String, nullable=True)
 
     @classmethod
     def get_data_uses(
@@ -388,9 +459,23 @@ class PrivacyDeclaration(Base):
     ### references to other tables, but kept as 'soft reference' strings for now
     data_use = Column(String, index=True, nullable=False)
     data_categories = Column(ARRAY(String))
-    data_qualifier = Column(String)
+    data_qualifier = Column(String)  # Deprecated
     data_subjects = Column(ARRAY(String))
     dataset_references = Column(ARRAY(String))
+
+    features = Column(ARRAY(String), server_default="{}", nullable=False)
+    legal_basis_for_processing = Column(String)
+    impact_assessment_location = Column(String)
+    retention_period = Column(String)
+    processes_special_category_data = Column(
+        BOOLEAN(), server_default="f", nullable=False
+    )
+    special_category_legal_basis = Column(String)
+    data_shared_with_third_parties = Column(
+        BOOLEAN(), server_default="f", nullable=False
+    )
+    third_parties = Column(String)
+    shared_categories = Column(ARRAY(String), server_default="{}")
 
     ### proper FK references to other tables
     # System
@@ -467,11 +552,10 @@ sql_model_map: Dict = {
     "evaluation": Evaluation,
 }
 
-models_with_default_field = [
-    sql_model
-    for _, sql_model in sql_model_map.items()
-    if hasattr(sql_model, "is_default")
-]
+
+@runtime_checkable
+class ModelWithDefaultField(Protocol):
+    is_default: bool
 
 
 class AllowedTypes(str, EnumType):

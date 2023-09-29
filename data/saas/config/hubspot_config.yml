@@ -3,13 +3,17 @@ saas_config:
   name: HubSpot
   type: hubspot
   description: A sample schema representing the HubSpot connector for Fides
-  version: 0.0.3
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/hubspot
+  version: 0.0.4
 
   connector_params:
     - name: domain
       default_value: api.hubapi.com
+      description: Your HubSpot domain
     - name: private_app_token
       sensitive: True
+      label: Private app token
+      description: Your HubSpot Private Apps access token
 
   client_config:
     protocol: https

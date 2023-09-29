@@ -33,6 +33,7 @@ class UserConsentPreference(Enum):
 PrivacyNoticeRegion = Enum(
     "PrivacyNoticeRegion",
     [
+        ("us", "us"),  # united states
         ("us_al", "us_al"),  # alabama
         ("us_ak", "us_ak"),  # alaska
         ("us_az", "us_az"),  # arizona
@@ -83,6 +84,7 @@ PrivacyNoticeRegion = Enum(
         ("us_wv", "us_wv"),  # west virginia
         ("us_wi", "us_wi"),  # wisconsin
         ("us_wy", "us_wy"),  # wyoming
+        ("eea", "eea"),  # european economic area
         ("be", "be"),  # belgium
         ("bg", "bg"),  # bulgaria
         ("cz", "cz"),  # czechia
@@ -117,6 +119,20 @@ PrivacyNoticeRegion = Enum(
         ("is", "is"),  # iceland
         ("no", "no"),  # norway
         ("li", "li"),  # liechtenstein
+        ("ca", "ca"),  # canada
+        ("ca_ab", "ca_ab"),  # alberta
+        ("ca_bc", "ca_bc"),  # british columbia
+        ("ca_mb", "ca_mb"),  # manitoba
+        ("ca_nb", "ca_nb"),  # new brunswick
+        ("ca_nl", "ca_nl"),  # newfoundland and labrador
+        ("ca_ns", "ca_ns"),  # nova scotia
+        ("ca_on", "ca_on"),  # ontario
+        ("ca_pe", "ca_pe"),  # prince edward island
+        ("ca_qc", "ca_qc"),  # quebec
+        ("ca_sk", "ca_sk"),  # saskatchewan
+        ("ca_nt", "ca_nt"),  # northwest territories
+        ("ca_nu", "ca_nu"),  # nunavut
+        ("ca_yt", "ca_yt"),  # yukon
     ],
 )
 
@@ -187,8 +203,7 @@ class PrivacyNoticeBase:
         if not isinstance(name, str):
             raise Exception("Privacy notice keys must be generated from a string.")
         notice_key: str = re.sub(r"\s+", "_", name.lower().strip())
-        FidesKey.validate(notice_key)
-        return notice_key
+        return FidesKey(FidesKey.validate(notice_key))
 
     def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
         """
@@ -280,6 +295,15 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
                 )
             )
         ).all()
+
+    @property
+    def systems_applicable(self) -> bool:
+        """Return if any systems overlap with this notice's data uses"""
+        db = Session.object_session(self)
+        for system in db.query(System):
+            if self.applies_to_system(system):
+                return True
+        return False
 
     @classmethod
     def create(
@@ -435,15 +459,13 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
     def calculate_relevant_systems(self, db: Session) -> List[FidesKey]:
         """Method to cache the relevant systems at the time to store on PrivacyPreferenceHistory for record keeping
 
-        Provided the notice's enforcement level is "system_wide" - a system is relevant if
-        their data use is an exact match or a child of the notice's data use.
+        A system is relevant if their data use is an exact match or a child of the notice's data use.
         """
         relevant_systems: List[FidesKey] = []
-        if self.enforcement_level == EnforcementLevel.system_wide:
-            for system in db.query(System):
-                if self.applies_to_system(system):
-                    relevant_systems.append(system.fides_key)
-                    continue
+        for system in db.query(System):
+            if self.applies_to_system(system):
+                relevant_systems.append(system.fides_key)
+                continue
         return relevant_systems
 
 

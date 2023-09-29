@@ -1,4 +1,5 @@
 import pytest
+from fideslang.gvl import MAPPED_PURPOSES, MAPPED_SPECIAL_PURPOSES
 from sqlalchemy.exc import IntegrityError
 
 from fides.api.api.deps import get_api_session
@@ -8,6 +9,7 @@ from fides.api.models.privacy_experience import (
     PrivacyExperience,
     PrivacyExperienceConfig,
     PrivacyExperienceConfigHistory,
+    cache_saved_and_served_on_consent_record,
     upsert_privacy_experiences_after_config_update,
     upsert_privacy_experiences_after_notice_update,
 )
@@ -18,6 +20,8 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeRegion,
     UserConsentPreference,
 )
+from fides.api.models.privacy_preference import ConsentRecordType
+from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
 
 
 class TestExperienceConfig:
@@ -146,7 +150,9 @@ class TestPrivacyExperience:
         (
             queried_overlay_exp,
             queried_pc_exp,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_tx)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_tx
+        )
         assert queried_overlay_exp is None
         assert queried_pc_exp is None
 
@@ -161,7 +167,9 @@ class TestPrivacyExperience:
         (
             queried_overlay_exp,
             queried_pc_exp,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_tx)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_tx
+        )
         assert queried_overlay_exp == overlay_exp
         assert queried_pc_exp is None
 
@@ -176,7 +184,9 @@ class TestPrivacyExperience:
         (
             queried_overlay_exp,
             queried_pc_exp,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_tx)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_tx
+        )
         assert queried_overlay_exp == overlay_exp
         assert queried_pc_exp == pc_exp
 
@@ -386,6 +396,14 @@ class TestPrivacyExperience:
         privacy_notice.histories[0].delete(db)
         privacy_notice.delete(db)
 
+    def test_get_related_privacy_notices_for_a_tcf_overlay(
+        self, db, privacy_experience_france_tcf_overlay
+    ):
+        """Just returns an empty list; Privacy Notices are not relevant here"""
+        assert (
+            privacy_experience_france_tcf_overlay.get_related_privacy_notices(db) == []
+        )
+
     def test_get_should_show_banner(self, db):
         """Test PrivacyExperience.get_should_show_banner that is calculated at runtime"""
         privacy_experience = PrivacyExperience.create(
@@ -471,6 +489,12 @@ class TestPrivacyExperience:
         # Banner delivery not required because config says that banner should be always disabled
         assert privacy_experience.get_should_show_banner(db) is False
 
+    def test_get_should_show_banner_for_a_tcf_overlay(
+        self, privacy_experience_france_tcf_overlay, db
+    ):
+        """Currently, this returns true if the experience is a TCF Overlay type"""
+        assert privacy_experience_france_tcf_overlay.get_should_show_banner(db) is True
+
     @pytest.mark.usefixtures("privacy_preference_history_us_ca_provide")
     def test_get_related_notices_no_privacy_preference_for_fides_user_device_id(
         self,
@@ -551,7 +575,7 @@ class TestPrivacyExperience:
         privacy_notice_us_ca_provide.update(
             db=db,
             data={
-                "data_uses": ["improve"],
+                "data_uses": ["functional"],
                 "enforcement_level": EnforcementLevel.frontend,
             },
         )
@@ -656,7 +680,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
         assert overlay_experience is None
         assert privacy_center_experience is None
 
@@ -667,7 +693,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
 
         assert overlay_experience is None  # Only privacy center experience was created
         assert privacy_center_experience is not None
@@ -722,7 +750,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
         assert overlay_experience is None
         assert privacy_center_experience is not None
 
@@ -733,7 +763,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience is not None
@@ -774,7 +806,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.it)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.it
+        )
         assert overlay_experience is None
         assert privacy_center_experience is None
 
@@ -785,7 +819,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.it)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.it
+        )
 
         assert overlay_experience is not None
         assert privacy_center_experience is None
@@ -840,7 +876,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
 
         assert overlay_experience is not None
         assert privacy_center_experience is None
@@ -852,7 +890,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
         db.refresh(overlay_experience)
 
         assert overlay_experience is not None
@@ -894,7 +934,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
         assert overlay_experience is None
         assert privacy_center_experience is None
 
@@ -905,7 +947,9 @@ class TestUpsertPrivacyExperiencesOnNoticeChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ca)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ca
+        )
 
         assert overlay_experience is not None
         assert privacy_center_experience is not None
@@ -956,7 +1000,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
         assert overlay_experience is None
         assert privacy_center_experience is None
 
@@ -966,7 +1012,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience is not None
@@ -1006,7 +1054,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
         assert overlay_experience is None
         assert privacy_center_experience == pc_exp
 
@@ -1016,7 +1066,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience is not None
@@ -1057,7 +1109,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience == pc_exp
@@ -1068,7 +1122,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
         db.refresh(privacy_center_experience)
 
         assert overlay_experience is None
@@ -1111,7 +1167,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience == pc_exp
@@ -1122,7 +1180,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience is not None
@@ -1164,7 +1224,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience == pc_exp
@@ -1177,7 +1239,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         (
             overlay_experience,
             privacy_center_experience,
-        ) = PrivacyExperience.get_experiences_by_region(db, PrivacyNoticeRegion.us_ak)
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
+            db, PrivacyNoticeRegion.us_ak
+        )
 
         assert overlay_experience is None
         assert privacy_center_experience is not None
@@ -1191,3 +1255,202 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         assert privacy_center_experience.experience_config_id is None
 
         privacy_center_experience.delete(db)
+
+
+class TestCacheSavedAndServedOnConsentRecord:
+    @pytest.fixture
+    def tcf_purpose_consent_record(self):
+        return TCFPurposeRecord(**MAPPED_PURPOSES[8].dict())
+
+    @pytest.mark.usefixtures(
+        "served_notice_history_us_provide_for_fides_user",
+        "privacy_preference_history_us_ca_provide_for_fides_user",
+    )
+    def test_cache_saved_and_served_for_privacy_notice_history(
+        self,
+        db,
+        fides_user_provided_identity,
+        privacy_notice_us_ca_provide,
+    ):
+        assert (
+            privacy_notice_us_ca_provide.default_preference
+            == UserConsentPreference.opt_out
+        )
+        assert privacy_notice_us_ca_provide.current_preference is None
+        assert privacy_notice_us_ca_provide.outdated_preference is None
+        assert privacy_notice_us_ca_provide.current_served is None
+        assert privacy_notice_us_ca_provide.outdated_served is None
+
+        cache_saved_and_served_on_consent_record(
+            db=db,
+            consent_record=privacy_notice_us_ca_provide,
+            fides_user_provided_identity=fides_user_provided_identity,
+            record_type=ConsentRecordType.privacy_notice_id,
+        )
+
+        assert (
+            privacy_notice_us_ca_provide.default_preference
+            == UserConsentPreference.opt_out
+        )
+        assert (
+            privacy_notice_us_ca_provide.current_preference
+            == UserConsentPreference.opt_in
+        )
+        assert privacy_notice_us_ca_provide.outdated_preference is None
+        assert privacy_notice_us_ca_provide.current_served is True
+        assert privacy_notice_us_ca_provide.outdated_served is None
+
+    def test_record_for_tcf_purpose_exists_for_older_version(
+        self,
+        db,
+        tcf_purpose_consent_record,
+        fides_user_provided_identity,
+        privacy_preference_history_for_tcf_purpose,
+        served_notice_history_for_tcf_purpose,
+    ):
+        privacy_preference_history_for_tcf_purpose.current_privacy_preference.tcf_version = (
+            "1.0"
+        )
+        privacy_preference_history_for_tcf_purpose.current_privacy_preference.save(db)
+
+        served_notice_history_for_tcf_purpose.last_served_record.tcf_version = "1.0"
+        served_notice_history_for_tcf_purpose.last_served_record.save(db)
+
+        cache_saved_and_served_on_consent_record(
+            db,
+            tcf_purpose_consent_record,
+            fides_user_provided_identity,
+            record_type=ConsentRecordType.purpose,
+        )
+
+        assert tcf_purpose_consent_record.current_preference is None
+        assert (
+            tcf_purpose_consent_record.outdated_preference
+            == UserConsentPreference.opt_out
+        )
+        assert tcf_purpose_consent_record.current_served is None
+        assert tcf_purpose_consent_record.outdated_served is True
+
+    @pytest.mark.usefixtures(
+        "privacy_preference_history_for_tcf_purpose",
+        "served_notice_history_for_tcf_purpose",
+    )
+    def test_record_for_tcf_purpose_exists_for_current_version(
+        self, db, tcf_purpose_consent_record, fides_user_provided_identity
+    ):
+        cache_saved_and_served_on_consent_record(
+            db,
+            tcf_purpose_consent_record,
+            fides_user_provided_identity,
+            record_type=ConsentRecordType.purpose,
+        )
+        assert (
+            tcf_purpose_consent_record.current_preference
+            == UserConsentPreference.opt_out
+        )
+        assert tcf_purpose_consent_record.outdated_preference is None
+        assert tcf_purpose_consent_record.current_served is True
+        assert tcf_purpose_consent_record.outdated_served is None
+
+    def test_no_record_for_tcf_purpose_exists(
+        self, db, tcf_purpose_consent_record, fides_user_provided_identity
+    ):
+        cache_saved_and_served_on_consent_record(
+            db,
+            tcf_purpose_consent_record,
+            fides_user_provided_identity,
+            record_type=ConsentRecordType.purpose,
+        )
+        assert (
+            tcf_purpose_consent_record.default_preference
+            == UserConsentPreference.opt_out
+        )
+        assert tcf_purpose_consent_record.current_preference is None
+        assert tcf_purpose_consent_record.outdated_preference is None
+        assert tcf_purpose_consent_record.current_served is None
+        assert tcf_purpose_consent_record.outdated_served is None
+
+    @pytest.mark.usefixtures(
+        "privacy_preference_history_for_tcf_special_purpose",
+        "served_notice_history_for_tcf_special_purpose",
+    )
+    def test_cache_saved_and_served_for_special_purpose(
+        self,
+        db,
+        fides_user_provided_identity,
+    ):
+        special_purpose_record = TCFPurposeRecord(**MAPPED_SPECIAL_PURPOSES[1].dict())
+        cache_saved_and_served_on_consent_record(
+            db,
+            special_purpose_record,
+            fides_user_provided_identity,
+            record_type=ConsentRecordType.special_purpose,
+        )
+
+        assert (
+            special_purpose_record.default_preference == UserConsentPreference.opt_out
+        )
+        assert special_purpose_record.current_preference == UserConsentPreference.opt_in
+        assert special_purpose_record.outdated_preference is None
+        assert special_purpose_record.current_served is True
+        assert special_purpose_record.outdated_served is None
+
+    @pytest.mark.usefixtures("privacy_preference_history_for_vendor")
+    def test_cache_saved_and_served_for_vendor(self, db, fides_user_provided_identity):
+        vendor_record = TCFVendorRecord(
+            id="amplitude", name="amplitude", has_vendor_id=True
+        )
+        cache_saved_and_served_on_consent_record(
+            db,
+            vendor_record,
+            fides_user_provided_identity,
+            record_type=ConsentRecordType.vendor,
+        )
+
+        assert vendor_record.default_preference == UserConsentPreference.opt_out
+        assert vendor_record.current_preference == UserConsentPreference.opt_out
+        assert vendor_record.outdated_preference is None
+        assert vendor_record.current_served is None
+        assert vendor_record.outdated_served is None
+
+    @pytest.mark.usefixtures("privacy_preference_history_for_system")
+    def test_cache_saved_and_served_for_system(
+        self, db, fides_user_provided_identity, system
+    ):
+        system_record = TCFVendorRecord(
+            id=system.id, name=system.name, has_vendor_id=False
+        )
+        cache_saved_and_served_on_consent_record(
+            db,
+            system_record,
+            fides_user_provided_identity,
+            record_type=ConsentRecordType.system,
+        )
+
+        assert system_record.default_preference == UserConsentPreference.opt_out
+        assert system_record.current_preference == UserConsentPreference.opt_in
+        assert system_record.outdated_preference is None
+        assert system_record.current_served is None
+        assert system_record.outdated_served is None
+
+    @pytest.mark.usefixtures("privacy_preference_history_for_tcf_feature")
+    def test_cache_saved_and_served_for_tcf_feature(
+        self, db, fides_user_provided_identity
+    ):
+        feature_record = TCFFeatureRecord(
+            id=2,
+            name="Link different devices",
+            description="Different devices can be determined as belonging to you or your household in support of one or more of purposes.",
+        )
+        cache_saved_and_served_on_consent_record(
+            db,
+            feature_record,
+            fides_user_provided_identity,
+            record_type=ConsentRecordType.feature,
+        )
+
+        assert feature_record.default_preference == UserConsentPreference.opt_out
+        assert feature_record.current_preference == UserConsentPreference.opt_in
+        assert feature_record.outdated_preference is None
+        assert feature_record.current_served is True
+        assert feature_record.outdated_served is None
