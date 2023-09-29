@@ -29,7 +29,10 @@ from fides.api.schemas.tcf import (
     TCFSpecialPurposeSave,
     TCFVendorSave,
 )
-from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING, TCFComponentType
+from fides.api.util.tcf.tcf_experience_contents import (
+    TCF_COMPONENT_MAPPING,
+    TCFComponentType,
+)
 
 # Maps the sections in the request body for saving various TCF preferences
 # against the specific database column name on which these preferences are saved
@@ -86,6 +89,10 @@ class PrivacyPreferencesRequest(FidesSchema):
 
     browser_identity: Identity
     code: Optional[SafeStr]
+    tc_string: Optional[str] = Field(
+        description="If supplied, *_preferences fields will be ignored in favor of this TC string. Saves preferences"
+        "against purposes, special features, and vendors."
+    )  # TODO: Not yet implemented
     preferences: conlist(ConsentOptionCreate, max_items=200) = []  # type: ignore
     purpose_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
     special_purpose_preferences: conlist(TCFSpecialPurposeSave, max_items=200) = []  # type: ignore
