@@ -13,7 +13,7 @@ saas_config:
 
   client_config:
     protocol: https
-    host: <domain>
+    host: <domain>  # notice this is a placeholder, hence the <>
     authentication:
       strategy: basic
       configuration:
