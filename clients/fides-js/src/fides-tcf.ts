@@ -50,13 +50,9 @@ import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 
-import {
-  FidesConfig,
-  PrivacyExperience,
-  UserConsentPreference,
-} from "./lib/consent-types";
+import { FidesConfig, PrivacyExperience } from "./lib/consent-types";
 
-import { generateTcString, tcf } from "./lib/tcf";
+import { tcf } from "./lib/tcf";
 import {
   getInitialCookie,
   getInitialFides,
@@ -64,14 +60,8 @@ import {
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
-import {
-  FidesCookie,
-  hasSavedTcfPreferences,
-  isNewFidesCookie,
-  transformTcfPreferencesToCookieKeys,
-} from "./fides";
+import { FidesCookie, hasSavedTcfPreferences, isNewFidesCookie } from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
-import { TCFPurposeRecord, TcfSavePreferences } from "./lib/tcf/types";
 
 declare global {
   interface Window {
@@ -90,15 +80,27 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-/** Helper function to determine the initial value of a TCF object */
-const getInitialPreference = (
-  tcfObject: Pick<TCFPurposeRecord, "current_preference" | "default_preference">
-) => {
-  if (tcfObject.current_preference) {
-    return tcfObject.current_preference;
-  }
-  return tcfObject.default_preference ?? UserConsentPreference.OPT_OUT;
-};
+// /** Helper function to determine the initial value of a TCF object */
+// const getInitialEnabledIds = (
+//   tcfRecords:
+//     | Pick<
+//         TCFPurposeRecord,
+//         "id" | "current_preference" | "default_preference"
+//       >[]
+//     | undefined
+// ) => {
+//   if (!tcfRecords) {
+//     return [];
+//   }
+//   // TODO: take legal basis into account
+//   return tcfRecords
+//     .filter(
+//       (record) =>
+//         record.current_preference === UserConsentPreference.OPT_IN ||
+//         record.current_preference === UserConsentPreference.ACKNOWLEDGE
+//     )
+//     .map((record) => `${record.id}`);
+// };
 
 const updateCookie = async (
   oldCookie: FidesCookie,
@@ -109,30 +111,31 @@ const updateCookie = async (
     return { ...oldCookie, tc_string: "" };
   }
 
-  const tcStringPreferences: TcfSavePreferences = {
-    purpose_preferences: experience.tcf_purposes?.map((purpose) => ({
-      id: purpose.id,
-      preference: getInitialPreference(purpose),
-    })),
-    special_feature_preferences: experience.tcf_special_features?.map(
-      (feature) => ({
-        id: feature.id,
-        preference: getInitialPreference(feature),
-      })
-    ),
-    vendor_preferences: experience.tcf_vendors?.map((vendor) => ({
-      id: vendor.id,
-      preference: getInitialPreference(vendor),
-    })),
-    system_preferences: experience.tcf_systems?.map((system) => ({
-      id: system.id,
-      preference: getInitialPreference(system),
-    })),
-  };
+  // const tcStringPreferences: TcfSavePreferences = {
+  //   purpose_preferences: experience.tcf_purposes?.map((purpose) => ({
+  //     id: purpose.id,
+  //     preference: getInitialPreference(purpose),
+  //   })),
+  //   special_feature_preferences: experience.tcf_special_features?.map(
+  //     (feature) => ({
+  //       id: feature.id,
+  //       preference: getInitialPreference(feature),
+  //     })
+  //   ),
+  //   vendor_preferences: experience.tcf_vendors?.map((vendor) => ({
+  //     id: vendor.id,
+  //     preference: getInitialPreference(vendor),
+  //   })),
+  //   system_preferences: experience.tcf_systems?.map((system) => ({
+  //     id: system.id,
+  //     preference: getInitialPreference(system),
+  //   })),
+  // };
 
-  const tcString = await generateTcString({ tcStringPreferences, experience });
-  const tcfConsent = transformTcfPreferencesToCookieKeys(tcStringPreferences);
-  return { ...oldCookie, tc_string: tcString, tcf_consent: tcfConsent };
+  // const tcString = await generateTcString({ tcStringPreferences, experience });
+  // const tcfConsent = transformTcfPreferencesToCookieKeys(tcStringPreferences);
+  // return { ...oldCookie, tc_string: tcString, tcf_consent: tcfConsent };
+  return oldCookie;
 };
 
 /**

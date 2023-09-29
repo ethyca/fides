@@ -17,6 +17,7 @@ const DataUseToggle = ({
   disabled,
   isHeader,
   includeToggle = true,
+  secondToggle,
 }: {
   dataUse: DataUse;
   checked: boolean;
@@ -27,6 +28,7 @@ const DataUseToggle = ({
   disabled?: boolean;
   isHeader?: boolean;
   includeToggle?: boolean;
+  secondToggle?: ComponentChildren;
 }) => {
   const {
     isOpen,
@@ -81,6 +83,7 @@ const DataUseToggle = ({
             disabled={disabled}
           />
         ) : null}
+        {secondToggle || null}
       </div>
       {children ? <div {...getDisclosureProps()}>{children}</div> : null}
     </div>

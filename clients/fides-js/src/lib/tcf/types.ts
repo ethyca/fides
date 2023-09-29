@@ -169,6 +169,15 @@ export enum LegalBasisForProcessingEnum {
   LEGITIMATE_INTERESTS = "Legitimate interests",
 }
 
+export interface EnabledIds {
+  purposes: string[];
+  specialPurposes: string[];
+  features: string[];
+  specialFeatures: string[];
+  vendorsConsent: string[];
+  vendorsLegint: string[];
+}
+
 export type GVLJson = Pick<
   GVL,
   | "gvlSpecificationVersion"

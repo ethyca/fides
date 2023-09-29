@@ -72,10 +72,12 @@ const TcfTabs = ({
             assert.
           </InfoBox>
           <TcfVendors
-            allSystems={experience.tcf_systems}
-            allVendors={experience.tcf_vendors}
-            enabledVendorIds={enabledIds.vendors}
-            enabledSystemIds={enabledIds.systems}
+            vendors={[
+              ...(experience.tcf_vendors || []),
+              ...(experience.tcf_systems || []),
+            ]}
+            enabledVendorConsentIds={enabledIds.vendorsConsent}
+            enabledVendorLegintIds={enabledIds.vendorsLegint}
             onChange={onChange}
             gvl={experience.gvl}
           />
