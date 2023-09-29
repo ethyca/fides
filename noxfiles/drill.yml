@@ -1,7 +1,7 @@
 # This file is used by "drill", a load testing utility
 # https://github.com/fcsonline/drill
 
-concurrency: 1 # How many instances of the `plan` get run concurrently
+concurrency: 5 # How many instances of the `plan` get run concurrently
 base: 'http://localhost:8080'
 iterations: 5 # How many times to run the plan
 rampup: 1 # The number of seconds between starting concurrent runs

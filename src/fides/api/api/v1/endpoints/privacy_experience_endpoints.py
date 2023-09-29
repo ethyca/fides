@@ -124,7 +124,7 @@ def _filter_experiences_by_region_or_country(
     response_model=Page[PrivacyExperienceResponse],
 )
 @fides_limiter.limit(CONFIG.security.public_request_rate_limit)
-def privacy_experience_list(
+async def privacy_experience_list(
     *,
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
