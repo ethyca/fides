@@ -499,6 +499,9 @@ class TestUnflattenDict:
         with pytest.raises(FidesopsException):
             unflatten_dict({"A.B": 1, "A": 2, "A.C": 3})
 
+    def test_mixed_types_in_array(self):
+        assert unflatten_dict({"A.0": "B", "A.1.C": "D"}) == {"A": ["B", {"C": "D"}]}
+
     def test_data_not_completely_flattened(self):
         assert unflatten_dict({"A.B.C": 1, "A": {"B.D": 2}}) == {
             "A": {"B": {"C": 1, "D": 2}}
