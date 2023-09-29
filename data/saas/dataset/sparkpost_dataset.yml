@@ -1,4 +1,3 @@
-# contains data about what's at each endpoint we're going to use.
 dataset:
   - fides_key: <instance_fides_key>
     name: sparkpost
@@ -41,12 +40,12 @@ dataset:
               data_type: object
             fields:
               - name: email
-                data_categories: [system.operations]
+                data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
                   primary_key: True
               - name: name
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
           - name: return_path
@@ -56,7 +55,7 @@ dataset:
           - name: tags
             data_categories: [system.operations]
             fidesops_meta:
-              data_type: 'string[]'
+              data_type: "string[]"
           - name: metadata
             fidesops_meta:
               data_type: object

@@ -1,4 +1,3 @@
-# Endpoints and details about commecting
 saas_config:
   fides_key: <instance_fides_key>
   name: SparkPost SaaS Config
@@ -10,7 +9,7 @@ saas_config:
     - name: domain
       default_value: api.sparkpost.com
     - name: api_key
-      sensitive: True # controls the GUI display of entered values once submitted.
+      sensitive: true
 
   client_config:
     protocol: https
@@ -23,6 +22,20 @@ saas_config:
   test_request:
     method: GET
     path: /api/v1/recipient-lists
+
+  data_protection_request:
+    method: POST
+    path: /api/v1/data-privacy/rtbf-request
+    body: |
+      {
+        "recipients": [
+            "<email>"
+        ],
+        "include_subaccounts": true
+      }
+    param_values:
+      - name: email
+        identity: email
 
   endpoints:
     - name: recipient_list
@@ -52,17 +65,3 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: recipient_list.id
                   direction: from
-# in this case adding data_prot_req here as it will query more than one collection! unlike the above.
-  data_protection_request: 
-    method: POST
-    path: /api/v1/data-privacy/rtbf-request
-    body: |
-      {
-        "recipients": [
-            "<masked_object_fields>"
-        ],
-        "include_subaccounts": true
-      }
-    param_values:
-    - name: email
-      identity: email

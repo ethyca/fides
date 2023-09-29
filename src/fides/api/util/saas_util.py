@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 import re
-from collections import defaultdict
+from collections import defaultdict, deque
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import yaml
+from loguru import logger
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
 from fides.api.common_exceptions import FidesopsException, ValidationError
@@ -215,11 +216,10 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
     }
     """
     output: Dict[Any, Any] = {}
-    for path, value in flat_dict.items():
-        if isinstance(value, dict) and len(value) > 0:
-            raise FidesopsException(
-                "'unflatten_dict' expects a flattened dictionary as input."
-            )
+    queue = deque(flat_dict.items())
+
+    while queue:
+        path, value = queue.popleft()
         keys = path.split(separator)
         target = output
         for i, current_key in enumerate(keys[:-1]):
@@ -237,7 +237,14 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
             if isinstance(target, list):
                 target.append(value)
             else:
-                target[keys[-1]] = value
+                # If the value is a dictionary, add its components to the queue for processing
+                if isinstance(value, dict):
+                    target = target.setdefault(keys[-1], {})
+                    for inner_key, inner_value in value.items():
+                        new_key = f"{path}{separator}{inner_key}"
+                        queue.append((new_key, inner_value))
+                else:
+                    target[keys[-1]] = value
         except TypeError as exc:
             raise FidesopsException(
                 f"Error unflattening dictionary, conflicting levels detected: {exc}"

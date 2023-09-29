@@ -386,8 +386,9 @@ class TestUnflattenDict:
             unflatten_dict({"A.B": 1, "A": 2, "A.C": 3})
 
     def test_data_not_completely_flattened(self):
-        with pytest.raises(FidesopsException):
-            unflatten_dict({"A.B.C": 1, "A": {"B.D": 2}})
+        assert unflatten_dict({"A.B.C": 1, "A": {"B.D": 2}}) == {
+            "A": {"B": {"C": 1, "D": 2}}
+        }
 
     def test_none_separator(self):
         with pytest.raises(IndexError):

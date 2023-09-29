@@ -35,16 +35,6 @@ def sparkpost_erasure_identity_email() -> str:
 
 
 @pytest.fixture
-def sparkpost_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def sparkpost_erasure_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
 def sparkpost_erasure_data(
     sparkpost_erasure_identity_email: str,
 ) -> Generator:  # make recipients here
@@ -76,41 +66,17 @@ def sparkpost_erasure_data(
         auth=auth,
         json=payload,
     )
-    # import pdb; pdb.set_trace()
-    yield {}
+    recipient_list_id = response.json()["results"]["id"]
 
+    yield
 
-# @pytest.fixture
-# def sparkpost_data_protection_request(
-#     sparkpost_erasure_identity_email: str,
-# ) -> Generator:  # make a data protection request here (steal this from PostMan)
-#     payload = {"recipients": ["email@example.com"], "include_subaccounts": true}
-#     base_url = f"https://{secrets['domain']}"
-#     auth = secrets["api_key"], None
-#     response = requests.post(
-#         url=f"{base_url}/api/v1/rtbf-request",
-#         auth=auth,
-#         json=payload,
-#     )
-#     # import pdb
-
-#     # pdb.set_trace()
-#     # yield {}
+    # delete the recipient list after the test since the data_protection_request doesn't delete the lists just the recipients
+    requests.delete(
+        url=f"{base_url}/api/v1/recipient-lists/{recipient_list_id}",
+        auth=auth,
+    )
 
 
 @pytest.fixture
-def sparkpost_runner(
-    db,
-    cache,
-    sparkpost_secrets,
-    sparkpost_external_references,
-    sparkpost_erasure_external_references,
-) -> ConnectorRunner:
-    return ConnectorRunner(
-        db,
-        cache,
-        "sparkpost",
-        sparkpost_secrets,
-        external_references=sparkpost_external_references,
-        erasure_external_references=sparkpost_erasure_external_references,
-    )
+def sparkpost_runner(db, cache, sparkpost_secrets) -> ConnectorRunner:
+    return ConnectorRunner(db, cache, "sparkpost", sparkpost_secrets)
