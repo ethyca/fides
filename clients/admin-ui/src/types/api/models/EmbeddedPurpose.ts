@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * Sparse details for an embedded TCF line item within another TCF component. Read-only.
+ * Sparse details for an embedded purpose beneath a system or vendor section.  Read-only.
  */
 export type EmbeddedPurpose = {
   id: number;

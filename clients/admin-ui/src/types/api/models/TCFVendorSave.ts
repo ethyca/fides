@@ -5,7 +5,7 @@
 import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
- * Base schema for saving preferences with respect to a TCF Vendor
+ * Base schema for saving preferences with respect to a TCF Vendor or a System
  * TODO: TCF Add validation for allowable vendors (in GVL or dictionary?)
  */
 export type TCFVendorSave = {

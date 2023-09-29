@@ -292,6 +292,7 @@ const plusApi = baseApi.injectEndpoints({
         url: `plus/custom-asset/${assetType}`,
         method: "PUT",
         body: file,
+        responseHandler: (response: { text: () => any }) => response.text(),
       }),
       invalidatesTags: () => ["Custom Assets"],
     }),

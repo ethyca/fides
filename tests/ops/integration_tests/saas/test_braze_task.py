@@ -1,8 +1,6 @@
 import random
-from time import sleep
 
 import pytest
-import requests
 
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.privacy_request import PrivacyRequest
@@ -11,7 +9,9 @@ from fides.api.service.connectors import get_connector
 from fides.api.task import graph_task
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
+from tests.fixtures.saas.braze_fixtures import _user_exists
 from tests.ops.graph.graph_test_util import assert_rows_match
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
 @pytest.mark.integration_saas
@@ -159,7 +159,7 @@ async def test_braze_access_request_task_with_phone_number(
 async def test_braze_erasure_request_task(
     db,
     policy,
-    erasure_policy_string_rewrite,
+    erasure_policy_string_rewrite_name_and_email,
     braze_connection_config,
     braze_dataset_config,
     braze_erasure_identity_email,
@@ -213,7 +213,7 @@ async def test_braze_erasure_request_task(
 
     x = await graph_task.run_erasure(
         privacy_request,
-        erasure_policy_string_rewrite,
+        erasure_policy_string_rewrite_name_and_email,
         graph,
         [braze_connection_config],
         identity_kwargs,
@@ -226,41 +226,12 @@ async def test_braze_erasure_request_task(
         f"{dataset_name}:subscription_groups": 0,
     }
 
-    sleep(30)
-
-    # Verifying field is masked
-    braze_secrets = braze_connection_config.secrets
-    base_url = f"https://{braze_secrets['domain']}"
-    headers = {
-        "Authorization": f"Bearer {braze_secrets['api_key']}",
-    }
-    body = {
-        "email_address": braze_erasure_identity_email,
-        "fields_to_export": [
-            "braze_id",
-            "country",
-            "dob",
-            "email",
-            "external_id",
-            "first_name",
-            "gender",
-            "home_city",
-            "language",
-            "last_name",
-            "phone",
-            "user_aliases",
-        ],
-    }
-
-    user_response = requests.post(
-        url=f"{base_url}/users/export/ids",
-        json=body,
-        headers=headers,
+    # _users_exists will return None if the first_name has been masked
+    poll_for_existence(
+        _user_exists,
+        (braze_erasure_identity_email, braze_connection_config.secrets),
+        interval=30,
+        existence_desired=False,
     )
-    users = user_response.json().get("users")
-
-    for user in users:
-        assert user["first_name"] == "MASKED"
-        assert user["last_name"] == "MASKED"
 
     CONFIG.execution.masking_strict = temp_masking

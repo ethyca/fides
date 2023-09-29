@@ -4,7 +4,6 @@ import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
 import { getConsentContext } from "./consent-context";
 import {
-  buildCookieConsentForExperiences,
   CookieIdentity,
   CookieKeyConsent,
   CookieMeta,
@@ -12,6 +11,7 @@ import {
   getOrMakeFidesCookie,
   isNewFidesCookie,
   makeConsentDefaultsLegacy,
+  updateCookieFromNoticePreferences,
   updateExperienceFromCookieConsent,
 } from "./cookie";
 import {
@@ -38,14 +38,16 @@ import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
+import { TcfCookieConsent } from "./tcf/types";
 
 export type Fides = {
   consent: CookieKeyConsent;
   experience?: PrivacyExperience | EmptyExperience;
   geolocation?: UserGeolocation;
-  tcString?: string | undefined;
+  tc_string?: string | undefined;
   options: FidesOptions;
   fides_meta: CookieMeta;
+  tcf_consent: TcfCookieConsent;
   gtm: typeof gtm;
   identity: CookieIdentity;
   init: (config: FidesConfig) => Promise<void>;
@@ -75,12 +77,21 @@ const retrieveEffectiveRegionString = async (
   return fidesRegionString;
 };
 
-const automaticallyApplyGPCPreferences = (
-  cookie: FidesCookie,
-  fidesRegionString: string | null,
-  fidesApiUrl: string,
-  effectiveExperience?: PrivacyExperience
-) => {
+/**
+ * Opt out of notices that can be opted out of automatically.
+ * This does not currently do anything with TCF.
+ */
+const automaticallyApplyGPCPreferences = ({
+  cookie,
+  fidesRegionString,
+  fidesApiUrl,
+  effectiveExperience,
+}: {
+  cookie: FidesCookie;
+  fidesRegionString: string | null;
+  fidesApiUrl: string;
+  effectiveExperience?: PrivacyExperience;
+}) => {
   if (!effectiveExperience || !effectiveExperience.privacy_notices) {
     return;
   }
@@ -122,6 +133,8 @@ const automaticallyApplyGPCPreferences = (
       consentMethod: ConsentMethod.gpc,
       userLocationString: fidesRegionString || undefined,
       cookie,
+      updateCookie: (oldCookie) =>
+        updateCookieFromNoticePreferences(oldCookie, consentPreferencesToSave),
     });
   }
 };
@@ -166,11 +179,11 @@ export const getInitialFides = ({
   let updatedExperience = experience;
   if (isPrivacyExperience(experience)) {
     // at this point, pre-fetched experience contains no user consent, so we populate with the Fides cookie
-    updatedExperience = updateExperienceFromCookieConsent(
+    updatedExperience = updateExperienceFromCookieConsent({
       experience,
       cookie,
-      options.debug
-    );
+      debug: options.debug,
+    });
   }
 
   return {
@@ -178,6 +191,8 @@ export const getInitialFides = ({
     fides_meta: cookie.fides_meta,
     identity: cookie.identity,
     experience: updatedExperience,
+    tcf_consent: cookie.tcf_consent,
+    tc_string: cookie.tc_string,
     geolocation,
     options,
     initialized: true,
@@ -203,13 +218,12 @@ export const initialize = async ({
 }: {
   cookie: FidesCookie;
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
-  updateCookie?: (
+  updateCookie: (
     oldCookie: FidesCookie,
-    experience: PrivacyExperience
+    experience: PrivacyExperience,
+    debug?: boolean
   ) => Promise<FidesCookie>;
 } & FidesConfig): Promise<Partial<Fides>> => {
-  const context = getConsentContext();
-
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
   let effectiveExperience = experience;
   let fidesRegionString: string | null = null;
@@ -250,18 +264,12 @@ export const initialize = async ({
       isPrivacyExperience(effectiveExperience) &&
       experienceIsValid(effectiveExperience, options)
     ) {
-      // Overwrite cookie consent with experience-based consent values
-      // eslint-disable-next-line no-param-reassign
-      cookie.consent = buildCookieConsentForExperiences(
+      const updatedCookie = await updateCookie(
+        cookie,
         effectiveExperience,
-        context,
         options.debug
       );
-
-      if (updateCookie) {
-        // eslint-disable-next-line no-param-reassign
-        cookie = await updateCookie(cookie, effectiveExperience);
-      }
+      Object.assign(cookie, updatedCookie);
 
       if (shouldInitOverlay) {
         await initOverlay({
@@ -275,12 +283,12 @@ export const initialize = async ({
     }
   }
   if (shouldInitOverlay && isPrivacyExperience(effectiveExperience)) {
-    automaticallyApplyGPCPreferences(
+    automaticallyApplyGPCPreferences({
       cookie,
       fidesRegionString,
-      options.fidesApiUrl,
-      effectiveExperience
-    );
+      fidesApiUrl: options.fidesApiUrl,
+      effectiveExperience,
+    });
   }
 
   // return an object with the updated Fides values
@@ -288,7 +296,8 @@ export const initialize = async ({
     consent: cookie.consent,
     fides_meta: cookie.fides_meta,
     identity: cookie.identity,
-    tcString: cookie.tcString,
+    tc_string: cookie.tc_string,
+    tcf_consent: cookie.tcf_consent,
     experience,
     geolocation,
     options,
