@@ -221,10 +221,10 @@ async def privacy_experience_list(
 
     results: List[PrivacyExperience] = []
     should_unescape: Optional[str] = request.headers.get(UNESCAPE_SAFESTR_HEADER)
-      
+
     # Builds TCF Experience Contents once here, in case multiple TCF Experiences are requested
     base_tcf_contents: TCFExperienceContents = get_tcf_contents(db)
-    
+
     await asyncio.sleep(delay=0.001)
     for privacy_experience in experience_query.order_by(
         PrivacyExperience.created_at.desc()
