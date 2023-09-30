@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 from html import escape, unescape
 from typing import Dict, List, Optional
@@ -126,7 +127,7 @@ def _filter_experiences_by_region_or_country(
     response_model=Page[PrivacyExperienceResponse],
 )
 @fides_limiter.limit(CONFIG.security.public_request_rate_limit)
-def privacy_experience_list(
+async def privacy_experience_list(
     *,
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
@@ -178,6 +179,7 @@ def privacy_experience_list(
             db=db, fides_user_device_id=fides_user_device_id
         )
 
+    await asyncio.sleep(delay=0.001)
     experience_query = db.query(PrivacyExperience)
 
     if show_disabled is False:
@@ -188,11 +190,13 @@ def privacy_experience_list(
             PrivacyExperienceConfig.id == PrivacyExperience.experience_config_id,
         ).filter(PrivacyExperienceConfig.disabled.is_(False))
 
+    await asyncio.sleep(delay=0.001)
     if region is not None:
         experience_query = _filter_experiences_by_region_or_country(
             db=db, region=region, experience_query=experience_query
         )
 
+    await asyncio.sleep(delay=0.001)
     if component is not None:
         # Intentionally relaxes what is returned when querying for "overlay", by returning both types of overlays.
         # This way the frontend doesn't have to know which type of overlay, regular or tcf, just that it is an overlay.
@@ -204,10 +208,12 @@ def privacy_experience_list(
                 component_search_map.get(component, [component])
             )
         )
+    await asyncio.sleep(delay=0.001)
     if has_config is True:
         experience_query = experience_query.filter(
             PrivacyExperience.experience_config_id.isnot(None)
         )
+    await asyncio.sleep(delay=0.001)
     if has_config is False:
         experience_query = experience_query.filter(
             PrivacyExperience.experience_config_id.is_(None)
@@ -215,12 +221,15 @@ def privacy_experience_list(
 
     results: List[PrivacyExperience] = []
     should_unescape: Optional[str] = request.headers.get(UNESCAPE_SAFESTR_HEADER)
+
     # Builds TCF Experience Contents once here, in case multiple TCF Experiences are requested
     base_tcf_contents: TCFExperienceContents = get_tcf_contents(db)
 
+    await asyncio.sleep(delay=0.001)
     for privacy_experience in experience_query.order_by(
         PrivacyExperience.created_at.desc()
     ):
+        await asyncio.sleep(delay=0.001)
         content_exists: bool = embed_experience_details(
             db,
             privacy_experience=privacy_experience,
@@ -237,6 +246,7 @@ def privacy_experience_list(
             continue
 
         # Temporarily save "show_banner" on the privacy experience object
+        await asyncio.sleep(delay=0.001)
         privacy_experience.show_banner = privacy_experience.get_should_show_banner(
             db, show_disabled
         )
