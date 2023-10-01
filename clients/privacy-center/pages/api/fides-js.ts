@@ -87,7 +87,13 @@ export default async function handler(
   }
 
   // Check if a geolocation was provided via headers or query param
-  const geolocation = await lookupGeolocation(req);
+  // const geolocation = await lookupGeolocation(req);
+  // Hard code for the IAB image
+  const geolocation = {
+    country: "FI",
+    location: "FI-18",
+    region: "18",
+  };
 
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
