@@ -162,9 +162,6 @@ class ConsentReportingMixin:
     feature = Column(
         Integer, index=True
     )  # When saving privacy preferences with respect to a TCF feature directly
-    purpose = Column(
-        Integer, index=True
-    )  # When saving privacy preferences with respect to a TCF purpose directly
     purpose_consent = Column(
         Integer, index=True
     )  # When saving privacy preferences with respect to a TCF purpose with a consent legal basis
@@ -177,18 +174,12 @@ class ConsentReportingMixin:
     special_purpose = Column(
         Integer, index=True
     )  # When saving privacy preferences with respect to a TCF special purpose directly
-    vendor = Column(
-        String, index=True
-    )  # When saving privacy preferences with respect to a vendor directly. Vendors can apply to multiple systems.
     vendor_consent = Column(
         String, index=True
     )  # When saving privacy preferences with respect to a vendor with a legal basis of consent
     vendor_legitimate_interests = Column(
         String, index=True
     )  # When saving privacy preferences with respect to a vendor with a legal basis of legitimate interests
-    system = Column(
-        String, index=True
-    )  # When saving privacy preferences with respect to a system id directly, in the case where the vendor is unknown
     system_consent = Column(
         String, index=True
     )  # When saving privacy preferences with respect to a system id with consent legal basis, in the case where the vendor is unknown
@@ -617,8 +608,6 @@ class LastSavedMixin:
     # ==== TCF Attributes that can be served ==== #
     feature = Column(Integer, index=True)  # When a feature was served directly (TCF)
 
-    purpose = Column(Integer, index=True)  # When a purpose was served directly (TCF)
-
     purpose_consent = Column(
         Integer, index=True
     )  # When a TCF purpose with consent legal basis was served directly (TCF)
@@ -634,10 +623,6 @@ class LastSavedMixin:
         Integer, index=True
     )  # When a special purpose was served directly (TCF)
 
-    vendor = Column(
-        String, index=True
-    )  # When a vendor was served directly (TCF). Vendors can apply to multiple systems.
-
     vendor_consent = Column(
         String, index=True
     )  # When a TCF vendor with consent legal basis was served directly (TCF)
@@ -645,9 +630,6 @@ class LastSavedMixin:
         String, index=True
     )  # When a TCF vendor with legitimate interest legal basis was served directly (TCF)
 
-    system = Column(
-        String, index=True
-    )  # The id of a system (TCF). Used for when the specific vendor type is unknown.
     system_consent = Column(
         String, index=True
     )  # When a system id with consent legal basis was served directly.  Used for when the specific vendor type is unknown.
@@ -729,12 +711,6 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
             "privacy_notice_id",
             name="fides_user_device_identity_privacy_notice",
         ),
-        UniqueConstraint("provided_identity_id", "purpose", name="identity_purpose"),
-        UniqueConstraint(
-            "fides_user_device_provided_identity_id",
-            "purpose",
-            name="fides_user_device_identity_purpose",
-        ),
         UniqueConstraint(
             "provided_identity_id", "purpose_consent", name="identity_purpose_consent"
         ),
@@ -751,12 +727,6 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
             "special_purpose",
             name="fides_user_device_identity_special_purpose",
         ),
-        UniqueConstraint("provided_identity_id", "vendor", name="identity_vendor"),
-        UniqueConstraint(
-            "fides_user_device_provided_identity_id",
-            "vendor",
-            name="fides_user_device_identity_vendor",
-        ),
         UniqueConstraint(
             "provided_identity_id", "vendor_consent", name="identity_vendor_consent"
         ),
@@ -764,12 +734,6 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
             "fides_user_device_provided_identity_id",
             "vendor_legitimate_interests",
             name="fides_user_device_identity_vendor_leg_interests",
-        ),
-        UniqueConstraint("provided_identity_id", "system", name="identity_system"),
-        UniqueConstraint(
-            "fides_user_device_provided_identity_id",
-            "system",
-            name="fides_user_device_identity_system",
         ),
         UniqueConstraint(
             "provided_identity_id", "system_consent", name="identity_system_consent"
@@ -849,16 +813,6 @@ class LastServedNotice(LastSavedMixin, Base):
         ),
         UniqueConstraint(
             "provided_identity_id",
-            "purpose",
-            name="last_served_identity_purpose",
-        ),
-        UniqueConstraint(
-            "fides_user_device_provided_identity_id",
-            "purpose",
-            name="last_served_fides_user_device_identity_purpose",
-        ),
-        UniqueConstraint(
-            "provided_identity_id",
             "purpose_consent",
             name="last_served_identity_purpose_consent",
         ),
@@ -889,16 +843,6 @@ class LastServedNotice(LastSavedMixin, Base):
         ),
         UniqueConstraint(
             "provided_identity_id",
-            "vendor",
-            name="last_served_identity_vendor",
-        ),
-        UniqueConstraint(
-            "fides_user_device_provided_identity_id",
-            "vendor",
-            name="last_served_fides_user_device_identity_vendor",
-        ),
-        UniqueConstraint(
-            "provided_identity_id",
             "vendor_consent",
             name="last_served_identity_vendor_consent",
         ),
@@ -906,16 +850,6 @@ class LastServedNotice(LastSavedMixin, Base):
             "fides_user_device_provided_identity_id",
             "vendor_legitimate_interests",
             name="last_served_fides_user_device_identity_vendor_leg_interests",
-        ),
-        UniqueConstraint(
-            "provided_identity_id",
-            "system",
-            name="last_served_identity_system",
-        ),
-        UniqueConstraint(
-            "fides_user_device_provided_identity_id",
-            "system",
-            name="last_served_fides_user_device_identity_system",
         ),
         UniqueConstraint(
             "provided_identity_id",
