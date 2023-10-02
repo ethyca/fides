@@ -230,9 +230,9 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
     );
 
-    // Initialize vendor values from the TC string if it's available. The cookie only
-    // stores what the backend has, while the TC string has a little more right now.
-    // (fidesplus#1128)
+    // Initialize vendor values from the TC string if it's available. Neither the
+    // backend nor the cookie store vendorsConsent or vendorsLegint yet, so we must
+    // look at the string. (fidesplus#1128)
     if (cookie.tc_string && cookie.tc_string !== "") {
       const tcModel = TCString.decode(cookie.tc_string || "");
       vendorsConsent = [];
