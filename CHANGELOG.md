@@ -63,6 +63,7 @@ The types of changes are:
 - Allows CDN to cache empty experience responses from fides.js API  [#4113](https://github.com/ethyca/fides/pull/4113)
 - Fixed `identity_special_purpose` unique constraint definition [#4174](https://github.com/ethyca/fides/pull/4174/files)
 - Updating the unflatten_dict util to accept flattened dict values [#4200](https://github.com/ethyca/fides/pull/4200)
+- An issue where email was not being overridden correctly for Braze and Domo [#4196](https://github.com/ethyca/fides/pull/4196)
 
 ## [2.20.2](https://github.com/ethyca/fides/compare/2.20.1...2.20.2)
 
