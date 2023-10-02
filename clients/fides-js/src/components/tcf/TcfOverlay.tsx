@@ -223,29 +223,30 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   }
   const experienceConfig = experience.experience_config;
 
-  const goToVendorTab = () => {
-    setActiveTabIndex(2);
-  };
-
   return (
     <Overlay
       options={options}
       experience={experience}
       cookie={cookie}
-      renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) =>
-        showBanner ? (
+      onVendorPageClick={() => {
+        setActiveTabIndex(2);
+      }}
+      renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => {
+        const goToVendorTab = () => {
+          onManagePreferencesClick();
+          setActiveTabIndex(2);
+        };
+        return showBanner ? (
           <ConsentBanner
             bannerIsOpen={isOpen}
             onClose={onClose}
             experience={experienceConfig}
+            onVendorPageClick={goToVendorTab}
           >
             <InitialLayer experience={experience} />
             <VendorInfoBanner
               experience={experience}
-              goToVendorTab={() => {
-                onManagePreferencesClick();
-                goToVendorTab();
-              }}
+              goToVendorTab={goToVendorTab}
             />
             <TcfConsentButtons
               experience={experience}
@@ -256,8 +257,8 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               }}
             />
           </ConsentBanner>
-        ) : null
-      }
+        ) : null;
+      }}
       renderModalContent={({ onClose }) => {
         const onSave = (keys: EnabledIds) => {
           handleUpdateAllPreferences(keys);
