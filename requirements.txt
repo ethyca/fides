@@ -11,7 +11,6 @@ deepdiff==6.3.0
 defusedxml==0.7.1
 expandvars==0.9.0
 fastapi[all]==0.89.1
-fastapi-caching[redis]==0.3.0
 fastapi-pagination[sqlalchemy]==0.11.4
 fideslang==2.1.0
 fideslog==1.2.10
