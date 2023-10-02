@@ -2,7 +2,7 @@ import { VNode, h } from "preact";
 
 import { PrivacyExperience } from "../../lib/consent-types";
 import { ConsentButtons } from "../ConsentButtons";
-import type { EnabledIds } from "./TcfOverlay";
+import type { EnabledIds } from "../../lib/tcf/types";
 import {
   TCFPurposeRecord,
   TCFFeatureRecord,
@@ -40,13 +40,18 @@ export const TcfConsentButtons = ({
   }
 
   const handleAcceptAll = () => {
+    const vendorsAndSystems = [
+      ...(experience.tcf_vendors || []),
+      ...(experience.tcf_systems || []),
+    ];
     const allIds: EnabledIds = {
       purposes: getAllIds(experience.tcf_purposes),
       specialPurposes: getAllIds(experience.tcf_special_purposes),
       features: getAllIds(experience.tcf_features),
       specialFeatures: getAllIds(experience.tcf_special_features),
-      vendors: getAllIds(experience.tcf_vendors),
-      systems: getAllIds(experience.tcf_systems),
+      // TODO: make these read from separate fields once the backend supports it (fidesplus1128)
+      vendorsConsent: getAllIds(vendorsAndSystems),
+      vendorsLegint: getAllIds(vendorsAndSystems),
     };
     onSave(allIds);
   };
@@ -56,8 +61,8 @@ export const TcfConsentButtons = ({
       specialPurposes: [],
       features: [],
       specialFeatures: [],
-      vendors: [],
-      systems: [],
+      vendorsConsent: [],
+      vendorsLegint: [],
     };
     onSave(emptyIds);
   };
