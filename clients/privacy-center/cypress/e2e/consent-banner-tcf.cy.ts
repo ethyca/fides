@@ -180,7 +180,7 @@ describe("Fides-js TCF", () => {
       });
       cy.get("#fides-tab-Vendors");
       cy.getByTestId(`toggle-${VENDOR_1.name}`);
-      cy.getByTestId(`toggle-${VENDOR_2.name}`);
+      cy.getByTestId(`toggle-${VENDOR_2.name}-consent`);
     });
   });
 
