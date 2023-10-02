@@ -215,11 +215,15 @@ async function fetchCustomFidesCss(
 ): Promise<string | null> {
   const currentTime = Date.now();
   const forceRefresh = "refresh" in req.query;
-  if (
-    (!cachedCustomFidesCss ||
-      (lastFetched && currentTime - lastFetched > CUSTOM_FIDES_CSS_TTL_MS)) &&
-    (forceRefresh || autoRefresh)
-  ) {
+
+  // no cached value or TTL has elapsed
+  const isCacheInvalid =
+    !cachedCustomFidesCss ||
+    (lastFetched && currentTime - lastFetched > CUSTOM_FIDES_CSS_TTL_MS);
+  // refresh if forced or auto-refresh is enabled and the cache is invalid
+  const shouldRefresh = forceRefresh || (autoRefresh && isCacheInvalid);
+
+  if (shouldRefresh) {
     try {
       const environment = await loadPrivacyCenterEnvironment();
       const fidesUrl =
