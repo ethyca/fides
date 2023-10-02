@@ -41,7 +41,7 @@ class NonVendorSection(TCFSavedandServedDetails):
     systems: List[EmbeddedVendor] = []  # Systems that use this TCF attribute
 
 
-class TCFPurposeConsentRecord(MappedPurpose, NonVendorSection):
+class TCFPurposeConsentRecord(NonVendorSection, MappedPurpose):
     """Schema for a TCF Purpose with Consent Legal Basis returned in the TCF Overlay Experience"""
 
     @root_validator
@@ -52,7 +52,7 @@ class TCFPurposeConsentRecord(MappedPurpose, NonVendorSection):
         return values
 
 
-class TCFPurposeLegitimateInterestsRecord(MappedPurpose, NonVendorSection):
+class TCFPurposeLegitimateInterestsRecord(NonVendorSection, MappedPurpose):
     """Schema for a TCF Purpose with Legitimate Interests Legal Basis returned in the TCF Overlay Experience"""
 
     @root_validator
@@ -63,7 +63,7 @@ class TCFPurposeLegitimateInterestsRecord(MappedPurpose, NonVendorSection):
         return values
 
 
-class TCFSpecialPurposeRecord(MappedPurpose, NonVendorSection):
+class TCFSpecialPurposeRecord(NonVendorSection, MappedPurpose):
     @root_validator
     def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Default preference for special purposes is acknowledge"""
@@ -79,8 +79,19 @@ class EmbeddedLineItem(FidesSchema):
     name: str
 
 
-class VendorConsentPreference(UserSpecificConsentDetails):
+class CommonVendorFields(FidesSchema):
+    """Fields shared between the three vendor sections of the TCF Experience"""
+
     id: str
+    has_vendor_id: Optional[bool]
+    name: Optional[str]
+    description: Optional[str]
+
+
+class TCFConsentVendorRecord(UserSpecificConsentDetails, CommonVendorFields):
+    """Schema for a TCF Vendor with Consent legal basis"""
+
+    consent_purposes: List[EmbeddedLineItem] = []
 
     @root_validator
     def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -90,8 +101,12 @@ class VendorConsentPreference(UserSpecificConsentDetails):
         return values
 
 
-class VendorLegitimateInterestsPreference(UserSpecificConsentDetails):
-    id: str
+class TCFLegitimateInterestsVendorRecord(
+    UserSpecificConsentDetails, CommonVendorFields
+):
+    """Schema for a TCF Vendor with Legitimate interests legal basis"""
+
+    legitimate_interests_purposes: List[EmbeddedLineItem] = []
 
     @root_validator
     def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -101,23 +116,15 @@ class VendorLegitimateInterestsPreference(UserSpecificConsentDetails):
         return values
 
 
-class TCFVendorRecord(FidesSchema):
-    """Schema for a TCF Vendor or system: returned in the TCF Overlay Experience"""
+class TCFVendorRelationships(CommonVendorFields):
+    """Collects the other relationships for a given vendor - no preferences are saved here"""
 
-    id: str
-    has_vendor_id: bool
-    name: Optional[str]
-    description: Optional[str]
-    consent_purposes: List[EmbeddedLineItem] = []
-    legitimate_interests_purposes: List[EmbeddedLineItem] = []
     special_purposes: List[EmbeddedLineItem] = []
     features: List[EmbeddedLineItem] = []
     special_features: List[EmbeddedLineItem] = []
-    consent_preference: VendorConsentPreference
-    legitimate_interests_preference: VendorLegitimateInterestsPreference
 
 
-class TCFFeatureRecord(Feature, NonVendorSection):
+class TCFFeatureRecord(NonVendorSection, Feature):
     """Schema for a TCF Feature: returned in the TCF Overlay Experience"""
 
     @root_validator
@@ -128,7 +135,7 @@ class TCFFeatureRecord(Feature, NonVendorSection):
         return values
 
 
-class TCFSpecialFeatureRecord(Feature, NonVendorSection):
+class TCFSpecialFeatureRecord(NonVendorSection, Feature):
     """Schema for a TCF Special Feature: returned in the TCF Overlay Experience"""
 
     @root_validator

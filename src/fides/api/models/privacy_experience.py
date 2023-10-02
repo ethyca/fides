@@ -25,18 +25,17 @@ from fides.api.models.privacy_preference import (
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.tcf import (
+    TCFConsentVendorRecord,
     TCFFeatureRecord,
+    TCFLegitimateInterestsVendorRecord,
     TCFPurposeConsentRecord,
     TCFPurposeLegitimateInterestsRecord,
     TCFSpecialFeatureRecord,
     TCFSpecialPurposeRecord,
-    VendorConsentPreference,
-    VendorLegitimateInterestsPreference,
+    TCFVendorRelationships,
 )
 from fides.api.util.tcf.tcf_experience_contents import (
-    TCF_NON_VENDOR_SECTIONS,
     TCF_SECTION_MAPPING,
-    TCF_VENDOR_SECTIONS,
     ConsentRecordType,
     TCFExperienceContents,
 )
@@ -339,7 +338,8 @@ class PrivacyExperience(Base):
             tcf_contents = copy(base_tcf_contents)
 
             # Fetch previously saved records for the current user
-            for tcf_component, field_name in TCF_NON_VENDOR_SECTIONS.items():
+            has_tcf_contents = False
+            for tcf_component, field_name in TCF_SECTION_MAPPING.items():
                 for record in getattr(tcf_contents, tcf_component):
                     cache_saved_and_served_on_consent_record(
                         db,
@@ -347,31 +347,10 @@ class PrivacyExperience(Base):
                         fides_user_provided_identity=fides_user_provided_identity,
                         record_type=field_name,
                     )
-
-            for system_section, column_mapping in TCF_VENDOR_SECTIONS.items():
-                for vendor_record in getattr(tcf_contents, system_section):
-                    # Fetches previously saved and served records for system/vendor consent
-                    cache_saved_and_served_on_consent_record(
-                        db,
-                        vendor_record.consent_preference,
-                        fides_user_provided_identity=fides_user_provided_identity,
-                        record_type=column_mapping.consent,
-                    )
-                    # Fetches previously saved and served records for system/vendor legitimate interests
-                    cache_saved_and_served_on_consent_record(
-                        db,
-                        vendor_record.legitimate_interests_preference,
-                        fides_user_provided_identity=fides_user_provided_identity,
-                        record_type=column_mapping.legitimate_interests,
-                    )
-
-            has_tcf_contents: bool = False
-            for component in TCF_SECTION_MAPPING:
-                tcf_contents_for_component = getattr(tcf_contents, component)
+                tcf_contents_for_component = getattr(tcf_contents, tcf_component)
                 if bool(tcf_contents_for_component):
                     has_tcf_contents = True
-                # Add TCF contents to the privacy experience where applicable
-                setattr(self, component, tcf_contents_for_component)
+                    setattr(self, tcf_component, tcf_contents_for_component)
 
             if has_tcf_contents:
                 return True
@@ -636,11 +615,12 @@ def cache_saved_and_served_on_consent_record(
         TCFSpecialPurposeRecord,
         TCFFeatureRecord,
         TCFSpecialFeatureRecord,
-        VendorConsentPreference,
-        VendorLegitimateInterestsPreference,
+        TCFConsentVendorRecord,
+        TCFLegitimateInterestsVendorRecord,
+        TCFVendorRelationships,
     ],
     fides_user_provided_identity: Optional[ProvidedIdentity],
-    record_type: ConsentRecordType,
+    record_type: Optional[ConsentRecordType],
 ) -> None:
     """For display purposes, look up whether the resource was served to the given user and/or the user has saved
     preferences for that resource and add this to the consent_record
@@ -649,6 +629,12 @@ def cache_saved_and_served_on_consent_record(
     """
     if not fides_user_provided_identity:
         return
+
+    if not record_type:
+        # Some elements of the TCF form, like vendor relationships don't have saved preferences
+        return
+
+    assert not isinstance(consent_record, TCFVendorRelationships)  # For mypy
 
     consent_record.current_preference = None
     consent_record.outdated_preference = None

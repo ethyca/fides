@@ -22,12 +22,13 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.models.privacy_preference import ConsentRecordType
 from fides.api.schemas.tcf import (
+    TCFConsentVendorRecord,
     TCFFeatureRecord,
+    TCFLegitimateInterestsVendorRecord,
     TCFPurposeConsentRecord,
     TCFPurposeLegitimateInterestsRecord,
     TCFSpecialPurposeRecord,
-    VendorConsentPreference,
-    VendorLegitimateInterestsPreference,
+    TCFVendorRelationships,
 )
 
 
@@ -1448,7 +1449,9 @@ class TestCacheSavedAndServedOnConsentRecord:
     def test_cache_saved_and_served_for_vendor_consent(
         self, db, fides_user_provided_identity
     ):
-        vendor_record = VendorConsentPreference(id="sendgrid")
+        vendor_record = TCFConsentVendorRecord(
+            id="sendgrid", name="test", description="test", has_vendor_id=False
+        )
         cache_saved_and_served_on_consent_record(
             db,
             vendor_record,
@@ -1468,7 +1471,9 @@ class TestCacheSavedAndServedOnConsentRecord:
     def test_cache_saved_and_served_for_vendor_legitimate_interests(
         self, db, fides_user_provided_identity
     ):
-        vendor_record = VendorLegitimateInterestsPreference(id="sendgrid")
+        vendor_record = TCFLegitimateInterestsVendorRecord(
+            id="sendgrid", name="test", description="test", has_vendor_id=True
+        )
         cache_saved_and_served_on_consent_record(
             db,
             vendor_record,
@@ -1486,7 +1491,7 @@ class TestCacheSavedAndServedOnConsentRecord:
     def test_cache_saved_and_served_for_system_consent(
         self, db, fides_user_provided_identity, system
     ):
-        system_record = VendorConsentPreference(id=system.id)
+        system_record = TCFConsentVendorRecord(id=system.id, has_vendor_id=True)
         cache_saved_and_served_on_consent_record(
             db,
             system_record,
@@ -1499,6 +1504,22 @@ class TestCacheSavedAndServedOnConsentRecord:
         assert system_record.outdated_preference is None
         assert system_record.current_served is None
         assert system_record.outdated_served is None
+
+    def test_cache_saved_and_served_for_vendor_relationships(
+        self, db, fides_user_provided_identity, system
+    ):
+        """This is more just aggregating additional info - no consent is saved here"""
+        system_record = TCFVendorRelationships(
+            id=system.id, name="test", description="test", has_vendor_id=False
+        )
+        cache_saved_and_served_on_consent_record(
+            db,
+            system_record,
+            fides_user_provided_identity,
+            record_type=None,
+        )
+
+        assert not getattr(system_record, "default_preference", None)
 
     def test_cache_saved_and_served_for_tcf_special_purpose(
         self, db, fides_user_provided_identity

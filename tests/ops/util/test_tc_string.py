@@ -1265,8 +1265,6 @@ class TestBuildTCModel:
         assert decoded.interests_vendors == {}
         assert decoded.pub_restriction_entries == []
 
-        assert tcf_contents.tcf_vendors
-
         decoded.oob_disclosed_vendors = {
             num: num == vendor_id for num in range(1, vendor_id + 1)
         }

@@ -2165,7 +2165,7 @@ class TestHistoricalPreferences:
         assert len(response.json()["items"]) == 1
         assert (
             response.json()["items"][0]["system_consent"]
-            == privacy_preference_history_for_system.system
+            == privacy_preference_history_for_system.system_consent
         )
         assert (
             response.json()["items"][0]["preference"]

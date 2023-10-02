@@ -266,7 +266,7 @@ class ExperienceMeta(FidesSchema):
     reject_all_tc_mobile_data: Optional[TCMobileData] = None
 
 
-class PrivacyExperienceResponse(PrivacyExperienceWithId, TCFExperienceContents):
+class PrivacyExperienceResponse(TCFExperienceContents, PrivacyExperienceWithId):
     """
     An API representation of a PrivacyExperience used for response payloads
     """
