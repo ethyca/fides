@@ -611,7 +611,7 @@ def systems_that_match_tcf_data_uses(
     )
 
 
-def get_relevant_systems_for_tcf_attribute(
+def get_relevant_systems_for_tcf_attribute(  # pylint: disable=too-many-return-statements
     db: Session,
     tcf_field: Optional[str],
     tcf_value: Union[Optional[str], Optional[int]],
@@ -626,12 +626,35 @@ def get_relevant_systems_for_tcf_attribute(
     # as well as a legal basis of processing of consent or legitimate interests
     starting_privacy_declarations: Query = get_matching_privacy_declarations(db)
 
+    purpose_data_uses: List[str] = []
     if tcf_field in [
         TCFComponentType.purpose_consent.value,
         TCFComponentType.purpose_legitimate_interests.value,
         TCFComponentType.special_purpose.value,
     ]:
-        purpose_data_uses: List[str] = purpose_to_data_use(tcf_value, special_purpose="special" in tcf_field)  # type: ignore[arg-type]
+        purpose_data_uses = purpose_to_data_use(
+            tcf_value, special_purpose="special" in tcf_field
+        )
+
+    if tcf_field == TCFComponentType.purpose_consent.value:
+        return systems_that_match_tcf_data_uses(
+            starting_privacy_declarations.filter(
+                PrivacyDeclaration.legal_basis_for_processing
+                == LegalBasisForProcessingEnum.CONSENT
+            ),
+            purpose_data_uses,
+        )
+
+    if tcf_field == TCFComponentType.purpose_legitimate_interests.value:
+        return systems_that_match_tcf_data_uses(
+            starting_privacy_declarations.filter(
+                PrivacyDeclaration.legal_basis_for_processing
+                == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST
+            ),
+            purpose_data_uses,
+        )
+
+    if tcf_field == TCFComponentType.special_purpose.value:
         return systems_that_match_tcf_data_uses(
             starting_privacy_declarations, purpose_data_uses
         )
@@ -647,19 +670,42 @@ def get_relevant_systems_for_tcf_attribute(
             ),
         )
 
-    if tcf_field in [
-        TCFComponentType.vendor_consent.value,
-        TCFComponentType.vendor_legitimate_interests.value,
-    ]:
+    if tcf_field == TCFComponentType.vendor_consent.value:
         return systems_that_match_vendor_string(
-            starting_privacy_declarations, tcf_value  # type: ignore[arg-type]
+            starting_privacy_declarations.filter(
+                PrivacyDeclaration.legal_basis_for_processing
+                == LegalBasisForProcessingEnum.CONSENT
+            ),
+            tcf_value,  # type: ignore[arg-type]
         )
 
-    if tcf_field == [
-        TCFComponentType.system_consent.value,
-        TCFComponentType.system_legitimate_interests.value,
-    ]:
-        return systems_that_match_system_id(starting_privacy_declarations, tcf_value)  # type: ignore[arg-type]
+    if tcf_field == TCFComponentType.vendor_legitimate_interests.value:
+        return systems_that_match_vendor_string(
+            starting_privacy_declarations.filter(
+                PrivacyDeclaration.legal_basis_for_processing
+                == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST
+            ),
+            tcf_value,  # type: ignore[arg-type]
+        )
+
+    if tcf_field == TCFComponentType.system_consent.value:
+        return systems_that_match_system_id(
+            starting_privacy_declarations.filter(
+                PrivacyDeclaration.legal_basis_for_processing
+                == LegalBasisForProcessingEnum.CONSENT
+            ),
+            tcf_value
+            # type: ignore[arg-type]
+        )
+
+    if tcf_field == TCFComponentType.system_legitimate_interests.value:
+        return systems_that_match_system_id(
+            starting_privacy_declarations.filter(
+                PrivacyDeclaration.legal_basis_for_processing
+                == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST
+            ),
+            tcf_value,  # type: ignore[arg-type]
+        )
 
     return []
 

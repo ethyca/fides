@@ -1337,7 +1337,9 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
 
         pd_1.delete(db)
 
-    def test_determine_relevant_systems_for_tcf_purpose(self, db, system_with_no_uses):
+    def test_determine_relevant_systems_for_tcf_consent_purpose(
+        self, db, system_with_no_uses
+    ):
         # Add data use to system that corresponds to purpose 3.  Also has consent legal basis, which is important.
         pd_1 = PrivacyDeclaration.create(
             db=db,
@@ -1364,6 +1366,42 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
 
         assert PrivacyPreferenceHistory.determine_relevant_systems(
             db, tcf_field=TCFComponentType.purpose_consent.value, tcf_value=3
+        ) == [system_with_no_uses.fides_key]
+
+        pd_1.delete(db)
+
+    def test_determine_relevant_systems_for_tcf_legitimate_interests_purpose(
+        self, db, system_with_no_uses
+    ):
+        # Add data use to system that corresponds to purpose 3.  Also has LI legal basis, which is important.
+        pd_1 = PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Collect data for content performance",
+                "system_id": system_with_no_uses.id,
+                "data_categories": ["user.device.cookie_id"],
+                "data_use": "marketing.advertising.profiling",
+                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                "data_subjects": ["customer"],
+                "dataset_references": None,
+                "legal_basis_for_processing": "Legitimate interests",
+                "egress": None,
+                "ingress": None,
+            },
+        )
+
+        # This system is not relevant for purpose consent
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db, tcf_field=TCFComponentType.purpose_consent.value, tcf_value=3
+            )
+            == []
+        )
+
+        assert PrivacyPreferenceHistory.determine_relevant_systems(
+            db,
+            tcf_field=TCFComponentType.purpose_legitimate_interests.value,
+            tcf_value=3,
         ) == [system_with_no_uses.fides_key]
 
         pd_1.delete(db)
@@ -1401,7 +1439,9 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
 
         pd_1.delete(db)
 
-    def test_determine_relevant_systems_for_tcf_vendor(self, db, system_with_no_uses):
+    def test_determine_relevant_systems_for_tcf_consent_vendor(
+        self, db, system_with_no_uses
+    ):
         system_with_no_uses.vendor_id = "amplitude"
         system_with_no_uses.save(db)
         assert (
@@ -1413,7 +1453,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
             == []
         )
 
-        # Vendor needs to have a relevant data use, and a specific legal basis to make the vendor relevant
+        # Vendor needs to have a relevant data use, and a specific consent legal basis to make the vendor relevant
         PrivacyDeclaration.create(
             db=db,
             data={
@@ -1432,6 +1472,45 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
 
         assert PrivacyPreferenceHistory.determine_relevant_systems(
             db, tcf_field=TCFComponentType.vendor_consent.value, tcf_value="amplitude"
+        ) == [system_with_no_uses.fides_key]
+
+    def test_determine_relevant_systems_for_tcf_legitimate_interests_vendor(
+        self, db, system_with_no_uses
+    ):
+        system_with_no_uses.vendor_id = "amplitude"
+        system_with_no_uses.save(db)
+
+        # Vendor needs to have a relevant data use, and a specific consent legal basis to make the vendor relevant
+        PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Collect data for content performance",
+                "system_id": system_with_no_uses.id,
+                "data_categories": ["user.device.cookie_id"],
+                "data_use": "marketing.advertising.serving",
+                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                "data_subjects": ["customer"],
+                "legal_basis_for_processing": "Legitimate interests",
+                "dataset_references": None,
+                "egress": None,
+                "ingress": None,
+            },
+        )
+
+        # Vendor not relevant for vendor consent
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db,
+                tcf_field=TCFComponentType.vendor_consent.value,
+                tcf_value="amplitude",
+            )
+            == []
+        )
+
+        assert PrivacyPreferenceHistory.determine_relevant_systems(
+            db,
+            tcf_field=TCFComponentType.vendor_legitimate_interests.value,
+            tcf_value="amplitude",
         ) == [system_with_no_uses.fides_key]
 
     def test_determine_relevant_systems_for_tcf_feature(self, db, system):
