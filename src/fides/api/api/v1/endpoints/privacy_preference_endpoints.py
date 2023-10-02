@@ -62,6 +62,7 @@ from fides.api.schemas.privacy_preference import (
     PrivacyPreferencesRequest,
     RecordConsentServedCreate,
     RecordConsentServedRequest,
+    SavePrivacyPreferencesResponse,
 )
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
@@ -307,7 +308,7 @@ def _supplement_request_data_from_request_headers(
 @router.patch(
     CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
     status_code=HTTP_200_OK,
-    response_model=List[CurrentPrivacyPreferenceSchema],
+    response_model=SavePrivacyPreferencesResponse,
 )
 def save_privacy_preferences_with_verified_identity(
     *,
@@ -315,7 +316,7 @@ def save_privacy_preferences_with_verified_identity(
     db: Session = Depends(get_db),
     data: PrivacyPreferencesRequest,
     request: Request,
-) -> List[CurrentPrivacyPreference]:
+) -> SavePrivacyPreferencesResponse:
     """Saves privacy preferences in the privacy center.
 
     The ConsentRequest may have been created under an email, phone number, *or* fides user device id.
@@ -352,13 +353,15 @@ def save_privacy_preferences_with_verified_identity(
     logger.info("Saving privacy preferences")
 
     try:
-        return save_privacy_preferences_for_identities(
-            db=db,
-            consent_request=consent_request,
-            verified_provided_identity=provided_identity_verified,
-            fides_user_provided_identity=fides_user_provided_identity,
-            request=request,
-            original_request_data=data,
+        return SavePrivacyPreferencesResponse(
+            preferences=save_privacy_preferences_for_identities(
+                db=db,
+                consent_request=consent_request,
+                verified_provided_identity=provided_identity_verified,
+                fides_user_provided_identity=fides_user_provided_identity,
+                request=request,
+                original_request_data=data,
+            )
         )
     except (
         IdentityNotFoundException,
@@ -680,7 +683,7 @@ def verify_previously_served_records(
 @router.patch(
     PRIVACY_PREFERENCES,
     status_code=HTTP_200_OK,
-    response_model=List[CurrentPrivacyPreferenceSchema],
+    response_model=SavePrivacyPreferencesResponse,
 )
 @fides_limiter.limit(CONFIG.security.public_request_rate_limit)
 def save_privacy_preferences(
@@ -689,7 +692,7 @@ def save_privacy_preferences(
     data: PrivacyPreferencesRequest,
     request: Request,
     response: Response,  # required for rate limiting
-) -> List[CurrentPrivacyPreference]:
+) -> SavePrivacyPreferencesResponse:
     """Saves privacy preferences with respect to a fides user device id.
 
     Creates historical records for these preferences for record keeping, and also updates current preferences.
@@ -714,13 +717,15 @@ def save_privacy_preferences(
     logger.info("Saving privacy preferences with respect to fides user device id")
 
     try:
-        return save_privacy_preferences_for_identities(
-            db=db,
-            consent_request=None,
-            verified_provided_identity=None,
-            fides_user_provided_identity=fides_user_provided_identity,
-            request=request,
-            original_request_data=data,
+        return SavePrivacyPreferencesResponse(
+            preferences=save_privacy_preferences_for_identities(
+                db=db,
+                consent_request=None,
+                verified_provided_identity=None,
+                fides_user_provided_identity=fides_user_provided_identity,
+                request=request,
+                original_request_data=data,
+            )
         )
     except (
         IdentityNotFoundException,

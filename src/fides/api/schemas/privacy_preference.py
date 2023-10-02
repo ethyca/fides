@@ -319,6 +319,12 @@ class CurrentPrivacyPreferenceSchema(TCFAttributes):
     privacy_preference_history_id: Optional[str]
 
 
+class SavePrivacyPreferencesResponse(FidesSchema):
+    """Response schema when saving privacy preferences"""
+
+    preferences: List[CurrentPrivacyPreferenceSchema]
+
+
 class CurrentPrivacyPreferenceReportingSchema(TCFAttributes):
     """Schema to represent the latest saved preference for a given privacy notice
     Note that we return the privacy notice *history* record here though which has the

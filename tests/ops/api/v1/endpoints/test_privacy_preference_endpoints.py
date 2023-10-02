@@ -189,7 +189,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         assert response.status_code == 200
         assert len(response.json()) == 1
 
-        response_json = response.json()[0]
+        response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
             "privacy_preference_history_id"
         ]
@@ -293,9 +293,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             json=request_body,
         )
         assert response.status_code == 200
-        assert len(response.json()) == 1
+        assert len(response.json()["preferences"]) == 1
 
-        response_json = response.json()[0]
+        response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
             "privacy_preference_history_id"
         ]
@@ -365,9 +365,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             json=request_body,
         )
         assert response.status_code == 200
-        assert len(response.json()) == 1
+        assert len(response.json()["preferences"]) == 1
 
-        response_json = response.json()[0]
+        response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
             "privacy_preference_history_id"
         ]
@@ -656,9 +656,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
 
         assert response.status_code == 200
-        assert len(response.json()) == 2
+        assert len(response.json()["preferences"]) == 2
 
-        response_json = response.json()
+        response_json = response.json()["preferences"]
 
         first_privacy_preference_history_created = (
             db.query(PrivacyPreferenceHistory)
@@ -781,9 +781,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
 
         assert response.status_code == 200
-        assert len(response.json()) == 1
+        assert len(response.json()["preferences"]) == 1
 
-        response_json = response.json()
+        response_json = response.json()["preferences"]
 
         first_privacy_preference_history_created = (
             db.query(PrivacyPreferenceHistory)
@@ -794,7 +794,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             .first()
         )
         assert response_json[0]["preference"] == "opt_out"
-        assert response.json()[0]["feature"] == 1
+        assert response_json[0]["feature"] == 1
 
         assert first_privacy_preference_history_created.feature == 1
         assert (
@@ -906,9 +906,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             json=request_body,
         )
         assert response.status_code == 200
-        assert len(response.json()) == 1
+        assert len(response.json()["preferences"]) == 1
 
-        response_json = response.json()[0]
+        response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
             "privacy_preference_history_id"
         ]
@@ -991,9 +991,9 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             json=request_body,
         )
         assert response.status_code == 200
-        assert len(response.json()) == 1
+        assert len(response.json()["preferences"]) == 1
 
-        response_json = response.json()[0]
+        response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
             "privacy_preference_history_id"
         ]
@@ -1439,7 +1439,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             url, json=request_body, headers={"Origin": "http://localhost:8080"}
         )
         assert response.status_code == 200
-        response_json = response.json()[0]
+        response_json = response.json()["preferences"][0]
         assert response_json["preference"] == "opt_out"
         assert (
             response_json["privacy_notice_history"]["id"]
@@ -1705,12 +1705,12 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             url, json=tcf_request_body, headers={"Origin": "http://localhost:8080"}
         )
         assert response.status_code == 200
-        assert len(response.json()) == 5
+        assert len(response.json()["preferences"]) == 5
 
         # Returned in order of purpose consent, special purpose, feature, special feature, vendor consent, then system legitimate interests
         # Special purpose was not saved here
 
-        purpose_response = response.json()[0]
+        purpose_response = response.json()["preferences"][0]
         assert purpose_response["preference"] == "opt_out"
         assert purpose_response["purpose_consent"] == 8
         purpose_privacy_preference_history_id = purpose_response[
@@ -1780,7 +1780,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
 
         # Assert details saved w.r.t vendor
 
-        vendor_consent_response = response.json()[3]
+        vendor_consent_response = response.json()["preferences"][3]
         assert vendor_consent_response["preference"] == "opt_in"
         assert vendor_consent_response["vendor_consent"] == "amplitude"
 
@@ -1842,7 +1842,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert not run_privacy_request_mock.called
 
         # Assert feature portion of the response
-        feature_response = response.json()[1]
+        feature_response = response.json()["preferences"][1]
         assert feature_response["preference"] == "opt_out"
         assert feature_response["feature"] == 1
         assert feature_response["special_feature"] is None
@@ -1856,7 +1856,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert feature_privacy_preference_history.feature == 1
 
         # Assert special feature portion of the response
-        special_feature_response = response.json()[2]
+        special_feature_response = response.json()["preferences"][2]
         assert special_feature_response["preference"] == "opt_in"
         assert special_feature_response["special_feature"] == 2
         assert special_feature_response["feature"] is None
@@ -1870,7 +1870,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert special_feature_privacy_preference_history.special_feature == 2
 
         # Assert system portion of the response
-        system_response = response.json()[4]
+        system_response = response.json()["preferences"][4]
         assert system_response["preference"] == "opt_out"
         assert system_response["system_legitimate_interests"] == system.id
         current_system_preference = CurrentPrivacyPreference.get(
@@ -1942,7 +1942,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             url, json=request_body, headers={"Origin": "http://localhost:8080"}
         )
         assert response.status_code == 200
-        response_json = response.json()[0]
+        response_json = response.json()["preferences"][0]
         assert response_json["preference"] == "opt_out"
         assert (
             response_json["privacy_notice_history"]["id"]
