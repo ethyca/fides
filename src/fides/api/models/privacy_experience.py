@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import copy
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
@@ -24,11 +25,10 @@ from fides.api.models.privacy_preference import (
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
-from fides.api.util.tcf_util import (
+from fides.api.util.tcf.tcf_experience_contents import (
     TCF_COMPONENT_MAPPING,
     ConsentRecordType,
     TCFExperienceContents,
-    get_tcf_contents,
 )
 
 BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
@@ -224,6 +224,8 @@ class PrivacyExperience(Base):
     tcf_special_features: List = []
     tcf_systems: List = []
     gvl: Optional[Dict] = {}
+    # TCF Developer-Friendly Meta added at runtime as the result of build_tc_data_for_mobile
+    meta: Dict = {}
 
     # Attribute that is cached on the PrivacyExperience object by "get_should_show_banner", calculated at runtime
     show_banner: bool
@@ -309,15 +311,23 @@ class PrivacyExperience(Base):
 
         return notices
 
-    def get_related_tcf_contents(
-        self, db: Session, fides_user_provided_identity: Optional[ProvidedIdentity]
-    ) -> TCFExperienceContents:
-        """Returns the contents of a TCF experience supplemented with any previous records of
-        a user being served TCF components and/or consenting to any of the individual TCF components
+    def update_with_tcf_contents(
+        self,
+        db: Session,
+        base_tcf_contents: TCFExperienceContents,
+        fides_user_provided_identity: Optional[ProvidedIdentity],
+    ) -> bool:
+        """
+        Supplements the given TCF experience in-place with TCF contents at runtime, and returns whether
+        TCF contents exist.
+
+        The TCF experience is determined by systems in the data map as well as any previous records
+        of a user being served TCF components and/or consenting to any individual TCF components.
         """
         if self.component == ComponentType.tcf_overlay:
-            tcf_contents: TCFExperienceContents = get_tcf_contents(db)
+            tcf_contents = copy(base_tcf_contents)
 
+            # Fetch previously saved records for the current user
             for tcf_component, field_name in TCF_COMPONENT_MAPPING.items():
                 for record in getattr(tcf_contents, tcf_component):
                     cache_saved_and_served_on_consent_record(
@@ -326,8 +336,19 @@ class PrivacyExperience(Base):
                         fides_user_provided_identity=fides_user_provided_identity,
                         record_type=field_name,
                     )
-            return tcf_contents
-        return TCFExperienceContents()
+
+            has_tcf_contents: bool = False
+            for component in TCF_COMPONENT_MAPPING:
+                tcf_contents_for_component = getattr(tcf_contents, component)
+                if bool(tcf_contents_for_component):
+                    has_tcf_contents = True
+                # Add TCF contents to the privacy experience where applicable
+                setattr(self, component, tcf_contents_for_component)
+
+            if has_tcf_contents:
+                return True
+
+        return False
 
     @staticmethod
     def create_default_experience_for_region(
