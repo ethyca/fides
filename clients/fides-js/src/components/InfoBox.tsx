@@ -4,11 +4,11 @@ const InfoBox = ({
   title,
   children,
 }: {
-  title: ComponentChild;
+  title?: ComponentChild;
   children: ComponentChildren;
 }) => (
   <div className="fides-info-box">
-    <p className="fides-gpc-header">{title}</p>
+    {title ? <p className="fides-gpc-header">{title}</p> : null}
     {children}
   </div>
 );

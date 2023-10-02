@@ -10,15 +10,25 @@ import {
   TCFVendorRecord,
   GvlVendorUrl,
   GvlDataDeclarations,
+  LegalBasisForProcessingEnum,
 } from "../../lib/tcf/types";
 import { PrivacyExperience } from "../../lib/consent-types";
 import { UpdateEnabledIds } from "./TcfOverlay";
 import DataUseToggle from "../DataUseToggle";
 import FilterButtons from "./FilterButtons";
-import { vendorIsGvl } from "../../lib/tcf/vendors";
+import {
+  vendorIsGvl,
+  vendorRecordsWithLegalBasis,
+} from "../../lib/tcf/vendors";
 import ExternalLink from "../ExternalLink";
+import Toggle from "../Toggle";
 
 const FILTERS = [{ name: "All vendors" }, { name: "IAB TCF vendors" }];
+
+interface Retention {
+  mapping: Record<number, number>;
+  default: number;
+}
 
 const VendorDetails = ({
   label,
@@ -27,7 +37,7 @@ const VendorDetails = ({
 }: {
   label: string;
   lineItems: EmbeddedLineItem[] | undefined;
-  dataRetention?: Record<number, number>;
+  dataRetention?: Retention;
 }) => {
   if (!lineItems || lineItems.length === 0) {
     return null;
@@ -43,7 +53,10 @@ const VendorDetails = ({
       </thead>
       <tbody>
         {lineItems.map((item) => {
-          const retention = dataRetention ? dataRetention[item.id] : undefined;
+          let retention: string | number = "N/A";
+          if (dataRetention) {
+            retention = dataRetention.mapping[item.id] ?? dataRetention.default;
+          }
           return (
             <tr key={item.id}>
               <td>{item.name}</td>
@@ -83,13 +96,25 @@ const PurposeVendorDetails = ({
       <VendorDetails
         label="Purposes"
         lineItems={purposes as EmbeddedLineItem[]}
-        dataRetention={dataRetention ? dataRetention.purposes : undefined}
+        dataRetention={
+          dataRetention
+            ? {
+                mapping: dataRetention.purposes,
+                default: dataRetention.stdRetention,
+              }
+            : undefined
+        }
       />
       <VendorDetails
         label="Special purposes"
         lineItems={specialPurposes as EmbeddedLineItem[]}
         dataRetention={
-          dataRetention ? dataRetention.specialPurposes : undefined
+          dataRetention
+            ? {
+                mapping: dataRetention.specialPurposes,
+                default: dataRetention.stdRetention,
+              }
+            : undefined
         }
       />
     </div>
@@ -157,35 +182,39 @@ const StorageDisclosure = ({ vendor }: { vendor: Vendor }) => {
 };
 
 const TcfVendors = ({
-  allVendors,
-  allSystems,
-  enabledVendorIds,
-  enabledSystemIds,
+  vendors,
+  enabledVendorConsentIds,
+  enabledVendorLegintIds,
   onChange,
   gvl,
 }: {
-  allVendors: PrivacyExperience["tcf_vendors"];
-  allSystems: PrivacyExperience["tcf_systems"];
-  enabledVendorIds: string[];
-  enabledSystemIds: string[];
+  vendors: PrivacyExperience["tcf_vendors"];
+  enabledVendorConsentIds: string[];
+  enabledVendorLegintIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
   gvl?: GVLJson;
 }) => {
   const [isFiltered, setIsFiltered] = useState(false);
 
-  // Vendors and Systems are the same for the FE, but are 2 separate
-  // objects in the backend. We combine them here but keep them separate
-  // when patching preferences
-  const vendors = [...(allVendors || []), ...(allSystems || [])];
-  const enabledIds = [...enabledVendorIds, ...enabledSystemIds];
-
-  if (vendors.length === 0) {
+  if (!vendors || vendors.length === 0) {
     // TODO: empty state?
     return null;
   }
 
-  const handleToggle = (vendor: TCFVendorRecord) => {
-    const modelType = vendor.has_vendor_id ? "vendors" : "systems";
+  const handleToggle = (
+    vendor: TCFVendorRecord,
+    legalBasis:
+      | LegalBasisForProcessingEnum.CONSENT
+      | LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
+  ) => {
+    const enabledIds =
+      legalBasis === LegalBasisForProcessingEnum.CONSENT
+        ? enabledVendorConsentIds
+        : enabledVendorLegintIds;
+    const modelType =
+      legalBasis === LegalBasisForProcessingEnum.CONSENT
+        ? "vendorsConsent"
+        : "vendorsLegint";
     if (enabledIds.indexOf(vendor.id) !== -1) {
       onChange({
         newEnabledIds: enabledIds.filter((e) => e !== vendor.id),
@@ -214,6 +243,12 @@ const TcfVendors = ({
   return (
     <div>
       <FilterButtons filters={FILTERS} onChange={handleFilter} />
+      {/* DEFER: ideally we use a table object, but then DataUseToggles would need to be reworked
+      or we would need a separate component. */}
+      <div className="fides-legal-basis-labels">
+        <span className="fides-margin-right">Legitimate interest</span>
+        <span>Consent</span>
+      </div>
       {vendorsToDisplay.map((vendor) => {
         const gvlVendor = vendorIsGvl(vendor, gvl);
         // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
@@ -223,14 +258,47 @@ const TcfVendors = ({
         const dataCategories: GvlDataCategories | undefined =
           // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
           gvl?.dataCategories;
+        const isConsent =
+          vendorRecordsWithLegalBasis(
+            [vendor],
+            LegalBasisForProcessingEnum.CONSENT
+          ).length === 1;
+        const isLegint =
+          vendorRecordsWithLegalBasis(
+            [vendor],
+            LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
+          ).length === 1;
         return (
           <DataUseToggle
-            dataUse={{ key: vendor.id, name: vendor.name }}
-            onToggle={() => {
-              handleToggle(vendor);
+            dataUse={{
+              key: `${vendor.id}-legint`,
+              name: vendor.name,
             }}
-            checked={enabledIds.indexOf(vendor.id) !== -1}
+            onToggle={() => {
+              handleToggle(
+                vendor,
+                LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
+              );
+            }}
+            checked={enabledVendorLegintIds.indexOf(vendor.id) !== -1}
             badge={gvlVendor ? "IAB TCF" : undefined}
+            secondToggle={
+              <div
+                style={{ width: "50px", display: "flex", marginLeft: ".2em" }}
+              >
+                {isConsent ? (
+                  <Toggle
+                    name={`${vendor.name}-consent`}
+                    id={`${vendor.id}-consent`}
+                    checked={enabledVendorConsentIds.indexOf(vendor.id) !== -1}
+                    onChange={() =>
+                      handleToggle(vendor, LegalBasisForProcessingEnum.CONSENT)
+                    }
+                  />
+                ) : null}
+              </div>
+            }
+            includeToggle={isLegint}
           >
             <div>
               {gvlVendor ? <StorageDisclosure vendor={gvlVendor} /> : null}

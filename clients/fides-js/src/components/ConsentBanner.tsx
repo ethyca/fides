@@ -3,12 +3,14 @@ import { getConsentContext } from "../lib/consent-context";
 import { ExperienceConfig } from "../lib/consent-types";
 import CloseButton from "./CloseButton";
 import { GpcBadge } from "./GpcBadge";
+import ExperienceDescription from "./ExperienceDescription";
 
 interface BannerProps {
   experience: ExperienceConfig;
   onClose: () => void;
   bannerIsOpen: boolean;
   children: ComponentChildren;
+  onVendorPageClick?: () => void;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
@@ -16,6 +18,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   onClose,
   bannerIsOpen,
   children,
+  onVendorPageClick,
 }) => {
   const showGpcBadge = getConsentContext().globalPrivacyControl;
   return (
@@ -43,7 +46,10 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
             id="fides-banner-description"
             className="fides-banner-description"
           >
-            {experience.description}
+            <ExperienceDescription
+              description={experience.description}
+              onVendorPageClick={onVendorPageClick}
+            />
           </div>
           {children}
         </div>
