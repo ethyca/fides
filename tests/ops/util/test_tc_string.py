@@ -387,7 +387,7 @@ class TestBuildTCModel:
         )
 
         assert model.cmp_id == 12
-        assert model.vendor_list_version == 19
+        assert model.vendor_list_version == 20
         assert model.policy_version == 4
         assert model.cmp_version == 1
         assert model.consent_screen == 1
@@ -407,7 +407,7 @@ class TestBuildTCModel:
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
-        assert decoded.vendor_list_version == 19
+        assert decoded.vendor_list_version == 20
         assert decoded.tcf_policy_version == 4
         assert decoded.is_service_specific is False
         assert decoded.use_non_standard_stacks is False
@@ -493,7 +493,7 @@ class TestBuildTCModel:
         )
 
         assert model.cmp_id == 12
-        assert model.vendor_list_version == 19
+        assert model.vendor_list_version == 20
         assert model.policy_version == 4
         assert model.cmp_version == 1
         assert model.consent_screen == 1
@@ -513,7 +513,7 @@ class TestBuildTCModel:
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
-        assert decoded.vendor_list_version == 19
+        assert decoded.vendor_list_version == 20
         assert decoded.tcf_policy_version == 4
         assert decoded.is_service_specific is False
         assert decoded.use_non_standard_stacks is False
@@ -626,7 +626,7 @@ class TestBuildTCModel:
         )
 
         assert model.cmp_id == 12
-        assert model.vendor_list_version == 19
+        assert model.vendor_list_version == 20
         assert model.policy_version == 4
         assert model.cmp_version == 1
         assert model.consent_screen == 1
@@ -647,7 +647,7 @@ class TestBuildTCModel:
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
-        assert decoded.vendor_list_version == 19
+        assert decoded.vendor_list_version == 20
         assert decoded.tcf_policy_version == 4
         assert decoded.is_service_specific is False
         assert decoded.use_non_standard_stacks is False
@@ -831,7 +831,7 @@ class TestBuildTCModel:
         )
 
         assert model.cmp_id == 12
-        assert model.vendor_list_version == 19
+        assert model.vendor_list_version == 20
         assert model.policy_version == 4
         assert model.cmp_version == 1
         assert model.consent_screen == 1
@@ -852,7 +852,7 @@ class TestBuildTCModel:
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
-        assert decoded.vendor_list_version == 19
+        assert decoded.vendor_list_version == 20
         assert decoded.tcf_policy_version == 4
         assert decoded.is_service_specific is False
         assert decoded.use_non_standard_stacks is False
@@ -1049,7 +1049,7 @@ class TestBuildTCModel:
         )
 
         assert model.cmp_id == 12
-        assert model.vendor_list_version == 19
+        assert model.vendor_list_version == 20
         assert model.policy_version == 4
         assert model.cmp_version == 1
         assert model.consent_screen == 1
@@ -1070,7 +1070,7 @@ class TestBuildTCModel:
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
-        assert decoded.vendor_list_version == 19
+        assert decoded.vendor_list_version == 20
         assert decoded.tcf_policy_version == 4
         assert decoded.is_service_specific is False
         assert decoded.use_non_standard_stacks is False
@@ -1167,7 +1167,7 @@ class TestBuildTCModel:
         )
 
         assert model.cmp_id == 12
-        assert model.vendor_list_version == 19
+        assert model.vendor_list_version == 20
         assert model.policy_version == 4
         assert model.cmp_version == 1
         assert model.consent_screen == 1
@@ -1189,7 +1189,7 @@ class TestBuildTCModel:
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
-        assert decoded.vendor_list_version == 19
+        assert decoded.vendor_list_version == 20
         assert decoded.tcf_policy_version == 4
         assert decoded.is_service_specific is False
         assert decoded.use_non_standard_stacks is False
