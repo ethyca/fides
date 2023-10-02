@@ -649,6 +649,10 @@ div#fides-modal .fides-modal-button-group {
   align-items: center;
 }
 
+.fides-margin-right {
+  margin-right: 0.2em;
+}
+
 /* TCF toggles */
 .fides-tcf-toggle-content {
   margin-right: 60px;
@@ -679,6 +683,18 @@ div#fides-modal .fides-modal-button-group {
   padding-left: 0;
   list-style: none;
   margin-left: 0;
+}
+
+.fides-tcf-vendor-toggles {
+  display: flex;
+}
+
+.fides-legal-basis-labels {
+  display: flex;
+  align-items: end;
+  justify-content: end;
+  font-size: 0.8em;
+  font-weight: 500;
 }
 
 /* Vendor purpose table */

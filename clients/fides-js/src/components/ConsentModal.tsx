@@ -4,15 +4,18 @@ import { ExperienceConfig } from "../lib/consent-types";
 
 import CloseButton from "./CloseButton";
 import GpcInfo from "./GpcInfo";
+import ExperienceDescription from "./ExperienceDescription";
 
 const ConsentModal = ({
   attributes,
   experience,
   children,
+  onVendorPageClick,
 }: {
   attributes: Attributes;
   experience: ExperienceConfig;
   children: ComponentChildren;
+  onVendorPageClick?: () => void;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
 
@@ -41,22 +44,13 @@ const ConsentModal = ({
           data-testid="fides-modal-description"
           className="fides-modal-description"
         >
-          {experience.description}
+          <ExperienceDescription
+            onVendorPageClick={onVendorPageClick}
+            description={experience.description}
+          />
         </p>
         <GpcInfo />
         {children}
-        {/* {showTcf ? (
-          <TcfTabs notices={notices} />
-        ) : (
-          <div className="fides-modal-notices">
-            <NoticeToggles
-              notices={notices}
-              enabledNoticeKeys={enabledNoticeKeys}
-              onChange={onChange}
-            />
-          </div>
-        )} */}
-        {/* {buttonGroup} */}
         {experience.privacy_policy_link_label &&
         experience.privacy_policy_url ? (
           <a

@@ -23,7 +23,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
-from fides.api.util.tcf_util import ConsentRecordType
+from fides.api.util.tcf.tcf_experience_contents import ConsentRecordType
 from fides.common.api.scope_registry import (
     CONSENT_READ,
     CURRENT_PRIVACY_PREFERENCE_READ,

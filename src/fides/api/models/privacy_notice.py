@@ -84,6 +84,7 @@ PrivacyNoticeRegion = Enum(
         ("us_wv", "us_wv"),  # west virginia
         ("us_wi", "us_wi"),  # wisconsin
         ("us_wy", "us_wy"),  # wyoming
+        ("eea", "eea"),  # european economic area
         ("be", "be"),  # belgium
         ("bg", "bg"),  # bulgaria
         ("cz", "cz"),  # czechia

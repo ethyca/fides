@@ -1,10 +1,8 @@
 import { h } from "preact";
 import { useMemo } from "preact/hooks";
 import { PrivacyExperience } from "../../lib/consent-types";
-import {
-  LegalBasisForProcessingEnum,
-  TCFVendorRecord,
-} from "../../lib/tcf/types";
+import { LegalBasisForProcessingEnum } from "../../lib/tcf/types";
+import { vendorRecordsWithLegalBasis } from "../../lib/tcf/vendors";
 
 const VendorInfo = ({
   label,
@@ -31,23 +29,6 @@ const VendorInfo = ({
   </div>
 );
 
-const countVendorRecordsWithLegalBasis = (
-  records: TCFVendorRecord[],
-  legalBasis: LegalBasisForProcessingEnum
-) =>
-  records.filter((record) => {
-    const { purposes, special_purposes: specialPurposes } = record;
-    const hasApplicablePurposes = purposes?.filter((purpose) =>
-      purpose.legal_bases?.includes(legalBasis)
-    );
-    const hasApplicableSpecialPurposes = specialPurposes?.filter((purpose) =>
-      purpose.legal_bases?.includes(legalBasis)
-    );
-    return (
-      hasApplicablePurposes?.length || hasApplicableSpecialPurposes?.length
-    );
-  }).length;
-
 const VendorInfoBanner = ({
   experience,
   goToVendorTab,
@@ -62,25 +43,21 @@ const VendorInfoBanner = ({
 
     // consent count
     const consent =
-      countVendorRecordsWithLegalBasis(
-        systems,
-        LegalBasisForProcessingEnum.CONSENT
-      ) +
-      countVendorRecordsWithLegalBasis(
-        vendors,
-        LegalBasisForProcessingEnum.CONSENT
-      );
+      vendorRecordsWithLegalBasis(systems, LegalBasisForProcessingEnum.CONSENT)
+        .length +
+      vendorRecordsWithLegalBasis(vendors, LegalBasisForProcessingEnum.CONSENT)
+        .length;
 
     // legint count
     const legint =
-      countVendorRecordsWithLegalBasis(
+      vendorRecordsWithLegalBasis(
         systems,
         LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
-      ) +
-      countVendorRecordsWithLegalBasis(
+      ).length +
+      vendorRecordsWithLegalBasis(
         vendors,
         LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
-      );
+      ).length;
 
     return { total, consent, legint };
   }, [experience]);

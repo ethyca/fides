@@ -4,7 +4,7 @@ from fideslang.models import LegalBasisForProcessingEnum
 
 from fides.api.models.sql_models import PrivacyDeclaration
 from fides.api.schemas.tcf import EmbeddedVendor
-from fides.api.util.tcf_util import get_tcf_contents
+from fides.api.util.tcf.tcf_experience_contents import get_tcf_contents
 
 
 def assert_length_of_tcf_sections(
