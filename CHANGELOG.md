@@ -49,6 +49,7 @@ The types of changes are:
 - "Edit vendor" flow to configuring consent page [#4162](https://github.com/ethyca/fides/pull/4162)
 - TCF overlay description updates [#4051] https://github.com/ethyca/fides/pull/4151
 - Added developer-friendly TCF information under Experience meta [#4160](https://github.com/ethyca/fides/pull/4160/)
+- Added fides.css customization for Plus users [#4136](https://github.com/ethyca/fides/pull/4136)
 
 ### Changed
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
