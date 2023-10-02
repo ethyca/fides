@@ -683,7 +683,8 @@ class TestGetTCFPrivacyExperiences:
             resp.json()["items"][0]["privacy_notices"][0]["id"]
             == privacy_notice_fr_provide_service_frontend_only.id
         )
-        assert resp.json()["items"][0]["tcf_purposes"] == []
+        assert resp.json()["items"][0]["tcf_consent_purposes"] == []
+        assert resp.json()["items"][0]["tcf_legitimate_interests_purposes"] == []
         assert resp.json()["items"][0]["tcf_vendors"] == []
         assert resp.json()["items"][0]["tcf_features"] == []
         assert resp.json()["items"][0]["tcf_special_purposes"] == []
@@ -713,7 +714,8 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["id"] == privacy_experience_france_tcf_overlay.id
         assert resp.json()["items"][0]["component"] == ComponentType.tcf_overlay.value
         assert resp.json()["items"][0]["privacy_notices"] == []
-        assert resp.json()["items"][0]["tcf_purposes"] == []
+        assert resp.json()["items"][0]["tcf_consent_purposes"] == []
+        assert resp.json()["items"][0]["tcf_legitimate_interests_purposes"] == []
         assert resp.json()["items"][0]["tcf_vendors"] == []
         assert resp.json()["items"][0]["tcf_features"] == []
         assert resp.json()["items"][0]["tcf_special_purposes"] == []
@@ -736,11 +738,12 @@ class TestGetTCFPrivacyExperiences:
 
     @pytest.mark.usefixtures(
         "privacy_experience_france_overlay",
-        "privacy_preference_history_for_tcf_purpose",
+        "privacy_preference_history_for_tcf_purpose_consent",
         "privacy_preference_history_for_tcf_special_purpose",
         "served_notice_history_for_tcf_purpose",
         "fides_user_provided_identity",
         "served_notice_history_for_tcf_special_purpose",
+        "privacy_preference_history_for_vendor",
         "tcf_system",
     )
     def test_tcf_enabled_with_overlapping_vendors(
@@ -761,22 +764,61 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["id"] == privacy_experience_france_tcf_overlay.id
         assert resp.json()["items"][0]["component"] == ComponentType.tcf_overlay.value
         assert resp.json()["items"][0]["privacy_notices"] == []
-        assert len(resp.json()["items"][0]["tcf_purposes"]) == 1
-        assert resp.json()["items"][0]["tcf_purposes"][0]["id"] == 8
-        assert resp.json()["items"][0]["tcf_purposes"][0]["data_uses"] == [
+        assert len(resp.json()["items"][0]["tcf_consent_purposes"]) == 1
+        assert resp.json()["items"][0]["tcf_consent_purposes"][0]["id"] == 8
+        assert resp.json()["items"][0]["tcf_consent_purposes"][0]["data_uses"] == [
             "analytics.reporting.content_performance"
         ]
         assert (
-            resp.json()["items"][0]["tcf_purposes"][0]["current_preference"]
+            resp.json()["items"][0]["tcf_consent_purposes"][0]["current_preference"]
             == "opt_out"
         )
-        assert resp.json()["items"][0]["tcf_purposes"][0]["outdated_preference"] is None
-        assert resp.json()["items"][0]["tcf_purposes"][0]["current_served"] is True
-        assert resp.json()["items"][0]["tcf_purposes"][0]["outdated_served"] is None
+        assert (
+            resp.json()["items"][0]["tcf_consent_purposes"][0]["outdated_preference"]
+            is None
+        )
+        assert (
+            resp.json()["items"][0]["tcf_consent_purposes"][0]["current_served"] is True
+        )
+        assert (
+            resp.json()["items"][0]["tcf_consent_purposes"][0]["outdated_served"]
+            is None
+        )
 
         assert len(resp.json()["items"][0]["tcf_vendors"]) == 1
         assert resp.json()["items"][0]["tcf_vendors"][0]["id"] == "sendgrid"
-        assert resp.json()["items"][0]["tcf_vendors"][0]["purposes"][0]["id"] == 8
+        assert (
+            resp.json()["items"][0]["tcf_vendors"][0]["consent_purposes"][0]["id"] == 8
+        )
+        assert (
+            resp.json()["items"][0]["tcf_vendors"][0]["legitimate_interests_purposes"]
+            == []
+        )
+        assert (
+            resp.json()["items"][0]["tcf_vendors"][0]["consent_preference"][
+                "default_preference"
+            ]
+            == "opt_out"
+        )
+        assert (
+            resp.json()["items"][0]["tcf_vendors"][0]["consent_preference"][
+                "current_preference"
+            ]
+            == "opt_out"
+        )
+        assert (
+            resp.json()["items"][0]["tcf_vendors"][0][
+                "legitimate_interests_preference"
+            ]["default_preference"]
+            == "opt_in"
+        )
+        assert (
+            resp.json()["items"][0]["tcf_vendors"][0][
+                "legitimate_interests_preference"
+            ]["current_preference"]
+            is None
+        )
+
         assert resp.json()["items"][0]["tcf_features"] == []
 
         assert len(resp.json()["items"][0]["tcf_special_purposes"]) == 1
@@ -811,6 +853,7 @@ class TestGetTCFPrivacyExperiences:
         "privacy_preference_history_for_tcf_feature",
         "served_notice_history_for_tcf_feature",
         "fides_user_provided_identity",
+        "privacy_preference_history_for_system",
     )
     def test_tcf_enabled_with_overlapping_systems(
         self, db, api_client, url, privacy_experience_france_tcf_overlay, system
@@ -834,7 +877,8 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["id"] == privacy_experience_france_tcf_overlay.id
         assert resp.json()["items"][0]["component"] == ComponentType.tcf_overlay.value
         assert resp.json()["items"][0]["privacy_notices"] == []
-        assert len(resp.json()["items"][0]["tcf_purposes"]) == 1
+        assert len(resp.json()["items"][0]["tcf_consent_purposes"]) == 1
+        assert len(resp.json()["items"][0]["tcf_legitimate_interests_purposes"]) == 0
         assert resp.json()["items"][0]["tcf_special_purposes"] == []
         assert resp.json()["items"][0]["tcf_vendors"] == []
         assert resp.json()["items"][0]["tcf_special_features"] == []
@@ -846,6 +890,7 @@ class TestGetTCFPrivacyExperiences:
 
         assert feature_data["id"] == 2
         assert feature_data["name"] == "Link different devices"
+        assert feature_data["default_preference"] == "acknowledge"
         assert feature_data["current_preference"] == "opt_in"
         assert feature_data["outdated_preference"] is None
         assert feature_data["current_served"] is True
@@ -854,12 +899,86 @@ class TestGetTCFPrivacyExperiences:
         system_data = resp.json()["items"][0]["tcf_systems"][0]
 
         assert system_data["id"] == system.id
-        assert len(system_data["purposes"]) == 1
+        assert len(system_data["consent_purposes"]) == 1
+        assert system_data["consent_preference"]["default_preference"] == "opt_out"
+        assert system_data["consent_preference"]["current_preference"] == "opt_in"
+        assert len(system_data["legitimate_interests_purposes"]) == 0
+
+        assert (
+            system_data["legitimate_interests_preference"]["default_preference"]
+            == "opt_in"
+        )
+        assert (
+            system_data["legitimate_interests_preference"]["current_preference"] is None
+        )
+
         assert system_data["special_purposes"] == []
         assert len(system_data["features"]) == 1
         assert system_data["features"][0]["id"] == 2
         assert system_data["features"][0]["name"] == "Link different devices"
         assert system_data["special_features"] == []
+
+    @pytest.mark.usefixtures(
+        "privacy_experience_france_overlay",
+        "fides_user_provided_identity",
+        "privacy_preference_history_for_vendor_legitimate_interests",
+        "served_notice_history_for_vendor_legitimate_interests",
+    )
+    def test_tcf_enabled_with_legitimate_interest_purpose(
+        self, db, api_client, url, privacy_experience_france_tcf_overlay, system
+    ):
+        """System has purpose 2 with legitimate interests legal basis"""
+        settings = ConsentSettings.get_or_create_with_defaults(db)
+        settings.update(db=db, data={"tcf_enabled": True})
+        system.vendor_id = "sendgrid"
+        system.save(db)
+        privacy_declaration = system.privacy_declarations[0]
+        privacy_declaration.data_use = "marketing.advertising.first_party.contextual"
+        privacy_declaration.legal_basis_for_processing = "Legitimate interests"
+        privacy_declaration.save(db)
+
+        resp = api_client.get(
+            url
+            + "?region=fr&component=overlay&fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f&has_notices=True",
+        )
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 1
+        assert resp.json()["items"][0]["id"] == privacy_experience_france_tcf_overlay.id
+        assert resp.json()["items"][0]["component"] == ComponentType.tcf_overlay.value
+        assert resp.json()["items"][0]["privacy_notices"] == []
+        assert len(resp.json()["items"][0]["tcf_consent_purposes"]) == 0
+        assert len(resp.json()["items"][0]["tcf_legitimate_interests_purposes"]) == 1
+        assert (
+            resp.json()["items"][0]["tcf_legitimate_interests_purposes"][0]["id"] == 2
+        )
+        assert resp.json()["items"][0]["tcf_special_purposes"] == []
+        assert len(resp.json()["items"][0]["tcf_vendors"]) == 1
+        assert resp.json()["items"][0]["tcf_special_features"] == []
+
+        assert len(resp.json()["items"][0]["tcf_features"]) == 0
+        assert len(resp.json()["items"][0]["tcf_systems"]) == 0
+
+        vendor_data = resp.json()["items"][0]["tcf_vendors"][0]
+
+        assert vendor_data["id"] == "sendgrid"
+        assert len(vendor_data["consent_purposes"]) == 0
+        assert len(vendor_data["legitimate_interests_purposes"]) == 1
+        assert vendor_data["legitimate_interests_purposes"][0]["id"] == 2
+
+        assert (
+            vendor_data["legitimate_interests_preference"]["default_preference"]
+            == "opt_in"
+        )
+        assert (
+            vendor_data["legitimate_interests_preference"]["current_preference"]
+            == "opt_out"
+        )
+        assert vendor_data["legitimate_interests_preference"]["current_served"] is True
+        assert vendor_data["legitimate_interests_preference"]["outdated_served"] is None
+
+        assert vendor_data["special_purposes"] == []
+        assert len(vendor_data["features"]) == 0
+        assert vendor_data["special_features"] == []
 
 
 class TestFilterExperiencesByRegionOrCountry:

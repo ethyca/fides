@@ -1309,14 +1309,14 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             "browser_identity": {
                 "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
             },
-            "purpose_preferences": [
+            "purpose_consent_preferences": [
                 {
                     "id": 8,
                     "preference": "opt_out",
                     "served_notice_history_id": served_notice_history_for_tcf_purpose.id,
                 }
             ],
-            "vendor_preferences": [
+            "vendor_consent_preferences": [
                 {
                     "id": "amplitude",
                     "preference": "opt_in",
@@ -1324,7 +1324,9 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             ],
             "feature_preferences": [{"id": 1, "preference": "opt_out"}],
             "special_feature_preferences": [{"id": 2, "preference": "opt_in"}],
-            "system_preferences": [{"id": system.id, "preference": "opt_out"}],
+            "system_legitimate_interests_preferences": [
+                {"id": system.id, "preference": "opt_out"}
+            ],
             "user_geography": "fr",
             "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
         }
@@ -1519,7 +1521,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             "browser_identity": {
                 "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
             },
-            "purpose_preferences": [
+            "purpose_consent_preferences": [
                 {
                     "id": 1000,
                     "preference": "opt_out",
@@ -1624,7 +1626,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             "browser_identity": {
                 "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
             },
-            "system_preferences": [
+            "system_consent_preferences": [
                 {
                     "id": "bad_system",
                     "preference": "opt_out",
@@ -1705,12 +1707,12 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert response.status_code == 200
         assert len(response.json()) == 5
 
-        # Returned in order of purpose, special purpose, feature, special feature, vendor, then system
+        # Returned in order of purpose consent, special purpose, feature, special feature, vendor consent, then system legitimate interests
         # Special purpose was not saved here
 
         purpose_response = response.json()[0]
         assert purpose_response["preference"] == "opt_out"
-        assert purpose_response["purpose"] == 8
+        assert purpose_response["purpose_consent"] == 8
         purpose_privacy_preference_history_id = purpose_response[
             "privacy_preference_history_id"
         ]
@@ -1725,7 +1727,9 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             purpose_privacy_preference_history.id
             == purpose_privacy_preference_history_id
         )
-        assert purpose_privacy_preference_history.vendor is None
+        assert purpose_privacy_preference_history.vendor_consent is None
+        assert purpose_privacy_preference_history.vendor_legitimate_interests is None
+
         assert purpose_privacy_preference_history.privacy_notice_history_id is None
         assert purpose_privacy_preference_history.feature is None
         fides_user_device_provided_identity = (
@@ -1748,7 +1752,11 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             == ProvidedIdentity.hash_value(test_device_id)
         )
         assert purpose_privacy_preference_history.fides_user_device == test_device_id
-        assert purpose_privacy_preference_history.purpose == purpose_response["purpose"]
+        assert (
+            purpose_privacy_preference_history.purpose_consent
+            == purpose_response["purpose_consent"]
+        )
+        assert purpose_privacy_preference_history.purpose_legitimate_interests is None
 
         assert (
             purpose_privacy_preference_history.request_origin
@@ -1772,17 +1780,17 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
 
         # Assert details saved w.r.t vendor
 
-        vendor_response = response.json()[3]
-        assert vendor_response["preference"] == "opt_in"
-        assert vendor_response["vendor"] == "amplitude"
+        vendor_consent_response = response.json()[3]
+        assert vendor_consent_response["preference"] == "opt_in"
+        assert vendor_consent_response["vendor_consent"] == "amplitude"
 
         current_vendor_preference = CurrentPrivacyPreference.get(
-            db, object_id=vendor_response["id"]
+            db, object_id=vendor_consent_response["id"]
         )
         vendor_privacy_preference_history = (
             current_vendor_preference.privacy_preference_history
         )
-        assert vendor_privacy_preference_history.purpose is None
+        assert vendor_privacy_preference_history.purpose_consent is None
         assert vendor_privacy_preference_history.privacy_notice_history_id is None
         assert vendor_privacy_preference_history.feature is None
 
@@ -1806,7 +1814,10 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             == ProvidedIdentity.hash_value(test_device_id)
         )
         assert vendor_privacy_preference_history.fides_user_device == test_device_id
-        assert vendor_privacy_preference_history.vendor == vendor_response["vendor"]
+        assert (
+            vendor_privacy_preference_history.vendor_consent
+            == vendor_consent_response["vendor_consent"]
+        )
 
         assert (
             vendor_privacy_preference_history.request_origin
@@ -1861,15 +1872,17 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         # Assert system portion of the response
         system_response = response.json()[4]
         assert system_response["preference"] == "opt_out"
-        assert system_response["system"] == system.id
+        assert system_response["system_legitimate_interests"] == system.id
         current_system_preference = CurrentPrivacyPreference.get(
             db, object_id=system_response["id"]
         )
         system_privacy_preference_history = (
             current_system_preference.privacy_preference_history
         )
-        assert current_system_preference.system == system.id
-        assert system_privacy_preference_history.system == system.id
+        assert current_system_preference.system_legitimate_interests == system.id
+        assert (
+            system_privacy_preference_history.system_legitimate_interests == system.id
+        )
 
         current_system_preference.delete(db)
         system_privacy_preference_history.delete(db)
@@ -2077,7 +2090,7 @@ class TestHistoricalPreferences:
         api_client: TestClient,
         url,
         generate_auth_header,
-        privacy_preference_history_for_tcf_purpose,
+        privacy_preference_history_for_tcf_purpose_consent,
         served_notice_history_for_tcf_purpose,
         privacy_experience_france_overlay,
     ) -> None:
@@ -2091,7 +2104,9 @@ class TestHistoricalPreferences:
 
         response_body = response.json()["items"][0]
 
-        assert response_body["id"] == privacy_preference_history_for_tcf_purpose.id
+        assert (
+            response_body["id"] == privacy_preference_history_for_tcf_purpose_consent.id
+        )
         assert response_body["privacy_request_id"] is None
         assert response_body["email"] == "test@email.com"
         assert response_body["phone_number"] is None
@@ -2099,9 +2114,13 @@ class TestHistoricalPreferences:
             response_body["fides_user_device_id"]
             == "051b219f-20e4-45df-82f7-5eb68a00889f"
         )
-        assert response_body["purpose"] == 8
+        assert response_body["purpose_consent"] == 8
+        assert response_body["purpose_legitimate_interests"] is None
         assert response_body["special_purpose"] is None
-        assert response_body["vendor"] is None
+        assert response_body["vendor_consent"] is None
+        assert response_body["vendor_legitimate_interests"] is None
+        assert response_body["system_consent"] is None
+        assert response_body["system_legitimate_interests"] is None
         assert response_body["feature"] is None
         assert response_body["special_feature"] is None
         assert response_body["tcf_version"] == CURRENT_TCF_VERSION
@@ -2145,7 +2164,7 @@ class TestHistoricalPreferences:
         assert response.status_code == 200
         assert len(response.json()["items"]) == 1
         assert (
-            response.json()["items"][0]["system"]
+            response.json()["items"][0]["system_consent"]
             == privacy_preference_history_for_system.system
         )
         assert (
@@ -2295,7 +2314,7 @@ class TestCurrentPrivacyPreferences:
     def test_get_current_preferences_report_with_tcf(
         self,
         generate_auth_header,
-        privacy_preference_history_for_tcf_purpose,
+        privacy_preference_history_for_tcf_purpose_consent,
         api_client,
         url,
     ):
@@ -2308,12 +2327,12 @@ class TestCurrentPrivacyPreferences:
         data = response.json()["items"][0]
         assert (
             data["preference"]
-            == privacy_preference_history_for_tcf_purpose.preference.value
+            == privacy_preference_history_for_tcf_purpose_consent.preference.value
         )
-        assert data["purpose"] == 8
+        assert data["purpose_consent"] == 8
         assert (
             data["id"]
-            == privacy_preference_history_for_tcf_purpose.current_privacy_preference.id
+            == privacy_preference_history_for_tcf_purpose_consent.current_privacy_preference.id
         )
 
     @pytest.mark.parametrize(

@@ -24,9 +24,19 @@ from fides.api.models.privacy_preference import (
 )
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
+from fides.api.schemas.tcf import (
+    TCFFeatureRecord,
+    TCFPurposeConsentRecord,
+    TCFPurposeLegitimateInterestsRecord,
+    TCFSpecialFeatureRecord,
+    TCFSpecialPurposeRecord,
+    VendorConsentPreference,
+    VendorLegitimateInterestsPreference,
+)
 from fides.api.util.tcf.tcf_experience_contents import (
-    TCF_COMPONENT_MAPPING,
+    TCF_NON_VENDOR_SECTIONS,
+    TCF_SECTION_MAPPING,
+    TCF_VENDOR_SECTIONS,
     ConsentRecordType,
     TCFExperienceContents,
 )
@@ -217,7 +227,8 @@ class PrivacyExperience(Base):
     # related to experiences.
     privacy_notices: List[PrivacyNotice] = []
     # TCF attributes that can be added at runtime as the result of "get_related_tcf_contents"
-    tcf_purposes: List = []
+    tcf_consent_purposes: List = []
+    tcf_legitimate_interests_purposes: List = []
     tcf_special_purposes: List = []
     tcf_vendors: List = []
     tcf_features: List = []
@@ -328,7 +339,7 @@ class PrivacyExperience(Base):
             tcf_contents = copy(base_tcf_contents)
 
             # Fetch previously saved records for the current user
-            for tcf_component, field_name in TCF_COMPONENT_MAPPING.items():
+            for tcf_component, field_name in TCF_NON_VENDOR_SECTIONS.items():
                 for record in getattr(tcf_contents, tcf_component):
                     cache_saved_and_served_on_consent_record(
                         db,
@@ -337,8 +348,25 @@ class PrivacyExperience(Base):
                         record_type=field_name,
                     )
 
+            for system_section, column_mapping in TCF_VENDOR_SECTIONS.items():
+                for vendor_record in getattr(tcf_contents, system_section):
+                    # Fetches previously saved and served records for system/vendor consent
+                    cache_saved_and_served_on_consent_record(
+                        db,
+                        vendor_record.consent_preference,
+                        fides_user_provided_identity=fides_user_provided_identity,
+                        record_type=column_mapping.consent,
+                    )
+                    # Fetches previously saved and served records for system/vendor legitimate interests
+                    cache_saved_and_served_on_consent_record(
+                        db,
+                        vendor_record.legitimate_interests_preference,
+                        fides_user_provided_identity=fides_user_provided_identity,
+                        record_type=column_mapping.legitimate_interests,
+                    )
+
             has_tcf_contents: bool = False
-            for component in TCF_COMPONENT_MAPPING:
+            for component in TCF_SECTION_MAPPING:
                 tcf_contents_for_component = getattr(tcf_contents, component)
                 if bool(tcf_contents_for_component):
                     has_tcf_contents = True
@@ -602,7 +630,14 @@ def upsert_privacy_experiences_after_config_update(
 def cache_saved_and_served_on_consent_record(
     db: Session,
     consent_record: Union[
-        PrivacyNotice, TCFPurposeRecord, TCFFeatureRecord, TCFVendorRecord
+        PrivacyNotice,
+        TCFPurposeConsentRecord,
+        TCFPurposeLegitimateInterestsRecord,
+        TCFSpecialPurposeRecord,
+        TCFFeatureRecord,
+        TCFSpecialFeatureRecord,
+        VendorConsentPreference,
+        VendorLegitimateInterestsPreference,
     ],
     fides_user_provided_identity: Optional[ProvidedIdentity],
     record_type: ConsentRecordType,

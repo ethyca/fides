@@ -23,6 +23,7 @@ from fides.api.custom_types import SafeStr
 from fides.api.models.privacy_preference import LastServedNotice, ServedNoticeHistory
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.schemas.privacy_preference import (
+    TCF_SERVED_FIELD_MAPPING,
     LastServedConsentSchema,
     RecordConsentServedCreate,
     RecordConsentServedRequest,
@@ -32,10 +33,7 @@ from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter
-from fides.api.util.tcf.tcf_experience_contents import (
-    TCF_COMPONENT_MAPPING,
-    ConsentRecordType,
-)
+from fides.api.util.tcf.tcf_experience_contents import ConsentRecordType
 from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST_NOTICES_SERVED,
     NOTICES_SERVED,
@@ -106,8 +104,9 @@ def save_consent_served_for_identities(
         original_request_data.privacy_notice_history_ids,
         ConsentRecordType.privacy_notice_history_id,
     )
+
     # Save consent served for TCF components if applicable
-    for tcf_component, database_column in TCF_COMPONENT_MAPPING.items():
+    for tcf_component, database_column in TCF_SERVED_FIELD_MAPPING.items():
         save_consent_served_for_field_name(
             getattr(original_request_data, tcf_component),
             database_column,

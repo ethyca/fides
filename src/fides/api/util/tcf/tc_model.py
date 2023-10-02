@@ -2,12 +2,11 @@ import re
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
-from fideslang.models import LegalBasisForProcessingEnum
 from pydantic import Field, NonNegativeInt, PositiveInt, root_validator, validator
 
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
+from fides.api.schemas.tcf import TCFSpecialFeatureRecord, TCFVendorRecord
 from fides.api.util.tcf.tcf_experience_contents import TCFExperienceContents, load_gvl
 
 CMP_ID: int = 12  # TODO: hardcode our unique CMP ID after certification
@@ -290,19 +289,11 @@ def _build_vendor_consents_and_legitimate_interests(
             # check that ensures this id is also in the gvl.
             continue
 
-        consent_purpose_ids: List[int] = [
-            purpose.id
-            for purpose in vendor.purposes
-            if LegalBasisForProcessingEnum.CONSENT.value in purpose.legal_bases
-        ]
-        if consent_purpose_ids:
+        if vendor.consent_purposes:
             vendor_consents.append(int(vendor.id))
 
         leg_int_purpose_ids: List[int] = [
-            purpose.id
-            for purpose in vendor.purposes
-            if LegalBasisForProcessingEnum.LEGITIMATE_INTEREST.value
-            in purpose.legal_bases
+            purpose.id for purpose in vendor.legitimate_interests_purposes
         ]
 
         # Ensure vendor doesn't have forbidden legint purpose set
@@ -314,29 +305,8 @@ def _build_vendor_consents_and_legitimate_interests(
     return vendor_consents, vendor_legitimate_interests
 
 
-def _build_purpose_consent_and_legitimate_interests(
-    purposes: List[TCFPurposeRecord],
-) -> Tuple[List, List]:
-    """Construct the purpose_consents and purpose_legitimate_interests sections"""
-
-    purpose_consents: List[int] = []
-    purpose_legitimate_interests: List[int] = []
-
-    for purpose in purposes:
-        if LegalBasisForProcessingEnum.CONSENT.value in purpose.legal_bases:
-            purpose_consents.append(purpose.id)
-
-        if (
-            LegalBasisForProcessingEnum.LEGITIMATE_INTEREST.value in purpose.legal_bases
-            and purpose.id not in FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS
-        ):
-            purpose_legitimate_interests.append(purpose.id)
-
-    return purpose_consents, purpose_legitimate_interests
-
-
 def _build_special_feature_opt_ins(
-    special_features: List[TCFFeatureRecord],
+    special_features: List[TCFSpecialFeatureRecord],
 ) -> List[int]:
     """Construct the special_feature_opt_ins section"""
     special_feature_opt_ins: List[int] = []
@@ -398,10 +368,12 @@ def convert_tcf_contents_to_tc_model(
         vendor_legitimate_interests,
     ) = _build_vendor_consents_and_legitimate_interests(tcf_contents.tcf_vendors)
 
-    (
-        purpose_consents,
-        purpose_legitimate_interests,
-    ) = _build_purpose_consent_and_legitimate_interests(tcf_contents.tcf_purposes)
+    purpose_consents: List[int] = [
+        purpose.id for purpose in tcf_contents.tcf_consent_purposes
+    ]
+    purpose_legitimate_interests: List[int] = [
+        purpose.id for purpose in tcf_contents.tcf_legitimate_interests_purposes
+    ]
 
     special_feature_opt_ins: List[int] = _build_special_feature_opt_ins(
         tcf_contents.tcf_special_features

@@ -36,18 +36,40 @@ class EmbeddedVendor(FidesSchema):
     name: str
 
 
-class TCFPurposeRecord(MappedPurpose, TCFSavedandServedDetails):
-    """Schema for a TCF Purpose or a Special Purpose: returned in the TCF Overlay Experience"""
+class NonVendorSection(TCFSavedandServedDetails):
+    vendors: List[EmbeddedVendor] = []  # Vendors that use this TCF attribute
+    systems: List[EmbeddedVendor] = []  # Systems that use this TCF attribute
 
-    legal_bases: List[str] = []
-    vendors: List[
-        EmbeddedVendor
-    ] = []  # Vendors that use this purpose or special purpose
-    systems: List[
-        EmbeddedVendor
-    ] = (
-        []
-    )  # Systems that use this purpose or special purpose (we don't have a vendor_id)
+
+class TCFPurposeConsentRecord(MappedPurpose, NonVendorSection):
+    """Schema for a TCF Purpose with Consent Legal Basis returned in the TCF Overlay Experience"""
+
+    @root_validator
+    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Default preference for purposes with legal basis of consent is opt-out"""
+        values["default_preference"] = UserConsentPreference.opt_out
+
+        return values
+
+
+class TCFPurposeLegitimateInterestsRecord(MappedPurpose, NonVendorSection):
+    """Schema for a TCF Purpose with Legitimate Interests Legal Basis returned in the TCF Overlay Experience"""
+
+    @root_validator
+    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Default preference for purposes with legal basis of legitimate interests is opt-int"""
+        values["default_preference"] = UserConsentPreference.opt_in
+
+        return values
+
+
+class TCFSpecialPurposeRecord(MappedPurpose, NonVendorSection):
+    @root_validator
+    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Default preference for special purposes is acknowledge"""
+        values["default_preference"] = UserConsentPreference.acknowledge
+
+        return values
 
 
 class EmbeddedLineItem(FidesSchema):
@@ -57,47 +79,64 @@ class EmbeddedLineItem(FidesSchema):
     name: str
 
 
-class EmbeddedPurpose(EmbeddedLineItem):
-    """Sparse details for an embedded purpose beneath a system or vendor section.  Read-only."""
-
-    legal_bases: List[str] = []
-
-
-class TCFDataCategoryRecord(FidesSchema):
-    """Details for data categories on systems: Read-only"""
-
+class VendorConsentPreference(UserSpecificConsentDetails):
     id: str
-    name: Optional[str]
-    cookie: Optional[str]
-    domain: Optional[str]
-    duration: Optional[str]
+
+    @root_validator
+    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Default preference for vendor with legal basis of consent is opt-out"""
+        values["default_preference"] = UserConsentPreference.opt_out
+
+        return values
 
 
-class TCFVendorRecord(TCFSavedandServedDetails):
+class VendorLegitimateInterestsPreference(UserSpecificConsentDetails):
+    id: str
+
+    @root_validator
+    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Default preference for vendor with legal basis of leg interests is opt-in"""
+        values["default_preference"] = UserConsentPreference.opt_in
+
+        return values
+
+
+class TCFVendorRecord(FidesSchema):
     """Schema for a TCF Vendor or system: returned in the TCF Overlay Experience"""
 
     id: str
     has_vendor_id: bool
     name: Optional[str]
     description: Optional[str]
-    purposes: List[EmbeddedPurpose] = []
-    special_purposes: List[EmbeddedPurpose] = []
-    data_categories: List[TCFDataCategoryRecord] = []
+    consent_purposes: List[EmbeddedLineItem] = []
+    legitimate_interests_purposes: List[EmbeddedLineItem] = []
+    special_purposes: List[EmbeddedLineItem] = []
     features: List[EmbeddedLineItem] = []
     special_features: List[EmbeddedLineItem] = []
+    consent_preference: VendorConsentPreference
+    legitimate_interests_preference: VendorLegitimateInterestsPreference
 
 
-class TCFFeatureRecord(Feature, TCFSavedandServedDetails):
-    """Schema for a TCF Feature or a special feature: returned in the TCF Overlay Experience"""
+class TCFFeatureRecord(Feature, NonVendorSection):
+    """Schema for a TCF Feature: returned in the TCF Overlay Experience"""
 
-    vendors: List[
-        EmbeddedVendor
-    ] = []  # Vendors that use this feature or special feature
-    systems: List[
-        EmbeddedVendor
-    ] = (
-        []
-    )  # Systems that use this feature or special feature (we don't have a vendor_id)
+    @root_validator
+    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Default preference for features is acknowledge"""
+        values["default_preference"] = UserConsentPreference.acknowledge
+
+        return values
+
+
+class TCFSpecialFeatureRecord(Feature, NonVendorSection):
+    """Schema for a TCF Special Feature: returned in the TCF Overlay Experience"""
+
+    @root_validator
+    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Default preference for special features is acknowledge"""
+        values["default_preference"] = UserConsentPreference.opt_out
+
+        return values
 
 
 class TCFPreferenceSaveBase(FidesSchema):

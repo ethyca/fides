@@ -821,10 +821,15 @@ def get_historical_consent_report(
             PrivacyPreferenceHistory.served_notice_history_id.label(
                 "served_notice_history_id"
             ),
-            PrivacyPreferenceHistory.purpose.label("purpose"),
+            PrivacyPreferenceHistory.purpose_consent.label("purpose_consent"),
+            PrivacyPreferenceHistory.purpose_legitimate_interests.label(
+                "purpose_legitimate_interests"
+            ),
             PrivacyPreferenceHistory.special_purpose.label("special_purpose"),
-            PrivacyPreferenceHistory.vendor.label("vendor"),
-            PrivacyPreferenceHistory.system.label("system"),
+            PrivacyPreferenceHistory.vendor.label("vendor_consent"),
+            PrivacyPreferenceHistory.vendor.label("vendor_legitimate_interests"),
+            PrivacyPreferenceHistory.system.label("system_consent"),
+            PrivacyPreferenceHistory.system.label("system_legitimate_interests"),
             PrivacyPreferenceHistory.feature.label("feature"),
             PrivacyPreferenceHistory.special_feature.label("special_feature"),
             PrivacyPreferenceHistory.tcf_version.label("tcf_version"),
