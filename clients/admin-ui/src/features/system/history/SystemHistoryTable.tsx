@@ -96,14 +96,7 @@ const SystemHistoryTable = ({ system }: Props) => {
               border="1px solid #E2E8F0"
               background="#F7FAFC"
             >
-              System created
-              {system.created_by && (
-                <>
-                  {" "}
-                  by <b>{system.created_by}</b>{" "}
-                </>
-              )}{" "}
-              on {formattedDate} at {formattedTime}
+              System created on {formattedDate} at {formattedTime}
             </Td>
           </Tr>
         </Thead>

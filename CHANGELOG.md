@@ -17,12 +17,16 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.21.0...main)
 
+### Added
+- Added an option to link to vendor tab from an experience config description [#4191](https://github.com/ethyca/fides/pull/4191)
 ### Changed
 - Removed `TCF_ENABLED` environment variable from the privacy center in favor of dynamically figuring out which `fides-js` bundle to send [#4131](https://github.com/ethyca/fides/pull/4131)
+- Updated copy of info boxes on each TCF tab [#4191](https://github.com/ethyca/fides/pull/4191)
 
 ### Fixed
 - TCF overlay can initialize its consent preferences from a cookie [#4124](https://github.com/ethyca/fides/pull/4124)
 - Various improvements to the TCF modal such as vendor storage disclosures, vendor counts, privacy policies, etc. [#4167](https://github.com/ethyca/fides/pull/4167)
+- An issue where Braze could not mask an email due to formatting [#4187](https://github.com/ethyca/fides/pull/4187)
 
 ## [2.21.0](https://github.com/ethyca/fides/compare/2.20.2...2.21.0)
 
@@ -39,6 +43,8 @@ The types of changes are:
 - Embed the GVL in the GET Experiences response [#4143](https://github.com/ethyca/fides/pull/4143)
 - Button to view how many vendors and to open the vendor tab in the TCF modal [#4144](https://github.com/ethyca/fides/pull/4144)
 - "Edit vendor" flow to configuring consent page [#4162](https://github.com/ethyca/fides/pull/4162)
+- TCF overlay description updates [#4051] https://github.com/ethyca/fides/pull/4151
+- Added developer-friendly TCF information under Experience meta [#4160](https://github.com/ethyca/fides/pull/4160/)
 
 ### Changed
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
@@ -55,7 +61,7 @@ The types of changes are:
 
 ## [2.20.2](https://github.com/ethyca/fides/compare/2.20.1...2.20.2)
 
-### Fixed 
+### Fixed
 - added version_added, version_deprecated, and replaced_by to data use, data subject, and data category APIs [#4135](https://github.com/ethyca/fides/pull/4135)
 - Update fides.js to not fetch experience client-side if pre-fetched experience is empty [#4149](https://github.com/ethyca/fides/pull/4149)
 - Erasure privacy requests now pause for input if there are any manual process integrations [#4115](https://github.com/ethyca/fides/pull/4115)
