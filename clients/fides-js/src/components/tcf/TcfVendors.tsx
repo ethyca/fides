@@ -47,8 +47,8 @@ const VendorDetails = ({
     <table className="fides-vendor-details-table">
       <thead>
         <tr>
-          <th>{label}</th>
-          {dataRetention ? <th>Retention</th> : null}
+          <th width="80%">{label}</th>
+          {dataRetention ? <th width="20%">Retention</th> : null}
         </tr>
       </thead>
       <tbody>
@@ -246,7 +246,7 @@ const TcfVendors = ({
       {/* DEFER: ideally we use a table object, but then DataUseToggles would need to be reworked
       or we would need a separate component. */}
       <div className="fides-legal-basis-labels">
-        <span className="fides-margin-right">Legitimate interest</span>
+        <span>Legitimate interest</span>
         <span>Consent</span>
       </div>
       {vendorsToDisplay.map((vendor) => {
@@ -283,9 +283,7 @@ const TcfVendors = ({
             checked={enabledVendorLegintIds.indexOf(vendor.id) !== -1}
             badge={gvlVendor ? "IAB TCF" : undefined}
             secondToggle={
-              <div
-                style={{ width: "50px", display: "flex", marginLeft: ".2em" }}
-              >
+              <div style={{ display: "flex", marginLeft: "16px" }}>
                 {isConsent ? (
                   <Toggle
                     name={`${vendor.name}-consent`}

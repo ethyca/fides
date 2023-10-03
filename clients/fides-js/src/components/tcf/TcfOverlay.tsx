@@ -1,4 +1,4 @@
-import { h, FunctionComponent } from "preact";
+import { h, FunctionComponent, Fragment } from "preact";
 import { useState, useCallback, useMemo } from "preact/hooks";
 import { TCString } from "@iabtechlabtcf/core";
 import ConsentBanner from "../ConsentBanner";
@@ -356,7 +356,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           onClose();
         };
         return (
-          <div>
+          <Fragment>
             <TcfTabs
               experience={experience}
               enabledIds={draftIds}
@@ -375,7 +375,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                 />
               }
             />
-          </div>
+          </Fragment>
         );
       }}
     />
