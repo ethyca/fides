@@ -6,21 +6,30 @@ import type { EmbeddedVendor } from "./EmbeddedVendor";
 import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
- * Schema for a TCF Feature: returned in the TCF Overlay Experience
+ * Default Schema that combines TCF details with whether a consent item was
+ * previously saved or served.
  */
-export type TCFFeatureRecord = {
+export type TCFSpecialPurposeRecord = {
   /**
-   * Official GVL feature ID or special feature ID
+   * Official GVL purpose ID. Used for linking with other records, e.g. vendors, cookies, etc.
    */
   id: number;
   /**
-   * Name of the GVL feature or special feature.
+   * Name of the GVL purpose.
    */
   name: string;
   /**
-   * Description of the GVL feature or special feature.
+   * Description of the GVL purpose.
    */
   description: string;
+  /**
+   * Illustrative examples of the purpose.
+   */
+  illustrations: Array<string>;
+  /**
+   * The fideslang default taxonomy data uses that are associated with the purpose.
+   */
+  data_uses: Array<string>;
   default_preference?: UserConsentPreference;
   current_preference?: UserConsentPreference;
   outdated_preference?: UserConsentPreference;

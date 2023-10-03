@@ -6,9 +6,9 @@ import type { EmbeddedVendor } from "./EmbeddedVendor";
 import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
- * Schema for a TCF Feature: returned in the TCF Overlay Experience
+ * Schema for a TCF Special Feature: returned in the TCF Overlay Experience
  */
-export type TCFFeatureRecord = {
+export type TCFSpecialFeatureRecord = {
   /**
    * Official GVL feature ID or special feature ID
    */
