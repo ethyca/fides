@@ -35,7 +35,8 @@ const TcfTabs = ({
             Legitimate Interest below.
           </InfoBox>
           <TcfPurposes
-            allPurposes={experience.tcf_purposes}
+            // TODO(fides#4210): add legint purposes
+            allPurposes={experience.tcf_consent_purposes}
             allSpecialPurposes={experience.tcf_special_purposes}
             enabledPurposeIds={enabledIds.purposes}
             enabledSpecialPurposeIds={enabledIds.specialPurposes}
