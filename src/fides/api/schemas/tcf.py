@@ -14,21 +14,6 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_notice import UserSpecificConsentDetails
 
 
-class TCFSavedandServedDetails(UserSpecificConsentDetails):
-    """Default Schema that combines TCF details with whether a consent item was
-    previously saved or served."""
-
-    @root_validator
-    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """For TCF components, the default preferences are just 'opt-out'"""
-        values["default_preference"] = UserConsentPreference.opt_out
-
-        return values
-
-    class Config:
-        use_enum_values = True
-
-
 class EmbeddedVendor(FidesSchema):
     """Sparse details for an embedded vendor beneath a purpose or feature section. Read-only."""
 
@@ -36,7 +21,10 @@ class EmbeddedVendor(FidesSchema):
     name: str
 
 
-class NonVendorSection(TCFSavedandServedDetails):
+class NonVendorSection(UserSpecificConsentDetails):
+    """Common details for non-vendor TCF sections.  Includes previously-saved preferences and
+    records where consent was previously served if applicable."""
+
     vendors: List[EmbeddedVendor] = []  # Vendors that use this TCF attribute
     systems: List[EmbeddedVendor] = []  # Systems that use this TCF attribute
 
@@ -57,7 +45,7 @@ class TCFPurposeLegitimateInterestsRecord(NonVendorSection, MappedPurpose):
 
     @root_validator
     def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """Default preference for purposes with legal basis of legitimate interests is opt-int"""
+        """Default preference for purposes with legal basis of legitimate interests is opt-in"""
         values["default_preference"] = UserConsentPreference.opt_in
 
         return values

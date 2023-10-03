@@ -31,7 +31,6 @@ from fides.api.schemas.tcf import (
 )
 from fides.api.util.tcf.tcf_experience_contents import (
     TCF_SECTION_MAPPING,
-    ConsentRecordType,
     TCFComponentType,
 )
 
@@ -50,21 +49,6 @@ TCF_PREFERENCES_FIELD_MAPPING: Dict[str, str] = {
 }
 
 
-# Maps the sections in the request body for saving various TCF components were served
-# against the specific database column name on which these served records are saved
-TCF_SERVED_FIELD_MAPPING: Dict[str, ConsentRecordType] = {
-    "tcf_consent_purposes": ConsentRecordType.purpose_consent,
-    "tcf_legitimate_interests_purposes": ConsentRecordType.purpose_legitimate_interests,
-    "tcf_special_purposes": ConsentRecordType.special_purpose,
-    "tcf_features": ConsentRecordType.feature,
-    "tcf_special_features": ConsentRecordType.special_feature,
-    "tcf_consent_vendors": ConsentRecordType.vendor_consent,
-    "tcf_legitimate_interests_vendors": ConsentRecordType.vendor_legitimate_interests,
-    "tcf_consent_systems": ConsentRecordType.system_consent,
-    "tcf_legitimate_interests_systems": ConsentRecordType.system_legitimate_interests,
-}
-
-
 class TCFAttributes(FidesSchema):
     """Common schema for storing values for the relevant TCF Attribute"""
 
@@ -72,7 +56,7 @@ class TCFAttributes(FidesSchema):
         title="The TCF purpose with consent legal basis that was served or saved against"
     )
     purpose_legitimate_interests: Optional[int] = Field(
-        title="The TCF purpose with legitimate interests basis that was served or saved against"
+        title="The TCF purpose with a legitimate interests basis that was served or saved against"
     )
 
     special_purpose: Optional[int] = Field(
