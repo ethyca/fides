@@ -169,12 +169,11 @@ def config():
     yield CONFIG
 
 
-
 @pytest.fixture(scope="function")
 def enable_tcf(config):
     assert config.test_mode
     config.consent.tcf_enabled = True
-    yield  config
+    yield config
     config.consent.tcf_enabled = False
 
 

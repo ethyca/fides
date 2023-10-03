@@ -16,8 +16,8 @@ from pydantic.env_settings import SettingsSourceCallable
 from fides.common.utils import echo_red
 
 from .admin_ui_settings import AdminUISettings
-from .consent_settings import ConsentSettings
 from .cli_settings import CLISettings
+from .consent_settings import ConsentSettings
 from .credentials_settings import merge_credentials_environment
 from .database_settings import DatabaseSettings
 from .execution_settings import ExecutionSettings

@@ -31,7 +31,6 @@ from fides.api.common_exceptions import (
 )
 from fides.api.custom_types import SafeStr
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
-from fides.config import CONFIG
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.privacy_experience import PrivacyExperience
 from fides.api.models.privacy_notice import (

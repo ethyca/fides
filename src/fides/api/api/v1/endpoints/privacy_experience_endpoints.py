@@ -18,7 +18,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.config import CONFIG
 from fides.api.models.privacy_experience import (
     ComponentType,
     PrivacyExperience,

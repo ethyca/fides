@@ -695,7 +695,7 @@ class TestGetTCFPrivacyExperiences:
     @pytest.mark.usefixtures(
         "privacy_experience_france_overlay",
         "privacy_notice_fr_provide_service_frontend_only",
-        "enable_tcf"
+        "enable_tcf",
     )
     def test_tcf_enabled_but_no_relevant_systems(
         self, db, api_client, url, privacy_experience_france_tcf_overlay
@@ -737,7 +737,7 @@ class TestGetTCFPrivacyExperiences:
         "fides_user_provided_identity",
         "served_notice_history_for_tcf_special_purpose",
         "tcf_system",
-        "enable_tcf"
+        "enable_tcf",
     )
     def test_tcf_enabled_with_overlapping_vendors(
         self,
@@ -805,7 +805,7 @@ class TestGetTCFPrivacyExperiences:
         "privacy_preference_history_for_tcf_feature",
         "served_notice_history_for_tcf_feature",
         "fides_user_provided_identity",
-        "enable_tcf"
+        "enable_tcf",
     )
     def test_tcf_enabled_with_overlapping_systems(
         self, db, api_client, url, privacy_experience_france_tcf_overlay, system
@@ -898,7 +898,9 @@ class TestFilterExperiencesByRegionOrCountry:
         assert resp.first().id == privacy_experience_france_tcf_overlay.id
 
     @pytest.mark.usefixtures(
-        "privacy_experience_france_overlay", "privacy_experience_france_tcf_overlay", "enable_tcf"
+        "privacy_experience_france_overlay",
+        "privacy_experience_france_tcf_overlay",
+        "enable_tcf",
     )
     def test_tcf_enabled_but_we_are_not_in_eea(self, db, privacy_experience_overlay):
         resp = _filter_experiences_by_region_or_country(
