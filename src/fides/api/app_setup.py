@@ -26,7 +26,6 @@ from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnect
 from fides.api.db.database import configure_db
 from fides.api.db.seed import create_or_update_parent_user
 from fides.api.models.application_config import ApplicationConfig
-from fides.api.models.consent_settings import ConsentSettings
 from fides.api.oauth.system_manager_oauth_util import (
     get_system_fides_key,
     get_system_schema,
@@ -207,8 +206,6 @@ async def run_database_startup(app: FastAPI) -> None:
         load_default_privacy_notices()
         load_tcf_experiences()
 
-    create_default_consent_settings()
-
     db.close()
 
 
@@ -260,13 +257,3 @@ def load_tcf_experiences() -> None:
         db.close()
 
 
-def create_default_consent_settings() -> None:
-    """Load Default Consent Settings if they don't exist"""
-    logger.info("Loading default Consent Settings")
-    try:
-        db = get_api_session()
-        ConsentSettings.get_or_create_with_defaults(db)
-    except Exception as e:
-        logger.error("Skipping loading default consent settings: {}", str(e))
-    finally:
-        db.close()

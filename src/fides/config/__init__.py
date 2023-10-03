@@ -16,6 +16,7 @@ from pydantic.env_settings import SettingsSourceCallable
 from fides.common.utils import echo_red
 
 from .admin_ui_settings import AdminUISettings
+from .consent_settings import ConsentSettings
 from .cli_settings import CLISettings
 from .credentials_settings import merge_credentials_environment
 from .database_settings import DatabaseSettings
@@ -66,6 +67,7 @@ class FidesConfig(FidesSettings):
     # Setting Subsections
     # These should match the `settings_map` in `build_config`
     admin_ui: AdminUISettings
+    consent: ConsentSettings
     cli: CLISettings
     celery: Dict = Field(
         description="This section can be used to pass config vars to Celery directly.",
@@ -149,6 +151,7 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
 
     settings_map: Dict[str, Any] = {
         "admin_ui": AdminUISettings,
+        "consent": ConsentSettings,
         "cli": CLISettings,
         "database": DatabaseSettings,
         "execution": ExecutionSettings,
