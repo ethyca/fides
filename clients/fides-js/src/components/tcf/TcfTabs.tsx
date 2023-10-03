@@ -2,10 +2,11 @@ import { h } from "preact";
 import { useRef } from "preact/hooks";
 import TcfPurposes from "./TcfPurposes";
 import { PrivacyExperience } from "../../lib/consent-types";
-import type { EnabledIds, UpdateEnabledIds } from "./TcfOverlay";
+import type { UpdateEnabledIds } from "./TcfOverlay";
 import TcfFeatures from "./TcfFeatures";
 import TcfVendors from "./TcfVendors";
 import InfoBox from "../InfoBox";
+import { EnabledIds } from "../../lib/tcf/types";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";

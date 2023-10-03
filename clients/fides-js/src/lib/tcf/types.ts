@@ -15,20 +15,6 @@ export type EmbeddedVendor = {
   name: string;
 };
 
-export type EmbeddedPurpose = {
-  id: number;
-  name: string;
-  legal_bases?: Array<string>;
-};
-
-export type TCFDataCategoryRecord = {
-  id: string;
-  name?: string;
-  cookie?: string;
-  domain?: string;
-  duration?: string;
-};
-
 export type TCFFeatureRecord = {
   default_preference?: UserConsentPreference;
   current_preference?: UserConsentPreference;
@@ -106,19 +92,96 @@ export type TCFSpecialPurposeSave = {
   served_notice_history_id?: string;
 };
 
-export type TCFVendorRecord = {
+export type TCFPurposeConsentRecord = {
+  id: number;
+  name: string;
+  description: string;
+  illustrations: Array<string>;
+  data_uses: Array<string>;
   default_preference?: UserConsentPreference;
   current_preference?: UserConsentPreference;
   outdated_preference?: UserConsentPreference;
   current_served?: boolean;
   outdated_served?: boolean;
+  vendors?: Array<EmbeddedVendor>;
+  systems?: Array<EmbeddedVendor>;
+};
+
+export type TCFPurposeLegitimateInterestsRecord = {
+  id: number;
+  name: string;
+  description: string;
+  illustrations: Array<string>;
+  data_uses: Array<string>;
+  default_preference?: UserConsentPreference;
+  current_preference?: UserConsentPreference;
+  outdated_preference?: UserConsentPreference;
+  current_served?: boolean;
+  outdated_served?: boolean;
+  vendors?: Array<EmbeddedVendor>;
+  systems?: Array<EmbeddedVendor>;
+};
+
+export type TCFSpecialPurposeRecord = {
+  id: number;
+  name: string;
+  description: string;
+  illustrations: Array<string>;
+  data_uses: Array<string>;
+  default_preference?: UserConsentPreference;
+  current_preference?: UserConsentPreference;
+  outdated_preference?: UserConsentPreference;
+  current_served?: boolean;
+  outdated_served?: boolean;
+  vendors?: Array<EmbeddedVendor>;
+  systems?: Array<EmbeddedVendor>;
+};
+
+export type TCFConsentVendorRecord = {
   id: string;
-  has_vendor_id: boolean;
+  has_vendor_id?: boolean;
   name?: string;
   description?: string;
-  purposes?: Array<EmbeddedPurpose>;
-  special_purposes?: Array<EmbeddedPurpose>;
-  data_categories?: Array<TCFDataCategoryRecord>;
+  default_preference?: UserConsentPreference;
+  current_preference?: UserConsentPreference;
+  outdated_preference?: UserConsentPreference;
+  current_served?: boolean;
+  outdated_served?: boolean;
+  consent_purposes?: Array<EmbeddedLineItem>;
+};
+
+export type TCFLegitimateInterestsVendorRecord = {
+  id: string;
+  has_vendor_id?: boolean;
+  name?: string;
+  description?: string;
+  default_preference?: UserConsentPreference;
+  current_preference?: UserConsentPreference;
+  outdated_preference?: UserConsentPreference;
+  current_served?: boolean;
+  outdated_served?: boolean;
+  legitimate_interests_purposes?: Array<EmbeddedLineItem>;
+};
+
+export type TCFSpecialFeatureRecord = {
+  id: number;
+  name: string;
+  description: string;
+  default_preference?: UserConsentPreference;
+  current_preference?: UserConsentPreference;
+  outdated_preference?: UserConsentPreference;
+  current_served?: boolean;
+  outdated_served?: boolean;
+  vendors?: Array<EmbeddedVendor>;
+  systems?: Array<EmbeddedVendor>;
+};
+
+export type TCFVendorRelationships = {
+  id: string;
+  has_vendor_id?: boolean;
+  name?: string;
+  description?: string;
+  special_purposes?: Array<EmbeddedLineItem>;
   features?: Array<EmbeddedLineItem>;
   special_features?: Array<EmbeddedLineItem>;
 };
