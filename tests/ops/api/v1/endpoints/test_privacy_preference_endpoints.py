@@ -2486,3 +2486,160 @@ class TestCurrentPrivacyPreferences:
         assert response.status_code == 400
         assert "Value specified for updated_lt" in response.json()["detail"]
         assert "must be after updated_gt" in response.json()["detail"]
+
+
+class TestSavePrivacyPreferencesTCStringOnly:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + PRIVACY_PREFERENCES
+
+    def test_save_privacy_preferences_tc_string_section_overlaps_request_body_section(
+        self, api_client, url, db
+    ):
+        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
+        consent_settings.tcf_enabled = True
+        consent_settings.save(db=db)
+
+        tc_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE"
+        fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        minimal_request_body = {
+            "browser_identity": {
+                "fides_user_device_id": fides_user_device_id,
+            },
+            "tc_string": tc_string,
+            "purpose_consent_preferences": [{"id": 1, "preference": "opt_out"}],
+        }
+        response = api_client.patch(
+            url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Cannot supply value for 'purpose_consent_preferences' and 'tc_string' simultaneously when saving privacy preferences."
+        )
+
+    def test_save_privacy_preferences_bad_tc_string(self, api_client, url):
+        tc_string: str = "bad_string"
+        fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        minimal_request_body = {
+            "browser_identity": {
+                "fides_user_device_id": fides_user_device_id,
+            },
+            "tc_string": tc_string,
+        }
+        response = api_client.patch(
+            url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 400
+        assert response.json()["detail"] == "Invalid base64-encoded TC string"
+
+    def test_save_privacy_preferences_with_tc_string_when_datamap_empty(
+        self, api_client, url, db
+    ):
+        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
+        consent_settings.tcf_enabled = True
+        consent_settings.save(db=db)
+
+        tc_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE"
+        fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        minimal_request_body = {
+            "browser_identity": {
+                "fides_user_device_id": fides_user_device_id,
+            },
+            "tc_string": tc_string,
+        }
+        response = api_client.patch(
+            url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 200
+        response_body = response.json()["preferences"]
+
+        # Nothing in the datamap so we didn't save anything here.
+        assert len(response_body) == 0
+
+    def test_save_privacy_preferences_when_tcf_disabled(self, api_client, url):
+        tc_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE"
+        fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        minimal_request_body = {
+            "browser_identity": {
+                "fides_user_device_id": fides_user_device_id,
+            },
+            "tc_string": tc_string,
+        }
+        response = api_client.patch(
+            url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 200
+        response_body = response.json()["preferences"]
+
+        # Nothing saved because TCF is disabled
+        assert len(response_body) == 0
+
+    @pytest.mark.usefixtures(
+        "skimbit_system", "emerse_system", "captify_technologies_system"
+    )
+    def test_save_privacy_preferences_with_tc_string(self, api_client, url, db):
+        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
+        consent_settings.tcf_enabled = True
+        consent_settings.save(db=db)
+
+        tc_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE"
+        fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        minimal_request_body = {
+            "browser_identity": {
+                "fides_user_device_id": fides_user_device_id,
+            },
+            "tc_string": tc_string,
+        }
+        response = api_client.patch(
+            url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 200
+        response_body = response.json()["preferences"]
+
+        assert len(response_body) == 17
+
+        first_record = response_body[0]
+        assert first_record["purpose_consent"] == 1
+        assert first_record["preference"] == "opt_in"
+        saved_current_privacy_preference_record = db.query(
+            CurrentPrivacyPreference
+        ).get(first_record["id"])
+        assert saved_current_privacy_preference_record.purpose_consent == 1
+        assert (
+            saved_current_privacy_preference_record.preference
+            == UserConsentPreference.opt_in
+        )
+
+        privacy_preference_history_record = db.query(PrivacyPreferenceHistory).get(
+            first_record["privacy_preference_history_id"]
+        )
+        assert (
+            privacy_preference_history_record.current_privacy_preference
+            == saved_current_privacy_preference_record
+        )
+
+        assert (
+            privacy_preference_history_record.fides_user_device == fides_user_device_id
+        )
+        assert (
+            privacy_preference_history_record.fides_user_device_provided_identity
+            is not None
+        )
+        assert (
+            privacy_preference_history_record.fides_user_device_provided_identity
+            == saved_current_privacy_preference_record.fides_user_device_provided_identity
+        )
+
+        assert (
+            privacy_preference_history_record.privacy_experience_id is None
+        )  # Not required in request body
+        assert (
+            privacy_preference_history_record.privacy_experience_config_history_id
+            is None
+        )

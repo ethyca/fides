@@ -1,12 +1,22 @@
 import base64
-from typing import Any, List, Optional, Union
+import binascii
+from typing import Any, Dict, List, Optional, Type, Union
 
+from iab_tcf import ConsentV2, decode_v2  # type: ignore[import]
 from pydantic import Field
 
+from fides.api.common_exceptions import DecodeTCStringError
+from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.util.tcf.tc_model import TCModel
+from fides.api.schemas.privacy_preference import TCStringFidesPreferences
+from fides.api.schemas.tcf import TCFPurposeSave, TCFSpecialFeatureSave, TCFVendorSave
+from fides.api.util.tcf.tc_model import TCModel, convert_tcf_contents_to_tc_model
 
 # Number of bits allowed for certain sections that are used in multiple places
+from fides.api.util.tcf.tcf_experience_contents import (
+    TCFExperienceContents,
+)
+
 USE_NON_STANDARD_TEXT_BITS = 1
 SPECIAL_FEATURE_BITS = 12
 PURPOSE_CONSENTS_BITS = 24
@@ -180,3 +190,87 @@ def build_disclosed_vendors_string(model: TCModel) -> str:
     return base64.urlsafe_b64encode(
         _convert_bitstring_to_bytes(disclosed_vendor_bits)
     ).decode()
+
+
+def boolean_to_user_consent_preference(preference: bool) -> UserConsentPreference:
+    return UserConsentPreference.opt_in if preference else UserConsentPreference.opt_out
+
+
+FidesPreferenceType = Union[TCFPurposeSave, TCFVendorSave, TCFSpecialFeatureSave]
+
+
+def convert_to_fides_preference(
+    datamap_options: List[int],
+    tc_string_preferences: Dict[int, bool],
+    preference_class: Union[
+        Type[TCFPurposeSave], Type[TCFVendorSave], Type[TCFSpecialFeatureSave]
+    ],
+) -> List[FidesPreferenceType]:
+    """For a field in the TC string, convert to a list of preferences where we opt-in if it is included in the string,
+    and opt-out if it is not in the string, but in the datamap"""
+    # Loop through all the datamap options that are currently available.  For example, all of the vendors
+    # from the datamap against which we can save preferences with a consent legal basis
+    preferences_array: List[FidesPreferenceType] = []
+
+    for identifier in datamap_options:
+        # Check if there's an opt_in encoded in the string.  Otherwise, we assume the user is opting out.
+        preference: bool = tc_string_preferences.get(identifier, False)
+
+        if isinstance(preference_class, TCFVendorSave):
+            # Vendors are currently saved as strings in our db
+            identifier = str(identifier)
+
+        fides_preference: FidesPreferenceType = preference_class(
+            id=identifier, preference=boolean_to_user_consent_preference(preference)
+        )
+        preferences_array.append(fides_preference)
+    return preferences_array
+
+
+def decode_tc_string_to_preferences(
+    tc_string: str, tcf_contents: TCFExperienceContents
+) -> TCStringFidesPreferences:
+    """Method to convert a TC String into a TCStringFidesPreferences object, which is a format from which
+    preferences can be saved into the Fides database"""
+    try:
+        # Decode the string and pull the user opt-ins off of the string
+        decoded: ConsentV2 = decode_v2(tc_string)
+        tc_str_p_c: Dict[int, bool] = decoded.purposes_consent
+        tc_str_p_li: Dict[int, bool] = decoded.purposes_legitimate_interests
+        tc_str_v_c: Dict[int, bool] = decoded.consented_vendors
+        tc_str_v_li: Dict[int, bool] = decoded.interests_vendors
+        tc_str_sf: Dict[int, bool] = decoded.special_features_optin
+    except (binascii.Error, AttributeError):
+        raise DecodeTCStringError("Invalid base64-encoded TC string")
+
+    # From our datamap, build all the possible options for the TC string, if the user
+    # opted into everything
+    all_options_tc_model: TCModel = convert_tcf_contents_to_tc_model(
+        tcf_contents, UserConsentPreference.opt_in
+    )
+    datamap_p_c: List[int] = all_options_tc_model.purpose_consents
+    datamap_p_li: List[int] = all_options_tc_model.purpose_legitimate_interests
+    datamap_v_c: List[int] = all_options_tc_model.vendor_consents
+    datamap_v_li: List[int] = all_options_tc_model.vendor_legitimate_interests
+    datamap_sf: List[int] = all_options_tc_model.special_feature_optins
+
+    # Return TCString Preferences that are driven by the datamap.  For every element in the datamap,
+    # consider it an opt-in preference if it's included in the TC string, otherwise, consider
+    # it an opt-out preference.
+    return TCStringFidesPreferences(
+        purpose_consent_preferences=convert_to_fides_preference(
+            datamap_p_c, tc_str_p_c, TCFPurposeSave
+        ),
+        purpose_legitimate_interests_preferences=convert_to_fides_preference(
+            datamap_p_li, tc_str_p_li, TCFPurposeSave
+        ),
+        vendor_consent_preferences=convert_to_fides_preference(
+            datamap_v_c, tc_str_v_c, TCFVendorSave
+        ),
+        vendor_legitimate_interests_preferences=convert_to_fides_preference(
+            datamap_v_li, tc_str_v_li, TCFVendorSave
+        ),
+        special_feature_preferences=convert_to_fides_preference(
+            datamap_sf, tc_str_sf, TCFSpecialFeatureSave
+        ),
+    )
