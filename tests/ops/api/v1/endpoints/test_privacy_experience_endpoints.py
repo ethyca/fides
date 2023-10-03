@@ -597,6 +597,12 @@ class TestGetPrivacyExperiences:
 
         assert resp["privacy_notices"][0]["current_served"] is None
         assert resp["privacy_notices"][0]["outdated_served"] is None
+        meta = resp["meta"]
+        assert not meta["version_hash"]
+        assert not meta["accept_all_tc_string"]
+        assert not meta["accept_all_tc_mobile_data"]
+        assert not meta["reject_all_tc_string"]
+        assert not meta["reject_all_tc_mobile_data"]
 
     @pytest.mark.usefixtures(
         "privacy_notice_us_ca_provide",
@@ -665,7 +671,7 @@ class TestGetTCFPrivacyExperiences:
         settings.update(db=db, data={"tcf_enabled": False})
 
         resp = api_client.get(
-            url + "?region=fr&component=overlay&include_gvl=True",
+            url + "?region=fr&component=overlay&include_gvl=True&include_meta=True",
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
@@ -683,6 +689,12 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["tcf_special_purposes"] == []
         assert resp.json()["items"][0]["tcf_special_features"] == []
         assert resp.json()["items"][0]["tcf_systems"] == []
+        meta = resp.json()["items"][0]["meta"]
+        assert not meta["version_hash"]
+        assert not meta["accept_all_tc_string"]
+        assert not meta["accept_all_tc_mobile_data"]
+        assert not meta["reject_all_tc_string"]
+        assert not meta["reject_all_tc_mobile_data"]
 
     @pytest.mark.usefixtures(
         "privacy_experience_france_overlay",
@@ -694,7 +706,7 @@ class TestGetTCFPrivacyExperiences:
         settings = ConsentSettings.get_or_create_with_defaults(db)
         settings.update(db=db, data={"tcf_enabled": True})
         resp = api_client.get(
-            url + "?region=fr&component=overlay&include_gvl=True",
+            url + "?region=fr&component=overlay&include_gvl=True&include_meta=True",
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
@@ -708,6 +720,12 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["tcf_special_features"] == []
         assert resp.json()["items"][0]["tcf_systems"] == []
         assert resp.json()["items"][0]["gvl"] == {}
+        meta = resp.json()["items"][0]["meta"]
+        assert not meta["version_hash"]
+        assert not meta["accept_all_tc_string"]
+        assert not meta["accept_all_tc_mobile_data"]
+        assert not meta["reject_all_tc_string"]
+        assert not meta["reject_all_tc_mobile_data"]
 
         # Has notices = True flag will keep this experience from appearing altogether
         resp = api_client.get(
@@ -736,7 +754,7 @@ class TestGetTCFPrivacyExperiences:
         settings.update(db=db, data={"tcf_enabled": True})
         resp = api_client.get(
             url
-            + "?region=fr&component=overlay&fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f&has_notices=True&include_gvl=True",
+            + "?region=fr&component=overlay&fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f&has_notices=True&include_gvl=True&include_meta=True",
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
@@ -781,6 +799,12 @@ class TestGetTCFPrivacyExperiences:
         )
         assert resp.json()["items"][0]["tcf_systems"] == []
         assert resp.json()["items"][0]["gvl"]["gvlSpecificationVersion"] == 3
+        meta = resp.json()["items"][0]["meta"]
+        assert meta["version_hash"] == "75fb2dafef58"
+        assert meta["accept_all_tc_string"]
+        assert meta["accept_all_tc_mobile_data"]
+        assert meta["reject_all_tc_string"]
+        assert meta["reject_all_tc_mobile_data"]
 
     @pytest.mark.usefixtures(
         "privacy_experience_france_overlay",

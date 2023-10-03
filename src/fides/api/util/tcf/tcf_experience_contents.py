@@ -36,7 +36,7 @@ _gvl: Optional[Dict] = None
 
 GVL_PATH = join(
     dirname(__file__),
-    "../../data",
+    "../../../data",
     "gvl.json",
 )
 
