@@ -1,6 +1,4 @@
 import type {
-  TCFPurposeRecord,
-  TCFVendorRecord,
   TCFFeatureRecord,
   TCFPurposeSave,
   TCFSpecialPurposeSave,
@@ -8,6 +6,13 @@ import type {
   TCFSpecialFeatureSave,
   TCFVendorSave,
   GVLJson,
+  TCFPurposeConsentRecord,
+  TCFPurposeLegitimateInterestsRecord,
+  TCFSpecialPurposeRecord,
+  TCFSpecialFeatureRecord,
+  TCFConsentVendorRecord,
+  TCFLegitimateInterestsVendorRecord,
+  TCFVendorRelationships,
 } from "./tcf/types";
 
 export type EmptyExperience = Record<PropertyKey, never>;
@@ -80,12 +85,17 @@ export type PrivacyExperience = {
   updated_at: string;
   show_banner?: boolean;
   privacy_notices?: Array<PrivacyNotice>;
-  tcf_purposes?: Array<TCFPurposeRecord>;
-  tcf_special_purposes?: Array<TCFPurposeRecord>;
-  tcf_vendors?: Array<TCFVendorRecord>;
-  tcf_systems?: Array<TCFVendorRecord>;
+  tcf_consent_purposes?: Array<TCFPurposeConsentRecord>;
+  tcf_legitimate_interests_purposes?: Array<TCFPurposeLegitimateInterestsRecord>;
+  tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
   tcf_features?: Array<TCFFeatureRecord>;
-  tcf_special_features?: Array<TCFFeatureRecord>;
+  tcf_special_features?: Array<TCFSpecialFeatureRecord>;
+  tcf_consent_vendors?: Array<TCFConsentVendorRecord>;
+  tcf_legitimate_interests_vendors?: Array<TCFLegitimateInterestsVendorRecord>;
+  tcf_vendor_relationships?: Array<TCFVendorRelationships>;
+  tcf_consent_systems?: Array<TCFConsentVendorRecord>;
+  tcf_legitimate_interests_systems?: Array<TCFLegitimateInterestsVendorRecord>;
+  tcf_system_relationships?: Array<TCFVendorRelationships>;
   gvl?: GVLJson;
 };
 
@@ -263,13 +273,25 @@ export type NoticesServedRequest = {
   serving_component: ServingComponent;
 };
 /**
- * Schema that surfaces the last version of a notice that was shown to a user
+ * Schema that surfaces the the last time a consent item that was shown to a user
  */
-export type LastServedNoticeSchema = {
+export type LastServedConsentSchema = {
+  purpose?: number;
+  purpose_consent?: number;
+  purpose_legitimate_interests?: number;
+  special_purpose?: number;
+  vendor?: string;
+  vendor_consent?: string;
+  vendor_legitimate_interests?: string;
+  feature?: number;
+  special_feature?: number;
+  system?: string;
+  system_consent?: string;
+  system_legitimate_interests?: string;
   id: string;
   updated_at: string;
-  privacy_notice_history: PrivacyNotice;
   served_notice_history_id: string;
+  privacy_notice_history?: PrivacyNotice;
 };
 
 // ------------------LEGACY TYPES BELOW -------------------

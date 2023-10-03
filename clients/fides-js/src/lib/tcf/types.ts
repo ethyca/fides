@@ -5,6 +5,16 @@ import type {
   UserConsentPreference,
 } from "../consent-types";
 
+export enum LegalBasisForProcessingEnum {
+  CONSENT = "Consent",
+  CONTRACT = "Contract",
+  LEGAL_OBLIGATIONS = "Legal obligations",
+  VITAL_INTERESTS = "Vital interests",
+  PUBLIC_INTEREST = "Public interest",
+  LEGITIMATE_INTERESTS = "Legitimate interests",
+}
+
+// Embedded items
 export type EmbeddedLineItem = {
   id: number;
   name: string;
@@ -15,81 +25,21 @@ export type EmbeddedVendor = {
   name: string;
 };
 
-export type TCFFeatureRecord = {
-  default_preference?: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
-  /**
-   * Official GVL feature ID or special feature ID
-   */
-  id: number;
-  /**
-   * Name of the GVL feature or special feature.
-   */
-  name: string;
-  /**
-   * Description of the GVL feature or special feature.
-   */
-  description: string;
-  vendors?: Array<EmbeddedVendor>;
-  systems?: Array<EmbeddedVendor>;
-};
-
-export type TCFFeatureSave = {
-  id: number;
-  preference: UserConsentPreference;
-  served_notice_history_id?: string;
-};
-
+// Purposes
 export type TCFPurposeRecord = {
   default_preference?: UserConsentPreference;
   current_preference?: UserConsentPreference;
   outdated_preference?: UserConsentPreference;
   current_served?: boolean;
   outdated_served?: boolean;
-  /**
-   * Official GVL purpose ID. Used for linking with other records, e.g. vendors, cookies, etc.
-   */
   id: number;
-  /**
-   * Name of the GVL purpose.
-   */
   name: string;
-  /**
-   * Description of the GVL purpose.
-   */
   description: string;
-  /**
-   * Illustrative examples of the purpose.
-   */
   illustrations: Array<string>;
-  /**
-   * The fideslang default taxonomy data uses that are associated with the purpose.
-   */
   data_uses: Array<string>;
   legal_bases?: Array<string>;
   vendors?: Array<EmbeddedVendor>;
   systems?: Array<EmbeddedVendor>;
-};
-
-export type TCFPurposeSave = {
-  id: number;
-  preference: UserConsentPreference;
-  served_notice_history_id?: string;
-};
-
-export type TCFSpecialFeatureSave = {
-  id: number;
-  preference: UserConsentPreference;
-  served_notice_history_id?: string;
-};
-
-export type TCFSpecialPurposeSave = {
-  id: number;
-  preference: UserConsentPreference;
-  served_notice_history_id?: string;
 };
 
 export type TCFPurposeConsentRecord = {
@@ -122,6 +72,13 @@ export type TCFPurposeLegitimateInterestsRecord = {
   systems?: Array<EmbeddedVendor>;
 };
 
+export type TCFPurposeSave = {
+  id: number;
+  preference: UserConsentPreference;
+  served_notice_history_id?: string;
+};
+
+// Special purposes
 export type TCFSpecialPurposeRecord = {
   id: number;
   name: string;
@@ -137,6 +94,53 @@ export type TCFSpecialPurposeRecord = {
   systems?: Array<EmbeddedVendor>;
 };
 
+export type TCFSpecialPurposeSave = {
+  id: number;
+  preference: UserConsentPreference;
+  served_notice_history_id?: string;
+};
+
+// Features
+export type TCFFeatureRecord = {
+  default_preference?: UserConsentPreference;
+  current_preference?: UserConsentPreference;
+  outdated_preference?: UserConsentPreference;
+  current_served?: boolean;
+  outdated_served?: boolean;
+  id: number;
+  name: string;
+  description: string;
+  vendors?: Array<EmbeddedVendor>;
+  systems?: Array<EmbeddedVendor>;
+};
+
+export type TCFFeatureSave = {
+  id: number;
+  preference: UserConsentPreference;
+  served_notice_history_id?: string;
+};
+
+// Special features
+export type TCFSpecialFeatureRecord = {
+  id: number;
+  name: string;
+  description: string;
+  default_preference?: UserConsentPreference;
+  current_preference?: UserConsentPreference;
+  outdated_preference?: UserConsentPreference;
+  current_served?: boolean;
+  outdated_served?: boolean;
+  vendors?: Array<EmbeddedVendor>;
+  systems?: Array<EmbeddedVendor>;
+};
+
+export type TCFSpecialFeatureSave = {
+  id: number;
+  preference: UserConsentPreference;
+  served_notice_history_id?: string;
+};
+
+// Vendor records
 export type TCFConsentVendorRecord = {
   id: string;
   has_vendor_id?: boolean;
@@ -163,19 +167,6 @@ export type TCFLegitimateInterestsVendorRecord = {
   legitimate_interests_purposes?: Array<EmbeddedLineItem>;
 };
 
-export type TCFSpecialFeatureRecord = {
-  id: number;
-  name: string;
-  description: string;
-  default_preference?: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
-  vendors?: Array<EmbeddedVendor>;
-  systems?: Array<EmbeddedVendor>;
-};
-
 export type TCFVendorRelationships = {
   id: string;
   has_vendor_id?: boolean;
@@ -192,6 +183,7 @@ export type TCFVendorSave = {
   served_notice_history_id?: string;
 };
 
+// Convenience types, frontend only
 export type TcfSavePreferences = Pick<
   PrivacyPreferencesRequest,
   | "purpose_preferences"
@@ -202,12 +194,15 @@ export type TcfSavePreferences = Pick<
 
 export type TcfExperienceRecords = Pick<
   PrivacyExperience,
-  | "tcf_purposes"
+  | "tcf_consent_purposes"
+  | "tcf_legitimate_interests_purposes"
   | "tcf_special_purposes"
   | "tcf_features"
   | "tcf_special_features"
-  | "tcf_vendors"
-  | "tcf_systems"
+  | "tcf_consent_vendors"
+  | "tcf_legitimate_interests_vendors"
+  | "tcf_consent_systems"
+  | "tcf_legitimate_interests_systems"
 >;
 
 type TcfCookieKeyConsent = {
@@ -223,15 +218,6 @@ export interface TcfCookieConsent {
 
 export type TcfModelType = keyof TcfCookieConsent;
 
-export enum LegalBasisForProcessingEnum {
-  CONSENT = "Consent",
-  CONTRACT = "Contract",
-  LEGAL_OBLIGATIONS = "Legal obligations",
-  VITAL_INTERESTS = "Vital interests",
-  PUBLIC_INTEREST = "Public interest",
-  LEGITIMATE_INTERESTS = "Legitimate interests",
-}
-
 export interface EnabledIds {
   purposes: string[];
   specialPurposes: string[];
@@ -240,6 +226,15 @@ export interface EnabledIds {
   vendorsConsent: string[];
   vendorsLegint: string[];
 }
+
+export type VendorRecord = TCFConsentVendorRecord &
+  Pick<TCFLegitimateInterestsVendorRecord, "legitimate_interests_purposes"> &
+  TCFVendorRelationships & {
+    isFidesSystem: boolean;
+    isGvl: boolean;
+    isConsent: boolean;
+    isLegint: boolean;
+  };
 
 export type GVLJson = Pick<
   GVL,
