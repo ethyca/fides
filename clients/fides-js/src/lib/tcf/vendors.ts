@@ -29,11 +29,15 @@ const transformVendorDataToVendorRecords = ({
   isFidesSystem: boolean;
 }) => {
   const records: VendorRecord[] = [];
-  relationships.forEach((relationship) => {
-    const { id } = relationship;
+  const uniqueVendorIds = Array.from(
+    new Set([...consents.map((c) => c.id), ...legints.map((l) => l.id)])
+  );
+  uniqueVendorIds.forEach((id) => {
     const vendorConsent = consents.find((v) => v.id === id);
     const vendorLegint = legints.find((v) => v.id === id);
+    const relationship = relationships.find((r) => r.id === id);
     const record: VendorRecord = {
+      id,
       ...relationship,
       ...vendorConsent,
       ...vendorLegint,

@@ -114,24 +114,25 @@ const createTcfSavePayload = ({
   experience: PrivacyExperience;
   enabledIds: EnabledIds;
 }): TcfSavePreferences => {
+  const {
+    tcf_consent_systems: consentSystems,
+    tcf_legitimate_interests_systems: legintSystems,
+  } = experience;
   // Because systems were combined with vendors to make the UI easier to work with,
   // we need to separate them out now (the backend treats them as separate entities).
-  const systemIds = experience.tcf_system_relationships
-    ? experience.tcf_system_relationships.map((s) => s.id)
-    : [];
   const enabledConsentSystemIds: string[] = [];
   const enabledConsentVendorIds: string[] = [];
   const enabledLegintSystemIds: string[] = [];
   const enabledLegintVendorIds: string[] = [];
   enabledIds.vendorsConsent.forEach((id) => {
-    if (systemIds.includes(id)) {
+    if (consentSystems?.map((s) => s.id).includes(id)) {
       enabledConsentSystemIds.push(id);
     } else {
       enabledConsentVendorIds.push(id);
     }
   });
   enabledIds.vendorsLegint.forEach((id) => {
-    if (systemIds.includes(id)) {
+    if (legintSystems?.map((s) => s.id).includes(id)) {
       enabledLegintSystemIds.push(id);
     } else {
       enabledLegintVendorIds.push(id);
@@ -145,7 +146,6 @@ const createTcfSavePayload = ({
     }) as TCFPurposeSave[],
     purpose_legitimate_interests_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_legitimate_interests_purposes,
-      // TODO: fix enabledIds
       enabledIds: enabledIds.purposesLegint,
     }) as TCFPurposeSave[],
     special_feature_preferences: transformTcfModelToTcfSave({
