@@ -88,7 +88,10 @@ export const generateTcString = async ({
         tcStringPreferences.purposesLegint.length > 0
       ) {
         tcStringPreferences.purposesLegint.forEach((purposeId) => {
-          tcModel.purposeLegitimateInterests.set(+purposeId);
+          const id = +purposeId;
+          if (!FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id)) {
+            tcModel.purposeLegitimateInterests.set(id);
+          }
         });
       }
 
