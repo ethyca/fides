@@ -1,7 +1,7 @@
 import {
   ComponentType,
   EmptyExperience,
-  LastServedNoticeSchema,
+  LastServedConsentSchema,
   NoticesServedRequest,
   PrivacyExperience,
   PrivacyPreferencesRequest,
@@ -122,7 +122,7 @@ export const patchNoticesServed = async ({
   request: NoticesServedRequest;
   fidesApiUrl: string;
   debug: boolean;
-}): Promise<Array<LastServedNoticeSchema> | null> => {
+}): Promise<Array<LastServedConsentSchema> | null> => {
   debugLog(debug, "Saving that notices were served...");
   const fetchOptions: RequestInit = {
     ...PATCH_FETCH_OPTIONS,

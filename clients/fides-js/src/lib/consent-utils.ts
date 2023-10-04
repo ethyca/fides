@@ -11,6 +11,7 @@ import {
   UserGeolocation,
   VALID_ISO_3166_LOCATION_REGEX,
 } from "./consent-types";
+import { EXPERIENCE_KEYS_WITH_PREFERENCES } from "./tcf/constants";
 import { TCFPurposeRecord } from "./tcf/types";
 
 /**
@@ -237,16 +238,14 @@ const hasActionNeededTcfPreference = (
  * Returns true if the user has any saved TCF preferences
  */
 export const hasSavedTcfPreferences = (experience: PrivacyExperience) =>
-  hasCurrentPreference(experience.tcf_purposes) ||
-  hasCurrentPreference(experience.tcf_special_features) ||
-  hasCurrentPreference(experience.tcf_vendors) ||
-  hasCurrentPreference(experience.tcf_systems);
+  EXPERIENCE_KEYS_WITH_PREFERENCES.some((key) =>
+    hasCurrentPreference(experience[key])
+  );
 
 export const hasActionNeededTcfPreferences = (experience: PrivacyExperience) =>
-  hasActionNeededTcfPreference(experience.tcf_purposes) ||
-  hasActionNeededTcfPreference(experience.tcf_special_features) ||
-  hasActionNeededTcfPreference(experience.tcf_vendors) ||
-  hasActionNeededTcfPreference(experience.tcf_systems);
+  EXPERIENCE_KEYS_WITH_PREFERENCES.some((key) =>
+    hasActionNeededTcfPreference(experience[key])
+  );
 
 /**
  * Returns true if there are notices in the experience that require a user preference

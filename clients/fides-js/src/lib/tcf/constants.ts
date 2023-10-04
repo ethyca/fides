@@ -33,3 +33,11 @@ export const TCF_COOKIE_KEY_TO_EXPERIENCE_KEY: {
     experienceKey: "tcf_legitimate_interests_systems",
   },
 ];
+
+// Just the experience keys where a user can make a choice (none of the notice-only ones)
+export const EXPERIENCE_KEYS_WITH_PREFERENCES =
+  TCF_COOKIE_KEY_TO_EXPERIENCE_KEY.filter(
+    ({ experienceKey }) =>
+      experienceKey !== "tcf_features" &&
+      experienceKey !== "tcf_special_purposes"
+  ).map((key) => key.experienceKey);
