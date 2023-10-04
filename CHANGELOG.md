@@ -25,7 +25,6 @@ The types of changes are:
 ### Changed
 - Removed `TCF_ENABLED` environment variable from the privacy center in favor of dynamically figuring out which `fides-js` bundle to send [#4131](https://github.com/ethyca/fides/pull/4131)
 - Updated copy of info boxes on each TCF tab [#4191](https://github.com/ethyca/fides/pull/4191)
-=======
 - Clarified messages for error messages presented during connector upload [#4198](https://github.com/ethyca/fides/pull/4198)
 
 ### Fixed
