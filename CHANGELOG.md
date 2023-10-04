@@ -27,6 +27,7 @@ The types of changes are:
 - Updated copy of info boxes on each TCF tab [#4191](https://github.com/ethyca/fides/pull/4191)
 - Refactor legal basis dimension regarding how TCF preferences are saved and how the experience is built [#4201](https://github.com/ethyca/fides/pull/4201/)
 - Updated fides server to use an environment variable for turning TCF on and off [#4220](https://github.com/ethyca/fides/pull/4220)
+- Update frontend to use new legal basis dimension on vendors [#4216](https://github.com/ethyca/fides/pull/4216)
 
 ### Fixed
 - TCF overlay can initialize its consent preferences from a cookie [#4124](https://github.com/ethyca/fides/pull/4124)
