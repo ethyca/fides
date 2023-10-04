@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.21.0"
+    "version": "2.21.0rc0.post0.dev23"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -4310,82 +4310,6 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "connection_type:read"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/consent-settings": {
-      "get": {
-        "tags": [
-          "Consent Settings"
-        ],
-        "summary": "Get Consent Settings",
-        "description": "Endpoint that returns organization-wide consent settings.",
-        "operationId": "get_consent_settings_api_v1_consent_settings_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConsentSettingsResponseSchema"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "consent_settings:read"
-            ]
-          }
-        ]
-      },
-      "patch": {
-        "tags": [
-          "Consent Settings"
-        ],
-        "summary": "Patch Consent Settings",
-        "description": "Update organization-wide consent settings. Only the single record is updated.",
-        "operationId": "patch_consent_settings_api_v1_consent_settings_patch",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ConsentSettingsRequestSchema"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConsentSettingsResponseSchema"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "consent_settings:update"
             ]
           }
         ]
@@ -15062,44 +14986,6 @@
           }
         },
         "description": "Schema for consent request response."
-      },
-      "ConsentSettingsRequestSchema": {
-        "title": "ConsentSettingsRequestSchema",
-        "type": "object",
-        "properties": {
-          "tcf_enabled": {
-            "title": "Tcf Enabled",
-            "type": "boolean",
-            "default": false
-          }
-        },
-        "description": "Response schema for consent settings update"
-      },
-      "ConsentSettingsResponseSchema": {
-        "title": "ConsentSettingsResponseSchema",
-        "required": [
-          "created_at",
-          "updated_at"
-        ],
-        "type": "object",
-        "properties": {
-          "tcf_enabled": {
-            "title": "Tcf Enabled",
-            "type": "boolean",
-            "default": false
-          },
-          "created_at": {
-            "title": "Created At",
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_at": {
-            "title": "Updated At",
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "description": "Response schema for consent settings response"
       },
       "ConsentWithExecutableStatus": {
         "title": "ConsentWithExecutableStatus",
