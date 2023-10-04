@@ -73,8 +73,6 @@ export type { ConsentReport } from "./models/ConsentReport";
 export type { ConsentReportingSchema } from "./models/ConsentReportingSchema";
 export type { ConsentRequestMap } from "./models/ConsentRequestMap";
 export type { ConsentRequestResponse } from "./models/ConsentRequestResponse";
-export type { ConsentSettingsRequestSchema } from "./models/ConsentSettingsRequestSchema";
-export type { ConsentSettingsResponseSchema } from "./models/ConsentSettingsResponseSchema";
 export type { ConsentWithExecutableStatus } from "./models/ConsentWithExecutableStatus";
 export type { ContactDetails } from "./models/ContactDetails";
 export type { Cookies } from "./models/Cookies";

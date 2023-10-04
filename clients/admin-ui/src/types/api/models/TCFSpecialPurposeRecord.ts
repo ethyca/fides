@@ -6,8 +6,8 @@ import type { EmbeddedVendor } from "./EmbeddedVendor";
 import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
- * Default Schema that combines TCF details with whether a consent item was
- * previously saved or served.
+ * Common details for non-vendor TCF sections.  Includes previously-saved preferences and
+ * records where consent was previously served if applicable.
  */
 export type TCFSpecialPurposeRecord = {
   /**
