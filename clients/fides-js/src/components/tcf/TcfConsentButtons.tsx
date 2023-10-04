@@ -2,12 +2,7 @@ import { VNode, h } from "preact";
 
 import { PrivacyExperience } from "../../lib/consent-types";
 import { ConsentButtons } from "../ConsentButtons";
-import type { EnabledIds } from "../../lib/tcf/types";
-import {
-  TCFPurposeRecord,
-  TCFFeatureRecord,
-  TCFVendorRecord,
-} from "../../lib/tcf/types";
+import type { EnabledIds, TcfModels } from "../../lib/tcf/types";
 
 interface TcfConsentButtonProps {
   experience: PrivacyExperience;
@@ -16,13 +11,7 @@ interface TcfConsentButtonProps {
   firstButton?: VNode;
 }
 
-const getAllIds = (
-  modelList:
-    | TCFPurposeRecord[]
-    | TCFFeatureRecord[]
-    | TCFVendorRecord[]
-    | undefined
-) => {
+const getAllIds = (modelList: TcfModels) => {
   if (!modelList) {
     return [];
   }
@@ -40,24 +29,27 @@ export const TcfConsentButtons = ({
   }
 
   const handleAcceptAll = () => {
-    const vendorsAndSystems = [
-      ...(experience.tcf_vendors || []),
-      ...(experience.tcf_systems || []),
-    ];
     const allIds: EnabledIds = {
-      purposes: getAllIds(experience.tcf_purposes),
+      purposesConsent: getAllIds(experience.tcf_consent_purposes),
+      purposesLegint: getAllIds(experience.tcf_legitimate_interests_purposes),
       specialPurposes: getAllIds(experience.tcf_special_purposes),
       features: getAllIds(experience.tcf_features),
       specialFeatures: getAllIds(experience.tcf_special_features),
-      // TODO: make these read from separate fields once the backend supports it (fidesplus1128)
-      vendorsConsent: getAllIds(vendorsAndSystems),
-      vendorsLegint: getAllIds(vendorsAndSystems),
+      vendorsConsent: getAllIds([
+        ...(experience.tcf_consent_vendors || []),
+        ...(experience.tcf_consent_systems || []),
+      ]),
+      vendorsLegint: getAllIds([
+        ...(experience.tcf_legitimate_interests_vendors || []),
+        ...(experience.tcf_legitimate_interests_systems || []),
+      ]),
     };
     onSave(allIds);
   };
   const handleRejectAll = () => {
     const emptyIds: EnabledIds = {
-      purposes: [],
+      purposesConsent: [],
+      purposesLegint: [],
       specialPurposes: [],
       features: [],
       specialFeatures: [],

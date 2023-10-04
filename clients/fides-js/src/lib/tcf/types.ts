@@ -26,22 +26,6 @@ export type EmbeddedVendor = {
 };
 
 // Purposes
-export type TCFPurposeRecord = {
-  default_preference?: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
-  id: number;
-  name: string;
-  description: string;
-  illustrations: Array<string>;
-  data_uses: Array<string>;
-  legal_bases?: Array<string>;
-  vendors?: Array<EmbeddedVendor>;
-  systems?: Array<EmbeddedVendor>;
-};
-
 export type TCFPurposeConsentRecord = {
   id: number;
   name: string;
@@ -207,6 +191,16 @@ export type TcfExperienceRecords = Pick<
   | "tcf_consent_systems"
   | "tcf_legitimate_interests_systems"
 >;
+
+export type TcfModels =
+  | TCFPurposeConsentRecord[]
+  | TCFPurposeLegitimateInterestsRecord[]
+  | TCFSpecialPurposeRecord[]
+  | TCFFeatureRecord[]
+  | TCFSpecialFeatureRecord[]
+  | TCFConsentVendorRecord[]
+  | TCFLegitimateInterestsVendorRecord[]
+  | undefined;
 
 type TcfCookieKeyConsent = {
   [id: string | number]: boolean | undefined;

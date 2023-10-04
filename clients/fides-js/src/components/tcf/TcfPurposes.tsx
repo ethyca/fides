@@ -2,11 +2,15 @@ import { h } from "preact";
 
 import DataUseToggle from "../DataUseToggle";
 import { PrivacyExperience } from "../../lib/consent-types";
-import { TCFPurposeRecord } from "../../lib/tcf/types";
+import {
+  TCFPurposeConsentRecord,
+  TCFPurposeLegitimateInterestsRecord,
+} from "../../lib/tcf/types";
 import { UpdateEnabledIds } from "./TcfOverlay";
-import LegalBasisDropdown, {
-  useLegalBasisDropdown,
-} from "./LegalBasisDropdown";
+
+type TCFPurposeRecord =
+  | TCFPurposeConsentRecord
+  | TCFPurposeLegitimateInterestsRecord;
 
 const PurposeToggle = ({
   purpose,
@@ -56,37 +60,35 @@ const PurposeToggle = ({
 
 const PurposeBlock = ({
   label,
-  allPurposes,
-  enabledIds,
+  allPurposesConsent = [],
+  enabledIdsConsent,
   onChange,
   hideToggles,
 }: {
   label: string;
-  allPurposes: TCFPurposeRecord[] | undefined;
-  enabledIds: string[];
+  allPurposesConsent: TCFPurposeConsentRecord[] | undefined;
+  // TODO: support legint toggle (fides#4210)
+  // allPurposesLegint: TCFPurposeLegitimateInterestsRecord[] | undefined;
+  enabledIdsConsent: string[];
   onChange: (newIds: string[]) => void;
   hideToggles?: boolean;
 }) => {
-  if (!allPurposes || allPurposes.length === 0) {
-    return null;
-  }
-
-  const allChecked = allPurposes.every(
-    (p) => enabledIds.indexOf(`${p.id}`) !== -1
+  const allChecked = allPurposesConsent.every(
+    (p) => enabledIdsConsent.indexOf(`${p.id}`) !== -1
   );
   const handleToggle = (purpose: TCFPurposeRecord) => {
     const purposeId = `${purpose.id}`;
-    if (enabledIds.indexOf(purposeId) !== -1) {
-      onChange(enabledIds.filter((e) => e !== purposeId));
+    if (enabledIdsConsent.indexOf(purposeId) !== -1) {
+      onChange(enabledIdsConsent.filter((e) => e !== purposeId));
     } else {
-      onChange([...enabledIds, purposeId]);
+      onChange([...enabledIdsConsent, purposeId]);
     }
   };
   const handleToggleAll = () => {
     if (allChecked) {
       onChange([]);
     } else {
-      onChange(allPurposes.map((p) => `${p.id}`));
+      onChange(allPurposesConsent.map((p) => `${p.id}`));
     }
   };
 
@@ -99,13 +101,13 @@ const PurposeBlock = ({
         isHeader
         includeToggle={!hideToggles}
       />
-      {allPurposes.map((p) => (
+      {allPurposesConsent.map((p) => (
         <PurposeToggle
           purpose={p}
           onToggle={() => {
             handleToggle(p);
           }}
-          checked={enabledIds.indexOf(`${p.id}`) !== -1}
+          checked={enabledIdsConsent.indexOf(`${p.id}`) !== -1}
           includeToggle={!hideToggles}
         />
       ))}
@@ -114,49 +116,40 @@ const PurposeBlock = ({
 };
 
 const TcfPurposes = ({
-  allPurposes,
+  allPurposesConsent,
   allSpecialPurposes,
-  enabledPurposeIds,
+  enabledPurposeConsentIds,
   enabledSpecialPurposeIds,
   onChange,
 }: {
-  allPurposes: PrivacyExperience["tcf_purposes"];
+  allPurposesConsent: TCFPurposeConsentRecord[] | undefined;
+  enabledPurposeConsentIds: string[];
   allSpecialPurposes: PrivacyExperience["tcf_special_purposes"];
-  enabledPurposeIds: string[];
+  // TODO: support legint toggle (fides#4210)
+  // allPurposesLegint: TCFPurposeLegitimateInterestsRecord[] | undefined;
+  // enabledPurposeLegintIds: string[];
   enabledSpecialPurposeIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
-}) => {
-  const { filtered, legalBasisFilter, setLegalBasisFilter } =
-    useLegalBasisDropdown({
-      allPurposes,
-      allSpecialPurposes,
-    });
-
-  return (
-    <div>
-      <LegalBasisDropdown
-        selected={legalBasisFilter}
-        onSelect={(basis) => setLegalBasisFilter(basis)}
-      />
-      <PurposeBlock
-        label="Purposes"
-        allPurposes={filtered.purposes as TCFPurposeRecord[]}
-        enabledIds={enabledPurposeIds}
-        onChange={(newEnabledIds) =>
-          onChange({ newEnabledIds, modelType: "purposes" })
-        }
-      />
-      <PurposeBlock
-        label="Special purposes"
-        allPurposes={filtered.specialPurposes as TCFPurposeRecord[]}
-        enabledIds={enabledSpecialPurposeIds}
-        onChange={(newEnabledIds) =>
-          onChange({ newEnabledIds, modelType: "specialPurposes" })
-        }
-        hideToggles
-      />
-    </div>
-  );
-};
+}) => (
+  <div>
+    <PurposeBlock
+      label="Purposes"
+      allPurposesConsent={allPurposesConsent}
+      enabledIdsConsent={enabledPurposeConsentIds}
+      onChange={(newEnabledIds) =>
+        onChange({ newEnabledIds, modelType: "purposesConsent" })
+      }
+    />
+    <PurposeBlock
+      label="Special purposes"
+      allPurposesConsent={allSpecialPurposes}
+      enabledIdsConsent={enabledSpecialPurposeIds}
+      onChange={(newEnabledIds) =>
+        onChange({ newEnabledIds, modelType: "specialPurposes" })
+      }
+      hideToggles
+    />
+  </div>
+);
 
 export default TcfPurposes;

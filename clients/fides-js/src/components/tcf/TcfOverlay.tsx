@@ -14,18 +14,20 @@ import Overlay from "../Overlay";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import { OverlayProps } from "../types";
 
-import {
-  type EnabledIds,
-  type TCFFeatureRecord,
-  type TCFFeatureSave,
-  type TCFPurposeRecord,
-  type TCFPurposeSave,
-  type TCFSpecialFeatureSave,
-  type TCFSpecialPurposeSave,
-  type TCFVendorSave,
-  type TcfSavePreferences,
+import type {
+  EnabledIds,
+  TCFFeatureRecord,
+  TCFFeatureSave,
+  TCFPurposeConsentRecord,
+  TCFPurposeLegitimateInterestsRecord,
+  TCFPurposeSave,
+  TCFSpecialFeatureSave,
+  TCFSpecialPurposeSave,
+  TCFVendorSave,
+  TcfSavePreferences,
   TCFConsentVendorRecord,
   TCFLegitimateInterestsVendorRecord,
+  TcfModels,
 } from "../../lib/tcf/types";
 
 import { updateConsentPreferences } from "../../lib/preferences";
@@ -46,7 +48,8 @@ import VendorInfoBanner from "./VendorInfoBanner";
 
 const resolveConsentValueFromTcfModel = (
   model:
-    | TCFPurposeRecord
+    | TCFPurposeConsentRecord
+    | TCFPurposeLegitimateInterestsRecord
     | TCFFeatureRecord
     | TCFConsentVendorRecord
     | TCFLegitimateInterestsVendorRecord
@@ -57,13 +60,6 @@ const resolveConsentValueFromTcfModel = (
 
   return transformUserPreferenceToBoolean(model.default_preference);
 };
-
-type TcfModels =
-  | TCFPurposeRecord[]
-  | TCFFeatureRecord[]
-  | TCFConsentVendorRecord[]
-  | TCFLegitimateInterestsVendorRecord[]
-  | undefined;
 
 type TcfSave =
   | TCFPurposeSave

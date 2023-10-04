@@ -36,9 +36,9 @@ const TcfTabs = ({
           </InfoBox>
           <TcfPurposes
             // TODO(fides#4210): add legint purposes
-            allPurposes={experience.tcf_consent_purposes}
+            allPurposesConsent={experience.tcf_consent_purposes}
             allSpecialPurposes={experience.tcf_special_purposes}
-            enabledPurposeIds={enabledIds.purposesConsent}
+            enabledPurposeConsentIds={enabledIds.purposesConsent}
             enabledSpecialPurposeIds={enabledIds.specialPurposes}
             onChange={onChange}
           />
