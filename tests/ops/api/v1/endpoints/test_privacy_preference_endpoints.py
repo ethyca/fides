@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
-from fides.api.models.consent_settings import ConsentSettings
 from fides.api.models.privacy_preference import (
     CURRENT_TCF_VERSION,
     ConsentMethod,
@@ -753,6 +752,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "automatically_approved",
         "consent_policy",
         "system",
+        "enable_tcf",
     )
     @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
@@ -768,10 +768,6 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         verification_code,
         tcf_request_body,
     ):
-        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-        consent_settings.tcf_enabled = True
-        consent_settings.save(db=db)
-
         provided_identity, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
 
@@ -1227,6 +1223,7 @@ class TestPrivacyPreferenceVerify:
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
+        "enable_tcf",
     )
     def test_consent_verify_tcf_consent_preferences(
         self,
@@ -1236,10 +1233,6 @@ class TestPrivacyPreferenceVerify:
         verification_code,
         privacy_preference_history_for_tcf_special_purpose,
     ):
-        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-        consent_settings.tcf_enabled = True
-        consent_settings.save(db=db)
-
         provided_identity, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
 
@@ -1613,13 +1606,12 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             == "Cannot save preferences against invalid special feature id: '3'"
         )
 
+    @pytest.mark.usefixtures(
+        "enable_tcf",
+    )
     def test_invalid_system_in_request_body(
         self, api_client, url, db, privacy_experience_france_tcf_overlay
     ):
-        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-        consent_settings.tcf_enabled = True
-        consent_settings.save(db=db)
-
         request_body = {
             "browser_identity": {
                 "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
@@ -1670,6 +1662,9 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             == "Duplicate preferences saved against TCF component: 'special_purpose_preferences'"
         )
 
+    @pytest.mark.usefixtures(
+        "enable_tcf",
+    )
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
     )
@@ -1692,10 +1687,6 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         """Assert CurrentPrivacyPreference records were updated and PrivacyPreferenceHistory records were created
         for recordkeeping with respect to the fides user device id in the request
         """
-        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-        consent_settings.tcf_enabled = True
-        consent_settings.save(db=db)
-
         test_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
         masked_ip = "12.214.31.0"
         mock_anonymize.return_value = masked_ip

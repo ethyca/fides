@@ -31,7 +31,6 @@ from fides.api.common_exceptions import (
 )
 from fides.api.custom_types import SafeStr
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
-from fides.api.models.consent_settings import ConsentSettings
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.privacy_experience import PrivacyExperience
 from fides.api.models.privacy_notice import (
@@ -164,8 +163,7 @@ def consent_request_verify_for_privacy_preferences(
         .order_by(CurrentPrivacyPreference.created_at)
     )
 
-    consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-    if not consent_settings.tcf_enabled:
+    if not CONFIG.consent.tcf_enabled:
         query = query.filter(CurrentPrivacyPreference.privacy_notice_id.isnot(None))
 
     return paginate(query, params)
@@ -379,8 +377,7 @@ def persist_tcf_preferences(
     All TCF Preferences have frontend-only enforcement at the moment, so no Privacy Requests
     are created to propagate consent. The "upserted_current_preferences" list is updated in place.
     """
-    consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-    if not consent_settings.tcf_enabled:
+    if not CONFIG.consent.tcf_enabled:
         return
 
     def save_tcf_preference(
