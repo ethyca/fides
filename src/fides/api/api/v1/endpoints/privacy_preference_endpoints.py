@@ -351,8 +351,8 @@ def save_privacy_preferences_with_verified_identity(
     logger.info("Saving privacy preferences")
 
     try:
-        return SavePrivacyPreferencesResponse(
-            preferences=save_privacy_preferences_for_identities(
+        saved_preferences_response: SavePrivacyPreferencesResponse = (
+            save_privacy_preferences_for_identities(
                 db=db,
                 consent_request=consent_request,
                 verified_provided_identity=provided_identity_verified,
@@ -361,6 +361,8 @@ def save_privacy_preferences_with_verified_identity(
                 original_request_data=data,
             )
         )
+        return saved_preferences_response
+
     except (
         IdentityNotFoundException,
         PrivacyNoticeHistoryNotFound,
@@ -373,7 +375,7 @@ def persist_tcf_preferences(
     db: Session,
     user_data: Dict[str, str],
     request_data: PrivacyPreferencesRequest,
-    upserted_current_preferences: List[CurrentPrivacyPreference],
+    saved_preferences_response: SavePrivacyPreferencesResponse,
 ) -> None:
     """Save TCF preferences with respect to individual TCF components if applicable.
 
@@ -431,7 +433,10 @@ def persist_tcf_preferences(
         ] = getattr(request_data, tcf_preference_field)
 
         for preference in saved_preferences:
-            upserted_current_preferences.append(
+            saved_section: List = getattr(
+                saved_preferences_response, tcf_preference_field
+            )
+            saved_section.append(
                 save_tcf_preference(
                     preference_request=preference,
                     component_type=field_name,
@@ -501,7 +506,7 @@ def save_privacy_preferences_for_identities(
     fides_user_provided_identity: Optional[ProvidedIdentity],
     request: Request,
     original_request_data: PrivacyPreferencesRequest,
-) -> List[CurrentPrivacyPreference]:
+) -> SavePrivacyPreferencesResponse:
     """
     Shared method to save privacy preferences for an end user.
 
@@ -512,10 +517,9 @@ def save_privacy_preferences_for_identities(
     saved changes for each preference type.
 
     Creates a privacy request to propagate preferences to third-party systems if applicable.
-
     """
     created_historical_preferences: List[PrivacyPreferenceHistory] = []
-    upserted_current_preferences: List[CurrentPrivacyPreference] = []
+    saved_preferences_response = SavePrivacyPreferencesResponse()
 
     # Combines user data from request body and request headers for consent reporting
     common_user_data: Dict = update_request_body_for_consent_served_or_saved(
@@ -533,7 +537,7 @@ def save_privacy_preferences_for_identities(
         db=db,
         user_data=common_user_data,
         request_data=original_request_data,
-        upserted_current_preferences=upserted_current_preferences,
+        saved_preferences_response=saved_preferences_response,
     )
 
     # Separately persist preferences with respect to Privacy Notices where applicable.
@@ -556,7 +560,9 @@ def save_privacy_preferences_for_identities(
             check_name=False,
         )
         created_historical_preferences.append(historical_preference)
-        upserted_current_preferences.append(current_preference)
+        saved_preferences_response.preferences.append(
+            current_preference  # type:ignore[arg-type]
+        )
 
         if (
             historical_preference.privacy_notice_history
@@ -611,7 +617,8 @@ def save_privacy_preferences_for_identities(
             consent_request.save(db=db)
 
     # Return a list of all the individual preferences saved
-    return upserted_current_preferences
+
+    return saved_preferences_response
 
 
 def verify_previously_served_records(
@@ -714,8 +721,8 @@ def save_privacy_preferences(
     logger.info("Saving privacy preferences with respect to fides user device id")
 
     try:
-        return SavePrivacyPreferencesResponse(
-            preferences=save_privacy_preferences_for_identities(
+        saved_preferences_response: SavePrivacyPreferencesResponse = (
+            save_privacy_preferences_for_identities(
                 db=db,
                 consent_request=None,
                 verified_provided_identity=None,
@@ -724,6 +731,8 @@ def save_privacy_preferences(
                 original_request_data=data,
             )
         )
+        return saved_preferences_response
+
     except (
         IdentityNotFoundException,
         PrivacyNoticeHistoryNotFound,

@@ -306,7 +306,16 @@ class CurrentPrivacyPreferenceSchema(TCFAttributes):
 class SavePrivacyPreferencesResponse(FidesSchema):
     """Response schema when saving privacy preferences"""
 
-    preferences: List[CurrentPrivacyPreferenceSchema]
+    preferences: List[CurrentPrivacyPreferenceSchema] = []
+    purpose_consent_preferences: List[CurrentPrivacyPreferenceSchema] = []
+    purpose_legitimate_interests_preferences: List[CurrentPrivacyPreferenceSchema] = []
+    special_purpose_preferences: List[CurrentPrivacyPreferenceSchema] = []
+    vendor_consent_preferences: List[CurrentPrivacyPreferenceSchema] = []
+    vendor_legitimate_interests_preferences: List[CurrentPrivacyPreferenceSchema] = []
+    feature_preferences: List[CurrentPrivacyPreferenceSchema] = []
+    special_feature_preferences: List[CurrentPrivacyPreferenceSchema] = []
+    system_consent_preferences: List[CurrentPrivacyPreferenceSchema] = []
+    system_legitimate_interests_preferences: List[CurrentPrivacyPreferenceSchema] = []
 
 
 class CurrentPrivacyPreferenceReportingSchema(TCFAttributes):
