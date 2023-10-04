@@ -6,6 +6,7 @@ from iab_tcf import decode_v2
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
+from fides.api.common_exceptions import DecodeTCStringError
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.schemas.privacy_preference import TCStringFidesPreferences
@@ -14,7 +15,10 @@ from fides.api.util.tcf.experience_meta import (
     _build_tcf_version_hash_model,
     build_tcf_version_hash,
 )
-from fides.api.util.tcf.tc_mobile_data import build_tc_data_for_mobile
+from fides.api.util.tcf.tc_mobile_data import (
+    build_tc_data_for_mobile,
+    convert_tc_string_to_mobile_data,
+)
 from fides.api.util.tcf.tc_model import CMP_ID, convert_tcf_contents_to_tc_model
 from fides.api.util.tcf.tc_string import (
     TCModel,
@@ -1325,3 +1329,145 @@ class TestDecodeTcString:
             == UserConsentPreference.opt_in
         )
         assert fides_tcf_preferences.special_feature_preferences[0].id == 2
+
+
+class TestConvertTCStringtoMobile:
+    def test_expected_response(self):
+        """
+        Test expected response
+
+        Purpose consents are 1, 2, 3, 4, 7, 9, 10
+        Purpose legitimate interests are 2, 7, 8, 9, 10
+        Vendor consents are 2, 8
+        Vendor legitimate interests are 8, 46
+        Special feature opt ins are 2
+        """
+        tc_str = "CPytTYAPytTYAAMABBENATEEAPLAAEPAAAAAAEEEALgCAAAAAAgAAAAA.IAXEEAAAAABA"
+        tc_mobile_data = convert_tc_string_to_mobile_data(tc_str).dict()
+
+        assert tc_mobile_data["IABTCF_CmpSdkID"] == 12
+        assert tc_mobile_data["IABTCF_CmpSdkVersion"] == 1
+        assert tc_mobile_data["IABTCF_PolicyVersion"] == 4
+        assert tc_mobile_data["IABTCF_gdprApplies"] == 1
+        assert tc_mobile_data["IABTCF_PublisherCC"] == "AA"
+        assert tc_mobile_data["IABTCF_PurposeOneTreatment"] == 0
+        assert tc_mobile_data["IABTCF_UseNonStandardTexts"] == 0
+        assert tc_mobile_data["IABTCF_TCString"] == tc_str
+        # Purpose consents: 1, 2, 3, 4, 7, 9, 10
+        assert tc_mobile_data["IABTCF_PurposeConsents"] == "111100101100000000000000"
+        # Purpose legitimate interests: 2, 7, 8, 9, 10
+        assert (
+            tc_mobile_data["IABTCF_PurposeLegitimateInterests"]
+            == "010000111100000000000000"
+        )
+        # Vendor consents: 2, 8
+        assert tc_mobile_data["IABTCF_VendorConsents"] == "01000001"
+        # Vendor legitimate interests: 8, 46
+        assert (
+            tc_mobile_data["IABTCF_VendorLegitimateInterests"]
+            == "0000000100000000000000000000000000000000000001"
+        )
+        #  Special feature opt ins: 2
+        assert tc_mobile_data["IABTCF_SpecialFeaturesOptIns"] == "010000000000"
+
+    def test_another_tc_string(self):
+        """
+        Test expected response with another contrived TC string
+
+        Purpose consents are 1, 4, 6, 10
+        Purpose legitimate interests are 2, 3, 4
+        Vendor consents are 1, 6, 10, 11
+        Vendor legitimate interests are 1, 2, 4, 8
+        Special feature opt ins are 1
+        """
+        tc_str = "CPy2kiHPy2kiHfQADLENCZCYAJRAAHAAAAKwAFoRgAQ0QAA.II7Nd_X__bX9n-_7_6ft0eY1f9_r37uQzDhfNs-8F3L_W_LwX32E7NF36tq4KmR4ku1bBIQNtHMnUDUmxaolVrzHsak2cpyNKJ_JkknsZe2dYGF9Pn9lD-YKZ7_5_9_f52T_9_9_-39z3_9f___dv_-__-vjf_599n_v9fV_78_Kf9______-____________8A"
+        tc_mobile_data = convert_tc_string_to_mobile_data(tc_str).dict()
+
+        assert tc_mobile_data["IABTCF_CmpSdkID"] == 2000
+        assert tc_mobile_data["IABTCF_CmpSdkVersion"] == 3
+        assert tc_mobile_data["IABTCF_PolicyVersion"] == 2
+        assert tc_mobile_data["IABTCF_gdprApplies"] == 1
+        assert tc_mobile_data["IABTCF_PublisherCC"] == "BW"
+        assert tc_mobile_data["IABTCF_PurposeOneTreatment"] == 0
+        assert tc_mobile_data["IABTCF_UseNonStandardTexts"] == 1
+        assert tc_mobile_data["IABTCF_TCString"] == tc_str
+        assert tc_mobile_data["IABTCF_PurposeConsents"] == "100101000100000000000000"
+        assert (
+            tc_mobile_data["IABTCF_PurposeLegitimateInterests"]
+            == "011100000000000000000000"
+        )
+        assert tc_mobile_data["IABTCF_VendorConsents"] == "10000100011"
+        assert tc_mobile_data["IABTCF_VendorLegitimateInterests"] == "11010001"
+        #  Special feature opt ins: 2
+        assert tc_mobile_data["IABTCF_SpecialFeaturesOptIns"] == "100000000000"
+
+    def test_reject_all_string(self):
+        """
+        Test reject all response
+        """
+        tc_str = "CPy2UQ3Py2UQ3AYAAAENCZCQAAAAAAAAAIAAAAAAAAAA.II7Nd_X__bX9n-_7_6ft0eY1f9_r37uQzDhfNs-8F3L_W_LwX32E7NF36tq4KmR4ku1bBIQNtHMnUDUmxaolVrzHsak2cpyNKJ_JkknsZe2dYGF9Pn9lD-YKZ7_5_9_f52T_9_9_-39z3_9f___dv_-__-vjf_599n_v9fV_78_Kf9______-____________8A"
+        tc_mobile_data = convert_tc_string_to_mobile_data(tc_str).dict()
+
+        assert tc_mobile_data["IABTCF_CmpSdkID"] == 24
+        assert tc_mobile_data["IABTCF_CmpSdkVersion"] == 0
+        assert tc_mobile_data["IABTCF_PolicyVersion"] == 2
+        assert tc_mobile_data["IABTCF_gdprApplies"] == 1
+        assert tc_mobile_data["IABTCF_PublisherCC"] == "AA"
+        assert tc_mobile_data["IABTCF_PurposeOneTreatment"] == 1
+        assert tc_mobile_data["IABTCF_UseNonStandardTexts"] == 1
+        assert tc_mobile_data["IABTCF_TCString"] == tc_str
+        assert tc_mobile_data["IABTCF_PurposeConsents"] == "000000000000000000000000"
+        assert (
+            tc_mobile_data["IABTCF_PurposeLegitimateInterests"]
+            == "000000000000000000000000"
+        )
+        assert tc_mobile_data["IABTCF_VendorConsents"] == ""
+        assert tc_mobile_data["IABTCF_VendorLegitimateInterests"] == ""
+        assert tc_mobile_data["IABTCF_SpecialFeaturesOptIns"] == "000000000000"
+
+    def test_bad_str(self):
+        """
+        Test response for an invalid string
+        """
+
+        tc_str = "bad_core.bad_vendor"
+        with pytest.raises(DecodeTCStringError):
+            convert_tc_string_to_mobile_data(tc_str)
+
+    def test_invalid_base64_encoded_str(self):
+        """
+        Test response for an invalid string
+        """
+
+        tc_str = "a"
+        with pytest.raises(DecodeTCStringError):
+            convert_tc_string_to_mobile_data(tc_str)
+
+    def test_string_with_incorrect_bits_for_field(self):
+        """String was encoded with version bits as one longer than it should have been,
+        which throws everything else off
+
+        This implementation assumes each field was constructed following the number of bits in the spec
+        """
+        tc_str = "BH5Z8oAH5Z8oAAGAGAiGgDBAAEgAAAAAAAAAAAAAAAAA"
+
+        tc_mobile_data = convert_tc_string_to_mobile_data(tc_str).dict()
+
+        assert tc_mobile_data["IABTCF_CmpSdkID"] == 6  # Was supposed to be 12
+        assert tc_mobile_data["IABTCF_CmpSdkVersion"] == 6  # Was supposed to be 12
+        assert tc_mobile_data["IABTCF_PolicyVersion"] == 1  # Was supposed to be 2
+        assert tc_mobile_data["IABTCF_gdprApplies"] == 1
+        assert tc_mobile_data["IABTCF_PublisherCC"] == "AA"
+        assert tc_mobile_data["IABTCF_PurposeOneTreatment"] == 0
+        assert tc_mobile_data["IABTCF_UseNonStandardTexts"] == 0
+        assert tc_mobile_data["IABTCF_TCString"] == tc_str
+        assert (
+            tc_mobile_data["IABTCF_PurposeConsents"] == "010010000000000000000000"
+        )  # Supposed to be 1 and 4
+        assert (
+            tc_mobile_data["IABTCF_PurposeLegitimateInterests"]
+            == "000000000000000000000000"
+        )
+        assert tc_mobile_data["IABTCF_VendorConsents"] == ""
+        assert tc_mobile_data["IABTCF_VendorLegitimateInterests"] == ""
+        assert tc_mobile_data["IABTCF_SpecialFeaturesOptIns"] == "000000000000"
