@@ -382,6 +382,7 @@ def save_privacy_preferences_with_verified_identity(
         IdentityNotFoundException,
         PrivacyNoticeHistoryNotFound,
         SystemNotFound,
+        DecodeTCStringError,
     ) as exc:
         raise HTTPException(status_code=400, detail=exc.args[0])
 
@@ -704,10 +705,7 @@ def update_request_with_decoded_tc_string_fields(
 ) -> PrivacyPreferencesRequest:
     """Update the request body with the decoded values of the TC string if applicable"""
     if request_body.tc_string:
-        tcf_contents: TCFExperienceContents = get_tcf_contents(
-            db
-        )  # TODO: Cache this response
-
+        tcf_contents: TCFExperienceContents = get_tcf_contents(db)
         try:
             decoded_preference_request_body: TCStringFidesPreferences = (
                 decode_tc_string_to_preferences(request_body.tc_string, tcf_contents)
@@ -788,6 +786,7 @@ def save_privacy_preferences(
         IdentityNotFoundException,
         PrivacyNoticeHistoryNotFound,
         SystemNotFound,
+        DecodeTCStringError,
     ) as exc:
         raise HTTPException(status_code=400, detail=exc.args[0])
 
