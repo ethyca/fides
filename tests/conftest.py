@@ -169,6 +169,14 @@ def config():
     yield CONFIG
 
 
+@pytest.fixture(scope="function")
+def enable_tcf(config):
+    assert config.test_mode
+    config.consent.tcf_enabled = True
+    yield config
+    config.consent.tcf_enabled = False
+
+
 @pytest.fixture
 def loguru_caplog(caplog):
     handler_id = logger.add(caplog.handler, format="{message}")
