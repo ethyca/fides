@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
-from fides.api.models.consent_settings import ConsentSettings
 from fides.api.models.privacy_preference import (
     CURRENT_TCF_VERSION,
     ConsentMethod,
@@ -757,6 +756,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "automatically_approved",
         "consent_policy",
         "system",
+        "enable_tcf",
     )
     @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
@@ -772,10 +772,6 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         verification_code,
         tcf_request_body,
     ):
-        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-        consent_settings.tcf_enabled = True
-        consent_settings.save(db=db)
-
         provided_identity, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
 
@@ -785,10 +781,11 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
 
         assert response.status_code == 200
-        assert len(response.json()["preferences"]) == 1
         assert response.json()["tc_mobile_data"] is None
+        assert len(response.json()["preferences"]) == 0
+        assert len(response.json()["feature_preferences"]) == 1
 
-        response_json = response.json()["preferences"]
+        response_json = response.json()["feature_preferences"]
 
         first_privacy_preference_history_created = (
             db.query(PrivacyPreferenceHistory)
@@ -1233,6 +1230,7 @@ class TestPrivacyPreferenceVerify:
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
+        "enable_tcf",
     )
     def test_consent_verify_tcf_consent_preferences(
         self,
@@ -1242,10 +1240,6 @@ class TestPrivacyPreferenceVerify:
         verification_code,
         privacy_preference_history_for_tcf_special_purpose,
     ):
-        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-        consent_settings.tcf_enabled = True
-        consent_settings.save(db=db)
-
         provided_identity, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
 
@@ -1622,13 +1616,12 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             == "Cannot save preferences against invalid special feature id: '3'"
         )
 
+    @pytest.mark.usefixtures(
+        "enable_tcf",
+    )
     def test_invalid_system_in_request_body(
         self, api_client, url, db, privacy_experience_france_tcf_overlay
     ):
-        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-        consent_settings.tcf_enabled = True
-        consent_settings.save(db=db)
-
         request_body = {
             "browser_identity": {
                 "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
@@ -1679,6 +1672,9 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             == "Duplicate preferences saved against TCF component: 'special_purpose_preferences'"
         )
 
+    @pytest.mark.usefixtures(
+        "enable_tcf",
+    )
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
     )
@@ -1701,10 +1697,6 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         """Assert CurrentPrivacyPreference records were updated and PrivacyPreferenceHistory records were created
         for recordkeeping with respect to the fides user device id in the request
         """
-        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-        consent_settings.tcf_enabled = True
-        consent_settings.save(db=db)
-
         test_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
         masked_ip = "12.214.31.0"
         mock_anonymize.return_value = masked_ip
@@ -1712,13 +1704,18 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             url, json=tcf_request_body, headers={"Origin": "http://localhost:8080"}
         )
         assert response.status_code == 200
+        assert len(response.json()["purpose_consent_preferences"]) == 1
+        assert len(response.json()["preferences"]) == 0
+        assert len(response.json()["purpose_legitimate_interests_preferences"]) == 0
+        assert len(response.json()["special_purpose_preferences"]) == 0
+        assert len(response.json()["vendor_consent_preferences"]) == 1
+        assert len(response.json()["feature_preferences"]) == 1
+        assert len(response.json()["special_feature_preferences"]) == 1
+        assert len(response.json()["system_consent_preferences"]) == 0
+        assert len(response.json()["system_legitimate_interests_preferences"]) == 1
         assert response.json()["tc_mobile_data"] is None
-        assert len(response.json()["preferences"]) == 5
 
-        # Returned in order of purpose consent, special purpose, feature, special feature, vendor consent, then system legitimate interests
-        # Special purpose was not saved here
-
-        purpose_response = response.json()["preferences"][0]
+        purpose_response = response.json()["purpose_consent_preferences"][0]
         assert purpose_response["preference"] == "opt_out"
         assert purpose_response["purpose_consent"] == 8
         purpose_privacy_preference_history_id = purpose_response[
@@ -1788,7 +1785,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
 
         # Assert details saved w.r.t vendor
 
-        vendor_consent_response = response.json()["preferences"][3]
+        vendor_consent_response = response.json()["vendor_consent_preferences"][0]
         assert vendor_consent_response["preference"] == "opt_in"
         assert vendor_consent_response["vendor_consent"] == "amplitude"
 
@@ -1850,7 +1847,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert not run_privacy_request_mock.called
 
         # Assert feature portion of the response
-        feature_response = response.json()["preferences"][1]
+        feature_response = response.json()["feature_preferences"][0]
         assert feature_response["preference"] == "opt_out"
         assert feature_response["feature"] == 1
         assert feature_response["special_feature"] is None
@@ -1864,7 +1861,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert feature_privacy_preference_history.feature == 1
 
         # Assert special feature portion of the response
-        special_feature_response = response.json()["preferences"][2]
+        special_feature_response = response.json()["special_feature_preferences"][0]
         assert special_feature_response["preference"] == "opt_in"
         assert special_feature_response["special_feature"] == 2
         assert special_feature_response["feature"] is None
@@ -1878,7 +1875,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert special_feature_privacy_preference_history.special_feature == 2
 
         # Assert system portion of the response
-        system_response = response.json()["preferences"][4]
+        system_response = response.json()["system_legitimate_interests_preferences"][0]
         assert system_response["preference"] == "opt_out"
         assert system_response["system_legitimate_interests"] == system.id
         current_system_preference = CurrentPrivacyPreference.get(
@@ -2501,13 +2498,10 @@ class TestSavePrivacyPreferencesTCStringOnly:
     def url(self) -> str:
         return V1_URL_PREFIX + PRIVACY_PREFERENCES
 
+    @pytest.mark.usefixtures("enable_tcf")
     def test_save_privacy_preferences_tc_string_section_overlaps_request_body_section(
-        self, api_client, url, db
+        self, api_client, url
     ):
-        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-        consent_settings.tcf_enabled = True
-        consent_settings.save(db=db)
-
         tc_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE"
         fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
 
@@ -2543,13 +2537,10 @@ class TestSavePrivacyPreferencesTCStringOnly:
         assert response.status_code == 400
         assert response.json()["detail"] == "Invalid base64-encoded TC string"
 
+    @pytest.mark.usefixtures("enable_tcf")
     def test_save_privacy_preferences_with_tc_string_when_datamap_empty(
-        self, api_client, url, db
+        self, api_client, url
     ):
-        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-        consent_settings.tcf_enabled = True
-        consent_settings.save(db=db)
-
         tc_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE"
         fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
 
@@ -2588,13 +2579,9 @@ class TestSavePrivacyPreferencesTCStringOnly:
         assert len(response_body) == 0
 
     @pytest.mark.usefixtures(
-        "skimbit_system", "emerse_system", "captify_technologies_system"
+        "skimbit_system", "emerse_system", "captify_technologies_system", "enable_tcf"
     )
     def test_save_privacy_preferences_with_tc_string(self, api_client, url, db):
-        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-        consent_settings.tcf_enabled = True
-        consent_settings.save(db=db)
-
         tc_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE"
         fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
 
@@ -2608,11 +2595,20 @@ class TestSavePrivacyPreferencesTCStringOnly:
             url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
         )
         assert response.status_code == 200
-        response_body = response.json()["preferences"]
+        response_body = response.json()
 
-        assert len(response_body) == 17
+        assert len(response_body["preferences"]) == 0
+        assert len(response_body["purpose_consent_preferences"]) == 7
+        assert len(response_body["purpose_legitimate_interests_preferences"]) == 5
+        assert len(response_body["special_purpose_preferences"]) == 0
+        assert len(response_body["vendor_consent_preferences"]) == 2
+        assert len(response_body["vendor_legitimate_interests_preferences"]) == 2
+        assert len(response_body["feature_preferences"]) == 0
+        assert len(response_body["special_feature_preferences"]) == 1
+        assert len(response_body["system_consent_preferences"]) == 0
+        assert len(response_body["system_legitimate_interests_preferences"]) == 0
 
-        first_record = response_body[0]
+        first_record = response_body["purpose_consent_preferences"][0]
         assert first_record["purpose_consent"] == 1
         assert first_record["preference"] == "opt_in"
         saved_current_privacy_preference_record = db.query(

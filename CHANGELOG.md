@@ -26,12 +26,15 @@ The types of changes are:
 - Removed `TCF_ENABLED` environment variable from the privacy center in favor of dynamically figuring out which `fides-js` bundle to send [#4131](https://github.com/ethyca/fides/pull/4131)
 - Updated copy of info boxes on each TCF tab [#4191](https://github.com/ethyca/fides/pull/4191)
 - Refactor legal basis dimension regarding how TCF preferences are saved and how the experience is built [#4201](https://github.com/ethyca/fides/pull/4201/)
+- Updated fides server to use an environment variable for turning TCF on and off [#4220](https://github.com/ethyca/fides/pull/4220)
 
 ### Fixed
 - TCF overlay can initialize its consent preferences from a cookie [#4124](https://github.com/ethyca/fides/pull/4124)
 - Various improvements to the TCF modal such as vendor storage disclosures, vendor counts, privacy policies, etc. [#4167](https://github.com/ethyca/fides/pull/4167)
 - An issue where Braze could not mask an email due to formatting [#4187](https://github.com/ethyca/fides/pull/4187)
+- An issue where email was not being overridden correctly for Braze and Domo [#4196](https://github.com/ethyca/fides/pull/4196)
 - Use `stdRetention` when there is not a specific value for a purpose's data retention [#4199](https://github.com/ethyca/fides/pull/4199)
+- Updating the unflatten_dict util to accept flattened dict values [#4200](https://github.com/ethyca/fides/pull/4200)
 
 ## [2.21.0](https://github.com/ethyca/fides/compare/2.20.2...2.21.0)
 
