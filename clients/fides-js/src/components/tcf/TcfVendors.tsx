@@ -259,7 +259,7 @@ const TcfVendors = ({
         );
         const dataCategories: GvlDataCategories | undefined =
           // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
-          gvl?.dataCategories;
+          experience.gvl?.dataCategories;
         return (
           <DataUseToggle
             dataUse={{
