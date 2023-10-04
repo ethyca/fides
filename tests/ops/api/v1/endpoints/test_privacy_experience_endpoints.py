@@ -898,13 +898,12 @@ class TestGetTCFPrivacyExperiences:
         "fides_user_provided_identity",
         "privacy_preference_history_for_vendor_legitimate_interests",
         "served_notice_history_for_vendor_legitimate_interests",
+        "enable_tcf",
     )
     def test_tcf_enabled_with_legitimate_interest_purpose(
         self, db, api_client, url, privacy_experience_france_tcf_overlay, system
     ):
         """System has purpose 2 with legitimate interests legal basis"""
-        settings = ConsentSettings.get_or_create_with_defaults(db)
-        settings.update(db=db, data={"tcf_enabled": True})
         system.vendor_id = "sendgrid"
         system.save(db)
         privacy_declaration = system.privacy_declarations[0]
