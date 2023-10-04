@@ -337,20 +337,26 @@ class PrivacyExperience(Base):
         if self.component == ComponentType.tcf_overlay:
             tcf_contents = copy(base_tcf_contents)
 
-            # Fetch previously saved records for the current user
             has_tcf_contents = False
-            for tcf_component, field_name in TCF_SECTION_MAPPING.items():
-                for record in getattr(tcf_contents, tcf_component):
+            for (
+                tcf_section_name,
+                corresponding_db_field_name,
+            ) in TCF_SECTION_MAPPING.items():
+                # Loop through each top-level section in the TCF Contents
+                tcf_section: List = getattr(tcf_contents, tcf_section_name)
+                for record in tcf_section:
+                    # Loop through each record within a TCF section, and cache
+                    # any previously saved preferences if applicable
                     cache_saved_and_served_on_consent_record(
                         db,
                         record,
                         fides_user_provided_identity=fides_user_provided_identity,
-                        record_type=field_name,
+                        record_type=corresponding_db_field_name,
                     )
-                tcf_contents_for_component = getattr(tcf_contents, tcf_component)
-                if bool(tcf_contents_for_component):
+                # Now supplement the TCF Experience with this new section
+                setattr(self, tcf_section_name, tcf_section)
+                if tcf_section:
                     has_tcf_contents = True
-                    setattr(self, tcf_component, tcf_contents_for_component)
 
             if has_tcf_contents:
                 return True

@@ -28,7 +28,7 @@ def braze_user_update(
         # regardless of the masking strategy in use
         all_object_fields = row_param_values["all_object_fields"]
 
-        if "user.contact.email" in policy.get_erasure_target_categories():
+        if "email" in all_object_fields:
             privacy_request_id = row_param_values[PRIVACY_REQUEST_ID]
             all_object_fields["email"] = f"{privacy_request_id}@company.com"
 

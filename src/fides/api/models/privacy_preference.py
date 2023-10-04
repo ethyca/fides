@@ -715,6 +715,16 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
             "provided_identity_id", "purpose_consent", name="identity_purpose_consent"
         ),
         UniqueConstraint(
+            "provided_identity_id",
+            "purpose_legitimate_interests",
+            name="identity_purpose_leg_interests",
+        ),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "purpose_consent",
+            name="fides_user_device_identity_purpose_consent",
+        ),
+        UniqueConstraint(
             "fides_user_device_provided_identity_id",
             "purpose_legitimate_interests",
             name="fides_user_device_identity_purpose_leg_interests",
@@ -731,12 +741,32 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
             "provided_identity_id", "vendor_consent", name="identity_vendor_consent"
         ),
         UniqueConstraint(
+            "provided_identity_id",
+            "vendor_legitimate_interests",
+            name="identity_vendor_leg_interests",
+        ),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "vendor_consent",
+            name="fides_user_device_identity_vendor_consent",
+        ),
+        UniqueConstraint(
             "fides_user_device_provided_identity_id",
             "vendor_legitimate_interests",
             name="fides_user_device_identity_vendor_leg_interests",
         ),
         UniqueConstraint(
             "provided_identity_id", "system_consent", name="identity_system_consent"
+        ),
+        UniqueConstraint(
+            "provided_identity_id",
+            "system_legitimate_interests",
+            name="identity_system_leg_interests",
+        ),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "system_consent",
+            name="fides_user_device_identity_system_consent",
         ),
         UniqueConstraint(
             "fides_user_device_provided_identity_id",
@@ -817,6 +847,16 @@ class LastServedNotice(LastSavedMixin, Base):
             name="last_served_identity_purpose_consent",
         ),
         UniqueConstraint(
+            "provided_identity_id",
+            "purpose_legitimate_interests",
+            name="last_served_identity_purpose_legitimate_interests",
+        ),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "purpose_consent",
+            name="last_served_fides_user_device_identity_purpose_consent",
+        ),
+        UniqueConstraint(
             "fides_user_device_provided_identity_id",
             "purpose_legitimate_interests",
             name="last_served_fides_user_device_identity_purpose_leg_interests",
@@ -847,6 +887,16 @@ class LastServedNotice(LastSavedMixin, Base):
             name="last_served_identity_vendor_consent",
         ),
         UniqueConstraint(
+            "provided_identity_id",
+            "vendor_legitimate_interests",
+            name="last_served_identity_vendor_leg_interests",
+        ),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "vendor_consent",
+            name="last_served_fides_user_device_identity_vendor_consent",
+        ),
+        UniqueConstraint(
             "fides_user_device_provided_identity_id",
             "vendor_legitimate_interests",
             name="last_served_fides_user_device_identity_vendor_leg_interests",
@@ -855,6 +905,16 @@ class LastServedNotice(LastSavedMixin, Base):
             "provided_identity_id",
             "system_consent",
             name="last_served_identity_system_consent",
+        ),
+        UniqueConstraint(
+            "provided_identity_id",
+            "system_legitimate_interests",
+            name="last_served_identity_system_leg_interests",
+        ),
+        UniqueConstraint(
+            "fides_user_device_provided_identity_id",
+            "system_consent",
+            name="last_served_fides_user_device_identity_system_consent",
         ),
         UniqueConstraint(
             "fides_user_device_provided_identity_id",

@@ -57,7 +57,7 @@ for special_purpose in MAPPED_SPECIAL_PURPOSES.values():
 
 ALL_GVL_DATA_USES = list(set(PURPOSE_DATA_USES) | set(SPECIAL_PURPOSE_DATA_USES))
 
-
+# Defining some types for the different TCF sections
 NonVendorSectionType = Union[
     Type[TCFPurposeConsentRecord],
     Type[TCFPurposeLegitimateInterestsRecord],
@@ -95,7 +95,7 @@ SystemSubSections = Union[
 class ConsentRecordType(Enum):
     """*ALL* of the relevant consent items that can be served or have preferences saved against.
 
-    Includes two privacy notices fields, and then the TCFComponentType
+    Includes two privacy notices fields, and then everything in TCFComponentType
     """
 
     privacy_notice_id = "privacy_notice_id"
@@ -111,7 +111,9 @@ class ConsentRecordType(Enum):
     special_feature = "special_feature"
 
 
-TCF_SECTION_MAPPING = {
+# Each TCF section in the TCF Overlay mapped to the specific database column
+# from which previously-saved values are retrieved
+TCF_SECTION_MAPPING: Dict[str, Optional[ConsentRecordType]] = {
     "tcf_consent_purposes": ConsentRecordType.purpose_consent,
     "tcf_legitimate_interests_purposes": ConsentRecordType.purpose_legitimate_interests,
     "tcf_special_purposes": ConsentRecordType.special_purpose,
@@ -127,7 +129,10 @@ TCF_SECTION_MAPPING = {
 
 
 class TCFComponentType(Enum):
-    """A particular element of the TCF form against which preferences can be saved"""
+    """A particular element of the TCF form against which preferences can be saved
+
+    Note that system_relationships and vendor_relationships are not in this list
+    """
 
     purpose_consent = "purpose_consent"
     purpose_legitimate_interests = "purpose_legitimate_interests"
@@ -307,6 +312,8 @@ def _embed_system_under_purpose_or_feature(
 
     vendor_id, system_identifier = get_system_identifiers(privacy_declaration_row)
 
+    # Vendors when embedded beneath Purposes, Special Purposes, Features, or Special Features
+    # are not separated by legal basis here -
     embedded_system_section: List[EmbeddedVendor] = (
         non_vendor_record_map[top_level_tcf_record.id].vendors
         if vendor_id
@@ -344,14 +351,14 @@ def build_purpose_or_feature_section_and_update_vendor_map(
     ],
     matching_privacy_declaration_query: Query,
 ) -> Tuple[Dict[int, NonVendorRecord], Dict[str, VendorRecord]]:
-    """Builds a purpose or feature section of the TCF Overlay and makes corresponding updates to the systems section
+    """Builds a purpose or feature section of the TCF Overlay and makes corresponding updates to the vendor section
 
     Represents information in multiple formats.  Puts purposes and features at the top-level and embeds vendor and systems
     information underneath.  Likewise, puts vendor and system information top-level, and embeds purpose and feature information
     underneath.
 
-    System map is passed in as an argument instead of being constructed here, because both
-    purposes/features are added to it and we modify that mapping multiple times.
+    Vendor maps are passed in as an argument instead of being constructed here - in some places,
+    the vendor map is modified multiple times each time this function is called.
     """
     non_vendor_record_map: Dict[int, NonVendorRecord] = {}
 
@@ -386,7 +393,7 @@ def build_purpose_or_feature_section_and_update_vendor_map(
             vendor_id, system_identifier = get_system_identifiers(
                 privacy_declaration_row
             )
-            # Add top-level entry to the system section if applicable
+            # Add top-level entry to the particular system section if applicable
             if system_identifier not in vendor_map:
                 vendor_map[system_identifier] = tcf_vendor_component_type(
                     id=system_identifier,  # Identify system by vendor id if it exists, otherwise use system id.
@@ -397,7 +404,7 @@ def build_purpose_or_feature_section_and_update_vendor_map(
                     ),  # Has_vendor_id will let us separate data between systems and vendors
                 )
 
-            # Embed the purpose/feature under the system if it doesn't exist, and/or consolidate legal bases
+            # Embed the purpose/feature under the system if it doesn't exist
             _embed_purpose_or_feature_under_system(
                 embedded_tcf_record=top_level_tcf_record.copy(),
                 system_section=getattr(
@@ -405,7 +412,7 @@ def build_purpose_or_feature_section_and_update_vendor_map(
                 ),
             )
 
-            # Finally, nest the system beneath this top level tcf record
+            # Finally, nest the system beneath this top level non-vendor tcf record
             _embed_system_under_purpose_or_feature(
                 top_level_tcf_record=top_level_tcf_record,
                 non_vendor_record_map=non_vendor_record_map,
@@ -424,8 +431,12 @@ def get_tcf_contents(
     Queries for systems/privacy declarations that have a relevant GVL data use and a legal basis of Consent or Legitimate interests,
     and builds the TCF Overlay from these systems and privacy declarations.
 
-    TCF Overlay has Purpose, Special Purpose, Feature, and Special Feature Sections, that have relevant systems and vendors embedded underneath.
-    The reverse representation is also returned, and Vendors and Systems each have relevant Purpose, Special Purpose, Feature, and Special Feature sections.
+    TCF Overlay has Consent Purpose, Legitimate Interest Purpose, Special Purpose, Feature, and Special Feature Sections,
+    that have relevant systems and vendors embedded underneath.
+
+    We also have Consent Vendor, Legitimate Interests Vendor, and Vendor Relationships sections (same for systems),
+    which are almost a reverse representation, and have their own purposes and features embedded underneath.
+
     """
     vendor_consent_map: Dict[str, TCFConsentVendorRecord] = {}
     vendor_legitimate_interests_map: Dict[str, TCFLegitimateInterestsVendorRecord] = {}
@@ -521,7 +532,7 @@ def combine_overlay_sections(
     purpose_legitimate_interests_map: Dict[int, TCFPurposeLegitimateInterestsRecord],
     special_purpose_map: Dict[int, TCFSpecialPurposeRecord],
     feature_map: Dict[int, TCFFeatureRecord],
-    special_feature_map: Dict[int, TCFFeatureRecord],
+    special_feature_map: Dict[int, TCFSpecialFeatureRecord],
     updated_vendor_consent_map: Dict[str, TCFConsentVendorRecord],
     updated_vendor_legitimate_interests_map: Dict[
         str, TCFLegitimateInterestsVendorRecord
