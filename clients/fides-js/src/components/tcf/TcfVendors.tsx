@@ -1,24 +1,22 @@
 import { h } from "preact";
-import { useState } from "preact/hooks";
+import { useMemo, useState } from "preact/hooks";
 import { Vendor } from "@iabtechlabtcf/core";
 import {
   GvlDataRetention,
   EmbeddedLineItem,
-  EmbeddedPurpose,
-  GVLJson,
   GvlDataCategories,
-  TCFVendorRecord,
   GvlVendorUrl,
   GvlDataDeclarations,
   LegalBasisForProcessingEnum,
+  VendorRecord,
 } from "../../lib/tcf/types";
 import { PrivacyExperience } from "../../lib/consent-types";
 import { UpdateEnabledIds } from "./TcfOverlay";
 import DataUseToggle from "../DataUseToggle";
 import FilterButtons from "./FilterButtons";
 import {
+  transformExperienceToVendorRecords,
   vendorIsGvl,
-  vendorRecordsWithLegalBasis,
 } from "../../lib/tcf/vendors";
 import ExternalLink from "../ExternalLink";
 import Toggle from "../Toggle";
@@ -76,8 +74,8 @@ const PurposeVendorDetails = ({
   specialPurposes,
   gvlVendor,
 }: {
-  purposes: EmbeddedPurpose[] | undefined;
-  specialPurposes: EmbeddedPurpose[] | undefined;
+  purposes: EmbeddedLineItem[] | undefined;
+  specialPurposes: EmbeddedLineItem[] | undefined;
   gvlVendor: Vendor | undefined;
 }) => {
   const emptyPurposes = purposes ? purposes.length === 0 : true;
@@ -182,19 +180,23 @@ const StorageDisclosure = ({ vendor }: { vendor: Vendor }) => {
 };
 
 const TcfVendors = ({
-  vendors,
+  experience,
   enabledVendorConsentIds,
   enabledVendorLegintIds,
   onChange,
-  gvl,
 }: {
-  vendors: PrivacyExperience["tcf_vendors"];
+  experience: PrivacyExperience;
   enabledVendorConsentIds: string[];
   enabledVendorLegintIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
-  gvl?: GVLJson;
 }) => {
   const [isFiltered, setIsFiltered] = useState(false);
+
+  // Combine the various vendor objects into one object for convenience
+  const vendors = useMemo(
+    () => transformExperienceToVendorRecords(experience),
+    [experience]
+  );
 
   if (!vendors || vendors.length === 0) {
     // TODO: empty state?
@@ -202,7 +204,7 @@ const TcfVendors = ({
   }
 
   const handleToggle = (
-    vendor: TCFVendorRecord,
+    vendor: VendorRecord,
     legalBasis:
       | LegalBasisForProcessingEnum.CONSENT
       | LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
@@ -237,7 +239,7 @@ const TcfVendors = ({
   };
 
   const vendorsToDisplay = isFiltered
-    ? vendors.filter((v) => vendorIsGvl(v, gvl))
+    ? vendors.filter((v) => vendorIsGvl(v, experience.gvl))
     : vendors;
 
   return (
@@ -250,7 +252,7 @@ const TcfVendors = ({
         <span>Consent</span>
       </div>
       {vendorsToDisplay.map((vendor) => {
-        const gvlVendor = vendorIsGvl(vendor, gvl);
+        const gvlVendor = vendorIsGvl(vendor, experience.gvl);
         // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
         const url: GvlVendorUrl | undefined = gvlVendor?.urls.find(
           (u: GvlVendorUrl) => u.langId === "en"
@@ -258,16 +260,6 @@ const TcfVendors = ({
         const dataCategories: GvlDataCategories | undefined =
           // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
           gvl?.dataCategories;
-        const isConsent =
-          vendorRecordsWithLegalBasis(
-            [vendor],
-            LegalBasisForProcessingEnum.CONSENT
-          ).length === 1;
-        const isLegint =
-          vendorRecordsWithLegalBasis(
-            [vendor],
-            LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
-          ).length === 1;
         return (
           <DataUseToggle
             dataUse={{
@@ -286,7 +278,7 @@ const TcfVendors = ({
               <div
                 style={{ width: "50px", display: "flex", marginLeft: ".2em" }}
               >
-                {isConsent ? (
+                {vendor.isConsent ? (
                   <Toggle
                     name={`${vendor.name}-consent`}
                     id={`${vendor.id}-consent`}
@@ -298,7 +290,7 @@ const TcfVendors = ({
                 ) : null}
               </div>
             }
-            includeToggle={isLegint}
+            includeToggle={vendor.isLegint}
           >
             <div>
               {gvlVendor ? <StorageDisclosure vendor={gvlVendor} /> : null}
@@ -313,7 +305,10 @@ const TcfVendors = ({
                 ) : null}
               </div>
               <PurposeVendorDetails
-                purposes={vendor.purposes}
+                purposes={[
+                  ...(vendor.consent_purposes || []),
+                  ...(vendor.legitimate_interests_purposes || []),
+                ]}
                 specialPurposes={vendor.special_purposes}
                 gvlVendor={gvlVendor}
               />

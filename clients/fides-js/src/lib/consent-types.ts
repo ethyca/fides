@@ -211,14 +211,18 @@ export enum ConsentMethod {
 export type PrivacyPreferencesRequest = {
   browser_identity: Identity;
   code?: string;
+  tc_string?: string;
   preferences?: Array<ConsentOptionCreate>;
-  purpose_preferences?: Array<TCFPurposeSave>;
+  purpose_consent_preferences?: Array<TCFPurposeSave>;
+  purpose_legitimate_interests_preferences?: Array<TCFPurposeSave>;
   special_purpose_preferences?: Array<TCFSpecialPurposeSave>;
-  vendor_preferences?: Array<TCFVendorSave>;
-  system_preferences?: Array<TCFVendorSave>;
+  vendor_consent_preferences?: Array<TCFVendorSave>;
+  vendor_legitimate_interests_preferences?: Array<TCFVendorSave>;
   feature_preferences?: Array<TCFFeatureSave>;
   special_feature_preferences?: Array<TCFSpecialFeatureSave>;
-  policy_key?: string; // Will use default consent policy if not supplied
+  system_consent_preferences?: Array<TCFVendorSave>;
+  system_legitimate_interests_preferences?: Array<TCFVendorSave>;
+  policy_key?: string;
   privacy_experience_id?: string;
   user_geography?: string;
   method?: ConsentMethod;

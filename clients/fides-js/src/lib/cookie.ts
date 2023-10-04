@@ -280,12 +280,18 @@ export const updateExperienceFromCookieConsent = ({
 
   // Handle the TCF case, which has many keys to query
   const tcfEntities = {
-    tcf_purposes: experience.tcf_purposes,
+    tcf_consent_purposes: experience.tcf_consent_purposes,
+    tcf_legitimate_interests_purposes:
+      experience.tcf_legitimate_interests_purposes,
     tcf_special_purposes: experience.tcf_special_purposes,
     tcf_features: experience.tcf_features,
     tcf_special_features: experience.tcf_special_features,
-    tcf_vendors: experience.tcf_vendors,
-    tcf_systems: experience.tcf_systems,
+    tcf_consent_vendors: experience.tcf_consent_vendors,
+    tcf_legitimate_interests_vendors:
+      experience.tcf_legitimate_interests_vendors,
+    tcf_consent_systems: experience.tcf_consent_systems,
+    tcf_legitimate_interests_systems:
+      experience.tcf_legitimate_interests_systems,
   };
 
   if (cookie.tcf_consent) {

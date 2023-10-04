@@ -38,7 +38,7 @@ const TcfTabs = ({
             // TODO(fides#4210): add legint purposes
             allPurposes={experience.tcf_consent_purposes}
             allSpecialPurposes={experience.tcf_special_purposes}
-            enabledPurposeIds={enabledIds.purposes}
+            enabledPurposeIds={enabledIds.purposesConsent}
             enabledSpecialPurposeIds={enabledIds.specialPurposes}
             onChange={onChange}
           />
@@ -74,14 +74,10 @@ const TcfTabs = ({
             assert.
           </InfoBox>
           <TcfVendors
-            vendors={[
-              ...(experience.tcf_vendors || []),
-              ...(experience.tcf_systems || []),
-            ]}
+            experience={experience}
             enabledVendorConsentIds={enabledIds.vendorsConsent}
             enabledVendorLegintIds={enabledIds.vendorsLegint}
             onChange={onChange}
-            gvl={experience.gvl}
           />
         </div>
       ),

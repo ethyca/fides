@@ -186,10 +186,13 @@ export type TCFVendorSave = {
 // Convenience types, frontend only
 export type TcfSavePreferences = Pick<
   PrivacyPreferencesRequest,
-  | "purpose_preferences"
+  | "purpose_consent_preferences"
+  | "purpose_legitimate_interests_preferences"
   | "special_feature_preferences"
-  | "vendor_preferences"
-  | "system_preferences"
+  | "vendor_consent_preferences"
+  | "vendor_legitimate_interests_preferences"
+  | "system_consent_preferences"
+  | "system_legitimate_interests_preferences"
 >;
 
 export type TcfExperienceRecords = Pick<
@@ -210,16 +213,20 @@ type TcfCookieKeyConsent = {
 };
 
 export interface TcfCookieConsent {
-  purpose_preferences?: TcfCookieKeyConsent;
+  purpose_consent_preferences?: TcfCookieKeyConsent;
+  purpose_legitimate_interests_preferences?: TcfCookieKeyConsent;
   special_feature_preferences?: TcfCookieKeyConsent;
-  vendor_preferences?: TcfCookieKeyConsent;
-  system_preferences?: TcfCookieKeyConsent;
+  vendor_consent_preferences?: TcfCookieKeyConsent;
+  vendor_legitimate_interests_preferences?: TcfCookieKeyConsent;
+  system_consent_preferences?: TcfCookieKeyConsent;
+  system_legitimate_interests_preferences?: TcfCookieKeyConsent;
 }
 
 export type TcfModelType = keyof TcfCookieConsent;
 
 export interface EnabledIds {
-  purposes: string[];
+  purposesConsent: string[];
+  purposesLegint: string[];
   specialPurposes: string[];
   features: string[];
   specialFeatures: string[];
@@ -231,7 +238,6 @@ export type VendorRecord = TCFConsentVendorRecord &
   Pick<TCFLegitimateInterestsVendorRecord, "legitimate_interests_purposes"> &
   TCFVendorRelationships & {
     isFidesSystem: boolean;
-    isGvl: boolean;
     isConsent: boolean;
     isLegint: boolean;
   };
