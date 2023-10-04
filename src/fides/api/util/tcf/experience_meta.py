@@ -6,7 +6,8 @@ from pydantic import Extra, root_validator
 
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.schemas.privacy_experience import ExperienceMeta, TCMobileData
+from fides.api.schemas.privacy_experience import ExperienceMeta
+from fides.api.schemas.tcf import TCMobileData
 from fides.api.util.tcf.tc_mobile_data import build_tc_data_for_mobile
 from fides.api.util.tcf.tc_model import TCModel, convert_tcf_contents_to_tc_model
 from fides.api.util.tcf.tcf_experience_contents import TCFExperienceContents

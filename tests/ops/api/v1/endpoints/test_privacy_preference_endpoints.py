@@ -187,7 +187,8 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             json=request_body,
         )
         assert response.status_code == 200
-        assert len(response.json()) == 1
+        assert len(response.json()["preferences"]) == 1
+        assert response.json()["tc_mobile_data"] is None
 
         response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
@@ -294,6 +295,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert response.status_code == 200
         assert len(response.json()["preferences"]) == 1
+        assert response.json()["tc_mobile_data"] is None
 
         response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
@@ -366,6 +368,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert response.status_code == 200
         assert len(response.json()["preferences"]) == 1
+        assert response.json()["tc_mobile_data"] is None
 
         response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
@@ -657,6 +660,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
 
         assert response.status_code == 200
         assert len(response.json()["preferences"]) == 2
+        assert response.json()["tc_mobile_data"] is None
 
         response_json = response.json()["preferences"]
 
@@ -782,6 +786,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
 
         assert response.status_code == 200
         assert len(response.json()["preferences"]) == 1
+        assert response.json()["tc_mobile_data"] is None
 
         response_json = response.json()["preferences"]
 
@@ -992,6 +997,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert response.status_code == 200
         assert len(response.json()["preferences"]) == 1
+        assert response.json()["tc_mobile_data"] is None
 
         response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
@@ -1439,6 +1445,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             url, json=request_body, headers={"Origin": "http://localhost:8080"}
         )
         assert response.status_code == 200
+        assert response.json()["tc_mobile_data"] is None
         response_json = response.json()["preferences"][0]
         assert response_json["preference"] == "opt_out"
         assert (
@@ -1705,6 +1712,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             url, json=tcf_request_body, headers={"Origin": "http://localhost:8080"}
         )
         assert response.status_code == 200
+        assert response.json()["tc_mobile_data"] is None
         assert len(response.json()["preferences"]) == 5
 
         # Returned in order of purpose consent, special purpose, feature, special feature, vendor consent, then system legitimate interests
@@ -2643,3 +2651,24 @@ class TestSavePrivacyPreferencesTCStringOnly:
             privacy_preference_history_record.privacy_experience_config_history_id
             is None
         )
+
+        mobile_data = response.json()["tc_mobile_data"]
+        assert mobile_data == {
+            "IABTCF_CmpSdkID": 12,
+            "IABTCF_CmpSdkVersion": 1,
+            "IABTCF_PolicyVersion": 4,
+            "IABTCF_gdprApplies": 1,
+            "IABTCF_PublisherCC": "AA",
+            "IABTCF_PurposeOneTreatment": 0,
+            "IABTCF_UseNonStandardTexts": 0,
+            "IABTCF_TCString": "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE",
+            "IABTCF_VendorConsents": "01",
+            "IABTCF_VendorLegitimateInterests": "",
+            "IABTCF_PurposeConsents": "111100101100000000000000",
+            "IABTCF_PurposeLegitimateInterests": "000000000000000000000000",
+            "IABTCF_SpecialFeaturesOptIns": "010000000000",
+            "IABTCF_PublisherConsent": None,
+            "IABTCF_PublisherLegitimateInterests": None,
+            "IABTCF_PublisherCustomPurposesConsents": None,
+            "IABTCF_PublisherCustomPurposesLegitimateInterests": None,
+        }

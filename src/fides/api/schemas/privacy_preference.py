@@ -28,6 +28,7 @@ from fides.api.schemas.tcf import (
     TCFSpecialFeatureSave,
     TCFSpecialPurposeSave,
     TCFVendorSave,
+    TCMobileData,
 )
 from fides.api.util.tcf.tcf_experience_contents import (
     TCF_SECTION_MAPPING,
@@ -115,7 +116,8 @@ class PrivacyPreferencesRequest(TCStringFidesPreferences):
     browser_identity: Identity
     code: Optional[SafeStr]
     tc_string: Optional[str] = Field(
-        description="If supplied, TC string is decoded and preferences saved for purpose_consent, purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features"
+        description="If supplied, TC string is decoded and preferences saved for purpose_consent, "
+        "purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features"
     )
     preferences: conlist(ConsentOptionCreate, max_items=200) = []  # type: ignore
     special_purpose_preferences: conlist(TCFSpecialPurposeSave, max_items=200) = []  # type: ignore
@@ -323,6 +325,7 @@ class SavePrivacyPreferencesResponse(FidesSchema):
     """Response schema when saving privacy preferences"""
 
     preferences: List[CurrentPrivacyPreferenceSchema]
+    tc_mobile_data: Optional[TCMobileData] = None
 
 
 class CurrentPrivacyPreferenceReportingSchema(TCFAttributes):

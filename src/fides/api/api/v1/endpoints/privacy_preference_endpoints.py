@@ -84,6 +84,7 @@ from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, validate_start_and_end_filters
+from fides.api.util.tcf.tc_mobile_data import convert_tc_string_to_mobile_data
 from fides.api.util.tcf.tc_string import decode_tc_string_to_preferences
 from fides.api.util.tcf.tcf_experience_contents import (
     TCFExperienceContents,
@@ -734,6 +735,7 @@ def save_privacy_preferences(
     Creates historical records for these preferences for record keeping, and also updates current preferences.
     Creates a privacy request to propagate preferences to third party systems if applicable.
     """
+    tc_string: Optional[str] = data.tc_string
     data = update_request_with_decoded_tc_string_fields(data, db)
 
     verify_privacy_notice_and_historical_records(
@@ -763,7 +765,8 @@ def save_privacy_preferences(
                 fides_user_provided_identity=fides_user_provided_identity,
                 request=request,
                 original_request_data=data,
-            )
+            ),
+            tc_mobile_data=convert_tc_string_to_mobile_data(tc_string),
         )
     except (
         IdentityNotFoundException,

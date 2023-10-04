@@ -13,9 +13,7 @@ from fides.api.schemas.tcf import TCFPurposeSave, TCFSpecialFeatureSave, TCFVend
 from fides.api.util.tcf.tc_model import TCModel, convert_tcf_contents_to_tc_model
 
 # Number of bits allowed for certain sections that are used in multiple places
-from fides.api.util.tcf.tcf_experience_contents import (
-    TCFExperienceContents,
-)
+from fides.api.util.tcf.tcf_experience_contents import TCFExperienceContents
 
 USE_NON_STANDARD_TEXT_BITS = 1
 SPECIAL_FEATURE_BITS = 12
