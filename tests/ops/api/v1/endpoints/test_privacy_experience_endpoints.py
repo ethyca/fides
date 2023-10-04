@@ -898,7 +898,7 @@ class TestGetTCFPrivacyExperiences:
         "fides_user_provided_identity",
         "privacy_preference_history_for_vendor_legitimate_interests",
         "served_notice_history_for_vendor_legitimate_interests",
-        "enable_tcf"
+        "enable_tcf",
     )
     def test_tcf_enabled_with_legitimate_interest_purpose(
         self, db, api_client, url, privacy_experience_france_tcf_overlay, system
