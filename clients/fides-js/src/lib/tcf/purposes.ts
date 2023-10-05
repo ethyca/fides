@@ -21,10 +21,16 @@ export const getUniquePurposeRecords = ({
   uniqueIds.forEach((id) => {
     const consent = consentPurposes.find((p) => p.id === id);
     const legint = legintPurposes.find((p) => p.id === id);
-    if (consent) {
-      purposes.push({ ...consent, isConsent: true, isLegint: false });
-    } else if (legint) {
-      purposes.push({ ...legint, isConsent: false, isLegint: true });
+    if (consent || legint) {
+      const record = { ...consent, ...legint } as
+        | TCFPurposeConsentRecord
+        | TCFPurposeLegitimateInterestsRecord;
+      purposes.push({
+        ...record,
+        id,
+        isConsent: !!consent,
+        isLegint: !!legint,
+      });
     }
   });
 
