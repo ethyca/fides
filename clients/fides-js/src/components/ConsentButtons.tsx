@@ -1,4 +1,4 @@
-import { h, VNode } from "preact";
+import { ComponentChildren, h, VNode } from "preact";
 import Button from "./Button";
 import {
   ButtonType,
@@ -14,16 +14,18 @@ export const ConsentButtons = ({
   firstButton,
   onAcceptAll,
   onRejectAll,
+  children,
 }: {
   experienceConfig: ExperienceConfig;
   onManagePreferencesClick?: () => void;
   firstButton?: VNode;
   onAcceptAll: () => void;
   onRejectAll: () => void;
+  children: ComponentChildren;
 }) => (
   <div id="fides-button-group">
     {onManagePreferencesClick ? (
-      <div style={{ display: "flex", marginRight: "24px" }}>
+      <div style={{ display: "flex" }}>
         <Button
           buttonType={ButtonType.TERTIARY}
           label={experienceConfig.privacy_preferences_link_label}
@@ -44,6 +46,7 @@ export const ConsentButtons = ({
         onClick={onAcceptAll}
       />
     </div>
+    {children}
   </div>
 );
 
@@ -56,6 +59,7 @@ interface NoticeConsentButtonProps {
   enabledKeys: NoticeKeys;
   isAcknowledge: boolean;
   isInModal?: boolean;
+  children?: ComponentChildren;
 }
 
 export const NoticeConsentButtons = ({
@@ -65,6 +69,7 @@ export const NoticeConsentButtons = ({
   enabledKeys,
   isInModal,
   isAcknowledge,
+  children,
 }: NoticeConsentButtonProps) => {
   if (!experience.experience_config || !experience.privacy_notices) {
     return null;
@@ -118,6 +123,8 @@ export const NoticeConsentButtons = ({
           />
         ) : undefined
       }
-    />
+    >
+      {children}
+    </ConsentButtons>
   );
 };

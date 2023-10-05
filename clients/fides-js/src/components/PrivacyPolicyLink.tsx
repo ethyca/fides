@@ -14,14 +14,22 @@ const PrivacyPolicyLink = ({
   }
 
   return (
-    <a
-      href={experience.privacy_policy_url}
-      rel="noopener noreferrer"
-      target="_blank"
-      className="fides-privacy-policy"
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
     >
-      {experience.privacy_policy_link_label}
-    </a>
+      <a
+        href={experience.privacy_policy_url}
+        rel="noopener noreferrer"
+        target="_blank"
+        className="fides-privacy-policy"
+      >
+        {experience.privacy_policy_link_label}
+      </a>
+    </div>
   );
 };
 

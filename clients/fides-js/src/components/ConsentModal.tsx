@@ -5,7 +5,6 @@ import { ExperienceConfig } from "../lib/consent-types";
 import CloseButton from "./CloseButton";
 import GpcInfo from "./GpcInfo";
 import ExperienceDescription from "./ExperienceDescription";
-import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
 const ConsentModal = ({
   attributes,

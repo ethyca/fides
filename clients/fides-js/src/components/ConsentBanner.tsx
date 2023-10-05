@@ -15,7 +15,7 @@ interface BannerProps {
   experience: ExperienceConfig;
   onClose: () => void;
   bannerIsOpen: boolean;
-  children: ComponentChildren;
+  children?: ComponentChildren;
   onVendorPageClick?: () => void;
   buttonGroup: VNode;
   bannerType?: String;
@@ -41,7 +41,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
       <div id="fides-banner">
         <div id="fides-banner-inner">
           <CloseButton ariaLabel="Close banner" onClick={onClose} />
-          <div id="fides-banner-inner-container">
+          <div
+            id="fides-banner-inner-container"
+            style={{
+              gridTemplateColumns: children ? "1fr 1fr" : "1fr",
+            }}
+          >
             <div id="fides-banner-inner-description">
               <div id="fides-banner-heading">
                 <div id="fides-banner-title" className="fides-banner-title">
@@ -64,9 +69,9 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                 />
               </div>
             </div>
-            <div id="fides-banner-inner-tcf">{children}</div>
+            {children}
+            {buttonGroup}
           </div>
-          {buttonGroup}
         </div>
       </div>
     </div>

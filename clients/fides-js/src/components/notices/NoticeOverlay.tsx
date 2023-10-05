@@ -22,6 +22,7 @@ import NoticeToggles from "./NoticeToggles";
 import { OverlayProps } from "../types";
 import { useConsentServed } from "../../lib/hooks";
 import { updateCookieFromNoticePreferences } from "../../lib/cookie";
+import PrivacyPolicyLink from "../PrivacyPolicyLink";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   experience,
@@ -113,18 +114,29 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             bannerIsOpen={isOpen}
             onClose={onClose}
             experience={experienceConfig}
-          >
-            <NoticeConsentButtons
-              experience={experience}
-              onManagePreferencesClick={onManagePreferencesClick}
-              enabledKeys={draftEnabledNoticeKeys}
-              onSave={(keys) => {
-                handleUpdatePreferences(keys);
-                onSave();
-              }}
-              isAcknowledge={isAllNoticeOnly}
-            />
-          </ConsentBanner>
+            buttonGroup={
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <NoticeConsentButtons
+                  experience={experience}
+                  onManagePreferencesClick={onManagePreferencesClick}
+                  enabledKeys={draftEnabledNoticeKeys}
+                  onSave={(keys) => {
+                    handleUpdatePreferences(keys);
+                    onSave();
+                  }}
+                  isAcknowledge={isAllNoticeOnly}
+                >
+                  <PrivacyPolicyLink experience={experienceConfig} />
+                </NoticeConsentButtons>
+              </div>
+            }
+          />
         ) : null
       }
       renderModalContent={({ onClose }) => (
@@ -136,16 +148,19 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               onChange={setDraftEnabledNoticeKeys}
             />
           </div>
-          <NoticeConsentButtons
-            experience={experience}
-            enabledKeys={draftEnabledNoticeKeys}
-            onSave={(keys) => {
-              handleUpdatePreferences(keys);
-              onClose();
-            }}
-            isInModal
-            isAcknowledge={isAllNoticeOnly}
-          />
+          <div class="fides-modal-footer">
+            <NoticeConsentButtons
+              experience={experience}
+              enabledKeys={draftEnabledNoticeKeys}
+              onSave={(keys) => {
+                handleUpdatePreferences(keys);
+                onClose();
+              }}
+              isInModal
+              isAcknowledge={isAllNoticeOnly}
+            ></NoticeConsentButtons>
+            <PrivacyPolicyLink experience={experience.experience_config} />
+          </div>
         </div>
       )}
     />

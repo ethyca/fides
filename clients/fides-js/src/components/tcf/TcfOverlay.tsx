@@ -340,9 +340,10 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               <div
                 style={{
                   display: "flex",
-                  width: "calc(50% - 30px)",
                   justifyContent: "space-between",
                   alignItems: "center",
+                  gridColumn: 1,
+                  gridRow: 2,
                 }}
               >
                 <TcfConsentButtons
@@ -352,16 +353,19 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                     handleUpdateAllPreferences(keys);
                     onSave();
                   }}
-                />
-                <PrivacyPolicyLink experience={experience.experience_config} />
+                >
+                  <PrivacyPolicyLink experience={experienceConfig} />
+                </TcfConsentButtons>
               </div>
             }
           >
-            <VendorInfoBanner
-              experience={experience}
-              goToVendorTab={goToVendorTab}
-            />
-            <InitialLayer experience={experience} />
+            <div id="fides-tcf-banner-inner">
+              <VendorInfoBanner
+                experience={experience}
+                goToVendorTab={goToVendorTab}
+              />
+              <InitialLayer experience={experience} />
+            </div>
           </ConsentBanner>
         ) : null;
       }}

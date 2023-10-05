@@ -69,9 +69,9 @@ const VendorInfoBanner = ({
         count={counts.total}
         onClick={goToVendorTab}
       />
-      <VendorInfo label="Vendors who use consent" count={counts.consent} />
+      <VendorInfo label="Vendors using consent" count={counts.consent} />
       <VendorInfo
-        label="Vendors who use legitimate interest"
+        label="Vendors using legitimate interest"
         count={counts.legint}
       />
     </div>
