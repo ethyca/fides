@@ -201,24 +201,6 @@ const TcfVendors = ({
     return null;
   }
 
-  const handleToggle = (vendor: VendorRecord) => {
-    const enabledIds = vendor.isConsent
-      ? enabledVendorConsentIds
-      : enabledVendorLegintIds;
-    const modelType = vendor.isConsent ? "vendorsConsent" : "vendorsLegint";
-    if (enabledIds.indexOf(vendor.id) !== -1) {
-      onChange({
-        newEnabledIds: enabledIds.filter((e) => e !== vendor.id),
-        modelType,
-      });
-    } else {
-      onChange({
-        newEnabledIds: [...enabledIds, vendor.id],
-        modelType,
-      });
-    }
-  };
-
   const handleFilter = (index: number) => {
     if (index === 0) {
       setIsFiltered(false);
@@ -235,10 +217,13 @@ const TcfVendors = ({
     <div>
       <FilterButtons filters={FILTERS} onChange={handleFilter} />
       <DoubleToggleTable<VendorRecord>
+        title="Vendors"
         items={vendorsToDisplay}
         enabledConsentIds={enabledVendorConsentIds}
         enabledLegintIds={enabledVendorLegintIds}
-        onToggle={handleToggle}
+        onToggle={onChange}
+        consentModelType="vendorsConsent"
+        legintModelType="vendorsLegint"
         renderBadgeLabel={(vendor) =>
           vendorIsGvl(vendor, experience.gvl) ? "IAB TCF" : undefined
         }

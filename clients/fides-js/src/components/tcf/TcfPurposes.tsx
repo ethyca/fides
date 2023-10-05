@@ -130,33 +130,17 @@ const TcfPurposes = ({
     [allPurposesConsent, allPurposesLegint]
   );
 
-  const handleTogglePurpose = (purpose: PurposeRecord) => {
-    const enabledIds = purpose.isConsent
-      ? enabledPurposeConsentIds
-      : enabledPurposeLegintIds;
-    const modelType = purpose.isConsent ? "purposesConsent" : "purposesLegint";
-    const purposeId = `${purpose.id}`;
-    if (enabledIds.indexOf(purposeId) !== -1) {
-      onChange({
-        newEnabledIds: enabledIds.filter((e) => e !== purposeId),
-        modelType,
-      });
-    } else {
-      onChange({
-        newEnabledIds: [...enabledIds, purposeId],
-        modelType,
-      });
-    }
-  };
-
   return (
     <div>
       <DoubleToggleTable<PurposeRecord>
+        title="Purposes"
         items={uniquePurposes}
         enabledConsentIds={enabledPurposeConsentIds}
         enabledLegintIds={enabledPurposeLegintIds}
-        onToggle={handleTogglePurpose}
+        onToggle={onChange}
         renderToggleChild={(purpose) => <PurposeDetails purpose={purpose} />}
+        consentModelType="purposesConsent"
+        legintModelType="purposesLegint"
       />
       <SpecialPurposeBlock
         label="Special purposes"
