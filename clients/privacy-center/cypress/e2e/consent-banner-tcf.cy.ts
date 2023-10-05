@@ -215,10 +215,13 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("toggle-Purposes").within(() => {
           cy.get("input").should("be.checked");
         });
-        cy.getByTestId(`toggle-${PURPOSE_4.name}`).within(() => {
+        cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
           cy.get("input").should("be.checked");
         });
-        cy.getByTestId(`toggle-${PURPOSE_9.name}`).within(() => {
+        cy.getByTestId(`toggle-${PURPOSE_9.name}-consent`).within(() => {
+          cy.get("input").should("be.checked");
+        });
+        cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
           cy.get("input").should("be.checked");
         });
         cy.get(".fides-notice-toggle-header").contains("Special purposes");
@@ -265,17 +268,35 @@ describe("Fides-js TCF", () => {
       });
 
       it("can group toggle", () => {
-        // Toggle the parent toggle off
+        // Toggle just legitimate interests
         cy.getByTestId("toggle-Purposes").click();
-        cy.getByTestId(`toggle-${PURPOSE_4.name}`).within(() => {
+        cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
           cy.get("input").should("not.be.checked");
         });
-        cy.getByTestId(`toggle-${PURPOSE_9.name}`).within(() => {
-          cy.get("input").should("not.be.checked");
-        });
+
         // Toggle a child back on
-        cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
+        cy.getByTestId(`toggle-${PURPOSE_2.name}`).click();
         cy.getByTestId("toggle-Purposes").within(() => {
+          cy.get("input").should("be.checked");
+        });
+
+        // Do the same for consent column
+        cy.getByTestId("toggle-all-Purposes-consent").click();
+        cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
+          cy.get("input").should("not.be.checked");
+        });
+        // Toggle back on
+        cy.getByTestId("toggle-all-Purposes-consent").click();
+        cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
+          cy.get("input").should("be.checked");
+        });
+
+        // Try the all on/all off button
+        cy.get("button").contains("All off").click();
+        cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
+          cy.get("input").should("not.be.checked");
+        });
+        cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
           cy.get("input").should("not.be.checked");
         });
       });
@@ -423,7 +444,7 @@ describe("Fides-js TCF", () => {
 
       it("can opt in to some and opt out of others", () => {
         cy.getByTestId("consent-modal").within(() => {
-          cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
+          cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).click();
 
           cy.get("#fides-tab-Features").click();
           cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).click();
@@ -658,15 +679,15 @@ describe("Fides-js TCF", () => {
 
       // Verify the toggles
       // Purposes
-      cy.getByTestId(`toggle-${PURPOSE_4.name}`).within(() => {
+      cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
         cy.get("input").should("not.be.checked");
       });
-      cy.getByTestId(`toggle-${PURPOSE_9.name}`).within(() => {
+      cy.getByTestId(`toggle-${PURPOSE_9.name}-consent`).within(() => {
         cy.get("input").should("be.checked");
       });
       // also verify that a purpose that was not part of the cookie is also opted out
       // (since it should have no current_preference, and default behavior is opt out)
-      cy.getByTestId(`toggle-${PURPOSE_6.name}`).within(() => {
+      cy.getByTestId(`toggle-${PURPOSE_6.name}-consent`).within(() => {
         cy.get("input").should("not.be.checked");
       });
       // Features

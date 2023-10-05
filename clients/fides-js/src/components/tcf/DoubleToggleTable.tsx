@@ -38,7 +38,7 @@ const DoubleToggleTable = <T extends Item>({
   consentModelType,
   legintModelType,
 }: Props<T>) => {
-  const toggleAllId = `toggle-all-${title}`;
+  const toggleAllId = `all-${title}`;
   const toggleAllConsentId = `${toggleAllId}-consent`;
 
   const { allConsentChecked, allLegintChecked } = useMemo(() => {
