@@ -26,6 +26,7 @@ The types of changes are:
 - Removed `TCF_ENABLED` environment variable from the privacy center in favor of dynamically figuring out which `fides-js` bundle to send [#4131](https://github.com/ethyca/fides/pull/4131)
 - Updated copy of info boxes on each TCF tab [#4191](https://github.com/ethyca/fides/pull/4191)
 - Updated fides server to use an environment variable for turning TCF on and off [#4220](https://github.com/ethyca/fides/pull/4220)
+- Migrated data use personalize.profiling -> personalize.content.profiling [#4231](https://github.com/ethyca/fides/pull/4231)
 
 ### Fixed
 - TCF overlay can initialize its consent preferences from a cookie [#4124](https://github.com/ethyca/fides/pull/4124)
