@@ -2,6 +2,7 @@ import { h, FunctionComponent, Fragment } from "preact";
 import { useState, useCallback, useMemo } from "preact/hooks";
 import { TCString } from "@iabtechlabtcf/core";
 import ConsentBanner from "../ConsentBanner";
+import PrivacyPolicyLink from "../PrivacyPolicyLink";
 
 import {
   debugLog,
@@ -319,6 +320,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       options={options}
       experience={experience}
       cookie={cookie}
+      overlayType="TCF"
       onVendorPageClick={() => {
         setActiveTabIndex(2);
       }}
@@ -333,20 +335,33 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             onClose={onClose}
             experience={experienceConfig}
             onVendorPageClick={goToVendorTab}
+            bannerType="TCF"
+            buttonGroup={
+              <div
+                style={{
+                  display: "flex",
+                  width: "calc(50% - 30px)",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <TcfConsentButtons
+                  experience={experience}
+                  onManagePreferencesClick={onManagePreferencesClick}
+                  onSave={(keys) => {
+                    handleUpdateAllPreferences(keys);
+                    onSave();
+                  }}
+                />
+                <PrivacyPolicyLink experience={experience.experience_config} />
+              </div>
+            }
           >
-            <InitialLayer experience={experience} />
             <VendorInfoBanner
               experience={experience}
               goToVendorTab={goToVendorTab}
             />
-            <TcfConsentButtons
-              experience={experience}
-              onManagePreferencesClick={onManagePreferencesClick}
-              onSave={(keys) => {
-                handleUpdateAllPreferences(keys);
-                onSave();
-              }}
-            />
+            <InitialLayer experience={experience} />
           </ConsentBanner>
         ) : null;
       }}
@@ -364,17 +379,20 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               activeTabIndex={activeTabIndex}
               onTabChange={setActiveTabIndex}
             />
-            <TcfConsentButtons
-              experience={experience}
-              onSave={onSave}
-              firstButton={
-                <Button
-                  buttonType={ButtonType.SECONDARY}
-                  label={experience.experience_config?.save_button_label}
-                  onClick={() => onSave(draftIds)}
-                />
-              }
-            />
+            <div class="fides-modal-footer">
+              <TcfConsentButtons
+                experience={experience}
+                onSave={onSave}
+                firstButton={
+                  <Button
+                    buttonType={ButtonType.SECONDARY}
+                    label={experience.experience_config?.save_button_label}
+                    onClick={() => onSave(draftIds)}
+                  />
+                }
+              />
+              <PrivacyPolicyLink experience={experience.experience_config} />
+            </div>
           </Fragment>
         );
       }}

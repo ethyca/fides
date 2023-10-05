@@ -23,7 +23,7 @@ export const ConsentButtons = ({
 }) => (
   <div id="fides-button-group">
     {onManagePreferencesClick ? (
-      <div>
+      <div style={{ display: "flex", marginRight: "24px" }}>
         <Button
           buttonType={ButtonType.TERTIARY}
           label={experienceConfig.privacy_preferences_link_label}

@@ -1,4 +1,4 @@
-import { VNode, h } from "preact";
+import { Fragment, VNode, h } from "preact";
 
 import { PrivacyExperience } from "../../lib/consent-types";
 import { ConsentButtons } from "../ConsentButtons";

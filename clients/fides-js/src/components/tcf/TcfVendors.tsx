@@ -48,7 +48,11 @@ const VendorDetails = ({
       <thead>
         <tr>
           <th width="80%">{label}</th>
-          {dataRetention ? <th width="20%">Retention</th> : null}
+          {dataRetention ? (
+            <th width="20%" style={{ textAlign: "right" }}>
+              Retention
+            </th>
+          ) : null}
         </tr>
       </thead>
       <tbody>
@@ -61,7 +65,9 @@ const VendorDetails = ({
             <tr key={item.id}>
               <td>{item.name}</td>
               {dataRetention ? (
-                <td>{retention == null ? "N/A" : `${retention} day(s)`}</td>
+                <td style={{ textAlign: "right" }}>
+                  {retention == null ? "N/A" : `${retention} day(s)`}
+                </td>
               ) : null}
             </tr>
           );

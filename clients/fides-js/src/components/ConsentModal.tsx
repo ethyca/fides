@@ -1,21 +1,24 @@
-import { ComponentChildren, h } from "preact";
+import { ComponentChildren, VNode, h } from "preact";
 import { Attributes } from "../lib/a11y-dialog";
 import { ExperienceConfig } from "../lib/consent-types";
 
 import CloseButton from "./CloseButton";
 import GpcInfo from "./GpcInfo";
 import ExperienceDescription from "./ExperienceDescription";
+import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
 const ConsentModal = ({
   attributes,
   experience,
   children,
   onVendorPageClick,
+  modalType,
 }: {
   attributes: Attributes;
   experience: ExperienceConfig;
   children: ComponentChildren;
   onVendorPageClick?: () => void;
+  modalType?: String;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
 
@@ -49,19 +52,8 @@ const ConsentModal = ({
             description={experience.description}
           />
         </p>
-        <GpcInfo />
+        {modalType !== "TCF" && <GpcInfo />}
         {children}
-        {experience.privacy_policy_link_label &&
-        experience.privacy_policy_url ? (
-          <a
-            href={experience.privacy_policy_url}
-            rel="noopener noreferrer"
-            target="_blank"
-            className="fides-modal-privacy-policy"
-          >
-            {experience.privacy_policy_link_label}
-          </a>
-        ) : null}
       </div>
     </div>
   );

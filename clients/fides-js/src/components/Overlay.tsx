@@ -33,6 +33,7 @@ interface Props {
   renderBanner: (props: RenderBannerProps) => VNode | null;
   renderModalContent: (props: RenderModalContent) => VNode;
   onVendorPageClick?: () => void;
+  overlayType?: String;
 }
 
 const Overlay: FunctionComponent<Props> = ({
@@ -42,6 +43,7 @@ const Overlay: FunctionComponent<Props> = ({
   renderBanner,
   renderModalContent,
   onVendorPageClick,
+  overlayType,
 }) => {
   const delayBannerMilliseconds = 100;
   const delayModalLinkMilliseconds = 200;
@@ -153,6 +155,7 @@ const Overlay: FunctionComponent<Props> = ({
         attributes={attributes}
         experience={experience.experience_config}
         onVendorPageClick={onVendorPageClick}
+        modalType={overlayType}
       >
         {renderModalContent({ onClose: handleCloseModal })}
       </ConsentModal>
