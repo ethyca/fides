@@ -724,6 +724,10 @@ div#fides-modal .fides-modal-button-group {
   color: var(--fides-overlay-body-font-color);
 }
 
+.fides-primary-text-color {
+  color: var(--fides-overlay-primary-color);
+}
+
 /* Link */
 .fides-external-link {
   color: var(--fides-overlay-primary-color);
@@ -768,4 +772,15 @@ div#fides-modal .fides-modal-button-group {
 
 .fides-info-box p {
   margin: 0;
+}
+
+/* All on off buttons */
+.fides-all-on-off-buttons {
+  display: flex;
+  justify-content: end;
+  margin-bottom: 1em;
+}
+
+.fides-all-on-button {
+  margin-right: 0.9em;
 }

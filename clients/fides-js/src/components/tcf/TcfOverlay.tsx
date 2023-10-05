@@ -234,14 +234,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     [experience]
   );
 
-  const handleUpdateDraftState = useCallback(
-    ({ newEnabledIds, modelType }: UpdateEnabledIds) => {
-      const updated = { ...draftIds, [modelType]: newEnabledIds };
-      setDraftIds(updated);
-    },
-    [draftIds]
-  );
-
   const handleUpdateAllPreferences = useCallback(
     (enabledIds: EnabledIds) => {
       const tcf = createTcfSavePayload({ experience, enabledIds });
@@ -317,7 +309,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             <TcfTabs
               experience={experience}
               enabledIds={draftIds}
-              onChange={handleUpdateDraftState}
+              onChange={setDraftIds}
               activeTabIndex={activeTabIndex}
               onTabChange={setActiveTabIndex}
             />
