@@ -18,7 +18,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.models.consent_settings import ConsentSettings
 from fides.api.models.privacy_experience import (
     ComponentType,
     PrivacyExperience,
@@ -110,8 +109,7 @@ def _filter_experiences_by_region_or_country(
         experience_ids.append(privacy_center.id)
 
     # Only return TCF overlay or a regular overlay here; not both
-    consent_settings: ConsentSettings = ConsentSettings.get_or_create_with_defaults(db)
-    if consent_settings.tcf_enabled and tcf_overlay:
+    if CONFIG.consent.tcf_enabled and tcf_overlay:
         experience_ids.append(tcf_overlay.id)
     elif overlay:
         experience_ids.append(overlay.id)
