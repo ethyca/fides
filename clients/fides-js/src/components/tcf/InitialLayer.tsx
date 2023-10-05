@@ -7,10 +7,8 @@ import {
   getIdsNotRepresentedInStacks,
 } from "../../lib/tcf/stacks";
 import InitialLayerAccordion from "./InitialLayerAccordion";
-import {
-  TCFPurposeConsentRecord,
-  TCFPurposeLegitimateInterestsRecord,
-} from "../../lib/tcf/types";
+
+import { getUniquePurposeRecords } from "../../lib/tcf/purposes";
 
 const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
   const {
@@ -19,34 +17,15 @@ const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
     tcf_special_features: experienceSpecialFeatures = [],
   } = experience;
 
-  const uniquePurposeIds = useMemo(() => {
-    const consents = consentPurposes.map((p) => p.id);
-    const legints = legintPurposes.map((p) => p.id) ?? [];
-    const ids = new Set([...consents, ...legints]);
-    return Array.from(ids);
-  }, [consentPurposes, legintPurposes]);
+  const { uniquePurposeIds, uniquePurposes } = useMemo(
+    () => getUniquePurposeRecords({ consentPurposes, legintPurposes }),
+    [consentPurposes, legintPurposes]
+  );
 
   const specialFeatureIds = useMemo(
     () => experienceSpecialFeatures.map((sf) => sf.id),
     [experienceSpecialFeatures]
   );
-
-  const uniquePurposes = useMemo(() => {
-    const purposes: (
-      | TCFPurposeConsentRecord
-      | TCFPurposeLegitimateInterestsRecord
-    )[] = [];
-    uniquePurposeIds.forEach((id) => {
-      const consent = consentPurposes.find((p) => p.id === id);
-      const legint = legintPurposes.find((p) => p.id === id);
-      if (consent) {
-        purposes.push(consent);
-      } else if (legint) {
-        purposes.push(legint);
-      }
-    });
-    return purposes;
-  }, [uniquePurposeIds, consentPurposes, legintPurposes]);
 
   const stacks = useMemo(() => {
     if (!experience.gvl) {
