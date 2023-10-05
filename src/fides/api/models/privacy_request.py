@@ -625,7 +625,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         """
         return get_action_required_details(cached_key=f"EN_FAILED_LOCATION__{self.id}")
 
-    def cache_manual_webhook_input(
+    def cache_manual_webhook_access_input(
         self, manual_webhook: AccessManualWebhook, input_data: Optional[Dict[str, Any]]
     ) -> None:
         """Cache manually added data for the given manual webhook.  This is for use by the *manual_webhook* connector,
@@ -637,11 +637,27 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         parsed_data = manual_webhook.fields_schema.parse_obj(input_data)
 
         cache.set_encoded_object(
-            f"WEBHOOK_MANUAL_INPUT__{self.id}__{manual_webhook.id}",
+            f"WEBHOOK_MANUAL_ACCESS_INPUT__{self.id}__{manual_webhook.id}",
             parsed_data.dict(),
         )
 
-    def get_manual_webhook_input_strict(
+    def cache_manual_webhook_erasure_input(
+        self, manual_webhook: AccessManualWebhook, input_data: Optional[Dict[str, Any]]
+    ) -> None:
+        """Cache manually added data for the given manual webhook.  This is for use by the *manual_webhook* connector,
+        which is *NOT* integrated with the graph.
+
+        Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
+        """
+        cache: FidesopsRedis = get_cache()
+        parsed_data = manual_webhook.erasure_fields_schema.parse_obj(input_data)
+
+        cache.set_encoded_object(
+            f"WEBHOOK_MANUAL_ERASURE_INPUT__{self.id}__{manual_webhook.id}",
+            parsed_data.dict(),
+        )
+
+    def get_manual_webhook_access_input_strict(
         self, manual_webhook: AccessManualWebhook
     ) -> Dict[str, Any]:
         """
@@ -651,7 +667,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
 
         This is for use by the *manual_webhook* connector which is *NOT* integrated with the graph.
         """
-        cached_results: Optional[Dict[str, Any]] = _get_manual_input_from_cache(
+        cached_results: Optional[Dict[str, Any]] = _get_manual_access_input_from_cache(
             privacy_request=self, manual_webhook=manual_webhook
         )
 
@@ -668,7 +684,36 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             f"No data cached for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
         )
 
-    def get_manual_webhook_input_non_strict(
+    def get_manual_webhook_erasure_input_strict(
+        self, manual_webhook: AccessManualWebhook
+    ) -> Dict[str, Any]:
+        """
+        Retrieves manual webhook fields saved to the privacy request in strict mode.
+        Fails either if extra saved fields are detected (webhook definition had fields removed) or fields were not
+        explicitly set (webhook definition had fields added). This mode lets us know if webhooks data needs to be re-uploaded.
+
+        This is for use by the *manual_webhook* connector which is *NOT* integrated with the graph.
+        """
+        cached_results: Optional[Dict[str, Any]] = _get_manual_erasure_input_from_cache(
+            privacy_request=self, manual_webhook=manual_webhook
+        )
+
+        if cached_results:
+            data: Dict[str, Any] = manual_webhook.erasure_fields_schema.parse_obj(
+                cached_results
+            ).dict(exclude_unset=True)
+            if set(data.keys()) != set(
+                manual_webhook.erasure_fields_schema.__fields__.keys()
+            ):
+                raise ManualWebhookFieldsUnset(
+                    f"Fields unset for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
+                )
+            return data
+        raise NoCachedManualWebhookEntry(
+            f"No data cached for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
+        )
+
+    def get_manual_webhook_access_input_non_strict(
         self, manual_webhook: AccessManualWebhook
     ) -> Dict[str, Any]:
         """Retrieves manual webhook fields saved to the privacy request in non-strict mode.
@@ -676,7 +721,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
 
         This is for use by the *manual_webhook* connector which is *NOT* integrated with the graph.
         """
-        cached_results: Optional[Dict[str, Any]] = _get_manual_input_from_cache(
+        cached_results: Optional[Dict[str, Any]] = _get_manual_access_input_from_cache(
             privacy_request=self, manual_webhook=manual_webhook
         )
         if cached_results:
@@ -685,7 +730,24 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             ).dict()
         return manual_webhook.empty_fields_dict
 
-    def cache_manual_input(
+    def get_manual_webhook_erasure_input_non_strict(
+        self, manual_webhook: AccessManualWebhook
+    ) -> Dict[str, Any]:
+        """Retrieves manual webhook fields saved to the privacy request in non-strict mode.
+        Returns None for any fields not explicitly set and ignores extra fields.
+
+        This is for use by the *manual_webhook* connector which is *NOT* integrated with the graph.
+        """
+        cached_results: Optional[Dict[str, Any]] = _get_manual_erasure_input_from_cache(
+            privacy_request=self, manual_webhook=manual_webhook
+        )
+        if cached_results:
+            return manual_webhook.erasure_fields_non_strict_schema.parse_obj(
+                cached_results
+            ).dict()
+        return manual_webhook.empty_fields_dict
+
+    def cache_manual_access_input(
         self, collection: CollectionAddress, manual_rows: Optional[List[Row]]
     ) -> None:
         """Cache manually added rows for the given CollectionAddress. This is for use by the *manual* connector which is integrated with the graph."""
@@ -695,7 +757,9 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             manual_rows,
         )
 
-    def get_manual_input(self, collection: CollectionAddress) -> Optional[List[Row]]:
+    def get_manual_access_input(
+        self, collection: CollectionAddress
+    ) -> Optional[List[Row]]:
         """Retrieve manually added rows from the cache for the given CollectionAddress.
         Returns the manual data if it exists, otherwise None.
 
@@ -902,7 +966,7 @@ class PrivacyRequestError(Base):
     )
 
 
-def _get_manual_input_from_cache(
+def _get_manual_access_input_from_cache(
     privacy_request: PrivacyRequest, manual_webhook: AccessManualWebhook
 ) -> Optional[Dict[str, Any]]:
     """Get raw manual input uploaded to the privacy request for the given webhook
@@ -911,7 +975,23 @@ def _get_manual_input_from_cache(
     cached_results: Optional[
         Optional[Dict[str, Any]]
     ] = cache.get_encoded_objects_by_prefix(
-        f"WEBHOOK_MANUAL_INPUT__{privacy_request.id}__{manual_webhook.id}"
+        f"WEBHOOK_MANUAL_ACCESS_INPUT__{privacy_request.id}__{manual_webhook.id}"
+    )
+    if cached_results:
+        return list(cached_results.values())[0]
+    return None
+
+
+def _get_manual_erasure_input_from_cache(
+    privacy_request: PrivacyRequest, manual_webhook: AccessManualWebhook
+) -> Optional[Dict[str, Any]]:
+    """Get raw manual input uploaded to the privacy request for the given webhook
+    from the cache without attempting to coerce into a Pydantic schema"""
+    cache: FidesopsRedis = get_cache()
+    cached_results: Optional[
+        Optional[Dict[str, Any]]
+    ] = cache.get_encoded_objects_by_prefix(
+        f"WEBHOOK_MANUAL_ERASURE_INPUT__{privacy_request.id}__{manual_webhook.id}"
     )
     if cached_results:
         return list(cached_results.values())[0]

@@ -649,6 +649,10 @@ div#fides-modal .fides-modal-button-group {
   align-items: center;
 }
 
+.fides-margin-right {
+  margin-right: 0.2em;
+}
+
 /* TCF toggles */
 .fides-tcf-toggle-content {
   margin-right: 60px;
@@ -657,7 +661,9 @@ div#fides-modal .fides-modal-button-group {
 }
 
 .fides-tcf-purpose-vendor-title {
-  font-weight: 500;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
 }
 
 .fides-tcf-illustration {
@@ -679,13 +685,51 @@ div#fides-modal .fides-modal-button-group {
   margin-left: 0;
 }
 
+.fides-tcf-vendor-toggles {
+  display: flex;
+}
+
+.fides-legal-basis-labels {
+  display: flex;
+  align-items: end;
+  justify-content: end;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+/* Vendor purpose table */
+.fides-vendor-details-table {
+  width: 100%;
+  margin-bottom: 1em;
+}
+
+.fides-vendor-details-table th,
+.fides-vendor-details-table td {
+  padding: 0.5em 1em;
+  text-align: left;
+  font-size: 0.9em;
+}
+
+.fides-vendor-details-table td {
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+}
+
 /* Link button */
 .fides-link-button {
   border: none;
-  color: var(--fides-overlay-primary-color);
   background: none;
   padding: 0;
   cursor: pointer;
+  text-decoration: underline;
+  color: var(--fides-overlay-body-font-color);
+}
+
+/* Link */
+.fides-external-link {
+  color: var(--fides-overlay-primary-color);
+  font-weight: 500;
+  font-size: 0.9em;
+  margin-right: 1em;
 }
 
 /* Dropdown */
@@ -696,4 +740,32 @@ div#fides-modal .fides-modal-button-group {
   border-radius: var(--fides-overlay-component-border-radius);
   padding: 0.4em;
   border: 1px solid var(--fides-overlay-select-border-color);
+}
+
+/* Vendor info (initial layer) */
+.fides-vendor-info div {
+  margin-right: 2em;
+}
+
+.fides-vendor-info {
+  display: flex;
+  padding: 1.1em;
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-vendor-info-label {
+  font-weight: 600;
+  font-size: 1em;
+}
+
+/* Info box */
+.fides-info-box {
+  background-color: var(--fides-overlay-background-dark-color);
+  border-radius: var(--fides-overlay-component-border-radius);
+  padding: 1.1em;
+  margin-bottom: 1em;
+}
+
+.fides-info-box p {
+  margin: 0;
 }

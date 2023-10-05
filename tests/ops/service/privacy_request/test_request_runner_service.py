@@ -2072,7 +2072,7 @@ class TestPrivacyRequestsManualWebhooks:
 
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     @mock.patch("fides.api.service.privacy_request.request_runner_service.run_erasure")
-    def test_manual_input_not_required_for_erasure_only_policies(
+    def test_manual_input_required_for_erasure_only_policies(
         self,
         mock_erasure,
         mock_upload,
@@ -2082,7 +2082,7 @@ class TestPrivacyRequestsManualWebhooks:
         run_privacy_request_task,
         db,
     ):
-        """Manual inputs are not tied to policies, but shouldn't hold up request if only erasures are requested"""
+        """Manual inputs are not tied to policies, but should still hold up a request even for erasure requests."""
         customer_email = "customer-1@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
@@ -2097,11 +2097,9 @@ class TestPrivacyRequestsManualWebhooks:
             data,
         )
         db.refresh(pr)
-        assert (
-            pr.status == PrivacyRequestStatus.complete
-        )  # Privacy request not put in "requires_input" state
+        assert pr.status == PrivacyRequestStatus.requires_input
         assert not mock_upload.called  # erasure only request, no data uploaded
-        assert mock_erasure.called
+        assert not mock_erasure.called
 
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_pass_on_manually_added_input(
@@ -2113,7 +2111,7 @@ class TestPrivacyRequestsManualWebhooks:
         run_privacy_request_task,
         privacy_request_requires_input: PrivacyRequest,
         db,
-        cached_input,
+        cached_access_input,
     ):
         run_privacy_request_task.delay(privacy_request_requires_input.id).get(
             timeout=PRIVACY_REQUEST_TASK_TIMEOUT
@@ -2138,7 +2136,7 @@ class TestPrivacyRequestsManualWebhooks:
         privacy_request_requires_input: PrivacyRequest,
         db,
     ):
-        privacy_request_requires_input.cache_manual_webhook_input(
+        privacy_request_requires_input.cache_manual_webhook_access_input(
             access_manual_webhook,
             {"email": "customer-1@example.com"},
         )
@@ -2167,7 +2165,7 @@ class TestPrivacyRequestsManualWebhooks:
         privacy_request_requires_input: PrivacyRequest,
         db,
     ):
-        privacy_request_requires_input.cache_manual_webhook_input(
+        privacy_request_requires_input.cache_manual_webhook_access_input(
             access_manual_webhook,
             {},
         )

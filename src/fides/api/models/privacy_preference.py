@@ -34,7 +34,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.util.tcf_util import (
+from fides.api.util.tcf.tcf_experience_contents import (
     ConsentRecordType,
     TCFComponentType,
     get_relevant_systems_for_tcf_attribute,
@@ -693,7 +693,7 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
             name="fides_user_device_identity_purpose",
         ),
         UniqueConstraint(
-            "provided_identity_id", "purpose", name="identity_special_purpose"
+            "provided_identity_id", "special_purpose", name="identity_special_purpose"
         ),
         UniqueConstraint(
             "fides_user_device_provided_identity_id",

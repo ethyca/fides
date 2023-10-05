@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 from html import escape, unescape
 from typing import Dict, List, Optional
@@ -17,7 +18,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.models.consent_settings import ConsentSettings
 from fides.api.models.privacy_experience import (
     ComponentType,
     PrivacyExperience,
@@ -34,9 +34,11 @@ from fides.api.util.consent_util import (
     get_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, transform_fields
-from fides.api.util.tcf_util import (
+from fides.api.util.tcf.experience_meta import build_experience_tcf_meta
+from fides.api.util.tcf.tcf_experience_contents import (
     TCF_COMPONENT_MAPPING,
     TCFExperienceContents,
+    get_tcf_contents,
     load_gvl,
 )
 from fides.common.api.v1 import urn_registry as urls
@@ -107,8 +109,7 @@ def _filter_experiences_by_region_or_country(
         experience_ids.append(privacy_center.id)
 
     # Only return TCF overlay or a regular overlay here; not both
-    consent_settings: ConsentSettings = ConsentSettings.get_or_create_with_defaults(db)
-    if consent_settings.tcf_enabled and tcf_overlay:
+    if CONFIG.consent.tcf_enabled and tcf_overlay:
         experience_ids.append(tcf_overlay.id)
     elif overlay:
         experience_ids.append(overlay.id)
@@ -124,7 +125,7 @@ def _filter_experiences_by_region_or_country(
     response_model=Page[PrivacyExperienceResponse],
 )
 @fides_limiter.limit(CONFIG.security.public_request_rate_limit)
-def privacy_experience_list(
+async def privacy_experience_list(
     *,
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
@@ -136,6 +137,7 @@ def privacy_experience_list(
     fides_user_device_id: Optional[str] = None,
     systems_applicable: Optional[bool] = False,
     include_gvl: Optional[bool] = False,
+    include_meta: Optional[bool] = False,
     request: Request,  # required for rate limiting
     response: Response,  # required for rate limiting
 ) -> AbstractPage[PrivacyExperience]:
@@ -156,6 +158,7 @@ def privacy_experience_list(
     :param fides_user_device_id: Supplement the response with current saved preferences of the given user
     :param systems_applicable: Only return embedded Notices associated with systems.
     :param include_gvl: Embeds gvl.json in the response provided we also have TCF content
+    :param include_meta: If True, returns TCF Experience meta if applicable
     :param request:
     :param response:
     :return:
@@ -174,6 +177,7 @@ def privacy_experience_list(
             db=db, fides_user_device_id=fides_user_device_id
         )
 
+    await asyncio.sleep(delay=0.001)
     experience_query = db.query(PrivacyExperience)
 
     if show_disabled is False:
@@ -184,11 +188,13 @@ def privacy_experience_list(
             PrivacyExperienceConfig.id == PrivacyExperience.experience_config_id,
         ).filter(PrivacyExperienceConfig.disabled.is_(False))
 
+    await asyncio.sleep(delay=0.001)
     if region is not None:
         experience_query = _filter_experiences_by_region_or_country(
             db=db, region=region, experience_query=experience_query
         )
 
+    await asyncio.sleep(delay=0.001)
     if component is not None:
         # Intentionally relaxes what is returned when querying for "overlay", by returning both types of overlays.
         # This way the frontend doesn't have to know which type of overlay, regular or tcf, just that it is an overlay.
@@ -200,10 +206,12 @@ def privacy_experience_list(
                 component_search_map.get(component, [component])
             )
         )
+    await asyncio.sleep(delay=0.001)
     if has_config is True:
         experience_query = experience_query.filter(
             PrivacyExperience.experience_config_id.isnot(None)
         )
+    await asyncio.sleep(delay=0.001)
     if has_config is False:
         experience_query = experience_query.filter(
             PrivacyExperience.experience_config_id.is_(None)
@@ -211,9 +219,15 @@ def privacy_experience_list(
 
     results: List[PrivacyExperience] = []
     should_unescape: Optional[str] = request.headers.get(UNESCAPE_SAFESTR_HEADER)
+
+    # Builds TCF Experience Contents once here, in case multiple TCF Experiences are requested
+    base_tcf_contents: TCFExperienceContents = get_tcf_contents(db)
+
+    await asyncio.sleep(delay=0.001)
     for privacy_experience in experience_query.order_by(
         PrivacyExperience.created_at.desc()
     ):
+        await asyncio.sleep(delay=0.001)
         content_exists: bool = embed_experience_details(
             db,
             privacy_experience=privacy_experience,
@@ -222,12 +236,15 @@ def privacy_experience_list(
             fides_user_provided_identity=fides_user_provided_identity,
             should_unescape=should_unescape,
             include_gvl=include_gvl,
+            include_meta=include_meta,
+            base_tcf_contents=base_tcf_contents,
         )
 
         if content_required and not content_exists:
             continue
 
         # Temporarily save "show_banner" on the privacy experience object
+        await asyncio.sleep(delay=0.001)
         privacy_experience.show_banner = privacy_experience.get_should_show_banner(
             db, show_disabled
         )
@@ -253,6 +270,8 @@ def embed_experience_details(
     fides_user_provided_identity: Optional[ProvidedIdentity],
     should_unescape: Optional[str],
     include_gvl: Optional[bool],
+    include_meta: Optional[bool],
+    base_tcf_contents: TCFExperienceContents,
 ) -> bool:
     """
     Embed the contents of the PrivacyExperience at runtime. Adds Privacy Notices or TCF contents if applicable.
@@ -262,22 +281,22 @@ def embed_experience_details(
     """
     # Reset any temporary cached items just in case
     privacy_experience.privacy_notices = []
+    privacy_experience.meta = {}
+    privacy_experience.gvl = {}
     for component in TCF_COMPONENT_MAPPING:
         setattr(privacy_experience, component, [])
 
-    # Fetch the base TCF Contents
-    tcf_contents: TCFExperienceContents = privacy_experience.get_related_tcf_contents(
-        db, fides_user_provided_identity
+    # Updates Privacy Experience in-place with TCF Contents if applicable, and then returns
+    # if TCF contents exist
+    has_tcf_contents: bool = privacy_experience.update_with_tcf_contents(
+        db, base_tcf_contents, fides_user_provided_identity
     )
-    has_tcf_contents: bool = any(
-        getattr(tcf_contents, component) for component in TCF_COMPONENT_MAPPING
-    )
-    if has_tcf_contents and include_gvl:
-        privacy_experience.gvl = load_gvl()
 
-    # Add fetched TCF contents to the Privacy Experience if applicable
-    for component in TCF_COMPONENT_MAPPING:
-        setattr(privacy_experience, component, getattr(tcf_contents, component))
+    if has_tcf_contents:
+        if include_meta:
+            privacy_experience.meta = build_experience_tcf_meta(base_tcf_contents)
+        if include_gvl:
+            privacy_experience.gvl = load_gvl()
 
     privacy_notices: List[
         PrivacyNotice

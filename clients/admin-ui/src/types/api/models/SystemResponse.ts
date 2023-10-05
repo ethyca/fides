@@ -9,14 +9,16 @@ import type { DataFlow } from "./DataFlow";
 import type { DataProtectionImpactAssessment } from "./DataProtectionImpactAssessment";
 import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
 import type { LegalBasisForProfilingEnum } from "./LegalBasisForProfilingEnum";
-import type { LegalBasisForTransfersEnum } from "./LegalBasisForTransfersEnum";
 import type { PrivacyDeclarationResponse } from "./PrivacyDeclarationResponse";
 import type { SystemMetadata } from "./SystemMetadata";
 import type { UserResponse } from "./UserResponse";
 
 /**
- * Extension of base pydantic model to include additional fields like `privacy_declarations`, connection_config fields
- * and cookies in responses
+ * Extension of base pydantic response model to include additional relationship fields that
+ * may require extra DB queries, like `privacy_declarations`, connection_config fields and cookies.
+ *
+ * This response model is generally useful for an API that returns a detailed view of _single_
+ * System record. Attempting to return bulk results with this model can lead to n+1 query issues.
  */
 export type SystemResponse = {
   /**
@@ -140,7 +142,7 @@ export type SystemResponse = {
   /**
    * The legal basis (or bases) under which the data is transferred.
    */
-  legal_basis_for_transfers?: Array<LegalBasisForTransfersEnum>;
+  legal_basis_for_transfers?: Array<string>;
   /**
    * Whether this system requires data protection impact assessments.
    */
@@ -187,6 +189,7 @@ export type SystemResponse = {
    * The data security practices employed by this system.
    */
   data_security_practices?: string;
+  created_at: string;
   /**
    *
    * Describes the returned schema for a ConnectionConfiguration.
@@ -198,6 +201,4 @@ export type SystemResponse = {
    */
   data_stewards?: Array<UserResponse>;
   cookies?: Array<Cookies>;
-  created_by?: string;
-  created_at: string;
 };

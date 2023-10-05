@@ -7,7 +7,6 @@ from starlette.testclient import TestClient
 from fides.api.api.v1.endpoints.privacy_experience_endpoints import (
     _filter_experiences_by_region_or_country,
 )
-from fides.api.models.consent_settings import ConsentSettings
 from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.models.privacy_notice import ConsentMechanism
 from fides.common.api.v1.urn_registry import PRIVACY_EXPERIENCE, V1_URL_PREFIX
@@ -597,6 +596,12 @@ class TestGetPrivacyExperiences:
 
         assert resp["privacy_notices"][0]["current_served"] is None
         assert resp["privacy_notices"][0]["outdated_served"] is None
+        meta = resp["meta"]
+        assert not meta["version_hash"]
+        assert not meta["accept_all_tc_string"]
+        assert not meta["accept_all_tc_mobile_data"]
+        assert not meta["reject_all_tc_string"]
+        assert not meta["reject_all_tc_mobile_data"]
 
     @pytest.mark.usefixtures(
         "privacy_notice_us_ca_provide",
@@ -661,11 +666,8 @@ class TestGetTCFPrivacyExperiences:
         privacy_experience_france_overlay,
         privacy_notice_fr_provide_service_frontend_only,
     ):
-        settings = ConsentSettings.get_or_create_with_defaults(db)
-        settings.update(db=db, data={"tcf_enabled": False})
-
         resp = api_client.get(
-            url + "?region=fr&component=overlay&include_gvl=True",
+            url + "?region=fr&component=overlay&include_gvl=True&include_meta=True",
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
@@ -683,18 +685,23 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["tcf_special_purposes"] == []
         assert resp.json()["items"][0]["tcf_special_features"] == []
         assert resp.json()["items"][0]["tcf_systems"] == []
+        meta = resp.json()["items"][0]["meta"]
+        assert not meta["version_hash"]
+        assert not meta["accept_all_tc_string"]
+        assert not meta["accept_all_tc_mobile_data"]
+        assert not meta["reject_all_tc_string"]
+        assert not meta["reject_all_tc_mobile_data"]
 
     @pytest.mark.usefixtures(
         "privacy_experience_france_overlay",
         "privacy_notice_fr_provide_service_frontend_only",
+        "enable_tcf",
     )
     def test_tcf_enabled_but_no_relevant_systems(
         self, db, api_client, url, privacy_experience_france_tcf_overlay
     ):
-        settings = ConsentSettings.get_or_create_with_defaults(db)
-        settings.update(db=db, data={"tcf_enabled": True})
         resp = api_client.get(
-            url + "?region=fr&component=overlay&include_gvl=True",
+            url + "?region=fr&component=overlay&include_gvl=True&include_meta=True",
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
@@ -708,6 +715,12 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["tcf_special_features"] == []
         assert resp.json()["items"][0]["tcf_systems"] == []
         assert resp.json()["items"][0]["gvl"] == {}
+        meta = resp.json()["items"][0]["meta"]
+        assert not meta["version_hash"]
+        assert not meta["accept_all_tc_string"]
+        assert not meta["accept_all_tc_mobile_data"]
+        assert not meta["reject_all_tc_string"]
+        assert not meta["reject_all_tc_mobile_data"]
 
         # Has notices = True flag will keep this experience from appearing altogether
         resp = api_client.get(
@@ -724,6 +737,7 @@ class TestGetTCFPrivacyExperiences:
         "fides_user_provided_identity",
         "served_notice_history_for_tcf_special_purpose",
         "tcf_system",
+        "enable_tcf",
     )
     def test_tcf_enabled_with_overlapping_vendors(
         self,
@@ -732,11 +746,9 @@ class TestGetTCFPrivacyExperiences:
         url,
         privacy_experience_france_tcf_overlay,
     ):
-        settings = ConsentSettings.get_or_create_with_defaults(db)
-        settings.update(db=db, data={"tcf_enabled": True})
         resp = api_client.get(
             url
-            + "?region=fr&component=overlay&fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f&has_notices=True&include_gvl=True",
+            + "?region=fr&component=overlay&fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f&has_notices=True&include_gvl=True&include_meta=True",
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
@@ -781,20 +793,25 @@ class TestGetTCFPrivacyExperiences:
         )
         assert resp.json()["items"][0]["tcf_systems"] == []
         assert resp.json()["items"][0]["gvl"]["gvlSpecificationVersion"] == 3
+        meta = resp.json()["items"][0]["meta"]
+        assert meta["version_hash"] == "75fb2dafef58"
+        assert meta["accept_all_tc_string"]
+        assert meta["accept_all_tc_mobile_data"]
+        assert meta["reject_all_tc_string"]
+        assert meta["reject_all_tc_mobile_data"]
 
     @pytest.mark.usefixtures(
         "privacy_experience_france_overlay",
         "privacy_preference_history_for_tcf_feature",
         "served_notice_history_for_tcf_feature",
         "fides_user_provided_identity",
+        "enable_tcf",
     )
     def test_tcf_enabled_with_overlapping_systems(
         self, db, api_client, url, privacy_experience_france_tcf_overlay, system
     ):
         """Assert a system without a specific vendor id has a relevant feature, and shows up in the overlay
         under systems"""
-        settings = ConsentSettings.get_or_create_with_defaults(db)
-        settings.update(db=db, data={"tcf_enabled": True})
         privacy_declaration = system.privacy_declarations[0]
         privacy_declaration.data_use = "functional.storage"
         privacy_declaration.legal_basis_for_processing = "Consent"
@@ -870,13 +887,10 @@ class TestFilterExperiencesByRegionOrCountry:
         assert resp.count() == 1
         assert resp.first().id == privacy_experience_france_overlay.id
 
-    @pytest.mark.usefixtures("privacy_experience_france_overlay")
+    @pytest.mark.usefixtures("privacy_experience_france_overlay", "enable_tcf")
     def test_tcf_overlay_returned_when_tcf_enabled(
         self, db, privacy_experience_france_tcf_overlay
     ):
-        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-        consent_settings.update(db=db, data={"tcf_enabled": True})
-
         resp = _filter_experiences_by_region_or_country(
             db, region="fr", experience_query=db.query(PrivacyExperience)
         )
@@ -884,12 +898,11 @@ class TestFilterExperiencesByRegionOrCountry:
         assert resp.first().id == privacy_experience_france_tcf_overlay.id
 
     @pytest.mark.usefixtures(
-        "privacy_experience_france_overlay", "privacy_experience_france_tcf_overlay"
+        "privacy_experience_france_overlay",
+        "privacy_experience_france_tcf_overlay",
+        "enable_tcf",
     )
     def test_tcf_enabled_but_we_are_not_in_eea(self, db, privacy_experience_overlay):
-        consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-        consent_settings.update(db=db, data={"tcf_enabled": True})
-
         resp = _filter_experiences_by_region_or_country(
             db, region="us_ca", experience_query=db.query(PrivacyExperience)
         )

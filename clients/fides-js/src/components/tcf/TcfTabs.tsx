@@ -5,6 +5,7 @@ import { PrivacyExperience } from "../../lib/consent-types";
 import type { EnabledIds, UpdateEnabledIds } from "./TcfOverlay";
 import TcfFeatures from "./TcfFeatures";
 import TcfVendors from "./TcfVendors";
+import InfoBox from "../InfoBox";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";
@@ -26,38 +27,61 @@ const TcfTabs = ({
     {
       name: "Purposes",
       content: (
-        <TcfPurposes
-          allPurposes={experience.tcf_purposes}
-          allSpecialPurposes={experience.tcf_special_purposes}
-          enabledPurposeIds={enabledIds.purposes}
-          enabledSpecialPurposeIds={enabledIds.specialPurposes}
-          onChange={onChange}
-        />
+        <div>
+          <InfoBox>
+            You can review and and exercise your right to consent to specific
+            purposes by using the filter to switch between Consent and
+            Legitimate Interest below.
+          </InfoBox>
+          <TcfPurposes
+            allPurposes={experience.tcf_purposes}
+            allSpecialPurposes={experience.tcf_special_purposes}
+            enabledPurposeIds={enabledIds.purposes}
+            enabledSpecialPurposeIds={enabledIds.specialPurposes}
+            onChange={onChange}
+          />
+        </div>
       ),
     },
     {
       name: "Features",
       content: (
-        <TcfFeatures
-          allFeatures={experience.tcf_features}
-          allSpecialFeatures={experience.tcf_special_features}
-          enabledFeatureIds={enabledIds.features}
-          enabledSpecialFeatureIds={enabledIds.specialFeatures}
-          onChange={onChange}
-        />
+        <div>
+          <InfoBox>
+            You can review the list of features and exercise your right to
+            consent to special features below.
+          </InfoBox>
+          <TcfFeatures
+            allFeatures={experience.tcf_features}
+            allSpecialFeatures={experience.tcf_special_features}
+            enabledFeatureIds={enabledIds.features}
+            enabledSpecialFeatureIds={enabledIds.specialFeatures}
+            onChange={onChange}
+          />
+        </div>
       ),
     },
     {
       name: "Vendors",
       content: (
-        <TcfVendors
-          allSystems={experience.tcf_systems}
-          allVendors={experience.tcf_vendors}
-          enabledVendorIds={enabledIds.vendors}
-          enabledSystemIds={enabledIds.systems}
-          onChange={onChange}
-          gvl={experience.gvl}
-        />
+        <div>
+          <InfoBox>
+            You may review the list of vendors and the purposes or features of
+            processing they individually declare below. You have the right to
+            exercise you consent for each vendor based on the legal basis they
+            assert.
+          </InfoBox>
+          <TcfVendors
+            vendors={[
+              ...(experience.tcf_vendors || []),
+              ...(experience.tcf_systems || []),
+            ]}
+            enabledVendorConsentIds={enabledIds.vendorsConsent}
+            enabledVendorLegintIds={enabledIds.vendorsLegint}
+            onChange={onChange}
+            gvl={experience.gvl}
+          />
+        </div>
       ),
     },
   ];
