@@ -5,13 +5,19 @@ import type {
   UserConsentPreference,
 } from "../consent-types";
 
-export enum LegalBasisForProcessingEnum {
+enum LegalBasisForProcessingEnum {
   CONSENT = "Consent",
   CONTRACT = "Contract",
   LEGAL_OBLIGATIONS = "Legal obligations",
   VITAL_INTERESTS = "Vital interests",
   PUBLIC_INTEREST = "Public interest",
   LEGITIMATE_INTERESTS = "Legitimate interests",
+}
+
+// These are the only relevant ones for TCF
+export enum LegalBasisEnum {
+  CONSENT = LegalBasisForProcessingEnum.CONSENT,
+  LEGITIMATE_INTERESTS = LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS,
 }
 
 // Embedded items
@@ -235,6 +241,11 @@ export type VendorRecord = TCFConsentVendorRecord &
     isConsent: boolean;
     isLegint: boolean;
   };
+
+export interface PurposeRecord extends TCFPurposeConsentRecord {
+  isConsent: boolean;
+  isLegint: boolean;
+}
 
 export type GVLJson = Pick<
   GVL,
