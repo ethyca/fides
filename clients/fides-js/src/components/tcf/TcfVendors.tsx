@@ -7,19 +7,17 @@ import {
   GvlDataCategories,
   GvlVendorUrl,
   GvlDataDeclarations,
-  LegalBasisForProcessingEnum,
   VendorRecord,
 } from "../../lib/tcf/types";
 import { PrivacyExperience } from "../../lib/consent-types";
 import { UpdateEnabledIds } from "./TcfOverlay";
-import DataUseToggle from "../DataUseToggle";
 import FilterButtons from "./FilterButtons";
 import {
   transformExperienceToVendorRecords,
   vendorIsGvl,
 } from "../../lib/tcf/vendors";
 import ExternalLink from "../ExternalLink";
-import Toggle from "../Toggle";
+import DoubleToggleTable from "./DoubleToggleTable";
 
 const FILTERS = [{ name: "All vendors" }, { name: "IAB TCF vendors" }];
 
@@ -203,33 +201,6 @@ const TcfVendors = ({
     return null;
   }
 
-  const handleToggle = (
-    vendor: VendorRecord,
-    legalBasis:
-      | LegalBasisForProcessingEnum.CONSENT
-      | LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
-  ) => {
-    const enabledIds =
-      legalBasis === LegalBasisForProcessingEnum.CONSENT
-        ? enabledVendorConsentIds
-        : enabledVendorLegintIds;
-    const modelType =
-      legalBasis === LegalBasisForProcessingEnum.CONSENT
-        ? "vendorsConsent"
-        : "vendorsLegint";
-    if (enabledIds.indexOf(vendor.id) !== -1) {
-      onChange({
-        newEnabledIds: enabledIds.filter((e) => e !== vendor.id),
-        modelType,
-      });
-    } else {
-      onChange({
-        newEnabledIds: [...enabledIds, vendor.id],
-        modelType,
-      });
-    }
-  };
-
   const handleFilter = (index: number) => {
     if (index === 0) {
       setIsFiltered(false);
@@ -245,53 +216,27 @@ const TcfVendors = ({
   return (
     <div>
       <FilterButtons filters={FILTERS} onChange={handleFilter} />
-      {/* DEFER: ideally we use a table object, but then DataUseToggles would need to be reworked
-      or we would need a separate component. */}
-      <div className="fides-legal-basis-labels">
-        <span className="fides-margin-right">Legitimate interest</span>
-        <span>Consent</span>
-      </div>
-      {vendorsToDisplay.map((vendor) => {
-        const gvlVendor = vendorIsGvl(vendor, experience.gvl);
-        // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
-        const url: GvlVendorUrl | undefined = gvlVendor?.urls.find(
-          (u: GvlVendorUrl) => u.langId === "en"
-        );
-        const dataCategories: GvlDataCategories | undefined =
+      <DoubleToggleTable<VendorRecord>
+        title="Vendors"
+        items={vendorsToDisplay}
+        enabledConsentIds={enabledVendorConsentIds}
+        enabledLegintIds={enabledVendorLegintIds}
+        onToggle={onChange}
+        consentModelType="vendorsConsent"
+        legintModelType="vendorsLegint"
+        renderBadgeLabel={(vendor) =>
+          vendorIsGvl(vendor, experience.gvl) ? "IAB TCF" : undefined
+        }
+        renderToggleChild={(vendor) => {
+          const gvlVendor = vendorIsGvl(vendor, experience.gvl);
           // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
-          experience.gvl?.dataCategories;
-        return (
-          <DataUseToggle
-            dataUse={{
-              key: `${vendor.id}-legint`,
-              name: vendor.name,
-            }}
-            onToggle={() => {
-              handleToggle(
-                vendor,
-                LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
-              );
-            }}
-            checked={enabledVendorLegintIds.indexOf(vendor.id) !== -1}
-            badge={gvlVendor ? "IAB TCF" : undefined}
-            secondToggle={
-              <div
-                style={{ width: "50px", display: "flex", marginLeft: ".2em" }}
-              >
-                {vendor.isConsent ? (
-                  <Toggle
-                    name={`${vendor.name}-consent`}
-                    id={`${vendor.id}-consent`}
-                    checked={enabledVendorConsentIds.indexOf(vendor.id) !== -1}
-                    onChange={() =>
-                      handleToggle(vendor, LegalBasisForProcessingEnum.CONSENT)
-                    }
-                  />
-                ) : null}
-              </div>
-            }
-            includeToggle={vendor.isLegint}
-          >
+          const url: GvlVendorUrl | undefined = gvlVendor?.urls.find(
+            (u: GvlVendorUrl) => u.langId === "en"
+          );
+          const dataCategories: GvlDataCategories | undefined =
+            // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
+            experience.gvl?.dataCategories;
+          return (
             <div>
               {gvlVendor ? <StorageDisclosure vendor={gvlVendor} /> : null}
               <div>
@@ -312,7 +257,6 @@ const TcfVendors = ({
                 specialPurposes={vendor.special_purposes}
                 gvlVendor={gvlVendor}
               />
-
               <VendorDetails label="Features" lineItems={vendor.features} />
               <VendorDetails
                 label="Special features"
@@ -323,9 +267,9 @@ const TcfVendors = ({
                 dataCategories={dataCategories}
               />
             </div>
-          </DataUseToggle>
-        );
-      })}
+          );
+        }}
+      />
     </div>
   );
 };
