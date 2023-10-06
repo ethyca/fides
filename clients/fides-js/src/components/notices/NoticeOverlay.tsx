@@ -115,27 +115,19 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             onClose={onClose}
             experience={experienceConfig}
             buttonGroup={
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+              <NoticeConsentButtons
+                experience={experience}
+                onManagePreferencesClick={onManagePreferencesClick}
+                enabledKeys={draftEnabledNoticeKeys}
+                onSave={(keys) => {
+                  handleUpdatePreferences(keys);
+                  onSave();
                 }}
-              >
-                <NoticeConsentButtons
-                  experience={experience}
-                  onManagePreferencesClick={onManagePreferencesClick}
-                  enabledKeys={draftEnabledNoticeKeys}
-                  onSave={(keys) => {
-                    handleUpdatePreferences(keys);
-                    onSave();
-                  }}
-                  isAcknowledge={isAllNoticeOnly}
-                  middleButton={
-                    <PrivacyPolicyLink experience={experienceConfig} />
-                  }
-                />
-              </div>
+                isAcknowledge={isAllNoticeOnly}
+                middleButton={
+                  <PrivacyPolicyLink experience={experienceConfig} />
+                }
+              />
             }
           />
         ) : null

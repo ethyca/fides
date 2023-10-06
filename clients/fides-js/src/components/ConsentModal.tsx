@@ -5,21 +5,21 @@ import { ExperienceConfig } from "../lib/consent-types";
 import CloseButton from "./CloseButton";
 import GpcInfo from "./GpcInfo";
 import ExperienceDescription from "./ExperienceDescription";
+import { getConsentContext } from "../fides";
 
 const ConsentModal = ({
   attributes,
   experience,
   children,
   onVendorPageClick,
-  modalType,
 }: {
   attributes: Attributes;
   experience: ExperienceConfig;
   children: ComponentChildren;
   onVendorPageClick?: () => void;
-  modalType?: String;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
+  const showGpcBadge = getConsentContext().globalPrivacyControl;
 
   return (
     // @ts-ignore A11yDialog ref obj type isn't quite the same
@@ -51,7 +51,7 @@ const ConsentModal = ({
             description={experience.description}
           />
         </p>
-        {modalType !== "TCF" && <GpcInfo />}
+        {showGpcBadge && <GpcInfo />}
         {children}
       </div>
     </div>

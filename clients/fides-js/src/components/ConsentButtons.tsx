@@ -20,10 +20,12 @@ export const ConsentButtons = ({
   experienceConfig: ExperienceConfig;
   onManagePreferencesClick?: () => void;
   firstButton?: VNode;
+  /** Used to add a button between the "manage preferences" button and the "accept/reject" buttons */
   middleButton?: VNode;
   onAcceptAll: () => void;
   onRejectAll: () => void;
-  children: ComponentChildren;
+  /** Added as siblings to the button group after the "accept/reject" buttons */
+  children?: ComponentChildren;
 }) => (
   <div id="fides-button-group">
     {onManagePreferencesClick ? (

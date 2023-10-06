@@ -320,7 +320,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       options={options}
       experience={experience}
       cookie={cookie}
-      overlayType="TCF"
       onVendorPageClick={() => {
         setActiveTabIndex(2);
       }}
@@ -335,28 +334,17 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             onClose={onClose}
             experience={experienceConfig}
             onVendorPageClick={goToVendorTab}
-            bannerType="TCF"
             buttonGroup={
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gridColumn: 1,
-                  gridRow: 2,
+              <TcfConsentButtons
+                experience={experience}
+                onManagePreferencesClick={onManagePreferencesClick}
+                onSave={(keys) => {
+                  handleUpdateAllPreferences(keys);
+                  onSave();
                 }}
               >
-                <TcfConsentButtons
-                  experience={experience}
-                  onManagePreferencesClick={onManagePreferencesClick}
-                  onSave={(keys) => {
-                    handleUpdateAllPreferences(keys);
-                    onSave();
-                  }}
-                >
-                  <PrivacyPolicyLink experience={experienceConfig} />
-                </TcfConsentButtons>
-              </div>
+                <PrivacyPolicyLink experience={experienceConfig} />
+              </TcfConsentButtons>
             }
           >
             <div id="fides-tcf-banner-inner">

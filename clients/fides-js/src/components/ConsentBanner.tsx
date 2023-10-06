@@ -9,10 +9,13 @@ interface BannerProps {
   experience: ExperienceConfig;
   onClose: () => void;
   bannerIsOpen: boolean;
+  /**
+   * Passing in children components will automatically set the container to be a 2x2 grid,
+   * it is up to the child components to specify how they'll be placed within the grid
+   * */
   children?: ComponentChildren;
   onVendorPageClick?: () => void;
   buttonGroup: VNode;
-  bannerType?: String;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
@@ -22,7 +25,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   children,
   onVendorPageClick,
   buttonGroup,
-  bannerType,
 }) => {
   const showGpcBadge = getConsentContext().globalPrivacyControl;
   return (
@@ -46,12 +48,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                 <div id="fides-banner-title" className="fides-banner-title">
                   {experience.title}
                 </div>
-                {showGpcBadge && bannerType !== "TCF" ? (
+                {showGpcBadge && (
                   <GpcBadge
                     label="Global Privacy Control Signal"
                     status="detected"
                   />
-                ) : null}
+                )}
               </div>
               <div
                 id="fides-banner-description"

@@ -13,6 +13,10 @@ declare global {
  * having to modify the browser before the script runs.
  */
 const getGlobalPrivacyControl = (): boolean | undefined => {
+  if (window.Fides.options.tcfEnabled) {
+    return false;
+  }
+
   if (typeof window.navigator?.globalPrivacyControl === "boolean") {
     return window.navigator.globalPrivacyControl;
   }
