@@ -61,6 +61,7 @@
   --fides-overlay-container-border-radius: 12px;
   --fides-overlay-component-border-radius: 4px;
   --fides-overlay-banner-offset: 48px;
+  --fides-banner-font-size-title: 1em;
   --fides-banner-button-font-size: 1em;
 }
 
@@ -183,7 +184,7 @@ div#fides-banner-heading {
 }
 
 div#fides-banner-title {
-  font-size: var(--fides-overlay-font-size-title);
+  font-size: var(--fides-banner-font-size-title);
   font-weight: 600;
   margin-top: 0.2em;
   min-width: 33%;
