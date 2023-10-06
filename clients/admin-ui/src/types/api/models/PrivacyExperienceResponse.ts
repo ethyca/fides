@@ -7,13 +7,13 @@ import type { ExperienceConfigResponse } from "./ExperienceConfigResponse";
 import type { ExperienceMeta } from "./ExperienceMeta";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { PrivacyNoticeResponseWithUserPreferences } from "./PrivacyNoticeResponseWithUserPreferences";
-import type { TCFConsentVendorRecord } from "./TCFConsentVendorRecord";
 import type { TCFFeatureRecord } from "./TCFFeatureRecord";
-import type { TCFLegitimateInterestsVendorRecord } from "./TCFLegitimateInterestsVendorRecord";
 import type { TCFPurposeConsentRecord } from "./TCFPurposeConsentRecord";
 import type { TCFPurposeLegitimateInterestsRecord } from "./TCFPurposeLegitimateInterestsRecord";
 import type { TCFSpecialFeatureRecord } from "./TCFSpecialFeatureRecord";
 import type { TCFSpecialPurposeRecord } from "./TCFSpecialPurposeRecord";
+import type { TCFVendorConsentRecord } from "./TCFVendorConsentRecord";
+import type { TCFVendorLegitimateInterestsRecord } from "./TCFVendorLegitimateInterestsRecord";
 import type { TCFVendorRelationships } from "./TCFVendorRelationships";
 
 /**
@@ -27,16 +27,16 @@ export type PrivacyExperienceResponse = {
    */
   experience_config?: ExperienceConfigResponse;
   id: string;
-  tcf_consent_purposes?: Array<TCFPurposeConsentRecord>;
-  tcf_legitimate_interests_purposes?: Array<TCFPurposeLegitimateInterestsRecord>;
+  tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
+  tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
   tcf_features?: Array<TCFFeatureRecord>;
   tcf_special_features?: Array<TCFSpecialFeatureRecord>;
-  tcf_consent_vendors?: Array<TCFConsentVendorRecord>;
-  tcf_legitimate_interests_vendors?: Array<TCFLegitimateInterestsVendorRecord>;
+  tcf_vendor_consents?: Array<TCFVendorConsentRecord>;
+  tcf_vendor_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_vendor_relationships?: Array<TCFVendorRelationships>;
-  tcf_consent_systems?: Array<TCFConsentVendorRecord>;
-  tcf_legitimate_interests_systems?: Array<TCFLegitimateInterestsVendorRecord>;
+  tcf_system_consents?: Array<TCFVendorConsentRecord>;
+  tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
   created_at: string;
   updated_at: string;
