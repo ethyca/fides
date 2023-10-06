@@ -13,7 +13,7 @@ from fides.api.schemas.tcf import (
 )
 from fides.api.util.tcf.tcf_experience_contents import TCFExperienceContents, load_gvl
 
-CMP_ID: int = 12  # TODO: hardcode our unique CMP ID after certification
+CMP_ID: int = 407
 CMP_VERSION = 1
 CONSENT_SCREEN = 1  # TODO On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
 

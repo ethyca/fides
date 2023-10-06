@@ -187,6 +187,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert response.status_code == 200
         assert len(response.json()["preferences"]) == 1
+        assert response.json()["tc_mobile_data"] is None
 
         response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
@@ -293,6 +294,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert response.status_code == 200
         assert len(response.json()["preferences"]) == 1
+        assert response.json()["tc_mobile_data"] is None
 
         response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
@@ -365,6 +367,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert response.status_code == 200
         assert len(response.json()["preferences"]) == 1
+        assert response.json()["tc_mobile_data"] is None
 
         response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
@@ -656,6 +659,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
 
         assert response.status_code == 200
         assert len(response.json()["preferences"]) == 2
+        assert response.json()["tc_mobile_data"] is None
 
         response_json = response.json()["preferences"]
 
@@ -777,6 +781,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
 
         assert response.status_code == 200
+        assert response.json()["tc_mobile_data"] is None
         assert len(response.json()["preferences"]) == 0
         assert len(response.json()["feature_preferences"]) == 1
 
@@ -989,6 +994,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert response.status_code == 200
         assert len(response.json()["preferences"]) == 1
+        assert response.json()["tc_mobile_data"] is None
 
         response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
@@ -1433,6 +1439,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             url, json=request_body, headers={"Origin": "http://localhost:8080"}
         )
         assert response.status_code == 200
+        assert response.json()["tc_mobile_data"] is None
         response_json = response.json()["preferences"][0]
         assert response_json["preference"] == "opt_out"
         assert (
@@ -1706,6 +1713,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert len(response.json()["special_feature_preferences"]) == 1
         assert len(response.json()["system_consent_preferences"]) == 0
         assert len(response.json()["system_legitimate_interests_preferences"]) == 1
+        assert response.json()["tc_mobile_data"] is None
 
         purpose_response = response.json()["purpose_consent_preferences"][0]
         assert purpose_response["preference"] == "opt_out"
@@ -2483,3 +2491,180 @@ class TestCurrentPrivacyPreferences:
         assert response.status_code == 400
         assert "Value specified for updated_lt" in response.json()["detail"]
         assert "must be after updated_gt" in response.json()["detail"]
+
+
+class TestSavePrivacyPreferencesTCStringOnly:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + PRIVACY_PREFERENCES
+
+    @pytest.mark.usefixtures("enable_tcf")
+    def test_save_privacy_preferences_tc_string_section_overlaps_request_body_section(
+        self, api_client, url
+    ):
+        tc_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE"
+        fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        minimal_request_body = {
+            "browser_identity": {
+                "fides_user_device_id": fides_user_device_id,
+            },
+            "tc_string": tc_string,
+            "purpose_consent_preferences": [{"id": 1, "preference": "opt_out"}],
+        }
+        response = api_client.patch(
+            url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Cannot supply value for 'purpose_consent_preferences' and 'tc_string' simultaneously when saving privacy preferences."
+        )
+
+    def test_save_privacy_preferences_bad_tc_string(self, api_client, url):
+        tc_string: str = "bad_string"
+        fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        minimal_request_body = {
+            "browser_identity": {
+                "fides_user_device_id": fides_user_device_id,
+            },
+            "tc_string": tc_string,
+        }
+        response = api_client.patch(
+            url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 400
+        assert response.json()["detail"] == "Invalid base64-encoded TC string"
+
+    @pytest.mark.usefixtures("enable_tcf")
+    def test_save_privacy_preferences_with_tc_string_when_datamap_empty(
+        self, api_client, url
+    ):
+        tc_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE"
+        fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        minimal_request_body = {
+            "browser_identity": {
+                "fides_user_device_id": fides_user_device_id,
+            },
+            "tc_string": tc_string,
+        }
+        response = api_client.patch(
+            url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 200
+        response_body = response.json()["preferences"]
+
+        # Nothing in the datamap so we didn't save anything here.
+        assert len(response_body) == 0
+
+    def test_save_privacy_preferences_when_tcf_disabled(self, api_client, url):
+        tc_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE"
+        fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        minimal_request_body = {
+            "browser_identity": {
+                "fides_user_device_id": fides_user_device_id,
+            },
+            "tc_string": tc_string,
+        }
+        response = api_client.patch(
+            url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 200
+        response_body = response.json()["preferences"]
+
+        # Nothing saved because TCF is disabled
+        assert len(response_body) == 0
+
+    @pytest.mark.usefixtures(
+        "skimbit_system", "emerse_system", "captify_technologies_system", "enable_tcf"
+    )
+    def test_save_privacy_preferences_with_tc_string(self, api_client, url, db):
+        tc_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE"
+        fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        minimal_request_body = {
+            "browser_identity": {
+                "fides_user_device_id": fides_user_device_id,
+            },
+            "tc_string": tc_string,
+        }
+        response = api_client.patch(
+            url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 200
+        response_body = response.json()
+
+        assert len(response_body["preferences"]) == 0
+        assert len(response_body["purpose_consent_preferences"]) == 7
+        assert len(response_body["purpose_legitimate_interests_preferences"]) == 5
+        assert len(response_body["special_purpose_preferences"]) == 0
+        assert len(response_body["vendor_consent_preferences"]) == 2
+        assert len(response_body["vendor_legitimate_interests_preferences"]) == 2
+        assert len(response_body["feature_preferences"]) == 0
+        assert len(response_body["special_feature_preferences"]) == 1
+        assert len(response_body["system_consent_preferences"]) == 0
+        assert len(response_body["system_legitimate_interests_preferences"]) == 0
+
+        first_record = response_body["purpose_consent_preferences"][0]
+        assert first_record["purpose_consent"] == 1
+        assert first_record["preference"] == "opt_in"
+        saved_current_privacy_preference_record = db.query(
+            CurrentPrivacyPreference
+        ).get(first_record["id"])
+        assert saved_current_privacy_preference_record.purpose_consent == 1
+        assert (
+            saved_current_privacy_preference_record.preference
+            == UserConsentPreference.opt_in
+        )
+
+        privacy_preference_history_record = db.query(PrivacyPreferenceHistory).get(
+            first_record["privacy_preference_history_id"]
+        )
+        assert (
+            privacy_preference_history_record.current_privacy_preference
+            == saved_current_privacy_preference_record
+        )
+
+        assert (
+            privacy_preference_history_record.fides_user_device == fides_user_device_id
+        )
+        assert (
+            privacy_preference_history_record.fides_user_device_provided_identity
+            is not None
+        )
+        assert (
+            privacy_preference_history_record.fides_user_device_provided_identity
+            == saved_current_privacy_preference_record.fides_user_device_provided_identity
+        )
+
+        assert (
+            privacy_preference_history_record.privacy_experience_id is None
+        )  # Not required in request body
+        assert (
+            privacy_preference_history_record.privacy_experience_config_history_id
+            is None
+        )
+
+        mobile_data = response.json()["tc_mobile_data"]
+        assert mobile_data == {
+            "IABTCF_CmpSdkID": 12,
+            "IABTCF_CmpSdkVersion": 1,
+            "IABTCF_PolicyVersion": 4,
+            "IABTCF_gdprApplies": 1,
+            "IABTCF_PublisherCC": "AA",
+            "IABTCF_PurposeOneTreatment": 0,
+            "IABTCF_UseNonStandardTexts": 0,
+            "IABTCF_TCString": "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE",
+            "IABTCF_VendorConsents": "01",
+            "IABTCF_VendorLegitimateInterests": "",
+            "IABTCF_PurposeConsents": "111100101100000000000000",
+            "IABTCF_PurposeLegitimateInterests": "000000000000000000000000",
+            "IABTCF_SpecialFeaturesOptIns": "010000000000",
+            "IABTCF_PublisherConsent": None,
+            "IABTCF_PublisherLegitimateInterests": None,
+            "IABTCF_PublisherCustomPurposesConsents": None,
+            "IABTCF_PublisherCustomPurposesLegitimateInterests": None,
+        }

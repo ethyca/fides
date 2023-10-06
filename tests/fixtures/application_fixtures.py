@@ -1,4 +1,5 @@
 import logging
+import uuid
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Generator, List, Optional
@@ -2826,4 +2827,163 @@ def tcf_system(db: Session) -> System:
     )
 
     db.refresh(system)
+    return system
+
+
+# Detailed systems with attributes for TC string testing
+# Please don't update them!
+
+
+@pytest.fixture(scope="function")
+def captify_technologies_system(db: Session) -> System:
+    """Add system that only has purposes with Consent legal basis"""
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"captify_{uuid.uuid4()}",
+            "vendor_id": "2",
+            "name": f"Captify",
+            "description": "Captify is a search intelligence platform that helps brands and advertisers leverage search insights to improve their ad targeting and relevance.",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "uses_profiling": False,
+            "legal_basis_for_transfers": ["SCCs"],
+        },
+    )
+
+    for data_use in [
+        "functional.storage",  # Purpose 1
+        "marketing.advertising.negative_targeting",  # Purpose 2
+        "marketing.advertising.frequency_capping",  # Purpose 2
+        "marketing.advertising.first_party.contextual",  # Purpose 2
+        "marketing.advertising.profiling",  # Purpose 3
+        "marketing.advertising.first_party.targeted",  # Purpose 4
+        "marketing.advertising.third_party.targeted",  # Purpose 4
+        "analytics.reporting.ad_performance",  # Purpose 7
+        "analytics.reporting.campaign_insights",  # Purpose 9
+        "functional.service.improve",  # Purpose 10
+        "essential.fraud_detection",  # Special Purpose 1
+        "essential.service.security"  # Special Purpose 1
+        "marketing.advertising.serving",  # Special Purpose 2
+    ]:
+        # Includes Feature 2, Special Feature 2
+        PrivacyDeclaration.create(
+            db=db,
+            data={
+                "system_id": system.id,
+                "data_use": data_use,
+                "legal_basis_for_processing": "Consent",
+                "features": [
+                    "Link different devices",
+                    "Actively scan device characteristics for identification",
+                ],
+            },
+        )
+
+    db.refresh(system)
+    return system
+
+
+@pytest.fixture(scope="function")
+def emerse_system(db: Session) -> System:
+    """This system has purposes that are both consent and legitimate interest legal basis"""
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"emerse{uuid.uuid4()}",
+            "vendor_id": "8",
+            "name": f"Emerse",
+            "description": "Emerse Sverige AB is a provider of programmatic advertising solutions, offering advertisers and publishers tools to manage and optimize their digital ad campaigns.",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    # Add Consent-related Purposes
+    for data_use in [
+        "functional.storage",  # Purpose 1
+        "marketing.advertising.profiling",  # Purpose 3
+        "marketing.advertising.third_party.targeted",  # Purpose 4
+        "marketing.advertising.first_party.targeted",  # Purpose 4
+    ]:
+        # Includes Feature 2, Special Feature 2
+        PrivacyDeclaration.create(
+            db=db,
+            data={
+                "system_id": system.id,
+                "data_use": data_use,
+                "legal_basis_for_processing": "Consent",
+                "features": [
+                    "Match and combine data from other data sources",  # Feature 1
+                    "Link different devices",  # Feature 2
+                ],
+            },
+        )
+
+    # Add Legitimate Interest-related Purposes
+    for data_use in [
+        "marketing.advertising.negative_targeting",  # Purpose 2
+        "marketing.advertising.first_party.contextual",  # Purpose 2
+        "marketing.advertising.frequency_capping",  # Purpose 2
+        "analytics.reporting.ad_performance",  # Purpose 7
+        "analytics.reporting.content_performance",  # Purpose 8
+        "analytics.reporting.campaign_insights",  # Purpose 9
+        "essential.fraud_detection",  # Special Purpose 1
+        "essential.service.security",  # Special Purpose 1
+        "marketing.advertising.serving",  # Special Purpose 2
+    ]:
+        # Includes Feature 2, Special Feature 2
+        PrivacyDeclaration.create(
+            db=db,
+            data={
+                "system_id": system.id,
+                "data_use": data_use,
+                "legal_basis_for_processing": "Legitimate interests",
+                "features": [
+                    "Match and combine data from other data sources",  # Feature 1
+                    "Link different devices",  # Feature 2
+                ],
+            },
+        )
+
+    db.refresh(system)
+    return system
+
+
+@pytest.fixture(scope="function")
+def skimbit_system(db):
+    """Add system that only has purposes with LI legal basis"""
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"skimbit{uuid.uuid4()}",
+            "vendor_id": "46",
+            "name": f"Skimbit (Skimlinks, Taboola)",
+            "description": "Skimbit, a Taboola company, specializes in data-driven advertising and provides tools for brands and advertisers to analyze customer behavior and deliver targeted and personalized ads.",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    # Add Legitimate Interest-related Purposes
+    for data_use in [
+        "analytics.reporting.ad_performance",  # Purpose 7
+        "analytics.reporting.content_performance",  # Purpose 8
+        "functional.service.improve",  # Purpose 10
+        "essential.service.security"  # Special Purpose 1
+        "essential.fraud_detection",  # Special Purpose 1
+        "marketing.advertising.serving",  # Special Purpose 2
+    ]:
+        # Includes Feature 3
+        PrivacyDeclaration.create(
+            db=db,
+            data={
+                "system_id": system.id,
+                "data_use": data_use,
+                "legal_basis_for_processing": "Legitimate interests",
+                "features": [
+                    "Identify devices based on information transmitted automatically"
+                ],
+            },
+        )
     return system

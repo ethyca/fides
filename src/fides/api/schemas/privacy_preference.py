@@ -28,6 +28,7 @@ from fides.api.schemas.tcf import (
     TCFSpecialFeatureSave,
     TCFSpecialPurposeSave,
     TCFVendorSave,
+    TCMobileData,
 )
 from fides.api.util.tcf.tcf_experience_contents import (
     TCF_SECTION_MAPPING,
@@ -93,7 +94,17 @@ class ConsentOptionCreate(FidesSchema):
     served_notice_history_id: Optional[str]
 
 
-class PrivacyPreferencesRequest(FidesSchema):
+class TCStringFidesPreferences(FidesSchema):
+    """TCF Preferences that can be unpacked from a TC string"""
+
+    purpose_consent_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
+    purpose_legitimate_interests_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
+    vendor_consent_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
+    vendor_legitimate_interests_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
+    special_feature_preferences: conlist(TCFSpecialFeatureSave, max_items=200) = []  # type: ignore
+
+
+class PrivacyPreferencesRequest(TCStringFidesPreferences):
     """Request body for creating PrivacyPreferences.
 
 
@@ -105,17 +116,12 @@ class PrivacyPreferencesRequest(FidesSchema):
     browser_identity: Identity
     code: Optional[SafeStr]
     tc_string: Optional[str] = Field(
-        description="If supplied, *_preferences fields will be ignored in favor of this TC string. Saves preferences"
-        "against purposes, special features, and vendors."
-    )  # TODO: Not yet implemented
+        description="If supplied, TC string is decoded and preferences saved for purpose_consent, "
+        "purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features"
+    )
     preferences: conlist(ConsentOptionCreate, max_items=200) = []  # type: ignore
-    purpose_consent_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
-    purpose_legitimate_interests_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
     special_purpose_preferences: conlist(TCFSpecialPurposeSave, max_items=200) = []  # type: ignore
-    vendor_consent_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
-    vendor_legitimate_interests_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
     feature_preferences: conlist(TCFFeatureSave, max_items=200) = []  # type: ignore
-    special_feature_preferences: conlist(TCFSpecialFeatureSave, max_items=200) = []  # type: ignore
     system_consent_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
     system_legitimate_interests_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
@@ -125,10 +131,14 @@ class PrivacyPreferencesRequest(FidesSchema):
 
     @root_validator()
     @classmethod
-    def validate_tcf_duplicates(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_tcf_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Check that there are no duplicates preferences against TCF components
+        Run a few validation checks related to saving privacy preferences against TCF attributes.
+
+        - Check that there are no duplicates preferences against TCF components
         to avoid confusing responses
+        - Make sure that if a TC string is supplied, we're not also supplying values for the related
+        TC sections individually, because the TC string will override everything here.
         """
 
         def tcf_duplicates_detected(preference_list: List) -> bool:
@@ -140,6 +150,14 @@ class PrivacyPreferencesRequest(FidesSchema):
                 raise ValueError(
                     f"Duplicate preferences saved against TCF component: '{field_name}'"
                 )
+
+        if values.get("tc_string"):
+            for field in TCStringFidesPreferences.__fields__:
+                if values.get(field):
+                    raise ValueError(
+                        f"Cannot supply value for '{field}' and 'tc_string' simultaneously when saving privacy preferences."
+                    )
+
         return values
 
 
@@ -316,6 +334,7 @@ class SavePrivacyPreferencesResponse(FidesSchema):
     special_feature_preferences: List[CurrentPrivacyPreferenceSchema] = []
     system_consent_preferences: List[CurrentPrivacyPreferenceSchema] = []
     system_legitimate_interests_preferences: List[CurrentPrivacyPreferenceSchema] = []
+    tc_mobile_data: Optional[TCMobileData] = None
 
 
 class CurrentPrivacyPreferenceReportingSchema(TCFAttributes):
