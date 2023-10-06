@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import pydash
 import yaml
-from loguru import logger
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
 from fides.api.common_exceptions import FidesopsException, ValidationError
