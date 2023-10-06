@@ -167,15 +167,15 @@ class RecordConsentServedRequest(FidesSchema):
     browser_identity: Identity
     code: Optional[SafeStr]  # For verified identity workflow only
     privacy_notice_history_ids: List[SafeStr] = []
-    tcf_consent_purposes: List[int] = []
-    tcf_legitimate_interests_purposes: List[int] = []
+    tcf_purpose_consents: List[int] = []
+    tcf_purpose_legitimate_interests: List[int] = []
     tcf_special_purposes: List[int] = []
-    tcf_consent_vendors: List[SafeStr] = []
-    tcf_legitimate_interests_vendors: List[SafeStr] = []
+    tcf_vendor_consents: List[SafeStr] = []
+    tcf_vendor_legitimate_interests: List[SafeStr] = []
     tcf_features: List[int] = []
     tcf_special_features: List[int] = []
-    tcf_consent_systems: List[SafeStr] = []
-    tcf_legitimate_interests_systems: List[SafeStr] = []
+    tcf_system_consents: List[SafeStr] = []
+    tcf_system_legitimate_interests: List[SafeStr] = []
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]
     acknowledge_mode: Optional[bool]
@@ -198,8 +198,8 @@ class RecordConsentServedRequest(FidesSchema):
                 )
 
         expected_field_mapping: Dict[str, Dict] = {
-            "tcf_consent_purposes": MAPPED_PURPOSES,
-            "tcf_legitimate_interests_purposes": MAPPED_PURPOSES,
+            "tcf_purpose_consents": MAPPED_PURPOSES,
+            "tcf_purpose_legitimate_interests": MAPPED_PURPOSES,
             "tcf_special_purposes": MAPPED_SPECIAL_PURPOSES,
             "tcf_features": GVL_FEATURES,
             "tcf_special_features": GVL_SPECIAL_FEATURES,

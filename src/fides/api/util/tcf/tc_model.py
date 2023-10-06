@@ -7,9 +7,9 @@ from pydantic import Field, NonNegativeInt, PositiveInt, root_validator, validat
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.tcf import (
-    TCFConsentVendorRecord,
-    TCFLegitimateInterestsVendorRecord,
     TCFSpecialFeatureRecord,
+    TCFVendorConsentRecord,
+    TCFVendorLegitimateInterestsRecord,
 )
 from fides.api.util.tcf.tcf_experience_contents import TCFExperienceContents, load_gvl
 
@@ -273,8 +273,8 @@ def _validate_vendor_legal_basis_fields(
 
 
 def _build_vendor_consents_and_legitimate_interests(
-    consent_vendors: List[TCFConsentVendorRecord],
-    legitimate_interests_vendors: List[TCFLegitimateInterestsVendorRecord],
+    vendor_consents: List[TCFVendorConsentRecord],
+    vendor_legitimate_interests: List[TCFVendorLegitimateInterestsRecord],
 ) -> Tuple[List, List]:
     """Construct the vendor_consents and vendor_legitimate_interests sections
     Only add the vendor id to the vendor consents list if one of its purposes
@@ -283,41 +283,42 @@ def _build_vendor_consents_and_legitimate_interests(
     Later, in the TCModel construction, we validate if the vendor is allowed to have
     this legal basis
     """
-    vendor_consents: List[int] = []
-    vendor_legitimate_interests: List[int] = []
+    vendor_consent_ids: List[int] = []
+    vendor_legitimate_interest_ids: List[int] = []
 
-    for vendor in consent_vendors:
+    for vendor_consent in vendor_consents:
         try:
-            int(vendor.id)
+            int(vendor_consent.id)
         except ValueError:
             # Early check that filters out non-integer vendor ids.  Later we'll run a separate
             # check that ensures this id is also in the gvl.
             continue
 
-        if vendor.consent_purposes:
+        if vendor_consent.purpose_consents:
             # This vendor should only be in "vendor_consents" in the first place, if consent_purposes is populated.
             # This is just to check
-            vendor_consents.append(int(vendor.id))
+            vendor_consent_ids.append(int(vendor_consent.id))
 
-    for leg_vendor in legitimate_interests_vendors:
+    for vendor_legitimate_interest in vendor_legitimate_interests:
         try:
-            int(leg_vendor.id)
+            int(vendor_legitimate_interest.id)
         except ValueError:
             # Early check that filters out non-integer vendor ids.  Later we'll run a separate
             # check that ensures this id is also in the gvl.
             continue
 
         leg_int_purpose_ids: List[int] = [
-            purpose.id for purpose in leg_vendor.legitimate_interests_purposes
+            purpose.id
+            for purpose in vendor_legitimate_interest.purpose_legitimate_interests
         ]
 
         # Ensure vendor doesn't have forbidden legint purpose set
         if leg_int_purpose_ids and not bool(
             set(leg_int_purpose_ids) & set(FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS)
         ):
-            vendor_legitimate_interests.append(int(leg_vendor.id))
+            vendor_legitimate_interest_ids.append(int(vendor_legitimate_interest.id))
 
-    return vendor_consents, vendor_legitimate_interests
+    return vendor_consent_ids, vendor_legitimate_interest_ids
 
 
 def _build_special_feature_opt_ins(
@@ -342,8 +343,8 @@ def _build_vendors_disclosed(tcf_contents: TCFExperienceContents) -> List[int]:
     vendors_disclosed = set()
 
     vendor_main_lists: List[List] = [
-        tcf_contents.tcf_consent_vendors,
-        tcf_contents.tcf_legitimate_interests_vendors,
+        tcf_contents.tcf_vendor_consents,
+        tcf_contents.tcf_vendor_legitimate_interests,
         tcf_contents.tcf_vendor_relationships,
     ]
 
@@ -391,14 +392,14 @@ def convert_tcf_contents_to_tc_model(
         vendor_consents,
         vendor_legitimate_interests,
     ) = _build_vendor_consents_and_legitimate_interests(
-        tcf_contents.tcf_consent_vendors, tcf_contents.tcf_legitimate_interests_vendors
+        tcf_contents.tcf_vendor_consents, tcf_contents.tcf_vendor_legitimate_interests
     )
 
     purpose_consents: List[int] = [
-        purpose.id for purpose in tcf_contents.tcf_consent_purposes
+        purpose.id for purpose in tcf_contents.tcf_purpose_consents
     ]
     purpose_legitimate_interests: List[int] = [
-        purpose.id for purpose in tcf_contents.tcf_legitimate_interests_purposes
+        purpose.id for purpose in tcf_contents.tcf_purpose_legitimate_interests
     ]
 
     special_feature_opt_ins: List[int] = _build_special_feature_opt_ins(
