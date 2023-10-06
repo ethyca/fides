@@ -1,7 +1,14 @@
-import { GVLJson, LegalBasisForProcessingEnum, TCFVendorRecord } from "./types";
+import { PrivacyExperience } from "../consent-types";
+import {
+  GVLJson,
+  TCFVendorConsentRecord,
+  TCFVendorLegitimateInterestsRecord,
+  TCFVendorRelationships,
+  VendorRecord,
+} from "./types";
 
 export const vendorIsGvl = (
-  vendor: Pick<TCFVendorRecord, "id">,
+  vendor: Pick<TCFVendorRelationships, "id">,
   gvl: GVLJson | undefined
 ) => {
   if (!gvl) {
@@ -10,19 +17,65 @@ export const vendorIsGvl = (
   return gvl.vendors[vendor.id];
 };
 
-export const vendorRecordsWithLegalBasis = (
-  records: TCFVendorRecord[],
-  legalBasis: LegalBasisForProcessingEnum
-) =>
-  records.filter((record) => {
-    const { purposes, special_purposes: specialPurposes } = record;
-    const hasApplicablePurposes = purposes?.filter((purpose) =>
-      purpose.legal_bases?.includes(legalBasis)
-    );
-    const hasApplicableSpecialPurposes = specialPurposes?.filter((purpose) =>
-      purpose.legal_bases?.includes(legalBasis)
-    );
-    return (
-      hasApplicablePurposes?.length || hasApplicableSpecialPurposes?.length
-    );
+const transformVendorDataToVendorRecords = ({
+  consents,
+  legints,
+  relationships,
+  isFidesSystem,
+}: {
+  consents: TCFVendorConsentRecord[];
+  legints: TCFVendorLegitimateInterestsRecord[];
+  relationships: TCFVendorRelationships[];
+  isFidesSystem: boolean;
+}) => {
+  const records: VendorRecord[] = [];
+  const uniqueVendorIds = Array.from(
+    new Set([...consents.map((c) => c.id), ...legints.map((l) => l.id)])
+  );
+  uniqueVendorIds.forEach((id) => {
+    const vendorConsent = consents.find((v) => v.id === id);
+    const vendorLegint = legints.find((v) => v.id === id);
+    const relationship = relationships.find((r) => r.id === id);
+    const record: VendorRecord = {
+      id,
+      ...relationship,
+      ...vendorConsent,
+      ...vendorLegint,
+      isFidesSystem,
+      isConsent: !!vendorConsent,
+      isLegint: !!vendorLegint,
+    };
+    records.push(record);
   });
+  return records;
+};
+
+export const transformExperienceToVendorRecords = (
+  experience: PrivacyExperience
+): VendorRecord[] => {
+  const {
+    tcf_vendor_consents: consentVendors = [],
+    tcf_vendor_legitimate_interests: legintVendors = [],
+    tcf_vendor_relationships: vendorRelationships = [],
+    tcf_system_consents: consentSystems = [],
+    tcf_system_legitimate_interests: legintSystems = [],
+    tcf_system_relationships: systemRelationships = [],
+  } = experience;
+
+  const vendorRecords = transformVendorDataToVendorRecords({
+    consents: consentVendors,
+    legints: legintVendors,
+    relationships: vendorRelationships,
+    isFidesSystem: false,
+  });
+  const systemRecords = transformVendorDataToVendorRecords({
+    consents: consentSystems,
+    legints: legintSystems,
+    relationships: systemRelationships,
+    isFidesSystem: true,
+  });
+
+  const records = [...vendorRecords, ...systemRecords];
+
+  return records;
+};

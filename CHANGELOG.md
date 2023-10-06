@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 - Added an option to link to vendor tab from an experience config description [#4191](https://github.com/ethyca/fides/pull/4191)
 - Added two toggles for vendors in the TCF overlay, one for Consent, and one for Legitimate Interest [#4189](https://github.com/ethyca/fides/pull/4189)
+- Added two toggles for purposes in the TCF overlay, one for Consent, and one for Legitimate Interest [#4234](https://github.com/ethyca/fides/pull/4234)
 
 
 ### Changed
@@ -28,6 +29,8 @@ The types of changes are:
 - Refactor legal basis dimension regarding how TCF preferences are saved and how the experience is built [#4201](https://github.com/ethyca/fides/pull/4201/)
 - Add saving privacy preferences via a TC string [#4221](https://github.com/ethyca/fides/pull/4221)
 - Updated fides server to use an environment variable for turning TCF on and off [#4220](https://github.com/ethyca/fides/pull/4220)
+- Update frontend to use new legal basis dimension on vendors [#4216](https://github.com/ethyca/fides/pull/4216)
+- Updated privacy center patch preferences call to handle updated API response [#4235](https://github.com/ethyca/fides/pull/4235)
 - Added our CMP ID [#4233](https://github.com/ethyca/fides/pull/4233)
 
 ### Fixed

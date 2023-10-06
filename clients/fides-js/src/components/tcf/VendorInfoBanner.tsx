@@ -1,8 +1,6 @@
 import { h } from "preact";
 import { useMemo } from "preact/hooks";
 import { PrivacyExperience } from "../../lib/consent-types";
-import { LegalBasisForProcessingEnum } from "../../lib/tcf/types";
-import { vendorRecordsWithLegalBasis } from "../../lib/tcf/vendors";
 
 const VendorInfo = ({
   label,
@@ -37,27 +35,22 @@ const VendorInfoBanner = ({
   goToVendorTab: () => void;
 }) => {
   const counts = useMemo(() => {
-    const { tcf_systems: systems = [], tcf_vendors: vendors = [] } = experience;
-    // total count
-    const total = systems.length + vendors.length;
+    const {
+      tcf_vendor_consents: consentVendors = [],
+      tcf_vendor_legitimate_interests: legintVendors = [],
+      tcf_system_consents: consentSystems = [],
+      tcf_system_legitimate_interests: legintSystems = [],
+    } = experience;
 
-    // consent count
-    const consent =
-      vendorRecordsWithLegalBasis(systems, LegalBasisForProcessingEnum.CONSENT)
-        .length +
-      vendorRecordsWithLegalBasis(vendors, LegalBasisForProcessingEnum.CONSENT)
-        .length;
+    const total =
+      consentSystems.length +
+      consentVendors.length +
+      legintVendors.length +
+      legintSystems.length;
 
-    // legint count
-    const legint =
-      vendorRecordsWithLegalBasis(
-        systems,
-        LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
-      ).length +
-      vendorRecordsWithLegalBasis(
-        vendors,
-        LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
-      ).length;
+    const consent = consentSystems.length + consentVendors.length;
+
+    const legint = legintVendors.length + legintSystems.length;
 
     return { total, consent, legint };
   }, [experience]);
