@@ -705,7 +705,9 @@ def update_request_with_decoded_tc_string_fields(
 ) -> PrivacyPreferencesRequest:
     """Update the request body with the decoded values of the TC string if applicable"""
     if request_body.tc_string:
-        tcf_contents: TCFExperienceContents = get_tcf_contents(db)
+        tcf_contents: TCFExperienceContents = get_tcf_contents(
+            db
+        )  # TODO cache this so we're not building each time privacy preference is saved
         try:
             decoded_preference_request_body: TCStringFidesPreferences = (
                 decode_tc_string_to_preferences(request_body.tc_string, tcf_contents)
