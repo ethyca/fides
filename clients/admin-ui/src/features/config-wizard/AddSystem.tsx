@@ -7,7 +7,7 @@ import {
   ManualSetupIcon,
   OktaLogoIcon,
 } from "~/features/common/Icon";
-import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/v2/routes";
+import { ADD_SYSTEMS_MANUAL_ROUTE, ADD_SYSTEMS_MULTIPLE_ROUTE } from "~/features/common/nav/v2/routes";
 import { ValidTargets } from "~/types/api";
 
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
@@ -60,6 +60,16 @@ const AddSystem = () => {
             onClick={() => {
               dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
               router.push(ADD_SYSTEMS_MANUAL_ROUTE);
+            }}
+            data-testid="manual-btn"
+          />
+          <SystemOption
+            label="Add multiple systems"
+            icon={<ManualSetupIcon boxSize={8} />}
+            description="Add multiple systems to your data map from the GVL, Google AC list, and Compass"
+            onClick={() => {
+              dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
+              router.push(ADD_SYSTEMS_MULTIPLE_ROUTE);
             }}
             data-testid="manual-btn"
           />
