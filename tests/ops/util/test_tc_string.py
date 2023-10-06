@@ -240,7 +240,7 @@ class TestBuildTCModel:
             tcf_contents, UserConsentPreference.opt_in
         )
 
-        assert model.cmp_id == 12
+        assert model.cmp_id == 407
         assert model.vendor_list_version == 20
         assert model.policy_version == 4
         assert model.cmp_version == 1
@@ -257,7 +257,7 @@ class TestBuildTCModel:
 
         assert decoded.version == 2
         assert datetime.utcnow().date() == decoded.created.date()
-        assert decoded.cmp_id == 12
+        assert decoded.cmp_id == 407
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
@@ -346,7 +346,7 @@ class TestBuildTCModel:
             tcf_contents, UserConsentPreference.opt_in
         )
 
-        assert model.cmp_id == 12
+        assert model.cmp_id == 407
         assert model.vendor_list_version == 20
         assert model.policy_version == 4
         assert model.cmp_version == 1
@@ -363,7 +363,7 @@ class TestBuildTCModel:
         decoded = decode_v2(tc_str)
 
         assert decoded.version == 2
-        assert decoded.cmp_id == 12
+        assert decoded.cmp_id == 407
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
@@ -479,7 +479,7 @@ class TestBuildTCModel:
             tcf_contents, UserConsentPreference.opt_in
         )
 
-        assert model.cmp_id == 12
+        assert model.cmp_id == 407
         assert model.vendor_list_version == 20
         assert model.policy_version == 4
         assert model.cmp_version == 1
@@ -497,7 +497,7 @@ class TestBuildTCModel:
         decoded = decode_v2(tc_str)
 
         assert decoded.version == 2
-        assert decoded.cmp_id == 12
+        assert decoded.cmp_id == 407
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
@@ -684,7 +684,7 @@ class TestBuildTCModel:
             tcf_contents, UserConsentPreference.opt_in
         )
 
-        assert model.cmp_id == 12
+        assert model.cmp_id == 407
         assert model.vendor_list_version == 20
         assert model.policy_version == 4
         assert model.cmp_version == 1
@@ -701,7 +701,7 @@ class TestBuildTCModel:
         decoded = decode_v2(tc_str)
 
         assert decoded.version == 2
-        assert decoded.cmp_id == 12
+        assert decoded.cmp_id == 407
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
@@ -901,7 +901,7 @@ class TestBuildTCModel:
             tcf_contents, UserConsentPreference.opt_in
         )
 
-        assert model.cmp_id == 12
+        assert model.cmp_id == 407
         assert model.vendor_list_version == 20
         assert model.policy_version == 4
         assert model.cmp_version == 1
@@ -919,7 +919,7 @@ class TestBuildTCModel:
         decoded = decode_v2(tc_str)
 
         assert decoded.version == 2
-        assert decoded.cmp_id == 12
+        assert decoded.cmp_id == 407
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"
@@ -1019,7 +1019,7 @@ class TestBuildTCModel:
             tcf_contents, UserConsentPreference.opt_out
         )
 
-        assert model.cmp_id == 12
+        assert model.cmp_id == 407
         assert model.vendor_list_version == 20
         assert model.policy_version == 4
         assert model.cmp_version == 1
@@ -1038,7 +1038,7 @@ class TestBuildTCModel:
         assert decoded.version == 2
         assert datetime.utcnow().date() == decoded.created.date()
         assert datetime.utcnow().date() == decoded.last_updated.date()
-        assert decoded.cmp_id == 12
+        assert decoded.cmp_id == 407
         assert decoded.cmp_version == 1
         assert decoded.consent_screen == 1
         assert decoded.consent_language == b"EN"

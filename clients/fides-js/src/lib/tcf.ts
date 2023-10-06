@@ -17,7 +17,7 @@ import {
 import { vendorIsGvl } from "./tcf/vendors";
 import { PrivacyExperience } from "./consent-types";
 
-const CMP_ID = 12; // TODO: hardcode our unique CMP ID after certification
+const CMP_ID = 407;
 const CMP_VERSION = 1;
 const FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6];
 
