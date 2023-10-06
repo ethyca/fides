@@ -46,10 +46,10 @@ class TestSaveNoticesServedForFidesDeviceId:
             "browser_identity": {
                 "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
             },
-            "tcf_consent_purposes": [5],
-            "tcf_consent_vendors": ["sendgrid"],
+            "tcf_purpose_consents": [5],
+            "tcf_vendor_consents": ["sendgrid"],
             "tcf_special_features": [2],
-            "tcf_legitimate_interests_systems": [system.id],
+            "tcf_system_legitimate_interests": [system.id],
             "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
             "user_geography": "fr",
             "acknowledge_mode": False,
@@ -267,7 +267,7 @@ class TestSaveNoticesServedForFidesDeviceId:
             "browser_identity": {
                 "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
             },
-            "tcf_consent_purposes": [1000],
+            "tcf_purpose_consents": [1000],
             "user_geography": "us_ca",
             "acknowledge_mode": False,
             "serving_component": ServingComponent.tcf_overlay.value,
@@ -276,7 +276,7 @@ class TestSaveNoticesServedForFidesDeviceId:
         assert response.status_code == 422
         assert (
             response.json()["detail"][0]["msg"]
-            == "Invalid values for tcf_consent_purposes served."
+            == "Invalid values for tcf_purpose_consents served."
         )
 
     def test_invalid_tcf_special_purpose_served(
@@ -351,7 +351,7 @@ class TestSaveNoticesServedForFidesDeviceId:
             "browser_identity": {
                 "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
             },
-            "tcf_consent_systems": ["bad_system"],
+            "tcf_system_consents": ["bad_system"],
             "user_geography": "us_ca",
             "acknowledge_mode": False,
             "serving_component": ServingComponent.tcf_overlay.value,
@@ -553,7 +553,7 @@ class TestSaveNoticesServedPrivacyCenter:
                 "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
             },
             "code": verification_code,
-            "tcf_consent_purposes": [5],
+            "tcf_purpose_consents": [5],
             "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
             "user_geography": "fr",
             "acknowledge_mode": False,
