@@ -1,10 +1,6 @@
 import { h } from "preact";
 import { useMemo } from "preact/hooks";
 import { PrivacyExperience } from "../../lib/consent-types";
-import {
-  LegalBasisForProcessingEnum,
-  TCFVendorRecord,
-} from "../../lib/tcf/types";
 
 const VendorInfo = ({
   label,
@@ -31,23 +27,6 @@ const VendorInfo = ({
   </div>
 );
 
-const countVendorRecordsWithLegalBasis = (
-  records: TCFVendorRecord[],
-  legalBasis: LegalBasisForProcessingEnum
-) =>
-  records.filter((record) => {
-    const { purposes, special_purposes: specialPurposes } = record;
-    const hasApplicablePurposes = purposes?.filter((purpose) =>
-      purpose.legal_bases?.includes(legalBasis)
-    );
-    const hasApplicableSpecialPurposes = specialPurposes?.filter((purpose) =>
-      purpose.legal_bases?.includes(legalBasis)
-    );
-    return (
-      hasApplicablePurposes?.length || hasApplicableSpecialPurposes?.length
-    );
-  }).length;
-
 const VendorInfoBanner = ({
   experience,
   goToVendorTab,
@@ -56,31 +35,22 @@ const VendorInfoBanner = ({
   goToVendorTab: () => void;
 }) => {
   const counts = useMemo(() => {
-    const { tcf_systems: systems = [], tcf_vendors: vendors = [] } = experience;
-    // total count
-    const total = systems.length + vendors.length;
+    const {
+      tcf_vendor_consents: consentVendors = [],
+      tcf_vendor_legitimate_interests: legintVendors = [],
+      tcf_system_consents: consentSystems = [],
+      tcf_system_legitimate_interests: legintSystems = [],
+    } = experience;
 
-    // consent count
-    const consent =
-      countVendorRecordsWithLegalBasis(
-        systems,
-        LegalBasisForProcessingEnum.CONSENT
-      ) +
-      countVendorRecordsWithLegalBasis(
-        vendors,
-        LegalBasisForProcessingEnum.CONSENT
-      );
+    const total =
+      consentSystems.length +
+      consentVendors.length +
+      legintVendors.length +
+      legintSystems.length;
 
-    // legint count
-    const legint =
-      countVendorRecordsWithLegalBasis(
-        systems,
-        LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
-      ) +
-      countVendorRecordsWithLegalBasis(
-        vendors,
-        LegalBasisForProcessingEnum.LEGITIMATE_INTERESTS
-      );
+    const consent = consentSystems.length + consentVendors.length;
+
+    const legint = legintVendors.length + legintSystems.length;
 
     return { total, consent, legint };
   }, [experience]);

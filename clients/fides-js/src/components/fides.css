@@ -317,23 +317,6 @@ div#fides-modal .fides-modal-button-group {
   background: var(--fides-overlay-hover-color);
 }
 
-.fides-back-button {
-  position: absolute;
-  top: 0.5em;
-  left: 0.2em;
-  cursor: pointer;
-  background: none;
-  border: 1px solid var(--fides-overlay-background-dark-color);
-  border-radius: var(--fides-overlay-button-border-radius);
-  display: flex;
-  padding: 0.4em;
-  align-items: center;
-}
-
-.fides-back-button > svg {
-  margin-right: 0.6em;
-}
-
 .fides-modal-notices {
   margin-bottom: 1em;
 }
@@ -624,29 +607,14 @@ div#fides-modal .fides-modal-button-group {
   border-radius: var(--fides-overlay-button-border-radius);
 }
 
-/* Table */
-
-.fides-cookies-table {
-  border-collapse: collapse;
-  width: 100%;
-  text-align: left;
-}
-
-.fides-cookies-table th {
-  text-transform: uppercase;
-}
-
-.fides-cookies-table td,
-.fides-cookies-table th {
-  border: 1px solid var(--fides-overlay-row-divider-color);
-  padding-left: 1.1em;
-  padding-right: 0.6em;
-}
-
 /* General classes */
 .fides-flex-center {
   display: flex;
   align-items: center;
+}
+
+.fides-margin-right {
+  margin-right: 0.2em;
 }
 
 /* TCF toggles */
@@ -681,6 +649,18 @@ div#fides-modal .fides-modal-button-group {
   margin-left: 0;
 }
 
+.fides-tcf-vendor-toggles {
+  display: flex;
+}
+
+.fides-legal-basis-labels {
+  display: flex;
+  align-items: end;
+  justify-content: end;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
 /* Vendor purpose table */
 .fides-vendor-details-table {
   width: 100%;
@@ -708,22 +688,16 @@ div#fides-modal .fides-modal-button-group {
   color: var(--fides-overlay-body-font-color);
 }
 
+.fides-primary-text-color {
+  color: var(--fides-overlay-primary-color);
+}
+
 /* Link */
 .fides-external-link {
   color: var(--fides-overlay-primary-color);
   font-weight: 500;
   font-size: 0.9em;
   margin-right: 1em;
-}
-
-/* Dropdown */
-
-.fides-select-dropdown {
-  display: block;
-  width: 100%;
-  border-radius: var(--fides-overlay-component-border-radius);
-  padding: 0.4em;
-  border: 1px solid var(--fides-overlay-select-border-color);
 }
 
 /* Vendor info (initial layer) */
@@ -752,4 +726,15 @@ div#fides-modal .fides-modal-button-group {
 
 .fides-info-box p {
   margin: 0;
+}
+
+/* All on off buttons */
+.fides-all-on-off-buttons {
+  display: flex;
+  justify-content: end;
+  margin-bottom: 1em;
+}
+
+.fides-all-on-button {
+  margin-right: 0.9em;
 }

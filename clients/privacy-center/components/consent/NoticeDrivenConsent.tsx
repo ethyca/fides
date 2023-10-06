@@ -171,7 +171,7 @@ const NoticeDrivenConsent = () => {
           (n) => n.privacy_notice_history_id === historyKey
         );
         const servedNotice = servedNotices?.find(
-          (sn) => sn.privacy_notice_history.id === historyKey
+          (sn) => sn.privacy_notice_history?.id === historyKey
         );
         return { historyKey, preference, notice, servedNotice };
       }
@@ -208,11 +208,15 @@ const NoticeDrivenConsent = () => {
       id: consentRequestId,
       body: payload,
     });
-    if ("error" in result) {
+    const isError = "error" in result;
+    if (isError || !result.data.preferences) {
+      let description = "No preferences returned";
+      if (isError) {
+        description = typeof result.error === "string" ? result.error : "";
+      }
       toast({
         title: "An error occurred while saving user consent preferences",
-        description:
-          typeof result.error === "string" ? result.error : undefined,
+        description,
         ...ErrorToastOptions,
       });
       return;
@@ -220,8 +224,8 @@ const NoticeDrivenConsent = () => {
 
     // 2. Save the cookie and window obj on success
     const noticeKeyMap = new Map<string, boolean>(
-      result.data.map((preference) => [
-        preference.privacy_notice_history.notice_key || "",
+      result.data.preferences.map((preference) => [
+        preference.privacy_notice_history?.notice_key || "",
         transformUserPreferenceToBoolean(preference.preference),
       ])
     );

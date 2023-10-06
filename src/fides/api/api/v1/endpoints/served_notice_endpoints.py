@@ -32,7 +32,10 @@ from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter
-from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING, ConsentRecordType
+from fides.api.util.tcf.tcf_experience_contents import (
+    TCF_SECTION_MAPPING,
+    ConsentRecordType,
+)
 from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST_NOTICES_SERVED,
     NOTICES_SERVED,
@@ -73,7 +76,8 @@ def save_consent_served_for_identities(
     common_data["serving_component"] = original_request_data.serving_component
 
     def save_consent_served_for_field_name(
-        identifiers: Union[List[SafeStr], List[int]], field_name: ConsentRecordType
+        identifiers: Optional[Union[List[SafeStr], List[int]]],
+        field_name: Optional[ConsentRecordType],
     ) -> None:
         """Internal helper for creating a ServedNoticeHistory record for various types
         of consent components
@@ -81,6 +85,9 @@ def save_consent_served_for_identities(
         Loops through the list of all consent components of a given type and saves
         to the database that they were served.
         """
+        if not field_name or not identifiers:
+            return
+
         for identifier in identifiers:
             (
                 _,
@@ -103,10 +110,11 @@ def save_consent_served_for_identities(
         original_request_data.privacy_notice_history_ids,
         ConsentRecordType.privacy_notice_history_id,
     )
+
     # Save consent served for TCF components if applicable
-    for tcf_component, database_column in TCF_COMPONENT_MAPPING.items():
+    for tcf_component, database_column in TCF_SECTION_MAPPING.items():
         save_consent_served_for_field_name(
-            getattr(original_request_data, tcf_component),
+            getattr(original_request_data, tcf_component, None),
             database_column,
         )
 
