@@ -300,6 +300,50 @@ describe("Fides-js TCF", () => {
           cy.get("input").should("not.be.checked");
         });
       });
+
+      it("can handle group toggle empty states", () => {
+        cy.fixture("consent/experience_tcf.json").then((payload) => {
+          const experience = payload.items[0];
+          const updatedExperience = { ...experience, tcf_purpose_consents: [] };
+          stubConfig({
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+            },
+            experience: updatedExperience,
+          });
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.get("#fides-modal-link").click();
+            cy.getByTestId(`toggle-all-Purposes-consent`).should("not.exist");
+          });
+        });
+      });
+
+      it("can handle all on/all off empty states", () => {
+        cy.fixture("consent/experience_tcf.json").then((payload) => {
+          const experience = payload.items[0];
+          const updatedExperience = {
+            ...experience,
+            tcf_purpose_consents: [],
+            tcf_purpose_legitimate_interests: [],
+          };
+          stubConfig({
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+            },
+            experience: updatedExperience,
+          });
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.get("#fides-modal-link").click();
+            // Should not show up on the purpose tab
+            cy.get(".fides-all-on-off-buttons").should("not.be.visible");
+            // But should show up in Features
+            cy.get("#fides-tab-Features").click();
+            cy.get(".fides-all-on-off-buttons").should("be.visible");
+          });
+        });
+      });
     });
 
     describe("saving preferences", () => {
