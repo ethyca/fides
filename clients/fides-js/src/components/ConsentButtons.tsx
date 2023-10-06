@@ -33,7 +33,11 @@ export const ConsentButtons = ({
         />
       </div>
     ) : null}
-    <div className={firstButton ? "fides-modal-button-group" : undefined}>
+    <div
+      className={
+        firstButton ? "fides-modal-button-group" : "fides-banner-button-group"
+      }
+    >
       {firstButton || null}
       <Button
         buttonType={ButtonType.PRIMARY}
