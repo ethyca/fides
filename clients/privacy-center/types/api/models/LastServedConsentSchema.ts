@@ -3,14 +3,11 @@
 /* eslint-disable */
 
 import type { PrivacyNoticeHistorySchema } from "./PrivacyNoticeHistorySchema";
-import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
- * Schema to represent the latest saved preference for a given privacy notice
- * Note that we return the privacy notice *history* record here though which has the
- * contents of the notice the user consented to at the time.
+ * Schema that surfaces the the last time a consent item that was shown to a user
  */
-export type CurrentPrivacyPreferenceSchema = {
+export type LastServedConsentSchema = {
   purpose_consent?: number;
   purpose_legitimate_interests?: number;
   special_purpose?: number;
@@ -21,7 +18,7 @@ export type CurrentPrivacyPreferenceSchema = {
   system_consent?: string;
   system_legitimate_interests?: string;
   id: string;
-  preference: UserConsentPreference;
+  updated_at: string;
+  served_notice_history_id: string;
   privacy_notice_history?: PrivacyNoticeHistorySchema;
-  privacy_preference_history_id?: string;
 };
