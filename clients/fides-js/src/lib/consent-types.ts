@@ -10,8 +10,8 @@ import type {
   TCFPurposeLegitimateInterestsRecord,
   TCFSpecialPurposeRecord,
   TCFSpecialFeatureRecord,
-  TCFConsentVendorRecord,
-  TCFLegitimateInterestsVendorRecord,
+  TCFVendorConsentRecord,
+  TCFVendorLegitimateInterestsRecord,
   TCFVendorRelationships,
 } from "./tcf/types";
 
@@ -85,16 +85,16 @@ export type PrivacyExperience = {
   updated_at: string;
   show_banner?: boolean;
   privacy_notices?: Array<PrivacyNotice>;
-  tcf_consent_purposes?: Array<TCFPurposeConsentRecord>;
-  tcf_legitimate_interests_purposes?: Array<TCFPurposeLegitimateInterestsRecord>;
+  tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
+  tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
   tcf_features?: Array<TCFFeatureRecord>;
   tcf_special_features?: Array<TCFSpecialFeatureRecord>;
-  tcf_consent_vendors?: Array<TCFConsentVendorRecord>;
-  tcf_legitimate_interests_vendors?: Array<TCFLegitimateInterestsVendorRecord>;
+  tcf_vendor_consents?: Array<TCFVendorConsentRecord>;
+  tcf_vendor_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_vendor_relationships?: Array<TCFVendorRelationships>;
-  tcf_consent_systems?: Array<TCFConsentVendorRecord>;
-  tcf_legitimate_interests_systems?: Array<TCFLegitimateInterestsVendorRecord>;
+  tcf_system_consents?: Array<TCFVendorConsentRecord>;
+  tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
   gvl?: GVLJson;
 };
@@ -267,10 +267,19 @@ export enum ServingComponent {
 /**
  * Request body when indicating that notices were served in the UI
  */
-export type NoticesServedRequest = {
+export type RecordConsentServedRequest = {
   browser_identity: Identity;
   code?: string;
-  privacy_notice_history_ids: Array<string>;
+  privacy_notice_history_ids?: Array<string>;
+  tcf_purpose_consents?: Array<number>;
+  tcf_purpose_legitimate_interests?: Array<number>;
+  tcf_special_purposes?: Array<number>;
+  tcf_vendor_consents?: Array<string>;
+  tcf_vendor_legitimate_interests?: Array<string>;
+  tcf_features?: Array<number>;
+  tcf_special_features?: Array<number>;
+  tcf_system_consents?: Array<string>;
+  tcf_system_legitimate_interests?: Array<string>;
   privacy_experience_id?: string;
   user_geography?: string;
   acknowledge_mode?: boolean;

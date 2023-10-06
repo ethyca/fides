@@ -25,13 +25,13 @@ from fides.api.models.privacy_preference import (
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.tcf import (
-    TCFConsentVendorRecord,
     TCFFeatureRecord,
-    TCFLegitimateInterestsVendorRecord,
     TCFPurposeConsentRecord,
     TCFPurposeLegitimateInterestsRecord,
     TCFSpecialFeatureRecord,
     TCFSpecialPurposeRecord,
+    TCFVendorConsentRecord,
+    TCFVendorLegitimateInterestsRecord,
     TCFVendorRelationships,
 )
 from fides.api.util.tcf.tcf_experience_contents import (
@@ -226,13 +226,15 @@ class PrivacyExperience(Base):
     # related to experiences.
     privacy_notices: List[PrivacyNotice] = []
     # TCF attributes that can be added at runtime as the result of "get_related_tcf_contents"
-    tcf_consent_purposes: List = []
-    tcf_legitimate_interests_purposes: List = []
+    tcf_purpose_consents: List = []
+    tcf_purpose_legitimate_interests: List = []
     tcf_special_purposes: List = []
-    tcf_vendors: List = []
+    tcf_vendor_consents: List = []
+    tcf_vendor_legitimate_interests: List = []
     tcf_features: List = []
     tcf_special_features: List = []
-    tcf_systems: List = []
+    tcf_system_consents: List = []
+    tcf_system_legitimate_interests: List = []
     gvl: Optional[Dict] = {}
     # TCF Developer-Friendly Meta added at runtime as the result of build_tc_data_for_mobile
     meta: Dict = {}
@@ -621,8 +623,8 @@ def cache_saved_and_served_on_consent_record(
         TCFSpecialPurposeRecord,
         TCFFeatureRecord,
         TCFSpecialFeatureRecord,
-        TCFConsentVendorRecord,
-        TCFLegitimateInterestsVendorRecord,
+        TCFVendorConsentRecord,
+        TCFVendorLegitimateInterestsRecord,
         TCFVendorRelationships,
     ],
     fides_user_provided_identity: Optional[ProvidedIdentity],

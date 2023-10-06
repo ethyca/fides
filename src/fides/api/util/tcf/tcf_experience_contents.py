@@ -28,13 +28,13 @@ from fides.api.models.sql_models import (  # type:ignore[attr-defined]
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.tcf import (
     EmbeddedVendor,
-    TCFConsentVendorRecord,
     TCFFeatureRecord,
-    TCFLegitimateInterestsVendorRecord,
     TCFPurposeConsentRecord,
     TCFPurposeLegitimateInterestsRecord,
     TCFSpecialFeatureRecord,
     TCFSpecialPurposeRecord,
+    TCFVendorConsentRecord,
+    TCFVendorLegitimateInterestsRecord,
     TCFVendorRelationships,
 )
 from fides.config.helpers import load_file
@@ -74,13 +74,13 @@ NonVendorRecord = Union[
 ]
 
 VendorSectionType = Union[
-    Type[TCFConsentVendorRecord],
-    Type[TCFLegitimateInterestsVendorRecord],
+    Type[TCFVendorConsentRecord],
+    Type[TCFVendorLegitimateInterestsRecord],
     Type[TCFVendorRelationships],
 ]
 
 VendorRecord = Union[
-    TCFConsentVendorRecord, TCFLegitimateInterestsVendorRecord, TCFVendorRelationships
+    TCFVendorConsentRecord, TCFVendorLegitimateInterestsRecord, TCFVendorRelationships
 ]
 
 SystemSubSections = Union[
@@ -114,16 +114,16 @@ class ConsentRecordType(Enum):
 # Each TCF section in the TCF Overlay mapped to the specific database column
 # from which previously-saved values are retrieved
 TCF_SECTION_MAPPING: Dict[str, Optional[ConsentRecordType]] = {
-    "tcf_consent_purposes": ConsentRecordType.purpose_consent,
-    "tcf_legitimate_interests_purposes": ConsentRecordType.purpose_legitimate_interests,
+    "tcf_purpose_consents": ConsentRecordType.purpose_consent,
+    "tcf_purpose_legitimate_interests": ConsentRecordType.purpose_legitimate_interests,
     "tcf_special_purposes": ConsentRecordType.special_purpose,
     "tcf_features": ConsentRecordType.feature,
     "tcf_special_features": ConsentRecordType.special_feature,
-    "tcf_consent_vendors": ConsentRecordType.vendor_consent,
-    "tcf_legitimate_interests_vendors": ConsentRecordType.vendor_legitimate_interests,
+    "tcf_vendor_consents": ConsentRecordType.vendor_consent,
+    "tcf_vendor_legitimate_interests": ConsentRecordType.vendor_legitimate_interests,
     "tcf_vendor_relationships": None,
-    "tcf_consent_systems": ConsentRecordType.system_consent,
-    "tcf_legitimate_interests_systems": ConsentRecordType.system_legitimate_interests,
+    "tcf_system_consents": ConsentRecordType.system_consent,
+    "tcf_system_legitimate_interests": ConsentRecordType.system_legitimate_interests,
     "tcf_system_relationships": None,
 }
 
@@ -156,19 +156,19 @@ class TCFExperienceContents(
     Used to store GVL information pulled from Fideslang that has been combined with system data
     """
 
-    tcf_consent_purposes: List[TCFPurposeConsentRecord] = []
-    tcf_legitimate_interests_purposes: List[TCFPurposeLegitimateInterestsRecord] = []
+    tcf_purpose_consents: List[TCFPurposeConsentRecord] = []
+    tcf_purpose_legitimate_interests: List[TCFPurposeLegitimateInterestsRecord] = []
 
     tcf_special_purposes: List[TCFSpecialPurposeRecord] = []
     tcf_features: List[TCFFeatureRecord] = []
     tcf_special_features: List[TCFSpecialFeatureRecord] = []
 
-    tcf_consent_vendors: List[TCFConsentVendorRecord] = []
-    tcf_legitimate_interests_vendors: List[TCFLegitimateInterestsVendorRecord] = []
+    tcf_vendor_consents: List[TCFVendorConsentRecord] = []
+    tcf_vendor_legitimate_interests: List[TCFVendorLegitimateInterestsRecord] = []
     tcf_vendor_relationships: List[TCFVendorRelationships] = []
 
-    tcf_consent_systems: List[TCFConsentVendorRecord] = []
-    tcf_legitimate_interests_systems: List[TCFLegitimateInterestsVendorRecord] = []
+    tcf_system_consents: List[TCFVendorConsentRecord] = []
+    tcf_system_legitimate_interests: List[TCFVendorLegitimateInterestsRecord] = []
     tcf_system_relationships: List[TCFVendorRelationships] = []
 
 
@@ -343,11 +343,7 @@ def build_purpose_or_feature_section_and_update_vendor_map(
     vendor_subsection_name: str,
     vendor_map: Dict[
         str,
-        Union[
-            TCFConsentVendorRecord,
-            TCFLegitimateInterestsVendorRecord,
-            TCFVendorRelationships,
-        ],
+        VendorRecord,
     ],
     matching_privacy_declaration_query: Query,
 ) -> Tuple[Dict[int, NonVendorRecord], Dict[str, VendorRecord]]:
@@ -438,8 +434,8 @@ def get_tcf_contents(
     which are almost a reverse representation, and have their own purposes and features embedded underneath.
 
     """
-    vendor_consent_map: Dict[str, TCFConsentVendorRecord] = {}
-    vendor_legitimate_interests_map: Dict[str, TCFLegitimateInterestsVendorRecord] = {}
+    vendor_consent_map: Dict[str, TCFVendorConsentRecord] = {}
+    vendor_legitimate_interests_map: Dict[str, TCFVendorLegitimateInterestsRecord] = {}
     vendor_relationships_map: Dict[str, TCFVendorRelationships] = {}
 
     matching_privacy_declarations: Query = get_matching_privacy_declarations(db)
@@ -451,8 +447,8 @@ def get_tcf_contents(
     ) = build_purpose_or_feature_section_and_update_vendor_map(
         PURPOSE_DATA_USES,
         tcf_component_type=TCFPurposeConsentRecord,
-        tcf_vendor_component_type=TCFConsentVendorRecord,
-        vendor_subsection_name="consent_purposes",
+        tcf_vendor_component_type=TCFVendorConsentRecord,
+        vendor_subsection_name="purpose_consents",
         vendor_map=vendor_consent_map,
         matching_privacy_declaration_query=matching_privacy_declarations.filter(
             PrivacyDeclaration.legal_basis_for_processing
@@ -467,8 +463,8 @@ def get_tcf_contents(
     ) = build_purpose_or_feature_section_and_update_vendor_map(
         PURPOSE_DATA_USES,
         tcf_component_type=TCFPurposeLegitimateInterestsRecord,
-        tcf_vendor_component_type=TCFLegitimateInterestsVendorRecord,
-        vendor_subsection_name="legitimate_interests_purposes",
+        tcf_vendor_component_type=TCFVendorLegitimateInterestsRecord,
+        vendor_subsection_name="purpose_legitimate_interests",
         vendor_map=vendor_legitimate_interests_map,
         matching_privacy_declaration_query=matching_privacy_declarations.filter(
             PrivacyDeclaration.legal_basis_for_processing
@@ -533,45 +529,45 @@ def combine_overlay_sections(
     special_purpose_map: Dict[int, TCFSpecialPurposeRecord],
     feature_map: Dict[int, TCFFeatureRecord],
     special_feature_map: Dict[int, TCFSpecialFeatureRecord],
-    updated_vendor_consent_map: Dict[str, TCFConsentVendorRecord],
+    updated_vendor_consent_map: Dict[str, TCFVendorConsentRecord],
     updated_vendor_legitimate_interests_map: Dict[
-        str, TCFLegitimateInterestsVendorRecord
+        str, TCFVendorLegitimateInterestsRecord
     ],
     updated_vendor_relationships: Dict[str, TCFVendorRelationships],
 ) -> TCFExperienceContents:
     """Combine the different TCF sections and sort purposes/features by id, and vendors/systems by name"""
     experience_contents = TCFExperienceContents()
-    experience_contents.tcf_consent_purposes = _sort_by_id(purpose_consent_map)  # type: ignore[assignment]
-    experience_contents.tcf_legitimate_interests_purposes = _sort_by_id(purpose_legitimate_interests_map)  # type: ignore[assignment]
+    experience_contents.tcf_purpose_consents = _sort_by_id(purpose_consent_map)  # type: ignore[assignment]
+    experience_contents.tcf_purpose_legitimate_interests = _sort_by_id(purpose_legitimate_interests_map)  # type: ignore[assignment]
     experience_contents.tcf_special_purposes = _sort_by_id(special_purpose_map)  # type: ignore[assignment]
     experience_contents.tcf_features = _sort_by_id(feature_map)  # type: ignore[assignment]
     experience_contents.tcf_special_features = _sort_by_id(special_feature_map)  # type: ignore[assignment]
 
-    experience_contents.tcf_consent_vendors = []
-    experience_contents.tcf_legitimate_interests_vendors = []
+    experience_contents.tcf_vendor_consents = []
+    experience_contents.tcf_vendor_legitimate_interests = []
     experience_contents.tcf_vendor_relationships = []
 
-    experience_contents.tcf_consent_systems = []
-    experience_contents.tcf_legitimate_interests_systems = []
+    experience_contents.tcf_system_consents = []
+    experience_contents.tcf_system_legitimate_interests = []
     experience_contents.tcf_system_relationships = []
 
-    sorted_vendor_consents: List[TCFConsentVendorRecord] = _sort_by_name(updated_vendor_consent_map)  # type: ignore[assignment]
-    sorted_vendor_legitimate_interests: List[TCFLegitimateInterestsVendorRecord] = _sort_by_name(updated_vendor_legitimate_interests_map)  # type: ignore[assignment]
+    sorted_vendor_consents: List[TCFVendorConsentRecord] = _sort_by_name(updated_vendor_consent_map)  # type: ignore[assignment]
+    sorted_vendor_legitimate_interests: List[TCFVendorLegitimateInterestsRecord] = _sort_by_name(updated_vendor_legitimate_interests_map)  # type: ignore[assignment]
     sorted_vendor_relationships: List[TCFVendorRelationships] = _sort_by_name(updated_vendor_relationships)  # type: ignore[assignment]
 
     for vendor in sorted_vendor_consents:
-        vendor.consent_purposes.sort(key=lambda x: x.id)
+        vendor.purpose_consents.sort(key=lambda x: x.id)
         if vendor.has_vendor_id:
-            experience_contents.tcf_consent_vendors.append(vendor)
+            experience_contents.tcf_vendor_consents.append(vendor)
         else:
-            experience_contents.tcf_consent_systems.append(vendor)
+            experience_contents.tcf_system_consents.append(vendor)
 
     for vendor in sorted_vendor_legitimate_interests:
-        vendor.legitimate_interests_purposes.sort(key=lambda x: x.id)
+        vendor.purpose_legitimate_interests.sort(key=lambda x: x.id)
         if vendor.has_vendor_id:
-            experience_contents.tcf_legitimate_interests_vendors.append(vendor)
+            experience_contents.tcf_vendor_legitimate_interests.append(vendor)
         else:
-            experience_contents.tcf_legitimate_interests_systems.append(vendor)
+            experience_contents.tcf_system_legitimate_interests.append(vendor)
 
     for vendor in sorted_vendor_relationships:
         vendor.special_purposes.sort(key=lambda x: x.id)
@@ -594,8 +590,8 @@ def _sort_by_id(
 def _sort_by_name(
     tcf_mapping: Dict,
 ) -> Union[
-    List[TCFConsentVendorRecord],
-    List[TCFLegitimateInterestsVendorRecord],
+    List[TCFVendorConsentRecord],
+    List[TCFVendorLegitimateInterestsRecord],
     List[TCFVendorRelationships],
 ]:
     return sorted(list(tcf_mapping.values()), key=lambda x: x.name)

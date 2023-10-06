@@ -50,12 +50,11 @@ export const generateTcString = async ({
           }
         });
         tcStringPreferences.vendorsLegint.forEach((vendorId) => {
-          const thisVendor =
-            experience.tcf_legitimate_interests_vendors?.filter(
-              (v) => v.id === vendorId
-            )[0];
+          const thisVendor = experience.tcf_vendor_legitimate_interests?.filter(
+            (v) => v.id === vendorId
+          )[0];
 
-          const vendorPurposes = thisVendor?.legitimate_interests_purposes;
+          const vendorPurposes = thisVendor?.purpose_legitimate_interests;
           // Handle the case where a vendor has forbidden legint purposes set
           let skipSetLegInt = false;
           if (vendorPurposes) {

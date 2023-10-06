@@ -76,10 +76,10 @@ class CommonVendorFields(FidesSchema):
     description: Optional[str]
 
 
-class TCFConsentVendorRecord(UserSpecificConsentDetails, CommonVendorFields):
+class TCFVendorConsentRecord(UserSpecificConsentDetails, CommonVendorFields):
     """Schema for a TCF Vendor with Consent legal basis"""
 
-    consent_purposes: List[EmbeddedLineItem] = []
+    purpose_consents: List[EmbeddedLineItem] = []
 
     @root_validator
     def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -89,12 +89,12 @@ class TCFConsentVendorRecord(UserSpecificConsentDetails, CommonVendorFields):
         return values
 
 
-class TCFLegitimateInterestsVendorRecord(
+class TCFVendorLegitimateInterestsRecord(
     UserSpecificConsentDetails, CommonVendorFields
 ):
     """Schema for a TCF Vendor with Legitimate interests legal basis"""
 
-    legitimate_interests_purposes: List[EmbeddedLineItem] = []
+    purpose_legitimate_interests: List[EmbeddedLineItem] = []
 
     @root_validator
     def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:

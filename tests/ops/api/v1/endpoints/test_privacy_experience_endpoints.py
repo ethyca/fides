@@ -679,15 +679,15 @@ class TestGetTCFPrivacyExperiences:
             resp.json()["items"][0]["privacy_notices"][0]["id"]
             == privacy_notice_fr_provide_service_frontend_only.id
         )
-        assert resp.json()["items"][0]["tcf_consent_purposes"] == []
-        assert resp.json()["items"][0]["tcf_legitimate_interests_purposes"] == []
-        assert resp.json()["items"][0]["tcf_consent_vendors"] == []
-        assert resp.json()["items"][0]["tcf_legitimate_interests_vendors"] == []
+        assert resp.json()["items"][0]["tcf_purpose_consents"] == []
+        assert resp.json()["items"][0]["tcf_purpose_legitimate_interests"] == []
+        assert resp.json()["items"][0]["tcf_vendor_consents"] == []
+        assert resp.json()["items"][0]["tcf_vendor_legitimate_interests"] == []
         assert resp.json()["items"][0]["tcf_features"] == []
         assert resp.json()["items"][0]["tcf_special_purposes"] == []
         assert resp.json()["items"][0]["tcf_special_features"] == []
-        assert resp.json()["items"][0]["tcf_legitimate_interests_systems"] == []
-        assert resp.json()["items"][0]["tcf_consent_systems"] == []
+        assert resp.json()["items"][0]["tcf_system_legitimate_interests"] == []
+        assert resp.json()["items"][0]["tcf_system_consents"] == []
         meta = resp.json()["items"][0]["meta"]
         assert not meta["version_hash"]
         assert not meta["accept_all_tc_string"]
@@ -711,15 +711,15 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["id"] == privacy_experience_france_tcf_overlay.id
         assert resp.json()["items"][0]["component"] == ComponentType.tcf_overlay.value
         assert resp.json()["items"][0]["privacy_notices"] == []
-        assert resp.json()["items"][0]["tcf_consent_purposes"] == []
-        assert resp.json()["items"][0]["tcf_legitimate_interests_purposes"] == []
-        assert resp.json()["items"][0]["tcf_consent_vendors"] == []
-        assert resp.json()["items"][0]["tcf_legitimate_interests_vendors"] == []
+        assert resp.json()["items"][0]["tcf_purpose_consents"] == []
+        assert resp.json()["items"][0]["tcf_purpose_legitimate_interests"] == []
+        assert resp.json()["items"][0]["tcf_vendor_consents"] == []
+        assert resp.json()["items"][0]["tcf_vendor_legitimate_interests"] == []
         assert resp.json()["items"][0]["tcf_features"] == []
         assert resp.json()["items"][0]["tcf_special_purposes"] == []
         assert resp.json()["items"][0]["tcf_special_features"] == []
-        assert resp.json()["items"][0]["tcf_consent_systems"] == []
-        assert resp.json()["items"][0]["tcf_legitimate_interests_systems"] == []
+        assert resp.json()["items"][0]["tcf_system_consents"] == []
+        assert resp.json()["items"][0]["tcf_system_legitimate_interests"] == []
         assert resp.json()["items"][0]["gvl"] == {}
         meta = resp.json()["items"][0]["meta"]
         assert not meta["version_hash"]
@@ -762,41 +762,41 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["id"] == privacy_experience_france_tcf_overlay.id
         assert resp.json()["items"][0]["component"] == ComponentType.tcf_overlay.value
         assert resp.json()["items"][0]["privacy_notices"] == []
-        assert len(resp.json()["items"][0]["tcf_consent_purposes"]) == 1
-        assert resp.json()["items"][0]["tcf_consent_purposes"][0]["id"] == 8
-        assert resp.json()["items"][0]["tcf_consent_purposes"][0]["data_uses"] == [
+        assert len(resp.json()["items"][0]["tcf_purpose_consents"]) == 1
+        assert resp.json()["items"][0]["tcf_purpose_consents"][0]["id"] == 8
+        assert resp.json()["items"][0]["tcf_purpose_consents"][0]["data_uses"] == [
             "analytics.reporting.content_performance"
         ]
         assert (
-            resp.json()["items"][0]["tcf_consent_purposes"][0]["current_preference"]
+            resp.json()["items"][0]["tcf_purpose_consents"][0]["current_preference"]
             == "opt_out"
         )
         assert (
-            resp.json()["items"][0]["tcf_consent_purposes"][0]["outdated_preference"]
+            resp.json()["items"][0]["tcf_purpose_consents"][0]["outdated_preference"]
             is None
         )
         assert (
-            resp.json()["items"][0]["tcf_consent_purposes"][0]["current_served"] is True
+            resp.json()["items"][0]["tcf_purpose_consents"][0]["current_served"] is True
         )
         assert (
-            resp.json()["items"][0]["tcf_consent_purposes"][0]["outdated_served"]
+            resp.json()["items"][0]["tcf_purpose_consents"][0]["outdated_served"]
             is None
         )
 
-        assert len(resp.json()["items"][0]["tcf_consent_vendors"]) == 1
-        assert resp.json()["items"][0]["tcf_consent_vendors"][0]["id"] == "sendgrid"
+        assert len(resp.json()["items"][0]["tcf_vendor_consents"]) == 1
+        assert resp.json()["items"][0]["tcf_vendor_consents"][0]["id"] == "sendgrid"
         assert (
-            resp.json()["items"][0]["tcf_consent_vendors"][0]["consent_purposes"][0][
+            resp.json()["items"][0]["tcf_vendor_consents"][0]["purpose_consents"][0][
                 "id"
             ]
             == 8
         )
         assert (
-            resp.json()["items"][0]["tcf_consent_vendors"][0]["default_preference"]
+            resp.json()["items"][0]["tcf_vendor_consents"][0]["default_preference"]
             == "opt_out"
         )
         assert (
-            resp.json()["items"][0]["tcf_consent_vendors"][0]["current_preference"]
+            resp.json()["items"][0]["tcf_vendor_consents"][0]["current_preference"]
             == "opt_out"
         )
 
@@ -819,8 +819,8 @@ class TestGetTCFPrivacyExperiences:
             resp.json()["items"][0]["tcf_special_purposes"][0]["outdated_served"]
             is None
         )
-        assert resp.json()["items"][0]["tcf_consent_systems"] == []
-        assert resp.json()["items"][0]["tcf_legitimate_interests_systems"] == []
+        assert resp.json()["items"][0]["tcf_system_consents"] == []
+        assert resp.json()["items"][0]["tcf_system_legitimate_interests"] == []
         assert resp.json()["items"][0]["gvl"]["gvlSpecificationVersion"] == 3
         meta = resp.json()["items"][0]["meta"]
         assert meta["version_hash"] == "75fb2dafef58"
@@ -857,16 +857,16 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["id"] == privacy_experience_france_tcf_overlay.id
         assert resp.json()["items"][0]["component"] == ComponentType.tcf_overlay.value
         assert resp.json()["items"][0]["privacy_notices"] == []
-        assert len(resp.json()["items"][0]["tcf_consent_purposes"]) == 1
-        assert len(resp.json()["items"][0]["tcf_legitimate_interests_purposes"]) == 0
+        assert len(resp.json()["items"][0]["tcf_purpose_consents"]) == 1
+        assert len(resp.json()["items"][0]["tcf_purpose_legitimate_interests"]) == 0
         assert resp.json()["items"][0]["tcf_special_purposes"] == []
-        assert resp.json()["items"][0]["tcf_consent_vendors"] == []
-        assert resp.json()["items"][0]["tcf_legitimate_interests_vendors"] == []
+        assert resp.json()["items"][0]["tcf_vendor_consents"] == []
+        assert resp.json()["items"][0]["tcf_vendor_legitimate_interests"] == []
         assert resp.json()["items"][0]["tcf_special_features"] == []
 
         assert len(resp.json()["items"][0]["tcf_features"]) == 1
-        assert len(resp.json()["items"][0]["tcf_consent_systems"]) == 1
-        assert len(resp.json()["items"][0]["tcf_legitimate_interests_systems"]) == 0
+        assert len(resp.json()["items"][0]["tcf_system_consents"]) == 1
+        assert len(resp.json()["items"][0]["tcf_system_legitimate_interests"]) == 0
 
         feature_data = resp.json()["items"][0]["tcf_features"][0]
 
@@ -878,10 +878,10 @@ class TestGetTCFPrivacyExperiences:
         assert feature_data["current_served"] is True
         assert feature_data["outdated_served"] is None
 
-        system_data = resp.json()["items"][0]["tcf_consent_systems"][0]
+        system_data = resp.json()["items"][0]["tcf_system_consents"][0]
 
         assert system_data["id"] == system.id
-        assert len(system_data["consent_purposes"]) == 1
+        assert len(system_data["purpose_consents"]) == 1
         assert system_data["default_preference"] == "opt_out"
         assert system_data["current_preference"] == "opt_in"
 
@@ -920,23 +920,21 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["id"] == privacy_experience_france_tcf_overlay.id
         assert resp.json()["items"][0]["component"] == ComponentType.tcf_overlay.value
         assert resp.json()["items"][0]["privacy_notices"] == []
-        assert len(resp.json()["items"][0]["tcf_consent_purposes"]) == 0
-        assert len(resp.json()["items"][0]["tcf_legitimate_interests_purposes"]) == 1
-        assert (
-            resp.json()["items"][0]["tcf_legitimate_interests_purposes"][0]["id"] == 2
-        )
+        assert len(resp.json()["items"][0]["tcf_purpose_consents"]) == 0
+        assert len(resp.json()["items"][0]["tcf_purpose_legitimate_interests"]) == 1
+        assert resp.json()["items"][0]["tcf_purpose_legitimate_interests"][0]["id"] == 2
         assert resp.json()["items"][0]["tcf_special_purposes"] == []
-        assert len(resp.json()["items"][0]["tcf_consent_vendors"]) == 0
-        assert len(resp.json()["items"][0]["tcf_legitimate_interests_vendors"]) == 1
+        assert len(resp.json()["items"][0]["tcf_vendor_consents"]) == 0
+        assert len(resp.json()["items"][0]["tcf_vendor_legitimate_interests"]) == 1
         assert resp.json()["items"][0]["tcf_special_features"] == []
 
         assert len(resp.json()["items"][0]["tcf_features"]) == 0
-        assert len(resp.json()["items"][0]["tcf_consent_systems"]) == 0
-        assert len(resp.json()["items"][0]["tcf_legitimate_interests_systems"]) == 0
+        assert len(resp.json()["items"][0]["tcf_system_consents"]) == 0
+        assert len(resp.json()["items"][0]["tcf_system_legitimate_interests"]) == 0
 
-        vendor_data = resp.json()["items"][0]["tcf_legitimate_interests_vendors"][0]
-        assert len(vendor_data["legitimate_interests_purposes"]) == 1
-        assert vendor_data["legitimate_interests_purposes"][0]["id"] == 2
+        vendor_data = resp.json()["items"][0]["tcf_vendor_legitimate_interests"][0]
+        assert len(vendor_data["purpose_legitimate_interests"]) == 1
+        assert vendor_data["purpose_legitimate_interests"][0]["id"] == 2
 
         assert vendor_data["default_preference"] == "opt_in"
         assert vendor_data["current_preference"] == "opt_out"

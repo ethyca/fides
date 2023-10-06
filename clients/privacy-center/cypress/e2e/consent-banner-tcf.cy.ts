@@ -75,11 +75,11 @@ describe("Fides-js TCF", () => {
       experience: PrivacyExperience,
       value: UserConsentPreference | undefined
     ): PrivacyExperience => {
-      const consentPurposes = experience.tcf_consent_purposes?.map((p) => ({
+      const consentPurposes = experience.tcf_purpose_consents?.map((p) => ({
         ...p,
         current_preference: value,
       }));
-      const legintPurposes = experience.tcf_legitimate_interests_purposes?.map(
+      const legintPurposes = experience.tcf_purpose_legitimate_interests?.map(
         (p) => ({ ...p, current_preference: value })
       );
       const specialPurposes = experience.tcf_special_purposes?.map((p) => ({
@@ -94,21 +94,21 @@ describe("Fides-js TCF", () => {
         ...f,
         current_preference: value,
       }));
-      const consentVendors = experience.tcf_consent_vendors?.map((v) => ({
+      const consentVendors = experience.tcf_vendor_consents?.map((v) => ({
         ...v,
         current_preference: value,
       }));
-      const legintVendors = experience.tcf_legitimate_interests_vendors?.map(
+      const legintVendors = experience.tcf_vendor_legitimate_interests?.map(
         (v) => ({
           ...v,
           current_preference: value,
         })
       );
-      const consentSystems = experience.tcf_consent_systems?.map((s) => ({
+      const consentSystems = experience.tcf_system_consents?.map((s) => ({
         ...s,
         current_preference: value,
       }));
-      const legintSystems = experience.tcf_legitimate_interests_systems?.map(
+      const legintSystems = experience.tcf_system_legitimate_interests?.map(
         (v) => ({
           ...v,
           current_preference: value,
@@ -116,15 +116,15 @@ describe("Fides-js TCF", () => {
       );
       return {
         ...experience,
-        tcf_consent_purposes: consentPurposes,
-        tcf_legitimate_interests_purposes: legintPurposes,
+        tcf_purpose_consents: consentPurposes,
+        tcf_purpose_legitimate_interests: legintPurposes,
         tcf_special_purposes: specialPurposes,
         tcf_features: features,
         tcf_special_features: specialFeatures,
-        tcf_consent_vendors: consentVendors,
-        tcf_legitimate_interests_vendors: legintVendors,
-        tcf_consent_systems: consentSystems,
-        tcf_legitimate_interests_systems: legintSystems,
+        tcf_vendor_consents: consentVendors,
+        tcf_vendor_legitimate_interests: legintVendors,
+        tcf_system_consents: consentSystems,
+        tcf_system_legitimate_interests: legintSystems,
       };
     };
     it("banner should not appear if everything already has a preference", () => {
@@ -153,7 +153,7 @@ describe("Fides-js TCF", () => {
           experience,
           UserConsentPreference.OPT_IN
         );
-        updatedExperience.tcf_consent_purposes![0].current_preference =
+        updatedExperience.tcf_purpose_consents![0].current_preference =
           undefined;
         stubConfig({
           options: {
@@ -572,16 +572,16 @@ describe("Fides-js TCF", () => {
         cy.fixture("consent/experience_tcf.json").then((payload) => {
           const experience: PrivacyExperience = payload.items[0];
           // Set purpose with id 4 to LegInt which is not allowed!
-          const purpose4 = experience.tcf_consent_purposes?.find(
+          const purpose4 = experience.tcf_purpose_consents?.find(
             (p) => p.id === 4
           )!;
-          experience.tcf_legitimate_interests_purposes?.push(purpose4);
+          experience.tcf_purpose_legitimate_interests?.push(purpose4);
           // Set the corresponding embedded vendor purpose too
-          const vendor = experience.tcf_consent_purposes![0];
-          experience.tcf_legitimate_interests_vendors?.push({
+          const vendor = experience.tcf_purpose_consents![0];
+          experience.tcf_vendor_legitimate_interests?.push({
             ...vendor,
             id: "test",
-            legitimate_interests_purposes: [{ id: 4, name: purpose4.name }],
+            purpose_legitimate_interests: [{ id: 4, name: purpose4.name }],
           });
 
           stubConfig({

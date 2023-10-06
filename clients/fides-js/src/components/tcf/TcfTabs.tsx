@@ -47,13 +47,13 @@ const TcfTabs = ({
             enabledIds={enabledIds}
             onChange={onChange}
             modelTypeMappings={{
-              purposesLegint: experience.tcf_legitimate_interests_purposes,
-              purposesConsent: experience.tcf_consent_purposes,
+              purposesLegint: experience.tcf_purpose_legitimate_interests,
+              purposesConsent: experience.tcf_purpose_consents,
             }}
           />
           <TcfPurposes
-            allPurposesConsent={experience.tcf_consent_purposes}
-            allPurposesLegint={experience.tcf_legitimate_interests_purposes}
+            allPurposesConsent={experience.tcf_purpose_consents}
+            allPurposesLegint={experience.tcf_purpose_legitimate_interests}
             allSpecialPurposes={experience.tcf_special_purposes}
             enabledPurposeConsentIds={enabledIds.purposesConsent}
             enabledPurposeLegintIds={enabledIds.purposesLegint}
@@ -103,12 +103,12 @@ const TcfTabs = ({
             onChange={onChange}
             modelTypeMappings={{
               vendorsConsent: [
-                ...(experience.tcf_consent_vendors || []),
-                ...(experience.tcf_consent_systems || []),
+                ...(experience.tcf_vendor_consents || []),
+                ...(experience.tcf_system_consents || []),
               ],
               vendorsLegint: [
-                ...(experience.tcf_legitimate_interests_vendors || []),
-                ...(experience.tcf_legitimate_interests_systems || []),
+                ...(experience.tcf_vendor_legitimate_interests || []),
+                ...(experience.tcf_system_legitimate_interests || []),
               ],
             }}
           />

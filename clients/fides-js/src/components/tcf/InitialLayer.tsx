@@ -12,8 +12,8 @@ import { getUniquePurposeRecords } from "../../lib/tcf/purposes";
 
 const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
   const {
-    tcf_consent_purposes: consentPurposes = [],
-    tcf_legitimate_interests_purposes: legintPurposes = [],
+    tcf_purpose_consents: consentPurposes = [],
+    tcf_purpose_legitimate_interests: legintPurposes = [],
     tcf_special_features: experienceSpecialFeatures = [],
   } = experience;
 

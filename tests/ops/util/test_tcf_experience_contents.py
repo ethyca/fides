@@ -21,19 +21,19 @@ def assert_length_of_tcf_sections(
     s_li_len: int,
     s_r_len: int,
 ):
-    assert len(tcf_contents.tcf_consent_purposes) == p_c_len
-    assert len(tcf_contents.tcf_legitimate_interests_purposes) == p_li_len
+    assert len(tcf_contents.tcf_purpose_consents) == p_c_len
+    assert len(tcf_contents.tcf_purpose_legitimate_interests) == p_li_len
 
     assert len(tcf_contents.tcf_features) == f_len
     assert len(tcf_contents.tcf_special_purposes) == sp_len
     assert len(tcf_contents.tcf_special_features) == sf_len
 
-    assert len(tcf_contents.tcf_consent_vendors) == v_c_len
-    assert len(tcf_contents.tcf_legitimate_interests_vendors) == v_li_len
+    assert len(tcf_contents.tcf_vendor_consents) == v_c_len
+    assert len(tcf_contents.tcf_vendor_legitimate_interests) == v_li_len
     assert len(tcf_contents.tcf_vendor_relationships) == v_r_len
 
-    assert len(tcf_contents.tcf_consent_systems) == s_c_len
-    assert len(tcf_contents.tcf_legitimate_interests_systems) == s_li_len
+    assert len(tcf_contents.tcf_system_consents) == s_c_len
+    assert len(tcf_contents.tcf_system_legitimate_interests) == s_li_len
     assert len(tcf_contents.tcf_system_relationships) == s_r_len
 
 
@@ -210,22 +210,22 @@ class TestTCFContents:
             s_r_len=0,
         )
 
-        assert tcf_contents.tcf_consent_purposes[0].id == 8
-        assert tcf_contents.tcf_consent_purposes[0].data_uses == [
+        assert tcf_contents.tcf_purpose_consents[0].id == 8
+        assert tcf_contents.tcf_purpose_consents[0].data_uses == [
             "analytics.reporting.content_performance"
         ]
-        assert tcf_contents.tcf_consent_purposes[0].vendors == [
+        assert tcf_contents.tcf_purpose_consents[0].vendors == [
             EmbeddedVendor(id="sendgrid", name="TCF System Test")
         ]
 
-        assert tcf_contents.tcf_consent_vendors[0].id == "sendgrid"
-        assert tcf_contents.tcf_consent_vendors[0].name == "TCF System Test"
+        assert tcf_contents.tcf_vendor_consents[0].id == "sendgrid"
+        assert tcf_contents.tcf_vendor_consents[0].name == "TCF System Test"
         assert (
-            tcf_contents.tcf_consent_vendors[0].description
+            tcf_contents.tcf_vendor_consents[0].description
             == "My TCF System Description"
         )
-        assert len(tcf_contents.tcf_consent_vendors[0].consent_purposes) == 1
-        assert tcf_contents.tcf_consent_vendors[0].consent_purposes[0].id == 8
+        assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
+        assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 8
 
         assert tcf_contents.tcf_vendor_relationships[0].id == "sendgrid"
         assert tcf_contents.tcf_vendor_relationships[0].name == "TCF System Test"
@@ -260,21 +260,21 @@ class TestTCFContents:
             s_r_len=1,
         )
 
-        assert tcf_contents.tcf_consent_purposes[0].id == 8
+        assert tcf_contents.tcf_purpose_consents[0].id == 8
         # No "vendors" because we don't have an official vendor id
-        assert len(tcf_contents.tcf_consent_purposes[0].vendors) == 0
+        assert len(tcf_contents.tcf_purpose_consents[0].vendors) == 0
         # System returned instead
-        assert len(tcf_contents.tcf_consent_purposes[0].systems) == 1
+        assert len(tcf_contents.tcf_purpose_consents[0].systems) == 1
 
-        assert tcf_contents.tcf_consent_systems[0].id == tcf_system.id
-        assert tcf_contents.tcf_consent_systems[0].name == "TCF System Test"
+        assert tcf_contents.tcf_system_consents[0].id == tcf_system.id
+        assert tcf_contents.tcf_system_consents[0].name == "TCF System Test"
         assert (
-            tcf_contents.tcf_consent_systems[0].description
+            tcf_contents.tcf_system_consents[0].description
             == "My TCF System Description"
         )
-        assert len(tcf_contents.tcf_consent_systems[0].consent_purposes) == 1
-        assert tcf_contents.tcf_consent_systems[0].consent_purposes[0].id == 8
-        assert tcf_contents.tcf_consent_systems[0].has_vendor_id is False
+        assert len(tcf_contents.tcf_system_consents[0].purpose_consents) == 1
+        assert tcf_contents.tcf_system_consents[0].purpose_consents[0].id == 8
+        assert tcf_contents.tcf_system_consents[0].has_vendor_id is False
 
         assert tcf_contents.tcf_system_relationships[0].id == tcf_system.id
         assert tcf_contents.tcf_system_relationships[0].name == "TCF System Test"
@@ -333,27 +333,27 @@ class TestTCFContents:
             s_r_len=0,
         )
 
-        assert {purpose.id for purpose in tcf_contents.tcf_consent_purposes} == {1, 8}
+        assert {purpose.id for purpose in tcf_contents.tcf_purpose_consents} == {1, 8}
         assert {
             use
-            for purpose in tcf_contents.tcf_consent_purposes
+            for purpose in tcf_contents.tcf_purpose_consents
             for use in purpose.data_uses
         } == {"functional.storage", "analytics.reporting.content_performance"}
-        assert tcf_contents.tcf_consent_purposes[0].vendors == [
+        assert tcf_contents.tcf_purpose_consents[0].vendors == [
             EmbeddedVendor(id="sendgrid", name="TCF System Test")
         ]
 
-        assert tcf_contents.tcf_consent_vendors[0].id == "sendgrid"
-        assert tcf_contents.tcf_consent_vendors[0].name == "TCF System Test"
+        assert tcf_contents.tcf_vendor_consents[0].id == "sendgrid"
+        assert tcf_contents.tcf_vendor_consents[0].name == "TCF System Test"
         assert (
-            tcf_contents.tcf_consent_vendors[0].description
+            tcf_contents.tcf_vendor_consents[0].description
             == "My TCF System Description"
         )
         # Purposes also consolidated
-        assert len(tcf_contents.tcf_consent_vendors[0].consent_purposes) == 2
+        assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 2
         assert {
             purpose.id
-            for purpose in tcf_contents.tcf_consent_vendors[0].consent_purposes
+            for purpose in tcf_contents.tcf_vendor_consents[0].purpose_consents
         } == {
             1,
             8,
@@ -388,19 +388,19 @@ class TestTCFContents:
             s_r_len=0,
         )
 
-        assert tcf_contents.tcf_consent_purposes[0].id == 2
-        assert tcf_contents.tcf_consent_purposes[0].data_uses == [
+        assert tcf_contents.tcf_purpose_consents[0].id == 2
+        assert tcf_contents.tcf_purpose_consents[0].data_uses == [
             "marketing.advertising.first_party.contextual",
             "marketing.advertising.frequency_capping",
             "marketing.advertising.negative_targeting",
         ]
-        assert tcf_contents.tcf_consent_purposes[0].vendors == [
+        assert tcf_contents.tcf_purpose_consents[0].vendors == [
             EmbeddedVendor(id="sendgrid", name="TCF System Test")
         ]
 
-        assert tcf_contents.tcf_consent_vendors[0].id == "sendgrid"
-        assert len(tcf_contents.tcf_consent_vendors[0].consent_purposes) == 1
-        assert tcf_contents.tcf_consent_vendors[0].consent_purposes[0].id == 2
+        assert tcf_contents.tcf_vendor_consents[0].id == "sendgrid"
+        assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
+        assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 2
 
     @pytest.mark.usefixtures("tcf_system")
     def test_special_purposes(self, db):
@@ -431,9 +431,9 @@ class TestTCFContents:
             EmbeddedVendor(id="sendgrid", name="TCF System Test")
         ]
 
-        assert tcf_contents.tcf_consent_vendors[0].id == "sendgrid"
-        assert len(tcf_contents.tcf_consent_vendors[0].consent_purposes) == 1
-        assert tcf_contents.tcf_consent_vendors[0].consent_purposes[0].id == 8
+        assert tcf_contents.tcf_vendor_consents[0].id == "sendgrid"
+        assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
+        assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 8
 
         assert tcf_contents.tcf_vendor_relationships[0].id == "sendgrid"
         assert len(tcf_contents.tcf_vendor_relationships[0].special_purposes) == 1
@@ -562,19 +562,19 @@ class TestTCFContents:
             s_r_len=0,
         )
 
-        first_purpose = tcf_contents.tcf_consent_purposes[0]
+        first_purpose = tcf_contents.tcf_purpose_consents[0]
         assert first_purpose.id == 1
 
-        second_purpose = tcf_contents.tcf_legitimate_interests_purposes[0]
+        second_purpose = tcf_contents.tcf_purpose_legitimate_interests[0]
         assert second_purpose.id == 6
 
-        system_info = tcf_contents.tcf_consent_systems[0]
-        assert len(system_info.consent_purposes) == 1
-        assert system_info.consent_purposes[0].id == 1
+        system_info = tcf_contents.tcf_system_consents[0]
+        assert len(system_info.purpose_consents) == 1
+        assert system_info.purpose_consents[0].id == 1
 
-        system_info = tcf_contents.tcf_legitimate_interests_systems[0]
-        assert len(system_info.legitimate_interests_purposes) == 1
-        assert system_info.legitimate_interests_purposes[0].id == 6
+        system_info = tcf_contents.tcf_system_legitimate_interests[0]
+        assert len(system_info.purpose_legitimate_interests) == 1
+        assert system_info.purpose_legitimate_interests[0].id == 6
 
     def test_duplicate_data_uses_on_system(self, tcf_system, db):
         """Contrived test (since UI enforces unique data uses on systems), that adds the same data use to multiple privacy declarations.
@@ -602,34 +602,34 @@ class TestTCFContents:
             s_r_len=0,
         )
 
-        assert tcf_contents.tcf_consent_purposes[0].id == 3
-        assert len(tcf_contents.tcf_consent_purposes[0].vendors) == 1
-        assert tcf_contents.tcf_consent_purposes[0].vendors[0].name == tcf_system.name
-        assert len(tcf_contents.tcf_consent_purposes[0].systems) == 0
+        assert tcf_contents.tcf_purpose_consents[0].id == 3
+        assert len(tcf_contents.tcf_purpose_consents[0].vendors) == 1
+        assert tcf_contents.tcf_purpose_consents[0].vendors[0].name == tcf_system.name
+        assert len(tcf_contents.tcf_purpose_consents[0].systems) == 0
 
-        assert tcf_contents.tcf_legitimate_interests_purposes[0].id == 3
-        assert len(tcf_contents.tcf_legitimate_interests_purposes[0].vendors) == 1
+        assert tcf_contents.tcf_purpose_legitimate_interests[0].id == 3
+        assert len(tcf_contents.tcf_purpose_legitimate_interests[0].vendors) == 1
         assert (
-            tcf_contents.tcf_legitimate_interests_purposes[0].vendors[0].name
+            tcf_contents.tcf_purpose_legitimate_interests[0].vendors[0].name
             == tcf_system.name
         )
-        assert len(tcf_contents.tcf_legitimate_interests_purposes[0].systems) == 0
+        assert len(tcf_contents.tcf_purpose_legitimate_interests[0].systems) == 0
 
-        assert tcf_contents.tcf_consent_vendors[0].name == tcf_system.name
-        assert len(tcf_contents.tcf_consent_vendors[0].consent_purposes) == 1
-        assert tcf_contents.tcf_consent_vendors[0].consent_purposes[0].id == 3
+        assert tcf_contents.tcf_vendor_consents[0].name == tcf_system.name
+        assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
+        assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 3
 
         assert (
             len(
-                tcf_contents.tcf_legitimate_interests_vendors[
+                tcf_contents.tcf_vendor_legitimate_interests[
                     0
-                ].legitimate_interests_purposes
+                ].purpose_legitimate_interests
             )
             == 1
         )
         assert (
-            tcf_contents.tcf_legitimate_interests_vendors[0]
-            .legitimate_interests_purposes[0]
+            tcf_contents.tcf_vendor_legitimate_interests[0]
+            .purpose_legitimate_interests[0]
             .id
             == 3
         )
@@ -667,34 +667,34 @@ class TestTCFContents:
             s_r_len=0,
         )
 
-        assert tcf_contents.tcf_consent_purposes[0].id == 2
-        assert tcf_contents.tcf_legitimate_interests_purposes[0].id == 2
+        assert tcf_contents.tcf_purpose_consents[0].id == 2
+        assert tcf_contents.tcf_purpose_legitimate_interests[0].id == 2
 
-        assert len(tcf_contents.tcf_consent_purposes[0].vendors) == 1
-        assert tcf_contents.tcf_consent_purposes[0].vendors[0].name == tcf_system.name
-        assert len(tcf_contents.tcf_consent_purposes[0].systems) == 0
+        assert len(tcf_contents.tcf_purpose_consents[0].vendors) == 1
+        assert tcf_contents.tcf_purpose_consents[0].vendors[0].name == tcf_system.name
+        assert len(tcf_contents.tcf_purpose_consents[0].systems) == 0
 
-        assert len(tcf_contents.tcf_legitimate_interests_purposes[0].vendors) == 1
+        assert len(tcf_contents.tcf_purpose_legitimate_interests[0].vendors) == 1
         assert (
-            tcf_contents.tcf_legitimate_interests_purposes[0].vendors[0].name
+            tcf_contents.tcf_purpose_legitimate_interests[0].vendors[0].name
             == tcf_system.name
         )
-        assert len(tcf_contents.tcf_legitimate_interests_purposes[0].systems) == 0
+        assert len(tcf_contents.tcf_purpose_legitimate_interests[0].systems) == 0
 
-        assert tcf_contents.tcf_consent_vendors[0].name == tcf_system.name
-        assert len(tcf_contents.tcf_consent_vendors[0].consent_purposes) == 1
-        assert tcf_contents.tcf_consent_vendors[0].consent_purposes[0].id == 2
+        assert tcf_contents.tcf_vendor_consents[0].name == tcf_system.name
+        assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
+        assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 2
         assert (
             len(
-                tcf_contents.tcf_legitimate_interests_vendors[
+                tcf_contents.tcf_vendor_legitimate_interests[
                     0
-                ].legitimate_interests_purposes
+                ].purpose_legitimate_interests
             )
             == 1
         )
         assert (
-            tcf_contents.tcf_legitimate_interests_vendors[0]
-            .legitimate_interests_purposes[0]
+            tcf_contents.tcf_vendor_legitimate_interests[0]
+            .purpose_legitimate_interests[0]
             .id
             == 2
         )
@@ -763,42 +763,42 @@ class TestTCFContents:
             s_li_len=2,
             s_r_len=0,
         )
-        assert len(tcf_contents.tcf_consent_purposes[0].vendors) == 0
-        assert tcf_contents.tcf_consent_purposes[0].id == 4
-        assert tcf_contents.tcf_legitimate_interests_purposes[0].id == 4
+        assert len(tcf_contents.tcf_purpose_consents[0].vendors) == 0
+        assert tcf_contents.tcf_purpose_consents[0].id == 4
+        assert tcf_contents.tcf_purpose_legitimate_interests[0].id == 4
 
-        assert tcf_contents.tcf_legitimate_interests_systems[0].name == "System A"
+        assert tcf_contents.tcf_system_legitimate_interests[0].name == "System A"
         assert (
             len(
-                tcf_contents.tcf_legitimate_interests_systems[
+                tcf_contents.tcf_system_legitimate_interests[
                     0
-                ].legitimate_interests_purposes
+                ].purpose_legitimate_interests
             )
             == 1
         )
         assert (
-            tcf_contents.tcf_legitimate_interests_systems[0]
-            .legitimate_interests_purposes[0]
+            tcf_contents.tcf_system_legitimate_interests[0]
+            .purpose_legitimate_interests[0]
             .id
             == 4
         )
 
-        assert tcf_contents.tcf_consent_systems[0].name == "System B"
-        assert len(tcf_contents.tcf_consent_systems[0].consent_purposes) == 1
-        assert tcf_contents.tcf_consent_systems[0].consent_purposes[0].id == 4
+        assert tcf_contents.tcf_system_consents[0].name == "System B"
+        assert len(tcf_contents.tcf_system_consents[0].purpose_consents) == 1
+        assert tcf_contents.tcf_system_consents[0].purpose_consents[0].id == 4
 
-        assert tcf_contents.tcf_legitimate_interests_systems[1].name == "System B"
+        assert tcf_contents.tcf_system_legitimate_interests[1].name == "System B"
         assert (
             len(
-                tcf_contents.tcf_legitimate_interests_systems[
+                tcf_contents.tcf_system_legitimate_interests[
                     1
-                ].legitimate_interests_purposes
+                ].purpose_legitimate_interests
             )
             == 1
         )
         assert (
-            tcf_contents.tcf_legitimate_interests_systems[1]
-            .legitimate_interests_purposes[0]
+            tcf_contents.tcf_system_legitimate_interests[1]
+            .purpose_legitimate_interests[0]
             .id
             == 4
         )

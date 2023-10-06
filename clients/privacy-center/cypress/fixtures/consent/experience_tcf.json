@@ -61,7 +61,7 @@
         "updated_at": "2023-09-29T15:16:59.437776+00:00"
       },
       "id": "pri_da3252e2-b604-49fd-b493-70a9960dce66",
-      "tcf_consent_purposes": [
+      "tcf_purpose_consents": [
         {
           "id": 4,
           "name": "Use profiles to select personalised advertising",
@@ -154,7 +154,7 @@
           "systems": []
         }
       ],
-      "tcf_legitimate_interests_purposes": [
+      "tcf_purpose_legitimate_interests": [
         {
           "id": 2,
           "name": "Use limited data to select advertising",
@@ -267,7 +267,7 @@
           "systems": []
         }
       ],
-      "tcf_consent_vendors": [
+      "tcf_vendor_consents": [
         {
           "id": "2",
           "has_vendor_id": true,
@@ -278,7 +278,7 @@
           "outdated_preference": null,
           "current_served": null,
           "outdated_served": null,
-          "consent_purposes": [
+          "purpose_consents": [
             {
               "id": 4,
               "name": "Use profiles to select personalised advertising"
@@ -298,7 +298,7 @@
           ]
         }
       ],
-      "tcf_legitimate_interests_vendors": [],
+      "tcf_vendor_legitimate_interests": [],
       "tcf_vendor_relationships": [
         {
           "id": "2",
@@ -316,7 +316,7 @@
         }
       ],
       "tcf_consent_systems": [],
-      "tcf_legitimate_interests_systems": [
+      "tcf_system_legitimate_interests": [
         {
           "id": "ctl_b3dde2d5-e535-4d9a-bf6e-a3b6beb01761",
           "has_vendor_id": false,
@@ -327,7 +327,7 @@
           "outdated_preference": null,
           "current_served": null,
           "outdated_served": null,
-          "legitimate_interests_purposes": [
+          "purpose_legitimate_interests": [
             {
               "id": 2,
               "name": "Use limited data to select advertising"

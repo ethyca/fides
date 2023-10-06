@@ -6,9 +6,9 @@ import type { EmbeddedLineItem } from "./EmbeddedLineItem";
 import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
- * Schema for a TCF Vendor with Legitimate interests legal basis
+ * Schema for a TCF Vendor with Consent legal basis
  */
-export type TCFLegitimateInterestsVendorRecord = {
+export type TCFVendorConsentRecord = {
   id: string;
   has_vendor_id?: boolean;
   name?: string;
@@ -18,5 +18,5 @@ export type TCFLegitimateInterestsVendorRecord = {
   outdated_preference?: UserConsentPreference;
   current_served?: boolean;
   outdated_served?: boolean;
-  legitimate_interests_purposes?: Array<EmbeddedLineItem>;
+  purpose_consents?: Array<EmbeddedLineItem>;
 };

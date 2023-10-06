@@ -30,18 +30,18 @@ export const TcfConsentButtons = ({
 
   const handleAcceptAll = () => {
     const allIds: EnabledIds = {
-      purposesConsent: getAllIds(experience.tcf_consent_purposes),
-      purposesLegint: getAllIds(experience.tcf_legitimate_interests_purposes),
+      purposesConsent: getAllIds(experience.tcf_purpose_consents),
+      purposesLegint: getAllIds(experience.tcf_purpose_legitimate_interests),
       specialPurposes: getAllIds(experience.tcf_special_purposes),
       features: getAllIds(experience.tcf_features),
       specialFeatures: getAllIds(experience.tcf_special_features),
       vendorsConsent: getAllIds([
-        ...(experience.tcf_consent_vendors || []),
-        ...(experience.tcf_consent_systems || []),
+        ...(experience.tcf_vendor_consents || []),
+        ...(experience.tcf_system_consents || []),
       ]),
       vendorsLegint: getAllIds([
-        ...(experience.tcf_legitimate_interests_vendors || []),
-        ...(experience.tcf_legitimate_interests_systems || []),
+        ...(experience.tcf_vendor_legitimate_interests || []),
+        ...(experience.tcf_system_legitimate_interests || []),
       ]),
     };
     onSave(allIds);

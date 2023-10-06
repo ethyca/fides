@@ -22,12 +22,12 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.models.privacy_preference import ConsentRecordType
 from fides.api.schemas.tcf import (
-    TCFConsentVendorRecord,
     TCFFeatureRecord,
-    TCFLegitimateInterestsVendorRecord,
     TCFPurposeConsentRecord,
     TCFPurposeLegitimateInterestsRecord,
     TCFSpecialPurposeRecord,
+    TCFVendorConsentRecord,
+    TCFVendorLegitimateInterestsRecord,
     TCFVendorRelationships,
 )
 
@@ -1449,7 +1449,7 @@ class TestCacheSavedAndServedOnConsentRecord:
     def test_cache_saved_and_served_for_vendor_consent(
         self, db, fides_user_provided_identity
     ):
-        vendor_record = TCFConsentVendorRecord(
+        vendor_record = TCFVendorConsentRecord(
             id="sendgrid", name="test", description="test", has_vendor_id=False
         )
         cache_saved_and_served_on_consent_record(
@@ -1471,7 +1471,7 @@ class TestCacheSavedAndServedOnConsentRecord:
     def test_cache_saved_and_served_for_vendor_legitimate_interests(
         self, db, fides_user_provided_identity
     ):
-        vendor_record = TCFLegitimateInterestsVendorRecord(
+        vendor_record = TCFVendorLegitimateInterestsRecord(
             id="sendgrid", name="test", description="test", has_vendor_id=True
         )
         cache_saved_and_served_on_consent_record(
@@ -1491,7 +1491,7 @@ class TestCacheSavedAndServedOnConsentRecord:
     def test_cache_saved_and_served_for_system_consent(
         self, db, fides_user_provided_identity, system
     ):
-        system_record = TCFConsentVendorRecord(id=system.id, has_vendor_id=True)
+        system_record = TCFVendorConsentRecord(id=system.id, has_vendor_id=True)
         cache_saved_and_served_on_consent_record(
             db,
             system_record,

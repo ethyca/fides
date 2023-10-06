@@ -3,7 +3,7 @@ import { FidesEvent } from "./events";
 import {
   FidesOptions,
   LastServedConsentSchema,
-  NoticesServedRequest,
+  RecordConsentServedRequest,
   PrivacyNotice,
   ServingComponent,
 } from "./consent-types";
@@ -91,7 +91,7 @@ export const useConsentServed = ({
       ) {
         return;
       }
-      const request: NoticesServedRequest = {
+      const request: RecordConsentServedRequest = {
         browser_identity: event.detail.identity,
         privacy_experience_id: privacyExperienceId,
         user_geography: userGeography,
