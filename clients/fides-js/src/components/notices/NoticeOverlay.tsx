@@ -131,9 +131,10 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
                     onSave();
                   }}
                   isAcknowledge={isAllNoticeOnly}
-                >
-                  <PrivacyPolicyLink experience={experienceConfig} />
-                </NoticeConsentButtons>
+                  middleButton={
+                    <PrivacyPolicyLink experience={experienceConfig} />
+                  }
+                />
               </div>
             }
           />

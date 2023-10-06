@@ -12,6 +12,7 @@ export const ConsentButtons = ({
   experienceConfig,
   onManagePreferencesClick,
   firstButton,
+  middleButton,
   onAcceptAll,
   onRejectAll,
   children,
@@ -19,6 +20,7 @@ export const ConsentButtons = ({
   experienceConfig: ExperienceConfig;
   onManagePreferencesClick?: () => void;
   firstButton?: VNode;
+  middleButton?: VNode;
   onAcceptAll: () => void;
   onRejectAll: () => void;
   children: ComponentChildren;
@@ -33,6 +35,7 @@ export const ConsentButtons = ({
         />
       </div>
     ) : null}
+    {middleButton || null}
     <div
       className={
         firstButton ? "fides-modal-button-group" : "fides-banner-button-group"
@@ -64,6 +67,7 @@ interface NoticeConsentButtonProps {
   isAcknowledge: boolean;
   isInModal?: boolean;
   children?: ComponentChildren;
+  middleButton?: VNode;
 }
 
 export const NoticeConsentButtons = ({
@@ -74,6 +78,7 @@ export const NoticeConsentButtons = ({
   isInModal,
   isAcknowledge,
   children,
+  middleButton,
 }: NoticeConsentButtonProps) => {
   if (!experience.experience_config || !experience.privacy_notices) {
     return null;
@@ -127,6 +132,7 @@ export const NoticeConsentButtons = ({
           />
         ) : undefined
       }
+      middleButton={middleButton}
     >
       {children}
     </ConsentButtons>
