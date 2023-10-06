@@ -1,9 +1,10 @@
 import {
   ComponentType,
-  LastServedNoticeSchema,
-  NoticesServedRequest,
+  EmptyExperience,
+  LastServedConsentSchema,
   PrivacyExperience,
   PrivacyPreferencesRequest,
+  RecordConsentServedRequest,
 } from "../../lib/consent-types";
 import { debugLog } from "../../lib/consent-utils";
 
@@ -22,7 +23,7 @@ export const fetchExperience = async (
   fidesApiUrl: string,
   debug: boolean,
   fidesUserDeviceId?: string | null
-): Promise<PrivacyExperience | null> => {
+): Promise<PrivacyExperience | EmptyExperience> => {
   debugLog(
     debug,
     `Fetching experience for userId: ${fidesUserDeviceId} in location: ${userLocationString}`
@@ -39,6 +40,7 @@ export const fetchExperience = async (
     has_notices: "true",
     has_config: "true",
     systems_applicable: "true",
+    include_gvl: "true",
   };
   if (fidesUserDeviceId) {
     params.fides_user_device_id = fidesUserDeviceId;
@@ -51,25 +53,19 @@ export const fetchExperience = async (
   if (!response.ok) {
     debugLog(
       debug,
-      "Error getting experience from Fides API, returning null. Response:",
+      "Error getting experience from Fides API, returning {}. Response:",
       response
     );
-    return null;
+    return {};
   }
   try {
     const body = await response.json();
-    const experience = body.items && body.items[0];
-    if (!experience) {
-      debugLog(
-        debug,
-        "No relevant experience found from Fides API, returning null. Response:",
-        body
-      );
-      return null;
-    }
+    // returning empty obj instead of undefined ensures we can properly cache on server-side for locations
+    // that have no relevant experiences
+    const experience = (body.items && body.items[0]) ?? {};
     debugLog(
       debug,
-      "Got experience response from Fides API, returning:",
+      "Got experience response from Fides API, returning: ",
       experience
     );
     return experience;
@@ -79,7 +75,7 @@ export const fetchExperience = async (
       "Error parsing experience response body from Fides API, returning {}. Response:",
       response
     );
-    return null;
+    return {};
   }
 };
 
@@ -123,10 +119,10 @@ export const patchNoticesServed = async ({
   fidesApiUrl,
   debug,
 }: {
-  request: NoticesServedRequest;
+  request: RecordConsentServedRequest;
   fidesApiUrl: string;
   debug: boolean;
-}): Promise<Array<LastServedNoticeSchema> | null> => {
+}): Promise<Array<LastServedConsentSchema> | null> => {
   debugLog(debug, "Saving that notices were served...");
   const fetchOptions: RequestInit = {
     ...PATCH_FETCH_OPTIONS,

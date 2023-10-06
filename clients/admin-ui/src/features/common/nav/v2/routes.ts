@@ -14,6 +14,7 @@ export const PRIVACY_REQUESTS_CONFIGURATION_ROUTE = `${PRIVACY_REQUESTS_ROUTE}/c
 // Consent group
 export const PRIVACY_EXPERIENCE_ROUTE = "/consent/privacy-experience";
 export const PRIVACY_NOTICES_ROUTE = "/consent/privacy-notices";
+export const CONFIGURE_CONSENT_ROUTE = "/consent/configure";
 
 // Management group
 export const USER_MANAGEMENT_ROUTE = "/user-management";
@@ -22,3 +23,5 @@ export const TAXONOMY_ROUTE = "/taxonomy";
 export const ABOUT_ROUTE = "/management/about";
 export const CUSTOM_FIELDS_ROUTE = "/management/custom-fields";
 export const EMAIL_TEMPLATES_ROUTE = "/management/email-templates";
+export const DOMAIN_RECORDS_ROUTE = "/management/domain-records";
+export const CORS_CONFIGURATION_ROUTE = "/management/cors-configuration";

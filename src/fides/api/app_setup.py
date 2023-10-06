@@ -1,12 +1,14 @@
 """
 Contains utility functions that set up the application webserver.
 """
+# pylint: disable=too-many-branches
 from logging import DEBUG
 from os.path import dirname, join
-from typing import List, Optional, Pattern, Union
+from typing import List, Optional, Pattern
 
 from fastapi import APIRouter, FastAPI
 from loguru import logger
+from pydantic import AnyUrl
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore
@@ -39,6 +41,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.util.cache import get_cache
 from fides.api.util.consent_util import (
+    create_tcf_experiences_on_startup,
     load_default_experience_configs_on_startup,
     load_default_notices_on_startup,
 )
@@ -46,6 +49,7 @@ from fides.api.util.endpoint_utils import fides_limiter
 from fides.api.util.errors import FidesError
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 VERSION = fides.__version__
 
@@ -72,7 +76,7 @@ PRIVACY_EXPERIENCE_CONFIGS_PATH = join(
 
 
 def create_fides_app(
-    cors_origins: Union[str, List[str]] = CONFIG.security.cors_origins,
+    cors_origins: List[AnyUrl] = CONFIG.security.cors_origins,
     cors_origin_regex: Optional[Pattern] = CONFIG.security.cors_origin_regex,
     routers: List = ROUTERS,
     app_version: str = VERSION,
@@ -138,7 +142,7 @@ def log_startup() -> None:
         CONFIG.log_all_config_values()
 
 
-async def run_database_startup() -> None:
+async def run_database_startup(app: FastAPI) -> None:
     """
     Perform all relevant database startup activities/configuration for the
     application webserver.
@@ -172,6 +176,15 @@ async def run_database_startup() -> None:
     finally:
         db.close()
 
+    logger.info("Loading CORS domains from ConfigProxy...")
+    try:
+        ConfigProxy(db).load_current_cors_domains_into_middleware(app)
+    except Exception as e:
+        logger.error("Error occured while loading CORS domains: {}", str(e))
+        raise FidesError(f"Error occured while loading CORS domains: {str(e)}")
+    finally:
+        db.close()
+
     logger.info("Validating SaaS connector templates...")
     try:
         update_saas_configs(db)
@@ -191,6 +204,8 @@ async def run_database_startup() -> None:
         # Default notices subject to change, so preventing these from
         # loading in test mode to avoid interfering with unit tests.
         load_default_privacy_notices()
+        load_tcf_experiences()
+
     db.close()
 
 
@@ -226,5 +241,17 @@ def load_default_experience_configs() -> None:
         load_default_experience_configs_on_startup(db, PRIVACY_EXPERIENCE_CONFIGS_PATH)
     except Exception as e:
         logger.error("Skipping loading default privacy experience configs: {}", str(e))
+    finally:
+        db.close()
+
+
+def load_tcf_experiences() -> None:
+    """Load TCF Overlay Experiences if they don't exist"""
+    logger.info("Loading default TCF Overlay Experiences")
+    try:
+        db = get_api_session()
+        create_tcf_experiences_on_startup(db)
+    except Exception as e:
+        logger.error("Skipping loading TCF Overlay Experiences: {}", str(e))
     finally:
         db.close()

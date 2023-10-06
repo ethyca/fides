@@ -7,16 +7,16 @@ import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
 import { useFeatures } from "~/features/common/features";
+import {
+  DirtyFormConfirmationModal,
+  useIsAnyFormDirty,
+} from "~/features/common/hooks/useIsAnyFormDirty";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
 import { System, SystemResponse } from "~/types/api";
 
-import {
-  DirtyFormConfirmationModal,
-  useIsAnyFormDirty,
-} from "../common/hooks/useIsAnyFormDirty";
 import SystemHistoryTable from "./history/SystemHistoryTable";
 import {
   selectActiveSystem,
@@ -255,7 +255,8 @@ const SystemFormTabs = ({
           <Box px={6} paddingBottom={6}>
             <Text fontSize="sm" lineHeight={5} fontWeight="medium">
               All changes to this system are tracked here in this audit table by
-              date and by user.
+              date and by user. You can inspect the changes by selecting any of
+              the events listed.
             </Text>
           </Box>
           <SystemHistoryTable system={activeSystem} />

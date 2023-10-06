@@ -11,4 +11,5 @@ export type Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__ =
     total: number;
     page: number;
     size: number;
+    pages?: number;
   };

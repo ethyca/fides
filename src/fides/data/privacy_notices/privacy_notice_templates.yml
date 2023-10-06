@@ -43,7 +43,7 @@ privacy_notices:
   data_uses:
     - essential
   enforcement_level: not_applicable
-  disabled: False
+  disabled: True
   has_gpc_flag: False
   displayed_in_privacy_center: False
   displayed_in_overlay: True
@@ -92,7 +92,7 @@ privacy_notices:
   data_uses:
     - personalize
   enforcement_level: frontend
-  disabled: False
+  disabled: True
   has_gpc_flag: False
   displayed_in_privacy_center: False
   displayed_in_overlay: True
@@ -141,7 +141,7 @@ privacy_notices:
   data_uses:
     - analytics
   enforcement_level: frontend
-  disabled: False
+  disabled: True
   has_gpc_flag: False
   displayed_in_privacy_center: False
   displayed_in_overlay: True
@@ -191,7 +191,7 @@ privacy_notices:
     - marketing.advertising.first_party.targeted
     - marketing.advertising.third_party.targeted
   enforcement_level: frontend
-  disabled: False
+  disabled: True
   has_gpc_flag: True
   displayed_in_privacy_center: False
   displayed_in_overlay: True
@@ -213,7 +213,7 @@ privacy_notices:
     - marketing.advertising.first_party.targeted
     - marketing.advertising.third_party.targeted
   enforcement_level: frontend
-  disabled: False
+  disabled: True
   has_gpc_flag: True
   displayed_in_privacy_center: True
   displayed_in_overlay: True

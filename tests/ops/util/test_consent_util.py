@@ -24,11 +24,13 @@ from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.sql_models import DataUse as sql_DataUse
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.util.consent_util import (
+    EEA_COUNTRIES,
     add_complete_system_status_for_consent_reporting,
     add_errored_system_status_for_consent_reporting,
     cache_initial_status_and_identities_for_consent_reporting,
     create_default_experience_config,
     create_privacy_notices_util,
+    create_tcf_experiences_on_startup,
     get_fides_user_device_id_provided_identity,
     load_default_notices_on_startup,
     should_opt_in_to_service,
@@ -305,7 +307,7 @@ class TestShouldOptIntoService:
 
         privacy_request_with_consent_policy.consent_preferences = [
             {"data_use": "marketing.advertising", "opt_in": True},
-            {"data_use": "improve", "opt_in": False},
+            {"data_use": "functional", "opt_in": False},
         ]
         collapsed_opt_in_preference, filtered_preferences = should_opt_in_to_service(
             system, privacy_request_with_consent_policy
@@ -541,7 +543,10 @@ class TestLoadDefaultNotices:
     def test_load_default_notices(self, db, load_default_data_uses):
         # Load notice from a file that only has one template (A) defined.
         # This should create one template (A), one notice (A), and one notice history (A)
-        overlay_exp, privacy_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.us_ak
         )
         assert overlay_exp is None
@@ -572,7 +577,10 @@ class TestLoadDefaultNotices:
         assert notice.displayed_in_overlay is True
         assert notice.displayed_in_api is False
         assert notice.version == 1.0
-        overlay_exp, privacy_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.us_ak
         )
         assert overlay_exp is not None
@@ -625,7 +633,10 @@ class TestLoadDefaultNotices:
         # This should update the existing template (A), create a separate new template (B),
         # and then create a new notice (B) and notice history (B) from just the new template (B).
         # Leave the existing notice (A) and notice history (A) untouched.
-        overlay_exp, privacy_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.us_al
         )
         assert overlay_exp is None
@@ -696,7 +707,10 @@ class TestLoadDefaultNotices:
         assert new_privacy_notice.version == 1.0
         assert new_privacy_notice.id != notice.id
 
-        overlay_exp, privacy_exp = PrivacyExperience.get_experiences_by_region(
+        (
+            overlay_exp,
+            privacy_exp,
+        ) = PrivacyExperience.get_overlay_and_privacy_center_experience_by_region(
             db, PrivacyNoticeRegion.us_al
         )
         assert overlay_exp is None
@@ -931,7 +945,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     name="B",
                     regions=["it"],
                     consent_mechanism=ConsentMechanism.opt_in,
-                    data_uses=["improve"],
+                    data_uses=["functional"],
                     enforcement_level=EnforcementLevel.frontend,
                     disabled=True,
                     displayed_in_overlay=True,
@@ -955,7 +969,7 @@ class TestUpsertPrivacyNoticeTemplates:
         assert second_template.name == "B"
         assert second_template.regions == [PrivacyNoticeRegion.it]
         assert second_template.consent_mechanism == ConsentMechanism.opt_in
-        assert second_template.data_uses == ["improve"]
+        assert second_template.data_uses == ["functional"]
         assert second_template.enforcement_level == EnforcementLevel.frontend
         assert second_template.disabled
 
@@ -979,7 +993,7 @@ class TestUpsertPrivacyNoticeTemplates:
                     name="C",
                     regions=["it"],
                     consent_mechanism=ConsentMechanism.opt_out,
-                    data_uses=["improve"],
+                    data_uses=["functional"],
                     enforcement_level=EnforcementLevel.system_wide,
                     disabled=False,
                     displayed_in_overlay=True,
@@ -1018,7 +1032,7 @@ class TestUpsertPrivacyNoticeTemplates:
         assert third_template.name == "C"
         assert third_template.regions == [PrivacyNoticeRegion.it]
         assert third_template.consent_mechanism == ConsentMechanism.opt_out
-        assert third_template.data_uses == ["improve"]
+        assert third_template.data_uses == ["functional"]
         assert third_template.enforcement_level == EnforcementLevel.system_wide
         assert not third_template.disabled
 
@@ -1196,7 +1210,6 @@ class TestValidateDataUses:
                 name="New data use",
                 description="A test data use",
                 parent_key=None,
-                is_default=True,
             ).dict(),
         )
 
@@ -1252,3 +1265,16 @@ class TestValidateDataUses:
             custom_data_use.fides_key,
         ]
         validate_notice_data_uses([privacy_notice_request], db)
+
+
+class TestLoadTCFExperiences:
+    def test_create_tcf_experiences_on_startup(self, db):
+        """Sanity check on creating TCF experiences"""
+        experiences_created = create_tcf_experiences_on_startup(db)
+        assert len(experiences_created) == len(EEA_COUNTRIES)
+        be_exp = experiences_created[0]
+        assert be_exp.component == ComponentType.tcf_overlay
+        assert be_exp.region == PrivacyNoticeRegion.be
+        experience_config = be_exp.experience_config
+        assert experience_config.is_default
+        assert experience_config.component == ComponentType.tcf_overlay

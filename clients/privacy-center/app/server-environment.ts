@@ -47,7 +47,6 @@ export interface PrivacyCenterSettings {
   OVERLAY_PARENT_ID: string | null; // (optional) ID of the parent DOM element where the overlay should be inserted
   MODAL_LINK_ID: string | null; // (optional) ID of the DOM element that should trigger the consent modal
   PRIVACY_CENTER_URL: string; // e.g. http://localhost:3000
-  TCF_ENABLED: boolean; // whether we should render the TCF modal
 }
 
 /**
@@ -67,7 +66,6 @@ export type PrivacyCenterClientSettings = Pick<
   | "OVERLAY_PARENT_ID"
   | "MODAL_LINK_ID"
   | "PRIVACY_CENTER_URL"
-  | "TCF_ENABLED"
 >;
 
 export type Styles = string;
@@ -285,9 +283,6 @@ export const loadPrivacyCenterEnvironment =
       PRIVACY_CENTER_URL:
         process.env.FIDES_PRIVACY_CENTER__PRIVACY_CENTER_URL ||
         "http://localhost:3000",
-      TCF_ENABLED: process.env.FIDES_PRIVACY_CENTER__TCF_ENABLED
-        ? process.env.FIDES_PRIVACY_CENTER__TCF_ENABLED === "true"
-        : false,
     };
 
     // Load configuration file (if it exists)
@@ -309,7 +304,6 @@ export const loadPrivacyCenterEnvironment =
       OVERLAY_PARENT_ID: settings.OVERLAY_PARENT_ID,
       MODAL_LINK_ID: settings.MODAL_LINK_ID,
       PRIVACY_CENTER_URL: settings.PRIVACY_CENTER_URL,
-      TCF_ENABLED: settings.TCF_ENABLED,
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present

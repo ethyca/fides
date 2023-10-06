@@ -22,6 +22,7 @@ export const baseApi = createApi({
     "Classify Instances Datasets",
     "Classify Instances Systems",
     "Connection Type",
+    "Custom Assets",
     "Custom Field Definition",
     "Custom Fields",
     "Data Categories",
@@ -32,6 +33,7 @@ export const baseApi = createApi({
     "Datastore Connection",
     "Dataset",
     "Datasets",
+    "Fides Cloud Config",
     "Messaging Templates",
     "Dictionary",
     "Latest Scan",
@@ -46,6 +48,7 @@ export const baseApi = createApi({
     "Request",
     "Roles",
     "User",
+    "Configuration Settings",
   ],
   endpoints: () => ({}),
 });

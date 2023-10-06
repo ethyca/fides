@@ -6,7 +6,7 @@ system:
     privacy_declarations:
       - name: Share Political Opinions
         data_categories:
-          - user.political_opinion
+          - user.demographic.political_opinion
         data_use: essential.service.payment_processing
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         data_subjects:

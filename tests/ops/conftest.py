@@ -11,7 +11,7 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 from fides.api.db.base import Base
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
-from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from tests.conftest import create_citext_extension
 
 
@@ -37,6 +37,9 @@ def db(api_client, config):
 
     if not scheduler.running:
         scheduler.start()
+    if not async_scheduler.running:
+        async_scheduler.start()
+
     SessionLocal = get_db_session(config, engine=engine)
     the_session = SessionLocal()
     # Setup above...

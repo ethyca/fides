@@ -10,6 +10,7 @@ from packaging.version import Version
 RELEASE_BRANCH_REGEX = r"release-(([0-9]+\.)+[0-9]+)"
 RELEASE_TAG_REGEX = r"(([0-9]+\.)+[0-9]+)"
 VERSION_TAG_REGEX = r"{version}{tag_type}([0-9]+)"
+RC_TAG_REGEX = r"(([0-9]+\.)+[0-9]+)rc([0-9]+)"
 GENERIC_TAG_REGEX = r"{tag_type}([0-9]+)$"
 
 INITIAL_TAG_INCREMENT = 0
@@ -104,8 +105,13 @@ def tag(session: nox.Session, action: str) -> None:
         session.error(f"Invalid action: {action}")
 
 
-def next_release_increment(session: nox.Session, all_tags: List) -> Version:
-    """Helper to generate the next release 'increment' based on latest release tag found"""
+def next_release_increment(
+    session: nox.Session, all_tags: List, treat_rc_as_release: bool = False
+) -> Version:
+    """Helper to generate the next release 'increment' based on latest release tag found
+
+    If `treat_rc_as_release` is `True`, also treat `rc` tags as releases
+    """
 
     releases = sorted(  # sorted by Version - what we want!
         (
@@ -115,9 +121,23 @@ def next_release_increment(session: nox.Session, all_tags: List) -> Version:
         ),
         reverse=True,
     )
-    latest_release = releases[0]
+    latest_release = releases[0] if releases else None
     if not latest_release:  # this would be bad...
         session.error("Could not identify the latest release!")
+
+    if treat_rc_as_release:
+        rc_releases = sorted(  # sorted by Version - what we want!
+            (
+                Version(tag.name)
+                for tag in all_tags
+                if re.fullmatch(RC_TAG_REGEX, tag.name)
+            ),
+            reverse=True,
+        )
+        latest_rc_release = rc_releases[0] if rc_releases else None
+        if latest_rc_release and latest_rc_release > latest_release:
+            latest_release = latest_rc_release
+
     return Version(
         f"{latest_release.major}.{latest_release.minor}.{latest_release.micro + 1}"
     )
@@ -192,14 +212,18 @@ def generate_tag(session: nox.Session, branch_name: str, all_tags: List) -> str:
             session, all_tags, release_branch_match.group(1), TagType.RC
         )
 
-    next_release = next_release_increment(session, all_tags)
-
     if branch_name == "main":  # main
+        # we consider `rc` tags as releases when generating beta tags while on `main``
+        # this keeps our tags based off `main` _ahead_ of our `rc` tags
+        next_release = next_release_increment(
+            session, all_tags, treat_rc_as_release=True
+        )
         session.log(
             f"Current branch '{branch_name}' matched main branch. Generating a new {TagType.BETA.name.lower()} tag"
         )
         return increment_tag(session, all_tags, next_release, TagType.BETA)
 
+    next_release = next_release_increment(session, all_tags)
     # feature branch, if we've made it here
     if "release" in branch_name:
         session.warn(

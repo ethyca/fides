@@ -12,6 +12,7 @@ import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
  */
 export type PrivacyNoticeResponse = {
   name?: string;
+  notice_key?: string;
   description?: string;
   internal_description?: string;
   origin?: string;
@@ -30,4 +31,5 @@ export type PrivacyNoticeResponse = {
   version: number;
   privacy_notice_history_id: string;
   cookies: Array<Cookies>;
+  systems_applicable?: boolean;
 };

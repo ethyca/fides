@@ -6,6 +6,14 @@ export type IdentityInputs = {
   phone?: string;
 };
 
+export type CustomPrivacyRequestFields = Record<
+  string,
+  {
+    label: string;
+    required: boolean;
+  }
+>;
+
 export type LegacyConfig = {
   title: string;
   description: string;
@@ -27,10 +35,13 @@ export type Config = {
   server_url_development?: string;
   server_url_production?: string;
   logo_path: string;
+  logo_url?: string;
   favicon_path?: string;
   actions: PrivacyRequestOption[];
   includeConsent?: boolean;
   consent?: ConsentConfig;
+  privacy_policy_url?: string;
+  privacy_policy_url_text?: string;
 };
 
 export type LegacyConsentConfig = {
@@ -71,6 +82,7 @@ export type PrivacyRequestOption = {
   confirmButtonText?: string;
   cancelButtonText?: string;
   identity_inputs?: IdentityInputs;
+  custom_privacy_request_fields?: CustomPrivacyRequestFields;
 };
 
 export type ConfigConsentOption = {

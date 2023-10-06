@@ -42,7 +42,7 @@ class ManualConnector(BaseConnector[None]):
         On the event that we pause, caches the stopped step, stopped collection, and details needed to manually resume
         the privacy request.
         """
-        cached_results: Optional[List[Row]] = privacy_request.get_manual_input(
+        cached_results: Optional[List[Row]] = privacy_request.get_manual_access_input(
             node.address
         )
 

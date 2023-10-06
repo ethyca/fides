@@ -28,7 +28,9 @@ class SystemHistory(Base):
     after = Column(MutableDict.as_mutable(JSONB), nullable=False)
 
     __table_args__ = (
-        Index("idx_system_history_created_at_system_id", "created_at", "system_id"),
+        Index(
+            "idx_plus_system_history_created_at_system_id", "created_at", "system_id"
+        ),
     )
 
     @property

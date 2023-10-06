@@ -99,7 +99,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                         identities=self.identities_for_test_email,
                         consent_preferences=[  # TODO slated for deprecation
                             Consent(data_use="marketing.advertising", opt_in=False),
-                            Consent(data_use="improve", opt_in=True),
+                            Consent(data_use="functional", opt_in=True),
                         ],
                         privacy_preferences=[
                             MinimalPrivacyPreferenceHistorySchema(
@@ -128,7 +128,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                                     id="test_2",
                                     privacy_notice_id="67890",
                                     consent_mechanism=ConsentMechanism.opt_out,
-                                    data_uses=["improve.system"],
+                                    data_uses=["functional.service.improve"],
                                     enforcement_level=EnforcementLevel.system_wide,
                                     version=1.0,
                                     displayed_in_overlay=True,

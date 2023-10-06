@@ -717,7 +717,7 @@ class TestPrivacyNoticeModel:
                     PrivacyNotice(
                         name="pn_1",
                         notice_key="pn_1",
-                        data_uses=["improve"],
+                        data_uses=["functional"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     )
                 ],
@@ -728,7 +728,7 @@ class TestPrivacyNoticeModel:
                     PrivacyNotice(
                         name="pn_2",
                         notice_key="pn_2",
-                        data_uses=["improve"],
+                        data_uses=["functional"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     ),
                     PrivacyNotice(
@@ -761,7 +761,7 @@ class TestPrivacyNoticeModel:
                     PrivacyNotice(
                         name="pn_2",
                         notice_key="pn_2",
-                        data_uses=["improve"],
+                        data_uses=["functional"],
                         regions=[PrivacyNoticeRegion.us_ca],
                     )
                 ],
@@ -780,7 +780,7 @@ class TestPrivacyNoticeModel:
                     PrivacyNotice(
                         name="pn_1",
                         notice_key="pn_1",
-                        data_uses=["improve"],
+                        data_uses=["functional"],
                         regions=[PrivacyNoticeRegion.us_va],
                     )
                 ],
@@ -915,12 +915,11 @@ class TestPrivacyNoticeModel:
             ].calculate_relevant_systems(db)
             == []
         ), "Privacy notice data use is a child of the system: N/A"
-        assert (
-            privacy_notice_fr_provide_service_frontend_only.histories[
-                0
-            ].calculate_relevant_systems(db)
-            == []
-        ), "This is an exact match but this privacy notice is frontend only"
+        assert privacy_notice_fr_provide_service_frontend_only.histories[
+            0
+        ].calculate_relevant_systems(db) == [
+            system.fides_key
+        ], "This is an exact match, and we are recording even though the privacy notice is frontend only, for recordkeeping"
 
     def test_generate_privacy_notice_key(self, privacy_notice):
         assert (

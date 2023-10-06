@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import EmptyTableState from "~/features/system/dictionary-data-uses/EmptyTableState";
+import { transformDictDataUseToDeclaration } from "~/features/system/dictionary-form/helpers";
 import { useUpdateSystemMutation } from "~/features/system/system.slice";
 import {
   PrivacyDeclarationDisplayGroup,
@@ -96,36 +97,6 @@ const PrivacyDeclarationFormTab = ({
       return true;
     }
     return false;
-  };
-
-  const transformDictDataUseToDeclaration = (
-    dataUse: DictDataUse
-  ): PrivacyDeclarationResponse => {
-    // fix "Legitimate Interests" capitalization for API
-    const legalBasisForProcessing =
-      dataUse.legal_basis_for_processing === "Legitimate Interests"
-        ? "Legitimate interests"
-        : dataUse.legal_basis_for_processing;
-
-    // some data categories are nested on the backend, flatten them
-    // https://github.com/ethyca/fides-services/issues/100
-    const dataCategories = dataUse.data_categories.flatMap((dc) =>
-      dc.split(",")
-    );
-
-    return {
-      data_use: dataUse.data_use,
-      data_categories: dataCategories,
-      features: dataUse.features,
-      // @ts-ignore
-      legal_basis_for_processing: legalBasisForProcessing,
-      retention_period: `${dataUse.retention_period}`,
-      cookies: dataUse.cookies.map((c) => ({
-        name: c.identifier,
-        domain: c.domains,
-        path: "/",
-      })),
-    };
   };
 
   const handleSave = async (
@@ -233,13 +204,12 @@ const PrivacyDeclarationFormTab = ({
     handleCloseDictModal();
   };
 
-  const handleSubmit = (values: PrivacyDeclarationResponse) => {
+  const handleSubmit = async (values: PrivacyDeclarationResponse) => {
     handleCloseForm();
     if (currentDeclaration) {
-      handleEditDeclaration(currentDeclaration, values);
-    } else {
-      handleCreateDeclaration(values);
+      return handleEditDeclaration(currentDeclaration, values);
     }
+    return handleCreateDeclaration(values);
   };
 
   const handleDelete = async (
@@ -257,7 +227,7 @@ const PrivacyDeclarationFormTab = ({
   }, [system.fides_key]);
 
   return (
-    <Stack spacing={6}>
+    <Stack spacing={6} data-testid="data-use-tab">
       {system.privacy_declarations.length === 0 ? (
         <EmptyTableState
           title="You don't have a data use set up for this system yet."
@@ -265,7 +235,7 @@ const PrivacyDeclarationFormTab = ({
           dictAvailable={features.dictionaryService}
           handleAdd={handleOpenNewForm}
           handleDictSuggestion={handleOpenDictModal}
-          vendorSelected={!!system.meta.vendor}
+          vendorSelected={!!system.vendor_id}
         />
       ) : (
         <PrivacyDeclarationDisplayGroup
@@ -300,23 +270,26 @@ const PrivacyDeclarationFormTab = ({
           initialValues={currentDeclaration}
           onSubmit={handleSubmit}
           onCancel={handleCloseForm}
+          includeCustomFields={includeCustomFields}
           {...dataProps}
         />
       </PrivacyDeclarationFormModal>
-      <PrivacyDeclarationFormModal
-        isOpen={showDictionaryModal}
-        onClose={handleCloseDictModal}
-        isCentered
-        heading="Compass suggestions"
-      >
-        <PrivacyDeclarationDictModalComponents
-          alreadyHasDataUses={system.privacy_declarations.length > 0}
-          allDataUses={dataProps.allDataUses}
-          onCancel={handleCloseDictModal}
-          onAccept={handleAcceptDictSuggestions}
-          vendorId={system.meta?.vendor?.id ? system.meta.vendor.id : undefined}
-        />
-      </PrivacyDeclarationFormModal>
+      {system.vendor_id ? (
+        <PrivacyDeclarationFormModal
+          isOpen={showDictionaryModal}
+          onClose={handleCloseDictModal}
+          isCentered
+          heading="Compass suggestions"
+        >
+          <PrivacyDeclarationDictModalComponents
+            alreadyHasDataUses={system.privacy_declarations.length > 0}
+            allDataUses={dataProps.allDataUses}
+            onCancel={handleCloseDictModal}
+            onAccept={handleAcceptDictSuggestions}
+            vendorId={system.vendor_id}
+          />
+        </PrivacyDeclarationFormModal>
+      ) : null}
     </Stack>
   );
 };

@@ -442,7 +442,7 @@ class TestCrud:
 @pytest.mark.unit
 class TestSystemCreate:
     @pytest.fixture(scope="function", autouse=True)
-    def remove_all_systems(self, db) -> SystemSchema:
+    def remove_all_systems(self, db) -> None:
         """Remove any systems (and privacy declarations) before test execution for clean state"""
         for privacy_declaration in PrivacyDeclaration.all(db):
             privacy_declaration.delete(db)
@@ -989,7 +989,7 @@ class TestSystemUpdate:
     updated_system_name = "Updated System Name"
 
     @pytest.fixture(scope="function", autouse=True)
-    def remove_all_systems(self, db) -> SystemSchema:
+    def remove_all_systems(self, db) -> None:
         """Remove any systems (and privacy declarations) before test execution for clean state"""
         for privacy_declaration in PrivacyDeclaration.all(db):
             privacy_declaration.delete(db)
@@ -1013,6 +1013,8 @@ class TestSystemUpdate:
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
+                    ingress=None,
+                    egress=None,
                 )
             ],
         )
@@ -1061,7 +1063,12 @@ class TestSystemUpdate:
             uses_profiling=True,
             legal_basis_for_profiling=["Authorised by law", "Contract"],
             does_international_transfers=True,
-            legal_basis_for_transfers=["Adequacy Decision", "BCRs"],
+            legal_basis_for_transfers=[
+                "Adequacy Decision",
+                "BCRs",
+                "Supplementary Measures",
+                "Unknown legal basis",
+            ],
             requires_data_protection_assessments=True,
             dpa_location="https://www.example.com/dpa",
             dpa_progress="pending",
@@ -1491,7 +1498,12 @@ class TestSystemUpdate:
         assert system.uses_profiling is True
         assert system.legal_basis_for_profiling == ["Authorised by law", "Contract"]
         assert system.does_international_transfers is True
-        assert system.legal_basis_for_transfers == ["Adequacy Decision", "BCRs"]
+        assert system.legal_basis_for_transfers == [
+            "Adequacy Decision",
+            "BCRs",
+            "Supplementary Measures",
+            "Unknown legal basis",
+        ]
         assert system.requires_data_protection_assessments is True
         assert system.dpa_location == "https://www.example.com/dpa"
         assert system.dpa_progress == "pending"
@@ -1590,6 +1602,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        egress=None,
+                        ingress=None,
                     )
                 ]
             ),
@@ -1604,6 +1618,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        egress=None,
+                        ingress=None,
                     ),
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
@@ -1613,6 +1629,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        egress=None,
+                        ingress=None,
                     ),
                 ]
             ),
@@ -1627,6 +1645,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        ingress=None,
+                        egress=None,
                     ),
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
@@ -1636,6 +1656,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        ingress=None,
+                        egress=None,
                     ),
                 ]
             ),
@@ -1650,6 +1672,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        egress=None,
+                        ingress=None,
                     ),
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
@@ -1659,6 +1683,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        egress=None,
+                        ingress=None,
                     ),
                 ]
             ),
@@ -1696,15 +1722,23 @@ class TestSystemUpdate:
 
         # assert the declarations in our responses match those in our requests
         response_decs: List[dict] = result.json()["privacy_declarations"]
-        # remove the IDs from the response decs for easier matching with request payload
-        # we also are implicitly affirming the response declarations DO have an
-        # 'id' field, as we expect
+
+        assert len(response_decs) == len(
+            update_declarations
+        ), "Response declaration count doesn't match the number sent!"
         for response_dec in response_decs:
-            response_dec.pop("id")
-        for update_dec in update_declarations:
-            response_decs.remove(update_dec.dict())
-        # and assert we don't have any extra response declarations
-        assert len(response_decs) == 0
+            assert (
+                "id" in response_dec.keys()
+            ), "No 'id' field in the response declaration!"
+
+            parsed_response_declaration = models.PrivacyDeclaration.parse_obj(
+                response_dec
+            )
+            assert (
+                parsed_response_declaration in update_declarations
+            ), "The response declaration '{}' doesn't match anything in the request declarations!".format(
+                parsed_response_declaration.name
+            )
 
         # do the same for the declarations in our db record
         system = System.all(db)[0]
@@ -1723,7 +1757,7 @@ class TestSystemUpdate:
         "update_declarations",
         [
             (
-                [  # update a dec matching one existing dec
+                [  # Check 1: update a dec matching one existing dec
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
                         data_categories=[],
@@ -1735,7 +1769,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                [  # add a new single dec with same data use
+                [  # Check 2: add a new single dec with same data use
                     models.PrivacyDeclaration(
                         name="declaration-name-1",
                         data_categories=[],
@@ -1747,7 +1781,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                [  # add a new single dec with same data use, no name
+                [  # Check 3: add a new single dec with same data use, no name
                     models.PrivacyDeclaration(
                         name="",
                         data_categories=[],
@@ -1759,7 +1793,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # update 2 privacy declarations both matching existing decs
+                # Check 4: update 2 privacy declarations both matching existing decs
                 [
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
@@ -1780,7 +1814,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # update 2 privacy declarations, one with matching name and data use, other only data use
+                # Check 5: update 2 privacy declarations, one with matching name and data use, other only data use
                 [
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
@@ -1801,7 +1835,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # update 2 privacy declarations, one with matching name and data use, other only data use but same data use
+                # Check 6: update 2 privacy declarations, one with matching name and data use, other only data use but same data use
                 [
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
@@ -1822,7 +1856,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # update 2 privacy declarations, one with only matching data use, other totally new
+                # Check 7: update 2 privacy declarations, one with only matching data use, other totally new
                 [
                     models.PrivacyDeclaration(
                         name="declaration-name-1",
@@ -1843,7 +1877,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # add 2 new privacy declarations
+                # Check 8: add 2 new privacy declarations
                 [
                     models.PrivacyDeclaration(
                         name="declaration-name",
@@ -1856,7 +1890,7 @@ class TestSystemUpdate:
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
                         data_categories=[],
-                        data_use="improve",
+                        data_use="functional",
                         data_subjects=[],
                         data_qualifier="aggregated_data",
                         dataset_references=[],
@@ -1864,7 +1898,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # add 2 new privacy declarations, same data uses as existing decs but no names
+                # Check 9: add 2 new privacy declarations, same data uses as existing decs but no names
                 [
                     models.PrivacyDeclaration(
                         name="",
@@ -1885,7 +1919,7 @@ class TestSystemUpdate:
                 ]
             ),
             (
-                # specify no declarations, declarations should be cleared off the system
+                # Check 10: specify no declarations, declarations should be cleared off the system
                 []
             ),
         ],
@@ -2171,7 +2205,11 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
+
+        #  Set fields for default labels
         manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         result = _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
@@ -2192,7 +2230,11 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
+
+        #  Set fields for default labels
         manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         result = _api.upsert(
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
@@ -2220,7 +2262,10 @@ class TestDefaultTaxonomyCrud:
             headers=test_config.user.auth_header,
         )
 
+        #  Set fields for default labels
         manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         result = _api.update(
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
@@ -2234,8 +2279,12 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
-        manifest.is_default = True
         second_item = manifest.copy()
+
+        #  Set fields for default labels
+        manifest.is_default = True
+        manifest.version_added = "2.0.0"
+
         second_item.is_default = False
 
         _api.create(
@@ -2337,6 +2386,7 @@ class TestCrudActiveProperty:
         )  # cast resource to extended model
         resource.fides_key = resource.fides_key + "_test_create_active_false"
         resource.is_default = False
+        resource.version_added = None
         resource.active = False
         json_resource = resource.json(exclude_none=True)
         token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]

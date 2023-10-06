@@ -44,6 +44,8 @@
   --fides-overlay-row-hover-color: var(--fides-overlay-hover-color);
   /* Badge */
   --fides-overlay-badge-background-color: #718096;
+  /* Select */
+  --fides-overlay-select-border-color: #e2e8f0;
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
@@ -172,6 +174,7 @@ div#fides-banner-description {
   line-height: 1.2em;
   min-width: 33%;
   flex: 1;
+  margin-bottom: 0.5em;
 }
 
 div#fides-button-group {
@@ -353,8 +356,11 @@ div#fides-modal .fides-modal-button-group {
 .fides-toggle .fides-toggle-display {
   --offset: 0.1em;
   --diameter: 1em;
-
-  display: inline-flex;
+  /**
+  Because we have a "hidden" attr on this toggle element, some CSS libs customers use may include a global
+  display: none on the hidden attr. To prevent our toggles from being hidden we use !important here
+  **/
+  display: inline-flex !important;
   align-items: center;
   justify-content: space-around;
 
@@ -429,6 +435,7 @@ div#fides-modal .fides-modal-button-group {
 /* Disclosure */
 
 .fides-disclosure-hidden {
+  display: flex;
   visibility: hidden;
   height: 0px;
   margin-top: 0px;
@@ -456,12 +463,22 @@ div#fides-modal .fides-modal-button-group {
   background-color: var(--fides-overlay-row-hover-color);
 }
 
-.fides-notice-toggle .disclosure-visible {
-  padding-left: 0.5em;
+.fides-notice-toggle .fides-disclosure-visible {
+  padding-inline: 0.5em;
+}
+
+.fides-notice-toggle p {
+  margin: 0;
+  margin-bottom: 1.1em;
 }
 
 .fides-notice-toggle-expanded {
   background-color: var(--fides-overlay-row-hover-color);
+}
+
+.fides-notice-toggle-header {
+  text-transform: uppercase;
+  font-weight: 600;
 }
 
 /* GPC */
@@ -590,27 +607,134 @@ div#fides-modal .fides-modal-button-group {
   border-radius: var(--fides-overlay-button-border-radius);
 }
 
-/* Table */
-
-.fides-cookies-table {
-  border-collapse: collapse;
-  width: 100%;
-  text-align: left;
-}
-
-.fides-cookies-table th {
-  text-transform: uppercase;
-}
-
-.fides-cookies-table td,
-.fides-cookies-table th {
-  border: 1px solid var(--fides-overlay-row-divider-color);
-  padding-left: 1.1em;
-  padding-right: 0.6em;
-}
-
 /* General classes */
 .fides-flex-center {
   display: flex;
   align-items: center;
+}
+
+.fides-margin-right {
+  margin-right: 0.2em;
+}
+
+/* TCF toggles */
+.fides-tcf-toggle-content {
+  margin-right: 60px;
+  font-size: 0.9em;
+  font-weight: 400;
+}
+
+.fides-tcf-purpose-vendor-title {
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+}
+
+.fides-tcf-illustration {
+  font-size: 0.9em;
+  padding: 0.8em;
+  padding-right: 60px;
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-tcf-purpose-vendor {
+  padding: 0.8em;
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-tcf-purpose-vendor-list {
+  font-weight: 400;
+  padding-left: 0;
+  list-style: none;
+  margin-left: 0;
+}
+
+.fides-tcf-vendor-toggles {
+  display: flex;
+}
+
+.fides-legal-basis-labels {
+  display: flex;
+  align-items: end;
+  justify-content: end;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+/* Vendor purpose table */
+.fides-vendor-details-table {
+  width: 100%;
+  margin-bottom: 1em;
+}
+
+.fides-vendor-details-table th,
+.fides-vendor-details-table td {
+  padding: 0.5em 1em;
+  text-align: left;
+  font-size: 0.9em;
+}
+
+.fides-vendor-details-table td {
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+}
+
+/* Link button */
+.fides-link-button {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  color: var(--fides-overlay-body-font-color);
+}
+
+.fides-primary-text-color {
+  color: var(--fides-overlay-primary-color);
+}
+
+/* Link */
+.fides-external-link {
+  color: var(--fides-overlay-primary-color);
+  font-weight: 500;
+  font-size: 0.9em;
+  margin-right: 1em;
+}
+
+/* Vendor info (initial layer) */
+.fides-vendor-info div {
+  margin-right: 2em;
+}
+
+.fides-vendor-info {
+  display: flex;
+  padding: 1.1em;
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-vendor-info-label {
+  font-weight: 600;
+  font-size: 1em;
+}
+
+/* Info box */
+.fides-info-box {
+  background-color: var(--fides-overlay-background-dark-color);
+  border-radius: var(--fides-overlay-component-border-radius);
+  padding: 1.1em;
+  margin-bottom: 1em;
+}
+
+.fides-info-box p {
+  margin: 0;
+}
+
+/* All on off buttons */
+.fides-all-on-off-buttons {
+  display: flex;
+  justify-content: end;
+  margin-bottom: 1em;
+}
+
+.fides-all-on-button {
+  margin-right: 0.9em;
 }

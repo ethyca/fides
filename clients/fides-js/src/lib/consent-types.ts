@@ -1,10 +1,29 @@
+import type {
+  TCFFeatureRecord,
+  TCFPurposeSave,
+  TCFSpecialPurposeSave,
+  TCFFeatureSave,
+  TCFSpecialFeatureSave,
+  TCFVendorSave,
+  GVLJson,
+  TCFPurposeConsentRecord,
+  TCFPurposeLegitimateInterestsRecord,
+  TCFSpecialPurposeRecord,
+  TCFSpecialFeatureRecord,
+  TCFVendorConsentRecord,
+  TCFVendorLegitimateInterestsRecord,
+  TCFVendorRelationships,
+} from "./tcf/types";
+
+export type EmptyExperience = Record<PropertyKey, never>;
+
 export interface FidesConfig {
   // Set the consent defaults from a "legacy" Privacy Center config.json.
   consent?: LegacyConsentConfig;
   // Set the "experience" to be used for this Fides.js instance -- overrides the "legacy" config.
-  // If set, Fides.js will fetch neither experience config nor user geolocation.
-  // If not set, Fides.js will fetch its own experience config.
-  experience?: PrivacyExperience;
+  // If defined or is empty, Fides.js will not fetch experience config.
+  // If undefined, Fides.js will attempt to fetch its own experience config.
+  experience?: PrivacyExperience | EmptyExperience;
   // Set the geolocation for this Fides.js instance. If *not* set, Fides.js will fetch its own geolocation.
   geolocation?: UserGeolocation;
   // Global options for this Fides.js instance. Fides provides defaults for all props except privacyCenterUrl
@@ -43,7 +62,7 @@ export type FidesOptions = {
   serverSideFidesApiUrl: string;
 
   // Whether we should show the TCF modal
-  tcfEnabled: boolean;
+  tcfEnabled?: boolean;
 };
 
 export class SaveConsentPreference {
@@ -66,6 +85,18 @@ export type PrivacyExperience = {
   updated_at: string;
   show_banner?: boolean;
   privacy_notices?: Array<PrivacyNotice>;
+  tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
+  tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
+  tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
+  tcf_features?: Array<TCFFeatureRecord>;
+  tcf_special_features?: Array<TCFSpecialFeatureRecord>;
+  tcf_vendor_consents?: Array<TCFVendorConsentRecord>;
+  tcf_vendor_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
+  tcf_vendor_relationships?: Array<TCFVendorRelationships>;
+  tcf_system_consents?: Array<TCFVendorConsentRecord>;
+  tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
+  tcf_system_relationships?: Array<TCFVendorRelationships>;
+  gvl?: GVLJson;
 };
 
 export type ExperienceConfig = {
@@ -143,6 +174,7 @@ export enum UserConsentPreference {
 export enum ComponentType {
   OVERLAY = "overlay",
   PRIVACY_CENTER = "privacy_center",
+  TCF_OVERLAY = "tcf_overlay",
 }
 
 export enum BannerEnabled {
@@ -179,8 +211,18 @@ export enum ConsentMethod {
 export type PrivacyPreferencesRequest = {
   browser_identity: Identity;
   code?: string;
-  preferences: Array<ConsentOptionCreate>;
-  policy_key?: string; // Will use default consent policy if not supplied
+  tc_string?: string;
+  preferences?: Array<ConsentOptionCreate>;
+  purpose_consent_preferences?: Array<TCFPurposeSave>;
+  purpose_legitimate_interests_preferences?: Array<TCFPurposeSave>;
+  special_purpose_preferences?: Array<TCFSpecialPurposeSave>;
+  vendor_consent_preferences?: Array<TCFVendorSave>;
+  vendor_legitimate_interests_preferences?: Array<TCFVendorSave>;
+  feature_preferences?: Array<TCFFeatureSave>;
+  special_feature_preferences?: Array<TCFSpecialFeatureSave>;
+  system_consent_preferences?: Array<TCFVendorSave>;
+  system_legitimate_interests_preferences?: Array<TCFVendorSave>;
+  policy_key?: string;
   privacy_experience_id?: string;
   user_geography?: string;
   method?: ConsentMethod;
@@ -220,27 +262,49 @@ export enum ServingComponent {
   OVERLAY = "overlay",
   BANNER = "banner",
   PRIVACY_CENTER = "privacy_center",
+  TCF_OVERLAY = "tcf_overlay",
 }
 /**
  * Request body when indicating that notices were served in the UI
  */
-export type NoticesServedRequest = {
+export type RecordConsentServedRequest = {
   browser_identity: Identity;
   code?: string;
-  privacy_notice_history_ids: Array<string>;
+  privacy_notice_history_ids?: Array<string>;
+  tcf_purpose_consents?: Array<number>;
+  tcf_purpose_legitimate_interests?: Array<number>;
+  tcf_special_purposes?: Array<number>;
+  tcf_vendor_consents?: Array<string>;
+  tcf_vendor_legitimate_interests?: Array<string>;
+  tcf_features?: Array<number>;
+  tcf_special_features?: Array<number>;
+  tcf_system_consents?: Array<string>;
+  tcf_system_legitimate_interests?: Array<string>;
   privacy_experience_id?: string;
   user_geography?: string;
   acknowledge_mode?: boolean;
   serving_component: ServingComponent;
 };
 /**
- * Schema that surfaces the last version of a notice that was shown to a user
+ * Schema that surfaces the the last time a consent item that was shown to a user
  */
-export type LastServedNoticeSchema = {
+export type LastServedConsentSchema = {
+  purpose?: number;
+  purpose_consent?: number;
+  purpose_legitimate_interests?: number;
+  special_purpose?: number;
+  vendor?: string;
+  vendor_consent?: string;
+  vendor_legitimate_interests?: string;
+  feature?: number;
+  special_feature?: number;
+  system?: string;
+  system_consent?: string;
+  system_legitimate_interests?: string;
   id: string;
   updated_at: string;
-  privacy_notice_history: PrivacyNotice;
   served_notice_history_id: string;
+  privacy_notice_history?: PrivacyNotice;
 };
 
 // ------------------LEGACY TYPES BELOW -------------------

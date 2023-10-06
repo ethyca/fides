@@ -20,17 +20,19 @@ import {
   ClassifyRequestPayload,
   ClassifyStatusUpdatePayload,
   ClassifySystem,
+  CloudConfig,
+  CustomAssetType,
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
   CustomFieldWithId,
   GenerateTypes,
   HealthCheck,
+  Page_SystemHistoryResponse_,
   ResourceTypes,
   SystemScannerStatus,
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
-import { SystemHistoryResponse } from "~/types/api/models/SystemHistoryResponse";
 
 import { DictDataUse, DictEntry, Page } from "./types";
 
@@ -251,9 +253,16 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Dictionary"],
     }),
+    getFidesCloudConfig: build.query<CloudConfig, void>({
+      query: () => ({
+        url: `plus/fides-cloud`,
+        method: "GET",
+      }),
+      providesTags: ["Fides Cloud Config"],
+    }),
     getDictionaryDataUses: build.query<
       Page<DictDataUse>,
-      { vendor_id: number }
+      { vendor_id: string }
     >({
       query: ({ vendor_id }) => ({
         params: { size: 1000 },
@@ -263,11 +272,29 @@ const plusApi = baseApi.injectEndpoints({
       providesTags: ["Dictionary"],
     }),
     getSystemHistory: build.query<
-      SystemHistoryResponse,
-      { system_key: string }
+      Page_SystemHistoryResponse_,
+      { system_key: string; page?: number; size?: number }
     >({
-      query: (params) => ({ url: `plus/system/${params.system_key}/history` }),
+      query: (params) => ({
+        url: `plus/system/${params.system_key}/history`,
+        params: {
+          page: params.page,
+          size: params.size,
+        },
+      }),
       providesTags: () => ["System History"],
+    }),
+    updateCustomAsset: build.mutation<
+      void,
+      { assetType: CustomAssetType; file: File }
+    >({
+      query: ({ assetType, file }) => ({
+        url: `plus/custom-asset/${assetType}`,
+        method: "PUT",
+        body: file,
+        responseHandler: (response: { text: () => any }) => response.text(),
+      }),
+      invalidatesTags: () => ["Custom Assets"],
     }),
   }),
 });
@@ -294,8 +321,10 @@ export const {
   useGetAllCustomFieldDefinitionsQuery,
   useGetAllowListQuery,
   useGetAllDictionaryEntriesQuery,
+  useGetFidesCloudConfigQuery,
   useGetDictionaryDataUsesQuery,
   useGetSystemHistoryQuery,
+  useUpdateCustomAssetMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
@@ -403,10 +432,10 @@ export const selectAllCustomFieldDefinitions = createSelector(
   ({ data }) => data || emptySelectAllCustomFields
 );
 
-type DictOption = {
+export type DictOption = {
   label: string;
   value: string;
-  descriptiong?: string;
+  description?: string;
 };
 
 const EMPTY_DICT_ENTRIES: DictOption[] = [];
@@ -417,13 +446,13 @@ export const selectAllDictEntries = createSelector(
   ],
   (RootState, { data }) =>
     data
-      ? (data.items
+      ? data.items
           .map((d) => ({
             label: d.display_name ? d.display_name : d.legal_name,
             value: d.id,
             description: d.description ? d.description : undefined,
           }))
-          .sort((a, b) => (a.label > b.label ? 1 : -1)) as DictOption[])
+          .sort((a, b) => (a.label > b.label ? 1 : -1))
       : EMPTY_DICT_ENTRIES
 );
 
@@ -440,7 +469,7 @@ export const selectDictEntry = (vendorId: string) =>
 
 const EMPTY_DATA_USES: DictDataUse[] = [];
 
-export const selectDictDataUses = (vendorId: number) =>
+export const selectDictDataUses = (vendorId: string) =>
   createSelector(
     [
       (state) => state,

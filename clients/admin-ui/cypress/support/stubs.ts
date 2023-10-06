@@ -17,9 +17,9 @@ export const stubTaxonomyEntities = () => {
 };
 
 export const stubSystemCrud = () => {
-  cy.intercept("POST", "/api/v1/system", { fixture: "systems/system.json" }).as(
-    "postSystem"
-  );
+  cy.intercept("POST", "/api/v1/system", {
+    fixture: "systems/system.json",
+  }).as("postSystem");
   cy.intercept("GET", "/api/v1/system/*", {
     fixture: "systems/system.json",
   }).as("getSystem");
@@ -39,7 +39,10 @@ export const stubSystemCrud = () => {
 export const stubVendorList = () => {
   cy.intercept("GET", "/api/v1/plus/dictionary/system*", {
     fixture: "dictionary-entries.json",
-  });
+  }).as("getDictionaryEntries");
+  cy.intercept("GET", "/api/v1/plus/dictionary/data-use-declarations/*", {
+    fixture: "dictionary-declarations.json",
+  }).as("getDictionaryDeclarations");
 };
 
 export const stubOrganizationCrud = () => {

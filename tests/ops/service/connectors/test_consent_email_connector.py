@@ -288,7 +288,7 @@ class TestConsentEmailConnectorMethods:
                             id="test_2",
                             privacy_notice_id="67890",
                             consent_mechanism=ConsentMechanism.opt_out,
-                            data_uses=["improve.system"],
+                            data_uses=["functional.service.improve"],
                             enforcement_level=EnforcementLevel.system_wide,
                             version=1.0,
                             displayed_in_overlay=True,
@@ -551,10 +551,7 @@ class TestSovrnConnector:
         )
         assert preferences[0]["consent_preferences"][0]["opt_in"] is False
 
-        assert (
-            preferences[0]["consent_preferences"][1]["data_use"]
-            == "Improves the product, service, application or system."
-        )
+        assert preferences[0]["consent_preferences"][1]["data_use"] == "Functional"
         assert preferences[0]["consent_preferences"][1]["opt_in"] is True
 
         assert (

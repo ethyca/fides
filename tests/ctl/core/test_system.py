@@ -371,7 +371,7 @@ class TestUpsertCookies:
                 PrivacyDeclarationSchema(
                     name="declaration-name-2",
                     data_categories=[],
-                    data_use="improve",
+                    data_use="functional.service.improve",
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],

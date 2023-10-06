@@ -11,11 +11,11 @@ dataset:
               data_type: string
               primary_key: True
           - name: age
-            data_categories: [user.non_specific_age]
+            data_categories: [user.demographic.age_range]
             fidesops_meta:
               data_type: integer
           - name: birthDate
-            data_categories: [user.date_of_birth]
+            data_categories: [user.demographic.date_of_birth]
           - name: blackList
             data_categories: [system.operations]
             fidesops_meta:
@@ -93,7 +93,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: gender
-            data_categories: [user.gender]
+            data_categories: [user.demographic.gender]
             fidesops_meta:
               data_type: string
           - name: href
@@ -207,11 +207,11 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: age
-            data_categories: [user.non_specific_age]
+            data_categories: [user.demographic.age_range]
             fidesops_meta:
               data_type: integer
           - name: birthDate
-            data_categories: [user.date_of_birth]
+            data_categories: [user.demographic.date_of_birth]
           - name: blackList
             data_categories: [system.operations]
             fidesops_meta:
@@ -295,7 +295,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: gender
-            data_categories: [user.gender]
+            data_categories: [user.demographic.gender]
             fidesops_meta:
               data_type: string
           - name: href

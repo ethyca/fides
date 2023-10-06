@@ -17,10 +17,10 @@ import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import { storageTypes } from "~/features/privacy-requests/constants";
 import {
-  useCreateConfigurationSettingsMutation,
   useCreateStorageMutation,
   useGetActiveStorageQuery,
   useGetStorageDetailsQuery,
+  usePatchConfigurationSettingsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 import S3StorageConfiguration from "./S3StorageConfiguration";
@@ -35,7 +35,7 @@ const StorageConfiguration = () => {
     type: storageValue,
   });
   const [saveStorageType, { isLoading }] = useCreateStorageMutation();
-  const [saveActiveStorage] = useCreateConfigurationSettingsMutation();
+  const [saveActiveStorage] = usePatchConfigurationSettingsMutation();
 
   useEffect(() => {
     if (activeStorage) {

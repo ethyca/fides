@@ -9,4 +9,5 @@ export type Page_StorageDestinationResponse_ = {
   total: number;
   page: number;
   size: number;
+  pages?: number;
 };

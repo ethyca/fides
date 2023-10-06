@@ -20,6 +20,7 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Session, backref, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -33,7 +34,7 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fides.api.cryptography.cryptographic_util import hash_with_salt
+from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.base_class import JSONTypeOverride
 from fides.api.db.util import EnumColumn
@@ -56,6 +57,9 @@ from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.external_https import SecondPartyResponseFormat, WebhookJWE
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.redis_cache import (
+    CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
+)
 from fides.api.schemas.redis_cache import Identity, IdentityBase
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (
@@ -63,6 +67,7 @@ from fides.api.util.cache import (
     get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
     get_cache,
+    get_custom_privacy_request_field_cache_key,
     get_drp_request_body_cache_key,
     get_encryption_cache_key,
     get_identity_cache_key,
@@ -86,11 +91,12 @@ EXECUTION_CHECKPOINTS = [
 
 
 class ManualAction(FidesSchema):
-    """Surface how to retrieve or mask data in a database-agnostic way
+    """
+    Surface how to retrieve or mask data in a database-agnostic way
 
-    "locators" are similar to the SQL "WHERE" information.
-    "get" contains a list of fields that should be retrieved from the source
-    "update" is a dictionary of fields and the replacement value/masking strategy
+    - 'locators' are similar to the SQL "WHERE" information.
+    - 'get' contains a list of fields that should be retrieved from the source
+    - 'update' is a dictionary of fields and the replacement value/masking strategy
     """
 
     locators: Dict[str, Any]
@@ -202,6 +208,11 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
         nullable=True,
     )
+    custom_privacy_request_fields_approved_by = Column(
+        String,
+        ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
+        nullable=True,
+    )
     client_id = Column(
         String,
         ForeignKey(ClientDetail.id_field_path),
@@ -252,10 +263,16 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     )
 
     reviewer = relationship(
-        FidesUser, backref=backref("privacy_request", passive_deletes=True)
+        FidesUser,
+        backref=backref("privacy_requests", passive_deletes=True),
+        foreign_keys=[reviewed_by],
     )
+
     paused_at = Column(DateTime(timezone=True), nullable=True)
     identity_verified_at = Column(DateTime(timezone=True), nullable=True)
+    custom_privacy_request_fields_approved_at = Column(
+        DateTime(timezone=True), nullable=True
+    )
     due_date = Column(DateTime(timezone=True), nullable=True)
     awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
@@ -325,6 +342,33 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                     value,
                 )
 
+    def cache_custom_privacy_request_fields(
+        self,
+        custom_privacy_request_fields: Optional[
+            Dict[str, CustomPrivacyRequestFieldSchema]
+        ] = None,
+    ) -> None:
+        """Sets each of the custom privacy request fields values under their own key in the cache"""
+        if not custom_privacy_request_fields:
+            return
+
+        if not CONFIG.execution.allow_custom_privacy_request_field_collection:
+            return
+
+        if CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution:
+            cache: FidesopsRedis = get_cache()
+            for key, item in custom_privacy_request_fields.items():
+                if item is not None:
+                    cache.set_with_autoexpire(
+                        get_custom_privacy_request_field_cache_key(self.id, key),
+                        item.value,
+                    )
+        else:
+            logger.info(
+                "Custom fields from privacy request {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution' is set to false and prevents their usage.",
+                self.id,
+            )
+
     def persist_identity(self, db: Session, identity: Identity) -> None:
         """
         Stores the identity provided with the privacy request in a secure way, compatible with
@@ -345,6 +389,34 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                     },
                 )
 
+    def persist_custom_privacy_request_fields(
+        self,
+        db: Session,
+        custom_privacy_request_fields: Dict[str, CustomPrivacyRequestFieldSchema],
+    ) -> None:
+        if not custom_privacy_request_fields:
+            return
+
+        if CONFIG.execution.allow_custom_privacy_request_field_collection:
+            for key, item in custom_privacy_request_fields.items():
+                if item.value:
+                    hashed_value = CustomPrivacyRequestField.hash_value(item.value)
+                    CustomPrivacyRequestField.create(
+                        db=db,
+                        data={
+                            "privacy_request_id": self.id,
+                            "field_name": key,
+                            "field_label": item.label,
+                            "encrypted_value": {"value": item.value},
+                            "hashed_value": hashed_value,
+                        },
+                    )
+        else:
+            logger.info(
+                "Custom fields provided in privacy request {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_field_collection' prevents their storage.",
+                self.id,
+            )
+
     def get_persisted_identity(self) -> Identity:
         """
         Retrieves persisted identity fields from the DB.
@@ -357,6 +429,15 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                 field.encrypted_value["value"],
             )
         return schema
+
+    def get_persisted_custom_privacy_request_fields(self) -> Dict[str, Any]:
+        return {
+            field.field_name: {
+                "label": field.field_label,
+                "value": field.encrypted_value["value"],
+            }
+            for field in self.custom_fields  # type: ignore[attr-defined]
+        }
 
     def verify_identity(self, db: Session, provided_code: str) -> "PrivacyRequest":
         """Verify the identification code supplied by the user
@@ -440,6 +521,13 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache"""
         prefix = f"id-{self.id}-identity-*"
+        cache: FidesopsRedis = get_cache()
+        keys = cache.keys(prefix)
+        return {key.split("-")[-1]: cache.get(key) for key in keys}
+
+    def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
+        """Retrieves any custom fields pertaining to this request from the cache"""
+        prefix = f"id-{self.id}-custom-privacy-request-field-*"
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
         return {key.split("-")[-1]: cache.get(key) for key in keys}
@@ -532,12 +620,12 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     ) -> Optional[CheckpointActionRequired]:
         """Get details about the failed step (access or erasure) and collection that triggered failure.
 
-        The failed step lets us know if we should resume privacy request execution from the "access" or the "erasure"
-        portion of the privacy request flow.
+        If DSR processing failed within the graph, this will let us know if we should resume privacy request execution
+        from the "access" or "erasure" portion of the privacy request flow.
         """
         return get_action_required_details(cached_key=f"EN_FAILED_LOCATION__{self.id}")
 
-    def cache_manual_webhook_input(
+    def cache_manual_webhook_access_input(
         self, manual_webhook: AccessManualWebhook, input_data: Optional[Dict[str, Any]]
     ) -> None:
         """Cache manually added data for the given manual webhook.  This is for use by the *manual_webhook* connector,
@@ -549,11 +637,27 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         parsed_data = manual_webhook.fields_schema.parse_obj(input_data)
 
         cache.set_encoded_object(
-            f"WEBHOOK_MANUAL_INPUT__{self.id}__{manual_webhook.id}",
+            f"WEBHOOK_MANUAL_ACCESS_INPUT__{self.id}__{manual_webhook.id}",
             parsed_data.dict(),
         )
 
-    def get_manual_webhook_input_strict(
+    def cache_manual_webhook_erasure_input(
+        self, manual_webhook: AccessManualWebhook, input_data: Optional[Dict[str, Any]]
+    ) -> None:
+        """Cache manually added data for the given manual webhook.  This is for use by the *manual_webhook* connector,
+        which is *NOT* integrated with the graph.
+
+        Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
+        """
+        cache: FidesopsRedis = get_cache()
+        parsed_data = manual_webhook.erasure_fields_schema.parse_obj(input_data)
+
+        cache.set_encoded_object(
+            f"WEBHOOK_MANUAL_ERASURE_INPUT__{self.id}__{manual_webhook.id}",
+            parsed_data.dict(),
+        )
+
+    def get_manual_webhook_access_input_strict(
         self, manual_webhook: AccessManualWebhook
     ) -> Dict[str, Any]:
         """
@@ -563,7 +667,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
 
         This is for use by the *manual_webhook* connector which is *NOT* integrated with the graph.
         """
-        cached_results: Optional[Dict[str, Any]] = _get_manual_input_from_cache(
+        cached_results: Optional[Dict[str, Any]] = _get_manual_access_input_from_cache(
             privacy_request=self, manual_webhook=manual_webhook
         )
 
@@ -580,7 +684,36 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             f"No data cached for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
         )
 
-    def get_manual_webhook_input_non_strict(
+    def get_manual_webhook_erasure_input_strict(
+        self, manual_webhook: AccessManualWebhook
+    ) -> Dict[str, Any]:
+        """
+        Retrieves manual webhook fields saved to the privacy request in strict mode.
+        Fails either if extra saved fields are detected (webhook definition had fields removed) or fields were not
+        explicitly set (webhook definition had fields added). This mode lets us know if webhooks data needs to be re-uploaded.
+
+        This is for use by the *manual_webhook* connector which is *NOT* integrated with the graph.
+        """
+        cached_results: Optional[Dict[str, Any]] = _get_manual_erasure_input_from_cache(
+            privacy_request=self, manual_webhook=manual_webhook
+        )
+
+        if cached_results:
+            data: Dict[str, Any] = manual_webhook.erasure_fields_schema.parse_obj(
+                cached_results
+            ).dict(exclude_unset=True)
+            if set(data.keys()) != set(
+                manual_webhook.erasure_fields_schema.__fields__.keys()
+            ):
+                raise ManualWebhookFieldsUnset(
+                    f"Fields unset for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
+                )
+            return data
+        raise NoCachedManualWebhookEntry(
+            f"No data cached for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
+        )
+
+    def get_manual_webhook_access_input_non_strict(
         self, manual_webhook: AccessManualWebhook
     ) -> Dict[str, Any]:
         """Retrieves manual webhook fields saved to the privacy request in non-strict mode.
@@ -588,7 +721,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
 
         This is for use by the *manual_webhook* connector which is *NOT* integrated with the graph.
         """
-        cached_results: Optional[Dict[str, Any]] = _get_manual_input_from_cache(
+        cached_results: Optional[Dict[str, Any]] = _get_manual_access_input_from_cache(
             privacy_request=self, manual_webhook=manual_webhook
         )
         if cached_results:
@@ -597,7 +730,24 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             ).dict()
         return manual_webhook.empty_fields_dict
 
-    def cache_manual_input(
+    def get_manual_webhook_erasure_input_non_strict(
+        self, manual_webhook: AccessManualWebhook
+    ) -> Dict[str, Any]:
+        """Retrieves manual webhook fields saved to the privacy request in non-strict mode.
+        Returns None for any fields not explicitly set and ignores extra fields.
+
+        This is for use by the *manual_webhook* connector which is *NOT* integrated with the graph.
+        """
+        cached_results: Optional[Dict[str, Any]] = _get_manual_erasure_input_from_cache(
+            privacy_request=self, manual_webhook=manual_webhook
+        )
+        if cached_results:
+            return manual_webhook.erasure_fields_non_strict_schema.parse_obj(
+                cached_results
+            ).dict()
+        return manual_webhook.empty_fields_dict
+
+    def cache_manual_access_input(
         self, collection: CollectionAddress, manual_rows: Optional[List[Row]]
     ) -> None:
         """Cache manually added rows for the given CollectionAddress. This is for use by the *manual* connector which is integrated with the graph."""
@@ -607,7 +757,9 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             manual_rows,
         )
 
-    def get_manual_input(self, collection: CollectionAddress) -> Optional[List[Row]]:
+    def get_manual_access_input(
+        self, collection: CollectionAddress
+    ) -> Optional[List[Row]]:
         """Retrieve manually added rows from the cache for the given CollectionAddress.
         Returns the manual data if it exists, otherwise None.
 
@@ -814,7 +966,7 @@ class PrivacyRequestError(Base):
     )
 
 
-def _get_manual_input_from_cache(
+def _get_manual_access_input_from_cache(
     privacy_request: PrivacyRequest, manual_webhook: AccessManualWebhook
 ) -> Optional[Dict[str, Any]]:
     """Get raw manual input uploaded to the privacy request for the given webhook
@@ -823,7 +975,23 @@ def _get_manual_input_from_cache(
     cached_results: Optional[
         Optional[Dict[str, Any]]
     ] = cache.get_encoded_objects_by_prefix(
-        f"WEBHOOK_MANUAL_INPUT__{privacy_request.id}__{manual_webhook.id}"
+        f"WEBHOOK_MANUAL_ACCESS_INPUT__{privacy_request.id}__{manual_webhook.id}"
+    )
+    if cached_results:
+        return list(cached_results.values())[0]
+    return None
+
+
+def _get_manual_erasure_input_from_cache(
+    privacy_request: PrivacyRequest, manual_webhook: AccessManualWebhook
+) -> Optional[Dict[str, Any]]:
+    """Get raw manual input uploaded to the privacy request for the given webhook
+    from the cache without attempting to coerce into a Pydantic schema"""
+    cache: FidesopsRedis = get_cache()
+    cached_results: Optional[
+        Optional[Dict[str, Any]]
+    ] = cache.get_encoded_objects_by_prefix(
+        f"WEBHOOK_MANUAL_ERASURE_INPUT__{privacy_request.id}__{manual_webhook.id}"
     )
     if cached_results:
         return list(cached_results.values())[0]
@@ -897,7 +1065,7 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         value: str,
         encoding: str = "UTF-8",
     ) -> str:
-        """Utility function to hash a user's password with a generated salt"""
+        """Utility function to hash the value with a generated salt"""
         SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
         hashed_value = hash_with_salt(
             value.encode(encoding),
@@ -922,6 +1090,62 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
             self.encrypted_value.get("value"),  # type:ignore
         )
         return identity
+
+
+class CustomPrivacyRequestField(Base):
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "custom_privacy_request_field"
+
+    privacy_request_id = Column(
+        String,
+        ForeignKey(PrivacyRequest.id_field_path),
+    )
+    privacy_request = relationship(
+        PrivacyRequest,
+        backref="custom_fields",
+    )
+    field_name = Column(
+        String,
+        index=False,
+        nullable=False,
+    )
+    field_label = Column(
+        String,
+        index=False,
+        nullable=False,
+    )
+    hashed_value = Column(
+        String,
+        index=True,
+        unique=False,
+        nullable=True,
+    )  # This field is used as a blind index for exact match searches
+    encrypted_value = Column(
+        MutableDict.as_mutable(
+            StringEncryptedType(
+                JSONTypeOverride,
+                CONFIG.security.app_encryption_key,
+                AesGcmEngine,
+                "pkcs5",
+            )
+        ),
+        nullable=True,
+    )  # Type bytea in the db
+
+    @classmethod
+    def hash_value(
+        cls,
+        value: str,
+        encoding: str = "UTF-8",
+    ) -> str:
+        """Utility function to hash the value with a generated salt"""
+        salt = generate_salt()
+        hashed_value = hash_with_salt(
+            value.encode(encoding),
+            salt.encode(encoding),
+        )
+        return hashed_value
 
 
 class Consent(Base):

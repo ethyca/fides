@@ -9,7 +9,9 @@ from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_notice import PrivacyNoticeResponseWithUserPreferences
+from fides.api.schemas.tcf import TCMobileData
 from fides.api.util.endpoint_utils import human_friendly_list
+from fides.api.util.tcf.tcf_experience_contents import TCFExperienceContents
 
 
 class ExperienceConfigSchema(FidesSchema):
@@ -181,13 +183,40 @@ class PrivacyExperienceWithId(PrivacyExperience):
     id: str
 
 
-class PrivacyExperienceResponse(PrivacyExperienceWithId):
+class ExperienceMeta(FidesSchema):
+    """Supplements experience with developer-friendly meta information"""
+
+    version_hash: Optional[str] = Field(
+        description="A hashed value that can be compared to previously-fetched "
+        "hash values to determine if the Experience has meaningfully changed"
+    )
+    accept_all_tc_string: Optional[str] = Field(
+        description="The TC string corresponding to a user opting in to all "
+        "available options"
+    )
+    accept_all_tc_mobile_data: Optional[TCMobileData] = None
+    reject_all_tc_string: Optional[str] = Field(
+        description="The TC string corresponding to a user opting out of all "
+        "available options"
+    )
+    reject_all_tc_mobile_data: Optional[TCMobileData] = None
+
+
+class PrivacyExperienceResponse(TCFExperienceContents, PrivacyExperienceWithId):
     """
     An API representation of a PrivacyExperience used for response payloads
     """
 
     created_at: datetime
     updated_at: datetime
-    show_banner: Optional[bool]
-    privacy_notices: Optional[List[PrivacyNoticeResponseWithUserPreferences]]
-    experience_config: Optional[ExperienceConfigResponse]
+    show_banner: Optional[bool] = Field(
+        description="Whether the experience should show a banner",
+    )
+    privacy_notices: Optional[List[PrivacyNoticeResponseWithUserPreferences]] = Field(
+        description="The Privacy Notices associated with this experience, if applicable"
+    )
+    experience_config: Optional[ExperienceConfigResponse] = Field(
+        description="The Experience copy or language"
+    )
+    gvl: Optional[Dict] = None
+    meta: Optional[ExperienceMeta] = None
