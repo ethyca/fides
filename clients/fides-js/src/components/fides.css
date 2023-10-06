@@ -317,23 +317,6 @@ div#fides-modal .fides-modal-button-group {
   background: var(--fides-overlay-hover-color);
 }
 
-.fides-back-button {
-  position: absolute;
-  top: 0.5em;
-  left: 0.2em;
-  cursor: pointer;
-  background: none;
-  border: 1px solid var(--fides-overlay-background-dark-color);
-  border-radius: var(--fides-overlay-button-border-radius);
-  display: flex;
-  padding: 0.4em;
-  align-items: center;
-}
-
-.fides-back-button > svg {
-  margin-right: 0.6em;
-}
-
 .fides-modal-notices {
   margin-bottom: 1em;
 }
@@ -624,25 +607,6 @@ div#fides-modal .fides-modal-button-group {
   border-radius: var(--fides-overlay-button-border-radius);
 }
 
-/* Table */
-
-.fides-cookies-table {
-  border-collapse: collapse;
-  width: 100%;
-  text-align: left;
-}
-
-.fides-cookies-table th {
-  text-transform: uppercase;
-}
-
-.fides-cookies-table td,
-.fides-cookies-table th {
-  border: 1px solid var(--fides-overlay-row-divider-color);
-  padding-left: 1.1em;
-  padding-right: 0.6em;
-}
-
 /* General classes */
 .fides-flex-center {
   display: flex;
@@ -734,16 +698,6 @@ div#fides-modal .fides-modal-button-group {
   font-weight: 500;
   font-size: 0.9em;
   margin-right: 1em;
-}
-
-/* Dropdown */
-
-.fides-select-dropdown {
-  display: block;
-  width: 100%;
-  border-radius: var(--fides-overlay-component-border-radius);
-  padding: 0.4em;
-  border: 1px solid var(--fides-overlay-select-border-color);
 }
 
 /* Vendor info (initial layer) */
