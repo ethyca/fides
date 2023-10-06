@@ -12,6 +12,8 @@ export type { ConsentPreferences } from "./models/ConsentPreferences";
 export type { ConsentPreferencesWithVerificationCode } from "./models/ConsentPreferencesWithVerificationCode";
 export type { ConsentWithExecutableStatus } from "./models/ConsentWithExecutableStatus";
 export type { CurrentPrivacyPreferenceSchema } from "./models/CurrentPrivacyPreferenceSchema";
+export type { EmbeddedLineItem } from "./models/EmbeddedLineItem";
+export type { EmbeddedVendor } from "./models/EmbeddedVendor";
 export { EnforcementLevel } from "./models/EnforcementLevel";
 export type { ExperienceConfigResponse } from "./models/ExperienceConfigResponse";
 export type { ExperienceMeta } from "./models/ExperienceMeta";
