@@ -10,7 +10,11 @@ const useA11yDialogInstance = () => {
   const [instance, setInstance] = useState<A11yDialogLib | null>(null);
   const container = useCallback((node: Element) => {
     if (node !== null) {
-      setInstance(new A11yDialogLib(node));
+      const dialog = new A11yDialogLib(node);
+      dialog
+        .on("show", () => (document.documentElement.style.overflowY = "hidden"))
+        .on("hide", () => (document.documentElement.style.overflowY = ""));
+      setInstance(dialog);
     }
   }, []);
   return { instance, container };

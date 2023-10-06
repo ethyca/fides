@@ -56,7 +56,7 @@ const Overlay: FunctionComponent<Props> = ({
 
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
-    role: "dialog",
+    role: "alertdialog",
     title: experience?.experience_config?.title || "",
     onClose: dispatchCloseEvent,
   });
