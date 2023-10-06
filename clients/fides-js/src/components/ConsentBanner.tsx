@@ -1,10 +1,4 @@
-import {
-  h,
-  FunctionComponent,
-  ComponentChildren,
-  Component,
-  VNode,
-} from "preact";
+import { h, FunctionComponent, ComponentChildren, VNode } from "preact";
 import { getConsentContext } from "../lib/consent-context";
 import { ExperienceConfig } from "../lib/consent-types";
 import CloseButton from "./CloseButton";

@@ -149,7 +149,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               onChange={setDraftEnabledNoticeKeys}
             />
           </div>
-          <div class="fides-modal-footer">
+          <div className="fides-modal-footer">
             <NoticeConsentButtons
               experience={experience}
               enabledKeys={draftEnabledNoticeKeys}
@@ -159,7 +159,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               }}
               isInModal
               isAcknowledge={isAllNoticeOnly}
-            ></NoticeConsentButtons>
+            />
             <PrivacyPolicyLink experience={experience.experience_config} />
           </div>
         </div>

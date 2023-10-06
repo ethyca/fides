@@ -383,7 +383,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               activeTabIndex={activeTabIndex}
               onTabChange={setActiveTabIndex}
             />
-            <div class="fides-modal-footer">
+            <div className="fides-modal-footer">
               <TcfConsentButtons
                 experience={experience}
                 onSave={onSave}

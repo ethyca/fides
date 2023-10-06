@@ -12,8 +12,12 @@ const useA11yDialogInstance = () => {
     if (node !== null) {
       const dialog = new A11yDialogLib(node);
       dialog
-        .on("show", () => (document.documentElement.style.overflowY = "hidden"))
-        .on("hide", () => (document.documentElement.style.overflowY = ""));
+        .on("show", () => {
+          document.documentElement.style.overflowY = "hidden";
+        })
+        .on("hide", () => {
+          document.documentElement.style.overflowY = "";
+        });
       setInstance(dialog);
     }
   }, []);

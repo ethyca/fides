@@ -1,4 +1,4 @@
-import { ComponentChildren, VNode, h } from "preact";
+import { ComponentChildren, h } from "preact";
 import { Attributes } from "../lib/a11y-dialog";
 import { ExperienceConfig } from "../lib/consent-types";
 
