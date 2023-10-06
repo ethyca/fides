@@ -5,7 +5,6 @@ import pydash
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.db import session
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -13,6 +12,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.service.connectors import SaaSConnector
@@ -22,55 +22,52 @@ from fides.api.util.saas_util import (
 )
 from tests.ops.test_helpers.vault_client import get_secrets
 
-secrets = get_secrets("rudder_stack")
+secrets = get_secrets("rudderstack")
 
 
 @pytest.fixture(scope="session")
-def rudder_stack_secrets(saas_config):
+def rudderstack_secrets(saas_config):
     return {
-        "domain": pydash.get(saas_config, "rudder_stack.domain")
-        or secrets["domain"],
-        "token": pydash.get(saas_config, "rudder_stack.token")
-        or secrets["token"],
+        "domain": pydash.get(saas_config, "rudderstack.domain") or secrets["domain"],
+        "token": pydash.get(saas_config, "rudderstack.token") or secrets["token"],
     }
 
 
 @pytest.fixture(scope="session")
-def rudder_stack_identity_email(saas_config):
+def rudderstack_identity_email(saas_config):
     return "customer-1@example.com"
 
+
 @pytest.fixture
-def rudder_stack_external_references(saas_config) -> Dict[str, Any]:
+def rudderstack_external_references(saas_config) -> Dict[str, Any]:
     return {
-        "user_id": pydash.get(saas_config, "rudder_stack.user_id")
-        # or secrets["user_id"]
-        or "543256"
+        "user_id": pydash.get(saas_config, "rudderstack.user_id") or secrets["user_id"]
     }
 
 
 @pytest.fixture
-def rudder_stack_config() -> Dict[str, Any]:
+def rudderstack_config() -> Dict[str, Any]:
     return load_config_with_replacement(
-        "data/saas/config/rudder_stack_config.yml",
+        "data/saas/config/rudderstack_config.yml",
         "<instance_fides_key>",
-        "rudder_stack_instance",
+        "rudderstack_instance",
     )
 
 
 @pytest.fixture
-def rudder_stack_dataset() -> Dict[str, Any]:
+def rudderstack_dataset() -> Dict[str, Any]:
     return load_dataset_with_replacement(
-        "data/saas/dataset/rudder_stack_dataset.yml",
+        "data/saas/dataset/rudderstack_dataset.yml",
         "<instance_fides_key>",
-        "rudder_stack_instance",
+        "rudderstack_instance",
     )[0]
 
 
 @pytest.fixture(scope="function")
-def rudder_stack_connection_config(
-    db: session, rudder_stack_config, rudder_stack_secrets
+def rudderstack_connection_config(
+    db: Session, rudderstack_config, rudderstack_secrets
 ) -> Generator:
-    fides_key = rudder_stack_config["fides_key"]
+    fides_key = rudderstack_config["fides_key"]
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -78,8 +75,8 @@ def rudder_stack_connection_config(
             "name": fides_key,
             "connection_type": ConnectionType.saas,
             "access": AccessLevel.write,
-            "secrets": rudder_stack_secrets,
-            "saas_config": rudder_stack_config,
+            "secrets": rudderstack_secrets,
+            "saas_config": rudderstack_config,
         },
     )
     yield connection_config
@@ -87,24 +84,22 @@ def rudder_stack_connection_config(
 
 
 @pytest.fixture
-def rudder_stack_dataset_config(
+def rudderstack_dataset_config(
     db: Session,
-    rudder_stack_connection_config: ConnectionConfig,
-    rudder_stack_dataset: Dict[str, Any],
+    rudderstack_connection_config: ConnectionConfig,
+    rudderstack_dataset: Dict[str, Any],
 ) -> Generator:
-    fides_key = rudder_stack_dataset["fides_key"]
-    rudder_stack_connection_config.name = fides_key
-    rudder_stack_connection_config.key = fides_key
-    rudder_stack_connection_config.save(db=db)
+    fides_key = rudderstack_dataset["fides_key"]
+    rudderstack_connection_config.name = fides_key
+    rudderstack_connection_config.key = fides_key
+    rudderstack_connection_config.save(db=db)
 
-    ctl_dataset = CtlDataset.create_from_dataset_dict(
-        db, rudder_stack_dataset
-    )
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, rudderstack_dataset)
 
     dataset = DatasetConfig.create(
         db=db,
         data={
-            "connection_config_id": rudder_stack_connection_config.id,
+            "connection_config_id": rudderstack_connection_config.id,
             "fides_key": fides_key,
             "ctl_dataset_id": ctl_dataset.id,
         },
@@ -115,45 +110,44 @@ def rudder_stack_dataset_config(
 
 
 @pytest.fixture(scope="function")
-def reset_rudder_stack_data(
-    rudder_stack_connection_config, rudder_stack_identity_email, rudder_stack_external_references
+def reset_rudderstack_data(
+    rudderstack_connection_config,
+    rudderstack_identity_email,
+    rudderstack_external_references,
 ) -> Generator:
     """
-    Adds regulation to the rudder stack Allowlist
+    Adds regulation to the RudderStack Allowlist
     """
-    connector = SaaSConnector(rudder_stack_connection_config)
+    connector = SaaSConnector(rudderstack_connection_config)
     connector.set_saas_request_state(
         SaaSRequest(path="test_path", method=HTTPMethod.GET)
     )  # dummy request as connector requires it
     request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.POST,
         path="/v2/regulations",
-        body=json.dumps({
-            "regulationType": "suppress",
-            # "destinationIds": [
-            #     "27OeyCriZ4vGFiOFPihSMgr0Nt1"
-            # ],
-            "users": [
-              {
-                  "userId": "543256",
-                  "email": "ethyca.email@email.com"
-              }
-            ]
-        }),
+        body=json.dumps(
+            {
+                "regulationType": "suppress",
+                # "destinationIds": [
+                #     "27OeyCriZ4vGFiOFPihSMgr0Nt1"
+                # ],
+                "users": [{"userId": "543256", "email": "ethyca.email@email.com"}],
+            }
+        ),
     )
     response = connector.create_client().send(request)
     body = response.json()
     assert (
-        body["email"] == rudder_stack_identity_email
+        body["email"] == rudderstack_identity_email
     ), "Identity has been added to allowlist"
 
 
 @pytest.fixture(scope="function")
-def rudder_stack_connection_config_no_secrets(
-    db: session, rudder_stack_config
+def rudderstack_connection_config_no_secrets(
+    db: session, rudderstack_config
 ) -> Generator:
     """This test connector cannot not be used to make live requests"""
-    fides_key = rudder_stack_config["fides_key"]
+    fides_key = rudderstack_config["fides_key"]
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -162,7 +156,7 @@ def rudder_stack_connection_config_no_secrets(
             "connection_type": ConnectionType.saas,
             "access": AccessLevel.write,
             "secrets": {"api_key": "test"},
-            "saas_config": rudder_stack_config,
+            "saas_config": rudderstack_config,
         },
     )
     yield connection_config

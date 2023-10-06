@@ -1,0 +1,5 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: RudderStack Dataset
+    description: A sample dataset representing the RudderStack connector for Fides
+    collections: []
