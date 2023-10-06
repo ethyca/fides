@@ -306,8 +306,8 @@ const TcfVendors = ({
               </div>
               <PurposeVendorDetails
                 purposes={[
-                  ...(vendor.consent_purposes || []),
-                  ...(vendor.legitimate_interests_purposes || []),
+                  ...(vendor.purpose_consents || []),
+                  ...(vendor.purpose_legitimate_interests || []),
                 ]}
                 specialPurposes={vendor.special_purposes}
                 gvlVendor={gvlVendor}

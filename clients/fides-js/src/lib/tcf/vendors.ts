@@ -1,8 +1,8 @@
 import { PrivacyExperience } from "../consent-types";
 import {
   GVLJson,
-  TCFConsentVendorRecord,
-  TCFLegitimateInterestsVendorRecord,
+  TCFVendorConsentRecord,
+  TCFVendorLegitimateInterestsRecord,
   TCFVendorRelationships,
   VendorRecord,
 } from "./types";
@@ -23,8 +23,8 @@ const transformVendorDataToVendorRecords = ({
   relationships,
   isFidesSystem,
 }: {
-  consents: TCFConsentVendorRecord[];
-  legints: TCFLegitimateInterestsVendorRecord[];
+  consents: TCFVendorConsentRecord[];
+  legints: TCFVendorLegitimateInterestsRecord[];
   relationships: TCFVendorRelationships[];
   isFidesSystem: boolean;
 }) => {
@@ -54,11 +54,11 @@ export const transformExperienceToVendorRecords = (
   experience: PrivacyExperience
 ): VendorRecord[] => {
   const {
-    tcf_consent_vendors: consentVendors = [],
-    tcf_legitimate_interests_vendors: legintVendors = [],
+    tcf_vendor_consents: consentVendors = [],
+    tcf_vendor_legitimate_interests: legintVendors = [],
     tcf_vendor_relationships: vendorRelationships = [],
-    tcf_consent_systems: consentSystems = [],
-    tcf_legitimate_interests_systems: legintSystems = [],
+    tcf_system_consents: consentSystems = [],
+    tcf_system_legitimate_interests: legintSystems = [],
     tcf_system_relationships: systemRelationships = [],
   } = experience;
 

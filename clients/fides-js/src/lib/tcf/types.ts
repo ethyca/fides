@@ -125,7 +125,7 @@ export type TCFSpecialFeatureSave = {
 };
 
 // Vendor records
-export type TCFConsentVendorRecord = {
+export type TCFVendorConsentRecord = {
   id: string;
   has_vendor_id?: boolean;
   name?: string;
@@ -135,10 +135,10 @@ export type TCFConsentVendorRecord = {
   outdated_preference?: UserConsentPreference;
   current_served?: boolean;
   outdated_served?: boolean;
-  consent_purposes?: Array<EmbeddedLineItem>;
+  purpose_consents?: Array<EmbeddedLineItem>;
 };
 
-export type TCFLegitimateInterestsVendorRecord = {
+export type TCFVendorLegitimateInterestsRecord = {
   id: string;
   has_vendor_id?: boolean;
   name?: string;
@@ -148,7 +148,7 @@ export type TCFLegitimateInterestsVendorRecord = {
   outdated_preference?: UserConsentPreference;
   current_served?: boolean;
   outdated_served?: boolean;
-  legitimate_interests_purposes?: Array<EmbeddedLineItem>;
+  purpose_legitimate_interests?: Array<EmbeddedLineItem>;
 };
 
 export type TCFVendorRelationships = {
@@ -181,15 +181,15 @@ export type TcfSavePreferences = Pick<
 
 export type TcfExperienceRecords = Pick<
   PrivacyExperience,
-  | "tcf_consent_purposes"
-  | "tcf_legitimate_interests_purposes"
+  | "tcf_purpose_consents"
+  | "tcf_purpose_legitimate_interests"
   | "tcf_special_purposes"
   | "tcf_features"
   | "tcf_special_features"
-  | "tcf_consent_vendors"
-  | "tcf_legitimate_interests_vendors"
-  | "tcf_consent_systems"
-  | "tcf_legitimate_interests_systems"
+  | "tcf_vendor_consents"
+  | "tcf_vendor_legitimate_interests"
+  | "tcf_system_consents"
+  | "tcf_system_legitimate_interests"
 >;
 
 export type TcfModels =
@@ -198,8 +198,8 @@ export type TcfModels =
   | TCFSpecialPurposeRecord[]
   | TCFFeatureRecord[]
   | TCFSpecialFeatureRecord[]
-  | TCFConsentVendorRecord[]
-  | TCFLegitimateInterestsVendorRecord[]
+  | TCFVendorConsentRecord[]
+  | TCFVendorLegitimateInterestsRecord[]
   | undefined;
 
 type TcfCookieKeyConsent = {
@@ -228,8 +228,8 @@ export interface EnabledIds {
   vendorsLegint: string[];
 }
 
-export type VendorRecord = TCFConsentVendorRecord &
-  Pick<TCFLegitimateInterestsVendorRecord, "legitimate_interests_purposes"> &
+export type VendorRecord = TCFVendorConsentRecord &
+  Pick<TCFVendorLegitimateInterestsRecord, "purpose_legitimate_interests"> &
   TCFVendorRelationships & {
     isFidesSystem: boolean;
     isConsent: boolean;

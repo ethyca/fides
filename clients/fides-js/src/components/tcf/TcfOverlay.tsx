@@ -25,8 +25,8 @@ import type {
   TCFSpecialPurposeSave,
   TCFVendorSave,
   TcfSavePreferences,
-  TCFConsentVendorRecord,
-  TCFLegitimateInterestsVendorRecord,
+  TCFVendorConsentRecord,
+  TCFVendorLegitimateInterestsRecord,
   TcfModels,
 } from "../../lib/tcf/types";
 
@@ -51,8 +51,8 @@ const resolveConsentValueFromTcfModel = (
     | TCFPurposeConsentRecord
     | TCFPurposeLegitimateInterestsRecord
     | TCFFeatureRecord
-    | TCFConsentVendorRecord
-    | TCFLegitimateInterestsVendorRecord
+    | TCFVendorConsentRecord
+    | TCFVendorLegitimateInterestsRecord
 ) => {
   if (model.current_preference) {
     return transformUserPreferenceToBoolean(model.current_preference);
@@ -115,8 +115,8 @@ const createTcfSavePayload = ({
   enabledIds: EnabledIds;
 }): TcfSavePreferences => {
   const {
-    tcf_consent_systems: consentSystems,
-    tcf_legitimate_interests_systems: legintSystems,
+    tcf_system_consents: consentSystems,
+    tcf_system_legitimate_interests: legintSystems,
   } = experience;
   // Because systems were combined with vendors to make the UI easier to work with,
   // we need to separate them out now (the backend treats them as separate entities).
@@ -141,11 +141,11 @@ const createTcfSavePayload = ({
 
   return {
     purpose_consent_preferences: transformTcfModelToTcfSave({
-      modelList: experience.tcf_consent_purposes,
+      modelList: experience.tcf_purpose_consents,
       enabledIds: enabledIds.purposesConsent,
     }) as TCFPurposeSave[],
     purpose_legitimate_interests_preferences: transformTcfModelToTcfSave({
-      modelList: experience.tcf_legitimate_interests_purposes,
+      modelList: experience.tcf_purpose_legitimate_interests,
       enabledIds: enabledIds.purposesLegint,
     }) as TCFPurposeSave[],
     special_feature_preferences: transformTcfModelToTcfSave({
@@ -153,19 +153,19 @@ const createTcfSavePayload = ({
       enabledIds: enabledIds.specialFeatures,
     }) as TCFSpecialFeatureSave[],
     vendor_consent_preferences: transformTcfModelToTcfSave({
-      modelList: experience.tcf_consent_vendors,
+      modelList: experience.tcf_vendor_consents,
       enabledIds: enabledConsentVendorIds,
     }) as TCFVendorSave[],
     vendor_legitimate_interests_preferences: transformTcfModelToTcfSave({
-      modelList: experience.tcf_legitimate_interests_vendors,
+      modelList: experience.tcf_vendor_legitimate_interests,
       enabledIds: enabledLegintVendorIds,
     }) as TCFVendorSave[],
     system_consent_preferences: transformTcfModelToTcfSave({
-      modelList: experience.tcf_consent_systems,
+      modelList: experience.tcf_system_consents,
       enabledIds: enabledConsentSystemIds,
     }) as TCFVendorSave[],
     system_legitimate_interests_preferences: transformTcfModelToTcfSave({
-      modelList: experience.tcf_legitimate_interests_systems,
+      modelList: experience.tcf_system_legitimate_interests,
       enabledIds: enabledLegintSystemIds,
     }) as TCFVendorSave[],
   };
@@ -204,15 +204,15 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
 }) => {
   const initialEnabledIds: EnabledIds = useMemo(() => {
     const {
-      tcf_consent_purposes: consentPurposes = [],
-      tcf_legitimate_interests_purposes: legintPurposes = [],
+      tcf_purpose_consents: consentPurposes = [],
+      tcf_purpose_legitimate_interests: legintPurposes = [],
       tcf_special_purposes: specialPurposes = [],
       tcf_features: features = [],
       tcf_special_features: specialFeatures = [],
-      tcf_consent_vendors: consentVendors = [],
-      tcf_legitimate_interests_vendors: legintVendors = [],
-      tcf_consent_systems: consentSystems = [],
-      tcf_legitimate_interests_systems: legintSystems = [],
+      tcf_vendor_consents: consentVendors = [],
+      tcf_vendor_legitimate_interests: legintVendors = [],
+      tcf_system_consents: consentSystems = [],
+      tcf_system_legitimate_interests: legintSystems = [],
     } = experience;
 
     // Vendors and systems are the same to the FE, so we combine them here

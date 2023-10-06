@@ -36,10 +36,10 @@ const VendorInfoBanner = ({
 }) => {
   const counts = useMemo(() => {
     const {
-      tcf_consent_vendors: consentVendors = [],
-      tcf_legitimate_interests_vendors: legintVendors = [],
-      tcf_consent_systems: consentSystems = [],
-      tcf_legitimate_interests_systems: legintSystems = [],
+      tcf_vendor_consents: consentVendors = [],
+      tcf_vendor_legitimate_interests: legintVendors = [],
+      tcf_system_consents: consentSystems = [],
+      tcf_system_legitimate_interests: legintSystems = [],
     } = experience;
 
     const total =

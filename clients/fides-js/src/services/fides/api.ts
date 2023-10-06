@@ -2,9 +2,9 @@ import {
   ComponentType,
   EmptyExperience,
   LastServedConsentSchema,
-  NoticesServedRequest,
   PrivacyExperience,
   PrivacyPreferencesRequest,
+  RecordConsentServedRequest,
 } from "../../lib/consent-types";
 import { debugLog } from "../../lib/consent-utils";
 
@@ -119,7 +119,7 @@ export const patchNoticesServed = async ({
   fidesApiUrl,
   debug,
 }: {
-  request: NoticesServedRequest;
+  request: RecordConsentServedRequest;
   fidesApiUrl: string;
   debug: boolean;
 }): Promise<Array<LastServedConsentSchema> | null> => {
