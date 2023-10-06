@@ -11,7 +11,8 @@ import {
   UserGeolocation,
   VALID_ISO_3166_LOCATION_REGEX,
 } from "./consent-types";
-import { TCFPurposeRecord } from "./tcf/types";
+import { EXPERIENCE_KEYS_WITH_PREFERENCES } from "./tcf/constants";
+import { TCFPurposeConsentRecord } from "./tcf/types";
 
 /**
  * Wrapper around 'console.log' that only logs output when the 'debug' banner
@@ -216,7 +217,7 @@ export const experienceIsValid = (
 
 /** Returns true if a list of records has any current preference at all */
 const hasCurrentPreference = (
-  records: Pick<TCFPurposeRecord, "current_preference">[] | undefined
+  records: Pick<TCFPurposeConsentRecord, "current_preference">[] | undefined
 ) => {
   if (!records || records.length === 0) {
     return false;
@@ -225,7 +226,7 @@ const hasCurrentPreference = (
 };
 
 const hasActionNeededTcfPreference = (
-  records: Pick<TCFPurposeRecord, "current_preference">[] | undefined
+  records: Pick<TCFPurposeConsentRecord, "current_preference">[] | undefined
 ) => {
   if (!records || records.length === 0) {
     return false;
@@ -237,16 +238,14 @@ const hasActionNeededTcfPreference = (
  * Returns true if the user has any saved TCF preferences
  */
 export const hasSavedTcfPreferences = (experience: PrivacyExperience) =>
-  hasCurrentPreference(experience.tcf_purposes) ||
-  hasCurrentPreference(experience.tcf_special_features) ||
-  hasCurrentPreference(experience.tcf_vendors) ||
-  hasCurrentPreference(experience.tcf_systems);
+  EXPERIENCE_KEYS_WITH_PREFERENCES.some((key) =>
+    hasCurrentPreference(experience[key])
+  );
 
 export const hasActionNeededTcfPreferences = (experience: PrivacyExperience) =>
-  hasActionNeededTcfPreference(experience.tcf_purposes) ||
-  hasActionNeededTcfPreference(experience.tcf_special_features) ||
-  hasActionNeededTcfPreference(experience.tcf_vendors) ||
-  hasActionNeededTcfPreference(experience.tcf_systems);
+  EXPERIENCE_KEYS_WITH_PREFERENCES.some((key) =>
+    hasActionNeededTcfPreference(experience[key])
+  );
 
 /**
  * Returns true if there are notices in the experience that require a user preference

@@ -13,12 +13,15 @@ import type { UserConsentPreference } from "./UserConsentPreference";
  * Schema for consent reporting - largely a join of PrivacyPreferenceHistory and PrivacyRequest
  */
 export type ConsentReportingSchema = {
-  purpose?: number;
+  purpose_consent?: number;
+  purpose_legitimate_interests?: number;
   special_purpose?: number;
-  vendor?: string;
+  vendor_consent?: string;
+  vendor_legitimate_interests?: string;
   feature?: number;
   special_feature?: number;
-  system?: string;
+  system_consent?: string;
+  system_legitimate_interests?: string;
   id: string;
   privacy_request_id?: string;
   email?: string;

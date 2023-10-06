@@ -2,8 +2,8 @@ import { useEffect, useState, useCallback } from "preact/hooks";
 import { FidesEvent } from "./events";
 import {
   FidesOptions,
-  LastServedNoticeSchema,
-  NoticesServedRequest,
+  LastServedConsentSchema,
+  RecordConsentServedRequest,
   PrivacyNotice,
   ServingComponent,
 } from "./consent-types";
@@ -78,7 +78,7 @@ export const useConsentServed = ({
   acknowledgeMode?: boolean;
 }) => {
   const [servedNotices, setServedNotices] = useState<
-    LastServedNoticeSchema[] | undefined
+    LastServedConsentSchema[] | undefined
   >(undefined);
 
   const handleUIEvent = useCallback(
@@ -91,7 +91,7 @@ export const useConsentServed = ({
       ) {
         return;
       }
-      const request: NoticesServedRequest = {
+      const request: RecordConsentServedRequest = {
         browser_identity: event.detail.identity,
         privacy_experience_id: privacyExperienceId,
         user_geography: userGeography,

@@ -1,77 +1,63 @@
 import { h } from "preact";
 
+import { useMemo } from "preact/hooks";
 import DataUseToggle from "../DataUseToggle";
 import { PrivacyExperience } from "../../lib/consent-types";
-import { TCFPurposeRecord } from "../../lib/tcf/types";
+import {
+  PurposeRecord,
+  TCFPurposeConsentRecord,
+  TCFPurposeLegitimateInterestsRecord,
+} from "../../lib/tcf/types";
 import { UpdateEnabledIds } from "./TcfOverlay";
-import LegalBasisDropdown, {
-  useLegalBasisDropdown,
-} from "./LegalBasisDropdown";
+import DoubleToggleTable from "./DoubleToggleTable";
+import { getUniquePurposeRecords } from "../../lib/tcf/purposes";
 
-const PurposeToggle = ({
-  purpose,
-  onToggle,
-  checked,
-  includeToggle = true,
-}: {
-  purpose: TCFPurposeRecord;
-  onToggle: () => void;
-  checked: boolean;
-  includeToggle?: boolean;
-}) => {
-  const dataUse = { key: purpose.name, name: purpose.name };
+type TCFPurposeRecord =
+  | TCFPurposeConsentRecord
+  | TCFPurposeLegitimateInterestsRecord;
+
+const PurposeDetails = ({ purpose }: { purpose: TCFPurposeRecord }) => {
   const vendors = [...(purpose.vendors || []), ...(purpose.systems || [])];
   return (
-    <DataUseToggle
-      dataUse={dataUse}
-      checked={checked}
-      onToggle={onToggle}
-      includeToggle={includeToggle}
-    >
-      <div>
-        <p className="fides-tcf-toggle-content">{purpose.description}</p>
-        {purpose.illustrations.map((illustration) => (
-          <p className="fides-tcf-illustration fides-background-dark">
-            {illustration}
-          </p>
-        ))}
+    <div>
+      <p className="fides-tcf-toggle-content">{purpose.description}</p>
+      {purpose.illustrations.map((illustration) => (
+        <p className="fides-tcf-illustration fides-background-dark">
+          {illustration}
+        </p>
+      ))}
 
-        {vendors.length ? (
-          <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
-            <span className="fides-tcf-purpose-vendor-title">
-              Vendors we use for this purpose
-              <span>{vendors.length} vendor(s)</span>
-            </span>
-            <ul className="fides-tcf-purpose-vendor-list">
-              {vendors.map((v) => (
-                <li>{v.name}</li>
-              ))}
-            </ul>
-          </p>
-        ) : null}
-      </div>
-    </DataUseToggle>
+      {vendors.length ? (
+        <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
+          <span className="fides-tcf-purpose-vendor-title">
+            Vendors we use for this purpose
+            <span>{vendors.length} vendor(s)</span>
+          </span>
+          <ul className="fides-tcf-purpose-vendor-list">
+            {vendors.map((v) => (
+              <li>{v.name}</li>
+            ))}
+          </ul>
+        </p>
+      ) : null}
+    </div>
   );
 };
 
-const PurposeBlock = ({
+const SpecialPurposeBlock = ({
   label,
-  allPurposes,
+  allSpecialPurposes = [],
   enabledIds,
   onChange,
   hideToggles,
 }: {
   label: string;
-  allPurposes: TCFPurposeRecord[] | undefined;
+  allSpecialPurposes: TCFPurposeConsentRecord[] | undefined;
   enabledIds: string[];
   onChange: (newIds: string[]) => void;
   hideToggles?: boolean;
 }) => {
-  if (!allPurposes || allPurposes.length === 0) {
-    return null;
-  }
-
-  const allChecked = allPurposes.every(
+  const allChecked = allSpecialPurposes.every(
     (p) => enabledIds.indexOf(`${p.id}`) !== -1
   );
   const handleToggle = (purpose: TCFPurposeRecord) => {
@@ -86,7 +72,7 @@ const PurposeBlock = ({
     if (allChecked) {
       onChange([]);
     } else {
-      onChange(allPurposes.map((p) => `${p.id}`));
+      onChange(allSpecialPurposes.map((p) => `${p.id}`));
     }
   };
 
@@ -99,56 +85,66 @@ const PurposeBlock = ({
         isHeader
         includeToggle={!hideToggles}
       />
-      {allPurposes.map((p) => (
-        <PurposeToggle
-          purpose={p}
-          onToggle={() => {
-            handleToggle(p);
-          }}
-          checked={enabledIds.indexOf(`${p.id}`) !== -1}
-          includeToggle={!hideToggles}
-        />
-      ))}
+      {allSpecialPurposes.map((p) => {
+        const dataUse = { key: p.name, name: p.name };
+        return (
+          <DataUseToggle
+            dataUse={dataUse}
+            checked={enabledIds.indexOf(`${p.id}`) !== -1}
+            onToggle={() => {
+              handleToggle(p);
+            }}
+            includeToggle={!hideToggles}
+          >
+            <PurposeDetails purpose={p} />
+          </DataUseToggle>
+        );
+      })}
     </div>
   );
 };
 
 const TcfPurposes = ({
-  allPurposes,
+  allPurposesConsent = [],
+  allPurposesLegint = [],
   allSpecialPurposes,
-  enabledPurposeIds,
+  enabledPurposeConsentIds,
+  enabledPurposeLegintIds,
   enabledSpecialPurposeIds,
   onChange,
 }: {
-  allPurposes: PrivacyExperience["tcf_purposes"];
+  allPurposesConsent: TCFPurposeConsentRecord[] | undefined;
+  enabledPurposeConsentIds: string[];
   allSpecialPurposes: PrivacyExperience["tcf_special_purposes"];
-  enabledPurposeIds: string[];
+  allPurposesLegint: TCFPurposeLegitimateInterestsRecord[] | undefined;
+  enabledPurposeLegintIds: string[];
   enabledSpecialPurposeIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
 }) => {
-  const { filtered, legalBasisFilter, setLegalBasisFilter } =
-    useLegalBasisDropdown({
-      allPurposes,
-      allSpecialPurposes,
-    });
+  const { uniquePurposes } = useMemo(
+    () =>
+      getUniquePurposeRecords({
+        consentPurposes: allPurposesConsent,
+        legintPurposes: allPurposesLegint,
+      }),
+    [allPurposesConsent, allPurposesLegint]
+  );
 
   return (
     <div>
-      <LegalBasisDropdown
-        selected={legalBasisFilter}
-        onSelect={(basis) => setLegalBasisFilter(basis)}
+      <DoubleToggleTable<PurposeRecord>
+        title="Purposes"
+        items={uniquePurposes}
+        enabledConsentIds={enabledPurposeConsentIds}
+        enabledLegintIds={enabledPurposeLegintIds}
+        onToggle={onChange}
+        renderToggleChild={(purpose) => <PurposeDetails purpose={purpose} />}
+        consentModelType="purposesConsent"
+        legintModelType="purposesLegint"
       />
-      <PurposeBlock
-        label="Purposes"
-        allPurposes={filtered.purposes as TCFPurposeRecord[]}
-        enabledIds={enabledPurposeIds}
-        onChange={(newEnabledIds) =>
-          onChange({ newEnabledIds, modelType: "purposes" })
-        }
-      />
-      <PurposeBlock
+      <SpecialPurposeBlock
         label="Special purposes"
-        allPurposes={filtered.specialPurposes as TCFPurposeRecord[]}
+        allSpecialPurposes={allSpecialPurposes}
         enabledIds={enabledSpecialPurposeIds}
         onChange={(newEnabledIds) =>
           onChange({ newEnabledIds, modelType: "specialPurposes" })
