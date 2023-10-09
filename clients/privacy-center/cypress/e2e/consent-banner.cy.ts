@@ -5,7 +5,7 @@ import {
   ConsentMethod,
   ConsentOptionCreate,
   FidesCookie,
-  LastServedNoticeSchema,
+  LastServedConsentSchema,
   UserConsentPreference,
 } from "fides-js";
 
@@ -1565,7 +1565,7 @@ describe("Consent banner", () => {
         cy.wait("@patchPrivacyPreference").then((preferenceInterception) => {
           const { preferences } = preferenceInterception.request.body;
           const expected = interception.response?.body.map(
-            (s: LastServedNoticeSchema) => s.served_notice_history_id
+            (s: LastServedConsentSchema) => s.served_notice_history_id
           );
           expect(
             preferences.map(

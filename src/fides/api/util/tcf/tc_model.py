@@ -2,12 +2,15 @@ import re
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
-from fideslang.models import LegalBasisForProcessingEnum
 from pydantic import Field, NonNegativeInt, PositiveInt, root_validator, validator
 
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
+from fides.api.schemas.tcf import (
+    TCFSpecialFeatureRecord,
+    TCFVendorConsentRecord,
+    TCFVendorLegitimateInterestsRecord,
+)
 from fides.api.util.tcf.tcf_experience_contents import TCFExperienceContents, load_gvl
 
 CMP_ID: int = 407
@@ -270,7 +273,8 @@ def _validate_vendor_legal_basis_fields(
 
 
 def _build_vendor_consents_and_legitimate_interests(
-    vendors: List[TCFVendorRecord],
+    vendor_consents: List[TCFVendorConsentRecord],
+    vendor_legitimate_interests: List[TCFVendorLegitimateInterestsRecord],
 ) -> Tuple[List, List]:
     """Construct the vendor_consents and vendor_legitimate_interests sections
     Only add the vendor id to the vendor consents list if one of its purposes
@@ -279,64 +283,46 @@ def _build_vendor_consents_and_legitimate_interests(
     Later, in the TCModel construction, we validate if the vendor is allowed to have
     this legal basis
     """
-    vendor_consents: List[int] = []
-    vendor_legitimate_interests: List[int] = []
+    vendor_consent_ids: List[int] = []
+    vendor_legitimate_interest_ids: List[int] = []
 
-    for vendor in vendors:
+    for vendor_consent in vendor_consents:
         try:
-            int(vendor.id)
+            int(vendor_consent.id)
         except ValueError:
             # Early check that filters out non-integer vendor ids.  Later we'll run a separate
             # check that ensures this id is also in the gvl.
             continue
 
-        consent_purpose_ids: List[int] = [
-            purpose.id
-            for purpose in vendor.purposes
-            if LegalBasisForProcessingEnum.CONSENT.value in purpose.legal_bases
-        ]
-        if consent_purpose_ids:
-            vendor_consents.append(int(vendor.id))
+        if vendor_consent.purpose_consents:
+            # This vendor should only be in "vendor_consents" in the first place, if consent_purposes is populated.
+            # This is just to check
+            vendor_consent_ids.append(int(vendor_consent.id))
+
+    for vendor_legitimate_interest in vendor_legitimate_interests:
+        try:
+            int(vendor_legitimate_interest.id)
+        except ValueError:
+            # Early check that filters out non-integer vendor ids.  Later we'll run a separate
+            # check that ensures this id is also in the gvl.
+            continue
 
         leg_int_purpose_ids: List[int] = [
             purpose.id
-            for purpose in vendor.purposes
-            if LegalBasisForProcessingEnum.LEGITIMATE_INTEREST.value
-            in purpose.legal_bases
+            for purpose in vendor_legitimate_interest.purpose_legitimate_interests
         ]
 
         # Ensure vendor doesn't have forbidden legint purpose set
         if leg_int_purpose_ids and not bool(
             set(leg_int_purpose_ids) & set(FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS)
         ):
-            vendor_legitimate_interests.append(int(vendor.id))
+            vendor_legitimate_interest_ids.append(int(vendor_legitimate_interest.id))
 
-    return vendor_consents, vendor_legitimate_interests
-
-
-def _build_purpose_consent_and_legitimate_interests(
-    purposes: List[TCFPurposeRecord],
-) -> Tuple[List, List]:
-    """Construct the purpose_consents and purpose_legitimate_interests sections"""
-
-    purpose_consents: List[int] = []
-    purpose_legitimate_interests: List[int] = []
-
-    for purpose in purposes:
-        if LegalBasisForProcessingEnum.CONSENT.value in purpose.legal_bases:
-            purpose_consents.append(purpose.id)
-
-        if (
-            LegalBasisForProcessingEnum.LEGITIMATE_INTEREST.value in purpose.legal_bases
-            and purpose.id not in FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS
-        ):
-            purpose_legitimate_interests.append(purpose.id)
-
-    return purpose_consents, purpose_legitimate_interests
+    return vendor_consent_ids, vendor_legitimate_interest_ids
 
 
 def _build_special_feature_opt_ins(
-    special_features: List[TCFFeatureRecord],
+    special_features: List[TCFSpecialFeatureRecord],
 ) -> List[int]:
     """Construct the special_feature_opt_ins section"""
     special_feature_opt_ins: List[int] = []
@@ -346,7 +332,7 @@ def _build_special_feature_opt_ins(
     return special_feature_opt_ins
 
 
-def _build_vendors_disclosed(vendors: List[TCFVendorRecord]) -> List[int]:
+def _build_vendors_disclosed(tcf_contents: TCFExperienceContents) -> List[int]:
     """
     Returns the vendor ids that we surface in the TCF Experience, provided they show up in the GVL.
 
@@ -354,11 +340,20 @@ def _build_vendors_disclosed(vendors: List[TCFVendorRecord]) -> List[int]:
     given user by a CMP. It may be used by a CMP while storing TC Strings, but must not be included in the TC String
     when returned by the CMP API."""
     all_vendor_ids: List[str] = [vendor_id for vendor_id in gvl.get("vendors", {})]
-    return [
-        int(vendor.id)
-        for vendor in vendors
-        if str.isdigit(vendor.id) and vendor.id in all_vendor_ids
+    vendors_disclosed = set()
+
+    vendor_main_lists: List[List] = [
+        tcf_contents.tcf_vendor_consents,
+        tcf_contents.tcf_vendor_legitimate_interests,
+        tcf_contents.tcf_vendor_relationships,
     ]
+
+    for vendor_list in vendor_main_lists:
+        for vendor in vendor_list:
+            if str.isdigit(vendor.id) and vendor.id in all_vendor_ids:
+                vendors_disclosed.add(int(vendor.id))
+
+    return sorted(list(vendors_disclosed))
 
 
 def _get_epoch_time() -> int:
@@ -396,12 +391,16 @@ def convert_tcf_contents_to_tc_model(
     (
         vendor_consents,
         vendor_legitimate_interests,
-    ) = _build_vendor_consents_and_legitimate_interests(tcf_contents.tcf_vendors)
+    ) = _build_vendor_consents_and_legitimate_interests(
+        tcf_contents.tcf_vendor_consents, tcf_contents.tcf_vendor_legitimate_interests
+    )
 
-    (
-        purpose_consents,
-        purpose_legitimate_interests,
-    ) = _build_purpose_consent_and_legitimate_interests(tcf_contents.tcf_purposes)
+    purpose_consents: List[int] = [
+        purpose.id for purpose in tcf_contents.tcf_purpose_consents
+    ]
+    purpose_legitimate_interests: List[int] = [
+        purpose.id for purpose in tcf_contents.tcf_purpose_legitimate_interests
+    ]
 
     special_feature_opt_ins: List[int] = _build_special_feature_opt_ins(
         tcf_contents.tcf_special_features
@@ -422,7 +421,7 @@ def convert_tcf_contents_to_tc_model(
         purpose_legitimate_interests=purpose_legitimate_interests if consented else [],
         vendor_consents=vendor_consents if consented else [],
         vendor_legitimate_interests=vendor_legitimate_interests if consented else [],
-        vendors_disclosed=_build_vendors_disclosed(tcf_contents.tcf_vendors),
+        vendors_disclosed=_build_vendors_disclosed(tcf_contents),
     )
 
     return tc_model
