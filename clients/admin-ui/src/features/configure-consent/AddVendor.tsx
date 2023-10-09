@@ -101,7 +101,7 @@ const AddVendor = ({
     helpers: FormikHelpers<FormValues>
   ) => {
     const transformedDeclarations = values.privacy_declarations
-      .filter((dec) => dec.data_use !== EMPTY_DECLARATION.data_use)
+      .filter((dec) => dec.consent_use !== EMPTY_DECLARATION.consent_use)
       .map((dec) => {
         // if a cookie from the form already exists on the declaration with full
         // information from the dictionary, use that; otherwise, make the cookie
@@ -112,7 +112,13 @@ const AddVendor = ({
         });
 
         const { cookieNames, ...rest } = dec;
-        return { ...rest, cookies: transformedCookies };
+        const final = {
+          ...rest,
+          data_use: dec.data_use ? dec.data_use : dec.consent_use,
+          cookies: transformedCookies,
+        };
+        console.log(final);
+        return final;
       });
 
     // We use vendor_id to potentially store a new system name
@@ -136,7 +142,8 @@ const AddVendor = ({
     };
 
     const result = passedInSystem
-      ? await updateSystemMutationTrigger(payload)
+      ? //@ts-ignore
+        await updateSystemMutationTrigger(payload)
       : await createSystemMutationTrigger(payload);
 
     if (isErrorResult(result)) {

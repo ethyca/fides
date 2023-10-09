@@ -1,6 +1,7 @@
-import { Button, Spinner, VStack } from "@fidesui/react";
+import { Button, Collapse, Spinner, VStack, Text, Box } from "@fidesui/react";
 import { FieldArray, useFormikContext } from "formik";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { consentUseOptions } from "./constants";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -27,8 +28,17 @@ const DataUseBlock = ({
   index: number;
   isSuggestion: boolean;
 }) => {
-  const dataUseOptions = useAppSelector(selectDataUseOptions);
+  const allDataUseOptions = useAppSelector(selectDataUseOptions);
   const textColor = isSuggestion ? "complimentary.500" : "gray.800";
+
+  const { values } = useFormikContext<FormValues>();
+
+  const detailedDataUseOptions = allDataUseOptions.filter(
+    (o) =>
+      o.value.split(".")[0] === values.privacy_declarations[index].consent_use
+  );
+
+  console.log(detailedDataUseOptions);
 
   return (
     <VStack
@@ -42,10 +52,24 @@ const DataUseBlock = ({
       <CustomSelect
         label="Data use"
         tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
-        name={`privacy_declarations.${index}.data_use`}
-        options={dataUseOptions}
+        name={`privacy_declarations.${index}.consent_use`}
+        options={consentUseOptions}
         variant="stacked"
+        isRequired
+        isCustomOption
+        singleValueBlock
         textColor={textColor}
+      />
+      <CustomSelect
+        label="Detailed data use (optional)"
+        tooltip="Select a more specific data use"
+        name={`privacy_declarations.${index}.data_use`}
+        options={detailedDataUseOptions}
+        variant="stacked"
+        isCustomOption
+        singleValueBlock
+        textColor={textColor}
+        isDisabled={!values.privacy_declarations[index].consent_use}
       />
       <CustomCreatableSelect
         label="Cookie names"
