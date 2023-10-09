@@ -1,9 +1,9 @@
 import { h, FunctionComponent, ComponentChildren } from "preact";
+import { useEffect } from "react";
 import { getConsentContext } from "../lib/consent-context";
 import { ExperienceConfig } from "../lib/consent-types";
 import CloseButton from "./CloseButton";
 import { GpcBadge } from "./GpcBadge";
-import { useEffect } from "react";
 import ExperienceDescription from "./ExperienceDescription";
 
 interface BannerProps {

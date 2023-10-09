@@ -91,9 +91,9 @@ export const useConsentServed = ({
   privacyExperience: PrivacyExperience;
   acknowledgeMode?: boolean;
 }) => {
-  const [servedNotices, setServedNotices] = useState<
-    LastServedConsentSchema[] | undefined
-  >(undefined);
+  const [servedNotices, setServedNotices] = useState<LastServedConsentSchema[]>(
+    []
+  );
 
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
@@ -117,16 +117,27 @@ export const useConsentServed = ({
         privacy_notice_history_ids: notices.map(
           (n) => n.privacy_notice_history_id
         ),
-        tcf_purposes: extractIds(privacyExperience?.tcf_purposes),
+        tcf_purpose_consents: extractIds(
+          privacyExperience?.tcf_purpose_consents
+        ),
+        tcf_purpose_legitimate_interests: extractIds(
+          privacyExperience.tcf_purpose_legitimate_interests
+        ),
         tcf_special_purposes: extractIds(
           privacyExperience?.tcf_special_purposes
         ),
-        tcf_vendors: extractIds(privacyExperience?.tcf_vendors),
+        tcf_vendor_consents: extractIds(privacyExperience?.tcf_vendor_consents),
+        tcf_vendor_legitimate_interests: extractIds(
+          privacyExperience.tcf_vendor_legitimate_interests
+        ),
         tcf_features: extractIds(privacyExperience?.tcf_features),
         tcf_special_features: extractIds(
           privacyExperience?.tcf_special_features
         ),
-        tcf_systems: extractIds(privacyExperience?.tcf_systems),
+        tcf_system_consents: extractIds(privacyExperience?.tcf_system_consents),
+        tcf_system_legitimate_interests: extractIds(
+          privacyExperience?.tcf_purpose_legitimate_interests
+        ),
         serving_component: event.detail.extraDetails.servingComponent,
       };
       const result = await patchNoticesServed({
