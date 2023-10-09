@@ -234,6 +234,7 @@ button.fides-banner-button {
   background: var(--fides-overlay-primary-button-background-color);
   color: var(--fides-overlay-primary-button-text-color);
   border: 1px solid;
+  border-radius: var(--fides-overlay-button-border-radius);
 
   font-family: inherit;
   line-height: 1.15;
@@ -249,7 +250,6 @@ button.fides-banner-button.fides-banner-button-primary {
   background: var(--fides-overlay-primary-button-background-color);
   color: var(--fides-overlay-primary-button-text-color);
   border: none;
-  border-radius: var(--fides-overlay-button-border-radius);
 }
 
 button.fides-banner-button.fides-banner-button-primary:hover {
@@ -260,7 +260,6 @@ button.fides-banner-button.fides-banner-button-secondary {
   background: var(--fides-overlay-secondary-button-background-color);
   color: var(--fides-overlay-secondary-button-text-color);
   border: 1px solid var(--fides-overlay-primary-button-background-color);
-  border-radius: var(--fides-overlay-button-border-radius);
 }
 
 button.fides-banner-button.fides-banner-button-secondary:hover {
