@@ -163,6 +163,7 @@ div#fides-tcf-banner-inner {
   min-height: 100%;
   margin-top: 3em;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 /* Responsive banner */
@@ -549,7 +550,6 @@ div#fides-banner-inner .fides-privacy-policy {
   align-items: center;
   display: flex;
   width: 100%;
-  justify-content: space-between;
 }
 
 .fides-notice-toggle-expanded {
@@ -829,9 +829,9 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-all-on-off-buttons {
   display: flex;
   justify-content: end;
-  margin-bottom: 1em;
-}
+  margin-bottom: 8px;
 
-.fides-all-on-button {
-  margin-right: 0.9em;
+  > button {
+    margin-right: 12px;
+  }
 }

@@ -1,4 +1,4 @@
-import { h } from "preact";
+import { VNode, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { Vendor } from "@iabtechlabtcf/core";
 import {
@@ -188,11 +188,13 @@ const TcfVendors = ({
   enabledVendorConsentIds,
   enabledVendorLegintIds,
   onChange,
+  allOnOffButtons,
 }: {
   experience: PrivacyExperience;
   enabledVendorConsentIds: string[];
   enabledVendorLegintIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
+  allOnOffButtons: VNode;
 }) => {
   const [isFiltered, setIsFiltered] = useState(false);
 
@@ -222,6 +224,7 @@ const TcfVendors = ({
   return (
     <div>
       <FilterButtons filters={FILTERS} onChange={handleFilter} />
+      {allOnOffButtons}
       <DoubleToggleTable<VendorRecord>
         title="Vendors"
         items={vendorsToDisplay}
