@@ -7,6 +7,11 @@ import {
   VendorRecord,
 } from "./types";
 
+enum VendorSouces {
+  GVL = "gvl",
+  AC = "ac",
+}
+
 export const vendorIsGvl = (
   vendor: Pick<TCFVendorRelationships, "id">,
   gvl: GVLJson | undefined
@@ -16,6 +21,20 @@ export const vendorIsGvl = (
   }
   return gvl.vendors[vendor.id];
 };
+
+/**
+ * Given a vendor id such as `gvl.2`, return {source: "gvl", id: "2"};
+ */
+export const decodeVendorId = (vendorId: TCFVendorRelationships["id"]) => {
+  const split = vendorId.split(".");
+  if (split.length === 1) {
+    return { source: undefined, id: split[0] };
+  }
+  return { source: split[0], id: split[1] };
+};
+
+export const vendorIsAc = (vendorId: TCFVendorRelationships["id"]) =>
+  decodeVendorId(vendorId).source === VendorSouces.AC;
 
 const transformVendorDataToVendorRecords = ({
   consents,

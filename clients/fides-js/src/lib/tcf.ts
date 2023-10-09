@@ -10,12 +10,40 @@ import { TCModel, TCString, GVL } from "@iabtechlabtcf/core";
 import { makeStub } from "./tcf/stub";
 
 import { EnabledIds } from "./tcf/types";
-import { vendorIsGvl } from "./tcf/vendors";
+import { vendorIsAc, vendorIsGvl } from "./tcf/vendors";
 import { PrivacyExperience } from "./consent-types";
 
+// TCF
 const CMP_ID = 407;
 const CMP_VERSION = 1;
 const FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6];
+
+// AC
+const AC_SPECIFICATION_VERSION = 1;
+
+// Fides
+const FIDES_SEPARATOR = ",";
+
+/**
+ * Generate an AC String based on TCF-related info from privacy experience.
+ */
+const generateAcString = ({
+  tcStringPreferences,
+}: {
+  tcStringPreferences: Pick<EnabledIds, "vendorsConsent" | "vendorsLegint">;
+}) => {
+  const uniqueIds = Array.from(
+    new Set(
+      [
+        ...tcStringPreferences.vendorsConsent,
+        ...tcStringPreferences.vendorsLegint,
+      ].filter((id) => vendorIsAc(id))
+    )
+  );
+  const vendorIds = uniqueIds.join(".");
+
+  return `${AC_SPECIFICATION_VERSION}~${vendorIds}`;
+};
 
 /**
  * Generate TC String based on TCF-related info from privacy experience.
@@ -109,6 +137,10 @@ export const generateTcString = async ({
       // See https://iabeurope.eu/iab-europe-transparency-consent-framework-policies/
       // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/issues/63#issuecomment-581798996
       encodedString = TCString.encode(tcModel);
+
+      // Attach the AC string
+      const acString = generateAcString({ tcStringPreferences });
+      encodedString = `${encodedString}${FIDES_SEPARATOR}${acString}`;
     }
   } catch (e) {
     // eslint-disable-next-line no-console
