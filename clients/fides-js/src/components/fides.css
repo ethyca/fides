@@ -45,7 +45,7 @@
   --fides-overlay-row-hover-color: var(--fides-overlay-hover-color);
   /* Badge */
   --fides-overlay-badge-background-color: #718096;
-  --fides-overlay-badge-border-radius: 2px;
+  --fides-overlay-badge-border-radius: 4px;
   /* Select */
   --fides-overlay-select-border-color: #e2e8f0;
 
@@ -591,7 +591,7 @@ div#fides-banner-inner .fides-privacy-policy {
   text-transform: uppercase;
   padding: 0 4px;
   font-weight: 700;
-  border-radius: 4px;
+  border-radius: var(--fides-overlay-badge-border-radius);
 }
 
 .fides-gpc-badge-applied,
