@@ -52,7 +52,7 @@ import { shopify } from "./integrations/shopify";
 
 import { FidesConfig, PrivacyExperience } from "./lib/consent-types";
 
-import { tcf } from "./lib/tcf";
+import { initializeCmpApi } from "./lib/tcf";
 import {
   getInitialCookie,
   getInitialFides,
@@ -103,6 +103,8 @@ const updateCookie = async (
 const init = async (config: FidesConfig) => {
   const cookie = getInitialCookie(config);
   const initialFides = getInitialFides({ ...config, cookie });
+  // Initialize the CMP API early so that listeners are established
+  initializeCmpApi();
   if (initialFides) {
     Object.assign(_Fides, initialFides);
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
@@ -126,8 +128,6 @@ const init = async (config: FidesConfig) => {
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
   }
   dispatchFidesEvent("FidesUpdated", cookie, config.options.debug);
-
-  tcf();
 };
 
 // The global Fides object; this is bound to window.Fides if available

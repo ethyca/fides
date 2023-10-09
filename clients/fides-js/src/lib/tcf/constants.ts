@@ -1,5 +1,7 @@
 import { TcfExperienceRecords, TcfModelType } from "./types";
 
+export const FIDES_SEPARATOR = ",";
+
 export const TCF_COOKIE_KEY_TO_EXPERIENCE_KEY: {
   cookieKey: TcfModelType;
   experienceKey: keyof TcfExperienceRecords;
