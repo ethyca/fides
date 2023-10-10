@@ -649,7 +649,6 @@ export const CustomSelect = ({
             menuPosition={props.menuPosition}
             textColor={textColor}
             onChange={!isFormikOnChange ? onChange : undefined}
-            // onChange={() => console.log("changed")}
           />
         </Box>
         <ErrorMessage

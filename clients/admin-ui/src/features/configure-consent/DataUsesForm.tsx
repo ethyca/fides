@@ -93,6 +93,11 @@ const DataUsesForm = ({ showSuggestions }: { showSuggestions: boolean }) => {
   useEffect(() => {
     if (showSuggestions && values.vendor_id && dictDataUses?.length) {
       const declarations: MinimalPrivacyDeclaration[] = dictDataUses
+        .filter((du) =>
+          ["analytics, essential, functional, marketing"].includes(
+            du.data_use.split(".")[0]
+          )
+        )
         .map((d) => transformDictDataUseToDeclaration(d))
         .map((d) => ({
           name: d.name ?? "",

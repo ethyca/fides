@@ -148,6 +148,19 @@ const AddVendor = ({
           cookies: transformedCookies,
         };
       });
+    // if editing and the system has existing data uses not shown on form
+    // due to not being consent uses, include those in the payload
+    const declarationsToSave = passedInSystem
+      ? [
+          ...passedInSystem.privacy_declarations.filter(
+            (du) =>
+              !["analytics, essential, functional, marketing"].includes(
+                du.data_use.split(".")[0]
+              )
+          ),
+          ...transformedDeclarations,
+        ]
+      : transformedDeclarations;
 
     // We use vendor_id to potentially store a new system name
     // so now we need to clear out vendor_id if it's not a system in the dictionary
@@ -166,7 +179,7 @@ const AddVendor = ({
       name: passedInSystem ? passedInSystem.name : newName,
       fides_key: passedInSystem ? passedInSystem.fides_key : formatKey(newName),
       system_type: passedInSystem ? passedInSystem.system_type : "",
-      privacy_declarations: transformedDeclarations,
+      privacy_declarations: declarationsToSave,
     };
 
     const result = passedInSystem
