@@ -1154,6 +1154,7 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherLegitimateInterests is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesConsents is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
+        assert tc_mobile_data.IABTCF_AddtlConsent is None
 
     @pytest.mark.usefixtures("captify_technologies_system")
     def test_build_reject_all_tc_data_for_mobile_consent_purposes_only(self, db):
@@ -1185,6 +1186,7 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherLegitimateInterests is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesConsents is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
+        assert tc_mobile_data.IABTCF_AddtlConsent is None
 
     @pytest.mark.usefixtures("skimbit_system")
     def test_build_accept_all_tc_data_for_mobile_with_legitimate_interest_purposes(
@@ -1221,6 +1223,7 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherLegitimateInterests is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesConsents is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
+        assert tc_mobile_data.IABTCF_AddtlConsent is None
 
     @pytest.mark.usefixtures("skimbit_system")
     def test_build_reject_all_tc_data_for_mobile_with_legitimate_interest_purposes(
@@ -1254,6 +1257,7 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherLegitimateInterests is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesConsents is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
+        assert tc_mobile_data.IABTCF_AddtlConsent is None
 
 
 class TestDecodeTcString:
