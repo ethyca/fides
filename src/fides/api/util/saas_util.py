@@ -43,7 +43,7 @@ def load_config_from_string(string: str) -> Dict:
         return yaml.safe_load(string)["saas_config"]
     except:
         raise ValidationError(
-            "Config contents do not contain a 'saas_config' key at the root level. For example, check formatting, specifically indentation"
+            "Config contents do not contain a 'saas_config' key at the root level. For example, check formatting, specifically indentation."
         )
 
 

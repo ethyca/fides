@@ -664,7 +664,7 @@ class TestRegisterConnectorTemplate:
                 "connector_template_wrong_contents_config",
                 400,
                 {
-                    "detail": "Config contents do not contain a 'saas_config' key at the root level."
+                    "detail": "Config contents do not contain a 'saas_config' key at the root level. For example, check formatting, specifically indentation."
                 },
             ),
             (
