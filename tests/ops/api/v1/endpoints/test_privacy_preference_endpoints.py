@@ -2667,4 +2667,5 @@ class TestSavePrivacyPreferencesTCStringOnly:
             "IABTCF_PublisherLegitimateInterests": None,
             "IABTCF_PublisherCustomPurposesConsents": None,
             "IABTCF_PublisherCustomPurposesLegitimateInterests": None,
+            "IABTCF_AddtlConsent": None,
         }
