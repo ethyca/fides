@@ -98,25 +98,27 @@ const TcfTabs = ({
             exercise you consent for each vendor based on the legal basis they
             assert.
           </InfoBox>
-          <AllOnOffButtons
-            enabledIds={enabledIds}
-            onChange={onChange}
-            modelTypeMappings={{
-              vendorsConsent: [
-                ...(experience.tcf_vendor_consents || []),
-                ...(experience.tcf_system_consents || []),
-              ],
-              vendorsLegint: [
-                ...(experience.tcf_vendor_legitimate_interests || []),
-                ...(experience.tcf_system_legitimate_interests || []),
-              ],
-            }}
-          />
           <TcfVendors
             experience={experience}
             enabledVendorConsentIds={enabledIds.vendorsConsent}
             enabledVendorLegintIds={enabledIds.vendorsLegint}
             onChange={handleUpdateDraftState}
+            allOnOffButtons={
+              <AllOnOffButtons
+                enabledIds={enabledIds}
+                onChange={onChange}
+                modelTypeMappings={{
+                  vendorsConsent: [
+                    ...(experience.tcf_vendor_consents || []),
+                    ...(experience.tcf_system_consents || []),
+                  ],
+                  vendorsLegint: [
+                    ...(experience.tcf_vendor_legitimate_interests || []),
+                    ...(experience.tcf_system_legitimate_interests || []),
+                  ],
+                }}
+              />
+            }
           />
         </div>
       ),
