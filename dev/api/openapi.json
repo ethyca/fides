@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.21.1b0.post0.dev3"
+    "version": "2.21.1b2.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -23725,6 +23725,10 @@
           },
           "IABTCF_PublisherCustomPurposesLegitimateInterests": {
             "title": "Iabtcf Publishercustompurposeslegitimateinterests",
+            "type": "string"
+          },
+          "IABTCF_AddtlConsent": {
+            "title": "Iabtcf Addtlconsent",
             "type": "string"
           }
         },
