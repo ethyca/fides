@@ -136,7 +136,7 @@ export const useConsentServed = ({
         ),
         tcf_system_consents: extractIds(privacyExperience?.tcf_system_consents),
         tcf_system_legitimate_interests: extractIds(
-          privacyExperience?.tcf_purpose_legitimate_interests
+          privacyExperience?.tcf_system_legitimate_interests
         ),
         serving_component: event.detail.extraDetails.servingComponent,
       };
