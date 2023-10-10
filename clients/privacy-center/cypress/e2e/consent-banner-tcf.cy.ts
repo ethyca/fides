@@ -749,4 +749,158 @@ describe("Fides-js TCF", () => {
       });
     });
   });
+
+  describe("ac string", () => {
+    const AC_IDS = [42, 33, 49];
+    const acceptAllAcString = `1~${AC_IDS.join(".")}`;
+    const rejectAllAcString = "1~";
+    beforeEach(() => {
+      cy.fixture("consent/experience_tcf.json").then((payload) => {
+        const experience = payload.items[0];
+        // Add AC consent only vendors
+        const baseVendor = {
+          id: "2",
+          has_vendor_id: true,
+          name: "Test",
+          description: "A longer description",
+          default_preference: "opt_out",
+          current_preference: null,
+          outdated_preference: null,
+          current_served: null,
+          outdated_served: null,
+          purpose_consents: [
+            {
+              id: 4,
+              name: "Use profiles to select personalised advertising",
+            },
+          ],
+        };
+        AC_IDS.forEach((id) => {
+          experience.tcf_vendor_consents.push({
+            ...baseVendor,
+            id: `ac.${id}`,
+            name: `AC ${id}`,
+          });
+        });
+
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+          },
+          experience,
+        });
+      });
+      cy.get("#fides-modal-link").click();
+    });
+
+    it("can opt in to AC vendors and generate string", () => {
+      cy.get("#fides-tab-Vendors").click();
+      AC_IDS.forEach((id) => {
+        cy.getByTestId(`toggle-AC ${id}-consent`);
+      });
+      cy.get("section#fides-panel-Vendors").within(() => {
+        cy.get("button").contains("All on").click();
+      });
+      cy.get("button").contains("Save").click();
+      cy.wait("@patchPrivacyPreference").then((interception) => {
+        const { body } = interception.request;
+        const expected = [
+          { id: VENDOR_1.id, preference: "opt_in" },
+          ...AC_IDS.map((id) => ({ id: `ac.${id}`, preference: "opt_in" })),
+        ];
+        expect(body.vendor_consent_preferences).to.eql(expected);
+
+        // Check the cookie
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const cookieKeyConsent: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          const { fides_tc_string: tcString } = cookieKeyConsent;
+          const acString = tcString?.split(",")[1];
+          expect(acString).to.eql(acceptAllAcString);
+        });
+      });
+    });
+
+    it("can opt out of AC vendors and generate string", () => {
+      cy.get("#fides-tab-Vendors").click();
+      cy.get("section#fides-panel-Vendors").within(() => {
+        cy.get("button").contains("All off").click();
+      });
+      cy.get("button").contains("Save").click();
+      cy.wait("@patchPrivacyPreference").then((interception) => {
+        const { body } = interception.request;
+        const expected = [
+          { id: VENDOR_1.id, preference: "opt_out" },
+          ...AC_IDS.map((id) => ({ id: `ac.${id}`, preference: "opt_out" })),
+        ];
+        expect(body.vendor_consent_preferences).to.eql(expected);
+
+        // Check the cookie
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const cookieKeyConsent: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          const { fides_tc_string: tcString } = cookieKeyConsent;
+          const acString = tcString?.split(",")[1];
+          expect(acString).to.eql(rejectAllAcString);
+        });
+      });
+    });
+
+    it("can emit FidesEvent with composite string but CMP API without", () => {
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+      });
+      cy.get("#fides-tab-Vendors").click();
+      cy.get("section#fides-panel-Vendors").within(() => {
+        cy.get("button").contains("All on").click();
+      });
+      cy.get("button").contains("Save").click();
+      cy.wait("@patchPrivacyPreference");
+      cy.get("@FidesUpdated")
+        .should("have.been.calledTwice")
+        .its("secondCall.args.0.detail.fides_tc_string")
+        .then((fidesTcString) => {
+          const parts = fidesTcString.split(",");
+          expect(parts.length).to.eql(2);
+          expect(parts[1]).to.eql(acceptAllAcString);
+        });
+
+      cy.get("@TCFEvent")
+        .its("lastCall.args")
+        .then(([tcData, success]) => {
+          expect(success).to.eql(true);
+          expect(tcData.eventStatus).to.eql("useractioncomplete");
+          // This TC string should not be a composite—should just be the tc string
+          const { tcString } = tcData;
+          const parts = tcString.split(",");
+          expect(parts.length).to.eql(1);
+          expect(parts[0]).to.not.contain("1~");
+          // But we can still access the AC string via `addtlConsent`
+          expect(tcData.addtlConsent).to.eql(acceptAllAcString);
+        });
+    });
+
+    it("can get `addtlConsents` from getTCData custom function", () => {
+      cy.get("#fides-tab-Vendors").click();
+      cy.get("section#fides-panel-Vendors").within(() => {
+        cy.get("button").contains("All on").click();
+      });
+      cy.get("button").contains("Save").click();
+      cy.wait("@patchPrivacyPreference");
+      // Call getTCData
+      cy.window().then((win) => {
+        win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
+      });
+      cy.get("@getTCData")
+        .should("have.been.calledOnce")
+        .its("lastCall.args")
+        .then(([tcData, success]) => {
+          expect(success).to.eql(true);
+          expect(tcData.addtlConsent).to.eql(acceptAllAcString);
+        });
+    });
+  });
 });
