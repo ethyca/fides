@@ -279,3 +279,6 @@ class TCMobileData(FidesSchema):
     IABTCF_PublisherLegitimateInterests: Optional[str] = None
     IABTCF_PublisherCustomPurposesConsents: Optional[str] = None
     IABTCF_PublisherCustomPurposesLegitimateInterests: Optional[str] = None
+    IABTCF_AddtlConsent: Optional[
+        str
+    ] = None  # TODO: placholder for Google Additional Consent Mode string, needs to be populated!
