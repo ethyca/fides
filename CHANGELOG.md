@@ -32,6 +32,7 @@ The types of changes are:
 - Update frontend to use new legal basis dimension on vendors [#4216](https://github.com/ethyca/fides/pull/4216)
 - Updated privacy center patch preferences call to handle updated API response [#4235](https://github.com/ethyca/fides/pull/4235)
 - Added our CMP ID [#4233](https://github.com/ethyca/fides/pull/4233)
+- Allow Admin UI users to turn on Configure Consent flag [#4246](https://github.com/ethyca/fides/pull/4246)
 - Styling improvements for the fides.js consent banners and modals [#4222](https://github.com/ethyca/fides/pull/4222)
 
 ### Fixed

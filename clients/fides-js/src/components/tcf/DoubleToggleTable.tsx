@@ -82,9 +82,10 @@ const DoubleToggleTable = <T extends Item>({
     }
   };
 
-  const handleToggleIndividual = (item: T) => {
-    const enabledIds = item.isConsent ? enabledConsentIds : enabledLegintIds;
-    const modelType = item.isConsent ? consentModelType : legintModelType;
+  const handleToggleIndividual = (item: T, legalBasis: LegalBasisEnum) => {
+    const isConsent = legalBasis === LegalBasisEnum.CONSENT;
+    const enabledIds = isConsent ? enabledConsentIds : enabledLegintIds;
+    const modelType = isConsent ? consentModelType : legintModelType;
     const purposeId = `${item.id}`;
     if (enabledIds.indexOf(purposeId) !== -1) {
       onToggle({
@@ -138,7 +139,7 @@ const DoubleToggleTable = <T extends Item>({
             name: item.name,
           }}
           onToggle={() => {
-            handleToggleIndividual(item);
+            handleToggleIndividual(item, LegalBasisEnum.LEGITIMATE_INTERESTS);
           }}
           checked={enabledLegintIds.indexOf(`${item.id}`) !== -1}
           badge={renderBadgeLabel ? renderBadgeLabel(item) : undefined}
@@ -149,7 +150,9 @@ const DoubleToggleTable = <T extends Item>({
                   name={`${item.name}-consent`}
                   id={`${item.id}-consent`}
                   checked={enabledConsentIds.indexOf(`${item.id}`) !== -1}
-                  onChange={() => handleToggleIndividual(item)}
+                  onChange={() =>
+                    handleToggleIndividual(item, LegalBasisEnum.CONSENT)
+                  }
                 />
               ) : null}
             </div>
