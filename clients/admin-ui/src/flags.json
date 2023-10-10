@@ -23,7 +23,7 @@
     "development": true,
     "test": true,
     "production": false,
-    "userCannotModify": true
+    "userCannotModify": false
   },
   "standaloneConnections": {
     "description": "Allow the creation of standalone connections for testing",
