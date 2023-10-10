@@ -86,7 +86,7 @@ const updateCookie = async (
 ): Promise<FidesCookie> => {
   // First check if the user has never consented before
   if (!hasSavedTcfPreferences(experience)) {
-    return { ...oldCookie, tc_string: "" };
+    return { ...oldCookie, fides_tc_string: "" };
   }
 
   // Usually at this point, we'd look at the Experience from the backend and update

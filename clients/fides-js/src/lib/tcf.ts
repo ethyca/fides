@@ -155,7 +155,7 @@ export const generateTcString = async ({
  * `vendors_disclosed` and our own AC string addition.
  */
 const fidesEventToTcString = (event: FidesEvent) => {
-  const { tc_string: cookieString } = event.detail;
+  const { fides_tc_string: cookieString } = event.detail;
   if (cookieString) {
     // Remove the AC portion which is separated by FIDES_SEPARATOR
     const [tcString] = cookieString.split(FIDES_SEPARATOR);
@@ -181,7 +181,8 @@ export const initializeCmpApi = () => {
       /*
        * If using with 'removeEventListener' command, add a check to see if tcData is not a boolean. */
       if (typeof tcData !== "boolean") {
-        const stringSplit = window.Fides.tc_string?.split(FIDES_SEPARATOR);
+        const stringSplit =
+          window.Fides.fides_tc_string?.split(FIDES_SEPARATOR);
         const addtlConsent = stringSplit?.length === 2 ? stringSplit[1] : "";
         next({ ...tcData, addtlConsent }, status);
       }
