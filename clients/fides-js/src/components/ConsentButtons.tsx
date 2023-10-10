@@ -1,4 +1,4 @@
-import { h, VNode } from "preact";
+import { ComponentChildren, h, VNode } from "preact";
 import Button from "./Button";
 import {
   ButtonType,
@@ -12,18 +12,24 @@ export const ConsentButtons = ({
   experienceConfig,
   onManagePreferencesClick,
   firstButton,
+  middleButton,
   onAcceptAll,
   onRejectAll,
+  children,
 }: {
   experienceConfig: ExperienceConfig;
   onManagePreferencesClick?: () => void;
   firstButton?: VNode;
+  /** Used to add a button between the "manage preferences" button and the "accept/reject" buttons */
+  middleButton?: VNode;
   onAcceptAll: () => void;
   onRejectAll: () => void;
+  /** Added as siblings to the button group after the "accept/reject" buttons */
+  children?: ComponentChildren;
 }) => (
   <div id="fides-button-group">
     {onManagePreferencesClick ? (
-      <div>
+      <div style={{ display: "flex" }}>
         <Button
           buttonType={ButtonType.TERTIARY}
           label={experienceConfig.privacy_preferences_link_label}
@@ -31,7 +37,12 @@ export const ConsentButtons = ({
         />
       </div>
     ) : null}
-    <div className={firstButton ? "fides-modal-button-group" : undefined}>
+    {middleButton || null}
+    <div
+      className={
+        firstButton ? "fides-modal-button-group" : "fides-banner-button-group"
+      }
+    >
       {firstButton || null}
       <Button
         buttonType={ButtonType.PRIMARY}
@@ -44,6 +55,7 @@ export const ConsentButtons = ({
         onClick={onAcceptAll}
       />
     </div>
+    {children}
   </div>
 );
 
@@ -56,6 +68,8 @@ interface NoticeConsentButtonProps {
   enabledKeys: NoticeKeys;
   isAcknowledge: boolean;
   isInModal?: boolean;
+  children?: ComponentChildren;
+  middleButton?: VNode;
 }
 
 export const NoticeConsentButtons = ({
@@ -65,6 +79,8 @@ export const NoticeConsentButtons = ({
   enabledKeys,
   isInModal,
   isAcknowledge,
+  children,
+  middleButton,
 }: NoticeConsentButtonProps) => {
   if (!experience.experience_config || !experience.privacy_notices) {
     return null;
@@ -118,6 +134,9 @@ export const NoticeConsentButtons = ({
           />
         ) : undefined
       }
-    />
+      middleButton={middleButton}
+    >
+      {children}
+    </ConsentButtons>
   );
 };
