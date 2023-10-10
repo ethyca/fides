@@ -106,6 +106,7 @@ export const PRIVACY_NOTICE_REGION_RECORD: Record<PrivacyNoticeRegion, string> =
     [PrivacyNoticeRegion.CA_NT]: "Northwest Territories (Canada)",
     [PrivacyNoticeRegion.CA_NU]: "Nunavut (Canada)",
     [PrivacyNoticeRegion.CA_YT]: "Yukon (Canada)",
+    [PrivacyNoticeRegion.EEA]: "European Economic Area",
   };
 
 export const PRIVACY_NOTICE_REGION_MAP = new Map(

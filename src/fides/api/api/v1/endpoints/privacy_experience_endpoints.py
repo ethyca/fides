@@ -18,7 +18,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.models.consent_settings import ConsentSettings
 from fides.api.models.privacy_experience import (
     ComponentType,
     PrivacyExperience,
@@ -37,7 +36,7 @@ from fides.api.util.consent_util import (
 from fides.api.util.endpoint_utils import fides_limiter, transform_fields
 from fides.api.util.tcf.experience_meta import build_experience_tcf_meta
 from fides.api.util.tcf.tcf_experience_contents import (
-    TCF_COMPONENT_MAPPING,
+    TCF_SECTION_MAPPING,
     TCFExperienceContents,
     get_tcf_contents,
     load_gvl,
@@ -110,8 +109,7 @@ def _filter_experiences_by_region_or_country(
         experience_ids.append(privacy_center.id)
 
     # Only return TCF overlay or a regular overlay here; not both
-    consent_settings: ConsentSettings = ConsentSettings.get_or_create_with_defaults(db)
-    if consent_settings.tcf_enabled and tcf_overlay:
+    if CONFIG.consent.tcf_enabled and tcf_overlay:
         experience_ids.append(tcf_overlay.id)
     elif overlay:
         experience_ids.append(overlay.id)
@@ -285,7 +283,7 @@ def embed_experience_details(
     privacy_experience.privacy_notices = []
     privacy_experience.meta = {}
     privacy_experience.gvl = {}
-    for component in TCF_COMPONENT_MAPPING:
+    for component in TCF_SECTION_MAPPING:
         setattr(privacy_experience, component, [])
 
     # Updates Privacy Experience in-place with TCF Contents if applicable, and then returns

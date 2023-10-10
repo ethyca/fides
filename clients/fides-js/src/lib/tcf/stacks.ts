@@ -1,4 +1,4 @@
-import { TCFFeatureRecord, TCFPurposeRecord } from "./types";
+import { TCFFeatureRecord, TCFPurposeConsentRecord } from "./types";
 
 export interface Stack {
   id: number;
@@ -28,7 +28,7 @@ export const createStacks = ({
   specialFeatureIds,
   stacks,
 }: {
-  purposeIds: Array<TCFPurposeRecord["id"]>;
+  purposeIds: Array<TCFPurposeConsentRecord["id"]>;
   specialFeatureIds: Array<TCFFeatureRecord["id"]>;
   stacks: Record<string, Stack>;
 }) => {
