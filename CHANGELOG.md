@@ -22,6 +22,7 @@ The types of changes are:
 - Added two toggles for vendors in the TCF overlay, one for Consent, and one for Legitimate Interest [#4189](https://github.com/ethyca/fides/pull/4189)
 - Added two toggles for purposes in the TCF overlay, one for Consent, and one for Legitimate Interest [#4234](https://github.com/ethyca/fides/pull/4234)
 - Support for AC string to `fides-tcf` [#4244](https://github.com/ethyca/fides/pull/4244)
+- Support for `gvl` prefixed vendor IDs [#4247](https://github.com/ethyca/fides/pull/4247)
 
 
 ### Changed
