@@ -152,11 +152,10 @@ const AddVendor = ({
     // due to not being consent uses, include those in the payload
     const declarationsToSave = passedInSystem
       ? [
-          ...passedInSystem.privacy_declarations.filter(
-            (du) =>
-              !["analytics, essential, functional, marketing"].includes(
-                du.data_use.split(".")[0]
-              )
+          ...passedInSystem.privacy_declarations.filter((du) =>
+            consentUseOptions.some(
+              (opt) => opt.value === du.data_use.split(".")[0]
+            )
           ),
           ...transformedDeclarations,
         ]
