@@ -247,6 +247,23 @@ describe("Fides-js TCF", () => {
       });
 
       it("can render IAB TCF badge on vendors and filter", () => {
+        const newVendor = {
+          // Use the new vendor id scheme
+          id: "gvl.1",
+          name: "Exponential Interactive, Inc d/b/a VDX.tv",
+        };
+        cy.fixture("consent/experience_tcf.json").then((payload) => {
+          const experience = payload.items[0];
+          experience.tcf_vendor_consents.push(newVendor);
+          stubConfig({
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+            },
+            experience,
+          });
+        });
+        cy.get("#fides-modal-link").click();
         cy.get("#fides-tab-Vendors").click();
         cy.get("span")
           .contains(SYSTEM_1.name)
@@ -258,6 +275,11 @@ describe("Fides-js TCF", () => {
           .within(() => {
             cy.get("span").contains("IAB TCF");
           });
+        cy.get("span")
+          .contains(newVendor.name)
+          .within(() => {
+            cy.get("span").contains("IAB TCF");
+          });
 
         // Filter to just GVL
         cy.get(".fides-filter-button-group").within(() => {
@@ -265,6 +287,22 @@ describe("Fides-js TCF", () => {
         });
         cy.get("span").contains(SYSTEM_1.name).should("not.exist");
         cy.get("span").contains(VENDOR_1.name);
+        cy.get("span").contains(newVendor.name);
+
+        // Check that the vendor ids persisted to the TC string
+        cy.getByTestId("consent-modal").within(() => {
+          cy.get("button").contains("Opt in to all").click();
+        });
+        cy.window().then((win) => {
+          win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
+        });
+        cy.get("@getTCData")
+          .should("have.been.calledOnce")
+          .its("lastCall.args")
+          .then(([tcData, success]) => {
+            expect(success).to.eql(true);
+            expect(tcData.vendor.consents).to.eql({ 1: true, 2: true });
+          });
       });
 
       it("can group toggle", () => {
