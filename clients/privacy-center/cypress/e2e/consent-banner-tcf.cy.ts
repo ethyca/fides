@@ -775,11 +775,13 @@ describe("Fides-js TCF", () => {
             },
           ],
         };
-        AC_IDS.forEach((id) => {
+        AC_IDS.forEach((id, idx) => {
           experience.tcf_vendor_consents.push({
             ...baseVendor,
             id: `ac.${id}`,
             name: `AC ${id}`,
+            // Set some of these vendors without purpose_consents
+            purpose_consents: idx % 2 === 0 ? [] : baseVendor.purpose_consents,
           });
         });
 

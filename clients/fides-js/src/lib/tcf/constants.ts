@@ -1,5 +1,11 @@
 import { TcfExperienceRecords, TcfModelType } from "./types";
 
+/**
+ * We store all of our preference strings (TC, AC, etc.) together as one string so that
+ * we can have a single-source-of-truth for offline storage & syncing. The code responsible
+ * for serving our standards-compliant JS API is responsible for separating out the
+ * preference strings for consumption.
+ */
 export const FIDES_SEPARATOR = ",";
 
 export const TCF_COOKIE_KEY_TO_EXPERIENCE_KEY: {

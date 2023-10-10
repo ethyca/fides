@@ -165,7 +165,7 @@ const fidesEventToTcString = (event: FidesEvent) => {
     // We only want to return the first part of the tcString, which is separated by '.'
     // This means Publisher TC is not sent either, which is okay for now since we do not set it.
     // However, if we do one day set it, we would have to decode the string and encode it again
-    // without vendor_consents
+    // without vendorsDisclosed
     return tcString.split(".")[0];
   }
   return cookieString;
