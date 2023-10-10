@@ -190,37 +190,37 @@ const createTcfSavePayload = ({
     purpose_consent_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_purpose_consents,
       enabledIds: enabledIds.purposesConsent,
-      noticeSubMap: servedNoticeMap["purpose_consent"],
+      noticeSubMap: servedNoticeMap.purpose_consent,
     }) as TCFPurposeSave[],
     purpose_legitimate_interests_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_purpose_legitimate_interests,
       enabledIds: enabledIds.purposesLegint,
-      noticeSubMap: servedNoticeMap["purpose_legitimate_interests"],
+      noticeSubMap: servedNoticeMap.purpose_legitimate_interests,
     }) as TCFPurposeSave[],
     special_feature_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_special_features,
       enabledIds: enabledIds.specialFeatures,
-      noticeSubMap: servedNoticeMap["special_feature"],
+      noticeSubMap: servedNoticeMap.special_feature,
     }) as TCFSpecialFeatureSave[],
     vendor_consent_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_vendor_consents,
       enabledIds: enabledConsentVendorIds,
-      noticeSubMap: servedNoticeMap["vendor_consent"],
+      noticeSubMap: servedNoticeMap.vendor_consent,
     }) as TCFVendorSave[],
     vendor_legitimate_interests_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_vendor_legitimate_interests,
       enabledIds: enabledLegintVendorIds,
-      noticeSubMap: servedNoticeMap["vendor_legitimate_interests"],
+      noticeSubMap: servedNoticeMap.vendor_legitimate_interests,
     }) as TCFVendorSave[],
     system_consent_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_system_consents,
       enabledIds: enabledConsentSystemIds,
-      noticeSubMap: servedNoticeMap["system_consent"],
+      noticeSubMap: servedNoticeMap.system_consent,
     }) as TCFVendorSave[],
     system_legitimate_interests_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_system_legitimate_interests,
       enabledIds: enabledLegintSystemIds,
-      noticeSubMap: servedNoticeMap["system_legitimate_interests"],
+      noticeSubMap: servedNoticeMap.system_legitimate_interests,
     }) as TCFVendorSave[],
   };
 };
@@ -297,7 +297,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   });
 
   const handleUpdateAllPreferences = useCallback(
-    (enabledIds: EnabledIds, servedNotices: LastServedConsentSchema[]) => {
+    (enabledIds: EnabledIds) => {
       const tcf = createTcfSavePayload({
         experience,
         enabledIds,
@@ -318,7 +318,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       });
       setDraftIds(enabledIds);
     },
-    [cookie, experience, fidesRegionString, options]
+    [cookie, experience, fidesRegionString, options, servedNotices]
   );
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -372,7 +372,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               experience={experience}
               onManagePreferencesClick={onManagePreferencesClick}
               onSave={(keys) => {
-                handleUpdateAllPreferences(keys, servedNotices);
+                handleUpdateAllPreferences(keys);
                 onSave();
               }}
             />
@@ -381,7 +381,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       }}
       renderModalContent={({ onClose }) => {
         const onSave = (keys: EnabledIds) => {
-          handleUpdateAllPreferences(keys, servedNotices);
+          handleUpdateAllPreferences(keys);
           onClose();
         };
         return (
