@@ -1,7 +1,6 @@
-import { Button, Collapse, Spinner, VStack, Text, Box } from "@fidesui/react";
+import { Button, Spinner, VStack } from "@fidesui/react";
 import { FieldArray, useFormikContext } from "formik";
-import { ChangeEvent, useEffect, useState } from "react";
-import { consentUseOptions } from "./constants";
+import { useEffect } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -16,6 +15,7 @@ import {
 import { transformDictDataUseToDeclaration } from "~/features/system/dictionary-form/helpers";
 
 import {
+  consentUseOptions,
   EMPTY_DECLARATION,
   FormValues,
   MinimalPrivacyDeclaration,
@@ -31,7 +31,7 @@ const DataUseBlock = ({
   const allDataUseOptions = useAppSelector(selectDataUseOptions);
   const textColor = isSuggestion ? "complimentary.500" : "gray.800";
 
-  const { values, dirty, isValid, errors } = useFormikContext<FormValues>();
+  const { values } = useFormikContext<FormValues>();
 
   const detailedDataUseOptions = allDataUseOptions.filter(
     (o) =>
