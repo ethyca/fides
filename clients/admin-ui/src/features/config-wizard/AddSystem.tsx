@@ -7,7 +7,10 @@ import {
   ManualSetupIcon,
   OktaLogoIcon,
 } from "~/features/common/Icon";
-import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  ADD_SYSTEMS_MANUAL_ROUTE,
+  ADD_SYSTEMS_MULTIPLE_ROUTE,
+} from "~/features/common/nav/v2/routes";
 import { ValidTargets } from "~/types/api";
 
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
@@ -62,6 +65,16 @@ const AddSystem = () => {
               router.push(ADD_SYSTEMS_MANUAL_ROUTE);
             }}
             data-testid="manual-btn"
+          />
+          <SystemOption
+            label="Add multiple systems"
+            icon={<ManualSetupIcon boxSize={8} />}
+            description="Add multiple systems"
+            onClick={() => {
+              dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
+              router.push(ADD_SYSTEMS_MULTIPLE_ROUTE);
+            }}
+            data-testid="multiple-btn"
           />
         </SimpleGrid>
       </Box>

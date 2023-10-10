@@ -11,10 +11,12 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
-import React, { ReactNode, useMemo } from "react";
+import React, { MutableRefObject, ReactNode, useEffect, useMemo } from "react";
 import {
   Column,
   Hooks,
+  TableInstance,
+  TableState,
   useGlobalFilter,
   useSortBy,
   useTable,
@@ -35,6 +37,8 @@ type Props<T extends FidesObject> = {
   footer?: ReactNode;
   onRowClick?: (row: T) => void;
   customHooks?: Array<(hooks: Hooks<T>) => void>;
+  tableInstanceRef?: MutableRefObject<TableInstance<T> | undefined>;
+  initialState?: Partial<TableState<T>>;
 };
 
 export const FidesTable = <T extends FidesObject>({
@@ -45,6 +49,8 @@ export const FidesTable = <T extends FidesObject>({
   footer,
   onRowClick,
   customHooks,
+  tableInstanceRef,
+  initialState,
 }: Props<T>) => {
   const plugins = useMemo(() => {
     if (customHooks) {
@@ -54,9 +60,20 @@ export const FidesTable = <T extends FidesObject>({
   }, [customHooks]);
 
   const tableInstance = useTable(
-    { columns, data, autoResetSortBy: false },
+    {
+      columns,
+      data,
+      autoResetSortBy: false,
+      initialState: initialState !== undefined ? initialState : {},
+    },
     ...plugins
   );
+  useEffect(() => {
+    if (tableInstanceRef) {
+      /* eslint-disable no-param-reassign */
+      tableInstanceRef.current = tableInstance;
+    }
+  }, [tableInstance, tableInstanceRef]);
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;

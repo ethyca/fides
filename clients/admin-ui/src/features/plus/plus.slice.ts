@@ -253,6 +253,12 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Dictionary"],
     }),
+    getAllCreatedSystems: build.query<DictSystems[], void>({
+      query: () => ({
+        url: `plus/dictionary/created-vendors`,
+      }),
+      providesTags: ["Dictionary"],
+    }),
     getFidesCloudConfig: build.query<CloudConfig, void>({
       query: () => ({
         url: `plus/fides-cloud`,
@@ -323,6 +329,7 @@ export const {
   useGetAllDictionaryEntriesQuery,
   useGetFidesCloudConfigQuery,
   useGetDictionaryDataUsesQuery,
+  useGetAllCreatedSystemsQuery,
   useGetSystemHistoryQuery,
   useUpdateCustomAssetMutation,
 } = plusApi;
@@ -477,3 +484,14 @@ export const selectDictDataUses = (vendorId: string) =>
     ],
     (state, { data }) => (data ? data.items : EMPTY_DATA_USES)
   );
+
+export type DictSystems = {
+  linked_system: boolean;
+  legal_name: string;
+  vendor_id: string;
+};
+const EMPTY_DICT_SYSTEMS: DictSystems[] = [];
+export const selectAllDictSystems = createSelector(
+  [(RootState) => RootState, plusApi.endpoints.getAllCreatedSystems.select()],
+  (RootState, { data }) => data || EMPTY_DICT_SYSTEMS
+);
