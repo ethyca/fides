@@ -10,7 +10,7 @@ import { TCModel, TCString, GVL } from "@iabtechlabtcf/core";
 import { makeStub } from "./tcf/stub";
 
 import { EnabledIds } from "./tcf/types";
-import { vendorIsAc, vendorIsGvl } from "./tcf/vendors";
+import { decodeVendorId, vendorIsAc, vendorIsGvl } from "./tcf/vendors";
 import { PrivacyExperience } from "./consent-types";
 import { FIDES_SEPARATOR } from "./tcf/constants";
 import { FidesEvent } from "./events";
@@ -36,7 +36,10 @@ const generateAcString = ({
       [
         ...tcStringPreferences.vendorsConsent,
         ...tcStringPreferences.vendorsLegint,
-      ].filter((id) => vendorIsAc(id))
+      ]
+        .filter((id) => vendorIsAc(id))
+        // Convert ac.42 --> 42
+        .map((id) => decodeVendorId(id).id)
     )
   );
   const vendorIds = uniqueIds.join(".");
@@ -176,7 +179,7 @@ export const initializeCmpApi = () => {
   makeStub();
   const isServiceSpecific = true; // TODO: determine this from the backend?
   const cmpApi = new CmpApi(CMP_ID, CMP_VERSION, isServiceSpecific, {
-    // Add custom AC commands
+    // Add custom command to support adding `addtlConsent` per AC spec
     getTCData: (next, tcData: TCData, status) => {
       /*
        * If using with 'removeEventListener' command, add a check to see if tcData is not a boolean. */
@@ -185,6 +188,7 @@ export const initializeCmpApi = () => {
           window.Fides.fides_tc_string?.split(FIDES_SEPARATOR);
         const addtlConsent = stringSplit?.length === 2 ? stringSplit[1] : "";
         next({ ...tcData, addtlConsent }, status);
+        return;
       }
 
       // pass data and status along
