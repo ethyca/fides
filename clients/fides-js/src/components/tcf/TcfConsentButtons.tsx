@@ -1,28 +1,18 @@
-import { VNode, h } from "preact";
+import { ComponentChildren, VNode, h } from "preact";
 
 import { PrivacyExperience } from "../../lib/consent-types";
 import { ConsentButtons } from "../ConsentButtons";
-import type { EnabledIds } from "../../lib/tcf/types";
-import {
-  TCFPurposeRecord,
-  TCFFeatureRecord,
-  TCFVendorRecord,
-} from "../../lib/tcf/types";
+import type { EnabledIds, TcfModels } from "../../lib/tcf/types";
 
 interface TcfConsentButtonProps {
   experience: PrivacyExperience;
   onManagePreferencesClick?: () => void;
   onSave: (keys: EnabledIds) => void;
   firstButton?: VNode;
+  children?: ComponentChildren;
 }
 
-const getAllIds = (
-  modelList:
-    | TCFPurposeRecord[]
-    | TCFFeatureRecord[]
-    | TCFVendorRecord[]
-    | undefined
-) => {
+const getAllIds = (modelList: TcfModels) => {
   if (!modelList) {
     return [];
   }
@@ -34,30 +24,34 @@ export const TcfConsentButtons = ({
   onManagePreferencesClick,
   onSave,
   firstButton,
+  children,
 }: TcfConsentButtonProps) => {
   if (!experience.experience_config) {
     return null;
   }
 
   const handleAcceptAll = () => {
-    const vendorsAndSystems = [
-      ...(experience.tcf_vendors || []),
-      ...(experience.tcf_systems || []),
-    ];
     const allIds: EnabledIds = {
-      purposes: getAllIds(experience.tcf_purposes),
+      purposesConsent: getAllIds(experience.tcf_purpose_consents),
+      purposesLegint: getAllIds(experience.tcf_purpose_legitimate_interests),
       specialPurposes: getAllIds(experience.tcf_special_purposes),
       features: getAllIds(experience.tcf_features),
       specialFeatures: getAllIds(experience.tcf_special_features),
-      // TODO: make these read from separate fields once the backend supports it (fidesplus1128)
-      vendorsConsent: getAllIds(vendorsAndSystems),
-      vendorsLegint: getAllIds(vendorsAndSystems),
+      vendorsConsent: getAllIds([
+        ...(experience.tcf_vendor_consents || []),
+        ...(experience.tcf_system_consents || []),
+      ]),
+      vendorsLegint: getAllIds([
+        ...(experience.tcf_vendor_legitimate_interests || []),
+        ...(experience.tcf_system_legitimate_interests || []),
+      ]),
     };
     onSave(allIds);
   };
   const handleRejectAll = () => {
     const emptyIds: EnabledIds = {
-      purposes: [],
+      purposesConsent: [],
+      purposesLegint: [],
       specialPurposes: [],
       features: [],
       specialFeatures: [],
@@ -74,6 +68,8 @@ export const TcfConsentButtons = ({
       onAcceptAll={handleAcceptAll}
       onRejectAll={handleRejectAll}
       firstButton={firstButton}
-    />
+    >
+      {children}
+    </ConsentButtons>
   );
 };

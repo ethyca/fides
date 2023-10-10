@@ -1,7 +1,7 @@
 import {
   ConsentMethod,
   ConsentOptionCreate,
-  LastServedNoticeSchema,
+  LastServedConsentSchema,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
   UserConsentPreference,
@@ -43,7 +43,7 @@ export const updateConsentPreferences = async ({
   userLocationString?: string;
   cookie: FidesCookie;
   debug?: boolean;
-  servedNotices?: Array<LastServedNoticeSchema> | null;
+  servedNotices?: Array<LastServedConsentSchema> | null;
   tcf?: TcfSavePreferences;
   updateCookie: (oldCookie: FidesCookie) => Promise<FidesCookie>;
 }) => {
@@ -54,7 +54,7 @@ export const updateConsentPreferences = async ({
           const servedNotice = servedNotices
             ? servedNotices.find(
                 (n) =>
-                  n.privacy_notice_history.id ===
+                  n.privacy_notice_history?.id ===
                   notice.privacy_notice_history_id
               )
             : undefined;

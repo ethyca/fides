@@ -279,27 +279,31 @@ export const updateExperienceFromCookieConsent = ({
   });
 
   // Handle the TCF case, which has many keys to query
-  const tcfEntities = {
-    tcf_purposes: experience.tcf_purposes,
+  const tcfEntities: Partial<PrivacyExperience> = {
+    tcf_purpose_consents: experience.tcf_purpose_consents,
+    tcf_purpose_legitimate_interests:
+      experience.tcf_purpose_legitimate_interests,
     tcf_special_purposes: experience.tcf_special_purposes,
     tcf_features: experience.tcf_features,
     tcf_special_features: experience.tcf_special_features,
-    tcf_vendors: experience.tcf_vendors,
-    tcf_systems: experience.tcf_systems,
+    tcf_vendor_consents: experience.tcf_vendor_consents,
+    tcf_vendor_legitimate_interests: experience.tcf_vendor_legitimate_interests,
+    tcf_system_consents: experience.tcf_system_consents,
+    tcf_system_legitimate_interests: experience.tcf_system_legitimate_interests,
   };
 
   if (cookie.tcf_consent) {
     TCF_COOKIE_KEY_TO_EXPERIENCE_KEY.forEach(({ cookieKey, experienceKey }) => {
       const cookieConsent = cookie.tcf_consent[cookieKey] ?? {};
       // @ts-ignore the array map should ensure we will get the right record type
-      tcfEntities[experienceKey] = experience[experienceKey]?.map((p) => {
-        const preference = Object.hasOwn(cookieConsent, p.id)
+      tcfEntities[experienceKey] = experience[experienceKey]?.map((item) => {
+        const preference = Object.hasOwn(cookieConsent, item.id)
           ? transformConsentToFidesUserPreference(
-              Boolean(cookieConsent[p.id]),
+              Boolean(cookieConsent[item.id]),
               ConsentMechanism.OPT_IN
             )
           : undefined;
-        return { ...p, current_preference: preference };
+        return { ...item, current_preference: preference };
       });
     });
   }
