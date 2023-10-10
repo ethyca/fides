@@ -1,6 +1,6 @@
 import { Button, Collapse, Spinner, VStack, Text, Box } from "@fidesui/react";
 import { FieldArray, useFormikContext } from "formik";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { consentUseOptions } from "./constants";
 
 import { useAppSelector } from "~/app/hooks";
@@ -31,14 +31,12 @@ const DataUseBlock = ({
   const allDataUseOptions = useAppSelector(selectDataUseOptions);
   const textColor = isSuggestion ? "complimentary.500" : "gray.800";
 
-  const { values } = useFormikContext<FormValues>();
+  const { values, dirty, isValid, errors } = useFormikContext<FormValues>();
 
   const detailedDataUseOptions = allDataUseOptions.filter(
     (o) =>
       o.value.split(".")[0] === values.privacy_declarations[index].consent_use
   );
-
-  console.log(detailedDataUseOptions);
 
   return (
     <VStack
@@ -133,7 +131,10 @@ const DataUsesForm = ({ showSuggestions }: { showSuggestions: boolean }) => {
             disabled={
               values.privacy_declarations[
                 values.privacy_declarations.length - 1
-              ]?.data_use === EMPTY_DECLARATION.data_use
+              ]?.data_use === EMPTY_DECLARATION.data_use &&
+              values.privacy_declarations[
+                values.privacy_declarations.length - 1
+              ]?.consent_use === EMPTY_DECLARATION.consent_use
             }
             data-testid="add-data-use-btn"
           >

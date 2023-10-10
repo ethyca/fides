@@ -30,7 +30,7 @@ import { System } from "~/types/api";
 import { getErrorMessage, isErrorResult } from "../common/helpers";
 import { errorToastParams, successToastParams } from "../common/toast";
 import AddModal from "./AddModal";
-import { EMPTY_DECLARATION, FormValues } from "./constants";
+import { consentUseOptions, EMPTY_DECLARATION, FormValues } from "./constants";
 import DataUsesForm from "./DataUsesForm";
 
 const defaultInitialValues: FormValues = {
@@ -43,9 +43,23 @@ const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("Vendor name"),
 });
 
-const DictionaryValidationSchema = Yup.object().shape({
-  vendor_id: Yup.string().required().label("Vendor"),
-});
+const DictionaryValidationSchema = Yup.object().shape(
+  {
+    // to allow creation/editing of non-dictionary systems even with
+    // dictionary enabled, only require one of either vendor_id or name
+    vendor_id: Yup.string().when("name", {
+      is: (name: string) => name === "" || null,
+      then: Yup.string().required().label("Vendor"),
+      otherwise: Yup.string().nullable().label("Vendor"),
+    }),
+    name: Yup.string().when("vendor_id", {
+      is: (vendor_id: string) => vendor_id === "" || null,
+      then: Yup.string().required().label("Name"),
+      otherwise: Yup.string().nullable().label("Name"),
+    }),
+  },
+  [["name", "vendor_id"]]
+);
 
 const AddVendor = ({
   passedInSystem,
@@ -85,14 +99,19 @@ const AddVendor = ({
     ? {
         name: passedInSystem.name ?? "",
         vendor_id: passedInSystem.vendor_id,
-        privacy_declarations: passedInSystem.privacy_declarations.map(
-          (dec) => ({
+        privacy_declarations: passedInSystem.privacy_declarations
+          .filter((dec) =>
+            consentUseOptions.some(
+              (opt) => opt.value === dec.data_use.split(".")[0]
+            )
+          )
+          .map((dec) => ({
             ...dec,
             name: dec.name ?? "",
             cookies: dec.cookies ?? [],
             cookieNames: dec.cookies ? dec.cookies.map((c) => c.name) : [],
-          })
-        ),
+            consent_use: dec.data_use.split(".")[0],
+          })),
       }
     : defaultInitialValues;
 
@@ -102,7 +121,7 @@ const AddVendor = ({
   ) => {
     const transformedDeclarations = values.privacy_declarations
       .filter((dec) => dec.consent_use !== EMPTY_DECLARATION.consent_use)
-      .map((dec) => {
+      .flatMap((dec) => {
         // if a cookie from the form already exists on the declaration with full
         // information from the dictionary, use that; otherwise, make the cookie
         // name from the form into a new cookie
@@ -110,15 +129,24 @@ const AddVendor = ({
           const existingCookie = dec.cookies.find((c) => c.name === name);
           return existingCookie ?? { name, path: "/" };
         });
-
         const { cookieNames, ...rest } = dec;
-        const final = {
+
+        // for "marketing", we create two data uses on the backend
+        if (dec.consent_use === "marketing") {
+          return [
+            "marketing.advertising.first_party.targeted",
+            "marketing.advertising.third_party.targeted",
+          ].map((dataUse) => ({
+            ...rest,
+            data_use: dataUse,
+            cookies: transformedCookies,
+          }));
+        }
+        return {
           ...rest,
-          data_use: dec.data_use ? dec.data_use : dec.consent_use,
+          data_use: dec.data_use ? dec.data_use : dec.consent_use!,
           cookies: transformedCookies,
         };
-        console.log(final);
-        return final;
       });
 
     // We use vendor_id to potentially store a new system name
@@ -142,8 +170,7 @@ const AddVendor = ({
     };
 
     const result = passedInSystem
-      ? //@ts-ignore
-        await updateSystemMutationTrigger(payload)
+      ? await updateSystemMutationTrigger(payload)
       : await createSystemMutationTrigger(payload);
 
     if (isErrorResult(result)) {
