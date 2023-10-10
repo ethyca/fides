@@ -39,17 +39,22 @@ export const generateTcString = async ({
     tcModel.cmpVersion = CMP_VERSION;
     tcModel.consentScreen = 1; // todo- On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
 
+    // Narrow the GVL to say we've only showed these vendors provided by our experience
+    const vendorIds = [
+      ...(experience.tcf_vendor_consents?.map((v) => +v.id) || []),
+      ...(experience.tcf_vendor_legitimate_interests?.map((v) => +v.id) || []),
+    ];
+    tcModel.gvl.narrowVendorsTo(vendorIds);
+
     if (tcStringPreferences) {
-      if (
-        tcStringPreferences.vendorsConsent &&
-        tcStringPreferences.vendorsConsent.length > 0
-      ) {
-        tcStringPreferences.vendorsConsent.forEach((vendorId) => {
-          if (vendorIsGvl({ id: vendorId }, experience.gvl)) {
-            tcModel.vendorConsents.set(+vendorId);
-          }
-        });
-        tcStringPreferences.vendorsLegint.forEach((vendorId) => {
+      // Set vendors on tcModel
+      tcStringPreferences.vendorsConsent.forEach((vendorId) => {
+        if (vendorIsGvl({ id: vendorId }, experience.gvl)) {
+          tcModel.vendorConsents.set(+vendorId);
+        }
+      });
+      tcStringPreferences.vendorsLegint.forEach((vendorId) => {
+        if (vendorIsGvl({ id: vendorId }, experience.gvl)) {
           const thisVendor = experience.tcf_vendor_legitimate_interests?.filter(
             (v) => v.id === vendorId
           )[0];
@@ -70,39 +75,24 @@ export const generateTcString = async ({
               tcModel.vendorLegitimateInterests.set(+vendorId);
             }
           }
-        });
-      }
+        }
+      });
 
-      // Set purpose consent on tcModel
-      if (
-        tcStringPreferences.purposesConsent &&
-        tcStringPreferences.purposesConsent.length > 0
-      ) {
-        tcStringPreferences.purposesConsent.forEach((purposeId) => {
-          tcModel.purposeConsents.set(+purposeId);
-        });
-      }
-      if (
-        tcStringPreferences.purposesLegint &&
-        tcStringPreferences.purposesLegint.length > 0
-      ) {
-        tcStringPreferences.purposesLegint.forEach((purposeId) => {
-          const id = +purposeId;
-          if (!FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id)) {
-            tcModel.purposeLegitimateInterests.set(id);
-          }
-        });
-      }
+      // Set purposes on tcModel
+      tcStringPreferences.purposesConsent.forEach((purposeId) => {
+        tcModel.purposeConsents.set(+purposeId);
+      });
+      tcStringPreferences.purposesLegint.forEach((purposeId) => {
+        const id = +purposeId;
+        if (!FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id)) {
+          tcModel.purposeLegitimateInterests.set(id);
+        }
+      });
 
       // Set special feature opt-ins on tcModel
-      if (
-        tcStringPreferences.specialFeatures &&
-        tcStringPreferences.specialFeatures.length > 0
-      ) {
-        tcStringPreferences.specialFeatures.forEach((id) => {
-          tcModel.specialFeatureOptins.set(+id);
-        });
-      }
+      tcStringPreferences.specialFeatures.forEach((id) => {
+        tcModel.specialFeatureOptins.set(+id);
+      });
 
       // note that we cannot set consent for special purposes nor features because the IAB policy states
       // the user is not given choice by a CMP.

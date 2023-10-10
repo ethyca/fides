@@ -384,6 +384,7 @@ describe("Fides-js TCF", () => {
     });
 
     describe("saving preferences", () => {
+      const expectedVendorsDisclosed = "IABE";
       it("can opt in to all", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         cy.getByTestId("consent-modal").within(() => {
@@ -449,6 +450,11 @@ describe("Fides-js TCF", () => {
           )
             .property(`${SYSTEM_1.id}`)
             .is.eql(true);
+
+          // Confirm vendors_disclosed section
+          expect(
+            cookieKeyConsent.tc_string?.endsWith(`.${expectedVendorsDisclosed}`)
+          ).to.eql(true);
         });
       });
 
@@ -516,6 +522,10 @@ describe("Fides-js TCF", () => {
           )
             .property(`${SYSTEM_1.id}`)
             .is.eql(false);
+          // Confirm vendors_disclosed section
+          expect(
+            cookieKeyConsent.tc_string?.endsWith(`.${expectedVendorsDisclosed}`)
+          ).to.eql(true);
         });
       });
 
@@ -590,6 +600,10 @@ describe("Fides-js TCF", () => {
           expect(
             cookieKeyConsent.tcf_consent.system_consent_preferences
           ).to.eql({});
+          // Confirm vendors_disclosed section
+          expect(
+            cookieKeyConsent.tc_string?.endsWith(`.${expectedVendorsDisclosed}`)
+          ).to.eql(true);
         });
       });
     });
