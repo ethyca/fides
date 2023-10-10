@@ -24,8 +24,8 @@ import {
   UserConsentPreference,
 } from "../../src/lib/consent-types";
 import {
-  TCFPurposeRecord,
-  TCFVendorRecord,
+  TCFPurposeConsentRecord,
+  TCFVendorConsentRecord,
   TcfCookieConsent,
   TcfExperienceRecords,
   TcfSavePreferences,
@@ -344,37 +344,52 @@ describe("removeCookiesFromBrowser", () => {
 
 describe("transformTcfPreferencesToCookieKeys", () => {
   it("can handle empty preferences", () => {
-    const preferences: TcfSavePreferences = { purpose_preferences: [] };
+    const preferences: TcfSavePreferences = { purpose_consent_preferences: [] };
     const expected: TcfCookieConsent = {
-      purpose_preferences: {},
+      purpose_consent_preferences: {},
+      purpose_legitimate_interests_preferences: {},
       special_feature_preferences: {},
-      vendor_preferences: {},
-      system_preferences: {},
+      vendor_consent_preferences: {},
+      vendor_legitimate_interests_preferences: {},
+      system_consent_preferences: {},
+      system_legitimate_interests_preferences: {},
     };
     expect(transformTcfPreferencesToCookieKeys(preferences)).toEqual(expected);
   });
 
   it("can transform", () => {
     const preferences: TcfSavePreferences = {
-      purpose_preferences: [
+      purpose_consent_preferences: [
         { id: 1, preference: UserConsentPreference.OPT_IN },
+      ],
+      purpose_legitimate_interests_preferences: [
+        { id: 1, preference: UserConsentPreference.OPT_OUT },
       ],
       special_feature_preferences: [
         { id: 1, preference: UserConsentPreference.OPT_IN },
         { id: 2, preference: UserConsentPreference.OPT_OUT },
       ],
-      vendor_preferences: [
+      vendor_consent_preferences: [
         { id: "1111", preference: UserConsentPreference.OPT_OUT },
       ],
-      system_preferences: [
+      vendor_legitimate_interests_preferences: [
+        { id: "1111", preference: UserConsentPreference.OPT_IN },
+      ],
+      system_consent_preferences: [
+        { id: "ctl_test_system", preference: UserConsentPreference.OPT_IN },
+      ],
+      system_legitimate_interests_preferences: [
         { id: "ctl_test_system", preference: UserConsentPreference.OPT_IN },
       ],
     };
     const expected: TcfCookieConsent = {
-      purpose_preferences: { 1: true },
+      purpose_consent_preferences: { 1: true },
+      purpose_legitimate_interests_preferences: { 1: false },
       special_feature_preferences: { 1: true, 2: false },
-      vendor_preferences: { 1111: false },
-      system_preferences: { ctl_test_system: true },
+      vendor_consent_preferences: { 1111: false },
+      vendor_legitimate_interests_preferences: { 1111: true },
+      system_consent_preferences: { ctl_test_system: true },
+      system_legitimate_interests_preferences: { ctl_test_system: true },
     };
     expect(transformTcfPreferencesToCookieKeys(preferences)).toEqual(expected);
   });
@@ -398,23 +413,26 @@ describe("updateExperienceFromCookieConsent", () => {
     { id: 1 },
     { id: 2 },
     { id: 3 },
-  ] as TCFPurposeRecord[];
+  ] as TCFPurposeConsentRecord[];
   const featureRecords = [
     { id: 4 },
     { id: 5 },
     { id: 6 },
-  ] as TCFPurposeRecord[];
+  ] as TCFPurposeConsentRecord[];
   const vendorRecords = [
     { id: "1111" },
     { id: "ctl_test_system" },
-  ] as TCFVendorRecord[];
+  ] as TCFVendorConsentRecord[];
   const experienceWithTcf = {
-    tcf_purposes: purposeRecords,
+    tcf_purpose_consents: purposeRecords,
+    tcf_legitimate_interests_consent: purposeRecords,
     tcf_special_purposes: purposeRecords,
     tcf_features: featureRecords,
     tcf_special_features: featureRecords,
-    tcf_vendors: vendorRecords,
-    tcf_systems: vendorRecords,
+    tcf_vendor_consents: vendorRecords,
+    tcf_vendor_legitimate_interests: vendorRecords,
+    tcf_system_consents: vendorRecords,
+    tcf_system_legitimate_interests: vendorRecords,
   } as unknown as PrivacyExperience;
 
   describe("notices", () => {
@@ -473,7 +491,7 @@ describe("updateExperienceFromCookieConsent", () => {
         experience: experienceWithTcf,
         cookie: baseCookie,
       });
-      expect(updatedExperience.tcf_purposes).toEqual([
+      expect(updatedExperience.tcf_purpose_consents).toEqual([
         { id: 1, current_preference: undefined },
         {
           id: 2,
@@ -487,11 +505,11 @@ describe("updateExperienceFromCookieConsent", () => {
       const cookie = {
         ...baseCookie,
         tcf_consent: {
-          purpose_preferences: {
+          purpose_consent_preferences: {
             1: true,
             2: false,
           },
-          system_preferences: {
+          system_consent_preferences: {
             1111: true,
             ctl_test_system: false,
           },
@@ -501,7 +519,7 @@ describe("updateExperienceFromCookieConsent", () => {
         experience: experienceWithTcf,
         cookie,
       });
-      expect(updatedExperience.tcf_purposes).toEqual([
+      expect(updatedExperience.tcf_purpose_consents).toEqual([
         { id: 1, current_preference: UserConsentPreference.OPT_IN },
         {
           id: 2,
@@ -509,7 +527,7 @@ describe("updateExperienceFromCookieConsent", () => {
         },
         { id: 3, current_preference: undefined },
       ]);
-      expect(updatedExperience.tcf_systems).toEqual([
+      expect(updatedExperience.tcf_system_consents).toEqual([
         { id: "1111", current_preference: UserConsentPreference.OPT_IN },
         {
           id: "ctl_test_system",
@@ -518,10 +536,13 @@ describe("updateExperienceFromCookieConsent", () => {
       ]);
       // The rest should be undefined
       const keys: Array<keyof TcfExperienceRecords> = [
+        "tcf_purpose_legitimate_interests",
         "tcf_special_purposes",
         "tcf_features",
         "tcf_special_features",
-        "tcf_vendors",
+        "tcf_vendor_consents",
+        "tcf_vendor_legitimate_interests",
+        "tcf_system_legitimate_interests",
       ];
       keys.forEach((key) => {
         updatedExperience[key]?.forEach((f) => {
@@ -534,7 +555,7 @@ describe("updateExperienceFromCookieConsent", () => {
       const cookie = {
         ...baseCookie,
         tcf_consent: {
-          purpose_preferences: {
+          purpose_consent_preferences: {
             1: true,
             2: false,
             555: false,
@@ -545,7 +566,7 @@ describe("updateExperienceFromCookieConsent", () => {
         experience: experienceWithTcf,
         cookie,
       });
-      expect(updatedExperience.tcf_purposes).toEqual([
+      expect(updatedExperience.tcf_purpose_consents).toEqual([
         { id: 1, current_preference: UserConsentPreference.OPT_IN },
         {
           id: 2,
@@ -556,11 +577,14 @@ describe("updateExperienceFromCookieConsent", () => {
 
       // The rest should be undefined
       const keys: Array<keyof TcfExperienceRecords> = [
+        "tcf_purpose_legitimate_interests",
         "tcf_special_purposes",
         "tcf_features",
         "tcf_special_features",
-        "tcf_vendors",
-        "tcf_systems",
+        "tcf_vendor_consents",
+        "tcf_vendor_legitimate_interests",
+        "tcf_system_consents",
+        "tcf_system_legitimate_interests",
       ];
       keys.forEach((key) => {
         updatedExperience[key]?.forEach((f) => {
@@ -575,7 +599,7 @@ describe("updateExperienceFromCookieConsent", () => {
       ...baseCookie,
       consent: { one: true, two: false },
       tcf_consent: {
-        purpose_preferences: {
+        purpose_consent_preferences: {
           1: true,
           2: false,
         },
@@ -593,7 +617,7 @@ describe("updateExperienceFromCookieConsent", () => {
       },
       { notice_key: "three", current_preference: undefined },
     ]);
-    expect(updatedExperience.tcf_purposes).toEqual([
+    expect(updatedExperience.tcf_purpose_consents).toEqual([
       { id: 1, current_preference: UserConsentPreference.OPT_IN },
       {
         id: 2,
@@ -604,11 +628,14 @@ describe("updateExperienceFromCookieConsent", () => {
 
     // The rest should be undefined
     const keys: Array<keyof TcfExperienceRecords> = [
+      "tcf_purpose_legitimate_interests",
       "tcf_special_purposes",
       "tcf_features",
       "tcf_special_features",
-      "tcf_vendors",
-      "tcf_systems",
+      "tcf_vendor_consents",
+      "tcf_vendor_legitimate_interests",
+      "tcf_system_consents",
+      "tcf_system_legitimate_interests",
     ];
     keys.forEach((key) => {
       updatedExperience[key]?.forEach((f) => {

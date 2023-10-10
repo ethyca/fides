@@ -24,9 +24,18 @@ from fides.api.models.privacy_preference import (
 )
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
+from fides.api.schemas.tcf import (
+    TCFFeatureRecord,
+    TCFPurposeConsentRecord,
+    TCFPurposeLegitimateInterestsRecord,
+    TCFSpecialFeatureRecord,
+    TCFSpecialPurposeRecord,
+    TCFVendorConsentRecord,
+    TCFVendorLegitimateInterestsRecord,
+    TCFVendorRelationships,
+)
 from fides.api.util.tcf.tcf_experience_contents import (
-    TCF_COMPONENT_MAPPING,
+    TCF_SECTION_MAPPING,
     ConsentRecordType,
     TCFExperienceContents,
 )
@@ -217,12 +226,15 @@ class PrivacyExperience(Base):
     # related to experiences.
     privacy_notices: List[PrivacyNotice] = []
     # TCF attributes that can be added at runtime as the result of "get_related_tcf_contents"
-    tcf_purposes: List = []
+    tcf_purpose_consents: List = []
+    tcf_purpose_legitimate_interests: List = []
     tcf_special_purposes: List = []
-    tcf_vendors: List = []
+    tcf_vendor_consents: List = []
+    tcf_vendor_legitimate_interests: List = []
     tcf_features: List = []
     tcf_special_features: List = []
-    tcf_systems: List = []
+    tcf_system_consents: List = []
+    tcf_system_legitimate_interests: List = []
     gvl: Optional[Dict] = {}
     # TCF Developer-Friendly Meta added at runtime as the result of build_tc_data_for_mobile
     meta: Dict = {}
@@ -327,23 +339,26 @@ class PrivacyExperience(Base):
         if self.component == ComponentType.tcf_overlay:
             tcf_contents = copy(base_tcf_contents)
 
-            # Fetch previously saved records for the current user
-            for tcf_component, field_name in TCF_COMPONENT_MAPPING.items():
-                for record in getattr(tcf_contents, tcf_component):
+            has_tcf_contents = False
+            for (
+                tcf_section_name,
+                corresponding_db_field_name,
+            ) in TCF_SECTION_MAPPING.items():
+                # Loop through each top-level section in the TCF Contents
+                tcf_section: List = getattr(tcf_contents, tcf_section_name)
+                for record in tcf_section:
+                    # Loop through each record within a TCF section, and cache
+                    # any previously saved preferences if applicable
                     cache_saved_and_served_on_consent_record(
                         db,
                         record,
                         fides_user_provided_identity=fides_user_provided_identity,
-                        record_type=field_name,
+                        record_type=corresponding_db_field_name,
                     )
-
-            has_tcf_contents: bool = False
-            for component in TCF_COMPONENT_MAPPING:
-                tcf_contents_for_component = getattr(tcf_contents, component)
-                if bool(tcf_contents_for_component):
+                # Now supplement the TCF Experience with this new section
+                setattr(self, tcf_section_name, tcf_section)
+                if tcf_section:
                     has_tcf_contents = True
-                # Add TCF contents to the privacy experience where applicable
-                setattr(self, component, tcf_contents_for_component)
 
             if has_tcf_contents:
                 return True
@@ -602,10 +617,18 @@ def upsert_privacy_experiences_after_config_update(
 def cache_saved_and_served_on_consent_record(
     db: Session,
     consent_record: Union[
-        PrivacyNotice, TCFPurposeRecord, TCFFeatureRecord, TCFVendorRecord
+        PrivacyNotice,
+        TCFPurposeConsentRecord,
+        TCFPurposeLegitimateInterestsRecord,
+        TCFSpecialPurposeRecord,
+        TCFFeatureRecord,
+        TCFSpecialFeatureRecord,
+        TCFVendorConsentRecord,
+        TCFVendorLegitimateInterestsRecord,
+        TCFVendorRelationships,
     ],
     fides_user_provided_identity: Optional[ProvidedIdentity],
-    record_type: ConsentRecordType,
+    record_type: Optional[ConsentRecordType],
 ) -> None:
     """For display purposes, look up whether the resource was served to the given user and/or the user has saved
     preferences for that resource and add this to the consent_record
@@ -614,6 +637,12 @@ def cache_saved_and_served_on_consent_record(
     """
     if not fides_user_provided_identity:
         return
+
+    if not record_type:
+        # Some elements of the TCF form, like vendor relationships don't have saved preferences
+        return
+
+    assert not isinstance(consent_record, TCFVendorRelationships)  # For mypy
 
     consent_record.current_preference = None
     consent_record.outdated_preference = None
