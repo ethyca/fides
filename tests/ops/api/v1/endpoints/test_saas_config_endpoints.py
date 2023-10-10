@@ -683,7 +683,7 @@ class TestRegisterConnectorTemplate:
                 "connector_template_wrong_contents_dataset",
                 400,
                 {
-                    "detail": "Dataset contents do not contain a 'dataset' key at the root level."
+                    "detail": "Dataset contents do not contain a 'dataset' key at the root level. For example, check formatting, specifically indentation."
                 },
             ),
             (

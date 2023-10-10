@@ -84,7 +84,7 @@ def load_dataset_from_string(string: str) -> Dict:
         return yaml.safe_load(string)["dataset"][0]
     except:
         raise ValidationError(
-            "Dataset contents do not contain a 'dataset' key at the root level. For example, check formatting, specifically indentation"
+            "Dataset contents do not contain a 'dataset' key at the root level. For example, check formatting, specifically indentation."
         )
 
 
