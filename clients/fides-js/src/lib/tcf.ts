@@ -10,7 +10,7 @@ import { TCModel, TCString, GVL } from "@iabtechlabtcf/core";
 import { makeStub } from "./tcf/stub";
 
 import { EnabledIds } from "./tcf/types";
-import { decodeVendorId, vendorIsAc, vendorIsGvl } from "./tcf/vendors";
+import { decodeVendorId, vendorIsAc, vendorGvlEntry } from "./tcf/vendors";
 import { PrivacyExperience } from "./consent-types";
 import { FIDES_SEPARATOR } from "./tcf/constants";
 import { FidesEvent } from "./events";
@@ -75,8 +75,9 @@ export const generateTcString = async ({
         tcStringPreferences.vendorsConsent.length > 0
       ) {
         tcStringPreferences.vendorsConsent.forEach((vendorId) => {
-          if (vendorIsGvl({ id: vendorId }, experience.gvl)) {
-            tcModel.vendorConsents.set(+vendorId);
+          if (vendorGvlEntry(vendorId, experience.gvl)) {
+            const { id } = decodeVendorId(vendorId);
+            tcModel.vendorConsents.set(+id);
           }
         });
         tcStringPreferences.vendorsLegint.forEach((vendorId) => {
@@ -97,7 +98,8 @@ export const generateTcString = async ({
               skipSetLegInt = true;
             }
             if (!skipSetLegInt) {
-              tcModel.vendorLegitimateInterests.set(+vendorId);
+              const { id } = decodeVendorId(vendorId);
+              tcModel.vendorLegitimateInterests.set(+id);
             }
           }
         });
