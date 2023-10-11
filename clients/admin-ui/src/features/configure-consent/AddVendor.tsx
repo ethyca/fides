@@ -129,6 +129,7 @@ const AddVendor = ({
           const existingCookie = dec.cookies.find((c) => c.name === name);
           return existingCookie ?? { name, path: "/" };
         });
+        // eslint-disable-next-line naming-convention
         const { cookieNames, consent_use, ...rest } = dec;
 
         // for "marketing", we create two data uses on the backend

@@ -31,7 +31,6 @@ import GroupedTableBody from "~/features/common/table/grouped/GroupedTableBody";
 import GroupedTableHeader from "~/features/common/table/grouped/GroupedTableHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import AddVendor from "~/features/configure-consent/AddVendor";
-import { consentUseOptions } from "~/features/configure-consent/constants";
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
 import { selectAllSystems, useDeleteSystemMutation } from "~/features/system";
 import { System } from "~/types/api";
