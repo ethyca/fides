@@ -36,8 +36,10 @@ describe("System management with Plus features", () => {
       cy.selectOption("input-vendor_id", "Aniview LTD");
       cy.getSelectValueContainer("input-vendor_id").contains("Aniview LTD");
 
-      cy.selectOption("input-vendor_id", "Jaduda GmbH");
-      cy.getSelectValueContainer("input-vendor_id").contains("Jaduda GmbH");
+      cy.selectOption("input-vendor_id", "Anzu Virtual Reality LTD");
+      cy.getSelectValueContainer("input-vendor_id").contains(
+        "Anzu Virtual Reality LTD"
+      );
     });
 
     // some DictSuggestionTextInputs don't get populated right, causing
