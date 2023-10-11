@@ -146,7 +146,7 @@ class TestTCFContents:
             v_r_len=0,
             s_c_len=1,
             s_li_len=0,
-            s_r_len=0,
+            s_r_len=1,
         )
 
     def test_system_has_feature_on_different_declaration_than_relevant_use(
@@ -220,6 +220,17 @@ class TestTCFContents:
             s_li_len=0,
             s_r_len=0,
         )
+
+        vendor_relationship = tcf_contents.tcf_vendor_relationships[0]
+        assert vendor_relationship.features == []
+        assert vendor_relationship.special_purposes == []
+        assert vendor_relationship.special_features == []
+        assert vendor_relationship.id == "sendgrid"
+        assert vendor_relationship.cookie_max_age_seconds is None
+        assert vendor_relationship.uses_cookies is False
+        assert vendor_relationship.uses_non_cookie_access is False
+        assert vendor_relationship.cookie_refresh is False
+        assert vendor_relationship.legitimate_interest_disclosure_url is None
 
     @pytest.mark.usefixtures("tcf_system")
     def test_system_exists_with_tcf_purpose_and_vendor(self, db):
@@ -687,7 +698,7 @@ class TestTCFContents:
             v_r_len=0,
             s_c_len=1,
             s_li_len=1,
-            s_r_len=0,
+            s_r_len=1,
         )
 
         first_purpose = tcf_contents.tcf_purpose_consents[0]
@@ -889,7 +900,7 @@ class TestTCFContents:
             v_r_len=0,
             s_c_len=1,
             s_li_len=2,
-            s_r_len=0,
+            s_r_len=2,
         )
         assert len(tcf_contents.tcf_purpose_consents[0].vendors) == 0
         assert tcf_contents.tcf_purpose_consents[0].id == 4
