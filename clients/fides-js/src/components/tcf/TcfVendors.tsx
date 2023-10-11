@@ -1,4 +1,4 @@
-import { h } from "preact";
+import { VNode, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { Vendor } from "@iabtechlabtcf/core";
 import {
@@ -43,8 +43,12 @@ const VendorDetails = ({
     <table className="fides-vendor-details-table">
       <thead>
         <tr>
-          <th>{label}</th>
-          {dataRetention ? <th>Retention</th> : null}
+          <th width="80%">{label}</th>
+          {dataRetention ? (
+            <th width="20%" style={{ textAlign: "right" }}>
+              Retention
+            </th>
+          ) : null}
         </tr>
       </thead>
       <tbody>
@@ -57,7 +61,9 @@ const VendorDetails = ({
             <tr key={item.id}>
               <td>{item.name}</td>
               {dataRetention ? (
-                <td>{retention == null ? "N/A" : `${retention} day(s)`}</td>
+                <td style={{ textAlign: "right" }}>
+                  {retention == null ? "N/A" : `${retention} day(s)`}
+                </td>
               ) : null}
             </tr>
           );
@@ -182,11 +188,13 @@ const TcfVendors = ({
   enabledVendorConsentIds,
   enabledVendorLegintIds,
   onChange,
+  allOnOffButtons,
 }: {
   experience: PrivacyExperience;
   enabledVendorConsentIds: string[];
   enabledVendorLegintIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
+  allOnOffButtons: VNode;
 }) => {
   const [isFiltered, setIsFiltered] = useState(false);
 
@@ -216,6 +224,7 @@ const TcfVendors = ({
   return (
     <div>
       <FilterButtons filters={FILTERS} onChange={handleFilter} />
+      {allOnOffButtons}
       <DoubleToggleTable<VendorRecord>
         title="Vendors"
         items={vendorsToDisplay}

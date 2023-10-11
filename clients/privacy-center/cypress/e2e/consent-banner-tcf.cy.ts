@@ -344,6 +344,43 @@ describe("Fides-js TCF", () => {
           });
         });
       });
+
+      it("can toggle double toggles individually", () => {
+        cy.fixture("consent/experience_tcf.json").then((payload) => {
+          const experience = payload.items[0];
+          // Add a vendor legitimate interest which is the same as vendor consent
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          const tcf_vendor_legitimate_interests = [
+            {
+              ...experience.tcf_vendor_consents[0],
+              default_preference: "opt_in",
+              purpose_legitimate_interests: [PURPOSE_2.id],
+            },
+          ];
+          const updatedExperience = {
+            ...experience,
+            tcf_vendor_legitimate_interests,
+          };
+          stubConfig({
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+            },
+            experience: updatedExperience,
+          });
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.get("#fides-modal-link").click();
+            cy.get("#fides-tab-Vendors").click();
+            cy.getByTestId(`toggle-${VENDOR_1.name}`).click();
+            cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
+              cy.get("input").should("not.be.checked");
+            });
+            cy.getByTestId(`toggle-${VENDOR_1.name}-consent`).within(() => {
+              cy.get("input").should("not.be.checked");
+            });
+          });
+        });
+      });
     });
 
     describe("saving preferences", () => {
@@ -359,10 +396,9 @@ describe("Fides-js TCF", () => {
               { id: PURPOSE_7.id, preference: "opt_in" },
               { id: PURPOSE_9.id, preference: "opt_in" },
             ]);
-            // TODO: fides#4210
-            // expect(body.purpose_legitimate_interests_preferences).to.eql([
-            //   { id: PURPOSE_2.id, preference: "opt_in" },
-            // ]);
+            expect(body.purpose_legitimate_interests_preferences).to.eql([
+              { id: PURPOSE_2.id, preference: "opt_in" },
+            ]);
             expect(body.special_purpose_preferences).to.eql(undefined);
             expect(body.feature_preferences).to.eql(undefined);
             expect(body.special_feature_preferences).to.eql([
@@ -390,13 +426,12 @@ describe("Fides-js TCF", () => {
                 .is.eql(true);
             }
           );
-          // TODO: fides#4210
-          // expect(
-          //   cookieKeyConsent.tcf_consent
-          //     .purpose_legitimate_interests_preferences
-          // )
-          //   .property(`${PURPOSE_2.id}`)
-          //   .is.eql(true);
+          expect(
+            cookieKeyConsent.tcf_consent
+              .purpose_legitimate_interests_preferences
+          )
+            .property(`${PURPOSE_2.id}`)
+            .is.eql(true);
           expect(cookieKeyConsent.tcf_consent.special_feature_preferences)
             .property(`${SPECIAL_FEATURE_1.id}`)
             .is.eql(true);
@@ -428,10 +463,9 @@ describe("Fides-js TCF", () => {
               { id: PURPOSE_7.id, preference: "opt_out" },
               { id: PURPOSE_9.id, preference: "opt_out" },
             ]);
-            // TODO: fides#4210
-            // expect(body.purpose_legitimate_interests_preferences).to.eql([
-            //   { id: PURPOSE_2.id, preference: "opt_out" },
-            // ]);
+            expect(body.purpose_legitimate_interests_preferences).to.eql([
+              { id: PURPOSE_2.id, preference: "opt_out" },
+            ]);
             expect(body.special_purpose_preferences).to.eql(undefined);
             expect(body.feature_preferences).to.eql(undefined);
             expect(body.special_feature_preferences).to.eql([
@@ -459,13 +493,12 @@ describe("Fides-js TCF", () => {
                 .is.eql(false);
             }
           );
-          // TODO: fides#4210
-          // expect(
-          //   cookieKeyConsent.tcf_consent
-          //     .purpose_legitimate_interests_preferences
-          // )
-          //   .property(`${PURPOSE_2.id}`)
-          //   .is.eql(false);
+          expect(
+            cookieKeyConsent.tcf_consent
+              .purpose_legitimate_interests_preferences
+          )
+            .property(`${PURPOSE_2.id}`)
+            .is.eql(false);
           expect(cookieKeyConsent.tcf_consent.special_feature_preferences)
             .property(`${SPECIAL_FEATURE_1.id}`)
             .is.eql(false);
@@ -489,7 +522,6 @@ describe("Fides-js TCF", () => {
       it("can opt in to some and opt out of others", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).click();
-
           cy.get("#fides-tab-Features").click();
           cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).click();
 
@@ -504,10 +536,9 @@ describe("Fides-js TCF", () => {
               { id: PURPOSE_7.id, preference: "opt_in" },
               { id: PURPOSE_9.id, preference: "opt_in" },
             ]);
-            // TODO: fides#4210
-            // expect(body.purpose_legitimate_interests_preferences).to.eql([
-            //   { id: PURPOSE_2.id, preference: "opt_in" },
-            // ]);
+            expect(body.purpose_legitimate_interests_preferences).to.eql([
+              { id: PURPOSE_2.id, preference: "opt_in" },
+            ]);
             expect(body.special_purpose_preferences).to.eql(undefined);
             expect(body.feature_preferences).to.eql(undefined);
             expect(body.special_feature_preferences).to.eql([
@@ -533,10 +564,12 @@ describe("Fides-js TCF", () => {
               .property(`${pid}`)
               .is.eql(true);
           });
-          // TODO: fides#4210
-          // expect(cookieKeyConsent.tcf_consent.purpose_legitimate_interests_preferences)
-          //   .property(`${PURPOSE_2.id}`)
-          //   .is.eql(false);
+          expect(
+            cookieKeyConsent.tcf_consent
+              .purpose_legitimate_interests_preferences
+          )
+            .property(`${PURPOSE_2.id}`)
+            .is.eql(true);
           expect(cookieKeyConsent.tcf_consent.purpose_consent_preferences)
             .property(`${PURPOSE_4.id}`)
             .is.eql(false);
