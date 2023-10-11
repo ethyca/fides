@@ -259,6 +259,14 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Dictionary"],
     }),
+    postCreatedSystems: build.mutation<any, string[]>({
+      query: (vendor_ids: string[]) => ({
+        method: "post",
+        url: `plus/dictionary/created-vendors`,
+        body: vendor_ids,
+      }),
+      invalidatesTags: ["Dictionary"],
+    }),
     getFidesCloudConfig: build.query<CloudConfig, void>({
       query: () => ({
         url: `plus/fides-cloud`,
@@ -330,6 +338,7 @@ export const {
   useGetFidesCloudConfigQuery,
   useGetDictionaryDataUsesQuery,
   useGetAllCreatedSystemsQuery,
+  usePostCreatedSystemsMutation,
   useGetSystemHistoryQuery,
   useUpdateCustomAssetMutation,
 } = plusApi;

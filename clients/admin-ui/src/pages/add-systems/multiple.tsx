@@ -4,7 +4,10 @@ import NextLink from "next/link";
 
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import Layout from "~/features/common/Layout";
-import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  ADD_SYSTEMS_ROUTE,
+  DATAMAP_ROUTE,
+} from "~/features/common/nav/v2/routes";
 import { AddMultipleSystems } from "~/features/system/AddMultipleSystems";
 
 const DESCRIBE_SYSTEM_COPY =
@@ -46,10 +49,9 @@ const AddMultipleSystemsPage: NextPage = () => {
           {DESCRIBE_SYSTEM_COPY}
         </Text>
       </Box>
-      <AddMultipleSystems />
+      <AddMultipleSystems redirectRoute={DATAMAP_ROUTE} />
     </Layout>
   );
 };
 
 export default AddMultipleSystemsPage;
-<AddMultipleSystems />;

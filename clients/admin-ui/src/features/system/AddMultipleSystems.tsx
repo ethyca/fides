@@ -7,7 +7,8 @@ import {
   useState,
 } from "react";
 import { Column, Hooks, Row, TableInstance, useRowSelect } from "react-table";
-
+import { useRouter } from "next/router";
+import { Spinner, Flex, Button, Box } from "@fidesui/react";
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import { FidesTable, WrappedCell } from "~/features/common/table";
@@ -16,9 +17,11 @@ import {
   DictSystems,
   selectAllDictSystems,
   useGetAllCreatedSystemsQuery,
+  usePostCreatedSystemsMutation,
 } from "~/features/plus/plus.slice";
+import { DATAMAP_ROUTE } from "../common/nav/v2/routes";
 
-type Props = {
+type CheckboxProps = {
   indeterminate?: boolean;
   row: Row<MultipleSystemTable>;
 } & HTMLProps<HTMLInputElement>;
@@ -27,7 +30,7 @@ const IndeterminateCheckboxTest = ({
   indeterminate,
   className = "",
   ...rest
-}: Props) => {
+}: CheckboxProps) => {
   const ref = useRef<HTMLInputElement>(null!);
   const [initialCheckedValue] = useState(rest?.row?.original.linked_system);
 
@@ -62,11 +65,21 @@ const IndeterminateCheckboxTest = ({
 
 type MultipleSystemTable = DictSystems & FidesObject;
 
-export const AddMultipleSystems = () => {
+type Props = {
+  redirectRoute: string;
+};
+
+export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   const features = useFeatures();
-  useGetAllCreatedSystemsQuery(undefined, {
+  const router = useRouter();
+  const [anyRowsSelected, setAnyRowsSelected] = useState(false);
+  const { isLoading: isGetLoading } = useGetAllCreatedSystemsQuery(undefined, {
     skip: !features.dictionaryService,
   });
+  const [
+    postVendorIds,
+    { isLoading: isPostLoading, isSuccess: isPostSuccess },
+  ] = usePostCreatedSystemsMutation();
 
   const customCheckboxHook = useCallback(
     (hooks: Hooks<MultipleSystemTable>) => {
@@ -113,15 +126,46 @@ export const AddMultipleSystems = () => {
     };
   }, [dictionaryOptions]);
 
+  const addVendors = async () => {
+    if (tableInstanceRef.current) {
+      const vendorIds = tableInstanceRef.current.selectedFlatRows
+        .filter((r) => r.isSelected && !r.original.linked_system)
+        .map((r) => r.original.vendor_id);
+      if (vendorIds.length > 0) {
+        await postVendorIds(vendorIds);
+        router.push(redirectRoute);
+      }
+    }
+  };
+
+  if (isGetLoading || isPostLoading || isPostSuccess) {
+    return (
+      <Flex justifyContent="center" alignItems="center" mt="5">
+        <Spinner color="complimentary.500" />
+      </Flex>
+    );
+  }
+
   return (
-    <div>
+    <Box height="100%">
       <FidesTable<MultipleSystemTable>
         columns={columns}
+        showSearchBar
+        searchBarRightButton={
+          <Button
+            onClick={addVendors}
+            colorScheme="black"
+            backgroundColor="primary.800"
+            fontWeight="semibold"
+          >
+            Add Vendors
+          </Button>
+        }
         data={dictionaryOptions}
         tableInstanceRef={tableInstanceRef}
         customHooks={[useRowSelect, customCheckboxHook]}
         initialState={initialTableState}
       />
-    </div>
+    </Box>
   );
 };
