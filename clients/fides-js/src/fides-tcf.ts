@@ -50,13 +50,9 @@ import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 
-import {
-  FidesConfig,
-  PrivacyExperience,
-  UserConsentPreference,
-} from "./lib/consent-types";
+import { FidesConfig, PrivacyExperience } from "./lib/consent-types";
 
-import { generateTcString, tcf } from "./lib/tcf";
+import { tcf } from "./lib/tcf";
 import {
   getInitialCookie,
   getInitialFides,
@@ -64,14 +60,8 @@ import {
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
-import {
-  FidesCookie,
-  hasSavedTcfPreferences,
-  isNewFidesCookie,
-  transformTcfPreferencesToCookieKeys,
-} from "./fides";
+import { FidesCookie, hasSavedTcfPreferences, isNewFidesCookie } from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
-import { TCFPurposeRecord, TcfSavePreferences } from "./lib/tcf/types";
 
 declare global {
   interface Window {
@@ -90,16 +80,6 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-/** Helper function to determine the initial value of a TCF object */
-const getInitialPreference = (
-  tcfObject: Pick<TCFPurposeRecord, "current_preference" | "default_preference">
-) => {
-  if (tcfObject.current_preference) {
-    return tcfObject.current_preference;
-  }
-  return tcfObject.default_preference ?? UserConsentPreference.OPT_OUT;
-};
-
 const updateCookie = async (
   oldCookie: FidesCookie,
   experience: PrivacyExperience
@@ -109,30 +89,12 @@ const updateCookie = async (
     return { ...oldCookie, tc_string: "" };
   }
 
-  const tcStringPreferences: TcfSavePreferences = {
-    purpose_preferences: experience.tcf_purposes?.map((purpose) => ({
-      id: purpose.id,
-      preference: getInitialPreference(purpose),
-    })),
-    special_feature_preferences: experience.tcf_special_features?.map(
-      (feature) => ({
-        id: feature.id,
-        preference: getInitialPreference(feature),
-      })
-    ),
-    vendor_preferences: experience.tcf_vendors?.map((vendor) => ({
-      id: vendor.id,
-      preference: getInitialPreference(vendor),
-    })),
-    system_preferences: experience.tcf_systems?.map((system) => ({
-      id: system.id,
-      preference: getInitialPreference(system),
-    })),
-  };
-
-  const tcString = await generateTcString({ tcStringPreferences, experience });
-  const tcfConsent = transformTcfPreferencesToCookieKeys(tcStringPreferences);
-  return { ...oldCookie, tc_string: tcString, tcf_consent: tcfConsent };
+  // Usually at this point, we'd look at the Experience from the backend and update
+  // the user's browser cookie to match the preferences in the Experience. However,
+  // TCF requires pre-fetching an experience. A prefetch'd experience will never have user
+  // specific consents. We rely on the cookie to fill those in. Therefore, we do nothing
+  // here, since the cookie is the source of truth, not the backend Experience.
+  return oldCookie;
 };
 
 /**

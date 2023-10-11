@@ -25,13 +25,13 @@ from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
 from fides.api.common_exceptions import (
+    DecodeTCStringError,
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
     SystemNotFound,
 )
 from fides.api.custom_types import SafeStr
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
-from fides.api.models.consent_settings import ConsentSettings
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.privacy_experience import PrivacyExperience
 from fides.api.models.privacy_notice import (
@@ -62,6 +62,8 @@ from fides.api.schemas.privacy_preference import (
     PrivacyPreferencesRequest,
     RecordConsentServedCreate,
     RecordConsentServedRequest,
+    SavePrivacyPreferencesResponse,
+    TCStringFidesPreferences,
 )
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
@@ -81,6 +83,12 @@ from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, validate_start_and_end_filters
+from fides.api.util.tcf.tc_mobile_data import convert_tc_string_to_mobile_data
+from fides.api.util.tcf.tc_string import decode_tc_string_to_preferences
+from fides.api.util.tcf.tcf_experience_contents import (
+    TCFExperienceContents,
+    get_tcf_contents,
+)
 from fides.common.api.scope_registry import (
     CURRENT_PRIVACY_PREFERENCE_READ,
     PRIVACY_PREFERENCE_HISTORY_READ,
@@ -164,8 +172,7 @@ def consent_request_verify_for_privacy_preferences(
         .order_by(CurrentPrivacyPreference.created_at)
     )
 
-    consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-    if not consent_settings.tcf_enabled:
+    if not CONFIG.consent.tcf_enabled:
         query = query.filter(CurrentPrivacyPreference.privacy_notice_id.isnot(None))
 
     return paginate(query, params)
@@ -307,7 +314,7 @@ def _supplement_request_data_from_request_headers(
 @router.patch(
     CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
     status_code=HTTP_200_OK,
-    response_model=List[CurrentPrivacyPreferenceSchema],
+    response_model=SavePrivacyPreferencesResponse,
 )
 def save_privacy_preferences_with_verified_identity(
     *,
@@ -315,7 +322,7 @@ def save_privacy_preferences_with_verified_identity(
     db: Session = Depends(get_db),
     data: PrivacyPreferencesRequest,
     request: Request,
-) -> List[CurrentPrivacyPreference]:
+) -> SavePrivacyPreferencesResponse:
     """Saves privacy preferences in the privacy center.
 
     The ConsentRequest may have been created under an email, phone number, *or* fides user device id.
@@ -325,6 +332,9 @@ def save_privacy_preferences_with_verified_identity(
     Creates historical records for these preferences for record keeping, and also updates current preferences.
     Creates a privacy request to propagate preferences to third party systems where applicable.
     """
+    tc_string: Optional[str] = data.tc_string
+    data = update_request_with_decoded_tc_string_fields(data, db)
+
     verify_privacy_notice_and_historical_records(
         db=db,
         notice_history_list=[
@@ -352,18 +362,27 @@ def save_privacy_preferences_with_verified_identity(
     logger.info("Saving privacy preferences")
 
     try:
-        return save_privacy_preferences_for_identities(
-            db=db,
-            consent_request=consent_request,
-            verified_provided_identity=provided_identity_verified,
-            fides_user_provided_identity=fides_user_provided_identity,
-            request=request,
-            original_request_data=data,
+        saved_preferences_response: SavePrivacyPreferencesResponse = (
+            save_privacy_preferences_for_identities(
+                db=db,
+                consent_request=consent_request,
+                verified_provided_identity=provided_identity_verified,
+                fides_user_provided_identity=fides_user_provided_identity,
+                request=request,
+                original_request_data=data,
+            )
         )
+        saved_preferences_response.tc_mobile_data = convert_tc_string_to_mobile_data(
+            tc_string
+        )
+
+        return saved_preferences_response
+
     except (
         IdentityNotFoundException,
         PrivacyNoticeHistoryNotFound,
         SystemNotFound,
+        DecodeTCStringError,
     ) as exc:
         raise HTTPException(status_code=400, detail=exc.args[0])
 
@@ -372,15 +391,14 @@ def persist_tcf_preferences(
     db: Session,
     user_data: Dict[str, str],
     request_data: PrivacyPreferencesRequest,
-    upserted_current_preferences: List[CurrentPrivacyPreference],
+    saved_preferences_response: SavePrivacyPreferencesResponse,
 ) -> None:
     """Save TCF preferences with respect to individual TCF components if applicable.
 
     All TCF Preferences have frontend-only enforcement at the moment, so no Privacy Requests
     are created to propagate consent. The "upserted_current_preferences" list is updated in place.
     """
-    consent_settings = ConsentSettings.get_or_create_with_defaults(db)
-    if not consent_settings.tcf_enabled:
+    if not CONFIG.consent.tcf_enabled:
         return
 
     def save_tcf_preference(
@@ -431,7 +449,10 @@ def persist_tcf_preferences(
         ] = getattr(request_data, tcf_preference_field)
 
         for preference in saved_preferences:
-            upserted_current_preferences.append(
+            saved_section: List = getattr(
+                saved_preferences_response, tcf_preference_field
+            )
+            saved_section.append(
                 save_tcf_preference(
                     preference_request=preference,
                     component_type=field_name,
@@ -501,7 +522,7 @@ def save_privacy_preferences_for_identities(
     fides_user_provided_identity: Optional[ProvidedIdentity],
     request: Request,
     original_request_data: PrivacyPreferencesRequest,
-) -> List[CurrentPrivacyPreference]:
+) -> SavePrivacyPreferencesResponse:
     """
     Shared method to save privacy preferences for an end user.
 
@@ -512,10 +533,9 @@ def save_privacy_preferences_for_identities(
     saved changes for each preference type.
 
     Creates a privacy request to propagate preferences to third-party systems if applicable.
-
     """
     created_historical_preferences: List[PrivacyPreferenceHistory] = []
-    upserted_current_preferences: List[CurrentPrivacyPreference] = []
+    saved_preferences_response = SavePrivacyPreferencesResponse()
 
     # Combines user data from request body and request headers for consent reporting
     common_user_data: Dict = update_request_body_for_consent_served_or_saved(
@@ -533,7 +553,7 @@ def save_privacy_preferences_for_identities(
         db=db,
         user_data=common_user_data,
         request_data=original_request_data,
-        upserted_current_preferences=upserted_current_preferences,
+        saved_preferences_response=saved_preferences_response,
     )
 
     # Separately persist preferences with respect to Privacy Notices where applicable.
@@ -556,7 +576,9 @@ def save_privacy_preferences_for_identities(
             check_name=False,
         )
         created_historical_preferences.append(historical_preference)
-        upserted_current_preferences.append(current_preference)
+        saved_preferences_response.preferences.append(
+            current_preference  # type:ignore[arg-type]
+        )
 
         if (
             historical_preference.privacy_notice_history
@@ -611,7 +633,8 @@ def save_privacy_preferences_for_identities(
             consent_request.save(db=db)
 
     # Return a list of all the individual preferences saved
-    return upserted_current_preferences
+
+    return saved_preferences_response
 
 
 def verify_previously_served_records(
@@ -677,10 +700,38 @@ def verify_previously_served_records(
             )
 
 
+def update_request_with_decoded_tc_string_fields(
+    request_body: PrivacyPreferencesRequest, db: Session
+) -> PrivacyPreferencesRequest:
+    """Update the request body with the decoded values of the TC string if applicable"""
+    if request_body.tc_string:
+        tcf_contents: TCFExperienceContents = get_tcf_contents(
+            db
+        )  # TODO cache this so we're not building each time privacy preference is saved
+        try:
+            decoded_preference_request_body: TCStringFidesPreferences = (
+                decode_tc_string_to_preferences(request_body.tc_string, tcf_contents)
+            )
+        except DecodeTCStringError as exc:
+            raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.args[0])
+
+        # Remove the TC string from the request body now that we've decoded it
+        request_body.tc_string = None
+        # Add the individual sections from the TC string to the request body
+        for decoded_tcf_section in decoded_preference_request_body.__fields__:
+            setattr(
+                request_body,
+                decoded_tcf_section,
+                getattr(decoded_preference_request_body, decoded_tcf_section),
+            )
+
+    return request_body
+
+
 @router.patch(
     PRIVACY_PREFERENCES,
     status_code=HTTP_200_OK,
-    response_model=List[CurrentPrivacyPreferenceSchema],
+    response_model=SavePrivacyPreferencesResponse,
 )
 @fides_limiter.limit(CONFIG.security.public_request_rate_limit)
 def save_privacy_preferences(
@@ -689,12 +740,15 @@ def save_privacy_preferences(
     data: PrivacyPreferencesRequest,
     request: Request,
     response: Response,  # required for rate limiting
-) -> List[CurrentPrivacyPreference]:
+) -> SavePrivacyPreferencesResponse:
     """Saves privacy preferences with respect to a fides user device id.
 
     Creates historical records for these preferences for record keeping, and also updates current preferences.
     Creates a privacy request to propagate preferences to third party systems if applicable.
     """
+    tc_string: Optional[str] = data.tc_string
+    data = update_request_with_decoded_tc_string_fields(data, db)
+
     verify_privacy_notice_and_historical_records(
         db=db,
         notice_history_list=[
@@ -714,18 +768,27 @@ def save_privacy_preferences(
     logger.info("Saving privacy preferences with respect to fides user device id")
 
     try:
-        return save_privacy_preferences_for_identities(
-            db=db,
-            consent_request=None,
-            verified_provided_identity=None,
-            fides_user_provided_identity=fides_user_provided_identity,
-            request=request,
-            original_request_data=data,
+        saved_preferences_response: SavePrivacyPreferencesResponse = (
+            save_privacy_preferences_for_identities(
+                db=db,
+                consent_request=None,
+                verified_provided_identity=None,
+                fides_user_provided_identity=fides_user_provided_identity,
+                request=request,
+                original_request_data=data,
+            )
         )
+        saved_preferences_response.tc_mobile_data = convert_tc_string_to_mobile_data(
+            tc_string
+        )
+
+        return saved_preferences_response
+
     except (
         IdentityNotFoundException,
         PrivacyNoticeHistoryNotFound,
         SystemNotFound,
+        DecodeTCStringError,
     ) as exc:
         raise HTTPException(status_code=400, detail=exc.args[0])
 
@@ -821,10 +884,19 @@ def get_historical_consent_report(
             PrivacyPreferenceHistory.served_notice_history_id.label(
                 "served_notice_history_id"
             ),
-            PrivacyPreferenceHistory.purpose.label("purpose"),
+            PrivacyPreferenceHistory.purpose_consent.label("purpose_consent"),
+            PrivacyPreferenceHistory.purpose_legitimate_interests.label(
+                "purpose_legitimate_interests"
+            ),
             PrivacyPreferenceHistory.special_purpose.label("special_purpose"),
-            PrivacyPreferenceHistory.vendor.label("vendor"),
-            PrivacyPreferenceHistory.system.label("system"),
+            PrivacyPreferenceHistory.vendor_consent.label("vendor_consent"),
+            PrivacyPreferenceHistory.vendor_legitimate_interests.label(
+                "vendor_legitimate_interests"
+            ),
+            PrivacyPreferenceHistory.system_consent.label("system_consent"),
+            PrivacyPreferenceHistory.system_legitimate_interests.label(
+                "system_legitimate_interests"
+            ),
             PrivacyPreferenceHistory.feature.label("feature"),
             PrivacyPreferenceHistory.special_feature.label("special_feature"),
             PrivacyPreferenceHistory.tcf_version.label("tcf_version"),

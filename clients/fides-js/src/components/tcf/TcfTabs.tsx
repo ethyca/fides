@@ -1,11 +1,13 @@
 import { h } from "preact";
-import { useRef } from "preact/hooks";
+import { useCallback, useRef } from "preact/hooks";
 import TcfPurposes from "./TcfPurposes";
 import { PrivacyExperience } from "../../lib/consent-types";
-import type { EnabledIds, UpdateEnabledIds } from "./TcfOverlay";
+import type { UpdateEnabledIds } from "./TcfOverlay";
 import TcfFeatures from "./TcfFeatures";
 import TcfVendors from "./TcfVendors";
 import InfoBox from "../InfoBox";
+import { EnabledIds } from "../../lib/tcf/types";
+import AllOnOffButtons from "./AllOnOffButtons";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";
@@ -19,26 +21,44 @@ const TcfTabs = ({
 }: {
   experience: PrivacyExperience;
   enabledIds: EnabledIds;
-  onChange: (payload: UpdateEnabledIds) => void;
+  onChange: (payload: EnabledIds) => void;
   activeTabIndex: number;
   onTabChange: (tabIndex: number) => void;
 }) => {
+  const handleUpdateDraftState = useCallback(
+    ({ newEnabledIds, modelType }: UpdateEnabledIds) => {
+      const updated = { ...enabledIds, [modelType]: newEnabledIds };
+      onChange(updated);
+    },
+    [enabledIds, onChange]
+  );
+
   const tcfTabs = [
     {
       name: "Purposes",
       content: (
         <div>
-          <InfoBox title="Transparency & Consent Framework">
-            The purposes for which your personal data is being collected are
-            detailed here. You can choose to opt in or opt out of any of these
-            purposes.
+          <InfoBox>
+            You can review and and exercise your right to consent to specific
+            purposes by using the filter to switch between Consent and
+            Legitimate Interest below.
           </InfoBox>
-          <TcfPurposes
-            allPurposes={experience.tcf_purposes}
-            allSpecialPurposes={experience.tcf_special_purposes}
-            enabledPurposeIds={enabledIds.purposes}
-            enabledSpecialPurposeIds={enabledIds.specialPurposes}
+          <AllOnOffButtons
+            enabledIds={enabledIds}
             onChange={onChange}
+            modelTypeMappings={{
+              purposesLegint: experience.tcf_purpose_legitimate_interests,
+              purposesConsent: experience.tcf_purpose_consents,
+            }}
+          />
+          <TcfPurposes
+            allPurposesConsent={experience.tcf_purpose_consents}
+            allPurposesLegint={experience.tcf_purpose_legitimate_interests}
+            allSpecialPurposes={experience.tcf_special_purposes}
+            enabledPurposeConsentIds={enabledIds.purposesConsent}
+            enabledPurposeLegintIds={enabledIds.purposesLegint}
+            enabledSpecialPurposeIds={enabledIds.specialPurposes}
+            onChange={handleUpdateDraftState}
           />
         </div>
       ),
@@ -47,17 +67,23 @@ const TcfTabs = ({
       name: "Features",
       content: (
         <div>
-          <InfoBox title="Transparency & Consent Framework">
-            The features for which your personal data is being collected are
-            detailed here. You can choose to opt in or opt out of any of these
-            purposes.
+          <InfoBox>
+            You can review the list of features and exercise your right to
+            consent to special features below.
           </InfoBox>
+          <AllOnOffButtons
+            enabledIds={enabledIds}
+            onChange={onChange}
+            modelTypeMappings={{
+              specialFeatures: experience.tcf_special_features,
+            }}
+          />
           <TcfFeatures
             allFeatures={experience.tcf_features}
             allSpecialFeatures={experience.tcf_special_features}
             enabledFeatureIds={enabledIds.features}
             enabledSpecialFeatureIds={enabledIds.specialFeatures}
-            onChange={onChange}
+            onChange={handleUpdateDraftState}
           />
         </div>
       ),
@@ -66,18 +92,33 @@ const TcfTabs = ({
       name: "Vendors",
       content: (
         <div>
-          <InfoBox title="Transparency & Consent Framework">
-            The features for which your personal data is being collected are
-            detailed here. You can choose to opt in or opt out of any of these
-            purposes.
+          <InfoBox>
+            You may review the list of vendors and the purposes or features of
+            processing they individually declare below. You have the right to
+            exercise you consent for each vendor based on the legal basis they
+            assert.
           </InfoBox>
           <TcfVendors
-            allSystems={experience.tcf_systems}
-            allVendors={experience.tcf_vendors}
-            enabledVendorIds={enabledIds.vendors}
-            enabledSystemIds={enabledIds.systems}
-            onChange={onChange}
-            gvl={experience.gvl}
+            experience={experience}
+            enabledVendorConsentIds={enabledIds.vendorsConsent}
+            enabledVendorLegintIds={enabledIds.vendorsLegint}
+            onChange={handleUpdateDraftState}
+            allOnOffButtons={
+              <AllOnOffButtons
+                enabledIds={enabledIds}
+                onChange={onChange}
+                modelTypeMappings={{
+                  vendorsConsent: [
+                    ...(experience.tcf_vendor_consents || []),
+                    ...(experience.tcf_system_consents || []),
+                  ],
+                  vendorsLegint: [
+                    ...(experience.tcf_vendor_legitimate_interests || []),
+                    ...(experience.tcf_system_legitimate_interests || []),
+                  ],
+                }}
+              />
+            }
           />
         </div>
       ),

@@ -4,11 +4,17 @@
 
 import type { ComponentType } from "./ComponentType";
 import type { ExperienceConfigResponse } from "./ExperienceConfigResponse";
+import type { ExperienceMeta } from "./ExperienceMeta";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { PrivacyNoticeResponseWithUserPreferences } from "./PrivacyNoticeResponseWithUserPreferences";
 import type { TCFFeatureRecord } from "./TCFFeatureRecord";
-import type { TCFPurposeRecord } from "./TCFPurposeRecord";
-import type { TCFVendorRecord } from "./TCFVendorRecord";
+import type { TCFPurposeConsentRecord } from "./TCFPurposeConsentRecord";
+import type { TCFPurposeLegitimateInterestsRecord } from "./TCFPurposeLegitimateInterestsRecord";
+import type { TCFSpecialFeatureRecord } from "./TCFSpecialFeatureRecord";
+import type { TCFSpecialPurposeRecord } from "./TCFSpecialPurposeRecord";
+import type { TCFVendorConsentRecord } from "./TCFVendorConsentRecord";
+import type { TCFVendorLegitimateInterestsRecord } from "./TCFVendorLegitimateInterestsRecord";
+import type { TCFVendorRelationships } from "./TCFVendorRelationships";
 
 /**
  * An API representation of a PrivacyExperience used for response payloads
@@ -21,6 +27,17 @@ export type PrivacyExperienceResponse = {
    */
   experience_config?: ExperienceConfigResponse;
   id: string;
+  tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
+  tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
+  tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
+  tcf_features?: Array<TCFFeatureRecord>;
+  tcf_special_features?: Array<TCFSpecialFeatureRecord>;
+  tcf_vendor_consents?: Array<TCFVendorConsentRecord>;
+  tcf_vendor_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
+  tcf_vendor_relationships?: Array<TCFVendorRelationships>;
+  tcf_system_consents?: Array<TCFVendorConsentRecord>;
+  tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
+  tcf_system_relationships?: Array<TCFVendorRelationships>;
   created_at: string;
   updated_at: string;
   /**
@@ -31,29 +48,6 @@ export type PrivacyExperienceResponse = {
    * The Privacy Notices associated with this experience, if applicable
    */
   privacy_notices?: Array<PrivacyNoticeResponseWithUserPreferences>;
-  /**
-   * For TCF Experiences, the TCF Purposes that appear on your Systems
-   */
-  tcf_purposes?: Array<TCFPurposeRecord>;
-  /**
-   * For TCF Experiences, the TCF Special Purposes that appear on your Systems
-   */
-  tcf_special_purposes?: Array<TCFPurposeRecord>;
-  /**
-   * For TCF Experiences, the TCF Vendors associated with your Systems
-   */
-  tcf_vendors?: Array<TCFVendorRecord>;
-  /**
-   * For TCF Experiences, the TCF Features that appear on your Systems
-   */
-  tcf_features?: Array<TCFFeatureRecord>;
-  /**
-   * For TCF Experiences, the TCF Special Features that appear on your Systems
-   */
-  tcf_special_features?: Array<TCFFeatureRecord>;
-  /**
-   * For TCF Experiences, Systems with TCF components that do not have an official vendor id (identified by system id)
-   */
-  tcf_systems?: Array<TCFVendorRecord>;
   gvl?: any;
+  meta?: ExperienceMeta;
 };
