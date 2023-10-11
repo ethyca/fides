@@ -36,7 +36,7 @@ def sparkpost_erasure_identity_email() -> str:
 
 @pytest.fixture
 def sparkpost_erasure_data(
-    sparkpost_erasure_identity_email: str,
+    sparkpost_erasure_identity_email: str, sparkpost_secrets
 ) -> Generator:  # make recipients here
     payload = {
         "id": str(uuid4()),
@@ -58,8 +58,8 @@ def sparkpost_erasure_data(
             },
         ],
     }
-    base_url = f"https://{secrets['domain']}"
-    auth = secrets["api_key"], None
+    base_url = f"https://{sparkpost_secrets['domain']}"
+    auth = sparkpost_secrets["api_key"], None
 
     response = requests.post(
         url=f"{base_url}/api/v1/recipient-lists",
