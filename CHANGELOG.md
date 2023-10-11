@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.21.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.22.0...main)
+
+## [2.22.0](https://github.com/ethyca/fides/compare/2.21.0...2.22.0)
 
 ### Added
 - Added an option to link to vendor tab from an experience config description [#4191](https://github.com/ethyca/fides/pull/4191)
