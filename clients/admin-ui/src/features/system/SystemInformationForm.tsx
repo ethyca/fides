@@ -234,7 +234,7 @@ const SystemInformationForm = ({
               <DictSuggestionTextInput
                 id="name"
                 name="name"
-                dictField="display_name"
+                dictField="name"
                 isRequired
                 label="System name"
                 tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
@@ -359,7 +359,7 @@ const SystemInformationForm = ({
                     <Stack spacing={0}>
                       <DictSuggestionSwitch
                         name="does_international_transfers"
-                        dictField="international_transfers"
+                        dictField="does_international_transfers"
                         label="This system transfers data"
                         tooltip="Does this system transfer data to other countries or international organizations?"
                       />

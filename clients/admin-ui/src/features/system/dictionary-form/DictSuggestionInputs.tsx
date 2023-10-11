@@ -21,9 +21,9 @@ import {
 } from "~/features/common/form/inputs";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { selectDictEntry } from "~/features/plus/plus.slice";
-import { DictEntry } from "~/features/plus/types";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import type { FormValues } from "~/features/system/form";
+import { Vendor } from "~/types/dictionary-api";
 
 const useDictSuggestion = (
   fieldName: string,
@@ -64,8 +64,8 @@ const useDictSuggestion = (
       dictEntry &&
       dictField in dictEntry
     ) {
-      if (field.value !== dictEntry[dictField as keyof DictEntry]) {
-        setValue(dictEntry[dictField as keyof DictEntry]);
+      if (field.value !== dictEntry[dictField as keyof Vendor]) {
+        setValue(dictEntry[dictField as keyof Vendor]);
 
         // This blur is a workaround some forik issues.
         // the setTimeout is required to get around a
