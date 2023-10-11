@@ -785,7 +785,7 @@ describe("Fides-js TCF", () => {
 
   describe("ac string", () => {
     const AC_IDS = [42, 33, 49];
-    const acceptAllAcString = `1~${AC_IDS.join(".")}`;
+    const acceptAllAcString = `1~${AC_IDS.sort().join(".")}`;
     const rejectAllAcString = "1~";
     beforeEach(() => {
       cy.fixture("consent/experience_tcf.json").then((payload) => {
