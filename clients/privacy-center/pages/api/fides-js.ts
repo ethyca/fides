@@ -87,7 +87,12 @@ export default async function handler(
   }
 
   // Check if a geolocation was provided via headers or query param
-  const geolocation = await lookupGeolocation(req);
+  // const geolocation = await lookupGeolocation(req);
+  const geolocation = {
+    country: "FR",
+    location: "FR-PAC",
+    region: "PAC",
+  };
 
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
