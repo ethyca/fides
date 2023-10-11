@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.22.0...main)
 
+### Added
+- Added a `FidesUIChanged` event to Fides.js to track when user preferences change without being saved [#4253](https://github.com/ethyca/fides/pull/4253)
+
 ## [2.22.0](https://github.com/ethyca/fides/compare/2.21.0...2.22.0)
 
 ### Added
