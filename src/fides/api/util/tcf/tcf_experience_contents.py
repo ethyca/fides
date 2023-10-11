@@ -405,11 +405,6 @@ def build_purpose_or_feature_section_and_update_vendor_map(
                     has_vendor_id=bool(
                         vendor_id
                     ),  # Has_vendor_id will let us separate data between systems and vendors
-                    cookie_max_age_seconds=privacy_declaration_row.system_cookie_max_age_seconds,
-                    uses_cookies=privacy_declaration_row.system_uses_cookies,
-                    cookie_refresh=privacy_declaration_row.system_cookie_refresh,
-                    uses_non_cookie_access=privacy_declaration_row.system_uses_non_cookie_access,
-                    legitimate_interest_disclosure_url=privacy_declaration_row.system_legitimate_interest_disclosure_url,
                 )
 
             # Embed the purpose/feature under the system if it doesn't exist
@@ -428,6 +423,52 @@ def build_purpose_or_feature_section_and_update_vendor_map(
             )
 
     return non_vendor_record_map, vendor_map
+
+
+def populate_vendor_relationships_basic_attributes(
+    vendor_map,
+    matching_privacy_declarations: Query,
+):
+    """Populates TCFVendorRelationships records for all vendors that we're displaying in the overlay.
+    Ensures that these TCFVendorRelationships records have the "basic" TCF attributes populated.
+    """
+    for privacy_declaration_row in matching_privacy_declarations:
+        vendor_id, system_identifier = get_system_identifiers(privacy_declaration_row)
+        if vendor_id:  # this only applies to GVL vendors
+            # Add top-level entry to the vendor relationship map
+            if system_identifier not in vendor_map:
+                vendor_map[system_identifier] = TCFVendorRelationships(
+                    id=system_identifier,  # Identify system by vendor id if it exists, otherwise use system id.
+                    name=privacy_declaration_row.system_name,
+                    description=privacy_declaration_row.system_description,
+                    has_vendor_id=bool(
+                        vendor_id
+                    ),  # Has_vendor_id will let us separate data between systems and vendors
+                    cookie_max_age_seconds=privacy_declaration_row.system_cookie_max_age_seconds,
+                    uses_cookies=privacy_declaration_row.system_uses_cookies,
+                    cookie_refresh=privacy_declaration_row.system_cookie_refresh,
+                    uses_non_cookie_access=privacy_declaration_row.system_uses_non_cookie_access,
+                    legitimate_interest_disclosure_url=privacy_declaration_row.system_legitimate_interest_disclosure_url,
+                )
+
+            else:
+                # otherwise just ensure that our basic attributes are populated on the vendor relationship entry
+                vendor_relationships = vendor_map[system_identifier]
+                vendor_relationships.cookie_max_age_seconds = (
+                    privacy_declaration_row.system_cookie_max_age_seconds
+                )
+                vendor_relationships.uses_cookies = (
+                    privacy_declaration_row.system_uses_cookies
+                )
+                vendor_relationships.cookie_refresh = (
+                    privacy_declaration_row.system_cookie_refresh
+                )
+                vendor_relationships.uses_non_cookie_access = (
+                    privacy_declaration_row.system_uses_non_cookie_access
+                )
+                vendor_relationships.legitimate_interest_disclosure_url = (
+                    privacy_declaration_row.system_legitimate_interest_disclosure_url
+                )
 
 
 def get_tcf_contents(
@@ -521,6 +562,11 @@ def get_tcf_contents(
         vendor_subsection_name="special_features",
         vendor_map=updated_vendor_relationships_map,
         matching_privacy_declaration_query=matching_privacy_declarations,
+    )
+
+    populate_vendor_relationships_basic_attributes(
+        vendor_map=updated_vendor_relationships_map,
+        matching_privacy_declarations=matching_privacy_declarations,
     )
 
     return combine_overlay_sections(

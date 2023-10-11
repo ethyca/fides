@@ -191,6 +191,36 @@ class TestTCFContents:
             s_r_len=0,
         )
 
+    def test_system_has_declaration_no_features_special_features_special_purposes(
+        self, tcf_system, db
+    ):
+        """Assert that a VendorRelationship record is created even if no features, special features or special purposes are present.
+        VendorRelationship is still used to store basic Vendor attributes.
+        """
+        decl = tcf_system.privacy_declarations[0]
+        decl.features = []
+        decl.save(db)
+
+        decl_2 = tcf_system.privacy_declarations[1]
+        decl_2.delete(db)
+
+        tcf_contents = get_tcf_contents(db)
+
+        assert_length_of_tcf_sections(
+            tcf_contents,
+            p_c_len=1,
+            p_li_len=0,
+            f_len=0,
+            sp_len=0,
+            sf_len=0,
+            v_c_len=1,
+            v_li_len=0,
+            v_r_len=1,
+            s_c_len=0,
+            s_li_len=0,
+            s_r_len=0,
+        )
+
     @pytest.mark.usefixtures("tcf_system")
     def test_system_exists_with_tcf_purpose_and_vendor(self, db):
         """System has vendor id so we return preferences against a "vendor" instead of the system"""
@@ -225,14 +255,13 @@ class TestTCFContents:
             == "My TCF System Description"
         )
 
-        # assert some additional TCF attributes are set to their defaults here
-        assert tcf_contents.tcf_vendor_consents[0].cookie_max_age_seconds is None
-        assert tcf_contents.tcf_vendor_consents[0].uses_cookies is False
-        assert tcf_contents.tcf_vendor_consents[0].uses_non_cookie_access is False
-        assert tcf_contents.tcf_vendor_consents[0].cookie_refresh is False
-        assert (
-            tcf_contents.tcf_vendor_consents[0].legitimate_interest_disclosure_url
-            is None
+        # assert some additional TCF attributes are NOT set on the consents object - only on VendorRelationships
+        assert not hasattr(
+            tcf_contents.tcf_vendor_consents[0], "cookie_max_age_seconds"
+        )
+        assert not hasattr(tcf_contents.tcf_vendor_consents[0], "uses_cookies")
+        assert not hasattr(
+            tcf_contents.tcf_vendor_consents[0], "legitimate_interest_disclosure_url"
         )
 
         assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
@@ -244,7 +273,7 @@ class TestTCFContents:
             tcf_contents.tcf_vendor_relationships[0].description
             == "My TCF System Description"
         )
-        # assert some additional TCF attributes are set to their defaults here
+        # assert some additional TCF attributes are set to their defaults here - this is where they belong!
         assert tcf_contents.tcf_vendor_relationships[0].cookie_max_age_seconds is None
         assert tcf_contents.tcf_vendor_relationships[0].uses_cookies is False
         assert tcf_contents.tcf_vendor_relationships[0].uses_non_cookie_access is False
@@ -301,14 +330,13 @@ class TestTCFContents:
             == "My TCF System Description"
         )
 
-        # assert some additional TCF attributes are set to their defaults here
-        assert tcf_contents.tcf_vendor_consents[0].cookie_max_age_seconds == 31536000
-        assert tcf_contents.tcf_vendor_consents[0].uses_cookies is True
-        assert tcf_contents.tcf_vendor_consents[0].uses_non_cookie_access is True
-        assert tcf_contents.tcf_vendor_consents[0].cookie_refresh is True
-        assert (
-            tcf_contents.tcf_vendor_consents[0].legitimate_interest_disclosure_url
-            == "http://test.com/disclosure_url"
+        # assert some additional TCF attributes are NOT set on the consents object - only on VendorRelationships
+        assert not hasattr(
+            tcf_contents.tcf_vendor_consents[0], "cookie_max_age_seconds"
+        )
+        assert not hasattr(tcf_contents.tcf_vendor_consents[0], "uses_cookies")
+        assert not hasattr(
+            tcf_contents.tcf_vendor_consents[0], "legitimate_interest_disclosure_url"
         )
 
         assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
@@ -320,7 +348,8 @@ class TestTCFContents:
             tcf_contents.tcf_vendor_relationships[0].description
             == "My TCF System Description"
         )
-        # assert some additional TCF attributes are set to their defaults here
+
+        # assert some additional TCF attributes are being populated properly based on the System record
         assert (
             tcf_contents.tcf_vendor_relationships[0].cookie_max_age_seconds == 31536000
         )
@@ -481,7 +510,7 @@ class TestTCFContents:
             sf_len=0,
             v_c_len=1,
             v_li_len=0,
-            v_r_len=0,
+            v_r_len=1,
             s_c_len=0,
             s_li_len=0,
             s_r_len=0,
@@ -695,7 +724,7 @@ class TestTCFContents:
             sf_len=0,
             v_c_len=1,
             v_li_len=1,
-            v_r_len=0,
+            v_r_len=1,
             s_c_len=0,
             s_li_len=0,
             s_r_len=0,
@@ -760,7 +789,7 @@ class TestTCFContents:
             sf_len=0,
             v_c_len=1,
             v_li_len=1,
-            v_r_len=0,
+            v_r_len=1,
             s_c_len=0,
             s_li_len=0,
             s_r_len=0,
