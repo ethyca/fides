@@ -4,7 +4,6 @@ from datetime import datetime
 import pytest
 from iab_tcf import decode_v2
 from pydantic import ValidationError
-from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import DecodeTCStringError
 from fides.api.models.privacy_notice import UserConsentPreference
@@ -19,7 +18,11 @@ from fides.api.util.tcf.tc_mobile_data import (
     build_tc_data_for_mobile,
     convert_tc_string_to_mobile_data,
 )
-from fides.api.util.tcf.tc_model import CMP_ID, convert_tcf_contents_to_tc_model
+from fides.api.util.tcf.tc_model import (
+    CMP_ID,
+    convert_tcf_contents_to_tc_model,
+    universal_vendor_id_to_id,
+)
 from fides.api.util.tcf.tc_string import (
     TCModel,
     build_tc_string,
@@ -38,12 +41,12 @@ class TestHashTCFExperience:
             purpose_consents=[8],
             purpose_legitimate_interests=[],
             special_feature_optins=[],
-            vendor_consents=[],
+            vendor_consents=[42],
             vendor_legitimate_interests=[],
         )
 
         version_hash = build_tcf_version_hash(tcf_contents)
-        assert version_hash == "75fb2dafef58"
+        assert version_hash == "f2db7626ca0b"
 
     def test_version_hash_model_sorts_ascending(self):
         version_hash_model = TCFVersionHash(
@@ -1311,7 +1314,8 @@ class TestDecodeTcString:
                 else UserConsentPreference.opt_out
             )
             assert isinstance(pref.id, str)
-            assert int(pref.id) in datamap_vendor_consents
+            assert pref.id.startswith("gvl.")
+            assert universal_vendor_id_to_id(pref.id) in datamap_vendor_consents
 
         assert len(
             fides_tcf_preferences.vendor_legitimate_interests_preferences
@@ -1320,7 +1324,11 @@ class TestDecodeTcString:
             # User opted out of every vendor legitimate interests preference 8 and 46
             assert pref.preference == UserConsentPreference.opt_out
             assert isinstance(pref.id, str)
-            assert int(pref.id) in datamap_vendor_legitimate_interests
+            assert pref.id.startswith("gvl.")
+            assert (
+                universal_vendor_id_to_id(pref.id)
+                in datamap_vendor_legitimate_interests
+            )
 
         assert (
             len(fides_tcf_preferences.special_feature_preferences)

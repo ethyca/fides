@@ -215,10 +215,10 @@ class TestTCFContents:
             "analytics.reporting.content_performance"
         ]
         assert tcf_contents.tcf_purpose_consents[0].vendors == [
-            EmbeddedVendor(id="sendgrid", name="TCF System Test")
+            EmbeddedVendor(id="gvl.42", name="TCF System Test")
         ]
 
-        assert tcf_contents.tcf_vendor_consents[0].id == "sendgrid"
+        assert tcf_contents.tcf_vendor_consents[0].id == "gvl.42"
         assert tcf_contents.tcf_vendor_consents[0].name == "TCF System Test"
         assert (
             tcf_contents.tcf_vendor_consents[0].description
@@ -227,7 +227,7 @@ class TestTCFContents:
         assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
         assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 8
 
-        assert tcf_contents.tcf_vendor_relationships[0].id == "sendgrid"
+        assert tcf_contents.tcf_vendor_relationships[0].id == "gvl.42"
         assert tcf_contents.tcf_vendor_relationships[0].name == "TCF System Test"
         assert (
             tcf_contents.tcf_vendor_relationships[0].description
@@ -340,10 +340,10 @@ class TestTCFContents:
             for use in purpose.data_uses
         } == {"functional.storage", "analytics.reporting.content_performance"}
         assert tcf_contents.tcf_purpose_consents[0].vendors == [
-            EmbeddedVendor(id="sendgrid", name="TCF System Test")
+            EmbeddedVendor(id="gvl.42", name="TCF System Test")
         ]
 
-        assert tcf_contents.tcf_vendor_consents[0].id == "sendgrid"
+        assert tcf_contents.tcf_vendor_consents[0].id == "gvl.42"
         assert tcf_contents.tcf_vendor_consents[0].name == "TCF System Test"
         assert (
             tcf_contents.tcf_vendor_consents[0].description
@@ -395,10 +395,10 @@ class TestTCFContents:
             "marketing.advertising.negative_targeting",
         ]
         assert tcf_contents.tcf_purpose_consents[0].vendors == [
-            EmbeddedVendor(id="sendgrid", name="TCF System Test")
+            EmbeddedVendor(id="gvl.42", name="TCF System Test")
         ]
 
-        assert tcf_contents.tcf_vendor_consents[0].id == "sendgrid"
+        assert tcf_contents.tcf_vendor_consents[0].id == "gvl.42"
         assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
         assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 2
 
@@ -428,14 +428,14 @@ class TestTCFContents:
             == "Ensure security, prevent and detect fraud, and fix errors"
         )
         assert tcf_contents.tcf_special_purposes[0].vendors == [
-            EmbeddedVendor(id="sendgrid", name="TCF System Test")
+            EmbeddedVendor(id="gvl.42", name="TCF System Test")
         ]
 
-        assert tcf_contents.tcf_vendor_consents[0].id == "sendgrid"
+        assert tcf_contents.tcf_vendor_consents[0].id == "gvl.42"
         assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
         assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 8
 
-        assert tcf_contents.tcf_vendor_relationships[0].id == "sendgrid"
+        assert tcf_contents.tcf_vendor_relationships[0].id == "gvl.42"
         assert len(tcf_contents.tcf_vendor_relationships[0].special_purposes) == 1
         assert tcf_contents.tcf_vendor_relationships[0].special_purposes[0].id == 1
 
