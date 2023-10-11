@@ -9,6 +9,7 @@ saas_config:
     - name: domain
       default_value: api.sparkpost.com
     - name: api_key
+      label: API key
       sensitive: true
 
   client_config:
