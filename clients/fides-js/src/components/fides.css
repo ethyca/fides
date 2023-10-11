@@ -289,7 +289,7 @@ div.fides-modal-content {
   background-color: var(--fides-overlay-background-color);
   border-radius: var(--fides-overlay-container-border-radius);
   max-height: 680px;
-  max-width: 100%;
+  width: 680px;
   overflow-y: auto;
 
   z-index: 2;
@@ -536,7 +536,7 @@ div#fides-banner-inner .fides-privacy-policy {
 }
 
 .fides-notice-toggle .fides-disclosure-visible {
-  padding: 12px 12px;
+  padding: 12px 12px 0px 12px;
   overflow: auto; /* prevent margin collapse */
 }
 
