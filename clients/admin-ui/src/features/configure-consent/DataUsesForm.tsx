@@ -101,6 +101,7 @@ const DataUsesForm = ({ showSuggestions }: { showSuggestions: boolean }) => {
         .map((d) => transformDictDataUseToDeclaration(d))
         .map((d) => ({
           name: d.name ?? "",
+          consent_use: d.data_use.split(".")[0],
           data_use: d.data_use,
           data_categories: d.data_categories,
           cookieNames: d.cookies?.map((c) => c.name) || [],

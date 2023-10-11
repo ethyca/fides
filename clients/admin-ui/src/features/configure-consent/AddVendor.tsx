@@ -129,10 +129,10 @@ const AddVendor = ({
           const existingCookie = dec.cookies.find((c) => c.name === name);
           return existingCookie ?? { name, path: "/" };
         });
-        const { cookieNames, ...rest } = dec;
+        const { cookieNames, consent_use, ...rest } = dec;
 
         // for "marketing", we create two data uses on the backend
-        if (dec.consent_use === "marketing") {
+        if (dec.consent_use === "marketing" && !dec.data_use) {
           return [
             "marketing.advertising.first_party.targeted",
             "marketing.advertising.third_party.targeted",
@@ -150,15 +150,16 @@ const AddVendor = ({
       });
     // if editing and the system has existing data uses not shown on form
     // due to not being consent uses, include those in the payload
-    const declarationsToSave = passedInSystem
-      ? [
-          ...passedInSystem.privacy_declarations.filter((du) =>
-            consentUseOptions.some(
+    const existingDeclarations = passedInSystem
+      ? passedInSystem.privacy_declarations.filter(
+          (du) =>
+            !consentUseOptions.some(
               (opt) => opt.value === du.data_use.split(".")[0]
             )
-          ),
-          ...transformedDeclarations,
-        ]
+        )
+      : [];
+    const declarationsToSave = passedInSystem
+      ? [...existingDeclarations, ...transformedDeclarations]
       : transformedDeclarations;
 
     // We use vendor_id to potentially store a new system name

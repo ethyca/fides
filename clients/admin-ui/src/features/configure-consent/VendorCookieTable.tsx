@@ -42,14 +42,7 @@ import { CookieBySystem, transformSystemsToCookies } from "./vendor-transform";
 const VendorCookieTable = () => {
   const systems = useAppSelector(selectAllSystems);
   const cookiesBySystem = useMemo(
-    () =>
-      transformSystemsToCookies(systems).filter(
-        (cookie) =>
-          cookie.dataUse &&
-          consentUseOptions.some(
-            (opt) => opt.value === cookie.dataUse!.split(".")[0]
-          )
-      ),
+    () => transformSystemsToCookies(systems),
     [systems]
   );
 
