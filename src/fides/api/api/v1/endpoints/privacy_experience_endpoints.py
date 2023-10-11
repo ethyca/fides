@@ -16,6 +16,8 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
+from fastapi_cache.decorator import cache as fastapi_cache
+
 
 from fides.api.api import deps
 from fides.api.models.privacy_experience import (
@@ -124,6 +126,7 @@ def _filter_experiences_by_region_or_country(
     status_code=HTTP_200_OK,
     response_model=Page[PrivacyExperienceResponse],
 )
+@fastapi_cache(expire=43200)  # Cached items live for 12 hours
 @fides_limiter.limit(CONFIG.security.public_request_rate_limit)
 async def privacy_experience_list(
     *,

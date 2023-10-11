@@ -14,6 +14,10 @@ from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore
 from slowapi.middleware import SlowAPIMiddleware  # type: ignore
 from starlette.middleware.cors import CORSMiddleware
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+
+from redis import asyncio as aioredis
 
 import fides
 from fides.api.api.deps import get_api_session
@@ -73,6 +77,26 @@ PRIVACY_EXPERIENCE_CONFIGS_PATH = join(
     "../data/privacy_notices",
     "privacy_experience_config_defaults.yml",
 )
+
+
+async def init_fastapi_redis_cache():
+    """Initialize a Redis-backed cache to store API responses."""
+    redis_url = "{}://{}:{}@{}:{}/{}".format(
+        "rediss" if CONFIG.redis.ssl else "redis",
+        CONFIG.redis.user,
+        CONFIG.redis.password,
+        CONFIG.redis.host,
+        CONFIG.redis.port,
+        CONFIG.redis.db_index,
+    )
+    redis = aioredis.from_url(
+        url=redis_url,
+        charset=CONFIG.redis.charset,
+        decode_responses=CONFIG.redis.decode_responses,
+        ssl_ca_certs=CONFIG.redis.ssl_ca_certs,
+        ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
+    )
+    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
 
 
 def create_fides_app(
