@@ -234,7 +234,7 @@ const SystemInformationForm = ({
               <DictSuggestionTextInput
                 id="name"
                 name="name"
-                dictField="name"
+                dictField="legal_name"
                 isRequired
                 label="System name"
                 tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
