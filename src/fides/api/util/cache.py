@@ -7,7 +7,6 @@ from urllib.parse import quote, unquote_to_bytes
 from bson.objectid import ObjectId
 from loguru import logger
 from redis import Redis
-from redis.client import Script  # type: ignore
 from redis.exceptions import ConnectionError as ConnectionErrorFromRedis
 
 from fides.api import common_exceptions
@@ -95,10 +94,9 @@ class FidesopsRedis(Redis):
 
     def delete_keys_by_prefix(self, prefix: str) -> None:
         """Delete all keys starting with a given prefix"""
-        s: Script = self.register_script(
+        self.register_script(
             f"for _,k in ipairs(redis.call('keys','{prefix}*')) do redis.call('del',k) end"
-        )
-        s()
+        )()
 
     def get_values(self, keys: List[str]) -> Dict[str, Optional[Any]]:
         """Retrieve all values corresponding to the set of input keys and return them as a
