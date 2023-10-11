@@ -2830,6 +2830,35 @@ def tcf_system(db: Session) -> System:
     return system
 
 
+@pytest.fixture(scope="function")
+def ac_system(db: Session) -> System:
+    """Test AC System - will be fleshed out further later"""
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"ac_system{uuid.uuid4()}",
+            "vendor_id": "ac.8",
+            "name": f"Test AC System",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "system_id": system.id,
+            "data_use": "functional.storage",
+            "legal_basis_for_processing": "Consent",
+            "features": [
+                "Match and combine data from other data sources",  # Feature 1
+                "Link different devices",  # Feature 2
+            ],
+        },
+    )
+    return system
+
+
 # Detailed systems with attributes for TC string testing
 # Please don't update them!
 

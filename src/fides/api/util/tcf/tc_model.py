@@ -21,15 +21,17 @@ FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6]
 gvl: Dict = load_gvl()
 
 
-def universal_vendor_id_to_id(universal_vendor_id: str) -> int:
-    """Converts a universal vendor id to a vendor id
+def universal_vendor_id_to_gvl_id(universal_vendor_id: str) -> int:
+    """Converts a universal gvl vendor id to a vendor id
 
     For example, converts "gvl.42" to integer 42.
-    Throws a ValueError if the id cannot be converted to an integer.
+    Throws a ValueError if the id cannot be converted to an integer or if this is an AC Vendor ID
 
     We store vendor ids as a universal vendor id internally, but need to strip this off when building TC strings.
     """
-    return int(universal_vendor_id.lstrip("gvl.").lstrip("ac."))
+    if "ac." in universal_vendor_id:
+        raise ValueError("Skipping AC Vendor ID")
+    return int(universal_vendor_id.lstrip("gvl."))
 
 
 class TCModel(FidesSchema):
@@ -299,7 +301,7 @@ def _build_vendor_consents_and_legitimate_interests(
 
     for vendor_consent in vendor_consents:
         try:
-            vendor_consent_id: int = universal_vendor_id_to_id(vendor_consent.id)
+            vendor_consent_id: int = universal_vendor_id_to_gvl_id(vendor_consent.id)
         except ValueError:
             # Early check that filters out non-integer vendor ids.  Later we'll run a separate
             # check that ensures this id is also in the gvl.
@@ -312,7 +314,9 @@ def _build_vendor_consents_and_legitimate_interests(
 
     for vendor_legitimate_interest in vendor_legitimate_interests:
         try:
-            vendor_li_id: int = universal_vendor_id_to_id(vendor_legitimate_interest.id)
+            vendor_li_id: int = universal_vendor_id_to_gvl_id(
+                vendor_legitimate_interest.id
+            )
         except ValueError:
             # Early check that filters out non-integer vendor ids.  Later we'll run a separate
             # check that ensures this id is also in the gvl.
@@ -362,7 +366,7 @@ def _build_vendors_disclosed(tcf_contents: TCFExperienceContents) -> List[int]:
     for vendor_list in vendor_main_lists:
         for vendor in vendor_list:
             try:
-                vendor_id: int = universal_vendor_id_to_id(vendor.id)
+                vendor_id: int = universal_vendor_id_to_gvl_id(vendor.id)
             except ValueError:
                 continue
             if vendor_id in all_vendor_ids:

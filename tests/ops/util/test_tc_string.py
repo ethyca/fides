@@ -21,7 +21,7 @@ from fides.api.util.tcf.tc_mobile_data import (
 from fides.api.util.tcf.tc_model import (
     CMP_ID,
     convert_tcf_contents_to_tc_model,
-    universal_vendor_id_to_id,
+    universal_vendor_id_to_gvl_id,
 )
 from fides.api.util.tcf.tc_string import (
     TCModel,
@@ -340,7 +340,7 @@ class TestBuildTCModel:
         assert decoded.interests_vendors == {}
         assert decoded.pub_restriction_entries == []
 
-        assert (decoded.oob_disclosed_vendors) == {1: False, 2: True}
+        assert decoded.oob_disclosed_vendors == {1: False, 2: True}
 
     @pytest.mark.usefixtures("emerse_system")
     def test_build_tc_string_emerse_accept_all(self, db):
@@ -1125,6 +1125,221 @@ class TestBuildTCModel:
             num: num == vendor_id for num in range(1, vendor_id + 1)
         }
 
+    @pytest.mark.usefixtures("captify_technologies_system")
+    def test_build_tc_string_captify_accept_all(self, db):
+        tcf_contents = get_tcf_contents(db)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_in
+        )
+
+        assert model.cmp_id == 407
+        assert model.vendor_list_version == 20
+        assert model.policy_version == 4
+        assert model.cmp_version == 1
+        assert model.consent_screen == 1
+
+        assert model.vendor_consents == [2]
+        assert model.vendor_legitimate_interests == []
+        assert model.purpose_consents == [1, 2, 3, 4, 7, 9, 10]
+        assert model.purpose_legitimate_interests == []
+        assert model.special_feature_optins == [2]
+
+        tc_str = build_tc_string(model)
+        decoded = decode_v2(tc_str)
+
+        assert decoded.version == 2
+        assert datetime.utcnow().date() == decoded.created.date()
+        assert decoded.cmp_id == 407
+        assert decoded.cmp_version == 1
+        assert decoded.consent_screen == 1
+        assert decoded.consent_language == b"EN"
+        assert decoded.vendor_list_version == 20
+        assert decoded.tcf_policy_version == 4
+        assert decoded.is_service_specific is False
+        assert decoded.use_non_standard_stacks is False
+        assert decoded.special_features_optin == {
+            1: False,
+            2: True,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+        }
+        assert decoded.purposes_consent == {
+            1: True,
+            2: True,
+            3: True,
+            4: True,
+            5: False,
+            6: False,
+            7: True,
+            8: False,
+            9: True,
+            10: True,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+        }
+        assert decoded.purposes_legitimate_interests == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+        }
+        assert decoded.purpose_one_treatment is False
+        assert decoded.publisher_cc == b"AA"
+        assert decoded.consented_vendors == {1: False, 2: True}
+        assert decoded.interests_vendors == {}
+        assert decoded.pub_restriction_entries == []
+
+        assert decoded.oob_disclosed_vendors == {1: False, 2: True}
+
+    @pytest.mark.usefixtures("ac_system")
+    def test_ac_system_not_in_tc_string(self, db):
+        """System with AC vendor id will not show up in the vendor consents section, but its purpose
+        with legal basis of consent does show up in purpose consents (this is the same thing we do if we
+        have a system that is not in the GVL too)"""
+        tcf_contents = get_tcf_contents(db)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_in
+        )
+
+        assert model.cmp_id == 407
+        assert model.vendor_list_version == 20
+        assert model.policy_version == 4
+        assert model.cmp_version == 1
+        assert model.consent_screen == 1
+
+        assert model.vendor_consents == []
+        assert model.vendor_legitimate_interests == []
+        assert model.purpose_consents == [1]
+        assert model.purpose_legitimate_interests == []
+        assert model.special_feature_optins == []
+
+        tc_str = build_tc_string(model)
+        decoded = decode_v2(tc_str)
+
+        assert decoded.version == 2
+        assert datetime.utcnow().date() == decoded.created.date()
+        assert decoded.cmp_id == 407
+        assert decoded.cmp_version == 1
+        assert decoded.consent_screen == 1
+        assert decoded.consent_language == b"EN"
+        assert decoded.vendor_list_version == 20
+        assert decoded.tcf_policy_version == 4
+        assert decoded.is_service_specific is False
+        assert decoded.use_non_standard_stacks is False
+        assert decoded.special_features_optin == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+        }
+        assert decoded.purposes_consent == {
+            1: True,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+        }
+        assert decoded.purposes_legitimate_interests == {
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False,
+            16: False,
+            17: False,
+            18: False,
+            19: False,
+            20: False,
+            21: False,
+            22: False,
+            23: False,
+            24: False,
+        }
+        assert decoded.purpose_one_treatment is False
+        assert decoded.publisher_cc == b"AA"
+        assert decoded.consented_vendors == {}
+        assert decoded.interests_vendors == {}
+        assert decoded.pub_restriction_entries == []
+
+        assert decoded.oob_disclosed_vendors == {}
+
 
 class TestBuildTCMobileData:
     @pytest.mark.usefixtures("captify_technologies_system")
@@ -1315,7 +1530,7 @@ class TestDecodeTcString:
             )
             assert isinstance(pref.id, str)
             assert pref.id.startswith("gvl.")
-            assert universal_vendor_id_to_id(pref.id) in datamap_vendor_consents
+            assert universal_vendor_id_to_gvl_id(pref.id) in datamap_vendor_consents
 
         assert len(
             fides_tcf_preferences.vendor_legitimate_interests_preferences
@@ -1326,7 +1541,7 @@ class TestDecodeTcString:
             assert isinstance(pref.id, str)
             assert pref.id.startswith("gvl.")
             assert (
-                universal_vendor_id_to_id(pref.id)
+                universal_vendor_id_to_gvl_id(pref.id)
                 in datamap_vendor_legitimate_interests
             )
 
