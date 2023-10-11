@@ -317,6 +317,8 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               experience={experience}
               enabledIds={draftIds}
               onChange={setDraftIds}
+              cookie={cookie}
+              options={options}
               activeTabIndex={activeTabIndex}
               onTabChange={setActiveTabIndex}
             />

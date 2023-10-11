@@ -139,6 +139,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               notices={privacyNotices}
               enabledNoticeKeys={draftEnabledNoticeKeys}
               onChange={setDraftEnabledNoticeKeys}
+              cookie={cookie}
+              options={options}
             />
           </div>
           <div className="fides-modal-footer">
