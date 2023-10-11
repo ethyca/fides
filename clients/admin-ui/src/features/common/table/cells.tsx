@@ -54,16 +54,16 @@ export const DateCell = <T extends object>({ value }: CellProps<T, string>) =>
 
 type MapCellProps<T extends object> = CellProps<T, string> & {
   map: Map<string, string>;
-  isPlaintext?: boolean;
+  isPlainText?: boolean;
 };
 
 export const MapCell = <T extends object>({
   map,
   value,
-  isPlaintext,
+  isPlainText,
 }: MapCellProps<T>) => {
   const innerText = map.get(value) ?? value;
-  if (isPlaintext) {
+  if (isPlainText) {
     return (
       <Text whiteSpace="normal" p={2}>
         {innerText}

@@ -7,6 +7,7 @@ import {
   CustomCreatableSelect,
   CustomSelect,
 } from "~/features/common/form/inputs";
+import { dataUseIsConsentUse } from "~/features/configure-consent/vendor-transform";
 import { selectDataUseOptions } from "~/features/data-use/data-use.slice";
 import {
   selectDictDataUses,
@@ -15,7 +16,7 @@ import {
 import { transformDictDataUseToDeclaration } from "~/features/system/dictionary-form/helpers";
 
 import {
-  consentUseOptions,
+  CONSENT_USE_OPTIONS,
   EMPTY_DECLARATION,
   FormValues,
   MinimalPrivacyDeclaration,
@@ -51,7 +52,7 @@ const DataUseBlock = ({
         label="Data use"
         tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
         name={`privacy_declarations.${index}.consent_use`}
-        options={consentUseOptions}
+        options={CONSENT_USE_OPTIONS}
         variant="stacked"
         isRequired
         isCustomOption
@@ -93,11 +94,7 @@ const DataUsesForm = ({ showSuggestions }: { showSuggestions: boolean }) => {
   useEffect(() => {
     if (showSuggestions && values.vendor_id && dictDataUses?.length) {
       const declarations: MinimalPrivacyDeclaration[] = dictDataUses
-        .filter((du) =>
-          consentUseOptions.some(
-            (opt) => opt.value === du.data_use.split(".")[0]
-          )
-        )
+        .filter((du) => dataUseIsConsentUse(du.data_use))
         .map((d) => transformDictDataUseToDeclaration(d))
         .map((d) => ({
           name: d.name ?? "",

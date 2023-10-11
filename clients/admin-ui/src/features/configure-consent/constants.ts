@@ -31,7 +31,7 @@ export const EMPTY_DECLARATION: MinimalPrivacyDeclaration = {
   cookies: [],
 };
 
-export const consentUseOptions = [
+export const CONSENT_USE_OPTIONS = [
   {
     label: "Analytics",
     value: "analytics",

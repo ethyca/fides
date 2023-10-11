@@ -16,6 +16,7 @@ import {
   CustomCreatableSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
+import { dataUseIsConsentUse } from "~/features/configure-consent/vendor-transform";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import {
   selectAllDictEntries,
@@ -30,7 +31,7 @@ import { System } from "~/types/api";
 import { getErrorMessage, isErrorResult } from "../common/helpers";
 import { errorToastParams, successToastParams } from "../common/toast";
 import AddModal from "./AddModal";
-import { consentUseOptions, EMPTY_DECLARATION, FormValues } from "./constants";
+import { EMPTY_DECLARATION, FormValues } from "./constants";
 import DataUsesForm from "./DataUsesForm";
 
 const defaultInitialValues: FormValues = {
@@ -100,11 +101,7 @@ const AddVendor = ({
         name: passedInSystem.name ?? "",
         vendor_id: passedInSystem.vendor_id,
         privacy_declarations: passedInSystem.privacy_declarations
-          .filter((dec) =>
-            consentUseOptions.some(
-              (opt) => opt.value === dec.data_use.split(".")[0]
-            )
-          )
+          .filter((dec) => dataUseIsConsentUse(dec.data_use))
           .map((dec) => ({
             ...dec,
             name: dec.name ?? "",
@@ -153,10 +150,7 @@ const AddVendor = ({
     // due to not being consent uses, include those in the payload
     const existingDeclarations = passedInSystem
       ? passedInSystem.privacy_declarations.filter(
-          (du) =>
-            !consentUseOptions.some(
-              (opt) => opt.value === du.data_use.split(".")[0]
-            )
+          (du) => !dataUseIsConsentUse(du.data_use)
         )
       : [];
     const declarationsToSave = passedInSystem
@@ -222,7 +216,9 @@ const AddVendor = ({
       >
         {({ dirty, values, isValid, resetForm }) => {
           let suggestionsState;
-          if (values.vendor_id == null) {
+          if (
+            dictionaryOptions.every((opt) => opt.value !== values.vendor_id)
+          ) {
             suggestionsState = "disabled" as const;
           } else if (isShowingSuggestions) {
             suggestionsState = "showing" as const;

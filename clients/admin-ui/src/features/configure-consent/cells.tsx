@@ -28,7 +28,7 @@ export const DataUseCell = (cellProps: CellProps<CookieBySystem, string>) => {
 
   return (
     <Box>
-      <MapCell isPlaintext map={map} {...cellProps} />
+      <MapCell isPlainText map={map} {...cellProps} />
     </Box>
   );
 };
