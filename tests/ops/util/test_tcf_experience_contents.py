@@ -224,6 +224,17 @@ class TestTCFContents:
             tcf_contents.tcf_vendor_consents[0].description
             == "My TCF System Description"
         )
+
+        # assert some additional TCF attributes are set to their defaults here
+        assert tcf_contents.tcf_vendor_consents[0].cookie_max_age_seconds is None
+        assert tcf_contents.tcf_vendor_consents[0].uses_cookies is False
+        assert tcf_contents.tcf_vendor_consents[0].uses_non_cookie_access is False
+        assert tcf_contents.tcf_vendor_consents[0].cookie_refresh is False
+        assert (
+            tcf_contents.tcf_vendor_consents[0].legitimate_interest_disclosure_url
+            is None
+        )
+
         assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
         assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 8
 
@@ -233,6 +244,94 @@ class TestTCFContents:
             tcf_contents.tcf_vendor_relationships[0].description
             == "My TCF System Description"
         )
+        # assert some additional TCF attributes are set to their defaults here
+        assert tcf_contents.tcf_vendor_relationships[0].cookie_max_age_seconds is None
+        assert tcf_contents.tcf_vendor_relationships[0].uses_cookies is False
+        assert tcf_contents.tcf_vendor_relationships[0].uses_non_cookie_access is False
+        assert tcf_contents.tcf_vendor_relationships[0].cookie_refresh is False
+        assert (
+            tcf_contents.tcf_vendor_relationships[0].legitimate_interest_disclosure_url
+            is None
+        )
+        assert len(tcf_contents.tcf_vendor_relationships[0].special_purposes) == 1
+        assert tcf_contents.tcf_vendor_relationships[0].special_purposes[0].id == 1
+
+    def test_system_exists_with_tcf_purpose_and_vendor_including_tcf_fields_set(
+        self, db, tcf_system
+    ):
+        """System has vendor id so we return preferences against a "vendor" instead of the system
+
+        Vendor has some TCF-specific attributes set, ensure they are being surfaced properly in the overlay.
+        """
+        tcf_system.cookie_max_age_seconds = 31536000
+        tcf_system.uses_cookies = True
+        tcf_system.cookie_refresh = True
+        tcf_system.uses_non_cookie_access = True
+        tcf_system.legitimate_interest_disclosure_url = "http://test.com/disclosure_url"
+        tcf_system.save(db)
+
+        tcf_contents = get_tcf_contents(db)
+        assert_length_of_tcf_sections(
+            tcf_contents,
+            p_c_len=1,
+            p_li_len=0,
+            f_len=0,
+            sp_len=1,
+            sf_len=0,
+            v_c_len=1,
+            v_li_len=0,
+            v_r_len=1,
+            s_c_len=0,
+            s_li_len=0,
+            s_r_len=0,
+        )
+
+        assert tcf_contents.tcf_purpose_consents[0].id == 8
+        assert tcf_contents.tcf_purpose_consents[0].data_uses == [
+            "analytics.reporting.content_performance"
+        ]
+        assert tcf_contents.tcf_purpose_consents[0].vendors == [
+            EmbeddedVendor(id="sendgrid", name="TCF System Test")
+        ]
+
+        assert tcf_contents.tcf_vendor_consents[0].id == "sendgrid"
+        assert tcf_contents.tcf_vendor_consents[0].name == "TCF System Test"
+        assert (
+            tcf_contents.tcf_vendor_consents[0].description
+            == "My TCF System Description"
+        )
+
+        # assert some additional TCF attributes are set to their defaults here
+        assert tcf_contents.tcf_vendor_consents[0].cookie_max_age_seconds == 31536000
+        assert tcf_contents.tcf_vendor_consents[0].uses_cookies is True
+        assert tcf_contents.tcf_vendor_consents[0].uses_non_cookie_access is True
+        assert tcf_contents.tcf_vendor_consents[0].cookie_refresh is True
+        assert (
+            tcf_contents.tcf_vendor_consents[0].legitimate_interest_disclosure_url
+            == "http://test.com/disclosure_url"
+        )
+
+        assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
+        assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 8
+
+        assert tcf_contents.tcf_vendor_relationships[0].id == "sendgrid"
+        assert tcf_contents.tcf_vendor_relationships[0].name == "TCF System Test"
+        assert (
+            tcf_contents.tcf_vendor_relationships[0].description
+            == "My TCF System Description"
+        )
+        # assert some additional TCF attributes are set to their defaults here
+        assert (
+            tcf_contents.tcf_vendor_relationships[0].cookie_max_age_seconds == 31536000
+        )
+        assert tcf_contents.tcf_vendor_relationships[0].uses_cookies is True
+        assert tcf_contents.tcf_vendor_relationships[0].uses_non_cookie_access is True
+        assert tcf_contents.tcf_vendor_relationships[0].cookie_refresh is True
+        assert (
+            tcf_contents.tcf_vendor_relationships[0].legitimate_interest_disclosure_url
+            == "http://test.com/disclosure_url"
+        )
+
         assert len(tcf_contents.tcf_vendor_relationships[0].special_purposes) == 1
         assert tcf_contents.tcf_vendor_relationships[0].special_purposes[0].id == 1
 
