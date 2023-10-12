@@ -46,6 +46,7 @@ The types of changes are:
 - Use `stdRetention` when there is not a specific value for a purpose's data retention [#4199](https://github.com/ethyca/fides/pull/4199)
 - Updating the unflatten_dict util to accept flattened dict values [#4200](https://github.com/ethyca/fides/pull/4200)
 - Minor CSS styling fixes for the consent modal [#4252](https://github.com/ethyca/fides/pull/4252)
+- Additional styling fixes for issues caused by a CSS reset [#4268](https://github.com/ethyca/fides/pull/4268)
 
 ## [2.21.0](https://github.com/ethyca/fides/compare/2.20.2...2.21.0)
 
