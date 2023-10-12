@@ -248,7 +248,7 @@ const TcfVendors = ({
           return (
             <div>
               {gvlVendor ? <StorageDisclosure vendor={gvlVendor} /> : null}
-              <div>
+              <div style={{ marginBottom: "1.1em" }}>
                 {url?.privacy ? (
                   <ExternalLink href={url.privacy}>Privacy policy</ExternalLink>
                 ) : null}
