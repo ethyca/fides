@@ -99,7 +99,7 @@ export default async function handler(
     geolocation &&
     environment.settings.IS_OVERLAY_ENABLED &&
     environment.settings.IS_PREFETCH_ENABLED &&
-    !fidesTcString // todo- check if empty or null
+    !fidesTcString
   ) {
     const fidesRegionString = constructFidesRegionString(geolocation);
 
