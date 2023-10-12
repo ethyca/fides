@@ -21,13 +21,13 @@ import {
 } from "~/features/common/form/inputs";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { selectDictEntry } from "~/features/plus/plus.slice";
-import { DictEntry } from "~/features/plus/types";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import type { FormValues } from "~/features/system/form";
+import { Vendor } from "~/types/dictionary-api";
 
 const useDictSuggestion = (
   fieldName: string,
-  dictField: string,
+  dictField?: (vendor: Vendor) => string | boolean,
   fieldType?: string
 ) => {
   const [initialField, meta, { setValue, setTouched }] = useField({
@@ -59,13 +59,13 @@ const useDictSuggestion = (
   }, [isShowingSuggestions, setPreSuggestionValue]);
 
   useEffect(() => {
-    if (
-      isShowingSuggestions === "showing" &&
-      dictEntry &&
-      dictField in dictEntry
-    ) {
-      if (field.value !== dictEntry[dictField as keyof DictEntry]) {
-        setValue(dictEntry[dictField as keyof DictEntry]);
+    if (isShowingSuggestions === "showing" && dictEntry) {
+      // Either use the passed in getter for a dictfield, or default to the field name
+      const dictFieldValue = dictField
+        ? dictField(dictEntry)
+        : dictEntry[fieldName as keyof Vendor];
+      if (field.value !== dictFieldValue) {
+        setValue(dictFieldValue);
 
         // This blur is a workaround some forik issues.
         // the setTimeout is required to get around a
@@ -78,7 +78,7 @@ const useDictSuggestion = (
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isShowingSuggestions, setValue, dictEntry, dictField, inputRef.current]);
+  }, [isShowingSuggestions, setValue, dictEntry, inputRef.current]);
 
   useEffect(() => {
     if (isShowingSuggestions === "hiding") {
@@ -96,7 +96,7 @@ const useDictSuggestion = (
 };
 
 type Props = {
-  dictField: string;
+  dictField?: (vendor: Vendor) => string | boolean;
 } & Omit<CustomInputProps, "variant"> &
   StringField;
 

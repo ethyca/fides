@@ -284,6 +284,7 @@ class TestTCFContents:
             tcf_contents.tcf_vendor_relationships[0].description
             == "My TCF System Description"
         )
+
         # assert some additional TCF attributes are set to their defaults here - this is where they belong!
         assert tcf_contents.tcf_vendor_relationships[0].cookie_max_age_seconds is None
         assert tcf_contents.tcf_vendor_relationships[0].uses_cookies is False
