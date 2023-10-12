@@ -39,6 +39,11 @@ export const defaultInitialValues: FormValues = {
   privacy_declarations: [],
   data_stewards: "",
   dpo: "",
+  cookie_max_age_seconds: undefined,
+  uses_cookies: false,
+  cookie_refresh: false,
+  uses_non_cookie_access: false,
+  legitimate_interest_disclosure_url: "",
 };
 
 export const transformSystemToFormValues = (
@@ -106,6 +111,14 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
     fidesctl_meta: formValues.fidesctl_meta,
     organization_fides_key: formValues.organization_fides_key,
     dpa_progress: formValues.dpa_progress,
+    cookie_max_age_seconds: formValues.cookie_max_age_seconds
+      ? formValues.cookie_max_age_seconds
+      : undefined,
+    uses_cookies: formValues.uses_cookies,
+    cookie_refresh: formValues.cookie_refresh,
+    uses_non_cookie_access: formValues.uses_non_cookie_access,
+    legitimate_interest_disclosure_url:
+      formValues.legitimate_interest_disclosure_url,
   };
 
   if (!formValues.processes_personal_data) {
