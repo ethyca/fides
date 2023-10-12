@@ -63,7 +63,7 @@ describe("Consent configuration", () => {
       cy.getByTestId("subrow-cell_0_Cookie name").contains("N/A");
       cy.getByTestId("subrow-cell_0_Data use").contains("N/A");
       cy.getByTestId("subrow-cell_1_Cookie name").contains("_ga");
-      cy.getByTestId("subrow-cell_1_Data use").contains("advertising");
+      cy.getByTestId("subrow-cell_1_Data use").contains("Marketing");
       cy.getByTestId("subrow-cell_2_Cookie name").contains("cookie");
       cy.getByTestId("subrow-cell_2_Data use").contains("Improve Service");
       cy.getByTestId("subrow-cell_3_Cookie name").contains("cookie2");
@@ -108,7 +108,10 @@ describe("Consent configuration", () => {
       it("can add a vendor without the dictionary", () => {
         cy.getByTestId("add-vendor-btn").click();
         cy.getByTestId("input-name").type("test vendor");
-        cy.selectOption("input-privacy_declarations.0.data_use", "analytics");
+        cy.selectOption(
+          "input-privacy_declarations.0.consent_use",
+          "analytics"
+        );
         cy.getByTestId("input-privacy_declarations.0.cookieNames")
           .find(".custom-creatable-select__input-container")
           .type("test{enter}cookie{enter}");
@@ -144,16 +147,20 @@ describe("Consent configuration", () => {
         cy.getByTestId("add-vendor-btn").click();
         cy.getByTestId("add-data-use-btn").should("be.disabled");
         cy.getByTestId("input-name").type("test vendor");
-        cy.selectOption("input-privacy_declarations.0.data_use", "analytics");
+        cy.selectOption(
+          "input-privacy_declarations.0.consent_use",
+          "analytics"
+        );
         cy.getByTestId("input-privacy_declarations.0.cookieNames")
           .find(".custom-creatable-select__input-container")
           .type("one{enter}");
 
         // Add another use
         cy.getByTestId("add-data-use-btn").click();
+        // TODO: this select fails when trying to select "essential" or "functional", but accepts "analytics" or "marketing"
         cy.selectOption(
-          "input-privacy_declarations.1.data_use",
-          "personalize.system"
+          "input-privacy_declarations.1.consent_use",
+          "marketing"
         );
         cy.getByTestId("input-privacy_declarations.1.cookieNames")
           .find(".custom-creatable-select__input-container")
@@ -175,7 +182,18 @@ describe("Consent configuration", () => {
             },
             {
               name: "",
-              data_use: "personalize.system",
+              data_use: "marketing.advertising.first_party.targeted",
+              data_categories: ["user"],
+              cookies: [
+                {
+                  name: "two",
+                  path: "/",
+                },
+              ],
+            },
+            {
+              name: "",
+              data_use: "marketing.advertising.third_party.targeted",
               data_categories: ["user"],
               cookies: [
                 {
@@ -205,8 +223,11 @@ describe("Consent configuration", () => {
         cy.getByTestId("sparkle-btn").click();
         cy.wait("@getDictionaryDeclarations");
         cy.getSelectValueContainer(
+          "input-privacy_declarations.0.consent_use"
+        ).contains("Marketing");
+        cy.getSelectValueContainer(
           "input-privacy_declarations.0.data_use"
-        ).contains("marketing.advertising.profiling");
+        ).contains("Profiling for Advertising");
         ["av_*", "aniC", "2_C_*"].forEach((cookieName) => {
           cy.getByTestId("input-privacy_declarations.0.cookieNames").contains(
             cookieName
@@ -216,7 +237,7 @@ describe("Consent configuration", () => {
         // Also check one that shouldn't have any cookies
         cy.getSelectValueContainer(
           "input-privacy_declarations.1.data_use"
-        ).contains("analytics.reporting.campaign_insights");
+        ).contains("Analytics for Insights");
         cy.getByTestId("input-privacy_declarations.1.cookieNames").contains(
           "Select..."
         );
@@ -621,28 +642,6 @@ describe("Consent configuration", () => {
             },
             {
               name: "",
-              data_use: "personalize.content.limited",
-              data_categories: [
-                "user.device.ip_address",
-                "user.device",
-                "user.sensor",
-                "user.user_sensor",
-                "user.telemetry",
-                "user.device.cookie_id",
-                "user.device.device_id",
-                "user.device.cookie",
-                "user.behavior.purchase_history",
-                "user.behavior",
-                "user.behavior.browsing_history",
-                "user.behavior.media_consumption",
-                "user.behavior.search_history",
-                "user.social",
-                "user.location.imprecise",
-              ],
-              cookies: [],
-            },
-            {
-              name: "",
               data_use: "essential.service.security",
               data_categories: [
                 "user.device.ip_address",
@@ -670,7 +669,10 @@ describe("Consent configuration", () => {
       it("can create a vendor that is not in the dictionary", () => {
         cy.getByTestId("add-vendor-btn").click();
         cy.getByTestId("input-vendor_id").type("custom vendor{enter}");
-        cy.selectOption("input-privacy_declarations.0.data_use", "analytics");
+        cy.selectOption(
+          "input-privacy_declarations.0.consent_use",
+          "analytics"
+        );
         cy.getByTestId("input-privacy_declarations.0.cookieNames")
           .find(".custom-creatable-select__input-container")
           .type("test{enter}");

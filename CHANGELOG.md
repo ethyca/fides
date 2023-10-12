@@ -39,6 +39,7 @@ The types of changes are:
 - Styling improvements for the fides.js consent banners and modals [#4222](https://github.com/ethyca/fides/pull/4222)
 - Update frontend to handle updated Compass schema [#4254](https://github.com/ethyca/fides/pull/4254)
 - Assume Universal Vendor ID usage in TC String translation [#4256](https://github.com/ethyca/fides/pull/4256)
+- Changed vendor form on configuring consent page to use two-part selection for consent uses [#4251](https://github.com/ethyca/fides/pull/4251)
 
 ### Fixed
 - TCF overlay can initialize its consent preferences from a cookie [#4124](https://github.com/ethyca/fides/pull/4124)
