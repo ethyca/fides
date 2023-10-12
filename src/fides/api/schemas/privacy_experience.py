@@ -190,16 +190,16 @@ class ExperienceMeta(FidesSchema):
         description="A hashed value that can be compared to previously-fetched "
         "hash values to determine if the Experience has meaningfully changed"
     )
-    accept_all_tc_string: Optional[str] = Field(
-        description="The TC string corresponding to a user opting in to all "
+    accept_all_fides_string: Optional[str] = Field(
+        description="The fides string (TC String + AC String) corresponding to a user opting in to all "
         "available options"
     )
-    accept_all_tc_mobile_data: Optional[TCMobileData] = None
-    reject_all_tc_string: Optional[str] = Field(
-        description="The TC string corresponding to a user opting out of all "
+    accept_all_fides_mobile_data: Optional[TCMobileData] = None
+    reject_all_fides_string: Optional[str] = Field(
+        description="The fides string (TC String + AC String) corresponding to a user opting out of all "
         "available options"
     )
-    reject_all_tc_mobile_data: Optional[TCMobileData] = None
+    reject_all_fides_mobile_data: Optional[TCMobileData] = None
 
 
 class PrivacyExperienceResponse(TCFExperienceContents, PrivacyExperienceWithId):
