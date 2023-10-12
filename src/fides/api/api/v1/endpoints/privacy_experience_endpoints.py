@@ -1,7 +1,7 @@
 import asyncio
 import uuid
 from html import escape, unescape
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from fastapi import Depends, HTTPException
 from fastapi import Query as FastAPIQuery
@@ -16,6 +16,7 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
+from functools import lru_cache
 
 
 from fides.api.api import deps
@@ -48,6 +49,7 @@ from fides.config import CONFIG
 router = APIRouter(tags=["Privacy Experience"], prefix=urls.V1_URL_PREFIX)
 
 
+@lru_cache(maxsize=20, typed=True)
 def get_privacy_experience_or_error(
     db: Session, experience_id: str
 ) -> PrivacyExperience:
@@ -65,6 +67,7 @@ def get_privacy_experience_or_error(
     return privacy_experience
 
 
+@lru_cache(maxsize=20, typed=True)
 def _filter_experiences_by_region_or_country(
     db: Session, region: Optional[str], experience_query: Query
 ) -> Query:
@@ -120,19 +123,16 @@ def _filter_experiences_by_region_or_country(
     return db.query(PrivacyExperience).filter(False)
 
 
-EPIC_CACHE: Dict[str, AbstractPage[PrivacyExperience]] = {}
+EPIC_CACHE: Dict[str, List] = {}
 
 
 @router.get(
     urls.PRIVACY_EXPERIENCE,
     status_code=HTTP_200_OK,
-    response_model=Page[PrivacyExperienceResponse],
 )
-@fides_limiter.limit(CONFIG.security.public_request_rate_limit)
 async def privacy_experience_list(
     *,
     db: Session = Depends(deps.get_db),
-    params: Params = Depends(),
     show_disabled: Optional[bool] = True,
     region: Optional[str] = None,
     component: Optional[ComponentType] = None,
@@ -144,7 +144,7 @@ async def privacy_experience_list(
     include_meta: Optional[bool] = False,
     request: Request,  # required for rate limiting
     response: Response,  # required for rate limiting
-) -> AbstractPage[PrivacyExperience]:
+) -> List:
     """
     Public endpoint that returns a list of PrivacyExperience records for individual regions with
     relevant privacy notices or tcf contents embedded in the response.
@@ -153,7 +153,6 @@ async def privacy_experience_list(
     notices as well.
 
     :param db:
-    :param params: Special case used for Pagination
     :param show_disabled: If False, returns only enabled Experiences and Notices
     :param region: Return the Experiences for the given region
     :param component: Returns Experiences of the given component type
@@ -281,10 +280,9 @@ async def privacy_experience_list(
             )
 
         results.append(privacy_experience)
+    EPIC_CACHE[cache_hash] = results
 
-    paginated_results = fastapi_paginate(results, params=params)
-    EPIC_CACHE[cache_hash] = paginated_results
-    return paginated_results
+    return results
 
 
 def embed_experience_details(

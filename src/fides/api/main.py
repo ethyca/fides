@@ -24,6 +24,7 @@ from fides.api.app_setup import (
     create_fides_app,
     log_startup,
     run_database_startup,
+    init_fastapi_redis_cache,
 )
 from fides.api.common_exceptions import MalisciousUrlException
 from fides.api.middleware import handle_audit_log_resource
@@ -260,6 +261,7 @@ async def setup_server() -> None:
     await run_database_startup(app)
 
     check_redis()
+    await init_fastapi_redis_cache()
 
     if not scheduler.running:
         scheduler.start()
