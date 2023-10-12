@@ -78,7 +78,7 @@ const useDictSuggestion = (
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isShowingSuggestions, setValue, dictEntry, dictField, inputRef.current]);
+  }, [isShowingSuggestions, setValue, dictEntry, inputRef.current]);
 
   useEffect(() => {
     if (isShowingSuggestions === "hiding") {
