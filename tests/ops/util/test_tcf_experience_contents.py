@@ -225,7 +225,7 @@ class TestTCFContents:
         assert vendor_relationship.features == []
         assert vendor_relationship.special_purposes == []
         assert vendor_relationship.special_features == []
-        assert vendor_relationship.id == "sendgrid"
+        assert vendor_relationship.id == "gvl.42"
         assert vendor_relationship.cookie_max_age_seconds is None
         assert vendor_relationship.uses_cookies is False
         assert vendor_relationship.uses_non_cookie_access is False
@@ -331,10 +331,10 @@ class TestTCFContents:
             "analytics.reporting.content_performance"
         ]
         assert tcf_contents.tcf_purpose_consents[0].vendors == [
-            EmbeddedVendor(id="sendgrid", name="TCF System Test")
+            EmbeddedVendor(id="gvl.42", name="TCF System Test")
         ]
 
-        assert tcf_contents.tcf_vendor_consents[0].id == "sendgrid"
+        assert tcf_contents.tcf_vendor_consents[0].id == "gvl.42"
         assert tcf_contents.tcf_vendor_consents[0].name == "TCF System Test"
         assert (
             tcf_contents.tcf_vendor_consents[0].description
@@ -353,7 +353,7 @@ class TestTCFContents:
         assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
         assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 8
 
-        assert tcf_contents.tcf_vendor_relationships[0].id == "sendgrid"
+        assert tcf_contents.tcf_vendor_relationships[0].id == "gvl.42"
         assert tcf_contents.tcf_vendor_relationships[0].name == "TCF System Test"
         assert (
             tcf_contents.tcf_vendor_relationships[0].description
