@@ -1,14 +1,11 @@
 import asyncio
 import uuid
 from html import escape, unescape
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 from fastapi import Depends, HTTPException
 from fastapi import Query as FastAPIQuery
 from fastapi import Request, Response
-from fastapi_pagination import Page, Params
-from fastapi_pagination import paginate as fastapi_paginate
-from fastapi_pagination.bases import AbstractPage
 from loguru import logger
 from sqlalchemy.orm import Query, Session
 from starlette.status import (
@@ -123,7 +120,7 @@ def _filter_experiences_by_region_or_country(
     return db.query(PrivacyExperience).filter(False)
 
 
-EPIC_CACHE: Dict[str, List] = {}
+EPIC_CACHE: Dict[str, Dict] = {}
 
 
 @router.get(
@@ -144,7 +141,7 @@ async def privacy_experience_list(
     include_meta: Optional[bool] = False,
     request: Request,  # required for rate limiting
     response: Response,  # required for rate limiting
-) -> List:
+) -> Dict:
     """
     Public endpoint that returns a list of PrivacyExperience records for individual regions with
     relevant privacy notices or tcf contents embedded in the response.
@@ -280,9 +277,12 @@ async def privacy_experience_list(
             )
 
         results.append(privacy_experience)
-    EPIC_CACHE[cache_hash] = results
 
-    return results
+    # This is structured to look like a paginated result to minimize impact from
+    # the caching changes
+    api_result = {"items": results, "total": len(results)}
+    EPIC_CACHE[cache_hash] = api_result
+    return api_result
 
 
 def embed_experience_details(
