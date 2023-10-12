@@ -1528,7 +1528,7 @@ def served_notice_history_for_vendor_legitimate_interests(
         data={
             "serving_component": "tcf_overlay",
             "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "vendor_legitimate_interests": "sendgrid",
+            "vendor_legitimate_interests": "gvl.42",
         },
         check_name=False,
     )
@@ -2386,7 +2386,7 @@ def privacy_preference_history_for_vendor(
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
             "method": "button",
-            "vendor_consent": "sendgrid",
+            "vendor_consent": "gvl.42",
             "privacy_experience_config_history_id": None,
             "privacy_experience_id": privacy_experience_france_overlay.id,
             "preference": "opt_out",
@@ -2417,7 +2417,7 @@ def privacy_preference_history_for_vendor_legitimate_interests(
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
             "method": "button",
-            "vendor_legitimate_interests": "sendgrid",
+            "vendor_legitimate_interests": "gvl.42",
             "privacy_experience_config_history_id": None,
             "privacy_experience_id": privacy_experience_france_overlay.id,
             "preference": "opt_out",
@@ -2780,7 +2780,7 @@ def tcf_system(db: Session) -> System:
         db=db,
         data={
             "fides_key": f"tcf-system_key-f{uuid4()}",
-            "vendor_id": "sendgrid",
+            "vendor_id": "gvl.42",
             "name": f"TCF System Test",
             "description": "My TCF System Description",
             "organization_fides_key": "default_organization",
@@ -2830,6 +2830,35 @@ def tcf_system(db: Session) -> System:
     return system
 
 
+@pytest.fixture(scope="function")
+def ac_system(db: Session) -> System:
+    """Test AC System - will be fleshed out further later"""
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"ac_system{uuid.uuid4()}",
+            "vendor_id": "ac.8",
+            "name": f"Test AC System",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "system_id": system.id,
+            "data_use": "functional.storage",
+            "legal_basis_for_processing": "Consent",
+            "features": [
+                "Match and combine data from other data sources",  # Feature 1
+                "Link different devices",  # Feature 2
+            ],
+        },
+    )
+    return system
+
+
 # Detailed systems with attributes for TC string testing
 # Please don't update them!
 
@@ -2841,7 +2870,7 @@ def captify_technologies_system(db: Session) -> System:
         db=db,
         data={
             "fides_key": f"captify_{uuid.uuid4()}",
-            "vendor_id": "2",
+            "vendor_id": "gvl.2",
             "name": f"Captify",
             "description": "Captify is a search intelligence platform that helps brands and advertisers leverage search insights to improve their ad targeting and relevance.",
             "organization_fides_key": "default_organization",
@@ -2891,7 +2920,7 @@ def emerse_system(db: Session) -> System:
         db=db,
         data={
             "fides_key": f"emerse{uuid.uuid4()}",
-            "vendor_id": "8",
+            "vendor_id": "gvl.8",
             "name": f"Emerse",
             "description": "Emerse Sverige AB is a provider of programmatic advertising solutions, offering advertisers and publishers tools to manage and optimize their digital ad campaigns.",
             "organization_fides_key": "default_organization",
@@ -2957,7 +2986,7 @@ def skimbit_system(db):
         db=db,
         data={
             "fides_key": f"skimbit{uuid.uuid4()}",
-            "vendor_id": "46",
+            "vendor_id": "gvl.46",
             "name": f"Skimbit (Skimlinks, Taboola)",
             "description": "Skimbit, a Taboola company, specializes in data-driven advertising and provides tools for brands and advertisers to analyze customer behavior and deliver targeted and personalized ads.",
             "organization_fides_key": "default_organization",
