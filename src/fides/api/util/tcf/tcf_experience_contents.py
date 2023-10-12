@@ -405,11 +405,6 @@ def build_purpose_or_feature_section_and_update_vendor_map(
                     has_vendor_id=bool(
                         vendor_id
                     ),  # Has_vendor_id will let us separate data between systems and vendors
-                    cookie_max_age_seconds=privacy_declaration_row.system_cookie_max_age_seconds,
-                    uses_cookies=privacy_declaration_row.system_uses_cookies,
-                    cookie_refresh=privacy_declaration_row.system_cookie_refresh,
-                    uses_non_cookie_access=privacy_declaration_row.system_uses_non_cookie_access,
-                    legitimate_interest_disclosure_url=privacy_declaration_row.system_legitimate_interest_disclosure_url,
                 )
 
             # Embed the purpose/feature under the system if it doesn't exist
