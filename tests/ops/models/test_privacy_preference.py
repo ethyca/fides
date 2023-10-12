@@ -1600,6 +1600,13 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
             tcf_value=system_with_no_uses.id,
         ) == [system_with_no_uses.fides_key]
 
+    def test_determine_relevant_systems_for_ac_system_under_vendor_consent(
+        self, db, ac_system_without_privacy_declaration
+    ):
+        assert PrivacyPreferenceHistory.determine_relevant_systems(
+            db, tcf_field=TCFComponentType.vendor_consent.value, tcf_value="ac.100"
+        ) == [ac_system_without_privacy_declaration.fides_key]
+
 
 class TestCurrentPrivacyPreference:
     def test_get_preference_by_notice_and_fides_user_device(

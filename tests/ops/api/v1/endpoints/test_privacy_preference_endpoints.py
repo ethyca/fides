@@ -1900,6 +1900,110 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         current_vendor_preference.delete(db)
         vendor_privacy_preference_history.delete(db)
 
+    @pytest.mark.usefixtures("enable_tcf")
+    def test_save_tcf_privacy_preferences_against_ac_vendor(
+        self,
+        db,
+        api_client,
+        url,
+        privacy_experience_france_tcf_overlay,
+        experience_config_tcf_overlay,
+        ac_system_without_privacy_declaration,
+    ):
+        """Assert CurrentPrivacyPreference records were updated and PrivacyPreferenceHistory records were created
+        for recordkeeping with respect to the fides user device id in the request
+        """
+        request_body = {
+            "browser_identity": {
+                "fides_user_device_id": "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11",
+            },
+            "vendor_consent_preferences": [
+                {
+                    "id": "ac.100",
+                    "preference": "opt_in",
+                }
+            ],
+            "user_geography": "fr",
+            "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
+        }
+        test_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        response = api_client.patch(
+            url, json=request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 200
+        assert len(response.json()["purpose_consent_preferences"]) == 0
+        assert len(response.json()["preferences"]) == 0
+        assert len(response.json()["purpose_legitimate_interests_preferences"]) == 0
+        assert len(response.json()["special_purpose_preferences"]) == 0
+        assert len(response.json()["vendor_consent_preferences"]) == 1
+        assert len(response.json()["feature_preferences"]) == 0
+        assert len(response.json()["special_feature_preferences"]) == 0
+        assert len(response.json()["system_consent_preferences"]) == 0
+        assert len(response.json()["system_legitimate_interests_preferences"]) == 0
+        assert response.json()["tc_mobile_data"] is None
+
+        # Assert details saved w.r.t vendor
+
+        vendor_consent_response = response.json()["vendor_consent_preferences"][0]
+        assert vendor_consent_response["preference"] == "opt_in"
+        assert vendor_consent_response["vendor_consent"] == "ac.100"
+
+        current_vendor_preference = CurrentPrivacyPreference.get(
+            db, object_id=vendor_consent_response["id"]
+        )
+        vendor_privacy_preference_history = (
+            current_vendor_preference.privacy_preference_history
+        )
+        assert vendor_privacy_preference_history.purpose_consent is None
+        assert vendor_privacy_preference_history.privacy_notice_history_id is None
+        assert vendor_privacy_preference_history.feature is None
+        assert vendor_privacy_preference_history.vendor_consent == "ac.100"
+        assert vendor_privacy_preference_history.relevant_systems == [
+            ac_system_without_privacy_declaration.fides_key
+        ]
+
+        fides_user_device_provided_identity = (
+            vendor_privacy_preference_history.fides_user_device_provided_identity
+        )
+        assert (
+            current_vendor_preference.fides_user_device_provided_identity
+            == fides_user_device_provided_identity
+        )
+        assert (
+            fides_user_device_provided_identity.hashed_value
+            == ProvidedIdentity.hash_value(test_device_id)
+        )
+        assert (
+            fides_user_device_provided_identity.encrypted_value["value"]
+            == test_device_id
+        )
+        assert (
+            vendor_privacy_preference_history.hashed_fides_user_device
+            == ProvidedIdentity.hash_value(test_device_id)
+        )
+        assert vendor_privacy_preference_history.fides_user_device == test_device_id
+        assert (
+            vendor_privacy_preference_history.vendor_consent
+            == vendor_consent_response["vendor_consent"]
+        )
+
+        assert (
+            vendor_privacy_preference_history.request_origin
+            == RequestOrigin.tcf_overlay
+        )
+        assert (
+            vendor_privacy_preference_history.privacy_experience_config_history_id
+            == experience_config_tcf_overlay.experience_config_history_id
+        )
+        assert (
+            vendor_privacy_preference_history.privacy_experience_id
+            == privacy_experience_france_tcf_overlay.id
+        )
+
+        current_vendor_preference.delete(db)
+        vendor_privacy_preference_history.delete(db)
+
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
     )
