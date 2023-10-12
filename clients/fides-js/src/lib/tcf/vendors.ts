@@ -7,7 +7,7 @@ import {
   VendorRecord,
 } from "./types";
 
-enum VendorSouces {
+enum VendorSources {
   GVL = "gvl",
   AC = "ac",
 }
@@ -41,14 +41,14 @@ export const vendorGvlEntry = (
   const { source, id } = decodeVendorId(vendorId);
   // For backwards compatibility, we also allow an undefined source but we should
   // remove this once the backend is fully using its new vendor ID scheme.
-  if (source === VendorSouces.GVL || source === undefined) {
+  if (source === VendorSources.GVL || source === undefined) {
     return gvl.vendors[id];
   }
   return undefined;
 };
 
 export const vendorIsAc = (vendorId: TCFVendorRelationships["id"]) =>
-  decodeVendorId(vendorId).source === VendorSouces.AC;
+  decodeVendorId(vendorId).source === VendorSources.AC;
 
 const transformVendorDataToVendorRecords = ({
   consents,
