@@ -27,7 +27,7 @@ import { Vendor } from "~/types/dictionary-api";
 
 const useDictSuggestion = (
   fieldName: string,
-  dictField: string,
+  dictField?: (vendor: Vendor) => string | boolean,
   fieldType?: string
 ) => {
   const [initialField, meta, { setValue, setTouched }] = useField({
@@ -59,13 +59,13 @@ const useDictSuggestion = (
   }, [isShowingSuggestions, setPreSuggestionValue]);
 
   useEffect(() => {
-    if (
-      isShowingSuggestions === "showing" &&
-      dictEntry &&
-      dictField in dictEntry
-    ) {
-      if (field.value !== dictEntry[dictField as keyof Vendor]) {
-        setValue(dictEntry[dictField as keyof Vendor]);
+    if (isShowingSuggestions === "showing" && dictEntry) {
+      // Either use the passed in getter for a dictfield, or default to the field name
+      const dictFieldValue = dictField
+        ? dictField(dictEntry)
+        : dictEntry[fieldName as keyof Vendor];
+      if (field.value !== dictFieldValue) {
+        setValue(dictFieldValue);
 
         // This blur is a workaround some forik issues.
         // the setTimeout is required to get around a
@@ -96,7 +96,7 @@ const useDictSuggestion = (
 };
 
 type Props = {
-  dictField: string;
+  dictField?: (vendor: Vendor) => string | boolean;
 } & Omit<CustomInputProps, "variant"> &
   StringField;
 
