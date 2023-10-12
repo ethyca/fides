@@ -660,9 +660,9 @@ class TestSystemCreate:
             == "We encrypt all your data in transit and at rest"
         )
         assert system.cookie_max_age_seconds == 31536000
-        assert system.uses_cookies == True
-        assert system.cookie_refresh == True
-        assert system.uses_non_cookie_access == True
+        assert system.uses_cookies is True
+        assert system.cookie_refresh is True
+        assert system.uses_non_cookie_access is True
         assert (
             system.legitimate_interest_disclosure_url
             == "http://www.example.com/legitimate_interest_disclosure"

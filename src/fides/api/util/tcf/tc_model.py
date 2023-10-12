@@ -21,6 +21,19 @@ FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6]
 gvl: Dict = load_gvl()
 
 
+def universal_vendor_id_to_gvl_id(universal_vendor_id: str) -> int:
+    """Converts a universal gvl vendor id to a vendor id
+
+    For example, converts "gvl.42" to integer 42.
+    Throws a ValueError if the id cannot be converted to an integer or if this is an AC Vendor ID
+
+    We store vendor ids as a universal vendor id internally, but need to strip this off when building TC strings.
+    """
+    if "ac." in universal_vendor_id:
+        raise ValueError("Skipping AC Vendor ID")
+    return int(universal_vendor_id.lstrip("gvl."))
+
+
 class TCModel(FidesSchema):
     """Base internal TC schema to store and validate key details from which to later build the TC String"""
 
@@ -288,7 +301,7 @@ def _build_vendor_consents_and_legitimate_interests(
 
     for vendor_consent in vendor_consents:
         try:
-            int(vendor_consent.id)
+            vendor_consent_id: int = universal_vendor_id_to_gvl_id(vendor_consent.id)
         except ValueError:
             # Early check that filters out non-integer vendor ids.  Later we'll run a separate
             # check that ensures this id is also in the gvl.
@@ -297,11 +310,13 @@ def _build_vendor_consents_and_legitimate_interests(
         if vendor_consent.purpose_consents:
             # This vendor should only be in "vendor_consents" in the first place, if consent_purposes is populated.
             # This is just to check
-            vendor_consent_ids.append(int(vendor_consent.id))
+            vendor_consent_ids.append(vendor_consent_id)
 
     for vendor_legitimate_interest in vendor_legitimate_interests:
         try:
-            int(vendor_legitimate_interest.id)
+            vendor_li_id: int = universal_vendor_id_to_gvl_id(
+                vendor_legitimate_interest.id
+            )
         except ValueError:
             # Early check that filters out non-integer vendor ids.  Later we'll run a separate
             # check that ensures this id is also in the gvl.
@@ -316,7 +331,7 @@ def _build_vendor_consents_and_legitimate_interests(
         if leg_int_purpose_ids and not bool(
             set(leg_int_purpose_ids) & set(FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS)
         ):
-            vendor_legitimate_interest_ids.append(int(vendor_legitimate_interest.id))
+            vendor_legitimate_interest_ids.append(vendor_li_id)
 
     return vendor_consent_ids, vendor_legitimate_interest_ids
 
@@ -339,7 +354,7 @@ def _build_vendors_disclosed(tcf_contents: TCFExperienceContents) -> List[int]:
     The DisclosedVendors is an optional TC String segment that records which vendors have been disclosed to a
     given user by a CMP. It may be used by a CMP while storing TC Strings, but must not be included in the TC String
     when returned by the CMP API."""
-    all_vendor_ids: List[str] = [vendor_id for vendor_id in gvl.get("vendors", {})]
+    all_vendor_ids: List[int] = [int(vendor_id) for vendor_id in gvl.get("vendors", {})]
     vendors_disclosed = set()
 
     vendor_main_lists: List[List] = [
@@ -350,8 +365,12 @@ def _build_vendors_disclosed(tcf_contents: TCFExperienceContents) -> List[int]:
 
     for vendor_list in vendor_main_lists:
         for vendor in vendor_list:
-            if str.isdigit(vendor.id) and vendor.id in all_vendor_ids:
-                vendors_disclosed.add(int(vendor.id))
+            try:
+                vendor_id: int = universal_vendor_id_to_gvl_id(vendor.id)
+            except ValueError:
+                continue
+            if vendor_id in all_vendor_ids:
+                vendors_disclosed.add(vendor_id)
 
     return sorted(list(vendors_disclosed))
 

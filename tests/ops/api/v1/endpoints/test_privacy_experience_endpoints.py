@@ -784,7 +784,7 @@ class TestGetTCFPrivacyExperiences:
         )
 
         assert len(resp.json()["items"][0]["tcf_vendor_consents"]) == 1
-        assert resp.json()["items"][0]["tcf_vendor_consents"][0]["id"] == "sendgrid"
+        assert resp.json()["items"][0]["tcf_vendor_consents"][0]["id"] == "gvl.42"
         assert (
             resp.json()["items"][0]["tcf_vendor_consents"][0]["purpose_consents"][0][
                 "id"
@@ -823,7 +823,7 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["tcf_system_legitimate_interests"] == []
         assert resp.json()["items"][0]["gvl"]["gvlSpecificationVersion"] == 3
         meta = resp.json()["items"][0]["meta"]
-        assert meta["version_hash"] == "75fb2dafef58"
+        assert meta["version_hash"] == "f2db7626ca0b"
         assert meta["accept_all_tc_string"]
         assert meta["accept_all_tc_mobile_data"]
         assert meta["reject_all_tc_string"]
@@ -904,7 +904,7 @@ class TestGetTCFPrivacyExperiences:
         self, db, api_client, url, privacy_experience_france_tcf_overlay, system
     ):
         """System has purpose 2 with legitimate interests legal basis"""
-        system.vendor_id = "sendgrid"
+        system.vendor_id = "gvl.42"
         system.save(db)
         privacy_declaration = system.privacy_declarations[0]
         privacy_declaration.data_use = "marketing.advertising.first_party.contextual"

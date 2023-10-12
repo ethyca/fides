@@ -115,6 +115,11 @@ class TCFVendorRelationships(CommonVendorFields):
     special_purposes: List[EmbeddedLineItem] = []
     features: List[EmbeddedLineItem] = []
     special_features: List[EmbeddedLineItem] = []
+    cookie_max_age_seconds: Optional[int]
+    uses_cookies: Optional[bool]
+    cookie_refresh: Optional[bool]
+    uses_non_cookie_access: Optional[bool]
+    legitimate_interest_disclosure_url: Optional[AnyUrl]
 
 
 class TCFFeatureRecord(NonVendorSection, Feature):

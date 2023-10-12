@@ -430,6 +430,50 @@ def build_purpose_or_feature_section_and_update_vendor_map(
     return non_vendor_record_map, vendor_map
 
 
+def populate_vendor_relationships_basic_attributes(
+    vendor_map: Dict[str, TCFVendorRelationships],
+    matching_privacy_declarations: Query,
+) -> Dict[str, TCFVendorRelationships]:
+    """Populates TCFVendorRelationships records for all vendors that we're displaying in the overlay.
+    Ensures that these TCFVendorRelationships records have the "basic" TCF attributes populated.
+    """
+    for privacy_declaration_row in matching_privacy_declarations:
+        vendor_id, system_identifier = get_system_identifiers(privacy_declaration_row)
+
+        # Get the existing TCFVendorRelationships record or create a new one.
+        # Add to the vendor map if it wasn't added in a previous section.
+        vendor_relationship_record = vendor_map.get(system_identifier)
+        if not vendor_relationship_record:
+            vendor_relationship_record = TCFVendorRelationships(
+                id=system_identifier,  # Identify system by vendor id if it exists, otherwise use system id.
+                name=privacy_declaration_row.system_name,
+                description=privacy_declaration_row.system_description,
+                has_vendor_id=bool(
+                    vendor_id  # This will let us separate data between systems and vendors later
+                ),
+            )
+            vendor_map[system_identifier] = vendor_relationship_record
+
+        # Now add basic attributes to the VendorRelationships record
+        vendor_relationship_record.cookie_max_age_seconds = (
+            privacy_declaration_row.system_cookie_max_age_seconds
+        )
+        vendor_relationship_record.uses_cookies = (
+            privacy_declaration_row.system_uses_cookies
+        )
+        vendor_relationship_record.cookie_refresh = (
+            privacy_declaration_row.system_cookie_refresh
+        )
+        vendor_relationship_record.uses_non_cookie_access = (
+            privacy_declaration_row.system_uses_non_cookie_access
+        )
+        vendor_relationship_record.legitimate_interest_disclosure_url = (
+            privacy_declaration_row.system_legitimate_interest_disclosure_url
+        )
+
+    return vendor_map
+
+
 def get_tcf_contents(
     db: Session,
 ) -> TCFExperienceContents:
@@ -521,6 +565,15 @@ def get_tcf_contents(
         vendor_subsection_name="special_features",
         vendor_map=updated_vendor_relationships_map,
         matching_privacy_declaration_query=matching_privacy_declarations,
+    )
+
+    # Finally, add missing TCFVendorRelationships records for vendors that weren't already added
+    # via the special_features, features, and special_purposes section.  Every vendor in the overlay
+    # should show up in this section. Add the basic attributes to the vendor here to avoid duplication
+    # in other vendor sections.
+    updated_vendor_relationships_map = populate_vendor_relationships_basic_attributes(
+        vendor_map=updated_vendor_relationships_map,
+        matching_privacy_declarations=matching_privacy_declarations,
     )
 
     return combine_overlay_sections(

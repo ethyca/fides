@@ -399,7 +399,9 @@ class System(Base, FidesBase):
     data_security_practices = Column(String)
     cookie_max_age_seconds = Column(Integer)
     uses_cookies = Column(BOOLEAN(), default=False, server_default="f", nullable=False)
-    cookie_refresh = Column(BOOLEAN(), default=False, server_default="f", nullable=False)
+    cookie_refresh = Column(
+        BOOLEAN(), default=False, server_default="f", nullable=False
+    )
     uses_non_cookie_access = Column(
         BOOLEAN(), default=False, server_default="f", nullable=False
     )
