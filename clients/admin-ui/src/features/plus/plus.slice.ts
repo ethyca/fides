@@ -251,7 +251,7 @@ const plusApi = baseApi.injectEndpoints({
     }),
     getAllDictionaryEntries: build.query<Page_Vendor_, void>({
       query: () => ({
-        params: { size: 1000 },
+        params: { size: 2000 },
         url: `plus/dictionary/system`,
       }),
       providesTags: ["Dictionary"],
