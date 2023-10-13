@@ -43,6 +43,8 @@ The types of changes are:
 - Assume Universal Vendor ID usage in TC String translation [#4256](https://github.com/ethyca/fides/pull/4256)
 - Changed vendor form on configuring consent page to use two-part selection for consent uses [#4251](https://github.com/ethyca/fides/pull/4251)
 - Updated system form to have new TCF fields [#4271](https://github.com/ethyca/fides/pull/4271)
+- Vendors disclosed string is now narrowed to only the vendors shown in the UI, not the whole GVL [#4250](https://github.com/ethyca/fides/pull/4250)
+- Changed naming convention "fides_string" instead of "tc_string" for developer friendly consent API's [#4267](https://github.com/ethyca/fides/pull/4267)
 
 ### Fixed
 - TCF overlay can initialize its consent preferences from a cookie [#4124](https://github.com/ethyca/fides/pull/4124)
@@ -53,6 +55,8 @@ The types of changes are:
 - Updating the unflatten_dict util to accept flattened dict values [#4200](https://github.com/ethyca/fides/pull/4200)
 - Minor CSS styling fixes for the consent modal [#4252](https://github.com/ethyca/fides/pull/4252)
 - Additional styling fixes for issues caused by a CSS reset [#4268](https://github.com/ethyca/fides/pull/4268)
+- Bug where vendor legitimate interests would not be set unless vendor consents were first set [#4250](https://github.com/ethyca/fides/pull/4250)
+- Vendor count over-counting in TCF overlay [#4275](https://github.com/ethyca/fides/pull/4275)
 
 ## [2.21.0](https://github.com/ethyca/fides/compare/2.20.2...2.21.0)
 
