@@ -332,7 +332,7 @@ def save_privacy_preferences_with_verified_identity(
     Creates historical records for these preferences for record keeping, and also updates current preferences.
     Creates a privacy request to propagate preferences to third party systems where applicable.
     """
-    tc_string: Optional[str] = data.tc_string
+    fides_string: Optional[str] = data.fides_string
     data = update_request_with_decoded_tc_string_fields(data, db)
 
     verify_privacy_notice_and_historical_records(
@@ -372,8 +372,8 @@ def save_privacy_preferences_with_verified_identity(
                 original_request_data=data,
             )
         )
-        saved_preferences_response.tc_mobile_data = convert_tc_string_to_mobile_data(
-            tc_string
+        saved_preferences_response.fides_mobile_data = convert_tc_string_to_mobile_data(
+            fides_string
         )
 
         return saved_preferences_response
@@ -704,19 +704,19 @@ def update_request_with_decoded_tc_string_fields(
     request_body: PrivacyPreferencesRequest, db: Session
 ) -> PrivacyPreferencesRequest:
     """Update the request body with the decoded values of the TC string if applicable"""
-    if request_body.tc_string:
+    if request_body.fides_string:
         tcf_contents: TCFExperienceContents = get_tcf_contents(
             db
         )  # TODO cache this so we're not building each time privacy preference is saved
         try:
             decoded_preference_request_body: TCStringFidesPreferences = (
-                decode_tc_string_to_preferences(request_body.tc_string, tcf_contents)
+                decode_tc_string_to_preferences(request_body.fides_string, tcf_contents)
             )
         except DecodeTCStringError as exc:
             raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.args[0])
 
         # Remove the TC string from the request body now that we've decoded it
-        request_body.tc_string = None
+        request_body.fides_string = None
         # Add the individual sections from the TC string to the request body
         for decoded_tcf_section in decoded_preference_request_body.__fields__:
             setattr(
@@ -746,7 +746,7 @@ def save_privacy_preferences(
     Creates historical records for these preferences for record keeping, and also updates current preferences.
     Creates a privacy request to propagate preferences to third party systems if applicable.
     """
-    tc_string: Optional[str] = data.tc_string
+    fides_string: Optional[str] = data.fides_string
     data = update_request_with_decoded_tc_string_fields(data, db)
 
     verify_privacy_notice_and_historical_records(
@@ -778,8 +778,8 @@ def save_privacy_preferences(
                 original_request_data=data,
             )
         )
-        saved_preferences_response.tc_mobile_data = convert_tc_string_to_mobile_data(
-            tc_string
+        saved_preferences_response.fides_mobile_data = convert_tc_string_to_mobile_data(
+            fides_string
         )
 
         return saved_preferences_response

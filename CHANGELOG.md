@@ -40,6 +40,7 @@ The types of changes are:
 - Styling improvements for the fides.js consent banners and modals [#4222](https://github.com/ethyca/fides/pull/4222)
 - Changed vendor form on configuring consent page to use two-part selection for consent uses [#4251](https://github.com/ethyca/fides/pull/4251)
 - Vendors disclosed string is now narrowed to only the vendors shown in the UI, not the whole GVL [#4250](https://github.com/ethyca/fides/pull/4250)
+- Changed naming convention "fides_string" instead of "tc_string" for developer friendly consent API's [#4267](https://github.com/ethyca/fides/pull/4267)
 
 ### Fixed
 - TCF overlay can initialize its consent preferences from a cookie [#4124](https://github.com/ethyca/fides/pull/4124)

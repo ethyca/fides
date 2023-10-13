@@ -79,8 +79,8 @@ def build_experience_tcf_meta(tcf_contents: TCFExperienceContents) -> Dict:
 
     return ExperienceMeta(
         version_hash=build_tcf_version_hash(tcf_contents),
-        accept_all_tc_string=accept_all_mobile_data.IABTCF_TCString,
-        reject_all_tc_string=reject_all_mobile_data.IABTCF_TCString,
-        accept_all_tc_mobile_data=accept_all_mobile_data,
-        reject_all_tc_mobile_data=reject_all_mobile_data,
+        accept_all_fides_string=accept_all_mobile_data.IABTCF_TCString,
+        reject_all_fides_string=reject_all_mobile_data.IABTCF_TCString,
+        accept_all_fides_mobile_data=accept_all_mobile_data,
+        reject_all_fides_mobile_data=reject_all_mobile_data,
     ).dict()
