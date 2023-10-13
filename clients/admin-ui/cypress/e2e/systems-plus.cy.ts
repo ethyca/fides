@@ -72,7 +72,7 @@ describe("System management with Plus features", () => {
       cy.getByTestId("save-btn").click();
       cy.wait("@putDictSystem");
       cy.wait("@getDictSystem");
-      cy.getByTestId("input-dpo").should("have.value", "info@anzu.io");
+      cy.getByTestId("input-dpo").should("have.value", "DPO@anzu.io");
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("tab-System information").click();
       // cy.pause();

@@ -3,6 +3,11 @@ import {
   Flex,
   FormControl,
   HStack,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
   Switch,
   Textarea,
   VStack,
@@ -360,6 +365,66 @@ export const DictSuggestionSelect = ({
           fieldName={field.name}
         />
       </VStack>
+    </FormControl>
+  );
+};
+
+export const DictSuggestionNumberInput = ({
+  label,
+  tooltip,
+  dictField,
+  name,
+  id,
+}: Props) => {
+  const { field, isInvalid, error, isShowingSuggestions } = useDictSuggestion(
+    name,
+    dictField,
+    "numeric"
+  );
+
+  const { setFieldValue } = useFormikContext();
+
+  return (
+    <FormControl isInvalid={isInvalid} width="full">
+      <Box display="flex" alignItems="center" justifyContent="space-between">
+        <HStack spacing={1}>
+          <Label htmlFor={id || name} fontSize="sm" my={0} mr={0}>
+            {label}
+          </Label>
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </HStack>
+        <HStack>
+          <NumberInput
+            value={field.value}
+            name={field.name}
+            size="sm"
+            onBlur={field.onBlur}
+            onChange={(v) => {
+              setFieldValue(field.name, v);
+            }}
+            w="100%"
+            colorScheme="purple"
+            inputMode="numeric"
+            data-testid={`input-${field.name}`}
+            color={
+              isShowingSuggestions === "showing"
+                ? "complimentary.500"
+                : "gray.800"
+            }
+          >
+            <NumberInputField />
+            <NumberInputStepper>
+              <NumberIncrementStepper />
+              <NumberDecrementStepper />
+            </NumberInputStepper>
+          </NumberInput>
+        </HStack>
+      </Box>
+      <ErrorMessage
+        isInvalid={isInvalid}
+        message={error}
+        fieldName={field.name}
+      />
     </FormControl>
   );
 };

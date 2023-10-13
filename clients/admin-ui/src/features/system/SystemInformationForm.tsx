@@ -33,6 +33,7 @@ import {
 } from "~/features/plus/plus.slice";
 import { setSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
+  DictSuggestionNumberInput,
   DictSuggestionSelect,
   DictSuggestionSwitch,
   DictSuggestionTextArea,
@@ -413,6 +414,28 @@ const SystemInformationForm = ({
               }
               animateOpacity
             >
+              <SystemFormInputGroup heading="Cookie properties">
+                <DictSuggestionSwitch
+                  name="uses_cookies"
+                  label="This system uses cookies"
+                  tooltip="Does this system use cookies?"
+                />
+                <DictSuggestionSwitch
+                  name="cookie_refresh"
+                  label="This system refreshes cookies"
+                  tooltip="Does this system automatically refresh cookies?"
+                />
+                <DictSuggestionSwitch
+                  name="uses_non_cookie_access"
+                  label="This system uses non-cookie trackers"
+                  tooltip="Does this system use other types of trackers?"
+                />
+                <DictSuggestionNumberInput
+                  name="cookie_max_age_seconds"
+                  label="Maximum duration"
+                  tooltip="What is the maximum amount of time a cookie will live?"
+                />
+              </SystemFormInputGroup>
               <SystemFormInputGroup heading="Administrative properties">
                 <CustomTextInput
                   label="Data stewards"
@@ -481,6 +504,11 @@ const SystemInformationForm = ({
                   name="data_security_practices"
                   id="data_security_practices"
                   tooltip="Which data security practices are employed to keep the data safe?"
+                />
+                <DictSuggestionTextInput
+                  label="Legitimate interest disclosure URL"
+                  name="legitimate_interest_disclosure_url"
+                  id="legitimate_interest_disclosure_url"
                 />
               </SystemFormInputGroup>
               {values.fides_key ? (
