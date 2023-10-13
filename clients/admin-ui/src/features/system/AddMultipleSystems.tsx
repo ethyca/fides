@@ -1,3 +1,5 @@
+import { Box, Button, Flex, Spinner } from "@fidesui/react";
+import { useRouter } from "next/router";
 import {
   HTMLProps,
   useCallback,
@@ -7,8 +9,7 @@ import {
   useState,
 } from "react";
 import { Column, Hooks, Row, TableInstance, useRowSelect } from "react-table";
-import { useRouter } from "next/router";
-import { Spinner, Flex, Button, Box } from "@fidesui/react";
+
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import { FidesTable, WrappedCell } from "~/features/common/table";
@@ -19,7 +20,6 @@ import {
   useGetAllCreatedSystemsQuery,
   usePostCreatedSystemsMutation,
 } from "~/features/plus/plus.slice";
-import { DATAMAP_ROUTE } from "../common/nav/v2/routes";
 
 type CheckboxProps = {
   indeterminate?: boolean;
@@ -72,7 +72,6 @@ type Props = {
 export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   const features = useFeatures();
   const router = useRouter();
-  const [anyRowsSelected, setAnyRowsSelected] = useState(false);
   const { isLoading: isGetLoading } = useGetAllCreatedSystemsQuery(undefined, {
     skip: !features.dictionaryService,
   });

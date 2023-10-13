@@ -1,7 +1,15 @@
-import { Box, Heading, SimpleGrid, Stack, Text } from "@fidesui/react";
+import {
+  Box,
+  Heading,
+  SimpleGrid,
+  Stack,
+  Text,
+  useDisclosure,
+} from "@fidesui/react";
 import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
+import { useFeatures } from "~/features/common/features";
 import {
   AWSLogoIcon,
   ManualSetupIcon,
@@ -11,6 +19,7 @@ import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_MULTIPLE_ROUTE,
 } from "~/features/common/nav/v2/routes";
+import { UpgradeModal } from "~/features/common/UpgradeModal";
 import { ValidTargets } from "~/types/api";
 
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
@@ -33,6 +42,8 @@ const SectionTitle = ({ children }: { children: string }) => (
 const AddSystem = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { isOpen, onClose, onOpen } = useDisclosure();
+  const { dictionaryService: isCompassEnabled } = useFeatures();
 
   return (
     <Stack spacing={9} data-testid="add-systems">
@@ -53,6 +64,13 @@ const AddSystem = () => {
           systems to your map.
         </Text>
       </Stack>
+      <UpgradeModal
+        isOpen={isOpen}
+        isSystem
+        nonUpgradeLink={ADD_SYSTEMS_MANUAL_ROUTE}
+        upgradeLink="https://ethyca.com"
+        onClose={onClose}
+      />
       <Box data-testid="manual-options">
         <SectionTitle>Manually add systems</SectionTitle>
         <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing="4">
@@ -69,10 +87,14 @@ const AddSystem = () => {
           <SystemOption
             label="Add multiple systems"
             icon={<ManualSetupIcon boxSize={8} />}
-            description="Add multiple systems"
+            description="Add multiple systems to your data map from the GVL, Google AC list, and Compass"
             onClick={() => {
-              dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
-              router.push(ADD_SYSTEMS_MULTIPLE_ROUTE);
+              if (isCompassEnabled) {
+                dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
+                router.push(ADD_SYSTEMS_MULTIPLE_ROUTE);
+              } else {
+                onOpen();
+              }
             }}
             data-testid="multiple-btn"
           />

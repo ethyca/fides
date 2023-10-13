@@ -257,7 +257,7 @@ const plusApi = baseApi.injectEndpoints({
       query: () => ({
         url: `plus/dictionary/created-vendors`,
       }),
-      providesTags: ["Dictionary"],
+      providesTags: ["Created Systems"],
     }),
     postCreatedSystems: build.mutation<any, string[]>({
       query: (vendor_ids: string[]) => ({
@@ -265,7 +265,13 @@ const plusApi = baseApi.injectEndpoints({
         url: `plus/dictionary/created-vendors`,
         body: vendor_ids,
       }),
-      invalidatesTags: ["Dictionary"],
+      invalidatesTags: [
+        "Dictionary",
+        "Created Systems",
+        "System",
+        "Datamap",
+        "System History",
+      ],
     }),
     getFidesCloudConfig: build.query<CloudConfig, void>({
       query: () => ({

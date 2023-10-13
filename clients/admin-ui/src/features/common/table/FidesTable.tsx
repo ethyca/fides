@@ -90,7 +90,7 @@ export const FidesTable = <T extends FidesObject>({
             setGlobalFilter={tableInstance.setGlobalFilter}
             placeholder={searchBarPlaceHolder}
           />
-          {searchBarRightButton ? searchBarRightButton : null}
+          {searchBarRightButton || null}
         </Flex>
       ) : null}
       <TableContainer
