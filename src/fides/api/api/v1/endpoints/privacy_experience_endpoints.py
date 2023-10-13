@@ -1,5 +1,6 @@
 import asyncio
 import uuid
+from functools import lru_cache
 from html import escape, unescape
 from typing import Dict, List, Optional
 
@@ -13,8 +14,6 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
-from functools import lru_cache
-
 
 from fides.api.api import deps
 from fides.api.models.privacy_experience import (
@@ -24,7 +23,6 @@ from fides.api.models.privacy_experience import (
 )
 from fides.api.models.privacy_notice import PrivacyNotice
 from fides.api.models.privacy_request import ProvidedIdentity
-from fides.api.schemas.privacy_experience import PrivacyExperienceResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
@@ -124,6 +122,7 @@ def _filter_experiences_by_region_or_country(
     return db.query(PrivacyExperience).filter(False)
 
 
+# TODO: readd the fides limiter
 @router.get(
     urls.PRIVACY_EXPERIENCE,
     status_code=HTTP_200_OK,
@@ -164,7 +163,6 @@ async def privacy_experience_list(
     :param response:
     :return:
     """
-    global PRIVACY_EXPERIENCE_CACHE
 
     # These are the parameters that get used to create the cache.
     param_hash_list = [
@@ -184,13 +182,13 @@ async def privacy_experience_list(
     if request.headers.get(BUST_CACHE_HEADER):
         PRIVACY_EXPERIENCE_CACHE.clear()
 
-    if cache_hash in PRIVACY_EXPERIENCE_CACHE.keys():
+    if PRIVACY_EXPERIENCE_CACHE.get(cache_hash):
         logger.debug("Cache HIT: {}", cache_hash)
         response.headers[CACHE_HEADER] = "HIT"
         return PRIVACY_EXPERIENCE_CACHE[cache_hash]
-    else:
-        logger.debug("Cache MISS: {}", cache_hash)
-        response.headers[CACHE_HEADER] = "MISS"
+
+    logger.debug("Cache MISS: {}", cache_hash)
+    response.headers[CACHE_HEADER] = "MISS"
 
     fides_user_provided_identity: Optional[ProvidedIdentity] = None
     if fides_user_device_id:

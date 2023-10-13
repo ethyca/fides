@@ -62,6 +62,7 @@ def _custom_decoder(json_dict: Dict[str, Any]) -> Dict[str, Any]:
     return json_dict
 
 
+# pylint: disable=abstract-method
 class FidesopsRedis(Redis):
     """
     An extension to Redis' python bindings to support auto expiring data input. This class

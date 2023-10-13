@@ -17,7 +17,6 @@ from pyinstrument import Profiler
 from starlette.background import BackgroundTask
 from uvicorn import Config, Server
 
-
 import fides
 from fides.api.app_setup import (
     check_redis,

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import Dict
 
 import pytest
@@ -6,9 +7,9 @@ from starlette.status import HTTP_200_OK
 from starlette.testclient import TestClient
 
 from fides.api.api.v1.endpoints.privacy_experience_endpoints import (
-    _filter_experiences_by_region_or_country,
     BUST_CACHE_HEADER,
     CACHE_HEADER,
+    _filter_experiences_by_region_or_country,
 )
 from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.models.privacy_notice import ConsentMechanism
@@ -17,6 +18,11 @@ from fides.common.api.v1.urn_registry import PRIVACY_EXPERIENCE, V1_URL_PREFIX
 
 def get_cache_bust_headers() -> Dict:
     return {BUST_CACHE_HEADER: "true"}
+
+
+@pytest.fixture(scope="function")
+def url() -> str:
+    return V1_URL_PREFIX + PRIVACY_EXPERIENCE
 
 
 class TestGetPrivacyExperiencesCaching:
@@ -37,10 +43,6 @@ class TestGetPrivacyExperiencesCaching:
 
 
 class TestGetPrivacyExperiences:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return V1_URL_PREFIX + PRIVACY_EXPERIENCE
-
     def test_get_privacy_experiences_unauthenticated(self, url, api_client):
         """This is a public endpoint"""
         resp = api_client.get(url)
