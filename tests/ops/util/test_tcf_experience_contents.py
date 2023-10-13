@@ -963,13 +963,13 @@ class TestTCFContents:
         )
 
         vendor_consent = tcf_contents.tcf_vendor_consents[0]
-        assert vendor_consent.id == "ac.100"
+        assert vendor_consent.id == "gacp.100"
         assert (
             vendor_consent.purpose_consents == []
         )  # AC Vendor showed up in this section even though it didn't have any purposes
 
         vendor_relationship = tcf_contents.tcf_vendor_relationships[0]
-        assert vendor_relationship.id == "ac.100"
+        assert vendor_relationship.id == "gacp.100"
         assert vendor_relationship.features == []
         assert vendor_relationship.special_purposes == []
         assert vendor_relationship.special_features == []

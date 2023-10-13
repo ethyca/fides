@@ -1604,7 +1604,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
         self, db, ac_system_without_privacy_declaration
     ):
         assert PrivacyPreferenceHistory.determine_relevant_systems(
-            db, tcf_field=TCFComponentType.vendor_consent.value, tcf_value="ac.100"
+            db, tcf_field=TCFComponentType.vendor_consent.value, tcf_value="gacp.100"
         ) == [ac_system_without_privacy_declaration.fides_key]
 
 

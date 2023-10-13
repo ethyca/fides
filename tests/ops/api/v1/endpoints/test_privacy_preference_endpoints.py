@@ -1919,7 +1919,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             },
             "vendor_consent_preferences": [
                 {
-                    "id": "ac.100",
+                    "id": "gacp.100",
                     "preference": "opt_in",
                 }
             ],
@@ -1947,7 +1947,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
 
         vendor_consent_response = response.json()["vendor_consent_preferences"][0]
         assert vendor_consent_response["preference"] == "opt_in"
-        assert vendor_consent_response["vendor_consent"] == "ac.100"
+        assert vendor_consent_response["vendor_consent"] == "gacp.100"
 
         current_vendor_preference = CurrentPrivacyPreference.get(
             db, object_id=vendor_consent_response["id"]
@@ -1958,7 +1958,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert vendor_privacy_preference_history.purpose_consent is None
         assert vendor_privacy_preference_history.privacy_notice_history_id is None
         assert vendor_privacy_preference_history.feature is None
-        assert vendor_privacy_preference_history.vendor_consent == "ac.100"
+        assert vendor_privacy_preference_history.vendor_consent == "gacp.100"
         assert vendor_privacy_preference_history.relevant_systems == [
             ac_system_without_privacy_declaration.fides_key
         ]

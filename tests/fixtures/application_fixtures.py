@@ -2866,7 +2866,7 @@ def ac_system_without_privacy_declaration(db: Session) -> System:
         db=db,
         data={
             "fides_key": f"ac_system{uuid.uuid4()}",
-            "vendor_id": "ac.100",
+            "vendor_id": "gacp.100",
             "name": f"Test AC System",
             "organization_fides_key": "default_organization",
             "system_type": "Service",

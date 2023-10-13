@@ -48,6 +48,9 @@ GVL_PATH = join(
     "gvl.json",
 )
 
+AC_PREFIX = "gacp."
+GVL_PREFIX = "gvl."
+
 PURPOSE_DATA_USES: List[str] = []
 for purpose in MAPPED_PURPOSES.values():
     PURPOSE_DATA_USES.extend(purpose.data_uses)
@@ -93,7 +96,7 @@ SystemSubSections = Union[
 ]
 
 # Common SQLAlchemy filters used below
-AC_SYSTEM_FILTER = System.vendor_id.startswith("ac.")
+AC_SYSTEM_FILTER = System.vendor_id.startswith(AC_PREFIX)
 CONSENT_LEGAL_BASIS_FILTER = (
     PrivacyDeclaration.legal_basis_for_processing == LegalBasisForProcessingEnum.CONSENT
 )
@@ -463,7 +466,7 @@ def add_ac_vendor_to_vendor_consent_map(
     if not tcf_vendor_component_type == TCFVendorConsentRecord:
         return
 
-    if not system_identifier.startswith("ac."):
+    if not system_identifier.startswith(AC_PREFIX):
         return
 
     if system_identifier in vendor_map:
