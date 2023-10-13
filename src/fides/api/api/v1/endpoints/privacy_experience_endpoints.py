@@ -45,6 +45,8 @@ from fides.config import CONFIG
 
 router = APIRouter(tags=["Privacy Experience"], prefix=urls.V1_URL_PREFIX)
 
+PRIVACY_EXPERIENCE_CACHE: Dict[str, Dict] = {}
+
 
 @lru_cache(maxsize=20, typed=True)
 def get_privacy_experience_or_error(
@@ -120,9 +122,6 @@ def _filter_experiences_by_region_or_country(
     return db.query(PrivacyExperience).filter(False)
 
 
-EPIC_CACHE: Dict[str, Dict] = {}
-
-
 @router.get(
     urls.PRIVACY_EXPERIENCE,
     status_code=HTTP_200_OK,
@@ -164,6 +163,7 @@ async def privacy_experience_list(
     :return:
     """
 
+    # These are the parameters that get used to create the cache.
     param_hash_list = [
         show_disabled,
         region,
@@ -178,10 +178,13 @@ async def privacy_experience_list(
     # Create a custom hash that avoids unhashable parameters
     cache_hash = "_".join([repr(x) for x in param_hash_list])
 
-    if cache_hash in EPIC_CACHE.keys():
+    if cache_hash in PRIVACY_EXPERIENCE_CACHE.keys():
         logger.debug("Cache HIT: {}", cache_hash)
-        return EPIC_CACHE[cache_hash]
-    logger.debug("Cache MISS: {}", cache_hash)
+        response.headers["X-Endpoint-Cache"] = "HIT"
+        return PRIVACY_EXPERIENCE_CACHE[cache_hash]
+    else:
+        logger.debug("Cache MISS: {}", cache_hash)
+        response.headers["x-Endpoint-Cache"] = "MISS"
 
     fides_user_provided_identity: Optional[ProvidedIdentity] = None
     if fides_user_device_id:
@@ -281,7 +284,7 @@ async def privacy_experience_list(
     # This is structured to look like a paginated result to minimize impact from
     # the caching changes
     api_result = {"items": results, "total": len(results)}
-    EPIC_CACHE[cache_hash] = api_result
+    PRIVACY_EXPERIENCE_CACHE[cache_hash] = api_result
     return api_result
 
 
