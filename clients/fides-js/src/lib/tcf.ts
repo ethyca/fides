@@ -43,7 +43,7 @@ const generateAcString = ({
         ...tcStringPreferences.vendorsLegint,
       ]
         .filter((id) => vendorIsAc(id))
-        // Convert ac.42 --> 42
+        // Convert gacp.42 --> 42
         .map((id) => decodeVendorId(id).id)
     )
   );
