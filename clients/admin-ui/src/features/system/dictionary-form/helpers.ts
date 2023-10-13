@@ -13,6 +13,8 @@ export const transformDictDataUseToDeclaration = (
     data_categories: dataCategories,
     features: dataUse.features,
     legal_basis_for_processing: dataUse.legal_basis_for_processing,
+    flexible_legal_basis_for_processing:
+      dataUse.flexible_legal_basis_for_processing,
     retention_period: `${dataUse.retention_period}`,
     cookies: dataUse.cookies?.map((c) => ({
       name: c.name,
