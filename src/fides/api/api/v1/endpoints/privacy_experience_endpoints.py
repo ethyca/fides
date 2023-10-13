@@ -45,6 +45,8 @@ from fides.config import CONFIG
 
 router = APIRouter(tags=["Privacy Experience"], prefix=urls.V1_URL_PREFIX)
 
+BUST_CACHE_HEADER = "bust-endpoint-cache"
+CACHE_HEADER = "X-Endpoint-Cache"
 PRIVACY_EXPERIENCE_CACHE: Dict[str, Dict] = {}
 
 
@@ -162,6 +164,7 @@ async def privacy_experience_list(
     :param response:
     :return:
     """
+    global PRIVACY_EXPERIENCE_CACHE
 
     # These are the parameters that get used to create the cache.
     param_hash_list = [
@@ -178,13 +181,16 @@ async def privacy_experience_list(
     # Create a custom hash that avoids unhashable parameters
     cache_hash = "_".join([repr(x) for x in param_hash_list])
 
+    if request.headers.get(BUST_CACHE_HEADER):
+        PRIVACY_EXPERIENCE_CACHE.clear()
+
     if cache_hash in PRIVACY_EXPERIENCE_CACHE.keys():
         logger.debug("Cache HIT: {}", cache_hash)
-        response.headers["X-Endpoint-Cache"] = "HIT"
+        response.headers[CACHE_HEADER] = "HIT"
         return PRIVACY_EXPERIENCE_CACHE[cache_hash]
     else:
         logger.debug("Cache MISS: {}", cache_hash)
-        response.headers["x-Endpoint-Cache"] = "MISS"
+        response.headers[CACHE_HEADER] = "MISS"
 
     fides_user_provided_identity: Optional[ProvidedIdentity] = None
     if fides_user_device_id:

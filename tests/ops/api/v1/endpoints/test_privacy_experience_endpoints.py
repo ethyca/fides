@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Dict
 
 import pytest
 from starlette.status import HTTP_200_OK
@@ -6,10 +7,33 @@ from starlette.testclient import TestClient
 
 from fides.api.api.v1.endpoints.privacy_experience_endpoints import (
     _filter_experiences_by_region_or_country,
+    BUST_CACHE_HEADER,
+    CACHE_HEADER,
 )
 from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.models.privacy_notice import ConsentMechanism
 from fides.common.api.v1.urn_registry import PRIVACY_EXPERIENCE, V1_URL_PREFIX
+
+
+def get_cache_bust_headers() -> Dict:
+    return {BUST_CACHE_HEADER: "true"}
+
+
+class TestGetPrivacyExperiencesCaching:
+    def test_cache_header_hit(self, url, api_client):
+        """Check that the header describing cache hits/misses is working."""
+        api_client.get(url)
+        resp = api_client.get(url)
+        cache_header = resp.headers.get(CACHE_HEADER)
+        assert cache_header
+        assert cache_header == "HIT"
+
+    def test_bust_cache_header(self, url, api_client):
+        """Check that the header to bust the cache is working."""
+        resp = api_client.get(url, headers=get_cache_bust_headers())
+        cache_header = resp.headers.get(CACHE_HEADER)
+        assert cache_header
+        assert cache_header == "MISS"
 
 
 class TestGetPrivacyExperiences:
@@ -47,7 +71,7 @@ class TestGetPrivacyExperiences:
         privacy_notice,
         privacy_experience_privacy_center,
     ):
-        unescape_header = {"Unescape-Safestr": "true"}
+        unescape_header = {"Unescape-Safestr": "true", BUST_CACHE_HEADER: "true"}
 
         resp = api_client.get(url + "?include_gvl=True", headers=unescape_header)
         assert resp.status_code == 200
@@ -98,7 +122,7 @@ class TestGetPrivacyExperiences:
         privacy_experience_privacy_center,
     ):
         # Assert not escaped without proper request header
-        resp = api_client.get(url)
+        resp = api_client.get(url, headers=get_cache_bust_headers())
         resp = resp.json()["items"][0]
         experience_config = resp["experience_config"]
         assert (
@@ -120,6 +144,7 @@ class TestGetPrivacyExperiences:
     ):
         resp = api_client.get(
             url,
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -128,6 +153,7 @@ class TestGetPrivacyExperiences:
 
         resp = api_client.get(
             url + "?show_disabled=False",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -144,6 +170,7 @@ class TestGetPrivacyExperiences:
         privacy_experience_overlay.unlink_experience_config(db)
         resp = api_client.get(
             url + "?show_disabled=False",
+            headers=get_cache_bust_headers(),
         )
         data = resp.json()
         assert (
@@ -162,6 +189,7 @@ class TestGetPrivacyExperiences:
     ):
         resp = api_client.get(
             url + "?region=us_co",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -172,6 +200,7 @@ class TestGetPrivacyExperiences:
 
         resp = api_client.get(
             url + "?region=us_ca",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -184,6 +213,7 @@ class TestGetPrivacyExperiences:
 
         resp = api_client.get(
             url + "?region=bad_region",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         assert resp.json()["total"] == 0
@@ -204,12 +234,14 @@ class TestGetPrivacyExperiences:
 
         response = api_client.get(
             url + "?region=fr_idg",
+            headers=get_cache_bust_headers(),
         )  # There are no experiences with "fr_idg" so we fell back to searching for "fr"
 
         assert_france_experience_and_notices_returned(response)
 
         response = api_client.get(
             url + "?region=FR-IDG",
+            headers=get_cache_bust_headers(),
         )  # Case insensitive and hyphens also work here -"
 
         assert_france_experience_and_notices_returned(response)
@@ -224,6 +256,7 @@ class TestGetPrivacyExperiences:
     ):
         resp = api_client.get(
             url + "?component=overlay",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -236,6 +269,7 @@ class TestGetPrivacyExperiences:
 
         resp = api_client.get(
             url + "?component=privacy_center",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -247,6 +281,7 @@ class TestGetPrivacyExperiences:
 
         resp = api_client.get(
             url + "?component=tcf_overlay",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -258,6 +293,7 @@ class TestGetPrivacyExperiences:
 
         resp = api_client.get(
             url + "?component=bad_type",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 422
 
@@ -270,6 +306,7 @@ class TestGetPrivacyExperiences:
     ):
         resp = api_client.get(
             url + "?has_notices=True",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -286,6 +323,7 @@ class TestGetPrivacyExperiences:
     ):
         resp = api_client.get(
             url + "?has_notices=True",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -309,6 +347,7 @@ class TestGetPrivacyExperiences:
     ):
         resp = api_client.get(
             url + "?has_notices=True",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -409,6 +448,7 @@ class TestGetPrivacyExperiences:
         # Filter on exact match region
         resp = api_client.get(
             url + "?has_notices=True&region=us_co",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         response_json = resp.json()
@@ -418,6 +458,7 @@ class TestGetPrivacyExperiences:
         # Filter on upper case and hyphens
         resp = api_client.get(
             url + "?has_notices=True&region=US-CO",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         assert_expected_filtered_region_response(resp.json())
@@ -442,6 +483,7 @@ class TestGetPrivacyExperiences:
         """For systems applicable filter, notices are only embedded if they are relevant to a system"""
         resp = api_client.get(
             url + "?region=us_co",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -466,6 +508,7 @@ class TestGetPrivacyExperiences:
 
         resp = api_client.get(
             url + "?region=us_co&systems_applicable=True",
+            headers=get_cache_bust_headers(),
         )
         notices = resp.json()["items"][0]["privacy_notices"]
         assert len(notices) == 1
@@ -502,6 +545,7 @@ class TestGetPrivacyExperiences:
 
         resp = api_client.get(
             url + "?has_notices=True&region=us_ca&show_disabled=False",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -528,6 +572,7 @@ class TestGetPrivacyExperiences:
     ):
         resp = api_client.get(
             url + "?has_config=False",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -536,6 +581,7 @@ class TestGetPrivacyExperiences:
 
         resp = api_client.get(
             url + "?has_config=True",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -552,6 +598,7 @@ class TestGetPrivacyExperiences:
         privacy_experience_privacy_center.save(db=db)
         resp = api_client.get(
             url + "?has_config=False",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -566,6 +613,7 @@ class TestGetPrivacyExperiences:
     ):
         resp = api_client.get(
             url + "?fides_user_device_id=does_not_exist",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 422
         assert resp.json()["detail"] == "Invalid fides user device id format"
@@ -583,6 +631,7 @@ class TestGetPrivacyExperiences:
     ):
         resp = api_client.get(
             url + "?cd685ccd-0960-4dc1-b9ca-7e810ebc5c1b",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -615,6 +664,7 @@ class TestGetPrivacyExperiences:
     ):
         resp = api_client.get(
             url + "?fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()["items"][0]
@@ -639,6 +689,7 @@ class TestGetPrivacyExperiences:
         assert privacy_notice_us_ca_provide.description == "new_description"
         resp = api_client.get(
             url + "?fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         data = resp.json()["items"][0]
@@ -668,6 +719,7 @@ class TestGetTCFPrivacyExperiences:
     ):
         resp = api_client.get(
             url + "?region=fr&component=overlay&include_gvl=True&include_meta=True",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
@@ -705,6 +757,7 @@ class TestGetTCFPrivacyExperiences:
     ):
         resp = api_client.get(
             url + "?region=fr&component=overlay&include_gvl=True&include_meta=True",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
@@ -731,6 +784,7 @@ class TestGetTCFPrivacyExperiences:
         # Has notices = True flag will keep this experience from appearing altogether
         resp = api_client.get(
             url + "?region=fr&has_notices=True",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 0
@@ -756,6 +810,7 @@ class TestGetTCFPrivacyExperiences:
         resp = api_client.get(
             url
             + "?region=fr&component=overlay&fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f&has_notices=True&include_gvl=True&include_meta=True",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
@@ -851,6 +906,7 @@ class TestGetTCFPrivacyExperiences:
         resp = api_client.get(
             url
             + "?region=fr&component=overlay&fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f&has_notices=True",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
@@ -914,6 +970,7 @@ class TestGetTCFPrivacyExperiences:
         resp = api_client.get(
             url
             + "?region=fr&component=overlay&fides_user_device_id=051b219f-20e4-45df-82f7-5eb68a00889f&has_notices=True",
+            headers=get_cache_bust_headers(),
         )
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
