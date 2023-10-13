@@ -57,7 +57,7 @@ export interface FidesCookie {
   consent: CookieKeyConsent;
   identity: CookieIdentity;
   fides_meta: CookieMeta;
-  tc_string?: string;
+  fides_tc_string?: string;
   tcf_consent: TcfCookieConsent;
 }
 
