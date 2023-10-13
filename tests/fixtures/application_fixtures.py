@@ -2837,7 +2837,7 @@ def ac_system(db: Session) -> System:
         db=db,
         data={
             "fides_key": f"ac_system{uuid.uuid4()}",
-            "vendor_id": "ac.8",
+            "vendor_id": "gacp.8",
             "name": f"Test AC System",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
