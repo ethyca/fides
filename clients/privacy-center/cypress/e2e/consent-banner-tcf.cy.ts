@@ -863,7 +863,7 @@ describe("Fides-js TCF", () => {
         AC_IDS.forEach((id, idx) => {
           experience.tcf_vendor_consents.push({
             ...baseVendor,
-            id: `ac.${id}`,
+            id: `gacp.${id}`,
             name: `AC ${id}`,
             // Set some of these vendors without purpose_consents
             purpose_consents: idx % 2 === 0 ? [] : baseVendor.purpose_consents,
@@ -894,7 +894,7 @@ describe("Fides-js TCF", () => {
         const { body } = interception.request;
         const expected = [
           { id: VENDOR_1.id, preference: "opt_in" },
-          ...AC_IDS.map((id) => ({ id: `ac.${id}`, preference: "opt_in" })),
+          ...AC_IDS.map((id) => ({ id: `gacp.${id}`, preference: "opt_in" })),
         ];
         expect(body.vendor_consent_preferences).to.eql(expected);
 
@@ -920,7 +920,7 @@ describe("Fides-js TCF", () => {
         const { body } = interception.request;
         const expected = [
           { id: VENDOR_1.id, preference: "opt_out" },
-          ...AC_IDS.map((id) => ({ id: `ac.${id}`, preference: "opt_out" })),
+          ...AC_IDS.map((id) => ({ id: `gacp.${id}`, preference: "opt_out" })),
         ];
         expect(body.vendor_consent_preferences).to.eql(expected);
 
