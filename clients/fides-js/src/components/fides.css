@@ -817,7 +817,7 @@ div#fides-banner-inner .fides-privacy-policy {
   background-color: var(--fides-overlay-background-dark-color);
   border-radius: var(--fides-overlay-component-border-radius);
   padding: 1.1em;
-  margin-bottom: 1em;
+  margin: 1em 0;
 }
 
 .fides-info-box p {
