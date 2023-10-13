@@ -1575,7 +1575,7 @@ describe("Fides-js TCF", () => {
           const cookieKeyConsent: FidesCookie = JSON.parse(
             decodeURIComponent(cookie!.value)
           );
-          const { fides_tc_string: tcString } = cookieKeyConsent;
+          const { fides_string: tcString } = cookieKeyConsent;
           const acString = tcString?.split(",")[1];
           expect(acString).to.eql(acceptAllAcString);
         });
@@ -1601,7 +1601,7 @@ describe("Fides-js TCF", () => {
           const cookieKeyConsent: FidesCookie = JSON.parse(
             decodeURIComponent(cookie!.value)
           );
-          const { fides_tc_string: tcString } = cookieKeyConsent;
+          const { fides_string: tcString } = cookieKeyConsent;
           const acString = tcString?.split(",")[1];
           expect(acString).to.eql(rejectAllAcString);
         });
@@ -1620,9 +1620,9 @@ describe("Fides-js TCF", () => {
       cy.wait("@patchPrivacyPreference");
       cy.get("@FidesUpdated")
         .should("have.been.calledTwice")
-        .its("secondCall.args.0.detail.fides_tc_string")
-        .then((fidesTcString) => {
-          const parts = fidesTcString.split(",");
+        .its("secondCall.args.0.detail.fides_string")
+        .then((fidesString) => {
+          const parts = fidesString.split(",");
           expect(parts.length).to.eql(2);
           expect(parts[1]).to.eql(acceptAllAcString);
         });

@@ -45,7 +45,7 @@ export type Fides = {
   consent: CookieKeyConsent;
   experience?: PrivacyExperience | EmptyExperience;
   geolocation?: UserGeolocation;
-  fides_tc_string?: string | undefined;
+  fides_string?: string | undefined;
   options: FidesOptions;
   fides_meta: CookieMeta;
   tcf_consent: TcfCookieConsent;
@@ -196,7 +196,7 @@ export const getInitialFides = ({
     identity: cookie.identity,
     experience: updatedExperience,
     tcf_consent: cookie.tcf_consent,
-    fides_tc_string: cookie.fides_tc_string,
+    fides_string: cookie.fides_string,
     geolocation,
     options,
     initialized: true,
@@ -278,8 +278,8 @@ export const initialize = async ({
           // we don't update cookie because it already has been overridden by the injected fidesString
           debugLog(
             options.debug,
-            "Overriding preferences from client-side fetched experience with cookie tc_string consent",
-            cookie.tc_string
+            "Overriding preferences from client-side fetched experience with cookie fides_string consent",
+            cookie.fides_string
           );
           const tcfEntities = buildTcfEntitiesFromCookie(
             effectiveExperience,
@@ -327,7 +327,7 @@ export const initialize = async ({
     consent: cookie.consent,
     fides_meta: cookie.fides_meta,
     identity: cookie.identity,
-    fides_tc_string: cookie.fides_tc_string,
+    fides_string: cookie.fides_string,
     tcf_consent: cookie.tcf_consent,
     experience,
     geolocation,

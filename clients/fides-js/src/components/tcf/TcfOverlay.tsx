@@ -193,7 +193,7 @@ const updateCookie = async (
   });
   return {
     ...oldCookie,
-    fides_tc_string: tcString,
+    fides_string: tcString,
     tcf_consent: transformTcfPreferencesToCookieKeys(tcf),
   };
 };

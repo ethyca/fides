@@ -119,7 +119,7 @@ const updateCookie = async (
 ): Promise<FidesCookie> => {
   // ignore server-side prefs if either user has no prefs to override, or TC str override is set
   if (!hasSavedTcfPreferences(experience)) {
-    return { ...oldCookie, fides_tc_string: "" };
+    return { ...oldCookie, fides_string: "" };
   }
 
   const tcSavePrefs: TcfSavePreferences = {};
@@ -154,12 +154,12 @@ const updateCookie = async (
     }
   });
 
-  const tcString = await generateTcString({
+  const fidesString = await generateTcString({
     experience,
     tcStringPreferences: enabledIds,
   });
   const tcfConsent = transformTcfPreferencesToCookieKeys(tcSavePrefs);
-  return { ...oldCookie, tc_string: tcString, tcf_consent: tcfConsent };
+  return { ...oldCookie, fides_string: fidesString, tcf_consent: tcfConsent };
 };
 
 /**
@@ -174,27 +174,27 @@ const init = async (config: FidesConfig) => {
       config.options.debug,
       "Explicit TC string detected. Proceeding to override all TCF preferences with given TC string"
     );
-    cookie.tc_string = config.options.fidesString;
+    cookie.fides_string = config.options.fidesString;
     cookie.tcf_consent = transformTcStringToCookieKeys(
       config.options.fidesString,
       config.options.debug
     );
   } else if (
     cookie.tcf_consent &&
-    !cookie.tc_string &&
+    !cookie.fides_string &&
     isPrivacyExperience(config.experience) &&
     experienceIsValid(config.experience, config.options)
   ) {
     // This state should not be hit, but just in case: if tc string is missing on cookie but we have tcf consent,
     // we should generate tc string so that our CMP API accurately reflects user preference
-    cookie.tc_string = await generateTcStringFromCookieTcfConsent(
+    cookie.fides_string = await generateTcStringFromCookieTcfConsent(
       config.experience,
       cookie.tcf_consent
     );
     debugLog(
       config.options.debug,
-      "tc_string was missing from cookie, so it has been generated based on tcf_consent",
-      cookie.tc_string
+      "fides_string was missing from cookie, so it has been generated based on tcf_consent",
+      cookie.fides_string
     );
   }
   const initialFides = getInitialFides({ ...config, cookie });

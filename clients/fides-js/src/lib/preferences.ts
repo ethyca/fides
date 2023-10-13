@@ -93,7 +93,7 @@ export const updateConsentPreferences = async ({
   // 3. Update the window.Fides object
   debugLog(debug, "Updating window.Fides");
   window.Fides.consent = cookie.consent;
-  window.Fides.fides_tc_string = cookie.fides_tc_string;
+  window.Fides.fides_string = cookie.fides_string;
   window.Fides.tcf_consent = cookie.tcf_consent;
 
   // 4. Save preferences to the cookie in the browser
