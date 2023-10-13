@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.21.1b3.post0.dev7"
+    "version": "2.21.1b3.post0.dev8"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -16929,20 +16929,20 @@
             "type": "string",
             "description": "A hashed value that can be compared to previously-fetched hash values to determine if the Experience has meaningfully changed"
           },
-          "accept_all_tc_string": {
-            "title": "Accept All Tc String",
+          "accept_all_fides_string": {
+            "title": "Accept All Fides String",
             "type": "string",
-            "description": "The TC string corresponding to a user opting in to all available options"
+            "description": "The fides string (TC String + AC String) corresponding to a user opting in to all available options"
           },
-          "accept_all_tc_mobile_data": {
+          "accept_all_fides_mobile_data": {
             "$ref": "#/components/schemas/TCMobileData"
           },
-          "reject_all_tc_string": {
-            "title": "Reject All Tc String",
+          "reject_all_fides_string": {
+            "title": "Reject All Fides String",
             "type": "string",
-            "description": "The TC string corresponding to a user opting out of all available options"
+            "description": "The fides string (TC String + AC String) corresponding to a user opting out of all available options"
           },
-          "reject_all_tc_mobile_data": {
+          "reject_all_fides_mobile_data": {
             "$ref": "#/components/schemas/TCMobileData"
           }
         },
@@ -20487,10 +20487,10 @@
             "title": "Code",
             "type": "string"
           },
-          "tc_string": {
-            "title": "Tc String",
+          "fides_string": {
+            "title": "Fides String",
             "type": "string",
-            "description": "If supplied, TC string is decoded and preferences saved for purpose_consent, purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features"
+            "description": "If supplied, TC strings and AC strings are decoded and preferences saved for purpose_consent, purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features"
           },
           "preferences": {
             "title": "Preferences",
@@ -21915,7 +21915,7 @@
             },
             "default": []
           },
-          "tc_mobile_data": {
+          "fides_mobile_data": {
             "$ref": "#/components/schemas/TCMobileData"
           }
         },
