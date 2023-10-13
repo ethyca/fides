@@ -49,6 +49,7 @@ The types of changes are:
 - Updating the unflatten_dict util to accept flattened dict values [#4200](https://github.com/ethyca/fides/pull/4200)
 - Minor CSS styling fixes for the consent modal [#4252](https://github.com/ethyca/fides/pull/4252)
 - Additional styling fixes for issues caused by a CSS reset [#4268](https://github.com/ethyca/fides/pull/4268)
+- Vendor count over-counting in TCF overlay [#4275](https://github.com/ethyca/fides/pull/4275)
 
 ## [2.21.0](https://github.com/ethyca/fides/compare/2.20.2...2.21.0)
 
