@@ -208,6 +208,15 @@ export type TcfModels =
   | TCFVendorLegitimateInterestsRecord[]
   | undefined;
 
+export type TcfModelsRecord =
+  | TCFPurposeConsentRecord
+  | TCFPurposeLegitimateInterestsRecord
+  | TCFSpecialPurposeRecord
+  | TCFFeatureRecord
+  | TCFSpecialFeatureRecord
+  | TCFVendorConsentRecord
+  | TCFVendorLegitimateInterestsRecord;
+
 export type TcfCookieKeyConsent = {
   [id: string | number]: boolean | undefined;
 };

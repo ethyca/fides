@@ -26,12 +26,12 @@ const useA11yDialogInstance = () => {
 
 interface Props {
   role: "dialog" | "alertdialog";
-  clazz: string;
+  className: string;
   id: string;
   title: string;
   onClose?: () => void;
 }
-export const useA11yDialog = ({ role, clazz, id, onClose }: Props) => {
+export const useA11yDialog = ({ role, className, id, onClose }: Props) => {
   const { instance, container: ref } = useA11yDialogInstance();
   const isAlertDialog = role === "alertdialog";
   const titleId = `${id}-title`;
@@ -60,7 +60,7 @@ export const useA11yDialog = ({ role, clazz, id, onClose }: Props) => {
     attributes: {
       container: {
         id,
-        clazz,
+        className,
         ref,
         role,
         tabIndex: -1,

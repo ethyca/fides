@@ -272,33 +272,35 @@ export const initialize = async ({
       isPrivacyExperience(effectiveExperience) &&
       experienceIsValid(effectiveExperience, options)
     ) {
-      if (options.fidesTcString && fetchedClientSideExperience) {
-        // if tc str was explicitly passed in, we need to override the client-side-fetched experience with consent from the cookie
-        // we don't update cookie because it already has been overridden by the injected fidesTcString
+      if (options.fidesTcString) {
+        if (fetchedClientSideExperience) {
+          // if tc str was explicitly passed in, we need to override the client-side-fetched experience with consent from the cookie
+          // we don't update cookie because it already has been overridden by the injected fidesTcString
+          debugLog(
+            options.debug,
+            "Overriding preferences from client-side fetched experience with cookie tc_string consent",
+            cookie.tc_string
+          );
+          const tcfEntities = buildTcfEntitiesFromCookie(
+            effectiveExperience,
+            cookie
+          );
+          Object.assign(effectiveExperience, tcfEntities);
+        }
+      } else {
+        const updatedCookie = await updateCookie(
+          cookie,
+          effectiveExperience,
+          options.debug,
+          Boolean(options.fidesTcString)
+        );
         debugLog(
           options.debug,
-          "Overriding preferences from client-side fetched experience with cookie tc_string consent",
-          cookie.tc_string
+          "Updated cookie based on experience",
+          updatedCookie
         );
-        const tcfEntities = buildTcfEntitiesFromCookie(
-          effectiveExperience,
-          cookie
-        );
-        Object.assign(effectiveExperience, tcfEntities);
+        Object.assign(cookie, updatedCookie);
       }
-      const updatedCookie = await updateCookie(
-        cookie,
-        effectiveExperience,
-        options.debug,
-        Boolean(options.fidesTcString)
-      );
-      debugLog(
-        options.debug,
-        "Updated cookie based on experience",
-        updatedCookie
-      );
-      Object.assign(cookie, updatedCookie);
-
       if (shouldInitOverlay) {
         await initOverlay({
           experience: effectiveExperience,

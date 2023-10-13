@@ -77,14 +77,14 @@ import {
 import { renderOverlay } from "./lib/tcf/renderOverlay";
 import {
   EnabledIds,
-  TCFFeatureRecord,
+  TcfModelsRecord,
   TcfSavePreferences,
-  TCFVendorConsentRecord,
-  TCFVendorLegitimateInterestsRecord,
 } from "./lib/tcf/types";
-import { transformTcStringToCookieKeys } from "./components/tcf/TcfOverlay";
 import { TCF_KEY_MAP } from "./lib/tcf/constants";
-import { generateTcStringFromCookieTcfConsent } from "./lib/tcf/utils";
+import {
+  generateTcStringFromCookieTcfConsent,
+  transformTcStringToCookieKeys,
+} from "./lib/tcf/utils";
 
 declare global {
   interface Window {
@@ -105,10 +105,7 @@ let _Fides: Fides;
 
 /** Helper function to determine the initial value of a TCF object */
 const getInitialPreference = (
-  tcfObject:
-    | TCFFeatureRecord
-    | TCFVendorConsentRecord
-    | TCFVendorLegitimateInterestsRecord
+  tcfObject: TcfModelsRecord
 ): UserConsentPreference => {
   if (tcfObject.current_preference) {
     return tcfObject.current_preference;
@@ -118,20 +115,15 @@ const getInitialPreference = (
 
 const updateCookie = async (
   oldCookie: FidesCookie,
-  experience: PrivacyExperience,
-  debug?: boolean,
-  tc_str_override_set?: boolean
+  experience: PrivacyExperience
 ): Promise<FidesCookie> => {
   // ignore server-side prefs if either user has no prefs to override, or TC str override is set
-  if (tc_str_override_set) {
-    return oldCookie;
-  }
   if (!hasSavedTcfPreferences(experience)) {
     return { ...oldCookie, fides_tc_string: "" };
   }
 
   const tcSavePrefs: TcfSavePreferences = {};
-  const enabledIds: any | EnabledIds = {
+  const enabledIds: EnabledIds = {
     purposesConsent: [],
     purposesLegint: [],
     specialPurposes: [],
@@ -150,7 +142,7 @@ const updateCookie = async (
         tcSavePrefs[cookieKey]?.push({
           // @ts-ignore
           id: record.id,
-          preference: getInitialPreference(record),
+          preference: pref,
         });
         // add to enabledIds only if user consent is True
         if (transformUserPreferenceToBoolean(pref)) {
