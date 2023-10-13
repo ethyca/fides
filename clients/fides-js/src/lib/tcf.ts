@@ -177,8 +177,7 @@ export const initializeCmpApi = () => {
       /*
        * If using with 'removeEventListener' command, add a check to see if tcData is not a boolean. */
       if (typeof tcData !== "boolean") {
-        const stringSplit =
-          window.Fides.fides_string?.split(FIDES_SEPARATOR);
+        const stringSplit = window.Fides.fides_string?.split(FIDES_SEPARATOR);
         const addtlConsent = stringSplit?.length === 2 ? stringSplit[1] : "";
         next({ ...tcData, addtlConsent }, status);
         return;
