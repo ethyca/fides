@@ -44,7 +44,7 @@ export type Fides = {
   consent: CookieKeyConsent;
   experience?: PrivacyExperience | EmptyExperience;
   geolocation?: UserGeolocation;
-  tc_string?: string | undefined;
+  fides_tc_string?: string | undefined;
   options: FidesOptions;
   fides_meta: CookieMeta;
   tcf_consent: TcfCookieConsent;
@@ -192,7 +192,7 @@ export const getInitialFides = ({
     identity: cookie.identity,
     experience: updatedExperience,
     tcf_consent: cookie.tcf_consent,
-    tc_string: cookie.tc_string,
+    fides_tc_string: cookie.fides_tc_string,
     geolocation,
     options,
     initialized: true,
@@ -296,7 +296,7 @@ export const initialize = async ({
     consent: cookie.consent,
     fides_meta: cookie.fides_meta,
     identity: cookie.identity,
-    tc_string: cookie.tc_string,
+    fides_tc_string: cookie.fides_tc_string,
     tcf_consent: cookie.tcf_consent,
     experience,
     geolocation,
