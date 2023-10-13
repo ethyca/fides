@@ -9,7 +9,7 @@ import {
 
 enum VendorSources {
   GVL = "gvl",
-  AC = "ac",
+  AC = "gacp",
 }
 
 /**
@@ -56,7 +56,7 @@ export const uniqueGvlVendorIds = (experience: PrivacyExperience): number[] => {
     tcf_vendor_legitimate_interests: vendorLegints = [],
   } = experience;
 
-  // List of i.e. [gvl.2, ac.3, gvl.4]
+  // List of i.e. [gvl.2, gacp.3, gvl.4]
   const universalIds = Array.from(
     new Set([
       ...vendorConsents.map((v) => v.id),
