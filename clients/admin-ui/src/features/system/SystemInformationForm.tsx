@@ -417,19 +417,23 @@ const SystemInformationForm = ({
               <SystemFormInputGroup heading="Cookie properties">
                 <DictSuggestionSwitch
                   name="uses_cookies"
-                  label="Uses cookies"
+                  label="This system uses cookies"
+                  tooltip="Does this system use cookies?"
                 />
                 <DictSuggestionSwitch
                   name="cookie_refresh"
-                  label="Cookie refreshes"
+                  label="This system refreshes cookies"
+                  tooltip="Does this system automatically refresh cookies?"
                 />
                 <DictSuggestionSwitch
                   name="uses_non_cookie_access"
-                  label="Uses non cookie access"
+                  label="This system uses non-cookie trackers"
+                  tooltip="Does this system use other types of trackers?"
                 />
                 <DictSuggestionNumberInput
                   name="cookie_max_age_seconds"
-                  label="Cookie max age seconds"
+                  label="Maximum duration"
+                  tooltip="What is the maximum amount of time a cookie will live?"
                 />
               </SystemFormInputGroup>
               <SystemFormInputGroup heading="Administrative properties">

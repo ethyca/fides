@@ -229,7 +229,8 @@ export const PrivacyDeclarationFormComponents = ({
         <Box mt={5}>
           <CustomSwitch
             name="flexible_legal_basis_for_processing"
-            label="Flexiable legal basis for processing"
+            label="This legal basis is flexible"
+            tooltip="Has the vendor declared that the legal basis may be overridden?"
             variant="stacked"
           />
         </Box>
