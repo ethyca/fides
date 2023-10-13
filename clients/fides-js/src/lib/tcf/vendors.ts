@@ -50,6 +50,27 @@ export const vendorGvlEntry = (
 export const vendorIsAc = (vendorId: TCFVendorRelationships["id"]) =>
   decodeVendorId(vendorId).source === VendorSources.AC;
 
+export const uniqueGvlVendorIds = (experience: PrivacyExperience): number[] => {
+  const {
+    tcf_vendor_consents: vendorConsents = [],
+    tcf_vendor_legitimate_interests: vendorLegints = [],
+  } = experience;
+
+  // List of i.e. [gvl.2, ac.3, gvl.4]
+  const universalIds = Array.from(
+    new Set([
+      ...vendorConsents.map((v) => v.id),
+      ...vendorLegints.map((v) => v.id),
+    ])
+  );
+  // Filter to just i.e. [gvl.2, gvl.4]
+  const gvlIds = universalIds.filter((uid) =>
+    vendorGvlEntry(uid, experience.gvl)
+  );
+  // Return [2,4] as numbers
+  return gvlIds.map((uid) => +decodeVendorId(uid).id);
+};
+
 const transformVendorDataToVendorRecords = ({
   consents,
   legints,

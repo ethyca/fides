@@ -10,7 +10,12 @@ import { TCModel, TCString, GVL } from "@iabtechlabtcf/core";
 import { makeStub } from "./tcf/stub";
 
 import { EnabledIds } from "./tcf/types";
-import { decodeVendorId, vendorIsAc, vendorGvlEntry } from "./tcf/vendors";
+import {
+  decodeVendorId,
+  vendorIsAc,
+  vendorGvlEntry,
+  uniqueGvlVendorIds,
+} from "./tcf/vendors";
 import { PrivacyExperience } from "./consent-types";
 import { FIDES_SEPARATOR } from "./tcf/constants";
 import { FidesEvent } from "./events";
@@ -70,11 +75,7 @@ export const generateTcString = async ({
     tcModel.consentScreen = 1; // todo- On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
 
     // Narrow the GVL to say we've only showed these vendors provided by our experience
-    const vendorIds = [
-      ...(experience.tcf_vendor_consents?.map((v) => +v.id) || []),
-      ...(experience.tcf_vendor_legitimate_interests?.map((v) => +v.id) || []),
-    ];
-    tcModel.gvl.narrowVendorsTo(vendorIds);
+    tcModel.gvl.narrowVendorsTo(uniqueGvlVendorIds(experience));
 
     if (tcStringPreferences) {
       // Set vendors on tcModel

@@ -422,7 +422,7 @@ describe("Fides-js TCF", () => {
     });
 
     describe("saving preferences", () => {
-      const expectedVendorsDisclosed = "IABE";
+      const expectedEndOfFidesString = ".IABE,1~";
       it("can opt in to all", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         cy.getByTestId("consent-modal").within(() => {
@@ -491,7 +491,7 @@ describe("Fides-js TCF", () => {
 
           // Confirm vendors_disclosed section
           expect(
-            cookieKeyConsent.tc_string?.endsWith(`.${expectedVendorsDisclosed}`)
+            cookieKeyConsent.fides_tc_string?.endsWith(expectedEndOfFidesString)
           ).to.eql(true);
         });
       });
@@ -562,7 +562,7 @@ describe("Fides-js TCF", () => {
             .is.eql(false);
           // Confirm vendors_disclosed section
           expect(
-            cookieKeyConsent.tc_string?.endsWith(`.${expectedVendorsDisclosed}`)
+            cookieKeyConsent.fides_tc_string?.endsWith(expectedEndOfFidesString)
           ).to.eql(true);
         });
       });
@@ -640,7 +640,7 @@ describe("Fides-js TCF", () => {
           ).to.eql({});
           // Confirm vendors_disclosed section
           expect(
-            cookieKeyConsent.tc_string?.endsWith(`.${expectedVendorsDisclosed}`)
+            cookieKeyConsent.fides_tc_string?.endsWith(expectedEndOfFidesString)
           ).to.eql(true);
         });
       });
