@@ -7,20 +7,10 @@ import {
   VendorRecord,
 } from "./types";
 
-enum VendorSouces {
+enum VendorSources {
   GVL = "gvl",
   AC = "ac",
 }
-
-export const vendorIsGvl = (
-  vendor: Pick<TCFVendorRelationships, "id">,
-  gvl: GVLJson | undefined
-) => {
-  if (!gvl) {
-    return undefined;
-  }
-  return gvl.vendors[vendor.id];
-};
 
 /**
  * Given a vendor id such as `gvl.2`, return {source: "gvl", id: "2"};
@@ -33,8 +23,32 @@ export const decodeVendorId = (vendorId: TCFVendorRelationships["id"]) => {
   return { source: split[0], id: split[1] };
 };
 
+/**
+ * Returns the associated GVL entry given a vendor ID. If the id is not found,
+ * returns `undefined`.
+ *
+ * @example If an id of `gvl.2` is passed in, return GVL Vendor #2
+ * @example If an id of `ac.2` is passed in, return undefined
+ * @example If an id of `2` is passed in, return GVL Vendor #2 (for backwards compatibility)
+ */
+export const vendorGvlEntry = (
+  vendorId: TCFVendorRelationships["id"],
+  gvl: GVLJson | undefined
+) => {
+  if (!gvl) {
+    return undefined;
+  }
+  const { source, id } = decodeVendorId(vendorId);
+  // For backwards compatibility, we also allow an undefined source but we should
+  // remove this once the backend is fully using its new vendor ID scheme.
+  if (source === VendorSources.GVL || source === undefined) {
+    return gvl.vendors[id];
+  }
+  return undefined;
+};
+
 export const vendorIsAc = (vendorId: TCFVendorRelationships["id"]) =>
-  decodeVendorId(vendorId).source === VendorSouces.AC;
+  decodeVendorId(vendorId).source === VendorSources.AC;
 
 const transformVendorDataToVendorRecords = ({
   consents,
