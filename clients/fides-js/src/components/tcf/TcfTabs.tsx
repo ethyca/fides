@@ -1,15 +1,13 @@
 import { h } from "preact";
 import { useCallback, useRef } from "preact/hooks";
 import TcfPurposes from "./TcfPurposes";
-import { FidesOptions, PrivacyExperience } from "../../lib/consent-types";
+import { PrivacyExperience } from "../../lib/consent-types";
 import type { UpdateEnabledIds } from "./TcfOverlay";
 import TcfFeatures from "./TcfFeatures";
 import TcfVendors from "./TcfVendors";
 import InfoBox from "../InfoBox";
 import { EnabledIds } from "../../lib/tcf/types";
 import AllOnOffButtons from "./AllOnOffButtons";
-import { dispatchFidesEvent } from "../../lib/events";
-import { FidesCookie } from "../../lib/cookie";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";
@@ -18,34 +16,21 @@ const TcfTabs = ({
   experience,
   enabledIds,
   onChange,
-  cookie,
-  options,
   activeTabIndex,
   onTabChange,
 }: {
   experience: PrivacyExperience;
   enabledIds: EnabledIds;
   onChange: (payload: EnabledIds) => void;
-  cookie: FidesCookie;
-  options: FidesOptions;
   activeTabIndex: number;
   onTabChange: (tabIndex: number) => void;
 }) => {
   const handleUpdateDraftState = useCallback(
     ({ newEnabledIds, modelType }: UpdateEnabledIds) => {
-      dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
       const updated = { ...enabledIds, [modelType]: newEnabledIds };
       onChange(updated);
     },
-    [enabledIds, onChange, cookie, options]
-  );
-
-  const handleAllOnOffChange = useCallback(
-    (updatedEnabledIds: EnabledIds) => {
-      dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
-      onChange(updatedEnabledIds);
-    },
-    [onChange, cookie, options]
+    [enabledIds, onChange]
   );
 
   const tcfTabs = [
@@ -61,7 +46,7 @@ const TcfTabs = ({
           </InfoBox>
           <AllOnOffButtons
             enabledIds={enabledIds}
-            onChange={handleAllOnOffChange}
+            onChange={onChange}
             modelTypeMappings={{
               purposesLegint: experience.tcf_purpose_legitimate_interests,
               purposesConsent: experience.tcf_purpose_consents,
@@ -90,7 +75,7 @@ const TcfTabs = ({
           </InfoBox>
           <AllOnOffButtons
             enabledIds={enabledIds}
-            onChange={handleAllOnOffChange}
+            onChange={onChange}
             modelTypeMappings={{
               specialFeatures: experience.tcf_special_features,
             }}
@@ -122,7 +107,7 @@ const TcfTabs = ({
             allOnOffButtons={
               <AllOnOffButtons
                 enabledIds={enabledIds}
-                onChange={handleAllOnOffChange}
+                onChange={onChange}
                 modelTypeMappings={{
                   vendorsConsent: [
                     ...(experience.tcf_vendor_consents || []),

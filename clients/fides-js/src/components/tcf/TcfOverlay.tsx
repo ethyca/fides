@@ -46,6 +46,7 @@ import InitialLayer from "./InitialLayer";
 import TcfTabs from "./TcfTabs";
 import Button from "../Button";
 import VendorInfoBanner from "./VendorInfoBanner";
+import { dispatchFidesEvent } from "../../lib/events";
 
 const resolveConsentValueFromTcfModel = (
   model:
@@ -316,9 +317,10 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             <TcfTabs
               experience={experience}
               enabledIds={draftIds}
-              onChange={setDraftIds}
-              cookie={cookie}
-              options={options}
+              onChange={(updatedIds) => {
+                setDraftIds(updatedIds);
+                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+              }}
               activeTabIndex={activeTabIndex}
               onTabChange={setActiveTabIndex}
             />

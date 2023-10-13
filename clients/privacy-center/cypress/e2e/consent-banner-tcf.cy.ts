@@ -273,27 +273,27 @@ describe("Fides-js TCF", () => {
         cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
           cy.get("input").should("not.be.checked");
         });
-        cy.get("@FidesUIChanged").should("have.been.called");
+        cy.get("@FidesUIChanged").its("callCount").should("equal", 1);
 
         // Toggle a child back on
         cy.getByTestId(`toggle-${PURPOSE_2.name}`).click();
         cy.getByTestId("toggle-Purposes").within(() => {
           cy.get("input").should("be.checked");
         });
-        cy.get("@FidesUIChanged").should("have.been.called");
+        cy.get("@FidesUIChanged").its("callCount").should("equal", 2);
 
         // Do the same for consent column
         cy.getByTestId("toggle-all-Purposes-consent").click();
         cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
           cy.get("input").should("not.be.checked");
         });
-        cy.get("@FidesUIChanged").should("have.been.called");
+        cy.get("@FidesUIChanged").its("callCount").should("equal", 3);
         // Toggle back on
         cy.getByTestId("toggle-all-Purposes-consent").click();
         cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
           cy.get("input").should("be.checked");
         });
-        cy.get("@FidesUIChanged").should("have.been.called");
+        cy.get("@FidesUIChanged").its("callCount").should("equal", 4);
 
         // Try the all on/all off button
         cy.get("button").contains("All off").click();
@@ -303,7 +303,7 @@ describe("Fides-js TCF", () => {
         cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
           cy.get("input").should("not.be.checked");
         });
-        cy.get("@FidesUIChanged").should("have.been.called");
+        cy.get("@FidesUIChanged").its("callCount").should("equal", 5);
       });
 
       it("can handle group toggle empty states", () => {
