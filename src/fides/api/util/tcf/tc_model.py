@@ -20,6 +20,8 @@ CONSENT_SCREEN = 1  # TODO On which 'screen' consent was captured; this is a CMP
 FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6]
 gvl: Dict = load_gvl()
 
+ac_prefix = "gacp."
+
 
 def universal_vendor_id_to_gvl_id(universal_vendor_id: str) -> int:
     """Converts a universal gvl vendor id to a vendor id
@@ -29,7 +31,7 @@ def universal_vendor_id_to_gvl_id(universal_vendor_id: str) -> int:
 
     We store vendor ids as a universal vendor id internally, but need to strip this off when building TC strings.
     """
-    if "ac." in universal_vendor_id:
+    if universal_vendor_id.startswith(ac_prefix):
         raise ValueError("Skipping AC Vendor ID")
     return int(universal_vendor_id.lstrip("gvl."))
 
