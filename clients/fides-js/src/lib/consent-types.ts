@@ -73,7 +73,7 @@ export type FidesOptions = {
 
   // An explicitly passed-in TC string that supersedes the cookie, and prevents any API calls to fetch
   // experiences / preferences. Only available when TCF is enabled. Optional.
-  fidesTcString: string | null;
+  fidesString: string | null;
 };
 
 export class SaveConsentPreference {

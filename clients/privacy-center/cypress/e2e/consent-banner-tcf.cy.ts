@@ -1035,7 +1035,7 @@ describe("Fides-js TCF", () => {
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            fidesTcString: undefined,
+            fidesString: undefined,
           },
           experience: experience.items[0],
         });
@@ -1137,7 +1137,7 @@ describe("Fides-js TCF", () => {
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            fidesTcString: undefined,
+            fidesString: undefined,
           },
           experience: OVERRIDE.UNDEFINED,
           // the below ensures we do not fetch experience client-side either
@@ -1153,7 +1153,7 @@ describe("Fides-js TCF", () => {
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            fidesTcString: undefined,
+            fidesString: undefined,
           },
           experience: OVERRIDE.UNDEFINED,
         },
@@ -1199,7 +1199,7 @@ describe("Fides-js TCF", () => {
             isOverlayEnabled: true,
             tcfEnabled: true,
             // this TC string sets purpose 4 to false and purpose 7 to true
-            fidesTcString: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
+            fidesString: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
           },
           experience: experience.items[0],
         });
@@ -1286,7 +1286,7 @@ describe("Fides-js TCF", () => {
             isOverlayEnabled: true,
             tcfEnabled: true,
             // this TC string sets purpose 4 to false and purpose 7 to true
-            fidesTcString: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
+            fidesString: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
           },
           experience: experience.items[0],
         });
@@ -1386,7 +1386,7 @@ describe("Fides-js TCF", () => {
             isOverlayEnabled: true,
             tcfEnabled: true,
             // this TC string sets purpose 4 to false and purpose 7 to true
-            fidesTcString: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
+            fidesString: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
           },
           experience: OVERRIDE.UNDEFINED,
         },
@@ -1427,7 +1427,7 @@ describe("Fides-js TCF", () => {
                 isOverlayEnabled: true,
                 tcfEnabled: true,
                 // this TC string sets purpose 4 to false and purpose 7 to true
-                fidesTcString:
+                fidesString:
                   "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
               },
               experience: OVERRIDE.UNDEFINED,

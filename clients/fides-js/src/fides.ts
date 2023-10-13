@@ -141,7 +141,7 @@ _Fides = {
     tcfEnabled: false,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
-    fidesTcString: null,
+    fidesString: null,
   },
   fides_meta: {},
   identity: {},

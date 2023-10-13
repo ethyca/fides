@@ -176,7 +176,7 @@ export const getInitialFides = ({
   cookie: FidesCookie;
 } & FidesConfig): Partial<Fides> | null => {
   const hasExistingCookie = !isNewFidesCookie(cookie);
-  if (!hasExistingCookie && !options.fidesTcString) {
+  if (!hasExistingCookie && !options.fidesString) {
     // A TC str can be injected and take effect even if the user has no previous Fides Cookie
     return null;
   }
@@ -272,10 +272,10 @@ export const initialize = async ({
       isPrivacyExperience(effectiveExperience) &&
       experienceIsValid(effectiveExperience, options)
     ) {
-      if (options.fidesTcString) {
+      if (options.fidesString) {
         if (fetchedClientSideExperience) {
           // if tc str was explicitly passed in, we need to override the client-side-fetched experience with consent from the cookie
-          // we don't update cookie because it already has been overridden by the injected fidesTcString
+          // we don't update cookie because it already has been overridden by the injected fidesString
           debugLog(
             options.debug,
             "Overriding preferences from client-side fetched experience with cookie tc_string consent",
@@ -292,7 +292,7 @@ export const initialize = async ({
           cookie,
           effectiveExperience,
           options.debug,
-          Boolean(options.fidesTcString)
+          Boolean(options.fidesString)
         );
         debugLog(
           options.debug,

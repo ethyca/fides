@@ -167,16 +167,16 @@ const updateCookie = async (
  */
 const init = async (config: FidesConfig) => {
   const cookie = getInitialCookie(config);
-  if (config.options.fidesTcString) {
+  if (config.options.fidesString) {
     // If a TC str is explicitly passed in, we override the associated cookie props, which are then used to
     // override associated props in experience
     debugLog(
       config.options.debug,
       "Explicit TC string detected. Proceeding to override all TCF preferences with given TC string"
     );
-    cookie.tc_string = config.options.fidesTcString;
+    cookie.tc_string = config.options.fidesString;
     cookie.tcf_consent = transformTcStringToCookieKeys(
-      config.options.fidesTcString,
+      config.options.fidesString,
       config.options.debug
     );
   } else if (
@@ -244,7 +244,7 @@ _Fides = {
     tcfEnabled: true,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
-    fidesTcString: null,
+    fidesString: null,
   },
   fides_meta: {},
   identity: {},

@@ -86,7 +86,7 @@ export default async function handler(
     }));
   }
 
-  const fidesTcString = environment.settings.FIDES_TC_STRING;
+  const fidesString = environment.settings.FIDES_STRING;
 
   // Check if a geolocation was provided via headers or query param
   const geolocation = await lookupGeolocation(req);
@@ -99,7 +99,7 @@ export default async function handler(
     geolocation &&
     environment.settings.IS_OVERLAY_ENABLED &&
     environment.settings.IS_PREFETCH_ENABLED &&
-    !fidesTcString
+    !fidesString
   ) {
     const fidesRegionString = constructFidesRegionString(geolocation);
 
@@ -146,7 +146,7 @@ export default async function handler(
         environment.settings.FIDES_API_URL,
       fidesEmbed: environment.settings.FIDES_EMBED,
       fidesDisableSaveApi: environment.settings.FIDES_DISABLE_SAVE_API,
-      fidesTcString,
+      fidesString,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
