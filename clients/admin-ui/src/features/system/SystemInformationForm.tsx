@@ -46,6 +46,7 @@ import {
 } from "~/features/system/form";
 import {
   selectAllSystems,
+  setActiveSystem,
   useCreateSystemMutation,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
@@ -155,7 +156,9 @@ const SystemInformationForm = ({
     const systemBody = transformFormValuesToSystem(values);
 
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+      result:
+        | { data: SystemResponse }
+        | { error: FetchBaseQueryError | SerializedError }
     ) => {
       if (isErrorResult(result)) {
         const attemptedAction = isEditing ? "editing" : "creating";
@@ -173,6 +176,7 @@ const SystemInformationForm = ({
         formikHelpers.resetForm({ values });
         onSuccess(systemBody);
         dispatch(setSuggestions("hiding"));
+        dispatch(setActiveSystem(result.data));
       }
     };
 

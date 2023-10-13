@@ -114,7 +114,6 @@ const SystemFormTabs = ({
     if (activeSystem === undefined) {
       setShowSaveMessage(true);
     }
-    dispatch(setActiveSystem(system));
     const toastParams = {
       ...DEFAULT_TOAST_PARAMS,
       description: (
