@@ -141,7 +141,11 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               enabledNoticeKeys={draftEnabledNoticeKeys}
               onChange={(updatedKeys) => {
                 setDraftEnabledNoticeKeys(updatedKeys);
-                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+                dispatchFidesEvent(
+                  "FidesPreferenceToggled",
+                  cookie,
+                  options.debug
+                );
               }}
             />
           </div>

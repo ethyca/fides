@@ -7,14 +7,14 @@ import { debugLog } from "./consent-utils";
  * - FidesUpdated: dispatched when preferences are updated, from updateConsentPreferences() or Fides.init()
  * - FidesUIShown: dispatched when either the banner or modal is shown to the user
  * - FidesModalClosed: dispatched when the modal is closed
- * - FidesUIChanged: dispatched when preferences are toggled but not saved, i.e. "dirty".
+ * - FidesPreferenceToggled: dispatched when preferences are toggled but not saved, i.e. "dirty".
  */
 export type FidesEventType =
   | "FidesInitialized"
   | "FidesUpdated"
   | "FidesUIShown"
   | "FidesModalClosed"
-  | "FidesUIChanged";
+  | "FidesPreferenceToggled";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
 declare global {
@@ -23,7 +23,7 @@ declare global {
     FidesUpdated: FidesEvent;
     FidesUIShown: FidesEvent;
     FidesModalClosed: FidesEvent;
-    FidesUIChanged: FidesEvent;
+    FidesPreferenceToggled: FidesEvent;
   }
 }
 

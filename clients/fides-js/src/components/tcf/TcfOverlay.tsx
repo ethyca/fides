@@ -319,7 +319,11 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               enabledIds={draftIds}
               onChange={(updatedIds) => {
                 setDraftIds(updatedIds);
-                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+                dispatchFidesEvent(
+                  "FidesPreferenceToggled",
+                  cookie,
+                  options.debug
+                );
               }}
               activeTabIndex={activeTabIndex}
               onTabChange={setActiveTabIndex}

@@ -267,33 +267,33 @@ describe("Fides-js TCF", () => {
         cy.get("span").contains(VENDOR_1.name);
       });
 
-      it("can group toggle and fire FidesUIChanged events", () => {
+      it("can group toggle and fire FidesPreferenceToggled events", () => {
         // Toggle just legitimate interests
         cy.getByTestId("toggle-Purposes").click();
         cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
           cy.get("input").should("not.be.checked");
         });
-        cy.get("@FidesUIChanged").its("callCount").should("equal", 1);
+        cy.get("@FidesPreferenceToggled").its("callCount").should("equal", 1);
 
         // Toggle a child back on
         cy.getByTestId(`toggle-${PURPOSE_2.name}`).click();
         cy.getByTestId("toggle-Purposes").within(() => {
           cy.get("input").should("be.checked");
         });
-        cy.get("@FidesUIChanged").its("callCount").should("equal", 2);
+        cy.get("@FidesPreferenceToggled").its("callCount").should("equal", 2);
 
         // Do the same for consent column
         cy.getByTestId("toggle-all-Purposes-consent").click();
         cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
           cy.get("input").should("not.be.checked");
         });
-        cy.get("@FidesUIChanged").its("callCount").should("equal", 3);
+        cy.get("@FidesPreferenceToggled").its("callCount").should("equal", 3);
         // Toggle back on
         cy.getByTestId("toggle-all-Purposes-consent").click();
         cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
           cy.get("input").should("be.checked");
         });
-        cy.get("@FidesUIChanged").its("callCount").should("equal", 4);
+        cy.get("@FidesPreferenceToggled").its("callCount").should("equal", 4);
 
         // Try the all on/all off button
         cy.get("button").contains("All off").click();
@@ -303,7 +303,7 @@ describe("Fides-js TCF", () => {
         cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
           cy.get("input").should("not.be.checked");
         });
-        cy.get("@FidesUIChanged").its("callCount").should("equal", 5);
+        cy.get("@FidesPreferenceToggled").its("callCount").should("equal", 5);
       });
 
       it("can handle group toggle empty states", () => {
@@ -383,7 +383,7 @@ describe("Fides-js TCF", () => {
             cy.getByTestId(`toggle-${VENDOR_1.name}-consent`).within(() => {
               cy.get("input").should("not.be.checked");
             });
-            cy.get("@FidesUIChanged").should("have.been.calledOnce");
+            cy.get("@FidesPreferenceToggled").should("have.been.calledOnce");
           });
         });
       });
@@ -395,7 +395,7 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
           cy.wait("@patchPrivacyPreference").then((interception) => {
-            cy.get("@FidesUIChanged").should("not.have.been.called");
+            cy.get("@FidesPreferenceToggled").should("not.have.been.called");
             const { body } = interception.request;
             expect(body.purpose_consent_preferences).to.eql([
               { id: PURPOSE_4.id, preference: "opt_in" },
@@ -463,7 +463,7 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt out of all").click();
           cy.wait("@patchPrivacyPreference").then((interception) => {
-            cy.get("@FidesUIChanged").should("not.have.been.called");
+            cy.get("@FidesPreferenceToggled").should("not.have.been.called");
             const { body } = interception.request;
             expect(body.purpose_consent_preferences).to.eql([
               { id: PURPOSE_4.id, preference: "opt_out" },
@@ -536,7 +536,7 @@ describe("Fides-js TCF", () => {
           cy.get("#fides-tab-Vendors").click();
           cy.getByTestId(`toggle-${SYSTEM_1.name}`).click();
           cy.get("button").contains("Save").click();
-          cy.get("@FidesUIChanged").its("callCount").should("equal", 3);
+          cy.get("@FidesPreferenceToggled").its("callCount").should("equal", 3);
           cy.wait("@patchPrivacyPreference").then((interception) => {
             const { body } = interception.request;
             expect(body.purpose_consent_preferences).to.eql([
