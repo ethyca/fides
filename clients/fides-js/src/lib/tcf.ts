@@ -47,7 +47,7 @@ const generateAcString = ({
         .map((id) => decodeVendorId(id).id)
     )
   );
-  const vendorIds = uniqueIds.sort().join(".");
+  const vendorIds = uniqueIds.sort((a, b) => Number(a) - Number(b)).join(".");
 
   return `${AC_SPECIFICATION_VERSION}~${vendorIds}`;
 };
