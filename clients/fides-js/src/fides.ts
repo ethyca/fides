@@ -53,7 +53,11 @@ import {
   buildCookieConsentForExperiences,
   isNewFidesCookie,
 } from "./lib/cookie";
-import { FidesConfig, PrivacyExperience } from "./lib/consent-types";
+import {
+  FidesConfig,
+  FidesOptions,
+  PrivacyExperience,
+} from "./lib/consent-types";
 
 import { dispatchFidesEvent } from "./lib/events";
 
@@ -91,10 +95,47 @@ const updateCookie = async (
   return { ...oldCookie, consent };
 };
 
+type OverrideFidesOptions = Pick<
+  FidesOptions,
+  "fidesString" | "fidesDisableSaveApi" | "fidesEmbed"
+>;
+
+const overrideOptionsValidatorMap = new Map<keyof OverrideFidesOptions, RegExp>(
+  [
+    ["fidesString", /(.*)/], // for now allow any characters, but follow-up with more strict validation after implementing AC str
+    ["fidesDisableSaveApi", /^(?i)(true|false)$/],
+    ["fidesEmbed", /^(?i)(true|false)$/],
+  ]
+);
+
+/**
+ * Gets and validates Fides override options provided through URL query params.
+ * This function is extensible to further support other methods of override, e.g. cookie or window obj.
+ */
+const getOverrideFidesOptions = (): Map<string, string> => {
+  const overrideOptions: Map<string, string> = new Map();
+  if (typeof window !== "undefined") {
+    // look for override options on URL query params
+    const params = new URLSearchParams(document.location.search);
+    overrideOptionsValidatorMap.forEach(
+      (regexp: RegExp, optionName: string) => {
+        const value = params.get(optionName);
+        if (value && regexp.test(value)) {
+          overrideOptions.set(optionName, value);
+        }
+      }
+    );
+  }
+  return overrideOptions;
+};
+
 /**
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
+  const overrideOptions: Map<string, string> = getOverrideFidesOptions();
+  // eslint-disable-next-line no-param-reassign
+  config.options = { ...config.options, ...overrideOptions };
   const cookie = getInitialCookie(config);
   const initialFides = getInitialFides({ ...config, cookie });
   if (initialFides) {
