@@ -149,6 +149,10 @@ div#fides-banner-inner-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-column-gap: 60px;
+
+  .fides-acknowledge-button-container {
+    margin-bottom: 0px;
+  }
 }
 
 div#fides-banner-inner-description {
@@ -212,7 +216,7 @@ div#fides-button-group {
 }
 
 div.fides-acknowledge-button-container {
-  margin-top: 0.5em;
+  margin-bottom: var(--fides-overlay-padding);
   display: flex;
   justify-content: end;
 }
@@ -289,7 +293,7 @@ div.fides-modal-content {
   background-color: var(--fides-overlay-background-color);
   border-radius: var(--fides-overlay-container-border-radius);
   max-height: 680px;
-  max-width: 100%;
+  width: 680px;
   overflow-y: auto;
 
   z-index: 2;
@@ -536,7 +540,7 @@ div#fides-banner-inner .fides-privacy-policy {
 }
 
 .fides-notice-toggle .fides-disclosure-visible {
-  padding-inline: 0.75em;
+  padding: 12px 12px 0px 12px;
   overflow: auto; /* prevent margin collapse */
 }
 
@@ -813,7 +817,7 @@ div#fides-banner-inner .fides-privacy-policy {
   background-color: var(--fides-overlay-background-dark-color);
   border-radius: var(--fides-overlay-component-border-radius);
   padding: 1.1em;
-  margin-bottom: 1em;
+  margin: 1em 0;
 }
 
 .fides-info-box p {
@@ -831,6 +835,6 @@ div#fides-banner-inner .fides-privacy-policy {
   margin-bottom: 8px;
 
   > button {
-    margin-right: 12px;
+    margin-right: 18px;
   }
 }
