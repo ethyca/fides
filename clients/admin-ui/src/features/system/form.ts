@@ -63,6 +63,19 @@ export const transformSystemToFormValues = (
       is_required: dpia?.is_required ? "true" : "false",
     },
     customFieldValues,
+    description: system.description ? system.description : "",
+    legal_address: system.legal_address ? system.legal_address : "",
+    dpo: system.dpo ? system.dpo : "",
+    // It looks like number input uses strings under the hood
+    // The backend will parse the string into a number
+    // @ts-ignore
+    cookie_max_age_seconds: system.cookie_max_age_seconds
+      ? system.cookie_max_age_seconds
+      : "",
+    legitimate_interest_disclosure_url:
+      system.legitimate_interest_disclosure_url
+        ? system.legitimate_interest_disclosure_url
+        : "",
     privacy_policy: system.privacy_policy ? system.privacy_policy : "",
     data_security_practices: system.data_security_practices
       ? system.data_security_practices
@@ -93,7 +106,7 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
     system_type: formValues.system_type,
     fides_key: key,
     name: formValues.name,
-    description: formValues.description,
+    description: formValues.description ? formValues.description : "",
     dataset_references: formValues.dataset_references,
     tags: formValues.tags,
     processes_personal_data: formValues.processes_personal_data,
@@ -118,7 +131,9 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
     cookie_refresh: formValues.cookie_refresh,
     uses_non_cookie_access: formValues.uses_non_cookie_access,
     legitimate_interest_disclosure_url:
-      formValues.legitimate_interest_disclosure_url,
+      formValues.legitimate_interest_disclosure_url
+        ? formValues.legitimate_interest_disclosure_url
+        : undefined,
   };
 
   if (!formValues.processes_personal_data) {
