@@ -67,7 +67,9 @@ export type FidesOptions = {
 
 export class SaveConsentPreference {
   consentPreference: UserConsentPreference;
+
   notice: PrivacyNotice;
+
   servedNoticeHistoryId?: string;
 
   constructor(
