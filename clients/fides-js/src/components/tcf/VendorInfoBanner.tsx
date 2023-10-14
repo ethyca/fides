@@ -40,13 +40,11 @@ const VendorInfoBanner = ({
       tcf_vendor_legitimate_interests: legintVendors = [],
       tcf_system_consents: consentSystems = [],
       tcf_system_legitimate_interests: legintSystems = [],
+      tcf_vendor_relationships: vendorRelationships = [],
+      tcf_system_relationships: systemRelationships = [],
     } = experience;
 
-    const total =
-      consentSystems.length +
-      consentVendors.length +
-      legintVendors.length +
-      legintSystems.length;
+    const total = vendorRelationships.length + systemRelationships.length;
 
     const consent = consentSystems.length + consentVendors.length;
 

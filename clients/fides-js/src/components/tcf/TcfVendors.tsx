@@ -14,7 +14,7 @@ import { UpdateEnabledIds } from "./TcfOverlay";
 import FilterButtons from "./FilterButtons";
 import {
   transformExperienceToVendorRecords,
-  vendorIsGvl,
+  vendorGvlEntry,
 } from "../../lib/tcf/vendors";
 import ExternalLink from "../ExternalLink";
 import DoubleToggleTable from "./DoubleToggleTable";
@@ -218,7 +218,7 @@ const TcfVendors = ({
   };
 
   const vendorsToDisplay = isFiltered
-    ? vendors.filter((v) => vendorIsGvl(v, experience.gvl))
+    ? vendors.filter((v) => vendorGvlEntry(v.id, experience.gvl))
     : vendors;
 
   return (
@@ -234,10 +234,10 @@ const TcfVendors = ({
         consentModelType="vendorsConsent"
         legintModelType="vendorsLegint"
         renderBadgeLabel={(vendor) =>
-          vendorIsGvl(vendor, experience.gvl) ? "IAB TCF" : undefined
+          vendorGvlEntry(vendor.id, experience.gvl) ? "IAB TCF" : undefined
         }
         renderToggleChild={(vendor) => {
-          const gvlVendor = vendorIsGvl(vendor, experience.gvl);
+          const gvlVendor = vendorGvlEntry(vendor.id, experience.gvl);
           // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
           const url: GvlVendorUrl | undefined = gvlVendor?.urls.find(
             (u: GvlVendorUrl) => u.langId === "en"

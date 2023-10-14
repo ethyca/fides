@@ -246,7 +246,7 @@ const updateCookie = async (
   });
   return {
     ...oldCookie,
-    tc_string: tcString,
+    fides_tc_string: tcString,
     tcf_consent: transformTcfPreferencesToCookieKeys(tcf),
   };
 };
