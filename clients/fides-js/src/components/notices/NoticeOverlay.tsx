@@ -3,6 +3,8 @@ import { useState, useCallback, useMemo } from "preact/hooks";
 import {
   ConsentMechanism,
   ConsentMethod,
+  ConsentOptionCreate,
+  LastServedConsentSchema,
   PrivacyNotice,
   SaveConsentPreference,
   ServingComponent,
@@ -63,15 +65,41 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     privacyExperience: experience,
   });
 
+  const createConsentPreferencesToSave = (
+    privacyNotices: PrivacyNotice[],
+    enabledPrivacyNoticeKeys: string[],
+    servedNotices: LastServedConsentSchema[]
+  ): SaveConsentPreference[] => {
+    const servedNoticeMap = Object.fromEntries(
+      servedNotices
+        .filter((notice) => notice.privacy_notice_history?.id !== undefined)
+        .map((notice) => [
+          notice.privacy_notice_history?.id,
+          notice.served_notice_history_id,
+        ])
+    );
+
+    return privacyNotices.map((notice) => {
+      const userPreference = transformConsentToFidesUserPreference(
+        enabledPrivacyNoticeKeys.includes(notice.notice_key),
+        notice.consent_mechanism
+      );
+      return new SaveConsentPreference(
+        notice,
+        userPreference,
+        servedNoticeMap[notice.privacy_notice_history_id]
+      );
+    });
+  };
+
   const handleUpdatePreferences = useCallback(
     (enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>) => {
-      const consentPreferencesToSave = privacyNotices.map((notice) => {
-        const userPreference = transformConsentToFidesUserPreference(
-          enabledPrivacyNoticeKeys.includes(notice.notice_key),
-          notice.consent_mechanism
-        );
-        return new SaveConsentPreference(notice, userPreference);
-      });
+      const consentPreferencesToSave = createConsentPreferencesToSave(
+        privacyNotices,
+        enabledPrivacyNoticeKeys,
+        servedNotices
+      );
+
       updateConsentPreferences({
         consentPreferencesToSave,
         experienceId: experience.id,
@@ -79,7 +107,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         consentMethod: ConsentMethod.button,
         userLocationString: fidesRegionString,
         cookie,
-        servedNotices,
         updateCookie: (oldCookie) =>
           updateCookieFromNoticePreferences(
             oldCookie,

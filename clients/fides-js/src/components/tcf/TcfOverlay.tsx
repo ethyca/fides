@@ -312,7 +312,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         userLocationString: fidesRegionString,
         cookie,
         debug: options.debug,
-        servedNotices: null,
         tcf,
         updateCookie: (oldCookie) =>
           updateCookie(oldCookie, tcf, enabledIds, experience),
