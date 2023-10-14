@@ -1,7 +1,5 @@
 import {
   ConsentMethod,
-  ConsentOptionCreate,
-  LastServedConsentSchema,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
   UserConsentPreference,

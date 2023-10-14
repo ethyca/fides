@@ -3,7 +3,6 @@ import { useState, useCallback, useMemo } from "preact/hooks";
 import {
   ConsentMechanism,
   ConsentMethod,
-  ConsentOptionCreate,
   LastServedConsentSchema,
   PrivacyNotice,
   SaveConsentPreference,
@@ -66,12 +65,12 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   });
 
   const createConsentPreferencesToSave = (
-    privacyNotices: PrivacyNotice[],
+    privacyNoticeList: PrivacyNotice[],
     enabledPrivacyNoticeKeys: string[],
-    servedNotices: LastServedConsentSchema[]
+    servedNoticeList: LastServedConsentSchema[]
   ): SaveConsentPreference[] => {
     const servedNoticeMap = Object.fromEntries(
-      servedNotices
+      servedNoticeList
         .filter((notice) => notice.privacy_notice_history?.id !== undefined)
         .map((notice) => [
           notice.privacy_notice_history?.id,
@@ -79,7 +78,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         ])
     );
 
-    return privacyNotices.map((notice) => {
+    return privacyNoticeList.map((notice) => {
       const userPreference = transformConsentToFidesUserPreference(
         enabledPrivacyNoticeKeys.includes(notice.notice_key),
         notice.consent_mechanism
