@@ -7,10 +7,7 @@ import type { LegalBasisForProcessingEnum } from "./LegalBasisForProcessingEnum"
 import type { SpecialCategoryLegalBasisEnum } from "./SpecialCategoryLegalBasisEnum";
 
 /**
- * The PrivacyDeclaration resource model.
- *
- * States a function of a system, and describes how it relates
- * to the privacy data types.
+ * A Compass data use declaration record, extending a fideslang `PrivacyDeclaration`
  */
 export type DataUseDeclaration = {
   /**
