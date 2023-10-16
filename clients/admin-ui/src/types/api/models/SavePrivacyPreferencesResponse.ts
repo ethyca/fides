@@ -19,5 +19,5 @@ export type SavePrivacyPreferencesResponse = {
   special_feature_preferences?: Array<CurrentPrivacyPreferenceSchema>;
   system_consent_preferences?: Array<CurrentPrivacyPreferenceSchema>;
   system_legitimate_interests_preferences?: Array<CurrentPrivacyPreferenceSchema>;
-  tc_mobile_data?: TCMobileData;
+  fides_mobile_data?: TCMobileData;
 };

@@ -12,9 +12,7 @@ import type { PrivacyDeclaration } from "./PrivacyDeclaration";
 import type { SystemMetadata } from "./SystemMetadata";
 
 /**
- * The System resource model.
- *
- * Describes an application and includes a list of PrivacyDeclaration resources.
+ * A Compass vendor record, extending a fideslang `System`
  */
 export type Vendor = {
   fides_key?: string;
