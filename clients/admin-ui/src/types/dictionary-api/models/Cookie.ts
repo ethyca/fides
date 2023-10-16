@@ -5,7 +5,7 @@
 import type { CookieType } from "./CookieType";
 
 /**
- * The Cookies resource model
+ * A Compass cookie record, extending a fideslang `Cookie`
  */
 export type Cookie = {
   name: string;
@@ -52,4 +52,8 @@ export type Cookie = {
    * The version of GVL from which the record is derived
    */
   gvl_version?: string;
+  /**
+   * A unique identifier for a Cookie record to be used in the Compass data store. Combines other fields that form uniqueness criteria for a Cookie record.
+   */
+  unique_id?: string;
 };
