@@ -10,6 +10,7 @@ import type { UserConsentPreference } from "./UserConsentPreference";
  * records where consent was previously served if applicable.
  */
 export type TCFSpecialPurposeRecord = {
+  retention_period?: string;
   /**
    * Official GVL purpose ID. Used for linking with other records, e.g. vendors, cookies, etc.
    */
