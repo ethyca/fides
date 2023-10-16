@@ -266,7 +266,6 @@ class TestTCFContents:
             tcf_contents.tcf_vendor_consents[0].description
             == "My TCF System Description"
         )
-        assert tcf_contents.tcf_vendor_consents[0].retention_period == "3-5 days"
 
         # assert some additional TCF attributes are NOT set on the consents object - only on VendorRelationships
         assert not hasattr(
@@ -346,7 +345,6 @@ class TestTCFContents:
             tcf_contents.tcf_vendor_consents[0].description
             == "My TCF System Description"
         )
-        assert tcf_contents.tcf_vendor_consents[0].retention_period == "3-5 days"
 
         # assert some additional TCF attributes are NOT set on the consents object - only on VendorRelationships
         assert not hasattr(
@@ -360,6 +358,10 @@ class TestTCFContents:
 
         assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
         assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 8
+        assert (
+            tcf_contents.tcf_vendor_consents[0].purpose_consents[0].retention_period
+            == "3-5 days"
+        )
 
         assert tcf_contents.tcf_vendor_relationships[0].id == "gvl.42"
         assert tcf_contents.tcf_vendor_relationships[0].name == "TCF System Test"
@@ -783,6 +785,12 @@ class TestTCFContents:
             .purpose_legitimate_interests[0]
             .id
             == 3
+        )
+        assert (
+            tcf_contents.tcf_vendor_legitimate_interests[0]
+            .purpose_legitimate_interests[0]
+            .retention_period
+            == "1 day"
         )
 
     def test_add_different_data_uses_that_correspond_to_same_purpose(
