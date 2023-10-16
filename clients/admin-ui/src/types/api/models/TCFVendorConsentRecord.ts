@@ -9,6 +9,7 @@ import type { UserConsentPreference } from "./UserConsentPreference";
  * Schema for a TCF Vendor with Consent legal basis
  */
 export type TCFVendorConsentRecord = {
+  retention_period?: string;
   id: string;
   has_vendor_id?: boolean;
   name?: string;

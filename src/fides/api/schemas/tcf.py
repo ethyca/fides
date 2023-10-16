@@ -76,7 +76,15 @@ class CommonVendorFields(FidesSchema):
     description: Optional[str]
 
 
-class TCFVendorConsentRecord(UserSpecificConsentDetails, CommonVendorFields):
+class CommonVendorLegalBasisFields(FidesSchema):
+    """Fields shared by the vendor sections that are split out by legal basis"""
+
+    retention_period: Optional[str]
+
+
+class TCFVendorConsentRecord(
+    UserSpecificConsentDetails, CommonVendorFields, CommonVendorLegalBasisFields
+):
     """Schema for a TCF Vendor with Consent legal basis"""
 
     purpose_consents: List[EmbeddedLineItem] = []
@@ -90,7 +98,7 @@ class TCFVendorConsentRecord(UserSpecificConsentDetails, CommonVendorFields):
 
 
 class TCFVendorLegitimateInterestsRecord(
-    UserSpecificConsentDetails, CommonVendorFields
+    UserSpecificConsentDetails, CommonVendorFields, CommonVendorLegalBasisFields
 ):
     """Schema for a TCF Vendor with Legitimate interests legal basis"""
 

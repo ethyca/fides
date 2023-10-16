@@ -266,6 +266,7 @@ class TestTCFContents:
             tcf_contents.tcf_vendor_consents[0].description
             == "My TCF System Description"
         )
+        assert tcf_contents.tcf_vendor_consents[0].retention_period == "3-5 days"
 
         # assert some additional TCF attributes are NOT set on the consents object - only on VendorRelationships
         assert not hasattr(
@@ -345,6 +346,7 @@ class TestTCFContents:
             tcf_contents.tcf_vendor_consents[0].description
             == "My TCF System Description"
         )
+        assert tcf_contents.tcf_vendor_consents[0].retention_period == "3-5 days"
 
         # assert some additional TCF attributes are NOT set on the consents object - only on VendorRelationships
         assert not hasattr(

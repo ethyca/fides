@@ -196,6 +196,7 @@ def get_matching_privacy_declarations(db: Session) -> Query:
             PrivacyDeclaration.data_use,
             PrivacyDeclaration.legal_basis_for_processing,
             PrivacyDeclaration.features,
+            PrivacyDeclaration.retention_period,
         )
         .join(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
         .filter(
@@ -406,6 +407,7 @@ def build_purpose_or_feature_section_and_update_vendor_map(
                     has_vendor_id=bool(
                         vendor_id
                     ),  # Has_vendor_id will let us separate data between systems and vendors
+                    retention_period=privacy_declaration_row.retention_period,
                 )
 
             # Embed the purpose/feature under the system if it doesn't exist
