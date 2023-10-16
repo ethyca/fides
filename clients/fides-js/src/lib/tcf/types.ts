@@ -31,8 +31,15 @@ export type EmbeddedVendor = {
   name: string;
 };
 
+export type EmbeddedPurpose = {
+  id: number;
+  name: string;
+  retention_period?: string;
+};
+
 // Purposes
 export type TCFPurposeConsentRecord = {
+  retention_period?: string;
   id: number;
   name: string;
   description: string;
@@ -48,6 +55,7 @@ export type TCFPurposeConsentRecord = {
 };
 
 export type TCFPurposeLegitimateInterestsRecord = {
+  retention_period?: string;
   id: number;
   name: string;
   description: string;
@@ -70,6 +78,7 @@ export type TCFPurposeSave = {
 
 // Special purposes
 export type TCFSpecialPurposeRecord = {
+  retention_period?: string;
   id: number;
   name: string;
   description: string;
@@ -141,7 +150,7 @@ export type TCFVendorConsentRecord = {
   outdated_preference?: UserConsentPreference;
   current_served?: boolean;
   outdated_served?: boolean;
-  purpose_consents?: Array<EmbeddedLineItem>;
+  purpose_consents?: Array<EmbeddedPurpose>;
 };
 
 export type TCFVendorLegitimateInterestsRecord = {
@@ -154,7 +163,7 @@ export type TCFVendorLegitimateInterestsRecord = {
   outdated_preference?: UserConsentPreference;
   current_served?: boolean;
   outdated_served?: boolean;
-  purpose_legitimate_interests?: Array<EmbeddedLineItem>;
+  purpose_legitimate_interests?: Array<EmbeddedPurpose>;
 };
 
 export type TCFVendorRelationships = {
@@ -162,7 +171,7 @@ export type TCFVendorRelationships = {
   has_vendor_id?: boolean;
   name?: string;
   description?: string;
-  special_purposes?: Array<EmbeddedLineItem>;
+  special_purposes?: Array<EmbeddedPurpose>;
   features?: Array<EmbeddedLineItem>;
   special_features?: Array<EmbeddedLineItem>;
   cookie_max_age_seconds?: number;
@@ -269,11 +278,6 @@ export type GVLJson = Pick<
 
 // GVL types—we should be able to get these from the library at some point,
 // but since they are on GVL 2.2, the types aren't quite right for GVL 3.
-export interface GvlDataRetention {
-  stdRetention: number;
-  purposes: Record<number, number>;
-  specialPurposes: Record<number, number>;
-}
 interface GvlDataCategory {
   id: number;
   name: string;
