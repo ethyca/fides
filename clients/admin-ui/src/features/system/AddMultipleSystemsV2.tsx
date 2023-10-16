@@ -8,7 +8,15 @@ import {
   useRef,
   useState,
 } from "react";
-import { createColumnHelper, ColumnDef, Row } from "@tanstack/react-table";
+import {
+  createColumnHelper,
+  useReactTable,
+  ColumnDef,
+  Row,
+  getCoreRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+} from "@tanstack/react-table";
 
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
@@ -86,6 +94,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
   ] = usePostCreatedSystemsMutation();
 
   const dictionaryOptions = useAppSelector(selectAllDictSystems);
+  const [globalFilter, setGlobalFilter] = useState();
 
   const columns = useMemo(
     () => [
@@ -131,9 +140,19 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
     return rowSelection;
   }, [dictionaryOptions]);
 
-  const tableInstance = useFidesTableV2({
+  const tableInstance = useReactTable<MultipleSystemTable>({
     columns,
     data: dictionaryOptions,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onGlobalFilterChange: setGlobalFilter,
+    enableRowSelection: true,
+    enableSorting: true,
+    enableGlobalFilter: true,
+    state: {
+      globalFilter,
+    },
     initialState: {
       rowSelection,
     },
@@ -165,6 +184,11 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
 
   return (
     <Box height="100%">
+      <input
+        value={globalFilter ?? ""}
+        onChange={(e) => setGlobalFilter(e.target.value)}
+        placeholder="search"
+      />
       <Button
         onClick={addVendors}
         colorScheme="black"

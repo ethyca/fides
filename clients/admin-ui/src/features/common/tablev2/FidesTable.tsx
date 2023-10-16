@@ -17,6 +17,7 @@ import {
   useReactTable,
   getSortedRowModel,
   getCoreRowModel,
+  getFilteredRowModel,
   flexRender,
   RowModel,
   ColumnDef,
@@ -25,37 +26,6 @@ import {
 } from "@tanstack/react-table";
 
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
-
-type UseFidesTableV2Props<T> = {
-  columns: ColumnDef<T>[];
-  data: T[];
-  initialState?: Partial<InitialTableState>;
-};
-
-export function useFidesTableV2<T>({
-  columns,
-  data,
-  initialState,
-}: UseFidesTableV2Props<T>) {
-  // const plugins = useMemo(() => {
-  //   if (customHooks) {
-  //     return [useGlobalFilter, useSortBy, ...customHooks];
-  //   }
-  //   return [useGlobalFilter, useSortBy];
-  // }, [customHooks]);
-
-  const tableInstance = useReactTable<T>({
-    columns,
-    data,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    enableRowSelection: true,
-    enableSorting: true,
-    initialState: initialState !== undefined ? initialState : {},
-  });
-
-  return tableInstance;
-}
 
 type Props<T> = {
   tableInstance: TableInstance<T>;
