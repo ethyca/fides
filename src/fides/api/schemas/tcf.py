@@ -115,6 +115,7 @@ class TCFVendorRelationships(CommonVendorFields):
     cookie_refresh: Optional[bool]
     uses_non_cookie_access: Optional[bool]
     legitimate_interest_disclosure_url: Optional[AnyUrl]
+    privacy_policy_url: Optional[AnyUrl]
 
 
 class TCFFeatureRecord(NonVendorSection, Feature):

@@ -191,6 +191,7 @@ def get_matching_privacy_declarations(db: Session) -> Query:
             System.legitimate_interest_disclosure_url.label(
                 "system_legitimate_interest_disclosure_url"
             ),
+            System.privacy_policy.label("system_privacy_policy"),
             System.vendor_id,
             PrivacyDeclaration.data_use,
             PrivacyDeclaration.legal_basis_for_processing,
@@ -464,6 +465,9 @@ def populate_vendor_relationships_basic_attributes(
         )
         vendor_relationship_record.legitimate_interest_disclosure_url = (
             privacy_declaration_row.system_legitimate_interest_disclosure_url
+        )
+        vendor_relationship_record.privacy_policy_url = (
+            privacy_declaration_row.system_privacy_policy
         )
 
     return vendor_map

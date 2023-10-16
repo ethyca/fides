@@ -231,6 +231,7 @@ class TestTCFContents:
         assert vendor_relationship.uses_non_cookie_access is False
         assert vendor_relationship.cookie_refresh is False
         assert vendor_relationship.legitimate_interest_disclosure_url is None
+        assert vendor_relationship.privacy_policy_url is None
 
     @pytest.mark.usefixtures("tcf_system")
     def test_system_exists_with_tcf_purpose_and_vendor(self, db):
@@ -274,6 +275,7 @@ class TestTCFContents:
         assert not hasattr(
             tcf_contents.tcf_vendor_consents[0], "legitimate_interest_disclosure_url"
         )
+        assert not hasattr(tcf_contents.tcf_vendor_consents[0], "privacy_policy_url")
 
         assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
         assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 8
@@ -294,6 +296,7 @@ class TestTCFContents:
             tcf_contents.tcf_vendor_relationships[0].legitimate_interest_disclosure_url
             is None
         )
+        assert tcf_contents.tcf_vendor_relationships[0].privacy_policy_url is None
         assert len(tcf_contents.tcf_vendor_relationships[0].special_purposes) == 1
         assert tcf_contents.tcf_vendor_relationships[0].special_purposes[0].id == 1
 
@@ -309,6 +312,7 @@ class TestTCFContents:
         tcf_system.cookie_refresh = True
         tcf_system.uses_non_cookie_access = True
         tcf_system.legitimate_interest_disclosure_url = "http://test.com/disclosure_url"
+        tcf_system.privacy_policy = "http://test.com/privacy_url"
         tcf_system.save(db)
 
         tcf_contents = get_tcf_contents(db)
@@ -350,6 +354,7 @@ class TestTCFContents:
         assert not hasattr(
             tcf_contents.tcf_vendor_consents[0], "legitimate_interest_disclosure_url"
         )
+        assert not hasattr(tcf_contents.tcf_vendor_consents[0], "privacy_policy_url")
 
         assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
         assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 8
@@ -371,6 +376,10 @@ class TestTCFContents:
         assert (
             tcf_contents.tcf_vendor_relationships[0].legitimate_interest_disclosure_url
             == "http://test.com/disclosure_url"
+        )
+        assert (
+            tcf_contents.tcf_vendor_relationships[0].privacy_policy_url
+            == "http://test.com/privacy_url"
         )
 
         assert len(tcf_contents.tcf_vendor_relationships[0].special_purposes) == 1

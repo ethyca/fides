@@ -20,4 +20,5 @@ export type TCFVendorRelationships = {
   cookie_refresh?: boolean;
   uses_non_cookie_access?: boolean;
   legitimate_interest_disclosure_url?: string;
+  privacy_policy_url?: string;
 };
