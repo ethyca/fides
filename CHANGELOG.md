@@ -20,6 +20,9 @@ The types of changes are:
 ### Added
 - Added a `FidesPreferenceToggled` event to Fides.js to track when user preferences change without being saved [#4253](https://github.com/ethyca/fides/pull/4253)
 
+### Changed
+- Derive cookie storage info, privacy policy and legitimate interest disclosure URLs, and data retention data from the data map instead of directly from gvl.json [#4286](https://github.com/ethyca/fides/pull/4286)
+
 ## [2.22.0](https://github.com/ethyca/fides/compare/2.21.0...2.22.0)
 
 ### Added
