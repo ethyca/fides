@@ -170,6 +170,7 @@ export type TCFVendorRelationships = {
   cookie_refresh?: boolean;
   uses_non_cookie_access?: boolean;
   legitimate_interest_disclosure_url?: string;
+  privacy_policy_url?: string;
 };
 
 export type TCFVendorSave = {
@@ -268,11 +269,6 @@ export type GVLJson = Pick<
 
 // GVL types—we should be able to get these from the library at some point,
 // but since they are on GVL 2.2, the types aren't quite right for GVL 3.
-export interface GvlVendorUrl {
-  langId: string;
-  privacy?: string;
-  legIntClaim?: string;
-}
 export interface GvlDataRetention {
   stdRetention: number;
   purposes: Record<number, number>;

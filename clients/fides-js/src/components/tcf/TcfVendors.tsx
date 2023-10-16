@@ -5,7 +5,6 @@ import {
   GvlDataRetention,
   EmbeddedLineItem,
   GvlDataCategories,
-  GvlVendorUrl,
   GvlDataDeclarations,
   VendorRecord,
 } from "../../lib/tcf/types";
@@ -238,10 +237,6 @@ const TcfVendors = ({
         }
         renderToggleChild={(vendor) => {
           const gvlVendor = vendorGvlEntry(vendor.id, experience.gvl);
-          // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
-          const url: GvlVendorUrl | undefined = gvlVendor?.urls.find(
-            (u: GvlVendorUrl) => u.langId === "en"
-          );
           const dataCategories: GvlDataCategories | undefined =
             // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
             experience.gvl?.dataCategories;
@@ -249,8 +244,10 @@ const TcfVendors = ({
             <div>
               <StorageDisclosure vendor={vendor} />
               <div style={{ marginBottom: "1.1em" }}>
-                {url?.privacy ? (
-                  <ExternalLink href={url.privacy}>Privacy policy</ExternalLink>
+                {vendor?.privacy_policy_url ? (
+                  <ExternalLink href={vendor.privacy_policy_url}>
+                    Privacy policy
+                  </ExternalLink>
                 ) : null}
                 {vendor.legitimate_interest_disclosure_url ? (
                   <ExternalLink
