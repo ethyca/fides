@@ -158,13 +158,13 @@ const DataCategories = ({
   );
 };
 
-const StorageDisclosure = ({ vendor }: { vendor: Vendor }) => {
+const StorageDisclosure = ({ vendor }: { vendor: VendorRecord }) => {
   const {
     name,
-    usesCookies,
-    usesNonCookieAccess,
-    cookieMaxAgeSeconds,
-    cookieRefresh,
+    uses_cookies: usesCookies,
+    uses_non_cookie_access: usesNonCookieAccess,
+    cookie_max_age_seconds: cookieMaxAgeSeconds,
+    cookie_refresh: cookieRefresh,
   } = vendor;
   let disclosure = "";
   if (usesCookies) {
@@ -247,13 +247,15 @@ const TcfVendors = ({
             experience.gvl?.dataCategories;
           return (
             <div>
-              {gvlVendor ? <StorageDisclosure vendor={gvlVendor} /> : null}
+              <StorageDisclosure vendor={vendor} />
               <div style={{ marginBottom: "1.1em" }}>
                 {url?.privacy ? (
                   <ExternalLink href={url.privacy}>Privacy policy</ExternalLink>
                 ) : null}
-                {url?.legIntClaim ? (
-                  <ExternalLink href={url.legIntClaim}>
+                {vendor.legitimate_interest_disclosure_url ? (
+                  <ExternalLink
+                    href={vendor.legitimate_interest_disclosure_url}
+                  >
                     Legitimate interest disclosure
                   </ExternalLink>
                 ) : null}
