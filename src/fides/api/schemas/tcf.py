@@ -30,7 +30,7 @@ class NonVendorSection(UserSpecificConsentDetails):
 
 
 class CommonPurposeFields(FidesSchema):
-    """Fields shared between the two purpose sections of the TCF Experience"""
+    """Fields shared between the purpose sections of the TCF Experience"""
 
     retention_period: Optional[str]
 
@@ -59,7 +59,7 @@ class TCFPurposeLegitimateInterestsRecord(
         return values
 
 
-class TCFSpecialPurposeRecord(NonVendorSection, MappedPurpose):
+class TCFSpecialPurposeRecord(NonVendorSection, MappedPurpose, CommonPurposeFields):
     @root_validator
     def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Default preference for special purposes is acknowledge"""

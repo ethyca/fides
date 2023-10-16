@@ -299,6 +299,12 @@ class TestTCFContents:
         assert tcf_contents.tcf_vendor_relationships[0].privacy_policy_url is None
         assert len(tcf_contents.tcf_vendor_relationships[0].special_purposes) == 1
         assert tcf_contents.tcf_vendor_relationships[0].special_purposes[0].id == 1
+        assert (
+            tcf_contents.tcf_vendor_relationships[0]
+            .special_purposes[0]
+            .retention_period
+            == "1 day"
+        )
 
     def test_system_exists_with_tcf_purpose_and_vendor_including_tcf_fields_set(
         self, db, tcf_system
