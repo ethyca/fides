@@ -36,8 +36,10 @@ describe("System management with Plus features", () => {
       cy.selectOption("input-vendor_id", "Aniview LTD");
       cy.getSelectValueContainer("input-vendor_id").contains("Aniview LTD");
 
-      cy.selectOption("input-vendor_id", "Jaduda GmbH");
-      cy.getSelectValueContainer("input-vendor_id").contains("Jaduda GmbH");
+      cy.selectOption("input-vendor_id", "Anzu Virtual Reality LTD");
+      cy.getSelectValueContainer("input-vendor_id").contains(
+        "Anzu Virtual Reality LTD"
+      );
     });
 
     // some DictSuggestionTextInputs don't get populated right, causing
@@ -70,7 +72,7 @@ describe("System management with Plus features", () => {
       cy.getByTestId("save-btn").click();
       cy.wait("@putDictSystem");
       cy.wait("@getDictSystem");
-      cy.getByTestId("input-dpo").should("have.value", "info@anzu.io");
+      cy.getByTestId("input-dpo").should("have.value", "DPO@anzu.io");
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("tab-System information").click();
       // cy.pause();

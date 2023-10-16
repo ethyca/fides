@@ -1,8 +1,8 @@
 {
   "gvlSpecificationVersion": 3,
-  "vendorListVersion": 20,
+  "vendorListVersion": 22,
   "tcfPolicyVersion": 4,
-  "lastUpdated": "2023-09-28T16:07:31Z",
+  "lastUpdated": "2023-10-12T16:07:33Z",
   "purposes": {
     "1": {
       "id": 1,
@@ -62,8 +62,8 @@
       "name": "Measure advertising performance",
       "description": "Information regarding which advertising is presented to you and how you interact with it can be used to determine how well an advert has worked for you or other users and whether the goals of the advertising were reached. For instance, whether you saw an ad, whether you clicked on it, whether it led you to buy a product or visit a website, etc. This is very helpful to understand the relevance of advertising campaigns.",
       "illustrations": [
-        "You have clicked on an advertisement about a \u201cblack Friday\u201d discount by an online shop on the website of a publisher and purchased a product. Your click will be linked to this purchase. Your interaction and that of other users will be measured to know how many clicks on the ad led to a purchase.",
-        "You are one of very few to have clicked on an advertisement about an \u201cinternational appreciation day\u201d discount by an online gift shop within the app of a publisher. The publisher wants to have reports to understand how often a specific ad placement within the app, and notably the \u201cinternational appreciation day\u201d ad, has been viewed or clicked by you and other users, in order to help the publisher and its partners (such as agencies) optimise ad placements."
+        "You have clicked on an advertisement about a “black Friday” discount by an online shop on the website of a publisher and purchased a product. Your click will be linked to this purchase. Your interaction and that of other users will be measured to know how many clicks on the ad led to a purchase.",
+        "You are one of very few to have clicked on an advertisement about an “international appreciation day” discount by an online gift shop within the app of a publisher. The publisher wants to have reports to understand how often a specific ad placement within the app, and notably the “international appreciation day” ad, has been viewed or clicked by you and other users, in order to help the publisher and its partners (such as agencies) optimise ad placements."
       ]
     },
     "8": {
@@ -98,7 +98,7 @@
       "name": "Use limited data to select content",
       "description": "Content presented to you on this service can be based on limited data, such as the website or app you are using, your non-precise location, your device type, or which content you are (or have been) interacting with (for example, to limit the number of times a video or an article is presented to you).\n",
       "illustrations": [
-        "A travel magazine has published an article on its website about the new online courses proposed by a language school, to improve travelling experiences abroad. The school\u2019s blog posts are inserted directly at the bottom of the page, and selected on the basis of your non-precise location (for instance, blog posts explaining the course curriculum for different languages than the language of the country you are situated in).\n",
+        "A travel magazine has published an article on its website about the new online courses proposed by a language school, to improve travelling experiences abroad. The school’s blog posts are inserted directly at the bottom of the page, and selected on the basis of your non-precise location (for instance, blog posts explaining the course curriculum for different languages than the language of the country you are situated in).\n",
         "A sports news mobile app has started a new section of articles covering the most recent football games. Each article includes videos hosted by a separate streaming platform showcasing the highlights of each match. If you fast-forward a video, this information may be used to select a shorter video to play next.\n"
       ]
     }
@@ -117,7 +117,7 @@
       "name": "Deliver and present advertising and content",
       "description": "Certain information (like an IP address or device capabilities) is used to ensure the technical compatibility of the content or advertising, and to facilitate the transmission of the content or ad to your device.",
       "illustrations": [
-        "Clicking on a link in an article might normally send you to another page or part of the article. To achieve this, 1\u00b0) your browser sends a request to a server linked to the website, 2\u00b0) the server answers back (\u201chere is the article you asked for\u201d), using technical information automatically included in the request sent by your device, to properly display the information / images that are part of the article you asked for. Technically, such exchange of information is necessary to deliver the content that appears on your screen."
+        "Clicking on a link in an article might normally send you to another page or part of the article. To achieve this, 1°) your browser sends a request to a server linked to the website, 2°) the server answers back (“here is the article you asked for”), using technical information automatically included in the request sent by your device, to properly display the information / images that are part of the article you asked for. Technically, such exchange of information is necessary to deliver the content that appears on your screen."
       ]
     }
   },
@@ -156,6 +156,16 @@
     }
   },
   "stacks": {
+    "1": {
+      "id": 1,
+      "purposes": [],
+      "specialFeatures": [
+        1,
+        2
+      ],
+      "name": "Precise geolocation data, and identification through device scanning",
+      "description": "Precise geolocation and information about device characteristics can be used.\n\n"
+    },
     "2": {
       "id": 2,
       "purposes": [
@@ -283,6 +293,7 @@
       "purposes": [
         6,
         8,
+        9,
         11
       ],
       "specialFeatures": [],
@@ -694,16 +705,6 @@
       "specialFeatures": [],
       "name": "Content based on limited data and content measurement",
       "description": "Content can be selected based on limited data. Content performance can be measured."
-    },
-    "1": {
-      "id": 1,
-      "purposes": [],
-      "specialFeatures": [
-        1,
-        2
-      ],
-      "name": "Precise geolocation data, and identification through device scanning",
-      "description": "Precise geolocation and information about device characteristics can be used.\n\n"
     }
   },
   "dataCategories": {
@@ -754,7 +755,7 @@
     },
     "10": {
       "id": 10,
-      "name": "Users\u2019 profiles",
+      "name": "Users’ profiles",
       "description": "Certain characteristics (e.g. your possible interests, your purchase intentions, your consumer profile) may be inferred or modeled from your previous online activity (e.g. the content you viewed or the service you used, your time spent on various online content and services) or the information you have provided (e.g. your age, your occupation)."
     },
     "11": {
@@ -869,6 +870,57 @@
         11
       ],
       "deviceStorageDisclosureUrl": "https://static.cpx.to/gvl/deviceStorageDisclosure.json"
+    },
+    "4": {
+      "id": 4,
+      "name": "Roq.ad GmbH",
+      "purposes": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        9,
+        10
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [],
+      "features": [
+        1,
+        2,
+        3
+      ],
+      "specialFeatures": [
+        1
+      ],
+      "cookieMaxAgeSeconds": 31536000,
+      "usesCookies": true,
+      "cookieRefresh": true,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 365,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://www.roq.ad/privacy-policy-roqad/"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://roqad-public.s3.eu-central-1.amazonaws.com/tcf-disclosure.json"
     },
     "6": {
       "id": 6,
@@ -1483,7 +1535,7 @@
         10,
         11
       ],
-      "deviceStorageDisclosureUrl": "\u00a0https://ttd-misc-public-assets.s3.us-west-2.amazonaws.com/deviceStorageDisclosureURL.json"
+      "deviceStorageDisclosureUrl": " https://ttd-misc-public-assets.s3.us-west-2.amazonaws.com/deviceStorageDisclosureURL.json"
     },
     "22": {
       "id": 22,
@@ -2118,7 +2170,7 @@
         1
       ],
       "specialFeatures": [],
-      "cookieMaxAgeSeconds": 182,
+      "cookieMaxAgeSeconds": 15724800,
       "usesCookies": true,
       "cookieRefresh": true,
       "usesNonCookieAccess": true,
@@ -4012,13 +4064,9 @@
       "flexiblePurposes": [],
       "specialPurposes": [],
       "features": [
-        1,
-        2,
-        3
+        1
       ],
-      "specialFeatures": [
-        2
-      ],
+      "specialFeatures": [],
       "cookieMaxAgeSeconds": 2592000,
       "usesCookies": true,
       "cookieRefresh": true,
@@ -4042,12 +4090,77 @@
       ],
       "dataDeclaration": [
         1,
-        2,
-        5,
         6,
         8
       ],
       "deviceStorageDisclosureUrl": "https://rdc.m32.media/gdpr/vendors_disclosure.json"
+    },
+    "76": {
+      "id": 76,
+      "name": "PubMatic, Inc",
+      "purposes": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ],
+      "legIntPurposes": [
+        2,
+        7,
+        8,
+        9,
+        10
+      ],
+      "flexiblePurposes": [
+        2,
+        7,
+        8,
+        9,
+        10
+      ],
+      "specialPurposes": [
+        1,
+        2
+      ],
+      "features": [
+        1,
+        2,
+        3
+      ],
+      "specialFeatures": [
+        1
+      ],
+      "cookieMaxAgeSeconds": 7776000,
+      "usesCookies": true,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": true,
+      "dataRetention": {
+        "stdRetention": 40,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://pubmatic.com/legal/privacy/",
+          "legIntClaim": "https://pubmatic.com/legal/privacy/"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://cdn.pubmatic.com/devicestorage.json"
     },
     "77": {
       "id": 77,
@@ -5425,9 +5538,70 @@
       ],
       "deviceStorageDisclosureUrl": "https://cdn.smartclip.net/iab/deviceStorageDisclosure.json"
     },
+    "119": {
+      "id": 119,
+      "name": "Ask Locala",
+      "purposes": [
+        1,
+        3,
+        4,
+        7,
+        8,
+        9,
+        10
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [
+        7,
+        8,
+        9,
+        10
+      ],
+      "specialPurposes": [
+        1,
+        2
+      ],
+      "features": [],
+      "specialFeatures": [
+        1
+      ],
+      "cookieMaxAgeSeconds": null,
+      "usesCookies": false,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": true,
+      "dataRetention": {
+        "stdRetention": 45,
+        "purposes": {
+          "3": 30,
+          "4": 30
+        },
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://asklocala.com/advertising-privacy-policy/?_gl=1*145zs89*_up*MQ..*_ga*MjA4NDgxNDYxOC4xNjk2NTEyNTU5*_ga_VRM83PCHBL*MTY5NjUxMjU1OC4xLjEuMTY5NjUxMjU3NS4wLjAuMA..*_ga_5N7836YC9X*MTY5NjUxMjU1OC4xLjEuMTY5NjUxMjU3NS4wLjAuMA..",
+          "legIntClaim": "https://asklocala.com/advertising-privacy-policy/?_gl=1*145zs89*_up*MQ..*_ga*MjA4NDgxNDYxOC4xNjk2NTEyNTU5*_ga_VRM83PCHBL*MTY5NjUxMjU1OC4xLjEuMTY5NjUxMjU3NS4wLjAuMA..*_ga_5N7836YC9X*MTY5NjUxMjU1OC4xLjEuMTY5NjUxMjU3NS4wLjAuMA.."
+        },
+        {
+          "langId": "fr",
+          "privacy": "https://asklocala.com/advertising-privacy-policy/?_gl=1*aiuw4v*_up*MQ..*_ga*MTQxNjAzNDUwMy4xNjk2NTEyNzk4*_ga_VRM83PCHBL*MTY5NjUxMjc5Ny4xLjEuMTY5NjUxMjc5Ny4wLjAuMA..*_ga_5N7836YC9X*MTY5NjUxMjc5Ny4xLjAuMTY5NjUxMjc5Ny4wLjAuMA..",
+          "legIntClaim": "https://asklocala.com/advertising-privacy-policy/?_gl=1*aiuw4v*_up*MQ..*_ga*MTQxNjAzNDUwMy4xNjk2NTEyNzk4*_ga_VRM83PCHBL*MTY5NjUxMjc5Ny4xLjEuMTY5NjUxMjc5Ny4wLjAuMA..*_ga_5N7836YC9X*MTY5NjUxMjc5Ny4xLjAuMTY5NjUxMjc5Ny4wLjAuMA.."
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        8,
+        9,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://cnt.s4mdsp.com/tcf/v2.json"
+    },
     "122": {
       "id": 122,
-      "name": "Dentsu London Limited",
+      "name": "Dentsu UK Limited",
       "purposes": [
         1,
         3,
@@ -5534,7 +5708,7 @@
     },
     "126": {
       "id": 126,
-      "name": "DoubleVerify Inc.\u200b",
+      "name": "DoubleVerify Inc.​",
       "purposes": [],
       "legIntPurposes": [
         2,
@@ -5914,11 +6088,6 @@
       },
       "urls": [
         {
-          "langId": "en",
-          "privacy": "https://www.smartstream.tv/en/productprivacy",
-          "legIntClaim": "https://www.smartstream.tv/en/productprivacy"
-        },
-        {
           "langId": "de",
           "privacy": "https://www.smartstream.tv/de/produktdatenschutz",
           "legIntClaim": "https://www.smartstream.tv/de/produktdatenschutz"
@@ -5937,7 +6106,7 @@
     },
     "136": {
       "id": 136,
-      "name": "Str\u00f6er SSP GmbH (SSP)",
+      "name": "Ströer SSP GmbH (SSP)",
       "purposes": [
         1,
         4
@@ -6531,6 +6700,45 @@
         11
       ],
       "deviceStorageDisclosureUrl": "https://www.inskinad.com/deviceStorageDisclosure.json"
+    },
+    "151": {
+      "id": 151,
+      "name": "MOOT TECHNOLOGY LTD",
+      "purposes": [
+        1,
+        2,
+        3,
+        4,
+        7
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [],
+      "features": [],
+      "specialFeatures": [
+        1
+      ],
+      "cookieMaxAgeSeconds": 0,
+      "usesCookies": true,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 390,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://admedo.com/privacy-policy"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        6,
+        8
+      ],
+      "deviceStorageDisclosureUrl": "https://admedo.com/admedo_device_storage_url.json"
     },
     "153": {
       "id": 153,
@@ -9628,17 +9836,13 @@
       "name": "ADYOULIKE SA",
       "purposes": [
         1,
+        2,
         3,
-        4
-      ],
-      "legIntPurposes": [
-        2,
+        4,
         7
       ],
-      "flexiblePurposes": [
-        2,
-        7
-      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
       "specialPurposes": [
         1,
         2
@@ -9671,7 +9875,9 @@
       "dataDeclaration": [
         1,
         2,
+        3,
         4,
+        6,
         8,
         11
       ],
@@ -10343,7 +10549,7 @@
     },
     "285": {
       "id": 285,
-      "name": "Comcast International France SAS",
+      "name": "Comcast International France SAS/FreeWheel Media, Inc.",
       "purposes": [
         1,
         2,
@@ -11062,7 +11268,7 @@
         {
           "langId": "en",
           "privacy": "https://clipcentric.com/privacy.bhtml",
-          "legIntClaim": "https://peter.clipcentric.com/privacy.bhtml#adViewersProcessingGrounds"
+          "legIntClaim": "https://clipcentric.com/privacy.bhtml#adViewersProcessingGrounds"
         }
       ],
       "dataDeclaration": [
@@ -12737,6 +12943,75 @@
       ],
       "deviceStorageDisclosureUrl": "https://www.communicationads.net/tcf-ca-crX5slZk63jtV.json"
     },
+    "381": {
+      "id": 381,
+      "name": "Solocal SA",
+      "purposes": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10
+      ],
+      "legIntPurposes": [
+        2,
+        8
+      ],
+      "flexiblePurposes": [],
+      "specialPurposes": [
+        1
+      ],
+      "features": [
+        1,
+        3
+      ],
+      "specialFeatures": [
+        1,
+        2
+      ],
+      "cookieMaxAgeSeconds": 34164000,
+      "usesCookies": true,
+      "cookieRefresh": true,
+      "usesNonCookieAccess": true,
+      "dataRetention": {
+        "purposes": {
+          "2": 0,
+          "3": 91,
+          "4": 91,
+          "5": 91,
+          "6": 91,
+          "7": 4320,
+          "8": 4320,
+          "9": 4320,
+          "10": 4320
+        },
+        "specialPurposes": {
+          "1": 372
+        }
+      },
+      "urls": [
+        {
+          "langId": "fr",
+          "privacy": "https://www.solocal.com/protection-de-la-vie-privee",
+          "legIntClaim": "https://www.solocal.com/protection-de-la-vie-privee"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://prd-cdn.adhslx.com/ui/assets/tcf/tcf-registration.json"
+    },
     "382": {
       "id": 382,
       "name": "The Reach Group GmbH",
@@ -12804,6 +13079,52 @@
         11
       ],
       "deviceStorageDisclosureUrl": "https://hal9000.redintelligence.net/privacy/tcf/deviceStorage/2723ad85dc4fd6c3.json"
+    },
+    "384": {
+      "id": 384,
+      "name": "Pixalate, Inc.",
+      "purposes": [
+        10
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [
+        10
+      ],
+      "specialPurposes": [
+        1
+      ],
+      "features": [
+        1,
+        2
+      ],
+      "specialFeatures": [],
+      "cookieMaxAgeSeconds": null,
+      "usesCookies": false,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "purposes": {
+          "10": 7
+        },
+        "specialPurposes": {
+          "1": 61
+        }
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://www.pixalate.com/privacypolicy",
+          "legIntClaim": "https://f.hubspotusercontent40.net/hubfs/2364596/Legal/2021-02-16%20Legitimate%20Interests.pdf"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        6,
+        8
+      ],
+      "deviceStorageDisclosureUrl": "https://api.pixalate.com/.well-known/disclosures/tcf_disclosures.json"
     },
     "385": {
       "id": 385,
@@ -13508,6 +13829,45 @@
       ],
       "deviceStorageDisclosureUrl": "https://developer.proxi.cloud/vendor-disclosures.json"
     },
+    "430": {
+      "id": 430,
+      "name": "AdServing Factory srl",
+      "purposes": [
+        7
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [
+        1,
+        2
+      ],
+      "features": [
+        3
+      ],
+      "specialFeatures": [],
+      "cookieMaxAgeSeconds": null,
+      "usesCookies": false,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 1,
+        "purposes": {
+          "7": 30
+        },
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://www.adservingfactory.com/privacy-policy.html",
+          "legIntClaim": "https://www.adservingfactory.com/privacy-policy.html"
+        }
+      ],
+      "dataDeclaration": [
+        2
+      ],
+      "deviceStorageDisclosureUrl": "https://content.adunity.com/tcf-vdso.json"
+    },
     "431": {
       "id": 431,
       "name": "HUMAN",
@@ -13819,6 +14179,59 @@
       ],
       "deviceStorageDisclosureUrl": "https://definemedia.de/tcf/deviceStorageDisclosureURL.json"
     },
+    "444": {
+      "id": 444,
+      "name": "EX.CO Technologies Ltd ",
+      "purposes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [],
+      "features": [
+        3
+      ],
+      "specialFeatures": [],
+      "cookieMaxAgeSeconds": 2592000,
+      "usesCookies": true,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 30,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://ex.co/privacy-policy/"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://ex.co/deviceStorage.json"
+    },
     "448": {
       "id": 448,
       "name": "Targetspot Belgium SPRL",
@@ -13977,6 +14390,107 @@
         11
       ],
       "deviceStorageDisclosureUrl": "https://iab.inbake.com/Innovid-IAB-TCFv2-disclosure.json"
+    },
+    "454": {
+      "id": 454,
+      "name": "Rico Developments Ltd",
+      "purposes": [
+        1,
+        7,
+        8,
+        10
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [
+        1,
+        2
+      ],
+      "features": [
+        3
+      ],
+      "specialFeatures": [
+        1
+      ],
+      "cookieMaxAgeSeconds": 31536000,
+      "usesCookies": true,
+      "cookieRefresh": true,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 365,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://adimo.co/privacy-policy",
+          "legIntClaim": "https://adimo.co/privacy-policy"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2
+      ],
+      "deviceStorageDisclosureUrl": "https://campaigns.adimo.co/tcf-adimo-device-storage-disclosure.json"
+    },
+    "455": {
+      "id": 455,
+      "name": "GDMServices, Inc. d/b/a Bidmind",
+      "purposes": [
+        1,
+        2,
+        3,
+        4,
+        10
+      ],
+      "legIntPurposes": [
+        7
+      ],
+      "flexiblePurposes": [
+        2,
+        10
+      ],
+      "specialPurposes": [
+        1,
+        2
+      ],
+      "features": [
+        1,
+        2,
+        3
+      ],
+      "specialFeatures": [
+        1
+      ],
+      "cookieMaxAgeSeconds": 7776000,
+      "usesCookies": true,
+      "cookieRefresh": true,
+      "usesNonCookieAccess": true,
+      "dataRetention": {
+        "stdRetention": 730,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://bidmind.com/privacy-policy/",
+          "legIntClaim": "https://bidmind.com/privacy-policy/"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        8,
+        9,
+        10,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://www.bidmind.com/tcf-disclosures.json"
     },
     "459": {
       "id": 459,
@@ -14176,6 +14690,57 @@
         11
       ],
       "deviceStorageDisclosureUrl": "https://gdpr-tcf.agkn.com/NeustarDeviceStorage.json"
+    },
+    "471": {
+      "id": 471,
+      "name": "Flexoffers.com, LLC",
+      "purposes": [
+        1,
+        2,
+        7,
+        8
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [
+        2,
+        7,
+        8
+      ],
+      "specialPurposes": [
+        1,
+        2
+      ],
+      "features": [
+        3
+      ],
+      "specialFeatures": [
+        1,
+        2
+      ],
+      "cookieMaxAgeSeconds": 2592000,
+      "usesCookies": true,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": true,
+      "dataRetention": {
+        "stdRetention": 4320,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://www.flexoffers.com/privacy-policy/",
+          "legIntClaim": "https://www.flexoffers.com/privacy-policy/"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        6,
+        7,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://www.flexoffers.com/privacy/json/iabgvl.json"
     },
     "473": {
       "id": 473,
@@ -14832,6 +15397,53 @@
         11
       ],
       "deviceStorageDisclosureUrl": "https://www.alliancegravity.com/tcf-vendor-info.json"
+    },
+    "502": {
+      "id": 502,
+      "name": "NEXD",
+      "purposes": [],
+      "legIntPurposes": [
+        7,
+        10,
+        11
+      ],
+      "flexiblePurposes": [
+        7,
+        10,
+        11
+      ],
+      "specialPurposes": [
+        1,
+        2
+      ],
+      "features": [],
+      "specialFeatures": [],
+      "overflow": {
+        "httpGetLimit": 128
+      },
+      "cookieMaxAgeSeconds": null,
+      "usesCookies": false,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 2920,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://nexd.com/privacy-policy",
+          "legIntClaim": "https://www.nexd.com/legitimate-interest-claim/"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        7,
+        8
+      ],
+      "deviceStorageDisclosureUrl": "https://media.adcanvas.com/.well-known/deviceStorage.json"
     },
     "506": {
       "id": 506,
@@ -15779,6 +16391,114 @@
         11
       ],
       "deviceStorageDisclosureUrl": "https://cdn.clickfuse.com/compliance/storage.json"
+    },
+    "550": {
+      "id": 550,
+      "name": "Happydemics",
+      "purposes": [
+        1,
+        2
+      ],
+      "legIntPurposes": [
+        9,
+        10
+      ],
+      "flexiblePurposes": [
+        9,
+        10
+      ],
+      "specialPurposes": [
+        2
+      ],
+      "features": [
+        3
+      ],
+      "specialFeatures": [],
+      "cookieMaxAgeSeconds": 129600,
+      "usesCookies": true,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "purposes": {
+          "2": 90,
+          "9": 1095,
+          "10": 1095
+        },
+        "specialPurposes": {
+          "2": 90
+        }
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://happydemics.com/en/terms_and_conditions",
+          "legIntClaim": "https://happydemics.com/en/terms_and_conditions"
+        },
+        {
+          "langId": "fr",
+          "privacy": "https://happydemics.com/fr/conditions-generales",
+          "legIntClaim": "https://happydemics.com/fr/conditions-generales"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        8,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://files.happydemics.com/iab-tcf/device_storage_disclosure.json"
+    },
+    "553": {
+      "id": 553,
+      "name": "Adhese",
+      "purposes": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        9
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [
+        1
+      ],
+      "features": [
+        1,
+        2
+      ],
+      "specialFeatures": [
+        1
+      ],
+      "cookieMaxAgeSeconds": 2592000,
+      "usesCookies": true,
+      "cookieRefresh": true,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 30,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://adhese.com/privacy-and-cookie-policy",
+          "legIntClaim": "https://adhese.com/privacy-and-cookie-policy"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://adhese.com/deviceStorage.json"
     },
     "554": {
       "id": 554,
@@ -17800,6 +18520,49 @@
       ],
       "deviceStorageDisclosureUrl": "https://www.skaze.com/deviceStorage.json"
     },
+    "653": {
+      "id": 653,
+      "name": "Smart Analytics SL",
+      "purposes": [
+        1,
+        7,
+        8,
+        9
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [],
+      "features": [
+        3
+      ],
+      "specialFeatures": [
+        1
+      ],
+      "cookieMaxAgeSeconds": 32000000,
+      "usesCookies": true,
+      "cookieRefresh": true,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 730,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "es",
+          "privacy": "https://www.smartmeanalytics.com/_next/static/e18aa096eb299626.pdf"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        6,
+        7,
+        9
+      ],
+      "deviceStorageDisclosureUrl": "https://smartmeanalytics.com/static/docs/smartme_device_storage_access.json"
+    },
     "655": {
       "id": 655,
       "name": "Sportradar AG",
@@ -19245,6 +20008,50 @@
       ],
       "deviceStorageDisclosureUrl": "https://assets.dataseat.com/GDPR_TCF.json"
     },
+    "714": {
+      "id": 714,
+      "name": "Upwave Inc.",
+      "purposes": [
+        1
+      ],
+      "legIntPurposes": [
+        7,
+        8,
+        9
+      ],
+      "flexiblePurposes": [
+        7,
+        8,
+        9
+      ],
+      "specialPurposes": [],
+      "features": [
+        3
+      ],
+      "specialFeatures": [],
+      "cookieMaxAgeSeconds": 32000000,
+      "usesCookies": true,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 400,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://www.upwave.com/privacy-policy/",
+          "legIntClaim": "https://www.upwave.com/privacy-policy/"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3
+      ],
+      "deviceStorageDisclosureUrl": "https://www.upwave.com/tcf.json"
+    },
     "715": {
       "id": 715,
       "name": "BidBerry SRL",
@@ -19406,7 +20213,7 @@
     },
     "718": {
       "id": 718,
-      "name": "XChange by SFBX\u00ae",
+      "name": "XChange by SFBX®",
       "purposes": [
         1,
         2,
@@ -20178,6 +20985,56 @@
       ],
       "deviceStorageDisclosureUrl": "https://connect.cint.com/cint-tcfv2.json"
     },
+    "736": {
+      "id": 736,
+      "name": "BidMachine Inc.",
+      "purposes": [
+        1
+      ],
+      "legIntPurposes": [
+        7,
+        8,
+        10
+      ],
+      "flexiblePurposes": [
+        7,
+        8,
+        10
+      ],
+      "specialPurposes": [
+        1,
+        2
+      ],
+      "features": [],
+      "specialFeatures": [
+        1
+      ],
+      "cookieMaxAgeSeconds": null,
+      "usesCookies": false,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": true,
+      "dataRetention": {
+        "stdRetention": 90,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://bidmachine.io/privacy-policy/",
+          "legIntClaim": "https://bidmachine.io/privacy-policy/"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        8,
+        9,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://bidmachine.io/deviceStorageDisclosureURL.json"
+    },
     "737": {
       "id": 737,
       "name": "Monet Engine Inc",
@@ -20248,6 +21105,64 @@
         8
       ],
       "deviceStorageDisclosureUrl": "https://device.adbility-media.com/deviceStorage.json"
+    },
+    "740": {
+      "id": 740,
+      "name": "6Sense Insights, Inc.",
+      "purposes": [
+        1,
+        3,
+        4
+      ],
+      "legIntPurposes": [
+        2,
+        7,
+        8,
+        10
+      ],
+      "flexiblePurposes": [
+        2,
+        7,
+        8,
+        10
+      ],
+      "specialPurposes": [
+        1,
+        2
+      ],
+      "features": [
+        1,
+        2,
+        3
+      ],
+      "specialFeatures": [],
+      "overflow": {
+        "httpGetLimit": 128
+      },
+      "cookieMaxAgeSeconds": 63072000,
+      "usesCookies": true,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": true,
+      "dataRetention": {
+        "stdRetention": 400,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://6sense.com/privacy-policy/",
+          "legIntClaim": "https://6sense.com/privacy-policy/"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        4,
+        6,
+        8,
+        10
+      ],
+      "deviceStorageDisclosureUrl": "https://6si-static.s3.amazonaws.com/disclosures/disclosure.json"
     },
     "741": {
       "id": 741,
@@ -22078,7 +22993,7 @@
     },
     "787": {
       "id": 787,
-      "name": "Hearts and Science M\u00fcnchen GmbH",
+      "name": "Hearts and Science München GmbH",
       "purposes": [
         1,
         7
@@ -23866,6 +24781,49 @@
       ],
       "deviceStorageDisclosureUrl": "https://ads.jetpackdigital.com/tcf.json"
     },
+    "839": {
+      "id": 839,
+      "name": "PIXFUTURE MEDIA INC.",
+      "purposes": [
+        1
+      ],
+      "legIntPurposes": [
+        2,
+        7,
+        10
+      ],
+      "flexiblePurposes": [],
+      "specialPurposes": [
+        1,
+        2
+      ],
+      "features": [],
+      "specialFeatures": [
+        1,
+        2
+      ],
+      "deletedDate": "2023-10-12T00:00:00Z",
+      "cookieMaxAgeSeconds": 31536000,
+      "usesCookies": true,
+      "cookieRefresh": true,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 365,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://www.pixfuture.com/terms-and-conditions#platform-terms",
+          "legIntClaim": "https://www.pixfuture.com/terms-and-conditions#platform-terms"
+        }
+      ],
+      "dataDeclaration": [
+        4
+      ],
+      "deviceStorageDisclosureUrl": "https://pixfuture.com/vendor-disclosures.json"
+    },
     "842": {
       "id": 842,
       "name": "PubWise, LLLP",
@@ -23912,7 +24870,7 @@
     },
     "844": {
       "id": 844,
-      "name": "SPICY MOBILE Karczewski Zawadzki Sp\u00f3\u0142ka Jawna",
+      "name": "SPICY MOBILE Karczewski Zawadzki Spółka Jawna",
       "purposes": [
         1,
         2,
@@ -24700,6 +25658,7 @@
         3
       ],
       "specialFeatures": [],
+      "deletedDate": "2023-10-09T00:00:00Z",
       "cookieMaxAgeSeconds": 31536000,
       "usesCookies": true,
       "cookieRefresh": false,
@@ -24919,9 +25878,48 @@
       ],
       "deviceStorageDisclosureUrl": "https://preciso.net/deviceStorage.json"
     },
+    "877": {
+      "id": 877,
+      "name": "Experian LTD",
+      "purposes": [
+        1,
+        3,
+        5
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [],
+      "features": [
+        1,
+        2,
+        3
+      ],
+      "specialFeatures": [],
+      "cookieMaxAgeSeconds": 15780000,
+      "usesCookies": true,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 180,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://www.experian.co.uk/privacy/consumer-information-portal/"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        10,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://experianmatch.info/tcf/disclosures.json"
+    },
     "878": {
       "id": 878,
-      "name": "Nat\u00edv Hirdet\u00e9s Korl\u00e1tolt Felel\u0151ss\u00e9g\u0171 T\u00e1rsas\u00e1g",
+      "name": "Natív Hirdetés Korlátolt Felelősségű Társaság",
       "purposes": [
         1
       ],
@@ -25019,6 +26017,63 @@
         8
       ],
       "deviceStorageDisclosureUrl": "https://www.thebiding.com/disclosures.json"
+    },
+    "880": {
+      "id": 880,
+      "name": "Quantyoo GmbH &amp; Co. KG",
+      "purposes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [],
+      "features": [
+        1,
+        2,
+        3
+      ],
+      "specialFeatures": [
+        1
+      ],
+      "cookieMaxAgeSeconds": 31536000,
+      "usesCookies": true,
+      "cookieRefresh": true,
+      "usesNonCookieAccess": true,
+      "dataRetention": {
+        "stdRetention": 730,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "de",
+          "privacy": "https://quantyoo.de/datenschutz"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://quantyoo.de/tcf/vendor.json"
     },
     "881": {
       "id": 881,
@@ -25662,6 +26717,58 @@
         8
       ],
       "deviceStorageDisclosureUrl": "https://misc.advisible.com/static/deviceStorage.json"
+    },
+    "901": {
+      "id": 901,
+      "name": "STUDIO GONG GmbH &amp; Co. Studiobetriebs KG",
+      "purposes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [
+        1,
+        2
+      ],
+      "features": [
+        1,
+        2,
+        3
+      ],
+      "specialFeatures": [
+        1
+      ],
+      "cookieMaxAgeSeconds": 34128000,
+      "usesCookies": true,
+      "cookieRefresh": true,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 90,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "de",
+          "privacy": "https://www.studio-gong.de/datenschutzerklaerung",
+          "legIntClaim": "https://www.studio-gong.de/datenschutzerklaerung"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3
+      ],
+      "deviceStorageDisclosureUrl": "https://www.studio-gong.de/devicedisclosure_vendor_studiogong.json"
     },
     "902": {
       "id": 902,
@@ -27614,6 +28721,51 @@
       ],
       "deviceStorageDisclosureUrl": "https://sellers.wemass.com/deviceStorage.json"
     },
+    "969": {
+      "id": 969,
+      "name": "SmartFrame Technologies Ltd",
+      "purposes": [],
+      "legIntPurposes": [
+        2,
+        7,
+        8
+      ],
+      "flexiblePurposes": [
+        7
+      ],
+      "specialPurposes": [
+        1,
+        2
+      ],
+      "features": [
+        3
+      ],
+      "specialFeatures": [
+        2
+      ],
+      "cookieMaxAgeSeconds": 86400,
+      "usesCookies": true,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": true,
+      "dataRetention": {
+        "stdRetention": 31,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://smartframe.io/publisher-terms-conditions/",
+          "legIntClaim": "https://smartframe.io/wp-content/uploads/2023/07/Legitimate-Interest-Assessment.pdf"
+        }
+      ],
+      "dataDeclaration": [
+        2,
+        3,
+        8
+      ],
+      "deviceStorageDisclosureUrl": "https://smartframe.io/file.json"
+    },
     "970": {
       "id": 970,
       "name": "Frameplay Corporation",
@@ -28394,6 +29546,49 @@
         3
       ],
       "deviceStorageDisclosureUrl": "https://lunamedia.io/tcf.json"
+    },
+    "999": {
+      "id": 999,
+      "name": "ADSTOURS SAS",
+      "purposes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [],
+      "features": [],
+      "specialFeatures": [],
+      "cookieMaxAgeSeconds": 63000000,
+      "usesCookies": true,
+      "cookieRefresh": true,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 60,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "fr",
+          "privacy": "https://www.clickintext.com/about/charte-rgpd.php"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        6,
+        8,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://www.clickintext.com/about/consensu.php"
     },
     "1001": {
       "id": 1001,
@@ -29549,6 +30744,42 @@
       ],
       "deviceStorageDisclosureUrl": "https://viads.com/deviceStorage.json"
     },
+    "1037": {
+      "id": 1037,
+      "name": "Pressboard Media Inc",
+      "purposes": [
+        8
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [],
+      "features": [
+        3
+      ],
+      "specialFeatures": [],
+      "cookieMaxAgeSeconds": null,
+      "usesCookies": false,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "purposes": {
+          "8": 1095
+        },
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://www.pressboardmedia.com/privacy-policy"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        4,
+        6
+      ],
+      "deviceStorageDisclosureUrl": "https://pbiabtcf.blob.core.windows.net/tcf/disclosure.json"
+    },
     "1038": {
       "id": 1038,
       "name": "AA INTERNET-MEDIA Ltd",
@@ -30170,7 +31401,7 @@
     },
     "1057": {
       "id": 1057,
-      "name": "Str\u00f6er Digital Media GmbH",
+      "name": "Ströer Digital Media GmbH",
       "purposes": [
         1
       ],
@@ -30942,7 +32173,9 @@
         2,
         7,
         8,
-        10
+        9,
+        10,
+        11
       ],
       "specialPurposes": [
         1,
@@ -30973,6 +32206,7 @@
         }
       ],
       "dataDeclaration": [
+        1,
         2,
         3,
         4,
@@ -31927,7 +33161,7 @@
     },
     "1110": {
       "id": 1110,
-      "name": "K\u00d6NIGSTEINER digital GmbH",
+      "name": "KÖNIGSTEINER digital GmbH",
       "purposes": [
         1,
         2,
@@ -33277,63 +34511,6 @@
       ],
       "deviceStorageDisclosureUrl": "https://rtb.adinmo.com/iab-tcf-vendor"
     },
-    "550": {
-      "id": 550,
-      "name": "Happydemics",
-      "purposes": [
-        1,
-        2
-      ],
-      "legIntPurposes": [
-        9,
-        10
-      ],
-      "flexiblePurposes": [
-        9,
-        10
-      ],
-      "specialPurposes": [
-        2
-      ],
-      "features": [
-        3
-      ],
-      "specialFeatures": [],
-      "cookieMaxAgeSeconds": 129600,
-      "usesCookies": true,
-      "cookieRefresh": false,
-      "usesNonCookieAccess": false,
-      "dataRetention": {
-        "purposes": {
-          "2": 90,
-          "9": 1095,
-          "10": 1095
-        },
-        "specialPurposes": {
-          "2": 90
-        }
-      },
-      "urls": [
-        {
-          "langId": "en",
-          "privacy": "https://happydemics.com/en/terms_and_conditions",
-          "legIntClaim": "https://happydemics.com/en/terms_and_conditions"
-        },
-        {
-          "langId": "fr",
-          "privacy": "https://happydemics.com/fr/conditions-generales",
-          "legIntClaim": "https://happydemics.com/fr/conditions-generales"
-        }
-      ],
-      "dataDeclaration": [
-        1,
-        2,
-        3,
-        8,
-        11
-      ],
-      "deviceStorageDisclosureUrl": "https://files.happydemics.com/iab-tcf/device_storage_disclosure.json"
-    },
     "1151": {
       "id": 1151,
       "name": "Boldwin LTD",
@@ -33383,49 +34560,6 @@
         1
       ],
       "deviceStorageDisclosureUrl": "https://magav.videowalldirect.com/iab/videowalldirectiab.json"
-    },
-    "653": {
-      "id": 653,
-      "name": "Smart Analytics SL",
-      "purposes": [
-        1,
-        7,
-        8,
-        9
-      ],
-      "legIntPurposes": [],
-      "flexiblePurposes": [],
-      "specialPurposes": [],
-      "features": [
-        3
-      ],
-      "specialFeatures": [
-        1
-      ],
-      "cookieMaxAgeSeconds": 32000000,
-      "usesCookies": true,
-      "cookieRefresh": true,
-      "usesNonCookieAccess": false,
-      "dataRetention": {
-        "stdRetention": 730,
-        "purposes": {},
-        "specialPurposes": {}
-      },
-      "urls": [
-        {
-          "langId": "es",
-          "privacy": "https://www.smartmeanalytics.com/_next/static/e18aa096eb299626.pdf"
-        }
-      ],
-      "dataDeclaration": [
-        1,
-        2,
-        3,
-        6,
-        7,
-        9
-      ],
-      "deviceStorageDisclosureUrl": "https://smartmeanalytics.com/static/docs/smartme_device_storage_access.json"
     },
     "1153": {
       "id": 1153,
@@ -33491,48 +34625,6 @@
         11
       ],
       "deviceStorageDisclosureUrl": "https://content.sonares.org/disclosure.json"
-    },
-    "839": {
-      "id": 839,
-      "name": "PIXFUTURE MEDIA INC.",
-      "purposes": [
-        1
-      ],
-      "legIntPurposes": [
-        2,
-        7,
-        10
-      ],
-      "flexiblePurposes": [],
-      "specialPurposes": [
-        1,
-        2
-      ],
-      "features": [],
-      "specialFeatures": [
-        1,
-        2
-      ],
-      "cookieMaxAgeSeconds": 31536000,
-      "usesCookies": true,
-      "cookieRefresh": true,
-      "usesNonCookieAccess": false,
-      "dataRetention": {
-        "stdRetention": 365,
-        "purposes": {},
-        "specialPurposes": {}
-      },
-      "urls": [
-        {
-          "langId": "en",
-          "privacy": "https://www.pixfuture.com/terms-and-conditions#platform-terms",
-          "legIntClaim": "https://www.pixfuture.com/terms-and-conditions#platform-terms"
-        }
-      ],
-      "dataDeclaration": [
-        4
-      ],
-      "deviceStorageDisclosureUrl": "https://pixfuture.com/vendor-disclosures.json"
     },
     "1154": {
       "id": 1154,
@@ -33910,51 +35002,6 @@
       ],
       "deviceStorageDisclosureUrl": "https://www.streamonkey.de/iab_disclosures.json"
     },
-    "969": {
-      "id": 969,
-      "name": "SmartFrame Technologies Ltd",
-      "purposes": [],
-      "legIntPurposes": [
-        2,
-        7,
-        8
-      ],
-      "flexiblePurposes": [
-        7
-      ],
-      "specialPurposes": [
-        1,
-        2
-      ],
-      "features": [
-        3
-      ],
-      "specialFeatures": [
-        2
-      ],
-      "cookieMaxAgeSeconds": 86400,
-      "usesCookies": true,
-      "cookieRefresh": false,
-      "usesNonCookieAccess": true,
-      "dataRetention": {
-        "stdRetention": 31,
-        "purposes": {},
-        "specialPurposes": {}
-      },
-      "urls": [
-        {
-          "langId": "en",
-          "privacy": "https://smartframe.io/publisher-terms-conditions/",
-          "legIntClaim": "https://smartframe.io/wp-content/uploads/2023/07/Legitimate-Interest-Assessment.pdf"
-        }
-      ],
-      "dataDeclaration": [
-        2,
-        3,
-        8
-      ],
-      "deviceStorageDisclosureUrl": "https://smartframe.io/file.json"
-    },
     "1161": {
       "id": 1161,
       "name": "freenet DLS GmbH",
@@ -34213,6 +35260,59 @@
         11
       ],
       "deviceStorageDisclosureUrl": "https://en.kueez.com/tcf.json"
+    },
+    "1167": {
+      "id": 1167,
+      "name": "Reliz LTD",
+      "purposes": [
+        1,
+        2,
+        7,
+        8,
+        9,
+        10
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [
+        2,
+        7,
+        8,
+        9,
+        10
+      ],
+      "specialPurposes": [
+        1,
+        2
+      ],
+      "features": [
+        3
+      ],
+      "specialFeatures": [
+        1
+      ],
+      "overflow": {
+        "httpGetLimit": 32
+      },
+      "cookieMaxAgeSeconds": 32000000,
+      "usesCookies": true,
+      "cookieRefresh": true,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 0,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://reliz.com/policy",
+          "legIntClaim": "https://reliz.com/policy"
+        }
+      ],
+      "dataDeclaration": [
+        7
+      ],
+      "deviceStorageDisclosureUrl": "https://hub.bumlam.com/TCFv2.json"
     },
     "1168": {
       "id": 1168,
@@ -34651,84 +35751,6 @@
       ],
       "deviceStorageDisclosureUrl": "https://ads.holid.io/devicestorage.json"
     },
-    "430": {
-      "id": 430,
-      "name": "AdServing Factory srl",
-      "purposes": [
-        7
-      ],
-      "legIntPurposes": [],
-      "flexiblePurposes": [],
-      "specialPurposes": [
-        1,
-        2
-      ],
-      "features": [
-        3
-      ],
-      "specialFeatures": [],
-      "cookieMaxAgeSeconds": null,
-      "usesCookies": false,
-      "cookieRefresh": false,
-      "usesNonCookieAccess": false,
-      "dataRetention": {
-        "stdRetention": 1,
-        "purposes": {
-          "7": 30
-        },
-        "specialPurposes": {}
-      },
-      "urls": [
-        {
-          "langId": "en",
-          "privacy": "https://www.adservingfactory.com/privacy-policy.html",
-          "legIntClaim": "https://www.adservingfactory.com/privacy-policy.html"
-        }
-      ],
-      "dataDeclaration": [
-        2
-      ],
-      "deviceStorageDisclosureUrl": "https://content.adunity.com/tcf-vdso.json"
-    },
-    "877": {
-      "id": 877,
-      "name": "Experian LTD",
-      "purposes": [
-        1,
-        3,
-        5
-      ],
-      "legIntPurposes": [],
-      "flexiblePurposes": [],
-      "specialPurposes": [],
-      "features": [
-        1,
-        2,
-        3
-      ],
-      "specialFeatures": [],
-      "cookieMaxAgeSeconds": 15780000,
-      "usesCookies": true,
-      "cookieRefresh": false,
-      "usesNonCookieAccess": false,
-      "dataRetention": {
-        "stdRetention": 180,
-        "purposes": {},
-        "specialPurposes": {}
-      },
-      "urls": [
-        {
-          "langId": "en",
-          "privacy": "https://www.experian.co.uk/privacy/consumer-information-portal/"
-        }
-      ],
-      "dataDeclaration": [
-        1,
-        10,
-        11
-      ],
-      "deviceStorageDisclosureUrl": "https://experianmatch.info/tcf/disclosures.json"
-    },
     "1178": {
       "id": 1178,
       "name": "First-id",
@@ -34820,7 +35842,7 @@
     },
     "1181": {
       "id": 1181,
-      "name": "BotTalk UG (haftungsbeschr\u00e4nkt)",
+      "name": "BotTalk UG (haftungsbeschränkt)",
       "purposes": [
         1,
         8,
@@ -34855,45 +35877,6 @@
         2
       ],
       "deviceStorageDisclosureUrl": "https://bottalk.io/gvr.json"
-    },
-    "151": {
-      "id": 151,
-      "name": "MOOT TECHNOLOGY LTD",
-      "purposes": [
-        1,
-        2,
-        3,
-        4,
-        7
-      ],
-      "legIntPurposes": [],
-      "flexiblePurposes": [],
-      "specialPurposes": [],
-      "features": [],
-      "specialFeatures": [
-        1
-      ],
-      "cookieMaxAgeSeconds": 0,
-      "usesCookies": true,
-      "cookieRefresh": false,
-      "usesNonCookieAccess": false,
-      "dataRetention": {
-        "stdRetention": 390,
-        "purposes": {},
-        "specialPurposes": {}
-      },
-      "urls": [
-        {
-          "langId": "en",
-          "privacy": "https://admedo.com/privacy-policy"
-        }
-      ],
-      "dataDeclaration": [
-        1,
-        6,
-        8
-      ],
-      "deviceStorageDisclosureUrl": "https://admedo.com/admedo_device_storage_url.json"
     },
     "1183": {
       "id": 1183,
@@ -34956,49 +35939,6 @@
         11
       ],
       "deviceStorageDisclosureUrl": "https://semseoymas.com/iab.json"
-    },
-    "454": {
-      "id": 454,
-      "name": "Rico Developments Ltd",
-      "purposes": [
-        1,
-        7,
-        8,
-        10
-      ],
-      "legIntPurposes": [],
-      "flexiblePurposes": [],
-      "specialPurposes": [
-        1,
-        2
-      ],
-      "features": [
-        3
-      ],
-      "specialFeatures": [
-        1
-      ],
-      "cookieMaxAgeSeconds": 31536000,
-      "usesCookies": true,
-      "cookieRefresh": true,
-      "usesNonCookieAccess": false,
-      "dataRetention": {
-        "stdRetention": 365,
-        "purposes": {},
-        "specialPurposes": {}
-      },
-      "urls": [
-        {
-          "langId": "en",
-          "privacy": "https://adimo.co/privacy-policy",
-          "legIntClaim": "https://adimo.co/privacy-policy"
-        }
-      ],
-      "dataDeclaration": [
-        1,
-        2
-      ],
-      "deviceStorageDisclosureUrl": "https://campaigns.adimo.co/tcf-adimo-device-storage-disclosure.json"
     },
     "1184": {
       "id": 1184,
@@ -35182,50 +36122,6 @@
       ],
       "deviceStorageDisclosureUrl": "https://gdpr.firework.com/disclosure.json"
     },
-    "714": {
-      "id": 714,
-      "name": "Upwave Inc.",
-      "purposes": [
-        1
-      ],
-      "legIntPurposes": [
-        7,
-        8,
-        9
-      ],
-      "flexiblePurposes": [
-        7,
-        8,
-        9
-      ],
-      "specialPurposes": [],
-      "features": [
-        3
-      ],
-      "specialFeatures": [],
-      "cookieMaxAgeSeconds": 32000000,
-      "usesCookies": true,
-      "cookieRefresh": false,
-      "usesNonCookieAccess": false,
-      "dataRetention": {
-        "stdRetention": 400,
-        "purposes": {},
-        "specialPurposes": {}
-      },
-      "urls": [
-        {
-          "langId": "en",
-          "privacy": "https://www.upwave.com/privacy-policy/",
-          "legIntClaim": "https://www.upwave.com/privacy-policy/"
-        }
-      ],
-      "dataDeclaration": [
-        1,
-        2,
-        3
-      ],
-      "deviceStorageDisclosureUrl": "https://www.upwave.com/tcf.json"
-    },
     "1189": {
       "id": 1189,
       "name": "ResponsiveAds, Inc.",
@@ -35327,7 +36223,7 @@
     },
     "1191": {
       "id": 1191,
-      "name": "Adsmovil Espa\u00f1a S.L",
+      "name": "Adsmovil España S.L",
       "purposes": [
         2,
         3,
@@ -35364,58 +36260,6 @@
         9
       ],
       "deviceStorageDisclosureUrl": "https://adsmovil.com/devicedisclosure.json"
-    },
-    "901": {
-      "id": 901,
-      "name": "STUDIO GONG GmbH &amp; Co. Studiobetriebs KG",
-      "purposes": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10
-      ],
-      "legIntPurposes": [],
-      "flexiblePurposes": [],
-      "specialPurposes": [
-        1,
-        2
-      ],
-      "features": [
-        1,
-        2,
-        3
-      ],
-      "specialFeatures": [
-        1
-      ],
-      "cookieMaxAgeSeconds": 34128000,
-      "usesCookies": true,
-      "cookieRefresh": true,
-      "usesNonCookieAccess": false,
-      "dataRetention": {
-        "stdRetention": 90,
-        "purposes": {},
-        "specialPurposes": {}
-      },
-      "urls": [
-        {
-          "langId": "de",
-          "privacy": "https://www.studio-gong.de/datenschutzerklaerung",
-          "legIntClaim": "https://www.studio-gong.de/datenschutzerklaerung"
-        }
-      ],
-      "dataDeclaration": [
-        1,
-        2,
-        3
-      ],
-      "deviceStorageDisclosureUrl": "https://www.studio-gong.de/devicedisclosure_vendor_studiogong.json"
     },
     "1192": {
       "id": 1192,
@@ -35468,59 +36312,6 @@
       ],
       "deviceStorageDisclosureUrl": "https://engagemedia.tv/deviceStorageDisclosure.json"
     },
-    "444": {
-      "id": 444,
-      "name": "EX.CO Technologies Ltd ",
-      "purposes": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11
-      ],
-      "legIntPurposes": [],
-      "flexiblePurposes": [],
-      "specialPurposes": [],
-      "features": [
-        3
-      ],
-      "specialFeatures": [],
-      "cookieMaxAgeSeconds": 2592000,
-      "usesCookies": true,
-      "cookieRefresh": false,
-      "usesNonCookieAccess": false,
-      "dataRetention": {
-        "stdRetention": 30,
-        "purposes": {},
-        "specialPurposes": {}
-      },
-      "urls": [
-        {
-          "langId": "en",
-          "privacy": "https://ex.co/privacy-policy/"
-        }
-      ],
-      "dataDeclaration": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11
-      ],
-      "deviceStorageDisclosureUrl": "https://ex.co/deviceStorage.json"
-    },
     "1193": {
       "id": 1193,
       "name": "ArcSpan Technologies, Inc.",
@@ -35565,49 +36356,6 @@
         11
       ],
       "deviceStorageDisclosureUrl": "https://docs.arcspan.com/arcspan.json"
-    },
-    "999": {
-      "id": 999,
-      "name": "ADSTOURS SAS",
-      "purposes": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10
-      ],
-      "legIntPurposes": [],
-      "flexiblePurposes": [],
-      "specialPurposes": [],
-      "features": [],
-      "specialFeatures": [],
-      "cookieMaxAgeSeconds": 63000000,
-      "usesCookies": true,
-      "cookieRefresh": true,
-      "usesNonCookieAccess": false,
-      "dataRetention": {
-        "stdRetention": 60,
-        "purposes": {},
-        "specialPurposes": {}
-      },
-      "urls": [
-        {
-          "langId": "fr",
-          "privacy": "https://www.clickintext.com/about/charte-rgpd.php"
-        }
-      ],
-      "dataDeclaration": [
-        1,
-        6,
-        8,
-        11
-      ],
-      "deviceStorageDisclosureUrl": "https://www.clickintext.com/about/consensu.php"
     },
     "1195": {
       "id": 1195,
@@ -35697,75 +36445,6 @@
         11
       ],
       "deviceStorageDisclosureUrl": "https://ad.vidverto.io/delivery/iab_tcf_ds.json"
-    },
-    "381": {
-      "id": 381,
-      "name": "Solocal SA",
-      "purposes": [
-        1,
-        3,
-        4,
-        5,
-        6,
-        7,
-        9,
-        10
-      ],
-      "legIntPurposes": [
-        2,
-        8
-      ],
-      "flexiblePurposes": [],
-      "specialPurposes": [
-        1
-      ],
-      "features": [
-        1,
-        3
-      ],
-      "specialFeatures": [
-        1,
-        2
-      ],
-      "cookieMaxAgeSeconds": 34164000,
-      "usesCookies": true,
-      "cookieRefresh": true,
-      "usesNonCookieAccess": true,
-      "dataRetention": {
-        "purposes": {
-          "2": 0,
-          "3": 91,
-          "4": 91,
-          "5": 91,
-          "6": 91,
-          "7": 4320,
-          "8": 4320,
-          "9": 4320,
-          "10": 4320
-        },
-        "specialPurposes": {
-          "1": 372
-        }
-      },
-      "urls": [
-        {
-          "langId": "fr",
-          "privacy": "https://www.solocal.com/protection-de-la-vie-privee",
-          "legIntClaim": "https://www.solocal.com/protection-de-la-vie-privee"
-        }
-      ],
-      "dataDeclaration": [
-        1,
-        2,
-        3,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11
-      ],
-      "deviceStorageDisclosureUrl": "https://prd-cdn.adhslx.com/ui/assets/tcf/tcf-registration.json"
     },
     "1199": {
       "id": 1199,
@@ -36796,7 +37475,7 @@
     },
     "1221": {
       "id": 1221,
-      "name": "Flyads O\u00dc",
+      "name": "Flyads OÜ",
       "purposes": [
         3,
         4,
@@ -36984,96 +37663,6 @@
         6
       ],
       "deviceStorageDisclosureUrl": "https://api.recova.ai/disclosures.json"
-    },
-    "384": {
-      "id": 384,
-      "name": "Pixalate, Inc.",
-      "purposes": [
-        10
-      ],
-      "legIntPurposes": [],
-      "flexiblePurposes": [
-        10
-      ],
-      "specialPurposes": [
-        1
-      ],
-      "features": [
-        1,
-        2
-      ],
-      "specialFeatures": [],
-      "cookieMaxAgeSeconds": null,
-      "usesCookies": false,
-      "cookieRefresh": false,
-      "usesNonCookieAccess": false,
-      "dataRetention": {
-        "purposes": {
-          "10": 7
-        },
-        "specialPurposes": {
-          "1": 61
-        }
-      },
-      "urls": [
-        {
-          "langId": "en",
-          "privacy": "https://www.pixalate.com/privacypolicy",
-          "legIntClaim": "https://f.hubspotusercontent40.net/hubfs/2364596/Legal/2021-02-16%20Legitimate%20Interests.pdf"
-        }
-      ],
-      "dataDeclaration": [
-        1,
-        2,
-        3,
-        6,
-        8
-      ],
-      "deviceStorageDisclosureUrl": "https://api.pixalate.com/.well-known/disclosures/tcf_disclosures.json"
-    },
-    "4176": {
-      "id": 4176,
-      "name": "Advertising.Tech FZ-LLC",
-      "purposes": [],
-      "legIntPurposes": [],
-      "flexiblePurposes": [],
-      "specialPurposes": [
-        1
-      ],
-      "features": [
-        3
-      ],
-      "specialFeatures": [],
-      "cookieMaxAgeSeconds": null,
-      "usesCookies": false,
-      "cookieRefresh": false,
-      "usesNonCookieAccess": false,
-      "dataRetention": {
-        "purposes": {},
-        "specialPurposes": {
-          "1": 2190
-        }
-      },
-      "urls": [
-        {
-          "langId": "en",
-          "privacy": "https://advertising.tech/privacy-policy/",
-          "legIntClaim": "https://advertising.tech/privacy-policy/#legal-basis"
-        }
-      ],
-      "dataDeclaration": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        10,
-        11
-      ],
-      "deviceStorageDisclosureUrl": "https://advertising.tech/tcf/gvl/deviceStorage.json"
     },
     "1225": {
       "id": 1225,
@@ -37349,6 +37938,55 @@
         11
       ],
       "deviceStorageDisclosureUrl": "https://www.audion.fm/tcfv2.json"
+    },
+    "1231": {
+      "id": 1231,
+      "name": "Groupe Canal&#43;",
+      "purposes": [
+        1,
+        2,
+        3,
+        7,
+        8,
+        9
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [],
+      "features": [
+        1,
+        2
+      ],
+      "specialFeatures": [],
+      "cookieMaxAgeSeconds": 34128000,
+      "usesCookies": true,
+      "cookieRefresh": true,
+      "usesNonCookieAccess": true,
+      "dataRetention": {
+        "stdRetention": 395,
+        "purposes": {
+          "3": 390
+        },
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "fr",
+          "privacy": "https://canalplus.com/cookies/"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://static.canal-plus.net/apps/mycanal/prod/api/IAB-Vendors-Device-Storage-Disclosure.json"
     },
     "1232": {
       "id": 1232,
@@ -37639,6 +38277,209 @@
         11
       ],
       "deviceStorageDisclosureUrl": "https://tr.roivenue.com/device-storage-disclosure/"
+    },
+    "1240": {
+      "id": 1240,
+      "name": "FireArc Technologies Ltd",
+      "purposes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "legIntPurposes": [
+        7,
+        8,
+        10,
+        11
+      ],
+      "flexiblePurposes": [],
+      "specialPurposes": [
+        1,
+        2
+      ],
+      "features": [],
+      "specialFeatures": [],
+      "cookieMaxAgeSeconds": 62208000,
+      "usesCookies": true,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 365,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://carambola.com/privacy-policy/",
+          "legIntClaim": "https://carambola.com/privacy-policy/"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        6,
+        8,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://carambola.com/sellers.json/"
+    },
+    "1241": {
+      "id": 1241,
+      "name": "SIA Setupad",
+      "purposes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [],
+      "features": [
+        1,
+        2,
+        3
+      ],
+      "specialFeatures": [
+        1,
+        2
+      ],
+      "cookieMaxAgeSeconds": 31536000,
+      "usesCookies": true,
+      "cookieRefresh": true,
+      "usesNonCookieAccess": true,
+      "dataRetention": {
+        "stdRetention": 365,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://setupad.com/privacy-policy/"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        8
+      ],
+      "deviceStorageDisclosureUrl": "https://cookies.stpd.cloud/disclosures.json"
+    },
+    "1242": {
+      "id": 1242,
+      "name": "Relevant Audience Oy",
+      "purposes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [],
+      "features": [
+        1,
+        2,
+        3
+      ],
+      "specialFeatures": [
+        1,
+        2
+      ],
+      "overflow": {
+        "httpGetLimit": 32
+      },
+      "cookieMaxAgeSeconds": 31536000,
+      "usesCookies": true,
+      "cookieRefresh": true,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "stdRetention": 365,
+        "purposes": {},
+        "specialPurposes": {}
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://audience.relevant.fi/privacy"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://audience-solutions.com/.well-known/deviceStorage.json"
+    },
+    "4176": {
+      "id": 4176,
+      "name": "Advertising.Tech FZ-LLC",
+      "purposes": [],
+      "legIntPurposes": [],
+      "flexiblePurposes": [],
+      "specialPurposes": [
+        1
+      ],
+      "features": [
+        3
+      ],
+      "specialFeatures": [],
+      "cookieMaxAgeSeconds": null,
+      "usesCookies": false,
+      "cookieRefresh": false,
+      "usesNonCookieAccess": false,
+      "dataRetention": {
+        "purposes": {},
+        "specialPurposes": {
+          "1": 2190
+        }
+      },
+      "urls": [
+        {
+          "langId": "en",
+          "privacy": "https://advertising.tech/privacy-policy/",
+          "legIntClaim": "https://advertising.tech/privacy-policy/#legal-basis"
+        }
+      ],
+      "dataDeclaration": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11
+      ],
+      "deviceStorageDisclosureUrl": "https://advertising.tech/tcf/gvl/deviceStorage.json"
     }
   }
 }
