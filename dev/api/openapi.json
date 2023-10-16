@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.21.1b3.post0.dev11"
+    "version": "2.21.1b3.post0.dev12"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13773,7 +13773,7 @@
             "items": {
               "$ref": "#/components/schemas/DataFlow"
             },
-            "description": "The resources to which the System sends data."
+            "description": "The resources to which the system sends data."
           },
           "ingress": {
             "title": "Ingress",
@@ -13781,7 +13781,7 @@
             "items": {
               "$ref": "#/components/schemas/DataFlow"
             },
-            "description": "The resources from which the System receives data."
+            "description": "The resources from which the system receives data."
           },
           "privacy_declarations": {
             "title": "Privacy Declarations",
@@ -13902,7 +13902,7 @@
             "maxLength": 65536,
             "minLength": 1,
             "type": "string",
-            "description": "A URL that points to the System's publicly accessible privacy policy.",
+            "description": "A URL that points to the system's publicly accessible privacy policy.",
             "format": "uri"
           },
           "legal_name": {
@@ -13936,6 +13936,37 @@
             "title": "Data Security Practices",
             "type": "string",
             "description": "The data security practices employed by this system."
+          },
+          "cookie_max_age_seconds": {
+            "title": "Cookie Max Age Seconds",
+            "type": "integer",
+            "description": "The maximum storage duration, in seconds, for cookies used by this system."
+          },
+          "uses_cookies": {
+            "title": "Uses Cookies",
+            "type": "boolean",
+            "description": "Whether this system uses cookie storage.",
+            "default": false
+          },
+          "cookie_refresh": {
+            "title": "Cookie Refresh",
+            "type": "boolean",
+            "description": "Whether the system's cookies are refreshed after being initially set.",
+            "default": false
+          },
+          "uses_non_cookie_access": {
+            "title": "Uses Non Cookie Access",
+            "type": "boolean",
+            "description": "Whether the system uses non-cookie methods of storage or accessing information stored on a user's device.",
+            "default": false
+          },
+          "legitimate_interest_disclosure_url": {
+            "title": "Legitimate Interest Disclosure Url",
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string",
+            "description": "A URL that points to the system's publicly accessible legitimate interest disclosure.",
+            "format": "uri"
           },
           "created_at": {
             "title": "Created At",
@@ -19451,6 +19482,11 @@
             },
             "description": "The features of processing personal data."
           },
+          "flexible_legal_basis_for_processing": {
+            "title": "Flexible Legal Basis For Processing",
+            "type": "boolean",
+            "description": "Whether the legal basis for processing is 'flexible' (i.e. can be overridden in a privacy notice) for this declaration."
+          },
           "legal_basis_for_processing": {
             "allOf": [
               {
@@ -19591,6 +19627,11 @@
               "type": "string"
             },
             "description": "The features of processing personal data."
+          },
+          "flexible_legal_basis_for_processing": {
+            "title": "Flexible Legal Basis For Processing",
+            "type": "boolean",
+            "description": "Whether the legal basis for processing is 'flexible' (i.e. can be overridden in a privacy notice) for this declaration."
           },
           "legal_basis_for_processing": {
             "allOf": [
@@ -22539,7 +22580,7 @@
             "items": {
               "$ref": "#/components/schemas/DataFlow"
             },
-            "description": "The resources to which the System sends data."
+            "description": "The resources to which the system sends data."
           },
           "ingress": {
             "title": "Ingress",
@@ -22547,7 +22588,7 @@
             "items": {
               "$ref": "#/components/schemas/DataFlow"
             },
-            "description": "The resources from which the System receives data."
+            "description": "The resources from which the system receives data."
           },
           "privacy_declarations": {
             "title": "Privacy Declarations",
@@ -22668,7 +22709,7 @@
             "maxLength": 65536,
             "minLength": 1,
             "type": "string",
-            "description": "A URL that points to the System's publicly accessible privacy policy.",
+            "description": "A URL that points to the system's publicly accessible privacy policy.",
             "format": "uri"
           },
           "legal_name": {
@@ -22702,6 +22743,37 @@
             "title": "Data Security Practices",
             "type": "string",
             "description": "The data security practices employed by this system."
+          },
+          "cookie_max_age_seconds": {
+            "title": "Cookie Max Age Seconds",
+            "type": "integer",
+            "description": "The maximum storage duration, in seconds, for cookies used by this system."
+          },
+          "uses_cookies": {
+            "title": "Uses Cookies",
+            "type": "boolean",
+            "description": "Whether this system uses cookie storage.",
+            "default": false
+          },
+          "cookie_refresh": {
+            "title": "Cookie Refresh",
+            "type": "boolean",
+            "description": "Whether the system's cookies are refreshed after being initially set.",
+            "default": false
+          },
+          "uses_non_cookie_access": {
+            "title": "Uses Non Cookie Access",
+            "type": "boolean",
+            "description": "Whether the system uses non-cookie methods of storage or accessing information stored on a user's device.",
+            "default": false
+          },
+          "legitimate_interest_disclosure_url": {
+            "title": "Legitimate Interest Disclosure Url",
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string",
+            "description": "A URL that points to the system's publicly accessible legitimate interest disclosure.",
+            "format": "uri"
           }
         },
         "description": "The System resource model.\n\nDescribes an application and includes a list of PrivacyDeclaration resources."
@@ -22806,7 +22878,7 @@
             "items": {
               "$ref": "#/components/schemas/DataFlow"
             },
-            "description": "The resources to which the System sends data."
+            "description": "The resources to which the system sends data."
           },
           "ingress": {
             "title": "Ingress",
@@ -22814,7 +22886,7 @@
             "items": {
               "$ref": "#/components/schemas/DataFlow"
             },
-            "description": "The resources from which the System receives data."
+            "description": "The resources from which the system receives data."
           },
           "privacy_declarations": {
             "title": "Privacy Declarations",
@@ -22935,7 +23007,7 @@
             "maxLength": 65536,
             "minLength": 1,
             "type": "string",
-            "description": "A URL that points to the System's publicly accessible privacy policy.",
+            "description": "A URL that points to the system's publicly accessible privacy policy.",
             "format": "uri"
           },
           "legal_name": {
@@ -22969,6 +23041,37 @@
             "title": "Data Security Practices",
             "type": "string",
             "description": "The data security practices employed by this system."
+          },
+          "cookie_max_age_seconds": {
+            "title": "Cookie Max Age Seconds",
+            "type": "integer",
+            "description": "The maximum storage duration, in seconds, for cookies used by this system."
+          },
+          "uses_cookies": {
+            "title": "Uses Cookies",
+            "type": "boolean",
+            "description": "Whether this system uses cookie storage.",
+            "default": false
+          },
+          "cookie_refresh": {
+            "title": "Cookie Refresh",
+            "type": "boolean",
+            "description": "Whether the system's cookies are refreshed after being initially set.",
+            "default": false
+          },
+          "uses_non_cookie_access": {
+            "title": "Uses Non Cookie Access",
+            "type": "boolean",
+            "description": "Whether the system uses non-cookie methods of storage or accessing information stored on a user's device.",
+            "default": false
+          },
+          "legitimate_interest_disclosure_url": {
+            "title": "Legitimate Interest Disclosure Url",
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string",
+            "description": "A URL that points to the system's publicly accessible legitimate interest disclosure.",
+            "format": "uri"
           },
           "created_at": {
             "title": "Created At",
@@ -23603,6 +23706,29 @@
               "$ref": "#/components/schemas/EmbeddedLineItem"
             },
             "default": []
+          },
+          "cookie_max_age_seconds": {
+            "title": "Cookie Max Age Seconds",
+            "type": "integer"
+          },
+          "uses_cookies": {
+            "title": "Uses Cookies",
+            "type": "boolean"
+          },
+          "cookie_refresh": {
+            "title": "Cookie Refresh",
+            "type": "boolean"
+          },
+          "uses_non_cookie_access": {
+            "title": "Uses Non Cookie Access",
+            "type": "boolean"
+          },
+          "legitimate_interest_disclosure_url": {
+            "title": "Legitimate Interest Disclosure Url",
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string",
+            "format": "uri"
           }
         },
         "description": "Collects the other relationships for a given vendor - no preferences are saved here"
