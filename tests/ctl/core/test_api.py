@@ -477,6 +477,11 @@ class TestSystemCreate:
             dpo="John Doe, CIPT",
             joint_controller_info="Jane Doe",
             data_security_practices="We encrypt all your data in transit and at rest",
+            cookie_max_age_seconds="31536000",
+            uses_cookies=True,
+            cookie_refresh=True,
+            uses_non_cookie_access=True,
+            legitimate_interest_disclosure_url="http://www.example.com/legitimate_interest_disclosure",
             privacy_declarations=[
                 models.PrivacyDeclaration(
                     name="declaration-name",
@@ -654,6 +659,14 @@ class TestSystemCreate:
             system.data_security_practices
             == "We encrypt all your data in transit and at rest"
         )
+        assert system.cookie_max_age_seconds == 31536000
+        assert system.uses_cookies is True
+        assert system.cookie_refresh is True
+        assert system.uses_non_cookie_access is True
+        assert (
+            system.legitimate_interest_disclosure_url
+            == "http://www.example.com/legitimate_interest_disclosure"
+        )
         assert system.data_stewards == []
         assert [cookie.name for cookie in systems[0].cookies] == ["essential_cookie"]
         assert [
@@ -679,6 +692,7 @@ class TestSystemCreate:
         assert privacy_decl.data_shared_with_third_parties is True
         assert privacy_decl.third_parties == "Third Party Marketing Dept."
         assert privacy_decl.shared_categories == ["user"]
+        assert privacy_decl.flexible_legal_basis_for_processing is None
 
     async def test_system_create_minimal_request_body(
         self, generate_auth_header, db, test_config, system_create_request_body

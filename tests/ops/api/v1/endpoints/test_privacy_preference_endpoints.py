@@ -2608,12 +2608,12 @@ class TestSavePrivacyPreferencesTCStringOnly:
         assert len(response_body["system_consent_preferences"]) == 0
         assert len(response_body["system_legitimate_interests_preferences"]) == 0
 
-        first_record = response_body["purpose_consent_preferences"][0]
-        assert first_record["purpose_consent"] == 1
-        assert first_record["preference"] == "opt_in"
+        first_purpose_consent_record = response_body["purpose_consent_preferences"][0]
+        assert first_purpose_consent_record["purpose_consent"] == 1
+        assert first_purpose_consent_record["preference"] == "opt_in"
         saved_current_privacy_preference_record = db.query(
             CurrentPrivacyPreference
-        ).get(first_record["id"])
+        ).get(first_purpose_consent_record["id"])
         assert saved_current_privacy_preference_record.purpose_consent == 1
         assert (
             saved_current_privacy_preference_record.preference
@@ -2621,7 +2621,7 @@ class TestSavePrivacyPreferencesTCStringOnly:
         )
 
         privacy_preference_history_record = db.query(PrivacyPreferenceHistory).get(
-            first_record["privacy_preference_history_id"]
+            first_purpose_consent_record["privacy_preference_history_id"]
         )
         assert (
             privacy_preference_history_record.current_privacy_preference
@@ -2646,6 +2646,61 @@ class TestSavePrivacyPreferencesTCStringOnly:
         assert (
             privacy_preference_history_record.privacy_experience_config_history_id
             is None
+        )
+
+        # There were no purpose legitimate interests in the string, but purpose 2 was disclosed
+        # to the user in the experience.  We opt out here.
+        first_purpose_li_record = response_body[
+            "purpose_legitimate_interests_preferences"
+        ][0]
+        assert first_purpose_li_record["purpose_legitimate_interests"] == 2
+        assert first_purpose_li_record["preference"] == "opt_out"
+        saved_current_privacy_preference_record = db.query(
+            CurrentPrivacyPreference
+        ).get(first_purpose_li_record["id"])
+        assert saved_current_privacy_preference_record.purpose_legitimate_interests == 2
+        assert (
+            saved_current_privacy_preference_record.preference
+            == UserConsentPreference.opt_out
+        )
+
+        # Vendor 2 was in the vendor consents section
+        first_vendor_consent_record = response_body["vendor_consent_preferences"][0]
+        assert first_vendor_consent_record["vendor_consent"] == "gvl.2"
+        assert first_vendor_consent_record["preference"] == "opt_in"
+        saved_current_privacy_preference_record = db.query(
+            CurrentPrivacyPreference
+        ).get(first_vendor_consent_record["id"])
+        assert saved_current_privacy_preference_record.vendor_consent == "gvl.2"
+        assert (
+            saved_current_privacy_preference_record.preference
+            == UserConsentPreference.opt_in
+        )
+
+        # Vendor 8 was not opted in in the vendor consents section, but was disclosed to the
+        # customer in the vendor consents section, so we opt out.
+        second_vendor_consent_record = response_body["vendor_consent_preferences"][1]
+        assert second_vendor_consent_record["vendor_consent"] == "gvl.8"
+        assert second_vendor_consent_record["preference"] == "opt_out"
+        saved_current_privacy_preference_record = db.query(
+            CurrentPrivacyPreference
+        ).get(second_vendor_consent_record["id"])
+        assert saved_current_privacy_preference_record.vendor_consent == "gvl.8"
+        assert (
+            saved_current_privacy_preference_record.preference
+            == UserConsentPreference.opt_out
+        )
+
+        special_feature_record = response_body["special_feature_preferences"][0]
+        assert special_feature_record["special_feature"] == 2
+        assert special_feature_record["preference"] == "opt_in"
+        saved_current_privacy_preference_record = db.query(
+            CurrentPrivacyPreference
+        ).get(special_feature_record["id"])
+        assert saved_current_privacy_preference_record.special_feature == 2
+        assert (
+            saved_current_privacy_preference_record.preference
+            == UserConsentPreference.opt_in
         )
 
         mobile_data = response.json()["fides_mobile_data"]
