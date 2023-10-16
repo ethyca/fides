@@ -53,6 +53,7 @@ const defaultInitialValues: FormValues = {
   ingress: undefined,
   features: [],
   legal_basis_for_processing: undefined,
+  flexible_legal_basis_for_processing: true,
   impact_assessment_location: "",
   retention_period: "",
   processes_special_category_data: false,
@@ -225,6 +226,14 @@ export const PrivacyDeclarationFormComponents = ({
             </Box>
           </Collapse>
         </Stack>
+        <Box mt={5}>
+          <CustomSwitch
+            name="flexible_legal_basis_for_processing"
+            label="This legal basis is flexible"
+            tooltip="Has the vendor declared that the legal basis may be overridden?"
+            variant="stacked"
+          />
+        </Box>
         <CustomTextInput
           name="retention_period"
           label="Retention period (days)"
