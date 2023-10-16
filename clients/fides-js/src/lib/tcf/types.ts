@@ -165,6 +165,11 @@ export type TCFVendorRelationships = {
   special_purposes?: Array<EmbeddedLineItem>;
   features?: Array<EmbeddedLineItem>;
   special_features?: Array<EmbeddedLineItem>;
+  cookie_max_age_seconds?: number;
+  uses_cookies?: boolean;
+  cookie_refresh?: boolean;
+  uses_non_cookie_access?: boolean;
+  legitimate_interest_disclosure_url?: string;
 };
 
 export type TCFVendorSave = {
