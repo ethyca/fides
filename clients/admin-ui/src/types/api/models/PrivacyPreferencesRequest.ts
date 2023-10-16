@@ -28,9 +28,9 @@ export type PrivacyPreferencesRequest = {
   browser_identity: Identity;
   code?: string;
   /**
-   * If supplied, TC string is decoded and preferences saved for purpose_consent, purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features
+   * If supplied, TC strings and AC strings are decoded and preferences saved for purpose_consent, purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features
    */
-  tc_string?: string;
+  fides_string?: string;
   preferences?: Array<ConsentOptionCreate>;
   special_purpose_preferences?: Array<TCFSpecialPurposeSave>;
   feature_preferences?: Array<TCFFeatureSave>;
