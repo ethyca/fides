@@ -255,6 +255,7 @@ describe("Fides-js TCF", () => {
         cy.fixture("consent/experience_tcf.json").then((payload) => {
           const experience = payload.items[0];
           experience.tcf_vendor_consents.push(newVendor);
+          experience.tcf_vendor_relationships.push(newVendor);
           stubConfig({
             options: {
               isOverlayEnabled: true,
@@ -721,6 +722,7 @@ describe("Fides-js TCF", () => {
             id: "test",
             purpose_legitimate_interests: [{ id: 4, name: purpose4.name }],
           });
+          experience.tcf_vendor_relationships?.push({ ...vendor, id: "test" });
 
           stubConfig({
             options: {
@@ -870,13 +872,13 @@ describe("Fides-js TCF", () => {
           ],
         };
         AC_IDS.forEach((id, idx) => {
+          const vendor = { ...baseVendor, id: `gacp.${id}`, name: `AC ${id}` };
           experience.tcf_vendor_consents.push({
-            ...baseVendor,
-            id: `gacp.${id}`,
-            name: `AC ${id}`,
+            ...vendor,
             // Set some of these vendors without purpose_consents
             purpose_consents: idx % 2 === 0 ? [] : baseVendor.purpose_consents,
           });
+          experience.tcf_vendor_relationships.push(vendor);
         });
 
         stubConfig({
