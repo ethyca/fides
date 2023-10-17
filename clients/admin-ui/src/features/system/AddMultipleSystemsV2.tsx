@@ -1,30 +1,18 @@
-import { Box, Button, Flex, Spinner } from "@fidesui/react";
-import { useRouter } from "next/router";
-import {
-  HTMLProps,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Box, Button, Flex, HStack, Spinner, Text } from "@fidesui/react";
 import {
   createColumnHelper,
-  useReactTable,
-  ColumnDef,
-  Row,
   getCoreRowModel,
-  getSortedRowModel,
   getFilteredRowModel,
+  getSortedRowModel,
+  Row,
+  useReactTable,
 } from "@tanstack/react-table";
+import { useRouter } from "next/router";
+import { HTMLProps, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import {
-  FidesTableV2,
-  WrappedCell,
-  useFidesTableV2,
-} from "~/features/common/tablev2";
+import { FidesTableV2, GlobalFilterV2 } from "~/features/common/tablev2";
 import {
   DictSystems,
   selectAllDictSystems,
@@ -116,14 +104,20 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
               disabled: !row.getCanSelect(),
               indeterminate: row.getIsSomeSelected(),
               onChange: row.getToggleSelectedHandler(),
-              row: row,
+              row,
             }}
           />
         ),
       }),
       columnHelper.accessor((row) => row.legal_name, {
         id: "legal_name",
-        cell: (props) => <div>{props.getValue()} </div>,
+        cell: (props) => (
+          <Flex alignItems="center" height="100%">
+            <Text fontSize="xs" lineHeight={4} fontWeight="normal">
+              {props.getValue()}{" "}
+            </Text>
+          </Flex>
+        ),
         header: "Name",
       }),
     ],
@@ -184,23 +178,30 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
 
   return (
     <Box height="100%">
-      <input
-        value={globalFilter ?? ""}
-        onChange={(e) => setGlobalFilter(e.target.value)}
-        placeholder="search"
-      />
-      <Button
-        onClick={addVendors}
-        colorScheme="black"
-        backgroundColor="primary.800"
-        fontWeight="semibold"
-        disabled={!anyNewSelectedRows}
+      <HStack
+        justifyContent="space-between"
+        alignItems="center"
+        p={2}
+        borderWidth="1px"
+        borderBottomWidth="0px"
+        borderColor="gray.200"
       >
-        Add Vendors
-      </Button>
+        <GlobalFilterV2
+          globalFilter={globalFilter}
+          setGlobalFilter={setGlobalFilter}
+          placeholder="search"
+        />
+        <Button
+          onClick={addVendors}
+          size="xs"
+          variant="outline"
+          disabled={!anyNewSelectedRows}
+        >
+          Add Vendors
+        </Button>
+      </HStack>
       <FidesTableV2<MultipleSystemTable>
         columns={columns}
-        showSearchBar
         data={dictionaryOptions}
         tableInstance={tableInstance}
       />

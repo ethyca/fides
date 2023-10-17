@@ -2,7 +2,6 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   Box,
-  Flex,
   Table,
   TableContainer,
   Tbody,
@@ -12,92 +11,70 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
-import React, { MutableRefObject, ReactNode, useEffect, useMemo } from "react";
-import {
-  useReactTable,
-  getSortedRowModel,
-  getCoreRowModel,
-  getFilteredRowModel,
-  flexRender,
-  RowModel,
-  ColumnDef,
-  Table as TableInstance,
-  InitialTableState,
-} from "@tanstack/react-table";
-
-import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
+import { flexRender, Table as TableInstance } from "@tanstack/react-table";
+import React, { ReactNode } from "react";
 
 type Props<T> = {
   tableInstance: TableInstance<T>;
-  showSearchBar?: boolean;
-  searchBarPlaceHolder?: string;
-  searchBarRightButton?: ReactNode;
   footer?: ReactNode;
   onRowClick?: (row: T) => void;
-  customHooks?: Array<(hooks: any) => void>;
 };
 
 export function FidesTableV2<T>({
   tableInstance,
-  showSearchBar,
-  searchBarPlaceHolder,
-  searchBarRightButton,
   footer,
   onRowClick,
 }: Props<T>) {
   return (
     <Box height="inherit">
-      <TableContainer
-        height="inherit"
-        overflowY="auto"
-        border="1px solid"
-        boxSizing="border-box"
-        borderColor="gray.200"
-        borderRadius="6px 6px 0px 0px"
-      >
-        <Table fontSize="sm">
-          <Thead position="sticky" top="0" backgroundColor="gray.50">
-            {tableInstance.getHeaderGroups().map((headerGroup) => {
-              return (
-                <Tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    let sortIcon: ReactNode = null;
-                    if (header.column.getIsSorted()) {
-                      sortIcon =
-                        header.column.getAutoSortDir() === "desc" ? (
-                          <ArrowDownIcon color="gray.500" />
-                        ) : (
-                          <ArrowUpIcon color="gray.500" />
-                        );
-                    }
+      <TableContainer height="inherit" overflowY="auto">
+        <Table variant="unstyled" borderCollapse="collapse">
+          <Thead
+            position="sticky"
+            top="0"
+            height="36px"
+            backgroundColor="gray.50"
+          >
+            {tableInstance.getHeaderGroups().map((headerGroup) => (
+              <Tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  let sortIcon: ReactNode = null;
+                  if (header.column.getIsSorted()) {
+                    sortIcon =
+                      header.column.getAutoSortDir() === "desc" ? (
+                        <ArrowDownIcon color="gray.500" />
+                      ) : (
+                        <ArrowUpIcon color="gray.500" />
+                      );
+                  }
 
-                    return (
-                      <Th
-                        key={header.id}
-                        colSpan={header.colSpan}
-                        textTransform="none"
-                        fontSize="sm"
-                        p={4}
-                        data-testid={`column-${header.id}`}
+                  return (
+                    <Th
+                      borderWidth="1px"
+                      borderColor="gray.200"
+                      key={header.id}
+                      colSpan={header.colSpan}
+                      data-testid={`column-${header.id}`}
+                      py={0}
+                      pr={2}
+                      pl={4}
+                    >
+                      <Text
+                        _hover={{ backgroundColor: "gray.100" }}
+                        borderRadius="4px"
+                        pr={sortIcon ? 0 : 3.5}
                       >
-                        <Text
-                          _hover={{ backgroundColor: "gray.100" }}
-                          p={1}
-                          borderRadius="4px"
-                          pr={sortIcon ? 0 : 3.5}
-                        >
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                          {sortIcon}
-                        </Text>
-                      </Th>
-                    );
-                  })}
-                </Tr>
-              );
-            })}
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                        {sortIcon}
+                      </Text>
+                    </Th>
+                  );
+                })}
+              </Tr>
+            ))}
           </Thead>
           <Tbody>
             {tableInstance.getRowModel().rows.map((row) => {
@@ -106,6 +83,7 @@ export function FidesTableV2<T>({
               return (
                 <Tr
                   key={row.id}
+                  height="36px"
                   _hover={
                     onRowClick
                       ? { backgroundColor: "gray.50", cursor: "pointer" }
@@ -113,28 +91,30 @@ export function FidesTableV2<T>({
                   }
                   data-testid={`row-${rowName ?? row.id}`}
                 >
-                  {row.getVisibleCells().map((cell) => {
-                    return (
-                      <Td
-                        key={cell.id}
-                        p={5}
-                        verticalAlign="baseline"
-                        onClick={
-                          cell.column.columnDef.header !== "Enable" &&
-                          onRowClick
-                            ? () => {
-                                onRowClick(row.original);
-                              }
-                            : undefined
-                        }
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </Td>
-                    );
-                  })}
+                  {row.getVisibleCells().map((cell) => (
+                    <Td
+                      key={cell.id}
+                      borderWidth="1px"
+                      borderColor="gray.200"
+                      height="inherit"
+                      verticalAlign="baseline"
+                      pl={4}
+                      pr={2}
+                      py={0}
+                      onClick={
+                        cell.column.columnDef.header !== "Enable" && onRowClick
+                          ? () => {
+                              onRowClick(row.original);
+                            }
+                          : undefined
+                      }
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </Td>
+                  ))}
                 </Tr>
               );
             })}
