@@ -47,6 +47,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
   const dictionaryOptions = useAppSelector(selectAllDictSystems);
   const [globalFilter, setGlobalFilter] = useState();
 
+  const allRowsAdded = dictionaryOptions.every((d) => d.linked_system);
   const columns = useMemo(
     () => [
       columnHelper.display({
@@ -57,6 +58,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
               checked: table.getIsAllRowsSelected(),
               indeterminate: table.getIsSomeRowsSelected(),
               onChange: table.getToggleAllRowsSelectedHandler(),
+              manualDisable: allRowsAdded,
             }}
           />
         ),
@@ -78,7 +80,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
         header: (props) => <DefaultHeaderCell value="System" {...props} />,
       }),
     ],
-    []
+    [allRowsAdded]
   );
 
   const rowSelection = useMemo(() => {
@@ -133,11 +135,9 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
     );
   }
 
-  const allRowsAdded = dictionaryOptions.every((d) => d.linked_system);
   const toolTipText = allRowsAdded
     ? "All systems have already been added"
     : "Select a system";
-  console.log(anyNewSelectedRows, !allRowsAdded);
 
   return (
     <Box height="100%">

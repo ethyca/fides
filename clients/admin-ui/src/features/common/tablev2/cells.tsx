@@ -1,6 +1,7 @@
 import {
   Flex,
   Text,
+  Box,
   Checkbox,
   ArrowDownIcon,
   ArrowUpIcon,
@@ -19,25 +20,29 @@ export const DefaultCell = ({ value }: { value: string }) => (
 type IndeterminateCheckboxCellProps = {
   indeterminate?: boolean;
   initialValue?: boolean;
+  manualDisable?: boolean;
 } & HTMLProps<HTMLInputElement>;
 
 export const IndeterminateCheckboxCell = ({
   indeterminate,
   className = "",
   initialValue,
+  manualDisable,
   ...rest
 }: IndeterminateCheckboxCellProps) => {
   const [initialCheckBoxValue] = useState(initialValue);
 
   return (
     <Flex alignItems="center" justifyContent="center">
-      <Checkbox
-        isChecked={initialCheckBoxValue || rest.checked}
-        isDisabled={initialCheckBoxValue}
-        onChange={rest.onChange}
-        isIndeterminate={!rest.checked && indeterminate}
-        colorScheme="purple"
-      />
+      <Box backgroundColor="white">
+        <Checkbox
+          isChecked={initialCheckBoxValue || rest.checked}
+          isDisabled={initialCheckBoxValue || manualDisable}
+          onChange={rest.onChange}
+          isIndeterminate={!rest.checked && indeterminate}
+          colorScheme="purple"
+        />
+      </Box>
     </Flex>
   );
 };
