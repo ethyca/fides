@@ -91,30 +91,42 @@ export function FidesTableV2<T>({
                   }
                   data-testid={`row-${rowName ?? row.id}`}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <Td
-                      key={cell.id}
-                      borderWidth="1px"
-                      borderColor="gray.200"
-                      height="inherit"
-                      verticalAlign="baseline"
-                      pl={4}
-                      pr={2}
-                      py={0}
-                      onClick={
-                        cell.column.columnDef.header !== "Enable" && onRowClick
-                          ? () => {
-                              onRowClick(row.original);
-                            }
-                          : undefined
-                      }
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </Td>
-                  ))}
+                  {row.getVisibleCells().map((cell) => {
+                    console.log(cell);
+                    const styles =
+                      cell.column.id === "select"
+                        ? { padding: "0px", width: "55px" }
+                        : {
+                            "padding-left": "16px",
+                            "padding-right": "8px",
+                            "padding-top": "0px",
+                            "padding-bottom": "0px",
+                          };
+                    return (
+                      <Td
+                        key={cell.id}
+                        borderWidth="1px"
+                        borderColor="gray.200"
+                        height="inherit"
+                        verticalAlign="baseline"
+                        padding={0}
+                        style={styles}
+                        onClick={
+                          cell.column.columnDef.header !== "Enable" &&
+                          onRowClick
+                            ? () => {
+                                onRowClick(row.original);
+                              }
+                            : undefined
+                        }
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </Td>
+                    );
+                  })}
                 </Tr>
               );
             })}

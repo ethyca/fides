@@ -1,18 +1,22 @@
-import { Box, Button, Flex, HStack, Spinner, Text } from "@fidesui/react";
+import { Box, Button, Flex, HStack, Spinner } from "@fidesui/react";
 import {
   createColumnHelper,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
-  Row,
   useReactTable,
 } from "@tanstack/react-table";
 import { useRouter } from "next/router";
-import { HTMLProps, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import { FidesTableV2, GlobalFilterV2 } from "~/features/common/tablev2";
+import {
+  FidesTableV2,
+  GlobalFilterV2,
+  DefaultCell,
+  IndeterminateCheckboxCell,
+} from "~/features/common/tablev2";
 import {
   DictSystems,
   selectAllDictSystems,
@@ -21,48 +25,6 @@ import {
 } from "~/features/plus/plus.slice";
 
 type MultipleSystemTable = DictSystems;
-
-type CheckboxProps = {
-  indeterminate?: boolean;
-  row?: Row<MultipleSystemTable>;
-} & HTMLProps<HTMLInputElement>;
-
-const IndeterminateCheckboxTest = ({
-  indeterminate,
-  className = "",
-  row,
-  ...rest
-}: CheckboxProps) => {
-  const ref = useRef<HTMLInputElement>(null!);
-  const [initialCheckBoxValue] = useState(row?.original.linked_system);
-
-  useEffect(() => {
-    if (typeof indeterminate === "boolean") {
-      ref.current.indeterminate = !rest.checked && indeterminate;
-    }
-  }, [ref, indeterminate, rest.checked]);
-
-  if (initialCheckBoxValue) {
-    return (
-      <input
-        type="checkbox"
-        ref={ref}
-        disabled
-        className={`${className} cursor-pointer`}
-        checked
-      />
-    );
-  }
-
-  return (
-    <input
-      type="checkbox"
-      ref={ref}
-      className={`${className} cursor-pointer`}
-      {...rest}
-    />
-  );
-};
 
 const columnHelper = createColumnHelper<MultipleSystemTable>();
 
@@ -89,7 +51,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
       columnHelper.display({
         id: "select",
         header: ({ table }) => (
-          <IndeterminateCheckboxTest
+          <IndeterminateCheckboxCell
             {...{
               checked: table.getIsAllRowsSelected(),
               indeterminate: table.getIsSomeRowsSelected(),
@@ -98,26 +60,20 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
           />
         ),
         cell: ({ row }) => (
-          <IndeterminateCheckboxTest
+          <IndeterminateCheckboxCell
             {...{
               checked: row.getIsSelected(),
               disabled: !row.getCanSelect(),
               indeterminate: row.getIsSomeSelected(),
               onChange: row.getToggleSelectedHandler(),
-              row,
+              initialValue: row.original.linked_system,
             }}
           />
         ),
       }),
       columnHelper.accessor((row) => row.legal_name, {
         id: "legal_name",
-        cell: (props) => (
-          <Flex alignItems="center" height="100%">
-            <Text fontSize="xs" lineHeight={4} fontWeight="normal">
-              {props.getValue()}{" "}
-            </Text>
-          </Flex>
-        ),
+        cell: (props) => <DefaultCell value={props.getValue()} />,
         header: "Name",
       }),
     ],
@@ -136,7 +92,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
 
   const tableInstance = useReactTable<MultipleSystemTable>({
     columns,
-    data: dictionaryOptions,
+    data: dictionaryOptions.slice(0, 25),
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
