@@ -1437,12 +1437,12 @@ describe("Fides-js TCF", () => {
           );
         });
       });
-      // fixme- wait for when win.__tcfapi exists
-      cy.wait(500); // eslint-disable-line cypress/no-unnecessary-waiting
-
-      cy.window().then((win) => {
-        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.window().then((win) => {
+          win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+        });
       });
+
       // Open the modal
       cy.get("#fides-modal-link").click();
 

@@ -56,7 +56,7 @@ import {
   UserConsentPreference,
 } from "./lib/consent-types";
 
-import { generateTcString, initializeCmpApi } from "./lib/tcf";
+import { generateFidesString, initializeCmpApi } from "./lib/tcf";
 import {
   getInitialCookie,
   getInitialFides,
@@ -82,8 +82,8 @@ import {
 } from "./lib/tcf/types";
 import { TCF_KEY_MAP } from "./lib/tcf/constants";
 import {
-  generateTcStringFromCookieTcfConsent,
-  transformTcStringToCookieKeys,
+  generateFidesStringFromCookieTcfConsent,
+  transformFidesStringToCookieKeys,
 } from "./lib/tcf/utils";
 
 declare global {
@@ -134,27 +134,25 @@ const updateCookie = async (
   };
 
   TCF_KEY_MAP.forEach(({ experienceKey, cookieKey, enabledIdsKey }) => {
-    if (experienceKey) {
-      tcSavePrefs[cookieKey] = [];
-      experience[experienceKey]?.forEach((record) => {
-        const pref: UserConsentPreference = getInitialPreference(record);
-        // map experience to tcSavePrefs (same as cookie keys)
-        tcSavePrefs[cookieKey]?.push({
-          // @ts-ignore
-          id: record.id,
-          preference: pref,
-        });
-        // add to enabledIds only if user consent is True
-        if (transformUserPreferenceToBoolean(pref)) {
-          if (enabledIdsKey) {
-            enabledIds[enabledIdsKey].push(record.id.toString());
-          }
-        }
+    tcSavePrefs[cookieKey] = [];
+    experience[experienceKey]?.forEach((record) => {
+      const pref: UserConsentPreference = getInitialPreference(record);
+      // map experience to tcSavePrefs (same as cookie keys)
+      tcSavePrefs[cookieKey]?.push({
+        // @ts-ignore
+        id: record.id,
+        preference: pref,
       });
-    }
+      // add to enabledIds only if user consent is True
+      if (transformUserPreferenceToBoolean(pref)) {
+        if (enabledIdsKey) {
+          enabledIds[enabledIdsKey].push(record.id.toString());
+        }
+      }
+    });
   });
 
-  const fidesString = await generateTcString({
+  const fidesString = await generateFidesString({
     experience,
     tcStringPreferences: enabledIds,
   });
@@ -168,14 +166,14 @@ const updateCookie = async (
 const init = async (config: FidesConfig) => {
   const cookie = getInitialCookie(config);
   if (config.options.fidesString) {
-    // If a TC str is explicitly passed in, we override the associated cookie props, which are then used to
+    // If a fidesString is explicitly passed in, we override the associated cookie props, which are then used to
     // override associated props in experience
     debugLog(
       config.options.debug,
-      "Explicit TC string detected. Proceeding to override all TCF preferences with given TC string"
+      "Explicit fidesString detected. Proceeding to override all TCF preferences with given fidesString"
     );
     cookie.fides_string = config.options.fidesString;
-    cookie.tcf_consent = transformTcStringToCookieKeys(
+    cookie.tcf_consent = transformFidesStringToCookieKeys(
       config.options.fidesString,
       config.options.debug
     );
@@ -185,9 +183,9 @@ const init = async (config: FidesConfig) => {
     isPrivacyExperience(config.experience) &&
     experienceIsValid(config.experience, config.options)
   ) {
-    // This state should not be hit, but just in case: if tc string is missing on cookie but we have tcf consent,
-    // we should generate tc string so that our CMP API accurately reflects user preference
-    cookie.fides_string = await generateTcStringFromCookieTcfConsent(
+    // This state should not be hit, but just in case: if fidesString is missing on cookie but we have tcf consent,
+    // we should generate fidesString so that our CMP API accurately reflects user preference
+    cookie.fides_string = await generateFidesStringFromCookieTcfConsent(
       config.experience,
       cookie.tcf_consent
     );

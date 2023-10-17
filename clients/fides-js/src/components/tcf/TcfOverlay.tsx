@@ -37,7 +37,7 @@ import {
   ConsentMethod,
   PrivacyExperience,
 } from "../../lib/consent-types";
-import { generateTcString } from "../../lib/tcf";
+import { generateFidesString } from "../../lib/tcf";
 import {
   FidesCookie,
   transformTcfPreferencesToCookieKeys,
@@ -187,7 +187,7 @@ const updateCookie = async (
   enabledIds: EnabledIds,
   experience: PrivacyExperience
 ): Promise<FidesCookie> => {
-  const tcString = await generateTcString({
+  const tcString = await generateFidesString({
     tcStringPreferences: enabledIds,
     experience,
   });

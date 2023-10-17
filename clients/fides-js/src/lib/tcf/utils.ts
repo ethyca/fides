@@ -2,14 +2,15 @@ import { TCModel, TCString, Vector } from "@iabtechlabtcf/core";
 import { PrivacyExperience } from "../consent-types";
 import { EnabledIds, TcfCookieConsent, TcfCookieKeyConsent } from "./types";
 import { TCF_KEY_MAP } from "./constants";
-import { generateTcString } from "../tcf";
+import { generateFidesString } from "../tcf";
 import { debugLog } from "../consent-utils";
 
-export const transformTcStringToCookieKeys = (
-  tcString: string,
+export const transformFidesStringToCookieKeys = (
+  fidesString: string,
   debug: boolean
 ): TcfCookieConsent => {
-  const tcModel: TCModel = TCString.decode(tcString || "");
+  // Defer: to fully support AC string, we need to split out TC from AC string https://github.com/ethyca/fides/issues/4263
+  const tcModel: TCModel = TCString.decode(fidesString || "");
 
   const cookieKeys: TcfCookieConsent = {};
 
@@ -25,13 +26,13 @@ export const transformTcStringToCookieKeys = (
   });
   debugLog(
     debug,
-    `Generated cookie.tcf_consent from explicit tc string.`,
+    `Generated cookie.tcf_consent from explicit fidesString.`,
     cookieKeys
   );
   return cookieKeys;
 };
 
-export const generateTcStringFromCookieTcfConsent = async (
+export const generateFidesStringFromCookieTcfConsent = async (
   experience: PrivacyExperience,
   tcfConsent: TcfCookieConsent
 ): Promise<string> => {
@@ -46,19 +47,17 @@ export const generateTcStringFromCookieTcfConsent = async (
   };
 
   TCF_KEY_MAP.forEach(({ cookieKey, enabledIdsKey }) => {
-    if (cookieKey) {
-      const cookieKeyConsent: TcfCookieKeyConsent | undefined =
-        tcfConsent[cookieKey];
-      if (cookieKeyConsent) {
-        Object.keys(cookieKeyConsent).forEach((key: string | number) => {
-          if (cookieKeyConsent[key] && enabledIdsKey) {
-            enabledIds[enabledIdsKey].push(key.toString());
-          }
-        });
-      }
+    const cookieKeyConsent: TcfCookieKeyConsent | undefined =
+      tcfConsent[cookieKey];
+    if (cookieKeyConsent) {
+      Object.keys(cookieKeyConsent).forEach((key: string | number) => {
+        if (cookieKeyConsent[key] && enabledIdsKey) {
+          enabledIds[enabledIdsKey].push(key.toString());
+        }
+      });
     }
   });
-  return generateTcString({
+  return generateFidesString({
     experience,
     tcStringPreferences: enabledIds,
   });

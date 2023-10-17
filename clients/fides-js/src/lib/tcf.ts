@@ -53,10 +53,10 @@ const generateAcString = ({
 };
 
 /**
- * Generate TC String based on TCF-related info from privacy experience.
+ * Generate FidesString based on TCF and AC-related info from privacy experience.
  * Called when there is either a FidesInitialized or FidesUpdated event
  */
-export const generateTcString = async ({
+export const generateFidesString = async ({
   experience,
   tcStringPreferences,
 }: {
