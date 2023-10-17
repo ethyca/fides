@@ -6,7 +6,7 @@ import { PrivacyDeclaration } from "~/types/api/models/PrivacyDeclaration";
 import { SystemHistoryResponse } from "~/types/api/models/SystemHistoryResponse";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
-// Helper function to format date and time
+/** Helper function to format date and time based on the user's locale */
 export const formatDateAndTime = (dateString: string) => {
   const date = new Date(dateString);
   const userLocale = navigator.language;
@@ -30,33 +30,7 @@ export const formatDateAndTime = (dateString: string) => {
   return { formattedTime, formattedDate };
 };
 
-export function alignArrays(
-  before: PrivacyDeclaration[],
-  after: PrivacyDeclaration[]
-) {
-  const allNames = new Set([...before, ...after].map((item) => item.data_use));
-  const alignedBefore: PrivacyDeclaration[] = [];
-  const alignedAfter: PrivacyDeclaration[] = [];
-
-  allNames.forEach((data_use) => {
-    const firstItem = before.find((item) => item.data_use === data_use) || {
-      data_use: "",
-      data_categories: [],
-    };
-    const secondItem = after.find((item) => item.data_use === data_use) || {
-      data_use: "",
-      data_categories: [],
-    };
-    alignedBefore.push(firstItem);
-    alignedAfter.push(secondItem);
-  });
-
-  return [alignedBefore, alignedAfter];
-}
-
-const lookupVendorLabel = (vendor_id: string, options: DictOption[]) =>
-  options.find((option) => option.value === vendor_id)?.label ?? vendor_id;
-
+/** A collection of mappings between backend identifiers an UI labels */
 export const getUiLabel = (key: string): string => {
   const keyMapping: Record<string, string> = {
     privacy_declarations: "data uses",
@@ -124,6 +98,7 @@ const categorizeFieldModifications = (
   return { addedFields, removedFields, changedFields };
 };
 
+/** Creates a description of the given system history entry in the style of a commit message */
 export const describeSystemChange = (history: SystemHistoryResponse) => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { edited_by, before, after, created_at } = history;
@@ -192,6 +167,7 @@ export const describeSystemChange = (history: SystemHistoryResponse) => {
   );
 };
 
+/** Replaces system keys with system names (if available) */
 export const assignSystemNames = (
   history: SystemHistoryResponse,
   systems: SystemResponse[]
@@ -224,6 +200,7 @@ export const assignSystemNames = (
   return { ...history, before: modifiedBefore, after: modifiedAfter };
 };
 
+/** Replaces vendor IDs with vendor names */
 export const assignVendorLabels = (
   history: SystemHistoryResponse,
   dictionaryOptions: DictOption[]
@@ -232,6 +209,9 @@ export const assignVendorLabels = (
   if (_.isEmpty(dictionaryOptions)) {
     return history;
   }
+
+  const lookupVendorLabel = (vendor_id: string, options: DictOption[]) =>
+    options.find((option) => option.value === vendor_id)?.label ?? vendor_id;
 
   return {
     ...history,
@@ -246,15 +226,33 @@ export const assignVendorLabels = (
   };
 };
 
+/** Modifies the privacy_declaration lists in the before and after objects to match in length */
 export const alignPrivacyDeclarations = (
   history: SystemHistoryResponse
 ): SystemHistoryResponse => {
-  const beforePrivacyDeclarations = history.before.privacy_declarations || [];
-  const afterPrivacyDeclarations = history.after.privacy_declarations || [];
-  const [alignedBefore, alignedAfter] = alignArrays(
-    beforePrivacyDeclarations,
-    afterPrivacyDeclarations
-  );
+  const before = history.before.privacy_declarations || [];
+  const after = history.after.privacy_declarations || [];
+
+  const allNames = new Set([...before, ...after].map((item) => item.data_use));
+  const alignedBefore: PrivacyDeclaration[] = [];
+  const alignedAfter: PrivacyDeclaration[] = [];
+
+  allNames.forEach((data_use) => {
+    const firstItem = before.find(
+      (item: PrivacyDeclaration) => item.data_use === data_use
+    ) || {
+      data_use: "",
+      data_categories: [],
+    };
+    const secondItem = after.find(
+      (item: PrivacyDeclaration) => item.data_use === data_use
+    ) || {
+      data_use: "",
+      data_categories: [],
+    };
+    alignedBefore.push(firstItem);
+    alignedAfter.push(secondItem);
+  });
 
   return {
     ...history,
