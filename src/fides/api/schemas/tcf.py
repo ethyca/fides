@@ -29,13 +29,7 @@ class NonVendorSection(UserSpecificConsentDetails):
     systems: List[EmbeddedVendor] = []  # Systems that use this TCF attribute
 
 
-class CommonPurposeFields(FidesSchema):
-    """Fields shared between the purpose sections of the TCF Experience"""
-
-    retention_period: Optional[str]
-
-
-class TCFPurposeConsentRecord(NonVendorSection, MappedPurpose, CommonPurposeFields):
+class TCFPurposeConsentRecord(NonVendorSection, MappedPurpose):
     """Schema for a TCF Purpose with Consent Legal Basis returned in the TCF Overlay Experience"""
 
     @root_validator
@@ -46,9 +40,7 @@ class TCFPurposeConsentRecord(NonVendorSection, MappedPurpose, CommonPurposeFiel
         return values
 
 
-class TCFPurposeLegitimateInterestsRecord(
-    NonVendorSection, MappedPurpose, CommonPurposeFields
-):
+class TCFPurposeLegitimateInterestsRecord(NonVendorSection, MappedPurpose):
     """Schema for a TCF Purpose with Legitimate Interests Legal Basis returned in the TCF Overlay Experience"""
 
     @root_validator
@@ -59,7 +51,7 @@ class TCFPurposeLegitimateInterestsRecord(
         return values
 
 
-class TCFSpecialPurposeRecord(NonVendorSection, MappedPurpose, CommonPurposeFields):
+class TCFSpecialPurposeRecord(NonVendorSection, MappedPurpose):
     @root_validator
     def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Default preference for special purposes is acknowledge"""

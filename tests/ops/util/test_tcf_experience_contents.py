@@ -303,7 +303,7 @@ class TestTCFContents:
             tcf_contents.tcf_vendor_relationships[0]
             .special_purposes[0]
             .retention_period
-            == "1 day"
+            == "1"
         )
 
     def test_system_exists_with_tcf_purpose_and_vendor_including_tcf_fields_set(
@@ -366,7 +366,7 @@ class TestTCFContents:
         assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 8
         assert (
             tcf_contents.tcf_vendor_consents[0].purpose_consents[0].retention_period
-            == "3-5 days"
+            == "3"
         )
 
         assert tcf_contents.tcf_vendor_relationships[0].id == "gvl.42"
@@ -796,7 +796,7 @@ class TestTCFContents:
             tcf_contents.tcf_vendor_legitimate_interests[0]
             .purpose_legitimate_interests[0]
             .retention_period
-            == "1 day"
+            == "1"
         )
 
     def test_add_different_data_uses_that_correspond_to_same_purpose(
