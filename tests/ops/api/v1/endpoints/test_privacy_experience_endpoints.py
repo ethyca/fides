@@ -825,8 +825,107 @@ class TestGetTCFPrivacyExperiences:
         meta = resp.json()["items"][0]["meta"]
         assert meta["version_hash"] == "f2db7626ca0b"
         assert meta["accept_all_fides_string"]
+        assert "," not in meta["accept_all_fides_string"]  # No AC string here
         assert meta["accept_all_fides_mobile_data"]
+        assert (
+            meta["accept_all_fides_mobile_data"]["IABTCF_TCString"]
+            == meta["accept_all_fides_string"]
+        )
+        assert meta["accept_all_fides_mobile_data"]["IABTCF_AddtlConsent"] is None
+
         assert meta["reject_all_fides_string"]
+        assert "," not in meta["reject_all_fides_string"]  # No AC string here
+        assert (
+            meta["reject_all_fides_mobile_data"]["IABTCF_TCString"]
+            == meta["reject_all_fides_string"]
+        )
+        assert meta["reject_all_fides_mobile_data"]["IABTCF_AddtlConsent"] is None
+        assert meta["reject_all_fides_mobile_data"]
+
+    @pytest.mark.usefixtures(
+        "privacy_experience_france_overlay",
+        "ac_system_with_privacy_declaration",
+        "ac_system_without_privacy_declaration",
+        "enable_tcf",
+    )
+    def test_meta_section_when_tcf_enabled_with_ac_systems(
+        self, db, api_client, url, privacy_experience_france_tcf_overlay
+    ):
+        resp = api_client.get(
+            url + "?region=fr&component=overlay&include_gvl=False&include_meta=True",
+        )
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 1
+        assert resp.json()["items"][0]["id"] == privacy_experience_france_tcf_overlay.id
+        assert resp.json()["items"][0]["component"] == ComponentType.tcf_overlay.value
+        assert resp.json()["items"][0]["privacy_notices"] == []
+        assert len(resp.json()["items"][0]["tcf_purpose_consents"]) == 1
+        assert resp.json()["items"][0]["tcf_purpose_consents"][0]["id"] == 1
+        assert resp.json()["items"][0]["tcf_purpose_consents"][0]["data_uses"] == [
+            "functional.storage"
+        ]
+        assert (
+            resp.json()["items"][0]["tcf_purpose_consents"][0]["current_preference"]
+            is None
+        )
+        assert (
+            resp.json()["items"][0]["tcf_purpose_consents"][0]["outdated_preference"]
+            is None
+        )
+        assert (
+            resp.json()["items"][0]["tcf_purpose_consents"][0]["current_served"] is None
+        )
+        assert (
+            resp.json()["items"][0]["tcf_purpose_consents"][0]["outdated_served"]
+            is None
+        )
+
+        assert len(resp.json()["items"][0]["tcf_vendor_consents"]) == 2
+        assert resp.json()["items"][0]["tcf_vendor_consents"][0]["id"] == "gacp.8"
+        assert (
+            resp.json()["items"][0]["tcf_vendor_consents"][0]["purpose_consents"][0][
+                "id"
+            ]
+            == 1
+        )
+        assert (
+            resp.json()["items"][0]["tcf_vendor_consents"][0]["default_preference"]
+            == "opt_out"
+        )
+        assert (
+            resp.json()["items"][0]["tcf_vendor_consents"][0]["current_preference"]
+            is None
+        )
+
+        assert resp.json()["items"][0]["tcf_vendor_consents"][1]["id"] == "gacp.100"
+        assert (
+            resp.json()["items"][0]["tcf_vendor_consents"][1]["purpose_consents"] == []
+        )
+        assert (
+            resp.json()["items"][0]["tcf_vendor_consents"][1]["default_preference"]
+            == "opt_out"
+        )
+        assert (
+            resp.json()["items"][0]["tcf_vendor_consents"][1]["current_preference"]
+            is None
+        )
+
+        meta = resp.json()["items"][0]["meta"]
+
+        assert meta["accept_all_fides_string"].endswith(",1~8.100")
+        assert (
+            meta["accept_all_fides_mobile_data"]["IABTCF_TCString"]
+            in meta["accept_all_fides_string"]
+        )
+        assert meta["accept_all_fides_mobile_data"]["IABTCF_AddtlConsent"] == "1~8.100"
+
+        assert meta["reject_all_fides_string"]
+        assert "," not in meta["reject_all_fides_string"]  # No AC string here
+        assert (
+            meta["reject_all_fides_mobile_data"]["IABTCF_TCString"]
+            == meta["reject_all_fides_string"]
+        )
+        assert meta["reject_all_fides_mobile_data"]["IABTCF_AddtlConsent"] is None
         assert meta["reject_all_fides_mobile_data"]
 
     @pytest.mark.usefixtures(

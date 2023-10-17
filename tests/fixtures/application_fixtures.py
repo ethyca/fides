@@ -2851,7 +2851,6 @@ def ac_system_with_privacy_declaration(db: Session) -> System:
             "data_use": "functional.storage",
             "legal_basis_for_processing": "Consent",
             "features": [
-                "Match and combine data from other data sources",  # Feature 1
                 "Link different devices",  # Feature 2
             ],
         },
@@ -2867,7 +2866,7 @@ def ac_system_without_privacy_declaration(db: Session) -> System:
         data={
             "fides_key": f"ac_system{uuid.uuid4()}",
             "vendor_id": "gacp.100",
-            "name": f"Test AC System",
+            "name": f"Test AC System 2",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
         },

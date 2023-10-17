@@ -59,6 +59,7 @@ def build_tc_data_for_mobile(tc_model: TCModel) -> TCMobileData:
         IABTCF_SpecialFeaturesOptIns=_build_binary_string(
             "special_feature_optins", SPECIAL_FEATURE_BITS
         ),
+        IABTCF_AddtlConsent=tc_model.ac_string,
     )
 
 

@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 
 import pytest
 from iab_tcf import decode_v2
@@ -9,6 +10,7 @@ from fides.api.common_exceptions import DecodeTCStringError
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.schemas.privacy_preference import TCStringFidesPreferences
+from fides.api.util.tcf.ac_string import build_ac_string
 from fides.api.util.tcf.experience_meta import (
     TCFVersionHash,
     _build_tcf_version_hash_model,
@@ -1475,6 +1477,57 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherLegitimateInterests is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesConsents is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
+        assert tc_mobile_data.IABTCF_AddtlConsent is None
+
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
+    def test_build_opt_in_tc_data_for_mobile_with_ac_system(self, db):
+        tcf_contents = get_tcf_contents(db)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_in
+        )
+
+        tc_mobile_data = build_tc_data_for_mobile(model)
+
+        assert tc_mobile_data.IABTCF_CmpSdkID == CMP_ID
+        assert tc_mobile_data.IABTCF_CmpSdkVersion == 1
+        assert tc_mobile_data.IABTCF_PolicyVersion == 4
+        assert tc_mobile_data.IABTCF_gdprApplies == 1
+        assert tc_mobile_data.IABTCF_PublisherCC == "AA"
+        assert tc_mobile_data.IABTCF_PurposeOneTreatment == 0
+        assert tc_mobile_data.IABTCF_TCString is not None
+        assert tc_mobile_data.IABTCF_UseNonStandardTexts == 0
+        assert tc_mobile_data.IABTCF_VendorConsents == ""
+        assert tc_mobile_data.IABTCF_VendorLegitimateInterests == ""
+        assert tc_mobile_data.IABTCF_PurposeConsents == "000000000000000000000000"
+        assert (
+            tc_mobile_data.IABTCF_PurposeLegitimateInterests
+            == "000000000000000000000000"
+        )
+        assert tc_mobile_data.IABTCF_SpecialFeaturesOptIns == "000000000000"
+
+        assert tc_mobile_data.IABTCF_PublisherConsent is None
+        assert tc_mobile_data.IABTCF_PublisherLegitimateInterests is None
+        assert tc_mobile_data.IABTCF_PublisherCustomPurposesConsents is None
+        assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
+        assert tc_mobile_data.IABTCF_AddtlConsent == "1~100"
+
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
+    def test_build_opt_out_tc_data_for_mobile_with_ac_system(self, db):
+        tcf_contents = get_tcf_contents(db)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_out
+        )
+
+        tc_mobile_data = build_tc_data_for_mobile(model)
+
+        assert tc_mobile_data.IABTCF_VendorConsents == ""
+        assert tc_mobile_data.IABTCF_VendorLegitimateInterests == ""
+        assert tc_mobile_data.IABTCF_PurposeConsents == "000000000000000000000000"
+        assert (
+            tc_mobile_data.IABTCF_PurposeLegitimateInterests
+            == "000000000000000000000000"
+        )
+        assert tc_mobile_data.IABTCF_SpecialFeaturesOptIns == "000000000000"
         assert tc_mobile_data.IABTCF_AddtlConsent is None
 
 

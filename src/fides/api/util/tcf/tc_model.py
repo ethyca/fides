@@ -11,6 +11,7 @@ from fides.api.schemas.tcf import (
     TCFVendorConsentRecord,
     TCFVendorLegitimateInterestsRecord,
 )
+from fides.api.util.tcf.ac_string import build_ac_string
 from fides.api.util.tcf.tcf_experience_contents import (
     AC_PREFIX,
     GVL_PREFIX,
@@ -187,6 +188,12 @@ class TCModel(FidesSchema):
     )
 
     num_pub_restrictions: int = 0  # Hardcoded here for now
+
+    ac_string: Optional[str] = Field(
+        default=None,
+        description="Google's Additional Consent String which contains a list of consented Google Ad Tech "
+        "Providers that are not registered with IAB",
+    )
 
     @validator("publisher_country_code")
     def check_publisher_country_code(cls, publisher_country_code: str) -> str:
@@ -446,6 +453,7 @@ def convert_tcf_contents_to_tc_model(
         vendor_consents=vendor_consents if consented else [],
         vendor_legitimate_interests=vendor_legitimate_interests if consented else [],
         vendors_disclosed=_build_vendors_disclosed(tcf_contents),
+        ac_string=build_ac_string(tcf_contents, preference),
     )
 
     return tc_model
