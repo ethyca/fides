@@ -76,6 +76,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         experienceId: experience.id,
         fidesApiUrl: options.fidesApiUrl,
         consentMethod: ConsentMethod.button,
+        fidesDisableSaveApi: options.fidesDisableSaveApi,
         userLocationString: fidesRegionString,
         cookie,
         servedNotices,
