@@ -5,6 +5,7 @@ import React from "react";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { PrivacyDeclaration } from "~/types/api";
 
+import SystemCustomFieldGroup from "./fields/SystemCustomFieldGroup";
 import SystemDataSwitch from "./fields/SystemDataSwitch";
 import SystemDataTags from "./fields/SystemDataTags";
 import SystemDataTextField from "./fields/SystemDataTextField";
@@ -158,6 +159,9 @@ const SystemDataForm: React.FC<SystemDataFormProps> = ({ initialValues }) => {
                 tooltip="Which data security practices are employed to keep the data safe?"
               />
             </SystemDataGroup>
+            <SystemCustomFieldGroup
+              customFields={initialValues.custom_fields}
+            />
             {/* Data uses */}
             {initialValues.privacy_declarations &&
               initialValues.privacy_declarations.map(

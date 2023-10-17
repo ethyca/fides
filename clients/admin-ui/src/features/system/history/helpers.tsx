@@ -67,10 +67,11 @@ export const getUiLabel = (key: string): string => {
   return keyMapping[key] || key;
 };
 
-export const describeSystemChange = (history: SystemHistoryResponse) => {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { edited_by, before, after, created_at } = history;
-
+/** Determines if a field was added, modified, or removed as part of modification */
+const categorizeFieldModifications = (
+  before: Record<string, any>,
+  after: Record<string, any>
+) => {
   const uniqueKeys = new Set([...Object.keys(before), ...Object.keys(after)]);
 
   const addedFields: string[] = [];
@@ -119,6 +120,28 @@ export const describeSystemChange = (history: SystemHistoryResponse) => {
       }
     }
   });
+
+  return { addedFields, removedFields, changedFields };
+};
+
+export const describeSystemChange = (history: SystemHistoryResponse) => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const { edited_by, before, after, created_at } = history;
+
+  let addedFields: string[] = [];
+  let removedFields: string[] = [];
+  let changedFields: string[] = [];
+
+  // if the history contains custom fields, it won't have the main fields
+  // so we can just process the custom_fields object
+  if (before.custom_fields || after.custom_fields) {
+    ({ addedFields, removedFields, changedFields } =
+      categorizeFieldModifications(before.custom_fields, after.custom_fields));
+  } else {
+    // process the main fields
+    ({ addedFields, removedFields, changedFields } =
+      categorizeFieldModifications(before, after));
+  }
 
   const changeDescriptions: Array<[string, JSX.Element]> = [];
 
