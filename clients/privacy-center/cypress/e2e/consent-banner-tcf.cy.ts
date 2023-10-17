@@ -306,6 +306,53 @@ describe("Fides-js TCF", () => {
           });
       });
 
+      it("can render extra vendor info such as cookie and retention data", () => {
+        cy.get("#fides-tab-Vendors").click();
+        cy.get(".fides-notice-toggle-title").contains(VENDOR_1.name).click();
+        cy.get(".fides-disclosure-visible").within(() => {
+          // Check urls
+          cy.get("a")
+            .contains("Privacy policy")
+            .should("have.attr", "href")
+            .and("contain", "https://www.example.com/privacy");
+          cy.get("a")
+            .contains("Legitimate interest disclosure")
+            .should("have.attr", "href")
+            .and(
+              "contain",
+              "https://www.example.com/legitimate_interest_disclosure"
+            );
+
+          // Check retention periods
+          [PURPOSE_4, PURPOSE_6, PURPOSE_7, PURPOSE_9].forEach((purpose) => {
+            // In the fixture, all retention are `${id} days`
+            cy.get("tr")
+              .contains(purpose.name)
+              .parent()
+              .contains(`${purpose.id} days`);
+          });
+          cy.get("tr")
+            .contains(SPECIAL_PURPOSE_1.name)
+            .parent()
+            .contains(`${SPECIAL_PURPOSE_1.id} day`);
+
+          // Check cookie disclosure
+          cy.get("p").contains(
+            'Captify stores cookies with a maximum duration of about 5 Day(s). These cookies may be refreshed. This vendor also uses other methods like "local storage" to store and access information on your device.'
+          );
+        });
+        // Check the cookie disclosure on the system
+        // First close the vendor
+        cy.get(".fides-notice-toggle-title").contains(VENDOR_1.name).click();
+        // Then open the system
+        cy.get(".fides-notice-toggle-title").contains(SYSTEM_1.name).click();
+        cy.get(".fides-disclosure-visible").within(() => {
+          cy.get("p").contains(
+            "Fides System stores cookies with a maximum duration of about 5 Day(s)"
+          );
+        });
+      });
+
       it("can group toggle and fire FidesPreferenceToggled events", () => {
         // Toggle just legitimate interests
         cy.getByTestId("toggle-Purposes").click();
