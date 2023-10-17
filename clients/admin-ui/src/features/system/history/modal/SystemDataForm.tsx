@@ -175,8 +175,8 @@ const SystemDataForm: React.FC<SystemDataFormProps> = ({ initialValues }) => {
                       />
                       <SystemDataTextField
                         name={`privacy_declarations[${index}].data_use`}
-                        label="This system processes personal data"
-                        tooltip="Does this system process personal data?"
+                        label="Data use"
+                        tooltip="For which business purposes is this data used?"
                       />
                       <SystemDataTags
                         name={`privacy_declarations[${index}].data_categories`}
