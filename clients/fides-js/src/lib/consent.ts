@@ -5,6 +5,9 @@ import { debugLog } from "./consent-utils";
 
 import { OverlayProps } from "../components/types";
 
+const FIDES_EMBED_CONTAINER_ID = "fides-embed-container";
+const FIDES_OVERLAY_DEFAULT_ID = "fides-overlay";
+
 /**
  * Initialize the Fides Consent overlay components.
  *
@@ -28,18 +31,30 @@ export const initOverlay = async ({
         "Rendering Fides overlay CSS & HTML into the DOM..."
       );
 
-      // Find or create the parent element where we should insert the overlay
-      const overlayParentId = options.overlayParentId || "fides-overlay";
-      let parentElem = document.getElementById(overlayParentId);
-      if (!parentElem) {
-        debugLog(
-          options.debug,
-          `Parent element not found (#${overlayParentId}), creating and appending to body...`
-        );
-        // Create our own parent element and append to body
-        parentElem = document.createElement("div");
-        parentElem.id = overlayParentId;
-        document.body.prepend(parentElem);
+      let parentElem;
+      if (options.fidesEmbed) {
+        // Embed mode requires an existing element by which to embed the consent overlay
+        parentElem = document.getElementById(FIDES_EMBED_CONTAINER_ID);
+        if (!parentElem) {
+          throw new Error(
+            "Element with id fides-embed-container could not be found."
+          );
+        }
+      } else {
+        // Find or create the parent element where we should insert the overlay
+        const overlayParentId =
+          options.overlayParentId || FIDES_OVERLAY_DEFAULT_ID;
+        parentElem = document.getElementById(overlayParentId);
+        if (!parentElem) {
+          debugLog(
+            options.debug,
+            `Parent element not found (#${overlayParentId}), creating and appending to body...`
+          );
+          // Create our own parent element and append to body
+          parentElem = document.createElement("div");
+          parentElem.id = overlayParentId;
+          document.body.prepend(parentElem);
+        }
       }
 
       if (

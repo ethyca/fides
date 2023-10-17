@@ -47,16 +47,16 @@ const generateAcString = ({
         .map((id) => decodeVendorId(id).id)
     )
   );
-  const vendorIds = uniqueIds.sort().join(".");
+  const vendorIds = uniqueIds.sort((a, b) => Number(a) - Number(b)).join(".");
 
   return `${AC_SPECIFICATION_VERSION}~${vendorIds}`;
 };
 
 /**
- * Generate TC String based on TCF-related info from privacy experience.
+ * Generate FidesString based on TCF and AC-related info from privacy experience.
  * Called when there is either a FidesInitialized or FidesUpdated event
  */
-export const generateTcString = async ({
+export const generateFidesString = async ({
   experience,
   tcStringPreferences,
 }: {
@@ -151,7 +151,7 @@ export const generateTcString = async ({
  * `vendors_disclosed` and our own AC string addition.
  */
 const fidesEventToTcString = (event: FidesEvent) => {
-  const { fides_tc_string: cookieString } = event.detail;
+  const { fides_string: cookieString } = event.detail;
   if (cookieString) {
     // Remove the AC portion which is separated by FIDES_SEPARATOR
     const [tcString] = cookieString.split(FIDES_SEPARATOR);
@@ -177,8 +177,7 @@ export const initializeCmpApi = () => {
       /*
        * If using with 'removeEventListener' command, add a check to see if tcData is not a boolean. */
       if (typeof tcData !== "boolean") {
-        const stringSplit =
-          window.Fides.fides_tc_string?.split(FIDES_SEPARATOR);
+        const stringSplit = window.Fides.fides_string?.split(FIDES_SEPARATOR);
         const addtlConsent = stringSplit?.length === 2 ? stringSplit[1] : "";
         next({ ...tcData, addtlConsent }, status);
         return;

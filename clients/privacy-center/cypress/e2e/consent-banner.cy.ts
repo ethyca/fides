@@ -305,6 +305,7 @@ describe("Consent banner", () => {
         cy.getByTestId("toggle-Test privacy notice").click();
         cy.getByTestId("toggle-Essential").within(() => {
           cy.get("input").should("be.disabled");
+          cy.get("input").should("be.checked");
         });
         cy.getByTestId("Save test-btn").click();
 
