@@ -14,6 +14,17 @@ import {
 import { flexRender, Table as TableInstance } from "@tanstack/react-table";
 import React, { ReactNode } from "react";
 
+const getTableTHandTDStyles = (cellId: string) => {
+  return cellId === "select"
+    ? { padding: "0px", width: "55px" }
+    : {
+        "padding-left": "16px",
+        "padding-right": "8px",
+        "padding-top": "0px",
+        "padding-bottom": "0px",
+      };
+};
+
 type Props<T> = {
   tableInstance: TableInstance<T>;
   footer?: ReactNode;
@@ -38,16 +49,6 @@ export function FidesTableV2<T>({
             {tableInstance.getHeaderGroups().map((headerGroup) => (
               <Tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
-                  let sortIcon: ReactNode = null;
-                  if (header.column.getIsSorted()) {
-                    sortIcon =
-                      header.column.getAutoSortDir() === "desc" ? (
-                        <ArrowDownIcon color="gray.500" />
-                      ) : (
-                        <ArrowUpIcon color="gray.500" />
-                      );
-                  }
-
                   return (
                     <Th
                       borderWidth="1px"
@@ -55,21 +56,12 @@ export function FidesTableV2<T>({
                       key={header.id}
                       colSpan={header.colSpan}
                       data-testid={`column-${header.id}`}
-                      py={0}
-                      pr={2}
-                      pl={4}
+                      style={getTableTHandTDStyles(header.column.id)}
                     >
-                      <Text
-                        _hover={{ backgroundColor: "gray.100" }}
-                        borderRadius="4px"
-                        pr={sortIcon ? 0 : 3.5}
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                        {sortIcon}
-                      </Text>
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                     </Th>
                   );
                 })}
@@ -92,16 +84,6 @@ export function FidesTableV2<T>({
                   data-testid={`row-${rowName ?? row.id}`}
                 >
                   {row.getVisibleCells().map((cell) => {
-                    console.log(cell);
-                    const styles =
-                      cell.column.id === "select"
-                        ? { padding: "0px", width: "55px" }
-                        : {
-                            "padding-left": "16px",
-                            "padding-right": "8px",
-                            "padding-top": "0px",
-                            "padding-bottom": "0px",
-                          };
                     return (
                       <Td
                         key={cell.id}
@@ -109,8 +91,7 @@ export function FidesTableV2<T>({
                         borderColor="gray.200"
                         height="inherit"
                         verticalAlign="baseline"
-                        padding={0}
-                        style={styles}
+                        style={getTableTHandTDStyles(cell.column.id)}
                         onClick={
                           cell.column.columnDef.header !== "Enable" &&
                           onRowClick

@@ -15,6 +15,7 @@ import {
   FidesTableV2,
   GlobalFilterV2,
   DefaultCell,
+  DefaultHeaderCell,
   IndeterminateCheckboxCell,
 } from "~/features/common/tablev2";
 import {
@@ -74,7 +75,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
       columnHelper.accessor((row) => row.legal_name, {
         id: "legal_name",
         cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: "Name",
+        header: (props) => <DefaultHeaderCell value="System" {...props} />,
       }),
     ],
     []
