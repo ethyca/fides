@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.21.0"
+    "version": "2.22.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -4310,82 +4310,6 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "connection_type:read"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/consent-settings": {
-      "get": {
-        "tags": [
-          "Consent Settings"
-        ],
-        "summary": "Get Consent Settings",
-        "description": "Endpoint that returns organization-wide consent settings.",
-        "operationId": "get_consent_settings_api_v1_consent_settings_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConsentSettingsResponseSchema"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "consent_settings:read"
-            ]
-          }
-        ]
-      },
-      "patch": {
-        "tags": [
-          "Consent Settings"
-        ],
-        "summary": "Patch Consent Settings",
-        "description": "Update organization-wide consent settings. Only the single record is updated.",
-        "operationId": "patch_consent_settings_api_v1_consent_settings_patch",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ConsentSettingsRequestSchema"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConsentSettingsResponseSchema"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "consent_settings:update"
             ]
           }
         ]
@@ -8704,11 +8628,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Save Privacy Preferences With Verified Identity Api V1 Consent Request  Consent Request Id  Privacy Preferences Patch",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
-                  }
+                  "$ref": "#/components/schemas/SavePrivacyPreferencesResponse"
                 }
               }
             }
@@ -8750,11 +8670,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Save Privacy Preferences Api V1 Privacy Preferences Patch",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
-                  }
+                  "$ref": "#/components/schemas/SavePrivacyPreferencesResponse"
                 }
               }
             }
@@ -13857,7 +13773,7 @@
             "items": {
               "$ref": "#/components/schemas/DataFlow"
             },
-            "description": "The resources to which the System sends data."
+            "description": "The resources to which the system sends data."
           },
           "ingress": {
             "title": "Ingress",
@@ -13865,7 +13781,7 @@
             "items": {
               "$ref": "#/components/schemas/DataFlow"
             },
-            "description": "The resources from which the System receives data."
+            "description": "The resources from which the system receives data."
           },
           "privacy_declarations": {
             "title": "Privacy Declarations",
@@ -13986,7 +13902,7 @@
             "maxLength": 65536,
             "minLength": 1,
             "type": "string",
-            "description": "A URL that points to the System's publicly accessible privacy policy.",
+            "description": "A URL that points to the system's publicly accessible privacy policy.",
             "format": "uri"
           },
           "legal_name": {
@@ -14020,6 +13936,37 @@
             "title": "Data Security Practices",
             "type": "string",
             "description": "The data security practices employed by this system."
+          },
+          "cookie_max_age_seconds": {
+            "title": "Cookie Max Age Seconds",
+            "type": "integer",
+            "description": "The maximum storage duration, in seconds, for cookies used by this system."
+          },
+          "uses_cookies": {
+            "title": "Uses Cookies",
+            "type": "boolean",
+            "description": "Whether this system uses cookie storage.",
+            "default": false
+          },
+          "cookie_refresh": {
+            "title": "Cookie Refresh",
+            "type": "boolean",
+            "description": "Whether the system's cookies are refreshed after being initially set.",
+            "default": false
+          },
+          "uses_non_cookie_access": {
+            "title": "Uses Non Cookie Access",
+            "type": "boolean",
+            "description": "Whether the system uses non-cookie methods of storage or accessing information stored on a user's device.",
+            "default": false
+          },
+          "legitimate_interest_disclosure_url": {
+            "title": "Legitimate Interest Disclosure Url",
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string",
+            "description": "A URL that points to the system's publicly accessible legitimate interest disclosure.",
+            "format": "uri"
           },
           "created_at": {
             "title": "Created At",
@@ -14862,16 +14809,24 @@
         ],
         "type": "object",
         "properties": {
-          "purpose": {
-            "title": "The TCF purpose that was served or saved against",
+          "purpose_consent": {
+            "title": "The TCF purpose with consent legal basis that was served or saved against",
+            "type": "integer"
+          },
+          "purpose_legitimate_interests": {
+            "title": "The TCF purpose with a legitimate interests basis that was served or saved against",
             "type": "integer"
           },
           "special_purpose": {
             "title": "The TCF special purpose that was served or saved against",
             "type": "integer"
           },
-          "vendor": {
-            "title": "The TCF vendor that was served or saved against",
+          "vendor_consent": {
+            "title": "The TCF vendor with a consent legal basis that was served or saved against",
+            "type": "string"
+          },
+          "vendor_legitimate_interests": {
+            "title": "The TCF vendor with a legitimate interests legal basis that was served or saved against",
             "type": "string"
           },
           "feature": {
@@ -14882,8 +14837,12 @@
             "title": "The TCF special feature that was served or saved against",
             "type": "integer"
           },
-          "system": {
-            "title": "The System id that consent was served or saved against. Used when we don't know what vendor corresponds to the system, so we save preferences against the system directly",
+          "system_consent": {
+            "title": "The System id with a legal basis of consent that was served or saved against. Used when we don't know what vendor corresponds to the system, so we save preferences against the system directly",
+            "type": "string"
+          },
+          "system_legitimate_interests": {
+            "title": "The System id with a legal basis of legitimate interests that consent was served or saved against. Used when we don't know what vendor corresponds to the system, so we save preferences against the system directly",
             "type": "string"
           },
           "id": {
@@ -15062,44 +15021,6 @@
           }
         },
         "description": "Schema for consent request response."
-      },
-      "ConsentSettingsRequestSchema": {
-        "title": "ConsentSettingsRequestSchema",
-        "type": "object",
-        "properties": {
-          "tcf_enabled": {
-            "title": "Tcf Enabled",
-            "type": "boolean",
-            "default": false
-          }
-        },
-        "description": "Response schema for consent settings update"
-      },
-      "ConsentSettingsResponseSchema": {
-        "title": "ConsentSettingsResponseSchema",
-        "required": [
-          "created_at",
-          "updated_at"
-        ],
-        "type": "object",
-        "properties": {
-          "tcf_enabled": {
-            "title": "Tcf Enabled",
-            "type": "boolean",
-            "default": false
-          },
-          "created_at": {
-            "title": "Created At",
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_at": {
-            "title": "Updated At",
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "description": "Response schema for consent settings response"
       },
       "ConsentWithExecutableStatus": {
         "title": "ConsentWithExecutableStatus",
@@ -15308,16 +15229,24 @@
         ],
         "type": "object",
         "properties": {
-          "purpose": {
-            "title": "The TCF purpose that was served or saved against",
+          "purpose_consent": {
+            "title": "The TCF purpose with consent legal basis that was served or saved against",
+            "type": "integer"
+          },
+          "purpose_legitimate_interests": {
+            "title": "The TCF purpose with a legitimate interests basis that was served or saved against",
             "type": "integer"
           },
           "special_purpose": {
             "title": "The TCF special purpose that was served or saved against",
             "type": "integer"
           },
-          "vendor": {
-            "title": "The TCF vendor that was served or saved against",
+          "vendor_consent": {
+            "title": "The TCF vendor with a consent legal basis that was served or saved against",
+            "type": "string"
+          },
+          "vendor_legitimate_interests": {
+            "title": "The TCF vendor with a legitimate interests legal basis that was served or saved against",
             "type": "string"
           },
           "feature": {
@@ -15328,8 +15257,12 @@
             "title": "The TCF special feature that was served or saved against",
             "type": "integer"
           },
-          "system": {
-            "title": "The System id that consent was served or saved against. Used when we don't know what vendor corresponds to the system, so we save preferences against the system directly",
+          "system_consent": {
+            "title": "The System id with a legal basis of consent that was served or saved against. Used when we don't know what vendor corresponds to the system, so we save preferences against the system directly",
+            "type": "string"
+          },
+          "system_legitimate_interests": {
+            "title": "The System id with a legal basis of legitimate interests that consent was served or saved against. Used when we don't know what vendor corresponds to the system, so we save preferences against the system directly",
             "type": "string"
           },
           "id": {
@@ -15367,16 +15300,24 @@
         ],
         "type": "object",
         "properties": {
-          "purpose": {
-            "title": "The TCF purpose that was served or saved against",
+          "purpose_consent": {
+            "title": "The TCF purpose with consent legal basis that was served or saved against",
+            "type": "integer"
+          },
+          "purpose_legitimate_interests": {
+            "title": "The TCF purpose with a legitimate interests basis that was served or saved against",
             "type": "integer"
           },
           "special_purpose": {
             "title": "The TCF special purpose that was served or saved against",
             "type": "integer"
           },
-          "vendor": {
-            "title": "The TCF vendor that was served or saved against",
+          "vendor_consent": {
+            "title": "The TCF vendor with a consent legal basis that was served or saved against",
+            "type": "string"
+          },
+          "vendor_legitimate_interests": {
+            "title": "The TCF vendor with a legitimate interests legal basis that was served or saved against",
             "type": "string"
           },
           "feature": {
@@ -15387,8 +15328,12 @@
             "title": "The TCF special feature that was served or saved against",
             "type": "integer"
           },
-          "system": {
-            "title": "The System id that consent was served or saved against. Used when we don't know what vendor corresponds to the system, so we save preferences against the system directly",
+          "system_consent": {
+            "title": "The System id with a legal basis of consent that was served or saved against. Used when we don't know what vendor corresponds to the system, so we save preferences against the system directly",
+            "type": "string"
+          },
+          "system_legitimate_interests": {
+            "title": "The System id with a legal basis of legitimate interests that consent was served or saved against. Used when we don't know what vendor corresponds to the system, so we save preferences against the system directly",
             "type": "string"
           },
           "id": {
@@ -16472,33 +16417,6 @@
         },
         "description": "Sparse details for an embedded TCF line item within another TCF component. Read-only."
       },
-      "EmbeddedPurpose": {
-        "title": "EmbeddedPurpose",
-        "required": [
-          "id",
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "legal_bases": {
-            "title": "Legal Bases",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "default": []
-          }
-        },
-        "description": "Sparse details for an embedded purpose beneath a system or vendor section.  Read-only."
-      },
       "EmbeddedVendor": {
         "title": "EmbeddedVendor",
         "required": [
@@ -17042,20 +16960,20 @@
             "type": "string",
             "description": "A hashed value that can be compared to previously-fetched hash values to determine if the Experience has meaningfully changed"
           },
-          "accept_all_tc_string": {
-            "title": "Accept All Tc String",
+          "accept_all_fides_string": {
+            "title": "Accept All Fides String",
             "type": "string",
-            "description": "The TC string corresponding to a user opting in to all available options"
+            "description": "The fides string (TC String + AC String) corresponding to a user opting in to all available options"
           },
-          "accept_all_tc_mobile_data": {
+          "accept_all_fides_mobile_data": {
             "$ref": "#/components/schemas/TCMobileData"
           },
-          "reject_all_tc_string": {
-            "title": "Reject All Tc String",
+          "reject_all_fides_string": {
+            "title": "Reject All Fides String",
             "type": "string",
-            "description": "The TC string corresponding to a user opting out of all available options"
+            "description": "The fides string (TC String + AC String) corresponding to a user opting out of all available options"
           },
-          "reject_all_tc_mobile_data": {
+          "reject_all_fides_mobile_data": {
             "$ref": "#/components/schemas/TCMobileData"
           }
         },
@@ -17459,16 +17377,24 @@
         ],
         "type": "object",
         "properties": {
-          "purpose": {
-            "title": "The TCF purpose that was served or saved against",
+          "purpose_consent": {
+            "title": "The TCF purpose with consent legal basis that was served or saved against",
+            "type": "integer"
+          },
+          "purpose_legitimate_interests": {
+            "title": "The TCF purpose with a legitimate interests basis that was served or saved against",
             "type": "integer"
           },
           "special_purpose": {
             "title": "The TCF special purpose that was served or saved against",
             "type": "integer"
           },
-          "vendor": {
-            "title": "The TCF vendor that was served or saved against",
+          "vendor_consent": {
+            "title": "The TCF vendor with a consent legal basis that was served or saved against",
+            "type": "string"
+          },
+          "vendor_legitimate_interests": {
+            "title": "The TCF vendor with a legitimate interests legal basis that was served or saved against",
             "type": "string"
           },
           "feature": {
@@ -17479,8 +17405,12 @@
             "title": "The TCF special feature that was served or saved against",
             "type": "integer"
           },
-          "system": {
-            "title": "The System id that consent was served or saved against. Used when we don't know what vendor corresponds to the system, so we save preferences against the system directly",
+          "system_consent": {
+            "title": "The System id with a legal basis of consent that was served or saved against. Used when we don't know what vendor corresponds to the system, so we save preferences against the system directly",
+            "type": "string"
+          },
+          "system_legitimate_interests": {
+            "title": "The System id with a legal basis of legitimate interests that consent was served or saved against. Used when we don't know what vendor corresponds to the system, so we save preferences against the system directly",
             "type": "string"
           },
           "id": {
@@ -19552,6 +19482,11 @@
             },
             "description": "The features of processing personal data."
           },
+          "flexible_legal_basis_for_processing": {
+            "title": "Flexible Legal Basis For Processing",
+            "type": "boolean",
+            "description": "Whether the legal basis for processing is 'flexible' (i.e. can be overridden in a privacy notice) for this declaration."
+          },
           "legal_basis_for_processing": {
             "allOf": [
               {
@@ -19693,6 +19628,11 @@
             },
             "description": "The features of processing personal data."
           },
+          "flexible_legal_basis_for_processing": {
+            "title": "Flexible Legal Basis For Processing",
+            "type": "boolean",
+            "description": "Whether the legal basis for processing is 'flexible' (i.e. can be overridden in a privacy notice) for this declaration."
+          },
           "legal_basis_for_processing": {
             "allOf": [
               {
@@ -19789,6 +19729,94 @@
             "title": "Id",
             "type": "string"
           },
+          "tcf_purpose_consents": {
+            "title": "Tcf Purpose Consents",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TCFPurposeConsentRecord"
+            },
+            "default": []
+          },
+          "tcf_purpose_legitimate_interests": {
+            "title": "Tcf Purpose Legitimate Interests",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TCFPurposeLegitimateInterestsRecord"
+            },
+            "default": []
+          },
+          "tcf_special_purposes": {
+            "title": "Tcf Special Purposes",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TCFSpecialPurposeRecord"
+            },
+            "default": []
+          },
+          "tcf_features": {
+            "title": "Tcf Features",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TCFFeatureRecord"
+            },
+            "default": []
+          },
+          "tcf_special_features": {
+            "title": "Tcf Special Features",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TCFSpecialFeatureRecord"
+            },
+            "default": []
+          },
+          "tcf_vendor_consents": {
+            "title": "Tcf Vendor Consents",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TCFVendorConsentRecord"
+            },
+            "default": []
+          },
+          "tcf_vendor_legitimate_interests": {
+            "title": "Tcf Vendor Legitimate Interests",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TCFVendorLegitimateInterestsRecord"
+            },
+            "default": []
+          },
+          "tcf_vendor_relationships": {
+            "title": "Tcf Vendor Relationships",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TCFVendorRelationships"
+            },
+            "default": []
+          },
+          "tcf_system_consents": {
+            "title": "Tcf System Consents",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TCFVendorConsentRecord"
+            },
+            "default": []
+          },
+          "tcf_system_legitimate_interests": {
+            "title": "Tcf System Legitimate Interests",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TCFVendorLegitimateInterestsRecord"
+            },
+            "default": []
+          },
+          "tcf_system_relationships": {
+            "title": "Tcf System Relationships",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TCFVendorRelationships"
+            },
+            "default": []
+          },
           "created_at": {
             "title": "Created At",
             "type": "string",
@@ -19811,54 +19839,6 @@
               "$ref": "#/components/schemas/PrivacyNoticeResponseWithUserPreferences"
             },
             "description": "The Privacy Notices associated with this experience, if applicable"
-          },
-          "tcf_purposes": {
-            "title": "Tcf Purposes",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFPurposeRecord"
-            },
-            "description": "For TCF Experiences, the TCF Purposes that appear on your Systems"
-          },
-          "tcf_special_purposes": {
-            "title": "Tcf Special Purposes",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFPurposeRecord"
-            },
-            "description": "For TCF Experiences, the TCF Special Purposes that appear on your Systems"
-          },
-          "tcf_vendors": {
-            "title": "Tcf Vendors",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFVendorRecord"
-            },
-            "description": "For TCF Experiences, the TCF Vendors associated with your Systems"
-          },
-          "tcf_features": {
-            "title": "Tcf Features",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFFeatureRecord"
-            },
-            "description": "For TCF Experiences, the TCF Features that appear on your Systems"
-          },
-          "tcf_special_features": {
-            "title": "Tcf Special Features",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFFeatureRecord"
-            },
-            "description": "For TCF Experiences, the TCF Special Features that appear on your Systems"
-          },
-          "tcf_systems": {
-            "title": "Tcf Systems",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFVendorRecord"
-            },
-            "description": "For TCF Experiences, Systems with TCF components that do not have an official vendor id (identified by system id)"
           },
           "gvl": {
             "title": "Gvl",
@@ -20496,29 +20476,8 @@
         ],
         "type": "object",
         "properties": {
-          "browser_identity": {
-            "$ref": "#/components/schemas/Identity"
-          },
-          "code": {
-            "title": "Code",
-            "type": "string"
-          },
-          "tc_string": {
-            "title": "Tc String",
-            "type": "string",
-            "description": "If supplied, *_preferences fields will be ignored in favor of this TC string. Saves preferencesagainst purposes, special features, and vendors."
-          },
-          "preferences": {
-            "title": "Preferences",
-            "maxItems": 200,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ConsentOptionCreate"
-            },
-            "default": []
-          },
-          "purpose_preferences": {
-            "title": "Purpose Preferences",
+          "purpose_consent_preferences": {
+            "title": "Purpose Consent Preferences",
             "maxItems": 200,
             "type": "array",
             "items": {
@@ -20526,17 +20485,17 @@
             },
             "default": []
           },
-          "special_purpose_preferences": {
-            "title": "Special Purpose Preferences",
+          "purpose_legitimate_interests_preferences": {
+            "title": "Purpose Legitimate Interests Preferences",
             "maxItems": 200,
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TCFSpecialPurposeSave"
+              "$ref": "#/components/schemas/TCFPurposeSave"
             },
             "default": []
           },
-          "vendor_preferences": {
-            "title": "Vendor Preferences",
+          "vendor_consent_preferences": {
+            "title": "Vendor Consent Preferences",
             "maxItems": 200,
             "type": "array",
             "items": {
@@ -20544,12 +20503,12 @@
             },
             "default": []
           },
-          "feature_preferences": {
-            "title": "Feature Preferences",
+          "vendor_legitimate_interests_preferences": {
+            "title": "Vendor Legitimate Interests Preferences",
             "maxItems": 200,
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TCFFeatureSave"
+              "$ref": "#/components/schemas/TCFVendorSave"
             },
             "default": []
           },
@@ -20562,8 +20521,56 @@
             },
             "default": []
           },
-          "system_preferences": {
-            "title": "System Preferences",
+          "browser_identity": {
+            "$ref": "#/components/schemas/Identity"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "fides_string": {
+            "title": "Fides String",
+            "type": "string",
+            "description": "If supplied, TC strings and AC strings are decoded and preferences saved for purpose_consent, purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features"
+          },
+          "preferences": {
+            "title": "Preferences",
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsentOptionCreate"
+            },
+            "default": []
+          },
+          "special_purpose_preferences": {
+            "title": "Special Purpose Preferences",
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TCFSpecialPurposeSave"
+            },
+            "default": []
+          },
+          "feature_preferences": {
+            "title": "Feature Preferences",
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TCFFeatureSave"
+            },
+            "default": []
+          },
+          "system_consent_preferences": {
+            "title": "System Consent Preferences",
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TCFVendorSave"
+            },
+            "default": []
+          },
+          "system_legitimate_interests_preferences": {
+            "title": "System Legitimate Interests Preferences",
             "maxItems": 200,
             "type": "array",
             "items": {
@@ -21101,8 +21108,16 @@
             },
             "default": []
           },
-          "tcf_purposes": {
-            "title": "Tcf Purposes",
+          "tcf_purpose_consents": {
+            "title": "Tcf Purpose Consents",
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "default": []
+          },
+          "tcf_purpose_legitimate_interests": {
+            "title": "Tcf Purpose Legitimate Interests",
             "type": "array",
             "items": {
               "type": "integer"
@@ -21117,8 +21132,16 @@
             },
             "default": []
           },
-          "tcf_vendors": {
-            "title": "Tcf Vendors",
+          "tcf_vendor_consents": {
+            "title": "Tcf Vendor Consents",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "tcf_vendor_legitimate_interests": {
+            "title": "Tcf Vendor Legitimate Interests",
             "type": "array",
             "items": {
               "type": "string"
@@ -21141,8 +21164,16 @@
             },
             "default": []
           },
-          "tcf_systems": {
-            "title": "Tcf Systems",
+          "tcf_system_consents": {
+            "title": "Tcf System Consents",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "tcf_system_legitimate_interests": {
+            "title": "Tcf System Legitimate Interests",
             "type": "array",
             "items": {
               "type": "string"
@@ -21841,6 +21872,96 @@
         },
         "description": "Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template"
       },
+      "SavePrivacyPreferencesResponse": {
+        "title": "SavePrivacyPreferencesResponse",
+        "type": "object",
+        "properties": {
+          "preferences": {
+            "title": "Preferences",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+            },
+            "default": []
+          },
+          "purpose_consent_preferences": {
+            "title": "Purpose Consent Preferences",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+            },
+            "default": []
+          },
+          "purpose_legitimate_interests_preferences": {
+            "title": "Purpose Legitimate Interests Preferences",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+            },
+            "default": []
+          },
+          "special_purpose_preferences": {
+            "title": "Special Purpose Preferences",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+            },
+            "default": []
+          },
+          "vendor_consent_preferences": {
+            "title": "Vendor Consent Preferences",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+            },
+            "default": []
+          },
+          "vendor_legitimate_interests_preferences": {
+            "title": "Vendor Legitimate Interests Preferences",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+            },
+            "default": []
+          },
+          "feature_preferences": {
+            "title": "Feature Preferences",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+            },
+            "default": []
+          },
+          "special_feature_preferences": {
+            "title": "Special Feature Preferences",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+            },
+            "default": []
+          },
+          "system_consent_preferences": {
+            "title": "System Consent Preferences",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+            },
+            "default": []
+          },
+          "system_legitimate_interests_preferences": {
+            "title": "System Legitimate Interests Preferences",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+            },
+            "default": []
+          },
+          "fides_mobile_data": {
+            "$ref": "#/components/schemas/TCMobileData"
+          }
+        },
+        "description": "Response schema when saving privacy preferences"
+      },
       "ScopeRegistryEnum": {
         "title": "ScopeRegistryEnum",
         "enum": [
@@ -22459,7 +22580,7 @@
             "items": {
               "$ref": "#/components/schemas/DataFlow"
             },
-            "description": "The resources to which the System sends data."
+            "description": "The resources to which the system sends data."
           },
           "ingress": {
             "title": "Ingress",
@@ -22467,7 +22588,7 @@
             "items": {
               "$ref": "#/components/schemas/DataFlow"
             },
-            "description": "The resources from which the System receives data."
+            "description": "The resources from which the system receives data."
           },
           "privacy_declarations": {
             "title": "Privacy Declarations",
@@ -22588,7 +22709,7 @@
             "maxLength": 65536,
             "minLength": 1,
             "type": "string",
-            "description": "A URL that points to the System's publicly accessible privacy policy.",
+            "description": "A URL that points to the system's publicly accessible privacy policy.",
             "format": "uri"
           },
           "legal_name": {
@@ -22622,6 +22743,37 @@
             "title": "Data Security Practices",
             "type": "string",
             "description": "The data security practices employed by this system."
+          },
+          "cookie_max_age_seconds": {
+            "title": "Cookie Max Age Seconds",
+            "type": "integer",
+            "description": "The maximum storage duration, in seconds, for cookies used by this system."
+          },
+          "uses_cookies": {
+            "title": "Uses Cookies",
+            "type": "boolean",
+            "description": "Whether this system uses cookie storage.",
+            "default": false
+          },
+          "cookie_refresh": {
+            "title": "Cookie Refresh",
+            "type": "boolean",
+            "description": "Whether the system's cookies are refreshed after being initially set.",
+            "default": false
+          },
+          "uses_non_cookie_access": {
+            "title": "Uses Non Cookie Access",
+            "type": "boolean",
+            "description": "Whether the system uses non-cookie methods of storage or accessing information stored on a user's device.",
+            "default": false
+          },
+          "legitimate_interest_disclosure_url": {
+            "title": "Legitimate Interest Disclosure Url",
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string",
+            "description": "A URL that points to the system's publicly accessible legitimate interest disclosure.",
+            "format": "uri"
           }
         },
         "description": "The System resource model.\n\nDescribes an application and includes a list of PrivacyDeclaration resources."
@@ -22726,7 +22878,7 @@
             "items": {
               "$ref": "#/components/schemas/DataFlow"
             },
-            "description": "The resources to which the System sends data."
+            "description": "The resources to which the system sends data."
           },
           "ingress": {
             "title": "Ingress",
@@ -22734,7 +22886,7 @@
             "items": {
               "$ref": "#/components/schemas/DataFlow"
             },
-            "description": "The resources from which the System receives data."
+            "description": "The resources from which the system receives data."
           },
           "privacy_declarations": {
             "title": "Privacy Declarations",
@@ -22855,7 +23007,7 @@
             "maxLength": 65536,
             "minLength": 1,
             "type": "string",
-            "description": "A URL that points to the System's publicly accessible privacy policy.",
+            "description": "A URL that points to the system's publicly accessible privacy policy.",
             "format": "uri"
           },
           "legal_name": {
@@ -22889,6 +23041,37 @@
             "title": "Data Security Practices",
             "type": "string",
             "description": "The data security practices employed by this system."
+          },
+          "cookie_max_age_seconds": {
+            "title": "Cookie Max Age Seconds",
+            "type": "integer",
+            "description": "The maximum storage duration, in seconds, for cookies used by this system."
+          },
+          "uses_cookies": {
+            "title": "Uses Cookies",
+            "type": "boolean",
+            "description": "Whether this system uses cookie storage.",
+            "default": false
+          },
+          "cookie_refresh": {
+            "title": "Cookie Refresh",
+            "type": "boolean",
+            "description": "Whether the system's cookies are refreshed after being initially set.",
+            "default": false
+          },
+          "uses_non_cookie_access": {
+            "title": "Uses Non Cookie Access",
+            "type": "boolean",
+            "description": "Whether the system uses non-cookie methods of storage or accessing information stored on a user's device.",
+            "default": false
+          },
+          "legitimate_interest_disclosure_url": {
+            "title": "Legitimate Interest Disclosure Url",
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string",
+            "description": "A URL that points to the system's publicly accessible legitimate interest disclosure.",
+            "format": "uri"
           },
           "created_at": {
             "title": "Created At",
@@ -22933,36 +23116,6 @@
         ],
         "description": "An enumeration."
       },
-      "TCFDataCategoryRecord": {
-        "title": "TCFDataCategoryRecord",
-        "required": [
-          "id"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "cookie": {
-            "title": "Cookie",
-            "type": "string"
-          },
-          "domain": {
-            "title": "Domain",
-            "type": "string"
-          },
-          "duration": {
-            "title": "Duration",
-            "type": "string"
-          }
-        },
-        "description": "Details for data categories on systems: Read-only"
-      },
       "TCFFeatureRecord": {
         "title": "TCFFeatureRecord",
         "required": [
@@ -22972,6 +23125,21 @@
         ],
         "type": "object",
         "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer",
+            "description": "Official GVL feature ID or special feature ID"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Name of the GVL feature or special feature."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "Description of the GVL feature or special feature."
+          },
           "default_preference": {
             "$ref": "#/components/schemas/UserConsentPreference"
           },
@@ -22988,21 +23156,6 @@
           "outdated_served": {
             "title": "Outdated Served",
             "type": "boolean"
-          },
-          "id": {
-            "title": "Id",
-            "type": "integer",
-            "description": "Official GVL feature ID or special feature ID"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string",
-            "description": "Name of the GVL feature or special feature."
-          },
-          "description": {
-            "title": "Description",
-            "type": "string",
-            "description": "Description of the GVL feature or special feature."
           },
           "vendors": {
             "title": "Vendors",
@@ -23021,7 +23174,7 @@
             "default": []
           }
         },
-        "description": "Schema for a TCF Feature or a special feature: returned in the TCF Overlay Experience"
+        "description": "Schema for a TCF Feature: returned in the TCF Overlay Experience"
       },
       "TCFFeatureSave": {
         "title": "TCFFeatureSave",
@@ -23045,8 +23198,8 @@
         },
         "description": "Schema for saving a user's preference with respect to a TCF feature"
       },
-      "TCFPurposeRecord": {
-        "title": "TCFPurposeRecord",
+      "TCFPurposeConsentRecord": {
+        "title": "TCFPurposeConsentRecord",
         "required": [
           "id",
           "name",
@@ -23056,23 +23209,6 @@
         ],
         "type": "object",
         "properties": {
-          "default_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "outdated_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_served": {
-            "title": "Current Served",
-            "type": "boolean"
-          },
-          "outdated_served": {
-            "title": "Outdated Served",
-            "type": "boolean"
-          },
           "id": {
             "title": "Id",
             "type": "integer",
@@ -23104,13 +23240,22 @@
             },
             "description": "The fideslang default taxonomy data uses that are associated with the purpose."
           },
-          "legal_bases": {
-            "title": "Legal Bases",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "default": []
+          "default_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "current_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "outdated_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "current_served": {
+            "title": "Current Served",
+            "type": "boolean"
+          },
+          "outdated_served": {
+            "title": "Outdated Served",
+            "type": "boolean"
           },
           "vendors": {
             "title": "Vendors",
@@ -23129,7 +23274,85 @@
             "default": []
           }
         },
-        "description": "Schema for a TCF Purpose or a Special Purpose: returned in the TCF Overlay Experience"
+        "description": "Schema for a TCF Purpose with Consent Legal Basis returned in the TCF Overlay Experience"
+      },
+      "TCFPurposeLegitimateInterestsRecord": {
+        "title": "TCFPurposeLegitimateInterestsRecord",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "illustrations",
+          "data_uses"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer",
+            "description": "Official GVL purpose ID. Used for linking with other records, e.g. vendors, cookies, etc."
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Name of the GVL purpose."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "Description of the GVL purpose."
+          },
+          "illustrations": {
+            "title": "Illustrations",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Illustrative examples of the purpose."
+          },
+          "data_uses": {
+            "title": "Data Uses",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The fideslang default taxonomy data uses that are associated with the purpose."
+          },
+          "default_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "current_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "outdated_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "current_served": {
+            "title": "Current Served",
+            "type": "boolean"
+          },
+          "outdated_served": {
+            "title": "Outdated Served",
+            "type": "boolean"
+          },
+          "vendors": {
+            "title": "Vendors",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmbeddedVendor"
+            },
+            "default": []
+          },
+          "systems": {
+            "title": "Systems",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmbeddedVendor"
+            },
+            "default": []
+          }
+        },
+        "description": "Schema for a TCF Purpose with Legitimate Interests Legal Basis returned in the TCF Overlay Experience"
       },
       "TCFPurposeSave": {
         "title": "TCFPurposeSave",
@@ -23153,6 +23376,66 @@
         },
         "description": "Schema for saving preferences with respect to a TCF Purpose"
       },
+      "TCFSpecialFeatureRecord": {
+        "title": "TCFSpecialFeatureRecord",
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer",
+            "description": "Official GVL feature ID or special feature ID"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Name of the GVL feature or special feature."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "Description of the GVL feature or special feature."
+          },
+          "default_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "current_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "outdated_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "current_served": {
+            "title": "Current Served",
+            "type": "boolean"
+          },
+          "outdated_served": {
+            "title": "Outdated Served",
+            "type": "boolean"
+          },
+          "vendors": {
+            "title": "Vendors",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmbeddedVendor"
+            },
+            "default": []
+          },
+          "systems": {
+            "title": "Systems",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmbeddedVendor"
+            },
+            "default": []
+          }
+        },
+        "description": "Schema for a TCF Special Feature: returned in the TCF Overlay Experience"
+      },
       "TCFSpecialFeatureSave": {
         "title": "TCFSpecialFeatureSave",
         "required": [
@@ -23174,6 +23457,84 @@
           }
         },
         "description": "Schema for saving a user's preference with respect to a TCF special feature"
+      },
+      "TCFSpecialPurposeRecord": {
+        "title": "TCFSpecialPurposeRecord",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "illustrations",
+          "data_uses"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer",
+            "description": "Official GVL purpose ID. Used for linking with other records, e.g. vendors, cookies, etc."
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Name of the GVL purpose."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "Description of the GVL purpose."
+          },
+          "illustrations": {
+            "title": "Illustrations",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Illustrative examples of the purpose."
+          },
+          "data_uses": {
+            "title": "Data Uses",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The fideslang default taxonomy data uses that are associated with the purpose."
+          },
+          "default_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "current_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "outdated_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "current_served": {
+            "title": "Current Served",
+            "type": "boolean"
+          },
+          "outdated_served": {
+            "title": "Outdated Served",
+            "type": "boolean"
+          },
+          "vendors": {
+            "title": "Vendors",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmbeddedVendor"
+            },
+            "default": []
+          },
+          "systems": {
+            "title": "Systems",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmbeddedVendor"
+            },
+            "default": []
+          }
+        },
+        "description": "Common details for non-vendor TCF sections.  Includes previously-saved preferences and\nrecords where consent was previously served if applicable."
       },
       "TCFSpecialPurposeSave": {
         "title": "TCFSpecialPurposeSave",
@@ -23197,14 +23558,29 @@
         },
         "description": "Schema for saving preferences with respect to a TCF Special Purpose"
       },
-      "TCFVendorRecord": {
-        "title": "TCFVendorRecord",
+      "TCFVendorConsentRecord": {
+        "title": "TCFVendorConsentRecord",
         "required": [
-          "id",
-          "has_vendor_id"
+          "id"
         ],
         "type": "object",
         "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "has_vendor_id": {
+            "title": "Has Vendor Id",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
           "default_preference": {
             "$ref": "#/components/schemas/UserConsentPreference"
           },
@@ -23222,6 +23598,24 @@
             "title": "Outdated Served",
             "type": "boolean"
           },
+          "purpose_consents": {
+            "title": "Purpose Consents",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmbeddedLineItem"
+            },
+            "default": []
+          }
+        },
+        "description": "Schema for a TCF Vendor with Consent legal basis"
+      },
+      "TCFVendorLegitimateInterestsRecord": {
+        "title": "TCFVendorLegitimateInterestsRecord",
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
           "id": {
             "title": "Id",
             "type": "string"
@@ -23238,27 +23632,62 @@
             "title": "Description",
             "type": "string"
           },
-          "purposes": {
-            "title": "Purposes",
+          "default_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "current_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "outdated_preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "current_served": {
+            "title": "Current Served",
+            "type": "boolean"
+          },
+          "outdated_served": {
+            "title": "Outdated Served",
+            "type": "boolean"
+          },
+          "purpose_legitimate_interests": {
+            "title": "Purpose Legitimate Interests",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/EmbeddedPurpose"
+              "$ref": "#/components/schemas/EmbeddedLineItem"
             },
             "default": []
+          }
+        },
+        "description": "Schema for a TCF Vendor with Legitimate interests legal basis"
+      },
+      "TCFVendorRelationships": {
+        "title": "TCFVendorRelationships",
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "has_vendor_id": {
+            "title": "Has Vendor Id",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
           },
           "special_purposes": {
             "title": "Special Purposes",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/EmbeddedPurpose"
-            },
-            "default": []
-          },
-          "data_categories": {
-            "title": "Data Categories",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFDataCategoryRecord"
+              "$ref": "#/components/schemas/EmbeddedLineItem"
             },
             "default": []
           },
@@ -23277,9 +23706,32 @@
               "$ref": "#/components/schemas/EmbeddedLineItem"
             },
             "default": []
+          },
+          "cookie_max_age_seconds": {
+            "title": "Cookie Max Age Seconds",
+            "type": "integer"
+          },
+          "uses_cookies": {
+            "title": "Uses Cookies",
+            "type": "boolean"
+          },
+          "cookie_refresh": {
+            "title": "Cookie Refresh",
+            "type": "boolean"
+          },
+          "uses_non_cookie_access": {
+            "title": "Uses Non Cookie Access",
+            "type": "boolean"
+          },
+          "legitimate_interest_disclosure_url": {
+            "title": "Legitimate Interest Disclosure Url",
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string",
+            "format": "uri"
           }
         },
-        "description": "Schema for a TCF Vendor or system: returned in the TCF Overlay Experience"
+        "description": "Collects the other relationships for a given vendor - no preferences are saved here"
       },
       "TCFVendorSave": {
         "title": "TCFVendorSave",
@@ -23399,6 +23851,10 @@
           },
           "IABTCF_PublisherCustomPurposesLegitimateInterests": {
             "title": "Iabtcf Publishercustompurposeslegitimateinterests",
+            "type": "string"
+          },
+          "IABTCF_AddtlConsent": {
+            "title": "Iabtcf Addtlconsent",
             "type": "string"
           }
         },

@@ -1493,7 +1493,15 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">378</span>
 <span class="normal">379</span>
 <span class="normal">380</span>
-<span class="normal">381</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1511,7 +1519,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ca9ffbdc29f085e6ed2071b5d46abc9d&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;1e35b7d603dc4e95487d89479dd4cd9e&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1525,6 +1533,14 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># The port of the Fides webserver</span>
 <span class="n">server_port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;8080&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1">#-------------#</span>
+<span class="c1">#-- CONSENT --#</span>
+<span class="c1">#--------------------------------------------------------------------#</span>
+<span class="p">[</span><span class="n">consent</span><span class="p">]</span><span class="w"> </span><span class="c1"># Configuration settings for Consent.</span>
+
+<span class="c1"># Toggle whether TCF is enabled.</span>
+<span class="n">tcf_enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">false</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1">#--------------#</span>
 <span class="c1">#-- DATABASE --#</span>
