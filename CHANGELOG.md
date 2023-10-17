@@ -20,6 +20,7 @@ The types of changes are:
 
 ### Added
 - Added a `FidesPreferenceToggled` event to Fides.js to track when user preferences change without being saved [#4253](https://github.com/ethyca/fides/pull/4253)
+- Custom fields are now included in system history change tracking [#4294](https://github.com/ethyca/fides/pull/4294)
 
 ### Fixed
 - Stacks that do not have any purposes will no longer render an empty purpose block [#4278](https://github.com/ethyca/fides/pull/4278)
