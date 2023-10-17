@@ -23,6 +23,7 @@ import { OverlayProps } from "../types";
 import { useConsentServed } from "../../lib/hooks";
 import { updateCookieFromNoticePreferences } from "../../lib/cookie";
 import PrivacyPolicyLink from "../PrivacyPolicyLink";
+import { dispatchFidesEvent } from "../../lib/events";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   experience,
@@ -75,6 +76,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         experienceId: experience.id,
         fidesApiUrl: options.fidesApiUrl,
         consentMethod: ConsentMethod.button,
+        fidesDisableSaveApi: options.fidesDisableSaveApi,
         userLocationString: fidesRegionString,
         cookie,
         servedNotices,
@@ -138,7 +140,14 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             <NoticeToggles
               notices={privacyNotices}
               enabledNoticeKeys={draftEnabledNoticeKeys}
-              onChange={setDraftEnabledNoticeKeys}
+              onChange={(updatedKeys) => {
+                setDraftEnabledNoticeKeys(updatedKeys);
+                dispatchFidesEvent(
+                  "FidesPreferenceToggled",
+                  cookie,
+                  options.debug
+                );
+              }}
             />
           </div>
           <div className="fides-modal-footer">

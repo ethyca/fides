@@ -30,10 +30,10 @@ import {
   System,
   SystemResponse,
 } from "~/types/api";
+import { DataUseDeclaration } from "~/types/dictionary-api";
 import { isErrorResult } from "~/types/errors";
 
 import { useFeatures } from "../../common/features";
-import { DictDataUse } from "../../plus/types";
 import PrivacyDeclarationDictModalComponents from "../dictionary-data-uses/PrivacyDeclarationDictModalComponents";
 
 interface Props {
@@ -100,7 +100,7 @@ const PrivacyDeclarationFormTab = ({
   };
 
   const handleSave = async (
-    updatedDeclarations: PrivacyDeclarationResponse[],
+    updatedDeclarations: Omit<PrivacyDeclarationResponse, "id">[],
     isDelete?: boolean
   ) => {
     // The API can return a null name, but cannot receive a null name,
@@ -195,7 +195,7 @@ const PrivacyDeclarationFormTab = ({
     setCurrentDeclaration(declarationToEdit);
   };
 
-  const handleAcceptDictSuggestions = (suggestions: DictDataUse[]) => {
+  const handleAcceptDictSuggestions = (suggestions: DataUseDeclaration[]) => {
     const newDeclarations = suggestions.map((du) =>
       transformDictDataUseToDeclaration(du)
     );

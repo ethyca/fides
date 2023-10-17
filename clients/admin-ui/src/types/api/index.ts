@@ -307,6 +307,7 @@ export type { SystemScannerStatus } from "./models/SystemScannerStatus";
 export type { SystemScanResponse } from "./models/SystemScanResponse";
 export type { SystemsDiff } from "./models/SystemsDiff";
 export { SystemType } from "./models/SystemType";
+export type { TCDecode } from "./models/TCDecode";
 export type { TCFFeatureRecord } from "./models/TCFFeatureRecord";
 export type { TCFFeatureSave } from "./models/TCFFeatureSave";
 export type { TCFPurposeConsentRecord } from "./models/TCFPurposeConsentRecord";

@@ -1450,7 +1450,7 @@ class TestCacheSavedAndServedOnConsentRecord:
         self, db, fides_user_provided_identity
     ):
         vendor_record = TCFVendorConsentRecord(
-            id="sendgrid", name="test", description="test", has_vendor_id=False
+            id="gvl.42", name="test", description="test", has_vendor_id=False
         )
         cache_saved_and_served_on_consent_record(
             db,
@@ -1472,7 +1472,7 @@ class TestCacheSavedAndServedOnConsentRecord:
         self, db, fides_user_provided_identity
     ):
         vendor_record = TCFVendorLegitimateInterestsRecord(
-            id="sendgrid", name="test", description="test", has_vendor_id=True
+            id="gvl.42", name="test", description="test", has_vendor_id=True
         )
         cache_saved_and_served_on_consent_record(
             db,

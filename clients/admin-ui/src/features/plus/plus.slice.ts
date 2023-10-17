@@ -33,8 +33,11 @@ import {
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
-
-import { DictDataUse, DictEntry, Page } from "./types";
+import {
+  DataUseDeclaration,
+  Page_DataUseDeclaration_,
+  Page_Vendor_,
+} from "~/types/dictionary-api";
 
 interface ScanParams {
   classify?: boolean;
@@ -246,9 +249,9 @@ const plusApi = baseApi.injectEndpoints({
       transformResponse: (list: CustomFieldDefinitionWithId[]) =>
         list.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")),
     }),
-    getAllDictionaryEntries: build.query<Page<DictEntry>, void>({
+    getAllDictionaryEntries: build.query<Page_Vendor_, void>({
       query: () => ({
-        params: { size: 1000 },
+        params: { size: 2000 },
         url: `plus/dictionary/system`,
       }),
       providesTags: ["Dictionary"],
@@ -261,7 +264,7 @@ const plusApi = baseApi.injectEndpoints({
       providesTags: ["Fides Cloud Config"],
     }),
     getDictionaryDataUses: build.query<
-      Page<DictDataUse>,
+      Page_DataUseDeclaration_,
       { vendor_id: string }
     >({
       query: ({ vendor_id }) => ({
@@ -448,8 +451,8 @@ export const selectAllDictEntries = createSelector(
     data
       ? data.items
           .map((d) => ({
-            label: d.display_name ? d.display_name : d.legal_name,
-            value: d.id,
+            label: (d.name ?? d.legal_name) || "",
+            value: d.vendor_id || "",
             description: d.description ? d.description : undefined,
           }))
           .sort((a, b) => (a.label > b.label ? 1 : -1))
@@ -461,13 +464,13 @@ export const selectDictEntry = (vendorId: string) =>
   createSelector(
     [(state) => state, plusApi.endpoints.getAllDictionaryEntries.select()],
     (state, { data }) => {
-      const dictEntry = data?.items.find((d) => d.id.toString() === vendorId);
+      const dictEntry = data?.items.find((d) => d.vendor_id === vendorId);
 
       return dictEntry || EMPTY_DICT_ENTRY;
     }
   );
 
-const EMPTY_DATA_USES: DictDataUse[] = [];
+const EMPTY_DATA_USES: DataUseDeclaration[] = [];
 
 export const selectDictDataUses = (vendorId: string) =>
   createSelector(
