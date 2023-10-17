@@ -16,6 +16,13 @@ The types of changes are:
 - `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.22.0...main)
+- Added support for 3 additional config variables in Fides.js: fidesEmbed, fidesDisableSaveApi, and fidesTcString [#4262](https://github.com/ethyca/fides/pull/4262)
+
+### Added
+- Added a `FidesPreferenceToggled` event to Fides.js to track when user preferences change without being saved [#4253](https://github.com/ethyca/fides/pull/4253)
+
+### Fixed
+- Stacks that do not have any purposes will no longer render an empty purpose block [#4278](https://github.com/ethyca/fides/pull/4278)
 
 ## [2.22.0](https://github.com/ethyca/fides/compare/2.21.0...2.22.0)
 
@@ -23,6 +30,9 @@ The types of changes are:
 - Added an option to link to vendor tab from an experience config description [#4191](https://github.com/ethyca/fides/pull/4191)
 - Added two toggles for vendors in the TCF overlay, one for Consent, and one for Legitimate Interest [#4189](https://github.com/ethyca/fides/pull/4189)
 - Added two toggles for purposes in the TCF overlay, one for Consent, and one for Legitimate Interest [#4234](https://github.com/ethyca/fides/pull/4234)
+- Added support for new TCF-related fields on `System` and `PrivacyDeclaration` models [#4228](https://github.com/ethyca/fides/pull/4228)
+- Support for AC string to `fides-tcf` [#4244](https://github.com/ethyca/fides/pull/4244)
+- Support for `gvl` prefixed vendor IDs [#4247](https://github.com/ethyca/fides/pull/4247)
 
 ### Changed
 - Removed `TCF_ENABLED` environment variable from the privacy center in favor of dynamically figuring out which `fides-js` bundle to send [#4131](https://github.com/ethyca/fides/pull/4131)
@@ -36,7 +46,12 @@ The types of changes are:
 - Added our CMP ID [#4233](https://github.com/ethyca/fides/pull/4233)
 - Allow Admin UI users to turn on Configure Consent flag [#4246](https://github.com/ethyca/fides/pull/4246)
 - Styling improvements for the fides.js consent banners and modals [#4222](https://github.com/ethyca/fides/pull/4222)
+- Update frontend to handle updated Compass schema [#4254](https://github.com/ethyca/fides/pull/4254)
+- Assume Universal Vendor ID usage in TC String translation [#4256](https://github.com/ethyca/fides/pull/4256)
 - Changed vendor form on configuring consent page to use two-part selection for consent uses [#4251](https://github.com/ethyca/fides/pull/4251)
+- Updated system form to have new TCF fields [#4271](https://github.com/ethyca/fides/pull/4271)
+- Vendors disclosed string is now narrowed to only the vendors shown in the UI, not the whole GVL [#4250](https://github.com/ethyca/fides/pull/4250)
+- Changed naming convention "fides_string" instead of "tc_string" for developer friendly consent API's [#4267](https://github.com/ethyca/fides/pull/4267)
 
 ### Fixed
 - TCF overlay can initialize its consent preferences from a cookie [#4124](https://github.com/ethyca/fides/pull/4124)
@@ -47,6 +62,8 @@ The types of changes are:
 - Updating the unflatten_dict util to accept flattened dict values [#4200](https://github.com/ethyca/fides/pull/4200)
 - Minor CSS styling fixes for the consent modal [#4252](https://github.com/ethyca/fides/pull/4252)
 - Additional styling fixes for issues caused by a CSS reset [#4268](https://github.com/ethyca/fides/pull/4268)
+- Bug where vendor legitimate interests would not be set unless vendor consents were first set [#4250](https://github.com/ethyca/fides/pull/4250)
+- Vendor count over-counting in TCF overlay [#4275](https://github.com/ethyca/fides/pull/4275)
 
 ## [2.21.0](https://github.com/ethyca/fides/compare/2.20.2...2.21.0)
 

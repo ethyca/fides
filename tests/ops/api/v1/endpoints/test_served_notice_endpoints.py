@@ -47,7 +47,7 @@ class TestSaveNoticesServedForFidesDeviceId:
                 "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
             },
             "tcf_purpose_consents": [5],
-            "tcf_vendor_consents": ["sendgrid"],
+            "tcf_vendor_consents": ["gvl.42"],
             "tcf_special_features": [2],
             "tcf_system_legitimate_interests": [system.id],
             "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
@@ -421,7 +421,7 @@ class TestSaveNoticesServedForFidesDeviceId:
         # Assert vendor served portion of response
         assert vendor_served["purpose_consent"] is None
         assert vendor_served["purpose_legitimate_interests"] is None
-        assert vendor_served["vendor_consent"] == "sendgrid"
+        assert vendor_served["vendor_consent"] == "gvl.42"
         assert vendor_served["vendor_legitimate_interests"] is None
         assert vendor_served["feature"] is None
         assert vendor_served["special_purpose"] is None
@@ -475,7 +475,7 @@ class TestSaveNoticesServedForFidesDeviceId:
         assert last_served_vendor.purpose_legitimate_interests is None
         assert last_served_vendor.privacy_notice_id is None
         assert last_served_vendor.privacy_notice_history_id is None
-        assert last_served_vendor.vendor_consent == "sendgrid"
+        assert last_served_vendor.vendor_consent == "gvl.42"
         assert last_served_vendor.vendor_legitimate_interests is None
         assert last_served_vendor.feature is None
         assert last_served_vendor.created_at is not None
@@ -488,7 +488,7 @@ class TestSaveNoticesServedForFidesDeviceId:
             vendor_served_history.fides_user_device_provided_identity_id
             == last_served_vendor.fides_user_device_provided_identity_id
         )
-        assert vendor_served_history.vendor_consent == "sendgrid"
+        assert vendor_served_history.vendor_consent == "gvl.42"
         assert vendor_served_history.vendor_legitimate_interests is None
         assert (
             vendor_served_history.privacy_experience_id

@@ -397,6 +397,15 @@ class System(Base, FidesBase):
     dpo = Column(String)
     joint_controller_info = Column(String)
     data_security_practices = Column(String)
+    cookie_max_age_seconds = Column(Integer)
+    uses_cookies = Column(BOOLEAN(), default=False, server_default="f", nullable=False)
+    cookie_refresh = Column(
+        BOOLEAN(), default=False, server_default="f", nullable=False
+    )
+    uses_non_cookie_access = Column(
+        BOOLEAN(), default=False, server_default="f", nullable=False
+    )
+    legitimate_interest_disclosure_url = Column(String)
 
     privacy_declarations = relationship(
         "PrivacyDeclaration",
@@ -465,6 +474,7 @@ class PrivacyDeclaration(Base):
 
     features = Column(ARRAY(String), server_default="{}", nullable=False)
     legal_basis_for_processing = Column(String)
+    flexible_legal_basis_for_processing = Column(BOOLEAN())
     impact_assessment_location = Column(String)
     retention_period = Column(String)
     processes_special_category_data = Column(

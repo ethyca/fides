@@ -187,7 +187,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert response.status_code == 200
         assert len(response.json()["preferences"]) == 1
-        assert response.json()["tc_mobile_data"] is None
+        assert response.json()["fides_mobile_data"] is None
 
         response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
@@ -294,7 +294,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert response.status_code == 200
         assert len(response.json()["preferences"]) == 1
-        assert response.json()["tc_mobile_data"] is None
+        assert response.json()["fides_mobile_data"] is None
 
         response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
@@ -367,7 +367,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert response.status_code == 200
         assert len(response.json()["preferences"]) == 1
-        assert response.json()["tc_mobile_data"] is None
+        assert response.json()["fides_mobile_data"] is None
 
         response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
@@ -659,7 +659,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
 
         assert response.status_code == 200
         assert len(response.json()["preferences"]) == 2
-        assert response.json()["tc_mobile_data"] is None
+        assert response.json()["fides_mobile_data"] is None
 
         response_json = response.json()["preferences"]
 
@@ -781,7 +781,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
 
         assert response.status_code == 200
-        assert response.json()["tc_mobile_data"] is None
+        assert response.json()["fides_mobile_data"] is None
         assert len(response.json()["preferences"]) == 0
         assert len(response.json()["feature_preferences"]) == 1
 
@@ -994,7 +994,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert response.status_code == 200
         assert len(response.json()["preferences"]) == 1
-        assert response.json()["tc_mobile_data"] is None
+        assert response.json()["fides_mobile_data"] is None
 
         response_json = response.json()["preferences"][0]
         created_privacy_preference_history_id = response_json[
@@ -1439,7 +1439,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
             url, json=request_body, headers={"Origin": "http://localhost:8080"}
         )
         assert response.status_code == 200
-        assert response.json()["tc_mobile_data"] is None
+        assert response.json()["fides_mobile_data"] is None
         response_json = response.json()["preferences"][0]
         assert response_json["preference"] == "opt_out"
         assert (
@@ -1713,7 +1713,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert len(response.json()["special_feature_preferences"]) == 1
         assert len(response.json()["system_consent_preferences"]) == 0
         assert len(response.json()["system_legitimate_interests_preferences"]) == 1
-        assert response.json()["tc_mobile_data"] is None
+        assert response.json()["fides_mobile_data"] is None
 
         purpose_response = response.json()["purpose_consent_preferences"][0]
         assert purpose_response["preference"] == "opt_out"
@@ -2509,7 +2509,7 @@ class TestSavePrivacyPreferencesTCStringOnly:
             "browser_identity": {
                 "fides_user_device_id": fides_user_device_id,
             },
-            "tc_string": tc_string,
+            "fides_string": tc_string,
             "purpose_consent_preferences": [{"id": 1, "preference": "opt_out"}],
         }
         response = api_client.patch(
@@ -2518,7 +2518,7 @@ class TestSavePrivacyPreferencesTCStringOnly:
         assert response.status_code == 422
         assert (
             response.json()["detail"][0]["msg"]
-            == "Cannot supply value for 'purpose_consent_preferences' and 'tc_string' simultaneously when saving privacy preferences."
+            == "Cannot supply value for 'purpose_consent_preferences' and 'fides_string' simultaneously when saving privacy preferences."
         )
 
     def test_save_privacy_preferences_bad_tc_string(self, api_client, url):
@@ -2529,7 +2529,7 @@ class TestSavePrivacyPreferencesTCStringOnly:
             "browser_identity": {
                 "fides_user_device_id": fides_user_device_id,
             },
-            "tc_string": tc_string,
+            "fides_string": tc_string,
         }
         response = api_client.patch(
             url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
@@ -2548,7 +2548,7 @@ class TestSavePrivacyPreferencesTCStringOnly:
             "browser_identity": {
                 "fides_user_device_id": fides_user_device_id,
             },
-            "tc_string": tc_string,
+            "fides_string": tc_string,
         }
         response = api_client.patch(
             url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
@@ -2567,7 +2567,7 @@ class TestSavePrivacyPreferencesTCStringOnly:
             "browser_identity": {
                 "fides_user_device_id": fides_user_device_id,
             },
-            "tc_string": tc_string,
+            "fides_string": tc_string,
         }
         response = api_client.patch(
             url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
@@ -2589,7 +2589,7 @@ class TestSavePrivacyPreferencesTCStringOnly:
             "browser_identity": {
                 "fides_user_device_id": fides_user_device_id,
             },
-            "tc_string": tc_string,
+            "fides_string": tc_string,
         }
         response = api_client.patch(
             url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
@@ -2608,12 +2608,12 @@ class TestSavePrivacyPreferencesTCStringOnly:
         assert len(response_body["system_consent_preferences"]) == 0
         assert len(response_body["system_legitimate_interests_preferences"]) == 0
 
-        first_record = response_body["purpose_consent_preferences"][0]
-        assert first_record["purpose_consent"] == 1
-        assert first_record["preference"] == "opt_in"
+        first_purpose_consent_record = response_body["purpose_consent_preferences"][0]
+        assert first_purpose_consent_record["purpose_consent"] == 1
+        assert first_purpose_consent_record["preference"] == "opt_in"
         saved_current_privacy_preference_record = db.query(
             CurrentPrivacyPreference
-        ).get(first_record["id"])
+        ).get(first_purpose_consent_record["id"])
         assert saved_current_privacy_preference_record.purpose_consent == 1
         assert (
             saved_current_privacy_preference_record.preference
@@ -2621,7 +2621,7 @@ class TestSavePrivacyPreferencesTCStringOnly:
         )
 
         privacy_preference_history_record = db.query(PrivacyPreferenceHistory).get(
-            first_record["privacy_preference_history_id"]
+            first_purpose_consent_record["privacy_preference_history_id"]
         )
         assert (
             privacy_preference_history_record.current_privacy_preference
@@ -2648,7 +2648,62 @@ class TestSavePrivacyPreferencesTCStringOnly:
             is None
         )
 
-        mobile_data = response.json()["tc_mobile_data"]
+        # There were no purpose legitimate interests in the string, but purpose 2 was disclosed
+        # to the user in the experience.  We opt out here.
+        first_purpose_li_record = response_body[
+            "purpose_legitimate_interests_preferences"
+        ][0]
+        assert first_purpose_li_record["purpose_legitimate_interests"] == 2
+        assert first_purpose_li_record["preference"] == "opt_out"
+        saved_current_privacy_preference_record = db.query(
+            CurrentPrivacyPreference
+        ).get(first_purpose_li_record["id"])
+        assert saved_current_privacy_preference_record.purpose_legitimate_interests == 2
+        assert (
+            saved_current_privacy_preference_record.preference
+            == UserConsentPreference.opt_out
+        )
+
+        # Vendor 2 was in the vendor consents section
+        first_vendor_consent_record = response_body["vendor_consent_preferences"][0]
+        assert first_vendor_consent_record["vendor_consent"] == "gvl.2"
+        assert first_vendor_consent_record["preference"] == "opt_in"
+        saved_current_privacy_preference_record = db.query(
+            CurrentPrivacyPreference
+        ).get(first_vendor_consent_record["id"])
+        assert saved_current_privacy_preference_record.vendor_consent == "gvl.2"
+        assert (
+            saved_current_privacy_preference_record.preference
+            == UserConsentPreference.opt_in
+        )
+
+        # Vendor 8 was not opted in in the vendor consents section, but was disclosed to the
+        # customer in the vendor consents section, so we opt out.
+        second_vendor_consent_record = response_body["vendor_consent_preferences"][1]
+        assert second_vendor_consent_record["vendor_consent"] == "gvl.8"
+        assert second_vendor_consent_record["preference"] == "opt_out"
+        saved_current_privacy_preference_record = db.query(
+            CurrentPrivacyPreference
+        ).get(second_vendor_consent_record["id"])
+        assert saved_current_privacy_preference_record.vendor_consent == "gvl.8"
+        assert (
+            saved_current_privacy_preference_record.preference
+            == UserConsentPreference.opt_out
+        )
+
+        special_feature_record = response_body["special_feature_preferences"][0]
+        assert special_feature_record["special_feature"] == 2
+        assert special_feature_record["preference"] == "opt_in"
+        saved_current_privacy_preference_record = db.query(
+            CurrentPrivacyPreference
+        ).get(special_feature_record["id"])
+        assert saved_current_privacy_preference_record.special_feature == 2
+        assert (
+            saved_current_privacy_preference_record.preference
+            == UserConsentPreference.opt_in
+        )
+
+        mobile_data = response.json()["fides_mobile_data"]
         assert mobile_data == {
             "IABTCF_CmpSdkID": 12,
             "IABTCF_CmpSdkVersion": 1,
