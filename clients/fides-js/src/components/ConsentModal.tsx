@@ -26,7 +26,7 @@ const ConsentModal = ({
     <div
       data-testid="consent-modal"
       {...container}
-      className="fides-modal-container"
+      className={`fides-modal-container ${attributes.container.className}`}
     >
       <div {...overlay} className="fides-modal-overlay" />
       <div
