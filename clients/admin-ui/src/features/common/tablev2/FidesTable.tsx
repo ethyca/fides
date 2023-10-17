@@ -90,7 +90,6 @@ export function FidesTableV2<T>({
                         borderWidth="1px"
                         borderColor="gray.200"
                         height="inherit"
-                        verticalAlign="baseline"
                         style={getTableTHandTDStyles(cell.column.id)}
                         onClick={
                           cell.column.columnDef.header !== "Enable" &&
