@@ -63,7 +63,9 @@ export const DefaultHeaderCell = <T,>({
   return (
     <Text
       _hover={{ backgroundColor: "gray.100" }}
-      borderRadius="4px"
+      fontSize="xs"
+      lineHeight={4}
+      fontWeight="medium"
       pr={sortIcon ? 0 : 3.5}
       onClick={column.getToggleSortingHandler()}
     >
