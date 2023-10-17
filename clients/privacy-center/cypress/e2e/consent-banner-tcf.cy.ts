@@ -709,9 +709,7 @@ describe("Fides-js TCF", () => {
             );
             [PURPOSE_4.id, PURPOSE_9.id, PURPOSE_6.id, PURPOSE_7.id].forEach(
               (pid) => {
-                expect(
-                  cookieKeyConsent.tcf_consent.purpose_consent_preferences
-                )
+                expect(cookieKeyConsent.tcf_consent.purpose_consent_preferences)
                   .property(`${pid}`)
                   .is.eql(false);
               }
@@ -843,8 +841,7 @@ describe("Fides-js TCF", () => {
             .is.eql(true);
         });
         expect(
-          cookieKeyConsent.tcf_consent
-            .purpose_legitimate_interests_preferences
+          cookieKeyConsent.tcf_consent.purpose_legitimate_interests_preferences
         )
           .property(`${PURPOSE_2.id}`)
           .is.eql(true);
@@ -865,9 +862,9 @@ describe("Fides-js TCF", () => {
         )
           .property(`${SYSTEM_1.id}`)
           .is.eql(false);
-        expect(
-          cookieKeyConsent.tcf_consent.system_consent_preferences
-        ).to.eql({});
+        expect(cookieKeyConsent.tcf_consent.system_consent_preferences).to.eql(
+          {}
+        );
       });
     });
   });
