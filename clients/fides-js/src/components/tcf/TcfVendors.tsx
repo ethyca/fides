@@ -50,7 +50,7 @@ const VendorDetails = ({
             <td>{item.name}</td>
             {hasRetentionInfo ? (
               <td style={{ textAlign: "right" }}>
-                {item.retention_period ?? "N/A"}
+                {`${item.retention_period} day(s)` ?? "N/A"}
               </td>
             ) : null}
           </tr>
@@ -75,35 +75,11 @@ const PurposeVendorDetails = ({
   if (emptyPurposes && emptySpecialPurposes) {
     return null;
   }
-  // // @ts-ignore our TCF lib does not have GVL v3 types yet
-  // const dataRetention: GvlDataRetention | undefined = gvlVendor?.dataRetention;
 
   return (
     <div>
-      <VendorDetails
-        label="Purposes"
-        lineItems={purposes}
-        // dataRetention={
-        //   dataRetention
-        //     ? {
-        //         mapping: dataRetention.purposes,
-        //         default: dataRetention.stdRetention,
-        //       }
-        //     : undefined
-        // }
-      />
-      <VendorDetails
-        label="Special purposes"
-        lineItems={specialPurposes}
-        // dataRetention={
-        //   dataRetention
-        //     ? {
-        //         mapping: dataRetention.specialPurposes,
-        //         default: dataRetention.stdRetention,
-        //       }
-        //     : undefined
-        // }
-      />
+      <VendorDetails label="Purposes" lineItems={purposes} />
+      <VendorDetails label="Special purposes" lineItems={specialPurposes} />
     </div>
   );
 };
@@ -157,12 +133,14 @@ const StorageDisclosure = ({ vendor }: { vendor: VendorRecord }) => {
       ? Math.ceil(cookieMaxAgeSeconds / 60 / 60 / 24)
       : 0;
     disclosure = `${name} stores cookies with a maximum duration of about ${days} Day(s).`;
-  }
-  if (cookieRefresh) {
-    disclosure = `${disclosure} These cookies may be refreshed.`;
-  }
-  if (usesNonCookieAccess) {
-    disclosure = `${disclosure} This vendor also uses other methods like "local storage" to store and access information on your device.`;
+    if (cookieRefresh) {
+      disclosure = `${disclosure} These cookies may be refreshed.`;
+    }
+    if (usesNonCookieAccess) {
+      disclosure = `${disclosure} This vendor also uses other methods like "local storage" to store and access information on your device.`;
+    }
+  } else if (usesNonCookieAccess) {
+    disclosure = `${name} uses methods like "local storage" to store and access information on your device.`;
   }
 
   return <p>{disclosure}</p>;

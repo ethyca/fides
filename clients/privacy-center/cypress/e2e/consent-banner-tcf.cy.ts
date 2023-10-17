@@ -325,16 +325,16 @@ describe("Fides-js TCF", () => {
 
           // Check retention periods
           [PURPOSE_4, PURPOSE_6, PURPOSE_7, PURPOSE_9].forEach((purpose) => {
-            // In the fixture, all retention are `${id} days`
+            // In the fixture, all retention periods are their id's
             cy.get("tr")
               .contains(purpose.name)
               .parent()
-              .contains(`${purpose.id} days`);
+              .contains(`${purpose.id} day(s)`);
           });
           cy.get("tr")
             .contains(SPECIAL_PURPOSE_1.name)
             .parent()
-            .contains(`${SPECIAL_PURPOSE_1.id} day`);
+            .contains(`${SPECIAL_PURPOSE_1.id} day(s)`);
 
           // Check cookie disclosure
           cy.get("p").contains(

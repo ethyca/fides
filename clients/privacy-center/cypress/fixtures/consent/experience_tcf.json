@@ -160,7 +160,7 @@
       ],
       "tcf_purpose_legitimate_interests": [
         {
-          "retention_period": "2 days",
+          "retention_period": "2",
           "id": 2,
           "name": "Use limited data to select advertising",
           "description": "Advertising presented to you on this service can be based on limited data, such as the website or app you are using, your non-precise location, your device type or which content you are (or have been) interacting with (for example, to limit the number of times an ad is presented to you).",
@@ -189,7 +189,7 @@
       ],
       "tcf_special_purposes": [
         {
-          "retention_period": "1 day",
+          "retention_period": "1",
           "id": 1,
           "name": "Ensure security, prevent and detect fraud, and fix errors",
           "description": "Your data can be used to monitor for and prevent unusual and possibly fraudulent activity (for example, regarding advertising, ad clicks by bots), and ensure systems and processes work properly and securely. It can also be used to correct any problems you, the publisher or the advertiser may encounter in the delivery of content and ads and in your interaction with them.",
@@ -288,22 +288,22 @@
             {
               "id": 4,
               "name": "Use profiles to select personalised advertising",
-              "retention_period": "4 days"
+              "retention_period": "4"
             },
             {
               "id": 6,
               "name": "Use profiles to select personalised content",
-              "retention_period": "6 days"
+              "retention_period": "6"
             },
             {
               "id": 7,
               "name": "Measure advertising performance",
-              "retention_period": "7 days"
+              "retention_period": "7"
             },
             {
               "id": 9,
               "name": "Understand audiences through statistics or combinations of data from different sources",
-              "retention_period": "9 days"
+              "retention_period": "9"
             }
           ]
         }
@@ -321,7 +321,7 @@
             {
               "id": 1,
               "name": "Ensure security, prevent and detect fraud, and fix errors",
-              "retention_period": "1 day"
+              "retention_period": "1"
             }
           ],
           "uses_cookies": true,
