@@ -79,7 +79,7 @@ export const updateConsentPreferences = async ({
       method: consentMethod,
       ...(tcf ?? []),
     };
-    patchUserPreferenceToFidesServer(
+    await patchUserPreferenceToFidesServer(
       privacyPreferenceCreate,
       fidesApiUrl,
       debug
