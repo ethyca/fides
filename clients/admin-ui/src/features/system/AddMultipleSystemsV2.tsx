@@ -1,4 +1,4 @@
-import { Box, Button, Flex, HStack, Spinner } from "@fidesui/react";
+import { Box, Button, Flex, HStack, Spinner, Tooltip } from "@fidesui/react";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -133,6 +133,12 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
     );
   }
 
+  const allRowsAdded = dictionaryOptions.every((d) => d.linked_system);
+  const toolTipText = allRowsAdded
+    ? "All systems have already been added"
+    : "Select a system";
+  console.log(anyNewSelectedRows, !allRowsAdded);
+
   return (
     <Box height="100%">
       <HStack
@@ -148,14 +154,24 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
           setGlobalFilter={setGlobalFilter}
           placeholder="search"
         />
-        <Button
-          onClick={addVendors}
-          size="xs"
-          variant="outline"
-          disabled={!anyNewSelectedRows}
+        <Tooltip
+          label={toolTipText}
+          shouldWrapChildren
+          placement="top"
+          isDisabled={
+            (anyNewSelectedRows && !allRowsAdded) ||
+            (anyNewSelectedRows && allRowsAdded)
+          }
         >
-          Add Vendors
-        </Button>
+          <Button
+            onClick={addVendors}
+            size="xs"
+            variant="outline"
+            disabled={!anyNewSelectedRows}
+          >
+            Add Vendors
+          </Button>
+        </Tooltip>
       </HStack>
       <FidesTableV2<MultipleSystemTable>
         columns={columns}
