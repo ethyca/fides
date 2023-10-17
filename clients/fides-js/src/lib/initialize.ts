@@ -225,8 +225,7 @@ export const initialize = async ({
   updateCookie: (
     oldCookie: FidesCookie,
     experience: PrivacyExperience,
-    debug?: boolean,
-    tc_str_override_set?: boolean
+    debug?: boolean
   ) => Promise<FidesCookie>;
 } & FidesConfig): Promise<Partial<Fides>> => {
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
@@ -291,8 +290,7 @@ export const initialize = async ({
         const updatedCookie = await updateCookie(
           cookie,
           effectiveExperience,
-          options.debug,
-          Boolean(options.fidesString)
+          options.debug
         );
         debugLog(
           options.debug,
