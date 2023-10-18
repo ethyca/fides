@@ -4,6 +4,7 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { useRouter } from "next/router";
@@ -18,6 +19,7 @@ import {
   DefaultHeaderCell,
   IndeterminateCheckboxCell,
   TableActionBar,
+  PaginationBar,
 } from "~/features/common/tablev2";
 import {
   DictSystems,
@@ -98,10 +100,11 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
 
   const tableInstance = useReactTable<MultipleSystemTable>({
     columns,
-    data: dictionaryOptions.slice(0, 25),
+    data: dictionaryOptions,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     onGlobalFilterChange: setGlobalFilter,
     enableRowSelection: true,
     enableSorting: true,
@@ -111,6 +114,9 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
     },
     initialState: {
       rowSelection,
+      pagination: {
+        pageSize: 10,
+      },
     },
   });
 
@@ -174,6 +180,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
         data={dictionaryOptions}
         tableInstance={tableInstance}
       />
+      <PaginationBar tableInstance={tableInstance} />
     </Box>
   );
 };
