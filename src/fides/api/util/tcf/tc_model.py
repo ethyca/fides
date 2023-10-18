@@ -11,7 +11,12 @@ from fides.api.schemas.tcf import (
     TCFVendorConsentRecord,
     TCFVendorLegitimateInterestsRecord,
 )
-from fides.api.util.tcf.tcf_experience_contents import TCFExperienceContents, load_gvl
+from fides.api.util.tcf.tcf_experience_contents import (
+    AC_PREFIX,
+    GVL_PREFIX,
+    TCFExperienceContents,
+    load_gvl,
+)
 
 CMP_ID: int = 407
 CMP_VERSION = 1
@@ -19,8 +24,6 @@ CONSENT_SCREEN = 1  # TODO On which 'screen' consent was captured; this is a CMP
 
 FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6]
 gvl: Dict = load_gvl()
-
-ac_prefix = "gacp."
 
 
 def universal_vendor_id_to_gvl_id(universal_vendor_id: str) -> int:
@@ -31,9 +34,9 @@ def universal_vendor_id_to_gvl_id(universal_vendor_id: str) -> int:
 
     We store vendor ids as a universal vendor id internally, but need to strip this off when building TC strings.
     """
-    if universal_vendor_id.startswith(ac_prefix):
+    if universal_vendor_id.startswith(AC_PREFIX):
         raise ValueError("Skipping AC Vendor ID")
-    return int(universal_vendor_id.lstrip("gvl."))
+    return int(universal_vendor_id.lstrip(GVL_PREFIX))
 
 
 class TCModel(FidesSchema):
