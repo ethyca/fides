@@ -20,6 +20,12 @@ def test_universal_vendor_id_to_ac_id():
     with pytest.raises(ValueError):
         universal_vendor_id_to_ac_id("gvl.100")
 
+    with pytest.raises(ValueError):
+        universal_vendor_id_to_ac_id("gacp.bad_id")
+
+    with pytest.raises(ValueError):
+        universal_vendor_id_to_ac_id("gacp.gacp")
+
 
 def test_build_fides_string():
     tc_string = "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
@@ -27,12 +33,12 @@ def test_build_fides_string():
 
     # TC string but no AC string
     assert (
-        build_fides_string(tc_string, None)
+        build_fides_string(tc_string, "")
         == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
     )
 
     # Contrived scenario, AC string but no TC string
-    assert build_fides_string(None, ac_string) == ",1~1.35.41.101"
+    assert build_fides_string("", ac_string) == ",1~1.35.41.101"
 
     # Both TC String and AC String
     assert (
@@ -41,29 +47,46 @@ def test_build_fides_string():
     )
 
     # Neither TC String or AC String
+    assert build_fides_string("", "") == ""
     assert build_fides_string(None, None) == ""
 
 
 def test_split_fides_string():
+    # No fides_string, so tc str and ac str are both None
     tc_str, ac_str = split_fides_string(None)
     assert tc_str is None
     assert ac_str is None
 
+    # Only a TC string was supplied
     tc_str, ac_str = split_fides_string(
         "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
     )
     assert tc_str == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
     assert ac_str is None
 
+    # Both TC and AC string were supplied
     tc_str, ac_str = split_fides_string(
         "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA,1~100.1000"
     )
     assert tc_str == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
     assert ac_str == "1~100.1000"
 
+    # Only an AC string was supplied
     tc_str, ac_str = split_fides_string(",1~100.1000")
     assert tc_str is None
     assert ac_str == "1~100.1000"
+
+    # Three sections supplied which is not supported
+    with pytest.raises(DecodeFidesStringError):
+        split_fides_string(
+            "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA,1~100.1000,another_section"
+        )
+
+    # Bad AC format
+    with pytest.raises(DecodeFidesStringError):
+        split_fides_string(
+            "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA,100.1000"
+        )
 
 
 class TestBuildACString:

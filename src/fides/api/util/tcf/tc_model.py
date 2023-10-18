@@ -193,7 +193,7 @@ class TCModel(FidesSchema):
 
     ac_vendor_consents: List[int] = Field(
         default=[],
-        description="A list of Google's  Additional Consent Vendors for which the customer has opted in.  These "
+        description="A list of Google's Additional Consent Vendors for which the customer has opted in. These "
         "are consented Google Ad Tech Providers that are not registered with IAB",
     )
 

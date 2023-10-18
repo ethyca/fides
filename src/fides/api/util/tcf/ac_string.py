@@ -27,7 +27,10 @@ def universal_vendor_id_to_ac_id(universal_vendor_id: str) -> int:
 def build_ac_vendor_consents(
     tcf_contents: TCFExperienceContents, preference: Optional[UserConsentPreference]
 ) -> List[int]:
-    """Build a list of integers representing AC vendors with opt-in consent"""
+    """Build a list of integers representing AC vendors with opt-in consent
+
+    This is a prerequisite step for building an accept-all AC string powered by our datamap.
+    """
     if not tcf_contents.tcf_vendor_consents:
         # AC Vendors are automatically added to the Vendor Consents section of the TCF Experience if present
         return []
@@ -59,7 +62,8 @@ def build_ac_string(ac_vendor_consents: List[int]) -> Optional[str]:
 
 
 def build_fides_string(tc_str: Optional[str], ac_str: Optional[str]) -> str:
-    """Concatenate a TC string and an AC string into a 'fides string' representation"""
+    """Concatenate a TC string and an AC string into a 'fides string' representation, to represent
+    both in a single string"""
     if tc_str is None:
         tc_str = ""
 
@@ -70,7 +74,11 @@ def build_fides_string(tc_str: Optional[str], ac_str: Optional[str]) -> str:
 
 
 def split_fides_string(fides_str: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
-    """Split a Fides String into separate TC Strings and AC Strings"""
+    """Split a Fides String into separate TC Strings and AC Strings
+
+    Run some upfront validation here on the Fides String format as a whole, and the AC string section.
+    TC string section validation is more complex and happens elsewhere.
+    """
     if not fides_str:
         return None, None
 
@@ -78,7 +86,11 @@ def split_fides_string(fides_str: Optional[str]) -> Tuple[Optional[str], Optiona
     tc_str = split_str[0] or None
 
     ac_str = None
-    if len(split_str) > 1:
+
+    if len(split_str) > 2:
+        raise DecodeFidesStringError("Unexpected Fides String format")
+
+    if len(split_str) == 2:
         ac_str = split_str[1]
 
     validate_ac_string_format(ac_str)
@@ -102,7 +114,10 @@ def validate_ac_string_format(ac_str: Optional[str]) -> None:
 
 
 def _ac_str_to_universal_vendor_id_list(ac_str: Optional[str]) -> List[str]:
-    """Convert an AC string into a list of universal ac vendor ids"""
+    """Helper to convert an AC string into a list of universal ac vendor ids
+
+    Used when saving preferences from an AC string
+    """
     if not ac_str:
         return []
 
@@ -122,13 +137,15 @@ def _convert_ac_strings_to_fides_preferences(
     current_ac_str: Optional[str],
     accept_all_ac_str: Optional[str],
 ) -> List[TCFVendorSave]:
-    """Convert an AC string into a list of corresponding vendor preferences.
+    """Helper to convert an AC string into a list of corresponding vendor preferences, for saving preferences
+    from an AC string.
 
-    Because AC strings only encode opt-ins, compare the passed in string with the AC string that would be
-    built from the datamap if we opted into every AC vendor.  Vendors in both strings get an opt-in preference.
-    AC vendors in the datamap but not in the string get an opt-out preference.
+    AC strings only encode opt-ins, so by itself, this doesn't give us explicit opt-outs. We compare the passed-in AC
+    String with the accept-all AC string built at runtime against our current datamap.
+
+    Vendors in both strings are saved as an opt-in.  AC vendors in the datamap, but not in the supplied AC string,
+    get persisted as an explicit opt-out.
     """
-
     ac_string_vendor_ids: List[str] = _ac_str_to_universal_vendor_id_list(
         current_ac_str
     )
@@ -154,10 +171,11 @@ def _convert_ac_strings_to_fides_preferences(
 def decode_ac_string_to_preferences(
     ac_str: Optional[str], tcf_contents: TCFExperienceContents
 ) -> FidesStringFidesPreferences:
-    """Method to convert an AC String into a FidesStringFidesPreferences object, which is a format from which
+    """Method to convert a passed-in AC String into a FidesStringFidesPreferences object, which is a format from which
     its vendor_consent_preferences can be saved into the Fides database
 
-    FE only shows consent toggle for AC vendors, so that's why we transform the AC String into that section.
+    We will save vendors in the AC string as "vendor consents" because the FE only shows consent toggles for
+    AC vendors by default.
     """
     if not ac_str:
         return FidesStringFidesPreferences()

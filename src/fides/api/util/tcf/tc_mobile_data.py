@@ -20,7 +20,11 @@ from fides.api.util.tcf.tc_string import (
 
 
 def build_tc_data_for_mobile(tc_model: TCModel) -> TCMobileData:
-    """Build TC Data for Mobile App"""
+    """Build TC Data for Mobile App
+
+    The use case is building tc mobile data from the datamap directly, such as supplementing the meta
+    section when building developer-friendly privacy experiences.
+    """
 
     def _build_binary_string(name: str, num_bits: int) -> str:
         """Internal helper to build a bit string of 0's and 1's to represent list data
@@ -72,7 +76,11 @@ def _integer_dict_to_list(int_dict: Dict[int, bool]) -> List[int]:
 def convert_fides_str_to_mobile_data(
     fides_str: Optional[str],
 ) -> Optional[TCMobileData]:
-    """Helper to take a TC String if supplied and decode it into a TCMobileData format"""
+    """Helper to take a Fides String if supplied and decode it into a TCMobileData format
+
+    The use case is to return mobile data from a fides_string directly, such as building the response
+    after saving privacy preferences from a fides_string.
+    """
     if not fides_str:
         return None
 
