@@ -1941,7 +1941,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         assert len(response.json()["special_feature_preferences"]) == 0
         assert len(response.json()["system_consent_preferences"]) == 0
         assert len(response.json()["system_legitimate_interests_preferences"]) == 0
-        assert response.json()["tc_mobile_data"] is None
+        assert response.json()["fides_mobile_data"] is None
 
         # Assert details saved w.r.t vendor
 
