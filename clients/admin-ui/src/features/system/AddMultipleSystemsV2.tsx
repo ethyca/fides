@@ -17,6 +17,7 @@ import {
   DefaultCell,
   DefaultHeaderCell,
   IndeterminateCheckboxCell,
+  TableActionBar,
 } from "~/features/common/tablev2";
 import {
   DictSystems,
@@ -143,14 +144,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
 
   return (
     <Box height="100%">
-      <HStack
-        justifyContent="space-between"
-        alignItems="center"
-        p={2}
-        borderWidth="1px"
-        borderBottomWidth="0px"
-        borderColor="gray.200"
-      >
+      <TableActionBar>
         <GlobalFilterV2
           globalFilter={globalFilter}
           setGlobalFilter={setGlobalFilter}
@@ -174,7 +168,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
             Add {`${systemText}s`}
           </Button>
         </Tooltip>
-      </HStack>
+      </TableActionBar>
       <FidesTableV2<MultipleSystemTable>
         columns={columns}
         data={dictionaryOptions}
