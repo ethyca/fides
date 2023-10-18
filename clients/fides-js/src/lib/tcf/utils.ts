@@ -1,5 +1,5 @@
 import { TCModel, TCString, Vector } from "@iabtechlabtcf/core";
-import { PrivacyExperience } from "../consent-types";
+import { ComponentType, PrivacyExperience } from "../consent-types";
 import { EnabledIds, TcfCookieConsent, TcfCookieKeyConsent } from "./types";
 import { TCF_KEY_MAP } from "./constants";
 import { generateFidesString } from "../tcf";
@@ -62,3 +62,6 @@ export const generateFidesStringFromCookieTcfConsent = async (
     tcStringPreferences: enabledIds,
   });
 };
+
+export const isTcfExperience = (experience: PrivacyExperience) =>
+  experience.component === ComponentType.TCF_OVERLAY;

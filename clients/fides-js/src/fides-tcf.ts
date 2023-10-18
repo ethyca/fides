@@ -73,7 +73,9 @@ import {
   isPrivacyExperience,
   transformTcfPreferencesToCookieKeys,
   transformUserPreferenceToBoolean,
+  updateCookie as updateCookieNotices,
 } from "./fides";
+
 import { renderOverlay } from "./lib/tcf/renderOverlay";
 import {
   EnabledIds,
@@ -83,6 +85,7 @@ import {
 import { TCF_KEY_MAP } from "./lib/tcf/constants";
 import {
   generateFidesStringFromCookieTcfConsent,
+  isTcfExperience,
   transformFidesStringToCookieKeys,
 } from "./lib/tcf/utils";
 
@@ -117,6 +120,9 @@ const updateCookie = async (
   oldCookie: FidesCookie,
   experience: PrivacyExperience
 ): Promise<FidesCookie> => {
+  if (!isTcfExperience(experience)) {
+    return updateCookieNotices(oldCookie, experience);
+  }
   // ignore server-side prefs if either user has no prefs to override, or TC str override is set
   if (!hasSavedTcfPreferences(experience)) {
     return { ...oldCookie, fides_string: "" };

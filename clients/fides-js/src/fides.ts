@@ -77,7 +77,7 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-const updateCookie = async (
+export const updateCookie = async (
   oldCookie: FidesCookie,
   experience: PrivacyExperience,
   debug?: boolean

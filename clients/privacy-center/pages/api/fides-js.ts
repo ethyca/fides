@@ -121,9 +121,10 @@ export default async function handler(
   // We determine server-side whether or not to send the TCF bundle, which is based
   // on whether or not the experience is marked as TCF. This means for TCF, we *must*
   // be able to prefetch the experience.
-  const tcfEnabled = experience
-    ? experience.component === ComponentType.TCF_OVERLAY
-    : false;
+  // const tcfEnabled = experience
+  //   ? experience.component === ComponentType.TCF_OVERLAY
+  //   : false;
+  const tcfEnabled = true;
 
   // Create the FidesConfig JSON that will be used to initialize fides.js
   const fidesConfig: FidesConfig = {
