@@ -9,6 +9,7 @@ import {
   CookieKeyConsent,
   CookieMeta,
   FidesCookie,
+  getCookieByName,
   getOrMakeFidesCookie,
   isNewFidesCookie,
   makeConsentDefaultsLegacy,
@@ -19,7 +20,9 @@ import {
   ConsentMechanism,
   ConsentMethod,
   EmptyExperience,
+  FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP,
   FidesConfig,
+  FidesOptionOverrides,
   FidesOptions,
   PrivacyExperience,
   SaveConsentPreference,
@@ -141,6 +144,35 @@ const automaticallyApplyGPCPreferences = ({
         updateCookieFromNoticePreferences(oldCookie, consentPreferencesToSave),
     });
   }
+};
+
+/**
+ * Gets and validates Fides override options provided through URL query params, cookie or window obj.
+ */
+export const getOverrideFidesOptions = (): FidesOptionOverrides => {
+  const overrideOptions: Partial<FidesOptionOverrides> = {};
+  if (typeof window !== "undefined") {
+    const params = new URLSearchParams(document.location.search);
+    FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP.forEach(
+      ({ fidesOption, fidesOptionType, fidesOverrideKey, validationRegex }) => {
+        // look for override options on URL query params, window obj, and cookie
+        const queryParamOverride: string | null = params.get(fidesOverrideKey);
+        const windowObjOverride: string | boolean | undefined = window.config
+          ?.fides
+          ? window.config?.fides[fidesOverrideKey]
+          : undefined;
+        const cookieOverride: string | undefined =
+          getCookieByName(fidesOverrideKey);
+        const value = queryParamOverride || windowObjOverride || cookieOverride;
+        if (value && validationRegex.test(value.toString())) {
+          // coerce to expected type in FidesOptions
+          overrideOptions[fidesOption] =
+            fidesOptionType === "string" ? value : JSON.parse(value.toString());
+        }
+      }
+    );
+  }
+  return <FidesOptionOverrides>overrideOptions;
 };
 
 /**
