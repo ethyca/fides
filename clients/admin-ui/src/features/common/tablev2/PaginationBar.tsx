@@ -20,7 +20,7 @@ export const PaginationBar = <T,>({ tableInstance }: PaginationBarProps<T>) => {
   const endRange = pageIndex * pageSize + pageSize;
 
   return (
-    <HStack>
+    <HStack mt={3}>
       <Text fontSize="xs" lineHeight={4} fontWeight="semibold">
         {startRange}
         {"-"}

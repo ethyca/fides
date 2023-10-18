@@ -37,7 +37,7 @@ export function FidesTableV2<T>({
   onRowClick,
 }: Props<T>) {
   return (
-    <Box height="inherit">
+    <Box>
       <TableContainer height="inherit" overflowY="auto">
         <Table variant="unstyled" borderCollapse="collapse">
           <Thead

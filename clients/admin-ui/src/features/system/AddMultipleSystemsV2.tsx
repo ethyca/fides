@@ -115,7 +115,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
     initialState: {
       rowSelection,
       pagination: {
-        pageSize: 10,
+        pageSize: 15,
       },
     },
   });
