@@ -11,7 +11,7 @@ import {
 import { AddMultipleSystemsV2 } from "~/features/system/AddMultipleSystemsV2";
 
 const DESCRIBE_SYSTEM_COPY =
-  "Select and add systems directory to your data map. ALl s ystems available here are from the TCF Global Vendor list, Google's AC list, and Fides Compass. All Systems come pre-configured so there is no need for your to do anything!";
+  "Select and add systems directory to your data map. All s ystems available here are from the TCF Global Vendor list, Google's AC list, and Fides Compass. All Systems come pre-configured so there is no need for your to do anything!";
 
 const Header = () => (
   <Box display="flex" mb={2} alignItems="center" data-testid="header">
@@ -49,7 +49,7 @@ const AddMultipleSystemsPage: NextPage = () => {
           {DESCRIBE_SYSTEM_COPY}
         </Text>
       </Box>
-      <AddMultipleSystemsV2 redirectRoute={DATAMAP_ROUTE} />
+      <AddMultipleSystemsV2 isSystem redirectRoute={DATAMAP_ROUTE} />
     </Layout>
   );
 };

@@ -30,10 +30,12 @@ type MultipleSystemTable = DictSystems;
 const columnHelper = createColumnHelper<MultipleSystemTable>();
 
 type Props = {
+  isSystem: boolean;
   redirectRoute: string;
 };
 
-export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
+export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
+  const systemText = isSystem ? "System" : "Vendor";
   const features = useFeatures();
   const router = useRouter();
   const { isLoading: isGetLoading } = useGetAllCreatedSystemsQuery(undefined, {
@@ -77,7 +79,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
       columnHelper.accessor((row) => row.legal_name, {
         id: "legal_name",
         cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="System" {...props} />,
+        header: (props) => <DefaultHeaderCell value={systemText} {...props} />,
       }),
     ],
     [allRowsAdded]
@@ -136,8 +138,8 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
   }
 
   const toolTipText = allRowsAdded
-    ? "All systems have already been added"
-    : "Select a system";
+    ? `All ${systemText.toLocaleLowerCase()} have already been added`
+    : `Select a ${systemText.toLocaleLowerCase()} `;
 
   return (
     <Box height="100%">
@@ -169,7 +171,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute }: Props) => {
             variant="outline"
             disabled={!anyNewSelectedRows}
           >
-            Add Vendors
+            Add {`${systemText}s`}
           </Button>
         </Tooltip>
       </HStack>
