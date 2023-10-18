@@ -266,3 +266,38 @@ export const alignPrivacyDeclarations = (
     },
   };
 };
+
+/** Makes sure the before and after custom_field objects have the same keys
+ * to align the rendering of the fields in the diff modal */
+export const alignCustomFields = (
+  history: SystemHistoryResponse
+): SystemHistoryResponse => {
+  const beforeCustomFields = { ...history.before.custom_fields };
+  const afterCustomFields = { ...history.after.custom_fields };
+
+  const allKeys = new Set([
+    ...Object.keys(beforeCustomFields),
+    ...Object.keys(afterCustomFields),
+  ]);
+
+  allKeys.forEach((key) => {
+    if (!(key in beforeCustomFields)) {
+      beforeCustomFields[key] = null;
+    }
+    if (!(key in afterCustomFields)) {
+      afterCustomFields[key] = null;
+    }
+  });
+
+  return {
+    ...history,
+    before: {
+      ...history.before,
+      custom_fields: beforeCustomFields,
+    },
+    after: {
+      ...history.after,
+      custom_fields: afterCustomFields,
+    },
+  };
+};
