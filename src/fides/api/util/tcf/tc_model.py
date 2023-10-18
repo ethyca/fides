@@ -41,7 +41,9 @@ def universal_vendor_id_to_gvl_id(universal_vendor_id: str) -> int:
 
 
 class TCModel(FidesSchema):
-    """Base internal TC schema to store and validate key details from which to later build the TC String"""
+    """Base internal TCF schema to store and validate key details from which to later build the TC String
+    and AC Strings
+    """
 
     _gvl: Dict = {}
 
@@ -409,7 +411,7 @@ def convert_tcf_contents_to_tc_model(
 ) -> TCModel:
     """
     Helper for building a TCModel from TCFExperienceContents that contains the prerequisite information to build
-    an accept-all or reject-all string, depending on the supplied preference.
+    an accept-all or reject-all fides string, with TC and AC sections, depending on the supplied preference.
     """
     if not preference:
         # Dev-level error
