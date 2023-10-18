@@ -20,6 +20,7 @@ import {
   IndeterminateCheckboxCell,
   TableActionBar,
   PaginationBar,
+  RowActionBar,
 } from "~/features/common/tablev2";
 import {
   DictSystems,
@@ -179,6 +180,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
         columns={columns}
         data={dictionaryOptions}
         tableInstance={tableInstance}
+        rowActionBar={<RowActionBar tableInstance={tableInstance} />}
       />
       <PaginationBar tableInstance={tableInstance} />
     </Box>

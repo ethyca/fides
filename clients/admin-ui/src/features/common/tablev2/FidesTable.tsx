@@ -27,12 +27,14 @@ const getTableTHandTDStyles = (cellId: string) => {
 
 type Props<T> = {
   tableInstance: TableInstance<T>;
+  rowActionBar?: ReactNode;
   footer?: ReactNode;
   onRowClick?: (row: T) => void;
 };
 
 export function FidesTableV2<T>({
   tableInstance,
+  rowActionBar,
   footer,
   onRowClick,
 }: Props<T>) {
@@ -69,6 +71,7 @@ export function FidesTableV2<T>({
             ))}
           </Thead>
           <Tbody>
+            {rowActionBar}
             {tableInstance.getRowModel().rows.map((row) => {
               // @ts-ignore
               const rowName = row.original.name;
