@@ -461,24 +461,22 @@ def add_ac_vendor_to_vendor_consent_map(
 
     FE shows Consent toggle only for AC vendors, and they are not required to have Privacy Declarations
     """
-    vendor_id, system_identifier = get_system_identifiers(privacy_declaration_row)
+    vendor_id, _ = get_system_identifiers(privacy_declaration_row)
+
+    if not (vendor_id and vendor_id.startswith(AC_PREFIX)):
+        return
 
     if not tcf_vendor_component_type == TCFVendorConsentRecord:
         return
 
-    if not system_identifier.startswith(AC_PREFIX):
+    if vendor_id in vendor_map:
         return
 
-    if system_identifier in vendor_map:
-        return
-
-    vendor_map[system_identifier] = TCFVendorConsentRecord(
-        id=system_identifier,  # Identify system by vendor id if it exists, otherwise use system id.
+    vendor_map[vendor_id] = TCFVendorConsentRecord(
+        id=vendor_id,
         name=privacy_declaration_row.system_name,
         description=privacy_declaration_row.system_description,
-        has_vendor_id=bool(
-            vendor_id
-        ),  # Has_vendor_id will let us separate data between systems and vendors
+        has_vendor_id=True,
     )
 
 

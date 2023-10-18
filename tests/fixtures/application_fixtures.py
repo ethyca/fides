@@ -2832,7 +2832,7 @@ def tcf_system(db: Session) -> System:
 
 @pytest.fixture(scope="function")
 def ac_system_with_privacy_declaration(db: Session) -> System:
-    """Test AC System - will be fleshed out further later"""
+    """Test AC System with a privacy declaration"""
     system = System.create(
         db=db,
         data={
