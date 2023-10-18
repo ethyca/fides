@@ -10,7 +10,6 @@ from fides.api.common_exceptions import DecodeFidesStringError
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.schemas.privacy_preference import FidesStringFidesPreferences
-from fides.api.util.tcf.ac_string import build_ac_string
 from fides.api.util.tcf.experience_meta import (
     TCFVersionHash,
     _build_tcf_version_hash_model,
@@ -1751,3 +1750,21 @@ class TestConvertTCStringtoMobile:
         assert tc_mobile_data["IABTCF_VendorConsents"] == ""
         assert tc_mobile_data["IABTCF_VendorLegitimateInterests"] == ""
         assert tc_mobile_data["IABTCF_SpecialFeaturesOptIns"] == "000000000000"
+
+    def test_bad_ac_string_format(self):
+        fides_str = "CPz4f8wPz4f8wKEAAAENCZCsAAwAACIAAAAAAFNdAAoAIAA.YAAAAAAAAAA,~12.35.1452.3313"
+
+        with pytest.raises(DecodeFidesStringError):
+            convert_fides_str_to_mobile_data(fides_str)
+
+    def test_tc_string_and_ac_string(self):
+        """Assert selected items off of the TC string, but primarily that the AC string is added to IABTCF_AddtlConsent"""
+        fides_str = "CPz4f8wPz4f8wKEAAAENCZCsAAwAACIAAAAAAFNdAAoAIAA.YAAAAAAAAAA,1~12.35.1452.3313"
+
+        tc_mobile_data = convert_fides_str_to_mobile_data(fides_str).dict()
+
+        assert tc_mobile_data["IABTCF_CmpSdkID"] == 644
+        assert tc_mobile_data["IABTCF_CmpSdkVersion"] == 0
+        assert tc_mobile_data["IABTCF_PolicyVersion"] == 2
+
+        assert tc_mobile_data["IABTCF_AddtlConsent"] == "1~12.35.1452.3313"

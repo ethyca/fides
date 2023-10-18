@@ -24,17 +24,17 @@ def universal_vendor_id_to_ac_id(universal_vendor_id: str) -> int:
     return int(universal_vendor_id.partition(AC_PREFIX)[2])
 
 
-def build_ac_string(
+def build_ac_vendor_consents(
     tcf_contents: TCFExperienceContents, preference: Optional[UserConsentPreference]
-) -> Optional[str]:
-    """Returns an AC string following this spec: https://support.google.com/admanager/answer/9681920"""
+) -> List[int]:
+    """Build a list of integers representing AC vendors with opt-in consent"""
     if not tcf_contents.tcf_vendor_consents:
-        # AC Vendors are automatically added to the Vendor Consents section if present
-        return None
+        # AC Vendors are automatically added to the Vendor Consents section of the TCF Experience if present
+        return []
 
     if preference != UserConsentPreference.opt_in:
         # The AC string only encodes opt-ins!
-        return None
+        return []
 
     ac_vendors: List[int] = []
     for vendor in tcf_contents.tcf_vendor_consents:
@@ -42,15 +42,19 @@ def build_ac_string(
             ac_vendors.append(universal_vendor_id_to_ac_id(vendor.id))
         except ValueError:
             continue
+    return ac_vendors
 
-    if not ac_vendors:
+
+def build_ac_string(ac_vendor_consents: List[int]) -> Optional[str]:
+    """Returns an AC string following this spec: https://support.google.com/admanager/answer/9681920"""
+    if not ac_vendor_consents:
         # No vendors found in AC format
         return None
 
     return (
         SPECIFICATION_VERSION_NUMBER
         + SEPARATOR_SYMBOL
-        + ".".join([str(vendor_id) for vendor_id in sorted(ac_vendors)])
+        + ".".join([str(vendor_id) for vendor_id in sorted(ac_vendor_consents)])
     )
 
 
@@ -77,7 +81,24 @@ def split_fides_string(fides_str: Optional[str]) -> Tuple[Optional[str], Optiona
     if len(split_str) > 1:
         ac_str = split_str[1]
 
+    validate_ac_string_format(ac_str)
     return tc_str, ac_str
+
+
+def validate_ac_string_format(ac_str: Optional[str]) -> None:
+    """Run some preliminary validation checks on the AC str"""
+    if not ac_str:
+        return
+
+    if not ac_str.startswith(SPECIFICATION_VERSION_NUMBER + SEPARATOR_SYMBOL):
+        raise DecodeFidesStringError("Unexpected AC String format")
+
+    ac_str = ac_str.lstrip(SPECIFICATION_VERSION_NUMBER).lstrip(SEPARATOR_SYMBOL)
+
+    try:
+        [int(vendor_id) for vendor_id in ac_str.split(".")]
+    except ValueError:
+        raise DecodeFidesStringError("Unexpected AC String format")
 
 
 def _ac_str_to_universal_vendor_id_list(ac_str: Optional[str]) -> List[str]:
@@ -85,19 +106,14 @@ def _ac_str_to_universal_vendor_id_list(ac_str: Optional[str]) -> List[str]:
     if not ac_str:
         return []
 
-    if not ac_str.startswith(SPECIFICATION_VERSION_NUMBER + SEPARATOR_SYMBOL):
-        raise DecodeFidesStringError("Unexpected AC String format")
+    validate_ac_string_format(ac_str)
 
     ac_str = ac_str.lstrip(SPECIFICATION_VERSION_NUMBER).lstrip(SEPARATOR_SYMBOL)
     vendor_ids: List[str] = ac_str.split(".")
-    universal_ac_vendor_ids: List[str] = []
 
-    for vendor_id in vendor_ids:
-        try:
-            int(vendor_id)
-        except ValueError:
-            raise DecodeFidesStringError("Unexpected AC String format")
-        universal_ac_vendor_ids.append(AC_PREFIX + vendor_id)
+    universal_ac_vendor_ids: List[str] = [
+        AC_PREFIX + vendor_id for vendor_id in vendor_ids
+    ]
 
     return universal_ac_vendor_ids
 
@@ -146,9 +162,11 @@ def decode_ac_string_to_preferences(
     if not ac_str:
         return FidesStringFidesPreferences()
 
-    all_options_ac_string: Optional[str] = build_ac_string(
+    # Build an AC string from the datamap that would assume the user opted into all, as a comparison
+    ac_vendor_consents: List[int] = build_ac_vendor_consents(
         tcf_contents, UserConsentPreference.opt_in
     )
+    all_options_ac_string: Optional[str] = build_ac_string(ac_vendor_consents)
 
     return FidesStringFidesPreferences(
         vendor_consent_preferences=_convert_ac_strings_to_fides_preferences(

@@ -5,6 +5,7 @@ from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.tcf import TCFVendorConsentRecord, TCFVendorSave
 from fides.api.util.tcf.ac_string import (
     build_ac_string,
+    build_ac_vendor_consents,
     build_fides_string,
     decode_ac_string_to_preferences,
     split_fides_string,
@@ -68,7 +69,10 @@ def test_split_fides_string():
 class TestBuildACString:
     def test_no_vendor_consents(self):
         contents = TCFExperienceContents()
-        assert build_ac_string(contents, UserConsentPreference.opt_in) is None
+        ac_vendor_consents = build_ac_vendor_consents(
+            contents, UserConsentPreference.opt_in
+        )
+        assert build_ac_string(ac_vendor_consents) is None
 
     def test_opt_out_preference(self):
         contents = TCFExperienceContents(
@@ -78,7 +82,10 @@ class TestBuildACString:
                 TCFVendorConsentRecord(id="gacp.8844"),
             ]
         )
-        assert build_ac_string(contents, UserConsentPreference.opt_out) is None
+        ac_vendor_consents = build_ac_vendor_consents(
+            contents, UserConsentPreference.opt_out
+        )
+        assert build_ac_string(ac_vendor_consents) is None
 
     def test_only_gvl_vendors(self):
         contents = TCFExperienceContents(
@@ -88,8 +95,10 @@ class TestBuildACString:
                 TCFVendorConsentRecord(id="gvl.8844"),
             ]
         )
-
-        assert build_ac_string(contents, UserConsentPreference.opt_in) is None
+        ac_vendor_consents = build_ac_vendor_consents(
+            contents, UserConsentPreference.opt_in
+        )
+        assert build_ac_string(ac_vendor_consents) is None
 
     def test_one_gacp_id(self):
         contents = TCFExperienceContents(
@@ -98,7 +107,10 @@ class TestBuildACString:
                 TCFVendorConsentRecord(id="gvl.29"),
             ]
         )
-        assert build_ac_string(contents, UserConsentPreference.opt_in) == "1~12"
+        ac_vendor_consents = build_ac_vendor_consents(
+            contents, UserConsentPreference.opt_in
+        )
+        assert build_ac_string(ac_vendor_consents) == "1~12"
 
     def test_badly_formatted_vendor_ids(self):
         contents = TCFExperienceContents(
@@ -107,7 +119,10 @@ class TestBuildACString:
                 TCFVendorConsentRecord(id="gvl.asdf"),
             ]
         )
-        assert build_ac_string(contents, UserConsentPreference.opt_in) is None
+        ac_vendor_consents = build_ac_vendor_consents(
+            contents, UserConsentPreference.opt_in
+        )
+        assert build_ac_string(ac_vendor_consents) is None
 
     def test_build_ac_string(self):
         contents = TCFExperienceContents(
@@ -117,9 +132,10 @@ class TestBuildACString:
                 TCFVendorConsentRecord(id="gacp.8844"),
             ]
         )
-        assert (
-            build_ac_string(contents, UserConsentPreference.opt_in) == "1~231.1313.8844"
+        ac_vendor_consents = build_ac_vendor_consents(
+            contents, UserConsentPreference.opt_in
         )
+        assert build_ac_string(ac_vendor_consents) == "1~231.1313.8844"
 
 
 class TestDecodeACStringToPreferences:

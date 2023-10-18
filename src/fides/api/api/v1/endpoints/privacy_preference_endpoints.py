@@ -709,12 +709,12 @@ def update_request_with_decoded_fides_string_fields(
 ) -> PrivacyPreferencesRequest:
     """Update the request body with the decoded values of the TC string and AC strings if applicable"""
     if request_body.fides_string:
-        tc_str, ac_str = split_fides_string(request_body.fides_string)
-
         tcf_contents: TCFExperienceContents = get_tcf_contents(
             db
         )  # TODO cache this so we're not building each time privacy preference is saved
         try:
+            tc_str, ac_str = split_fides_string(request_body.fides_string)
+
             decoded_tc_str_request_body: FidesStringFidesPreferences = (
                 decode_tc_string_to_preferences(tc_str, tcf_contents)
             )
