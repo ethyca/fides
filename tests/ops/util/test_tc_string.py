@@ -1231,9 +1231,9 @@ class TestBuildTCModel:
 
         assert decoded.oob_disclosed_vendors == {1: False, 2: True}
 
-    @pytest.mark.usefixtures("ac_system")
+    @pytest.mark.usefixtures("ac_system_with_privacy_declaration")
     def test_ac_system_not_in_tc_string(self, db):
-        """System with AC vendor id will not show up in the vendor consents section, but its purpose
+        """System with AC vendor id will not show up in the vendor consents section of the TC string, but its purpose
         with legal basis of consent does show up in purpose consents (this is the same thing we do if we
         have a system that is not in the GVL too)"""
         tcf_contents = get_tcf_contents(db)

@@ -20,6 +20,7 @@ The types of changes are:
 
 ### Added
 - Added a `FidesPreferenceToggled` event to Fides.js to track when user preferences change without being saved [#4253](https://github.com/ethyca/fides/pull/4253)
+- Add AC Systems to the TCF Overlay under Vendor Consents section [#4266](https://github.com/ethyca/fides/pull/4266/)
 
 ### Fixed
 - Stacks that do not have any purposes will no longer render an empty purpose block [#4278](https://github.com/ethyca/fides/pull/4278)

@@ -942,3 +942,77 @@ class TestTCFContents:
             .id
             == 4
         )
+
+    @pytest.mark.usefixtures("ac_system_with_privacy_declaration")
+    def test_ac_systems_with_valid_privacy_declarations(self, db):
+        """This AC system won't show up under vendor consents, but because it has a
+        valid declaration with a gvl data use, that shows up under purpose consents"""
+        tcf_contents = get_tcf_contents(db)
+
+        assert_length_of_tcf_sections(
+            tcf_contents,
+            p_c_len=1,
+            p_li_len=0,
+            f_len=2,
+            sp_len=0,
+            sf_len=0,
+            v_c_len=1,
+            v_li_len=0,
+            v_r_len=1,
+            s_c_len=0,
+            s_li_len=0,
+            s_r_len=0,
+        )
+
+        vendor_consent = tcf_contents.tcf_vendor_consents[0]
+        assert vendor_consent.id == "gacp.8"
+        assert len(vendor_consent.purpose_consents) == 1
+        assert vendor_consent.purpose_consents[0].id == 1
+
+        vendor_relationship = tcf_contents.tcf_vendor_relationships[0]
+        assert vendor_relationship.id == "gacp.8"
+        assert vendor_relationship.features[0].id == 1
+        assert vendor_relationship.features[1].id == 2
+        assert vendor_relationship.special_purposes == []
+        assert vendor_relationship.special_features == []
+        assert vendor_relationship.cookie_max_age_seconds is None
+        assert vendor_relationship.uses_cookies is False
+        assert vendor_relationship.uses_non_cookie_access is False
+        assert vendor_relationship.cookie_refresh is False
+        assert vendor_relationship.legitimate_interest_disclosure_url is None
+
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
+    def test_ac_systems_without_privacy_declarations(self, db):
+        tcf_contents = get_tcf_contents(db)
+
+        assert_length_of_tcf_sections(
+            tcf_contents,
+            p_c_len=0,
+            p_li_len=0,
+            f_len=0,
+            sp_len=0,
+            sf_len=0,
+            v_c_len=1,
+            v_li_len=0,
+            v_r_len=1,
+            s_c_len=0,
+            s_li_len=0,
+            s_r_len=0,
+        )
+
+        vendor_consent = tcf_contents.tcf_vendor_consents[0]
+        assert vendor_consent.id == "gacp.100"
+        assert (
+            vendor_consent.purpose_consents == []
+        )  # AC Vendor showed up in this section even though it didn't have any purposes
+
+        vendor_relationship = tcf_contents.tcf_vendor_relationships[0]
+        assert vendor_relationship.id == "gacp.100"
+        assert vendor_relationship.features == []
+        assert vendor_relationship.special_purposes == []
+        assert vendor_relationship.special_features == []
+        assert vendor_relationship.cookie_max_age_seconds is None
+        assert vendor_relationship.uses_cookies is False
+        assert vendor_relationship.uses_non_cookie_access is False
+        assert vendor_relationship.cookie_refresh is False
+        assert vendor_relationship.legitimate_interest_disclosure_url is None
