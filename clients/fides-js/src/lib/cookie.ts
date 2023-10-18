@@ -119,6 +119,12 @@ export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
 };
 
 /**
+ * Retrieve cookie by name
+ */
+export const getCookieByName = (cookieName: string): string | undefined =>
+  getCookie(cookieName, CODEC);
+
+/**
  * Attempt to read, parse, and return the current Fides cookie from the browser.
  * If one doesn't exist, make a new default cookie (including generating a new
  * pseudonymous ID) and return the default values.
@@ -138,7 +144,7 @@ export const getOrMakeFidesCookie = (
   }
 
   // Check for an existing cookie for this device
-  const cookieString = getCookie(CONSENT_COOKIE_NAME, CODEC);
+  const cookieString = getCookieByName(CONSENT_COOKIE_NAME);
   if (!cookieString) {
     debugLog(
       debug,

@@ -5,6 +5,7 @@ import {
   PrivacyExperience,
   UserConsentPreference,
 } from "fides-js";
+import { OverrideFidesOption } from "fides-js/src/lib/consent-types";
 import { OVERRIDE, stubConfig } from "../support/stubs";
 
 const PURPOSE_2 = {
@@ -742,11 +743,116 @@ describe("Fides-js TCF", () => {
           });
         });
       });
+      it("skips saving preferences to API when disable save is set via cookie", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.getCookie(OverrideFidesOption.FIDES_DISABLE_SAVE_API).should(
+          "not.exist"
+        );
+        cy.setCookie(OverrideFidesOption.FIDES_DISABLE_SAVE_API, "true");
+        cy.fixture("consent/experience_tcf.json").then((experience) => {
+          stubConfig({
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+            },
+            experience: experience.items[0],
+          });
+        });
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("#fides-modal-link").click();
+          cy.getByTestId("consent-modal").within(() => {
+            cy.get("button").contains("Opt out of all").click();
+            // timeout means API call not made, which is expected
+            cy.on("fail", (error) => {
+              if (error.message.indexOf("Timed out retrying") !== 0) {
+                throw error;
+              }
+            });
+            // check that preferences aren't sent to Fides API
+            cy.wait("@patchPrivacyPreference", {
+              requestTimeout: 500,
+            }).then((xhr) => {
+              assert.isNull(xhr?.response?.body);
+            });
+          });
+        });
+      });
+      it("skips saving preferences to API when disable save is set via query param", () => {
+        cy.getCookie(OverrideFidesOption.FIDES_STRING).should("not.exist");
+        cy.fixture("consent/experience_tcf.json").then((experience) => {
+          stubConfig(
+            {
+              options: {
+                isOverlayEnabled: true,
+                tcfEnabled: true,
+              },
+              experience: experience.items[0],
+            },
+            null,
+            null,
+            { fides_disable_save_api: true }
+          );
+        });
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("#fides-modal-link").click();
+          cy.getByTestId("consent-modal").within(() => {
+            cy.get("button").contains("Opt out of all").click();
+            // timeout means API call not made, which is expected
+            cy.on("fail", (error) => {
+              if (error.message.indexOf("Timed out retrying") !== 0) {
+                throw error;
+              }
+            });
+            // check that preferences aren't sent to Fides API
+            cy.wait("@patchPrivacyPreference", {
+              requestTimeout: 500,
+            }).then((xhr) => {
+              assert.isNull(xhr?.response?.body);
+            });
+          });
+        });
+      });
+      it("skips saving preferences to API when disable save is set via window obj", () => {
+        cy.getCookie(OverrideFidesOption.FIDES_STRING).should("not.exist");
+        cy.fixture("consent/experience_tcf.json").then((experience) => {
+          stubConfig(
+            {
+              options: {
+                isOverlayEnabled: true,
+                tcfEnabled: true,
+              },
+              experience: experience.items[0],
+            },
+            null,
+            null,
+            null,
+            { fides_disable_save_api: true }
+          );
+        });
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("#fides-modal-link").click();
+          cy.getByTestId("consent-modal").within(() => {
+            cy.get("button").contains("Opt out of all").click();
+            // timeout means API call not made, which is expected
+            cy.on("fail", (error) => {
+              if (error.message.indexOf("Timed out retrying") !== 0) {
+                throw error;
+              }
+            });
+            // check that preferences aren't sent to Fides API
+            cy.wait("@patchPrivacyPreference", {
+              requestTimeout: 500,
+            }).then((xhr) => {
+              assert.isNull(xhr?.response?.body);
+            });
+          });
+        });
+      });
     });
   });
 
   describe("second layer embedded", () => {
-    beforeEach(() => {
+    it("automatically renders the second layer and can render tabs", () => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
@@ -758,8 +864,6 @@ describe("Fides-js TCF", () => {
           experience: experience.items[0],
         });
       });
-    });
-    it("automatically renders the second layer and can render tabs", () => {
       cy.get("#fides-tab-Purposes");
       // Purposes
       cy.getByTestId("toggle-Purposes").within(() => {
@@ -796,6 +900,17 @@ describe("Fides-js TCF", () => {
       });
     });
     it("can opt in to some and opt out of others", () => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+            fidesEmbed: true,
+          },
+          experience: experience.items[0],
+        });
+      });
       cy.getByTestId("consent-modal").within(() => {
         cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).click();
         cy.get("#fides-tab-Features").click();
@@ -865,6 +980,89 @@ describe("Fides-js TCF", () => {
         expect(cookieKeyConsent.tcf_consent.system_consent_preferences).to.eql(
           {}
         );
+      });
+    });
+    it("automatically renders the second layer when fidesEmbed is set via cookie", () => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      cy.getCookie(OverrideFidesOption.FIDES_EMBED).should("not.exist");
+      cy.setCookie(OverrideFidesOption.FIDES_EMBED, "true");
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+          },
+          experience: experience.items[0],
+        });
+      });
+      // spot check a couple UI elements
+      cy.get("#fides-tab-Purposes");
+      // Purposes
+      cy.getByTestId("toggle-Purposes").within(() => {
+        cy.get("input").should("be.checked");
+      });
+      // Vendors
+      cy.get("#fides-tab-Vendors").click();
+      cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+    });
+    it("automatically renders the second layer when fidesEmbed is set via query param", () => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig(
+          {
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+            },
+            experience: experience.items[0],
+          },
+          null,
+          null,
+          { fides_embed: true }
+        );
+      });
+      // spot check a couple UI elements
+      cy.get("#fides-tab-Purposes");
+      // Purposes
+      cy.getByTestId("toggle-Purposes").within(() => {
+        cy.get("input").should("be.checked");
+      });
+      // Vendors
+      cy.get("#fides-tab-Vendors").click();
+      cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+    });
+    it("automatically renders the second layer when fidesEmbed is set via window obj", () => {
+      cy.getCookie(OverrideFidesOption.FIDES_STRING).should("not.exist");
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig(
+          {
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+            },
+            experience: experience.items[0],
+          },
+          null,
+          null,
+          null,
+          { fides_embed: true }
+        );
+      });
+      // spot check a couple UI elements
+      cy.get("#fides-tab-Purposes");
+      // Purposes
+      cy.getByTestId("toggle-Purposes").within(() => {
+        cy.get("input").should("be.checked");
+      });
+      // Vendors
+      cy.get("#fides-tab-Vendors").click();
+      cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
+        cy.get("input").should("be.checked");
       });
     });
   });
@@ -1483,6 +1681,141 @@ describe("Fides-js TCF", () => {
       cy.getByTestId(`toggle-${VENDOR_1.name}-consent`).within(() => {
         cy.get("input").should("not.be.checked");
       });
+
+      // verify CMP API
+      cy.get("@TCFEvent")
+        .its("lastCall.args")
+        .then(([tcData, success]) => {
+          expect(success).to.eql(true);
+          expect(tcData.eventStatus).to.eql("cmpuishown");
+          expect(tcData.purpose.consents).to.eql({
+            [PURPOSE_2.id]: false,
+            [PURPOSE_4.id]: false,
+            [PURPOSE_6.id]: false,
+            [PURPOSE_7.id]: true,
+            1: false,
+            2: false,
+            3: false,
+            5: false,
+          });
+          expect(tcData.purpose.legitimateInterests).to.eql({});
+          expect(tcData.vendor.consents).to.eql({});
+          expect(tcData.vendor.legitimateInterests).to.eql({});
+        });
+    });
+  });
+
+  describe("fides string override options", () => {
+    it("uses TC string when set via cookie", () => {
+      cy.getCookie(OverrideFidesOption.FIDES_STRING).should("not.exist");
+      // this TC string sets purpose 4 to false and purpose 7 to true
+      cy.setCookie(
+        OverrideFidesOption.FIDES_STRING,
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE"
+      );
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+          },
+          experience: experience.items[0],
+        });
+      });
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+      });
+      // Open the modal
+      cy.get("#fides-modal-link").click();
+
+      // verify CMP API
+      cy.get("@TCFEvent")
+        .its("lastCall.args")
+        .then(([tcData, success]) => {
+          expect(success).to.eql(true);
+          expect(tcData.eventStatus).to.eql("cmpuishown");
+          expect(tcData.purpose.consents).to.eql({
+            [PURPOSE_2.id]: false,
+            [PURPOSE_4.id]: false,
+            [PURPOSE_6.id]: false,
+            [PURPOSE_7.id]: true,
+            1: false,
+            2: false,
+            3: false,
+            5: false,
+          });
+          expect(tcData.purpose.legitimateInterests).to.eql({});
+          expect(tcData.vendor.consents).to.eql({});
+          expect(tcData.vendor.legitimateInterests).to.eql({});
+        });
+    });
+    it("uses TC string when set via query param", () => {
+      cy.getCookie(OverrideFidesOption.FIDES_STRING).should("not.exist");
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig(
+          {
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+            },
+            experience: experience.items[0],
+          },
+          null,
+          null,
+          // this TC string sets purpose 4 to false and purpose 7 to true
+          { fides_string: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE" }
+        );
+      });
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+      });
+      // Open the modal
+      cy.get("#fides-modal-link").click();
+
+      // verify CMP API
+      cy.get("@TCFEvent")
+        .its("lastCall.args")
+        .then(([tcData, success]) => {
+          expect(success).to.eql(true);
+          expect(tcData.eventStatus).to.eql("cmpuishown");
+          expect(tcData.purpose.consents).to.eql({
+            [PURPOSE_2.id]: false,
+            [PURPOSE_4.id]: false,
+            [PURPOSE_6.id]: false,
+            [PURPOSE_7.id]: true,
+            1: false,
+            2: false,
+            3: false,
+            5: false,
+          });
+          expect(tcData.purpose.legitimateInterests).to.eql({});
+          expect(tcData.vendor.consents).to.eql({});
+          expect(tcData.vendor.legitimateInterests).to.eql({});
+        });
+    });
+    it("uses TC string when set via window obj", () => {
+      cy.getCookie(OverrideFidesOption.FIDES_STRING).should("not.exist");
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig(
+          {
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+            },
+            experience: experience.items[0],
+          },
+          null,
+          null,
+          null,
+          // this TC string sets purpose 4 to false and purpose 7 to true
+          { fides_string: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE" }
+        );
+      });
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+      });
+      // Open the modal
+      cy.get("#fides-modal-link").click();
 
       // verify CMP API
       cy.get("@TCFEvent")

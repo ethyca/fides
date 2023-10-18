@@ -207,6 +207,49 @@ export type UserGeolocation = {
 // 3) Separated by a dash (e.g. "US-CA")
 export const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
 
+export type OverrideOptions = {
+  fides_string: string;
+  fides_disable_save_api: boolean;
+  fides_embed: boolean;
+};
+
+export type FidesOptionOverrides = Pick<
+  FidesOptions,
+  "fidesString" | "fidesDisableSaveApi" | "fidesEmbed"
+>;
+
+export enum OverrideFidesOption {
+  FIDES_STRING = "fides_string",
+  FIDES_DISABLE_SAVE_API = "fides_disable_save_api",
+  FIDES_EMBED = "fides_embed",
+}
+
+export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
+  fidesOption: keyof FidesOptionOverrides;
+  fidesOptionType: "string" | "boolean";
+  fidesOverrideKey: keyof OverrideOptions;
+  validationRegex: RegExp;
+}[] = [
+  {
+    fidesOption: "fidesEmbed",
+    fidesOptionType: "boolean",
+    fidesOverrideKey: OverrideFidesOption.FIDES_EMBED,
+    validationRegex: /^(true|false)$/,
+  },
+  {
+    fidesOption: "fidesDisableSaveApi",
+    fidesOptionType: "boolean",
+    fidesOverrideKey: OverrideFidesOption.FIDES_DISABLE_SAVE_API,
+    validationRegex: /^(true|false)$/,
+  },
+  {
+    fidesOption: "fidesString",
+    fidesOptionType: "string",
+    fidesOverrideKey: OverrideFidesOption.FIDES_STRING,
+    validationRegex: /(.*)/,
+  },
+];
+
 export enum ButtonType {
   PRIMARY = "primary",
   SECONDARY = "secondary",

@@ -52,6 +52,8 @@ import { shopify } from "./integrations/shopify";
 
 import {
   FidesConfig,
+  FidesOptionOverrides,
+  OverrideOptions,
   PrivacyExperience,
   UserConsentPreference,
 } from "./lib/consent-types";
@@ -60,6 +62,7 @@ import { generateFidesString, initializeCmpApi } from "./lib/tcf";
 import {
   getInitialCookie,
   getInitialFides,
+  getOverrideFidesOptions,
   initialize,
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
@@ -96,6 +99,9 @@ declare global {
       callback: (tcData: TCData, success: boolean) => void,
       parameter?: number | string
     ) => void;
+    config: {
+      fides: OverrideOptions;
+    };
   }
 }
 
@@ -164,6 +170,9 @@ const updateCookie = async (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
+  const overrideOptions: FidesOptionOverrides = getOverrideFidesOptions();
+  // eslint-disable-next-line no-param-reassign
+  config.options = { ...config.options, ...overrideOptions };
   const cookie = getInitialCookie(config);
   if (config.options.fidesString) {
     // If a fidesString is explicitly passed in, we override the associated cookie props, which are then used to
