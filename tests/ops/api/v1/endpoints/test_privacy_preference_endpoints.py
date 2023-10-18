@@ -2659,7 +2659,7 @@ class TestSavePrivacyPreferencesFidesStringOnly:
         assert response.status_code == 400
         assert response.json()["detail"] == "Unexpected AC String format"
 
-    @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration", "enable_tcf")
     def test_save_privacy_preferences_ac_string_only(self, api_client, url):
         """Likely contrived but let's make sure this works"""
         fides_string: str = ",1~100"
@@ -2685,7 +2685,7 @@ class TestSavePrivacyPreferencesFidesStringOnly:
         assert response.json()["fides_mobile_data"]["IABTCF_AddtlConsent"] == "1~100"
         assert response.json()["fides_mobile_data"]["IABTCF_CmpSdkVersion"] is None
 
-    @pytest.mark.usefixtures("emerse_system")
+    @pytest.mark.usefixtures("emerse_system", "enable_tcf")
     def test_save_privacy_preferences_tc_string_only(self, api_client, url):
         fides_string: str = (
             "CPz2D2nPz2D2nOPAAAENCZCgAAAAAAAAAAAAAEAEACACAAA.YAAAAAAAAAA"

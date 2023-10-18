@@ -18,7 +18,7 @@ from fides.api.util.tcf.experience_meta import (
 )
 from fides.api.util.tcf.tc_mobile_data import (
     build_tc_data_for_mobile,
-    convert_tc_string_to_mobile_data,
+    convert_fides_str_to_mobile_data,
 )
 from fides.api.util.tcf.tc_model import (
     CMP_ID,
@@ -1623,7 +1623,7 @@ class TestConvertTCStringtoMobile:
         Special feature opt ins are 2
         """
         tc_str = "CPytTYAPytTYAAMABBENATEEAPLAAEPAAAAAAEEEALgCAAAAAAgAAAAA.IAXEEAAAAABA"
-        tc_mobile_data = convert_tc_string_to_mobile_data(tc_str).dict()
+        tc_mobile_data = convert_fides_str_to_mobile_data(tc_str).dict()
 
         assert tc_mobile_data["IABTCF_CmpSdkID"] == 12
         assert tc_mobile_data["IABTCF_CmpSdkVersion"] == 1
@@ -1661,7 +1661,7 @@ class TestConvertTCStringtoMobile:
         Special feature opt ins are 1
         """
         tc_str = "CPy2kiHPy2kiHfQADLENCZCYAJRAAHAAAAKwAFoRgAQ0QAA.II7Nd_X__bX9n-_7_6ft0eY1f9_r37uQzDhfNs-8F3L_W_LwX32E7NF36tq4KmR4ku1bBIQNtHMnUDUmxaolVrzHsak2cpyNKJ_JkknsZe2dYGF9Pn9lD-YKZ7_5_9_f52T_9_9_-39z3_9f___dv_-__-vjf_599n_v9fV_78_Kf9______-____________8A"
-        tc_mobile_data = convert_tc_string_to_mobile_data(tc_str).dict()
+        tc_mobile_data = convert_fides_str_to_mobile_data(tc_str).dict()
 
         assert tc_mobile_data["IABTCF_CmpSdkID"] == 2000
         assert tc_mobile_data["IABTCF_CmpSdkVersion"] == 3
@@ -1686,7 +1686,7 @@ class TestConvertTCStringtoMobile:
         Test reject all response
         """
         tc_str = "CPy2UQ3Py2UQ3AYAAAENCZCQAAAAAAAAAIAAAAAAAAAA.II7Nd_X__bX9n-_7_6ft0eY1f9_r37uQzDhfNs-8F3L_W_LwX32E7NF36tq4KmR4ku1bBIQNtHMnUDUmxaolVrzHsak2cpyNKJ_JkknsZe2dYGF9Pn9lD-YKZ7_5_9_f52T_9_9_-39z3_9f___dv_-__-vjf_599n_v9fV_78_Kf9______-____________8A"
-        tc_mobile_data = convert_tc_string_to_mobile_data(tc_str).dict()
+        tc_mobile_data = convert_fides_str_to_mobile_data(tc_str).dict()
 
         assert tc_mobile_data["IABTCF_CmpSdkID"] == 24
         assert tc_mobile_data["IABTCF_CmpSdkVersion"] == 0
@@ -1712,7 +1712,7 @@ class TestConvertTCStringtoMobile:
 
         tc_str = "bad_core.bad_vendor"
         with pytest.raises(DecodeFidesStringError):
-            convert_tc_string_to_mobile_data(tc_str)
+            convert_fides_str_to_mobile_data(tc_str)
 
     def test_invalid_base64_encoded_str(self):
         """
@@ -1721,7 +1721,7 @@ class TestConvertTCStringtoMobile:
 
         tc_str = "a"
         with pytest.raises(DecodeFidesStringError):
-            convert_tc_string_to_mobile_data(tc_str)
+            convert_fides_str_to_mobile_data(tc_str)
 
     def test_string_with_incorrect_bits_for_field(self):
         """String was encoded with version bits as one longer than it should have been,
@@ -1731,7 +1731,7 @@ class TestConvertTCStringtoMobile:
         """
         tc_str = "BH5Z8oAH5Z8oAAGAGAiGgDBAAEgAAAAAAAAAAAAAAAAA"
 
-        tc_mobile_data = convert_tc_string_to_mobile_data(tc_str).dict()
+        tc_mobile_data = convert_fides_str_to_mobile_data(tc_str).dict()
 
         assert tc_mobile_data["IABTCF_CmpSdkID"] == 6  # Was supposed to be 12
         assert tc_mobile_data["IABTCF_CmpSdkVersion"] == 6  # Was supposed to be 12
