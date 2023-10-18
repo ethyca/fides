@@ -13,7 +13,7 @@ type PaginationBarProps<T> = {
 };
 
 export const PaginationBar = <T,>({ tableInstance }: PaginationBarProps<T>) => {
-  const totalRows = tableInstance.getCoreRowModel().rows.length;
+  const totalRows = tableInstance.getFilteredRowModel().rows.length;
   const pageIndex = tableInstance.getState().pagination.pageIndex;
   const pageSize = tableInstance.getState().pagination.pageSize;
   const startRange = pageIndex * pageSize;
