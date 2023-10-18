@@ -953,7 +953,7 @@ class TestTCFContents:
             tcf_contents,
             p_c_len=1,
             p_li_len=0,
-            f_len=2,
+            f_len=1,
             sp_len=0,
             sf_len=0,
             v_c_len=1,
@@ -971,8 +971,7 @@ class TestTCFContents:
 
         vendor_relationship = tcf_contents.tcf_vendor_relationships[0]
         assert vendor_relationship.id == "gacp.8"
-        assert vendor_relationship.features[0].id == 1
-        assert vendor_relationship.features[1].id == 2
+        assert vendor_relationship.features[0].id == 2
         assert vendor_relationship.special_purposes == []
         assert vendor_relationship.special_features == []
         assert vendor_relationship.cookie_max_age_seconds is None
