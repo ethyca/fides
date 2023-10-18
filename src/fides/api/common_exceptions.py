@@ -55,8 +55,8 @@ class RedisConnectionError(Exception):
     """The Configured Redis instance is uncontactable."""
 
 
-class DecodeTCStringError(Exception):
-    """Issues decoding the supplied TC String"""
+class DecodeFidesStringError(Exception):
+    """Issues decoding the supplied TC String or AC String"""
 
 
 class MisconfiguredPolicyException(Exception):

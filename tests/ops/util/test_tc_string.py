@@ -6,10 +6,10 @@ import pytest
 from iab_tcf import decode_v2
 from pydantic import ValidationError
 
-from fides.api.common_exceptions import DecodeTCStringError
+from fides.api.common_exceptions import DecodeFidesStringError
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.sql_models import PrivacyDeclaration, System
-from fides.api.schemas.privacy_preference import TCStringFidesPreferences
+from fides.api.schemas.privacy_preference import FidesStringFidesPreferences
 from fides.api.util.tcf.ac_string import build_ac_string
 from fides.api.util.tcf.experience_meta import (
     TCFVersionHash,
@@ -1553,7 +1553,7 @@ class TestDecodeTcString:
 
         tcf_contents = get_tcf_contents(db)
         fides_tcf_preferences = decode_tc_string_to_preferences(tc_str, tcf_contents)
-        assert isinstance(fides_tcf_preferences, TCStringFidesPreferences)
+        assert isinstance(fides_tcf_preferences, FidesStringFidesPreferences)
 
         assert len(fides_tcf_preferences.purpose_consent_preferences) == len(
             datamap_purpose_consent
@@ -1711,7 +1711,7 @@ class TestConvertTCStringtoMobile:
         """
 
         tc_str = "bad_core.bad_vendor"
-        with pytest.raises(DecodeTCStringError):
+        with pytest.raises(DecodeFidesStringError):
             convert_tc_string_to_mobile_data(tc_str)
 
     def test_invalid_base64_encoded_str(self):
@@ -1720,7 +1720,7 @@ class TestConvertTCStringtoMobile:
         """
 
         tc_str = "a"
-        with pytest.raises(DecodeTCStringError):
+        with pytest.raises(DecodeFidesStringError):
             convert_tc_string_to_mobile_data(tc_str)
 
     def test_string_with_incorrect_bits_for_field(self):

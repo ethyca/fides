@@ -3,8 +3,9 @@ from typing import Dict, List, Optional
 
 from iab_tcf import ConsentV2, decode_v2  # type: ignore[import]
 
-from fides.api.common_exceptions import DecodeTCStringError
+from fides.api.common_exceptions import DecodeFidesStringError
 from fides.api.schemas.tcf import TCMobileData
+from fides.api.util.tcf.ac_string import split_fides_string
 from fides.api.util.tcf.tc_model import TCModel
 from fides.api.util.tcf.tc_string import (
     PURPOSE_CONSENTS_BITS,
@@ -68,15 +69,22 @@ def _integer_dict_to_list(int_dict: Dict[int, bool]) -> List[int]:
     return [identifier for identifier, consented in int_dict.items() if consented]
 
 
-def convert_tc_string_to_mobile_data(tc_str: Optional[str]) -> Optional[TCMobileData]:
+def convert_fides_str_to_mobile_data(
+    fides_str: Optional[str],
+) -> Optional[TCMobileData]:
     """Helper to take a TC String if supplied and decode it into a TCMobileData format"""
-    if not tc_str:
+    if not fides_str:
         return None
+
+    tc_str, ac_str = split_fides_string(fides_str)
+
+    if not tc_str:
+        return TCMobileData(IABTCF_AddtlConsent=ac_str)
 
     try:
         decoded: ConsentV2 = decode_v2(tc_str)
     except binascii.Error:
-        raise DecodeTCStringError("Invalid base64-encoded string")
+        raise DecodeFidesStringError("Invalid base64-encoded string")
 
     def _build_binary_string(
         name: str, num_bits: int, override: Optional[List[int]] = None
@@ -134,8 +142,9 @@ def convert_tc_string_to_mobile_data(tc_str: Optional[str]) -> Optional[TCMobile
                 SPECIAL_FEATURE_BITS,
                 _integer_dict_to_list(decoded.special_features_optin),
             ),
+            IABTCF_AddtlConsent=ac_str,
         )
     except AttributeError:
-        raise DecodeTCStringError("Missing expected section(s) in TC String")
+        raise DecodeFidesStringError("Missing expected section(s) in TC String")
     except Exception as exc:
-        raise DecodeTCStringError(f"Unexpected decode error encountered: {exc}")
+        raise DecodeFidesStringError(f"Unexpected decode error encountered: {exc}")
