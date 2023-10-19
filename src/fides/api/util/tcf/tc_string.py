@@ -13,7 +13,7 @@ from fides.api.schemas.tcf import TCFPurposeSave, TCFSpecialFeatureSave, TCFVend
 from fides.api.util.tcf.tc_model import TCModel, convert_tcf_contents_to_tc_model
 
 # Number of bits allowed for certain sections that are used in multiple places
-from fides.api.util.tcf.tcf_experience_contents import TCFExperienceContents
+from fides.api.util.tcf.tcf_experience_contents import GVL_PREFIX, TCFExperienceContents
 
 USE_NON_STANDARD_TEXT_BITS = 1
 SPECIAL_FEATURE_BITS = 12
@@ -23,7 +23,7 @@ PURPOSE_LEGITIMATE_INTERESTS_BITS = 24
 
 def add_gvl_prefix(vendor_id: str) -> str:
     """Add gvl prefix to create a universal gvl identifier for the given vendor id"""
-    return "gvl." + vendor_id
+    return GVL_PREFIX + vendor_id
 
 
 class TCField(FidesSchema):

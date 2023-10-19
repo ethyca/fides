@@ -18,6 +18,7 @@ from fideslang.gvl.models import Feature, Purpose
 from fideslang.models import LegalBasisForProcessingEnum
 from fideslang.validation import FidesKey
 from loguru import logger
+from sqlalchemy import and_, or_
 from sqlalchemy.engine.row import Row  # type:ignore[import]
 from sqlalchemy.orm import Query, Session
 
@@ -47,6 +48,9 @@ GVL_PATH = join(
     "../../../data",
     "gvl.json",
 )
+
+AC_PREFIX = "gacp."
+GVL_PREFIX = "gvl."
 
 PURPOSE_DATA_USES: List[str] = []
 for purpose in MAPPED_PURPOSES.values():
@@ -91,6 +95,16 @@ SystemSubSections = Union[
     List[TCFFeatureRecord],
     List[TCFSpecialFeatureRecord],
 ]
+
+# Common SQLAlchemy filters used below
+AC_SYSTEM_FILTER = System.vendor_id.startswith(AC_PREFIX)
+CONSENT_LEGAL_BASIS_FILTER = (
+    PrivacyDeclaration.legal_basis_for_processing == LegalBasisForProcessingEnum.CONSENT
+)
+LEGITIMATE_INTEREST_LEGAL_BASIS_FILTER = (
+    PrivacyDeclaration.legal_basis_for_processing
+    == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST
+)
 
 
 class ConsentRecordType(Enum):
@@ -199,15 +213,20 @@ def get_matching_privacy_declarations(db: Session) -> Query:
             PrivacyDeclaration.features,
             PrivacyDeclaration.retention_period,
         )
-        .join(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
+        .outerjoin(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
         .filter(
-            PrivacyDeclaration.data_use.in_(ALL_GVL_DATA_USES),
-            PrivacyDeclaration.legal_basis_for_processing.in_(
-                [
-                    LegalBasisForProcessingEnum.CONSENT,
-                    LegalBasisForProcessingEnum.LEGITIMATE_INTEREST,
-                ]
-            ),
+            or_(
+                and_(
+                    PrivacyDeclaration.data_use.in_(ALL_GVL_DATA_USES),
+                    PrivacyDeclaration.legal_basis_for_processing.in_(
+                        [
+                            LegalBasisForProcessingEnum.CONSENT,
+                            LegalBasisForProcessingEnum.LEGITIMATE_INTEREST,
+                        ]
+                    ),
+                ),
+                AC_SYSTEM_FILTER,
+            )
         )
         .order_by(
             PrivacyDeclaration.created_at.desc()
@@ -245,7 +264,7 @@ def get_matching_data_uses_or_features(
         )
 
     unique_features: Set[str] = set()
-    for feature_name in record.features:
+    for feature_name in record.features or []:
         if feature_name in relevant_uses_or_features:
             unique_features.add(feature_name)
     return unique_features
@@ -441,7 +460,43 @@ def build_purpose_or_feature_section_and_update_vendor_map(
                 privacy_declaration_row=privacy_declaration_row,
             )
 
+        # Separately, add AC Vendor to Vendor Consent Map if applicable
+        add_ac_vendor_to_vendor_consent_map(
+            vendor_map=vendor_map,
+            tcf_vendor_component_type=tcf_vendor_component_type,
+            privacy_declaration_row=privacy_declaration_row,
+        )
+
     return non_vendor_record_map, vendor_map
+
+
+def add_ac_vendor_to_vendor_consent_map(
+    vendor_map: Dict[str, VendorRecord],
+    tcf_vendor_component_type: VendorSectionType,
+    privacy_declaration_row: Row,
+) -> None:
+    """
+    Add systems with ac.*-prefixed vendor records to the Vendor Consent section if applicable.
+
+    FE shows Consent toggle only for AC vendors, and they are not required to have Privacy Declarations
+    """
+    vendor_id, _ = get_system_identifiers(privacy_declaration_row)
+
+    if not (vendor_id and vendor_id.startswith(AC_PREFIX)):
+        return
+
+    if not tcf_vendor_component_type == TCFVendorConsentRecord:
+        return
+
+    if vendor_id in vendor_map:
+        return
+
+    vendor_map[vendor_id] = TCFVendorConsentRecord(
+        id=vendor_id,
+        name=privacy_declaration_row.system_name,
+        description=privacy_declaration_row.system_description,
+        has_vendor_id=True,
+    )
 
 
 def populate_vendor_relationships_basic_attributes(
@@ -513,7 +568,8 @@ def get_tcf_contents(
 
     matching_privacy_declarations: Query = get_matching_privacy_declarations(db)
 
-    # Collect purposes with a legal basis of consent and update system map
+    # Collect purposes with a legal basis of consent *or* AC systems (which aren't required to have privacy
+    # declarations) and update system map
     (
         purpose_consent_map,
         updated_vendor_consent_map,
@@ -524,8 +580,10 @@ def get_tcf_contents(
         vendor_subsection_name="purpose_consents",
         vendor_map=vendor_consent_map,
         matching_privacy_declaration_query=matching_privacy_declarations.filter(
-            PrivacyDeclaration.legal_basis_for_processing
-            == LegalBasisForProcessingEnum.CONSENT
+            or_(
+                CONSENT_LEGAL_BASIS_FILTER,
+                AC_SYSTEM_FILTER,
+            )
         ),
     )
 
@@ -540,8 +598,7 @@ def get_tcf_contents(
         vendor_subsection_name="purpose_legitimate_interests",
         vendor_map=vendor_legitimate_interests_map,
         matching_privacy_declaration_query=matching_privacy_declarations.filter(
-            PrivacyDeclaration.legal_basis_for_processing
-            == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST
+            LEGITIMATE_INTEREST_LEGAL_BASIS_FILTER
         ),
     )
 
@@ -727,18 +784,14 @@ def get_relevant_systems_for_tcf_attribute(  # pylint: disable=too-many-return-s
 
     if tcf_field == TCFComponentType.purpose_consent.value:
         return systems_that_match_tcf_data_uses(
-            starting_privacy_declarations.filter(
-                PrivacyDeclaration.legal_basis_for_processing
-                == LegalBasisForProcessingEnum.CONSENT
-            ),
+            starting_privacy_declarations.filter(CONSENT_LEGAL_BASIS_FILTER),
             purpose_data_uses,
         )
 
     if tcf_field == TCFComponentType.purpose_legitimate_interests.value:
         return systems_that_match_tcf_data_uses(
             starting_privacy_declarations.filter(
-                PrivacyDeclaration.legal_basis_for_processing
-                == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST
+                LEGITIMATE_INTEREST_LEGAL_BASIS_FILTER
             ),
             purpose_data_uses,
         )
@@ -762,8 +815,10 @@ def get_relevant_systems_for_tcf_attribute(  # pylint: disable=too-many-return-s
     if tcf_field == TCFComponentType.vendor_consent.value:
         return systems_that_match_vendor_string(
             starting_privacy_declarations.filter(
-                PrivacyDeclaration.legal_basis_for_processing
-                == LegalBasisForProcessingEnum.CONSENT
+                or_(
+                    CONSENT_LEGAL_BASIS_FILTER,
+                    AC_SYSTEM_FILTER,
+                )
             ),
             tcf_value,  # type: ignore[arg-type]
         )
@@ -771,18 +826,14 @@ def get_relevant_systems_for_tcf_attribute(  # pylint: disable=too-many-return-s
     if tcf_field == TCFComponentType.vendor_legitimate_interests.value:
         return systems_that_match_vendor_string(
             starting_privacy_declarations.filter(
-                PrivacyDeclaration.legal_basis_for_processing
-                == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST
+                LEGITIMATE_INTEREST_LEGAL_BASIS_FILTER
             ),
             tcf_value,  # type: ignore[arg-type]
         )
 
     if tcf_field == TCFComponentType.system_consent.value:
         return systems_that_match_system_id(
-            starting_privacy_declarations.filter(
-                PrivacyDeclaration.legal_basis_for_processing
-                == LegalBasisForProcessingEnum.CONSENT
-            ),
+            starting_privacy_declarations.filter(CONSENT_LEGAL_BASIS_FILTER),
             tcf_value
             # type: ignore[arg-type]
         )
@@ -790,8 +841,7 @@ def get_relevant_systems_for_tcf_attribute(  # pylint: disable=too-many-return-s
     if tcf_field == TCFComponentType.system_legitimate_interests.value:
         return systems_that_match_system_id(
             starting_privacy_declarations.filter(
-                PrivacyDeclaration.legal_basis_for_processing
-                == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST
+                LEGITIMATE_INTEREST_LEGAL_BASIS_FILTER
             ),
             tcf_value,  # type: ignore[arg-type]
         )
