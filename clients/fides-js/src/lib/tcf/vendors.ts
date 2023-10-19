@@ -51,22 +51,12 @@ export const vendorIsAc = (vendorId: TCFVendorRelationships["id"]) =>
   decodeVendorId(vendorId).source === VendorSources.AC;
 
 export const uniqueGvlVendorIds = (experience: PrivacyExperience): number[] => {
-  const {
-    tcf_vendor_consents: vendorConsents = [],
-    tcf_vendor_legitimate_interests: vendorLegints = [],
-  } = experience;
+  const { tcf_vendor_relationships: vendors = [] } = experience;
 
-  // List of i.e. [gvl.2, gacp.3, gvl.4]
-  const universalIds = Array.from(
-    new Set([
-      ...vendorConsents.map((v) => v.id),
-      ...vendorLegints.map((v) => v.id),
-    ])
-  );
   // Filter to just i.e. [gvl.2, gvl.4]
-  const gvlIds = universalIds.filter((uid) =>
-    vendorGvlEntry(uid, experience.gvl)
-  );
+  const gvlIds = vendors
+    .map((v) => v.id)
+    .filter((uid) => vendorGvlEntry(uid, experience.gvl));
   // Return [2,4] as numbers
   return gvlIds.map((uid) => +decodeVendorId(uid).id);
 };
@@ -83,15 +73,10 @@ const transformVendorDataToVendorRecords = ({
   isFidesSystem: boolean;
 }) => {
   const records: VendorRecord[] = [];
-  const uniqueVendorIds = Array.from(
-    new Set([...consents.map((c) => c.id), ...legints.map((l) => l.id)])
-  );
-  uniqueVendorIds.forEach((id) => {
-    const vendorConsent = consents.find((v) => v.id === id);
-    const vendorLegint = legints.find((v) => v.id === id);
-    const relationship = relationships.find((r) => r.id === id);
+  relationships.forEach((relationship) => {
+    const vendorConsent = consents.find((v) => v.id === relationship.id);
+    const vendorLegint = legints.find((v) => v.id === relationship.id);
     const record: VendorRecord = {
-      id,
       ...relationship,
       ...vendorConsent,
       ...vendorLegint,

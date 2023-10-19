@@ -227,7 +227,7 @@ export enum ConsentMethod {
 export type PrivacyPreferencesRequest = {
   browser_identity: Identity;
   code?: string;
-  tc_string?: string;
+  fides_string?: string;
   preferences?: Array<ConsentOptionCreate>;
   purpose_consent_preferences?: Array<TCFPurposeSave>;
   purpose_legitimate_interests_preferences?: Array<TCFPurposeSave>;
