@@ -1125,6 +1125,7 @@ describe("Fides-js TCF", () => {
       });
 
       it("can handle inappropriate legint purposes", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         cy.fixture("consent/experience_tcf.json").then((payload) => {
           const experience: PrivacyExperience = payload.items[0];
           // Set purpose with id 4 to LegInt which is not allowed!

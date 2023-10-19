@@ -74,6 +74,7 @@ import {
   hasSavedTcfPreferences,
   isNewFidesCookie,
   isPrivacyExperience,
+  tcfConsentCookieObjHasSomeConsentSet,
   transformTcfPreferencesToCookieKeys,
   transformUserPreferenceToBoolean,
 } from "./fides";
@@ -188,7 +189,7 @@ const init = async (config: FidesConfig) => {
       config.options.debug
     );
   } else if (
-    cookie.tcf_consent &&
+    tcfConsentCookieObjHasSomeConsentSet(cookie.tcf_consent) &&
     !cookie.fides_string &&
     isPrivacyExperience(config.experience) &&
     experienceIsValid(config.experience, config.options)
