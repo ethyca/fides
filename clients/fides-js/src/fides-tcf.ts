@@ -170,7 +170,8 @@ const updateCookie = async (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const overrideOptions: Partial<FidesOptionOverrides> = getOverrideFidesOptions();
+  const overrideOptions: Partial<FidesOptionOverrides> =
+    getOverrideFidesOptions();
   // eslint-disable-next-line no-param-reassign
   config.options = { ...config.options, ...overrideOptions };
   const cookie = getInitialCookie(config);
