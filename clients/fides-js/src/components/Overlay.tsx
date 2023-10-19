@@ -32,6 +32,7 @@ interface Props {
   cookie: FidesCookie;
   renderBanner: (props: RenderBannerProps) => VNode | null;
   renderModalContent: (props: RenderModalContent) => VNode;
+  onVendorPageClick?: () => void;
 }
 
 const Overlay: FunctionComponent<Props> = ({
@@ -40,6 +41,7 @@ const Overlay: FunctionComponent<Props> = ({
   cookie,
   renderBanner,
   renderModalContent,
+  onVendorPageClick,
 }) => {
   const delayBannerMilliseconds = 100;
   const delayModalLinkMilliseconds = 200;
@@ -52,7 +54,8 @@ const Overlay: FunctionComponent<Props> = ({
 
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
-    role: "dialog",
+    role: "alertdialog",
+    className: options.fidesEmbed ? "fides-embed" : "",
     title: experience?.experience_config?.title || "",
     onClose: dispatchCloseEvent,
   });
@@ -72,6 +75,12 @@ const Overlay: FunctionComponent<Props> = ({
       dispatchCloseEvent();
     }
   }, [instance, dispatchCloseEvent]);
+
+  useEffect(() => {
+    if (options.fidesEmbed && instance) {
+      handleOpenModal();
+    }
+  }, [options, instance, handleOpenModal]);
 
   useEffect(() => {
     const delayBanner = setTimeout(() => {
@@ -106,8 +115,11 @@ const Overlay: FunctionComponent<Props> = ({
   }, [options.modalLinkId, options.debug, handleOpenModal]);
 
   const showBanner = useMemo(
-    () => experience.show_banner && hasActionNeededNotices(experience),
-    [experience]
+    () =>
+      experience.show_banner &&
+      hasActionNeededNotices(experience) &&
+      !options.fidesEmbed,
+    [experience, options]
   );
 
   useEffect(() => {
@@ -150,6 +162,7 @@ const Overlay: FunctionComponent<Props> = ({
       <ConsentModal
         attributes={attributes}
         experience={experience.experience_config}
+        onVendorPageClick={onVendorPageClick}
       >
         {renderModalContent({ onClose: handleCloseModal })}
       </ConsentModal>

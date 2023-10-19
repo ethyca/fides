@@ -1,7 +1,7 @@
 import {
   ConsentMethod,
   ConsentOptionCreate,
-  LastServedNoticeSchema,
+  LastServedConsentSchema,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
   UserConsentPreference,
@@ -29,6 +29,7 @@ export const updateConsentPreferences = async ({
   experienceId,
   fidesApiUrl,
   consentMethod,
+  fidesDisableSaveApi,
   userLocationString,
   cookie,
   debug = false,
@@ -40,10 +41,11 @@ export const updateConsentPreferences = async ({
   experienceId: string;
   fidesApiUrl: string;
   consentMethod: ConsentMethod;
+  fidesDisableSaveApi: boolean;
   userLocationString?: string;
   cookie: FidesCookie;
   debug?: boolean;
-  servedNotices?: Array<LastServedNoticeSchema> | null;
+  servedNotices?: Array<LastServedConsentSchema> | null;
   tcf?: TcfSavePreferences;
   updateCookie: (oldCookie: FidesCookie) => Promise<FidesCookie>;
 }) => {
@@ -54,7 +56,7 @@ export const updateConsentPreferences = async ({
           const servedNotice = servedNotices
             ? servedNotices.find(
                 (n) =>
-                  n.privacy_notice_history.id ===
+                  n.privacy_notice_history?.id ===
                   notice.privacy_notice_history_id
               )
             : undefined;
@@ -67,16 +69,22 @@ export const updateConsentPreferences = async ({
       : undefined;
 
   // 1. Save preferences to Fides API
-  debugLog(debug, "Saving preferences to Fides API");
-  const privacyPreferenceCreate: PrivacyPreferencesRequest = {
-    browser_identity: cookie.identity,
-    preferences: fidesUserPreferences,
-    privacy_experience_id: experienceId,
-    user_geography: userLocationString,
-    method: consentMethod,
-    ...(tcf ?? []),
-  };
-  patchUserPreferenceToFidesServer(privacyPreferenceCreate, fidesApiUrl, debug);
+  if (!fidesDisableSaveApi) {
+    debugLog(debug, "Saving preferences to Fides API");
+    const privacyPreferenceCreate: PrivacyPreferencesRequest = {
+      browser_identity: cookie.identity,
+      preferences: fidesUserPreferences,
+      privacy_experience_id: experienceId,
+      user_geography: userLocationString,
+      method: consentMethod,
+      ...(tcf ?? []),
+    };
+    await patchUserPreferenceToFidesServer(
+      privacyPreferenceCreate,
+      fidesApiUrl,
+      debug
+    );
+  }
 
   // 2. Update the cookie object based on new preferences
   const updatedCookie = await updateCookie(cookie);
@@ -85,7 +93,7 @@ export const updateConsentPreferences = async ({
   // 3. Update the window.Fides object
   debugLog(debug, "Updating window.Fides");
   window.Fides.consent = cookie.consent;
-  window.Fides.tc_string = cookie.tc_string;
+  window.Fides.fides_string = cookie.fides_string;
   window.Fides.tcf_consent = cookie.tcf_consent;
 
   // 4. Save preferences to the cookie in the browser

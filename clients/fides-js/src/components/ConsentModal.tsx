@@ -4,24 +4,29 @@ import { ExperienceConfig } from "../lib/consent-types";
 
 import CloseButton from "./CloseButton";
 import GpcInfo from "./GpcInfo";
+import ExperienceDescription from "./ExperienceDescription";
+import { getConsentContext } from "../fides";
 
 const ConsentModal = ({
   attributes,
   experience,
   children,
+  onVendorPageClick,
 }: {
   attributes: Attributes;
   experience: ExperienceConfig;
   children: ComponentChildren;
+  onVendorPageClick?: () => void;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
+  const showGpcBadge = getConsentContext().globalPrivacyControl;
 
   return (
     // @ts-ignore A11yDialog ref obj type isn't quite the same
     <div
       data-testid="consent-modal"
       {...container}
-      className="fides-modal-container"
+      className={`fides-modal-container ${attributes.container.className}`}
     >
       <div {...overlay} className="fides-modal-overlay" />
       <div
@@ -41,33 +46,13 @@ const ConsentModal = ({
           data-testid="fides-modal-description"
           className="fides-modal-description"
         >
-          {experience.description}
+          <ExperienceDescription
+            onVendorPageClick={onVendorPageClick}
+            description={experience.description}
+          />
         </p>
-        <GpcInfo />
+        {showGpcBadge && <GpcInfo />}
         {children}
-        {/* {showTcf ? (
-          <TcfTabs notices={notices} />
-        ) : (
-          <div className="fides-modal-notices">
-            <NoticeToggles
-              notices={notices}
-              enabledNoticeKeys={enabledNoticeKeys}
-              onChange={onChange}
-            />
-          </div>
-        )} */}
-        {/* {buttonGroup} */}
-        {experience.privacy_policy_link_label &&
-        experience.privacy_policy_url ? (
-          <a
-            href={experience.privacy_policy_url}
-            rel="noopener noreferrer"
-            target="_blank"
-            className="fides-modal-privacy-policy"
-          >
-            {experience.privacy_policy_link_label}
-          </a>
-        ) : null}
       </div>
     </div>
   );

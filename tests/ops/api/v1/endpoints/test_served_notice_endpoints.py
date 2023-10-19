@@ -46,10 +46,10 @@ class TestSaveNoticesServedForFidesDeviceId:
             "browser_identity": {
                 "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
             },
-            "tcf_purposes": [5],
-            "tcf_vendors": ["amplitude"],
+            "tcf_purpose_consents": [5],
+            "tcf_vendor_consents": ["gvl.42"],
             "tcf_special_features": [2],
-            "tcf_systems": [system.id],
+            "tcf_system_legitimate_interests": [system.id],
             "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
             "user_geography": "fr",
             "acknowledge_mode": False,
@@ -239,7 +239,6 @@ class TestSaveNoticesServedForFidesDeviceId:
 
     def test_duplicate_tcf_feature_served(
         self,
-        db,
         api_client,
         url,
     ):
@@ -259,7 +258,7 @@ class TestSaveNoticesServedForFidesDeviceId:
             == "Duplicate served records saved against TCF component: 'tcf_features'"
         )
 
-    def test_invalid_tcf_purpose_served(
+    def test_invalid_tcf_consent_purpose_served(
         self,
         api_client,
         url,
@@ -268,7 +267,7 @@ class TestSaveNoticesServedForFidesDeviceId:
             "browser_identity": {
                 "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
             },
-            "tcf_purposes": [1000],
+            "tcf_purpose_consents": [1000],
             "user_geography": "us_ca",
             "acknowledge_mode": False,
             "serving_component": ServingComponent.tcf_overlay.value,
@@ -277,7 +276,7 @@ class TestSaveNoticesServedForFidesDeviceId:
         assert response.status_code == 422
         assert (
             response.json()["detail"][0]["msg"]
-            == "Invalid values for tcf_purposes served."
+            == "Invalid values for tcf_purpose_consents served."
         )
 
     def test_invalid_tcf_special_purpose_served(
@@ -352,7 +351,7 @@ class TestSaveNoticesServedForFidesDeviceId:
             "browser_identity": {
                 "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
             },
-            "tcf_systems": ["bad_system"],
+            "tcf_system_consents": ["bad_system"],
             "user_geography": "us_ca",
             "acknowledge_mode": False,
             "serving_component": ServingComponent.tcf_overlay.value,
@@ -394,18 +393,25 @@ class TestSaveNoticesServedForFidesDeviceId:
         vendor_served = response.json()[2]
         system_served = response.json()[3]
 
-        # Assert purpose served portion of response
-        assert purpose_served["purpose"] == 5
-        assert purpose_served["vendor"] is None
+        # Assert purpose consent served portion of response
+        assert purpose_served["purpose_consent"] == 5
+        assert purpose_served["purpose_legitimate_interests"] is None
+        assert purpose_served["vendor_consent"] is None
+        assert purpose_served["vendor_legitimate_interests"] is None
         assert purpose_served["feature"] is None
+        assert purpose_served["special_feature"] is None
+        assert purpose_served["special_purpose"] is None
         assert purpose_served["privacy_notice_history"] is None
         purpose_served_id = purpose_served["id"]
         purpose_served_history_id = purpose_served["served_notice_history_id"]
 
         # Assert special feature served portion of response
-        assert special_feature_served["purpose"] is None
-        assert special_feature_served["vendor"] is None
+        assert special_feature_served["purpose_consent"] is None
+        assert special_feature_served["purpose_legitimate_interests"] is None
+        assert special_feature_served["vendor_consent"] is None
+        assert special_feature_served["vendor_legitimate_interests"] is None
         assert special_feature_served["feature"] is None
+        assert special_feature_served["special_purpose"] is None
         assert special_feature_served["special_feature"] == 2
         assert special_feature_served["privacy_notice_history"] is None
         last_served_special_feature = LastServedNotice.get(
@@ -413,28 +419,38 @@ class TestSaveNoticesServedForFidesDeviceId:
         )
 
         # Assert vendor served portion of response
-        assert vendor_served["purpose"] is None
-        assert vendor_served["vendor"] == "amplitude"
+        assert vendor_served["purpose_consent"] is None
+        assert vendor_served["purpose_legitimate_interests"] is None
+        assert vendor_served["vendor_consent"] == "gvl.42"
+        assert vendor_served["vendor_legitimate_interests"] is None
         assert vendor_served["feature"] is None
+        assert vendor_served["special_purpose"] is None
         assert vendor_served["privacy_notice_history"] is None
         vendor_served_id = vendor_served["id"]
         vendor_served_history_id = vendor_served["served_notice_history_id"]
 
         # Assert system served portion of response
-        assert system_served["purpose"] is None
-        assert system_served["vendor"] is None
+        assert system_served["purpose_consent"] is None
+        assert system_served["purpose_legitimate_interests"] is None
+        assert system_served["vendor_consent"] is None
+        assert system_served["vendor_legitimate_interests"] is None
         assert system_served["feature"] is None
         assert system_served["special_feature"] is None
-        assert system_served["system"] == system.id
+        assert system_served["system_consent"] is None
+        assert system_served["system_legitimate_interests"] == system.id
         assert system_served["privacy_notice_history"] is None
         last_served_system = LastServedNotice.get(db, object_id=system_served["id"])
 
         # Assert db records created for last served and served notice history for the purpose
         last_served_use = LastServedNotice.get(db, object_id=purpose_served_id)
-        assert last_served_use.purpose == 5
+        assert last_served_use.purpose_consent == 5
+        assert last_served_use.purpose_legitimate_interests is None
         assert last_served_use.privacy_notice_id is None
         assert last_served_use.privacy_notice_history_id is None
-        assert last_served_use.vendor is None
+        assert last_served_use.vendor_consent is None
+        assert last_served_use.vendor_legitimate_interests is None
+        assert last_served_use.system_consent is None
+        assert last_served_use.system_legitimate_interests is None
         assert last_served_use.feature is None
         assert last_served_use.created_at is not None
         assert last_served_use.updated_at is not None
@@ -447,7 +463,7 @@ class TestSaveNoticesServedForFidesDeviceId:
             use_served_history.fides_user_device_provided_identity_id
             == last_served_use.fides_user_device_provided_identity_id
         )
-        assert use_served_history.purpose == 5
+        assert use_served_history.purpose_consent == 5
         assert (
             use_served_history.privacy_experience_id
             == privacy_experience_france_tcf_overlay.id
@@ -455,10 +471,12 @@ class TestSaveNoticesServedForFidesDeviceId:
 
         # Assert db records created for last served and served notice history for the vendor
         last_served_vendor = LastServedNotice.get(db, object_id=vendor_served_id)
-        assert last_served_vendor.purpose is None
+        assert last_served_vendor.purpose_consent is None
+        assert last_served_vendor.purpose_legitimate_interests is None
         assert last_served_vendor.privacy_notice_id is None
         assert last_served_vendor.privacy_notice_history_id is None
-        assert last_served_vendor.vendor == "amplitude"
+        assert last_served_vendor.vendor_consent == "gvl.42"
+        assert last_served_vendor.vendor_legitimate_interests is None
         assert last_served_vendor.feature is None
         assert last_served_vendor.created_at is not None
         assert last_served_vendor.updated_at is not None
@@ -470,7 +488,8 @@ class TestSaveNoticesServedForFidesDeviceId:
             vendor_served_history.fides_user_device_provided_identity_id
             == last_served_vendor.fides_user_device_provided_identity_id
         )
-        assert vendor_served_history.vendor == "amplitude"
+        assert vendor_served_history.vendor_consent == "gvl.42"
+        assert vendor_served_history.vendor_legitimate_interests is None
         assert (
             vendor_served_history.privacy_experience_id
             == privacy_experience_france_tcf_overlay.id
@@ -484,11 +503,12 @@ class TestSaveNoticesServedForFidesDeviceId:
         assert special_feature_served_history.special_feature == 2
 
         # Assert system last served
-        assert last_served_system.system == system.id
+        assert last_served_system.system_legitimate_interests == system.id
         system_served_history = ServedNoticeHistory.get(
             db, object_id=last_served_system.served_notice_history_id
         )
-        assert system_served_history.system == system.id
+        assert system_served_history.system_consent is None
+        assert system_served_history.system_legitimate_interests == system.id
 
         last_served_system.delete(db)
         system_served_history.delete(db)
@@ -533,7 +553,7 @@ class TestSaveNoticesServedPrivacyCenter:
                 "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
             },
             "code": verification_code,
-            "tcf_purposes": [5],
+            "tcf_purpose_consents": [5],
             "privacy_experience_id": privacy_experience_france_tcf_overlay.id,
             "user_geography": "fr",
             "acknowledge_mode": False,
@@ -732,14 +752,14 @@ class TestSaveNoticesServedPrivacyCenter:
         assert len(response.json()) == 1
         response_json = response.json()[0]
 
-        assert response_json["purpose"] == 5
+        assert response_json["purpose_consent"] == 5
         served_history_id = response_json["served_notice_history_id"]
         record = (
             db.query(ServedNoticeHistory)
             .filter(ServedNoticeHistory.id == served_history_id)
             .first()
         )
-        assert record.purpose == 5
+        assert record.purpose_consent == 5
 
         current = record.last_served_record
 

@@ -20,15 +20,22 @@ import type { TCFVendorSave } from "./TCFVendorSave";
  * New *_preferences fields are used for saving preferences against various tcf components.
  */
 export type PrivacyPreferencesRequest = {
+  purpose_consent_preferences?: Array<TCFPurposeSave>;
+  purpose_legitimate_interests_preferences?: Array<TCFPurposeSave>;
+  vendor_consent_preferences?: Array<TCFVendorSave>;
+  vendor_legitimate_interests_preferences?: Array<TCFVendorSave>;
+  special_feature_preferences?: Array<TCFSpecialFeatureSave>;
   browser_identity: Identity;
   code?: string;
+  /**
+   * If supplied, TC strings and AC strings are decoded and preferences saved for purpose_consent, purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features
+   */
+  fides_string?: string;
   preferences?: Array<ConsentOptionCreate>;
-  purpose_preferences?: Array<TCFPurposeSave>;
   special_purpose_preferences?: Array<TCFSpecialPurposeSave>;
-  vendor_preferences?: Array<TCFVendorSave>;
   feature_preferences?: Array<TCFFeatureSave>;
-  special_feature_preferences?: Array<TCFSpecialFeatureSave>;
-  system_preferences?: Array<TCFVendorSave>;
+  system_consent_preferences?: Array<TCFVendorSave>;
+  system_legitimate_interests_preferences?: Array<TCFVendorSave>;
   policy_key?: string;
   privacy_experience_id?: string;
   user_geography?: string;

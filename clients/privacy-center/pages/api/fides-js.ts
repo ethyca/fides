@@ -86,6 +86,8 @@ export default async function handler(
     }));
   }
 
+  const fidesString = environment.settings.FIDES_STRING;
+
   // Check if a geolocation was provided via headers or query param
   const geolocation = await lookupGeolocation(req);
 
@@ -96,7 +98,8 @@ export default async function handler(
   if (
     geolocation &&
     environment.settings.IS_OVERLAY_ENABLED &&
-    environment.settings.IS_PREFETCH_ENABLED
+    environment.settings.IS_PREFETCH_ENABLED &&
+    !fidesString
   ) {
     const fidesRegionString = constructFidesRegionString(geolocation);
 
@@ -141,6 +144,9 @@ export default async function handler(
       serverSideFidesApiUrl:
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
         environment.settings.FIDES_API_URL,
+      fidesEmbed: environment.settings.FIDES_EMBED,
+      fidesDisableSaveApi: environment.settings.FIDES_DISABLE_SAVE_API,
+      fidesString,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -211,11 +217,15 @@ async function fetchCustomFidesCss(
 ): Promise<string | null> {
   const currentTime = Date.now();
   const forceRefresh = "refresh" in req.query;
-  if (
-    (!cachedCustomFidesCss ||
-      (lastFetched && currentTime - lastFetched > CUSTOM_FIDES_CSS_TTL_MS)) &&
-    (forceRefresh || autoRefresh)
-  ) {
+
+  // no cached value or TTL has elapsed
+  const isCacheInvalid =
+    !cachedCustomFidesCss ||
+    (lastFetched && currentTime - lastFetched > CUSTOM_FIDES_CSS_TTL_MS);
+  // refresh if forced or auto-refresh is enabled and the cache is invalid
+  const shouldRefresh = forceRefresh || (autoRefresh && isCacheInvalid);
+
+  if (shouldRefresh) {
     try {
       const environment = await loadPrivacyCenterEnvironment();
       const fidesUrl =

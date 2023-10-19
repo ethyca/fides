@@ -1,6 +1,9 @@
 import { h } from "preact";
 import { useDisclosure } from "../../lib/hooks";
-import { TCFPurposeRecord } from "~/lib/tcf/types";
+import {
+  TCFPurposeConsentRecord,
+  TCFPurposeLegitimateInterestsRecord,
+} from "../../lib/tcf/types";
 
 const ArrowDown = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
@@ -18,7 +21,9 @@ const InitialLayerAccordion = ({
 }: {
   title: string;
   description: string;
-  purposes?: Array<TCFPurposeRecord>;
+  purposes?: Array<
+    TCFPurposeConsentRecord | TCFPurposeLegitimateInterestsRecord
+  >;
 }) => {
   const { isOpen, getButtonProps, getDisclosureProps, onToggle } =
     useDisclosure({
@@ -53,7 +58,7 @@ const InitialLayerAccordion = ({
       </div>
       <div {...getDisclosureProps()}>
         <div>{description}</div>
-        {purposes ? (
+        {purposes?.length ? (
           <div className="fides-tcf-purpose-vendor fides-background-dark">
             <div className="fides-tcf-purpose-vendor-title fides-tcf-toggle-content">
               Purposes include

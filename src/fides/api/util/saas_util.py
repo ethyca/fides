@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import re
-from collections import defaultdict
+from collections import defaultdict, deque
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import pydash
@@ -43,7 +43,7 @@ def load_config_from_string(string: str) -> Dict:
         return yaml.safe_load(string)["saas_config"]
     except:
         raise ValidationError(
-            "Config contents do not contain a 'saas_config' key at the root level."
+            "Config contents do not contain a 'saas_config' key at the root level. For example, check formatting, specifically indentation."
         )
 
 
@@ -84,7 +84,7 @@ def load_dataset_from_string(string: str) -> Dict:
         return yaml.safe_load(string)["dataset"][0]
     except:
         raise ValidationError(
-            "Dataset contents do not contain a 'dataset' key at the root level."
+            "Dataset contents do not contain a 'dataset' key at the root level. For example, check formatting, specifically indentation."
         )
 
 
@@ -231,11 +231,10 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
     }
     """
     output: Dict[Any, Any] = {}
-    for path, value in flat_dict.items():
-        if isinstance(value, dict) and len(value) > 0:
-            raise FidesopsException(
-                "'unflatten_dict' expects a flattened dictionary as input."
-            )
+    queue = deque(flat_dict.items())
+
+    while queue:
+        path, value = queue.popleft()
         keys = path.split(separator)
         target = output
         for i, current_key in enumerate(keys[:-1]):
@@ -253,7 +252,14 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
             if isinstance(target, list):
                 target.append(value)
             else:
-                target[keys[-1]] = value
+                # If the value is a dictionary, add its components to the queue for processing
+                if isinstance(value, dict):
+                    target = target.setdefault(keys[-1], {})
+                    for inner_key, inner_value in value.items():
+                        new_key = f"{path}{separator}{inner_key}"
+                        queue.append((new_key, inner_value))
+                else:
+                    target[keys[-1]] = value
         except TypeError as exc:
             raise FidesopsException(
                 f"Error unflattening dictionary, conflicting levels detected: {exc}"
