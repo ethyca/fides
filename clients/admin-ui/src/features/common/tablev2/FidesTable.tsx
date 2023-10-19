@@ -40,17 +40,24 @@ export function FidesTableV2<T>({
 }: Props<T>) {
   return (
     <Box>
-      <TableContainer height="inherit" overflowY="auto">
+      <TableContainer
+        height="inherit"
+        overflowY="auto"
+        borderBottomWidth="1px"
+        borderBottomColor="gray.200"
+      >
         <Table
           variant="unstyled"
           style={{
-            borderCollapse: "collapse",
+            borderCollapse: "separate",
+            borderSpacing: 0,
           }}
         >
           <Thead
             position="sticky"
             top="0"
             height="36px"
+            zIndex={10}
             backgroundColor="gray.50"
           >
             {tableInstance.getHeaderGroups().map((headerGroup) => (
@@ -58,9 +65,17 @@ export function FidesTableV2<T>({
                 {headerGroup.headers.map((header) => {
                   return (
                     <Th
-                      borderWidth="1px"
-                      borderColor="gray.200"
                       key={header.id}
+                      borderTopWidth="1px"
+                      borderTopColor="gray.200"
+                      borderBottomWidth="1px"
+                      borderBottomColor="gray.200"
+                      borderRightWidth="1px"
+                      borderRightColor="gray.200"
+                      _first={{
+                        borderLeftWidth: "1px",
+                        borderLeftColor: "gray.200",
+                      }}
                       colSpan={header.colSpan}
                       data-testid={`column-${header.id}`}
                       style={getTableTHandTDStyles(header.column.id)}
@@ -95,8 +110,14 @@ export function FidesTableV2<T>({
                     return (
                       <Td
                         key={cell.id}
-                        borderWidth="1px"
-                        borderColor="gray.200"
+                        borderBottomWidth="1px"
+                        borderBottomColor="gray.200"
+                        borderRightWidth="1px"
+                        borderRightColor="gray.200"
+                        _first={{
+                          borderLeftWidth: "1px",
+                          borderLeftColor: "gray.200",
+                        }}
                         height="inherit"
                         style={getTableTHandTDStyles(cell.column.id)}
                         onClick={
