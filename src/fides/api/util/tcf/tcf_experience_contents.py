@@ -275,7 +275,6 @@ def _add_top_level_record_to_purpose_or_feature_section(
     non_vendor_record_map: Dict[int, NonVendorRecord],
     is_purpose_type: bool,
     use_or_feature: str,
-    declaration: PrivacyDeclaration,
 ) -> Optional[NonVendorRecord]:
     """
     Create a purpose or feature record and add to the top-level sections.
@@ -295,7 +294,7 @@ def _add_top_level_record_to_purpose_or_feature_section(
     # Transform the base gvl record into the TCF record type that has more elements for TCF display.
     # Will be a top-level section.
     top_level_tcf_record: NonVendorRecord = tcf_component_type(
-        **fideslang_gvl_record.dict(), retention_period=declaration.retention_period
+        **fideslang_gvl_record.dict()
     )
 
     # Add the TCF record to the top-level section in-place if it does not exist
@@ -423,7 +422,6 @@ def build_purpose_or_feature_section_and_update_vendor_map(
                 non_vendor_record_map=non_vendor_record_map,
                 is_purpose_type=is_purpose_section,
                 use_or_feature=attribute,
-                declaration=privacy_declaration_row,
             )
 
             if not top_level_tcf_record:
