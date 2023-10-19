@@ -21,7 +21,15 @@ export const PaginationBar = <T,>({ tableInstance }: PaginationBarProps<T>) => {
 
   return (
     <HStack mt={3}>
-      <Text fontSize="xs" lineHeight={4} fontWeight="semibold">
+      <Text
+        fontSize="xs"
+        lineHeight={4}
+        fontWeight="semibold"
+        userSelect="none"
+        style={{
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
         {startRange}
         {"-"}
         {endRange <= totalRows ? endRange : totalRows} of {totalRows}
