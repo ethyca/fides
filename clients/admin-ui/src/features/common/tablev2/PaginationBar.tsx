@@ -1,12 +1,11 @@
-import { Table as TableInstance } from "@tanstack/react-table";
 import {
-  Button,
-  HStack,
-  Text,
   ChevronLeftIcon,
   ChevronRightIcon,
+  HStack,
   IconButton,
+  Text,
 } from "@fidesui/react";
+import { Table as TableInstance } from "@tanstack/react-table";
 
 type PaginationBarProps<T> = {
   tableInstance: TableInstance<T>;
@@ -14,8 +13,8 @@ type PaginationBarProps<T> = {
 
 export const PaginationBar = <T,>({ tableInstance }: PaginationBarProps<T>) => {
   const totalRows = tableInstance.getFilteredRowModel().rows.length;
-  const pageIndex = tableInstance.getState().pagination.pageIndex;
-  const pageSize = tableInstance.getState().pagination.pageSize;
+  const { pageIndex } = tableInstance.getState().pagination;
+  const { pageSize } = tableInstance.getState().pagination;
   const startRange = pageIndex * pageSize;
   const endRange = pageIndex * pageSize + pageSize;
 
@@ -30,9 +29,8 @@ export const PaginationBar = <T,>({ tableInstance }: PaginationBarProps<T>) => {
           fontVariantNumeric: "tabular-nums",
         }}
       >
-        {startRange}
-        {"-"}
-        {endRange <= totalRows ? endRange : totalRows} of {totalRows}
+        {startRange}-{endRange <= totalRows ? endRange : totalRows} of{" "}
+        {totalRows}
       </Text>
       <IconButton
         icon={<ChevronLeftIcon />}

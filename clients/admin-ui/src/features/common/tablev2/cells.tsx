@@ -1,13 +1,13 @@
 import {
-  Flex,
-  Text,
-  Box,
-  Checkbox,
   ArrowDownIcon,
   ArrowUpIcon,
+  Box,
+  Checkbox,
+  Flex,
+  Text,
 } from "@fidesui/react";
-import { useState, HTMLProps, ReactNode } from "react";
 import { HeaderContext } from "@tanstack/react-table";
+import { HTMLProps, ReactNode, useState } from "react";
 
 export const DefaultCell = ({ value }: { value: string }) => (
   <Flex alignItems="center" height="100%">
@@ -25,7 +25,6 @@ type IndeterminateCheckboxCellProps = {
 
 export const IndeterminateCheckboxCell = ({
   indeterminate,
-  className = "",
   initialValue,
   manualDisable,
   ...rest

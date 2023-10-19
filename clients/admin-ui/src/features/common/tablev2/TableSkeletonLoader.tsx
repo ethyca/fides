@@ -6,13 +6,9 @@ type Props = {
   numRows: number;
 };
 
-export const TableSkeletonLoader: FC<Props> = ({
-  children,
-  rowHeight,
-  numRows,
-}) => {
+export const TableSkeletonLoader: FC<Props> = ({ rowHeight, numRows }) => {
   const rows = [];
-  for (let i = 0; i < numRows; i++) {
+  for (let i = 0; i < numRows; i += 1) {
     rows.push(<Skeleton height={`${rowHeight}px`} key={i} />);
   }
 

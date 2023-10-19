@@ -1,8 +1,7 @@
+/* eslint-disable react/no-unstable-nested-components */
 import {
-  Box,
   Button,
   Flex,
-  HStack,
   Spinner,
   Tooltip,
   useDisclosure,
@@ -12,35 +11,34 @@ import {
   createColumnHelper,
   getCoreRowModel,
   getFilteredRowModel,
-  getSortedRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { useFeatures } from "~/features/common/features";
-
-import { successToastParams } from "~/features/common/toast";
 import {
-  FidesTableV2,
-  GlobalFilterV2,
   DefaultCell,
   DefaultHeaderCell,
+  FidesTableV2,
+  GlobalFilterV2,
   IndeterminateCheckboxCell,
-  TableActionBar,
   PaginationBar,
   RowSelectionBar,
+  TableActionBar,
   TableSkeletonLoader,
 } from "~/features/common/tablev2";
+import { successToastParams } from "~/features/common/toast";
 import {
   DictSystems,
   selectAllDictSystems,
   useGetAllCreatedSystemsQuery,
   usePostCreatedSystemsMutation,
 } from "~/features/plus/plus.slice";
-import ConfirmationModal from "~/features/common/ConfirmationModal";
 
 type MultipleSystemTable = DictSystems;
 
@@ -101,17 +99,17 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
         header: (props) => <DefaultHeaderCell value={systemText} {...props} />,
       }),
     ],
-    [allRowsAdded]
+    [allRowsAdded, systemText]
   );
 
   const rowSelection = useMemo(() => {
-    const rowSelection: Record<string, boolean> = {};
+    const innerRowSelection: Record<string, boolean> = {};
     dictionaryOptions.forEach((ds, index) => {
       if (ds.linked_system) {
-        rowSelection[index] = true;
+        innerRowSelection[index] = true;
       }
     });
-    return rowSelection;
+    return innerRowSelection;
   }, [dictionaryOptions]);
 
   const tableInstance = useReactTable<MultipleSystemTable>({

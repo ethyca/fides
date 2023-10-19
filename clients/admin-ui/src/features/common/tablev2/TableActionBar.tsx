@@ -1,5 +1,5 @@
-import { FC } from "react";
 import { HStack } from "@fidesui/react";
+import { FC } from "react";
 
 export const TableActionBar: FC = ({ children }) => (
   <HStack
