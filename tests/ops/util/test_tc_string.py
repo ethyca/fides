@@ -1704,7 +1704,7 @@ class TestConvertTCStringtoMobile:
         assert tc_mobile_data["IABTCF_VendorLegitimateInterests"] == ""
         assert tc_mobile_data["IABTCF_SpecialFeaturesOptIns"] == "000000000000"
 
-    def test_bad_str(self):
+    def test_bad_tc_str(self):
         """
         Test response for an invalid string
         """
@@ -1712,6 +1712,10 @@ class TestConvertTCStringtoMobile:
         tc_str = "bad_core.bad_vendor"
         with pytest.raises(DecodeFidesStringError):
             convert_fides_str_to_mobile_data(tc_str)
+
+        ac_str_only = ",1~1.100"
+        with pytest.raises(DecodeFidesStringError):
+            convert_fides_str_to_mobile_data(ac_str_only)
 
     def test_invalid_base64_encoded_str(self):
         """

@@ -71,10 +71,9 @@ def test_split_fides_string():
     assert tc_str == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
     assert ac_str == "1~100.1000"
 
-    # Only an AC string was supplied
-    tc_str, ac_str = split_fides_string(",1~100.1000")
-    assert tc_str is None
-    assert ac_str == "1~100.1000"
+    # Only an AC string was supplied - invalid, because core TC string needed for complete signal
+    with pytest.raises(DecodeFidesStringError):
+        split_fides_string(",1~100.1000")
 
     # Three sections supplied which is not supported
     with pytest.raises(DecodeFidesStringError):

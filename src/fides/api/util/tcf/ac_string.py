@@ -83,10 +83,11 @@ def split_fides_string(fides_str: Optional[str]) -> Tuple[Optional[str], Optiona
         return None, None
 
     split_str = fides_str.split(FIDES_SEPARATOR)
-    tc_str = split_str[0] or None
+    tc_str = split_str[0]
+    if not tc_str:
+        raise DecodeFidesStringError("TC String is required for a complete signal")
 
     ac_str = None
-
     if len(split_str) > 2:
         raise DecodeFidesStringError("Unexpected Fides String format")
 

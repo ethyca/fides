@@ -2661,7 +2661,7 @@ class TestSavePrivacyPreferencesFidesStringOnly:
 
     @pytest.mark.usefixtures("ac_system_without_privacy_declaration", "enable_tcf")
     def test_save_privacy_preferences_ac_string_only(self, api_client, url):
-        """Likely contrived but let's make sure this works"""
+        """Core TC String required, you can't just pass in an AC string by itself"""
         fides_string: str = ",1~100"
 
         fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
@@ -2675,15 +2675,10 @@ class TestSavePrivacyPreferencesFidesStringOnly:
         response = api_client.patch(
             url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
         )
-        assert response.status_code == 200
-        assert len(response.json()["vendor_consent_preferences"]) == 1
+        assert response.status_code == 400
         assert (
-            response.json()["vendor_consent_preferences"][0]["vendor_consent"]
-            == "gacp.100"
+            response.json()["detail"] == "TC String is required for a complete signal"
         )
-
-        assert response.json()["fides_mobile_data"]["IABTCF_AddtlConsent"] == "1~100"
-        assert response.json()["fides_mobile_data"]["IABTCF_CmpSdkVersion"] is None
 
     @pytest.mark.usefixtures("emerse_system", "enable_tcf")
     def test_save_privacy_preferences_tc_string_only(self, api_client, url):
