@@ -201,11 +201,16 @@ export type UserGeolocation = {
   region?: string; // "NY"
 };
 
-// Regex to validate a location string, which must:
-// 1) Start with a 2-3 character country code (e.g. "US")
-// 2) Optionally end with a 2-3 character region code (e.g. "CA")
-// 3) Separated by a dash (e.g. "US-CA")
-export const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
+export type OverrideOptions = {
+  fides_string: string;
+  fides_disable_save_api: boolean;
+  fides_embed: boolean;
+};
+
+export type FidesOptionOverrides = Pick<
+  FidesOptions,
+  "fidesString" | "fidesDisableSaveApi" | "fidesEmbed"
+>;
 
 export enum ButtonType {
   PRIMARY = "primary",
