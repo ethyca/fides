@@ -16,7 +16,12 @@ export const RowSelectionBar = <T,>({
   }
 
   return (
-    <Tr backgroundColor="purple.100" height="36px" p={0}>
+    <Tr
+      backgroundColor="purple.100"
+      height="36px"
+      p={0}
+      boxShadow="0px 4px 6px -1px rgba(0, 0, 0, 0.05)"
+    >
       <Td
         borderWidth="1px"
         borderColor="gray.200"
