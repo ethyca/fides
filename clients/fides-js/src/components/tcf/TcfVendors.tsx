@@ -30,7 +30,7 @@ const VendorDetails = ({
     return null;
   }
 
-  const hasRetentionInfo = lineItems.some((li) => li.retention_period);
+  const hasRetentionInfo = lineItems.some((li) => li.retention_period != null);
 
   return (
     <table className="fides-vendor-details-table">
@@ -50,7 +50,9 @@ const VendorDetails = ({
             <td>{item.name}</td>
             {hasRetentionInfo ? (
               <td style={{ textAlign: "right" }}>
-                {`${item.retention_period} day(s)` ?? "N/A"}
+                {item.retention_period
+                  ? `${item.retention_period} day(s)`
+                  : "N/A"}
               </td>
             ) : null}
           </tr>
