@@ -1,17 +1,24 @@
-import { Box, Breadcrumb, BreadcrumbItem, Heading, Text } from "@fidesui/react";
+import {
+  Box,
+  Breadcrumb,
+  BreadcrumbItem,
+  Flex,
+  Heading,
+  Text,
+} from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
-import Layout from "~/features/common/Layout";
+import FixedLayout from "~/features/common/FixedLayout";
 import {
   ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
 } from "~/features/common/nav/v2/routes";
-import { AddMultipleSystems } from "~/features/system/AddMultipleSystems";
+import { AddMultipleSystemsV2 } from "~/features/system/AddMultipleSystems";
 
 const DESCRIBE_SYSTEM_COPY =
-  "Select and add systems directory to your data map. ALl s ystems available here are from the TCF Global Vendor list, Google's AC list, and Fides Compass. All Systems come pre-configured so there is no need for your to do anything!";
+  "Select and add systems directory to your data map. All s ystems available here are from the TCF Global Vendor list, Google's AC list, and Fides Compass. All Systems come pre-configured so there is no need for your to do anything!";
 
 const Header = () => (
   <Box display="flex" mb={2} alignItems="center" data-testid="header">
@@ -25,7 +32,7 @@ const AddMultipleSystemsPage: NextPage = () => {
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
 
   return (
-    <Layout title="Describe your system">
+    <FixedLayout isDefaultLayoutPadding title="Describe your system">
       <Box mb={4}>
         <Header />
         <Box>
@@ -49,8 +56,8 @@ const AddMultipleSystemsPage: NextPage = () => {
           {DESCRIBE_SYSTEM_COPY}
         </Text>
       </Box>
-      <AddMultipleSystems redirectRoute={DATAMAP_ROUTE} />
-    </Layout>
+      <AddMultipleSystemsV2 isSystem redirectRoute={DATAMAP_ROUTE} />
+    </FixedLayout>
   );
 };
 

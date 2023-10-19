@@ -1,75 +1,59 @@
-import { Box, Button, Flex, Spinner } from "@fidesui/react";
-import { useRouter } from "next/router";
 import {
-  HTMLProps,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { Column, Hooks, Row, TableInstance, useRowSelect } from "react-table";
+  Box,
+  Button,
+  Flex,
+  HStack,
+  Spinner,
+  Tooltip,
+  useDisclosure,
+  useToast,
+} from "@fidesui/react";
+import {
+  createColumnHelper,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  getPaginationRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { useRouter } from "next/router";
+import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import { FidesTable, WrappedCell } from "~/features/common/table";
-import { FidesObject } from "~/features/common/table/FidesTable";
+
+import { successToastParams } from "~/features/common/toast";
+import {
+  FidesTableV2,
+  GlobalFilterV2,
+  DefaultCell,
+  DefaultHeaderCell,
+  IndeterminateCheckboxCell,
+  TableActionBar,
+  PaginationBar,
+  RowSelectionBar,
+  TableSkeletonLoader,
+} from "~/features/common/tablev2";
 import {
   DictSystems,
   selectAllDictSystems,
   useGetAllCreatedSystemsQuery,
   usePostCreatedSystemsMutation,
 } from "~/features/plus/plus.slice";
+import ConfirmationModal from "~/features/common/ConfirmationModal";
 
-type CheckboxProps = {
-  indeterminate?: boolean;
-  row: Row<MultipleSystemTable>;
-} & HTMLProps<HTMLInputElement>;
+type MultipleSystemTable = DictSystems;
 
-const IndeterminateCheckboxTest = ({
-  indeterminate,
-  className = "",
-  ...rest
-}: CheckboxProps) => {
-  const ref = useRef<HTMLInputElement>(null!);
-  const [initialCheckedValue] = useState(rest?.row?.original.linked_system);
-
-  useEffect(() => {
-    if (typeof indeterminate === "boolean") {
-      ref.current.indeterminate = !rest.checked && indeterminate;
-    }
-  }, [ref, indeterminate, rest.checked]);
-
-  if (initialCheckedValue) {
-    return (
-      <input
-        type="checkbox"
-        ref={ref}
-        disabled
-        className={`${className} cursor-pointer`}
-        checked
-      />
-    );
-  }
-
-  return (
-    <input
-      type="checkbox"
-      ref={ref}
-      disabled={initialCheckedValue}
-      className={`${className} cursor-pointer`}
-      {...rest}
-    />
-  );
-};
-
-type MultipleSystemTable = DictSystems & FidesObject;
+const columnHelper = createColumnHelper<MultipleSystemTable>();
 
 type Props = {
+  isSystem: boolean;
   redirectRoute: string;
 };
 
-export const AddMultipleSystems = ({ redirectRoute }: Props) => {
+export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
+  const systemText = isSystem ? "System" : "Vendor";
+  const toast = useToast();
   const features = useFeatures();
   const router = useRouter();
   const { isLoading: isGetLoading } = useGetAllCreatedSystemsQuery(undefined, {
@@ -80,91 +64,163 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     { isLoading: isPostLoading, isSuccess: isPostSuccess },
   ] = usePostCreatedSystemsMutation();
 
-  const customCheckboxHook = useCallback(
-    (hooks: Hooks<MultipleSystemTable>) => {
-      hooks.visibleColumns.push((columns) => [
-        // Let's make a column for selection
-        {
-          id: "selection",
-          /* eslint-disable */
-          Header: ({ getToggleAllRowsSelectedProps }: any) => (
-            <IndeterminateCheckboxTest {...getToggleAllRowsSelectedProps()} />
-          ),
-          Cell: ({ row }: any) => (
-            <IndeterminateCheckboxTest
-              {...row.getToggleRowSelectedProps()}
-              row={row}
-            />
-          ),
-          /* eslint-enable */
-        },
-        ...columns,
-      ]);
-    },
-    []
-  );
-
   const dictionaryOptions = useAppSelector(selectAllDictSystems);
+  const [globalFilter, setGlobalFilter] = useState();
+  const { isOpen, onClose, onOpen } = useDisclosure();
 
-  const columns: Column<DictSystems>[] = useMemo(
-    () => [{ Header: "System", accessor: "legal_name", Cell: WrappedCell }],
-    []
+  const allRowsAdded = dictionaryOptions.every((d) => d.linked_system);
+  const columns = useMemo(
+    () => [
+      columnHelper.display({
+        id: "select",
+        header: ({ table }) => (
+          <IndeterminateCheckboxCell
+            {...{
+              checked: table.getIsAllRowsSelected(),
+              indeterminate: table.getIsSomeRowsSelected(),
+              onChange: table.getToggleAllRowsSelectedHandler(),
+              manualDisable: allRowsAdded,
+            }}
+          />
+        ),
+        cell: ({ row }) => (
+          <IndeterminateCheckboxCell
+            {...{
+              checked: row.getIsSelected(),
+              disabled: !row.getCanSelect(),
+              indeterminate: row.getIsSomeSelected(),
+              onChange: row.getToggleSelectedHandler(),
+              initialValue: row.original.linked_system,
+            }}
+          />
+        ),
+      }),
+      columnHelper.accessor((row) => row.legal_name, {
+        id: "legal_name",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value={systemText} {...props} />,
+      }),
+    ],
+    [allRowsAdded]
   );
 
-  const tableInstanceRef = useRef<TableInstance<MultipleSystemTable>>();
-
-  const initialTableState = useMemo(() => {
-    const selectedRowIds: any = {};
+  const rowSelection = useMemo(() => {
+    const rowSelection: Record<string, boolean> = {};
     dictionaryOptions.forEach((ds, index) => {
       if (ds.linked_system) {
-        selectedRowIds[index] = true;
+        rowSelection[index] = true;
       }
     });
-    return {
-      selectedRowIds,
-    };
+    return rowSelection;
   }, [dictionaryOptions]);
 
+  const tableInstance = useReactTable<MultipleSystemTable>({
+    columns,
+    data: dictionaryOptions,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onGlobalFilterChange: setGlobalFilter,
+    enableRowSelection: true,
+    enableSorting: true,
+    enableGlobalFilter: true,
+    state: {
+      globalFilter,
+    },
+    initialState: {
+      rowSelection,
+      pagination: {
+        pageSize: 25,
+      },
+    },
+  });
+
   const addVendors = async () => {
-    if (tableInstanceRef.current) {
-      const vendorIds = tableInstanceRef.current.selectedFlatRows
-        .filter((r) => r.isSelected && !r.original.linked_system)
-        .map((r) => r.original.vendor_id);
-      if (vendorIds.length > 0) {
-        await postVendorIds(vendorIds);
-        router.push(redirectRoute);
-      }
+    const vendorIds = tableInstance
+      .getSelectedRowModel()
+      .rows.filter((r) => !r.original.linked_system)
+      .map((r) => r.original.vendor_id);
+    if (vendorIds.length > 0) {
+      await postVendorIds(vendorIds);
+      router.push(redirectRoute);
+      toast(
+        successToastParams(
+          `Successfully added ${
+            vendorIds.length
+          } ${systemText.toLocaleLowerCase()}`
+        )
+      );
     }
   };
 
-  if (isGetLoading || isPostLoading || isPostSuccess) {
+  const anyNewSelectedRows = tableInstance
+    .getSelectedRowModel()
+    .rows.some((row) => !row.original.linked_system);
+
+  if (isPostLoading || isPostSuccess) {
     return (
-      <Flex justifyContent="center" alignItems="center" mt="5">
-        <Spinner color="complimentary.500" />
+      <Flex height="100%" justifyContent="center" alignItems="center">
+        <Spinner />
       </Flex>
     );
   }
 
+  if (isGetLoading) {
+    return <TableSkeletonLoader rowHeight={36} numRows={15} />;
+  }
+
+  const toolTipText = allRowsAdded
+    ? `All ${systemText.toLocaleLowerCase()} have already been added`
+    : `Select a ${systemText.toLocaleLowerCase()} `;
+
   return (
-    <Box height="100%">
-      <FidesTable<MultipleSystemTable>
-        columns={columns}
-        showSearchBar
-        searchBarRightButton={
-          <Button
-            onClick={addVendors}
-            colorScheme="black"
-            backgroundColor="primary.800"
-            fontWeight="semibold"
-          >
-            Add Vendors
-          </Button>
-        }
-        data={dictionaryOptions}
-        tableInstanceRef={tableInstanceRef}
-        customHooks={[useRowSelect, customCheckboxHook]}
-        initialState={initialTableState}
+    <Flex flex={1} direction="column" overflow="auto">
+      <ConfirmationModal
+        isOpen={isOpen}
+        isCentered
+        onCancel={onClose}
+        onClose={onClose}
+        onConfirm={addVendors}
+        title="Confirmation"
+        message={`You are about to add ${
+          tableInstance
+            .getSelectedRowModel()
+            .rows.filter((r) => !r.original.linked_system).length
+        } ${systemText.toLocaleLowerCase()}`}
       />
-    </Box>
+      <TableActionBar>
+        <GlobalFilterV2
+          globalFilter={globalFilter}
+          setGlobalFilter={setGlobalFilter}
+          placeholder="search"
+        />
+        <Tooltip
+          label={toolTipText}
+          shouldWrapChildren
+          placement="top"
+          isDisabled={
+            (anyNewSelectedRows && !allRowsAdded) ||
+            (anyNewSelectedRows && allRowsAdded)
+          }
+        >
+          <Button
+            onClick={onOpen}
+            size="xs"
+            variant="outline"
+            disabled={!anyNewSelectedRows}
+          >
+            Add {`${systemText}s`}
+          </Button>
+        </Tooltip>
+      </TableActionBar>
+      <FidesTableV2<MultipleSystemTable>
+        columns={columns}
+        data={dictionaryOptions}
+        tableInstance={tableInstance}
+        rowActionBar={<RowSelectionBar tableInstance={tableInstance} />}
+      />
+      <PaginationBar tableInstance={tableInstance} />
+    </Flex>
   );
 };
