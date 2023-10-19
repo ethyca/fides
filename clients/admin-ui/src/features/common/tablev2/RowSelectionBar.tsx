@@ -35,16 +35,18 @@ export const RowSelectionBar = <T,>({
           <Text fontSize="xs">
             {tableInstance.getSelectedRowModel().rows.length} row(s) selected.
           </Text>
-          <Button
-            onClick={tableInstance.toggleAllRowsSelected}
-            variant="link"
-            color="black"
-            fontSize="xs"
-            fontWeight="400"
-            textDecoration="underline"
-          >
-            Select all {} rows.
-          </Button>
+          {!tableInstance.getIsAllRowsSelected() ? (
+            <Button
+              onClick={tableInstance.toggleAllRowsSelected}
+              variant="link"
+              color="black"
+              fontSize="xs"
+              fontWeight="400"
+              textDecoration="underline"
+            >
+              Select all {tableInstance.getFilteredRowModel().rows.length} rows.
+            </Button>
+          ) : null}
         </HStack>
       </Td>
     </Tr>
