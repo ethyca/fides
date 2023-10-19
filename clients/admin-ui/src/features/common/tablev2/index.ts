@@ -8,4 +8,5 @@ export { FidesTableFooter } from "./FidesTableFooter";
 export { GlobalFilterV2 } from "./filters/GlobalFilterV2";
 export { TableActionBar } from "./TableActionBar";
 export { PaginationBar } from "./PaginationBar";
-export { RowActionBar } from "./RowActionBar";
+export { RowSelectionBar } from "./RowSelectionBar";
+export { TableSkeletonLoader } from "./TableSkeletonLoader";

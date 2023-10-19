@@ -20,7 +20,8 @@ import {
   IndeterminateCheckboxCell,
   TableActionBar,
   PaginationBar,
-  RowActionBar,
+  RowSelectionBar,
+  TableSkeletonLoader,
 } from "~/features/common/tablev2";
 import {
   DictSystems,
@@ -138,11 +139,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
     .rows.some((row) => !row.original.linked_system);
 
   if (isGetLoading || isPostLoading || isPostSuccess) {
-    return (
-      <Flex justifyContent="center" alignItems="center" mt="5">
-        <Spinner color="complimentary.500" />
-      </Flex>
-    );
+    return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
 
   const toolTipText = allRowsAdded
@@ -180,7 +177,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
         columns={columns}
         data={dictionaryOptions}
         tableInstance={tableInstance}
-        rowActionBar={<RowActionBar tableInstance={tableInstance} />}
+        rowActionBar={<RowSelectionBar tableInstance={tableInstance} />}
       />
       <PaginationBar tableInstance={tableInstance} />
     </Box>

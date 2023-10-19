@@ -2,11 +2,13 @@ import { FC } from "react";
 import { Td, Tr, Button, Text, HStack } from "@fidesui/react";
 import { Table as TableInstance } from "@tanstack/react-table";
 
-type RowActionBarProps<T> = {
+type RowSelectionBarProps<T> = {
   tableInstance: TableInstance<T>;
 };
 
-export const RowActionBar = <T,>({ tableInstance }: RowActionBarProps<T>) => {
+export const RowSelectionBar = <T,>({
+  tableInstance,
+}: RowSelectionBarProps<T>) => {
   const isOpen = tableInstance.getSelectedRowModel().rows.length > 0;
 
   if (!isOpen) {
