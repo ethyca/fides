@@ -117,7 +117,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
     initialState: {
       rowSelection,
       pagination: {
-        pageSize: 35,
+        pageSize: 25,
       },
     },
   });
@@ -128,9 +128,8 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
       .rows.filter((r) => !r.original.linked_system)
       .map((r) => r.original.vendor_id);
     if (vendorIds.length > 0) {
-      // await postVendorIds(vendorIds);
-      // router.push(redirectRoute);
-      console.log(vendorIds);
+      await postVendorIds(vendorIds);
+      router.push(redirectRoute);
     }
   };
 
@@ -138,7 +137,15 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
     .getSelectedRowModel()
     .rows.some((row) => !row.original.linked_system);
 
-  if (isGetLoading || isPostLoading || isPostSuccess) {
+  if (isPostLoading || isPostSuccess) {
+    return (
+      <Flex height="100%" justifyContent="center" alignItems="center">
+        <Spinner />
+      </Flex>
+    );
+  }
+
+  if (isGetLoading) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
 
