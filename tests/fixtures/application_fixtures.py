@@ -1515,6 +1515,11 @@ def served_notice_history_for_tcf_purpose(
         },
         check_name=False,
     )
+    pref_1.tcf_version = "2.0"
+    pref_1.save(db)
+    pref_1.last_served_record.tcf_version = "2.0"
+    pref_1.last_served_record.save(db)
+
     yield pref_1
     pref_1.delete(db)
 
@@ -2340,6 +2345,12 @@ def privacy_preference_history_for_tcf_purpose_consent(
         },
         check_name=False,
     )
+    preference_history_record.tcf_version = "2.0"
+    preference_history_record.save(db)
+
+    preference_history_record.current_privacy_preference.tcf_version = "2.0"
+    preference_history_record.current_privacy_preference.save(db)
+
     yield preference_history_record
     preference_history_record.delete(db)
 

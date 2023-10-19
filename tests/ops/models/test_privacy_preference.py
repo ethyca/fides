@@ -2060,13 +2060,13 @@ class TestLastServedNotice:
         last_served = (
             served_notice_history_us_ca_provide_for_fides_user.last_served_record
         )
-        assert last_served.record_matches_current_version is True
+        assert last_served.record_is_current is True
 
         privacy_notice_us_ca_provide.update(db, data={"description": "new_description"})
         assert privacy_notice_us_ca_provide.version == 2.0
         assert privacy_notice_us_ca_provide.description == "new_description"
 
-        assert last_served.record_matches_current_version is False
+        assert last_served.record_is_current is False
 
     def test_served_latest_tcf_version(
         self,
@@ -2074,11 +2074,11 @@ class TestLastServedNotice:
         served_notice_history_for_tcf_purpose,
     ):
         last_served = served_notice_history_for_tcf_purpose.last_served_record
-        assert last_served.record_matches_current_version is True
+        assert last_served.record_is_current is True
 
-        # Just for demonstration
+        # TCF Version is not used to determine if a preference is outdated for TCF
         last_served.update(db, data={"tcf_version": "1.0"})
-        assert last_served.record_matches_current_version is False
+        assert last_served.record_is_current is True
 
     def test_get_last_served_for_notice_and_fides_user_device(
         self,

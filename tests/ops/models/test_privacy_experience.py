@@ -1320,6 +1320,12 @@ class TestCacheSavedAndServedOnConsentRecord:
         privacy_preference_history_for_tcf_purpose_consent,
         served_notice_history_for_tcf_purpose,
     ):
+        """For TCF preferences, preferences saved against a purpose in an older TCF version are still returned
+        as the current preference, not the outdated preference, same with TCF served.
+
+        For TCF, just because a preference was saved against an older TCF version, doesn't mean its necessarily "outdated".
+        For Privacy Notices, however, we do consider them outdated.
+        """
         privacy_preference_history_for_tcf_purpose_consent.current_privacy_preference.tcf_version = (
             "1.0"
         )
@@ -1341,13 +1347,13 @@ class TestCacheSavedAndServedOnConsentRecord:
             tcf_purpose_consent_record.default_preference
             == UserConsentPreference.opt_out
         )
-        assert tcf_purpose_consent_record.current_preference is None
+        assert tcf_purpose_consent_record.outdated_preference is None
         assert (
-            tcf_purpose_consent_record.outdated_preference
+            tcf_purpose_consent_record.current_preference
             == UserConsentPreference.opt_out
         )
-        assert tcf_purpose_consent_record.current_served is None
-        assert tcf_purpose_consent_record.outdated_served is True
+        assert tcf_purpose_consent_record.current_served is True
+        assert tcf_purpose_consent_record.outdated_served is None
 
     @pytest.mark.usefixtures(
         "privacy_preference_history_for_tcf_purpose_consent",

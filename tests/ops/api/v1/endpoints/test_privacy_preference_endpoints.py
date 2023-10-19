@@ -2232,7 +2232,7 @@ class TestHistoricalPreferences:
         assert response_body["system_legitimate_interests"] is None
         assert response_body["feature"] is None
         assert response_body["special_feature"] is None
-        assert response_body["tcf_version"] == CURRENT_TCF_VERSION
+        assert response_body["tcf_version"] == "2.0"
 
         assert response_body["request_timestamp"] is not None
         assert response_body["request_origin"] == "tcf_overlay"
