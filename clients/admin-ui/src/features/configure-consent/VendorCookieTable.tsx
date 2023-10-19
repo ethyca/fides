@@ -1,10 +1,10 @@
 import {
   Box,
+  Flex,
   HStack,
   IconButton,
   Menu,
   MenuButton,
-  Flex,
   MenuItem,
   MenuList,
   MoreIcon,
@@ -35,6 +35,7 @@ import AddVendor from "~/features/configure-consent/AddVendor";
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
 import { selectAllSystems, useDeleteSystemMutation } from "~/features/system";
 import { System } from "~/types/api";
+
 import { AddMultipleVendors } from "./AddMultipleVendors";
 import { DataUseCell } from "./cells";
 import { CookieBySystem, transformSystemsToCookies } from "./vendor-transform";

@@ -1,14 +1,12 @@
-import { Center, HStack, Spinner, Text, VStack, Button } from "@fidesui/react";
-import { useRouter } from "next/router";
+import { Center, HStack, Spinner, Text, VStack } from "@fidesui/react";
+import { FC } from "react";
 
 import EmptyTableState from "~/features/common/table/EmptyTableState";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 import { useGetAllSystemsQuery } from "~/features/system";
-import { FC } from "react";
-import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/v2/routes";
-import { AddMultipleVendors } from "./AddMultipleVendors";
 
+import { AddMultipleVendors } from "./AddMultipleVendors";
 import VendorCookieTable from "./VendorCookieTable";
 
 const EmptyStateContent: FC = ({ children }) => (
