@@ -9,7 +9,6 @@ import type { UserConsentPreference } from "./UserConsentPreference";
  * Schema for a TCF Purpose with Legitimate Interests Legal Basis returned in the TCF Overlay Experience
  */
 export type TCFPurposeLegitimateInterestsRecord = {
-  retention_period?: string;
   /**
    * Official GVL purpose ID. Used for linking with other records, e.g. vendors, cookies, etc.
    */

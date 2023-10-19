@@ -63,7 +63,6 @@
       "id": "pri_da3252e2-b604-49fd-b493-70a9960dce66",
       "tcf_purpose_consents": [
         {
-          "retention_period": "4 days",
           "id": 4,
           "name": "Use profiles to select personalised advertising",
           "description": "Advertising presented to you on this service can be based on your advertising profiles, which can reflect your activity on this service or other websites or apps (like the forms you submit, content you look at), possible interests and personal aspects.",
@@ -89,7 +88,6 @@
           "systems": []
         },
         {
-          "retention_period": "6 days",
           "id": 6,
           "name": "Use profiles to select personalised content",
           "description": "Content presented to you on this service can be based on your content personalisation profiles, which can reflect your activity on this or other services (for instance, the forms you submit, content you look at), possible interests and personal aspects, such as by adapting the order in which content is shown to you, so that it is even easier for you to find (non-advertising) content that matches your interests.",
@@ -112,7 +110,6 @@
           "systems": []
         },
         {
-          "retention_period": "7 days",
           "id": 7,
           "name": "Measure advertising performance",
           "description": "Information regarding which advertising is presented to you and how you interact with it can be used to determine how well an advert has worked for you or other users and whether the goals of the advertising were reached. For instance, whether you saw an ad, whether you clicked on it, whether it led you to buy a product or visit a website, etc. This is very helpful to understand the relevance of advertising campaigns.",
@@ -135,7 +132,6 @@
           "systems": []
         },
         {
-          "retention_period": "9 days",
           "id": 9,
           "name": "Understand audiences through statistics or combinations of data from different sources",
           "description": "Reports can be generated based on the combination of data sets (like user profiles, statistics, market research, analytics data) regarding your interactions and those of other users with advertising or (non-advertising) content to identify common characteristics (for instance, to determine which target audiences are more receptive to an ad campaign or to certain contents).",
@@ -160,7 +156,6 @@
       ],
       "tcf_purpose_legitimate_interests": [
         {
-          "retention_period": "2",
           "id": 2,
           "name": "Use limited data to select advertising",
           "description": "Advertising presented to you on this service can be based on limited data, such as the website or app you are using, your non-precise location, your device type or which content you are (or have been) interacting with (for example, to limit the number of times an ad is presented to you).",
@@ -189,7 +184,6 @@
       ],
       "tcf_special_purposes": [
         {
-          "retention_period": "1",
           "id": 1,
           "name": "Ensure security, prevent and detect fraud, and fix errors",
           "description": "Your data can be used to monitor for and prevent unusual and possibly fraudulent activity (for example, regarding advertising, ad clicks by bots), and ensure systems and processes work properly and securely. It can also be used to correct any problems you, the publisher or the advertiser may encounter in the delivery of content and ads and in your interaction with them.",
@@ -348,7 +342,7 @@
             {
               "id": 2,
               "name": "Use limited data to select advertising",
-              "retention_period": "2 days"
+              "retention_period": "2"
             }
           ]
         }
@@ -365,7 +359,7 @@
             {
               "id": 1,
               "name": "Ensure security, prevent and detect fraud, and fix errors",
-              "retention_period": "1 day"
+              "retention_period": "1"
             }
           ],
           "features": [

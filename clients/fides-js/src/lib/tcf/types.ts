@@ -39,7 +39,6 @@ export type EmbeddedPurpose = {
 
 // Purposes
 export type TCFPurposeConsentRecord = {
-  retention_period?: string;
   id: number;
   name: string;
   description: string;
@@ -55,7 +54,6 @@ export type TCFPurposeConsentRecord = {
 };
 
 export type TCFPurposeLegitimateInterestsRecord = {
-  retention_period?: string;
   id: number;
   name: string;
   description: string;
@@ -78,7 +76,6 @@ export type TCFPurposeSave = {
 
 // Special purposes
 export type TCFSpecialPurposeRecord = {
-  retention_period?: string;
   id: number;
   name: string;
   description: string;
