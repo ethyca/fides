@@ -49,7 +49,7 @@ type Props = {
   redirectRoute: string;
 };
 
-export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
+export const AddMultipleSystems = ({ redirectRoute, isSystem }: Props) => {
   const systemText = isSystem ? "System" : "Vendor";
   const toast = useToast();
   const features = useFeatures();

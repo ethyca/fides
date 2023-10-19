@@ -4,6 +4,7 @@ import {
   IconButton,
   Menu,
   MenuButton,
+  Flex,
   MenuItem,
   MenuList,
   MoreIcon,
@@ -34,7 +35,7 @@ import AddVendor from "~/features/configure-consent/AddVendor";
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
 import { selectAllSystems, useDeleteSystemMutation } from "~/features/system";
 import { System } from "~/types/api";
-
+import { AddMultipleVendors } from "./AddMultipleVendors";
 import { DataUseCell } from "./cells";
 import { CookieBySystem, transformSystemsToCookies } from "./vendor-transform";
 
@@ -161,11 +162,14 @@ const VendorCookieTable = () => {
           setGlobalFilter={tableInstance.setGlobalFilter}
           placeholder="Search"
         />
-
-        <AddVendor
-          passedInSystem={systemToEdit}
-          onCloseModal={() => setSystemToEdit(undefined)}
-        />
+        <Flex>
+          <AddMultipleVendors />
+          <Flex width="10px" />
+          <AddVendor
+            passedInSystem={systemToEdit}
+            onCloseModal={() => setSystemToEdit(undefined)}
+          />
+        </Flex>
         <ConfirmationModal
           isOpen={isDeleteModalOpen}
           onClose={onDeleteModalClose}
