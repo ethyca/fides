@@ -318,15 +318,26 @@ div.fides-modal-content {
 }
 
 /*Fides Embed*/
+div#fides-embed-container:focus-visible,
+div#fides-embed-container div#fides-modal:focus-visible {
+  outline: none;
+}
+
+div#fides-embed-container div#fides-modal .fides-modal-footer {
+  position: inherit;
+}
+
 div#fides-embed-container .fides-modal-container,
 div#fides-embed-container .fides-modal-overlay {
   position: initial;
-  display: inline;
+  background-color: white;
 }
 
 div#fides-embed-container .fides-modal-content {
   position: initial;
   transform: none;
+  border: none;
+  max-height: none;
 }
 
 div#fides-embed-container .fides-close-button {
