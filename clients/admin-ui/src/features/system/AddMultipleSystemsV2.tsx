@@ -1,4 +1,13 @@
-import { Box, Button, Flex, HStack, Spinner, Tooltip } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  HStack,
+  Spinner,
+  Tooltip,
+  useDisclosure,
+  useToast,
+} from "@fidesui/react";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -12,6 +21,8 @@ import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
+
+import { successToastParams } from "~/features/common/toast";
 import {
   FidesTableV2,
   GlobalFilterV2,
@@ -29,6 +40,7 @@ import {
   useGetAllCreatedSystemsQuery,
   usePostCreatedSystemsMutation,
 } from "~/features/plus/plus.slice";
+import ConfirmationModal from "~/features/common/ConfirmationModal";
 
 type MultipleSystemTable = DictSystems;
 
@@ -41,6 +53,7 @@ type Props = {
 
 export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
   const systemText = isSystem ? "System" : "Vendor";
+  const toast = useToast();
   const features = useFeatures();
   const router = useRouter();
   const { isLoading: isGetLoading } = useGetAllCreatedSystemsQuery(undefined, {
@@ -53,6 +66,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
 
   const dictionaryOptions = useAppSelector(selectAllDictSystems);
   const [globalFilter, setGlobalFilter] = useState();
+  const { isOpen, onClose, onOpen } = useDisclosure();
 
   const allRowsAdded = dictionaryOptions.every((d) => d.linked_system);
   const columns = useMemo(
@@ -130,6 +144,13 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
     if (vendorIds.length > 0) {
       await postVendorIds(vendorIds);
       router.push(redirectRoute);
+      toast(
+        successToastParams(
+          `Successfully added ${
+            vendorIds.length
+          } ${systemText.toLocaleLowerCase()}`
+        )
+      );
     }
   };
 
@@ -155,6 +176,19 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
 
   return (
     <Flex flex={1} direction="column" overflow="auto">
+      <ConfirmationModal
+        isOpen={isOpen}
+        isCentered
+        onCancel={onClose}
+        onClose={onClose}
+        onConfirm={addVendors}
+        title="Confirmation"
+        message={`You are about to add ${
+          tableInstance
+            .getSelectedRowModel()
+            .rows.filter((r) => !r.original.linked_system).length
+        } ${systemText.toLocaleLowerCase()}`}
+      />
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={globalFilter}
@@ -171,7 +205,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
           }
         >
           <Button
-            onClick={addVendors}
+            onClick={onOpen}
             size="xs"
             variant="outline"
             disabled={!anyNewSelectedRows}
