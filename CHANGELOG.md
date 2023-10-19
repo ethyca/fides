@@ -17,6 +17,7 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.22.0...main)
 - Added support for 3 additional config variables in Fides.js: fidesEmbed, fidesDisableSaveApi, and fidesTcString [#4262](https://github.com/ethyca/fides/pull/4262)
+- Added support for fidesEmbed, fidesDisableSaveApi, and fidesTcString to be passed into Fides.js via query param, cookie, or window object [#4297](https://github.com/ethyca/fides/pull/4297)
 
 ### Added
 - Added a `FidesPreferenceToggled` event to Fides.js to track when user preferences change without being saved [#4253](https://github.com/ethyca/fides/pull/4253)
@@ -24,6 +25,7 @@ The types of changes are:
 
 ### Fixed
 - Stacks that do not have any purposes will no longer render an empty purpose block [#4278](https://github.com/ethyca/fides/pull/4278)
+- Forcing hidden sections to use display none [#4299](https://github.com/ethyca/fides/pull/4299)
 
 ## [2.22.0](https://github.com/ethyca/fides/compare/2.21.0...2.22.0)
 
