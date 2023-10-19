@@ -317,14 +317,14 @@ describe("Fides-js TCF", () => {
         });
         cy.window().then((win) => {
           win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
+          cy.get("@getTCData")
+            .should("have.been.calledOnce")
+            .its("lastCall.args")
+            .then(([tcData, success]) => {
+              expect(success).to.eql(true);
+              expect(tcData.vendor.consents).to.eql({ 1: true, 2: true });
+            });
         });
-        cy.get("@getTCData")
-          .should("have.been.calledOnce")
-          .its("lastCall.args")
-          .then(([tcData, success]) => {
-            expect(success).to.eql(true);
-            expect(tcData.vendor.consents).to.eql({ 1: true, 2: true });
-          });
       });
 
       it("can render extra vendor info such as cookie and retention data", () => {
