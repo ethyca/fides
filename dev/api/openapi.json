@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.22.1b1.post0.dev1"
+    "version": "2.22.1b2.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -16417,6 +16417,29 @@
         },
         "description": "Sparse details for an embedded TCF line item within another TCF component. Read-only."
       },
+      "EmbeddedPurpose": {
+        "title": "EmbeddedPurpose",
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "retention_period": {
+            "title": "Retention Period",
+            "type": "string"
+          }
+        },
+        "description": "Sparse details for an embedded purpose beneath a system or vendor section.  Read-only."
+      },
       "EmbeddedVendor": {
         "title": "EmbeddedVendor",
         "required": [
@@ -23602,7 +23625,7 @@
             "title": "Purpose Consents",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/EmbeddedLineItem"
+              "$ref": "#/components/schemas/EmbeddedPurpose"
             },
             "default": []
           }
@@ -23653,7 +23676,7 @@
             "title": "Purpose Legitimate Interests",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/EmbeddedLineItem"
+              "$ref": "#/components/schemas/EmbeddedPurpose"
             },
             "default": []
           }
@@ -23687,7 +23710,7 @@
             "title": "Special Purposes",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/EmbeddedLineItem"
+              "$ref": "#/components/schemas/EmbeddedPurpose"
             },
             "default": []
           },
@@ -23725,6 +23748,13 @@
           },
           "legitimate_interest_disclosure_url": {
             "title": "Legitimate Interest Disclosure Url",
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string",
+            "format": "uri"
+          },
+          "privacy_policy_url": {
+            "title": "Privacy Policy Url",
             "maxLength": 65536,
             "minLength": 1,
             "type": "string",
