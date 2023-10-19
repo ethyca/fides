@@ -5,7 +5,6 @@ import {
   PrivacyExperience,
   UserConsentPreference,
 } from "fides-js";
-import { OverrideFidesOption } from "fides-js/src/lib/consent-types";
 import { OVERRIDE, stubConfig } from "../support/stubs";
 
 const PURPOSE_2 = {
@@ -745,10 +744,8 @@ describe("Fides-js TCF", () => {
       });
       it("skips saving preferences to API when disable save is set via cookie", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-        cy.getCookie(OverrideFidesOption.FIDES_DISABLE_SAVE_API).should(
-          "not.exist"
-        );
-        cy.setCookie(OverrideFidesOption.FIDES_DISABLE_SAVE_API, "true");
+        cy.getCookie("fides_disable_save_api").should("not.exist");
+        cy.setCookie("fides_disable_save_api", "true");
         cy.fixture("consent/experience_tcf.json").then((experience) => {
           stubConfig({
             options: {
@@ -778,7 +775,7 @@ describe("Fides-js TCF", () => {
         });
       });
       it("skips saving preferences to API when disable save is set via query param", () => {
-        cy.getCookie(OverrideFidesOption.FIDES_STRING).should("not.exist");
+        cy.getCookie("fides_string").should("not.exist");
         cy.fixture("consent/experience_tcf.json").then((experience) => {
           stubConfig(
             {
@@ -813,7 +810,7 @@ describe("Fides-js TCF", () => {
         });
       });
       it("skips saving preferences to API when disable save is set via window obj", () => {
-        cy.getCookie(OverrideFidesOption.FIDES_STRING).should("not.exist");
+        cy.getCookie("fides_string").should("not.exist");
         cy.fixture("consent/experience_tcf.json").then((experience) => {
           stubConfig(
             {
@@ -984,8 +981,8 @@ describe("Fides-js TCF", () => {
     });
     it("automatically renders the second layer when fidesEmbed is set via cookie", () => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      cy.getCookie(OverrideFidesOption.FIDES_EMBED).should("not.exist");
-      cy.setCookie(OverrideFidesOption.FIDES_EMBED, "true");
+      cy.getCookie("fides_embed").should("not.exist");
+      cy.setCookie("fides_embed", "true");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
           options: {
@@ -1036,7 +1033,7 @@ describe("Fides-js TCF", () => {
       });
     });
     it("automatically renders the second layer when fidesEmbed is set via window obj", () => {
-      cy.getCookie(OverrideFidesOption.FIDES_STRING).should("not.exist");
+      cy.getCookie("fides_string").should("not.exist");
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig(
@@ -1707,10 +1704,10 @@ describe("Fides-js TCF", () => {
 
   describe("fides string override options", () => {
     it("uses TC string when set via cookie", () => {
-      cy.getCookie(OverrideFidesOption.FIDES_STRING).should("not.exist");
+      cy.getCookie("fides_string").should("not.exist");
       // this TC string sets purpose 4 to false and purpose 7 to true
       cy.setCookie(
-        OverrideFidesOption.FIDES_STRING,
+        "fides_string",
         "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE"
       );
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -1750,7 +1747,7 @@ describe("Fides-js TCF", () => {
         });
     });
     it("uses TC string when set via query param", () => {
-      cy.getCookie(OverrideFidesOption.FIDES_STRING).should("not.exist");
+      cy.getCookie("fides_string").should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig(
           {
@@ -1794,7 +1791,7 @@ describe("Fides-js TCF", () => {
         });
     });
     it("uses TC string when set via window obj", () => {
-      cy.getCookie(OverrideFidesOption.FIDES_STRING).should("not.exist");
+      cy.getCookie("fides_string").should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig(
           {

@@ -20,7 +20,6 @@ import {
   ConsentMechanism,
   ConsentMethod,
   EmptyExperience,
-  FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP,
   FidesConfig,
   FidesOptionOverrides,
   FidesOptions,
@@ -43,6 +42,7 @@ import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
 import { TcfCookieConsent } from "./tcf/types";
+import { FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP } from "./consent-constants";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -149,7 +149,7 @@ const automaticallyApplyGPCPreferences = ({
 /**
  * Gets and validates Fides override options provided through URL query params, cookie or window obj.
  */
-export const getOverrideFidesOptions = (): FidesOptionOverrides => {
+export const getOverrideFidesOptions = (): Partial<FidesOptionOverrides> => {
   const overrideOptions: Partial<FidesOptionOverrides> = {};
   if (typeof window !== "undefined") {
     const params = new URLSearchParams(document.location.search);
@@ -172,7 +172,7 @@ export const getOverrideFidesOptions = (): FidesOptionOverrides => {
       }
     );
   }
-  return <FidesOptionOverrides>overrideOptions;
+  return overrideOptions;
 };
 
 /**
