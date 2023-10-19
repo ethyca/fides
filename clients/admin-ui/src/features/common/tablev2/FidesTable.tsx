@@ -18,10 +18,10 @@ const getTableTHandTDStyles = (cellId: string) => {
   return cellId === "select"
     ? { padding: "0px", width: "55px" }
     : {
-        "padding-left": "16px",
-        "padding-right": "8px",
-        "padding-top": "0px",
-        "padding-bottom": "0px",
+        paddingLeft: "16px",
+        paddingRight: "8px",
+        paddingTop: "0px",
+        paddingBottom: "0px",
       };
 };
 
@@ -41,7 +41,12 @@ export function FidesTableV2<T>({
   return (
     <Box>
       <TableContainer height="inherit" overflowY="auto">
-        <Table variant="unstyled" borderCollapse="collapse">
+        <Table
+          variant="unstyled"
+          style={{
+            borderCollapse: "collapse",
+          }}
+        >
           <Thead
             position="sticky"
             top="0"
