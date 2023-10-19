@@ -117,7 +117,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
     initialState: {
       rowSelection,
       pagination: {
-        pageSize: 15,
+        pageSize: 35,
       },
     },
   });
@@ -147,7 +147,7 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
     : `Select a ${systemText.toLocaleLowerCase()} `;
 
   return (
-    <Box height="100%">
+    <Flex flex={1} direction="column" overflow="auto">
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={globalFilter}
@@ -180,6 +180,6 @@ export const AddMultipleSystemsV2 = ({ redirectRoute, isSystem }: Props) => {
         rowActionBar={<RowSelectionBar tableInstance={tableInstance} />}
       />
       <PaginationBar tableInstance={tableInstance} />
-    </Box>
+    </Flex>
   );
 };

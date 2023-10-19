@@ -1,9 +1,16 @@
-import { Box, Breadcrumb, BreadcrumbItem, Heading, Text } from "@fidesui/react";
+import {
+  Box,
+  Breadcrumb,
+  BreadcrumbItem,
+  Flex,
+  Heading,
+  Text,
+} from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
-import Layout from "~/features/common/Layout";
+import FixedLayout from "~/features/common/FixedLayout";
 import {
   ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
@@ -25,7 +32,7 @@ const AddMultipleSystemsPage: NextPage = () => {
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
 
   return (
-    <Layout title="Describe your system">
+    <FixedLayout isDefaultLayoutPadding title="Describe your system">
       <Box mb={4}>
         <Header />
         <Box>
@@ -50,7 +57,7 @@ const AddMultipleSystemsPage: NextPage = () => {
         </Text>
       </Box>
       <AddMultipleSystemsV2 isSystem redirectRoute={DATAMAP_ROUTE} />
-    </Layout>
+    </FixedLayout>
   );
 };
 
