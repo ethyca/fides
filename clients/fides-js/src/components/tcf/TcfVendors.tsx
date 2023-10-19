@@ -143,6 +143,10 @@ const StorageDisclosure = ({ vendor }: { vendor: VendorRecord }) => {
     disclosure = `${name} uses methods like "local storage" to store and access information on your device.`;
   }
 
+  if (disclosure === "") {
+    return null;
+  }
+
   return <p>{disclosure}</p>;
 };
 
@@ -204,23 +208,28 @@ const TcfVendors = ({
           const dataCategories: GvlDataCategories | undefined =
             // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
             experience.gvl?.dataCategories;
+          const hasUrls =
+            vendor.privacy_policy_url ||
+            vendor.legitimate_interest_disclosure_url;
           return (
             <div>
               <StorageDisclosure vendor={vendor} />
-              <div style={{ marginBottom: "1.1em" }}>
-                {vendor?.privacy_policy_url ? (
-                  <ExternalLink href={vendor.privacy_policy_url}>
-                    Privacy policy
-                  </ExternalLink>
-                ) : null}
-                {vendor.legitimate_interest_disclosure_url ? (
-                  <ExternalLink
-                    href={vendor.legitimate_interest_disclosure_url}
-                  >
-                    Legitimate interest disclosure
-                  </ExternalLink>
-                ) : null}
-              </div>
+              {hasUrls ? (
+                <div style={{ marginBottom: "1.1em" }}>
+                  {vendor.privacy_policy_url ? (
+                    <ExternalLink href={vendor.privacy_policy_url}>
+                      Privacy policy
+                    </ExternalLink>
+                  ) : null}
+                  {vendor.legitimate_interest_disclosure_url ? (
+                    <ExternalLink
+                      href={vendor.legitimate_interest_disclosure_url}
+                    >
+                      Legitimate interest disclosure
+                    </ExternalLink>
+                  ) : null}
+                </div>
+              ) : null}
               <PurposeVendorDetails
                 purposes={[
                   ...(vendor.purpose_consents || []),
