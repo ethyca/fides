@@ -24,6 +24,7 @@ The types of changes are:
 
 ### Fixed
 - Stacks that do not have any purposes will no longer render an empty purpose block [#4278](https://github.com/ethyca/fides/pull/4278)
+- Forcing hidden sections to use display none [#4299](https://github.com/ethyca/fides/pull/4299)
 
 ## [2.22.0](https://github.com/ethyca/fides/compare/2.21.0...2.22.0)
 
