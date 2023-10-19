@@ -20,6 +20,7 @@ import {
 } from "./consent-utils";
 import type { TcfCookieConsent, TcfSavePreferences } from "./tcf/types";
 import { TCF_KEY_MAP } from "./tcf/constants";
+import { TcfCookieKeyConsent } from "./tcf/types";
 
 /**
  * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
@@ -87,7 +88,9 @@ export const tcfConsentCookieObjHasSomeConsentSet = (
   if (!tcf_consent) {
     return false;
   }
-  return Object.keys(tcf_consent).some((val) => Object.keys(val).length >= 0);
+  return Object.values(tcf_consent).some(
+    (val: TcfCookieKeyConsent) => Object.keys(val).length >= 0
+  );
 };
 
 /**
