@@ -33,7 +33,12 @@ export const RowSelectionBar = <T,>({
       >
         <HStack>
           <Text fontSize="xs">
-            {tableInstance.getSelectedRowModel().rows.filter((r) => !r.original.linked_system).length} row(s) selected.
+            {
+              tableInstance
+                .getSelectedRowModel()
+                .rows.filter((r) => !r.original.linked_system).length
+            }{" "}
+            row(s) selected.
           </Text>
           {!tableInstance.getIsAllRowsSelected() ? (
             <Button
