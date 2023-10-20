@@ -12,26 +12,23 @@ saas_config:
 
   client_config:
     protocol: https
-    host: statsigapi.net
+    host: <domain>
     authentication:
-       strategy: api_key
-       configuration:
-         query_params:
+      strategy: api_key
+      configuration:
+        headers:
           - name: STATSIG-API-KEY
             value: <STATSIG-API-KEY>
-         headers:
-          - name: STATSIG-API-KEY
-            value: <STATSIG-API-KEY>        
 
-    - name: test_request
-      requests:
-        read:
-          method: GET
-          path: /console/v1/users
-          headers:
-            - name: STATSIG-API-KEY
-              value: <STATSIG-API-KEY>
-
+  test_request:
+    method: GET
+    path: /console/v1/users
+    headers:
+      - name: STATSIG-API-KEY
+        value: <STATSIG-API-KEY>
+    param_values:
+      - name: STATSIG-API-KEY
+        value: <STATSIG-API-KEY>
 
   endpoints:
     - name: user
@@ -46,11 +43,20 @@ saas_config:
             - name: email
               identity: email
         update:
+          protocol: https
+          host: api.statsigapi.net
+          authentication:
+            strategy: api_key
+            configuration:
+              headers:
+                - name: STATSIG-API-KEY
+                value: <STATSIG-API-KEY>
           method: POST
-          path: /v1/delete_user_data
+          path: /v1/delete_user_data ## needs to be https://api.statsig.com/v1/delete_user_data, need to override the defauult client config
           headers:
             - name: STATSIG-API-KEY
               value: <STATSIG-SERVER-API-KEY>
-          body: >
-            {"unit_type": "user_id", "ids": "1,2,3,51", "request_id":
-            "test_request_66"}
+          body: |
+            {
+              "unit_type": "user_id", "ids": "<user_id>", "request_id": "test_request_66"
+            }
