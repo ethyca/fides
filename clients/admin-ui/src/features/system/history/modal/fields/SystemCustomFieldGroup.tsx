@@ -33,9 +33,12 @@ const SystemCustomFieldGroup: React.FC<SystemCustomFieldGroupProps> = ({
       ? "custom_fields"
       : "privacy_declarations[0].custom_fields";
 
+  // to ensure the order in the diff lists is the same
+  const sortedFieldNames = Object.keys(customFields).sort();
+
   return (
     <SystemDataGroup heading="Custom fields">
-      {Object.keys(customFields).map((fieldName) =>
+      {sortedFieldNames.map((fieldName) =>
         isMultivalued(fieldName) ? (
           <SystemDataTags
             key={fieldName}
