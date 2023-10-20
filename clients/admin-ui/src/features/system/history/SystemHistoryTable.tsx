@@ -24,7 +24,9 @@ import { SystemResponse } from "~/types/api/models/SystemResponse";
 
 import {
   alignCustomFields,
+  alignPrivacyDeclarationCustomFields,
   alignPrivacyDeclarations,
+  alignSystemCustomFields,
   assignSystemNames,
   assignVendorLabels,
   describeSystemChange,
@@ -61,7 +63,8 @@ const SystemHistoryTable = ({ system }: Props) => {
     // Look up the system names for the source and destination fides_keys
     history = assignSystemNames(history, systems);
     // Align custom fields
-    history = alignCustomFields(history);
+    history = alignSystemCustomFields(history);
+    history = alignPrivacyDeclarationCustomFields(history);
 
     setSelectedHistory(history);
     setModalOpen(true);

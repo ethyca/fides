@@ -9,13 +9,15 @@ import SystemDataTextField from "./SystemDataTextField";
 
 interface SystemCustomFieldGroupProps {
   customFields?: Record<string, any>;
+  resourceType: ResourceTypes;
 }
 
 const SystemCustomFieldGroup: React.FC<SystemCustomFieldGroupProps> = ({
   customFields = {},
+  resourceType,
 }) => {
   const { idToCustomFieldDefinition } = useCustomFields({
-    resourceType: ResourceTypes.SYSTEM,
+    resourceType,
   });
 
   /** Used to determine if a custom field should be rendered as a text field or data tags.
@@ -26,6 +28,11 @@ const SystemCustomFieldGroup: React.FC<SystemCustomFieldGroupProps> = ({
       (value) => value.name === name && !!value.allow_list_id
     );
 
+  const prefix =
+    resourceType == ResourceTypes.SYSTEM
+      ? "custom_fields"
+      : "privacy_declarations[0].custom_fields";
+
   return (
     <SystemDataGroup heading="Custom fields">
       {Object.keys(customFields).map((fieldName) =>
@@ -33,13 +40,13 @@ const SystemCustomFieldGroup: React.FC<SystemCustomFieldGroupProps> = ({
           <SystemDataTags
             key={fieldName}
             label={fieldName}
-            name={`custom_fields.${fieldName}`}
+            name={`${prefix}.${fieldName}`}
           />
         ) : (
           <SystemDataTextField
             key={fieldName}
             label={fieldName}
-            name={`custom_fields.${fieldName}`}
+            name={`${prefix}.${fieldName}`}
           />
         )
       )}

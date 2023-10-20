@@ -269,7 +269,7 @@ export const alignPrivacyDeclarations = (
 
 /** Makes sure the before and after custom_field objects have the same keys
  * to align the rendering of the fields in the diff modal */
-export const alignCustomFields = (
+export const alignSystemCustomFields = (
   history: SystemHistoryResponse
 ): SystemHistoryResponse => {
   const beforeCustomFields = { ...history.before.custom_fields };
@@ -298,6 +298,64 @@ export const alignCustomFields = (
     after: {
       ...history.after,
       custom_fields: afterCustomFields,
+    },
+  };
+};
+
+/** Makes sure the custom fields object on privacy declarations have the same keys */
+export const alignPrivacyDeclarationCustomFields = (
+  history: SystemHistoryResponse
+): SystemHistoryResponse => {
+  // If privacy_declarations[0].custom_fields isn't defined, return the unmodified history object
+  if (
+    !history.before.privacy_declarations ||
+    !history.before.privacy_declarations[0] ||
+    !history.before.privacy_declarations[0].custom_fields
+  ) {
+    return history;
+  }
+
+  const beforeCustomFields = {
+    ...history.before.privacy_declarations[0].custom_fields,
+  };
+  const afterCustomFields =
+    history.after.privacy_declarations && history.after.privacy_declarations[0]
+      ? { ...history.after.privacy_declarations[0].custom_fields }
+      : {};
+
+  const allKeys = new Set([
+    ...Object.keys(beforeCustomFields),
+    ...Object.keys(afterCustomFields),
+  ]);
+
+  allKeys.forEach((key) => {
+    if (!(key in beforeCustomFields)) {
+      beforeCustomFields[key] = null;
+    }
+    if (!(key in afterCustomFields)) {
+      afterCustomFields[key] = null;
+    }
+  });
+
+  return {
+    ...history,
+    before: {
+      ...history.before,
+      privacy_declarations: [
+        {
+          ...history.before.privacy_declarations[0],
+          custom_fields: beforeCustomFields,
+        },
+      ],
+    },
+    after: {
+      ...history.after,
+      privacy_declarations: [
+        {
+          ...history.after.privacy_declarations[0],
+          custom_fields: afterCustomFields,
+        },
+      ],
     },
   };
 };

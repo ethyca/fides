@@ -3,7 +3,7 @@ import { Form, Formik } from "formik";
 import React from "react";
 
 import { useFeatures } from "~/features/common/features/features.slice";
-import { PrivacyDeclaration } from "~/types/api";
+import { PrivacyDeclaration, ResourceTypes } from "~/types/api";
 
 import SystemCustomFieldGroup from "./fields/SystemCustomFieldGroup";
 import SystemDataSwitch from "./fields/SystemDataSwitch";
@@ -161,6 +161,7 @@ const SystemDataForm: React.FC<SystemDataFormProps> = ({ initialValues }) => {
             </SystemDataGroup>
             <SystemCustomFieldGroup
               customFields={initialValues.custom_fields}
+              resourceType={ResourceTypes.SYSTEM}
             />
             {/* Data uses */}
             {initialValues.privacy_declarations &&
@@ -247,6 +248,12 @@ const SystemDataForm: React.FC<SystemDataFormProps> = ({ initialValues }) => {
                         tooltip="Which categories of personal data does this system share with third parties?"
                       />
                     </SystemDataGroup>
+                    <SystemCustomFieldGroup
+                      customFields={
+                        initialValues.privacy_declarations[0].custom_fields
+                      }
+                      resourceType={ResourceTypes.PRIVACY_DECLARATION}
+                    />
                   </>
                 )
               )}
