@@ -50,6 +50,7 @@ export interface PrivacyCenterSettings {
   FIDES_EMBED: boolean | false; // (optional) Whether we should "embed" the fides.js overlay UI (ie. “Layer 2”) into a web page
   FIDES_DISABLE_SAVE_API: boolean | false; // (optional) Whether we should disable saving consent preferences to the Fides API
   FIDES_STRING: string | null; // (optional) An explicitly passed-in string that supersedes the cookie. Can contain both TC and AC strings
+  IS_FORCED_TCF: boolean; // whether to force the privacy center to use the fides-tcf.js bundle
 }
 
 /**
@@ -72,6 +73,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_EMBED"
   | "FIDES_DISABLE_SAVE_API"
   | "FIDES_STRING"
+  | "IS_FORCED_TCF"
 >;
 
 export type Styles = string;
@@ -297,6 +299,9 @@ export const loadPrivacyCenterEnvironment =
         ? process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_SAVE_API === "true"
         : false,
       FIDES_STRING: process.env.FIDES_PRIVACY_CENTER__FIDES_STRING || null,
+      IS_FORCED_TCF: process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF
+        ? process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF === "true"
+        : false,
     };
 
     // Load configuration file (if it exists)
@@ -321,6 +326,7 @@ export const loadPrivacyCenterEnvironment =
       FIDES_EMBED: settings.FIDES_EMBED,
       FIDES_DISABLE_SAVE_API: settings.FIDES_DISABLE_SAVE_API,
       FIDES_STRING: settings.FIDES_STRING,
+      IS_FORCED_TCF: settings.IS_FORCED_TCF,
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present
