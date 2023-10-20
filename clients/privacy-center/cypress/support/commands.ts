@@ -80,8 +80,8 @@ Cypress.Commands.add(
         win.addEventListener("FidesUpdated", cy.stub().as("FidesUpdated"));
         win.addEventListener("FidesUIShown", cy.stub().as("FidesUIShown"));
         win.addEventListener(
-          "FidesPreferenceToggled",
-          cy.stub().as("FidesPreferenceToggled")
+          "FidesUIChanged",
+          cy.stub().as("FidesUIChanged")
         );
 
         // Add GTM stub
