@@ -2807,6 +2807,7 @@ def tcf_system(db: Session) -> System:
             "legal_basis_for_processing": "Consent",
             "egress": None,
             "ingress": None,
+            "retention_period": "3",
         },
     )
 
@@ -2823,6 +2824,7 @@ def tcf_system(db: Session) -> System:
             "legal_basis_for_processing": "Legitimate interests",
             "egress": None,
             "ingress": None,
+            "retention_period": "1",
         },
     )
 
@@ -2831,8 +2833,8 @@ def tcf_system(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
-def ac_system(db: Session) -> System:
-    """Test AC System - will be fleshed out further later"""
+def ac_system_with_privacy_declaration(db: Session) -> System:
+    """Test AC System with a privacy declaration"""
     system = System.create(
         db=db,
         data={
@@ -2856,6 +2858,23 @@ def ac_system(db: Session) -> System:
             ],
         },
     )
+    return system
+
+
+@pytest.fixture(scope="function")
+def ac_system_without_privacy_declaration(db: Session) -> System:
+    """Test AC System without privacy declaration"""
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"ac_system{uuid.uuid4()}",
+            "vendor_id": "gacp.100",
+            "name": f"Test AC System",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
     return system
 
 

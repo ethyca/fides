@@ -46,7 +46,9 @@ interface FidesConfigTesting {
 export const stubConfig = (
   { consent, experience, geolocation, options }: Partial<FidesConfigTesting>,
   mockGeolocationApiResp?: any,
-  mockExperienceApiResp?: any
+  mockExperienceApiResp?: any,
+  demoPageQueryParams?: any,
+  demoPageWindowParams?: any
 ) => {
   cy.fixture("consent/test_banner_options.json").then((config) => {
     const updatedConfig = {
@@ -109,6 +111,10 @@ export const stubConfig = (
       `${updatedConfig.options.fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
       { fixture: "consent/notices_served.json" }
     ).as("patchNoticesServed");
-    cy.visitConsentDemo(updatedConfig);
+    cy.visitConsentDemo(
+      updatedConfig,
+      demoPageQueryParams,
+      demoPageWindowParams
+    );
   });
 };
