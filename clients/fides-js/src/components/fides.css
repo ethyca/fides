@@ -5,7 +5,7 @@
   /* Colors */
   --fides-overlay-primary-color: #8243f2;
   --fides-overlay-background-color: #f7fafc;
-  --fides-embedded-overlay-background-color: white;
+  --fides-overlay-embed-background-color: transparent;
   --fides-overlay-font-color: #4a5568;
   --fides-overlay-font-color-dark: #2d3748;
   --fides-overlay-hover-color: #edf2f7;
@@ -333,7 +333,7 @@ div#fides-embed-container div#fides-modal .fides-modal-footer {
 div#fides-embed-container .fides-modal-container,
 div#fides-embed-container .fides-modal-overlay {
   position: initial;
-  background-color: var(--fides-embedded-overlay-background-color);
+  background-color: var(--fides-overlay-embed-background-color);
 }
 
 div#fides-embed-container .fides-modal-content {
