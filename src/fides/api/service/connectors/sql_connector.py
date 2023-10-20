@@ -301,6 +301,43 @@ class MySQLConnector(SQLConnector):
         url = f"mysql+pymysql://{user_password}{netloc}{port}{dbname}"
         return url
 
+    def build_ssh_uri(self, local_address: tuple) -> str:
+        """Build URI of format mysql+pymysql://[user[:password]@][ssh_host][:ssh_port][/dbname]"""
+        config = self.secrets_schema(**self.configuration.secrets or {})
+
+        user_password = ""
+        if config.username:
+            user = config.username
+            password = f":{config.password}" if config.password else ""
+            user_password = f"{user}{password}@"
+
+        local_host, local_port = local_address
+        netloc = local_host
+        port = f":{local_port}" if local_port else ""
+        dbname = f"/{config.dbname}" if config.dbname else ""
+        url = f"mysql+pymysql://{user_password}{netloc}{port}{dbname}"
+        return url
+
+    # Overrides SQLConnector.create_client
+    def create_client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with a database"""
+        if (
+            self.configuration.secrets
+            and self.configuration.secrets.get("ssh_required", False)
+            and CONFIG.security.bastion_server_ssh_private_key
+        ):
+            config = self.secrets_schema(**self.configuration.secrets or {})
+            self.create_ssh_tunnel(host=config.host, port=config.port)
+            self.ssh_server.start()
+            uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
+        else:
+            uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
+        return create_engine(
+            uri,
+            hide_parameters=self.hide_parameters,
+            echo=not self.hide_parameters,
+        )
+
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
         """

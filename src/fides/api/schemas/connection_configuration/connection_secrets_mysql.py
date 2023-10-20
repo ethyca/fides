@@ -35,6 +35,11 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         description="The name of the specific database within the database server that you want to connect to.",
         title="Database",
     )
+    ssh_required: bool = Field(
+        False,
+        title="SSH Required",
+        description="Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.",
+    )
 
     _required_components: List[str] = ["host", "dbname"]
 
