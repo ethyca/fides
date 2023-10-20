@@ -29,7 +29,7 @@ const SystemCustomFieldGroup: React.FC<SystemCustomFieldGroupProps> = ({
     );
 
   const prefix =
-    resourceType == ResourceTypes.SYSTEM
+    resourceType === ResourceTypes.SYSTEM
       ? "custom_fields"
       : "privacy_declarations[0].custom_fields";
 

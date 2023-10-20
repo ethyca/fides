@@ -4,11 +4,9 @@ import { useFeatures } from "~/features/common/features";
 import { useAlert } from "~/features/common/hooks";
 import {
   useBulkUpdateCustomFieldsMutation,
-  useDeleteCustomFieldMutation,
   useGetAllAllowListQuery,
   useGetCustomFieldDefinitionsByResourceTypeQuery,
   useGetCustomFieldsForResourceQuery,
-  useUpsertCustomFieldMutation,
 } from "~/features/plus/plus.slice";
 import { CustomFieldWithId, ResourceTypes } from "~/types/api";
 
@@ -48,23 +46,13 @@ export const useCustomFields = ({
     skip: queryFidesKey !== "" && !(isEnabled && queryFidesKey),
   });
 
-  // The `fixedCacheKey` options will ensure that components referencing the same resource will
-  // share mutation info. That won't be too useful, though, because `upsertCustomField` can issue
-  // multiple requests: one for each field associated with the resource.
-  const [upsertCustomFieldMutationTrigger, upsertCustomFieldMutationResult] =
-    useUpsertCustomFieldMutation({ fixedCacheKey: resourceFidesKey });
-  const [deleteCustomFieldMutationTrigger, deleteCustomFieldMutationResult] =
-    useDeleteCustomFieldMutation({ fixedCacheKey: resourceFidesKey });
-
   const [bulkUpdateCustomFieldsMutationTrigger] =
     useBulkUpdateCustomFieldsMutation();
 
   const isLoading =
     allAllowListQuery.isLoading ||
     customFieldDefinitionsQuery.isLoading ||
-    isCustomFieldIsLoading ||
-    upsertCustomFieldMutationResult.isLoading ||
-    deleteCustomFieldMutationResult.isLoading;
+    isCustomFieldIsLoading;
 
   const idToAllowListWithOptions = useMemo(
     () =>
@@ -204,6 +192,7 @@ export const useCustomFields = ({
       errorAlert,
       resourceFidesKey,
       sortedCustomFieldDefinitionIds,
+      bulkUpdateCustomFieldsMutationTrigger,
     ]
   );
 

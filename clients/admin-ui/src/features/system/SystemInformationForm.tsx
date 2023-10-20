@@ -47,7 +47,6 @@ import {
 } from "~/features/system/form";
 import {
   selectAllSystems,
-  setActiveSystem,
   useCreateSystemMutation,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
