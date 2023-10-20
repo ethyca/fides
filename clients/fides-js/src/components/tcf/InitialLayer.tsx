@@ -28,7 +28,7 @@ const InitialLayer = ({ experience }: { experience: PrivacyExperience }) => {
   );
 
   const stacks = useMemo(() => {
-    if (!experience.gvl) {
+    if (!experience.gvl || Object.keys(experience.gvl).length === 0) {
       return [];
     }
     return createStacks({
