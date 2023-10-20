@@ -1,0 +1,56 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Statsig SaaS Config
+  type: statsig
+  description: A sample schema representing the Statsig connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: statsigapi.net
+    - name: STATSIG-API-KEY
+
+  client_config:
+    protocol: https
+    host: statsigapi.net
+    authentication:
+       strategy: api_key
+       configuration:
+         query_params:
+          - name: STATSIG-API-KEY
+            value: <STATSIG-API-KEY>
+         headers:
+          - name: STATSIG-API-KEY
+            value: <STATSIG-API-KEY>        
+
+    - name: test_request
+      requests:
+        read:
+          method: GET
+          path: /console/v1/users
+          headers:
+            - name: STATSIG-API-KEY
+              value: <STATSIG-API-KEY>
+
+
+  endpoints:
+    - name: user
+      requests:
+        read:
+          method: GET
+          path: /console/v1/users/<email>
+          headers:
+            - name: STATSIG-API-KEY
+              value: <STATSIG-API-KEY>
+          param_values:
+            - name: email
+              identity: email
+        update:
+          method: POST
+          path: /v1/delete_user_data
+          headers:
+            - name: STATSIG-API-KEY
+              value: <STATSIG-SERVER-API-KEY>
+          body: >
+            {"unit_type": "user_id", "ids": "1,2,3,51", "request_id":
+            "test_request_66"}
