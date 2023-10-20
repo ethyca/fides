@@ -47,6 +47,10 @@ export type PrivacyDeclarationResponse = {
    */
   features?: Array<string>;
   /**
+   * Whether the legal basis for processing is 'flexible' (i.e. can be overridden in a privacy notice) for this declaration.
+   */
+  flexible_legal_basis_for_processing?: boolean;
+  /**
    * The legal basis under which personal data is processed for this purpose.
    */
   legal_basis_for_processing?: LegalBasisForProcessingEnum;

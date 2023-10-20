@@ -62,7 +62,18 @@ export type FidesOptions = {
   serverSideFidesApiUrl: string;
 
   // Whether we should show the TCF modal
-  tcfEnabled?: boolean;
+  tcfEnabled: boolean;
+
+  // Whether we should "embed" the fides.js overlay UI (ie. “Layer 2”) into a web page instead of as a pop-up
+  // overlay, and never render the banner (ie. “Layer 1”).
+  fidesEmbed: boolean;
+
+  // Whether we should disable saving consent preferences to the Fides API.
+  fidesDisableSaveApi: boolean;
+
+  // An explicitly passed-in TC string that supersedes the cookie, and prevents any API calls to fetch
+  // experiences / preferences. Only available when TCF is enabled. Optional.
+  fidesString: string | null;
 };
 
 export class SaveConsentPreference {
@@ -190,11 +201,16 @@ export type UserGeolocation = {
   region?: string; // "NY"
 };
 
-// Regex to validate a location string, which must:
-// 1) Start with a 2-3 character country code (e.g. "US")
-// 2) Optionally end with a 2-3 character region code (e.g. "CA")
-// 3) Separated by a dash (e.g. "US-CA")
-export const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
+export type OverrideOptions = {
+  fides_string: string;
+  fides_disable_save_api: boolean;
+  fides_embed: boolean;
+};
+
+export type FidesOptionOverrides = Pick<
+  FidesOptions,
+  "fidesString" | "fidesDisableSaveApi" | "fidesEmbed"
+>;
 
 export enum ButtonType {
   PRIMARY = "primary",
@@ -211,7 +227,7 @@ export enum ConsentMethod {
 export type PrivacyPreferencesRequest = {
   browser_identity: Identity;
   code?: string;
-  tc_string?: string;
+  fides_string?: string;
   preferences?: Array<ConsentOptionCreate>;
   purpose_consent_preferences?: Array<TCFPurposeSave>;
   purpose_legitimate_interests_preferences?: Array<TCFPurposeSave>;

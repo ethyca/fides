@@ -485,7 +485,7 @@ class TestPrivacyPreferenceHistory:
         preference_history_record = PrivacyPreferenceHistory.create(
             db=db,
             data={
-                "vendor_consent": "sendgrid",
+                "vendor_consent": "gvl.42",
                 "email": None,
                 "fides_user_device": fides_user_device_id,
                 "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
@@ -521,7 +521,7 @@ class TestPrivacyPreferenceHistory:
             preference_history_record.fides_user_device_provided_identity
             == fides_user_provided_identity
         )
-        assert preference_history_record.vendor_consent == "sendgrid"
+        assert preference_history_record.vendor_consent == "gvl.42"
         assert preference_history_record.vendor_legitimate_interests is None
         assert preference_history_record.purpose_consent is None
         assert preference_history_record.purpose_legitimate_interests is None
@@ -553,7 +553,7 @@ class TestPrivacyPreferenceHistory:
         current_privacy_preference_id = current_privacy_preference.id
         assert current_privacy_preference.preference == UserConsentPreference.opt_out
         assert current_privacy_preference.privacy_notice_history is None
-        assert current_privacy_preference.vendor_consent == "sendgrid"
+        assert current_privacy_preference.vendor_consent == "gvl.42"
         assert current_privacy_preference.tcf_version == CURRENT_TCF_VERSION
 
         # Save preferences again with an "opt in" preference for this privacy notice
@@ -561,7 +561,7 @@ class TestPrivacyPreferenceHistory:
             db=db,
             data={
                 "preference": "opt_in",
-                "vendor_consent": "sendgrid",
+                "vendor_consent": "gvl.42",
                 "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
                 "request_origin": "tcf_overlay",
                 "secondary_user_ids": {"ga_client_id": "test"},
@@ -573,13 +573,13 @@ class TestPrivacyPreferenceHistory:
 
         assert next_preference_history_record.preference == UserConsentPreference.opt_in
         assert next_preference_history_record.privacy_notice_history is None
-        assert next_preference_history_record.vendor_consent == "sendgrid"
+        assert next_preference_history_record.vendor_consent == "gvl.42"
 
         # Assert CurrentPrivacyPreference record upserted
         db.refresh(current_privacy_preference)
         assert current_privacy_preference.preference == UserConsentPreference.opt_in
         assert current_privacy_preference.privacy_notice_history is None
-        assert current_privacy_preference.vendor_consent == "sendgrid"
+        assert current_privacy_preference.vendor_consent == "gvl.42"
         assert current_privacy_preference.vendor_legitimate_interests is None
         assert current_privacy_preference.purpose_consent is None
         assert current_privacy_preference.purpose_legitimate_interests is None
@@ -1599,6 +1599,13 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
             tcf_field=TCFComponentType.system_consent.value,
             tcf_value=system_with_no_uses.id,
         ) == [system_with_no_uses.fides_key]
+
+    def test_determine_relevant_systems_for_ac_system_under_vendor_consent(
+        self, db, ac_system_without_privacy_declaration
+    ):
+        assert PrivacyPreferenceHistory.determine_relevant_systems(
+            db, tcf_field=TCFComponentType.vendor_consent.value, tcf_value="gacp.100"
+        ) == [ac_system_without_privacy_declaration.fides_key]
 
 
 class TestCurrentPrivacyPreference:

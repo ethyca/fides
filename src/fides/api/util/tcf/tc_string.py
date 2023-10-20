@@ -13,12 +13,17 @@ from fides.api.schemas.tcf import TCFPurposeSave, TCFSpecialFeatureSave, TCFVend
 from fides.api.util.tcf.tc_model import TCModel, convert_tcf_contents_to_tc_model
 
 # Number of bits allowed for certain sections that are used in multiple places
-from fides.api.util.tcf.tcf_experience_contents import TCFExperienceContents
+from fides.api.util.tcf.tcf_experience_contents import GVL_PREFIX, TCFExperienceContents
 
 USE_NON_STANDARD_TEXT_BITS = 1
 SPECIAL_FEATURE_BITS = 12
 PURPOSE_CONSENTS_BITS = 24
 PURPOSE_LEGITIMATE_INTERESTS_BITS = 24
+
+
+def add_gvl_prefix(vendor_id: str) -> str:
+    """Add gvl prefix to create a universal gvl identifier for the given vendor id"""
+    return GVL_PREFIX + vendor_id
 
 
 class TCField(FidesSchema):
@@ -214,13 +219,19 @@ def convert_to_fides_preference(
         # Check if there's an opt_in encoded in the string.  Otherwise, we assume the user is opting out.
         preference: bool = tc_string_preferences.get(identifier, False)
 
-        if isinstance(preference_class, TCFVendorSave):
-            # Vendors are currently saved as strings in our db
-            identifier = str(identifier)
+        if preference_class == TCFVendorSave:
+            # Vendors are currently saved as strings in our db.
+            # We also need to add the gvl prefix here to turn this into
+            # a universal vendor id.
+            vendor_id: str = add_gvl_prefix(str(identifier))
+            fides_preference: FidesPreferenceType = preference_class(
+                id=vendor_id, preference=boolean_to_user_consent_preference(preference)
+            )
+        else:
+            fides_preference = preference_class(
+                id=identifier, preference=boolean_to_user_consent_preference(preference)
+            )
 
-        fides_preference: FidesPreferenceType = preference_class(
-            id=identifier, preference=boolean_to_user_consent_preference(preference)
-        )
         preferences_array.append(fides_preference)
     return preferences_array
 
