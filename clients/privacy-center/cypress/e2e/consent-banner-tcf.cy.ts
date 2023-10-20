@@ -2032,17 +2032,18 @@ describe("Fides-js TCF", () => {
       });
       cy.get("button").contains("Save").click();
       cy.wait("@patchPrivacyPreference");
+      cy.get("@FidesUpdated").should("have.been.calledTwice");
       // Call getTCData
       cy.window().then((win) => {
         win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
+        cy.get("@getTCData")
+          .should("have.been.calledOnce")
+          .its("lastCall.args")
+          .then(([tcData, success]) => {
+            expect(success).to.eql(true);
+            expect(tcData.addtlConsent).to.eql(acceptAllAcString);
+          });
       });
-      cy.get("@getTCData")
-        .should("have.been.calledOnce")
-        .its("lastCall.args")
-        .then(([tcData, success]) => {
-          expect(success).to.eql(true);
-          expect(tcData.addtlConsent).to.eql(acceptAllAcString);
-        });
     });
   });
 });
