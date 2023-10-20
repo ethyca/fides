@@ -28,6 +28,7 @@ from fides.api.models.sql_models import (  # type:ignore[attr-defined]
 )
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.tcf import (
+    EmbeddedPurpose,
     EmbeddedVendor,
     TCFFeatureRecord,
     TCFPurposeConsentRecord,
@@ -205,10 +206,12 @@ def get_matching_privacy_declarations(db: Session) -> Query:
             System.legitimate_interest_disclosure_url.label(
                 "system_legitimate_interest_disclosure_url"
             ),
+            System.privacy_policy.label("system_privacy_policy"),
             System.vendor_id,
             PrivacyDeclaration.data_use,
             PrivacyDeclaration.legal_basis_for_processing,
             PrivacyDeclaration.features,
+            PrivacyDeclaration.retention_period,
         )
         .outerjoin(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
         .filter(
@@ -305,6 +308,8 @@ def _add_top_level_record_to_purpose_or_feature_section(
 def _embed_purpose_or_feature_under_system(
     embedded_tcf_record: NonVendorRecord,
     system_section: SystemSubSections,
+    retention_period: Optional[str],
+    is_purpose_section: bool,
 ) -> None:
     """
     Embed a second-level TCF purpose/feature under the systems section.
@@ -323,8 +328,18 @@ def _embed_purpose_or_feature_under_system(
     if embedded_non_vendor_record:
         return
 
-    # Nest new cloned TCF purpose or feature record beneath system otherwise
-    system_section.append(embedded_tcf_record)  # type: ignore[arg-type]
+    if is_purpose_section:
+        # Build the EmbeddedPurpose record with the retention period
+        system_section.append(
+            EmbeddedPurpose(  # type: ignore[arg-type]
+                id=embedded_tcf_record.id,
+                name=embedded_tcf_record.name,
+                retention_period=retention_period,
+            )
+        )
+    else:
+        # Nest new cloned feature record beneath system otherwise
+        system_section.append(embedded_tcf_record)
 
 
 def _embed_system_under_purpose_or_feature(
@@ -432,6 +447,8 @@ def build_purpose_or_feature_section_and_update_vendor_map(
                 system_section=getattr(
                     vendor_map[system_identifier], vendor_subsection_name
                 ),
+                retention_period=privacy_declaration_row.retention_period,
+                is_purpose_section=is_purpose_section,
             )
 
             # Finally, nest the system beneath this top level non-vendor tcf record
@@ -519,6 +536,9 @@ def populate_vendor_relationships_basic_attributes(
         )
         vendor_relationship_record.legitimate_interest_disclosure_url = (
             privacy_declaration_row.system_legitimate_interest_disclosure_url
+        )
+        vendor_relationship_record.privacy_policy_url = (
+            privacy_declaration_row.system_privacy_policy
         )
 
     return vendor_map

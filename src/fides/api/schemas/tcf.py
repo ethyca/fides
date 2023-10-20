@@ -67,6 +67,12 @@ class EmbeddedLineItem(FidesSchema):
     name: str
 
 
+class EmbeddedPurpose(EmbeddedLineItem):
+    """Sparse details for an embedded purpose beneath a system or vendor section.  Read-only."""
+
+    retention_period: Optional[str]
+
+
 class CommonVendorFields(FidesSchema):
     """Fields shared between the three vendor sections of the TCF Experience"""
 
@@ -79,7 +85,7 @@ class CommonVendorFields(FidesSchema):
 class TCFVendorConsentRecord(UserSpecificConsentDetails, CommonVendorFields):
     """Schema for a TCF Vendor with Consent legal basis"""
 
-    purpose_consents: List[EmbeddedLineItem] = []
+    purpose_consents: List[EmbeddedPurpose] = []
 
     @root_validator
     def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -94,7 +100,7 @@ class TCFVendorLegitimateInterestsRecord(
 ):
     """Schema for a TCF Vendor with Legitimate interests legal basis"""
 
-    purpose_legitimate_interests: List[EmbeddedLineItem] = []
+    purpose_legitimate_interests: List[EmbeddedPurpose] = []
 
     @root_validator
     def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -107,7 +113,7 @@ class TCFVendorLegitimateInterestsRecord(
 class TCFVendorRelationships(CommonVendorFields):
     """Collects the other relationships for a given vendor - no preferences are saved here"""
 
-    special_purposes: List[EmbeddedLineItem] = []
+    special_purposes: List[EmbeddedPurpose] = []
     features: List[EmbeddedLineItem] = []
     special_features: List[EmbeddedLineItem] = []
     cookie_max_age_seconds: Optional[int]
@@ -115,6 +121,7 @@ class TCFVendorRelationships(CommonVendorFields):
     cookie_refresh: Optional[bool]
     uses_non_cookie_access: Optional[bool]
     legitimate_interest_disclosure_url: Optional[AnyUrl]
+    privacy_policy_url: Optional[AnyUrl]
 
 
 class TCFFeatureRecord(NonVendorSection, Feature):

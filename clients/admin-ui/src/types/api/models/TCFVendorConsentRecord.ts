@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { EmbeddedLineItem } from "./EmbeddedLineItem";
+import type { EmbeddedPurpose } from "./EmbeddedPurpose";
 import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
@@ -18,5 +18,5 @@ export type TCFVendorConsentRecord = {
   outdated_preference?: UserConsentPreference;
   current_served?: boolean;
   outdated_served?: boolean;
-  purpose_consents?: Array<EmbeddedLineItem>;
+  purpose_consents?: Array<EmbeddedPurpose>;
 };

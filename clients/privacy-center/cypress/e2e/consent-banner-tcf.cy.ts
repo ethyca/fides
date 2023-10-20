@@ -276,6 +276,7 @@ describe("Fides-js TCF", () => {
         cy.fixture("consent/experience_tcf.json").then((payload) => {
           const experience = payload.items[0];
           experience.tcf_vendor_consents.push(newVendor);
+          experience.tcf_vendor_relationships.push(newVendor);
           stubConfig({
             options: {
               isOverlayEnabled: true,
@@ -316,14 +317,61 @@ describe("Fides-js TCF", () => {
         });
         cy.window().then((win) => {
           win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
+          cy.get("@getTCData")
+            .should("have.been.calledOnce")
+            .its("lastCall.args")
+            .then(([tcData, success]) => {
+              expect(success).to.eql(true);
+              expect(tcData.vendor.consents).to.eql({ 1: true, 2: true });
+            });
         });
-        cy.get("@getTCData")
-          .should("have.been.calledOnce")
-          .its("lastCall.args")
-          .then(([tcData, success]) => {
-            expect(success).to.eql(true);
-            expect(tcData.vendor.consents).to.eql({ 1: true, 2: true });
+      });
+
+      it("can render extra vendor info such as cookie and retention data", () => {
+        cy.get("#fides-tab-Vendors").click();
+        cy.get(".fides-notice-toggle-title").contains(VENDOR_1.name).click();
+        cy.get(".fides-disclosure-visible").within(() => {
+          // Check urls
+          cy.get("a")
+            .contains("Privacy policy")
+            .should("have.attr", "href")
+            .and("contain", "https://www.example.com/privacy");
+          cy.get("a")
+            .contains("Legitimate interest disclosure")
+            .should("have.attr", "href")
+            .and(
+              "contain",
+              "https://www.example.com/legitimate_interest_disclosure"
+            );
+
+          // Check retention periods
+          [PURPOSE_4, PURPOSE_6, PURPOSE_7, PURPOSE_9].forEach((purpose) => {
+            // In the fixture, all retention periods are their id's
+            cy.get("tr")
+              .contains(purpose.name)
+              .parent()
+              .contains(`${purpose.id} day(s)`);
           });
+          cy.get("tr")
+            .contains(SPECIAL_PURPOSE_1.name)
+            .parent()
+            .contains(`${SPECIAL_PURPOSE_1.id} day(s)`);
+
+          // Check cookie disclosure
+          cy.get("p").contains(
+            'Captify stores cookies with a maximum duration of about 5 Day(s). These cookies may be refreshed. This vendor also uses other methods like "local storage" to store and access information on your device.'
+          );
+        });
+        // Check the cookie disclosure on the system
+        // First close the vendor
+        cy.get(".fides-notice-toggle-title").contains(VENDOR_1.name).click();
+        // Then open the system
+        cy.get(".fides-notice-toggle-title").contains(SYSTEM_1.name).click();
+        cy.get(".fides-disclosure-visible").within(() => {
+          cy.get("p").contains(
+            "Fides System stores cookies with a maximum duration of about 5 Day(s)"
+          );
+        });
       });
 
       it("can group toggle and fire FidesPreferenceToggled events", () => {
@@ -1140,6 +1188,7 @@ describe("Fides-js TCF", () => {
             id: "test",
             purpose_legitimate_interests: [{ id: 4, name: purpose4.name }],
           });
+          experience.tcf_vendor_relationships?.push({ ...vendor, id: "test" });
 
           stubConfig({
             options: {
@@ -1864,13 +1913,13 @@ describe("Fides-js TCF", () => {
           ],
         };
         AC_IDS.forEach((id, idx) => {
+          const vendor = { ...baseVendor, id: `gacp.${id}`, name: `AC ${id}` };
           experience.tcf_vendor_consents.push({
-            ...baseVendor,
-            id: `gacp.${id}`,
-            name: `AC ${id}`,
+            ...vendor,
             // Set some of these vendors without purpose_consents
             purpose_consents: idx % 2 === 0 ? [] : baseVendor.purpose_consents,
           });
+          experience.tcf_vendor_relationships.push(vendor);
         });
 
         stubConfig({

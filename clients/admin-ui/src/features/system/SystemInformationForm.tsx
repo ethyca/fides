@@ -432,7 +432,7 @@ const SystemInformationForm = ({
                 />
                 <DictSuggestionNumberInput
                   name="cookie_max_age_seconds"
-                  label="Maximum duration"
+                  label="Maximum duration (seconds)"
                   tooltip="What is the maximum amount of time a cookie will live?"
                 />
               </SystemFormInputGroup>
