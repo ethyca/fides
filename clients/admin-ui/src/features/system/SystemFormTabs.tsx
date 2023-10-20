@@ -109,11 +109,12 @@ const SystemFormTabs = ({
     }
   }, [activeSystem]);
 
-  const handleSuccess = () => {
+  const handleSuccess = (system: SystemResponse) => {
     // show a save message if this is the first time the system was saved
     if (activeSystem === undefined) {
       setShowSaveMessage(true);
     }
+    dispatch(setActiveSystem(system));
     const toastParams = {
       ...DEFAULT_TOAST_PARAMS,
       description: (

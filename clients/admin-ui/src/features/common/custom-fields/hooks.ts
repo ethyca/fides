@@ -56,7 +56,7 @@ export const useCustomFields = ({
   const [deleteCustomFieldMutationTrigger, deleteCustomFieldMutationResult] =
     useDeleteCustomFieldMutation({ fixedCacheKey: resourceFidesKey });
 
-  const [bulkUpdateCustomFieldsMutationTrigger, bulkUpdateCustomFieldsResult] =
+  const [bulkUpdateCustomFieldsMutationTrigger] =
     useBulkUpdateCustomFieldsMutation();
 
   const isLoading =

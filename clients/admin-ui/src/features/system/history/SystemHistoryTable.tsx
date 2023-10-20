@@ -23,7 +23,6 @@ import { SystemHistoryResponse } from "~/types/api";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
 import {
-  alignCustomFields,
   alignPrivacyDeclarationCustomFields,
   alignPrivacyDeclarations,
   alignSystemCustomFields,
