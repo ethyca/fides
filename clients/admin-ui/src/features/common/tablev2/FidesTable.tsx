@@ -7,18 +7,35 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
-import { flexRender, Table as TableInstance } from "@tanstack/react-table";
+import {
+  flexRender,
+  RowData,
+  Table as TableInstance,
+} from "@tanstack/react-table";
 import React, { ReactNode } from "react";
 
 const getTableTHandTDStyles = (cellId: string) =>
   cellId === "select"
-    ? { padding: "0px", width: "55px" }
+    ? { padding: "0px" }
     : {
         paddingLeft: "16px",
         paddingRight: "8px",
         paddingTop: "0px",
         paddingBottom: "0px",
       };
+
+/*
+  This was throwing a false positive for unused paramaters.
+  It's also how the library author reccomends typing meta.
+  https://tanstack.com/table/v8/docs/api/core/column-def#meta
+*/
+/* eslint-disable */
+declare module "@tanstack/table-core" {
+  interface ColumnMeta<TData extends RowData, TValue> {
+    width?: string;
+  }
+}
+/* eslint-enable */
 
 type Props<T> = {
   tableInstance: TableInstance<T>;
@@ -57,6 +74,11 @@ export const FidesTableV2 = <T,>({
             {headerGroup.headers.map((header) => (
               <Th
                 key={header.id}
+                width={
+                  header.column.columnDef.meta?.width
+                    ? header.column.columnDef.meta.width
+                    : "unset"
+                }
                 borderTopWidth="1px"
                 borderTopColor="gray.200"
                 borderBottomWidth="1px"
@@ -99,6 +121,11 @@ export const FidesTableV2 = <T,>({
               {row.getVisibleCells().map((cell) => (
                 <Td
                   key={cell.id}
+                  width={
+                    cell.column.columnDef.meta?.width
+                      ? cell.column.columnDef.meta.width
+                      : "unset"
+                  }
                   borderBottomWidth="1px"
                   borderBottomColor="gray.200"
                   borderRightWidth="1px"

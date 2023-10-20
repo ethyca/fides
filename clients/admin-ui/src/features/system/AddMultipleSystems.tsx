@@ -1,5 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 import {
+  Badge,
   Button,
   Flex,
   Spinner,
@@ -39,6 +40,12 @@ import {
   useGetAllCreatedSystemsQuery,
   usePostCreatedSystemsMutation,
 } from "~/features/plus/plus.slice";
+
+export const VendorSourceCell = ({ value }: { value: string }) => (
+  <Flex alignItems="center" height="100%">
+    <Badge>{value.split(".")[0] === "gvl" ? "GVL" : "AC"}</Badge>
+  </Flex>
+);
 
 type MultipleSystemTable = DictSystems;
 
@@ -92,11 +99,22 @@ export const AddMultipleSystems = ({ redirectRoute, isSystem }: Props) => {
             }}
           />
         ),
+        meta: {
+          width: "55px",
+        },
       }),
       columnHelper.accessor((row) => row.legal_name, {
         id: "legal_name",
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value={systemText} {...props} />,
+      }),
+      columnHelper.accessor((row) => row.vendor_id, {
+        id: "vendor_id",
+        cell: (props) => <VendorSourceCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Source" {...props} />,
+        meta: {
+          width: "80px",
+        },
       }),
     ],
     [allRowsAdded, systemText]
@@ -213,10 +231,17 @@ export const AddMultipleSystems = ({ redirectRoute, isSystem }: Props) => {
         </Tooltip>
       </TableActionBar>
       <FidesTableV2<MultipleSystemTable>
-        columns={columns}
-        data={dictionaryOptions}
         tableInstance={tableInstance}
-        rowActionBar={<RowSelectionBar tableInstance={tableInstance} />}
+        rowActionBar={
+          <RowSelectionBar<MultipleSystemTable>
+            tableInstance={tableInstance}
+            selectedRows={
+              tableInstance
+                .getSelectedRowModel()
+                .rows.filter((r) => !r.original.linked_system).length
+            }
+          />
+        }
       />
       <PaginationBar tableInstance={tableInstance} />
     </Flex>

@@ -3,10 +3,12 @@ import { Table as TableInstance } from "@tanstack/react-table";
 
 type RowSelectionBarProps<T> = {
   tableInstance: TableInstance<T>;
+  selectedRows: number;
 };
 
 export const RowSelectionBar = <T,>({
   tableInstance,
+  selectedRows,
 }: RowSelectionBarProps<T>) => {
   const isOpen = tableInstance.getSelectedRowModel().rows.length > 0;
 
@@ -31,17 +33,12 @@ export const RowSelectionBar = <T,>({
         colSpan={tableInstance.getAllColumns().length}
       >
         <HStack>
-          <Text fontSize="xs">
-            {
-              tableInstance
-                .getSelectedRowModel()
-                .rows.filter((r) => !r.original.linked_system).length
-            }{" "}
-            row(s) selected.
-          </Text>
+          <Text fontSize="xs">{selectedRows} row(s) selected.</Text>
           {!tableInstance.getIsAllRowsSelected() ? (
             <Button
-              onClick={tableInstance.toggleAllRowsSelected}
+              onClick={() => {
+                tableInstance.toggleAllRowsSelected();
+              }}
               variant="link"
               color="black"
               fontSize="xs"
