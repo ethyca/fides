@@ -31,7 +31,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: lastmodifieddate
-                data_categories: [user.sensor]
+                data_categories: [system.operations]
                 fidesops_meta:
                   data_type: string
               - name: lastname
@@ -47,11 +47,11 @@ dataset:
                 fidesops_meta:
                   data_type: string
           - name: createdAt
-            data_categories: [user.sensor]
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: updatedAt
-            data_categories: [user.sensor]
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: archived
@@ -101,7 +101,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: updatedAt
-            data_categories: [user.sensor]
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
       - name: subscription_preferences
