@@ -79,10 +79,7 @@ Cypress.Commands.add(
         );
         win.addEventListener("FidesUpdated", cy.stub().as("FidesUpdated"));
         win.addEventListener("FidesUIShown", cy.stub().as("FidesUIShown"));
-        win.addEventListener(
-          "FidesUIChanged",
-          cy.stub().as("FidesUIChanged")
-        );
+        win.addEventListener("FidesUIChanged", cy.stub().as("FidesUIChanged"));
 
         // Add GTM stub
         // eslint-disable-next-line no-param-reassign
