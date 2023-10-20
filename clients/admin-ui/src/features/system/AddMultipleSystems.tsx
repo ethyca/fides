@@ -82,7 +82,10 @@ export const AddMultipleSystems = ({ redirectRoute, isSystem }: Props) => {
           <IndeterminateCheckboxCell
             {...{
               checked: table.getIsAllRowsSelected(),
-              indeterminate: table.getIsSomeRowsSelected(),
+              indeterminate:
+                table
+                  .getSelectedRowModel()
+                  .rows.filter((r) => !r.original.linked_system).length > 0,
               onChange: table.getToggleAllRowsSelectedHandler(),
               manualDisable: allRowsAdded,
             }}

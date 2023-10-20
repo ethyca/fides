@@ -10,7 +10,7 @@ export const RowSelectionBar = <T,>({
   tableInstance,
   selectedRows,
 }: RowSelectionBarProps<T>) => {
-  const isOpen = tableInstance.getSelectedRowModel().rows.length > 0;
+  const isOpen = selectedRows !== 0;
 
   if (!isOpen) {
     return null;
