@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 - Added support for 3 additional config variables in Fides.js: fidesEmbed, fidesDisableSaveApi, and fidesTcString [#4262](https://github.com/ethyca/fides/pull/4262)
 - Added support for fidesEmbed, fidesDisableSaveApi, and fidesTcString to be passed into Fides.js via query param, cookie, or window object [#4297](https://github.com/ethyca/fides/pull/4297)
+- New privacy center environment variables `FIDES_PRIVACY_CENTER__IS_FORCED_TCF` which can make the privacy center always return the TCF bundle (`fides-tcf.js`) [#4312](https://github.com/ethyca/fides/pull/4312)
 
 ### Fixed
 - Cleans up CSS for fidesEmbed mode [#4306](https://github.com/ethyca/fides/pull/4306)
