@@ -22,6 +22,7 @@ The types of changes are:
 ### Added
 - Added a `FidesPreferenceToggled` event to Fides.js to track when user preferences change without being saved [#4253](https://github.com/ethyca/fides/pull/4253)
 - Add AC Systems to the TCF Overlay under Vendor Consents section [#4266](https://github.com/ethyca/fides/pull/4266/)
+- Added bulk system/vendor creation component [#4309](https://github.com/ethyca/fides/pull/4309/)
 
 ### Changed
 - Derive cookie storage info, privacy policy and legitimate interest disclosure URLs, and data retention data from the data map instead of directly from gvl.json [#4286](https://github.com/ethyca/fides/pull/4286)
