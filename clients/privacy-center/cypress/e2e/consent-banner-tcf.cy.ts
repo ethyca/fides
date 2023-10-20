@@ -1141,9 +1141,12 @@ describe("Fides-js TCF", () => {
 
     describe("setting fields", () => {
       it("can opt in to all and set legitimate interests", () => {
+        cy.get("@FidesUpdated").should("have.been.calledOnce");
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
+        // On slow connections, we should explicitly wait for FidesUpdated
+        cy.get("@FidesUpdated").should("have.been.calledTwice");
         cy.get("@TCFEvent")
           .its("lastCall.args")
           .then(([tcData, success]) => {
