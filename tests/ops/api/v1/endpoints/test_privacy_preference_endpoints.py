@@ -1900,7 +1900,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         current_vendor_preference.delete(db)
         vendor_privacy_preference_history.delete(db)
 
-    @pytest.mark.usefixtures("enable_tcf")
+    @pytest.mark.usefixtures("enable_tcf", "enable_ac")
     def test_save_tcf_privacy_preferences_against_ac_vendor(
         self,
         db,
@@ -2625,6 +2625,7 @@ class TestSavePrivacyPreferencesFidesStringOnly:
             == "Cannot supply value for 'purpose_consent_preferences' and 'fides_string' simultaneously when saving privacy preferences."
         )
 
+    @pytest.mark.usefixtures("enable_tcf")
     def test_save_privacy_preferences_bad_tc_string(self, api_client, url):
         tc_string: str = "bad_string"
         fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
@@ -2641,7 +2642,7 @@ class TestSavePrivacyPreferencesFidesStringOnly:
         assert response.status_code == 400
         assert response.json()["detail"] == "Invalid base64-encoded TC string"
 
-    @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration", "enable_tcf")
     def test_save_privacy_preferences_bad_ac_string(self, api_client, url):
         fides_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE,1~gacp.8"
 
@@ -2745,17 +2746,32 @@ class TestSavePrivacyPreferencesFidesStringOnly:
         response = api_client.patch(
             url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
         )
-        assert response.status_code == 200
-        response_body = response.json()["preferences"]
+        assert response.status_code == 400
+        assert response.json()["detail"] == "TCF must be enabled to decode TC String"
 
-        # Nothing saved because TCF is disabled
-        assert len(response_body) == 0
+    @pytest.mark.usefixtures("enable_tcf")
+    def test_save_ac_privacy_preferences_when_ac_disabled(self, api_client, url):
+        tc_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE,1~1"
+        fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        minimal_request_body = {
+            "browser_identity": {
+                "fides_user_device_id": fides_user_device_id,
+            },
+            "fides_string": tc_string,
+        }
+        response = api_client.patch(
+            url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 400
+        assert response.json()["detail"] == "AC must be enabled to decode AC String"
 
     @pytest.mark.usefixtures(
         "skimbit_system",
         "emerse_system",
         "captify_technologies_system",
         "enable_tcf",
+        "enable_ac",
         "ac_system_without_privacy_declaration",
         "ac_system_with_privacy_declaration",
     )

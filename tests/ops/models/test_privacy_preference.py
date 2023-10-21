@@ -1604,6 +1604,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
         "ac_system_with_privacy_declaration",
         "ac_system_with_invalid_li_declaration",
         "ac_system_with_invalid_vi_declaration",
+        "enable_ac",
     )
     def test_determine_relevant_systems_for_ac_system_under_vendor_consent(
         self, db, ac_system_without_privacy_declaration
@@ -1612,7 +1613,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
             db, tcf_field=TCFComponentType.vendor_consent.value, tcf_value="gacp.100"
         ) == [ac_system_without_privacy_declaration.fides_key]
 
-    @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration", "enable_ac")
     def test_determine_relevant_systems_for_ac_system_under_vendor_legitimate_interests(
         self, db
     ):
@@ -1631,6 +1632,7 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
         "ac_system_with_invalid_li_declaration",
         "ac_system_with_invalid_vi_declaration",
         "ac_system_without_privacy_declaration",
+        "enable_ac",
     )
     def test_determine_relevant_systems_for_ac_system_purpose_legitimate_interests(
         self, db

@@ -714,6 +714,11 @@ def update_request_with_decoded_fides_string_fields(
         )  # TODO cache this so we're not building each time privacy preference is saved
         try:
             tc_str, ac_str = split_fides_string(request_body.fides_string)
+            if tc_str and not CONFIG.consent.tcf_enabled:
+                raise DecodeFidesStringError("TCF must be enabled to decode TC String")
+
+            if ac_str and not CONFIG.consent.ac_enabled:
+                raise DecodeFidesStringError("AC must be enabled to decode AC String")
 
             decoded_tc_str_request_body: FidesStringFidesPreferences = (
                 decode_tc_string_to_preferences(tc_str, tcf_contents)

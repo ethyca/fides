@@ -39,6 +39,7 @@ from fides.api.schemas.tcf import (
     TCFVendorLegitimateInterestsRecord,
     TCFVendorRelationships,
 )
+from fides.config import CONFIG
 from fides.config.helpers import load_file
 
 _gvl: Optional[Dict] = None
@@ -245,6 +246,11 @@ def get_matching_privacy_declarations(db: Session) -> Query:
             PrivacyDeclaration.created_at.desc()
         )  # Order to get repeatable results when collapsing information
     )
+    if not CONFIG.consent.ac_enabled:
+        # If AC Mode is not enabled, exclude all Privacy Declarations
+        matching_privacy_declarations = matching_privacy_declarations.filter(
+            NOT_AC_SYSTEM_FILTER
+        )
     return matching_privacy_declarations
 
 

@@ -17,6 +17,7 @@ from fides.api.util.tcf.tc_string import (
     build_tc_string,
     get_bits_for_section,
 )
+from fides.config import CONFIG
 
 
 def build_tc_data_for_mobile(tc_model: TCModel) -> TCMobileData:
@@ -64,7 +65,9 @@ def build_tc_data_for_mobile(tc_model: TCModel) -> TCMobileData:
         IABTCF_SpecialFeaturesOptIns=_build_binary_string(
             "special_feature_optins", SPECIAL_FEATURE_BITS
         ),
-        IABTCF_AddtlConsent=build_ac_string(tc_model.ac_vendor_consents),
+        IABTCF_AddtlConsent=build_ac_string(tc_model.ac_vendor_consents)
+        if CONFIG.consent.ac_enabled
+        else None,
     )
 
 

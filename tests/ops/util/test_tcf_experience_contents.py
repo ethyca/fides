@@ -943,7 +943,7 @@ class TestTCFContents:
             == 4
         )
 
-    @pytest.mark.usefixtures("ac_system_with_privacy_declaration")
+    @pytest.mark.usefixtures("ac_system_with_privacy_declaration", "enable_ac")
     def test_ac_systems_with_consent_privacy_declarations(self, db):
         """This AC system won't show up under vendor consents, but because it has a
         valid declaration with a gvl data use, that shows up under purpose consents
@@ -983,7 +983,7 @@ class TestTCFContents:
         assert vendor_relationship.cookie_refresh is False
         assert vendor_relationship.legitimate_interest_disclosure_url is None
 
-    @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration", "enable_ac")
     def test_ac_systems_without_privacy_declarations(self, db):
         tcf_contents = get_tcf_contents(db)
 
@@ -1019,7 +1019,27 @@ class TestTCFContents:
         assert vendor_relationship.cookie_refresh is False
         assert vendor_relationship.legitimate_interest_disclosure_url is None
 
-    @pytest.mark.usefixtures("ac_system_with_invalid_li_declaration")
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
+    def test_ac_systems_with_ac_disabled(self, db):
+        """Available AC systems are suppressed from the Experience"""
+        tcf_contents = get_tcf_contents(db)
+
+        assert_length_of_tcf_sections(
+            tcf_contents,
+            p_c_len=0,
+            p_li_len=0,
+            f_len=0,
+            sp_len=0,
+            sf_len=0,
+            v_c_len=0,
+            v_li_len=0,
+            v_r_len=0,
+            s_c_len=0,
+            s_li_len=0,
+            s_r_len=0,
+        )
+
+    @pytest.mark.usefixtures("ac_system_with_invalid_li_declaration", "enable_ac")
     def test_ac_systems_with_li_privacy_declarations_only(self, db):
         """I suppress this AC system entirely - it was only defined with a purpose that had a legitimate interest legal
         basis which isn't permitted"""
@@ -1040,7 +1060,7 @@ class TestTCFContents:
             s_r_len=0,
         )
 
-    @pytest.mark.usefixtures("ac_system_with_invalid_vi_declaration")
+    @pytest.mark.usefixtures("ac_system_with_invalid_vi_declaration", "enable_ac")
     def test_ac_systems_with_li_privacy_declarations_only(self, db):
         """I suppress this AC system entirely - it was only defined with a purpose that had a vital interests legal basis"""
         tcf_contents = get_tcf_contents(db)

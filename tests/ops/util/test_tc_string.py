@@ -1232,7 +1232,7 @@ class TestBuildTCModel:
 
         assert decoded.oob_disclosed_vendors == {1: False, 2: True}
 
-    @pytest.mark.usefixtures("ac_system_with_privacy_declaration")
+    @pytest.mark.usefixtures("ac_system_with_privacy_declaration", "enable_ac")
     def test_ac_system_not_in_tc_string(self, db):
         """System with AC vendor id will not show up in the vendor consents section of the TC string, but its purpose
         with legal basis of consent does show up in purpose consents (this is the same thing we do if we
@@ -1343,7 +1343,7 @@ class TestBuildTCModel:
 
 
 class TestBuildTCMobileData:
-    @pytest.mark.usefixtures("captify_technologies_system")
+    @pytest.mark.usefixtures("captify_technologies_system", "enable_ac")
     def test_build_accept_all_tc_data_for_mobile_consent_purposes_only(self, db):
         tcf_contents = get_tcf_contents(db)
         model = convert_tcf_contents_to_tc_model(
@@ -1375,7 +1375,7 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
         assert tc_mobile_data.IABTCF_AddtlConsent == "1~"
 
-    @pytest.mark.usefixtures("captify_technologies_system")
+    @pytest.mark.usefixtures("captify_technologies_system", "enable_ac")
     def test_build_reject_all_tc_data_for_mobile_consent_purposes_only(self, db):
         tcf_contents = get_tcf_contents(db)
         model = convert_tcf_contents_to_tc_model(
@@ -1407,7 +1407,7 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
         assert tc_mobile_data.IABTCF_AddtlConsent == "1~"
 
-    @pytest.mark.usefixtures("skimbit_system")
+    @pytest.mark.usefixtures("skimbit_system", "enable_ac")
     def test_build_accept_all_tc_data_for_mobile_with_legitimate_interest_purposes(
         self, db
     ):
@@ -1444,7 +1444,7 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
         assert tc_mobile_data.IABTCF_AddtlConsent == "1~"
 
-    @pytest.mark.usefixtures("skimbit_system")
+    @pytest.mark.usefixtures("skimbit_system", "enable_ac")
     def test_build_reject_all_tc_data_for_mobile_with_legitimate_interest_purposes(
         self, db
     ):
@@ -1478,7 +1478,7 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
         assert tc_mobile_data.IABTCF_AddtlConsent == "1~"
 
-    @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration", "enable_ac")
     def test_build_opt_in_tc_data_for_mobile_with_ac_system(self, db):
         tcf_contents = get_tcf_contents(db)
         model = convert_tcf_contents_to_tc_model(
@@ -1511,6 +1511,20 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_AddtlConsent == "1~100"
 
     @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
+    def test_build_opt_in_tc_data_for_mobile_with_ac_system_but_ac_disabled(self, db):
+        tcf_contents = get_tcf_contents(db)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_in
+        )
+
+        tc_mobile_data = build_tc_data_for_mobile(model)
+
+        assert tc_mobile_data.IABTCF_CmpSdkID == CMP_ID
+        assert tc_mobile_data.IABTCF_CmpSdkVersion == 1
+        assert tc_mobile_data.IABTCF_PolicyVersion == 4
+        assert tc_mobile_data.IABTCF_AddtlConsent is None
+
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration", "enable_ac")
     def test_build_opt_out_tc_data_for_mobile_with_ac_system(self, db):
         tcf_contents = get_tcf_contents(db)
         model = convert_tcf_contents_to_tc_model(

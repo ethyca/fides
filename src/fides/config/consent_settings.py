@@ -9,6 +9,9 @@ class ConsentSettings(FidesSettings):
     tcf_enabled: bool = Field(
         default=False, description="Toggle whether TCF is enabled."
     )
+    ac_enabled: bool = Field(
+        default=False, description="Toggle whether Google AC Mode is enabled."
+    )
 
     class Config:
         env_prefix = "FIDES__CONSENT__"
