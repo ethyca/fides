@@ -33,6 +33,7 @@ The types of changes are:
 - Added support for new TCF-related fields on `System` and `PrivacyDeclaration` models [#4228](https://github.com/ethyca/fides/pull/4228)
 - Support for AC string to `fides-tcf` [#4244](https://github.com/ethyca/fides/pull/4244)
 - Support for `gvl` prefixed vendor IDs [#4247](https://github.com/ethyca/fides/pull/4247)
+- Added Access and Erasure Connector for Iterate 
 
 ### Changed
 - Removed `TCF_ENABLED` environment variable from the privacy center in favor of dynamically figuring out which `fides-js` bundle to send [#4131](https://github.com/ethyca/fides/pull/4131)
