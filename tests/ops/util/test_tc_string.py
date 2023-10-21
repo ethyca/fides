@@ -1774,8 +1774,6 @@ class TestConvertTCStringtoMobile:
         assert tc_mobile_data["IABTCF_AddtlConsent"] == "1~12.35.1452.3313"
 
     def test_null_fides_string(self):
-        with pytest.raises(DecodeFidesStringError):
-            convert_fides_str_to_mobile_data("")
+        assert convert_fides_str_to_mobile_data("") is None
 
-        with pytest.raises(DecodeFidesStringError):
-            assert convert_fides_str_to_mobile_data(None) is None
+        assert convert_fides_str_to_mobile_data(None) is None
