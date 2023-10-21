@@ -825,21 +825,25 @@ class TestGetTCFPrivacyExperiences:
         meta = resp.json()["items"][0]["meta"]
         assert meta["version_hash"] == "f2db7626ca0b"
         assert meta["accept_all_fides_string"]
-        assert "," not in meta["accept_all_fides_string"]  # No AC string here
+        assert meta["accept_all_fides_string"].endswith(",1~")
         assert meta["accept_all_fides_mobile_data"]
         assert (
             meta["accept_all_fides_mobile_data"]["IABTCF_TCString"]
+            + ","
+            + meta["accept_all_fides_mobile_data"]["IABTCF_AddtlConsent"]
             == meta["accept_all_fides_string"]
         )
-        assert meta["accept_all_fides_mobile_data"]["IABTCF_AddtlConsent"] is None
+        assert meta["accept_all_fides_mobile_data"]["IABTCF_AddtlConsent"] == "1~"
 
         assert meta["reject_all_fides_string"]
-        assert "," not in meta["reject_all_fides_string"]  # No AC string here
+        assert meta["reject_all_fides_string"].endswith(",1~")
         assert (
             meta["reject_all_fides_mobile_data"]["IABTCF_TCString"]
+            + ","
+            + meta["reject_all_fides_mobile_data"]["IABTCF_AddtlConsent"]
             == meta["reject_all_fides_string"]
         )
-        assert meta["reject_all_fides_mobile_data"]["IABTCF_AddtlConsent"] is None
+        assert meta["reject_all_fides_mobile_data"]["IABTCF_AddtlConsent"] == "1~"
         assert meta["reject_all_fides_mobile_data"]
 
     @pytest.mark.usefixtures(
@@ -920,12 +924,14 @@ class TestGetTCFPrivacyExperiences:
         assert meta["accept_all_fides_mobile_data"]["IABTCF_AddtlConsent"] == "1~8.100"
 
         assert meta["reject_all_fides_string"]
-        assert "," not in meta["reject_all_fides_string"]  # No AC string here
+        assert meta["reject_all_fides_string"].endswith(",1~")
         assert (
             meta["reject_all_fides_mobile_data"]["IABTCF_TCString"]
+            + ","
+            + meta["reject_all_fides_mobile_data"]["IABTCF_AddtlConsent"]
             == meta["reject_all_fides_string"]
         )
-        assert meta["reject_all_fides_mobile_data"]["IABTCF_AddtlConsent"] is None
+        assert meta["reject_all_fides_mobile_data"]["IABTCF_AddtlConsent"] == "1~"
         assert meta["reject_all_fides_mobile_data"]
 
     @pytest.mark.usefixtures(

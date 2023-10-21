@@ -82,7 +82,7 @@ def convert_fides_str_to_mobile_data(
     after saving privacy preferences from a fides_string.
     """
     if not fides_str:
-        return None
+        raise DecodeFidesStringError("Invalid Fides String supplied")
 
     tc_str, ac_str = split_fides_string(fides_str)
 

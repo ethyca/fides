@@ -1373,7 +1373,7 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherLegitimateInterests is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesConsents is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
-        assert tc_mobile_data.IABTCF_AddtlConsent is None
+        assert tc_mobile_data.IABTCF_AddtlConsent == "1~"
 
     @pytest.mark.usefixtures("captify_technologies_system")
     def test_build_reject_all_tc_data_for_mobile_consent_purposes_only(self, db):
@@ -1405,7 +1405,7 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherLegitimateInterests is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesConsents is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
-        assert tc_mobile_data.IABTCF_AddtlConsent is None
+        assert tc_mobile_data.IABTCF_AddtlConsent == "1~"
 
     @pytest.mark.usefixtures("skimbit_system")
     def test_build_accept_all_tc_data_for_mobile_with_legitimate_interest_purposes(
@@ -1442,7 +1442,7 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherLegitimateInterests is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesConsents is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
-        assert tc_mobile_data.IABTCF_AddtlConsent is None
+        assert tc_mobile_data.IABTCF_AddtlConsent == "1~"
 
     @pytest.mark.usefixtures("skimbit_system")
     def test_build_reject_all_tc_data_for_mobile_with_legitimate_interest_purposes(
@@ -1476,7 +1476,7 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherLegitimateInterests is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesConsents is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
-        assert tc_mobile_data.IABTCF_AddtlConsent is None
+        assert tc_mobile_data.IABTCF_AddtlConsent == "1~"
 
     @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
     def test_build_opt_in_tc_data_for_mobile_with_ac_system(self, db):
@@ -1527,7 +1527,7 @@ class TestBuildTCMobileData:
             == "000000000000000000000000"
         )
         assert tc_mobile_data.IABTCF_SpecialFeaturesOptIns == "000000000000"
-        assert tc_mobile_data.IABTCF_AddtlConsent is None
+        assert tc_mobile_data.IABTCF_AddtlConsent == "1~"
 
 
 class TestDecodeTcString:
@@ -1772,3 +1772,10 @@ class TestConvertTCStringtoMobile:
         assert tc_mobile_data["IABTCF_PolicyVersion"] == 2
 
         assert tc_mobile_data["IABTCF_AddtlConsent"] == "1~12.35.1452.3313"
+
+    def test_null_fides_string(self):
+        with pytest.raises(DecodeFidesStringError):
+            convert_fides_str_to_mobile_data("")
+
+        with pytest.raises(DecodeFidesStringError):
+            assert convert_fides_str_to_mobile_data(None) is None

@@ -37,8 +37,9 @@ def test_build_fides_string():
         == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
     )
 
-    # Contrived scenario, AC string but no TC string
-    assert build_fides_string("", ac_string) == ",1~1.35.41.101"
+    # Cannot build TC string with AC string alone
+    with pytest.raises(DecodeFidesStringError):
+        assert build_fides_string("", ac_string) == ",1~1.35.41.101"
 
     # Both TC String and AC String
     assert (
@@ -47,8 +48,11 @@ def test_build_fides_string():
     )
 
     # Neither TC String or AC String
-    assert build_fides_string("", "") == ""
-    assert build_fides_string(None, None) == ""
+    with pytest.raises(DecodeFidesStringError):
+        build_fides_string("", "")
+
+    with pytest.raises(DecodeFidesStringError):
+        assert build_fides_string(None, None)
 
 
 def test_split_fides_string():
@@ -75,11 +79,19 @@ def test_split_fides_string():
     with pytest.raises(DecodeFidesStringError):
         split_fides_string(",1~100.1000")
 
-    # Three sections supplied which is not supported
-    with pytest.raises(DecodeFidesStringError):
-        split_fides_string(
-            "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA,1~100.1000,another_section"
-        )
+    # Three sections supplied, so we just take the first two.
+    tc_str, ac_str = split_fides_string(
+        "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA,1~100.1000,another_section"
+    )
+    assert tc_str == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
+    assert ac_str == "1~100.1000"
+
+    # AC string with everything opted-out is supplied
+    tc_str, ac_str = split_fides_string(
+        "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA,1~"
+    )
+    assert tc_str == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
+    assert ac_str == "1~"
 
     # Bad AC format
     with pytest.raises(DecodeFidesStringError):
@@ -94,7 +106,7 @@ class TestBuildACString:
         ac_vendor_consents = build_ac_vendor_consents(
             contents, UserConsentPreference.opt_in
         )
-        assert build_ac_string(ac_vendor_consents) is None
+        assert build_ac_string(ac_vendor_consents) == "1~"
 
     def test_opt_out_preference(self):
         contents = TCFExperienceContents(
@@ -107,7 +119,7 @@ class TestBuildACString:
         ac_vendor_consents = build_ac_vendor_consents(
             contents, UserConsentPreference.opt_out
         )
-        assert build_ac_string(ac_vendor_consents) is None
+        assert build_ac_string(ac_vendor_consents) == "1~"
 
     def test_only_gvl_vendors(self):
         contents = TCFExperienceContents(
@@ -120,7 +132,7 @@ class TestBuildACString:
         ac_vendor_consents = build_ac_vendor_consents(
             contents, UserConsentPreference.opt_in
         )
-        assert build_ac_string(ac_vendor_consents) is None
+        assert build_ac_string(ac_vendor_consents) == "1~"
 
     def test_one_gacp_id(self):
         contents = TCFExperienceContents(
@@ -144,7 +156,7 @@ class TestBuildACString:
         ac_vendor_consents = build_ac_vendor_consents(
             contents, UserConsentPreference.opt_in
         )
-        assert build_ac_string(ac_vendor_consents) is None
+        assert build_ac_string(ac_vendor_consents) == "1~"
 
     def test_build_ac_string(self):
         contents = TCFExperienceContents(
@@ -191,6 +203,17 @@ class TestDecodeACStringToPreferences:
         )
         assert prefs.vendor_consent_preferences == [
             TCFVendorSave(id="gacp.100", preference=UserConsentPreference.opt_in)
+        ]
+
+    def test_pass_in_optout_string(self):
+        prefs = decode_ac_string_to_preferences(
+            "1~",
+            TCFExperienceContents(
+                tcf_vendor_consents=[TCFVendorConsentRecord(id="gacp.100")]
+            ),
+        )
+        assert prefs.vendor_consent_preferences == [
+            TCFVendorSave(id="gacp.100", preference=UserConsentPreference.opt_out)
         ]
 
     def test_ac_system_in_data_map_not_in_string_gets_opt_out(self):

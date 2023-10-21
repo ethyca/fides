@@ -50,10 +50,6 @@ def build_ac_vendor_consents(
 
 def build_ac_string(ac_vendor_consents: List[int]) -> Optional[str]:
     """Returns an AC string following this spec: https://support.google.com/admanager/answer/9681920"""
-    if not ac_vendor_consents:
-        # No vendors found in AC format
-        return None
-
     return (
         SPECIFICATION_VERSION_NUMBER
         + SEPARATOR_SYMBOL
@@ -64,8 +60,8 @@ def build_ac_string(ac_vendor_consents: List[int]) -> Optional[str]:
 def build_fides_string(tc_str: Optional[str], ac_str: Optional[str]) -> str:
     """Concatenate a TC string and an AC string into a 'fides string' representation, to represent
     both in a single string"""
-    if tc_str is None:
-        tc_str = ""
+    if not tc_str:
+        raise DecodeFidesStringError("TC String is required for a complete signal")
 
     if not ac_str:
         return tc_str
@@ -87,12 +83,7 @@ def split_fides_string(fides_str: Optional[str]) -> Tuple[Optional[str], Optiona
     if not tc_str:
         raise DecodeFidesStringError("TC String is required for a complete signal")
 
-    ac_str = None
-    if len(split_str) > 2:
-        raise DecodeFidesStringError("Unexpected Fides String format")
-
-    if len(split_str) == 2:
-        ac_str = split_str[1]
+    ac_str: Optional[str] = split_str[1] if len(split_str) > 1 else None
 
     validate_ac_string_format(ac_str)
     return tc_str, ac_str
@@ -107,6 +98,10 @@ def validate_ac_string_format(ac_str: Optional[str]) -> None:
         raise DecodeFidesStringError("Unexpected AC String format")
 
     ac_str = ac_str.lstrip(SPECIFICATION_VERSION_NUMBER).lstrip(SEPARATOR_SYMBOL)
+
+    if not ac_str:
+        # Return if AC string was just this format "1~"
+        return
 
     try:
         [int(vendor_id) for vendor_id in ac_str.split(".")]
@@ -125,6 +120,10 @@ def _ac_str_to_universal_vendor_id_list(ac_str: Optional[str]) -> List[str]:
     validate_ac_string_format(ac_str)
 
     ac_str = ac_str.lstrip(SPECIFICATION_VERSION_NUMBER).lstrip(SEPARATOR_SYMBOL)
+
+    if not ac_str:
+        return []
+
     vendor_ids: List[str] = ac_str.split(".")
 
     universal_ac_vendor_ids: List[str] = [
