@@ -216,6 +216,13 @@ class TestDecodeACStringToPreferences:
             TCFVendorSave(id="gacp.100", preference=UserConsentPreference.opt_out)
         ]
 
+    def test_pass_in_optout_string_no_systems_in_datamap(self):
+        prefs = decode_ac_string_to_preferences(
+            "1~",
+            TCFExperienceContents(tcf_vendor_consents=[]),
+        )
+        assert prefs.vendor_consent_preferences == []
+
     def test_ac_system_in_data_map_not_in_string_gets_opt_out(self):
         prefs = decode_ac_string_to_preferences(
             "1~100",
