@@ -2807,6 +2807,7 @@ def tcf_system(db: Session) -> System:
             "legal_basis_for_processing": "Consent",
             "egress": None,
             "ingress": None,
+            "retention_period": "3",
         },
     )
 
@@ -2823,6 +2824,7 @@ def tcf_system(db: Session) -> System:
             "legal_basis_for_processing": "Legitimate interests",
             "egress": None,
             "ingress": None,
+            "retention_period": "1",
         },
     )
 
