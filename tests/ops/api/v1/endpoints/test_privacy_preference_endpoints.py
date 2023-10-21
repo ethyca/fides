@@ -2683,7 +2683,7 @@ class TestSavePrivacyPreferencesFidesStringOnly:
     @pytest.mark.usefixtures("emerse_system", "enable_tcf")
     def test_save_privacy_preferences_tc_string_only(self, api_client, url):
         fides_string: str = (
-            "CPz2D2nPz2D2nOPAAAENCZCgAAAAAAAAAAAAAEAEACACAAA.YAAAAAAAAAA"
+            "CPz2D2nPz2D2nOPAAAENCZCgAAAAAAAAAAAAAEAEACACAAA.YAAAAAAAAAA,"
         )
 
         fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
@@ -2704,7 +2704,7 @@ class TestSavePrivacyPreferencesFidesStringOnly:
             == "gvl.8"
         )
 
-        assert response.json()["fides_mobile_data"]["IABTCF_AddtlConsent"] is None
+        assert response.json()["fides_mobile_data"]["IABTCF_AddtlConsent"] == ""
         assert response.json()["fides_mobile_data"]["IABTCF_CmpSdkID"] == 911
         assert (
             response.json()["fides_mobile_data"]["IABTCF_VendorConsents"] == "00000001"

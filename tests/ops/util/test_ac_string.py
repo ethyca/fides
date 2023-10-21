@@ -93,6 +93,13 @@ def test_split_fides_string():
     assert tc_str == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
     assert ac_str == "1~"
 
+    # Empty AC String supplied
+    tc_str, ac_str = split_fides_string(
+        "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA,"
+    )
+    assert tc_str == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
+    assert ac_str == ""
+
     # Bad AC format
     with pytest.raises(DecodeFidesStringError):
         split_fides_string(
@@ -101,7 +108,7 @@ def test_split_fides_string():
 
 
 class TestBuildACString:
-    def test_no_vendor_consents(self):
+    def test_opt_in_but_no_vendors(self):
         contents = TCFExperienceContents()
         ac_vendor_consents = build_ac_vendor_consents(
             contents, UserConsentPreference.opt_in
@@ -121,7 +128,7 @@ class TestBuildACString:
         )
         assert build_ac_string(ac_vendor_consents) == "1~"
 
-    def test_only_gvl_vendors(self):
+    def test_opt_in_only_gvl_vendors(self):
         contents = TCFExperienceContents(
             tcf_vendor_consents=[
                 TCFVendorConsentRecord(id="gvl.1313"),
@@ -134,7 +141,7 @@ class TestBuildACString:
         )
         assert build_ac_string(ac_vendor_consents) == "1~"
 
-    def test_one_gacp_id(self):
+    def test_opt_in_one_gacp_id(self):
         contents = TCFExperienceContents(
             tcf_vendor_consents=[
                 TCFVendorConsentRecord(id="gacp.12"),
@@ -146,7 +153,7 @@ class TestBuildACString:
         )
         assert build_ac_string(ac_vendor_consents) == "1~12"
 
-    def test_badly_formatted_vendor_ids(self):
+    def test_badly_formatted_vendor_ids_skipped(self):
         contents = TCFExperienceContents(
             tcf_vendor_consents=[
                 TCFVendorConsentRecord(id="gacp.1313aasd"),
@@ -158,7 +165,7 @@ class TestBuildACString:
         )
         assert build_ac_string(ac_vendor_consents) == "1~"
 
-    def test_build_ac_string(self):
+    def test_build_opt_in_ac_string(self):
         contents = TCFExperienceContents(
             tcf_vendor_consents=[
                 TCFVendorConsentRecord(id="gacp.1313"),
@@ -174,7 +181,20 @@ class TestBuildACString:
 
 class TestDecodeACStringToPreferences:
     def test_no_ac_str(self):
-        prefs = decode_ac_string_to_preferences(None, TCFExperienceContents())
+        prefs = decode_ac_string_to_preferences(
+            None,
+            TCFExperienceContents(
+                tcf_vendor_consents=[TCFVendorConsentRecord(id="gacp.122")]
+            ),
+        )
+        assert prefs.vendor_consent_preferences == []
+
+        prefs = decode_ac_string_to_preferences(
+            "",
+            TCFExperienceContents(
+                tcf_vendor_consents=[TCFVendorConsentRecord(id="gacp.122")]
+            ),
+        )
         assert prefs.vendor_consent_preferences == []
 
     def test_bad_ac_str(self):
