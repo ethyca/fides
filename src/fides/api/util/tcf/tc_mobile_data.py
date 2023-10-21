@@ -89,9 +89,6 @@ def convert_fides_str_to_mobile_data(
 
     tc_str, ac_str = split_fides_string(fides_str)
 
-    if not tc_str:
-        return TCMobileData(IABTCF_AddtlConsent=ac_str)
-
     try:
         decoded: ConsentV2 = decode_v2(tc_str)
     except binascii.Error:

@@ -1769,6 +1769,12 @@ class TestConvertTCStringtoMobile:
         assert tc_mobile_data["IABTCF_VendorLegitimateInterests"] == ""
         assert tc_mobile_data["IABTCF_SpecialFeaturesOptIns"] == "000000000000"
 
+    def test_ac_str_but_no_tc_str_string_format(self):
+        fides_str = ",~12.35.1452.3313"
+
+        with pytest.raises(DecodeFidesStringError):
+            convert_fides_str_to_mobile_data(fides_str)
+
     def test_bad_ac_string_format(self):
         fides_str = "CPz4f8wPz4f8wKEAAAENCZCsAAwAACIAAAAAAFNdAAoAIAA.YAAAAAAAAAA,~12.35.1452.3313"
 
