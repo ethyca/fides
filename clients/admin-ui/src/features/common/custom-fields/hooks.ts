@@ -175,6 +175,8 @@ export const useCustomFields = ({
 
       try {
         await bulkUpdateCustomFieldsMutationTrigger({
+          resource_type: resourceType,
+          resource_id: fidesKey,
           upsert: upsertList,
           delete: deleteList,
         });
