@@ -1626,7 +1626,6 @@ describe("Fides-js TCF", () => {
     it("does nothing when fides_string option when both fides_string option and cookie exist but no experience exists (neither prefetch nor API)", () => {
       const fidesStringOverride =
         "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
-      const expectedTCString = null;
       setFidesCookie();
       stubConfig(
         {
