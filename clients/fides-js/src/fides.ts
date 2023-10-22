@@ -77,7 +77,8 @@ declare global {
   interface Window {
     Fides: Fides;
     config: {
-      fides: OverrideOptions;
+      // TODO: make this configurable!
+      tc_info: OverrideOptions;
     };
   }
 }

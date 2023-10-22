@@ -722,6 +722,7 @@ describe("Fides-js TCF", () => {
           ).to.eql(true);
         });
       });
+
       it("skips saving preferences to API when disable save is set", () => {
         cy.fixture("consent/experience_tcf.json").then((experience) => {
           stubConfig({
@@ -790,6 +791,7 @@ describe("Fides-js TCF", () => {
           });
         });
       });
+
       it("skips saving preferences to API when disable save is set via cookie", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         cy.getCookie("fides_disable_save_api").should("not.exist");
@@ -822,6 +824,7 @@ describe("Fides-js TCF", () => {
           });
         });
       });
+
       it("skips saving preferences to API when disable save is set via query param", () => {
         cy.getCookie("fides_string").should("not.exist");
         cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -857,6 +860,7 @@ describe("Fides-js TCF", () => {
           });
         });
       });
+
       it("skips saving preferences to API when disable save is set via window obj", () => {
         cy.getCookie("fides_string").should("not.exist");
         cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -1248,7 +1252,7 @@ describe("Fides-js TCF", () => {
    * These specs test various combinations of those sources of truth and ensure
    * that Fides loads the correct preferences in each case.
    */
-  describe.only("user preferences overrides", () => {
+  describe("user preferences overrides", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
     });
@@ -1438,7 +1442,6 @@ describe("Fides-js TCF", () => {
      */
     it("prefers preferences from fides_string option when fides_string, experience, and cookie exist", () => {
       setFidesCookie();
-      // this fides_string sets purpose 4 to false and purpose 7 to true
       const fidesStringOverride = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -1529,7 +1532,6 @@ describe("Fides-js TCF", () => {
      * EXPECTED RESULT: use preferences from fides_string option
      */
     it("prefers preferences from fides_string option when both fides_string and experience is provided and cookie does not exist", () => {
-      // this fides_string sets purpose 4 to false and purpose 7 to true
       const fidesStringOverride = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -1620,7 +1622,6 @@ describe("Fides-js TCF", () => {
      * EXPECTED RESULT: ignore all preferences, do not load TCF experience
      */
     it("does nothing when fides_string option when both fides_string option and cookie exist but no experience exists (neither prefetch nor API)", () => {
-      // this fides_string sets purpose 4 to false and purpose 7 to true
       const fidesStringOverride = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
       const expectedTCString = null;
       setFidesCookie();
@@ -1629,7 +1630,7 @@ describe("Fides-js TCF", () => {
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            fidesString: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
+            fidesString: fidesStringOverride,
           },
           experience: OVERRIDE.UNDEFINED,
         },
@@ -1652,7 +1653,6 @@ describe("Fides-js TCF", () => {
      * EXPECTED RESULT: use preferences from fides_string option
      */
     it("prefers preferences from fides_string option when both fides_string option and cookie exist and experience is fetched from API", () => {
-      // this fides_string sets purpose 4 to false and purpose 7 to true
       const fidesStringOverride = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       setFidesCookie();
@@ -1663,9 +1663,7 @@ describe("Fides-js TCF", () => {
               options: {
                 isOverlayEnabled: true,
                 tcfEnabled: true,
-                // this fides_string sets purpose 4 to false and purpose 7 to true
-                fidesString:
-                  "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
+                fidesString: fidesStringOverride,
               },
               experience: OVERRIDE.UNDEFINED,
             },
@@ -1745,14 +1743,12 @@ describe("Fides-js TCF", () => {
     });
   });
 
-  describe("fides string override options", () => {
+  describe("fides_string override options", () => {
     it("uses fides_string when set via cookie", () => {
+      const fidesStringOverride = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+      const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.getCookie("fides_string").should("not.exist");
-      // this fides_string sets purpose 4 to false and purpose 7 to true
-      cy.setCookie(
-        "fides_string",
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE"
-      );
+      cy.setCookie("fides_string", fidesStringOverride);
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
           options: {
@@ -1790,7 +1786,10 @@ describe("Fides-js TCF", () => {
           expect(tcData.vendor.legitimateInterests).to.eql({});
         });
     });
+
     it("uses fides_string when set via query param", () => {
+      const fidesStringOverride = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+      const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.getCookie("fides_string").should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig(
@@ -1803,8 +1802,7 @@ describe("Fides-js TCF", () => {
           },
           null,
           null,
-          // this fides_string sets purpose 4 to false and purpose 7 to true
-          { fides_string: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE" }
+          { fides_string: fidesStringOverride }
         );
       });
       cy.window().then((win) => {
@@ -1835,6 +1833,7 @@ describe("Fides-js TCF", () => {
           expect(tcData.vendor.legitimateInterests).to.eql({});
         });
     });
+
     it("uses fides_string when set via window obj", () => {
       cy.getCookie("fides_string").should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -1849,7 +1848,6 @@ describe("Fides-js TCF", () => {
           null,
           null,
           null,
-          // this fides_string sets purpose 4 to false and purpose 7 to true
           { fides_string: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE" }
         );
       });

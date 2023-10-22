@@ -101,7 +101,8 @@ declare global {
       parameter?: number | string
     ) => void;
     config: {
-      fides: OverrideOptions;
+      // TODO: make configurable!
+      tc_info: OverrideOptions;
     };
   }
 }

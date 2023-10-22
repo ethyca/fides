@@ -159,8 +159,9 @@ export const getOverrideFidesOptions = (): Partial<FidesOptionOverrides> => {
   if (typeof window !== "undefined") {
     // Grab query params if provided in the URL (e.g. "?fides_string=123...")
     const queryParams = new URLSearchParams(window.location.search);
-    // Grab global window object if provided (e.g. window.config.fides = { fides_string: "123..." })
-    const windowObj = window.config?.fides;
+    // Grab global window object if provided (e.g. window.config.tc_info = { fides_string: "123..." })
+    // TODO: make this configurable (window.config.tc_info, window.my_config, etc.) and default to window.fides_config
+    const windowObj = window.config?.tc_info;
 
     // Look for each of the override options in all three locations: query params, window object, cookie
     FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP.forEach(
