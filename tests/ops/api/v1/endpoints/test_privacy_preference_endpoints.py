@@ -2073,7 +2073,7 @@ class TestHistoricalPreferences:
         assert response_body["user_geography"] == "us_ca"
         assert response_body["relevant_systems"] == [system.fides_key]
         assert response_body["affected_system_status"] == {system.fides_key: "complete"}
-        assert response_body["url_recorded"] == "example.com/privacy_center"
+        assert response_body["url_recorded"] == "https://example.com/privacy_center"
         assert (
             response_body["user_agent"]
             == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24"
