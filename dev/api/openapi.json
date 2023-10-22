@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.22.1b2.post0.dev2"
+    "version": "2.22.1b3.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -16722,8 +16722,11 @@
           },
           "privacy_policy_url": {
             "title": "Privacy Policy Url",
+            "maxLength": 2083,
+            "minLength": 1,
             "type": "string",
-            "description": "Overlay and Privacy Center 'Privacy policy URl'"
+            "description": "Overlay and Privacy Center 'Privacy policy URL",
+            "format": "uri"
           },
           "privacy_preferences_link_label": {
             "title": "Privacy Preferences Link Label",
@@ -16837,8 +16840,11 @@
           },
           "privacy_policy_url": {
             "title": "Privacy Policy Url",
+            "maxLength": 2083,
+            "minLength": 1,
             "type": "string",
-            "description": "Overlay and Privacy Center 'Privacy policy URl'"
+            "description": "Overlay and Privacy Center 'Privacy policy URL",
+            "format": "uri"
           },
           "privacy_preferences_link_label": {
             "title": "Privacy Preferences Link Label",
@@ -16940,8 +16946,11 @@
           },
           "privacy_policy_url": {
             "title": "Privacy Policy Url",
+            "maxLength": 2083,
+            "minLength": 1,
             "type": "string",
-            "description": "Overlay and Privacy Center 'Privacy policy URl'"
+            "description": "Overlay and Privacy Center 'Privacy policy URL",
+            "format": "uri"
           },
           "privacy_preferences_link_label": {
             "title": "Privacy Preferences Link Label",
