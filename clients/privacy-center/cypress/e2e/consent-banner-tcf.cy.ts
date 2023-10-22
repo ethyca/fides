@@ -1283,7 +1283,7 @@ describe("Fides-js TCF", () => {
           system_legitimate_interests_preferences: { [SYSTEM_1.id]: false },
           vendor_consent_preferences: { [VENDOR_1.id]: true },
         },
-        tc_string: "CPziCYAPziCYAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
+        fides_string: "CPziCYAPziCYAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
       };
 
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
@@ -1362,7 +1362,7 @@ describe("Fides-js TCF", () => {
         });
     });
 
-    it("does nothing when cookie exists and experience is not provided", () => {
+    it("does nothing when cookie exists but no experience is provided (neither prefetch nor API)", () => {
       /**
        * An experience is required to serve the CMP API, since the GVL is on the experience
        */
@@ -1386,7 +1386,7 @@ describe("Fides-js TCF", () => {
           system_legitimate_interests_preferences: { [SYSTEM_1.id]: false },
           vendor_consent_preferences: { [VENDOR_1.id]: false },
         },
-        tc_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
+        fides_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
       };
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
 
@@ -1398,15 +1398,16 @@ describe("Fides-js TCF", () => {
             fidesString: undefined,
           },
           experience: OVERRIDE.UNDEFINED,
-          // the below ensures we do not fetch experience client-side either
         },
         OVERRIDE.UNDEFINED,
-        OVERRIDE.UNDEFINED
+        OVERRIDE.EMPTY,
       );
-      cy.get("#fides-modal-link").should("not.be.visible");
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("#fides-modal-link").should("not.be.visible");
+      });
     });
     
-    it("does nothing when we have neither cookie, experience, nor fides_string", () => {
+    it("does nothing when nothing is provided (neither cookie, nor experience, nor fides_string option)", () => {
       stubConfig(
         {
           options: {
@@ -1417,12 +1418,14 @@ describe("Fides-js TCF", () => {
           experience: OVERRIDE.UNDEFINED,
         },
         OVERRIDE.UNDEFINED,
-        OVERRIDE.UNDEFINED
+        OVERRIDE.EMPTY
       );
-      cy.get("#fides-modal-link").should("not.be.visible");
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("#fides-modal-link").should("not.be.visible");
+      });
     });
     
-    it("prefers preferences from fides_string when fides_string, experience, and cookie exist", () => {
+    it("prefers preferences from fides_string option when fides_string, experience, and cookie exist", () => {
       /**
        * The default from the fixture is that
        *   - all purposes are opted in
@@ -1450,7 +1453,7 @@ describe("Fides-js TCF", () => {
           system_legitimate_interests_preferences: { [SYSTEM_1.id]: false },
           vendor_consent_preferences: { [VENDOR_1.id]: false },
         },
-        tc_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
+        fides_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
       };
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -1530,7 +1533,7 @@ describe("Fides-js TCF", () => {
         });
     });
 
-    it("prefers preferences from fides_string when both fides_string and experience is provided and cookie does not exist", () => {
+    it("prefers preferences from fides_string option when both fides_string and experience is provided and cookie does not exist", () => {
       /**
        * The default from the fixture is that
        *   - all purposes are opted in
@@ -1618,7 +1621,7 @@ describe("Fides-js TCF", () => {
         });
     });
 
-    it("does nothing when fides_string and cookie exist but experience is not provided", () => {
+    it("does nothing when fides_string option and cookie exist but no experience is provided (neither prefetch nor API)", () => {
       const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
       const CREATED_DATE = "2022-12-24T12:00:00.000Z";
       const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
@@ -1639,7 +1642,7 @@ describe("Fides-js TCF", () => {
           system_legitimate_interests_preferences: { [SYSTEM_1.id]: false },
           vendor_consent_preferences: { [VENDOR_1.id]: false },
         },
-        tc_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
+        fides_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
       };
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       stubConfig(
@@ -1653,12 +1656,14 @@ describe("Fides-js TCF", () => {
           experience: OVERRIDE.UNDEFINED,
         },
         OVERRIDE.UNDEFINED,
-        OVERRIDE.UNDEFINED
+        OVERRIDE.EMPTY // return no experience
       );
-      cy.get("#fides-modal-link").should("not.be.visible");
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("#fides-modal-link").should("not.be.visible");
+      });
     });
 
-    it("prefers preferences from fides_string when both tc string and cookie exist and client-side experience is fetched", () => {
+    it("prefers preferences from fides_string option when both cookie and client-side experience is fetched", () => {
       const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
       const CREATED_DATE = "2022-12-24T12:00:00.000Z";
       const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
@@ -1679,7 +1684,7 @@ describe("Fides-js TCF", () => {
           system_legitimate_interests_preferences: { [SYSTEM_1.id]: false },
           vendor_consent_preferences: { [VENDOR_1.id]: false },
         },
-        tc_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
+        fides_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
       };
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       cy.fixture("consent/experience_tcf.json").then((experience) => {
