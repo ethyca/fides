@@ -25,7 +25,7 @@ The types of changes are:
 - Cleans up CSS for fidesEmbed mode [#4306](https://github.com/ethyca/fides/pull/4306)
 
 ### Added
-- Added a `FidesPreferenceToggled` event to Fides.js to track when user preferences change without being saved [#4253](https://github.com/ethyca/fides/pull/4253)
+- Added a `FidesUIChanged` event to Fides.js to track when user preferences change without being saved [](?) and [#4253](https://github.com/ethyca/fides/pull/4253)
 - Add AC Systems to the TCF Overlay under Vendor Consents section [#4266](https://github.com/ethyca/fides/pull/4266/)
 
 ### Changed
