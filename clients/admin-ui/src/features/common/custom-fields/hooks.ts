@@ -102,6 +102,11 @@ export const useCustomFields = ({
     return ids;
   }, [idToCustomFieldDefinition]);
 
+  const isMultivalued = (id: string): boolean =>
+    Array.from(idToCustomFieldDefinition.values()).some(
+      (value) => value.id === id && !!value.allow_list_id
+    );
+
   /**
    * Transformed version of definitionIdToCustomField to be easy
    * to pass into Formik
@@ -110,7 +115,11 @@ export const useCustomFields = ({
     const values: CustomFieldValues = {};
     if (definitionIdToCustomField) {
       definitionIdToCustomField.forEach((value, key) => {
-        values[key] = value.value.toString();
+        if (isMultivalued(key)) {
+          values[key] = value.value;
+        } else {
+          values[key] = value.value.toString();
+        }
       });
     }
     return values;
