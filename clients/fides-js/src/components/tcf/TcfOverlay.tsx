@@ -321,7 +321,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               onChange={(updatedIds) => {
                 setDraftIds(updatedIds);
                 dispatchFidesEvent(
-                  "FidesPreferenceToggled",
+                  "FidesUIChanged",
                   cookie,
                   options.debug
                 );
