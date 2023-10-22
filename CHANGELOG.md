@@ -15,7 +15,7 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.22.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.22.1...main)
 
 ### Added
 - Added support for 3 additional config variables in Fides.js: fidesEmbed, fidesDisableSaveApi, and fidesTcString [#4262](https://github.com/ethyca/fides/pull/4262)
@@ -35,8 +35,12 @@ The types of changes are:
 - Stacks that do not have any purposes will no longer render an empty purpose block [#4278](https://github.com/ethyca/fides/pull/4278)
 - Forcing hidden sections to use display none [#4299](https://github.com/ethyca/fides/pull/4299)
 
+## [2.22.1](https://github.com/ethyca/fides/compare/2.22.0...2.22.1)
+
 ### Security
 - Added hostname checks for external SaaS connector URLs [CVE](https://github.com/ethyca/fides/security/advisories/GHSA-jq3w-9mgf-43m4)
+- Use a Pydantic URL type for privacy policy URLs [CVE](https://github.com/ethyca/fides/security/advisories/GHSA-fgjj-5jmr-gh83)
+- Remove the CONFIG_READ scope from the Viewer role [CVE](https://github.com/ethyca/fides/security/advisories/GHSA-rjxg-rpg3-9r89)
 
 ## [2.22.0](https://github.com/ethyca/fides/compare/2.21.0...2.22.0)
 
