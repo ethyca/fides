@@ -1239,11 +1239,11 @@ describe("Fides-js TCF", () => {
 
   /**
    * There are the following potential sources of user preferences:
-   * 1) experience API (via GET /privacy-experience)
-   * 2) "prefetched" experience (via config.options.experience)
+   * 1) fides_string override option (via config.options.fidesString)
+   * 2) DEFER: preferences API (via a custom function)
    * 3) local cookie (via fides_consent cookie)
-   * 4) DEFER: preferences API (via a custom function)
-   * 5) fides_string override option (via config.options.fidesString)
+   * 4) "prefetched" experience (via config.options.experience)
+   * 5) experience API (via GET /privacy-experience)
    * 
    * These specs test various combinations of those sources of truth and ensure
    * that Fides loads the correct preferences in each case.
@@ -1284,11 +1284,11 @@ describe("Fides-js TCF", () => {
 
     /**
      * TEST CASE #1:
-     * ❌ 1) experience API (via GET /privacy-experience)
-     * ✅ 2) "prefetched" experience (via config.options.experience)
+     * ❌ 1) fides_string override option (via config.options.fidesString)
+     * ❌ 2) DEFER: preferences API (via a custom function)
      * ✅ 3) local cookie (via fides_consent cookie)
-     * ❌ 4) DEFER: preferences API (via a custom function)
-     * ❌ 5) fides_string override option (via config.options.fidesString)
+     * ✅ 4) "prefetched" experience (via config.options.experience)
+     * ❌ 5) experience API (via GET /privacy-experience)
      * 
      * EXPECTED RESULT: use preferences from local cookie
      */
@@ -1371,11 +1371,11 @@ describe("Fides-js TCF", () => {
 
     /**
      * TEST CASE #2:
-     * ❌ 1) experience API (via GET /privacy-experience)
-     * ❌ 2) "prefetched" experience (via config.options.experience)
+     * ❌ 1) fides_string override option (via config.options.fidesString)
+     * ❌ 2) DEFER: preferences API (via a custom function)
      * ✅ 3) local cookie (via fides_consent cookie)
-     * ❌ 4) DEFER: preferences API (via a custom function)
-     * ❌ 5) fides_string override option (via config.options.fidesString)
+     * ❌ 4) "prefetched" experience (via config.options.experience)
+     * ❌ 5) experience API (via GET /privacy-experience)
      * 
      * EXPECTED RESULT: ignore all preferences, do not load TCF experience
      */
@@ -1400,11 +1400,11 @@ describe("Fides-js TCF", () => {
     
     /**
      * TEST CASE #3:
-     * ❌ 1) experience API (via GET /privacy-experience)
-     * ❌ 2) "prefetched" experience (via config.options.experience)
+     * ❌ 1) fides_string override option (via config.options.fidesString)
+     * ❌ 2) DEFER: preferences API (via a custom function)
      * ❌ 3) local cookie (via fides_consent cookie)
-     * ❌ 4) DEFER: preferences API (via a custom function)
-     * ❌ 5) fides_string override option (via config.options.fidesString)
+     * ❌ 4) "prefetched" experience (via config.options.experience)
+     * ❌ 5) experience API (via GET /privacy-experience)
      * 
      * EXPECTED RESULT: ignore all preferences, do not load TCF experience
      */
@@ -1428,11 +1428,11 @@ describe("Fides-js TCF", () => {
     
     /**
      * TEST CASE #4:
-     * ❌ 1) experience API (via GET /privacy-experience)
-     * ✅ 2) "prefetched" experience (via config.options.experience)
+     * ✅ 1) fides_string override option (via config.options.fidesString)
+     * ❌ 2) DEFER: preferences API (via a custom function)
      * ✅ 3) local cookie (via fides_consent cookie)
-     * ❌ 4) DEFER: preferences API (via a custom function)
-     * ✅ 5) fides_string override option (via config.options.fidesString)
+     * ✅ 4) "prefetched" experience (via config.options.experience)
+     * ❌ 5) experience API (via GET /privacy-experience)
      * 
      * EXPECTED RESULT: use preferences from fides_string option
      */
@@ -1520,11 +1520,11 @@ describe("Fides-js TCF", () => {
 
     /**
      * TEST CASE #5:
-     * ❌ 1) experience API (via GET /privacy-experience)
-     * ✅ 2) "prefetched" experience (via config.options.experience)
+     * ✅ 1) fides_string override option (via config.options.fidesString)
+     * ❌ 2) DEFER: preferences API (via a custom function)
      * ❌ 3) local cookie (via fides_consent cookie)
-     * ❌ 4) DEFER: preferences API (via a custom function)
-     * ✅ 5) fides_string override option (via config.options.fidesString)
+     * ✅ 4) "prefetched" experience (via config.options.experience)
+     * ❌ 5) experience API (via GET /privacy-experience)
      * 
      * EXPECTED RESULT: use preferences from fides_string option
      */
@@ -1611,11 +1611,11 @@ describe("Fides-js TCF", () => {
 
     /**
      * TEST CASE #6:
-     * ❌ 1) experience API (via GET /privacy-experience)
-     * ❌ 2) "prefetched" experience (via config.options.experience)
+     * ✅ 1) fides_string override option (via config.options.fidesString)
+     * ❌ 2) DEFER: preferences API (via a custom function)
      * ✅ 3) local cookie (via fides_consent cookie)
-     * ❌ 4) DEFER: preferences API (via a custom function)
-     * ✅ 5) fides_string override option (via config.options.fidesString)
+     * ❌ 4) "prefetched" experience (via config.options.experience)
+     * ❌ 5) experience API (via GET /privacy-experience)
      * 
      * EXPECTED RESULT: ignore all preferences, do not load TCF experience
      */
@@ -1643,11 +1643,11 @@ describe("Fides-js TCF", () => {
 
     /**
      * TEST CASE #7:
-     * ✅ 1) experience API (via GET /privacy-experience)
-     * ❌ 2) "prefetched" experience (via config.options.experience)
+     * ✅ 1) fides_string override option (via config.options.fidesString)
+     * ❌ 2) DEFER: preferences API (via a custom function)
      * ✅ 3) local cookie (via fides_consent cookie)
-     * ❌ 4) DEFER: preferences API (via a custom function)
-     * ✅ 5) fides_string override option (via config.options.fidesString)
+     * ❌ 4) "prefetched" experience (via config.options.experience)
+     * ✅ 5) experience API (via GET /privacy-experience)
      * 
      * EXPECTED RESULT: use preferences from fides_string option
      */
