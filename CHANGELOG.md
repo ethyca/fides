@@ -35,7 +35,7 @@ The types of changes are:
 - Stacks that do not have any purposes will no longer render an empty purpose block [#4278](https://github.com/ethyca/fides/pull/4278)
 - Forcing hidden sections to use display none [#4299](https://github.com/ethyca/fides/pull/4299)
 
-## [2.22.0](https://github.com/ethyca/fides/compare/2.22.0...2.22.1)
+## [2.22.1](https://github.com/ethyca/fides/compare/2.22.0...2.22.1)
 
 ### Security
 - Added hostname checks for external SaaS connector URLs [CVE](https://github.com/ethyca/fides/security/advisories/GHSA-jq3w-9mgf-43m4)
