@@ -1406,7 +1406,7 @@ describe("Fides-js TCF", () => {
       cy.get("#fides-modal-link").should("not.be.visible");
     });
     
-    it("does nothing when we have neither cookie, experience, nor tc string", () => {
+    it("does nothing when we have neither cookie, experience, nor fides_string", () => {
       stubConfig(
         {
           options: {
@@ -1422,7 +1422,7 @@ describe("Fides-js TCF", () => {
       cy.get("#fides-modal-link").should("not.be.visible");
     });
     
-    it("prefers preferences from a TC string when tc string, experience, and cookie exist", () => {
+    it("prefers preferences from fides_string when fides_string, experience, and cookie exist", () => {
       /**
        * The default from the fixture is that
        *   - all purposes are opted in
@@ -1458,7 +1458,7 @@ describe("Fides-js TCF", () => {
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            // this TC string sets purpose 4 to false and purpose 7 to true
+            // this fides_string sets purpose 4 to false and purpose 7 to true
             fidesString: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
           },
           experience: experience.items[0],
@@ -1473,12 +1473,12 @@ describe("Fides-js TCF", () => {
       // Verify the toggles
       // Purposes
       cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
-        // this purpose is set to true in the experience, but since it was not defined in the TC string,
+        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
         // it should use the default preference set in the experience which is true
         cy.get("input").should("be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
-        // this purpose was previously set to true from the experience, but it is overridden by the TC string
+        // this purpose was previously set to true from the experience, but it is overridden by the fides_string
         cy.get("input").should("not.be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_6.name}-consent`).within(() => {
@@ -1488,7 +1488,7 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_9.name}-consent`).within(() => {
-        // this purpose is set to true in the experience, but since it was not defined in the TC string,
+        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
         // it should use the default preference set in the experience which is false
         cy.get("input").should("not.be.checked");
       });
@@ -1498,7 +1498,7 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("be.checked");
       });
       // Vendors
-      // this purpose is set to true in the experience, but since it was not defined in the TC string,
+      // this purpose is set to true in the experience, but since it was not defined in the fides_string,
       // it should use the default preference set in the experience which is true
       cy.get("#fides-tab-Vendors").click();
       cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
@@ -1530,7 +1530,7 @@ describe("Fides-js TCF", () => {
         });
     });
 
-    it("prefers preferences from a TC string when both tc string and experience is provided and cookie does not exist", () => {
+    it("prefers preferences from fides_string when both fides_string and experience is provided and cookie does not exist", () => {
       /**
        * The default from the fixture is that
        *   - all purposes are opted in
@@ -1546,7 +1546,7 @@ describe("Fides-js TCF", () => {
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            // this TC string sets purpose 4 to false and purpose 7 to true
+            // this fides_string sets purpose 4 to false and purpose 7 to true
             fidesString: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
           },
           experience: experience.items[0],
@@ -1561,12 +1561,12 @@ describe("Fides-js TCF", () => {
       // Verify the toggles
       // Purposes
       cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
-        // this purpose is set to true in the experience, but since it was not defined in the TC string,
+        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
         // it should use the default preference set in the experience which is true
         cy.get("input").should("be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
-        // this purpose was previously set to true from the experience, but it is overridden by the TC string
+        // this purpose was previously set to true from the experience, but it is overridden by the fides_string
         cy.get("input").should("not.be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_6.name}-consent`).within(() => {
@@ -1576,7 +1576,7 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_9.name}-consent`).within(() => {
-        // this purpose is set to true in the experience, but since it was not defined in the TC string,
+        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
         // it should use the default preference set in the experience which is false
         cy.get("input").should("not.be.checked");
       });
@@ -1586,7 +1586,7 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("be.checked");
       });
       // Vendors
-      // this purpose is set to true in the experience, but since it was not defined in the TC string,
+      // this purpose is set to true in the experience, but since it was not defined in the fides_string,
       // it should use the default preference set in the experience which is true
       cy.get("#fides-tab-Vendors").click();
       cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
@@ -1618,7 +1618,7 @@ describe("Fides-js TCF", () => {
         });
     });
 
-    it("does nothing when tc string and cookie exist but experience is not provided", () => {
+    it("does nothing when fides_string and cookie exist but experience is not provided", () => {
       const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
       const CREATED_DATE = "2022-12-24T12:00:00.000Z";
       const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
@@ -1647,7 +1647,7 @@ describe("Fides-js TCF", () => {
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            // this TC string sets purpose 4 to false and purpose 7 to true
+            // this fides_string sets purpose 4 to false and purpose 7 to true
             fidesString: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
           },
           experience: OVERRIDE.UNDEFINED,
@@ -1658,7 +1658,7 @@ describe("Fides-js TCF", () => {
       cy.get("#fides-modal-link").should("not.be.visible");
     });
 
-    it("Prefers prefs on tc string when both tc string and cookie exist and client-side experience is fetched", () => {
+    it("prefers preferences from fides_string when both tc string and cookie exist and client-side experience is fetched", () => {
       const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
       const CREATED_DATE = "2022-12-24T12:00:00.000Z";
       const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
@@ -1689,7 +1689,7 @@ describe("Fides-js TCF", () => {
               options: {
                 isOverlayEnabled: true,
                 tcfEnabled: true,
-                // this TC string sets purpose 4 to false and purpose 7 to true
+                // this fides_string sets purpose 4 to false and purpose 7 to true
                 fidesString:
                   "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
               },
@@ -1712,12 +1712,12 @@ describe("Fides-js TCF", () => {
       // Verify the toggles
       // Purposes
       cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
-        // this purpose is set to true in the experience, but since it was not defined in the TC string,
+        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
         // it should use the default preference set in the experience which is true
         cy.get("input").should("be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
-        // this purpose was previously set to true from the experience, but it is overridden by the TC string
+        // this purpose was previously set to true from the experience, but it is overridden by the fides_string
         cy.get("input").should("not.be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_6.name}-consent`).within(() => {
@@ -1727,7 +1727,7 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_9.name}-consent`).within(() => {
-        // this purpose is set to true in the experience, but since it was not defined in the TC string,
+        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
         // it should use the default preference set in the experience which is false
         cy.get("input").should("not.be.checked");
       });
@@ -1737,7 +1737,7 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("be.checked");
       });
       // Vendors
-      // this purpose is set to true in the experience, but since it was not defined in the TC string,
+      // this purpose is set to true in the experience, but since it was not defined in the fides_string,
       // it should use the default preference set in the experience which is true
       cy.get("#fides-tab-Vendors").click();
       cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
@@ -1771,9 +1771,9 @@ describe("Fides-js TCF", () => {
   });
 
   describe("fides string override options", () => {
-    it("uses TC string when set via cookie", () => {
+    it("uses fides_string when set via cookie", () => {
       cy.getCookie("fides_string").should("not.exist");
-      // this TC string sets purpose 4 to false and purpose 7 to true
+      // this fides_string sets purpose 4 to false and purpose 7 to true
       cy.setCookie(
         "fides_string",
         "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE"
@@ -1814,7 +1814,7 @@ describe("Fides-js TCF", () => {
           expect(tcData.vendor.legitimateInterests).to.eql({});
         });
     });
-    it("uses TC string when set via query param", () => {
+    it("uses fides_string when set via query param", () => {
       cy.getCookie("fides_string").should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig(
@@ -1827,7 +1827,7 @@ describe("Fides-js TCF", () => {
           },
           null,
           null,
-          // this TC string sets purpose 4 to false and purpose 7 to true
+          // this fides_string sets purpose 4 to false and purpose 7 to true
           { fides_string: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE" }
         );
       });
@@ -1858,7 +1858,7 @@ describe("Fides-js TCF", () => {
           expect(tcData.vendor.legitimateInterests).to.eql({});
         });
     });
-    it("uses TC string when set via window obj", () => {
+    it("uses fides_string when set via window obj", () => {
       cy.getCookie("fides_string").should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig(
@@ -1872,7 +1872,7 @@ describe("Fides-js TCF", () => {
           null,
           null,
           null,
-          // this TC string sets purpose 4 to false and purpose 7 to true
+          // this fides_string sets purpose 4 to false and purpose 7 to true
           { fides_string: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE" }
         );
       });
@@ -2030,7 +2030,7 @@ describe("Fides-js TCF", () => {
         .then(([tcData, success]) => {
           expect(success).to.eql(true);
           expect(tcData.eventStatus).to.eql("useractioncomplete");
-          // This TC string should not be a composite—should just be the tc string
+          // This fides_string should not be a composite—should just be the tc string
           const { tcString } = tcData;
           const parts = tcString.split(",");
           expect(parts.length).to.eql(1);
