@@ -1112,7 +1112,7 @@ describe("Fides-js TCF", () => {
     });
   });
 
-  describe("cmp api", () => {
+  describe("CMP API", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -1237,10 +1237,21 @@ describe("Fides-js TCF", () => {
     });
   });
 
-  describe("User preference sources of truth for UI and CMP API", () => {
+  /**
+   * There are the following potential sources of user preferences:
+   * 1) prefetched experience (config.experience) OR experience API (via GET /privacy-experience)
+   * 2) local cookie (fides_consent)
+   * 3) DEFER: preferences API (via a custom function)
+   * 4) fides_string override option (config.options.fidesString)
+   * 
+   * These specs test various combinations of those sources of truth and ensure
+   * that Fides loads the correct preferences in each case.
+   */
+  describe("user preferences overrides", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
     });
+
     it("prefers preferences from a cookie when both cookie and experience exist", () => {
       /**
        * The default from the fixture is that
@@ -1274,6 +1285,7 @@ describe("Fides-js TCF", () => {
         },
         tc_string: "CPziCYAPziCYAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
       };
+
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
@@ -1349,6 +1361,7 @@ describe("Fides-js TCF", () => {
           });
         });
     });
+
     it("does nothing when cookie exists and experience is not provided", () => {
       /**
        * An experience is required to serve the CMP API, since the GVL is on the experience
@@ -1392,6 +1405,7 @@ describe("Fides-js TCF", () => {
       );
       cy.get("#fides-modal-link").should("not.be.visible");
     });
+    
     it("does nothing when we have neither cookie, experience, nor tc string", () => {
       stubConfig(
         {
@@ -1407,6 +1421,7 @@ describe("Fides-js TCF", () => {
       );
       cy.get("#fides-modal-link").should("not.be.visible");
     });
+    
     it("prefers preferences from a TC string when tc string, experience, and cookie exist", () => {
       /**
        * The default from the fixture is that
@@ -1514,6 +1529,7 @@ describe("Fides-js TCF", () => {
           expect(tcData.vendor.legitimateInterests).to.eql({});
         });
     });
+
     it("prefers preferences from a TC string when both tc string and experience is provided and cookie does not exist", () => {
       /**
        * The default from the fixture is that
@@ -1601,6 +1617,7 @@ describe("Fides-js TCF", () => {
           expect(tcData.vendor.legitimateInterests).to.eql({});
         });
     });
+
     it("does nothing when tc string and cookie exist but experience is not provided", () => {
       const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
       const CREATED_DATE = "2022-12-24T12:00:00.000Z";
@@ -1640,6 +1657,7 @@ describe("Fides-js TCF", () => {
       );
       cy.get("#fides-modal-link").should("not.be.visible");
     });
+
     it("Prefers prefs on tc string when both tc string and cookie exist and client-side experience is fetched", () => {
       const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
       const CREATED_DATE = "2022-12-24T12:00:00.000Z";
