@@ -1239,30 +1239,24 @@ describe("Fides-js TCF", () => {
 
   /**
    * There are the following potential sources of user preferences:
-   * 1) prefetched experience (config.experience) OR experience API (via GET /privacy-experience)
-   * 2) local cookie (fides_consent)
-   * 3) DEFER: preferences API (via a custom function)
-   * 4) fides_string override option (config.options.fidesString)
+   * 1) experience API (via GET /privacy-experience)
+   * 2) "prefetched" experience (via config.options.experience)
+   * 3) local cookie (via fides_consent cookie)
+   * 4) DEFER: preferences API (via a custom function)
+   * 5) fides_string override option (via config.options.fidesString)
    * 
    * These specs test various combinations of those sources of truth and ensure
    * that Fides loads the correct preferences in each case.
    */
-  describe("user preferences overrides", () => {
+  describe.only("user preferences overrides", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
     });
 
-    it("prefers preferences from a cookie when both cookie and experience exist", () => {
-      /**
-       * The default from the fixture is that
-       *   - all purposes are opted in
-       *   - all special purposes are opted in
-       *   - feature 1 is opted out, feature 2 has no preference
-       *   - all vendors are opted in
-       *   - all systems are opted in
-       *
-       * We'll change at least one value from each entity type in the cookie
-       */
+    /**
+     * Configure a valid fides_consent cookie with previously saved preferences
+     */
+    const setFidesCookie = () => {
       const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
       const CREATED_DATE = "2022-12-24T12:00:00.000Z";
       const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
@@ -1285,8 +1279,19 @@ describe("Fides-js TCF", () => {
         },
         fides_string: "CPziCYAPziCYAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
       };
-
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+    }
+
+    /**
+     * TEST CASE #1:
+     * ❌ 1) experience API (via GET /privacy-experience)
+     * ✅ 2) "prefetched" experience (via config.options.experience)
+     * ✅ 3) local cookie (via fides_consent cookie)
+     * ❌ 4) DEFER: preferences API (via a custom function)
+     * ❌ 5) fides_string override option (via config.options.fidesString)
+     */
+    it("prefers preferences from a cookie when both cookie and experience exist", () => {
+      setFidesCookie();
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
           options: {
@@ -1363,33 +1368,7 @@ describe("Fides-js TCF", () => {
     });
 
     it("does nothing when cookie exists but no experience is provided (neither prefetch nor API)", () => {
-      /**
-       * An experience is required to serve the CMP API, since the GVL is on the experience
-       */
-      const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
-      const CREATED_DATE = "2022-12-24T12:00:00.000Z";
-      const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
-
-      const cookie = {
-        identity: { fides_user_device_id: uuid },
-        fides_meta: {
-          version: "0.9.0",
-          createdAt: CREATED_DATE,
-          updatedAt: UPDATED_DATE,
-        },
-        consent: {},
-        tcf_consent: {
-          // We hard-code 2 because purpose_2 references a tcf_purpose_legitimate_interest in the experience
-          // and we wish to refer to a purpose_consent_preference here
-          purpose_consent_preferences: { 2: false, [PURPOSE_4.id]: true },
-          special_feature_preferences: { [SPECIAL_FEATURE_1.id]: true },
-          system_legitimate_interests_preferences: { [SYSTEM_1.id]: false },
-          vendor_consent_preferences: { [VENDOR_1.id]: false },
-        },
-        fides_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
-      };
-      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
-
+      setFidesCookie();
       stubConfig(
         {
           options: {
@@ -1426,36 +1405,7 @@ describe("Fides-js TCF", () => {
     });
     
     it("prefers preferences from fides_string option when fides_string, experience, and cookie exist", () => {
-      /**
-       * The default from the fixture is that
-       *   - all purposes are opted in
-       *   - all special purposes are opted in
-       *   - feature 1 is opted out, feature 2 has no preference
-       *   - all vendors are opted in
-       *   - all systems are opted in
-       *
-       * We'll change at least one value from each entity type in the cookie
-       */
-      const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
-      const CREATED_DATE = "2022-12-24T12:00:00.000Z";
-      const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
-      const cookie = {
-        identity: { fides_user_device_id: uuid },
-        fides_meta: {
-          version: "0.9.0",
-          createdAt: CREATED_DATE,
-          updatedAt: UPDATED_DATE,
-        },
-        consent: {},
-        tcf_consent: {
-          purpose_preferences: { 2: false, [PURPOSE_4.id]: true },
-          special_feature_preferences: { [SPECIAL_FEATURE_1.id]: true },
-          system_legitimate_interests_preferences: { [SYSTEM_1.id]: false },
-          vendor_consent_preferences: { [VENDOR_1.id]: false },
-        },
-        fides_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
-      };
-      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+      setFidesCookie();
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
           options: {
@@ -1622,29 +1572,7 @@ describe("Fides-js TCF", () => {
     });
 
     it("does nothing when fides_string option and cookie exist but no experience is provided (neither prefetch nor API)", () => {
-      const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
-      const CREATED_DATE = "2022-12-24T12:00:00.000Z";
-      const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
-      const cookie = {
-        identity: { fides_user_device_id: uuid },
-        fides_meta: {
-          version: "0.9.0",
-          createdAt: CREATED_DATE,
-          updatedAt: UPDATED_DATE,
-        },
-        consent: {},
-        tcf_consent: {
-          purpose_consent_preferences: {
-            [PURPOSE_2.id]: false,
-            [PURPOSE_4.id]: true,
-          },
-          special_feature_preferences: { [SPECIAL_FEATURE_1.id]: true },
-          system_legitimate_interests_preferences: { [SYSTEM_1.id]: false },
-          vendor_consent_preferences: { [VENDOR_1.id]: false },
-        },
-        fides_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
-      };
-      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+      setFidesCookie();
       stubConfig(
         {
           options: {
@@ -1664,29 +1592,7 @@ describe("Fides-js TCF", () => {
     });
 
     it("prefers preferences from fides_string option when both cookie and client-side experience is fetched", () => {
-      const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
-      const CREATED_DATE = "2022-12-24T12:00:00.000Z";
-      const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
-      const cookie = {
-        identity: { fides_user_device_id: uuid },
-        fides_meta: {
-          version: "0.9.0",
-          createdAt: CREATED_DATE,
-          updatedAt: UPDATED_DATE,
-        },
-        consent: {},
-        tcf_consent: {
-          purpose_consent_preferences: {
-            [PURPOSE_2.id]: false,
-            [PURPOSE_4.id]: true,
-          },
-          special_feature_preferences: { [SPECIAL_FEATURE_1.id]: true },
-          system_legitimate_interests_preferences: { [SYSTEM_1.id]: false },
-          vendor_consent_preferences: { [VENDOR_1.id]: false },
-        },
-        fides_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
-      };
-      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+      setFidesCookie();
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         cy.fixture("consent/geolocation_tcf.json").then((geo) => {
           stubConfig(
