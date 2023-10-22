@@ -1248,7 +1248,7 @@ describe("Fides-js TCF", () => {
    * 3) local cookie (via fides_consent cookie)
    * 4) "prefetched" experience (via config.options.experience)
    * 5) experience API (via GET /privacy-experience)
-   * 
+   *
    * These specs test various combinations of those sources of truth and ensure
    * that Fides loads the correct preferences in each case.
    */
@@ -1284,7 +1284,7 @@ describe("Fides-js TCF", () => {
         fides_string: "CPziCYAPziCYAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
       };
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
-    }
+    };
 
     /**
      * TEST CASE #1:
@@ -1293,7 +1293,7 @@ describe("Fides-js TCF", () => {
      * ✅ 3) local cookie (via fides_consent cookie)
      * ✅ 4) "prefetched" experience (via config.options.experience)
      * ❌ 5) experience API (via GET /privacy-experience)
-     * 
+     *
      * EXPECTED RESULT: use preferences from local cookie
      */
     it("prefers preferences from a cookie when both cookie and experience exist", () => {
@@ -1380,7 +1380,7 @@ describe("Fides-js TCF", () => {
      * ✅ 3) local cookie (via fides_consent cookie)
      * ❌ 4) "prefetched" experience (via config.options.experience)
      * ❌ 5) experience API (via GET /privacy-experience)
-     * 
+     *
      * EXPECTED RESULT: ignore all preferences, do not load TCF experience
      */
     it("does nothing when cookie exists but no experience is provided (neither prefetch nor API)", () => {
@@ -1395,13 +1395,13 @@ describe("Fides-js TCF", () => {
           experience: OVERRIDE.UNDEFINED,
         },
         OVERRIDE.UNDEFINED,
-        OVERRIDE.EMPTY,
+        OVERRIDE.EMPTY
       );
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("#fides-modal-link").should("not.be.visible");
       });
     });
-    
+
     /**
      * TEST CASE #3:
      * ❌ 1) fides_string override option (via config.options.fidesString)
@@ -1409,7 +1409,7 @@ describe("Fides-js TCF", () => {
      * ❌ 3) local cookie (via fides_consent cookie)
      * ❌ 4) "prefetched" experience (via config.options.experience)
      * ❌ 5) experience API (via GET /privacy-experience)
-     * 
+     *
      * EXPECTED RESULT: ignore all preferences, do not load TCF experience
      */
     it("does nothing when nothing is provided (neither cookie, nor experience, nor fides_string option)", () => {
@@ -1429,7 +1429,7 @@ describe("Fides-js TCF", () => {
         cy.get("#fides-modal-link").should("not.be.visible");
       });
     });
-    
+
     /**
      * TEST CASE #4:
      * ✅ 1) fides_string override option (via config.options.fidesString)
@@ -1437,12 +1437,13 @@ describe("Fides-js TCF", () => {
      * ✅ 3) local cookie (via fides_consent cookie)
      * ✅ 4) "prefetched" experience (via config.options.experience)
      * ❌ 5) experience API (via GET /privacy-experience)
-     * 
+     *
      * EXPECTED RESULT: use preferences from fides_string option
      */
     it("prefers preferences from fides_string option when fides_string, experience, and cookie exist", () => {
       setFidesCookie();
-      const fidesStringOverride = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
@@ -1528,11 +1529,12 @@ describe("Fides-js TCF", () => {
      * ❌ 3) local cookie (via fides_consent cookie)
      * ✅ 4) "prefetched" experience (via config.options.experience)
      * ❌ 5) experience API (via GET /privacy-experience)
-     * 
+     *
      * EXPECTED RESULT: use preferences from fides_string option
      */
     it("prefers preferences from fides_string option when both fides_string and experience is provided and cookie does not exist", () => {
-      const fidesStringOverride = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
@@ -1618,11 +1620,12 @@ describe("Fides-js TCF", () => {
      * ✅ 3) local cookie (via fides_consent cookie)
      * ❌ 4) "prefetched" experience (via config.options.experience)
      * ❌ 5) experience API (via GET /privacy-experience)
-     * 
+     *
      * EXPECTED RESULT: ignore all preferences, do not load TCF experience
      */
     it("does nothing when fides_string option when both fides_string option and cookie exist but no experience exists (neither prefetch nor API)", () => {
-      const fidesStringOverride = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
       const expectedTCString = null;
       setFidesCookie();
       stubConfig(
@@ -1649,11 +1652,12 @@ describe("Fides-js TCF", () => {
      * ✅ 3) local cookie (via fides_consent cookie)
      * ❌ 4) "prefetched" experience (via config.options.experience)
      * ✅ 5) experience API (via GET /privacy-experience)
-     * 
+     *
      * EXPECTED RESULT: use preferences from fides_string option
      */
     it("prefers preferences from fides_string option when both fides_string option and cookie exist and experience is fetched from API", () => {
-      const fidesStringOverride = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       setFidesCookie();
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -1745,7 +1749,8 @@ describe("Fides-js TCF", () => {
 
   describe("fides_string override options", () => {
     it("uses fides_string when set via cookie", () => {
-      const fidesStringOverride = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.getCookie("fides_string").should("not.exist");
       cy.setCookie("fides_string", fidesStringOverride);
@@ -1788,7 +1793,8 @@ describe("Fides-js TCF", () => {
     });
 
     it("uses fides_string when set via query param", () => {
-      const fidesStringOverride = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.getCookie("fides_string").should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
