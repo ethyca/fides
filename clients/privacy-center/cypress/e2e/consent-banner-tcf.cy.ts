@@ -1841,6 +1841,9 @@ describe("Fides-js TCF", () => {
     });
 
     it("uses fides_string when set via window obj", () => {
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+      const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.getCookie("fides_string").should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig(
@@ -1854,7 +1857,7 @@ describe("Fides-js TCF", () => {
           null,
           null,
           null,
-          { fides_string: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE" }
+          { fides_string: fidesStringOverride }
         );
       });
       cy.window().then((win) => {
