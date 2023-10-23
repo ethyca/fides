@@ -3,7 +3,6 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   Heading,
-  Link,
   Spinner,
   Text,
   useToast,
@@ -17,7 +16,6 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
-import EmptyTableState from "~/features/common/table/EmptyTableState";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
 import {
@@ -62,7 +60,7 @@ const ConfigureSystem: NextPage = () => {
         system.vendor_id.split(".")[0] === "gvl";
       dispatch(setLockedForGVL(locked));
     }
-  }, [system, dispatch]);
+  }, [system, dispatch, isTCFEnabled]);
 
   useEffect(() => {
     const { status } = router.query;

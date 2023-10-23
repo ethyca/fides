@@ -1,8 +1,8 @@
 import { Box, Link, Text } from "@fidesui/react";
+
 import EmptyTableState from "~/features/common/table/EmptyTableState";
 
-const GVLNotice = () => {
-  return (
+const GVLNotice = () => (
     <Box mb="6" maxW="720px">
       <EmptyTableState
         title="This system is part of the TCF Global Vendor Listing"
@@ -22,6 +22,5 @@ const GVLNotice = () => {
       />
     </Box>
   );
-};
 
 export default GVLNotice;

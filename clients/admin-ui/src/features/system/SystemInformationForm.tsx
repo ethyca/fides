@@ -33,9 +33,9 @@ import {
   useLazyGetDictionaryDataUsesQuery,
 } from "~/features/plus/plus.slice";
 import {
-  setSuggestions,
-  setLockedForGVL,
   selectLockedForGVL,
+  setLockedForGVL,
+  setSuggestions,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
   DictSuggestionNumberInput,

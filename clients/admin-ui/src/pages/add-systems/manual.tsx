@@ -1,21 +1,13 @@
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  Heading,
-  Link,
-  Text,
-} from "@fidesui/react";
+import { Box, Breadcrumb, BreadcrumbItem, Heading, Text } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
-import { useAppSelector } from "~/app/hooks";
 
+import { useAppSelector } from "~/app/hooks";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import Layout from "~/features/common/Layout";
 import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
-import EmptyTableState from "~/features/common/table/EmptyTableState";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import SystemFormTabs from "~/features/system/SystemFormTabs";
