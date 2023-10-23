@@ -1264,7 +1264,7 @@ describe("Fides-js TCF", () => {
       const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
       const CREATED_DATE = "2022-12-24T12:00:00.000Z";
       const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
-      const cookie = {
+      const cookie: FidesCookie = {
         identity: { fides_user_device_id: uuid },
         fides_meta: {
           version: "0.9.0",
