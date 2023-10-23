@@ -136,7 +136,7 @@ class TestPrivacyPreferenceHistory:
                 "secondary_user_ids": {"ga_client_id": "test"},
                 "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
                 "user_geography": "us_ca",
-                "url_recorded": "example.com/privacy_center",
+                "url_recorded": "http://example.com/privacy_center",
             },
             check_name=False,
         )
@@ -194,7 +194,10 @@ class TestPrivacyPreferenceHistory:
             == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24"
         )
         assert preference_history_record.user_geography == "us_ca"
-        assert preference_history_record.url_recorded == "example.com/privacy_center"
+        assert (
+            preference_history_record.url_recorded
+            == "http://example.com/privacy_center"
+        )
 
         # Assert PrivacyRequest.privacy_preferences relationship
         assert privacy_request.privacy_preferences == []
@@ -237,7 +240,7 @@ class TestPrivacyPreferenceHistory:
                 "secondary_user_ids": {"ga_client_id": "test"},
                 "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
                 "user_geography": "us_ca",
-                "url_recorded": "example.com/privacy_center",
+                "url_recorded": "http://example.com/privacy_center",
             },
             check_name=False,
         )
@@ -662,7 +665,7 @@ class TestPrivacyPreferenceHistory:
                 "secondary_user_ids": {"ga_client_id": "test"},
                 "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
                 "user_geography": "us_ca",
-                "url_recorded": "example.com/privacy_center",
+                "url_recorded": "http://example.com/privacy_center",
             },
             check_name=False,
         )
@@ -758,7 +761,7 @@ class TestPrivacyPreferenceHistory:
                 "secondary_user_ids": {"ga_client_id": "test"},
                 "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
                 "user_geography": "us_ca",
-                "url_recorded": "example.com/privacy_center",
+                "url_recorded": "http://example.com/privacy_center",
             },
             check_name=False,
         )
@@ -818,7 +821,7 @@ class TestPrivacyPreferenceHistory:
                 "secondary_user_ids": {"ga_client_id": "test"},
                 "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
                 "user_geography": "us_ca",
-                "url_recorded": "example.com/privacy_center",
+                "url_recorded": "http://example.com/privacy_center",
             },
             check_name=False,
         )
@@ -860,7 +863,7 @@ class TestPrivacyPreferenceHistory:
                 "secondary_user_ids": {"ga_client_id": "test"},
                 "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
                 "user_geography": "us_ca",
-                "url_recorded": "example.com/privacy_center",
+                "url_recorded": "http://example.com/privacy_center",
             },
             check_name=False,
         )
@@ -1076,7 +1079,7 @@ class TestPrivacyPreferenceHistory:
                 "secondary_user_ids": {"ga_client_id": "test"},
                 "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
                 "user_geography": "us_ca",
-                "url_recorded": "example.com/privacy_center",
+                "url_recorded": "http://example.com/privacy_center",
             },
             check_name=False,
         )
@@ -1110,7 +1113,7 @@ class TestPrivacyPreferenceHistory:
                 "secondary_user_ids": {"ga_client_id": "test"},
                 "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
                 "user_geography": "us_ca",
-                "url_recorded": "example.com/privacy_center",
+                "url_recorded": "http://example.com/privacy_center",
             },
             check_name=False,
         )
@@ -1874,7 +1877,7 @@ class TestServedNoticeHistory:
                 "request_origin": "privacy_center",
                 "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
                 "user_geography": "us_co",
-                "url_recorded": "example.com/privacy_center",
+                "url_recorded": "http://example.com/privacy_center",
                 "acknowledge_mode": False,
                 "serving_component": ServingComponent.privacy_center,
                 "privacy_experience_id": privacy_experience_privacy_center.id,
@@ -1921,7 +1924,10 @@ class TestServedNoticeHistory:
             == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24"
         )
         assert served_notice_history_record.user_geography == "us_co"
-        assert served_notice_history_record.url_recorded == "example.com/privacy_center"
+        assert (
+            served_notice_history_record.url_recorded
+            == "http://example.com/privacy_center"
+        )
 
         # Assert ServedNoticeHistory record upserted
         last_served_notice = served_notice_history_record.last_served_record

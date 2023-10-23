@@ -47,7 +47,7 @@ class TestExperienceConfig:
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                 "privacy_preferences_link_label": "Manage preferences",
                 "privacy_policy_link_label": "View our privacy policy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "reject_button_label": "Reject all",
                 "save_button_label": "Save",
                 "title": "Control your privacy",
@@ -66,7 +66,7 @@ class TestExperienceConfig:
         assert config.is_default is False
         assert config.privacy_preferences_link_label == "Manage preferences"
         assert config.privacy_policy_link_label == "View our privacy policy"
-        assert config.privacy_policy_url == "example.com/privacy"
+        assert config.privacy_policy_url == "http://example.com/privacy"
         assert config.reject_button_label == "Reject all"
         assert config.save_button_label == "Save"
         assert config.title == "Control your privacy"
@@ -91,7 +91,7 @@ class TestExperienceConfig:
         assert history.is_default is False
         assert history.privacy_preferences_link_label == "Manage preferences"
         assert history.privacy_policy_link_label == "View our privacy policy"
-        assert history.privacy_policy_url == "example.com/privacy"
+        assert history.privacy_policy_url == "http://example.com/privacy"
         assert history.reject_button_label == "Reject all"
         assert history.save_button_label == "Save"
         assert history.title == "Control your privacy"
@@ -112,7 +112,7 @@ class TestExperienceConfig:
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                 "privacy_preferences_link_label": "Manage preferences",
                 "privacy_policy_link_label": "View our privacy policy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "reject_button_label": "Reject all",
                 "save_button_label": "Save",
                 "title": "Control your privacy",
@@ -473,7 +473,7 @@ class TestPrivacyExperience:
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                 "privacy_preferences_link_label": "Manage preferences",
                 "privacy_policy_link_label": "View our privacy policy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "reject_button_label": "Reject all",
                 "save_button_label": "Save",
                 "title": "Control your privacy",
