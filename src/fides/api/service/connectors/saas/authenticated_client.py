@@ -6,6 +6,7 @@ import time
 from functools import wraps
 from time import sleep
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
+from urllib.parse import urlparse
 
 from loguru import logger
 from requests import PreparedRequest, Request, Response, Session
@@ -20,6 +21,7 @@ from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiterPeriod,
     RateLimiterRequest,
 )
+from fides.api.util.saas_util import deny_unsafe_hosts
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
@@ -195,7 +197,7 @@ class AuthenticatedClient:
         Builds and executes an authenticated request.
         Optionally ignores:
           - all non-2xx/3xx responses if ignore_errors is set to True
-          - no non-2xx/3xx repsones if ignore_errors is set to False
+          - no non-2xx/3xx responses if ignore_errors is set to False
           - specific non-2xx/3xx responses if ignore_errors is set to a list of status codes
         """
         rate_limit_requests = self.build_rate_limit_requests()
@@ -204,6 +206,12 @@ class AuthenticatedClient:
         prepared_request: PreparedRequest = self.get_authenticated_request(
             request_params
         )
+        if not prepared_request.url:
+            raise ValueError("The URL for the prepared request is missing.")
+
+        # extract the hostname from the complete URL and verify its safety
+        deny_unsafe_hosts(urlparse(prepared_request.url).netloc)
+
         response = self.session.send(prepared_request)
 
         log_request_and_response_for_debugging(
