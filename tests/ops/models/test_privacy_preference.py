@@ -136,7 +136,7 @@ class TestPrivacyPreferenceHistory:
                 "secondary_user_ids": {"ga_client_id": "test"},
                 "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
                 "user_geography": "us_ca",
-                "url_recorded": "https://example.com/privacy_center",
+                "url_recorded": "http://example.com/privacy_center",
             },
             check_name=False,
         )
