@@ -196,7 +196,7 @@ class TestPrivacyPreferenceHistory:
         assert preference_history_record.user_geography == "us_ca"
         assert (
             preference_history_record.url_recorded
-            == "http://example.com/privacy_center"
+            == "https://example.com/privacy_center"
         )
 
         # Assert PrivacyRequest.privacy_preferences relationship
