@@ -68,6 +68,7 @@ Cypress.Commands.add(
           // @ts-ignore
           // eslint-disable-next-line no-param-reassign
           win.config = {
+            // TODO: make this configurable!
             tc_info: windowParams,
           };
         }
