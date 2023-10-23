@@ -1,0 +1,36 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Qualtrics SaaS Config
+  type: qualtrics
+  description: A sample schema representing the Qualtrics connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+
+  client_config:
+    protocol: https
+    host: yul1.qualtrics.com
+    authentication:
+      strategy: no_authentication
+      configuration: {}
+
+  test_request:
+    method: GET
+    path: /API/v3/directories
+    headers:
+      - name: X-API-TOKEN
+        value: rZNc7IvwrpFTYXNOuimVs9NdNGJBjAXVWAJHgYQu
+
+  endpoints:
+    - name: user
+      requests:
+        read:
+          method: GET
+          path: ""
+        update:
+          method: POST
+          path: /API/v3/op-erase-personal-data
+          headers:
+            - name: X-API-TOKEN
+              value: rZNc7IvwrpFTYXNOuimVs9NdNGJBjAXVWAJHgYQu
