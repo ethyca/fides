@@ -9,7 +9,11 @@ from fides.api.api.v1.endpoints.privacy_experience_endpoints import (
 )
 from fides.api.models.privacy_experience import ComponentType, PrivacyExperience
 from fides.api.models.privacy_notice import ConsentMechanism
-from fides.common.api.v1.urn_registry import PRIVACY_EXPERIENCE, V1_URL_PREFIX
+from fides.common.api.v1.urn_registry import (
+    PRIVACY_EXPERIENCE,
+    PRIVACY_EXPERIENCE_META,
+    V1_URL_PREFIX,
+)
 
 
 class TestGetPrivacyExperiences:
@@ -995,3 +999,75 @@ class TestFilterExperiencesByRegionOrCountry:
         )
         assert resp.count() == 1
         assert resp.first().id == privacy_experience_overlay.id
+
+
+class TestExperienceMetaEndpoint:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + PRIVACY_EXPERIENCE_META
+
+    @staticmethod
+    def assert_no_meta_data(response_json):
+        assert response_json["meta"]["version_hash"] is None
+        assert response_json["meta"]["accept_all_fides_string"] is None
+        assert response_json["meta"]["accept_all_fides_mobile_data"] is None
+        assert response_json["meta"]["reject_all_fides_string"] is None
+        assert response_json["meta"]["reject_all_fides_mobile_data"] is None
+
+    @pytest.mark.usefixtures(
+        "tcf_system",
+        "privacy_experience_france_overlay",
+        "privacy_experience_france_tcf_overlay",
+    )
+    def test_tcf_not_enabled(self, url, api_client):
+        """Regular overlay was returned instead of TCF overlay"""
+        resp = api_client.get(
+            url + "?region=fr",
+        )
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 1
+        resp_json = resp.json()["items"][0]
+        assert resp_json["component"] == ComponentType.overlay.value
+        assert resp_json["region"] == "fr"
+        self.assert_no_meta_data(resp_json)
+
+    @pytest.mark.usefixtures(
+        "tcf_system",
+        "privacy_experience_france_overlay",
+        "enable_tcf",
+        "privacy_experience_france_tcf_overlay",
+    )
+    def test_tcf_enabled_get_experience_meta(self, url, api_client):
+        resp = api_client.get(
+            url + "?region=fr",
+        )
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 1
+        resp_json = resp.json()["items"][0]
+        assert resp_json["component"] == ComponentType.tcf_overlay.value
+        assert resp_json["region"] == "fr"
+        assert resp_json["meta"]["version_hash"] == "f2db7626ca0b"
+        assert resp_json["meta"]["accept_all_fides_string"] is not None
+        assert resp_json["meta"]["accept_all_fides_mobile_data"] is not None
+        assert resp_json["meta"]["reject_all_fides_string"] is not None
+        assert resp_json["meta"]["reject_all_fides_mobile_data"] is not None
+
+    @pytest.mark.usefixtures(
+        "tcf_system",
+        "privacy_experience_france_overlay",
+        "enable_tcf",
+        "privacy_experience_france_tcf_overlay",
+        "privacy_experience_overlay",
+    )
+    def test_get_ca_experience_meta(self, url, api_client):
+        """Meta data only built for TCF experiences currently,
+        so fetching a CA experience will just return null meta details"""
+        resp = api_client.get(
+            url + "?region=us_ca",
+        )
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 1
+        resp_json = resp.json()["items"][0]
+        assert resp_json["component"] == ComponentType.overlay.value
+        assert resp_json["region"] == "us_ca"
+        self.assert_no_meta_data(resp_json)
