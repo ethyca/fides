@@ -42,9 +42,6 @@ saas_config:
         update:
           method: POST
           path: /v1/delete_user_data
-          client_config:
-            protocol: https
-            host: api.statsig.com
           headers:
             - name: STATSIG-API-KEY
               value: <STATSIG-SERVER-API-KEY>
