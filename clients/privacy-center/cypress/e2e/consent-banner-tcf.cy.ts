@@ -724,22 +724,25 @@ describe("Fides-js TCF", () => {
           ).to.eql(true);
         });
       });
+
       it("skips saving preferences to API when custom API fn is provided in Fides.init", () => {
+        const apiOptions = {
+          /* eslint-disable @typescript-eslint/no-unused-vars */
+          savePreferencesFn: (
+            fides: FidesConfig,
+            consent: CookieKeyConsent,
+            fides_string: string | undefined,
+            experience: PrivacyExperience
+          ) => {},
+          /* eslint-enable @typescript-eslint/no-unused-vars */
+        };
+        cy.spy(apiOptions, "savePreferencesFn").as("mockSavePreferencesFn");
         cy.fixture("consent/experience_tcf.json").then((privacyExperience) => {
           stubConfig({
             options: {
               isOverlayEnabled: true,
               tcfEnabled: true,
-              api: {
-                /* eslint-disable @typescript-eslint/no-unused-vars */
-                savePreferencesFn: (
-                  fides: FidesConfig,
-                  consent: CookieKeyConsent,
-                  fides_string: string | undefined,
-                  experience: PrivacyExperience
-                ) => {},
-                /* eslint-enable @typescript-eslint/no-unused-vars */
-              },
+              api: apiOptions,
             },
             experience: privacyExperience.items[0],
           });
@@ -756,11 +759,12 @@ describe("Fides-js TCF", () => {
             });
             // check that preferences aren't sent to Fides API
             cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 500,
+              requestTimeout: 100,
             }).then((xhr) => {
               assert.isNull(xhr?.response?.body);
             });
           });
+          cy.wait("@mockSavePreferencesFn");
           // The cookie should still get updated
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const cookieKeyConsent: FidesCookie = JSON.parse(
@@ -801,6 +805,7 @@ describe("Fides-js TCF", () => {
           });
         });
       });
+
       it("skips saving preferences to API when disable save is set", () => {
         cy.fixture("consent/experience_tcf.json").then((experience) => {
           stubConfig({
@@ -824,7 +829,7 @@ describe("Fides-js TCF", () => {
             });
             // check that preferences aren't sent to Fides API
             cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 500,
+              requestTimeout: 100,
             }).then((xhr) => {
               assert.isNull(xhr?.response?.body);
             });
@@ -895,7 +900,7 @@ describe("Fides-js TCF", () => {
             });
             // check that preferences aren't sent to Fides API
             cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 500,
+              requestTimeout: 100,
             }).then((xhr) => {
               assert.isNull(xhr?.response?.body);
             });
@@ -931,7 +936,7 @@ describe("Fides-js TCF", () => {
             });
             // check that preferences aren't sent to Fides API
             cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 500,
+              requestTimeout: 100,
             }).then((xhr) => {
               assert.isNull(xhr?.response?.body);
             });
@@ -968,7 +973,7 @@ describe("Fides-js TCF", () => {
             });
             // check that preferences aren't sent to Fides API
             cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 500,
+              requestTimeout: 100,
             }).then((xhr) => {
               assert.isNull(xhr?.response?.body);
             });

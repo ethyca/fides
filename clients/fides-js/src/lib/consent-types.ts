@@ -82,8 +82,7 @@ export type FidesOptions = {
 
 export type FidesApiOptions = {
   /**
-   * Intake a custom save function to upload the saved `fides_string` alongside
-   * the `version_hash` of the notices it was created for to our own API.
+   * Intake a custom function that is called instead of the internal Fides API to save user preferences.
    *
    * @param {object} Fides  - the global Fides object with all configured options, state, etc.
    * @param {object} consent - updated version of Fides.consent with the user's saved preferences for Fides notices
