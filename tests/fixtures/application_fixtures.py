@@ -2302,7 +2302,7 @@ def privacy_preference_history(
             "request_origin": "privacy_center",
             "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
             "user_geography": "us_ca",
-            "url_recorded": "example.com/privacy_center",
+            "url_recorded": "https://example.com/privacy_center",
             "served_notice_history_id": served_notice_history.id,
         },
         check_name=False,
@@ -2651,7 +2651,7 @@ def experience_config_overlay(db: Session) -> Generator:
             "disabled": False,
             "privacy_preferences_link_label": "Manage preferences",
             "privacy_policy_link_label": "View our company&#x27;s privacy policy",
-            "privacy_policy_url": "example.com/privacy",
+            "privacy_policy_url": "https://example.com/privacy",
             "reject_button_label": "Reject all",
             "save_button_label": "Save",
             "title": "Manage your consent",
@@ -2677,7 +2677,7 @@ def experience_config_tcf_overlay(db: Session) -> Generator:
             "disabled": False,
             "privacy_preferences_link_label": "Manage preferences",
             "privacy_policy_link_label": "View our company&#x27;s privacy policy",
-            "privacy_policy_url": "example.com/privacy",
+            "privacy_policy_url": "https://example.com/privacy",
             "reject_button_label": "Reject all",
             "save_button_label": "Save",
             "title": "Manage your consent",
@@ -2807,6 +2807,7 @@ def tcf_system(db: Session) -> System:
             "legal_basis_for_processing": "Consent",
             "egress": None,
             "ingress": None,
+            "retention_period": "3",
         },
     )
 
@@ -2823,6 +2824,7 @@ def tcf_system(db: Session) -> System:
             "legal_basis_for_processing": "Legitimate interests",
             "egress": None,
             "ingress": None,
+            "retention_period": "1",
         },
     )
 
