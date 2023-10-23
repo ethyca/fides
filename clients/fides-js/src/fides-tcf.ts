@@ -101,7 +101,8 @@ declare global {
       parameter?: number | string
     ) => void;
     config: {
-      fides: OverrideOptions;
+      // DEFER (PROD-1243): support a configurable "custom options" path
+      tc_info: OverrideOptions;
     };
   }
 }
