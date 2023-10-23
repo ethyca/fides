@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import Extra, Field, root_validator, validator
+from pydantic import Extra, Field, HttpUrl, root_validator, validator
 
 from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
@@ -43,8 +43,8 @@ class ExperienceConfigSchema(FidesSchema):
     privacy_policy_link_label: Optional[str] = Field(
         description="Overlay and Privacy Center 'Privacy policy link label'"
     )
-    privacy_policy_url: Optional[str] = Field(
-        description="Overlay and Privacy Center 'Privacy policy URl'"
+    privacy_policy_url: Optional[HttpUrl] = Field(
+        default=None, description="Overlay and Privacy Center 'Privacy policy URL"
     )
     privacy_preferences_link_label: Optional[str] = Field(
         description="Overlay 'Privacy preferences link label'"
