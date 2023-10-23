@@ -102,28 +102,26 @@ export const useCustomFields = ({
     return ids;
   }, [idToCustomFieldDefinition]);
 
-  const isMultivalued = (id: string): boolean =>
-    Array.from(idToCustomFieldDefinition.values()).some(
-      (value) => value.id === id && !!value.allow_list_id
-    );
-
   /**
    * Transformed version of definitionIdToCustomField to be easy
    * to pass into Formik
    */
   const customFieldValues = useMemo(() => {
     const values: CustomFieldValues = {};
-    if (definitionIdToCustomField) {
-      definitionIdToCustomField.forEach((value, key) => {
-        if (isMultivalued(key)) {
-          values[key] = value.value;
-        } else {
-          values[key] = value.value.toString();
+    if (activeCustomFieldDefinition && definitionIdToCustomField) {
+      activeCustomFieldDefinition.forEach((value, key) => {
+        const customField = definitionIdToCustomField.get(value.id || "")
+        if (customField){
+          if (!!value.allow_list_id && value.field_type == "string[]") {
+            values[customField.custom_field_definition_id] = customField.value;
+          } else {
+            values[customField.custom_field_definition_id] = customField.value.toString();
+          }
         }
       });
     }
     return values;
-  }, [definitionIdToCustomField]);
+  }, [activeCustomFieldDefinition, definitionIdToCustomField]);
 
   /**
    * Issue a batch of upsert and delete requests that will sync the form selections to the
