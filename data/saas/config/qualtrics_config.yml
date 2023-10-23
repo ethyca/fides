@@ -1,0 +1,57 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Qualtrics
+  type: qualtrics
+  description: A sample schema representing the Qualtrics connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: yul1.qualtrics.com
+    - name: api_key    
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: api_key
+      configuration:
+        headers:
+          - name: X-API-TOKEN
+            value: <api_key>
+        query_params:
+          - name: api_key
+            value: api_key
+
+  test_request:
+    method: GET
+    path: /API/v3/directories
+
+  endpoints:
+    - name: search_directory_contact
+      requests:
+        read:
+          method: POST
+          path: /API/v3/directories/<all_directories_directoryId>/contacts/search
+          body: |
+            {
+             "filter": {"filterType": "email","comparison": "eq","value": "<email>"}
+             }
+          data_path: result.elements
+          param_values:
+            - name: all_directories_directoryId
+              references:
+                - dataset: <instance_fides_key>
+                  field: all_directories.directoryId
+                  direction: from
+            - name: email
+              identity: email
+    - name: all_directories
+      requests:
+        read:
+          method: GET
+          path: /API/v3/directories
+          data_path: result.elements
+          param_values:
+            - name: placeholder
+              identity: email
