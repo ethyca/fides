@@ -52,7 +52,6 @@ const useDictSuggestion = (
   const { values } = useFormikContext<FormValues>();
   const { vendor_id: vendorId } = values;
   const dictEntry = useAppSelector(selectDictEntry(vendorId || ""));
-  console.log(dictEntry);
   const isShowingSuggestions = useAppSelector(selectSuggestions);
   const inputRef = useRef();
 

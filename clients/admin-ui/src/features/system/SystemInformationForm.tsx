@@ -3,15 +3,14 @@ import {
   Button,
   Collapse,
   Heading,
-  Link,
   Stack,
   Text,
   useToast,
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
-import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
-import { ChangeEvent, useMemo, useState } from "react";
+import { Form, Formik, FormikHelpers } from "formik";
+import { ChangeEvent, useMemo } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -28,12 +27,10 @@ import {
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
-import EmptyTableState from "~/features/common/table/EmptyTableState";
 import {
   selectAllDictEntries,
-  selectDictDataUses,
   useGetAllDictionaryEntriesQuery,
-  useGetDictionaryDataUsesQuery,
+  useLazyGetDictionaryDataUsesQuery,
 } from "~/features/plus/plus.slice";
 import {
   setSuggestions,
@@ -47,6 +44,7 @@ import {
   DictSuggestionTextArea,
   DictSuggestionTextInput,
 } from "~/features/system/dictionary-form/DictSuggestionInputs";
+import { transformDictDataUseToDeclaration } from "~/features/system/dictionary-form/helpers";
 import {
   defaultInitialValues,
   FormValues,
@@ -131,6 +129,7 @@ const SystemInformationForm = ({
   useGetAllDictionaryEntriesQuery(undefined, {
     skip: !features.dictionaryService,
   });
+  const [getDictionaryDataUseTrigger] = useLazyGetDictionaryDataUsesQuery();
 
   const dictionaryOptions = useAppSelector(selectAllDictEntries);
   const lockedForGVL = useAppSelector(selectLockedForGVL);
@@ -162,7 +161,24 @@ const SystemInformationForm = ({
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
-    const systemBody = transformFormValuesToSystem(values);
+    let dictionaryDeclarations;
+    if (lockedForGVL) {
+      const dataUseQueryResult = await getDictionaryDataUseTrigger({
+        vendor_id: values.vendor_id!,
+      }).unwrap();
+      dictionaryDeclarations = dataUseQueryResult.items.map((dec) => ({
+        ...transformDictDataUseToDeclaration(dec),
+        name: dec.name ?? "",
+      }));
+    }
+
+    const valuesToSubmit = {
+      ...values,
+      privacy_declarations:
+        dictionaryDeclarations ?? values.privacy_declarations,
+    };
+
+    const systemBody = transformFormValuesToSystem(valuesToSubmit);
 
     const handleResult = (
       result: { data: {} } | { error: FetchBaseQueryError | SerializedError }

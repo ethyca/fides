@@ -19,6 +19,8 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
+import { useAppSelector } from "~/app/hooks";
+import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import {
   DataCategory,
@@ -149,6 +151,8 @@ export const PrivacyDeclarationFormComponents = ({
     [allDatasets]
   );
 
+  const lockedForGVL = useAppSelector(selectLockedForGVL);
+
   return (
     <Stack spacing={4}>
       <SystemFormInputGroup heading="Data use declaration">
@@ -157,6 +161,7 @@ export const PrivacyDeclarationFormComponents = ({
           label="Declaration name (optional)"
           name="name"
           tooltip="Would you like to append anything to the system name?"
+          disabled={lockedForGVL}
           variant="stacked"
         />
         <CustomSelect
@@ -170,7 +175,7 @@ export const PrivacyDeclarationFormComponents = ({
           tooltip="For which business purposes is this data processed?"
           variant="stacked"
           isRequired
-          isDisabled={!!privacyDeclarationId}
+          isDisabled={!!privacyDeclarationId || lockedForGVL}
         />
         <CustomSelect
           name="data_categories"
@@ -182,6 +187,7 @@ export const PrivacyDeclarationFormComponents = ({
           tooltip="Which categories of personal data are collected for this purpose?"
           isMulti
           isRequired
+          isDisabled={lockedForGVL}
           variant="stacked"
         />
         <CustomSelect

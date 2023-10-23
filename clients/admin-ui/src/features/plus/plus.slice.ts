@@ -326,6 +326,7 @@ export const {
   useGetAllDictionaryEntriesQuery,
   useGetFidesCloudConfigQuery,
   useGetDictionaryDataUsesQuery,
+  useLazyGetDictionaryDataUsesQuery,
   useGetSystemHistoryQuery,
   useUpdateCustomAssetMutation,
 } = plusApi;
