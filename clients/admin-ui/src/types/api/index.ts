@@ -317,6 +317,7 @@ export type { TCFSpecialFeatureRecord } from "./models/TCFSpecialFeatureRecord";
 export type { TCFSpecialFeatureSave } from "./models/TCFSpecialFeatureSave";
 export type { TCFSpecialPurposeRecord } from "./models/TCFSpecialPurposeRecord";
 export type { TCFSpecialPurposeSave } from "./models/TCFSpecialPurposeSave";
+export type { TCFStatus } from "./models/TCFStatus";
 export type { TCFVendorConsentRecord } from "./models/TCFVendorConsentRecord";
 export type { TCFVendorLegitimateInterestsRecord } from "./models/TCFVendorLegitimateInterestsRecord";
 export type { TCFVendorRelationships } from "./models/TCFVendorRelationships";

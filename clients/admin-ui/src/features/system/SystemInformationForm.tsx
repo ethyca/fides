@@ -3,14 +3,15 @@ import {
   Button,
   Collapse,
   Heading,
+  Link,
   Stack,
   Text,
   useToast,
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
-import { Form, Formik, FormikHelpers } from "formik";
-import { useMemo } from "react";
+import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
+import { ChangeEvent, useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -27,11 +28,18 @@ import {
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
+import EmptyTableState from "~/features/common/table/EmptyTableState";
 import {
   selectAllDictEntries,
+  selectDictDataUses,
   useGetAllDictionaryEntriesQuery,
+  useGetDictionaryDataUsesQuery,
 } from "~/features/plus/plus.slice";
-import { setSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
+import {
+  setSuggestions,
+  setLockedForGVL,
+  selectLockedForGVL,
+} from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
   DictSuggestionNumberInput,
   DictSuggestionSelect,
@@ -125,6 +133,7 @@ const SystemInformationForm = ({
   });
 
   const dictionaryOptions = useAppSelector(selectAllDictEntries);
+  const lockedForGVL = useAppSelector(selectLockedForGVL);
 
   const systems = useAppSelector(selectAllSystems);
   const isEditing = useMemo(
@@ -189,6 +198,15 @@ const SystemInformationForm = ({
     handleResult(result);
   };
 
+  const handleVendorSelected = (newVendorId: string) => {
+    if (features.tcf && newVendorId.split(".")[0] === "gvl") {
+      dispatch(setSuggestions("showing"));
+      dispatch(setLockedForGVL(true));
+    } else {
+      dispatch(setLockedForGVL(false));
+    }
+  };
+
   const isLoading =
     updateSystemMutationResult.isLoading ||
     createSystemMutationResult.isLoading ||
@@ -229,6 +247,10 @@ const SystemInformationForm = ({
                   options={dictionaryOptions}
                   tooltip="Select the vendor that matches the system"
                   isCustomOption
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                    // @ts-ignore
+                    handleVendorSelected(e.value)
+                  }
                   variant="stacked"
                 />
               ) : null}
@@ -239,6 +261,7 @@ const SystemInformationForm = ({
                 isRequired
                 label="System name"
                 tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                disabled={lockedForGVL}
               />
               {passedInSystem?.fides_key && (
                 <CustomTextInput
@@ -291,6 +314,7 @@ const SystemInformationForm = ({
                     label="This system processes personal data"
                     tooltip="Does this system process personal data?"
                     variant="stacked"
+                    disabled={lockedForGVL}
                   />
                 </Box>
                 <Box padding={4} borderRadius={4} backgroundColor="gray.50">
@@ -299,7 +323,7 @@ const SystemInformationForm = ({
                       name="exempt_from_privacy_regulations"
                       label="This system is exempt from privacy regulations"
                       tooltip="Is this system exempt from privacy regulations?"
-                      disabled={!values.processes_personal_data}
+                      disabled={!values.processes_personal_data || lockedForGVL}
                       variant="stacked"
                     />
                     <Collapse
@@ -359,6 +383,7 @@ const SystemInformationForm = ({
                         name="does_international_transfers"
                         label="This system transfers data"
                         tooltip="Does this system transfer data to other countries or international organizations?"
+                        disabled={lockedForGVL}
                       />
                       <Collapse
                         in={values.does_international_transfers}
@@ -375,6 +400,7 @@ const SystemInformationForm = ({
                             tooltip="What is the legal basis under which the data is transferred?"
                             isMulti
                             isRequired={values.does_international_transfers}
+                            disabled={lockedForGVL}
                           />
                         </Box>
                       </Collapse>
@@ -455,12 +481,14 @@ const SystemInformationForm = ({
                   name="legal_name"
                   label="Legal name"
                   tooltip="What is the legal name of the business?"
+                  disabled={lockedForGVL}
                 />
                 <DictSuggestionTextArea
                   id="legal_address"
                   name="legal_address"
                   label="Legal address"
                   tooltip="What is the legal address for the business?"
+                  disabled={lockedForGVL}
                 />
                 <CustomTextInput
                   label="Department"

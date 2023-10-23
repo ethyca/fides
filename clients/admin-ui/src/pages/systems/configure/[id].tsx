@@ -3,6 +3,7 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   Heading,
+  Link,
   Spinner,
   Text,
   useToast,
@@ -12,15 +13,21 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import { useAppDispatch } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
+import EmptyTableState from "~/features/common/table/EmptyTableState";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
 import {
   setActiveSystem,
   useGetSystemByFidesKeyQuery,
 } from "~/features/system";
+import {
+  selectLockedForGVL,
+  setLockedForGVL,
+} from "~/features/system/dictionary-form/dict-suggestion.slice";
 import EditSystemFlow from "~/features/system/EditSystemFlow";
 
 const INTEGRATION_TAB_INDEX = 3; // this needs to be updated if the order of the tabs changes
@@ -41,9 +48,19 @@ const ConfigureSystem: NextPage = () => {
     skip: !systemId,
   });
   const { isLoading: isDictionaryLoading } = useGetAllDictionaryEntriesQuery();
+  const { tcf: isTCFEnabled } = useFeatures();
+
+  const lockedForGVL = useAppSelector(selectLockedForGVL);
 
   useEffect(() => {
     dispatch(setActiveSystem(system));
+    if (system) {
+      const locked =
+        isTCFEnabled &&
+        !!system.vendor_id &&
+        system.vendor_id.split(".")[0] === "gvl";
+      dispatch(setLockedForGVL(locked));
+    }
   }, [system, dispatch]);
 
   useEffect(() => {
@@ -83,6 +100,7 @@ const ConfigureSystem: NextPage = () => {
       <Heading mb={2} fontSize="2xl" fontWeight="semibold">
         Configure your system
       </Heading>
+
       <Box mb={8}>
         <Breadcrumb fontWeight="medium" fontSize="sm" color="gray.600">
           <BreadcrumbItem>
@@ -93,6 +111,24 @@ const ConfigureSystem: NextPage = () => {
           </BreadcrumbItem>
         </Breadcrumb>
       </Box>
+
+      {lockedForGVL ? (
+        <Box mb="6" maxW="720px">
+          <EmptyTableState
+            title="This system is part of the TCF Global Vendor Listing"
+            description={
+              <Text>
+                Some form elements below will be disabled as they cannot be
+                edited if they are populated directly from the Global Vendor
+                List.{" "}
+                <Link href="/" color="complimentary.500">
+                  For more information on the Global Vendor List, click here.
+                </Link>
+              </Text>
+            }
+          />
+        </Box>
+      ) : null}
       {!system && !isLoading && !isDictionaryLoading ? (
         <Text data-testid="system-not-found">
           Could not find a system with id {systemId}

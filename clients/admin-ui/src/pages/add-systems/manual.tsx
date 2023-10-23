@@ -1,13 +1,23 @@
-import { Box, Breadcrumb, BreadcrumbItem, Heading, Text } from "@fidesui/react";
+import {
+  Box,
+  Breadcrumb,
+  BreadcrumbItem,
+  Heading,
+  Link,
+  Text,
+} from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
+import { useAppSelector } from "~/app/hooks";
 
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import Layout from "~/features/common/Layout";
 import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
+import EmptyTableState from "~/features/common/table/EmptyTableState";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
+import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import SystemFormTabs from "~/features/system/SystemFormTabs";
 import { ConnectionSystemTypeMap } from "~/types/api";
 
@@ -39,6 +49,8 @@ const NewManualSystem: NextPage = () => {
     return JSON.parse(value);
   }, [connectorType]);
 
+  const lockedForGVL = useAppSelector(selectLockedForGVL);
+
   return (
     <Layout title="Describe your system">
       <Box mb={4}>
@@ -62,6 +74,23 @@ const NewManualSystem: NextPage = () => {
           </Breadcrumb>
         </Box>
       </Box>
+      {lockedForGVL ? (
+        <Box mb="6" maxW="720px">
+          <EmptyTableState
+            title="This system is part of the TCF Global Vendor Listing"
+            description={
+              <Text>
+                Some form elements below will be disabled as they cannot be
+                edited if they are populated directly from the Global Vendor
+                List.{" "}
+                <Link href="/" color="complimentary.500">
+                  For more information on the Global Vendor List, click here.
+                </Link>
+              </Text>
+            }
+          />
+        </Box>
+      ) : null}
       <Box w={{ base: "100%", md: "75%" }}>
         <Text fontSize="sm" mb={8}>
           {DESCRIBE_SYSTEM_COPY}

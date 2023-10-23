@@ -52,6 +52,7 @@ const useDictSuggestion = (
   const { values } = useFormikContext<FormValues>();
   const { vendor_id: vendorId } = values;
   const dictEntry = useAppSelector(selectDictEntry(vendorId || ""));
+  console.log(dictEntry);
   const isShowingSuggestions = useAppSelector(selectSuggestions);
   const inputRef = useRef();
 
@@ -154,6 +155,7 @@ export const DictSuggestionTextInput = ({
 export const DictSuggestionTextArea = ({
   label,
   tooltip,
+  disabled,
   isRequired = false,
   dictField,
   name,
@@ -183,6 +185,7 @@ export const DictSuggestionTextArea = ({
               ? "complimentary.500"
               : "gray.800"
           }
+          isDisabled={disabled}
         />
         <ErrorMessage
           isInvalid={isInvalid}
