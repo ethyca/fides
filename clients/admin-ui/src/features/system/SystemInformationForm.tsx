@@ -269,6 +269,7 @@ const SystemInformationForm = ({
                     // @ts-ignore
                     handleVendorSelected(e.value)
                   }
+                  disabled={passedInSystem && lockedForGVL}
                   variant="stacked"
                 />
               ) : null}
