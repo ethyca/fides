@@ -68,7 +68,7 @@ Cypress.Commands.add(
           // @ts-ignore
           // eslint-disable-next-line no-param-reassign
           win.config = {
-            // TODO: make this configurable!
+            // DEFER (PROD-1243): support a configurable "custom options" path
             tc_info: windowParams,
           };
         }

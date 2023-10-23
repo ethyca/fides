@@ -77,7 +77,7 @@ declare global {
   interface Window {
     Fides: Fides;
     config: {
-      // TODO: make this configurable!
+      // DEFER (PROD-1243): support a configurable "custom options" path
       tc_info: OverrideOptions;
     };
   }
