@@ -1,0 +1,44 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: typeform SaaS Config
+  type: typeform
+  description: A sample schema representing the typeform connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: api.typeform.com
+    - name: account_id
+      default_value: <account_id>
+
+  client_config:
+    protocol: https
+    host: api.typeform.com
+    authentication:
+      strategy: bearer
+      configuration:
+        token: <bearer-token>
+
+  test_request:
+    method: GET
+    path: /me
+
+  endpoints:
+    - name: user
+      requests:
+        read:
+          method: GET
+          path: ""
+        delete:
+          method: DELETE
+          path: /rtbf/<account_id>/responses
+          headers:
+            - name: Content-Type
+              value: application/json
+          body: |
+            ["<email>"]
+          param_values:
+            - name: account_id
+              connector_param: account_id
+            - name: email
+              identity: email
