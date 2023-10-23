@@ -20,23 +20,21 @@ The types of changes are:
 ### Added
 - Added support for 3 additional config variables in Fides.js: fidesEmbed, fidesDisableSaveApi, and fidesTcString [#4262](https://github.com/ethyca/fides/pull/4262)
 - Added support for fidesEmbed, fidesDisableSaveApi, and fidesTcString to be passed into Fides.js via query param, cookie, or window object [#4297](https://github.com/ethyca/fides/pull/4297)
+- Added a `FidesUIChanged` event to Fides.js to track when user preferences change without being saved [#4314](https://github.com/ethyca/fides/pull/4314) and [#4253](https://github.com/ethyca/fides/pull/4253)
+- Add AC Systems to the TCF Overlay under Vendor Consents section [#4266](https://github.com/ethyca/fides/pull/4266/)
 
 ### Fixed
 - Cleans up CSS for fidesEmbed mode [#4306](https://github.com/ethyca/fides/pull/4306)
-
-### Added
-- Added a `FidesUIChanged` event to Fides.js to track when user preferences change without being saved [#4314](https://github.com/ethyca/fides/pull/4314) and [#4253](https://github.com/ethyca/fides/pull/4253)
-- Add AC Systems to the TCF Overlay under Vendor Consents section [#4266](https://github.com/ethyca/fides/pull/4266/)
-- Custom fields are now included in system history change tracking [#4294](https://github.com/ethyca/fides/pull/4294)
+- Stacks that do not have any purposes will no longer render an empty purpose block [#4278](https://github.com/ethyca/fides/pull/4278)
+- Forcing hidden sections to use display none [#4299](https://github.com/ethyca/fides/pull/4299)
 
 ### Changed
 - Derive cookie storage info, privacy policy and legitimate interest disclosure URLs, and data retention data from the data map instead of directly from gvl.json [#4286](https://github.com/ethyca/fides/pull/4286)
 
-### Fixed
-- Stacks that do not have any purposes will no longer render an empty purpose block [#4278](https://github.com/ethyca/fides/pull/4278)
-- Forcing hidden sections to use display none [#4299](https://github.com/ethyca/fides/pull/4299)
-
 ## [2.22.1](https://github.com/ethyca/fides/compare/2.22.0...2.22.1)
+
+### Added
+- Custom fields are now included in system history change tracking [#4294](https://github.com/ethyca/fides/pull/4294)
 
 ### Security
 - Added hostname checks for external SaaS connector URLs [CVE-2023-46124](https://github.com/ethyca/fides/security/advisories/GHSA-jq3w-9mgf-43m4)
