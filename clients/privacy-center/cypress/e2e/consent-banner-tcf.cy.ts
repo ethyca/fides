@@ -5,6 +5,8 @@ import {
   PrivacyExperience,
   UserConsentPreference,
 } from "fides-js";
+import { CookieKeyConsent } from "fides-js/src/lib/cookie";
+import { FidesConfig } from "fides-js/src/lib/consent-types";
 import { OVERRIDE, stubConfig } from "../support/stubs";
 
 const PURPOSE_2 = {
@@ -722,7 +724,83 @@ describe("Fides-js TCF", () => {
           ).to.eql(true);
         });
       });
-
+      it("skips saving preferences to API when custom API fn is provided in Fides.init", () => {
+        cy.fixture("consent/experience_tcf.json").then((privacyExperience) => {
+          stubConfig({
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+              api: {
+                /* eslint-disable @typescript-eslint/no-unused-vars */
+                savePreferencesFn: (
+                  fides: FidesConfig,
+                  consent: CookieKeyConsent,
+                  fides_string: string | undefined,
+                  experience: PrivacyExperience
+                ) => {},
+                /* eslint-enable @typescript-eslint/no-unused-vars */
+              },
+            },
+            experience: privacyExperience.items[0],
+          });
+        });
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("#fides-modal-link").click();
+          cy.getByTestId("consent-modal").within(() => {
+            cy.get("button").contains("Opt out of all").click();
+            // timeout means API call not made, which is expected
+            cy.on("fail", (error) => {
+              if (error.message.indexOf("Timed out retrying") !== 0) {
+                throw error;
+              }
+            });
+            // check that preferences aren't sent to Fides API
+            cy.wait("@patchPrivacyPreference", {
+              requestTimeout: 500,
+            }).then((xhr) => {
+              assert.isNull(xhr?.response?.body);
+            });
+          });
+          // The cookie should still get updated
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const cookieKeyConsent: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value)
+            );
+            [PURPOSE_4.id, PURPOSE_9.id, PURPOSE_6.id, PURPOSE_7.id].forEach(
+              (pid) => {
+                expect(cookieKeyConsent.tcf_consent.purpose_consent_preferences)
+                  .property(`${pid}`)
+                  .is.eql(false);
+              }
+            );
+            expect(
+              cookieKeyConsent.tcf_consent
+                .purpose_legitimate_interests_preferences
+            )
+              .property(`${PURPOSE_2.id}`)
+              .is.eql(false);
+            expect(cookieKeyConsent.tcf_consent.special_feature_preferences)
+              .property(`${SPECIAL_FEATURE_1.id}`)
+              .is.eql(false);
+            expect(cookieKeyConsent.tcf_consent.vendor_consent_preferences)
+              .property(`${VENDOR_1.id}`)
+              .is.eql(false);
+            expect(
+              cookieKeyConsent.tcf_consent
+                .vendor_legitimate_interests_preferences
+            ).to.eql({});
+            expect(
+              cookieKeyConsent.tcf_consent.system_consent_preferences
+            ).to.eql({});
+            expect(
+              cookieKeyConsent.tcf_consent
+                .system_legitimate_interests_preferences
+            )
+              .property(`${SYSTEM_1.id}`)
+              .is.eql(false);
+          });
+        });
+      });
       it("skips saving preferences to API when disable save is set", () => {
         cy.fixture("consent/experience_tcf.json").then((experience) => {
           stubConfig({

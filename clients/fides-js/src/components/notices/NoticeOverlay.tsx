@@ -27,7 +27,7 @@ import { dispatchFidesEvent } from "../../lib/events";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   experience,
-  options,
+  fidesConfig,
   fidesRegionString,
   cookie,
 }) => {
@@ -56,7 +56,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   const { servedNotices } = useConsentServed({
     notices: privacyNotices,
-    options,
+    options: fidesConfig.options,
     userGeography: fidesRegionString,
     acknowledgeMode: isAllNoticeOnly,
     privacyExperienceId: experience.id,
@@ -73,10 +73,9 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       });
       updateConsentPreferences({
         consentPreferencesToSave,
-        experienceId: experience.id,
-        fidesApiUrl: options.fidesApiUrl,
+        experience,
         consentMethod: ConsentMethod.button,
-        fidesDisableSaveApi: options.fidesDisableSaveApi,
+        fidesConfig,
         userLocationString: fidesRegionString,
         cookie,
         servedNotices,
@@ -94,20 +93,20 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       cookie,
       fidesRegionString,
       experience.id,
-      options.fidesApiUrl,
+      fidesConfig.options.fidesApiUrl,
       servedNotices,
     ]
   );
 
   if (!experience.experience_config) {
-    debugLog(options.debug, "No experience config found");
+    debugLog(fidesConfig.options.debug, "No experience config found");
     return null;
   }
   const experienceConfig = experience.experience_config;
 
   return (
     <Overlay
-      options={options}
+      options={fidesConfig.options}
       experience={experience}
       cookie={cookie}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) =>
@@ -142,7 +141,11 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               enabledNoticeKeys={draftEnabledNoticeKeys}
               onChange={(updatedKeys) => {
                 setDraftEnabledNoticeKeys(updatedKeys);
-                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+                dispatchFidesEvent(
+                  "FidesUIChanged",
+                  cookie,
+                  fidesConfig.options.debug
+                );
               }}
             />
           </div>

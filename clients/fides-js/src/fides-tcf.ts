@@ -217,9 +217,9 @@ const init = async (config: FidesConfig) => {
   }
   const experience = initialFides?.experience ?? config.experience;
   const updatedFides = await initialize({
-    ...config,
-    experience,
     cookie,
+    config,
+    experience,
     renderOverlay,
     updateCookie,
   });
@@ -255,6 +255,7 @@ _Fides = {
     fidesEmbed: false,
     fidesDisableSaveApi: false,
     fidesString: null,
+    api: null,
   },
   fides_meta: {},
   identity: {},

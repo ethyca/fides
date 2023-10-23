@@ -201,7 +201,7 @@ const updateCookie = async (
 const TcfOverlay: FunctionComponent<OverlayProps> = ({
   fidesRegionString,
   experience,
-  options,
+  fidesConfig,
   cookie,
 }) => {
   const initialEnabledIds: EnabledIds = useMemo(() => {
@@ -241,13 +241,11 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       const tcf = createTcfSavePayload({ experience, enabledIds });
       updateConsentPreferences({
         consentPreferencesToSave: [],
-        experienceId: experience.id,
-        fidesApiUrl: options.fidesApiUrl,
+        experience,
         consentMethod: ConsentMethod.button,
-        fidesDisableSaveApi: options.fidesDisableSaveApi,
+        fidesConfig,
         userLocationString: fidesRegionString,
         cookie,
-        debug: options.debug,
         servedNotices: null, // TODO: served notices
         tcf,
         updateCookie: (oldCookie) =>
@@ -255,20 +253,20 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       });
       setDraftIds(enabledIds);
     },
-    [cookie, experience, fidesRegionString, options]
+    [cookie, experience, fidesRegionString, fidesConfig]
   );
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   if (!experience.experience_config) {
-    debugLog(options.debug, "No experience config found");
+    debugLog(fidesConfig.options.debug, "No experience config found");
     return null;
   }
   const experienceConfig = experience.experience_config;
 
   return (
     <Overlay
-      options={options}
+      options={fidesConfig.options}
       experience={experience}
       cookie={cookie}
       onVendorPageClick={() => {
@@ -320,7 +318,11 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               enabledIds={draftIds}
               onChange={(updatedIds) => {
                 setDraftIds(updatedIds);
-                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+                dispatchFidesEvent(
+                  "FidesUIChanged",
+                  cookie,
+                  fidesConfig.options.debug
+                );
               }}
               activeTabIndex={activeTabIndex}
               onTabChange={setActiveTabIndex}
