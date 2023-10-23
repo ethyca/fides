@@ -21,7 +21,7 @@ import { TcfSavePreferences } from "./tcf/types";
 /**
  * Updates the user's consent preferences, going through the following steps:
  * 1. Update the cookie object based on new preferences
- * 2. Update the window.Fides.consent object
+ * 2. Update the window.Fides object
  * 3. Save preferences to Fides API or a custom function (`savePreferencesFn`)
  * 4. Save preferences to the `fides_consent` cookie in the browser
  * 5. Remove any cookies from notices that were opted-out from the browser
