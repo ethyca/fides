@@ -38,9 +38,9 @@ The types of changes are:
 ## [2.22.1](https://github.com/ethyca/fides/compare/2.22.0...2.22.1)
 
 ### Security
-- Added hostname checks for external SaaS connector URLs [CVE](https://github.com/ethyca/fides/security/advisories/GHSA-jq3w-9mgf-43m4)
-- Use a Pydantic URL type for privacy policy URLs [CVE](https://github.com/ethyca/fides/security/advisories/GHSA-fgjj-5jmr-gh83)
-- Remove the CONFIG_READ scope from the Viewer role [CVE](https://github.com/ethyca/fides/security/advisories/GHSA-rjxg-rpg3-9r89)
+- Added hostname checks for external SaaS connector URLs [CVE-2023-46124](https://github.com/ethyca/fides/security/advisories/GHSA-jq3w-9mgf-43m4)
+- Use a Pydantic URL type for privacy policy URLs [CVE-2023-46126](https://github.com/ethyca/fides/security/advisories/GHSA-fgjj-5jmr-gh83)
+- Remove the CONFIG_READ scope from the Viewer role [CVE-2023-46125](https://github.com/ethyca/fides/security/advisories/GHSA-rjxg-rpg3-9r89)
 
 ## [2.22.0](https://github.com/ethyca/fides/compare/2.21.0...2.22.0)
 
