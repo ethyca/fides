@@ -29,6 +29,7 @@ import {
   setLockedForGVL,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import EditSystemFlow from "~/features/system/EditSystemFlow";
+import GVLNotice from "~/pages/GVLNotice";
 
 const INTEGRATION_TAB_INDEX = 3; // this needs to be updated if the order of the tabs changes
 
@@ -112,23 +113,7 @@ const ConfigureSystem: NextPage = () => {
         </Breadcrumb>
       </Box>
 
-      {lockedForGVL ? (
-        <Box mb="6" maxW="720px">
-          <EmptyTableState
-            title="This system is part of the TCF Global Vendor Listing"
-            description={
-              <Text>
-                Some form elements below will be disabled as they cannot be
-                edited if they are populated directly from the Global Vendor
-                List.{" "}
-                <Link href="/" color="complimentary.500">
-                  For more information on the Global Vendor List, click here.
-                </Link>
-              </Text>
-            }
-          />
-        </Box>
-      ) : null}
+      {lockedForGVL ? <GVLNotice /> : null}
       {!system && !isLoading && !isDictionaryLoading ? (
         <Text data-testid="system-not-found">
           Could not find a system with id {systemId}

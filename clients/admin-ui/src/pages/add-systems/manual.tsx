@@ -19,6 +19,7 @@ import EmptyTableState from "~/features/common/table/EmptyTableState";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import SystemFormTabs from "~/features/system/SystemFormTabs";
+import GVLNotice from "~/pages/GVLNotice";
 import { ConnectionSystemTypeMap } from "~/types/api";
 
 const DESCRIBE_SYSTEM_COPY =
@@ -74,23 +75,7 @@ const NewManualSystem: NextPage = () => {
           </Breadcrumb>
         </Box>
       </Box>
-      {lockedForGVL ? (
-        <Box mb="6" maxW="720px">
-          <EmptyTableState
-            title="This system is part of the TCF Global Vendor Listing"
-            description={
-              <Text>
-                Some form elements below will be disabled as they cannot be
-                edited if they are populated directly from the Global Vendor
-                List.{" "}
-                <Link href="/" color="complimentary.500">
-                  For more information on the Global Vendor List, click here.
-                </Link>
-              </Text>
-            }
-          />
-        </Box>
-      ) : null}
+      {lockedForGVL ? <GVLNotice /> : null}
       <Box w={{ base: "100%", md: "75%" }}>
         <Text fontSize="sm" mb={8}>
           {DESCRIBE_SYSTEM_COPY}
