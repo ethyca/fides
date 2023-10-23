@@ -109,13 +109,14 @@ export const useCustomFields = ({
   const customFieldValues = useMemo(() => {
     const values: CustomFieldValues = {};
     if (activeCustomFieldDefinition && definitionIdToCustomField) {
-      activeCustomFieldDefinition.forEach((value, key) => {
-        const customField = definitionIdToCustomField.get(value.id || "")
-        if (customField){
-          if (!!value.allow_list_id && value.field_type == "string[]") {
+      activeCustomFieldDefinition.forEach((value) => {
+        const customField = definitionIdToCustomField.get(value.id || "");
+        if (customField) {
+          if (!!value.allow_list_id && value.field_type === "string[]") {
             values[customField.custom_field_definition_id] = customField.value;
           } else {
-            values[customField.custom_field_definition_id] = customField.value.toString();
+            values[customField.custom_field_definition_id] =
+              customField.value.toString();
           }
         }
       });
@@ -202,6 +203,7 @@ export const useCustomFields = ({
       resourceFidesKey,
       sortedCustomFieldDefinitionIds,
       bulkUpdateCustomFieldsMutationTrigger,
+      resourceType,
     ]
   );
 
