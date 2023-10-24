@@ -104,10 +104,7 @@ export const FidesTableV2 = <T,>({
       </Thead>
       <Tbody>
         {rowActionBar}
-        {tableInstance.getRowModel().rows.map((row) => {
-          // @ts-ignore
-          const rowName = row.original.name;
-          return (
+        {tableInstance.getRowModel().rows.map((row) => (
             <Tr
               key={row.id}
               height="36px"
@@ -116,7 +113,7 @@ export const FidesTableV2 = <T,>({
                   ? { backgroundColor: "gray.50", cursor: "pointer" }
                   : undefined
               }
-              data-testid={`row-${rowName ?? row.id}`}
+              data-testid={`row-${row.id}`}
             >
               {row.getVisibleCells().map((cell) => (
                 <Td
@@ -148,8 +145,7 @@ export const FidesTableV2 = <T,>({
                 </Td>
               ))}
             </Tr>
-          );
-        })}
+          ))}
       </Tbody>
       {footer}
     </Table>
