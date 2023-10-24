@@ -1110,13 +1110,13 @@ describe("Consent banner", () => {
           [PRIVACY_NOTICE_KEY_1]: false,
           [PRIVACY_NOTICE_KEY_2]: true,
         });
-      cy.get("@FidesPreferenceToggled").should("not.have.been.called");
+      cy.get("@FidesUIChanged").should("not.have.been.called");
     });
 
     describe("when preferences are changed / saved", () => {
       it("emits another FidesUpdated event when reject all is clicked", () => {
         cy.contains("button", "Reject Test").should("be.visible").click();
-        cy.get("@FidesPreferenceToggled").should("not.have.been.called");
+        cy.get("@FidesUIChanged").should("not.have.been.called");
         cy.get("@FidesUpdated")
           .should("have.been.calledTwice")
           // First call should be from initialization, before the user rejects all
@@ -1136,7 +1136,7 @@ describe("Consent banner", () => {
 
       it("emits another FidesUpdated event when accept all is clicked", () => {
         cy.contains("button", "Accept Test").should("be.visible").click();
-        cy.get("@FidesPreferenceToggled").should("not.have.been.called");
+        cy.get("@FidesUIChanged").should("not.have.been.called");
         cy.get("@FidesUpdated")
           .should("have.been.calledTwice")
           // First call should be from initialization, before the user accepts all
@@ -1154,13 +1154,13 @@ describe("Consent banner", () => {
           });
       });
 
-      it("emits a FidesPreferenceToggled event when preferences are changed and a FidesUpdated event when preferences are saved", () => {
+      it("emits a FidesUIChanged event when preferences are changed and a FidesUpdated event when preferences are saved", () => {
         cy.contains("button", "Manage preferences")
           .should("be.visible")
           .click();
         cy.getByTestId("toggle-Test privacy notice").click();
         cy.getByTestId("consent-modal").contains("Save").click();
-        cy.get("@FidesPreferenceToggled").should("have.been.calledOnce");
+        cy.get("@FidesUIChanged").should("have.been.calledOnce");
         cy.get("@FidesUpdated")
           .should("have.been.calledTwice")
           // First call should be from initialization, before the user saved preferences

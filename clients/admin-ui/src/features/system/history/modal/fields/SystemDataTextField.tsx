@@ -30,7 +30,7 @@ const SystemDataTextField = ({
     const afterValue = _.get(selectedHistory?.after, props.name) || "";
 
     // Determine whether to highlight
-    setShouldHighlight(beforeValue !== afterValue);
+    setShouldHighlight(!_.isEqual(beforeValue, afterValue));
 
     const longestValue =
       beforeValue.length > afterValue.length ? beforeValue : afterValue;

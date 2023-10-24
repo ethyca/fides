@@ -177,6 +177,14 @@ def enable_tcf(config):
     config.consent.tcf_enabled = False
 
 
+@pytest.fixture(scope="function")
+def enable_ac(config):
+    assert config.test_mode
+    config.consent.ac_enabled = True
+    yield config
+    config.consent.ac_enabled = False
+
+
 @pytest.fixture
 def loguru_caplog(caplog):
     handler_id = logger.add(caplog.handler, format="{message}")
