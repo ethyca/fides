@@ -1006,7 +1006,7 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("be.checked");
       });
     });
-    it.only("can opt in to some and opt out of others", () => {
+    it("can opt in to some and opt out of others", () => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
