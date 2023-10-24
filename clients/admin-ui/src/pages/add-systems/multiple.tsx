@@ -25,7 +25,13 @@ const AddMultipleSystemsPage: NextPage = () => {
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
 
   return (
-    <FixedLayout isDefaultLayoutPadding title="Describe your system">
+    <FixedLayout
+      title="Describe your system"
+      mainProps={{
+        padding: "40px",
+        paddingRight: "48px",
+      }}
+    >
       <Box mb={4}>
         <Header />
         <Box>

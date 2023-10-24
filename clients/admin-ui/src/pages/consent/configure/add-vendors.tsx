@@ -21,7 +21,13 @@ const Header = () => (
 );
 
 const AddMultipleVendorsPage: NextPage = () => (
-  <FixedLayout isDefaultLayoutPadding title="Describe your vendor">
+  <FixedLayout
+    title="Describe your vendor"
+    mainProps={{
+      padding: "40px",
+      paddingRight: "48px",
+    }}
+  >
     <Box mb={4}>
       <Header />
       <Box>

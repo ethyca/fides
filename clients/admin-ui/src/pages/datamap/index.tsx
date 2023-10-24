@@ -16,7 +16,13 @@ const Home: NextPage = () => {
   );
 
   return (
-    <FixedLayout title="View Map">
+    <FixedLayout
+      title="View Map"
+      mainProps={{
+        paddingTop: "40px",
+        paddingLeft: "40px",
+      }}
+    >
       <DatamapTableContext.Provider value={datamapTableContextValue}>
         <DatamapGraphStore>
           <Datamap />
