@@ -51,6 +51,7 @@ export const FidesTableV2 = <T,>({
   onRowClick,
 }: Props<T>) => (
   <TableContainer
+    data-testid="fidesTable"
     overflowY="auto"
     borderBottomWidth="1px"
     borderBottomColor="gray.200"
@@ -102,7 +103,7 @@ export const FidesTableV2 = <T,>({
           </Tr>
         ))}
       </Thead>
-      <Tbody>
+      <Tbody data-testid="fidesTable-body">
         {rowActionBar}
         {tableInstance.getRowModel().rows.map((row) => (
           <Tr

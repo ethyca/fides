@@ -237,6 +237,7 @@ export const AddMultipleSystems = ({ redirectRoute, isSystem }: Props) => {
         >
           <Button
             onClick={onOpen}
+            data-testid="add-multiple-systems-btn"
             size="xs"
             variant="outline"
             disabled={!anyNewSelectedRows}
