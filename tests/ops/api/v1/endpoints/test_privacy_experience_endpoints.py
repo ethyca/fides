@@ -1199,8 +1199,10 @@ class TestExperienceMetaEndpoint:
         "privacy_experience_france_overlay",
         "enable_tcf",
         "privacy_experience_france_tcf_overlay",
+        "ac_system_with_privacy_declaration",
     )
     def test_tcf_enabled_get_experience_meta(self, url, api_client):
+        """TCF Enabled but not AC so no AC information is returned"""
         resp = api_client.get(
             url + "?region=fr",
         )
@@ -1209,11 +1211,93 @@ class TestExperienceMetaEndpoint:
         resp_json = resp.json()["items"][0]
         assert resp_json["component"] == ComponentType.tcf_overlay.value
         assert resp_json["region"] == "fr"
-        assert resp_json["meta"]["version_hash"] == "f2db7626ca0b"
+        assert resp_json["meta"]["version_hash"] == "dbde7265d5dd"
         assert resp_json["meta"]["accept_all_fides_string"] is not None
         assert resp_json["meta"]["accept_all_fides_mobile_data"] is not None
+
+        assert (
+            resp_json["meta"]["accept_all_fides_string"]
+            == resp_json["meta"]["accept_all_fides_mobile_data"]["IABTCF_TCString"]
+        )
+        assert (
+            resp_json["meta"]["accept_all_fides_mobile_data"]["IABTCF_AddtlConsent"]
+            is None
+        )
+        assert (
+            resp_json["meta"]["accept_all_fides_mobile_data"]["IABTCF_PurposeConsents"]
+            == "000000010000000000000000"
+        )
+        assert (
+            resp_json["meta"]["accept_all_fides_mobile_data"]["IABTCF_VendorConsents"]
+            == "000000000000000000000000000000000000000001"
+        )
         assert resp_json["meta"]["reject_all_fides_string"] is not None
         assert resp_json["meta"]["reject_all_fides_mobile_data"] is not None
+        assert (
+            resp_json["meta"]["reject_all_fides_mobile_data"]["IABTCF_AddtlConsent"]
+            is None
+        )
+        assert (
+            resp_json["meta"]["reject_all_fides_string"]
+            == resp_json["meta"]["reject_all_fides_mobile_data"]["IABTCF_TCString"]
+        )
+
+    @pytest.mark.usefixtures(
+        "tcf_system",
+        "privacy_experience_france_overlay",
+        "enable_tcf",
+        "enable_ac",
+        "privacy_experience_france_tcf_overlay",
+        "ac_system_with_privacy_declaration",
+    )
+    def test_tcf_and_ac_enabled_get_experience_meta(self, url, api_client):
+        """TCF Enabled and AC enabled
+        Purpose consents section is altered because an AC purpose is surfaced in addition to a GVL purpose.
+        Vendor consents section is the same because AC vendors don't show up in that section.
+        IABTCF_AddtlConsent is populated
+        """
+        resp = api_client.get(
+            url + "?region=fr",
+        )
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == 1
+        resp_json = resp.json()["items"][0]
+        assert resp_json["component"] == ComponentType.tcf_overlay.value
+        assert resp_json["region"] == "fr"
+        assert resp_json["meta"]["version_hash"] == "ac76b5d026b7"
+        assert resp_json["meta"]["accept_all_fides_string"] is not None
+        assert resp_json["meta"]["accept_all_fides_mobile_data"] is not None
+
+        assert (
+            resp_json["meta"]["accept_all_fides_string"]
+            == resp_json["meta"]["accept_all_fides_mobile_data"]["IABTCF_TCString"]
+            + ","
+            + "1~8"
+        )
+        assert (
+            resp_json["meta"]["accept_all_fides_mobile_data"]["IABTCF_AddtlConsent"]
+            == "1~8"
+        )
+        assert (
+            resp_json["meta"]["accept_all_fides_mobile_data"]["IABTCF_PurposeConsents"]
+            == "100000010000000000000000"
+        )
+        assert (
+            resp_json["meta"]["accept_all_fides_mobile_data"]["IABTCF_VendorConsents"]
+            == "000000000000000000000000000000000000000001"
+        )
+        assert resp_json["meta"]["reject_all_fides_string"] is not None
+        assert resp_json["meta"]["reject_all_fides_mobile_data"] is not None
+        assert (
+            resp_json["meta"]["reject_all_fides_mobile_data"]["IABTCF_AddtlConsent"]
+            == "1~"
+        )
+        assert (
+            resp_json["meta"]["reject_all_fides_string"]
+            == resp_json["meta"]["reject_all_fides_mobile_data"]["IABTCF_TCString"]
+            + ","
+            + "1~"
+        )
 
     @pytest.mark.usefixtures(
         "tcf_system",
