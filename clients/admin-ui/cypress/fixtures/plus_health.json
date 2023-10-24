@@ -10,5 +10,8 @@
     "enabled": true,
     "service_health": null,
     "service_error": null
+  },
+  "tcf": {
+    "enabled": true
   }
 }
