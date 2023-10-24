@@ -37,6 +37,7 @@ const ConsentModal = ({
         className="fides-modal-content"
       >
         <div class="fides-modal-header">
+          <div />
           <CloseButton ariaLabel="Close modal" onClick={closeButton.onClick} />
         </div>
         <div class="fides-modal-body">
