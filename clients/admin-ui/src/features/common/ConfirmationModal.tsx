@@ -68,7 +68,12 @@ const ConfirmationModal = ({
           <Button
             variant="outline"
             mr={3}
-            onClick={onCancel || onClose}
+            onClick={() => {
+              if (onCancel) {
+                onCancel();
+              }
+              onClose();
+            }}
             data-testid="cancel-btn"
             isDisabled={isLoading}
             {...cancelButtonThemingProps}
