@@ -83,10 +83,8 @@ from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, validate_start_and_end_filters
-from fides.api.util.tcf.ac_string import (
-    decode_ac_string_to_preferences,
-    split_fides_string,
-)
+from fides.api.util.tcf.ac_string import decode_ac_string_to_preferences
+from fides.api.util.tcf.fides_string import split_fides_string
 from fides.api.util.tcf.tc_mobile_data import convert_fides_str_to_mobile_data
 from fides.api.util.tcf.tc_string import decode_tc_string_to_preferences
 from fides.api.util.tcf.tcf_experience_contents import (

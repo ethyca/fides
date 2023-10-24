@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from fides.api.common_exceptions import DecodeFidesStringError
 from fides.api.models.privacy_notice import UserConsentPreference
@@ -29,18 +29,16 @@ def build_ac_vendor_consents(
 ) -> List[int]:
     """Build a list of integers representing AC vendors with opt-in consent
 
-    This is a prerequisite step for building an accept-all AC string powered by our datamap.
+    This is a prerequisite step for building an accept-all AC string powered by our datamap.  If
+    a reject-all string is being built, we just return an empty list here.
     """
-    if not tcf_contents.tcf_vendor_consents:
-        # AC Vendors are automatically added to the Vendor Consents section of the TCF Experience if present
-        return []
-
     if preference != UserConsentPreference.opt_in:
-        # The AC string only encodes opt-ins!
+        # The AC string only encodes opt-ins, so we exit early here.
         return []
 
     ac_vendors: List[int] = []
-    for vendor in tcf_contents.tcf_vendor_consents:
+    for vendor in tcf_contents.tcf_vendor_consents or []:
+        # AC Vendors will always be in the `tcf_vendor_consents` section of the TCF Experience
         try:
             ac_vendors.append(universal_vendor_id_to_ac_id(vendor.id))
         except ValueError:
@@ -55,38 +53,6 @@ def build_ac_string(ac_vendor_consents: List[int]) -> Optional[str]:
         + SEPARATOR_SYMBOL
         + ".".join([str(vendor_id) for vendor_id in sorted(ac_vendor_consents)])
     )
-
-
-def build_fides_string(tc_str: Optional[str], ac_str: Optional[str]) -> str:
-    """Concatenate a TC string and an AC string into a 'fides string' representation, to represent
-    both in a single string"""
-    if not tc_str:
-        raise DecodeFidesStringError("TC String is required for a complete signal")
-
-    if not ac_str:
-        return tc_str
-
-    return f"{tc_str}{FIDES_SEPARATOR}{ac_str}"
-
-
-def split_fides_string(fides_str: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
-    """Split a Fides String into separate TC Strings and AC Strings
-
-    Run some upfront validation here on the Fides String format as a whole, and the AC string section.
-    TC string section validation is more complex and happens elsewhere.
-    """
-    if not fides_str:
-        return None, None
-
-    split_str = fides_str.split(FIDES_SEPARATOR)
-    tc_str = split_str[0]
-    if not tc_str:
-        raise DecodeFidesStringError("TC String is required for a complete signal")
-
-    ac_str: Optional[str] = split_str[1] if len(split_str) > 1 else None
-
-    validate_ac_string_format(ac_str)
-    return tc_str, ac_str
 
 
 def validate_ac_string_format(ac_str: Optional[str]) -> None:

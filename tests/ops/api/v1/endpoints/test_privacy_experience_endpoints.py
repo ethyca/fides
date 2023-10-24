@@ -666,6 +666,7 @@ class TestGetTCFPrivacyExperiences:
         privacy_experience_france_overlay,
         privacy_notice_fr_provide_service_frontend_only,
     ):
+        """Regular overlay, not TCF overlay returned"""
         resp = api_client.get(
             url + "?region=fr&component=overlay&include_gvl=True&include_meta=True",
         )
@@ -701,7 +702,7 @@ class TestGetTCFPrivacyExperiences:
         "enable_tcf",
     )
     def test_tcf_enabled_but_no_relevant_systems(
-        self, db, api_client, url, privacy_experience_france_tcf_overlay
+        self, api_client, url, privacy_experience_france_tcf_overlay
     ):
         resp = api_client.get(
             url + "?region=fr&component=overlay&include_gvl=True&include_meta=True",
@@ -749,7 +750,6 @@ class TestGetTCFPrivacyExperiences:
     )
     def test_tcf_and_ac_enabled_with_overlapping_vendors(
         self,
-        db,
         api_client,
         url,
         privacy_experience_france_tcf_overlay,
@@ -944,6 +944,7 @@ class TestGetTCFPrivacyExperiences:
         "enable_tcf",
     )
     def test_meta_section_when_ac_disabled_with_only_ac_systems(self, api_client, url):
+        """AC vendors exist but are excluded from the Experience because AC mode is disabled"""
         resp = api_client.get(
             url + "?region=fr&component=overlay&include_gvl=False&include_meta=True",
         )
@@ -952,9 +953,6 @@ class TestGetTCFPrivacyExperiences:
         assert len(resp.json()["items"][0]["tcf_vendor_consents"]) == 0
 
         meta = resp.json()["items"][0]["meta"]
-        import pdb
-
-        pdb.set_trace()
 
         assert meta["accept_all_fides_string"] is None
         assert meta["accept_all_fides_mobile_data"] is None

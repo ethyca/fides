@@ -8,11 +8,10 @@ from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_experience import ExperienceMeta
 from fides.api.schemas.tcf import TCMobileData
-from fides.api.util.tcf.ac_string import build_fides_string
+from fides.api.util.tcf.fides_string import build_fides_string
 from fides.api.util.tcf.tc_mobile_data import build_tc_data_for_mobile
 from fides.api.util.tcf.tc_model import TCModel, convert_tcf_contents_to_tc_model
 from fides.api.util.tcf.tcf_experience_contents import TCFExperienceContents
-from fides.config import CONFIG
 
 
 class TCFVersionHash(FidesSchema):
@@ -69,8 +68,6 @@ def build_tcf_version_hash(tcf_contents: TCFExperienceContents) -> str:
 
 def build_experience_tcf_meta(tcf_contents: TCFExperienceContents) -> Dict:
     """Build TCF Meta information to supplement a TCF Privacy Experience at runtime"""
-    if not CONFIG.consent.tcf_enabled:
-        return ExperienceMeta().dict()
 
     accept_all_tc_model: TCModel = convert_tcf_contents_to_tc_model(
         tcf_contents, UserConsentPreference.opt_in

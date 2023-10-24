@@ -250,7 +250,7 @@ def get_matching_privacy_declarations(db: Session) -> Query:
         )  # Order to get repeatable results when collapsing information
     )
     if not CONFIG.consent.ac_enabled:
-        # If AC Mode is not enabled, exclude all Privacy Declarations
+        # If AC Mode is not enabled, exclude all Privacy Declarations tied to an AC-based system
         matching_privacy_declarations = matching_privacy_declarations.filter(
             NOT_AC_SYSTEM_FILTER
         )

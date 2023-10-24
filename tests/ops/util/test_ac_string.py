@@ -6,9 +6,7 @@ from fides.api.schemas.tcf import TCFVendorConsentRecord, TCFVendorSave
 from fides.api.util.tcf.ac_string import (
     build_ac_string,
     build_ac_vendor_consents,
-    build_fides_string,
     decode_ac_string_to_preferences,
-    split_fides_string,
     universal_vendor_id_to_ac_id,
 )
 from fides.api.util.tcf.tcf_experience_contents import TCFExperienceContents
@@ -25,86 +23,6 @@ def test_universal_vendor_id_to_ac_id():
 
     with pytest.raises(ValueError):
         universal_vendor_id_to_ac_id("gacp.gacp")
-
-
-def test_build_fides_string():
-    tc_string = "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
-    ac_string = "1~1.35.41.101"
-
-    # TC string but no AC string
-    assert (
-        build_fides_string(tc_string, "")
-        == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
-    )
-
-    # Cannot build TC string with AC string alone
-    with pytest.raises(DecodeFidesStringError):
-        assert build_fides_string("", ac_string) == ",1~1.35.41.101"
-
-    # Both TC String and AC String
-    assert (
-        build_fides_string(tc_string, ac_string)
-        == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA,1~1.35.41.101"
-    )
-
-    # Neither TC String or AC String
-    with pytest.raises(DecodeFidesStringError):
-        build_fides_string("", "")
-
-    with pytest.raises(DecodeFidesStringError):
-        assert build_fides_string(None, None)
-
-
-def test_split_fides_string():
-    # No fides_string, so tc str and ac str are both None
-    tc_str, ac_str = split_fides_string(None)
-    assert tc_str is None
-    assert ac_str is None
-
-    # Only a TC string was supplied
-    tc_str, ac_str = split_fides_string(
-        "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
-    )
-    assert tc_str == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
-    assert ac_str is None
-
-    # Both TC and AC string were supplied
-    tc_str, ac_str = split_fides_string(
-        "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA,1~100.1000"
-    )
-    assert tc_str == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
-    assert ac_str == "1~100.1000"
-
-    # Only an AC string was supplied - invalid, because core TC string needed for complete signal
-    with pytest.raises(DecodeFidesStringError):
-        split_fides_string(",1~100.1000")
-
-    # Three sections supplied, so we just take the first two.
-    tc_str, ac_str = split_fides_string(
-        "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA,1~100.1000,another_section"
-    )
-    assert tc_str == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
-    assert ac_str == "1~100.1000"
-
-    # AC string with everything opted-out is supplied
-    tc_str, ac_str = split_fides_string(
-        "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA,1~"
-    )
-    assert tc_str == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
-    assert ac_str == "1~"
-
-    # Empty AC String supplied
-    tc_str, ac_str = split_fides_string(
-        "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA,"
-    )
-    assert tc_str == "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA"
-    assert ac_str == ""
-
-    # Bad AC format
-    with pytest.raises(DecodeFidesStringError):
-        split_fides_string(
-            "CPz1hddPz1hddDxAAAENCZCgADgAAAAAAAAAAEBcABioAAA.YAAAAAAAAAA,100.1000"
-        )
 
 
 class TestBuildACString:
@@ -256,4 +174,26 @@ class TestDecodeACStringToPreferences:
         assert prefs.vendor_consent_preferences == [
             TCFVendorSave(id="gacp.100", preference=UserConsentPreference.opt_in),
             TCFVendorSave(id="gacp.250", preference=UserConsentPreference.opt_out),
+        ]
+
+    def test_multiple_ac_vendors_in_the_string(self):
+        prefs = decode_ac_string_to_preferences(
+            "1~100.250.300.400",
+            TCFExperienceContents(
+                tcf_vendor_consents=[
+                    TCFVendorConsentRecord(id="gacp.100"),
+                    TCFVendorConsentRecord(id="gacp.250"),
+                    TCFVendorConsentRecord(id="gacp.300"),
+                    TCFVendorConsentRecord(id="gacp.500"),
+                ],
+                tcf_vendor_legitimate_interests=[  # No bearing on preferences saved
+                    TCFVendorConsentRecord(id="gacp.1000"),
+                ],
+            ),
+        )
+        assert prefs.vendor_consent_preferences == [
+            TCFVendorSave(id="gacp.100", preference=UserConsentPreference.opt_in),
+            TCFVendorSave(id="gacp.250", preference=UserConsentPreference.opt_in),
+            TCFVendorSave(id="gacp.300", preference=UserConsentPreference.opt_in),
+            TCFVendorSave(id="gacp.500", preference=UserConsentPreference.opt_out),
         ]
