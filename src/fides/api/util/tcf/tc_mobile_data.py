@@ -3,8 +3,10 @@ from typing import Dict, List, Optional
 
 from iab_tcf import ConsentV2, decode_v2  # type: ignore[import]
 
-from fides.api.common_exceptions import DecodeTCStringError
+from fides.api.common_exceptions import DecodeFidesStringError
 from fides.api.schemas.tcf import TCMobileData
+from fides.api.util.tcf.ac_string import build_ac_string
+from fides.api.util.tcf.fides_string import split_fides_string
 from fides.api.util.tcf.tc_model import TCModel
 from fides.api.util.tcf.tc_string import (
     PURPOSE_CONSENTS_BITS,
@@ -16,10 +18,15 @@ from fides.api.util.tcf.tc_string import (
     build_tc_string,
     get_bits_for_section,
 )
+from fides.config import CONFIG
 
 
 def build_tc_data_for_mobile(tc_model: TCModel) -> TCMobileData:
-    """Build TC Data for Mobile App"""
+    """Build TC Data for Mobile App
+
+    The use case is building tc mobile data from the datamap directly, such as supplementing the meta
+    section when building developer-friendly privacy experiences.
+    """
 
     def _build_binary_string(name: str, num_bits: int) -> str:
         """Internal helper to build a bit string of 0's and 1's to represent list data
@@ -59,6 +66,9 @@ def build_tc_data_for_mobile(tc_model: TCModel) -> TCMobileData:
         IABTCF_SpecialFeaturesOptIns=_build_binary_string(
             "special_feature_optins", SPECIAL_FEATURE_BITS
         ),
+        IABTCF_AddtlConsent=build_ac_string(tc_model.ac_vendor_consents)
+        if CONFIG.consent.ac_enabled
+        else None,
     )
 
 
@@ -67,15 +77,23 @@ def _integer_dict_to_list(int_dict: Dict[int, bool]) -> List[int]:
     return [identifier for identifier, consented in int_dict.items() if consented]
 
 
-def convert_tc_string_to_mobile_data(tc_str: Optional[str]) -> Optional[TCMobileData]:
-    """Helper to take a TC String if supplied and decode it into a TCMobileData format"""
-    if not tc_str:
+def convert_fides_str_to_mobile_data(
+    fides_str: Optional[str],
+) -> Optional[TCMobileData]:
+    """Helper to take a Fides String if supplied and decode it into a TCMobileData format
+
+    The use case is to return mobile data from a fides_string directly, such as building the response
+    after saving privacy preferences from a fides_string.
+    """
+    if not fides_str:
         return None
+
+    tc_str, ac_str = split_fides_string(fides_str)
 
     try:
         decoded: ConsentV2 = decode_v2(tc_str)
     except binascii.Error:
-        raise DecodeTCStringError("Invalid base64-encoded string")
+        raise DecodeFidesStringError("Invalid base64-encoded string")
 
     def _build_binary_string(
         name: str, num_bits: int, override: Optional[List[int]] = None
@@ -133,8 +151,9 @@ def convert_tc_string_to_mobile_data(tc_str: Optional[str]) -> Optional[TCMobile
                 SPECIAL_FEATURE_BITS,
                 _integer_dict_to_list(decoded.special_features_optin),
             ),
+            IABTCF_AddtlConsent=ac_str,
         )
     except AttributeError:
-        raise DecodeTCStringError("Missing expected section(s) in TC String")
+        raise DecodeFidesStringError("Missing expected section(s) in TC String")
     except Exception as exc:
-        raise DecodeTCStringError(f"Unexpected decode error encountered: {exc}")
+        raise DecodeFidesStringError(f"Unexpected decode error encountered: {exc}")

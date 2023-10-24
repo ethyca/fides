@@ -1603,12 +1603,55 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
             tcf_value=system_with_no_uses.id,
         ) == [system_with_no_uses.fides_key]
 
+    @pytest.mark.usefixtures(
+        "ac_system_with_privacy_declaration",
+        "ac_system_with_invalid_li_declaration",
+        "ac_system_with_invalid_vi_declaration",
+        "enable_ac",
+    )
     def test_determine_relevant_systems_for_ac_system_under_vendor_consent(
         self, db, ac_system_without_privacy_declaration
     ):
         assert PrivacyPreferenceHistory.determine_relevant_systems(
             db, tcf_field=TCFComponentType.vendor_consent.value, tcf_value="gacp.100"
         ) == [ac_system_without_privacy_declaration.fides_key]
+
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration", "enable_ac")
+    def test_determine_relevant_systems_for_ac_system_under_vendor_legitimate_interests(
+        self, db
+    ):
+        """Contrived - attempting to save consent for an AC vendor with legitimate interests legal basis -"""
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db,
+                tcf_field=TCFComponentType.vendor_legitimate_interests.value,
+                tcf_value="gacp.100",
+            )
+            == []
+        )
+
+    @pytest.mark.usefixtures(
+        "ac_system_with_privacy_declaration",
+        "ac_system_with_invalid_li_declaration",
+        "ac_system_with_invalid_vi_declaration",
+        "ac_system_without_privacy_declaration",
+        "enable_ac",
+    )
+    def test_determine_relevant_systems_for_ac_system_purpose_legitimate_interests(
+        self, db
+    ):
+        """Saving preferences for purpose 8 with a legitimate interests legal basis.  None of these
+        AC systems should show up as "relevant systems", even if they have been mistakenly defined to have
+        that purpose with this legal basis
+        """
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db,
+                tcf_field=TCFComponentType.purpose_legitimate_interests.value,
+                tcf_value=8,
+            )
+            == []
+        )
 
 
 class TestCurrentPrivacyPreference:
