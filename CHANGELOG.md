@@ -33,6 +33,7 @@ The types of changes are:
 ### Changed
 - Derive cookie storage info, privacy policy and legitimate interest disclosure URLs, and data retention data from the data map instead of directly from gvl.json [#4286](https://github.com/ethyca/fides/pull/4286)
 - Updated TCF Version for backend consent reporting [#4305](https://github.com/ethyca/fides/pull/4305)
+- Update Version Hash Contents [#4313](https://github.com/ethyca/fides/pull/4313)
 
 ## [2.22.1](https://github.com/ethyca/fides/compare/2.22.0...2.22.1)
 

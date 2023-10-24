@@ -824,7 +824,7 @@ class TestGetTCFPrivacyExperiences:
         assert resp.json()["items"][0]["tcf_system_legitimate_interests"] == []
         assert resp.json()["items"][0]["gvl"]["gvlSpecificationVersion"] == 3
         meta = resp.json()["items"][0]["meta"]
-        assert meta["version_hash"] == "f2db7626ca0b"
+        assert meta["version_hash"] == "dbde7265d5dd"
         assert meta["accept_all_fides_string"]
         assert meta["accept_all_fides_string"].endswith(",1~")
         assert meta["accept_all_fides_mobile_data"]
