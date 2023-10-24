@@ -4,6 +4,7 @@ import { ExperienceConfig } from "../lib/consent-types";
 import CloseButton from "./CloseButton";
 import { GpcBadge } from "./GpcBadge";
 import ExperienceDescription from "./ExperienceDescription";
+import { useState, useEffect } from "preact/hooks";
 
 interface BannerProps {
   experience: ExperienceConfig;
@@ -15,7 +16,7 @@ interface BannerProps {
    * */
   children?: ComponentChildren;
   onVendorPageClick?: () => void;
-  buttonGroup: VNode;
+  buttonGroup: (isMobile: boolean) => VNode;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
@@ -26,6 +27,21 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   onVendorPageClick,
   buttonGroup,
 }) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   const showGpcBadge = getConsentContext().globalPrivacyControl;
   return (
     <div
@@ -66,8 +82,9 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
               </div>
             </div>
             {children}
-            {buttonGroup}
+            {!isMobile && buttonGroup(isMobile)}
           </div>
+          {isMobile && buttonGroup(isMobile)}
         </div>
       </div>
     </div>

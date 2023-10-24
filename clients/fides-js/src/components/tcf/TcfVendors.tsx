@@ -180,6 +180,11 @@ const StorageDisclosure = ({ vendor }: { vendor: Vendor }) => {
     disclosure = `${disclosure} This vendor also uses other methods like "local storage" to store and access information on your device.`;
   }
 
+  // Return null if the disclosure string is empty
+  if (!disclosure) {
+    return null;
+  }
+
   return <p>{disclosure}</p>;
 };
 
@@ -248,16 +253,20 @@ const TcfVendors = ({
           return (
             <div>
               {gvlVendor ? <StorageDisclosure vendor={gvlVendor} /> : null}
-              <div style={{ marginBottom: "1.1em" }}>
-                {url?.privacy ? (
-                  <ExternalLink href={url.privacy}>Privacy policy</ExternalLink>
-                ) : null}
-                {url?.legIntClaim ? (
-                  <ExternalLink href={url.legIntClaim}>
-                    Legitimate interest disclosure
-                  </ExternalLink>
-                ) : null}
-              </div>
+              {(url?.privacy || url?.legIntClaim) && (
+                <div style={{ marginBottom: "1.1em" }}>
+                  {url?.privacy && (
+                    <ExternalLink href={url.privacy}>
+                      Privacy policy
+                    </ExternalLink>
+                  )}
+                  {url?.legIntClaim && (
+                    <ExternalLink href={url.legIntClaim}>
+                      Legitimate interest disclosure
+                    </ExternalLink>
+                  )}
+                </div>
+              )}
               <PurposeVendorDetails
                 purposes={[
                   ...(vendor.purpose_consents || []),

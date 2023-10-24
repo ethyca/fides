@@ -1,4 +1,4 @@
-import { h, FunctionComponent } from "preact";
+import { h, FunctionComponent, Fragment } from "preact";
 import { useState, useCallback, useMemo } from "preact/hooks";
 import {
   ConsentMechanism,
@@ -114,25 +114,28 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             bannerIsOpen={isOpen}
             onClose={onClose}
             experience={experienceConfig}
-            buttonGroup={
-              <NoticeConsentButtons
-                experience={experience}
-                onManagePreferencesClick={onManagePreferencesClick}
-                enabledKeys={draftEnabledNoticeKeys}
-                onSave={(keys) => {
-                  handleUpdatePreferences(keys);
-                  onSave();
-                }}
-                isAcknowledge={isAllNoticeOnly}
-                middleButton={
-                  <PrivacyPolicyLink experience={experienceConfig} />
-                }
-              />
-            }
+            buttonGroup={(isMobile) => {
+              return (
+                <NoticeConsentButtons
+                  experience={experience}
+                  onManagePreferencesClick={onManagePreferencesClick}
+                  enabledKeys={draftEnabledNoticeKeys}
+                  onSave={(keys) => {
+                    handleUpdatePreferences(keys);
+                    onSave();
+                  }}
+                  isAcknowledge={isAllNoticeOnly}
+                  middleButton={
+                    <PrivacyPolicyLink experience={experienceConfig} />
+                  }
+                  isMobile={isMobile}
+                />
+              );
+            }}
           />
         ) : null
       }
-      renderModalContent={({ onClose }) => (
+      renderModalContent={() => (
         <div>
           <div className="fides-modal-notices">
             <NoticeToggles
@@ -141,7 +144,11 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               onChange={setDraftEnabledNoticeKeys}
             />
           </div>
-          <div className="fides-modal-footer">
+        </div>
+      )}
+      renderModalFooter={({ onClose, isMobile }) => {
+        return (
+          <Fragment>
             <NoticeConsentButtons
               experience={experience}
               enabledKeys={draftEnabledNoticeKeys}
@@ -151,11 +158,12 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               }}
               isInModal
               isAcknowledge={isAllNoticeOnly}
+              isMobile={isMobile}
             />
             <PrivacyPolicyLink experience={experience.experience_config} />
-          </div>
-        </div>
-      )}
+          </Fragment>
+        );
+      }}
     />
   );
 };

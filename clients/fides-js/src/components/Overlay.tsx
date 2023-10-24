@@ -21,9 +21,9 @@ interface RenderBannerProps {
   onSave: () => void;
   onManagePreferencesClick: () => void;
 }
-
-interface RenderModalContent {
+interface RenderModalFooter {
   onClose: () => void;
+  isMobile: boolean;
 }
 
 interface Props {
@@ -31,7 +31,8 @@ interface Props {
   experience: PrivacyExperience;
   cookie: FidesCookie;
   renderBanner: (props: RenderBannerProps) => VNode | null;
-  renderModalContent: (props: RenderModalContent) => VNode;
+  renderModalContent: () => VNode;
+  renderModalFooter: (props: RenderModalFooter) => VNode;
   onVendorPageClick?: () => void;
 }
 
@@ -41,6 +42,7 @@ const Overlay: FunctionComponent<Props> = ({
   cookie,
   renderBanner,
   renderModalContent,
+  renderModalFooter,
   onVendorPageClick,
 }) => {
   const delayBannerMilliseconds = 100;
@@ -153,8 +155,14 @@ const Overlay: FunctionComponent<Props> = ({
         attributes={attributes}
         experience={experience.experience_config}
         onVendorPageClick={onVendorPageClick}
+        renderModalFooter={() => {
+          return renderModalFooter({
+            onClose: handleCloseModal,
+            isMobile: false,
+          });
+        }}
       >
-        {renderModalContent({ onClose: handleCloseModal })}
+        {renderModalContent()}
       </ConsentModal>
     </div>
   );

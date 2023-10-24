@@ -16,6 +16,7 @@ export const ConsentButtons = ({
   onAcceptAll,
   onRejectAll,
   children,
+  isMobile,
 }: {
   experienceConfig: ExperienceConfig;
   onManagePreferencesClick?: () => void;
@@ -26,12 +27,13 @@ export const ConsentButtons = ({
   onRejectAll: () => void;
   /** Added as siblings to the button group after the "accept/reject" buttons */
   children?: ComponentChildren;
+  isMobile: boolean;
 }) => (
   <div id="fides-button-group">
     {onManagePreferencesClick ? (
       <div style={{ display: "flex" }}>
         <Button
-          buttonType={ButtonType.TERTIARY}
+          buttonType={isMobile ? ButtonType.SECONDARY : ButtonType.TERTIARY}
           label={experienceConfig.privacy_preferences_link_label}
           onClick={onManagePreferencesClick}
         />
@@ -46,13 +48,13 @@ export const ConsentButtons = ({
       {firstButton || null}
       <Button
         buttonType={ButtonType.PRIMARY}
-        label={experienceConfig.reject_button_label}
-        onClick={onRejectAll}
+        label={experienceConfig.accept_button_label}
+        onClick={onAcceptAll}
       />
       <Button
         buttonType={ButtonType.PRIMARY}
-        label={experienceConfig.accept_button_label}
-        onClick={onAcceptAll}
+        label={experienceConfig.reject_button_label}
+        onClick={onRejectAll}
       />
     </div>
     {children}
@@ -70,6 +72,7 @@ interface NoticeConsentButtonProps {
   isInModal?: boolean;
   children?: ComponentChildren;
   middleButton?: VNode;
+  isMobile: boolean;
 }
 
 export const NoticeConsentButtons = ({
@@ -81,6 +84,7 @@ export const NoticeConsentButtons = ({
   isAcknowledge,
   children,
   middleButton,
+  isMobile,
 }: NoticeConsentButtonProps) => {
   if (!experience.experience_config || !experience.privacy_notices) {
     return null;
@@ -135,6 +139,7 @@ export const NoticeConsentButtons = ({
         ) : undefined
       }
       middleButton={middleButton}
+      isMobile={isMobile}
     >
       {children}
     </ConsentButtons>
