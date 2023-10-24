@@ -25,7 +25,7 @@ from sqlalchemy import (
     cast,
     type_coerce,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, BYTEA
+from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, BYTEA
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
@@ -397,7 +397,7 @@ class System(Base, FidesBase):
     dpo = Column(String)
     joint_controller_info = Column(String)
     data_security_practices = Column(String)
-    cookie_max_age_seconds = Column(Integer)
+    cookie_max_age_seconds = Column(BIGINT)
     uses_cookies = Column(BOOLEAN(), default=False, server_default="f", nullable=False)
     cookie_refresh = Column(
         BOOLEAN(), default=False, server_default="f", nullable=False
