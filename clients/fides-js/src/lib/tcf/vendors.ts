@@ -7,14 +7,58 @@ import {
   VendorRecord,
 } from "./types";
 
-export const vendorIsGvl = (
-  vendor: Pick<TCFVendorRelationships, "id">,
+enum VendorSources {
+  GVL = "gvl",
+  AC = "gacp",
+}
+
+/**
+ * Given a vendor id such as `gvl.2`, return {source: "gvl", id: "2"};
+ */
+export const decodeVendorId = (vendorId: TCFVendorRelationships["id"]) => {
+  const split = vendorId.split(".");
+  if (split.length === 1) {
+    return { source: undefined, id: split[0] };
+  }
+  return { source: split[0], id: split[1] };
+};
+
+/**
+ * Returns the associated GVL entry given a vendor ID. If the id is not found,
+ * returns `undefined`.
+ *
+ * @example If an id of `gvl.2` is passed in, return GVL Vendor #2
+ * @example If an id of `ac.2` is passed in, return undefined
+ * @example If an id of `2` is passed in, return GVL Vendor #2 (for backwards compatibility)
+ */
+export const vendorGvlEntry = (
+  vendorId: TCFVendorRelationships["id"],
   gvl: GVLJson | undefined
 ) => {
   if (!gvl) {
     return undefined;
   }
-  return gvl.vendors[vendor.id];
+  const { source, id } = decodeVendorId(vendorId);
+  // For backwards compatibility, we also allow an undefined source but we should
+  // remove this once the backend is fully using its new vendor ID scheme.
+  if (source === VendorSources.GVL || source === undefined) {
+    return gvl.vendors[id];
+  }
+  return undefined;
+};
+
+export const vendorIsAc = (vendorId: TCFVendorRelationships["id"]) =>
+  decodeVendorId(vendorId).source === VendorSources.AC;
+
+export const uniqueGvlVendorIds = (experience: PrivacyExperience): number[] => {
+  const { tcf_vendor_relationships: vendors = [] } = experience;
+
+  // Filter to just i.e. [gvl.2, gvl.4]
+  const gvlIds = vendors
+    .map((v) => v.id)
+    .filter((uid) => vendorGvlEntry(uid, experience.gvl));
+  // Return [2,4] as numbers
+  return gvlIds.map((uid) => +decodeVendorId(uid).id);
 };
 
 const transformVendorDataToVendorRecords = ({
@@ -29,15 +73,10 @@ const transformVendorDataToVendorRecords = ({
   isFidesSystem: boolean;
 }) => {
   const records: VendorRecord[] = [];
-  const uniqueVendorIds = Array.from(
-    new Set([...consents.map((c) => c.id), ...legints.map((l) => l.id)])
-  );
-  uniqueVendorIds.forEach((id) => {
-    const vendorConsent = consents.find((v) => v.id === id);
-    const vendorLegint = legints.find((v) => v.id === id);
-    const relationship = relationships.find((r) => r.id === id);
+  relationships.forEach((relationship) => {
+    const vendorConsent = consents.find((v) => v.id === relationship.id);
+    const vendorLegint = legints.find((v) => v.id === relationship.id);
     const record: VendorRecord = {
-      id,
       ...relationship,
       ...vendorConsent,
       ...vendorLegint,

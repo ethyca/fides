@@ -137,8 +137,10 @@
 
     <style>
       body {
-        max-width: 800px;
         margin: 16px;
+        height: 100vh;
+        overflow: scroll;
+        overflow-x: hidden;
       }
       pre {
         background-color: #eee;
@@ -156,6 +158,8 @@
         choices can be accessed by pages that live outside of the Privacy
         Center.
       </p>
+
+      <div id="fides-embed-container"></div>
 
       <h2>Was the fides global defined?</h2>
       <pre id="has-fides"></pre>

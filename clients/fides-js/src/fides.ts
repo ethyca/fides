@@ -53,7 +53,12 @@ import {
   buildCookieConsentForExperiences,
   isNewFidesCookie,
 } from "./lib/cookie";
-import { FidesConfig, PrivacyExperience } from "./lib/consent-types";
+import {
+  FidesConfig,
+  FidesOptionOverrides,
+  OverrideOptions,
+  PrivacyExperience,
+} from "./lib/consent-types";
 
 import { dispatchFidesEvent } from "./lib/events";
 
@@ -61,6 +66,7 @@ import {
   initialize,
   getInitialCookie,
   getInitialFides,
+  getOverrideFidesOptions,
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 
@@ -70,6 +76,10 @@ import { getConsentContext } from "./lib/consent-context";
 declare global {
   interface Window {
     Fides: Fides;
+    config: {
+      // DEFER (PROD-1243): support a configurable "custom options" path
+      tc_info: OverrideOptions;
+    };
   }
 }
 
@@ -95,6 +105,10 @@ const updateCookie = async (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
+  const overrideOptions: Partial<FidesOptionOverrides> =
+    getOverrideFidesOptions();
+  // eslint-disable-next-line no-param-reassign
+  config.options = { ...config.options, ...overrideOptions };
   const cookie = getInitialCookie(config);
   const initialFides = getInitialFides({ ...config, cookie });
   if (initialFides) {
@@ -105,8 +119,8 @@ const init = async (config: FidesConfig) => {
   const experience = initialFides?.experience ?? config.experience;
   const updatedFides = await initialize({
     ...config,
-    experience,
     cookie,
+    experience,
     renderOverlay,
     updateCookie,
   });
@@ -139,6 +153,10 @@ _Fides = {
     fidesApiUrl: "",
     serverSideFidesApiUrl: "",
     tcfEnabled: false,
+    fidesEmbed: false,
+    fidesDisableSaveApi: false,
+    fidesString: null,
+    apiOptions: null,
   },
   fides_meta: {},
   identity: {},

@@ -94,8 +94,8 @@ class ConsentOptionCreate(FidesSchema):
     served_notice_history_id: Optional[str]
 
 
-class TCStringFidesPreferences(FidesSchema):
-    """TCF Preferences that can be unpacked from a TC string"""
+class FidesStringFidesPreferences(FidesSchema):
+    """TCF Preferences that can be unpacked from TC and AC Strings"""
 
     purpose_consent_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
     purpose_legitimate_interests_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
@@ -104,7 +104,7 @@ class TCStringFidesPreferences(FidesSchema):
     special_feature_preferences: conlist(TCFSpecialFeatureSave, max_items=200) = []  # type: ignore
 
 
-class PrivacyPreferencesRequest(TCStringFidesPreferences):
+class PrivacyPreferencesRequest(FidesStringFidesPreferences):
     """Request body for creating PrivacyPreferences.
 
 
@@ -115,8 +115,8 @@ class PrivacyPreferencesRequest(TCStringFidesPreferences):
 
     browser_identity: Identity
     code: Optional[SafeStr]
-    tc_string: Optional[str] = Field(
-        description="If supplied, TC string is decoded and preferences saved for purpose_consent, "
+    fides_string: Optional[str] = Field(
+        description="If supplied, TC strings and AC strings are decoded and preferences saved for purpose_consent, "
         "purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features"
     )
     preferences: conlist(ConsentOptionCreate, max_items=200) = []  # type: ignore
@@ -151,11 +151,11 @@ class PrivacyPreferencesRequest(TCStringFidesPreferences):
                     f"Duplicate preferences saved against TCF component: '{field_name}'"
                 )
 
-        if values.get("tc_string"):
-            for field in TCStringFidesPreferences.__fields__:
+        if values.get("fides_string"):
+            for field in FidesStringFidesPreferences.__fields__:
                 if values.get(field):
                     raise ValueError(
-                        f"Cannot supply value for '{field}' and 'tc_string' simultaneously when saving privacy preferences."
+                        f"Cannot supply value for '{field}' and 'fides_string' simultaneously when saving privacy preferences."
                     )
 
         return values
@@ -334,7 +334,7 @@ class SavePrivacyPreferencesResponse(FidesSchema):
     special_feature_preferences: List[CurrentPrivacyPreferenceSchema] = []
     system_consent_preferences: List[CurrentPrivacyPreferenceSchema] = []
     system_legitimate_interests_preferences: List[CurrentPrivacyPreferenceSchema] = []
-    tc_mobile_data: Optional[TCMobileData] = None
+    fides_mobile_data: Optional[TCMobileData] = None
 
 
 class CurrentPrivacyPreferenceReportingSchema(TCFAttributes):

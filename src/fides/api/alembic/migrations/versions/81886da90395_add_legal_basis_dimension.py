@@ -4,7 +4,7 @@ We've previously been saving preferences against purposes, vendors, and systems,
 need to instead save preferences against a purpose/vendor AND a legal basis.
 
 Revision ID: 81886da90395
-Revises: 4cb3b5af4160
+Revises: 9b98aba5bba8
 Create Date: 2023-09-30 17:39:46.251444
 
 """

@@ -37,7 +37,7 @@ import {
   ConsentMethod,
   PrivacyExperience,
 } from "../../lib/consent-types";
-import { generateTcString } from "../../lib/tcf";
+import { generateFidesString } from "../../lib/tcf";
 import {
   FidesCookie,
   transformTcfPreferencesToCookieKeys,
@@ -46,6 +46,7 @@ import InitialLayer from "./InitialLayer";
 import TcfTabs from "./TcfTabs";
 import Button from "../Button";
 import VendorInfoBanner from "./VendorInfoBanner";
+import { dispatchFidesEvent } from "../../lib/events";
 
 const resolveConsentValueFromTcfModel = (
   model:
@@ -186,13 +187,13 @@ const updateCookie = async (
   enabledIds: EnabledIds,
   experience: PrivacyExperience
 ): Promise<FidesCookie> => {
-  const tcString = await generateTcString({
+  const tcString = await generateFidesString({
     tcStringPreferences: enabledIds,
     experience,
   });
   return {
     ...oldCookie,
-    tc_string: tcString,
+    fides_string: tcString,
     tcf_consent: transformTcfPreferencesToCookieKeys(tcf),
   };
 };
@@ -240,12 +241,11 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       const tcf = createTcfSavePayload({ experience, enabledIds });
       updateConsentPreferences({
         consentPreferencesToSave: [],
-        experienceId: experience.id,
-        fidesApiUrl: options.fidesApiUrl,
+        experience,
         consentMethod: ConsentMethod.button,
+        options,
         userLocationString: fidesRegionString,
         cookie,
-        debug: options.debug,
         servedNotices: null, // TODO: served notices
         tcf,
         updateCookie: (oldCookie) =>
@@ -315,7 +315,10 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             <TcfTabs
               experience={experience}
               enabledIds={draftIds}
-              onChange={setDraftIds}
+              onChange={(updatedIds) => {
+                setDraftIds(updatedIds);
+                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+              }}
               activeTabIndex={activeTabIndex}
               onTabChange={setActiveTabIndex}
             />

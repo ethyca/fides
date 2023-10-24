@@ -10,14 +10,14 @@ import {
   Tr,
 } from "@fidesui/react";
 
-import { DataUse } from "../../../types/api";
-import { DictDataUse } from "../../plus/types";
+import { DataUse } from "~/types/api";
+import { DataUseDeclaration } from "~/types/dictionary-api";
 
 interface Props {
-  onChange: (dataUses: DictDataUse[]) => void;
+  onChange: (dataUses: DataUseDeclaration[]) => void;
   allDataUses: DataUse[];
-  dictDataUses: DictDataUse[];
-  checked: DictDataUse[];
+  dictDataUses: DataUseDeclaration[];
+  checked: DataUseDeclaration[];
 }
 
 const DataUseCheckboxTable = ({
@@ -34,7 +34,7 @@ const DataUseCheckboxTable = ({
     }
   };
 
-  const onCheck = (dataUse: DictDataUse) => {
+  const onCheck = (dataUse: DataUseDeclaration) => {
     const exists =
       checked.filter((du) => du.data_use === dataUse.data_use).length > 0;
     if (!exists) {
@@ -48,7 +48,7 @@ const DataUseCheckboxTable = ({
     }
   };
 
-  const declarationTitle = (declaration: DictDataUse) => {
+  const declarationTitle = (declaration: DataUseDeclaration) => {
     const dataUse = allDataUses.filter(
       (du) => du.fides_key === declaration.data_use
     )[0];

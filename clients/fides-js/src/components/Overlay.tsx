@@ -57,6 +57,7 @@ const Overlay: FunctionComponent<Props> = ({
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
     role: "alertdialog",
+    className: options.fidesEmbed ? "fides-embed" : "",
     title: experience?.experience_config?.title || "",
     onClose: dispatchCloseEvent,
   });
@@ -71,11 +72,17 @@ const Overlay: FunctionComponent<Props> = ({
   }, [instance, cookie, options.debug]);
 
   const handleCloseModal = useCallback(() => {
-    if (instance) {
+    if (instance && !options.fidesEmbed) {
       instance.hide();
       dispatchCloseEvent();
     }
-  }, [instance, dispatchCloseEvent]);
+  }, [instance, dispatchCloseEvent, options.fidesEmbed]);
+
+  useEffect(() => {
+    if (options.fidesEmbed && instance) {
+      handleOpenModal();
+    }
+  }, [options, instance, handleOpenModal]);
 
   useEffect(() => {
     const delayBanner = setTimeout(() => {
@@ -110,8 +117,11 @@ const Overlay: FunctionComponent<Props> = ({
   }, [options.modalLinkId, options.debug, handleOpenModal]);
 
   const showBanner = useMemo(
-    () => experience.show_banner && hasActionNeededNotices(experience),
-    [experience]
+    () =>
+      experience.show_banner &&
+      hasActionNeededNotices(experience) &&
+      !options.fidesEmbed,
+    [experience, options]
   );
 
   useEffect(() => {

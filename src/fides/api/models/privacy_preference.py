@@ -41,7 +41,7 @@ from fides.api.util.tcf.tcf_experience_contents import (
 )
 from fides.config import CONFIG
 
-CURRENT_TCF_VERSION = "2.0"
+CURRENT_TCF_VERSION = "2.2"
 
 
 class RequestOrigin(Enum):
@@ -674,9 +674,13 @@ class LastSavedMixin:
         return relationship(PrivacyNoticeHistory)
 
     @property
-    def record_matches_current_version(self) -> bool:
+    def record_is_current(self) -> bool:
         """Returns True if the latest saved preference corresponds to the
-        latest version for this notice or TCF component"""
+        latest version for this notice
+
+        For TCF - just return True, and don't use the tcf_version to say a preference is outdated. We'll
+        use other criteria to determine if consent needs to be resurfaced.
+        """
 
         if self.privacy_notice and self.privacy_notice_history_id:
             return (
@@ -684,10 +688,7 @@ class LastSavedMixin:
                 == self.privacy_notice_history_id
             )
 
-        if self.tcf_version:
-            return self.tcf_version == CURRENT_TCF_VERSION
-
-        return False
+        return True
 
 
 class CurrentPrivacyPreference(LastSavedMixin, Base):

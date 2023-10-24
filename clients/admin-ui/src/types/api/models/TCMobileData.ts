@@ -64,6 +64,7 @@ export type TCMobileData = {
   IABTCF_PublisherLegitimateInterests?: string;
   IABTCF_PublisherCustomPurposesConsents?: string;
   IABTCF_PublisherCustomPurposesLegitimateInterests?: string;
+  IABTCF_AddtlConsent?: string;
 };
 
 export namespace TCMobileData {

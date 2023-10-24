@@ -317,7 +317,7 @@ class TestCreateExperienceConfig:
             "disabled": False,
             "privacy_preferences_link_label": "Manage preferences",
             "privacy_policy_link_label": "View our privacy policy",
-            "privacy_policy_url": "example.com/privacy",
+            "privacy_policy_url": "http://example.com/privacy",
             "reject_button_label": "Reject all",
             "regions": [],
             "save_button_label": "Save",
@@ -455,7 +455,7 @@ class TestCreateExperienceConfig:
                 "description": "We take your privacy seriously",
                 "is_default": True,
                 "privacy_policy_link_label": "Manage your privacy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "reject_button_label": "No",
                 "save_button_label": "Save",
                 "title": "Manage your privacy",
@@ -468,6 +468,39 @@ class TestCreateExperienceConfig:
             response.json()["detail"]
             == "Cannot set as the default. Only one default privacy_center config can be in the system."
         )
+
+    @pytest.mark.parametrize(
+        "invalid_url",
+        [
+            "thisisnotaurl",
+            "javascript:alert('XSS: domain scope: '+document.domain)",
+        ],
+    )
+    def test_create_experience_config_with_invalid_policy_url(
+        self, api_client: TestClient, url, generate_auth_header, db, invalid_url
+    ) -> None:
+        """
+        Verify that an invalid Privacy Policy URL returns a 422.
+        """
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "accept_button_label": "Yes",
+                "banner_enabled": "always_disabled",
+                "component": "privacy_center",
+                "description": "We take your company's privacy seriously",
+                "privacy_policy_link_label": "Manage your privacy",
+                "privacy_policy_url": invalid_url,
+                "reject_button_label": "No",
+                "save_button_label": "Save",
+                "title": "Manage your privacy",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
 
     def test_create_experience_config_with_no_regions(
         self, api_client: TestClient, url, generate_auth_header, db
@@ -487,7 +520,7 @@ class TestCreateExperienceConfig:
                 "component": "privacy_center",
                 "description": "We take your company's privacy seriously",
                 "privacy_policy_link_label": "Manage your privacy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "reject_button_label": "No",
                 "save_button_label": "Save",
                 "title": "Manage your privacy",
@@ -503,7 +536,7 @@ class TestCreateExperienceConfig:
             resp["description"] == "We take your company's privacy seriously"
         )  # Returned in the response, unescaped, for display
         assert resp["privacy_policy_link_label"] == "Manage your privacy"
-        assert resp["privacy_policy_url"] == "example.com/privacy"
+        assert resp["privacy_policy_url"] == "http://example.com/privacy"
         assert resp["regions"] == []
         assert resp["reject_button_label"] == "No"
         assert resp["save_button_label"] == "Save"
@@ -551,7 +584,7 @@ class TestCreateExperienceConfig:
                 "component": "privacy_center",
                 "description": "We take your privacy seriously",
                 "privacy_policy_link_label": "Manage your privacy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "regions": [],
                 "reject_button_label": "No",
                 "save_button_label": "Save",
@@ -566,7 +599,7 @@ class TestCreateExperienceConfig:
         assert resp["component"] == "privacy_center"
         assert resp["description"] == "We take your privacy seriously"
         assert resp["privacy_policy_link_label"] == "Manage your privacy"
-        assert resp["privacy_policy_url"] == "example.com/privacy"
+        assert resp["privacy_policy_url"] == "http://example.com/privacy"
         assert resp["regions"] == []
         assert resp["reject_button_label"] == "No"
         assert resp["save_button_label"] == "Save"
@@ -624,7 +657,7 @@ class TestCreateExperienceConfig:
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                 "privacy_preferences_link_label": "Control your privacy",
                 "privacy_policy_link_label": "Control your privacy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "regions": ["us_ny"],
                 "reject_button_label": "Reject all",
                 "save_button_label": "Save",
@@ -645,7 +678,7 @@ class TestCreateExperienceConfig:
         )
         assert resp["privacy_preferences_link_label"] == "Control your privacy"
         assert resp["privacy_policy_link_label"] == "Control your privacy"
-        assert resp["privacy_policy_url"] == "example.com/privacy"
+        assert resp["privacy_policy_url"] == "http://example.com/privacy"
         assert resp["regions"] == ["us_ny"]
         assert resp["reject_button_label"] == "Reject all"
         assert resp["save_button_label"] == "Save"
@@ -667,7 +700,7 @@ class TestCreateExperienceConfig:
             experience_config.privacy_preferences_link_label == "Control your privacy"
         )
         assert experience_config.privacy_policy_link_label == "Control your privacy"
-        assert experience_config.privacy_policy_url == "example.com/privacy"
+        assert experience_config.privacy_policy_url == "http://example.com/privacy"
         assert experience_config.regions == [PrivacyNoticeRegion.us_ny]
         assert experience_config.reject_button_label == "Reject all"
         assert experience_config.save_button_label == "Save"
@@ -700,7 +733,9 @@ class TestCreateExperienceConfig:
             experience_config_history.privacy_policy_link_label
             == "Control your privacy"
         )
-        assert experience_config_history.privacy_policy_url == "example.com/privacy"
+        assert (
+            experience_config_history.privacy_policy_url == "http://example.com/privacy"
+        )
         assert experience_config_history.reject_button_label == "Reject all"
         assert experience_config_history.save_button_label == "Save"
         assert experience_config_history.title == "Control your privacy"
@@ -758,7 +793,7 @@ class TestCreateExperienceConfig:
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                 "privacy_preferences_link_label": "Control your privacy",
                 "privacy_policy_link_label": "Control your privacy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "regions": ["us_tx"],
                 "reject_button_label": "Reject all",
                 "save_button_label": "Save",
@@ -779,7 +814,7 @@ class TestCreateExperienceConfig:
         )
         assert resp["privacy_preferences_link_label"] == "Control your privacy"
         assert resp["privacy_policy_link_label"] == "Control your privacy"
-        assert resp["privacy_policy_url"] == "example.com/privacy"
+        assert resp["privacy_policy_url"] == "http://example.com/privacy"
         assert resp["regions"] == ["us_tx"]
         assert resp["reject_button_label"] == "Reject all"
         assert resp["save_button_label"] == "Save"
@@ -957,7 +992,7 @@ class TestUpdateExperienceConfig:
                 "disabled": False,
                 "privacy_preferences_link_label": "Manage preferences",
                 "privacy_policy_link_label": "View our privacy policy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "reject_button_label": "Reject all",
                 "save_button_label": "Save",
                 "title": "Control your privacy",

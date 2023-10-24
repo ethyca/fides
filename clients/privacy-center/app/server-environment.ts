@@ -47,6 +47,9 @@ export interface PrivacyCenterSettings {
   OVERLAY_PARENT_ID: string | null; // (optional) ID of the parent DOM element where the overlay should be inserted
   MODAL_LINK_ID: string | null; // (optional) ID of the DOM element that should trigger the consent modal
   PRIVACY_CENTER_URL: string; // e.g. http://localhost:3000
+  FIDES_EMBED: boolean | false; // (optional) Whether we should "embed" the fides.js overlay UI (ie. “Layer 2”) into a web page
+  FIDES_DISABLE_SAVE_API: boolean | false; // (optional) Whether we should disable saving consent preferences to the Fides API
+  FIDES_STRING: string | null; // (optional) An explicitly passed-in string that supersedes the cookie. Can contain both TC and AC strings
 }
 
 /**
@@ -66,6 +69,9 @@ export type PrivacyCenterClientSettings = Pick<
   | "OVERLAY_PARENT_ID"
   | "MODAL_LINK_ID"
   | "PRIVACY_CENTER_URL"
+  | "FIDES_EMBED"
+  | "FIDES_DISABLE_SAVE_API"
+  | "FIDES_STRING"
 >;
 
 export type Styles = string;
@@ -283,6 +289,14 @@ export const loadPrivacyCenterEnvironment =
       PRIVACY_CENTER_URL:
         process.env.FIDES_PRIVACY_CENTER__PRIVACY_CENTER_URL ||
         "http://localhost:3000",
+      FIDES_EMBED: process.env.FIDES_PRIVACY_CENTER__FIDES_EMBED
+        ? process.env.FIDES_PRIVACY_CENTER__FIDES_EMBED === "true"
+        : false,
+      FIDES_DISABLE_SAVE_API: process.env
+        .FIDES_PRIVACY_CENTER__FIDES_DISABLE_SAVE_API
+        ? process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_SAVE_API === "true"
+        : false,
+      FIDES_STRING: process.env.FIDES_PRIVACY_CENTER__FIDES_STRING || null,
     };
 
     // Load configuration file (if it exists)
@@ -304,6 +318,9 @@ export const loadPrivacyCenterEnvironment =
       OVERLAY_PARENT_ID: settings.OVERLAY_PARENT_ID,
       MODAL_LINK_ID: settings.MODAL_LINK_ID,
       PRIVACY_CENTER_URL: settings.PRIVACY_CENTER_URL,
+      FIDES_EMBED: settings.FIDES_EMBED,
+      FIDES_DISABLE_SAVE_API: settings.FIDES_DISABLE_SAVE_API,
+      FIDES_STRING: settings.FIDES_STRING,
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present

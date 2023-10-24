@@ -226,8 +226,8 @@ describe("Consent configuration", () => {
           "input-privacy_declarations.0.consent_use"
         ).contains("Marketing");
         cy.getSelectValueContainer(
-          "input-privacy_declarations.1.data_use"
-        ).contains("Local Data Storage");
+          "input-privacy_declarations.0.data_use"
+        ).contains("Profiling for Advertising");
         ["av_*", "aniC", "2_C_*"].forEach((cookieName) => {
           cy.getByTestId("input-privacy_declarations.0.cookieNames").contains(
             cookieName
@@ -236,9 +236,9 @@ describe("Consent configuration", () => {
 
         // Also check one that shouldn't have any cookies
         cy.getSelectValueContainer(
-          "input-privacy_declarations.3.data_use"
+          "input-privacy_declarations.1.data_use"
         ).contains("Analytics for Insights");
-        cy.getByTestId("input-privacy_declarations.3.cookieNames").contains(
+        cy.getByTestId("input-privacy_declarations.1.cookieNames").contains(
           "Select..."
         );
         // There should be 13 declarations (but start from 0, so 12)
@@ -270,95 +270,19 @@ describe("Consent configuration", () => {
               ],
               cookies: [
                 {
-                  name: "av_*",
-                  domain: "**",
-                  path: "/",
+                  name: "2_C_*",
+                  domain: "*.aniview.com",
+                  path: null,
                 },
                 {
                   name: "aniC",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
+                  domain: "*.aniview.com",
+                  path: null,
                 },
-                {
-                  name: "2_C_*",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
-                },
-              ],
-            },
-            {
-              name: "",
-              data_use: "functional.storage",
-              data_categories: [
-                "user.device.ip_address",
-                "user.device",
-                "user.sensor",
-                "user.user_sensor",
-                "user.telemetry",
-                "user.device.cookie_id",
-                "user.device.device_id",
-                "user.device.cookie",
-                "user.behavior.purchase_history",
-                "user.behavior",
-                "user.behavior.browsing_history",
-                "user.behavior.media_consumption",
-                "user.behavior.search_history",
-                "user.social",
-                "user.location.imprecise",
-              ],
-              cookies: [
                 {
                   name: "av_*",
-                  domain: "**",
-                  path: "/",
-                },
-                {
-                  name: "aniC",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
-                },
-                {
-                  name: "2_C_*",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
-                },
-              ],
-            },
-            {
-              name: "",
-              data_use: "analytics.reporting.ad_performance",
-              data_categories: [
-                "user.device.ip_address",
-                "user.device",
-                "user.sensor",
-                "user.user_sensor",
-                "user.telemetry",
-                "user.device.cookie_id",
-                "user.device.device_id",
-                "user.device.cookie",
-                "user.behavior.purchase_history",
-                "user.behavior",
-                "user.behavior.browsing_history",
-                "user.behavior.media_consumption",
-                "user.behavior.search_history",
-                "user.social",
-                "user.location.imprecise",
-              ],
-              cookies: [
-                {
-                  name: "av_*",
-                  domain: "**",
-                  path: "/",
-                },
-                {
-                  name: "aniC",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
-                },
-                {
-                  name: "2_C_*",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
+                  domain: "*",
+                  path: null,
                 },
               ],
             },
@@ -386,6 +310,44 @@ describe("Consent configuration", () => {
             },
             {
               name: "",
+              data_use: "analytics.reporting.ad_performance",
+              data_categories: [
+                "user.device.ip_address",
+                "user.device",
+                "user.sensor",
+                "user.user_sensor",
+                "user.telemetry",
+                "user.device.cookie_id",
+                "user.device.device_id",
+                "user.device.cookie",
+                "user.behavior.purchase_history",
+                "user.behavior",
+                "user.behavior.browsing_history",
+                "user.behavior.media_consumption",
+                "user.behavior.search_history",
+                "user.social",
+                "user.location.imprecise",
+              ],
+              cookies: [
+                {
+                  name: "2_C_*",
+                  domain: "*.aniview.com",
+                  path: null,
+                },
+                {
+                  name: "aniC",
+                  domain: "*.aniview.com",
+                  path: null,
+                },
+                {
+                  name: "av_*",
+                  domain: "*",
+                  path: null,
+                },
+              ],
+            },
+            {
+              name: "",
               data_use: "marketing.advertising.first_party.targeted",
               data_categories: [
                 "user.device.ip_address",
@@ -406,25 +368,25 @@ describe("Consent configuration", () => {
               ],
               cookies: [
                 {
-                  name: "av_*",
-                  domain: "**",
-                  path: "/",
+                  name: "2_C_*",
+                  domain: "*.aniview.com",
+                  path: null,
                 },
                 {
                   name: "aniC",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
+                  domain: "*.aniview.com",
+                  path: null,
                 },
                 {
-                  name: "2_C_*",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
+                  name: "av_*",
+                  domain: "*",
+                  path: null,
                 },
               ],
             },
             {
               name: "",
-              data_use: "functional.service.improve",
+              data_use: "marketing.advertising.third_party.targeted",
               data_categories: [
                 "user.device.ip_address",
                 "user.device",
@@ -442,11 +404,27 @@ describe("Consent configuration", () => {
                 "user.social",
                 "user.location.imprecise",
               ],
-              cookies: [],
+              cookies: [
+                {
+                  name: "2_C_*",
+                  domain: "*.aniview.com",
+                  path: null,
+                },
+                {
+                  name: "aniC",
+                  domain: "*.aniview.com",
+                  path: null,
+                },
+                {
+                  name: "av_*",
+                  domain: "*",
+                  path: null,
+                },
+              ],
             },
             {
               name: "",
-              data_use: "analytics.reporting.content_performance",
+              data_use: "functional.storage",
               data_categories: [
                 "user.device.ip_address",
                 "user.device",
@@ -464,33 +442,27 @@ describe("Consent configuration", () => {
                 "user.social",
                 "user.location.imprecise",
               ],
-              cookies: [],
+              cookies: [
+                {
+                  name: "2_C_*",
+                  domain: "*.aniview.com",
+                  path: null,
+                },
+                {
+                  name: "aniC",
+                  domain: "*.aniview.com",
+                  path: null,
+                },
+                {
+                  name: "av_*",
+                  domain: "*",
+                  path: null,
+                },
+              ],
             },
             {
               name: "",
               data_use: "essential.fraud_detection",
-              data_categories: [
-                "user.device.ip_address",
-                "user.device",
-                "user.sensor",
-                "user.user_sensor",
-                "user.telemetry",
-                "user.device.cookie_id",
-                "user.device.device_id",
-                "user.device.cookie",
-                "user.behavior.purchase_history",
-                "user.behavior",
-                "user.behavior.browsing_history",
-                "user.behavior.media_consumption",
-                "user.behavior.search_history",
-                "user.social",
-                "user.location.imprecise",
-              ],
-              cookies: [],
-            },
-            {
-              name: "",
-              data_use: "essential.service.security",
               data_categories: [
                 "user.device.ip_address",
                 "user.device",
@@ -532,57 +504,19 @@ describe("Consent configuration", () => {
               ],
               cookies: [
                 {
-                  name: "av_*",
-                  domain: "**",
-                  path: "/",
+                  name: "2_C_*",
+                  domain: "*.aniview.com",
+                  path: null,
                 },
                 {
                   name: "aniC",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
+                  domain: "*.aniview.com",
+                  path: null,
                 },
-                {
-                  name: "2_C_*",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
-                },
-              ],
-            },
-            {
-              name: "",
-              data_use: "marketing.advertising.first_party.contextual",
-              data_categories: [
-                "user.device.ip_address",
-                "user.device",
-                "user.sensor",
-                "user.user_sensor",
-                "user.telemetry",
-                "user.device.cookie_id",
-                "user.device.device_id",
-                "user.device.cookie",
-                "user.behavior.purchase_history",
-                "user.behavior",
-                "user.behavior.browsing_history",
-                "user.behavior.media_consumption",
-                "user.behavior.search_history",
-                "user.social",
-                "user.location.imprecise",
-              ],
-              cookies: [
                 {
                   name: "av_*",
-                  domain: "**",
-                  path: "/",
-                },
-                {
-                  name: "aniC",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
-                },
-                {
-                  name: "2_C_*",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
+                  domain: "*",
+                  path: null,
                 },
               ],
             },
@@ -608,25 +542,47 @@ describe("Consent configuration", () => {
               ],
               cookies: [
                 {
-                  name: "av_*",
-                  domain: "**",
-                  path: "/",
+                  name: "2_C_*",
+                  domain: "*.aniview.com",
+                  path: null,
                 },
                 {
                   name: "aniC",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
+                  domain: "*.aniview.com",
+                  path: null,
                 },
                 {
-                  name: "2_C_*",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
+                  name: "av_*",
+                  domain: "*",
+                  path: null,
                 },
               ],
             },
             {
               name: "",
-              data_use: "marketing.advertising.third_party.targeted",
+              data_use: "analytics.reporting.content_performance",
+              data_categories: [
+                "user.device.ip_address",
+                "user.device",
+                "user.sensor",
+                "user.user_sensor",
+                "user.telemetry",
+                "user.device.cookie_id",
+                "user.device.device_id",
+                "user.device.cookie",
+                "user.behavior.purchase_history",
+                "user.behavior",
+                "user.behavior.browsing_history",
+                "user.behavior.media_consumption",
+                "user.behavior.search_history",
+                "user.social",
+                "user.location.imprecise",
+              ],
+              cookies: [],
+            },
+            {
+              name: "",
+              data_use: "marketing.advertising.first_party.contextual",
               data_categories: [
                 "user.device.ip_address",
                 "user.device",
@@ -646,21 +602,65 @@ describe("Consent configuration", () => {
               ],
               cookies: [
                 {
-                  name: "av_*",
-                  domain: "**",
-                  path: "/",
+                  name: "2_C_*",
+                  domain: "*.aniview.com",
+                  path: null,
                 },
                 {
                   name: "aniC",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
+                  domain: "*.aniview.com",
+                  path: null,
                 },
                 {
-                  name: "2_C_*",
-                  domain: "*.aniview.com*.aniview.com",
-                  path: "/",
+                  name: "av_*",
+                  domain: "*",
+                  path: null,
                 },
               ],
+            },
+            {
+              name: "",
+              data_use: "functional.service.improve",
+              data_categories: [
+                "user.device.ip_address",
+                "user.device",
+                "user.sensor",
+                "user.user_sensor",
+                "user.telemetry",
+                "user.device.cookie_id",
+                "user.device.device_id",
+                "user.device.cookie",
+                "user.behavior.purchase_history",
+                "user.behavior",
+                "user.behavior.browsing_history",
+                "user.behavior.media_consumption",
+                "user.behavior.search_history",
+                "user.social",
+                "user.location.imprecise",
+              ],
+              cookies: [],
+            },
+            {
+              name: "",
+              data_use: "essential.service.security",
+              data_categories: [
+                "user.device.ip_address",
+                "user.device",
+                "user.sensor",
+                "user.user_sensor",
+                "user.telemetry",
+                "user.device.cookie_id",
+                "user.device.device_id",
+                "user.device.cookie",
+                "user.behavior.purchase_history",
+                "user.behavior",
+                "user.behavior.browsing_history",
+                "user.behavior.media_consumption",
+                "user.behavior.search_history",
+                "user.social",
+                "user.location.imprecise",
+              ],
+              cookies: [],
             },
           ]);
         });
