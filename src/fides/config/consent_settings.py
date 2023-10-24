@@ -25,6 +25,6 @@ class ConsentSettings(FidesSettings):
         ac_mode = values.get("ac_enabled")
 
         if ac_mode and not tcf_mode:
-            raise ValueError("TCF must be enabled in order for AC features to work.")
+            raise ValueError("AC cannot be enabled unless TCF mode is also enabled.")
 
         return values

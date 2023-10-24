@@ -38,7 +38,7 @@ def build_ac_vendor_consents(
 
     ac_vendors: List[int] = []
     for vendor in tcf_contents.tcf_vendor_consents or []:
-        # AC Vendors will always be in the `tcf_vendor_consents` section of the TCF Experience
+        #  AC vendors are surfaced in the`tcf_vendor_consents` section of the TCF Experience
         try:
             ac_vendors.append(universal_vendor_id_to_ac_id(vendor.id))
         except ValueError:
