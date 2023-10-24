@@ -18,17 +18,24 @@ import { dispatchFidesEvent } from "./events";
 import { patchUserPreferenceToFidesServer } from "../services/fides/api";
 import { TcfSavePreferences } from "./tcf/types";
 
-
 /**
  * Helper function to save preferences to an API, either custom or internal
  */
-async function savePreferencesApi(options: FidesOptions, cookie: FidesCookie, experience: PrivacyExperience, fidesUserPreferences: Array<ConsentOptionCreate> | undefined, consentMethod: ConsentMethod, tcf?: TcfSavePreferences, userLocationString?: string, ) {
+async function savePreferencesApi(
+  options: FidesOptions,
+  cookie: FidesCookie,
+  experience: PrivacyExperience,
+  fidesUserPreferences: Array<ConsentOptionCreate> | undefined,
+  consentMethod: ConsentMethod,
+  tcf?: TcfSavePreferences,
+  userLocationString?: string
+) {
   if (options.apiOptions?.savePreferencesFn) {
     debugLog(options.debug, "Calling custom save preferences fn");
     await options.apiOptions.savePreferencesFn(
-        cookie.consent,
-        cookie.fides_string,
-        experience
+      cookie.consent,
+      cookie.fides_string,
+      experience
     );
   } else {
     const privacyPreferenceCreate: PrivacyPreferencesRequest = {
@@ -41,9 +48,9 @@ async function savePreferencesApi(options: FidesOptions, cookie: FidesCookie, ex
     };
     debugLog(options.debug, "Saving preferences to Fides API");
     await patchUserPreferenceToFidesServer(
-        privacyPreferenceCreate,
-        options.fidesApiUrl,
-        options.debug
+      privacyPreferenceCreate,
+      options.fidesApiUrl,
+      options.debug
     );
   }
 }
@@ -110,9 +117,21 @@ export const updateConsentPreferences = async ({
   // 3. Save preferences to API (if not disabled)
   if (!options.fidesDisableSaveApi) {
     try {
-      await savePreferencesApi(options, cookie, experience, fidesUserPreferences, consentMethod, tcf, userLocationString);
+      await savePreferencesApi(
+        options,
+        cookie,
+        experience,
+        fidesUserPreferences,
+        consentMethod,
+        tcf,
+        userLocationString
+      );
     } catch (e) {
-      debugLog(options.debug, "Error saving updated preferences to API, continuing. Error: ", e);
+      debugLog(
+        options.debug,
+        "Error saving updated preferences to API, continuing. Error: ",
+        e
+      );
     }
   }
 

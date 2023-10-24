@@ -6,7 +6,6 @@ import {
   UserConsentPreference,
 } from "fides-js";
 import { CookieKeyConsent } from "fides-js/src/lib/cookie";
-import { FidesConfig } from "fides-js/src/lib/consent-types";
 import { OVERRIDE, stubConfig } from "../support/stubs";
 
 const PURPOSE_2 = {
@@ -725,17 +724,19 @@ describe("Fides-js TCF", () => {
         });
       });
 
-      it.only("calls custom save preferences API fn instead of internal Fides API when it is provided in Fides.init", () => {
+      it("calls custom save preferences API fn instead of internal Fides API when it is provided in Fides.init", () => {
         const apiOptions = {
           /* eslint-disable @typescript-eslint/no-unused-vars */
           savePreferencesFn: (
             consent: CookieKeyConsent,
             fides_string: string | undefined,
             experience: PrivacyExperience
-          ): Promise<void> => {return new Promise(() => {})},
+          ): Promise<void> => new Promise(() => {}),
           /* eslint-enable @typescript-eslint/no-unused-vars */
         };
-        const spyObject = cy.spy(apiOptions, "savePreferencesFn").as("mockSavePreferencesFn");
+        const spyObject = cy
+          .spy(apiOptions, "savePreferencesFn")
+          .as("mockSavePreferencesFn");
         cy.fixture("consent/experience_tcf.json").then((privacyExperience) => {
           stubConfig({
             options: {
@@ -750,13 +751,19 @@ describe("Fides-js TCF", () => {
             cy.getByTestId("consent-modal").within(() => {
               cy.get("button").contains("Opt out of all").click();
               cy.get("@FidesUpdated").then(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 expect(spyObject).to.be.called;
-                const spy = spyObject["getCalls"]();
+                const spy = spyObject.getCalls();
                 const { args } = spy[0];
-                expect(args[0]).to.deep.equal({data_sales: true, tracking: false});
-                expect(args[1]).to.equal("CP0JloAP0JloAGXABBENATEAAAAAAAAAAAAAAAAAAAAA.IABE,1~");
+                expect(args[0]).to.deep.equal({
+                  data_sales: true,
+                  tracking: false,
+                });
+                expect(args[1]).to.equal(
+                  "CP0JloAP0JloAGXABBENATEAAAAAAAAAAAAAAAAAAAAA.IABE,1~"
+                );
                 expect(args[2]).to.deep.equal(privacyExperience.items[0]);
-              })
+              });
               // timeout means API call not made, which is expected
               cy.on("fail", (error) => {
                 if (error.message.indexOf("Timed out retrying") !== 0) {
@@ -772,7 +779,6 @@ describe("Fides-js TCF", () => {
             });
           });
         });
-
       });
 
       it("skips saving preferences to API when disable save is set", () => {
@@ -1021,6 +1027,8 @@ describe("Fides-js TCF", () => {
         cy.getByTestId(`toggle-${SYSTEM_1.name}`).click();
         cy.get("button").contains("Save").click();
         cy.wait("@patchPrivacyPreference").then((interception) => {
+          // embed modal should not close on preferences save
+          cy.getByTestId("consent-modal").should("exist");
           const { body } = interception.request;
           expect(body.purpose_consent_preferences).to.eql([
             { id: PURPOSE_4.id, preference: "opt_out" },
