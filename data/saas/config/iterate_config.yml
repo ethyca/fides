@@ -2,7 +2,7 @@ saas_config:
   fides_key: <instance_fides_key>
   name: Iterate
   type: iterate ## make sure this case/exactly matches what we name everything else including the icon!
-  description: A sample schema representing the IterateHQ connector for Fides
+  description: A sample schema representing the Iterate connector for Fides
   version: 0.1.0
 
   connector_params:
@@ -22,7 +22,7 @@ saas_config:
           - name: access_token
             value: <access_token>
           - name: v
-            value: <v>
+            value: 20230101 ## hardcoded for a good reason we don't normally do this
 
   test_request:
     method: GET
