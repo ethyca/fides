@@ -222,13 +222,13 @@ const TcfVendors = ({
             <Fragment>
               <StorageDisclosure vendor={vendor} />
               {hasUrls && (
-                <div style={{ marginBottom: "12px" }}>
+                <div>
                   {vendor.privacy_policy_url && (
                     <ExternalLink href={vendor.privacy_policy_url}>
                       Privacy policy
                     </ExternalLink>
                   )}
-                  {vendor?.legitimate_interest_disclosure_url && (
+                  {vendor.legitimate_interest_disclosure_url && (
                     <ExternalLink
                       href={vendor.legitimate_interest_disclosure_url}
                     >

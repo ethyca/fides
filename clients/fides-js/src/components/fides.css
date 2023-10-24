@@ -784,7 +784,6 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-tcf-purpose-vendor {
   padding: 0.8em;
   border-radius: var(--fides-overlay-component-border-radius);
-  margin-top: 12px;
 }
 
 .fides-tcf-purpose-vendor-list {
@@ -927,9 +926,14 @@ div#fides-banner-inner .fides-privacy-policy {
     justify-content: space-between;
   }
 
+  div#fides-banner-description {
+    margin-bottom: 0px;
+  }
+
   div#fides-banner-inner div#fides-button-group {
     flex-direction: column;
     gap: 12px;
+    padding-top: 24px;
   }
 
   .fides-banner-button-group {
@@ -941,7 +945,7 @@ div#fides-banner-inner .fides-privacy-policy {
   }
 
   div#fides-tcf-banner-inner {
-    margin-top: 0px;
+    margin-top: 24px;
     overflow-y: revert;
     min-height: revert;
   }
