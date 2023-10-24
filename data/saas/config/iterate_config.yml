@@ -1,7 +1,7 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: IterateHQ SaaS Config
-  type: iteratehq
+  name: Iterate
+  type: iterate ## make sure this case/exactly matches what we name everything else including the icon!
   description: A sample schema representing the IterateHQ connector for Fides
   version: 0.1.0
 
@@ -9,6 +9,7 @@ saas_config:
     - name: domain
       default_value: iteratehq.com
     - name: company_id
+      label: Company ID #shows in GUI add any finding out steps they need to do
     - name: access_token
   ##steal to fix this
   client_config: ## used by default for all following things save for manually overwriting it
@@ -20,18 +21,12 @@ saas_config:
         query_params:
           - name: access_token
             value: <access_token>
+          - name: v
+            value: <v>
 
   test_request:
     method: GET
     path: /api/v1/surveys
-    query_params:
-      - name: v
-        value: <v>
-      - name: access_token
-        value: <access_token>
-    param_values:
-      - name: access_token
-        connector_param: access_token
 
   endpoints:
     - name: user
@@ -40,28 +35,17 @@ saas_config:
           method: GET
           path: /api/v1/companies/<company_id>/users/search
           query_params:
-            - name: v
-              value: "20180101"
-            - name: access_token
-              value: <access_token>
             - name: email
               value: <email>
           data_path: results.user
           param_values:
             - name: company_id
               connector_param: company_id
-            - name: access_token
-              connector_param: access_token
             - name: email
               identity: email
         update:
           method: POST
           path: /api/v1/companies/<company_id>/users/anonymize
-          query_params:
-            - name: v
-              value: <v>
-            - name: access_token
-              value: <access_token>
           body: |
             {
                  "email": ["<email>"]
@@ -69,7 +53,5 @@ saas_config:
           param_values:
             - name: company_id
               connector_param: company_id
-            - name: access_token
-              connector_param: access_token
             - name: email
               identity: email
