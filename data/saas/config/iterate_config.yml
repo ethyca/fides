@@ -1,7 +1,7 @@
 saas_config:
   fides_key: <instance_fides_key>
   name: Iterate
-  type: iterate ## make sure this case/exactly matches what we name everything else including the icon!
+  type: iterate
   description: A sample schema representing the Iterate connector for Fides
   version: 0.1.0
 
@@ -9,10 +9,10 @@ saas_config:
     - name: domain
       default_value: iteratehq.com
     - name: company_id
-      label: Company ID #shows in GUI add any finding out steps they need to do
+      label: Company ID
     - name: access_token
-  ##steal to fix this
-  client_config: ## used by default for all following things save for manually overwriting it
+
+  client_config:
     protocol: https
     host: <domain>
     authentication:
