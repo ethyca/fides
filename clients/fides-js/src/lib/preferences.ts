@@ -1,7 +1,7 @@
 import {
   ConsentMethod,
   ConsentOptionCreate,
-  FidesConfig,
+  FidesOptions,
   LastServedConsentSchema,
   PrivacyExperience,
   PrivacyPreferencesRequest,
@@ -31,7 +31,7 @@ export const updateConsentPreferences = async ({
   consentPreferencesToSave,
   experience,
   consentMethod,
-  fidesConfig,
+  options,
   userLocationString,
   cookie,
   servedNotices,
@@ -41,7 +41,7 @@ export const updateConsentPreferences = async ({
   consentPreferencesToSave?: Array<SaveConsentPreference>;
   experience: PrivacyExperience;
   consentMethod: ConsentMethod;
-  fidesConfig: FidesConfig;
+  options: FidesOptions;
   userLocationString?: string;
   cookie: FidesCookie;
   servedNotices?: Array<LastServedConsentSchema> | null;
@@ -72,31 +72,23 @@ export const updateConsentPreferences = async ({
   Object.assign(cookie, updatedCookie);
 
   // 2. Update the window.Fides object
-  debugLog(fidesConfig.options.debug, "Updating window.Fides");
+  debugLog(options.debug, "Updating window.Fides");
   window.Fides.consent = cookie.consent;
   window.Fides.fides_string = cookie.fides_string;
   window.Fides.tcf_consent = cookie.tcf_consent;
 
   // 3. Save preferences to Fides API
-  if (!fidesConfig.options.fidesDisableSaveApi) {
-    if (fidesConfig.options.api?.savePreferencesFn) {
+  if (!options.fidesDisableSaveApi) {
+    if (options.apiOptions?.savePreferencesFn) {
       try {
-        debugLog(
-          fidesConfig.options.debug,
-          "Calling custom save preferences fn"
-        );
-        await fidesConfig.options.api.savePreferencesFn(
-          fidesConfig,
+        debugLog(options.debug, "Calling custom save preferences fn");
+        await options.apiOptions.savePreferencesFn(
           cookie.consent,
           cookie.fides_string,
           experience
         );
       } catch (e) {
-        debugLog(
-          fidesConfig.options.debug,
-          "Error calling custom save preferences fn",
-          e
-        );
+        debugLog(options.debug, "Error calling custom save preferences fn", e);
       }
     } else {
       const privacyPreferenceCreate: PrivacyPreferencesRequest = {
@@ -108,15 +100,15 @@ export const updateConsentPreferences = async ({
         ...(tcf ?? []),
       };
       try {
-        debugLog(fidesConfig.options.debug, "Saving preferences to Fides API");
+        debugLog(options.debug, "Saving preferences to Fides API");
         await patchUserPreferenceToFidesServer(
           privacyPreferenceCreate,
-          fidesConfig.options.fidesApiUrl,
-          fidesConfig.options.debug
+          options.fidesApiUrl,
+          options.debug
         );
       } catch (e) {
         debugLog(
-          fidesConfig.options.debug,
+          options.debug,
           "Error saving user preferences to Fides server",
           e
         );
@@ -125,7 +117,7 @@ export const updateConsentPreferences = async ({
   }
 
   // 4. Save preferences to the cookie in the browser
-  debugLog(fidesConfig.options.debug, "Saving preferences to cookie");
+  debugLog(options.debug, "Saving preferences to cookie");
   saveFidesCookie(cookie);
 
   // 5. Remove cookies associated with notices that were opted-out from the browser
@@ -141,5 +133,5 @@ export const updateConsentPreferences = async ({
   }
 
   // 6. Dispatch a "FidesUpdated" event
-  dispatchFidesEvent("FidesUpdated", cookie, fidesConfig.options.debug);
+  dispatchFidesEvent("FidesUpdated", cookie, options.debug);
 };

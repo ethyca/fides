@@ -201,7 +201,7 @@ const updateCookie = async (
 const TcfOverlay: FunctionComponent<OverlayProps> = ({
   fidesRegionString,
   experience,
-  fidesConfig,
+  options,
   cookie,
 }) => {
   const initialEnabledIds: EnabledIds = useMemo(() => {
@@ -243,7 +243,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         consentPreferencesToSave: [],
         experience,
         consentMethod: ConsentMethod.button,
-        fidesConfig,
+        options,
         userLocationString: fidesRegionString,
         cookie,
         servedNotices: null, // TODO: served notices
@@ -253,20 +253,20 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       });
       setDraftIds(enabledIds);
     },
-    [cookie, experience, fidesRegionString, fidesConfig]
+    [cookie, experience, fidesRegionString, options]
   );
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   if (!experience.experience_config) {
-    debugLog(fidesConfig.options.debug, "No experience config found");
+    debugLog(options.debug, "No experience config found");
     return null;
   }
   const experienceConfig = experience.experience_config;
 
   return (
     <Overlay
-      options={fidesConfig.options}
+      options={options}
       experience={experience}
       cookie={cookie}
       onVendorPageClick={() => {
@@ -318,11 +318,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               enabledIds={draftIds}
               onChange={(updatedIds) => {
                 setDraftIds(updatedIds);
-                dispatchFidesEvent(
-                  "FidesUIChanged",
-                  cookie,
-                  fidesConfig.options.debug
-                );
+                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
               }}
               activeTabIndex={activeTabIndex}
               onTabChange={setActiveTabIndex}

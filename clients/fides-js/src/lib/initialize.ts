@@ -89,12 +89,12 @@ const automaticallyApplyGPCPreferences = ({
   cookie,
   fidesRegionString,
   effectiveExperience,
-  fidesConfig,
+  fidesOptions,
 }: {
   cookie: FidesCookie;
   fidesRegionString: string | null;
   effectiveExperience?: PrivacyExperience;
-  fidesConfig: FidesConfig;
+  fidesOptions: FidesOptions;
 }) => {
   if (!effectiveExperience || !effectiveExperience.privacy_notices) {
     return;
@@ -134,7 +134,7 @@ const automaticallyApplyGPCPreferences = ({
       consentPreferencesToSave,
       experience: effectiveExperience,
       consentMethod: ConsentMethod.gpc,
-      fidesConfig,
+      options: fidesOptions,
       userLocationString: fidesRegionString || undefined,
       cookie,
       updateCookie: (oldCookie) =>
@@ -255,8 +255,9 @@ export const getInitialFides = ({
  */
 export const initialize = async ({
   cookie,
-  config,
+  options,
   experience,
+  geolocation,
   renderOverlay,
   updateCookie,
 }: {
@@ -267,33 +268,31 @@ export const initialize = async ({
     experience: PrivacyExperience,
     debug?: boolean
   ) => Promise<FidesCookie>;
-  config: FidesConfig;
-  experience?: PrivacyExperience | EmptyExperience;
-}): Promise<Partial<Fides>> => {
-  let shouldInitOverlay: boolean = config.options.isOverlayEnabled;
+} & FidesConfig): Promise<Partial<Fides>> => {
+  let shouldInitOverlay: boolean = options.isOverlayEnabled;
   let effectiveExperience = experience;
   let fidesRegionString: string | null = null;
 
   if (shouldInitOverlay) {
-    if (!validateOptions(config.options)) {
+    if (!validateOptions(options)) {
       debugLog(
-        config.options.debug,
+        options.debug,
         "Invalid overlay options. Skipping overlay initialization.",
-        config.options
+        options
       );
       shouldInitOverlay = false;
     }
 
     fidesRegionString = await retrieveEffectiveRegionString(
-      config.geolocation,
-      config.options
+      geolocation,
+      options
     );
 
     let fetchedClientSideExperience = false;
 
     if (!fidesRegionString) {
       debugLog(
-        config.options.debug,
+        options.debug,
         `User location could not be obtained. Skipping overlay initialization.`
       );
       shouldInitOverlay = false;
@@ -303,22 +302,22 @@ export const initialize = async ({
       // the Fides API using the current region string
       effectiveExperience = await fetchExperience(
         fidesRegionString,
-        config.options.fidesApiUrl,
-        config.options.debug,
+        options.fidesApiUrl,
+        options.debug,
         cookie.identity.fides_user_device_id
       );
     }
 
     if (
       isPrivacyExperience(effectiveExperience) &&
-      experienceIsValid(effectiveExperience, config.options)
+      experienceIsValid(effectiveExperience, options)
     ) {
-      if (config.options.fidesString) {
+      if (options.fidesString) {
         if (fetchedClientSideExperience) {
           // if tc str was explicitly passed in, we need to override the client-side-fetched experience with consent from the cookie
           // we don't update cookie because it already has been overridden by the injected fidesString
           debugLog(
-            config.options.debug,
+            options.debug,
             "Overriding preferences from client-side fetched experience with cookie fides_string consent",
             cookie.fides_string
           );
@@ -332,10 +331,10 @@ export const initialize = async ({
         const updatedCookie = await updateCookie(
           cookie,
           effectiveExperience,
-          config.options.debug
+          options.debug
         );
         debugLog(
-          config.options.debug,
+          options.debug,
           "Updated cookie based on experience",
           updatedCookie
         );
@@ -346,7 +345,7 @@ export const initialize = async ({
           experience: effectiveExperience,
           fidesRegionString: fidesRegionString as string,
           cookie,
-          fidesConfig: config,
+          options,
           renderOverlay,
         }).catch(() => {});
       }
@@ -357,7 +356,7 @@ export const initialize = async ({
       cookie,
       fidesRegionString,
       effectiveExperience,
-      fidesConfig: config,
+      fidesOptions: options,
     });
   }
 
@@ -369,8 +368,8 @@ export const initialize = async ({
     fides_string: cookie.fides_string,
     tcf_consent: cookie.tcf_consent,
     experience,
-    geolocation: config.geolocation,
-    options: config.options,
+    geolocation,
+    options,
     initialized: true,
   };
 };

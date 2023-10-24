@@ -27,7 +27,7 @@ import { dispatchFidesEvent } from "../../lib/events";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   experience,
-  fidesConfig,
+  options,
   fidesRegionString,
   cookie,
 }) => {
@@ -56,7 +56,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   const { servedNotices } = useConsentServed({
     notices: privacyNotices,
-    options: fidesConfig.options,
+    options,
     userGeography: fidesRegionString,
     acknowledgeMode: isAllNoticeOnly,
     privacyExperienceId: experience.id,
@@ -75,7 +75,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         consentPreferencesToSave,
         experience,
         consentMethod: ConsentMethod.button,
-        fidesConfig,
+        options,
         userLocationString: fidesRegionString,
         cookie,
         servedNotices,
@@ -92,21 +92,21 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       privacyNotices,
       cookie,
       fidesRegionString,
-      experience.id,
-      fidesConfig.options.fidesApiUrl,
+      experience,
+      options,
       servedNotices,
     ]
   );
 
   if (!experience.experience_config) {
-    debugLog(fidesConfig.options.debug, "No experience config found");
+    debugLog(options.debug, "No experience config found");
     return null;
   }
   const experienceConfig = experience.experience_config;
 
   return (
     <Overlay
-      options={fidesConfig.options}
+      options={options}
       experience={experience}
       cookie={cookie}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) =>
@@ -141,11 +141,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               enabledNoticeKeys={draftEnabledNoticeKeys}
               onChange={(updatedKeys) => {
                 setDraftEnabledNoticeKeys(updatedKeys);
-                dispatchFidesEvent(
-                  "FidesUIChanged",
-                  cookie,
-                  fidesConfig.options.debug
-                );
+                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
               }}
             />
           </div>

@@ -1,4 +1,4 @@
-import type { FidesConfig, PrivacyExperience } from "../lib/consent-types";
+import type { FidesOptions, PrivacyExperience } from "../lib/consent-types";
 import { FidesCookie } from "../lib/cookie";
 
 /**
@@ -9,7 +9,7 @@ import { FidesCookie } from "../lib/cookie";
  * this type as a prop.
  */
 export interface OverlayProps {
-  fidesConfig: FidesConfig;
+  options: FidesOptions;
   experience: PrivacyExperience;
   cookie: FidesCookie;
   fidesRegionString: string;

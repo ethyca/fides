@@ -77,24 +77,22 @@ export type FidesOptions = {
   fidesString: string | null;
 
   // Allows for explicit overrides on various internal API calls made from Fides.
-  api: FidesApiOptions | null;
+  apiOptions: FidesApiOptions | null;
 };
 
 export type FidesApiOptions = {
   /**
    * Intake a custom function that is called instead of the internal Fides API to save user preferences.
    *
-   * @param {object} Fides  - the global Fides object with all configured options, state, etc.
    * @param {object} consent - updated version of Fides.consent with the user's saved preferences for Fides notices
    * @param {string} fides_string - updated version of Fides.fides_string with the user's saved preferences for TC/AC/etc notices
    * @param {object} experience - current version of the privacy experience that was shown to the user
    */
   savePreferencesFn: (
-    fides: FidesConfig,
     consent: CookieKeyConsent,
     fides_string: string | undefined,
     experience: PrivacyExperience
-  ) => void;
+  ) => Promise<void>;
 };
 
 export class SaveConsentPreference {
