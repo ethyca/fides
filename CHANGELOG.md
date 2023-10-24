@@ -22,6 +22,8 @@ The types of changes are:
 - Added support for fidesEmbed, fidesDisableSaveApi, and fidesTcString to be passed into Fides.js via query param, cookie, or window object [#4297](https://github.com/ethyca/fides/pull/4297)
 - Added a `FidesUIChanged` event to Fides.js to track when user preferences change without being saved [#4314](https://github.com/ethyca/fides/pull/4314) and [#4253](https://github.com/ethyca/fides/pull/4253)
 - Add AC Systems to the TCF Overlay under Vendor Consents section [#4266](https://github.com/ethyca/fides/pull/4266/)
+- Added support for overriding the save user preferences API call with a custom fn provided through Fides.init [#4318](https://github.com/ethyca/fides/pull/4318)
+- Return AC strings in GET Privacy Experience meta and allow saving preferences against AC strings [#4295](https://github.com/ethyca/fides/pull/4295)
 - Added notice that a system is GVL when adding/editing from system form [#4327](https://github.com/ethyca/fides/pull/4327)
 
 ### Fixed
@@ -31,6 +33,8 @@ The types of changes are:
 
 ### Changed
 - Derive cookie storage info, privacy policy and legitimate interest disclosure URLs, and data retention data from the data map instead of directly from gvl.json [#4286](https://github.com/ethyca/fides/pull/4286)
+- Updated TCF Version for backend consent reporting [#4305](https://github.com/ethyca/fides/pull/4305)
+- Update Version Hash Contents [#4313](https://github.com/ethyca/fides/pull/4313)
 
 ## [2.22.1](https://github.com/ethyca/fides/compare/2.22.0...2.22.1)
 

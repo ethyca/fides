@@ -1515,6 +1515,11 @@ def served_notice_history_for_tcf_purpose(
         },
         check_name=False,
     )
+    pref_1.tcf_version = "2.0"
+    pref_1.save(db)
+    pref_1.last_served_record.tcf_version = "2.0"
+    pref_1.last_served_record.save(db)
+
     yield pref_1
     pref_1.delete(db)
 
@@ -2340,6 +2345,12 @@ def privacy_preference_history_for_tcf_purpose_consent(
         },
         check_name=False,
     )
+    preference_history_record.tcf_version = "2.0"
+    preference_history_record.save(db)
+
+    preference_history_record.current_privacy_preference.tcf_version = "2.0"
+    preference_history_record.current_privacy_preference.save(db)
+
     yield preference_history_record
     preference_history_record.delete(db)
 
@@ -2834,7 +2845,10 @@ def tcf_system(db: Session) -> System:
 
 @pytest.fixture(scope="function")
 def ac_system_with_privacy_declaration(db: Session) -> System:
-    """Test AC System with a privacy declaration"""
+    """Test AC System with privacy declarations - several contrived
+    declarations here to assert content that shouldn't show up in the
+    TCF experience is suppressed
+    """
     system = System.create(
         db=db,
         data={
@@ -2846,6 +2860,7 @@ def ac_system_with_privacy_declaration(db: Session) -> System:
         },
     )
 
+    # Valid TCF purpose with consent legal basis
     PrivacyDeclaration.create(
         db=db,
         data={
@@ -2853,7 +2868,32 @@ def ac_system_with_privacy_declaration(db: Session) -> System:
             "data_use": "functional.storage",
             "legal_basis_for_processing": "Consent",
             "features": [
-                "Match and combine data from other data sources",  # Feature 1
+                "Link different devices",  # Feature 2
+            ],
+        },
+    )
+
+    # Separate purpose with legitimate interest which isn't valid for AC systems
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "system_id": system.id,
+            "data_use": "analytics.reporting.content_performance",
+            "legal_basis_for_processing": "Legitimate interests",
+            "features": [
+                "Link different devices",  # Feature 2
+            ],
+        },
+    )
+
+    # Separate purpose with consent legal basis but it is not a TCF data use, so shouldn't show up
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "system_id": system.id,
+            "data_use": "marketing.advertising",
+            "legal_basis_for_processing": "Consent",
+            "features": [
                 "Link different devices",  # Feature 2
             ],
         },
@@ -2869,9 +2909,67 @@ def ac_system_without_privacy_declaration(db: Session) -> System:
         data={
             "fides_key": f"ac_system{uuid.uuid4()}",
             "vendor_id": "gacp.100",
-            "name": f"Test AC System",
+            "name": f"Test AC System 2",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
+        },
+    )
+
+    return system
+
+
+@pytest.fixture(scope="function")
+def ac_system_with_invalid_li_declaration(db: Session) -> System:
+    """Test AC System with invalid LI declaration only"""
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"ac_system{uuid.uuid4()}",
+            "vendor_id": "gacp.100",
+            "name": f"Test AC System 3",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+    # Separate purpose with legitimate interest which isn't valid for AC systems
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "system_id": system.id,
+            "data_use": "analytics.reporting.content_performance",
+            "legal_basis_for_processing": "Legitimate interests",
+            "features": [
+                "Link different devices",  # Feature 2
+            ],
+        },
+    )
+
+    return system
+
+
+@pytest.fixture(scope="function")
+def ac_system_with_invalid_vi_declaration(db: Session) -> System:
+    """Test AC System with vital interests declaration only"""
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"ac_system{uuid.uuid4()}",
+            "vendor_id": "gacp.100",
+            "name": f"Test AC System 4",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+    # Separate purpose with "Vital interests"
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "system_id": system.id,
+            "data_use": "analytics.reporting.content_performance",
+            "legal_basis_for_processing": "Vital interests",
+            "features": [
+                "Link different devices",  # Feature 2
+            ],
         },
     )
 

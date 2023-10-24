@@ -5,6 +5,7 @@ import {
   PrivacyExperience,
   UserConsentPreference,
 } from "fides-js";
+import { CookieKeyConsent } from "fides-js/src/lib/cookie";
 import { OVERRIDE, stubConfig } from "../support/stubs";
 
 const PURPOSE_2 = {
@@ -723,6 +724,63 @@ describe("Fides-js TCF", () => {
         });
       });
 
+      it("calls custom save preferences API fn instead of internal Fides API when it is provided in Fides.init", () => {
+        const apiOptions = {
+          /* eslint-disable @typescript-eslint/no-unused-vars */
+          savePreferencesFn: (
+            consent: CookieKeyConsent,
+            fides_string: string | undefined,
+            experience: PrivacyExperience
+          ): Promise<void> => new Promise(() => {}),
+          /* eslint-enable @typescript-eslint/no-unused-vars */
+        };
+        const spyObject = cy
+          .spy(apiOptions, "savePreferencesFn")
+          .as("mockSavePreferencesFn");
+        cy.fixture("consent/experience_tcf.json").then((privacyExperience) => {
+          stubConfig({
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+              apiOptions,
+            },
+            experience: privacyExperience.items[0],
+          });
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.get("#fides-modal-link").click();
+            cy.getByTestId("consent-modal").within(() => {
+              cy.get("button").contains("Opt out of all").click();
+              cy.get("@FidesUpdated").then(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                expect(spyObject).to.be.called;
+                const spy = spyObject.getCalls();
+                const { args } = spy[0];
+                expect(args[0]).to.deep.equal({
+                  data_sales: true,
+                  tracking: false,
+                });
+                expect(args[1]).to.equal(
+                  "CP0JloAP0JloAGXABBENATEAAAAAAAAAAAAAAAAAAAAA.IABE,1~"
+                );
+                expect(args[2]).to.deep.equal(privacyExperience.items[0]);
+              });
+              // timeout means API call not made, which is expected
+              cy.on("fail", (error) => {
+                if (error.message.indexOf("Timed out retrying") !== 0) {
+                  throw error;
+                }
+              });
+              // check that preferences aren't sent to Fides API
+              cy.wait("@patchPrivacyPreference", {
+                requestTimeout: 100,
+              }).then((xhr) => {
+                assert.isNull(xhr?.response?.body);
+              });
+            });
+          });
+        });
+      });
+
       it("skips saving preferences to API when disable save is set", () => {
         cy.fixture("consent/experience_tcf.json").then((experience) => {
           stubConfig({
@@ -746,7 +804,7 @@ describe("Fides-js TCF", () => {
             });
             // check that preferences aren't sent to Fides API
             cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 500,
+              requestTimeout: 100,
             }).then((xhr) => {
               assert.isNull(xhr?.response?.body);
             });
@@ -817,7 +875,7 @@ describe("Fides-js TCF", () => {
             });
             // check that preferences aren't sent to Fides API
             cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 500,
+              requestTimeout: 100,
             }).then((xhr) => {
               assert.isNull(xhr?.response?.body);
             });
@@ -853,7 +911,7 @@ describe("Fides-js TCF", () => {
             });
             // check that preferences aren't sent to Fides API
             cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 500,
+              requestTimeout: 100,
             }).then((xhr) => {
               assert.isNull(xhr?.response?.body);
             });
@@ -890,7 +948,7 @@ describe("Fides-js TCF", () => {
             });
             // check that preferences aren't sent to Fides API
             cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 500,
+              requestTimeout: 100,
             }).then((xhr) => {
               assert.isNull(xhr?.response?.body);
             });
@@ -994,6 +1052,8 @@ describe("Fides-js TCF", () => {
           expect(body.system_consent_preferences).to.eql([]);
         });
       });
+      // embed modal should not close on preferences save
+      cy.getByTestId("consent-modal").should("exist");
       // Verify the cookie on save
       cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
         const cookieKeyConsent: FidesCookie = JSON.parse(
@@ -1443,7 +1503,7 @@ describe("Fides-js TCF", () => {
     it("prefers preferences from fides_string option when fides_string, experience, and cookie exist", () => {
       setFidesCookie();
       const fidesStringOverride =
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
@@ -1534,7 +1594,7 @@ describe("Fides-js TCF", () => {
      */
     it("prefers preferences from fides_string option when both fides_string and experience is provided and cookie does not exist", () => {
       const fidesStringOverride =
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
@@ -1625,7 +1685,7 @@ describe("Fides-js TCF", () => {
      */
     it("does nothing when fides_string option when both fides_string option and cookie exist but no experience exists (neither prefetch nor API)", () => {
       const fidesStringOverride =
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
       setFidesCookie();
       stubConfig(
         {
@@ -1656,7 +1716,7 @@ describe("Fides-js TCF", () => {
      */
     it("prefers preferences from fides_string option when both fides_string option and cookie exist and experience is fetched from API", () => {
       const fidesStringOverride =
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       setFidesCookie();
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -1749,7 +1809,7 @@ describe("Fides-js TCF", () => {
   describe("fides_string override options", () => {
     it("uses fides_string when set via cookie", () => {
       const fidesStringOverride =
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.getCookie("fides_string").should("not.exist");
       cy.setCookie("fides_string", fidesStringOverride);
@@ -1793,7 +1853,7 @@ describe("Fides-js TCF", () => {
 
     it("uses fides_string when set via query param", () => {
       const fidesStringOverride =
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.getCookie("fides_string").should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -1841,7 +1901,7 @@ describe("Fides-js TCF", () => {
 
     it("uses fides_string when set via window obj", () => {
       const fidesStringOverride =
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE";
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.getCookie("fides_string").should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
