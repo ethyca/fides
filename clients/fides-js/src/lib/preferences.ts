@@ -18,6 +18,36 @@ import { dispatchFidesEvent } from "./events";
 import { patchUserPreferenceToFidesServer } from "../services/fides/api";
 import { TcfSavePreferences } from "./tcf/types";
 
+
+/**
+ * Helper function to save preferences to an API, either custom or internal
+ */
+async function savePreferencesApi(options: FidesOptions, cookie: FidesCookie, experience: PrivacyExperience, fidesUserPreferences: Array<ConsentOptionCreate> | undefined, consentMethod: ConsentMethod, tcf?: TcfSavePreferences, userLocationString?: string, ) {
+  if (options.apiOptions?.savePreferencesFn) {
+    debugLog(options.debug, "Calling custom save preferences fn");
+    await options.apiOptions.savePreferencesFn(
+        cookie.consent,
+        cookie.fides_string,
+        experience
+    );
+  } else {
+    const privacyPreferenceCreate: PrivacyPreferencesRequest = {
+      browser_identity: cookie.identity,
+      preferences: fidesUserPreferences,
+      privacy_experience_id: experience.id,
+      user_geography: userLocationString,
+      method: consentMethod,
+      ...(tcf ?? []),
+    };
+    debugLog(options.debug, "Saving preferences to Fides API");
+    await patchUserPreferenceToFidesServer(
+        privacyPreferenceCreate,
+        options.fidesApiUrl,
+        options.debug
+    );
+  }
+}
+
 /**
  * Updates the user's consent preferences, going through the following steps:
  * 1. Update the cookie object based on new preferences
@@ -77,42 +107,12 @@ export const updateConsentPreferences = async ({
   window.Fides.fides_string = cookie.fides_string;
   window.Fides.tcf_consent = cookie.tcf_consent;
 
-  // 3. Save preferences to Fides API
+  // 3. Save preferences to API (if not disabled)
   if (!options.fidesDisableSaveApi) {
-    if (options.apiOptions?.savePreferencesFn) {
-      try {
-        debugLog(options.debug, "Calling custom save preferences fn");
-        await options.apiOptions.savePreferencesFn(
-          cookie.consent,
-          cookie.fides_string,
-          experience
-        );
-      } catch (e) {
-        debugLog(options.debug, "Error calling custom save preferences fn", e);
-      }
-    } else {
-      const privacyPreferenceCreate: PrivacyPreferencesRequest = {
-        browser_identity: cookie.identity,
-        preferences: fidesUserPreferences,
-        privacy_experience_id: experience.id,
-        user_geography: userLocationString,
-        method: consentMethod,
-        ...(tcf ?? []),
-      };
-      try {
-        debugLog(options.debug, "Saving preferences to Fides API");
-        await patchUserPreferenceToFidesServer(
-          privacyPreferenceCreate,
-          options.fidesApiUrl,
-          options.debug
-        );
-      } catch (e) {
-        debugLog(
-          options.debug,
-          "Error saving user preferences to Fides server",
-          e
-        );
-      }
+    try {
+      await savePreferencesApi(options, cookie, experience, fidesUserPreferences, consentMethod, tcf, userLocationString);
+    } catch (e) {
+      debugLog(options.debug, "Error saving updated preferences to API, continuing. Error: ", e);
     }
   }
 
