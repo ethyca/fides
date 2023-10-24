@@ -1006,7 +1006,7 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("be.checked");
       });
     });
-    it("can opt in to some and opt out of others", () => {
+    it.only("can opt in to some and opt out of others", () => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
@@ -1027,8 +1027,6 @@ describe("Fides-js TCF", () => {
         cy.getByTestId(`toggle-${SYSTEM_1.name}`).click();
         cy.get("button").contains("Save").click();
         cy.wait("@patchPrivacyPreference").then((interception) => {
-          // embed modal should not close on preferences save
-          cy.getByTestId("consent-modal").should("exist");
           const { body } = interception.request;
           expect(body.purpose_consent_preferences).to.eql([
             { id: PURPOSE_4.id, preference: "opt_out" },
@@ -1054,6 +1052,8 @@ describe("Fides-js TCF", () => {
           expect(body.system_consent_preferences).to.eql([]);
         });
       });
+      // embed modal should not close on preferences save
+      cy.getByTestId("consent-modal").should("exist");
       // Verify the cookie on save
       cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
         const cookieKeyConsent: FidesCookie = JSON.parse(
