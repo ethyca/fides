@@ -148,3 +148,16 @@ export const enumToOptions = (e: { [s: number]: string }) =>
     value: entry[1],
     label: entry[1],
   }));
+
+export enum VendorSources {
+  GVL = "gvl",
+  AC = "gacp",
+}
+
+export const extractVendorSource = (vendorId: string) => {
+  const source = vendorId.split(".")[0];
+  if (source === VendorSources.AC) {
+    return VendorSources.AC;
+  }
+  return VendorSources.GVL;
+};

@@ -23,6 +23,12 @@ import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { useFeatures } from "~/features/common/features";
 import {
+  extractVendorSource,
+  getErrorMessage,
+  isErrorResult,
+  VendorSources,
+} from "~/features/common/helpers";
+import {
   DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
@@ -33,7 +39,7 @@ import {
   TableActionBar,
   TableSkeletonLoader,
 } from "~/features/common/tablev2";
-import { successToastParams } from "~/features/common/toast";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   DictSystems,
   selectAllDictSystems,
@@ -43,7 +49,9 @@ import {
 
 export const VendorSourceCell = ({ value }: { value: string }) => (
   <Flex alignItems="center" height="100%">
-    <Badge>{value.split(".")[0] === "gvl" ? "GVL" : "AC"}</Badge>
+    <Badge>
+      {extractVendorSource(value) === VendorSources.GVL ? "GVL" : "AC"}
+    </Badge>
   </Flex>
 );
 
@@ -161,15 +169,19 @@ export const AddMultipleSystems = ({ redirectRoute, isSystem }: Props) => {
       .rows.filter((r) => !r.original.linked_system)
       .map((r) => r.original.vendor_id);
     if (vendorIds.length > 0) {
-      await postVendorIds(vendorIds);
+      const result = await postVendorIds(vendorIds);
       router.push(redirectRoute);
-      toast(
-        successToastParams(
-          `Successfully added ${
-            vendorIds.length
-          } ${systemText.toLocaleLowerCase()}`
-        )
-      );
+      if (isErrorResult(result)) {
+        toast(errorToastParams(getErrorMessage(result.error)));
+      } else {
+        toast(
+          successToastParams(
+            `Successfully added ${
+              vendorIds.length
+            } ${systemText.toLocaleLowerCase()}`
+          )
+        );
+      }
     }
   };
 
