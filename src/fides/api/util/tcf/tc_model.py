@@ -11,6 +11,7 @@ from fides.api.schemas.tcf import (
     TCFVendorConsentRecord,
     TCFVendorLegitimateInterestsRecord,
 )
+from fides.api.util.tcf.ac_string import build_ac_vendor_consents
 from fides.api.util.tcf.tcf_experience_contents import (
     AC_PREFIX,
     GVL_PREFIX,
@@ -40,7 +41,9 @@ def universal_vendor_id_to_gvl_id(universal_vendor_id: str) -> int:
 
 
 class TCModel(FidesSchema):
-    """Base internal TC schema to store and validate key details from which to later build the TC String"""
+    """Base internal TCF schema to store and validate key details from which to later build the TC String
+    and AC Strings
+    """
 
     _gvl: Dict = {}
 
@@ -187,6 +190,12 @@ class TCModel(FidesSchema):
     )
 
     num_pub_restrictions: int = 0  # Hardcoded here for now
+
+    ac_vendor_consents: List[int] = Field(
+        default=[],
+        description="A list of Google's Additional Consent Vendors for which the customer has opted in. These "
+        "are consented Google Ad Tech Providers that are not registered with IAB",
+    )
 
     @validator("publisher_country_code")
     def check_publisher_country_code(cls, publisher_country_code: str) -> str:
@@ -402,7 +411,7 @@ def convert_tcf_contents_to_tc_model(
 ) -> TCModel:
     """
     Helper for building a TCModel from TCFExperienceContents that contains the prerequisite information to build
-    an accept-all or reject-all string, depending on the supplied preference.
+    an accept-all or reject-all fides string, with TC and AC sections, depending on the supplied preference.
     """
     if not preference:
         # Dev-level error
@@ -446,6 +455,7 @@ def convert_tcf_contents_to_tc_model(
         vendor_consents=vendor_consents if consented else [],
         vendor_legitimate_interests=vendor_legitimate_interests if consented else [],
         vendors_disclosed=_build_vendors_disclosed(tcf_contents),
+        ac_vendor_consents=build_ac_vendor_consents(tcf_contents, preference),
     )
 
     return tc_model

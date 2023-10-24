@@ -70,11 +70,11 @@ const Overlay: FunctionComponent<Props> = ({
   }, [instance, cookie, options.debug]);
 
   const handleCloseModal = useCallback(() => {
-    if (instance) {
+    if (instance && !options.fidesEmbed) {
       instance.hide();
       dispatchCloseEvent();
     }
-  }, [instance, dispatchCloseEvent]);
+  }, [instance, dispatchCloseEvent, options.fidesEmbed]);
 
   useEffect(() => {
     if (options.fidesEmbed && instance) {
