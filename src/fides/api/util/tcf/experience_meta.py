@@ -30,21 +30,21 @@ class TCFVersionHash(FidesSchema):
         "re-establish transparency and consent from users."
     )
     vendor_purpose_consents: List[str] = Field(
-        description="Stores vendor * purpose * consent legal basis in the format "
+        description="Stores vendor * purpose * consent legal basis in the format: "
         "<universal_vendor_id>-<comma separated purposes>"
     )
     vendor_purpose_legitimate_interests: List[str] = Field(
-        description="Stores vendor * purpose * legitimate interest legal basis in the format"
-        " <universal_vendor_id>-<comma separated purposes>"
+        description="Stores vendor * purpose * legitimate interest legal basis in the format: "
+        "<universal_vendor_id>-<comma separated purposes>"
     )
     gvl_vendors_disclosed: List[int] = Field(
-        description="List of GVL vendors disclosed from the last vendor list"
+        description="List of GVL vendors disclosed from the current vendor list"
     )
 
     @root_validator()
     @classmethod
     def sort_lists(cls, values: Dict) -> Dict:
-        """Verify lists are sorted for repeatability"""
+        """Verify lists are sorted deterministically for repeatability"""
         for field, val in values.items():
             if isinstance(val, list):
                 values[field] = sorted(val)
@@ -72,7 +72,7 @@ def _build_tcf_version_hash_model(
     ) -> List[str]:
         """Hash helper for building vendor x purposes.  Converts a list of vendor records
         into a list of strings each consisting of a vendor id, a separator (-), and comma
-        separated purposes (if applicable) with the given legitimate interest.
+        separated purposes (if applicable) with the given legal basis.
 
         Example:
         [<universal_vendor_id>-<comma separated purposes>]
@@ -118,7 +118,8 @@ def _build_tcf_version_hash_model(
         policy_version=model.policy_version,
         vendor_purpose_consents=vendor_consents,
         vendor_purpose_legitimate_interests=vendor_li,
-        gvl_vendors_disclosed=model.vendors_disclosed,
+        gvl_vendors_disclosed=model.vendors_disclosed,  # `vendors_disclosed` field only has GVL vendors present
+        # in "current" GVL vendor list
     )
 
 

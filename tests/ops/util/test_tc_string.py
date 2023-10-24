@@ -87,6 +87,7 @@ class TestHashTCFExperience:
         "captify_technologies_system",
         "ac_system_without_privacy_declaration",
         "ac_system_with_privacy_declaration",
+        "enable_ac",
     )
     def test_vendor_hash_model_contents(self, db, system):
         """Test building hash model with a mixture of GVL, AC, and regular Systems without a vendor"""
