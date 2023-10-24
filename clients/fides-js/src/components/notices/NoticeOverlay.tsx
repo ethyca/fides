@@ -73,10 +73,9 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       });
       updateConsentPreferences({
         consentPreferencesToSave,
-        experienceId: experience.id,
-        fidesApiUrl: options.fidesApiUrl,
+        experience,
         consentMethod: ConsentMethod.button,
-        fidesDisableSaveApi: options.fidesDisableSaveApi,
+        options,
         userLocationString: fidesRegionString,
         cookie,
         servedNotices,
@@ -93,8 +92,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       privacyNotices,
       cookie,
       fidesRegionString,
-      experience.id,
-      options.fidesApiUrl,
+      experience,
+      options,
       servedNotices,
     ]
   );
@@ -142,11 +141,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               enabledNoticeKeys={draftEnabledNoticeKeys}
               onChange={(updatedKeys) => {
                 setDraftEnabledNoticeKeys(updatedKeys);
-                dispatchFidesEvent(
-                  "FidesPreferenceToggled",
-                  cookie,
-                  options.debug
-                );
+                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
               }}
             />
           </div>

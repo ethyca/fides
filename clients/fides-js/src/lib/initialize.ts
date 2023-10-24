@@ -9,6 +9,7 @@ import {
   CookieKeyConsent,
   CookieMeta,
   FidesCookie,
+  getCookieByName,
   getOrMakeFidesCookie,
   isNewFidesCookie,
   makeConsentDefaultsLegacy,
@@ -20,6 +21,7 @@ import {
   ConsentMethod,
   EmptyExperience,
   FidesConfig,
+  FidesOptionOverrides,
   FidesOptions,
   PrivacyExperience,
   SaveConsentPreference,
@@ -40,6 +42,7 @@ import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
 import { TcfCookieConsent } from "./tcf/types";
+import { FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP } from "./consent-constants";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -85,15 +88,13 @@ const retrieveEffectiveRegionString = async (
 const automaticallyApplyGPCPreferences = ({
   cookie,
   fidesRegionString,
-  fidesApiUrl,
-  fidesDisableSaveApi,
   effectiveExperience,
+  fidesOptions,
 }: {
   cookie: FidesCookie;
   fidesRegionString: string | null;
-  fidesApiUrl: string;
-  fidesDisableSaveApi: boolean;
   effectiveExperience?: PrivacyExperience;
+  fidesOptions: FidesOptions;
 }) => {
   if (!effectiveExperience || !effectiveExperience.privacy_notices) {
     return;
@@ -131,16 +132,56 @@ const automaticallyApplyGPCPreferences = ({
   if (gpcApplied) {
     updateConsentPreferences({
       consentPreferencesToSave,
-      experienceId: effectiveExperience.id,
-      fidesApiUrl,
+      experience: effectiveExperience,
       consentMethod: ConsentMethod.gpc,
-      fidesDisableSaveApi,
+      options: fidesOptions,
       userLocationString: fidesRegionString || undefined,
       cookie,
       updateCookie: (oldCookie) =>
         updateCookieFromNoticePreferences(oldCookie, consentPreferencesToSave),
     });
   }
+};
+
+/**
+ * Gets and validates Fides override options provided through URL query params, cookie or window obj.
+ *
+ * If the same override option is provided in multiple ways, load the value in this order:
+ * 1) query param  (top priority)
+ * 2) window obj   (second priority)
+ * 3) cookie value (last priority)
+ */
+export const getOverrideFidesOptions = (): Partial<FidesOptionOverrides> => {
+  const overrideOptions: Partial<FidesOptionOverrides> = {};
+  if (typeof window !== "undefined") {
+    // Grab query params if provided in the URL (e.g. "?fides_string=123...")
+    const queryParams = new URLSearchParams(window.location.search);
+    // Grab global window object if provided (e.g. window.config.tc_info = { fides_string: "123..." })
+    // DEFER (PROD-1243): support a configurable "custom options" path
+    const windowObj = window.config?.tc_info;
+
+    // Look for each of the override options in all three locations: query params, window object, cookie
+    FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP.forEach(
+      ({ fidesOption, fidesOptionType, fidesOverrideKey, validationRegex }) => {
+        const queryParamOverride: string | null =
+          queryParams.get(fidesOverrideKey);
+        const windowObjOverride: string | boolean | undefined = windowObj
+          ? windowObj[fidesOverrideKey]
+          : undefined;
+        const cookieOverride: string | undefined =
+          getCookieByName(fidesOverrideKey);
+
+        // Load the override option value, respecting the order of precedence (query params > window object > cookie)
+        const value = queryParamOverride || windowObjOverride || cookieOverride;
+        if (value && validationRegex.test(value.toString())) {
+          // coerce to expected type in FidesOptions
+          overrideOptions[fidesOption] =
+            fidesOptionType === "string" ? value : JSON.parse(value.toString());
+        }
+      }
+    );
+  }
+  return overrideOptions;
 };
 
 /**
@@ -314,9 +355,8 @@ export const initialize = async ({
     automaticallyApplyGPCPreferences({
       cookie,
       fidesRegionString,
-      fidesApiUrl: options.fidesApiUrl,
-      fidesDisableSaveApi: options.fidesDisableSaveApi,
       effectiveExperience,
+      fidesOptions: options,
     });
   }
 

@@ -9,10 +9,10 @@ import {
   PrivacyNotice,
   UserConsentPreference,
   UserGeolocation,
-  VALID_ISO_3166_LOCATION_REGEX,
 } from "./consent-types";
 import { EXPERIENCE_KEYS_WITH_PREFERENCES } from "./tcf/constants";
 import { TCFPurposeConsentRecord } from "./tcf/types";
+import { VALID_ISO_3166_LOCATION_REGEX } from "./consent-constants";
 
 /**
  * Wrapper around 'console.log' that only logs output when the 'debug' banner

@@ -47,7 +47,7 @@ class TestExperienceConfig:
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                 "privacy_preferences_link_label": "Manage preferences",
                 "privacy_policy_link_label": "View our privacy policy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "reject_button_label": "Reject all",
                 "save_button_label": "Save",
                 "title": "Control your privacy",
@@ -66,7 +66,7 @@ class TestExperienceConfig:
         assert config.is_default is False
         assert config.privacy_preferences_link_label == "Manage preferences"
         assert config.privacy_policy_link_label == "View our privacy policy"
-        assert config.privacy_policy_url == "example.com/privacy"
+        assert config.privacy_policy_url == "http://example.com/privacy"
         assert config.reject_button_label == "Reject all"
         assert config.save_button_label == "Save"
         assert config.title == "Control your privacy"
@@ -91,7 +91,7 @@ class TestExperienceConfig:
         assert history.is_default is False
         assert history.privacy_preferences_link_label == "Manage preferences"
         assert history.privacy_policy_link_label == "View our privacy policy"
-        assert history.privacy_policy_url == "example.com/privacy"
+        assert history.privacy_policy_url == "http://example.com/privacy"
         assert history.reject_button_label == "Reject all"
         assert history.save_button_label == "Save"
         assert history.title == "Control your privacy"
@@ -112,7 +112,7 @@ class TestExperienceConfig:
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                 "privacy_preferences_link_label": "Manage preferences",
                 "privacy_policy_link_label": "View our privacy policy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "reject_button_label": "Reject all",
                 "save_button_label": "Save",
                 "title": "Control your privacy",
@@ -473,7 +473,7 @@ class TestPrivacyExperience:
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                 "privacy_preferences_link_label": "Manage preferences",
                 "privacy_policy_link_label": "View our privacy policy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "reject_button_label": "Reject all",
                 "save_button_label": "Save",
                 "title": "Control your privacy",
@@ -1320,6 +1320,12 @@ class TestCacheSavedAndServedOnConsentRecord:
         privacy_preference_history_for_tcf_purpose_consent,
         served_notice_history_for_tcf_purpose,
     ):
+        """For TCF preferences, preferences saved against a purpose in an older TCF version are still returned
+        as the current preference, not the outdated preference, same with TCF served.
+
+        For TCF, just because a preference was saved against an older TCF version, doesn't mean its necessarily "outdated".
+        For Privacy Notices, however, we do consider them outdated.
+        """
         privacy_preference_history_for_tcf_purpose_consent.current_privacy_preference.tcf_version = (
             "1.0"
         )
@@ -1341,13 +1347,13 @@ class TestCacheSavedAndServedOnConsentRecord:
             tcf_purpose_consent_record.default_preference
             == UserConsentPreference.opt_out
         )
-        assert tcf_purpose_consent_record.current_preference is None
+        assert tcf_purpose_consent_record.outdated_preference is None
         assert (
-            tcf_purpose_consent_record.outdated_preference
+            tcf_purpose_consent_record.current_preference
             == UserConsentPreference.opt_out
         )
-        assert tcf_purpose_consent_record.current_served is None
-        assert tcf_purpose_consent_record.outdated_served is True
+        assert tcf_purpose_consent_record.current_served is True
+        assert tcf_purpose_consent_record.outdated_served is None
 
     @pytest.mark.usefixtures(
         "privacy_preference_history_for_tcf_purpose_consent",

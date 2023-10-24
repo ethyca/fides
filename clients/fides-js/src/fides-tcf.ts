@@ -52,6 +52,8 @@ import { shopify } from "./integrations/shopify";
 
 import {
   FidesConfig,
+  FidesOptionOverrides,
+  OverrideOptions,
   PrivacyExperience,
   UserConsentPreference,
 } from "./lib/consent-types";
@@ -60,6 +62,7 @@ import { generateFidesString, initializeCmpApi } from "./lib/tcf";
 import {
   getInitialCookie,
   getInitialFides,
+  getOverrideFidesOptions,
   initialize,
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
@@ -71,6 +74,7 @@ import {
   hasSavedTcfPreferences,
   isNewFidesCookie,
   isPrivacyExperience,
+  tcfConsentCookieObjHasSomeConsentSet,
   transformTcfPreferencesToCookieKeys,
   transformUserPreferenceToBoolean,
 } from "./fides";
@@ -96,6 +100,10 @@ declare global {
       callback: (tcData: TCData, success: boolean) => void,
       parameter?: number | string
     ) => void;
+    config: {
+      // DEFER (PROD-1243): support a configurable "custom options" path
+      tc_info: OverrideOptions;
+    };
   }
 }
 
@@ -164,6 +172,10 @@ const updateCookie = async (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
+  const overrideOptions: Partial<FidesOptionOverrides> =
+    getOverrideFidesOptions();
+  // eslint-disable-next-line no-param-reassign
+  config.options = { ...config.options, ...overrideOptions };
   const cookie = getInitialCookie(config);
   if (config.options.fidesString) {
     // If a fidesString is explicitly passed in, we override the associated cookie props, which are then used to
@@ -178,7 +190,7 @@ const init = async (config: FidesConfig) => {
       config.options.debug
     );
   } else if (
-    cookie.tcf_consent &&
+    tcfConsentCookieObjHasSomeConsentSet(cookie.tcf_consent) &&
     !cookie.fides_string &&
     isPrivacyExperience(config.experience) &&
     experienceIsValid(config.experience, config.options)
@@ -206,8 +218,8 @@ const init = async (config: FidesConfig) => {
   const experience = initialFides?.experience ?? config.experience;
   const updatedFides = await initialize({
     ...config,
-    experience,
     cookie,
+    experience,
     renderOverlay,
     updateCookie,
   });
@@ -243,6 +255,7 @@ _Fides = {
     fidesEmbed: false,
     fidesDisableSaveApi: false,
     fidesString: null,
+    apiOptions: null,
   },
   fides_meta: {},
   identity: {},

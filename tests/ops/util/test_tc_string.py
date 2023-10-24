@@ -1,14 +1,15 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 
 import pytest
 from iab_tcf import decode_v2
 from pydantic import ValidationError
 
-from fides.api.common_exceptions import DecodeTCStringError
+from fides.api.common_exceptions import DecodeFidesStringError
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.sql_models import PrivacyDeclaration, System
-from fides.api.schemas.privacy_preference import TCStringFidesPreferences
+from fides.api.schemas.privacy_preference import FidesStringFidesPreferences
 from fides.api.util.tcf.experience_meta import (
     TCFVersionHash,
     _build_tcf_version_hash_model,
@@ -16,7 +17,7 @@ from fides.api.util.tcf.experience_meta import (
 )
 from fides.api.util.tcf.tc_mobile_data import (
     build_tc_data_for_mobile,
-    convert_tc_string_to_mobile_data,
+    convert_fides_str_to_mobile_data,
 )
 from fides.api.util.tcf.tc_model import (
     CMP_ID,
@@ -1231,9 +1232,9 @@ class TestBuildTCModel:
 
         assert decoded.oob_disclosed_vendors == {1: False, 2: True}
 
-    @pytest.mark.usefixtures("ac_system")
+    @pytest.mark.usefixtures("ac_system_with_privacy_declaration", "enable_ac")
     def test_ac_system_not_in_tc_string(self, db):
-        """System with AC vendor id will not show up in the vendor consents section, but its purpose
+        """System with AC vendor id will not show up in the vendor consents section of the TC string, but its purpose
         with legal basis of consent does show up in purpose consents (this is the same thing we do if we
         have a system that is not in the GVL too)"""
         tcf_contents = get_tcf_contents(db)
@@ -1342,7 +1343,7 @@ class TestBuildTCModel:
 
 
 class TestBuildTCMobileData:
-    @pytest.mark.usefixtures("captify_technologies_system")
+    @pytest.mark.usefixtures("captify_technologies_system", "enable_ac")
     def test_build_accept_all_tc_data_for_mobile_consent_purposes_only(self, db):
         tcf_contents = get_tcf_contents(db)
         model = convert_tcf_contents_to_tc_model(
@@ -1372,9 +1373,9 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherLegitimateInterests is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesConsents is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
-        assert tc_mobile_data.IABTCF_AddtlConsent is None
+        assert tc_mobile_data.IABTCF_AddtlConsent == "1~"
 
-    @pytest.mark.usefixtures("captify_technologies_system")
+    @pytest.mark.usefixtures("captify_technologies_system", "enable_ac")
     def test_build_reject_all_tc_data_for_mobile_consent_purposes_only(self, db):
         tcf_contents = get_tcf_contents(db)
         model = convert_tcf_contents_to_tc_model(
@@ -1404,9 +1405,9 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherLegitimateInterests is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesConsents is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
-        assert tc_mobile_data.IABTCF_AddtlConsent is None
+        assert tc_mobile_data.IABTCF_AddtlConsent == "1~"
 
-    @pytest.mark.usefixtures("skimbit_system")
+    @pytest.mark.usefixtures("skimbit_system", "enable_ac")
     def test_build_accept_all_tc_data_for_mobile_with_legitimate_interest_purposes(
         self, db
     ):
@@ -1441,9 +1442,9 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherLegitimateInterests is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesConsents is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
-        assert tc_mobile_data.IABTCF_AddtlConsent is None
+        assert tc_mobile_data.IABTCF_AddtlConsent == "1~"
 
-    @pytest.mark.usefixtures("skimbit_system")
+    @pytest.mark.usefixtures("skimbit_system", "enable_ac")
     def test_build_reject_all_tc_data_for_mobile_with_legitimate_interest_purposes(
         self, db
     ):
@@ -1475,7 +1476,72 @@ class TestBuildTCMobileData:
         assert tc_mobile_data.IABTCF_PublisherLegitimateInterests is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesConsents is None
         assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
+        assert tc_mobile_data.IABTCF_AddtlConsent == "1~"
+
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration", "enable_ac")
+    def test_build_opt_in_tc_data_for_mobile_with_ac_system(self, db):
+        tcf_contents = get_tcf_contents(db)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_in
+        )
+
+        tc_mobile_data = build_tc_data_for_mobile(model)
+
+        assert tc_mobile_data.IABTCF_CmpSdkID == CMP_ID
+        assert tc_mobile_data.IABTCF_CmpSdkVersion == 1
+        assert tc_mobile_data.IABTCF_PolicyVersion == 4
+        assert tc_mobile_data.IABTCF_gdprApplies == 1
+        assert tc_mobile_data.IABTCF_PublisherCC == "AA"
+        assert tc_mobile_data.IABTCF_PurposeOneTreatment == 0
+        assert tc_mobile_data.IABTCF_TCString is not None
+        assert tc_mobile_data.IABTCF_UseNonStandardTexts == 0
+        assert tc_mobile_data.IABTCF_VendorConsents == ""
+        assert tc_mobile_data.IABTCF_VendorLegitimateInterests == ""
+        assert tc_mobile_data.IABTCF_PurposeConsents == "000000000000000000000000"
+        assert (
+            tc_mobile_data.IABTCF_PurposeLegitimateInterests
+            == "000000000000000000000000"
+        )
+        assert tc_mobile_data.IABTCF_SpecialFeaturesOptIns == "000000000000"
+
+        assert tc_mobile_data.IABTCF_PublisherConsent is None
+        assert tc_mobile_data.IABTCF_PublisherLegitimateInterests is None
+        assert tc_mobile_data.IABTCF_PublisherCustomPurposesConsents is None
+        assert tc_mobile_data.IABTCF_PublisherCustomPurposesLegitimateInterests is None
+        assert tc_mobile_data.IABTCF_AddtlConsent == "1~100"
+
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
+    def test_build_opt_in_tc_data_for_mobile_with_ac_system_but_ac_disabled(self, db):
+        tcf_contents = get_tcf_contents(db)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_in
+        )
+
+        tc_mobile_data = build_tc_data_for_mobile(model)
+
+        assert tc_mobile_data.IABTCF_CmpSdkID == CMP_ID
+        assert tc_mobile_data.IABTCF_CmpSdkVersion == 1
+        assert tc_mobile_data.IABTCF_PolicyVersion == 4
         assert tc_mobile_data.IABTCF_AddtlConsent is None
+
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration", "enable_ac")
+    def test_build_opt_out_tc_data_for_mobile_with_ac_system(self, db):
+        tcf_contents = get_tcf_contents(db)
+        model = convert_tcf_contents_to_tc_model(
+            tcf_contents, UserConsentPreference.opt_out
+        )
+
+        tc_mobile_data = build_tc_data_for_mobile(model)
+
+        assert tc_mobile_data.IABTCF_VendorConsents == ""
+        assert tc_mobile_data.IABTCF_VendorLegitimateInterests == ""
+        assert tc_mobile_data.IABTCF_PurposeConsents == "000000000000000000000000"
+        assert (
+            tc_mobile_data.IABTCF_PurposeLegitimateInterests
+            == "000000000000000000000000"
+        )
+        assert tc_mobile_data.IABTCF_SpecialFeaturesOptIns == "000000000000"
+        assert tc_mobile_data.IABTCF_AddtlConsent == "1~"
 
 
 class TestDecodeTcString:
@@ -1500,7 +1566,7 @@ class TestDecodeTcString:
 
         tcf_contents = get_tcf_contents(db)
         fides_tcf_preferences = decode_tc_string_to_preferences(tc_str, tcf_contents)
-        assert isinstance(fides_tcf_preferences, TCStringFidesPreferences)
+        assert isinstance(fides_tcf_preferences, FidesStringFidesPreferences)
 
         assert len(fides_tcf_preferences.purpose_consent_preferences) == len(
             datamap_purpose_consent
@@ -1570,7 +1636,7 @@ class TestConvertTCStringtoMobile:
         Special feature opt ins are 2
         """
         tc_str = "CPytTYAPytTYAAMABBENATEEAPLAAEPAAAAAAEEEALgCAAAAAAgAAAAA.IAXEEAAAAABA"
-        tc_mobile_data = convert_tc_string_to_mobile_data(tc_str).dict()
+        tc_mobile_data = convert_fides_str_to_mobile_data(tc_str).dict()
 
         assert tc_mobile_data["IABTCF_CmpSdkID"] == 12
         assert tc_mobile_data["IABTCF_CmpSdkVersion"] == 1
@@ -1608,7 +1674,7 @@ class TestConvertTCStringtoMobile:
         Special feature opt ins are 1
         """
         tc_str = "CPy2kiHPy2kiHfQADLENCZCYAJRAAHAAAAKwAFoRgAQ0QAA.II7Nd_X__bX9n-_7_6ft0eY1f9_r37uQzDhfNs-8F3L_W_LwX32E7NF36tq4KmR4ku1bBIQNtHMnUDUmxaolVrzHsak2cpyNKJ_JkknsZe2dYGF9Pn9lD-YKZ7_5_9_f52T_9_9_-39z3_9f___dv_-__-vjf_599n_v9fV_78_Kf9______-____________8A"
-        tc_mobile_data = convert_tc_string_to_mobile_data(tc_str).dict()
+        tc_mobile_data = convert_fides_str_to_mobile_data(tc_str).dict()
 
         assert tc_mobile_data["IABTCF_CmpSdkID"] == 2000
         assert tc_mobile_data["IABTCF_CmpSdkVersion"] == 3
@@ -1633,7 +1699,7 @@ class TestConvertTCStringtoMobile:
         Test reject all response
         """
         tc_str = "CPy2UQ3Py2UQ3AYAAAENCZCQAAAAAAAAAIAAAAAAAAAA.II7Nd_X__bX9n-_7_6ft0eY1f9_r37uQzDhfNs-8F3L_W_LwX32E7NF36tq4KmR4ku1bBIQNtHMnUDUmxaolVrzHsak2cpyNKJ_JkknsZe2dYGF9Pn9lD-YKZ7_5_9_f52T_9_9_-39z3_9f___dv_-__-vjf_599n_v9fV_78_Kf9______-____________8A"
-        tc_mobile_data = convert_tc_string_to_mobile_data(tc_str).dict()
+        tc_mobile_data = convert_fides_str_to_mobile_data(tc_str).dict()
 
         assert tc_mobile_data["IABTCF_CmpSdkID"] == 24
         assert tc_mobile_data["IABTCF_CmpSdkVersion"] == 0
@@ -1652,14 +1718,18 @@ class TestConvertTCStringtoMobile:
         assert tc_mobile_data["IABTCF_VendorLegitimateInterests"] == ""
         assert tc_mobile_data["IABTCF_SpecialFeaturesOptIns"] == "000000000000"
 
-    def test_bad_str(self):
+    def test_bad_tc_str(self):
         """
         Test response for an invalid string
         """
 
         tc_str = "bad_core.bad_vendor"
-        with pytest.raises(DecodeTCStringError):
-            convert_tc_string_to_mobile_data(tc_str)
+        with pytest.raises(DecodeFidesStringError):
+            convert_fides_str_to_mobile_data(tc_str)
+
+        ac_str_only = ",1~1.100"
+        with pytest.raises(DecodeFidesStringError):
+            convert_fides_str_to_mobile_data(ac_str_only)
 
     def test_invalid_base64_encoded_str(self):
         """
@@ -1667,8 +1737,8 @@ class TestConvertTCStringtoMobile:
         """
 
         tc_str = "a"
-        with pytest.raises(DecodeTCStringError):
-            convert_tc_string_to_mobile_data(tc_str)
+        with pytest.raises(DecodeFidesStringError):
+            convert_fides_str_to_mobile_data(tc_str)
 
     def test_string_with_incorrect_bits_for_field(self):
         """String was encoded with version bits as one longer than it should have been,
@@ -1678,7 +1748,7 @@ class TestConvertTCStringtoMobile:
         """
         tc_str = "BH5Z8oAH5Z8oAAGAGAiGgDBAAEgAAAAAAAAAAAAAAAAA"
 
-        tc_mobile_data = convert_tc_string_to_mobile_data(tc_str).dict()
+        tc_mobile_data = convert_fides_str_to_mobile_data(tc_str).dict()
 
         assert tc_mobile_data["IABTCF_CmpSdkID"] == 6  # Was supposed to be 12
         assert tc_mobile_data["IABTCF_CmpSdkVersion"] == 6  # Was supposed to be 12
@@ -1698,3 +1768,32 @@ class TestConvertTCStringtoMobile:
         assert tc_mobile_data["IABTCF_VendorConsents"] == ""
         assert tc_mobile_data["IABTCF_VendorLegitimateInterests"] == ""
         assert tc_mobile_data["IABTCF_SpecialFeaturesOptIns"] == "000000000000"
+
+    def test_ac_str_but_no_tc_str_string_format(self):
+        fides_str = ",~12.35.1452.3313"
+
+        with pytest.raises(DecodeFidesStringError):
+            convert_fides_str_to_mobile_data(fides_str)
+
+    def test_bad_ac_string_format(self):
+        fides_str = "CPz4f8wPz4f8wKEAAAENCZCsAAwAACIAAAAAAFNdAAoAIAA.YAAAAAAAAAA,~12.35.1452.3313"
+
+        with pytest.raises(DecodeFidesStringError):
+            convert_fides_str_to_mobile_data(fides_str)
+
+    def test_tc_string_and_ac_string(self):
+        """Assert selected items off of the TC string, but primarily that the AC string is added to IABTCF_AddtlConsent"""
+        fides_str = "CPz4f8wPz4f8wKEAAAENCZCsAAwAACIAAAAAAFNdAAoAIAA.YAAAAAAAAAA,1~12.35.1452.3313"
+
+        tc_mobile_data = convert_fides_str_to_mobile_data(fides_str).dict()
+
+        assert tc_mobile_data["IABTCF_CmpSdkID"] == 644
+        assert tc_mobile_data["IABTCF_CmpSdkVersion"] == 0
+        assert tc_mobile_data["IABTCF_PolicyVersion"] == 2
+
+        assert tc_mobile_data["IABTCF_AddtlConsent"] == "1~12.35.1452.3313"
+
+    def test_null_fides_string(self):
+        assert convert_fides_str_to_mobile_data("") is None
+
+        assert convert_fides_str_to_mobile_data(None) is None
