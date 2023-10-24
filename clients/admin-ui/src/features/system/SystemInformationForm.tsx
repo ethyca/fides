@@ -52,7 +52,7 @@ import {
 } from "~/features/system/system.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import VendorSelector from "~/features/system/VendorSelector";
-import { ResourceTypes, System, SystemResponse } from "~/types/api";
+import { ResourceTypes, SystemResponse } from "~/types/api";
 
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
 import {
