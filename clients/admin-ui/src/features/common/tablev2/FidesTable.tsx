@@ -105,47 +105,47 @@ export const FidesTableV2 = <T,>({
       <Tbody>
         {rowActionBar}
         {tableInstance.getRowModel().rows.map((row) => (
-            <Tr
-              key={row.id}
-              height="36px"
-              _hover={
-                onRowClick
-                  ? { backgroundColor: "gray.50", cursor: "pointer" }
-                  : undefined
-              }
-              data-testid={`row-${row.id}`}
-            >
-              {row.getVisibleCells().map((cell) => (
-                <Td
-                  key={cell.id}
-                  width={
-                    cell.column.columnDef.meta?.width
-                      ? cell.column.columnDef.meta.width
-                      : "unset"
-                  }
-                  borderBottomWidth="1px"
-                  borderBottomColor="gray.200"
-                  borderRightWidth="1px"
-                  borderRightColor="gray.200"
-                  _first={{
-                    borderLeftWidth: "1px",
-                    borderLeftColor: "gray.200",
-                  }}
-                  height="inherit"
-                  style={getTableTHandTDStyles(cell.column.id)}
-                  onClick={
-                    cell.column.columnDef.header !== "Enable" && onRowClick
-                      ? () => {
-                          onRowClick(row.original);
-                        }
-                      : undefined
-                  }
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </Td>
-              ))}
-            </Tr>
-          ))}
+          <Tr
+            key={row.id}
+            height="36px"
+            _hover={
+              onRowClick
+                ? { backgroundColor: "gray.50", cursor: "pointer" }
+                : undefined
+            }
+            data-testid={`row-${row.id}`}
+          >
+            {row.getVisibleCells().map((cell) => (
+              <Td
+                key={cell.id}
+                width={
+                  cell.column.columnDef.meta?.width
+                    ? cell.column.columnDef.meta.width
+                    : "unset"
+                }
+                borderBottomWidth="1px"
+                borderBottomColor="gray.200"
+                borderRightWidth="1px"
+                borderRightColor="gray.200"
+                _first={{
+                  borderLeftWidth: "1px",
+                  borderLeftColor: "gray.200",
+                }}
+                height="inherit"
+                style={getTableTHandTDStyles(cell.column.id)}
+                onClick={
+                  cell.column.columnDef.header !== "Enable" && onRowClick
+                    ? () => {
+                        onRowClick(row.original);
+                      }
+                    : undefined
+                }
+              >
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </Td>
+            ))}
+          </Tr>
+        ))}
       </Tbody>
       {footer}
     </Table>
