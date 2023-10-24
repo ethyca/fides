@@ -10,7 +10,7 @@ import {
 import { AddMultipleSystems } from "~/features/system/AddMultipleSystems";
 
 const DESCRIBE_VENDOR_COPY =
-  "Select and add vendors. All vendors available here are from the TCF Global Vendor list, Google's AC list, and Fides Compass. All Systems come pre-configured so there is no need for your to do anything!";
+  "Select and add vendors. All vendors available here are from the TCF Global Vendor list, Google's AC list, and Fides Compass. All Systems come pre-configured so there is no need for you to do anything!";
 
 const Header = () => (
   <Box display="flex" mb={2} alignItems="center" data-testid="header">
