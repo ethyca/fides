@@ -15,7 +15,7 @@ import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrData
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
-import { System, SystemResponse } from "~/types/api";
+import { SystemResponse } from "~/types/api";
 
 import SystemHistoryTable from "./history/SystemHistoryTable";
 import {
@@ -109,7 +109,7 @@ const SystemFormTabs = ({
     }
   }, [activeSystem]);
 
-  const handleSuccess = (system: System) => {
+  const handleSuccess = (system: SystemResponse) => {
     // show a save message if this is the first time the system was saved
     if (activeSystem === undefined) {
       setShowSaveMessage(true);

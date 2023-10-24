@@ -457,3 +457,39 @@ class TestBuildingRedisURLs:
             redis_settings.connection_url
             == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=required&ssl_ca_certs=/path/to/my/cert.crt"
         )
+
+
+@patch.dict(
+    os.environ,
+    {
+        "FIDES__CONSENT__TCF_ENABLED": "true",
+        "FIDES__CONSENT__AC_ENABLED": "true",
+    },
+    clear=True,
+)
+@pytest.mark.unit
+def test_tcf_and_ac_mode() -> None:
+    """Test that AC mode cannot be true without TCF mode on"""
+    config = get_config()
+    assert config.consent.tcf_enabled
+    assert config.consent.ac_enabled
+
+
+@patch.dict(
+    os.environ,
+    {
+        "FIDES__CONSENT__TCF_ENABLED": "false",
+        "FIDES__CONSENT__AC_ENABLED": "true",
+    },
+    clear=True,
+)
+@pytest.mark.unit
+def test_get_config_ac_mode_without_tc_mode() -> None:
+    """Test that AC mode cannot be true without TCF mode on"""
+    with pytest.raises(ValidationError) as exc:
+        get_config()
+
+    assert (
+        exc.value.errors()[0]["msg"]
+        == "AC cannot be enabled unless TCF mode is also enabled."
+    )
