@@ -1,8 +1,7 @@
 import { Box } from "@fidesui/react";
-import { useMemo, useState } from "react";
-
 import SearchBar from "common/SearchBar";
 import { debounce } from "common/utils";
+import { useMemo, useState } from "react";
 
 type GlobalFilterProps = {
   globalFilter: any;
