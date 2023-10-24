@@ -1900,7 +1900,7 @@ class TestSavePrivacyPreferencesForFidesDeviceId:
         current_vendor_preference.delete(db)
         vendor_privacy_preference_history.delete(db)
 
-    @pytest.mark.usefixtures("enable_tcf")
+    @pytest.mark.usefixtures("enable_tcf", "enable_ac")
     def test_save_tcf_privacy_preferences_against_ac_vendor(
         self,
         db,
@@ -2232,7 +2232,7 @@ class TestHistoricalPreferences:
         assert response_body["system_legitimate_interests"] is None
         assert response_body["feature"] is None
         assert response_body["special_feature"] is None
-        assert response_body["tcf_version"] == CURRENT_TCF_VERSION
+        assert response_body["tcf_version"] == "2.0"
 
         assert response_body["request_timestamp"] is not None
         assert response_body["request_origin"] == "tcf_overlay"
@@ -2597,7 +2597,7 @@ class TestCurrentPrivacyPreferences:
         assert "must be after updated_gt" in response.json()["detail"]
 
 
-class TestSavePrivacyPreferencesTCStringOnly:
+class TestSavePrivacyPreferencesFidesStringOnly:
     @pytest.fixture(scope="function")
     def url(self) -> str:
         return V1_URL_PREFIX + PRIVACY_PREFERENCES
@@ -2625,6 +2625,7 @@ class TestSavePrivacyPreferencesTCStringOnly:
             == "Cannot supply value for 'purpose_consent_preferences' and 'fides_string' simultaneously when saving privacy preferences."
         )
 
+    @pytest.mark.usefixtures("enable_tcf")
     def test_save_privacy_preferences_bad_tc_string(self, api_client, url):
         tc_string: str = "bad_string"
         fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
@@ -2640,6 +2641,75 @@ class TestSavePrivacyPreferencesTCStringOnly:
         )
         assert response.status_code == 400
         assert response.json()["detail"] == "Invalid base64-encoded TC string"
+
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration", "enable_tcf")
+    def test_save_privacy_preferences_bad_ac_string(self, api_client, url):
+        fides_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE,1~gacp.8"
+
+        fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        minimal_request_body = {
+            "browser_identity": {
+                "fides_user_device_id": fides_user_device_id,
+            },
+            "fides_string": fides_string,
+        }
+        response = api_client.patch(
+            url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 400
+        assert response.json()["detail"] == "Unexpected AC String format"
+
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration", "enable_tcf")
+    def test_save_privacy_preferences_ac_string_only(self, api_client, url):
+        """Core TC String required, you can't just pass in an AC string by itself"""
+        fides_string: str = ",1~100"
+
+        fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        minimal_request_body = {
+            "browser_identity": {
+                "fides_user_device_id": fides_user_device_id,
+            },
+            "fides_string": fides_string,
+        }
+        response = api_client.patch(
+            url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"] == "TC String is required for a complete signal"
+        )
+
+    @pytest.mark.usefixtures("emerse_system", "enable_tcf")
+    def test_save_privacy_preferences_tc_string_only(self, api_client, url):
+        fides_string: str = (
+            "CPz2D2nPz2D2nOPAAAENCZCgAAAAAAAAAAAAAEAEACACAAA.YAAAAAAAAAA,"
+        )
+
+        fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        minimal_request_body = {
+            "browser_identity": {
+                "fides_user_device_id": fides_user_device_id,
+            },
+            "fides_string": fides_string,
+        }
+        response = api_client.patch(
+            url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 200
+        assert len(response.json()["vendor_consent_preferences"]) == 1
+        assert (
+            response.json()["vendor_consent_preferences"][0]["vendor_consent"]
+            == "gvl.8"
+        )
+
+        assert response.json()["fides_mobile_data"]["IABTCF_AddtlConsent"] == ""
+        assert response.json()["fides_mobile_data"]["IABTCF_CmpSdkID"] == 911
+        assert (
+            response.json()["fides_mobile_data"]["IABTCF_VendorConsents"] == "00000001"
+        )
 
     @pytest.mark.usefixtures("enable_tcf")
     def test_save_privacy_preferences_with_tc_string_when_datamap_empty(
@@ -2676,17 +2746,12 @@ class TestSavePrivacyPreferencesTCStringOnly:
         response = api_client.patch(
             url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
         )
-        assert response.status_code == 200
-        response_body = response.json()["preferences"]
+        assert response.status_code == 400
+        assert response.json()["detail"] == "TCF must be enabled to decode TC String"
 
-        # Nothing saved because TCF is disabled
-        assert len(response_body) == 0
-
-    @pytest.mark.usefixtures(
-        "skimbit_system", "emerse_system", "captify_technologies_system", "enable_tcf"
-    )
-    def test_save_privacy_preferences_with_tc_string(self, api_client, url, db):
-        tc_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE"
+    @pytest.mark.usefixtures("enable_tcf")
+    def test_save_ac_privacy_preferences_when_ac_disabled(self, api_client, url):
+        tc_string: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE,1~1"
         fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
 
         minimal_request_body = {
@@ -2698,6 +2763,31 @@ class TestSavePrivacyPreferencesTCStringOnly:
         response = api_client.patch(
             url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
         )
+        assert response.status_code == 400
+        assert response.json()["detail"] == "AC must be enabled to decode AC String"
+
+    @pytest.mark.usefixtures(
+        "skimbit_system",
+        "emerse_system",
+        "captify_technologies_system",
+        "enable_tcf",
+        "enable_ac",
+        "ac_system_without_privacy_declaration",
+        "ac_system_with_privacy_declaration",
+    )
+    def test_save_privacy_preferences_with_fides_string(self, api_client, url, db):
+        fides_str: str = "CPzEX8APzEX8AAMABBENAUEEAPLAAAAAAAAAABEAAAAA.IABE,1~100"
+        fides_user_device_id = "e4e573ba-d806-4e54-bdd8-3d2ff11d4f11"
+
+        minimal_request_body = {
+            "browser_identity": {
+                "fides_user_device_id": fides_user_device_id,
+            },
+            "fides_string": fides_str,
+        }
+        response = api_client.patch(
+            url, json=minimal_request_body, headers={"Origin": "http://localhost:8080"}
+        )
         assert response.status_code == 200
         response_body = response.json()
 
@@ -2705,7 +2795,7 @@ class TestSavePrivacyPreferencesTCStringOnly:
         assert len(response_body["purpose_consent_preferences"]) == 7
         assert len(response_body["purpose_legitimate_interests_preferences"]) == 5
         assert len(response_body["special_purpose_preferences"]) == 0
-        assert len(response_body["vendor_consent_preferences"]) == 2
+        assert len(response_body["vendor_consent_preferences"]) == 4
         assert len(response_body["vendor_legitimate_interests_preferences"]) == 2
         assert len(response_body["feature_preferences"]) == 0
         assert len(response_body["special_feature_preferences"]) == 1
@@ -2768,7 +2858,7 @@ class TestSavePrivacyPreferencesTCStringOnly:
             == UserConsentPreference.opt_out
         )
 
-        # Vendor 2 was in the vendor consents section
+        # GVL Vendor 2 was in the vendor consents section
         first_vendor_consent_record = response_body["vendor_consent_preferences"][0]
         assert first_vendor_consent_record["vendor_consent"] == "gvl.2"
         assert first_vendor_consent_record["preference"] == "opt_in"
@@ -2781,7 +2871,7 @@ class TestSavePrivacyPreferencesTCStringOnly:
             == UserConsentPreference.opt_in
         )
 
-        # Vendor 8 was not opted in in the vendor consents section, but was disclosed to the
+        # GVL Vendor 8 was not opted in in the vendor consents section, but was disclosed to the
         # customer in the vendor consents section, so we opt out.
         second_vendor_consent_record = response_body["vendor_consent_preferences"][1]
         assert second_vendor_consent_record["vendor_consent"] == "gvl.8"
@@ -2793,6 +2883,33 @@ class TestSavePrivacyPreferencesTCStringOnly:
         assert (
             saved_current_privacy_preference_record.preference
             == UserConsentPreference.opt_out
+        )
+
+        # AC Vendor 8 was not in the AC string, but was disclosed to the
+        # customer in the vendor consents section, so we opt out.
+        third_vendor_consent_record = response_body["vendor_consent_preferences"][2]
+        assert third_vendor_consent_record["vendor_consent"] == "gacp.8"
+        assert third_vendor_consent_record["preference"] == "opt_out"
+        saved_current_privacy_preference_record = db.query(
+            CurrentPrivacyPreference
+        ).get(third_vendor_consent_record["id"])
+        assert saved_current_privacy_preference_record.vendor_consent == "gacp.8"
+        assert (
+            saved_current_privacy_preference_record.preference
+            == UserConsentPreference.opt_out
+        )
+
+        # AC Vendor 100 in the AC string so we opt in.
+        fourth_vendor_consent_record = response_body["vendor_consent_preferences"][3]
+        assert fourth_vendor_consent_record["vendor_consent"] == "gacp.100"
+        assert fourth_vendor_consent_record["preference"] == "opt_in"
+        saved_current_privacy_preference_record = db.query(
+            CurrentPrivacyPreference
+        ).get(fourth_vendor_consent_record["id"])
+        assert saved_current_privacy_preference_record.vendor_consent == "gacp.100"
+        assert (
+            saved_current_privacy_preference_record.preference
+            == UserConsentPreference.opt_in
         )
 
         special_feature_record = response_body["special_feature_preferences"][0]
@@ -2826,5 +2943,5 @@ class TestSavePrivacyPreferencesTCStringOnly:
             "IABTCF_PublisherLegitimateInterests": None,
             "IABTCF_PublisherCustomPurposesConsents": None,
             "IABTCF_PublisherCustomPurposesLegitimateInterests": None,
-            "IABTCF_AddtlConsent": None,
+            "IABTCF_AddtlConsent": "1~100",
         }

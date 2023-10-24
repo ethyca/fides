@@ -241,13 +241,11 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       const tcf = createTcfSavePayload({ experience, enabledIds });
       updateConsentPreferences({
         consentPreferencesToSave: [],
-        experienceId: experience.id,
-        fidesApiUrl: options.fidesApiUrl,
+        experience,
         consentMethod: ConsentMethod.button,
-        fidesDisableSaveApi: options.fidesDisableSaveApi,
+        options,
         userLocationString: fidesRegionString,
         cookie,
-        debug: options.debug,
         servedNotices: null, // TODO: served notices
         tcf,
         updateCookie: (oldCookie) =>

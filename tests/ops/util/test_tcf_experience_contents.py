@@ -1039,17 +1039,20 @@ class TestTCFContents:
             == 4
         )
 
-    @pytest.mark.usefixtures("ac_system_with_privacy_declaration")
-    def test_ac_systems_with_valid_privacy_declarations(self, db):
+    @pytest.mark.usefixtures("ac_system_with_privacy_declaration", "enable_ac")
+    def test_ac_systems_with_consent_privacy_declarations(self, db):
         """This AC system won't show up under vendor consents, but because it has a
-        valid declaration with a gvl data use, that shows up under purpose consents"""
+        valid declaration with a gvl data use, that shows up under purpose consents
+
+        It incorrectly has a separate declaration with a LI legal basis but that isn't surfaced here
+        """
         tcf_contents = get_tcf_contents(db)
 
         assert_length_of_tcf_sections(
             tcf_contents,
             p_c_len=1,
             p_li_len=0,
-            f_len=2,
+            f_len=1,
             sp_len=0,
             sf_len=0,
             v_c_len=1,
@@ -1067,8 +1070,7 @@ class TestTCFContents:
 
         vendor_relationship = tcf_contents.tcf_vendor_relationships[0]
         assert vendor_relationship.id == "gacp.8"
-        assert vendor_relationship.features[0].id == 1
-        assert vendor_relationship.features[1].id == 2
+        assert vendor_relationship.features[0].id == 2
         assert vendor_relationship.special_purposes == []
         assert vendor_relationship.special_features == []
         assert vendor_relationship.cookie_max_age_seconds is None
@@ -1077,7 +1079,7 @@ class TestTCFContents:
         assert vendor_relationship.cookie_refresh is False
         assert vendor_relationship.legitimate_interest_disclosure_url is None
 
-    @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration", "enable_ac")
     def test_ac_systems_without_privacy_declarations(self, db):
         tcf_contents = get_tcf_contents(db)
 
@@ -1112,3 +1114,64 @@ class TestTCFContents:
         assert vendor_relationship.uses_non_cookie_access is False
         assert vendor_relationship.cookie_refresh is False
         assert vendor_relationship.legitimate_interest_disclosure_url is None
+
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
+    def test_ac_systems_with_ac_disabled(self, db):
+        """Available AC systems are suppressed from the Experience"""
+        tcf_contents = get_tcf_contents(db)
+
+        assert_length_of_tcf_sections(
+            tcf_contents,
+            p_c_len=0,
+            p_li_len=0,
+            f_len=0,
+            sp_len=0,
+            sf_len=0,
+            v_c_len=0,
+            v_li_len=0,
+            v_r_len=0,
+            s_c_len=0,
+            s_li_len=0,
+            s_r_len=0,
+        )
+
+    @pytest.mark.usefixtures("ac_system_with_invalid_li_declaration", "enable_ac")
+    def test_ac_systems_with_li_privacy_declarations_only(self, db):
+        """I suppress this AC system entirely - it was only defined with a purpose that had a legitimate interest legal
+        basis which isn't permitted"""
+        tcf_contents = get_tcf_contents(db)
+
+        assert_length_of_tcf_sections(
+            tcf_contents,
+            p_c_len=0,
+            p_li_len=0,
+            f_len=0,
+            sp_len=0,
+            sf_len=0,
+            v_c_len=0,
+            v_li_len=0,
+            v_r_len=0,
+            s_c_len=0,
+            s_li_len=0,
+            s_r_len=0,
+        )
+
+    @pytest.mark.usefixtures("ac_system_with_invalid_vi_declaration", "enable_ac")
+    def test_ac_systems_with_li_privacy_declarations_only(self, db):
+        """I suppress this AC system entirely - it was only defined with a purpose that had a vital interests legal basis"""
+        tcf_contents = get_tcf_contents(db)
+
+        assert_length_of_tcf_sections(
+            tcf_contents,
+            p_c_len=0,
+            p_li_len=0,
+            f_len=0,
+            sp_len=0,
+            sf_len=0,
+            v_c_len=0,
+            v_li_len=0,
+            v_r_len=0,
+            s_c_len=0,
+            s_li_len=0,
+            s_r_len=0,
+        )
