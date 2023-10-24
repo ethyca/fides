@@ -26,13 +26,13 @@ def hubspot_contacts_update(
         # check if the privacy_request targeted emails for erasure,
         # if so rewrite with a format that can be accepted by hubspot
         # regardless of the masking strategy in use
-        all_object_fields = row_param_values["all_object_fields"]
+        masked_object_fields = row_param_values["masked_object_fields"]
 
-        if "email" in all_object_fields:
+        if "email" in masked_object_fields:
             privacy_request_id = row_param_values[PRIVACY_REQUEST_ID]
-            all_object_fields["email"] = f"{privacy_request_id}@company.com"
+            masked_object_fields["email"] = f"{privacy_request_id}@company.com"
 
-        update_body = dumps([all_object_fields])
+        update_body = dumps(masked_object_fields)
         contact_id = row_param_values["contactId"]
         client.send(
             SaaSRequestParams(

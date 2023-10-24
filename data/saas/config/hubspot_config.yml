@@ -56,6 +56,12 @@ saas_config:
               source: body
               path: paging.next.link
         update:
+          param_values:
+            - name: contactId
+              references:
+                - dataset: <instance_fides_key>
+                  field: contacts.id
+                  direction: from
           request_override: hubspot_contacts_update
     - name: owners
       requests:
