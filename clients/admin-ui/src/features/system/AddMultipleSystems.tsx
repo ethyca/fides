@@ -38,7 +38,7 @@ import {
   RowSelectionBar,
   TableActionBar,
   TableSkeletonLoader,
-} from "~/features/common/tablev2";
+} from "~/features/common/table/v2";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   DictSystems,
