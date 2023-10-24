@@ -741,7 +741,7 @@ describe("Fides-js TCF", () => {
             options: {
               isOverlayEnabled: true,
               tcfEnabled: true,
-              apiOptions: apiOptions,
+              apiOptions,
             },
             experience: privacyExperience.items[0],
           });
@@ -749,10 +749,14 @@ describe("Fides-js TCF", () => {
             cy.get("#fides-modal-link").click();
             cy.getByTestId("consent-modal").within(() => {
               cy.get("button").contains("Opt out of all").click();
-              cy.wait("@mockSavePreferencesFn")
-              const spyWithArgs = spyObject.withArgs({}, privacyExperience.items[0], "asdf");
-              expect(spyObject).to.be.called;
-              expect(spyWithArgs).to.be.called;
+              cy.get("@FidesUpdated").then(() => {
+                expect(spyObject).to.be.called;
+                const spy = spyObject["getCalls"]();
+                const { args } = spy[0];
+                expect(args[0]).to.deep.equal({data_sales: true, tracking: false});
+                expect(args[1]).to.equal("CP0JloAP0JloAGXABBENATEAAAAAAAAAAAAAAAAAAAAA.IABE,1~");
+                expect(args[2]).to.deep.equal(privacyExperience.items[0]);
+              })
               // timeout means API call not made, which is expected
               cy.on("fail", (error) => {
                 if (error.message.indexOf("Timed out retrying") !== 0) {
