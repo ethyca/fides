@@ -36,7 +36,6 @@ import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accord
 import { selectAllSystems, useDeleteSystemMutation } from "~/features/system";
 import { System } from "~/types/api";
 
-import { AddMultipleVendors } from "./AddMultipleVendors";
 import { DataUseCell } from "./cells";
 import { CookieBySystem, transformSystemsToCookies } from "./vendor-transform";
 
@@ -164,7 +163,6 @@ const VendorCookieTable = () => {
           placeholder="Search"
         />
         <Flex>
-          <AddMultipleVendors />
           <Flex width="10px" />
           <AddVendor
             passedInSystem={systemToEdit}

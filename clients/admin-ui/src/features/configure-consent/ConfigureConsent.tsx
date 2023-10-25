@@ -6,7 +6,6 @@ import AddVendor from "~/features/configure-consent/AddVendor";
 import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 import { useGetAllSystemsQuery } from "~/features/system";
 
-import { AddMultipleVendors } from "./AddMultipleVendors";
 import VendorCookieTable from "./VendorCookieTable";
 
 const EmptyStateContent: FC = ({ children }) => (
@@ -37,7 +36,6 @@ const ConfigureConsent = () => {
         title="It looks like it's your first time here!"
         description={
           <EmptyStateContent>
-            <AddMultipleVendors />
             <AddVendor />
           </EmptyStateContent>
         }
