@@ -1,3 +1,4 @@
+import { debugLog } from "../consent-utils";
 import { FIDES_SEPARATOR } from "./constants";
 import { VendorSources } from "./vendors";
 
@@ -19,11 +20,17 @@ export const decodeFidesString = (fidesString: string) => {
 /**
  * Given an AC string, return a list of its ids, encoded
  *
- * @example 1~1.2.3 --> [gacp.1, gacp.2, gacp.3]
+ * @example
+ * // returns [gacp.1, gacp.2, gacp.3]
+ * idsFromAcString("1~1.2.3")
  */
-export const idsFromAcString = (acString: string) => {
+export const idsFromAcString = (acString: string, debug?: boolean) => {
   const isValidAc = /\d~/;
   if (!isValidAc.test(acString)) {
+    debugLog(
+      !!debug,
+      `Received invalid AC string ${acString}, returning no ids`
+    );
     return [];
   }
   const split = acString.split("~");

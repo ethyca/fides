@@ -27,7 +27,7 @@ export const transformFidesStringToCookieKeys = (
   });
 
   // Set AC consents, which will only be on vendor_consents
-  const acIds = idsFromAcString(acString);
+  const acIds = idsFromAcString(acString, debug);
   acIds.forEach((acId) => {
     if (!cookieKeys.vendor_consent_preferences) {
       cookieKeys.vendor_consent_preferences = { [acId]: true };
