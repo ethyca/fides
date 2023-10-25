@@ -14,7 +14,7 @@ saas_config:
 
   client_config:
     protocol: https
-    host: <domain> # notice this is a placeholder, hence the <>
+    host: <domain>
     authentication:
       strategy: basic
       configuration:
@@ -29,9 +29,7 @@ saas_config:
     path: /api/v1/data-privacy/rtbf-request
     body: |
       {
-        "recipients": [
-            "<email>"
-        ],
+        "recipients": ["<email>"],
         "include_subaccounts": true
       }
     param_values:
