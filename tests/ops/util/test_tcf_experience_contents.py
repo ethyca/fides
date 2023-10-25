@@ -1,8 +1,10 @@
+from uuid import uuid4
+
 import pytest
 from fideslang import MAPPED_PURPOSES
 from fideslang.models import LegalBasisForProcessingEnum
 
-from fides.api.models.sql_models import PrivacyDeclaration
+from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.schemas.tcf import EmbeddedVendor
 from fides.api.util.tcf.tcf_experience_contents import get_tcf_contents
 
@@ -231,6 +233,7 @@ class TestTCFContents:
         assert vendor_relationship.uses_non_cookie_access is False
         assert vendor_relationship.cookie_refresh is False
         assert vendor_relationship.legitimate_interest_disclosure_url is None
+        assert vendor_relationship.privacy_policy_url is None
 
     @pytest.mark.usefixtures("tcf_system")
     def test_system_exists_with_tcf_purpose_and_vendor(self, db):
@@ -274,6 +277,7 @@ class TestTCFContents:
         assert not hasattr(
             tcf_contents.tcf_vendor_consents[0], "legitimate_interest_disclosure_url"
         )
+        assert not hasattr(tcf_contents.tcf_vendor_consents[0], "privacy_policy_url")
 
         assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
         assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 8
@@ -294,8 +298,15 @@ class TestTCFContents:
             tcf_contents.tcf_vendor_relationships[0].legitimate_interest_disclosure_url
             is None
         )
+        assert tcf_contents.tcf_vendor_relationships[0].privacy_policy_url is None
         assert len(tcf_contents.tcf_vendor_relationships[0].special_purposes) == 1
         assert tcf_contents.tcf_vendor_relationships[0].special_purposes[0].id == 1
+        assert (
+            tcf_contents.tcf_vendor_relationships[0]
+            .special_purposes[0]
+            .retention_period
+            == "1"
+        )
 
     def test_system_exists_with_tcf_purpose_and_vendor_including_tcf_fields_set(
         self, db, tcf_system
@@ -309,6 +320,7 @@ class TestTCFContents:
         tcf_system.cookie_refresh = True
         tcf_system.uses_non_cookie_access = True
         tcf_system.legitimate_interest_disclosure_url = "http://test.com/disclosure_url"
+        tcf_system.privacy_policy = "http://test.com/privacy_url"
         tcf_system.save(db)
 
         tcf_contents = get_tcf_contents(db)
@@ -350,9 +362,14 @@ class TestTCFContents:
         assert not hasattr(
             tcf_contents.tcf_vendor_consents[0], "legitimate_interest_disclosure_url"
         )
+        assert not hasattr(tcf_contents.tcf_vendor_consents[0], "privacy_policy_url")
 
         assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
         assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 8
+        assert (
+            tcf_contents.tcf_vendor_consents[0].purpose_consents[0].retention_period
+            == "3"
+        )
 
         assert tcf_contents.tcf_vendor_relationships[0].id == "gvl.42"
         assert tcf_contents.tcf_vendor_relationships[0].name == "TCF System Test"
@@ -371,6 +388,10 @@ class TestTCFContents:
         assert (
             tcf_contents.tcf_vendor_relationships[0].legitimate_interest_disclosure_url
             == "http://test.com/disclosure_url"
+        )
+        assert (
+            tcf_contents.tcf_vendor_relationships[0].privacy_policy_url
+            == "http://test.com/privacy_url"
         )
 
         assert len(tcf_contents.tcf_vendor_relationships[0].special_purposes) == 1
@@ -541,6 +562,75 @@ class TestTCFContents:
         assert tcf_contents.tcf_vendor_consents[0].id == "gvl.42"
         assert len(tcf_contents.tcf_vendor_consents[0].purpose_consents) == 1
         assert tcf_contents.tcf_vendor_consents[0].purpose_consents[0].id == 2
+
+    @pytest.mark.usefixtures("tcf_system")
+    def test_two_vendors_same_purpose_different_retention_period(self, db, tcf_system):
+        """Test making sure that two vendors that share the same purpose show up with
+        different retention periods in their EmbeddedPurposes"""
+
+        # Create a second system with the same privacy declaration as tcf_system
+        # but with a different retention period
+        second_system = System.create(
+            db=db,
+            data={
+                "fides_key": f"tcf-system_key-f{uuid4()}",
+                "vendor_id": "gvl.100",
+                "name": f"TCF System Second Test",
+                "description": "My Second TCF System Description",
+                "organization_fides_key": "default_organization",
+                "system_type": "Service",
+                "data_responsibility_title": "Processor",
+                "data_protection_impact_assessment": {
+                    "is_required": False,
+                    "progress": None,
+                    "link": None,
+                },
+            },
+        )
+
+        PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Collect data for content performance",
+                "system_id": second_system.id,
+                "data_categories": ["user.device.cookie_id"],
+                "data_use": "analytics.reporting.content_performance",
+                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                "data_subjects": ["customer"],
+                "dataset_references": None,
+                "legal_basis_for_processing": "Consent",
+                "egress": None,
+                "ingress": None,
+                "retention_period": "5",  # the fixture already has a retention_period of 3
+            },
+        )
+
+        tcf_contents = get_tcf_contents(db)
+
+        assert_length_of_tcf_sections(
+            tcf_contents,
+            p_c_len=1,
+            p_li_len=0,
+            f_len=0,
+            sp_len=1,
+            sf_len=0,
+            v_c_len=2,
+            v_li_len=0,
+            v_r_len=2,
+            s_c_len=0,
+            s_li_len=0,
+            s_r_len=0,
+        )
+
+        assert tcf_contents.tcf_vendor_consents[0].id == "gvl.100"
+        assert tcf_contents.tcf_vendor_consents[0].purpose_consents == [
+            {"id": 8, "name": "Measure content performance", "retention_period": "5"}
+        ]
+
+        assert tcf_contents.tcf_vendor_consents[1].id == "gvl.42"
+        assert tcf_contents.tcf_vendor_consents[1].purpose_consents == [
+            {"id": 8, "name": "Measure content performance", "retention_period": "3"}
+        ]
 
     @pytest.mark.usefixtures("tcf_system")
     def test_special_purposes(self, db):
@@ -773,6 +863,12 @@ class TestTCFContents:
             .id
             == 3
         )
+        assert (
+            tcf_contents.tcf_vendor_legitimate_interests[0]
+            .purpose_legitimate_interests[0]
+            .retention_period
+            == "1"
+        )
 
     def test_add_different_data_uses_that_correspond_to_same_purpose(
         self, tcf_system, db
@@ -943,17 +1039,20 @@ class TestTCFContents:
             == 4
         )
 
-    @pytest.mark.usefixtures("ac_system_with_privacy_declaration")
-    def test_ac_systems_with_valid_privacy_declarations(self, db):
+    @pytest.mark.usefixtures("ac_system_with_privacy_declaration", "enable_ac")
+    def test_ac_systems_with_consent_privacy_declarations(self, db):
         """This AC system won't show up under vendor consents, but because it has a
-        valid declaration with a gvl data use, that shows up under purpose consents"""
+        valid declaration with a gvl data use, that shows up under purpose consents
+
+        It incorrectly has a separate declaration with a LI legal basis but that isn't surfaced here
+        """
         tcf_contents = get_tcf_contents(db)
 
         assert_length_of_tcf_sections(
             tcf_contents,
             p_c_len=1,
             p_li_len=0,
-            f_len=2,
+            f_len=1,
             sp_len=0,
             sf_len=0,
             v_c_len=1,
@@ -971,8 +1070,7 @@ class TestTCFContents:
 
         vendor_relationship = tcf_contents.tcf_vendor_relationships[0]
         assert vendor_relationship.id == "gacp.8"
-        assert vendor_relationship.features[0].id == 1
-        assert vendor_relationship.features[1].id == 2
+        assert vendor_relationship.features[0].id == 2
         assert vendor_relationship.special_purposes == []
         assert vendor_relationship.special_features == []
         assert vendor_relationship.cookie_max_age_seconds is None
@@ -981,7 +1079,7 @@ class TestTCFContents:
         assert vendor_relationship.cookie_refresh is False
         assert vendor_relationship.legitimate_interest_disclosure_url is None
 
-    @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration", "enable_ac")
     def test_ac_systems_without_privacy_declarations(self, db):
         tcf_contents = get_tcf_contents(db)
 
@@ -1016,3 +1114,64 @@ class TestTCFContents:
         assert vendor_relationship.uses_non_cookie_access is False
         assert vendor_relationship.cookie_refresh is False
         assert vendor_relationship.legitimate_interest_disclosure_url is None
+
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration")
+    def test_ac_systems_with_ac_disabled(self, db):
+        """Available AC systems are suppressed from the Experience"""
+        tcf_contents = get_tcf_contents(db)
+
+        assert_length_of_tcf_sections(
+            tcf_contents,
+            p_c_len=0,
+            p_li_len=0,
+            f_len=0,
+            sp_len=0,
+            sf_len=0,
+            v_c_len=0,
+            v_li_len=0,
+            v_r_len=0,
+            s_c_len=0,
+            s_li_len=0,
+            s_r_len=0,
+        )
+
+    @pytest.mark.usefixtures("ac_system_with_invalid_li_declaration", "enable_ac")
+    def test_ac_systems_with_li_privacy_declarations_only(self, db):
+        """I suppress this AC system entirely - it was only defined with a purpose that had a legitimate interest legal
+        basis which isn't permitted"""
+        tcf_contents = get_tcf_contents(db)
+
+        assert_length_of_tcf_sections(
+            tcf_contents,
+            p_c_len=0,
+            p_li_len=0,
+            f_len=0,
+            sp_len=0,
+            sf_len=0,
+            v_c_len=0,
+            v_li_len=0,
+            v_r_len=0,
+            s_c_len=0,
+            s_li_len=0,
+            s_r_len=0,
+        )
+
+    @pytest.mark.usefixtures("ac_system_with_invalid_vi_declaration", "enable_ac")
+    def test_ac_systems_with_li_privacy_declarations_only(self, db):
+        """I suppress this AC system entirely - it was only defined with a purpose that had a vital interests legal basis"""
+        tcf_contents = get_tcf_contents(db)
+
+        assert_length_of_tcf_sections(
+            tcf_contents,
+            p_c_len=0,
+            p_li_len=0,
+            f_len=0,
+            sp_len=0,
+            sf_len=0,
+            v_c_len=0,
+            v_li_len=0,
+            v_r_len=0,
+            s_c_len=0,
+            s_li_len=0,
+            s_r_len=0,
+        )

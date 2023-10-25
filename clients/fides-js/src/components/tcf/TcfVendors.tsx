@@ -2,12 +2,10 @@ import { VNode, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { Vendor } from "@iabtechlabtcf/core";
 import {
-  GvlDataRetention,
-  EmbeddedLineItem,
   GvlDataCategories,
-  GvlVendorUrl,
   GvlDataDeclarations,
   VendorRecord,
+  EmbeddedPurpose,
 } from "../../lib/tcf/types";
 import { PrivacyExperience } from "../../lib/consent-types";
 import { UpdateEnabledIds } from "./TcfOverlay";
@@ -21,30 +19,25 @@ import DoubleToggleTable from "./DoubleToggleTable";
 
 const FILTERS = [{ name: "All vendors" }, { name: "IAB TCF vendors" }];
 
-interface Retention {
-  mapping: Record<number, number>;
-  default: number;
-}
-
 const VendorDetails = ({
   label,
   lineItems,
-  dataRetention,
 }: {
   label: string;
-  lineItems: EmbeddedLineItem[] | undefined;
-  dataRetention?: Retention;
+  lineItems: EmbeddedPurpose[] | undefined;
 }) => {
   if (!lineItems || lineItems.length === 0) {
     return null;
   }
+
+  const hasRetentionInfo = lineItems.some((li) => li.retention_period != null);
 
   return (
     <table className="fides-vendor-details-table">
       <thead>
         <tr>
           <th width="80%">{label}</th>
-          {dataRetention ? (
+          {hasRetentionInfo ? (
             <th width="20%" style={{ textAlign: "right" }}>
               Retention
             </th>
@@ -52,22 +45,18 @@ const VendorDetails = ({
         </tr>
       </thead>
       <tbody>
-        {lineItems.map((item) => {
-          let retention: string | number = "N/A";
-          if (dataRetention) {
-            retention = dataRetention.mapping[item.id] ?? dataRetention.default;
-          }
-          return (
-            <tr key={item.id}>
-              <td>{item.name}</td>
-              {dataRetention ? (
-                <td style={{ textAlign: "right" }}>
-                  {retention == null ? "N/A" : `${retention} day(s)`}
-                </td>
-              ) : null}
-            </tr>
-          );
-        })}
+        {lineItems.map((item) => (
+          <tr key={item.id}>
+            <td>{item.name}</td>
+            {hasRetentionInfo ? (
+              <td style={{ textAlign: "right" }}>
+                {item.retention_period
+                  ? `${item.retention_period} day(s)`
+                  : "N/A"}
+              </td>
+            ) : null}
+          </tr>
+        ))}
       </tbody>
     </table>
   );
@@ -76,11 +65,9 @@ const VendorDetails = ({
 const PurposeVendorDetails = ({
   purposes,
   specialPurposes,
-  gvlVendor,
 }: {
-  purposes: EmbeddedLineItem[] | undefined;
-  specialPurposes: EmbeddedLineItem[] | undefined;
-  gvlVendor: Vendor | undefined;
+  purposes: EmbeddedPurpose[] | undefined;
+  specialPurposes: EmbeddedPurpose[] | undefined;
 }) => {
   const emptyPurposes = purposes ? purposes.length === 0 : true;
   const emptySpecialPurposes = specialPurposes
@@ -90,35 +77,11 @@ const PurposeVendorDetails = ({
   if (emptyPurposes && emptySpecialPurposes) {
     return null;
   }
-  // @ts-ignore our TCF lib does not have GVL v3 types yet
-  const dataRetention: GvlDataRetention | undefined = gvlVendor?.dataRetention;
 
   return (
     <div>
-      <VendorDetails
-        label="Purposes"
-        lineItems={purposes as EmbeddedLineItem[]}
-        dataRetention={
-          dataRetention
-            ? {
-                mapping: dataRetention.purposes,
-                default: dataRetention.stdRetention,
-              }
-            : undefined
-        }
-      />
-      <VendorDetails
-        label="Special purposes"
-        lineItems={specialPurposes as EmbeddedLineItem[]}
-        dataRetention={
-          dataRetention
-            ? {
-                mapping: dataRetention.specialPurposes,
-                default: dataRetention.stdRetention,
-              }
-            : undefined
-        }
-      />
+      <VendorDetails label="Purposes" lineItems={purposes} />
+      <VendorDetails label="Special purposes" lineItems={specialPurposes} />
     </div>
   );
 };
@@ -158,13 +121,13 @@ const DataCategories = ({
   );
 };
 
-const StorageDisclosure = ({ vendor }: { vendor: Vendor }) => {
+const StorageDisclosure = ({ vendor }: { vendor: VendorRecord }) => {
   const {
     name,
-    usesCookies,
-    usesNonCookieAccess,
-    cookieMaxAgeSeconds,
-    cookieRefresh,
+    uses_cookies: usesCookies,
+    uses_non_cookie_access: usesNonCookieAccess,
+    cookie_max_age_seconds: cookieMaxAgeSeconds,
+    cookie_refresh: cookieRefresh,
   } = vendor;
   let disclosure = "";
   if (usesCookies) {
@@ -172,12 +135,18 @@ const StorageDisclosure = ({ vendor }: { vendor: Vendor }) => {
       ? Math.ceil(cookieMaxAgeSeconds / 60 / 60 / 24)
       : 0;
     disclosure = `${name} stores cookies with a maximum duration of about ${days} Day(s).`;
+    if (cookieRefresh) {
+      disclosure = `${disclosure} These cookies may be refreshed.`;
+    }
+    if (usesNonCookieAccess) {
+      disclosure = `${disclosure} This vendor also uses other methods like "local storage" to store and access information on your device.`;
+    }
+  } else if (usesNonCookieAccess) {
+    disclosure = `${name} uses methods like "local storage" to store and access information on your device.`;
   }
-  if (cookieRefresh) {
-    disclosure = `${disclosure} These cookies may be refreshed.`;
-  }
-  if (usesNonCookieAccess) {
-    disclosure = `${disclosure} This vendor also uses other methods like "local storage" to store and access information on your device.`;
+
+  if (disclosure === "") {
+    return null;
   }
 
   return <p>{disclosure}</p>;
@@ -238,33 +207,37 @@ const TcfVendors = ({
         }
         renderToggleChild={(vendor) => {
           const gvlVendor = vendorGvlEntry(vendor.id, experience.gvl);
-          // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
-          const url: GvlVendorUrl | undefined = gvlVendor?.urls.find(
-            (u: GvlVendorUrl) => u.langId === "en"
-          );
           const dataCategories: GvlDataCategories | undefined =
             // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
             experience.gvl?.dataCategories;
+          const hasUrls =
+            vendor.privacy_policy_url ||
+            vendor.legitimate_interest_disclosure_url;
           return (
             <div>
-              {gvlVendor ? <StorageDisclosure vendor={gvlVendor} /> : null}
-              <div style={{ marginBottom: "1.1em" }}>
-                {url?.privacy ? (
-                  <ExternalLink href={url.privacy}>Privacy policy</ExternalLink>
-                ) : null}
-                {url?.legIntClaim ? (
-                  <ExternalLink href={url.legIntClaim}>
-                    Legitimate interest disclosure
-                  </ExternalLink>
-                ) : null}
-              </div>
+              <StorageDisclosure vendor={vendor} />
+              {hasUrls ? (
+                <div style={{ marginBottom: "1.1em" }}>
+                  {vendor.privacy_policy_url ? (
+                    <ExternalLink href={vendor.privacy_policy_url}>
+                      Privacy policy
+                    </ExternalLink>
+                  ) : null}
+                  {vendor.legitimate_interest_disclosure_url ? (
+                    <ExternalLink
+                      href={vendor.legitimate_interest_disclosure_url}
+                    >
+                      Legitimate interest disclosure
+                    </ExternalLink>
+                  ) : null}
+                </div>
+              ) : null}
               <PurposeVendorDetails
                 purposes={[
                   ...(vendor.purpose_consents || []),
                   ...(vendor.purpose_legitimate_interests || []),
                 ]}
                 specialPurposes={vendor.special_purposes}
-                gvlVendor={gvlVendor}
               />
               <VendorDetails label="Features" lineItems={vendor.features} />
               <VendorDetails

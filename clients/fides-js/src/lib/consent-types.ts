@@ -14,6 +14,7 @@ import type {
   TCFVendorLegitimateInterestsRecord,
   TCFVendorRelationships,
 } from "./tcf/types";
+import { CookieKeyConsent } from "~/lib/cookie";
 
 export type EmptyExperience = Record<PropertyKey, never>;
 
@@ -74,6 +75,24 @@ export type FidesOptions = {
   // An explicitly passed-in TC string that supersedes the cookie, and prevents any API calls to fetch
   // experiences / preferences. Only available when TCF is enabled. Optional.
   fidesString: string | null;
+
+  // Allows for explicit overrides on various internal API calls made from Fides.
+  apiOptions: FidesApiOptions | null;
+};
+
+export type FidesApiOptions = {
+  /**
+   * Intake a custom function that is called instead of the internal Fides API to save user preferences.
+   *
+   * @param {object} consent - updated version of Fides.consent with the user's saved preferences for Fides notices
+   * @param {string} fides_string - updated version of Fides.fides_string with the user's saved preferences for TC/AC/etc notices
+   * @param {object} experience - current version of the privacy experience that was shown to the user
+   */
+  savePreferencesFn: (
+    consent: CookieKeyConsent,
+    fides_string: string | undefined,
+    experience: PrivacyExperience
+  ) => Promise<void>;
 };
 
 export class SaveConsentPreference {
@@ -227,7 +246,7 @@ export enum ConsentMethod {
 export type PrivacyPreferencesRequest = {
   browser_identity: Identity;
   code?: string;
-  tc_string?: string;
+  fides_string?: string;
   preferences?: Array<ConsentOptionCreate>;
   purpose_consent_preferences?: Array<TCFPurposeSave>;
   purpose_legitimate_interests_preferences?: Array<TCFPurposeSave>;

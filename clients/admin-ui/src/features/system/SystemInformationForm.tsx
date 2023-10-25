@@ -51,7 +51,7 @@ import {
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
-import { ResourceTypes, System, SystemResponse } from "~/types/api";
+import { ResourceTypes, SystemResponse } from "~/types/api";
 
 import { DictSuggestionToggle } from "./dictionary-form/ToggleDictSuggestions";
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
@@ -80,7 +80,7 @@ const SystemHeading = ({ system }: { system?: SystemResponse }) => {
 };
 
 interface Props {
-  onSuccess: (system: System) => void;
+  onSuccess: (system: SystemResponse) => void;
   system?: SystemResponse;
   withHeader?: boolean;
   children?: React.ReactNode;
@@ -156,7 +156,9 @@ const SystemInformationForm = ({
     const systemBody = transformFormValuesToSystem(values);
 
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+      result:
+        | { data: SystemResponse }
+        | { error: FetchBaseQueryError | SerializedError }
     ) => {
       if (isErrorResult(result)) {
         const attemptedAction = isEditing ? "editing" : "creating";
@@ -172,7 +174,7 @@ const SystemInformationForm = ({
         toast.closeAll();
         // Reset state such that isDirty will be checked again before next save
         formikHelpers.resetForm({ values });
-        onSuccess(systemBody);
+        onSuccess(result.data);
         dispatch(setSuggestions("hiding"));
       }
     };
@@ -432,7 +434,7 @@ const SystemInformationForm = ({
                 />
                 <DictSuggestionNumberInput
                   name="cookie_max_age_seconds"
-                  label="Maximum duration"
+                  label="Maximum duration (seconds)"
                   tooltip="What is the maximum amount of time a cookie will live?"
                 />
               </SystemFormInputGroup>

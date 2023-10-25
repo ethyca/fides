@@ -68,7 +68,8 @@ Cypress.Commands.add(
           // @ts-ignore
           // eslint-disable-next-line no-param-reassign
           win.config = {
-            fides: windowParams,
+            // DEFER (PROD-1243): support a configurable "custom options" path
+            tc_info: windowParams,
           };
         }
 
@@ -79,10 +80,7 @@ Cypress.Commands.add(
         );
         win.addEventListener("FidesUpdated", cy.stub().as("FidesUpdated"));
         win.addEventListener("FidesUIShown", cy.stub().as("FidesUIShown"));
-        win.addEventListener(
-          "FidesPreferenceToggled",
-          cy.stub().as("FidesPreferenceToggled")
-        );
+        win.addEventListener("FidesUIChanged", cy.stub().as("FidesUIChanged"));
 
         // Add GTM stub
         // eslint-disable-next-line no-param-reassign

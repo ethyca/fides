@@ -122,6 +122,7 @@ export type { DynamoDBDocsSchema } from "./models/DynamoDBDocsSchema";
 export { EdgeDirection } from "./models/EdgeDirection";
 export type { EmailDocsSchema } from "./models/EmailDocsSchema";
 export type { EmbeddedLineItem } from "./models/EmbeddedLineItem";
+export type { EmbeddedPurpose } from "./models/EmbeddedPurpose";
 export type { EmbeddedVendor } from "./models/EmbeddedVendor";
 export type { Endpoint } from "./models/Endpoint";
 export { EnforcementLevel } from "./models/EnforcementLevel";

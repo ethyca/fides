@@ -196,7 +196,14 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Custom Fields", "Datamap"],
     }),
-
+    bulkUpdateCustomFields: build.mutation<void, any>({
+      query: (params) => ({
+        url: `plus/custom-metadata/custom-field/bulk`,
+        method: "POST",
+        body: params,
+      }),
+      invalidatesTags: ["Custom Fields", "Datamap"],
+    }),
     getAllCustomFieldDefinitions: build.query<
       CustomFieldDefinitionWithId[],
       void
@@ -321,6 +328,7 @@ export const {
   useUpdateScanMutation,
   useUpsertAllowListMutation,
   useUpsertCustomFieldMutation,
+  useBulkUpdateCustomFieldsMutation,
   useGetAllCustomFieldDefinitionsQuery,
   useGetAllowListQuery,
   useGetAllDictionaryEntriesQuery,
