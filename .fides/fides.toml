@@ -64,3 +64,4 @@ notification_service_type = "mailgun"
 
 [consent]
 tcf_enabled = false
+ac_enabled = false

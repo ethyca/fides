@@ -136,7 +136,7 @@ class TestPrivacyPreferenceHistory:
                 "secondary_user_ids": {"ga_client_id": "test"},
                 "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
                 "user_geography": "us_ca",
-                "url_recorded": "https://example.com/privacy_center",
+                "url_recorded": "http://example.com/privacy_center",
             },
             check_name=False,
         )
@@ -1603,12 +1603,55 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
             tcf_value=system_with_no_uses.id,
         ) == [system_with_no_uses.fides_key]
 
+    @pytest.mark.usefixtures(
+        "ac_system_with_privacy_declaration",
+        "ac_system_with_invalid_li_declaration",
+        "ac_system_with_invalid_vi_declaration",
+        "enable_ac",
+    )
     def test_determine_relevant_systems_for_ac_system_under_vendor_consent(
         self, db, ac_system_without_privacy_declaration
     ):
         assert PrivacyPreferenceHistory.determine_relevant_systems(
             db, tcf_field=TCFComponentType.vendor_consent.value, tcf_value="gacp.100"
         ) == [ac_system_without_privacy_declaration.fides_key]
+
+    @pytest.mark.usefixtures("ac_system_without_privacy_declaration", "enable_ac")
+    def test_determine_relevant_systems_for_ac_system_under_vendor_legitimate_interests(
+        self, db
+    ):
+        """Contrived - attempting to save consent for an AC vendor with legitimate interests legal basis -"""
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db,
+                tcf_field=TCFComponentType.vendor_legitimate_interests.value,
+                tcf_value="gacp.100",
+            )
+            == []
+        )
+
+    @pytest.mark.usefixtures(
+        "ac_system_with_privacy_declaration",
+        "ac_system_with_invalid_li_declaration",
+        "ac_system_with_invalid_vi_declaration",
+        "ac_system_without_privacy_declaration",
+        "enable_ac",
+    )
+    def test_determine_relevant_systems_for_ac_system_purpose_legitimate_interests(
+        self, db
+    ):
+        """Saving preferences for purpose 8 with a legitimate interests legal basis.  None of these
+        AC systems should show up as "relevant systems", even if they have been mistakenly defined to have
+        that purpose with this legal basis
+        """
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db,
+                tcf_field=TCFComponentType.purpose_legitimate_interests.value,
+                tcf_value=8,
+            )
+            == []
+        )
 
 
 class TestCurrentPrivacyPreference:
@@ -2066,13 +2109,13 @@ class TestLastServedNotice:
         last_served = (
             served_notice_history_us_ca_provide_for_fides_user.last_served_record
         )
-        assert last_served.record_matches_current_version is True
+        assert last_served.record_is_current is True
 
         privacy_notice_us_ca_provide.update(db, data={"description": "new_description"})
         assert privacy_notice_us_ca_provide.version == 2.0
         assert privacy_notice_us_ca_provide.description == "new_description"
 
-        assert last_served.record_matches_current_version is False
+        assert last_served.record_is_current is False
 
     def test_served_latest_tcf_version(
         self,
@@ -2080,11 +2123,11 @@ class TestLastServedNotice:
         served_notice_history_for_tcf_purpose,
     ):
         last_served = served_notice_history_for_tcf_purpose.last_served_record
-        assert last_served.record_matches_current_version is True
+        assert last_served.record_is_current is True
 
-        # Just for demonstration
+        # TCF Version is not used to determine if a preference is outdated for TCF
         last_served.update(db, data={"tcf_version": "1.0"})
-        assert last_served.record_matches_current_version is False
+        assert last_served.record_is_current is True
 
     def test_get_last_served_for_notice_and_fides_user_device(
         self,

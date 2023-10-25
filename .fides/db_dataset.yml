@@ -2664,26 +2664,6 @@ dataset:
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-  - name: consentsettings
-    data_categories: []
-    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    fields:
-    - name: created_at
-      data_categories:
-      - system.operations
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: id
-      data_categories:
-      - system.operations
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: tcf_enabled
-      data_categories:
-      - system.operations
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: updated_at
-      data_categories:
-      - system.operations
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: messaging_template
     description: 'Table used to store custom messaging templates'
     data_categories: []
