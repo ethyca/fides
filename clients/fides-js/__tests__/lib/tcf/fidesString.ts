@@ -41,8 +41,8 @@ describe("decodeFidesString", () => {
       fidesString:
         "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA,1~2.3.4,extrastuff",
       expected: {
-        tc: "",
-        ac: "",
+        tc: "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA",
+        ac: "1~2.3.4",
       },
     },
   ])(

@@ -6,7 +6,7 @@ export const decodeFidesString = (fidesString: string) => {
   if (split.length === 1) {
     return { tc: split[0], ac: "" };
   }
-  if (split.length === 2) {
+  if (split.length >= 2) {
     const [tc, ac] = split;
     if (tc === "") {
       return { tc: "", ac: "" };
