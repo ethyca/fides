@@ -1,4 +1,4 @@
-import { Box, Flex } from "@fidesui/react";
+import { Box, Flex, FlexProps } from "@fidesui/react";
 import Head from "next/head";
 import React from "react";
 
@@ -9,9 +9,11 @@ import { NavTopBar } from "~/features/common/nav/v2/NavTopBar";
 const FixedLayout = ({
   children,
   title,
+  mainProps,
 }: {
   children: React.ReactNode;
   title: string;
+  mainProps?: FlexProps;
 }) => (
   // NOTE: unlike the main Layout, this layout specifies a fixed height
   // of 100vh for the page, and overflow="auto" for the main content area. This
@@ -30,14 +32,7 @@ const FixedLayout = ({
     </Head>
     <Header />
     <NavTopBar />
-    <Flex
-      as="main"
-      overflow="auto"
-      flexGrow={1}
-      paddingTop={10}
-      paddingLeft={10}
-      gap={10}
-    >
+    <Flex as="main" overflow="auto" flexGrow={1} gap={10} {...mainProps}>
       <Box flex={0} flexShrink={0}>
         <NavSideBar />
       </Box>
