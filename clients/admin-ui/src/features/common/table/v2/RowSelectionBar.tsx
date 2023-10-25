@@ -18,6 +18,9 @@ export const RowSelectionBar = <T,>({
 
   return (
     <Tr
+      position="sticky"
+      zIndex="10"
+      top="36px"
       backgroundColor="purple.100"
       height="36px"
       p={0}
