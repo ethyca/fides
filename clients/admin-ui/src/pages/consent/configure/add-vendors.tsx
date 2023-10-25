@@ -1,21 +1,28 @@
-import { Box, Breadcrumb, BreadcrumbItem, Heading, Text } from "@fidesui/react";
+import {
+  Box,
+  Breadcrumb,
+  BreadcrumbItem,
+  Heading,
+  Link,
+  Text,
+} from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import {
   ADD_MULTIPLE_VENDORS_ROUTE,
+  ADD_SYSTEMS_MANUAL_ROUTE,
   CONFIGURE_CONSENT_ROUTE,
 } from "~/features/common/nav/v2/routes";
 import { AddMultipleSystems } from "~/features/system/AddMultipleSystems";
 
 const DESCRIBE_VENDOR_COPY =
-  "Select and add vendors. All vendors available here are from the TCF Global Vendor list, Google's AC list, and Fides Compass. All Systems come pre-configured so there is no need for you to do anything!";
-
+  "Select your vendors below and they will be added as systems to your data map. Fides Compass will automatically populate the system information so that you can quickly configure privacy requests and consent. To add custom systems or unlisted vendors, please";
 const Header = () => (
   <Box display="flex" mb={2} alignItems="center" data-testid="header">
     <Heading fontSize="2xl" fontWeight="semibold">
-      Add vendors
+      Choose vendors
     </Heading>
   </Box>
 );
@@ -49,12 +56,13 @@ const AddMultipleVendorsPage: NextPage = () => (
     <Box w={{ base: "100%", md: "75%" }}>
       <Text fontSize="sm" mb={8}>
         {DESCRIBE_VENDOR_COPY}
+        <Link href={ADD_SYSTEMS_MANUAL_ROUTE} color="complimentary.500">
+          {" "}
+          click here.{" "}
+        </Link>
       </Text>
     </Box>
-    <AddMultipleSystems
-      isSystem={false}
-      redirectRoute={CONFIGURE_CONSENT_ROUTE}
-    />
+    <AddMultipleSystems redirectRoute={CONFIGURE_CONSENT_ROUTE} />
   </FixedLayout>
 );
 

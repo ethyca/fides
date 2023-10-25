@@ -60,12 +60,11 @@ type MultipleSystemTable = DictSystems;
 const columnHelper = createColumnHelper<MultipleSystemTable>();
 
 type Props = {
-  isSystem: boolean;
   redirectRoute: string;
 };
 
-export const AddMultipleSystems = ({ redirectRoute, isSystem }: Props) => {
-  const systemText = isSystem ? "System" : "Vendor";
+export const AddMultipleSystems = ({ redirectRoute }: Props) => {
+  const systemText = "Vendor";
   const toast = useToast();
   const features = useFeatures();
   const router = useRouter();
@@ -226,7 +225,7 @@ export const AddMultipleSystems = ({ redirectRoute, isSystem }: Props) => {
         <GlobalFilterV2
           globalFilter={globalFilter}
           setGlobalFilter={setGlobalFilter}
-          placeholder="search"
+          placeholder="Search"
         />
         <Tooltip
           label={toolTipText}

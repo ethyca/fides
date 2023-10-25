@@ -93,6 +93,7 @@ export const FidesTableV2 = <T,>({
                 colSpan={header.colSpan}
                 data-testid={`column-${header.id}`}
                 style={getTableTHandTDStyles(header.column.id)}
+                textTransform="unset"
               >
                 {flexRender(
                   header.column.columnDef.header,

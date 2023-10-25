@@ -66,9 +66,12 @@ const AddSystem = () => {
       </Stack>
       <UpgradeModal
         isOpen={isOpen}
-        isSystem
-        nonUpgradeLink={ADD_SYSTEMS_MANUAL_ROUTE}
-        upgradeLink="https://ethyca.com"
+        onConfirm={() => {
+          window.open("https://fid.es/upgrade-compass");
+        }}
+        onCancel={() => {
+          router.push(ADD_SYSTEMS_MANUAL_ROUTE);
+        }}
         onClose={onClose}
       />
       <Box data-testid="manual-options">
@@ -87,7 +90,7 @@ const AddSystem = () => {
           <SystemOption
             label="Add multiple systems"
             icon={<ManualSetupIcon boxSize={8} />}
-            description="Add multiple systems to your data map from the GVL, Google AC list, and Compass"
+            description="Choose vendors to include as systems within your data map and use Fides Compass to automatically populate system details."
             onClick={() => {
               if (isCompassEnabled) {
                 dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
