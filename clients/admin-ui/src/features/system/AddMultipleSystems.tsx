@@ -205,6 +205,10 @@ export const AddMultipleSystems = ({ redirectRoute, isSystem }: Props) => {
     ? `All ${systemText.toLocaleLowerCase()} have already been added`
     : `Select a ${systemText.toLocaleLowerCase()} `;
 
+  const totalSelectSystemsLength = tableInstance
+    .getSelectedRowModel()
+    .rows.filter((r) => !r.original.linked_system).length;
+
   return (
     <Flex flex={1} direction="column" overflow="auto">
       <ConfirmationModal
@@ -214,11 +218,9 @@ export const AddMultipleSystems = ({ redirectRoute, isSystem }: Props) => {
         onClose={onClose}
         onConfirm={addVendors}
         title="Confirmation"
-        message={`You are about to add ${
-          tableInstance
-            .getSelectedRowModel()
-            .rows.filter((r) => !r.original.linked_system).length
-        } ${systemText.toLocaleLowerCase()}`}
+        message={`You are about to add ${totalSelectSystemsLength} ${systemText.toLocaleLowerCase()}${
+          totalSelectSystemsLength > 1 ? "s" : ""
+        }`}
       />
       <TableActionBar>
         <GlobalFilterV2
