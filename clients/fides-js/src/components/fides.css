@@ -577,9 +577,12 @@ div#fides-banner-inner .fides-privacy-policy {
   width: 100%;
   display: flex;
   justify-content: space-between;
-  margin-right: 0.5em;
   min-height: 40px;
   align-items: center;
+
+  & svg {
+    flex-shrink: 0;
+  }
 }
 
 .fides-notice-toggle .fides-notice-toggle-title:hover {
