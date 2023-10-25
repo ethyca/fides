@@ -31,6 +31,7 @@ import {
   usePutConfigurationSettingsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
 import { ApplicationConfig } from "~/types/api";
+import * as Yup from "yup";
 
 type FormValues = CORSOrigins;
 
@@ -42,6 +43,13 @@ const CORSConfigurationPage: NextPage = () => {
     usePutConfigurationSettingsMutation();
 
   const toast = useToast();
+
+  const ValidationSchema = Yup.object().shape({
+    cors_origins: Yup.array().nullable()
+      .of(
+        Yup.string().required().trim().url().label("URL")
+      )
+  });
 
   const handleSubmit = async (
     values: FormValues,
@@ -110,6 +118,7 @@ const CORSConfigurationPage: NextPage = () => {
                 initialValues={corsOrigins}
                 enableReinitialize
                 onSubmit={handleSubmit}
+                validationSchema={ValidationSchema}
               >
                 {({ dirty, values, isValid }) => (
                   <Form>
