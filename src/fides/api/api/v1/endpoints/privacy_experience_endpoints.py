@@ -25,7 +25,10 @@ from fides.api.models.privacy_experience import (
 )
 from fides.api.models.privacy_notice import PrivacyNotice
 from fides.api.models.privacy_request import ProvidedIdentity
-from fides.api.schemas.privacy_experience import PrivacyExperienceResponse
+from fides.api.schemas.privacy_experience import (
+    PrivacyExperienceMetaResponse,
+    PrivacyExperienceResponse,
+)
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
@@ -62,6 +65,25 @@ def get_privacy_experience_or_error(
         )
 
     return privacy_experience
+
+
+def _filter_experiences_by_component(
+    component: ComponentType, experience_query: Query
+) -> Query:
+    """
+    Filters privacy experiences by component
+
+    Intentionally relaxes what is returned when querying for "overlay", by returning both types of overlays.
+    This way the frontend doesn't have to know which type of overlay, regular or tcf, just that it is an overlay.
+    """
+    component_search_map: Dict = {
+        ComponentType.overlay: [ComponentType.overlay, ComponentType.tcf_overlay]
+    }
+    return experience_query.filter(
+        PrivacyExperience.component.in_(
+            component_search_map.get(component, [component])
+        )
+    )
 
 
 def _filter_experiences_by_region_or_country(
@@ -117,6 +139,64 @@ def _filter_experiences_by_region_or_country(
     if experience_ids:
         return experience_query.filter(PrivacyExperience.id.in_(experience_ids))
     return db.query(PrivacyExperience).filter(False)
+
+
+@router.get(
+    urls.PRIVACY_EXPERIENCE_META,
+    status_code=HTTP_200_OK,
+    response_model=Page[PrivacyExperienceMetaResponse],
+)
+@fides_limiter.limit(CONFIG.security.public_request_rate_limit)
+async def get_privacy_experience_meta(
+    *,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+    region: Optional[str] = None,
+    component: Optional[ComponentType] = None,
+    request: Request,  # required for rate limiting
+    response: Response,  # required for rate limiting
+) -> AbstractPage[PrivacyExperience]:
+    """Minimal Developer Friendly Privacy Experience endpoint that returns only the meta object,
+    the component, and the region."""
+
+    logger.info("Fetching meta info for Experiences '{}'", params)
+
+    await asyncio.sleep(delay=0.001)
+    experience_query: Query = db.query(PrivacyExperience)
+
+    await asyncio.sleep(delay=0.001)
+    if region is not None:
+        experience_query = _filter_experiences_by_region_or_country(
+            db=db, region=region, experience_query=experience_query
+        )
+
+    await asyncio.sleep(delay=0.001)
+    if component is not None:
+        experience_query = _filter_experiences_by_component(component, experience_query)
+
+    await asyncio.sleep(delay=0.001)
+    # TCF contents are the same across all EEA regions, so we can build this once.
+    base_tcf_contents: TCFExperienceContents = get_tcf_contents(db)
+
+    tcf_meta: Optional[Dict] = None
+    for (
+        tcf_section_name,
+        _,
+    ) in TCF_SECTION_MAPPING.items():
+        if getattr(base_tcf_contents, tcf_section_name):
+            # TCF Experience meta is also the same across all EEA regions. Only build meta if there is TCF
+            # content under at least one section.
+            tcf_meta = build_experience_tcf_meta(base_tcf_contents)
+            break
+
+    results: List[PrivacyExperience] = []
+    for experience in experience_query:
+        if experience.component == ComponentType.tcf_overlay:
+            # Attach meta for TCF Experiences only.  We don't yet build meta info for non-TCF experiences.
+            experience.meta = tcf_meta
+        results.append(experience)
+
+    return fastapi_paginate(results, params=params)
 
 
 @router.get(
@@ -196,16 +276,8 @@ async def privacy_experience_list(
 
     await asyncio.sleep(delay=0.001)
     if component is not None:
-        # Intentionally relaxes what is returned when querying for "overlay", by returning both types of overlays.
-        # This way the frontend doesn't have to know which type of overlay, regular or tcf, just that it is an overlay.
-        component_search_map: Dict = {
-            ComponentType.overlay: [ComponentType.overlay, ComponentType.tcf_overlay]
-        }
-        experience_query = experience_query.filter(
-            PrivacyExperience.component.in_(
-                component_search_map.get(component, [component])
-            )
-        )
+        experience_query = _filter_experiences_by_component(component, experience_query)
+
     await asyncio.sleep(delay=0.001)
     if has_config is True:
         experience_query = experience_query.filter(
@@ -221,6 +293,7 @@ async def privacy_experience_list(
     should_unescape: Optional[str] = request.headers.get(UNESCAPE_SAFESTR_HEADER)
 
     # Builds TCF Experience Contents once here, in case multiple TCF Experiences are requested
+    await asyncio.sleep(delay=0.001)
     base_tcf_contents: TCFExperienceContents = get_tcf_contents(db)
 
     await asyncio.sleep(delay=0.001)
