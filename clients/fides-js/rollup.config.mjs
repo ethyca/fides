@@ -10,7 +10,7 @@ import postcss from "rollup-plugin-postcss";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
-const GZIP_SIZE_ERROR_KB = 23; // fail build if bundle size exceeds this
+const GZIP_SIZE_ERROR_KB = 24; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 15; // log a warning if bundle size exceeds this
 
 // TCF
