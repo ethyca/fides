@@ -19,7 +19,7 @@ The types of changes are:
 
 ### Added
 - SSH Support for MySQL connections [#4310](https://github.com/ethyca/fides/pull/4310)
-
+- Handles Hubspot requiring and email to be formatted as email when processing an erasure [#4322](https://github.com/ethyca/fides/pull/4322)
 
 ## [2.21.0](https://github.com/ethyca/fides/compare/2.20.2...2.21.0)
 
