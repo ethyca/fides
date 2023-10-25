@@ -10,7 +10,8 @@ export const transformFidesStringToCookieKeys = (
   debug: boolean
 ): TcfCookieConsent => {
   // Defer: to fully support AC string, we need to split out TC from AC string https://github.com/ethyca/fides/issues/4263
-  const tcModel: TCModel = TCString.decode(fidesString || "");
+  const tcString = (fidesString || "").split(",")[0];
+  const tcModel: TCModel = TCString.decode(tcString);
 
   const cookieKeys: TcfCookieConsent = {};
 

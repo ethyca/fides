@@ -77,7 +77,8 @@ declare global {
   interface Window {
     Fides: Fides;
     config: {
-      fides: OverrideOptions;
+      // DEFER (PROD-1243): support a configurable "custom options" path
+      tc_info: OverrideOptions;
     };
   }
 }
@@ -118,8 +119,8 @@ const init = async (config: FidesConfig) => {
   const experience = initialFides?.experience ?? config.experience;
   const updatedFides = await initialize({
     ...config,
-    experience,
     cookie,
+    experience,
     renderOverlay,
     updateCookie,
   });
@@ -155,6 +156,7 @@ _Fides = {
     fidesEmbed: false,
     fidesDisableSaveApi: false,
     fidesString: null,
+    apiOptions: null,
   },
   fides_meta: {},
   identity: {},
