@@ -26,6 +26,7 @@ The types of changes are:
 - Added support for overriding the save user preferences API call with a custom fn provided through Fides.init [#4318](https://github.com/ethyca/fides/pull/4318)
 - Return AC strings in GET Privacy Experience meta and allow saving preferences against AC strings [#4295](https://github.com/ethyca/fides/pull/4295)
 - Access and erasure support for SparkPost [#4328](https://github.com/ethyca/fides/pull/4238)
+- Access and erasure support for Iterate [#4332](https://github.com/ethyca/fides/pull/4332)
 
 ### Fixed
 - Cleans up CSS for fidesEmbed mode [#4306](https://github.com/ethyca/fides/pull/4306)
