@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.22.2b3.post0.dev9"
+    "version": "2.22.2b3.post0.dev10"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -18245,6 +18245,12 @@
             "title": "Database",
             "type": "string",
             "description": "The name of the specific database within the database server that you want to connect to."
+          },
+          "ssh_required": {
+            "title": "SSH Required",
+            "type": "boolean",
+            "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.",
+            "default": false
           }
         },
         "description": "MySQL Secrets Schema for API Docs"
