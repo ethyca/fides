@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.22.2b3.post0.dev8"
+    "version": "2.22.2b3.post0.dev9"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -7838,6 +7838,80 @@
             ]
           }
         ]
+      }
+    },
+    "/api/v1/privacy-experience-meta": {
+      "get": {
+        "tags": [
+          "Privacy Experience"
+        ],
+        "summary": "Get Privacy Experience Meta",
+        "description": "Minimal Developer Friendly Privacy Experience endpoint that returns only the meta object,\nthe component, and the region.",
+        "operationId": "get_privacy_experience_meta_api_v1_privacy_experience_meta_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Region",
+              "type": "string"
+            },
+            "name": "region",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ComponentType"
+            },
+            "name": "component",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_PrivacyExperienceMetaResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/privacy-experience": {
@@ -18829,6 +18903,45 @@
           }
         }
       },
+      "Page_PrivacyExperienceMetaResponse_": {
+        "title": "Page[PrivacyExperienceMetaResponse]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyExperienceMetaResponse"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
+          }
+        }
+      },
       "Page_PrivacyExperienceResponse_": {
         "title": "Page[PrivacyExperienceResponse]",
         "required": [
@@ -19731,6 +19844,30 @@
           }
         },
         "description": "Extension of base pydantic model to include DB `id` field in the response"
+      },
+      "PrivacyExperienceMetaResponse": {
+        "title": "PrivacyExperienceMetaResponse",
+        "required": [
+          "id",
+          "region"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "region": {
+            "$ref": "#/components/schemas/PrivacyNoticeRegion"
+          },
+          "component": {
+            "$ref": "#/components/schemas/ComponentType"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ExperienceMeta"
+          }
+        },
+        "description": "Privacy Experience Response only containing region, component, id, and meta information"
       },
       "PrivacyExperienceResponse": {
         "title": "PrivacyExperienceResponse",
