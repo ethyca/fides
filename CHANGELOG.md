@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 - Added support for 3 additional config variables in Fides.js: fidesEmbed, fidesDisableSaveApi, and fidesTcString [#4262](https://github.com/ethyca/fides/pull/4262)
 - Added support for fidesEmbed, fidesDisableSaveApi, and fidesTcString to be passed into Fides.js via query param, cookie, or window object [#4297](https://github.com/ethyca/fides/pull/4297)
+- New privacy center environment variables `FIDES_PRIVACY_CENTER__IS_FORCED_TCF` which can make the privacy center always return the TCF bundle (`fides-tcf.js`) [#4312](https://github.com/ethyca/fides/pull/4312)
 - Added a `FidesUIChanged` event to Fides.js to track when user preferences change without being saved [#4314](https://github.com/ethyca/fides/pull/4314) and [#4253](https://github.com/ethyca/fides/pull/4253)
 - Add AC Systems to the TCF Overlay under Vendor Consents section [#4266](https://github.com/ethyca/fides/pull/4266/)
 - Added support for overriding the save user preferences API call with a custom fn provided through Fides.init [#4318](https://github.com/ethyca/fides/pull/4318)
