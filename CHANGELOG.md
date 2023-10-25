@@ -24,6 +24,7 @@ The types of changes are:
 - Add AC Systems to the TCF Overlay under Vendor Consents section [#4266](https://github.com/ethyca/fides/pull/4266/)
 - Added support for overriding the save user preferences API call with a custom fn provided through Fides.init [#4318](https://github.com/ethyca/fides/pull/4318)
 - Return AC strings in GET Privacy Experience meta and allow saving preferences against AC strings [#4295](https://github.com/ethyca/fides/pull/4295)
+- Added served notice history IDs to the TCF privacy preference API calls [#4161](https://github.com/ethyca/fides/pull/4161)
 
 ### Fixed
 - Cleans up CSS for fidesEmbed mode [#4306](https://github.com/ethyca/fides/pull/4306)
