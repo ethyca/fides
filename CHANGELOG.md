@@ -23,6 +23,7 @@ The types of changes are:
 
 ### Fixed
 - Cleans up CSS for fidesEmbed mode [#4306](https://github.com/ethyca/fides/pull/4306)
+- Handles Hubspot requiring and email to be formatted as email when processing an erasure [#4322](https://github.com/ethyca/fides/pull/4322)
 
 ### Added
 - Added a `FidesUIChanged` event to Fides.js to track when user preferences change without being saved [#4314](https://github.com/ethyca/fides/pull/4314) and [#4253](https://github.com/ethyca/fides/pull/4253)
