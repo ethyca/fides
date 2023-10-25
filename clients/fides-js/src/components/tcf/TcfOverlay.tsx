@@ -283,21 +283,19 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             onClose={onClose}
             experience={experienceConfig}
             onVendorPageClick={goToVendorTab}
-            buttonGroup={(isMobile: boolean) => {
-              return (
-                <TcfConsentButtons
-                  experience={experience}
-                  onManagePreferencesClick={onManagePreferencesClick}
-                  onSave={(keys) => {
-                    handleUpdateAllPreferences(keys);
-                    onSave();
-                  }}
-                  isMobile={isMobile}
-                >
-                  <PrivacyPolicyLink experience={experienceConfig} />
-                </TcfConsentButtons>
-              );
-            }}
+            renderButtonGroup={({ isMobile }) => (
+              <TcfConsentButtons
+                experience={experience}
+                onManagePreferencesClick={onManagePreferencesClick}
+                onSave={(keys) => {
+                  handleUpdateAllPreferences(keys);
+                  onSave();
+                }}
+                isMobile={isMobile}
+              >
+                <PrivacyPolicyLink experience={experienceConfig} />
+              </TcfConsentButtons>
+            )}
           >
             <div id="fides-tcf-banner-inner">
               <VendorInfoBanner
@@ -309,22 +307,18 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           </ConsentBanner>
         ) : null;
       }}
-      renderModalContent={() => {
-        return (
-          <Fragment>
-            <TcfTabs
-              experience={experience}
-              enabledIds={draftIds}
-              onChange={(updatedIds) => {
-                setDraftIds(updatedIds);
-                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
-              }}
-              activeTabIndex={activeTabIndex}
-              onTabChange={setActiveTabIndex}
-            />
-          </Fragment>
-        );
-      }}
+      renderModalContent={() => (
+        <TcfTabs
+          experience={experience}
+          enabledIds={draftIds}
+          onChange={(updatedIds) => {
+            setDraftIds(updatedIds);
+            dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+          }}
+          activeTabIndex={activeTabIndex}
+          onTabChange={setActiveTabIndex}
+        />
+      )}
       renderModalFooter={({ onClose, isMobile }) => {
         const onSave = (keys: EnabledIds) => {
           handleUpdateAllPreferences(keys);

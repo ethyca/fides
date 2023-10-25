@@ -165,12 +165,12 @@ const Overlay: FunctionComponent<Props> = ({
         attributes={attributes}
         experience={experience.experience_config}
         onVendorPageClick={onVendorPageClick}
-        renderModalFooter={() => {
-          return renderModalFooter({
+        renderModalFooter={() =>
+          renderModalFooter({
             onClose: handleCloseModal,
             isMobile: false,
-          });
-        }}
+          })
+        }
       >
         {renderModalContent()}
       </ConsentModal>

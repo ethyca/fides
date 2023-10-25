@@ -36,11 +36,11 @@ const ConsentModal = ({
         {...dialog}
         className="fides-modal-content"
       >
-        <div class="fides-modal-header">
+        <div className="fides-modal-header">
           <div />
           <CloseButton ariaLabel="Close modal" onClick={closeButton.onClick} />
         </div>
-        <div class="fides-modal-body">
+        <div className="fides-modal-body">
           <h1
             data-testid="fides-modal-title"
             {...title}
@@ -60,7 +60,7 @@ const ConsentModal = ({
           {showGpcBadge && <GpcInfo />}
           {children}
         </div>
-        <div class="fides-modal-footer">{renderModalFooter()}</div>
+        <div className="fides-modal-footer">{renderModalFooter()}</div>
       </div>
     </div>
   );

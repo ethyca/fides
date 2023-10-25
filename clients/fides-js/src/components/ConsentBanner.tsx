@@ -1,10 +1,14 @@
 import { h, FunctionComponent, ComponentChildren, VNode } from "preact";
+import { useState, useEffect } from "preact/hooks";
 import { getConsentContext } from "../lib/consent-context";
 import { ExperienceConfig } from "../lib/consent-types";
 import CloseButton from "./CloseButton";
 import { GpcBadge } from "./GpcBadge";
 import ExperienceDescription from "./ExperienceDescription";
-import { useState, useEffect } from "preact/hooks";
+
+interface ButtonGroupProps {
+  isMobile: boolean;
+}
 
 interface BannerProps {
   experience: ExperienceConfig;
@@ -16,7 +20,7 @@ interface BannerProps {
    * */
   children?: ComponentChildren;
   onVendorPageClick?: () => void;
-  buttonGroup: (isMobile: boolean) => VNode;
+  renderButtonGroup: (props: ButtonGroupProps) => VNode;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
@@ -25,7 +29,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   bannerIsOpen,
   children,
   onVendorPageClick,
-  buttonGroup,
+  renderButtonGroup,
 }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -43,6 +47,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   }, []);
 
   const showGpcBadge = getConsentContext().globalPrivacyControl;
+
   return (
     <div
       id="fides-banner-container"
@@ -82,9 +87,9 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
               </div>
             </div>
             {children}
-            {!isMobile && buttonGroup(isMobile)}
+            {!isMobile && renderButtonGroup({ isMobile })}
           </div>
-          {isMobile && buttonGroup(isMobile)}
+          {isMobile && renderButtonGroup({ isMobile })}
         </div>
       </div>
     </div>

@@ -115,24 +115,22 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             bannerIsOpen={isOpen}
             onClose={onClose}
             experience={experienceConfig}
-            buttonGroup={(isMobile) => {
-              return (
-                <NoticeConsentButtons
-                  experience={experience}
-                  onManagePreferencesClick={onManagePreferencesClick}
-                  enabledKeys={draftEnabledNoticeKeys}
-                  onSave={(keys) => {
-                    handleUpdatePreferences(keys);
-                    onSave();
-                  }}
-                  isAcknowledge={isAllNoticeOnly}
-                  middleButton={
-                    <PrivacyPolicyLink experience={experienceConfig} />
-                  }
-                  isMobile={isMobile}
-                />
-              );
-            }}
+            renderButtonGroup={({ isMobile }) => (
+              <NoticeConsentButtons
+                experience={experience}
+                onManagePreferencesClick={onManagePreferencesClick}
+                enabledKeys={draftEnabledNoticeKeys}
+                onSave={(keys) => {
+                  handleUpdatePreferences(keys);
+                  onSave();
+                }}
+                isAcknowledge={isAllNoticeOnly}
+                middleButton={
+                  <PrivacyPolicyLink experience={experienceConfig} />
+                }
+                isMobile={isMobile}
+              />
+            )}
           />
         ) : null
       }
@@ -150,24 +148,22 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           </div>
         </div>
       )}
-      renderModalFooter={({ onClose, isMobile }) => {
-        return (
-          <Fragment>
-            <NoticeConsentButtons
-              experience={experience}
-              enabledKeys={draftEnabledNoticeKeys}
-              onSave={(keys) => {
-                handleUpdatePreferences(keys);
-                onClose();
-              }}
-              isInModal
-              isAcknowledge={isAllNoticeOnly}
-              isMobile={isMobile}
-            />
-            <PrivacyPolicyLink experience={experience.experience_config} />
-          </Fragment>
-        );
-      }}
+      renderModalFooter={({ onClose, isMobile }) => (
+        <Fragment>
+          <NoticeConsentButtons
+            experience={experience}
+            enabledKeys={draftEnabledNoticeKeys}
+            onSave={(keys) => {
+              handleUpdatePreferences(keys);
+              onClose();
+            }}
+            isInModal
+            isAcknowledge={isAllNoticeOnly}
+            isMobile={isMobile}
+          />
+          <PrivacyPolicyLink experience={experience.experience_config} />
+        </Fragment>
+      )}
     />
   );
 };

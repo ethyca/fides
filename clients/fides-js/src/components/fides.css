@@ -382,7 +382,6 @@ div#fides-modal .fides-modal-description {
   gap: 10px;
 }
 
-
 div#fides-modal .fides-modal-button-group {
   display: flex;
   width: 100%;
@@ -394,7 +393,7 @@ div#fides-modal .fides-modal-button-group {
 /* Responsive overlay */
 @media (max-width: 48em) {
   div.fides-modal-content {
-    width: 100%  
+    width: 100%;
   }
 
   div#fides-modal .fides-modal-button-group {
