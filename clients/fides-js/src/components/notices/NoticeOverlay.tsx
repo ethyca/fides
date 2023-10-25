@@ -3,8 +3,10 @@ import { useState, useCallback, useMemo } from "preact/hooks";
 import {
   ConsentMechanism,
   ConsentMethod,
+  LastServedConsentSchema,
   PrivacyNotice,
   SaveConsentPreference,
+  ServingComponent,
 } from "../../lib/consent-types";
 import ConsentBanner from "../ConsentBanner";
 
@@ -59,18 +61,44 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     options,
     userGeography: fidesRegionString,
     acknowledgeMode: isAllNoticeOnly,
-    privacyExperienceId: experience.id,
+    privacyExperience: experience,
   });
+
+  const createConsentPreferencesToSave = (
+    privacyNoticeList: PrivacyNotice[],
+    enabledPrivacyNoticeKeys: string[],
+    servedNoticeList: LastServedConsentSchema[]
+  ): SaveConsentPreference[] => {
+    const servedNoticeMap = Object.fromEntries(
+      servedNoticeList
+        .filter((notice) => notice.privacy_notice_history?.id !== undefined)
+        .map((notice) => [
+          notice.privacy_notice_history?.id,
+          notice.served_notice_history_id,
+        ])
+    );
+
+    return privacyNoticeList.map((notice) => {
+      const userPreference = transformConsentToFidesUserPreference(
+        enabledPrivacyNoticeKeys.includes(notice.notice_key),
+        notice.consent_mechanism
+      );
+      return new SaveConsentPreference(
+        notice,
+        userPreference,
+        servedNoticeMap[notice.privacy_notice_history_id]
+      );
+    });
+  };
 
   const handleUpdatePreferences = useCallback(
     (enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>) => {
-      const consentPreferencesToSave = privacyNotices.map((notice) => {
-        const userPreference = transformConsentToFidesUserPreference(
-          enabledPrivacyNoticeKeys.includes(notice.notice_key),
-          notice.consent_mechanism
-        );
-        return new SaveConsentPreference(notice, userPreference);
-      });
+      const consentPreferencesToSave = createConsentPreferencesToSave(
+        privacyNotices,
+        enabledPrivacyNoticeKeys,
+        servedNotices
+      );
+
       updateConsentPreferences({
         consentPreferencesToSave,
         experience,
@@ -78,7 +106,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         options,
         userLocationString: fidesRegionString,
         cookie,
-        servedNotices,
         updateCookie: (oldCookie) =>
           updateCookieFromNoticePreferences(
             oldCookie,
@@ -104,15 +131,29 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   }
   const experienceConfig = experience.experience_config;
 
+  const dispatchOpenBannerEvent = () => {
+    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+      servingComponent: ServingComponent.BANNER,
+    });
+  };
+
+  const dispatchOpenOverlayEvent = () => {
+    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+      servingComponent: ServingComponent.OVERLAY,
+    });
+  };
+
   return (
     <Overlay
       options={options}
       experience={experience}
       cookie={cookie}
+      onOpen={dispatchOpenOverlayEvent}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) =>
         showBanner ? (
           <ConsentBanner
             bannerIsOpen={isOpen}
+            onOpen={dispatchOpenBannerEvent}
             onClose={onClose}
             experience={experienceConfig}
             renderButtonGroup={({ isMobile }) => (

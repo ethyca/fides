@@ -12,6 +12,7 @@ interface ButtonGroupProps {
 
 interface BannerProps {
   experience: ExperienceConfig;
+  onOpen: () => void;
   onClose: () => void;
   bannerIsOpen: boolean;
   /**
@@ -25,6 +26,7 @@ interface BannerProps {
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
   experience,
+  onOpen,
   onClose,
   bannerIsOpen,
   children,
@@ -47,6 +49,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   }, []);
 
   const showGpcBadge = getConsentContext().globalPrivacyControl;
+
+  useEffect(() => {
+    if (bannerIsOpen) {
+      onOpen();
+    }
+  }, [bannerIsOpen]);
 
   return (
     <div

@@ -71,7 +71,7 @@ export const updateConsentPreferences = async ({
   options,
   userLocationString,
   cookie,
-  servedNotices,
+  debug = false,
   tcf,
   updateCookie,
 }: {
@@ -81,30 +81,36 @@ export const updateConsentPreferences = async ({
   options: FidesOptions;
   userLocationString?: string;
   cookie: FidesCookie;
+  debug?: boolean;
   servedNotices?: Array<LastServedConsentSchema> | null;
   tcf?: TcfSavePreferences;
   updateCookie: (oldCookie: FidesCookie) => Promise<FidesCookie>;
 }) => {
-  // Derive the Fides user preferences array from privacy notices
-  const fidesUserPreferences: Array<ConsentOptionCreate> | undefined =
-    consentPreferencesToSave
-      ? consentPreferencesToSave.map(({ notice, consentPreference }) => {
-          const servedNotice = servedNotices
-            ? servedNotices.find(
-                (n) =>
-                  n.privacy_notice_history?.id ===
-                  notice.privacy_notice_history_id
-              )
-            : undefined;
-          return {
-            privacy_notice_history_id: notice.privacy_notice_history_id,
-            preference: consentPreference,
-            served_notice_history_id: servedNotice?.served_notice_history_id,
-          };
-        })
-      : undefined;
+  // Derive the Fides user preferences array from consent preferences
+  const fidesUserPreferences = consentPreferencesToSave?.map((preference) => ({
+    privacy_notice_history_id: preference.notice.privacy_notice_history_id,
+    preference: preference.consentPreference,
+    served_notice_history_id: preference.servedNoticeHistoryId,
+  }));
 
-  // 1. Update the cookie object based on new preferences
+  // 1. Save preferences to Fides API
+  debugLog(debug, "Saving preferences to Fides API");
+
+  const privacyPreferenceCreate: PrivacyPreferencesRequest = {
+    browser_identity: cookie.identity,
+    preferences: fidesUserPreferences,
+    privacy_experience_id: experience.id,
+    user_geography: userLocationString,
+    method: consentMethod,
+    ...(tcf ?? []),
+  };
+  patchUserPreferenceToFidesServer(
+    privacyPreferenceCreate,
+    options.fidesApiUrl,
+    debug
+  );
+
+  // 2. Update the cookie object based on new preferences
   const updatedCookie = await updateCookie(cookie);
   Object.assign(cookie, updatedCookie);
 
