@@ -43,8 +43,8 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   DictSystems,
   selectAllDictSystems,
-  useGetAllCreatedSystemsQuery,
-  usePostCreatedSystemsMutation,
+  useGetAllSystemVendorsQuery,
+  usePostSystemVendorsMutation,
 } from "~/features/plus/plus.slice";
 
 export const VendorSourceCell = ({ value }: { value: string }) => (
@@ -68,13 +68,13 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   const toast = useToast();
   const features = useFeatures();
   const router = useRouter();
-  const { isLoading: isGetLoading } = useGetAllCreatedSystemsQuery(undefined, {
+  const { isLoading: isGetLoading } = useGetAllSystemVendorsQuery(undefined, {
     skip: !features.dictionaryService,
   });
   const [
     postVendorIds,
     { isLoading: isPostLoading, isSuccess: isPostSuccess },
-  ] = usePostCreatedSystemsMutation();
+  ] = usePostSystemVendorsMutation();
 
   const dictionaryOptions = useAppSelector(selectAllDictSystems);
   const [globalFilter, setGlobalFilter] = useState();
@@ -113,8 +113,8 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           width: "55px",
         },
       }),
-      columnHelper.accessor((row) => row.legal_name, {
-        id: "legal_name",
+      columnHelper.accessor((row) => row.name, {
+        id: "name",
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value={systemText} {...props} />,
       }),

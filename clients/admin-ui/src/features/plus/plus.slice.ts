@@ -263,21 +263,21 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Dictionary"],
     }),
-    getAllCreatedSystems: build.query<DictSystems[], void>({
+    getAllSystemVendors: build.query<DictSystems[], void>({
       query: () => ({
-        url: `plus/dictionary/created-vendors`,
+        url: `plus/dictionary/system-vendors`,
       }),
-      providesTags: ["Created Systems"],
+      providesTags: ["System Vendors"],
     }),
-    postCreatedSystems: build.mutation<any, string[]>({
+    postSystemVendors: build.mutation<any, string[]>({
       query: (vendor_ids: string[]) => ({
         method: "post",
-        url: `plus/dictionary/created-vendors`,
-        body: vendor_ids,
+        url: `plus/dictionary/system-vendors`,
+        body: { vendor_ids },
       }),
       invalidatesTags: [
         "Dictionary",
-        "Created Systems",
+        "System Vendors",
         "System",
         "Datamap",
         "System History",
@@ -354,8 +354,8 @@ export const {
   useGetAllDictionaryEntriesQuery,
   useGetFidesCloudConfigQuery,
   useGetDictionaryDataUsesQuery,
-  useGetAllCreatedSystemsQuery,
-  usePostCreatedSystemsMutation,
+  useGetAllSystemVendorsQuery,
+  usePostSystemVendorsMutation,
   useGetSystemHistoryQuery,
   useUpdateCustomAssetMutation,
 } = plusApi;
@@ -513,11 +513,11 @@ export const selectDictDataUses = (vendorId: string) =>
 
 export type DictSystems = {
   linked_system: boolean;
-  legal_name: string;
+  name: string;
   vendor_id: string;
 };
 const EMPTY_DICT_SYSTEMS: DictSystems[] = [];
 export const selectAllDictSystems = createSelector(
-  [(RootState) => RootState, plusApi.endpoints.getAllCreatedSystems.select()],
+  [(RootState) => RootState, plusApi.endpoints.getAllSystemVendors.select()],
   (RootState, { data }) => data || EMPTY_DICT_SYSTEMS
 );
