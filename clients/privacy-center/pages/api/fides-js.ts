@@ -123,7 +123,7 @@ export default async function handler(
   // be able to prefetch the experience.
   const tcfEnabled = experience
     ? experience.component === ComponentType.TCF_OVERLAY
-    : false;
+    : environment.settings.IS_FORCED_TCF;
 
   // Create the FidesConfig JSON that will be used to initialize fides.js
   const fidesConfig: FidesConfig = {
