@@ -155,7 +155,7 @@ async def get_privacy_experience_meta(
     component: Optional[ComponentType] = None,
     request: Request,  # required for rate limiting
     response: Response,  # required for rate limiting
-) -> AbstractPage[PrivacyExperienceMetaResponse]:
+) -> AbstractPage[PrivacyExperience]:
     """Minimal Developer Friendly Privacy Experience endpoint that returns only the meta object,
     the component, and the region."""
 
