@@ -88,15 +88,13 @@ const retrieveEffectiveRegionString = async (
 const automaticallyApplyGPCPreferences = ({
   cookie,
   fidesRegionString,
-  fidesApiUrl,
-  fidesDisableSaveApi,
   effectiveExperience,
+  fidesOptions,
 }: {
   cookie: FidesCookie;
   fidesRegionString: string | null;
-  fidesApiUrl: string;
-  fidesDisableSaveApi: boolean;
   effectiveExperience?: PrivacyExperience;
+  fidesOptions: FidesOptions;
 }) => {
   if (!effectiveExperience || !effectiveExperience.privacy_notices) {
     return;
@@ -134,10 +132,9 @@ const automaticallyApplyGPCPreferences = ({
   if (gpcApplied) {
     updateConsentPreferences({
       consentPreferencesToSave,
-      experienceId: effectiveExperience.id,
-      fidesApiUrl,
+      experience: effectiveExperience,
       consentMethod: ConsentMethod.gpc,
-      fidesDisableSaveApi,
+      options: fidesOptions,
       userLocationString: fidesRegionString || undefined,
       cookie,
       updateCookie: (oldCookie) =>
@@ -358,9 +355,8 @@ export const initialize = async ({
     automaticallyApplyGPCPreferences({
       cookie,
       fidesRegionString,
-      fidesApiUrl: options.fidesApiUrl,
-      fidesDisableSaveApi: options.fidesDisableSaveApi,
       effectiveExperience,
+      fidesOptions: options,
     });
   }
 
