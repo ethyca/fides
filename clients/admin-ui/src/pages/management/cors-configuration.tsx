@@ -15,6 +15,7 @@ import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { FieldArray, Form, Formik, FormikHelpers } from "formik";
 import type { NextPage } from "next";
+import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import DocsLink from "~/features/common/DocsLink";
@@ -31,7 +32,6 @@ import {
   usePutConfigurationSettingsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
 import { ApplicationConfig } from "~/types/api";
-import * as Yup from "yup";
 
 type FormValues = CORSOrigins;
 
@@ -45,10 +45,9 @@ const CORSConfigurationPage: NextPage = () => {
   const toast = useToast();
 
   const ValidationSchema = Yup.object().shape({
-    cors_origins: Yup.array().nullable()
-      .of(
-        Yup.string().required().trim().url().label("URL")
-      )
+    cors_origins: Yup.array()
+      .nullable()
+      .of(Yup.string().required().trim().url().label("URL")),
   });
 
   const handleSubmit = async (
@@ -100,10 +99,13 @@ const CORSConfigurationPage: NextPage = () => {
             Manage domains for your organization
           </Text>
           <Text mb={10} fontSize="sm">
-            You must add domains associated with your organization to Fides to ensure features such as consent function correctly. For more information on managing domains on Fides, click here
-            {" "}<DocsLink href="https://fid.es/cors-configuration">
+            You must add domains associated with your organization to Fides to
+            ensure features such as consent function correctly. For more
+            information on managing domains on Fides, click here{" "}
+            <DocsLink href="https://fid.es/cors-configuration">
               docs.ethyca.com
-            </DocsLink>.
+            </DocsLink>
+            .
           </Text>
         </Box>
 

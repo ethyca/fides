@@ -203,9 +203,9 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1].children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Manage domains")
+          .find((c) => c.title === "Domains")
       ).toEqual({
-        title: "Manage domains",
+        title: "Domains",
         path: routes.CORS_CONFIGURATION_ROUTE,
       });
     });
