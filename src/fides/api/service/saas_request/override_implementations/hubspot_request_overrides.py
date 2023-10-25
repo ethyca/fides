@@ -28,9 +28,11 @@ def hubspot_contacts_update(
         # regardless of the masking strategy in use
         masked_object_fields = row_param_values["masked_object_fields"]
 
-        if "email" in masked_object_fields:
+        if "email" in masked_object_fields["properties"]:
             privacy_request_id = row_param_values[PRIVACY_REQUEST_ID]
-            masked_object_fields["email"] = f"{privacy_request_id}@company.com"
+            masked_object_fields["properties"][
+                "email"
+            ] = f"{privacy_request_id}@company.com"
 
         update_body = dumps(masked_object_fields)
         contact_id = row_param_values["contactId"]
