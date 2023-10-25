@@ -579,10 +579,10 @@ div#fides-banner-inner .fides-privacy-policy {
   justify-content: space-between;
   min-height: 40px;
   align-items: center;
+}
 
-  & svg {
-    flex-shrink: 0;
-  }
+.fides-notice-toggle .fides-notice-toggle-trigger svg {
+  flex-shrink: 0;
 }
 
 .fides-notice-toggle .fides-notice-toggle-title:hover {
@@ -922,10 +922,6 @@ div#fides-banner-inner .fides-privacy-policy {
   .fides-vendor-info {
     flex-direction: column;
     gap: 12px;
-  }
-
-  .fides-flex-center {
-    justify-content: space-between;
   }
 
   div#fides-banner-description {
