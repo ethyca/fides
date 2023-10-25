@@ -1,10 +1,6 @@
 import { h, FunctionComponent, VNode } from "preact";
 import { useEffect, useState, useCallback, useMemo } from "preact/hooks";
-import {
-  FidesOptions,
-  PrivacyExperience,
-  ServingComponent,
-} from "../lib/consent-types";
+import { FidesOptions, PrivacyExperience } from "../lib/consent-types";
 
 import { debugLog, hasActionNeededNotices } from "../lib/consent-utils";
 
@@ -21,17 +17,19 @@ interface RenderBannerProps {
   onSave: () => void;
   onManagePreferencesClick: () => void;
 }
-
-interface RenderModalContent {
+interface RenderModalFooter {
   onClose: () => void;
+  isMobile: boolean;
 }
 
 interface Props {
   options: FidesOptions;
   experience: PrivacyExperience;
   cookie: FidesCookie;
+  onOpen: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
-  renderModalContent: (props: RenderModalContent) => VNode;
+  renderModalContent: () => VNode;
+  renderModalFooter: (props: RenderModalFooter) => VNode;
   onVendorPageClick?: () => void;
 }
 
@@ -39,8 +37,10 @@ const Overlay: FunctionComponent<Props> = ({
   experience,
   options,
   cookie,
+  onOpen,
   renderBanner,
   renderModalContent,
+  renderModalFooter,
   onVendorPageClick,
 }) => {
   const delayBannerMilliseconds = 100;
@@ -63,9 +63,7 @@ const Overlay: FunctionComponent<Props> = ({
   const handleOpenModal = useCallback(() => {
     if (instance) {
       instance.show();
-      dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
-        servingComponent: ServingComponent.OVERLAY,
-      });
+      onOpen();
     }
   }, [instance, cookie, options.debug]);
 
@@ -122,15 +120,6 @@ const Overlay: FunctionComponent<Props> = ({
     [experience, options]
   );
 
-  useEffect(() => {
-    const eventCookie = cookie;
-    if (showBanner && bannerIsOpen) {
-      dispatchFidesEvent("FidesUIShown", eventCookie, options.debug, {
-        servingComponent: ServingComponent.BANNER,
-      });
-    }
-  }, [showBanner, cookie, options.debug, bannerIsOpen]);
-
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();
     setBannerIsOpen(false);
@@ -163,8 +152,14 @@ const Overlay: FunctionComponent<Props> = ({
         attributes={attributes}
         experience={experience.experience_config}
         onVendorPageClick={onVendorPageClick}
+        renderModalFooter={() =>
+          renderModalFooter({
+            onClose: handleCloseModal,
+            isMobile: false,
+          })
+        }
       >
-        {renderModalContent({ onClose: handleCloseModal })}
+        {renderModalContent()}
       </ConsentModal>
     </div>
   );

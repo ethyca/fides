@@ -1,4 +1,4 @@
-import { ComponentChildren, h } from "preact";
+import { ComponentChildren, VNode, h } from "preact";
 import { Attributes } from "../lib/a11y-dialog";
 import { ExperienceConfig } from "../lib/consent-types";
 
@@ -12,11 +12,13 @@ const ConsentModal = ({
   experience,
   children,
   onVendorPageClick,
+  renderModalFooter,
 }: {
   attributes: Attributes;
   experience: ExperienceConfig;
   children: ComponentChildren;
   onVendorPageClick?: () => void;
+  renderModalFooter: () => VNode;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
   const showGpcBadge = getConsentContext().globalPrivacyControl;
@@ -34,25 +36,31 @@ const ConsentModal = ({
         {...dialog}
         className="fides-modal-content"
       >
-        <CloseButton ariaLabel="Close modal" onClick={closeButton.onClick} />
-        <h1
-          data-testid="fides-modal-header"
-          {...title}
-          className="fides-modal-header"
-        >
-          {experience.title}
-        </h1>
-        <p
-          data-testid="fides-modal-description"
-          className="fides-modal-description"
-        >
-          <ExperienceDescription
-            onVendorPageClick={onVendorPageClick}
-            description={experience.description}
-          />
-        </p>
-        {showGpcBadge && <GpcInfo />}
-        {children}
+        <div className="fides-modal-header">
+          <div />
+          <CloseButton ariaLabel="Close modal" onClick={closeButton.onClick} />
+        </div>
+        <div className="fides-modal-body">
+          <h1
+            data-testid="fides-modal-title"
+            {...title}
+            className="fides-modal-title"
+          >
+            {experience.title}
+          </h1>
+          <p
+            data-testid="fides-modal-description"
+            className="fides-modal-description"
+          >
+            <ExperienceDescription
+              onVendorPageClick={onVendorPageClick}
+              description={experience.description}
+            />
+          </p>
+          {showGpcBadge && <GpcInfo />}
+          {children}
+        </div>
+        <div className="fides-modal-footer">{renderModalFooter()}</div>
       </div>
     </div>
   );

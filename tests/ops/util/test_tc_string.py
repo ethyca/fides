@@ -39,31 +39,79 @@ class TestHashTCFExperience:
         version_hash_model = _build_tcf_version_hash_model(tcf_contents=tcf_contents)
         assert version_hash_model == TCFVersionHash(
             policy_version=4,
-            purpose_consents=[8],
-            purpose_legitimate_interests=[],
-            special_feature_optins=[],
-            vendor_consents=[42],
-            vendor_legitimate_interests=[],
+            vendor_purpose_consents=["gvl.42-8"],
+            vendor_purpose_legitimate_interests=[],
+            gvl_vendors_disclosed=[42],
         )
 
         version_hash = build_tcf_version_hash(tcf_contents)
-        assert version_hash == "f2db7626ca0b"
+        assert version_hash == "dbde7265d5dd"
 
-    def test_version_hash_model_sorts_ascending(self):
+    def test_version_hash_model_sorting(self):
+        """We're just doing string sorting here, we don't need to do natural language
+        sorting, as long as it's repeatable"""
         version_hash_model = TCFVersionHash(
             policy_version=4,
-            purpose_consents=[5, 4, 3, 1],
-            purpose_legitimate_interests=[7, 8],
-            special_feature_optins=[2, 1],
-            vendor_consents=[8, 2, 1],
-            vendor_legitimate_interests=[141, 14, 1],
+            vendor_purpose_consents=[
+                "gvl.8-1,4,6,7",
+                "gvl.39-1,4,6,7",
+                "gvl.5-1,2,3,4",
+                "gvl.1",
+                "gacp.4" "gacp.10,1",
+                "gacp.1",
+                "ctl_3c809e3f-96b3-4aec-a0c6-f3904104559b-9",
+            ],
+            vendor_purpose_legitimate_interests=["gvl.39-1,4,6,7", "gvl.100-1,2"],
+            gvl_vendors_disclosed=[100, 39, 5, 8, 1],
         )
 
         assert version_hash_model.policy_version == 4
-        assert version_hash_model.purpose_consents == [1, 3, 4, 5]
-        assert version_hash_model.purpose_legitimate_interests == [7, 8]
-        assert version_hash_model.special_feature_optins == [1, 2]
-        assert version_hash_model.vendor_legitimate_interests == [1, 14, 141]
+        assert version_hash_model.vendor_purpose_consents == [
+            "ctl_3c809e3f-96b3-4aec-a0c6-f3904104559b-9",
+            "gacp.1",
+            "gacp.4gacp.10,1",
+            "gvl.1",
+            "gvl.39-1,4,6,7",
+            "gvl.5-1,2,3,4",
+            "gvl.8-1,4,6,7",
+        ]
+        assert version_hash_model.vendor_purpose_legitimate_interests == [
+            "gvl.100-1,2",
+            "gvl.39-1,4,6,7",
+        ]
+        assert version_hash_model.gvl_vendors_disclosed == [1, 5, 8, 39, 100]
+
+    @pytest.mark.usefixtures(
+        "skimbit_system",
+        "emerse_system",
+        "captify_technologies_system",
+        "ac_system_without_privacy_declaration",
+        "ac_system_with_privacy_declaration",
+        "enable_ac",
+    )
+    def test_vendor_hash_model_contents(self, db, system):
+        """Test building hash model with a mixture of GVL, AC, and regular Systems without a vendor"""
+        decl = system.privacy_declarations[0]
+        decl.legal_basis_for_processing = "Legitimate interests"
+        decl.data_use = "marketing.advertising.first_party.targeted"
+        decl.save(db)
+
+        tcf_contents = get_tcf_contents(db)
+        version_hash_model = _build_tcf_version_hash_model(tcf_contents=tcf_contents)
+
+        assert version_hash_model.policy_version == 4
+        assert version_hash_model.vendor_purpose_consents == [
+            "gacp.100",
+            "gacp.8-1",
+            "gvl.2-1,2,3,4,7,9,10",
+            "gvl.8-1,3,4",
+        ]
+        assert version_hash_model.vendor_purpose_legitimate_interests == [
+            system.id + "-4",
+            "gvl.46-7,8,10",
+            "gvl.8-2,7,8,9",
+        ]
+        assert version_hash_model.gvl_vendors_disclosed == [2, 8, 46]
 
     @pytest.mark.usefixtures("captify_technologies_system")
     def test_build_tcf_version_hash_removing_declaration(
@@ -73,15 +121,13 @@ class TestHashTCFExperience:
         version_hash_model = _build_tcf_version_hash_model(tcf_contents=tcf_contents)
         assert version_hash_model == TCFVersionHash(
             policy_version=4,
-            purpose_consents=[1, 2, 3, 4, 7, 9, 10],
-            purpose_legitimate_interests=[],
-            special_feature_optins=[2],
-            vendor_consents=[2],
-            vendor_legitimate_interests=[],
+            vendor_purpose_consents=["gvl.2-1,2,3,4,7,9,10"],
+            vendor_purpose_legitimate_interests=[],
+            gvl_vendors_disclosed=[2],
         )
 
         version_hash = build_tcf_version_hash(tcf_contents)
-        assert version_hash == "eaab1c195073"
+        assert version_hash == "0429105be515"
 
         # Remove the privacy declaration corresponding to purpose 1
         for decl in captify_technologies_system.privacy_declarations:
@@ -93,30 +139,61 @@ class TestHashTCFExperience:
         version_hash_model = _build_tcf_version_hash_model(tcf_contents=tcf_contents)
         assert version_hash_model == TCFVersionHash(
             policy_version=4,
-            purpose_consents=[2, 3, 4, 7, 9, 10],
-            purpose_legitimate_interests=[],
-            special_feature_optins=[2],
-            vendor_consents=[2],
-            vendor_legitimate_interests=[],
+            vendor_purpose_consents=["gvl.2-2,3,4,7,9,10"],
+            vendor_purpose_legitimate_interests=[],
+            gvl_vendors_disclosed=[2],
         )
 
         version_hash = build_tcf_version_hash(tcf_contents)
-        assert version_hash == "77ed45ac8d43"
+        assert version_hash == "f2e19b4b3eae"
 
-    def test_build_tcf_version_hash_adding_data_use(self, db, emerse_system):
+    def test_build_tcf_version_hash_adding_vendor(self, db, system):
+        system.vendor_id = "gvl.88"
+        system.save(db)
+
         tcf_contents = get_tcf_contents(db)
         version_hash_model = _build_tcf_version_hash_model(tcf_contents=tcf_contents)
         assert version_hash_model == TCFVersionHash(
             policy_version=4,
-            purpose_consents=[1, 3, 4],
-            purpose_legitimate_interests=[2, 7, 8, 9],
-            special_feature_optins=[],
-            vendor_consents=[8],
-            vendor_legitimate_interests=[8],
+            vendor_purpose_consents=[],
+            vendor_purpose_legitimate_interests=[],
+            gvl_vendors_disclosed=[],
         )
 
         version_hash = build_tcf_version_hash(tcf_contents)
-        assert version_hash == "a2e85860c68b"
+        assert version_hash == "6b2062179826"
+
+        # Add declaration to system with TCF purpose, so now system shows up
+        decl = system.privacy_declarations[0]
+        decl.legal_basis_for_processing = "Legitimate interests"
+        decl.data_use = "marketing.advertising.first_party.targeted"
+        decl.save(db)
+
+        # Recalculate version hash model and version
+        tcf_contents = get_tcf_contents(db)
+        version_hash_model = _build_tcf_version_hash_model(tcf_contents=tcf_contents)
+        assert version_hash_model == TCFVersionHash(
+            policy_version=4,
+            vendor_purpose_consents=[],
+            vendor_purpose_legitimate_interests=[f"gvl.88-4"],
+            gvl_vendors_disclosed=[],
+        )
+
+        version_hash = build_tcf_version_hash(tcf_contents)
+        assert version_hash == "c5a4e3b672e3"
+
+    def test_build_tcf_version_hash_adding_purpose(self, db, emerse_system):
+        tcf_contents = get_tcf_contents(db)
+        version_hash_model = _build_tcf_version_hash_model(tcf_contents=tcf_contents)
+        assert version_hash_model == TCFVersionHash(
+            policy_version=4,
+            vendor_purpose_consents=["gvl.8-1,3,4"],
+            vendor_purpose_legitimate_interests=["gvl.8-2,7,8,9"],
+            gvl_vendors_disclosed=[8],
+        )
+
+        version_hash = build_tcf_version_hash(tcf_contents)
+        assert version_hash == "3a655ef13ee6"
 
         # Adding privacy declaration for purpose 10
         PrivacyDeclaration.create(
@@ -137,15 +214,52 @@ class TestHashTCFExperience:
         version_hash_model = _build_tcf_version_hash_model(tcf_contents=tcf_contents)
         assert version_hash_model == TCFVersionHash(
             policy_version=4,
-            purpose_consents=[1, 3, 4, 10],
-            purpose_legitimate_interests=[2, 7, 8, 9],
-            special_feature_optins=[],
-            vendor_consents=[8],
-            vendor_legitimate_interests=[8],
+            vendor_purpose_consents=["gvl.8-1,3,4,10"],
+            vendor_purpose_legitimate_interests=["gvl.8-2,7,8,9"],
+            gvl_vendors_disclosed=[8],
         )
 
         version_hash = build_tcf_version_hash(tcf_contents)
-        assert version_hash == "73c0762c9442"
+        assert version_hash == "c290c3d76a26"
+
+    def test_build_tcf_version_hash_updating_legal_basis(self, db, system):
+        system.vendor_id = "gvl.88"
+        system.save(db)
+
+        # Add declaration to system with TCF purpose, so now system shows up
+        decl = system.privacy_declarations[0]
+        decl.legal_basis_for_processing = "Legitimate interests"
+        decl.data_use = "marketing.advertising.first_party.targeted"
+        decl.save(db)
+
+        tcf_contents = get_tcf_contents(db)
+        version_hash_model = _build_tcf_version_hash_model(tcf_contents=tcf_contents)
+        assert version_hash_model == TCFVersionHash(
+            policy_version=4,
+            vendor_purpose_consents=[],
+            vendor_purpose_legitimate_interests=[f"gvl.88-4"],
+            gvl_vendors_disclosed=[],
+        )
+
+        version_hash = build_tcf_version_hash(tcf_contents)
+        assert version_hash == "c5a4e3b672e3"
+
+        # Update legal basis
+        decl.legal_basis_for_processing = "Consent"
+        decl.save(db)
+
+        # Recalculate version hash model and version
+        tcf_contents = get_tcf_contents(db)
+        version_hash_model = _build_tcf_version_hash_model(tcf_contents=tcf_contents)
+        assert version_hash_model == TCFVersionHash(
+            policy_version=4,
+            vendor_purpose_consents=[f"gvl.88-4"],
+            vendor_purpose_legitimate_interests=[],
+            gvl_vendors_disclosed=[],
+        )
+
+        version_hash = build_tcf_version_hash(tcf_contents)
+        assert version_hash == "a279467aec23"
 
 
 class TestBuildTCModel:
