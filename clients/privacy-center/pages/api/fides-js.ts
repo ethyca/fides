@@ -86,6 +86,8 @@ export default async function handler(
     }));
   }
 
+  const fidesString = environment.settings.FIDES_STRING;
+
   // Check if a geolocation was provided via headers or query param
   const geolocation = await lookupGeolocation(req);
 
@@ -96,7 +98,8 @@ export default async function handler(
   if (
     geolocation &&
     environment.settings.IS_OVERLAY_ENABLED &&
-    environment.settings.IS_PREFETCH_ENABLED
+    environment.settings.IS_PREFETCH_ENABLED &&
+    !fidesString
   ) {
     const fidesRegionString = constructFidesRegionString(geolocation);
 
@@ -141,6 +144,11 @@ export default async function handler(
       serverSideFidesApiUrl:
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
         environment.settings.FIDES_API_URL,
+      fidesEmbed: environment.settings.FIDES_EMBED,
+      fidesDisableSaveApi: environment.settings.FIDES_DISABLE_SAVE_API,
+      fidesString,
+      // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
+      apiOptions: null,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -231,6 +239,7 @@ async function fetchCustomFidesCss(
       const data = await response.text();
 
       if (!response.ok) {
+        // eslint-disable-next-line no-console
         console.error(
           "Error fetching custom-fides.css:",
           response.status,
@@ -244,6 +253,7 @@ async function fetchCustomFidesCss(
         throw new Error("No data returned by the server");
       }
 
+      // eslint-disable-next-line no-console
       console.log("Successfully retrieved custom-fides.css");
       autoRefresh = true;
       cachedCustomFidesCss = data;
@@ -251,8 +261,10 @@ async function fetchCustomFidesCss(
     } catch (error) {
       autoRefresh = false; // /custom-asset endpoint unreachable stop auto-refresh
       if (error instanceof Error) {
+        // eslint-disable-next-line no-console
         console.error("Error during fetch operation:", error.message);
       } else {
+        // eslint-disable-next-line no-console
         console.error("Unknown error occurred:", error);
       }
     }

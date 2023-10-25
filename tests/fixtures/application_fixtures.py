@@ -1515,6 +1515,11 @@ def served_notice_history_for_tcf_purpose(
         },
         check_name=False,
     )
+    pref_1.tcf_version = "2.0"
+    pref_1.save(db)
+    pref_1.last_served_record.tcf_version = "2.0"
+    pref_1.last_served_record.save(db)
+
     yield pref_1
     pref_1.delete(db)
 
@@ -1528,7 +1533,7 @@ def served_notice_history_for_vendor_legitimate_interests(
         data={
             "serving_component": "tcf_overlay",
             "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
-            "vendor_legitimate_interests": "sendgrid",
+            "vendor_legitimate_interests": "gvl.42",
         },
         check_name=False,
     )
@@ -2302,7 +2307,7 @@ def privacy_preference_history(
             "request_origin": "privacy_center",
             "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
             "user_geography": "us_ca",
-            "url_recorded": "example.com/privacy_center",
+            "url_recorded": "https://example.com/privacy_center",
             "served_notice_history_id": served_notice_history.id,
         },
         check_name=False,
@@ -2340,6 +2345,12 @@ def privacy_preference_history_for_tcf_purpose_consent(
         },
         check_name=False,
     )
+    preference_history_record.tcf_version = "2.0"
+    preference_history_record.save(db)
+
+    preference_history_record.current_privacy_preference.tcf_version = "2.0"
+    preference_history_record.current_privacy_preference.save(db)
+
     yield preference_history_record
     preference_history_record.delete(db)
 
@@ -2386,7 +2397,7 @@ def privacy_preference_history_for_vendor(
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
             "method": "button",
-            "vendor_consent": "sendgrid",
+            "vendor_consent": "gvl.42",
             "privacy_experience_config_history_id": None,
             "privacy_experience_id": privacy_experience_france_overlay.id,
             "preference": "opt_out",
@@ -2417,7 +2428,7 @@ def privacy_preference_history_for_vendor_legitimate_interests(
             "anonymized_ip_address": "92.158.1.0",
             "email": "test@email.com",
             "method": "button",
-            "vendor_legitimate_interests": "sendgrid",
+            "vendor_legitimate_interests": "gvl.42",
             "privacy_experience_config_history_id": None,
             "privacy_experience_id": privacy_experience_france_overlay.id,
             "preference": "opt_out",
@@ -2651,7 +2662,7 @@ def experience_config_overlay(db: Session) -> Generator:
             "disabled": False,
             "privacy_preferences_link_label": "Manage preferences",
             "privacy_policy_link_label": "View our company&#x27;s privacy policy",
-            "privacy_policy_url": "example.com/privacy",
+            "privacy_policy_url": "https://example.com/privacy",
             "reject_button_label": "Reject all",
             "save_button_label": "Save",
             "title": "Manage your consent",
@@ -2677,7 +2688,7 @@ def experience_config_tcf_overlay(db: Session) -> Generator:
             "disabled": False,
             "privacy_preferences_link_label": "Manage preferences",
             "privacy_policy_link_label": "View our company&#x27;s privacy policy",
-            "privacy_policy_url": "example.com/privacy",
+            "privacy_policy_url": "https://example.com/privacy",
             "reject_button_label": "Reject all",
             "save_button_label": "Save",
             "title": "Manage your consent",
@@ -2780,7 +2791,7 @@ def tcf_system(db: Session) -> System:
         db=db,
         data={
             "fides_key": f"tcf-system_key-f{uuid4()}",
-            "vendor_id": "sendgrid",
+            "vendor_id": "gvl.42",
             "name": f"TCF System Test",
             "description": "My TCF System Description",
             "organization_fides_key": "default_organization",
@@ -2807,6 +2818,7 @@ def tcf_system(db: Session) -> System:
             "legal_basis_for_processing": "Consent",
             "egress": None,
             "ingress": None,
+            "retention_period": "3",
         },
     )
 
@@ -2823,10 +2835,144 @@ def tcf_system(db: Session) -> System:
             "legal_basis_for_processing": "Legitimate interests",
             "egress": None,
             "ingress": None,
+            "retention_period": "1",
         },
     )
 
     db.refresh(system)
+    return system
+
+
+@pytest.fixture(scope="function")
+def ac_system_with_privacy_declaration(db: Session) -> System:
+    """Test AC System with privacy declarations - several contrived
+    declarations here to assert content that shouldn't show up in the
+    TCF experience is suppressed
+    """
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"ac_system{uuid.uuid4()}",
+            "vendor_id": "gacp.8",
+            "name": f"Test AC System",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    # Valid TCF purpose with consent legal basis
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "system_id": system.id,
+            "data_use": "functional.storage",
+            "legal_basis_for_processing": "Consent",
+            "features": [
+                "Link different devices",  # Feature 2
+            ],
+        },
+    )
+
+    # Separate purpose with legitimate interest which isn't valid for AC systems
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "system_id": system.id,
+            "data_use": "analytics.reporting.content_performance",
+            "legal_basis_for_processing": "Legitimate interests",
+            "features": [
+                "Link different devices",  # Feature 2
+            ],
+        },
+    )
+
+    # Separate purpose with consent legal basis but it is not a TCF data use, so shouldn't show up
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "system_id": system.id,
+            "data_use": "marketing.advertising",
+            "legal_basis_for_processing": "Consent",
+            "features": [
+                "Link different devices",  # Feature 2
+            ],
+        },
+    )
+    return system
+
+
+@pytest.fixture(scope="function")
+def ac_system_without_privacy_declaration(db: Session) -> System:
+    """Test AC System without privacy declaration"""
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"ac_system{uuid.uuid4()}",
+            "vendor_id": "gacp.100",
+            "name": f"Test AC System 2",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    return system
+
+
+@pytest.fixture(scope="function")
+def ac_system_with_invalid_li_declaration(db: Session) -> System:
+    """Test AC System with invalid LI declaration only"""
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"ac_system{uuid.uuid4()}",
+            "vendor_id": "gacp.100",
+            "name": f"Test AC System 3",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+    # Separate purpose with legitimate interest which isn't valid for AC systems
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "system_id": system.id,
+            "data_use": "analytics.reporting.content_performance",
+            "legal_basis_for_processing": "Legitimate interests",
+            "features": [
+                "Link different devices",  # Feature 2
+            ],
+        },
+    )
+
+    return system
+
+
+@pytest.fixture(scope="function")
+def ac_system_with_invalid_vi_declaration(db: Session) -> System:
+    """Test AC System with vital interests declaration only"""
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"ac_system{uuid.uuid4()}",
+            "vendor_id": "gacp.100",
+            "name": f"Test AC System 4",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+    # Separate purpose with "Vital interests"
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "system_id": system.id,
+            "data_use": "analytics.reporting.content_performance",
+            "legal_basis_for_processing": "Vital interests",
+            "features": [
+                "Link different devices",  # Feature 2
+            ],
+        },
+    )
+
     return system
 
 
@@ -2841,7 +2987,7 @@ def captify_technologies_system(db: Session) -> System:
         db=db,
         data={
             "fides_key": f"captify_{uuid.uuid4()}",
-            "vendor_id": "2",
+            "vendor_id": "gvl.2",
             "name": f"Captify",
             "description": "Captify is a search intelligence platform that helps brands and advertisers leverage search insights to improve their ad targeting and relevance.",
             "organization_fides_key": "default_organization",
@@ -2891,7 +3037,7 @@ def emerse_system(db: Session) -> System:
         db=db,
         data={
             "fides_key": f"emerse{uuid.uuid4()}",
-            "vendor_id": "8",
+            "vendor_id": "gvl.8",
             "name": f"Emerse",
             "description": "Emerse Sverige AB is a provider of programmatic advertising solutions, offering advertisers and publishers tools to manage and optimize their digital ad campaigns.",
             "organization_fides_key": "default_organization",
@@ -2957,7 +3103,7 @@ def skimbit_system(db):
         db=db,
         data={
             "fides_key": f"skimbit{uuid.uuid4()}",
-            "vendor_id": "46",
+            "vendor_id": "gvl.46",
             "name": f"Skimbit (Skimlinks, Taboola)",
             "description": "Skimbit, a Taboola company, specializes in data-driven advertising and provides tools for brands and advertisers to analyze customer behavior and deliver targeted and personalized ads.",
             "organization_fides_key": "default_organization",

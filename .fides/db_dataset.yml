@@ -1142,6 +1142,21 @@ dataset:
     - name: data_security_practices
       data_categories:
       - system.operations
+    - name: cookie_max_age_seconds
+      data_categories:
+      - system.operations
+    - name: cookie_refresh
+      data_categories:
+      - system.operations
+    - name: uses_cookies
+      data_categories:
+      - system.operations
+    - name: uses_non_cookie_access
+      data_categories:
+      - system.operations
+    - name: legitimate_interest_disclosure_url
+      data_categories:
+      - system.operations
     - name: user_id
       data_categories:
       - user.unique_id
@@ -1551,6 +1566,9 @@ dataset:
       data_categories:
       - system.operations
     - name: legal_basis_for_processing
+      data_categories:
+      - system.operations
+    - name: flexible_legal_basis_for_processing
       data_categories:
       - system.operations
     - name: impact_assessment_location
@@ -2643,26 +2661,6 @@ dataset:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: vendor_legitimate_interests
-      data_categories:
-      - system.operations
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-  - name: consentsettings
-    data_categories: []
-    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    fields:
-    - name: created_at
-      data_categories:
-      - system.operations
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: id
-      data_categories:
-      - system.operations
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: tcf_enabled
-      data_categories:
-      - system.operations
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: updated_at
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

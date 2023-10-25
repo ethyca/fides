@@ -58,7 +58,7 @@ const InitialLayerAccordion = ({
       </div>
       <div {...getDisclosureProps()}>
         <div>{description}</div>
-        {purposes ? (
+        {purposes?.length ? (
           <div className="fides-tcf-purpose-vendor fides-background-dark">
             <div className="fides-tcf-purpose-vendor-title fides-tcf-toggle-content">
               Purposes include

@@ -33,6 +33,7 @@ import {
 } from "~/features/plus/plus.slice";
 import { setSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
+  DictSuggestionNumberInput,
   DictSuggestionSelect,
   DictSuggestionSwitch,
   DictSuggestionTextArea,
@@ -50,7 +51,7 @@ import {
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
-import { ResourceTypes, System, SystemResponse } from "~/types/api";
+import { ResourceTypes, SystemResponse } from "~/types/api";
 
 import { DictSuggestionToggle } from "./dictionary-form/ToggleDictSuggestions";
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
@@ -79,7 +80,7 @@ const SystemHeading = ({ system }: { system?: SystemResponse }) => {
 };
 
 interface Props {
-  onSuccess: (system: System) => void;
+  onSuccess: (system: SystemResponse) => void;
   system?: SystemResponse;
   withHeader?: boolean;
   children?: React.ReactNode;
@@ -155,7 +156,9 @@ const SystemInformationForm = ({
     const systemBody = transformFormValuesToSystem(values);
 
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+      result:
+        | { data: SystemResponse }
+        | { error: FetchBaseQueryError | SerializedError }
     ) => {
       if (isErrorResult(result)) {
         const attemptedAction = isEditing ? "editing" : "creating";
@@ -171,7 +174,7 @@ const SystemInformationForm = ({
         toast.closeAll();
         // Reset state such that isDirty will be checked again before next save
         formikHelpers.resetForm({ values });
-        onSuccess(systemBody);
+        onSuccess(result.data);
         dispatch(setSuggestions("hiding"));
       }
     };
@@ -234,7 +237,7 @@ const SystemInformationForm = ({
               <DictSuggestionTextInput
                 id="name"
                 name="name"
-                dictField="display_name"
+                dictField={(vendor) => vendor.name ?? (vendor.legal_name || "")}
                 isRequired
                 label="System name"
                 tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
@@ -253,7 +256,6 @@ const SystemInformationForm = ({
                 id="description"
                 name="description"
                 label="Description"
-                dictField="description"
                 tooltip="What services does this system perform?"
               />
               <CustomCreatableSelect
@@ -332,7 +334,6 @@ const SystemInformationForm = ({
                     <Stack spacing={0}>
                       <DictSuggestionSwitch
                         name="uses_profiling"
-                        dictField="uses_profiling"
                         label="This system performs profiling"
                         tooltip="Does this system perform profiling that could have a legal effect?"
                       />
@@ -346,7 +347,6 @@ const SystemInformationForm = ({
                         <Box mt={4}>
                           <DictSuggestionSelect
                             name="legal_basis_for_profiling"
-                            dictField="legal_basis_for_profiling"
                             label="Legal basis for profiling"
                             options={legalBasisForProfilingOptions}
                             tooltip="What is the legal basis under which profiling is performed?"
@@ -359,7 +359,6 @@ const SystemInformationForm = ({
                     <Stack spacing={0}>
                       <DictSuggestionSwitch
                         name="does_international_transfers"
-                        dictField="international_transfers"
                         label="This system transfers data"
                         tooltip="Does this system transfer data to other countries or international organizations?"
                       />
@@ -373,7 +372,6 @@ const SystemInformationForm = ({
                         <Box mt={4}>
                           <DictSuggestionSelect
                             name="legal_basis_for_transfers"
-                            dictField="legal_basis_for_transfers"
                             label="Legal basis for transfer"
                             options={legalBasisForTransferOptions}
                             tooltip="What is the legal basis under which the data is transferred?"
@@ -418,6 +416,28 @@ const SystemInformationForm = ({
               }
               animateOpacity
             >
+              <SystemFormInputGroup heading="Cookie properties">
+                <DictSuggestionSwitch
+                  name="uses_cookies"
+                  label="This system uses cookies"
+                  tooltip="Does this system use cookies?"
+                />
+                <DictSuggestionSwitch
+                  name="cookie_refresh"
+                  label="This system refreshes cookies"
+                  tooltip="Does this system automatically refresh cookies?"
+                />
+                <DictSuggestionSwitch
+                  name="uses_non_cookie_access"
+                  label="This system uses non-cookie trackers"
+                  tooltip="Does this system use other types of trackers?"
+                />
+                <DictSuggestionNumberInput
+                  name="cookie_max_age_seconds"
+                  label="Maximum duration (seconds)"
+                  tooltip="What is the maximum amount of time a cookie will live?"
+                />
+              </SystemFormInputGroup>
               <SystemFormInputGroup heading="Administrative properties">
                 <CustomTextInput
                   label="Data stewards"
@@ -430,7 +450,6 @@ const SystemInformationForm = ({
                   id="privacy_policy"
                   name="privacy_policy"
                   label="Privacy policy URL"
-                  dictField="privacy_policy"
                   tooltip="Where can the privacy policy be located?"
                 />
                 <DictSuggestionTextInput
@@ -438,14 +457,12 @@ const SystemInformationForm = ({
                   name="legal_name"
                   label="Legal name"
                   tooltip="What is the legal name of the business?"
-                  dictField="legal_name"
                 />
                 <DictSuggestionTextArea
                   id="legal_address"
                   name="legal_address"
                   label="Legal address"
                   tooltip="What is the legal address for the business?"
-                  dictField="legal_address"
                 />
                 <CustomTextInput
                   label="Department"
@@ -460,7 +477,6 @@ const SystemInformationForm = ({
                 <DictSuggestionSelect
                   label="Responsibility"
                   name="responsibility"
-                  dictField="responsibility"
                   options={responsibilityOptions}
                   tooltip="What is the role of the business with regard to data processing?"
                   isMulti
@@ -474,7 +490,6 @@ const SystemInformationForm = ({
                   id="dpo"
                   label="Legal contact (DPO)"
                   tooltip="What is the official privacy contact information?"
-                  dictField="dpo"
                 />
                 <CustomTextInput
                   label="Joint controller"
@@ -490,8 +505,12 @@ const SystemInformationForm = ({
                   label="Data security practices"
                   name="data_security_practices"
                   id="data_security_practices"
-                  dictField="data_security_practices"
                   tooltip="Which data security practices are employed to keep the data safe?"
+                />
+                <DictSuggestionTextInput
+                  label="Legitimate interest disclosure URL"
+                  name="legitimate_interest_disclosure_url"
+                  id="legitimate_interest_disclosure_url"
                 />
               </SystemFormInputGroup>
               {values.fides_key ? (

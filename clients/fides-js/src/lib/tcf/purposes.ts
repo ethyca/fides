@@ -16,7 +16,7 @@ export const getUniquePurposeRecords = ({
       ...consentPurposes.map((p) => p.id),
       ...legintPurposes.map((p) => p.id),
     ])
-  );
+  ).sort((a, b) => a - b);
   const purposes: PurposeRecord[] = [];
   uniqueIds.forEach((id) => {
     const consent = consentPurposes.find((p) => p.id === id);

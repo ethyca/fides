@@ -46,11 +46,14 @@ interface FidesConfigTesting {
 export const stubConfig = (
   { consent, experience, geolocation, options }: Partial<FidesConfigTesting>,
   mockGeolocationApiResp?: any,
-  mockExperienceApiResp?: any
+  mockExperienceApiResp?: any,
+  demoPageQueryParams?: any,
+  demoPageWindowParams?: any
 ) => {
   cy.fixture("consent/test_banner_options.json").then((config) => {
     const updatedConfig = {
       consent: setNewConfig(config.consent, consent),
+      // this mocks the pre-fetched experience
       experience: setNewConfig(config.experience, experience),
       geolocation: setNewConfig(config.geolocation, geolocation),
       options: setNewConfig(config.options, options),
@@ -61,14 +64,17 @@ export const stubConfig = (
       typeof updatedConfig.options !== "string" &&
       updatedConfig.options?.geolocationApiUrl
     ) {
-      const geoLocationResp = mockGeolocationApiResp || {
-        body: {
-          country: "US",
-          ip: "63.173.339.012:13489",
-          location: "US-CA",
-          region: "CA",
+      const geoLocationResp = setNewConfig(
+        {
+          body: {
+            country: "US",
+            ip: "63.173.339.012:13489",
+            location: "US-CA",
+            region: "CA",
+          },
         },
-      };
+        mockGeolocationApiResp
+      );
       cy.intercept(
         "GET",
         updatedConfig.options.geolocationApiUrl,
@@ -79,9 +85,14 @@ export const stubConfig = (
       typeof updatedConfig.options !== "string" &&
       updatedConfig.options?.fidesApiUrl
     ) {
-      const experienceResp = mockExperienceApiResp || {
+      // this mocks the client-side experience fetch
+      const experienceMock = mockExperienceApiResp || {
         fixture: "consent/overlay_experience.json",
       };
+      const experienceResp =
+        mockExperienceApiResp === OVERRIDE.UNDEFINED
+          ? undefined
+          : experienceMock;
       cy.intercept(
         "GET",
         `${updatedConfig.options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}*`,
@@ -100,6 +111,10 @@ export const stubConfig = (
       `${updatedConfig.options.fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
       { fixture: "consent/notices_served.json" }
     ).as("patchNoticesServed");
-    cy.visitConsentDemo(updatedConfig);
+    cy.visitConsentDemo(
+      updatedConfig,
+      demoPageQueryParams,
+      demoPageWindowParams
+    );
   });
 };

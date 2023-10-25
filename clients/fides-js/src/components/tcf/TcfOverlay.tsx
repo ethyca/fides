@@ -39,7 +39,7 @@ import {
   PrivacyExperience,
   ServingComponent,
 } from "../../lib/consent-types";
-import { generateTcString } from "../../lib/tcf";
+import { generateFidesString } from "../../lib/tcf";
 import {
   FidesCookie,
   transformTcfPreferencesToCookieKeys,
@@ -49,7 +49,7 @@ import TcfTabs from "./TcfTabs";
 import Button from "../Button";
 import { useConsentServed } from "../../lib/hooks";
 import VendorInfoBanner from "./VendorInfoBanner";
-import { dispatchFidesEvent } from "../../fides";
+import { dispatchFidesEvent } from "../../lib/events";
 
 const resolveConsentValueFromTcfModel = (
   model:
@@ -240,13 +240,13 @@ const updateCookie = async (
   enabledIds: EnabledIds,
   experience: PrivacyExperience
 ): Promise<FidesCookie> => {
-  const tcString = await generateTcString({
+  const tcString = await generateFidesString({
     tcStringPreferences: enabledIds,
     experience,
   });
   return {
     ...oldCookie,
-    fides_tc_string: tcString,
+    fides_string: tcString,
     tcf_consent: transformTcfPreferencesToCookieKeys(tcf),
   };
 };
@@ -306,9 +306,9 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       });
       updateConsentPreferences({
         consentPreferencesToSave: [],
-        experienceId: experience.id,
-        fidesApiUrl: options.fidesApiUrl,
+        experience,
         consentMethod: ConsentMethod.button,
+        options,
         userLocationString: fidesRegionString,
         cookie,
         debug: options.debug,
@@ -395,7 +395,10 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             <TcfTabs
               experience={experience}
               enabledIds={draftIds}
-              onChange={setDraftIds}
+              onChange={(updatedIds) => {
+                setDraftIds(updatedIds);
+                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+              }}
               activeTabIndex={activeTabIndex}
               onTabChange={setActiveTabIndex}
             />

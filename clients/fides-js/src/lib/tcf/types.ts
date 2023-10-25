@@ -31,6 +31,12 @@ export type EmbeddedVendor = {
   name: string;
 };
 
+export type EmbeddedPurpose = {
+  id: number;
+  name: string;
+  retention_period?: string;
+};
+
 // Purposes
 export type TCFPurposeConsentRecord = {
   id: number;
@@ -141,7 +147,7 @@ export type TCFVendorConsentRecord = {
   outdated_preference?: UserConsentPreference;
   current_served?: boolean;
   outdated_served?: boolean;
-  purpose_consents?: Array<EmbeddedLineItem>;
+  purpose_consents?: Array<EmbeddedPurpose>;
 };
 
 export type TCFVendorLegitimateInterestsRecord = {
@@ -154,7 +160,7 @@ export type TCFVendorLegitimateInterestsRecord = {
   outdated_preference?: UserConsentPreference;
   current_served?: boolean;
   outdated_served?: boolean;
-  purpose_legitimate_interests?: Array<EmbeddedLineItem>;
+  purpose_legitimate_interests?: Array<EmbeddedPurpose>;
 };
 
 export type TCFVendorRelationships = {
@@ -162,9 +168,15 @@ export type TCFVendorRelationships = {
   has_vendor_id?: boolean;
   name?: string;
   description?: string;
-  special_purposes?: Array<EmbeddedLineItem>;
+  special_purposes?: Array<EmbeddedPurpose>;
   features?: Array<EmbeddedLineItem>;
   special_features?: Array<EmbeddedLineItem>;
+  cookie_max_age_seconds?: number;
+  uses_cookies?: boolean;
+  cookie_refresh?: boolean;
+  uses_non_cookie_access?: boolean;
+  legitimate_interest_disclosure_url?: string;
+  privacy_policy_url?: string;
 };
 
 export type TCFVendorSave = {
@@ -208,7 +220,16 @@ export type TcfModels =
   | TCFVendorLegitimateInterestsRecord[]
   | undefined;
 
-type TcfCookieKeyConsent = {
+export type TcfModelsRecord =
+  | TCFPurposeConsentRecord
+  | TCFPurposeLegitimateInterestsRecord
+  | TCFSpecialPurposeRecord
+  | TCFFeatureRecord
+  | TCFSpecialFeatureRecord
+  | TCFVendorConsentRecord
+  | TCFVendorLegitimateInterestsRecord;
+
+export type TcfCookieKeyConsent = {
   [id: string | number]: boolean | undefined;
 };
 
@@ -263,16 +284,6 @@ export type GVLJson = Pick<
 
 // GVL types—we should be able to get these from the library at some point,
 // but since they are on GVL 2.2, the types aren't quite right for GVL 3.
-export interface GvlVendorUrl {
-  langId: string;
-  privacy?: string;
-  legIntClaim?: string;
-}
-export interface GvlDataRetention {
-  stdRetention: number;
-  purposes: Record<number, number>;
-  specialPurposes: Record<number, number>;
-}
 interface GvlDataCategory {
   id: number;
   name: string;
