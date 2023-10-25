@@ -875,9 +875,8 @@ describe("Fides-js TCF", () => {
                   data_sales: true,
                   tracking: false,
                 });
-                expect(args[1]).to.equal(
-                  "CP0JloAP0JloAGXABBENATEAAAAAAAAAAAAAAAAAAAAA.IABE,1~"
-                );
+                // the TC str is dynamically updated upon save preferences with diff timestamp, so we do a fuzzy match
+                expect(args[1]).to.contain(".IABE,1~");
                 expect(args[2]).to.deep.equal(privacyExperience.items[0]);
               });
               // timeout means API call not made, which is expected
