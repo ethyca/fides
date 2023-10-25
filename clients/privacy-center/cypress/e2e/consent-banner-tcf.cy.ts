@@ -332,6 +332,7 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
+        cy.get("@FidesUpdated").should("have.been.calledTwice");
         cy.window().then((win) => {
           win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
           cy.get("@getTCData")
@@ -1320,9 +1321,12 @@ describe("Fides-js TCF", () => {
 
     describe("setting fields", () => {
       it("can opt in to all and set legitimate interests", () => {
+        cy.get("@FidesUpdated").should("have.been.calledOnce");
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
+        // On slow connections, we should explicitly wait for FidesUpdated
+        cy.get("@FidesUpdated").should("have.been.calledTwice");
         cy.get("@TCFEvent")
           .its("lastCall.args")
           .then(([tcData, success]) => {
@@ -2206,16 +2210,75 @@ describe("Fides-js TCF", () => {
       });
       cy.get("button").contains("Save").click();
       cy.wait("@patchPrivacyPreference");
+      cy.get("@FidesUpdated").should("have.been.calledTwice");
       // Call getTCData
       cy.window().then((win) => {
         win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
+        cy.get("@getTCData")
+          .should("have.been.calledOnce")
+          .its("lastCall.args")
+          .then(([tcData, success]) => {
+            expect(success).to.eql(true);
+            expect(tcData.addtlConsent).to.eql(acceptAllAcString);
+          });
       });
-      cy.get("@getTCData")
+    });
+
+    it("can initialize from an AC string", () => {
+      const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+      const CREATED_DATE = "2022-12-24T12:00:00.000Z";
+      const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
+      const cookie = {
+        identity: { fides_user_device_id: uuid },
+        fides_meta: {
+          version: "0.9.0",
+          createdAt: CREATED_DATE,
+          updatedAt: UPDATED_DATE,
+        },
+        consent: {},
+        tcf_consent: {
+          purpose_consent_preferences: { 2: false, [PURPOSE_4.id]: true },
+          special_feature_preferences: { [SPECIAL_FEATURE_1.id]: true },
+          system_legitimate_interests_preferences: { [SYSTEM_1.id]: false },
+          vendor_consent_preferences: { [VENDOR_1.id]: false },
+        },
+        tc_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
+      };
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+            // this TC string sets purpose 4 to false and purpose 7 to true
+            // the appended AC string sets AC 42 to true
+            fidesString:
+              "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~42.43.44",
+          },
+          experience: experience.items[0],
+        });
+      });
+
+      cy.get("@FidesInitialized")
         .should("have.been.calledOnce")
-        .its("lastCall.args")
-        .then(([tcData, success]) => {
-          expect(success).to.eql(true);
-          expect(tcData.addtlConsent).to.eql(acceptAllAcString);
+        .its("firstCall.args.0.detail.tcf_consent")
+        .then((tcfConsent) => {
+          // TC string setting worked
+          expect(tcfConsent.purpose_consent_preferences).to.eql({
+            1: false,
+            2: false,
+            3: false,
+            4: false,
+            5: false,
+            6: false,
+            7: true,
+          });
+          // AC string setting worked
+          expect(tcfConsent.vendor_consent_preferences).to.eql({
+            "gacp.42": true,
+            "gacp.43": true,
+            "gacp.44": true,
+          });
         });
     });
   });

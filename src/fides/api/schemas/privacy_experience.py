@@ -220,3 +220,14 @@ class PrivacyExperienceResponse(TCFExperienceContents, PrivacyExperienceWithId):
     )
     gvl: Optional[Dict] = None
     meta: Optional[ExperienceMeta] = None
+
+
+class PrivacyExperienceMetaResponse(FidesSchema):
+    """
+    Privacy Experience Response only containing region, component, id, and meta information
+    """
+
+    id: str
+    region: PrivacyNoticeRegion
+    component: Optional[ComponentType]
+    meta: Optional[ExperienceMeta] = None

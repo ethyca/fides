@@ -20,10 +20,16 @@ The types of changes are:
 ### Added
 - Added support for 3 additional config variables in Fides.js: fidesEmbed, fidesDisableSaveApi, and fidesTcString [#4262](https://github.com/ethyca/fides/pull/4262)
 - Added support for fidesEmbed, fidesDisableSaveApi, and fidesTcString to be passed into Fides.js via query param, cookie, or window object [#4297](https://github.com/ethyca/fides/pull/4297)
+- New privacy center environment variables `FIDES_PRIVACY_CENTER__IS_FORCED_TCF` which can make the privacy center always return the TCF bundle (`fides-tcf.js`) [#4312](https://github.com/ethyca/fides/pull/4312)
 - Added a `FidesUIChanged` event to Fides.js to track when user preferences change without being saved [#4314](https://github.com/ethyca/fides/pull/4314) and [#4253](https://github.com/ethyca/fides/pull/4253)
 - Add AC Systems to the TCF Overlay under Vendor Consents section [#4266](https://github.com/ethyca/fides/pull/4266/)
+- Support for passing in an AC string as part of a fides string for the TCF overlay [#4308](https://github.com/ethyca/fides/pull/4308)
 - Added support for overriding the save user preferences API call with a custom fn provided through Fides.init [#4318](https://github.com/ethyca/fides/pull/4318)
 - Return AC strings in GET Privacy Experience meta and allow saving preferences against AC strings [#4295](https://github.com/ethyca/fides/pull/4295)
+- New GET Privacy Experience Meta Endpoint [#4328](https://github.com/ethyca/fides/pull/4328)
+- Access and erasure support for SparkPost [#4328](https://github.com/ethyca/fides/pull/4238)
+- Access and erasure support for Iterate [#4332](https://github.com/ethyca/fides/pull/4332)
+- SSH Support for MySQL connections [#4310](https://github.com/ethyca/fides/pull/4310)
 - Added served notice history IDs to the TCF privacy preference API calls [#4161](https://github.com/ethyca/fides/pull/4161)
 
 ### Fixed

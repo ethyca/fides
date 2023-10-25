@@ -7,7 +7,7 @@ import {
   VendorRecord,
 } from "./types";
 
-enum VendorSources {
+export enum VendorSources {
   GVL = "gvl",
   AC = "gacp",
 }
