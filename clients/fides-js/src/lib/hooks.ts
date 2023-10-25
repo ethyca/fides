@@ -97,15 +97,12 @@ export const useConsentServed = ({
 
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
-      // Only send notices-served request when we show via the modal since that
-      // is the only time we show all notices.
-      // When TCF is enabled, report notices served as soon as the banner is shown
+      // The only time a notices served API call isn't triggered is when
+      // the BANNER is shown. Calls can be triggered for
+      // TCF_BANNER, TCF_OVERLAY, and OVERLAY
       if (
         !event.detail.extraDetails ||
-        (event.detail.extraDetails.servingComponent !==
-          ServingComponent.OVERLAY &&
-          event.detail.extraDetails.servingComponent !==
-            ServingComponent.TCF_BANNER)
+        event.detail.extraDetails.servingComponent === ServingComponent.BANNER
       ) {
         return;
       }
