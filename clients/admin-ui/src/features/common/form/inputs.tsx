@@ -289,6 +289,7 @@ export const SelectInput = ({
         option: (provided, state) => ({
           ...provided,
           background: state.isSelected || state.isFocused ? "gray.50" : "unset",
+          color: textColor ?? "gray.600"
         }),
         dropdownIndicator: (provided) => ({
           ...provided,
@@ -325,15 +326,15 @@ export const SelectInput = ({
         }),
         singleValue: singleValueBlock
           ? (provided) => ({
-              ...provided,
-              fontSize: "12px",
-              background: "gray.200",
-              color: "gray.600",
-              fontWeight: "400",
-              borderRadius: "2px",
-              py: 1,
-              px: 2,
-            })
+            ...provided,
+            fontSize: "12px",
+            background: "gray.200",
+            color: "gray.600",
+            fontWeight: "400",
+            borderRadius: "2px",
+            py: 1,
+            px: 2,
+          })
           : (provided) => ({ ...provided, color: textColor }),
       }}
       components={Object.keys(components).length > 0 ? components : undefined}
@@ -371,9 +372,9 @@ const CreatableSelectInput = ({
   const selected = Array.isArray(field.value)
     ? field.value.map((v) => ({ label: v, value: v }))
     : options.find((o) => o.value === field.value) ?? {
-        label: field.value,
-        value: field.value,
-      };
+      label: field.value,
+      value: field.value,
+    };
 
   const { setFieldValue, touched, setTouched } = useFormikContext();
 
@@ -467,15 +468,15 @@ const CreatableSelectInput = ({
         }),
         singleValue: singleValueBlock
           ? (provided) => ({
-              ...provided,
-              fontSize: "12px",
-              background: "gray.200",
-              color: textColor ?? "gray.600",
-              fontWeight: "400",
-              borderRadius: "2px",
-              py: 1,
-              px: 2,
-            })
+            ...provided,
+            fontSize: "12px",
+            background: "gray.200",
+            color: textColor ?? "gray.600",
+            fontWeight: "400",
+            borderRadius: "2px",
+            py: 1,
+            px: 2,
+          })
           : (provided) => ({ ...provided, color: textColor }),
       }}
       components={components}
