@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generator
+from typing import Any, Dict
 
 import pydash
 import pytest
@@ -16,12 +16,10 @@ secrets = get_secrets("iterate")
 def iterate_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "iterate.domain") or secrets["domain"],
-        # add the rest of your secrets here
-        "email": pydash.get(saas_config, "iterate.email") or secrets["email"],
         "access_token": pydash.get(saas_config, "iterate.access_token")
         or secrets["access_token"],
-        "company_id": pydash.get(saas_config, "iterate.company_id")
-        or secrets["company_id"],
+        "survey_id": pydash.get(saas_config, "iterate.survey_id")
+        or secrets["survey_id"],
     }
 
 
@@ -33,45 +31,10 @@ def iterate_identity_email(saas_config) -> str:
 
 
 @pytest.fixture
-def iterate_erasure_identity_email(saas_config) -> str:
-    #    return generate_random_email()
-    return (
-        pydash.get(saas_config, "iterate.erasure_identity_email")
-        or secrets["identity_email"]
-    )
+def iterate_erasure_identity_email() -> str:
+    return generate_random_email()
 
 
 @pytest.fixture
-def iterate_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def iterate_erasure_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def iterate_erasure_data(
-    iterate_erasure_identity_email: str,
-) -> Generator:
-    # create the data needed for erasure tests here
-    yield {}
-
-
-@pytest.fixture
-def iterate_runner(
-    db,
-    cache,
-    iterate_secrets,
-    iterate_external_references,
-    iterate_erasure_external_references,
-) -> ConnectorRunner:
-    return ConnectorRunner(
-        db,
-        cache,
-        "iterate",
-        iterate_secrets,
-        external_references=iterate_external_references,
-        erasure_external_references=iterate_erasure_external_references,
-    )
+def iterate_runner(db, cache, iterate_secrets) -> ConnectorRunner:
+    return ConnectorRunner(db, cache, "iterate", iterate_secrets)

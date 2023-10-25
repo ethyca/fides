@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: iteratehq
-    description: A sample dataset representing the IterateHQ connector for Fides
+    name: iterate
+    description: A sample dataset representing the Iterate connector for Fides
     collections:
       - name: user
         fields:
@@ -30,7 +30,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: email
-                data_categories: [system.operations]
+                data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
               - name: verified
@@ -41,6 +41,7 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
+              primary_key: True
           - name: role
             data_categories: [system.operations]
             fidesops_meta:
