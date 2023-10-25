@@ -15,14 +15,46 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.21.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.22.1...main)
+
+### Added
+- Added support for 3 additional config variables in Fides.js: fidesEmbed, fidesDisableSaveApi, and fidesTcString [#4262](https://github.com/ethyca/fides/pull/4262)
+- Added support for fidesEmbed, fidesDisableSaveApi, and fidesTcString to be passed into Fides.js via query param, cookie, or window object [#4297](https://github.com/ethyca/fides/pull/4297)
+- Added a `FidesUIChanged` event to Fides.js to track when user preferences change without being saved [#4314](https://github.com/ethyca/fides/pull/4314) and [#4253](https://github.com/ethyca/fides/pull/4253)
+- Add AC Systems to the TCF Overlay under Vendor Consents section [#4266](https://github.com/ethyca/fides/pull/4266/)
+- Added support for overriding the save user preferences API call with a custom fn provided through Fides.init [#4318](https://github.com/ethyca/fides/pull/4318)
+- Return AC strings in GET Privacy Experience meta and allow saving preferences against AC strings [#4295](https://github.com/ethyca/fides/pull/4295)
+- Access and erasure support for SparkPost [#4328](https://github.com/ethyca/fides/pull/4238)
+
+### Fixed
+- Cleans up CSS for fidesEmbed mode [#4306](https://github.com/ethyca/fides/pull/4306)
+- Stacks that do not have any purposes will no longer render an empty purpose block [#4278](https://github.com/ethyca/fides/pull/4278)
+- Forcing hidden sections to use display none [#4299](https://github.com/ethyca/fides/pull/4299)
+
+### Changed
+- Derive cookie storage info, privacy policy and legitimate interest disclosure URLs, and data retention data from the data map instead of directly from gvl.json [#4286](https://github.com/ethyca/fides/pull/4286)
+- Updated TCF Version for backend consent reporting [#4305](https://github.com/ethyca/fides/pull/4305)
+- Update Version Hash Contents [#4313](https://github.com/ethyca/fides/pull/4313)
+
+## [2.22.1](https://github.com/ethyca/fides/compare/2.22.0...2.22.1)
+
+### Added
+- Custom fields are now included in system history change tracking [#4294](https://github.com/ethyca/fides/pull/4294)
+
+### Security
+- Added hostname checks for external SaaS connector URLs [CVE-2023-46124](https://github.com/ethyca/fides/security/advisories/GHSA-jq3w-9mgf-43m4)
+- Use a Pydantic URL type for privacy policy URLs [CVE-2023-46126](https://github.com/ethyca/fides/security/advisories/GHSA-fgjj-5jmr-gh83)
+- Remove the CONFIG_READ scope from the Viewer role [CVE-2023-46125](https://github.com/ethyca/fides/security/advisories/GHSA-rjxg-rpg3-9r89)
+
+## [2.22.0](https://github.com/ethyca/fides/compare/2.21.0...2.22.0)
 
 ### Added
 - Added an option to link to vendor tab from an experience config description [#4191](https://github.com/ethyca/fides/pull/4191)
 - Added two toggles for vendors in the TCF overlay, one for Consent, and one for Legitimate Interest [#4189](https://github.com/ethyca/fides/pull/4189)
 - Added two toggles for purposes in the TCF overlay, one for Consent, and one for Legitimate Interest [#4234](https://github.com/ethyca/fides/pull/4234)
-- Added Sparkpost connector for use [4328] (https://github.com/ethyca/fides/pull/4238)
-
+- Added support for new TCF-related fields on `System` and `PrivacyDeclaration` models [#4228](https://github.com/ethyca/fides/pull/4228)
+- Support for AC string to `fides-tcf` [#4244](https://github.com/ethyca/fides/pull/4244)
+- Support for `gvl` prefixed vendor IDs [#4247](https://github.com/ethyca/fides/pull/4247)
 
 ### Changed
 - Removed `TCF_ENABLED` environment variable from the privacy center in favor of dynamically figuring out which `fides-js` bundle to send [#4131](https://github.com/ethyca/fides/pull/4131)
@@ -36,6 +68,12 @@ The types of changes are:
 - Added our CMP ID [#4233](https://github.com/ethyca/fides/pull/4233)
 - Allow Admin UI users to turn on Configure Consent flag [#4246](https://github.com/ethyca/fides/pull/4246)
 - Styling improvements for the fides.js consent banners and modals [#4222](https://github.com/ethyca/fides/pull/4222)
+- Update frontend to handle updated Compass schema [#4254](https://github.com/ethyca/fides/pull/4254)
+- Assume Universal Vendor ID usage in TC String translation [#4256](https://github.com/ethyca/fides/pull/4256)
+- Changed vendor form on configuring consent page to use two-part selection for consent uses [#4251](https://github.com/ethyca/fides/pull/4251)
+- Updated system form to have new TCF fields [#4271](https://github.com/ethyca/fides/pull/4271)
+- Vendors disclosed string is now narrowed to only the vendors shown in the UI, not the whole GVL [#4250](https://github.com/ethyca/fides/pull/4250)
+- Changed naming convention "fides_string" instead of "tc_string" for developer friendly consent API's [#4267](https://github.com/ethyca/fides/pull/4267)
 
 ### Fixed
 - TCF overlay can initialize its consent preferences from a cookie [#4124](https://github.com/ethyca/fides/pull/4124)
@@ -44,6 +82,10 @@ The types of changes are:
 - An issue where email was not being overridden correctly for Braze and Domo [#4196](https://github.com/ethyca/fides/pull/4196)
 - Use `stdRetention` when there is not a specific value for a purpose's data retention [#4199](https://github.com/ethyca/fides/pull/4199)
 - Updating the unflatten_dict util to accept flattened dict values [#4200](https://github.com/ethyca/fides/pull/4200)
+- Minor CSS styling fixes for the consent modal [#4252](https://github.com/ethyca/fides/pull/4252)
+- Additional styling fixes for issues caused by a CSS reset [#4268](https://github.com/ethyca/fides/pull/4268)
+- Bug where vendor legitimate interests would not be set unless vendor consents were first set [#4250](https://github.com/ethyca/fides/pull/4250)
+- Vendor count over-counting in TCF overlay [#4275](https://github.com/ethyca/fides/pull/4275)
 
 ## [2.21.0](https://github.com/ethyca/fides/compare/2.20.2...2.21.0)
 

@@ -16,6 +16,7 @@ import {
   CustomCreatableSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
+import { dataUseIsConsentUse } from "~/features/configure-consent/vendor-transform";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import {
   selectAllDictEntries,
@@ -43,9 +44,23 @@ const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("Vendor name"),
 });
 
-const DictionaryValidationSchema = Yup.object().shape({
-  vendor_id: Yup.string().required().label("Vendor"),
-});
+const DictionaryValidationSchema = Yup.object().shape(
+  {
+    // to allow creation/editing of non-dictionary systems even with
+    // dictionary enabled, only require one of either vendor_id or name
+    vendor_id: Yup.string().when("name", {
+      is: (name: string) => name === "" || null,
+      then: Yup.string().required().label("Vendor"),
+      otherwise: Yup.string().nullable().label("Vendor"),
+    }),
+    name: Yup.string().when("vendor_id", {
+      is: (vendor_id: string) => vendor_id === "" || null,
+      then: Yup.string().required().label("Name"),
+      otherwise: Yup.string().nullable().label("Name"),
+    }),
+  },
+  [["name", "vendor_id"]]
+);
 
 const AddVendor = ({
   passedInSystem,
@@ -85,14 +100,15 @@ const AddVendor = ({
     ? {
         name: passedInSystem.name ?? "",
         vendor_id: passedInSystem.vendor_id,
-        privacy_declarations: passedInSystem.privacy_declarations.map(
-          (dec) => ({
+        privacy_declarations: passedInSystem.privacy_declarations
+          .filter((dec) => dataUseIsConsentUse(dec.data_use))
+          .map((dec) => ({
             ...dec,
             name: dec.name ?? "",
             cookies: dec.cookies ?? [],
             cookieNames: dec.cookies ? dec.cookies.map((c) => c.name) : [],
-          })
-        ),
+            consent_use: dec.data_use.split(".")[0],
+          })),
       }
     : defaultInitialValues;
 
@@ -101,8 +117,8 @@ const AddVendor = ({
     helpers: FormikHelpers<FormValues>
   ) => {
     const transformedDeclarations = values.privacy_declarations
-      .filter((dec) => dec.data_use !== EMPTY_DECLARATION.data_use)
-      .map((dec) => {
+      .filter((dec) => dec.consent_use !== EMPTY_DECLARATION.consent_use)
+      .flatMap((dec) => {
         // if a cookie from the form already exists on the declaration with full
         // information from the dictionary, use that; otherwise, make the cookie
         // name from the form into a new cookie
@@ -110,10 +126,36 @@ const AddVendor = ({
           const existingCookie = dec.cookies.find((c) => c.name === name);
           return existingCookie ?? { name, path: "/" };
         });
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { cookieNames, consent_use, ...rest } = dec;
 
-        const { cookieNames, ...rest } = dec;
-        return { ...rest, cookies: transformedCookies };
+        // for "marketing", we create two data uses on the backend
+        if (dec.consent_use === "marketing" && !dec.data_use) {
+          return [
+            "marketing.advertising.first_party.targeted",
+            "marketing.advertising.third_party.targeted",
+          ].map((dataUse) => ({
+            ...rest,
+            data_use: dataUse,
+            cookies: transformedCookies,
+          }));
+        }
+        return {
+          ...rest,
+          data_use: dec.data_use ? dec.data_use : dec.consent_use!,
+          cookies: transformedCookies,
+        };
       });
+    // if editing and the system has existing data uses not shown on form
+    // due to not being consent uses, include those in the payload
+    const existingDeclarations = passedInSystem
+      ? passedInSystem.privacy_declarations.filter(
+          (du) => !dataUseIsConsentUse(du.data_use)
+        )
+      : [];
+    const declarationsToSave = passedInSystem
+      ? [...existingDeclarations, ...transformedDeclarations]
+      : transformedDeclarations;
 
     // We use vendor_id to potentially store a new system name
     // so now we need to clear out vendor_id if it's not a system in the dictionary
@@ -132,7 +174,7 @@ const AddVendor = ({
       name: passedInSystem ? passedInSystem.name : newName,
       fides_key: passedInSystem ? passedInSystem.fides_key : formatKey(newName),
       system_type: passedInSystem ? passedInSystem.system_type : "",
-      privacy_declarations: transformedDeclarations,
+      privacy_declarations: declarationsToSave,
     };
 
     const result = passedInSystem
@@ -174,7 +216,9 @@ const AddVendor = ({
       >
         {({ dirty, values, isValid, resetForm }) => {
           let suggestionsState;
-          if (values.vendor_id == null) {
+          if (
+            dictionaryOptions.every((opt) => opt.value !== values.vendor_id)
+          ) {
             suggestionsState = "disabled" as const;
           } else if (isShowingSuggestions) {
             suggestionsState = "showing" as const;

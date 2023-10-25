@@ -3,6 +3,11 @@ import {
   Flex,
   FormControl,
   HStack,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
   Switch,
   Textarea,
   VStack,
@@ -21,13 +26,13 @@ import {
 } from "~/features/common/form/inputs";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { selectDictEntry } from "~/features/plus/plus.slice";
-import { DictEntry } from "~/features/plus/types";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import type { FormValues } from "~/features/system/form";
+import { Vendor } from "~/types/dictionary-api";
 
 const useDictSuggestion = (
   fieldName: string,
-  dictField: string,
+  dictField?: (vendor: Vendor) => string | boolean,
   fieldType?: string
 ) => {
   const [initialField, meta, { setValue, setTouched }] = useField({
@@ -59,13 +64,13 @@ const useDictSuggestion = (
   }, [isShowingSuggestions, setPreSuggestionValue]);
 
   useEffect(() => {
-    if (
-      isShowingSuggestions === "showing" &&
-      dictEntry &&
-      dictField in dictEntry
-    ) {
-      if (field.value !== dictEntry[dictField as keyof DictEntry]) {
-        setValue(dictEntry[dictField as keyof DictEntry]);
+    if (isShowingSuggestions === "showing" && dictEntry) {
+      // Either use the passed in getter for a dictfield, or default to the field name
+      const dictFieldValue = dictField
+        ? dictField(dictEntry)
+        : dictEntry[fieldName as keyof Vendor];
+      if (field.value !== dictFieldValue) {
+        setValue(dictFieldValue);
 
         // This blur is a workaround some forik issues.
         // the setTimeout is required to get around a
@@ -78,7 +83,7 @@ const useDictSuggestion = (
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isShowingSuggestions, setValue, dictEntry, dictField, inputRef.current]);
+  }, [isShowingSuggestions, setValue, dictEntry, inputRef.current]);
 
   useEffect(() => {
     if (isShowingSuggestions === "hiding") {
@@ -96,7 +101,7 @@ const useDictSuggestion = (
 };
 
 type Props = {
-  dictField: string;
+  dictField?: (vendor: Vendor) => string | boolean;
 } & Omit<CustomInputProps, "variant"> &
   StringField;
 
@@ -360,6 +365,66 @@ export const DictSuggestionSelect = ({
           fieldName={field.name}
         />
       </VStack>
+    </FormControl>
+  );
+};
+
+export const DictSuggestionNumberInput = ({
+  label,
+  tooltip,
+  dictField,
+  name,
+  id,
+}: Props) => {
+  const { field, isInvalid, error, isShowingSuggestions } = useDictSuggestion(
+    name,
+    dictField,
+    "numeric"
+  );
+
+  const { setFieldValue } = useFormikContext();
+
+  return (
+    <FormControl isInvalid={isInvalid} width="full">
+      <Box display="flex" alignItems="center" justifyContent="space-between">
+        <HStack spacing={1}>
+          <Label htmlFor={id || name} fontSize="sm" my={0} mr={0}>
+            {label}
+          </Label>
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </HStack>
+        <HStack>
+          <NumberInput
+            value={field.value}
+            name={field.name}
+            size="sm"
+            onBlur={field.onBlur}
+            onChange={(v) => {
+              setFieldValue(field.name, v);
+            }}
+            w="100%"
+            colorScheme="purple"
+            inputMode="numeric"
+            data-testid={`input-${field.name}`}
+            color={
+              isShowingSuggestions === "showing"
+                ? "complimentary.500"
+                : "gray.800"
+            }
+          >
+            <NumberInputField />
+            <NumberInputStepper>
+              <NumberIncrementStepper />
+              <NumberDecrementStepper />
+            </NumberInputStepper>
+          </NumberInput>
+        </HStack>
+      </Box>
+      <ErrorMessage
+        isInvalid={isInvalid}
+        message={error}
+        fieldName={field.name}
+      />
     </FormControl>
   );
 };

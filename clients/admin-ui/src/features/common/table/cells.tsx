@@ -54,21 +54,36 @@ export const DateCell = <T extends object>({ value }: CellProps<T, string>) =>
 
 type MapCellProps<T extends object> = CellProps<T, string> & {
   map: Map<string, string>;
+  isPlainText?: boolean;
 };
 
-export const MapCell = <T extends object>({ map, value }: MapCellProps<T>) => (
-  <Badge
-    size="sm"
-    width="fit-content"
-    data-testid="status-badge"
-    textTransform="uppercase"
-    fontWeight="400"
-    color="gray.600"
-    px={2}
-  >
-    {map.get(value) ?? value}
-  </Badge>
-);
+export const MapCell = <T extends object>({
+  map,
+  value,
+  isPlainText,
+}: MapCellProps<T>) => {
+  const innerText = map.get(value) ?? value;
+  if (isPlainText) {
+    return (
+      <Text whiteSpace="normal" p={2}>
+        {innerText}
+      </Text>
+    );
+  }
+  return (
+    <Badge
+      size="sm"
+      width="fit-content"
+      data-testid="status-badge"
+      textTransform="uppercase"
+      fontWeight="400"
+      color="gray.600"
+      px={2}
+    >
+      {innerText}
+    </Badge>
+  );
+};
 
 export const MultiTagCell = <T extends object>({
   value,

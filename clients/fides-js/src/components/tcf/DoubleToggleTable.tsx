@@ -144,7 +144,9 @@ const DoubleToggleTable = <T extends Item>({
           checked={enabledLegintIds.indexOf(`${item.id}`) !== -1}
           badge={renderBadgeLabel ? renderBadgeLabel(item) : undefined}
           secondToggle={
-            <div style={{ display: "flex", marginLeft: "16px" }}>
+            <div
+              style={{ display: "flex", marginLeft: "16px", minWidth: "95px" }}
+            >
               {item.isConsent ? (
                 <Toggle
                   name={`${item.name}-consent`}

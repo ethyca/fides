@@ -1,3 +1,4 @@
+"""Test consent utils"""
 from __future__ import annotations
 
 from html import unescape
@@ -1051,7 +1052,7 @@ class TestUpsertDefaultExperienceConfig:
             "id": "test_id",
             "privacy_preferences_link_label": "D",
             "privacy_policy_link_label": "E's label",
-            "privacy_policy_url": "F",
+            "privacy_policy_url": "https://example.com/privacy_policy",
             "reject_button_label": "G",
             "save_button_label": "H",
             "title": "I",
@@ -1075,7 +1076,9 @@ class TestUpsertDefaultExperienceConfig:
         assert (
             experience_config.privacy_policy_link_label == "E&#x27;s label"
         )  # Escaped
-        assert experience_config.privacy_policy_url == "F"
+        assert (
+            experience_config.privacy_policy_url == "https://example.com/privacy_policy"
+        )
         assert experience_config.regions == []
         assert experience_config.reject_button_label == "G"
         assert experience_config.save_button_label == "H"
@@ -1101,7 +1104,7 @@ class TestUpsertDefaultExperienceConfig:
         assert history.id != "test_id"
         assert history.privacy_preferences_link_label == "D"
         assert history.privacy_policy_link_label == "E&#x27;s label"
-        assert history.privacy_policy_url == "F"
+        assert history.privacy_policy_url == "https://example.com/privacy_policy"
         assert history.reject_button_label == "G"
         assert history.save_button_label == "H"
         assert history.title == "I"
@@ -1141,7 +1144,9 @@ class TestUpsertDefaultExperienceConfig:
         )
         assert experience_config is not None
 
-        default_overlay_config_data["privacy_policy_url"] = "example.com/privacy_policy"
+        default_overlay_config_data[
+            "privacy_policy_url"
+        ] = "https://test_example.com/privacy_policy"
 
         resp = create_default_experience_config(db, default_overlay_config_data)
         assert resp is None
@@ -1150,7 +1155,10 @@ class TestUpsertDefaultExperienceConfig:
 
         # Data has changed but we didn't update existing config
         assert experience_config.version == 1.0
-        assert experience_config.privacy_policy_url != "example.com/privacy_policy"
+        assert (
+            experience_config.privacy_policy_url
+            != "https://test_example.com/privacy_policy"
+        )
         assert experience_config.histories.count() == 1
 
         assert experience_config.experience_config_history_id is not None
@@ -1158,7 +1166,10 @@ class TestUpsertDefaultExperienceConfig:
         history = experience_config.histories[0]
 
         assert history.version == 1.0
-        assert experience_config.privacy_policy_url != "example.com/privacy_policy"
+        assert (
+            experience_config.privacy_policy_url
+            != "https://test_example.com/privacy_policy"
+        )
 
         history.delete(db)
         experience_config.delete(db)

@@ -1,3 +1,4 @@
+import { CONSENT_USE_OPTIONS } from "~/features/configure-consent/constants";
 import { Cookies, SystemResponse } from "~/types/api";
 
 export interface CookieBySystem {
@@ -40,3 +41,6 @@ export const transformSystemsToCookies = (
   });
   return cookiesList;
 };
+
+export const dataUseIsConsentUse = (dataUse: string) =>
+  CONSENT_USE_OPTIONS.some((opt) => opt.value === dataUse.split(".")[0]);

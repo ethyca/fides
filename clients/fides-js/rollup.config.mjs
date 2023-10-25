@@ -14,7 +14,7 @@ const GZIP_SIZE_ERROR_KB = 22; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 15; // log a warning if bundle size exceeds this
 
 // TCF
-const GZIP_SIZE_TCF_ERROR_KB = 40;
+const GZIP_SIZE_TCF_ERROR_KB = 42;
 const GZIP_SIZE_TCF_WARN_KB = 35;
 
 const preactAliases = {

@@ -281,19 +281,23 @@
           "purpose_consents": [
             {
               "id": 4,
-              "name": "Use profiles to select personalised advertising"
+              "name": "Use profiles to select personalised advertising",
+              "retention_period": "4"
             },
             {
               "id": 6,
-              "name": "Use profiles to select personalised content"
+              "name": "Use profiles to select personalised content",
+              "retention_period": "6"
             },
             {
               "id": 7,
-              "name": "Measure advertising performance"
+              "name": "Measure advertising performance",
+              "retention_period": "7"
             },
             {
               "id": 9,
-              "name": "Understand audiences through statistics or combinations of data from different sources"
+              "name": "Understand audiences through statistics or combinations of data from different sources",
+              "retention_period": "9"
             }
           ]
         }
@@ -301,6 +305,8 @@
       "tcf_vendor_legitimate_interests": [],
       "tcf_vendor_relationships": [
         {
+          "cookie_max_age_seconds": 360000,
+          "cookie_refresh": true,
           "id": "2",
           "has_vendor_id": true,
           "name": "Captify",
@@ -308,11 +314,16 @@
           "special_purposes": [
             {
               "id": 1,
-              "name": "Ensure security, prevent and detect fraud, and fix errors"
+              "name": "Ensure security, prevent and detect fraud, and fix errors",
+              "retention_period": "1"
             }
           ],
+          "uses_cookies": true,
+          "uses_non_cookie_access": true,
           "features": [],
-          "special_features": []
+          "special_features": [],
+          "privacy_policy_url": "https://www.example.com/privacy",
+          "legitimate_interest_disclosure_url": "https://www.example.com/legitimate_interest_disclosure"
         }
       ],
       "tcf_consent_systems": [],
@@ -330,13 +341,16 @@
           "purpose_legitimate_interests": [
             {
               "id": 2,
-              "name": "Use limited data to select advertising"
+              "name": "Use limited data to select advertising",
+              "retention_period": "2"
             }
           ]
         }
       ],
       "tcf_system_relationships": [
         {
+          "cookie_max_age_seconds": 400000,
+          "cookie_refresh": false,
           "id": "ctl_b3dde2d5-e535-4d9a-bf6e-a3b6beb01761",
           "has_vendor_id": false,
           "name": "Fides System",
@@ -344,7 +358,8 @@
           "special_purposes": [
             {
               "id": 1,
-              "name": "Ensure security, prevent and detect fraud, and fix errors"
+              "name": "Ensure security, prevent and detect fraud, and fix errors",
+              "retention_period": "1"
             }
           ],
           "features": [
@@ -353,7 +368,9 @@
               "name": "Match and combine data from other data sources"
             }
           ],
-          "special_features": []
+          "special_features": [],
+          "uses_cookies": true,
+          "uses_non_cookie_access": false
         }
       ],
       "created_at": "2023-09-26T18:59:40.416181+00:00",
@@ -379,6 +396,34 @@
         "features": {},
         "specialFeatures": {},
         "vendors": {
+          "1": {
+            "id": 1,
+            "name": "Exponential Interactive, Inc d/b/a VDX.tv",
+            "purposes": [1],
+            "legIntPurposes": [],
+            "flexiblePurposes": [],
+            "specialPurposes": [],
+            "features": [],
+            "specialFeatures": [],
+            "cookieMaxAgeSeconds": 7776000,
+            "usesCookies": true,
+            "cookieRefresh": true,
+            "usesNonCookieAccess": false,
+            "dataRetention": {
+              "stdRetention": 397,
+              "purposes": {},
+              "specialPurposes": {}
+            },
+            "urls": [
+              {
+                "langId": "en",
+                "privacy": "https://vdx.tv/privacy/",
+                "legIntClaim": "https://cdnx.exponential.com/wp-content/uploads/2018/04/Balancing-Assessment-for-Legitimate-Interest-Publishers-v2.pdf"
+              }
+            ],
+            "dataDeclaration": [1, 3, 4, 6, 8, 10, 11],
+            "deviceStorageDisclosureUrl": "https://vdxtv.expo.workers.dev"
+          },
           "2": {
             "id": 2,
             "name": "Captify Technologies Limited",

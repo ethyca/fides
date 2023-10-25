@@ -25,7 +25,7 @@ from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
 from fides.api.common_exceptions import (
-    DecodeTCStringError,
+    DecodeFidesStringError,
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
     SystemNotFound,
@@ -58,12 +58,12 @@ from fides.api.schemas.privacy_preference import (
     ConsentReportingSchema,
     CurrentPrivacyPreferenceReportingSchema,
     CurrentPrivacyPreferenceSchema,
+    FidesStringFidesPreferences,
     PrivacyPreferencesCreate,
     PrivacyPreferencesRequest,
     RecordConsentServedCreate,
     RecordConsentServedRequest,
     SavePrivacyPreferencesResponse,
-    TCStringFidesPreferences,
 )
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
@@ -83,7 +83,9 @@ from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
 )
 from fides.api.util.endpoint_utils import fides_limiter, validate_start_and_end_filters
-from fides.api.util.tcf.tc_mobile_data import convert_tc_string_to_mobile_data
+from fides.api.util.tcf.ac_string import decode_ac_string_to_preferences
+from fides.api.util.tcf.fides_string import split_fides_string
+from fides.api.util.tcf.tc_mobile_data import convert_fides_str_to_mobile_data
 from fides.api.util.tcf.tc_string import decode_tc_string_to_preferences
 from fides.api.util.tcf.tcf_experience_contents import (
     TCFExperienceContents,
@@ -332,8 +334,8 @@ def save_privacy_preferences_with_verified_identity(
     Creates historical records for these preferences for record keeping, and also updates current preferences.
     Creates a privacy request to propagate preferences to third party systems where applicable.
     """
-    tc_string: Optional[str] = data.tc_string
-    data = update_request_with_decoded_tc_string_fields(data, db)
+    fides_string: Optional[str] = data.fides_string
+    data = update_request_with_decoded_fides_string_fields(data, db)
 
     verify_privacy_notice_and_historical_records(
         db=db,
@@ -372,8 +374,8 @@ def save_privacy_preferences_with_verified_identity(
                 original_request_data=data,
             )
         )
-        saved_preferences_response.tc_mobile_data = convert_tc_string_to_mobile_data(
-            tc_string
+        saved_preferences_response.fides_mobile_data = convert_fides_str_to_mobile_data(
+            fides_string
         )
 
         return saved_preferences_response
@@ -382,7 +384,7 @@ def save_privacy_preferences_with_verified_identity(
         IdentityNotFoundException,
         PrivacyNoticeHistoryNotFound,
         SystemNotFound,
-        DecodeTCStringError,
+        DecodeFidesStringError,
     ) as exc:
         raise HTTPException(status_code=400, detail=exc.args[0])
 
@@ -700,29 +702,44 @@ def verify_previously_served_records(
             )
 
 
-def update_request_with_decoded_tc_string_fields(
+def update_request_with_decoded_fides_string_fields(
     request_body: PrivacyPreferencesRequest, db: Session
 ) -> PrivacyPreferencesRequest:
-    """Update the request body with the decoded values of the TC string if applicable"""
-    if request_body.tc_string:
+    """Update the request body with the decoded values of the TC string and AC strings if applicable"""
+    if request_body.fides_string:
         tcf_contents: TCFExperienceContents = get_tcf_contents(
             db
         )  # TODO cache this so we're not building each time privacy preference is saved
         try:
-            decoded_preference_request_body: TCStringFidesPreferences = (
-                decode_tc_string_to_preferences(request_body.tc_string, tcf_contents)
+            tc_str, ac_str = split_fides_string(request_body.fides_string)
+            if tc_str and not CONFIG.consent.tcf_enabled:
+                raise DecodeFidesStringError("TCF must be enabled to decode TC String")
+
+            if ac_str and not CONFIG.consent.ac_enabled:
+                raise DecodeFidesStringError("AC must be enabled to decode AC String")
+
+            decoded_tc_str_request_body: FidesStringFidesPreferences = (
+                decode_tc_string_to_preferences(tc_str, tcf_contents)
             )
-        except DecodeTCStringError as exc:
+            decoded_ac_str_request_body: FidesStringFidesPreferences = (
+                decode_ac_string_to_preferences(ac_str, tcf_contents)
+            )
+            # We combine Vendor Consent Preferences from the TC String and AC String if applicable
+            decoded_tc_str_request_body.vendor_consent_preferences = (
+                decoded_tc_str_request_body.vendor_consent_preferences
+                + decoded_ac_str_request_body.vendor_consent_preferences
+            )
+        except DecodeFidesStringError as exc:
             raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.args[0])
 
         # Remove the TC string from the request body now that we've decoded it
-        request_body.tc_string = None
+        request_body.fides_string = None
         # Add the individual sections from the TC string to the request body
-        for decoded_tcf_section in decoded_preference_request_body.__fields__:
+        for decoded_tcf_section in decoded_tc_str_request_body.__fields__:
             setattr(
                 request_body,
                 decoded_tcf_section,
-                getattr(decoded_preference_request_body, decoded_tcf_section),
+                getattr(decoded_tc_str_request_body, decoded_tcf_section),
             )
 
     return request_body
@@ -746,8 +763,8 @@ def save_privacy_preferences(
     Creates historical records for these preferences for record keeping, and also updates current preferences.
     Creates a privacy request to propagate preferences to third party systems if applicable.
     """
-    tc_string: Optional[str] = data.tc_string
-    data = update_request_with_decoded_tc_string_fields(data, db)
+    fides_string: Optional[str] = data.fides_string
+    data = update_request_with_decoded_fides_string_fields(data, db)
 
     verify_privacy_notice_and_historical_records(
         db=db,
@@ -778,8 +795,8 @@ def save_privacy_preferences(
                 original_request_data=data,
             )
         )
-        saved_preferences_response.tc_mobile_data = convert_tc_string_to_mobile_data(
-            tc_string
+        saved_preferences_response.fides_mobile_data = convert_fides_str_to_mobile_data(
+            fides_string
         )
 
         return saved_preferences_response
@@ -788,7 +805,7 @@ def save_privacy_preferences(
         IdentityNotFoundException,
         PrivacyNoticeHistoryNotFound,
         SystemNotFound,
-        DecodeTCStringError,
+        DecodeFidesStringError,
     ) as exc:
         raise HTTPException(status_code=400, detail=exc.args[0])
 

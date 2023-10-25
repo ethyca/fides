@@ -39,9 +39,10 @@ const TcfTabs = ({
       content: (
         <div>
           <InfoBox>
-            You can review and and exercise your right to consent to specific
-            purposes by using the filter to switch between Consent and
-            Legitimate Interest below.
+            Below, you will find a list of the purposes and special features for
+            which your data is being processed. You may exercise your rights for
+            specific purposes, based on consent or legitimate interest, using
+            the toggles below.
           </InfoBox>
           <AllOnOffButtons
             enabledIds={enabledIds}
@@ -68,8 +69,9 @@ const TcfTabs = ({
       content: (
         <div>
           <InfoBox>
-            You can review the list of features and exercise your right to
-            consent to special features below.
+            Below, you will find a list of the features for which your data is
+            being processed. You may exercise your rights for special features
+            using the toggles below.
           </InfoBox>
           <AllOnOffButtons
             enabledIds={enabledIds}
@@ -93,10 +95,9 @@ const TcfTabs = ({
       content: (
         <div>
           <InfoBox>
-            You may review the list of vendors and the purposes or features of
-            processing they individually declare below. You have the right to
-            exercise you consent for each vendor based on the legal basis they
-            assert.
+            Below, you will find a list of vendors processing your data and the
+            purposes or features of processing they declare. You may exercise
+            your rights for each vendor based on the legal basis they assert.
           </InfoBox>
           <TcfVendors
             experience={experience}
