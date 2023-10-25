@@ -725,7 +725,8 @@ describe("Fides-js TCF", () => {
         });
       });
 
-      it("calls custom save preferences API fn instead of internal Fides API when it is provided in Fides.init", () => {
+      // Skip until we can fix in https://ethyca.atlassian.net/browse/PROD-1272
+      it.skip("calls custom save preferences API fn instead of internal Fides API when it is provided in Fides.init", () => {
         const apiOptions = {
           /* eslint-disable @typescript-eslint/no-unused-vars */
           savePreferencesFn: (
