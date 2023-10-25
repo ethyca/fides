@@ -5,6 +5,7 @@ import {
   PrivacyExperience,
   UserConsentPreference,
 } from "fides-js";
+import { CookieKeyConsent } from "fides-js/src/lib/cookie";
 import { OVERRIDE, stubConfig } from "../support/stubs";
 
 const PURPOSE_2 = {
@@ -315,6 +316,7 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
+        cy.get("@FidesUpdated").should("have.been.calledTwice");
         cy.window().then((win) => {
           win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
           cy.get("@getTCData")
@@ -374,33 +376,33 @@ describe("Fides-js TCF", () => {
         });
       });
 
-      it("can group toggle and fire FidesPreferenceToggled events", () => {
+      it("can group toggle and fire FidesUIChanged events", () => {
         // Toggle just legitimate interests
         cy.getByTestId("toggle-Purposes").click();
         cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
           cy.get("input").should("not.be.checked");
         });
-        cy.get("@FidesPreferenceToggled").its("callCount").should("equal", 1);
+        cy.get("@FidesUIChanged").its("callCount").should("equal", 1);
 
         // Toggle a child back on
         cy.getByTestId(`toggle-${PURPOSE_2.name}`).click();
         cy.getByTestId("toggle-Purposes").within(() => {
           cy.get("input").should("be.checked");
         });
-        cy.get("@FidesPreferenceToggled").its("callCount").should("equal", 2);
+        cy.get("@FidesUIChanged").its("callCount").should("equal", 2);
 
         // Do the same for consent column
         cy.getByTestId("toggle-all-Purposes-consent").click();
         cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
           cy.get("input").should("not.be.checked");
         });
-        cy.get("@FidesPreferenceToggled").its("callCount").should("equal", 3);
+        cy.get("@FidesUIChanged").its("callCount").should("equal", 3);
         // Toggle back on
         cy.getByTestId("toggle-all-Purposes-consent").click();
         cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
           cy.get("input").should("be.checked");
         });
-        cy.get("@FidesPreferenceToggled").its("callCount").should("equal", 4);
+        cy.get("@FidesUIChanged").its("callCount").should("equal", 4);
 
         // Try the all on/all off button
         cy.get("button").contains("All off").click();
@@ -410,7 +412,7 @@ describe("Fides-js TCF", () => {
         cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
           cy.get("input").should("not.be.checked");
         });
-        cy.get("@FidesPreferenceToggled").its("callCount").should("equal", 5);
+        cy.get("@FidesUIChanged").its("callCount").should("equal", 5);
       });
 
       it("can handle group toggle empty states", () => {
@@ -490,7 +492,7 @@ describe("Fides-js TCF", () => {
             cy.getByTestId(`toggle-${VENDOR_1.name}-consent`).within(() => {
               cy.get("input").should("not.be.checked");
             });
-            cy.get("@FidesPreferenceToggled").should("have.been.calledOnce");
+            cy.get("@FidesUIChanged").should("have.been.calledOnce");
           });
         });
       });
@@ -503,7 +505,7 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
           cy.wait("@patchPrivacyPreference").then((interception) => {
-            cy.get("@FidesPreferenceToggled").should("not.have.been.called");
+            cy.get("@FidesUIChanged").should("not.have.been.called");
             const { body } = interception.request;
             expect(body.purpose_consent_preferences).to.eql([
               { id: PURPOSE_4.id, preference: "opt_in" },
@@ -576,7 +578,7 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt out of all").click();
           cy.wait("@patchPrivacyPreference").then((interception) => {
-            cy.get("@FidesPreferenceToggled").should("not.have.been.called");
+            cy.get("@FidesUIChanged").should("not.have.been.called");
             const { body } = interception.request;
             expect(body.purpose_consent_preferences).to.eql([
               { id: PURPOSE_4.id, preference: "opt_out" },
@@ -653,7 +655,7 @@ describe("Fides-js TCF", () => {
           cy.get("#fides-tab-Vendors").click();
           cy.getByTestId(`toggle-${SYSTEM_1.name}`).click();
           cy.get("button").contains("Save").click();
-          cy.get("@FidesPreferenceToggled").its("callCount").should("equal", 3);
+          cy.get("@FidesUIChanged").its("callCount").should("equal", 3);
           cy.wait("@patchPrivacyPreference").then((interception) => {
             const { body } = interception.request;
             expect(body.purpose_consent_preferences).to.eql([
@@ -722,6 +724,64 @@ describe("Fides-js TCF", () => {
           ).to.eql(true);
         });
       });
+
+      it("calls custom save preferences API fn instead of internal Fides API when it is provided in Fides.init", () => {
+        const apiOptions = {
+          /* eslint-disable @typescript-eslint/no-unused-vars */
+          savePreferencesFn: (
+            consent: CookieKeyConsent,
+            fides_string: string | undefined,
+            experience: PrivacyExperience
+          ): Promise<void> => new Promise(() => {}),
+          /* eslint-enable @typescript-eslint/no-unused-vars */
+        };
+        const spyObject = cy
+          .spy(apiOptions, "savePreferencesFn")
+          .as("mockSavePreferencesFn");
+        cy.fixture("consent/experience_tcf.json").then((privacyExperience) => {
+          stubConfig({
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+              apiOptions,
+            },
+            experience: privacyExperience.items[0],
+          });
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.get("#fides-modal-link").click();
+            cy.getByTestId("consent-modal").within(() => {
+              cy.get("button").contains("Opt out of all").click();
+              cy.get("@FidesUpdated").then(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                expect(spyObject).to.be.called;
+                const spy = spyObject.getCalls();
+                const { args } = spy[0];
+                expect(args[0]).to.deep.equal({
+                  data_sales: true,
+                  tracking: false,
+                });
+                expect(args[1]).to.equal(
+                  "CP0JloAP0JloAGXABBENATEAAAAAAAAAAAAAAAAAAAAA.IABE,1~"
+                );
+                expect(args[2]).to.deep.equal(privacyExperience.items[0]);
+              });
+              // timeout means API call not made, which is expected
+              cy.on("fail", (error) => {
+                if (error.message.indexOf("Timed out retrying") !== 0) {
+                  throw error;
+                }
+              });
+              // check that preferences aren't sent to Fides API
+              cy.wait("@patchPrivacyPreference", {
+                requestTimeout: 100,
+              }).then((xhr) => {
+                assert.isNull(xhr?.response?.body);
+              });
+            });
+          });
+        });
+      });
+
       it("skips saving preferences to API when disable save is set", () => {
         cy.fixture("consent/experience_tcf.json").then((experience) => {
           stubConfig({
@@ -745,7 +805,7 @@ describe("Fides-js TCF", () => {
             });
             // check that preferences aren't sent to Fides API
             cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 500,
+              requestTimeout: 100,
             }).then((xhr) => {
               assert.isNull(xhr?.response?.body);
             });
@@ -790,6 +850,7 @@ describe("Fides-js TCF", () => {
           });
         });
       });
+
       it("skips saving preferences to API when disable save is set via cookie", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         cy.getCookie("fides_disable_save_api").should("not.exist");
@@ -815,13 +876,14 @@ describe("Fides-js TCF", () => {
             });
             // check that preferences aren't sent to Fides API
             cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 500,
+              requestTimeout: 100,
             }).then((xhr) => {
               assert.isNull(xhr?.response?.body);
             });
           });
         });
       });
+
       it("skips saving preferences to API when disable save is set via query param", () => {
         cy.getCookie("fides_string").should("not.exist");
         cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -850,13 +912,14 @@ describe("Fides-js TCF", () => {
             });
             // check that preferences aren't sent to Fides API
             cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 500,
+              requestTimeout: 100,
             }).then((xhr) => {
               assert.isNull(xhr?.response?.body);
             });
           });
         });
       });
+
       it("skips saving preferences to API when disable save is set via window obj", () => {
         cy.getCookie("fides_string").should("not.exist");
         cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -886,7 +949,7 @@ describe("Fides-js TCF", () => {
             });
             // check that preferences aren't sent to Fides API
             cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 500,
+              requestTimeout: 100,
             }).then((xhr) => {
               assert.isNull(xhr?.response?.body);
             });
@@ -990,6 +1053,8 @@ describe("Fides-js TCF", () => {
           expect(body.system_consent_preferences).to.eql([]);
         });
       });
+      // embed modal should not close on preferences save
+      cy.getByTestId("consent-modal").should("exist");
       // Verify the cookie on save
       cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
         const cookieKeyConsent: FidesCookie = JSON.parse(
@@ -1112,7 +1177,7 @@ describe("Fides-js TCF", () => {
     });
   });
 
-  describe("cmp api", () => {
+  describe("CMP API", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -1141,9 +1206,12 @@ describe("Fides-js TCF", () => {
 
     describe("setting fields", () => {
       it("can opt in to all and set legitimate interests", () => {
+        cy.get("@FidesUpdated").should("have.been.calledOnce");
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
+        // On slow connections, we should explicitly wait for FidesUpdated
+        cy.get("@FidesUpdated").should("have.been.calledTwice");
         cy.get("@TCFEvent")
           .its("lastCall.args")
           .then(([tcData, success]) => {
@@ -1237,25 +1305,30 @@ describe("Fides-js TCF", () => {
     });
   });
 
-  describe("User preference sources of truth for UI and CMP API", () => {
+  /**
+   * There are the following potential sources of user preferences:
+   * 1) fides_string override option (via config.options.fidesString)
+   * 2) DEFER: preferences API (via a custom function)
+   * 3) local cookie (via fides_consent cookie)
+   * 4) "prefetched" experience (via config.options.experience)
+   * 5) experience API (via GET /privacy-experience)
+   *
+   * These specs test various combinations of those sources of truth and ensure
+   * that Fides loads the correct preferences in each case.
+   */
+  describe("user preferences overrides", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
     });
-    it("prefers preferences from a cookie when both cookie and experience exist", () => {
-      /**
-       * The default from the fixture is that
-       *   - all purposes are opted in
-       *   - all special purposes are opted in
-       *   - feature 1 is opted out, feature 2 has no preference
-       *   - all vendors are opted in
-       *   - all systems are opted in
-       *
-       * We'll change at least one value from each entity type in the cookie
-       */
+
+    /**
+     * Configure a valid fides_consent cookie with previously saved preferences
+     */
+    const setFidesCookie = () => {
       const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
       const CREATED_DATE = "2022-12-24T12:00:00.000Z";
       const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
-      const cookie = {
+      const cookie: FidesCookie = {
         identity: { fides_user_device_id: uuid },
         fides_meta: {
           version: "0.9.0",
@@ -1272,9 +1345,23 @@ describe("Fides-js TCF", () => {
           system_legitimate_interests_preferences: { [SYSTEM_1.id]: false },
           vendor_consent_preferences: { [VENDOR_1.id]: true },
         },
-        tc_string: "CPziCYAPziCYAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
+        fides_string: "CPziCYAPziCYAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
       };
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+    };
+
+    /**
+     * TEST CASE #1:
+     * ❌ 1) fides_string override option (via config.options.fidesString)
+     * ❌ 2) DEFER: preferences API (via a custom function)
+     * ✅ 3) local cookie (via fides_consent cookie)
+     * ✅ 4) "prefetched" experience (via config.options.experience)
+     * ❌ 5) experience API (via GET /privacy-experience)
+     *
+     * EXPECTED RESULT: use preferences from local cookie
+     */
+    it("prefers preferences from a cookie when both cookie and experience exist", () => {
+      setFidesCookie();
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
           options: {
@@ -1349,50 +1436,19 @@ describe("Fides-js TCF", () => {
           });
         });
     });
-    it("does nothing when cookie exists and experience is not provided", () => {
-      /**
-       * An experience is required to serve the CMP API, since the GVL is on the experience
-       */
-      const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
-      const CREATED_DATE = "2022-12-24T12:00:00.000Z";
-      const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
 
-      const cookie = {
-        identity: { fides_user_device_id: uuid },
-        fides_meta: {
-          version: "0.9.0",
-          createdAt: CREATED_DATE,
-          updatedAt: UPDATED_DATE,
-        },
-        consent: {},
-        tcf_consent: {
-          // We hard-code 2 because purpose_2 references a tcf_purpose_legitimate_interest in the experience
-          // and we wish to refer to a purpose_consent_preference here
-          purpose_consent_preferences: { 2: false, [PURPOSE_4.id]: true },
-          special_feature_preferences: { [SPECIAL_FEATURE_1.id]: true },
-          system_legitimate_interests_preferences: { [SYSTEM_1.id]: false },
-          vendor_consent_preferences: { [VENDOR_1.id]: false },
-        },
-        tc_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
-      };
-      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
-
-      stubConfig(
-        {
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: true,
-            fidesString: undefined,
-          },
-          experience: OVERRIDE.UNDEFINED,
-          // the below ensures we do not fetch experience client-side either
-        },
-        OVERRIDE.UNDEFINED,
-        OVERRIDE.UNDEFINED
-      );
-      cy.get("#fides-modal-link").should("not.be.visible");
-    });
-    it("does nothing when we have neither cookie, experience, nor tc string", () => {
+    /**
+     * TEST CASE #2:
+     * ❌ 1) fides_string override option (via config.options.fidesString)
+     * ❌ 2) DEFER: preferences API (via a custom function)
+     * ✅ 3) local cookie (via fides_consent cookie)
+     * ❌ 4) "prefetched" experience (via config.options.experience)
+     * ❌ 5) experience API (via GET /privacy-experience)
+     *
+     * EXPECTED RESULT: ignore all preferences, do not load TCF experience
+     */
+    it("does nothing when cookie exists but no experience is provided (neither prefetch nor API)", () => {
+      setFidesCookie();
       stubConfig(
         {
           options: {
@@ -1403,48 +1459,62 @@ describe("Fides-js TCF", () => {
           experience: OVERRIDE.UNDEFINED,
         },
         OVERRIDE.UNDEFINED,
-        OVERRIDE.UNDEFINED
+        OVERRIDE.EMPTY
       );
-      cy.get("#fides-modal-link").should("not.be.visible");
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("#fides-modal-link").should("not.be.visible");
+      });
     });
-    it("prefers preferences from a TC string when tc string, experience, and cookie exist", () => {
-      /**
-       * The default from the fixture is that
-       *   - all purposes are opted in
-       *   - all special purposes are opted in
-       *   - feature 1 is opted out, feature 2 has no preference
-       *   - all vendors are opted in
-       *   - all systems are opted in
-       *
-       * We'll change at least one value from each entity type in the cookie
-       */
-      const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
-      const CREATED_DATE = "2022-12-24T12:00:00.000Z";
-      const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
-      const cookie = {
-        identity: { fides_user_device_id: uuid },
-        fides_meta: {
-          version: "0.9.0",
-          createdAt: CREATED_DATE,
-          updatedAt: UPDATED_DATE,
+
+    /**
+     * TEST CASE #3:
+     * ❌ 1) fides_string override option (via config.options.fidesString)
+     * ❌ 2) DEFER: preferences API (via a custom function)
+     * ❌ 3) local cookie (via fides_consent cookie)
+     * ❌ 4) "prefetched" experience (via config.options.experience)
+     * ❌ 5) experience API (via GET /privacy-experience)
+     *
+     * EXPECTED RESULT: ignore all preferences, do not load TCF experience
+     */
+    it("does nothing when nothing is provided (neither cookie, nor experience, nor fides_string option)", () => {
+      stubConfig(
+        {
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+            fidesString: undefined,
+          },
+          experience: OVERRIDE.UNDEFINED,
         },
-        consent: {},
-        tcf_consent: {
-          purpose_preferences: { 2: false, [PURPOSE_4.id]: true },
-          special_feature_preferences: { [SPECIAL_FEATURE_1.id]: true },
-          system_legitimate_interests_preferences: { [SYSTEM_1.id]: false },
-          vendor_consent_preferences: { [VENDOR_1.id]: false },
-        },
-        tc_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
-      };
-      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+        OVERRIDE.UNDEFINED,
+        OVERRIDE.EMPTY
+      );
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("#fides-modal-link").should("not.be.visible");
+      });
+    });
+
+    /**
+     * TEST CASE #4:
+     * ✅ 1) fides_string override option (via config.options.fidesString)
+     * ❌ 2) DEFER: preferences API (via a custom function)
+     * ✅ 3) local cookie (via fides_consent cookie)
+     * ✅ 4) "prefetched" experience (via config.options.experience)
+     * ❌ 5) experience API (via GET /privacy-experience)
+     *
+     * EXPECTED RESULT: use preferences from fides_string option
+     */
+    it("prefers preferences from fides_string option when fides_string, experience, and cookie exist", () => {
+      setFidesCookie();
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
+      const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            // this TC string sets purpose 4 to false and purpose 7 to true
-            fidesString: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
+            fidesString: fidesStringOverride,
           },
           experience: experience.items[0],
         });
@@ -1458,12 +1528,12 @@ describe("Fides-js TCF", () => {
       // Verify the toggles
       // Purposes
       cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
-        // this purpose is set to true in the experience, but since it was not defined in the TC string,
+        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
         // it should use the default preference set in the experience which is true
         cy.get("input").should("be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
-        // this purpose was previously set to true from the experience, but it is overridden by the TC string
+        // this purpose was previously set to true from the experience, but it is overridden by the fides_string
         cy.get("input").should("not.be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_6.name}-consent`).within(() => {
@@ -1473,7 +1543,7 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_9.name}-consent`).within(() => {
-        // this purpose is set to true in the experience, but since it was not defined in the TC string,
+        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
         // it should use the default preference set in the experience which is false
         cy.get("input").should("not.be.checked");
       });
@@ -1483,7 +1553,7 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("be.checked");
       });
       // Vendors
-      // this purpose is set to true in the experience, but since it was not defined in the TC string,
+      // this purpose is set to true in the experience, but since it was not defined in the fides_string,
       // it should use the default preference set in the experience which is true
       cy.get("#fides-tab-Vendors").click();
       cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
@@ -1498,6 +1568,7 @@ describe("Fides-js TCF", () => {
         .its("lastCall.args")
         .then(([tcData, success]) => {
           expect(success).to.eql(true);
+          expect(tcData.tcString).to.eql(expectedTCString);
           expect(tcData.eventStatus).to.eql("cmpuishown");
           expect(tcData.purpose.consents).to.eql({
             [PURPOSE_2.id]: false,
@@ -1514,24 +1585,27 @@ describe("Fides-js TCF", () => {
           expect(tcData.vendor.legitimateInterests).to.eql({});
         });
     });
-    it("prefers preferences from a TC string when both tc string and experience is provided and cookie does not exist", () => {
-      /**
-       * The default from the fixture is that
-       *   - all purposes are opted in
-       *   - all special purposes are opted in
-       *   - feature 1 is opted out, feature 2 has no preference
-       *   - all vendors are opted in
-       *   - all systems are opted in
-       *
-       * We'll change at least one value from each entity type in the cookie
-       */
+
+    /**
+     * TEST CASE #5:
+     * ✅ 1) fides_string override option (via config.options.fidesString)
+     * ❌ 2) DEFER: preferences API (via a custom function)
+     * ❌ 3) local cookie (via fides_consent cookie)
+     * ✅ 4) "prefetched" experience (via config.options.experience)
+     * ❌ 5) experience API (via GET /privacy-experience)
+     *
+     * EXPECTED RESULT: use preferences from fides_string option
+     */
+    it("prefers preferences from fides_string option when both fides_string and experience is provided and cookie does not exist", () => {
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
+      const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            // this TC string sets purpose 4 to false and purpose 7 to true
-            fidesString: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
+            fidesString: fidesStringOverride,
           },
           experience: experience.items[0],
         });
@@ -1545,12 +1619,12 @@ describe("Fides-js TCF", () => {
       // Verify the toggles
       // Purposes
       cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
-        // this purpose is set to true in the experience, but since it was not defined in the TC string,
+        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
         // it should use the default preference set in the experience which is true
         cy.get("input").should("be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
-        // this purpose was previously set to true from the experience, but it is overridden by the TC string
+        // this purpose was previously set to true from the experience, but it is overridden by the fides_string
         cy.get("input").should("not.be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_6.name}-consent`).within(() => {
@@ -1560,7 +1634,7 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_9.name}-consent`).within(() => {
-        // this purpose is set to true in the experience, but since it was not defined in the TC string,
+        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
         // it should use the default preference set in the experience which is false
         cy.get("input").should("not.be.checked");
       });
@@ -1570,7 +1644,7 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("be.checked");
       });
       // Vendors
-      // this purpose is set to true in the experience, but since it was not defined in the TC string,
+      // this purpose is set to true in the experience, but since it was not defined in the fides_string,
       // it should use the default preference set in the experience which is true
       cy.get("#fides-tab-Vendors").click();
       cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
@@ -1585,6 +1659,7 @@ describe("Fides-js TCF", () => {
         .its("lastCall.args")
         .then(([tcData, success]) => {
           expect(success).to.eql(true);
+          expect(tcData.tcString).to.eql(expectedTCString);
           expect(tcData.eventStatus).to.eql("cmpuishown");
           expect(tcData.purpose.consents).to.eql({
             [PURPOSE_2.id]: false,
@@ -1601,69 +1676,53 @@ describe("Fides-js TCF", () => {
           expect(tcData.vendor.legitimateInterests).to.eql({});
         });
     });
-    it("does nothing when tc string and cookie exist but experience is not provided", () => {
-      const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
-      const CREATED_DATE = "2022-12-24T12:00:00.000Z";
-      const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
-      const cookie = {
-        identity: { fides_user_device_id: uuid },
-        fides_meta: {
-          version: "0.9.0",
-          createdAt: CREATED_DATE,
-          updatedAt: UPDATED_DATE,
-        },
-        consent: {},
-        tcf_consent: {
-          purpose_consent_preferences: {
-            [PURPOSE_2.id]: false,
-            [PURPOSE_4.id]: true,
-          },
-          special_feature_preferences: { [SPECIAL_FEATURE_1.id]: true },
-          system_legitimate_interests_preferences: { [SYSTEM_1.id]: false },
-          vendor_consent_preferences: { [VENDOR_1.id]: false },
-        },
-        tc_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
-      };
-      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+
+    /**
+     * TEST CASE #6:
+     * ✅ 1) fides_string override option (via config.options.fidesString)
+     * ❌ 2) DEFER: preferences API (via a custom function)
+     * ✅ 3) local cookie (via fides_consent cookie)
+     * ❌ 4) "prefetched" experience (via config.options.experience)
+     * ❌ 5) experience API (via GET /privacy-experience)
+     *
+     * EXPECTED RESULT: ignore all preferences, do not load TCF experience
+     */
+    it("does nothing when fides_string option when both fides_string option and cookie exist but no experience exists (neither prefetch nor API)", () => {
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
+      setFidesCookie();
       stubConfig(
         {
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            // this TC string sets purpose 4 to false and purpose 7 to true
-            fidesString: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
+            fidesString: fidesStringOverride,
           },
           experience: OVERRIDE.UNDEFINED,
         },
         OVERRIDE.UNDEFINED,
-        OVERRIDE.UNDEFINED
+        OVERRIDE.EMPTY // return no experience
       );
-      cy.get("#fides-modal-link").should("not.be.visible");
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("#fides-modal-link").should("not.be.visible");
+      });
     });
-    it("Prefers prefs on tc string when both tc string and cookie exist and client-side experience is fetched", () => {
-      const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
-      const CREATED_DATE = "2022-12-24T12:00:00.000Z";
-      const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
-      const cookie = {
-        identity: { fides_user_device_id: uuid },
-        fides_meta: {
-          version: "0.9.0",
-          createdAt: CREATED_DATE,
-          updatedAt: UPDATED_DATE,
-        },
-        consent: {},
-        tcf_consent: {
-          purpose_consent_preferences: {
-            [PURPOSE_2.id]: false,
-            [PURPOSE_4.id]: true,
-          },
-          special_feature_preferences: { [SPECIAL_FEATURE_1.id]: true },
-          system_legitimate_interests_preferences: { [SYSTEM_1.id]: false },
-          vendor_consent_preferences: { [VENDOR_1.id]: false },
-        },
-        tc_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
-      };
-      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+
+    /**
+     * TEST CASE #7:
+     * ✅ 1) fides_string override option (via config.options.fidesString)
+     * ❌ 2) DEFER: preferences API (via a custom function)
+     * ✅ 3) local cookie (via fides_consent cookie)
+     * ❌ 4) "prefetched" experience (via config.options.experience)
+     * ✅ 5) experience API (via GET /privacy-experience)
+     *
+     * EXPECTED RESULT: use preferences from fides_string option
+     */
+    it("prefers preferences from fides_string option when both fides_string option and cookie exist and experience is fetched from API", () => {
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
+      const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
+      setFidesCookie();
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         cy.fixture("consent/geolocation_tcf.json").then((geo) => {
           stubConfig(
@@ -1671,9 +1730,7 @@ describe("Fides-js TCF", () => {
               options: {
                 isOverlayEnabled: true,
                 tcfEnabled: true,
-                // this TC string sets purpose 4 to false and purpose 7 to true
-                fidesString:
-                  "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE",
+                fidesString: fidesStringOverride,
               },
               experience: OVERRIDE.UNDEFINED,
             },
@@ -1694,12 +1751,12 @@ describe("Fides-js TCF", () => {
       // Verify the toggles
       // Purposes
       cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
-        // this purpose is set to true in the experience, but since it was not defined in the TC string,
+        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
         // it should use the default preference set in the experience which is true
         cy.get("input").should("be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
-        // this purpose was previously set to true from the experience, but it is overridden by the TC string
+        // this purpose was previously set to true from the experience, but it is overridden by the fides_string
         cy.get("input").should("not.be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_6.name}-consent`).within(() => {
@@ -1709,7 +1766,7 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("be.checked");
       });
       cy.getByTestId(`toggle-${PURPOSE_9.name}-consent`).within(() => {
-        // this purpose is set to true in the experience, but since it was not defined in the TC string,
+        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
         // it should use the default preference set in the experience which is false
         cy.get("input").should("not.be.checked");
       });
@@ -1719,7 +1776,7 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("be.checked");
       });
       // Vendors
-      // this purpose is set to true in the experience, but since it was not defined in the TC string,
+      // this purpose is set to true in the experience, but since it was not defined in the fides_string,
       // it should use the default preference set in the experience which is true
       cy.get("#fides-tab-Vendors").click();
       cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
@@ -1734,6 +1791,7 @@ describe("Fides-js TCF", () => {
         .its("lastCall.args")
         .then(([tcData, success]) => {
           expect(success).to.eql(true);
+          expect(tcData.tcString).to.eql(expectedTCString);
           expect(tcData.eventStatus).to.eql("cmpuishown");
           expect(tcData.purpose.consents).to.eql({
             [PURPOSE_2.id]: false,
@@ -1752,14 +1810,13 @@ describe("Fides-js TCF", () => {
     });
   });
 
-  describe("fides string override options", () => {
-    it("uses TC string when set via cookie", () => {
+  describe("fides_string override options", () => {
+    it("uses fides_string when set via cookie", () => {
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
+      const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.getCookie("fides_string").should("not.exist");
-      // this TC string sets purpose 4 to false and purpose 7 to true
-      cy.setCookie(
-        "fides_string",
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE"
-      );
+      cy.setCookie("fides_string", fidesStringOverride);
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
           options: {
@@ -1780,6 +1837,7 @@ describe("Fides-js TCF", () => {
         .its("lastCall.args")
         .then(([tcData, success]) => {
           expect(success).to.eql(true);
+          expect(tcData.tcString).to.eql(expectedTCString);
           expect(tcData.eventStatus).to.eql("cmpuishown");
           expect(tcData.purpose.consents).to.eql({
             [PURPOSE_2.id]: false,
@@ -1796,7 +1854,11 @@ describe("Fides-js TCF", () => {
           expect(tcData.vendor.legitimateInterests).to.eql({});
         });
     });
-    it("uses TC string when set via query param", () => {
+
+    it("uses fides_string when set via query param", () => {
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
+      const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.getCookie("fides_string").should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig(
@@ -1809,8 +1871,7 @@ describe("Fides-js TCF", () => {
           },
           null,
           null,
-          // this TC string sets purpose 4 to false and purpose 7 to true
-          { fides_string: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE" }
+          { fides_string: fidesStringOverride }
         );
       });
       cy.window().then((win) => {
@@ -1824,6 +1885,7 @@ describe("Fides-js TCF", () => {
         .its("lastCall.args")
         .then(([tcData, success]) => {
           expect(success).to.eql(true);
+          expect(tcData.tcString).to.eql(expectedTCString);
           expect(tcData.eventStatus).to.eql("cmpuishown");
           expect(tcData.purpose.consents).to.eql({
             [PURPOSE_2.id]: false,
@@ -1840,7 +1902,11 @@ describe("Fides-js TCF", () => {
           expect(tcData.vendor.legitimateInterests).to.eql({});
         });
     });
-    it("uses TC string when set via window obj", () => {
+
+    it("uses fides_string when set via window obj", () => {
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
+      const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.getCookie("fides_string").should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig(
@@ -1854,8 +1920,7 @@ describe("Fides-js TCF", () => {
           null,
           null,
           null,
-          // this TC string sets purpose 4 to false and purpose 7 to true
-          { fides_string: "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE" }
+          { fides_string: fidesStringOverride }
         );
       });
       cy.window().then((win) => {
@@ -1869,6 +1934,7 @@ describe("Fides-js TCF", () => {
         .its("lastCall.args")
         .then(([tcData, success]) => {
           expect(success).to.eql(true);
+          expect(tcData.tcString).to.eql(expectedTCString);
           expect(tcData.eventStatus).to.eql("cmpuishown");
           expect(tcData.purpose.consents).to.eql({
             [PURPOSE_2.id]: false,
@@ -2012,7 +2078,7 @@ describe("Fides-js TCF", () => {
         .then(([tcData, success]) => {
           expect(success).to.eql(true);
           expect(tcData.eventStatus).to.eql("useractioncomplete");
-          // This TC string should not be a composite—should just be the tc string
+          // This fides_string should not be a composite—should just be the tc string
           const { tcString } = tcData;
           const parts = tcString.split(",");
           expect(parts.length).to.eql(1);
@@ -2029,17 +2095,18 @@ describe("Fides-js TCF", () => {
       });
       cy.get("button").contains("Save").click();
       cy.wait("@patchPrivacyPreference");
+      cy.get("@FidesUpdated").should("have.been.calledTwice");
       // Call getTCData
       cy.window().then((win) => {
         win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
+        cy.get("@getTCData")
+          .should("have.been.calledOnce")
+          .its("lastCall.args")
+          .then(([tcData, success]) => {
+            expect(success).to.eql(true);
+            expect(tcData.addtlConsent).to.eql(acceptAllAcString);
+          });
       });
-      cy.get("@getTCData")
-        .should("have.been.calledOnce")
-        .its("lastCall.args")
-        .then(([tcData, success]) => {
-          expect(success).to.eql(true);
-          expect(tcData.addtlConsent).to.eql(acceptAllAcString);
-        });
     });
   });
 });

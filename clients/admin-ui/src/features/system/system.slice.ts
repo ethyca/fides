@@ -48,7 +48,7 @@ const systemApi = baseApi.injectEndpoints({
     }),
     // we accept 'unknown' as well since the user can paste anything in, and we rely
     // on the backend to do the validation for us
-    createSystem: build.mutation<System, System | unknown>({
+    createSystem: build.mutation<SystemResponse, System | unknown>({
       query: (body) => ({
         url: `system/`,
         method: "POST",

@@ -123,7 +123,7 @@ export default async function handler(
   // be able to prefetch the experience.
   const tcfEnabled = experience
     ? experience.component === ComponentType.TCF_OVERLAY
-    : false;
+    : environment.settings.IS_FORCED_TCF;
 
   // Create the FidesConfig JSON that will be used to initialize fides.js
   const fidesConfig: FidesConfig = {
@@ -147,6 +147,8 @@ export default async function handler(
       fidesEmbed: environment.settings.FIDES_EMBED,
       fidesDisableSaveApi: environment.settings.FIDES_DISABLE_SAVE_API,
       fidesString,
+      // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
+      apiOptions: null,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -237,6 +239,7 @@ async function fetchCustomFidesCss(
       const data = await response.text();
 
       if (!response.ok) {
+        // eslint-disable-next-line no-console
         console.error(
           "Error fetching custom-fides.css:",
           response.status,
@@ -250,6 +253,7 @@ async function fetchCustomFidesCss(
         throw new Error("No data returned by the server");
       }
 
+      // eslint-disable-next-line no-console
       console.log("Successfully retrieved custom-fides.css");
       autoRefresh = true;
       cachedCustomFidesCss = data;
@@ -257,8 +261,10 @@ async function fetchCustomFidesCss(
     } catch (error) {
       autoRefresh = false; // /custom-asset endpoint unreachable stop auto-refresh
       if (error instanceof Error) {
+        // eslint-disable-next-line no-console
         console.error("Error during fetch operation:", error.message);
       } else {
+        // eslint-disable-next-line no-console
         console.error("Unknown error occurred:", error);
       }
     }

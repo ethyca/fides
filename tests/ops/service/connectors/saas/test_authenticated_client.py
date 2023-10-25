@@ -40,7 +40,7 @@ def test_connection_config(test_saas_config) -> ConnectionConfig:
 def test_saas_request() -> SaaSRequestParams:
     return SaaSRequestParams(
         method=HTTPMethod.GET,
-        path="test_path",
+        path="/test_path",
         query_params={},
     )
 
@@ -55,7 +55,7 @@ def test_authenticated_client(
     test_connection_config, test_client_config
 ) -> AuthenticatedClient:
     return AuthenticatedClient(
-        "https://test_uri", test_connection_config, test_client_config
+        "https://ethyca.com", test_connection_config, test_client_config
     )
 
 
@@ -63,13 +63,31 @@ def test_authenticated_client(
 class TestAuthenticatedClient:
     @mock.patch.object(Session, "send")
     def test_client_returns_ok_response(
-        self, send, test_authenticated_client, test_saas_request
+        self,
+        send,
+        test_authenticated_client,
+        test_saas_request,
+        test_config_dev_mode_disabled,
     ):
         test_response = Response()
         test_response.status_code = 200
         send.return_value = test_response
         returned_response = test_authenticated_client.send(test_saas_request)
         assert returned_response == test_response
+
+    @pytest.mark.parametrize(
+        "ip_address", ["localhost", "127.0.0.1", "169.254.0.1", "169.254.169.254"]
+    )
+    def test_client_denied_url(
+        self,
+        test_authenticated_client: AuthenticatedClient,
+        test_saas_request,
+        test_config_dev_mode_disabled,
+        ip_address,
+    ):
+        test_authenticated_client.uri = f"https://{ip_address}"
+        with pytest.raises(ConnectionException):
+            test_authenticated_client.send(test_saas_request)
 
     @mock.patch.object(Session, "send")
     def test_client_retries_429_and_throws(
