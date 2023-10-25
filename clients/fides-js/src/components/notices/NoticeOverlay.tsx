@@ -1,4 +1,4 @@
-import { h, FunctionComponent } from "preact";
+import { h, FunctionComponent, Fragment } from "preact";
 import { useState, useCallback, useMemo } from "preact/hooks";
 import {
   ConsentMechanism,
@@ -156,7 +156,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             onOpen={dispatchOpenBannerEvent}
             onClose={onClose}
             experience={experienceConfig}
-            buttonGroup={
+            renderButtonGroup={({ isMobile }) => (
               <NoticeConsentButtons
                 experience={experience}
                 onManagePreferencesClick={onManagePreferencesClick}
@@ -169,12 +169,13 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
                 middleButton={
                   <PrivacyPolicyLink experience={experienceConfig} />
                 }
+                isMobile={isMobile}
               />
-            }
+            )}
           />
         ) : null
       }
-      renderModalContent={({ onClose }) => (
+      renderModalContent={() => (
         <div>
           <div className="fides-modal-notices">
             <NoticeToggles
@@ -186,20 +187,23 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               }}
             />
           </div>
-          <div className="fides-modal-footer">
-            <NoticeConsentButtons
-              experience={experience}
-              enabledKeys={draftEnabledNoticeKeys}
-              onSave={(keys) => {
-                handleUpdatePreferences(keys);
-                onClose();
-              }}
-              isInModal
-              isAcknowledge={isAllNoticeOnly}
-            />
-            <PrivacyPolicyLink experience={experience.experience_config} />
-          </div>
         </div>
+      )}
+      renderModalFooter={({ onClose, isMobile }) => (
+        <Fragment>
+          <NoticeConsentButtons
+            experience={experience}
+            enabledKeys={draftEnabledNoticeKeys}
+            onSave={(keys) => {
+              handleUpdatePreferences(keys);
+              onClose();
+            }}
+            isInModal
+            isAcknowledge={isAllNoticeOnly}
+            isMobile={isMobile}
+          />
+          <PrivacyPolicyLink experience={experience.experience_config} />
+        </Fragment>
       )}
     />
   );

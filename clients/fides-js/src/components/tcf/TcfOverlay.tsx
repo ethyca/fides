@@ -362,7 +362,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             onClose={onClose}
             experience={experienceConfig}
             onVendorPageClick={goToVendorTab}
-            buttonGroup={
+            renderButtonGroup={({ isMobile }) => (
               <TcfConsentButtons
                 experience={experience}
                 onManagePreferencesClick={onManagePreferencesClick}
@@ -370,10 +370,11 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                   handleUpdateAllPreferences(keys);
                   onSave();
                 }}
+                isMobile={isMobile}
               >
                 <PrivacyPolicyLink experience={experienceConfig} />
               </TcfConsentButtons>
-            }
+            )}
           >
             <div id="fides-tcf-banner-inner">
               <VendorInfoBanner
@@ -385,37 +386,38 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           </ConsentBanner>
         ) : null;
       }}
-      renderModalContent={({ onClose }) => {
+      renderModalContent={() => (
+        <TcfTabs
+          experience={experience}
+          enabledIds={draftIds}
+          onChange={(updatedIds) => {
+            setDraftIds(updatedIds);
+            dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+          }}
+          activeTabIndex={activeTabIndex}
+          onTabChange={setActiveTabIndex}
+        />
+      )}
+      renderModalFooter={({ onClose, isMobile }) => {
         const onSave = (keys: EnabledIds) => {
           handleUpdateAllPreferences(keys);
           onClose();
         };
         return (
           <Fragment>
-            <TcfTabs
+            <TcfConsentButtons
               experience={experience}
-              enabledIds={draftIds}
-              onChange={(updatedIds) => {
-                setDraftIds(updatedIds);
-                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
-              }}
-              activeTabIndex={activeTabIndex}
-              onTabChange={setActiveTabIndex}
+              onSave={onSave}
+              firstButton={
+                <Button
+                  buttonType={ButtonType.SECONDARY}
+                  label={experience.experience_config?.save_button_label}
+                  onClick={() => onSave(draftIds)}
+                />
+              }
+              isMobile={isMobile}
             />
-            <div className="fides-modal-footer">
-              <TcfConsentButtons
-                experience={experience}
-                onSave={onSave}
-                firstButton={
-                  <Button
-                    buttonType={ButtonType.SECONDARY}
-                    label={experience.experience_config?.save_button_label}
-                    onClick={() => onSave(draftIds)}
-                  />
-                }
-              />
-              <PrivacyPolicyLink experience={experience.experience_config} />
-            </div>
+            <PrivacyPolicyLink experience={experience.experience_config} />
           </Fragment>
         );
       }}

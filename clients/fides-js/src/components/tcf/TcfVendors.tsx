@@ -1,4 +1,4 @@
-import { VNode, h } from "preact";
+import { Fragment, VNode, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { Vendor } from "@iabtechlabtcf/core";
 import {
@@ -79,10 +79,10 @@ const PurposeVendorDetails = ({
   }
 
   return (
-    <div>
+    <Fragment>
       <VendorDetails label="Purposes" lineItems={purposes} />
       <VendorDetails label="Special purposes" lineItems={specialPurposes} />
-    </div>
+    </Fragment>
   );
 };
 
@@ -146,6 +146,11 @@ const StorageDisclosure = ({ vendor }: { vendor: VendorRecord }) => {
   }
 
   if (disclosure === "") {
+    return null;
+  }
+
+  // Return null if the disclosure string is empty
+  if (!disclosure) {
     return null;
   }
 
@@ -214,24 +219,24 @@ const TcfVendors = ({
             vendor.privacy_policy_url ||
             vendor.legitimate_interest_disclosure_url;
           return (
-            <div>
+            <Fragment>
               <StorageDisclosure vendor={vendor} />
-              {hasUrls ? (
-                <div style={{ marginBottom: "1.1em" }}>
-                  {vendor.privacy_policy_url ? (
+              {hasUrls && (
+                <div>
+                  {vendor.privacy_policy_url && (
                     <ExternalLink href={vendor.privacy_policy_url}>
                       Privacy policy
                     </ExternalLink>
-                  ) : null}
-                  {vendor.legitimate_interest_disclosure_url ? (
+                  )}
+                  {vendor.legitimate_interest_disclosure_url && (
                     <ExternalLink
                       href={vendor.legitimate_interest_disclosure_url}
                     >
                       Legitimate interest disclosure
                     </ExternalLink>
-                  ) : null}
+                  )}
                 </div>
-              ) : null}
+              )}
               <PurposeVendorDetails
                 purposes={[
                   ...(vendor.purpose_consents || []),
@@ -248,7 +253,7 @@ const TcfVendors = ({
                 gvlVendor={gvlVendor}
                 dataCategories={dataCategories}
               />
-            </div>
+            </Fragment>
           );
         }}
       />

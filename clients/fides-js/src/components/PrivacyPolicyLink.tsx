@@ -15,6 +15,7 @@ const PrivacyPolicyLink = ({
 
   return (
     <div
+      id="fides-privacy-policy-link"
       style={{
         display: "flex",
         alignItems: "center",
