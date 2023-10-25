@@ -237,6 +237,7 @@ class ServingComponent(Enum):
     banner = "banner"
     privacy_center = "privacy_center"
     tcf_overlay = "tcf_overlay"
+    tcf_banner = "tcf_banner"
 
 
 def _validate_before_saving_consent_history(

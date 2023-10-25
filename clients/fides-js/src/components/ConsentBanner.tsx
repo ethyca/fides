@@ -1,4 +1,5 @@
 import { h, FunctionComponent, ComponentChildren, VNode } from "preact";
+import { useEffect } from "react";
 import { getConsentContext } from "../lib/consent-context";
 import { ExperienceConfig } from "../lib/consent-types";
 import CloseButton from "./CloseButton";
@@ -7,6 +8,7 @@ import ExperienceDescription from "./ExperienceDescription";
 
 interface BannerProps {
   experience: ExperienceConfig;
+  onOpen: () => void;
   onClose: () => void;
   bannerIsOpen: boolean;
   /**
@@ -20,6 +22,7 @@ interface BannerProps {
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
   experience,
+  onOpen,
   onClose,
   bannerIsOpen,
   children,
@@ -27,6 +30,13 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   buttonGroup,
 }) => {
   const showGpcBadge = getConsentContext().globalPrivacyControl;
+
+  useEffect(() => {
+    if (bannerIsOpen) {
+      onOpen();
+    }
+  }, [bannerIsOpen]);
+
   return (
     <div
       id="fides-banner-container"

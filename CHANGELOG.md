@@ -30,6 +30,7 @@ The types of changes are:
 - Access and erasure support for SparkPost [#4328](https://github.com/ethyca/fides/pull/4238)
 - Access and erasure support for Iterate [#4332](https://github.com/ethyca/fides/pull/4332)
 - SSH Support for MySQL connections [#4310](https://github.com/ethyca/fides/pull/4310)
+- Added served notice history IDs to the TCF privacy preference API calls [#4161](https://github.com/ethyca/fides/pull/4161)
 
 ### Fixed
 - Cleans up CSS for fidesEmbed mode [#4306](https://github.com/ethyca/fides/pull/4306)

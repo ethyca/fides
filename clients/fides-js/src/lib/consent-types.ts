@@ -100,9 +100,16 @@ export class SaveConsentPreference {
 
   notice: PrivacyNotice;
 
-  constructor(notice: PrivacyNotice, consentPreference: UserConsentPreference) {
+  servedNoticeHistoryId?: string;
+
+  constructor(
+    notice: PrivacyNotice,
+    consentPreference: UserConsentPreference,
+    servedNoticeHistoryId?: string
+  ) {
     this.notice = notice;
     this.consentPreference = consentPreference;
+    this.servedNoticeHistoryId = servedNoticeHistoryId;
   }
 }
 
@@ -298,6 +305,7 @@ export enum ServingComponent {
   BANNER = "banner",
   PRIVACY_CENTER = "privacy_center",
   TCF_OVERLAY = "tcf_overlay",
+  TCF_BANNER = "tcf_banner",
 }
 /**
  * Request body when indicating that notices were served in the UI

@@ -65,7 +65,11 @@ export const dispatchFidesEvent = (
     });
     debugLog(
       debug,
-      `Dispatching event type ${type} with cookie ${JSON.stringify(cookie)}`
+      `Dispatching event type ${type} ${
+        extraDetails?.servingComponent
+          ? `from ${extraDetails.servingComponent} `
+          : ""
+      }with cookie ${JSON.stringify(cookie)}`
     );
     window.dispatchEvent(event);
   }
