@@ -28,6 +28,7 @@ export const PaginationBar = <T,>({ tableInstance }: PaginationBarProps<T>) => {
         style={{
           fontVariantNumeric: "tabular-nums",
         }}
+        minWidth="122px"
       >
         {startRange}-{endRange <= totalRows ? endRange : totalRows} of{" "}
         {totalRows}
