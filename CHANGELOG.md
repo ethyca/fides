@@ -20,6 +20,9 @@ The types of changes are:
 ### Fixed
 - Removes overflow styling for embedded modal in Fides.js [#4345](https://github.com/ethyca/fides/pull/4345)
 
+### Changed
+- Updates experience API calls from Fides.js to include new meta field [#4335](https://github.com/ethyca/fides/pull/4335)
+
 ## [2.23.0](https://github.com/ethyca/fides/compare/2.22.1...2.23.0)
 
 ### Added
