@@ -15,9 +15,15 @@ secrets = get_secrets("typeform")
 @pytest.fixture(scope="session")
 def typeform_secrets(saas_config) -> Dict[str, Any]:
     return {
-        "domain": pydash.get(saas_config, "typeform.domain")
-        or secrets["domain"]
+        "domain": pydash.get(saas_config, "typeform.domain") or secrets["domain"],
         # add the rest of your secrets here
+        "email": pydash.get(saas_config, "typeform.email") or secrets["email"],
+        "identity_email": pydash.get(saas_config, "typeform.identity_email")
+        or secrets["identity_email"],
+        "account_id": pydash.get(saas_config, "typeform.account_id")
+        or secrets["account_id"],
+        "bearer-token": pydash.get(saas_config, "typeform.bearer-token")
+        or secrets["bearer-token"],
     }
 
 

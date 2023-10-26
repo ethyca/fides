@@ -4,3 +4,4 @@ dataset:
     description: A sample dataset representing the typeform connector for Fides
     collections:
       - name: user
+        fields: []
