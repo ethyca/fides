@@ -11,6 +11,7 @@ import { selectSystemsToClassify } from "~/features/system";
 import {
   AllowList,
   AllowListUpdate,
+  BulkCustomFieldRequest,
   ClassificationResponse,
   ClassifyCollection,
   ClassifyDatasetResponse,
@@ -196,7 +197,7 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Custom Fields", "Datamap"],
     }),
-    bulkUpdateCustomFields: build.mutation<void, any>({
+    bulkUpdateCustomFields: build.mutation<void, BulkCustomFieldRequest>({
       query: (params) => ({
         url: `plus/custom-metadata/custom-field/bulk`,
         method: "POST",
