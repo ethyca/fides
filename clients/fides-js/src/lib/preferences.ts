@@ -27,7 +27,7 @@ async function savePreferencesApi(
   consentMethod: ConsentMethod,
   consentPreferencesToSave?: Array<SaveConsentPreference>,
   tcf?: TcfSavePreferences,
-  userLocationString?: string,
+  userLocationString?: string
 ) {
   if (options.apiOptions?.savePreferencesFn) {
     debugLog(options.debug, "Calling custom save preferences fn");
@@ -39,11 +39,13 @@ async function savePreferencesApi(
   } else {
     debugLog(options.debug, "Saving preferences to Fides API");
     // Derive the Fides user preferences array from consent preferences
-    const fidesUserPreferences = consentPreferencesToSave?.map((preference) => ({
-      privacy_notice_history_id: preference.notice.privacy_notice_history_id,
-      preference: preference.consentPreference,
-      served_notice_history_id: preference.servedNoticeHistoryId,
-    }));
+    const fidesUserPreferences = consentPreferencesToSave?.map(
+      (preference) => ({
+        privacy_notice_history_id: preference.notice.privacy_notice_history_id,
+        preference: preference.consentPreference,
+        served_notice_history_id: preference.servedNoticeHistoryId,
+      })
+    );
     const privacyPreferenceCreate: PrivacyPreferencesRequest = {
       browser_identity: cookie.identity,
       preferences: fidesUserPreferences,
@@ -90,7 +92,6 @@ export const updateConsentPreferences = async ({
   tcf?: TcfSavePreferences;
   updateCookie: (oldCookie: FidesCookie) => Promise<FidesCookie>;
 }) => {
-
   // 1. Update the cookie object based on new preferences
   const updatedCookie = await updateCookie(cookie);
   Object.assign(cookie, updatedCookie);
