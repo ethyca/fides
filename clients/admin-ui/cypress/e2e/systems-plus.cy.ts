@@ -27,8 +27,9 @@ describe("System management with Plus features", () => {
 
   describe("vendor list", () => {
     beforeEach(() => {
-      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
       stubVendorList();
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+      cy.wait("@getDictionaryEntries");
     });
 
     it("can display the vendor list dropdown", () => {
