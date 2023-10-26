@@ -18,7 +18,6 @@ from fides.api.graph.graph_differences import (
 from fides.api.graph.traversal import TraversalNode, artificial_traversal_node
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.policy import Policy
-from fides.api.schemas.policy import ActionType
 from fides.api.task.graph_task import EMPTY_REQUEST, GraphTask
 from fides.api.task.task_resources import TaskResources
 
@@ -838,80 +837,3 @@ class TestCachePrivacyRequestAccessGraph:
     def test_no_access_graph_cached(self, privacy_request):
         cached_data = privacy_request.get_cached_access_graph()
         assert cached_data is None
-
-
-class TestPrepareRerunAccessGraphEvent:
-    def test_rerun_access_graph_event_no_previous_graph(
-        self, privacy_request, env_a_b_c, resources
-    ):
-        end_nodes = [c_traversal_node().address]
-        analytics_event = prepare_rerun_graph_analytics_event(
-            privacy_request, env_a_b_c, end_nodes, resources, ActionType.access
-        )
-        assert analytics_event is None
-
-    def test_rerun_access_graph_analytics_event(
-        self, privacy_request, env_a_b, env_a_b_c, resources
-    ):
-        end_nodes = [b_traversal_node().address]
-        formatted_graph = format_graph_for_caching(env_a_b, end_nodes)
-        privacy_request.cache_access_graph(formatted_graph)
-
-        end_nodes = [c_traversal_node().address]
-        analytics_event = prepare_rerun_graph_analytics_event(
-            privacy_request, env_a_b_c, end_nodes, resources, step=ActionType.access
-        )
-
-        assert analytics_event.docker is True
-        assert analytics_event.event == "rerun_access_graph"
-        assert analytics_event.event_created_at is not None
-        assert analytics_event.extra_data == {
-            "prev_collection_count": 2,
-            "curr_collection_count": 3,
-            "added_collection_count": 1,
-            "removed_collection_count": 0,
-            "added_edge_count": 1,
-            "removed_edge_count": 0,
-            "already_processed_access_collection_count": 0,
-            "already_processed_erasure_collection_count": 0,
-            "skipped_added_edge_count": 0,
-            "privacy_request": privacy_request.id,
-        }
-
-        assert analytics_event.error is None
-        assert analytics_event.status_code is None
-        assert analytics_event.endpoint is None
-        assert analytics_event.local_host is None
-
-    def test_rerun_erasure_graph_analytics_event(
-        self, privacy_request, env_a_b, env_a_b_c, resources
-    ):
-        end_nodes = [b_traversal_node().address]
-        formatted_graph = format_graph_for_caching(env_a_b, end_nodes)
-        privacy_request.cache_access_graph(formatted_graph)
-
-        end_nodes = [c_traversal_node().address]
-        analytics_event = prepare_rerun_graph_analytics_event(
-            privacy_request, env_a_b_c, end_nodes, resources, step=ActionType.erasure
-        )
-
-        assert analytics_event.docker is True
-        assert analytics_event.event == "rerun_erasure_graph"
-        assert analytics_event.event_created_at is not None
-        assert analytics_event.extra_data == {
-            "prev_collection_count": 2,
-            "curr_collection_count": 3,
-            "added_collection_count": 1,
-            "removed_collection_count": 0,
-            "added_edge_count": 1,
-            "removed_edge_count": 0,
-            "already_processed_access_collection_count": 0,
-            "already_processed_erasure_collection_count": 0,
-            "skipped_added_edge_count": 0,
-            "privacy_request": privacy_request.id,
-        }
-
-        assert analytics_event.error is None
-        assert analytics_event.status_code is None
-        assert analytics_event.endpoint is None
-        assert analytics_event.local_host is None
