@@ -34,7 +34,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
   };
 
   return (
-    <Stack spacing={3} data-testid="privacy-declaration-step">
+    <Stack spacing={3} data-testid="privacy-declaration-step" minWidth={580}>
       <Heading as="h3" size="md">
         Data uses
       </Heading>

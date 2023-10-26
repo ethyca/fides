@@ -5,7 +5,7 @@
 import type { Identity } from "./Identity";
 
 /**
- * Schema for reporting Consent requests.
+ * Keeps record of each of the preferences that have been recorded via ConsentReporting endpoints.
  */
 export type ConsentReport = {
   data_use: string;

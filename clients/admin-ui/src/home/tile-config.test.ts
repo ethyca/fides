@@ -101,6 +101,7 @@ describe("configureTiles", () => {
         config: MODULE_CARD_ITEMS,
         userScopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
         flags: {},
+        hasPlus: true,
       });
       expect(tiles.length).toEqual(0);
     });
@@ -110,6 +111,7 @@ describe("configureTiles", () => {
         config: MODULE_CARD_ITEMS,
         userScopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
         flags: { configureConsent: true },
+        hasPlus: true,
       });
       expect(tiles.map((t) => t.name)).toEqual(["Manage consent"]);
     });

@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import json
 import re
-from collections import defaultdict
-from typing import Any, Dict, List, Optional, Set, Tuple
+import socket
+from collections import defaultdict, deque
+from ipaddress import IPv4Address, IPv6Address, ip_address
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import pydash
 import yaml
@@ -15,6 +17,7 @@ from fides.api.graph.config import Collection, CollectionAddress, Field, GraphDa
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.config import CONFIG
 from fides.config.helpers import load_file
 
 FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
@@ -22,6 +25,27 @@ PRIVACY_REQUEST_ID = "privacy_request_id"
 MASKED_OBJECT_FIELDS = "masked_object_fields"
 ALL_OBJECT_FIELDS = "all_object_fields"
 CUSTOM_PRIVACY_REQUEST_FIELDS = "custom_privacy_request_fields"
+
+
+def deny_unsafe_hosts(host: str) -> str:
+    """
+    Verify that the provided host isn't a potentially unsafe one.
+
+    WARNING: IPv6 is _not_ supported and will throw an exception!
+    """
+    if CONFIG.dev_mode:
+        return host
+
+    try:
+        host_ip: Union[IPv4Address, IPv6Address] = ip_address(
+            socket.gethostbyname(host)
+        )
+    except socket.gaierror:
+        raise ValueError(f"Failed to resolve hostname: {host}")
+
+    if host_ip.is_link_local or host_ip.is_loopback:
+        raise ValueError(f"Host '{host}' with IP Address '{host_ip}' is not safe!")
+    return host
 
 
 def load_yaml_as_string(filename: str) -> str:
@@ -43,7 +67,7 @@ def load_config_from_string(string: str) -> Dict:
         return yaml.safe_load(string)["saas_config"]
     except:
         raise ValidationError(
-            "Config contents do not contain a 'saas_config' key at the root level."
+            "Config contents do not contain a 'saas_config' key at the root level. For example, check formatting, specifically indentation."
         )
 
 
@@ -84,7 +108,7 @@ def load_dataset_from_string(string: str) -> Dict:
         return yaml.safe_load(string)["dataset"][0]
     except:
         raise ValidationError(
-            "Dataset contents do not contain a 'dataset' key at the root level."
+            "Dataset contents do not contain a 'dataset' key at the root level. For example, check formatting, specifically indentation."
         )
 
 
@@ -231,11 +255,10 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
     }
     """
     output: Dict[Any, Any] = {}
-    for path, value in flat_dict.items():
-        if isinstance(value, dict) and len(value) > 0:
-            raise FidesopsException(
-                "'unflatten_dict' expects a flattened dictionary as input."
-            )
+    queue = deque(flat_dict.items())
+
+    while queue:
+        path, value = queue.popleft()
         keys = path.split(separator)
         target = output
         for i, current_key in enumerate(keys[:-1]):
@@ -253,7 +276,14 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
             if isinstance(target, list):
                 target.append(value)
             else:
-                target[keys[-1]] = value
+                # If the value is a dictionary, add its components to the queue for processing
+                if isinstance(value, dict):
+                    target = target.setdefault(keys[-1], {})
+                    for inner_key, inner_value in value.items():
+                        new_key = f"{path}{separator}{inner_key}"
+                        queue.append((new_key, inner_value))
+                else:
+                    target[keys[-1]] = value
         except TypeError as exc:
             raise FidesopsException(
                 f"Error unflattening dictionary, conflicting levels detected: {exc}"

@@ -7,6 +7,22 @@
  */
 export type DataQualifier = {
   /**
+   * The version of Fideslang in which this label was added.
+   */
+  version_added?: string;
+  /**
+   * The version of Fideslang in which this label was deprecated.
+   */
+  version_deprecated?: string;
+  /**
+   * The new name, if applicable, for this label after deprecation.
+   */
+  replaced_by?: string;
+  /**
+   * Denotes whether the resource is part of the default taxonomy or not.
+   */
+  is_default?: boolean;
+  /**
    * A unique key used to identify this resource.
    */
   fides_key: string;
@@ -24,10 +40,6 @@ export type DataQualifier = {
    */
   description?: string;
   parent_key?: string;
-  /**
-   * Denotes whether the resource is part of the default taxonomy or not.
-   */
-  is_default?: boolean;
   /**
    * Indicates whether the resource is currently 'active'.
    */

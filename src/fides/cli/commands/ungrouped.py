@@ -68,7 +68,6 @@ def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None
         resource_type=resource_type,
         resource_key=fides_key,
         headers=config.user.auth_header,
-        raw=True,
     )
     print_divider()
     echo_green(yaml.dump({resource_type: [resource]}))
@@ -90,7 +89,6 @@ def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> Non
         resource_type=resource_type,
         headers=config.user.auth_header,
         exclude_keys=[],
-        raw=True,
     )
     print_divider()
     if verbose:
@@ -98,7 +96,7 @@ def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> Non
     else:
         if resources:
             sorted_fides_keys = sorted(
-                {resource["fides_key"] for resource in resources if resource}
+                {resource["fides_key"] for resource in resources if resource}  # type: ignore[index]
             )
             formatted_fides_keys = "\n  ".join(sorted_fides_keys)
             echo_green(
@@ -255,6 +253,7 @@ def evaluate(
     )
 
     if audit:
+        taxonomy = _parse.parse(manifests_dir)
         print_divider()
         pretty_echo("Auditing Organization Resource Compliance")
         _audit.audit_organizations(
@@ -269,7 +268,7 @@ def evaluate(
         _audit.audit_systems(
             url=config.cli.server_url,
             headers=config.user.auth_header,
-            include_keys=[system.fides_key for system in taxonomy.system],
+            include_keys=[system.fides_key for system in taxonomy.system or []],
         )
 
 

@@ -187,6 +187,8 @@ class TestCustomConnectorTemplateLoader:
                 dataset=planet_express_dataset,
                 icon=planet_express_icon,
                 human_readable="Planet Express",
+                authorization_required=False,
+                user_guide=None,
             )
         }
 
@@ -378,6 +380,8 @@ class TestCustomConnectorTemplateLoader:
                 config=planet_express_config,
                 dataset=planet_express_dataset,
                 human_readable="Planet Express",
+                authorization_required=False,
+                user_guide=None,
             )
         }
         mock_delete.assert_not_called()
@@ -421,6 +425,8 @@ class TestCustomConnectorTemplateLoader:
                 config=zendesk_config,
                 dataset=zendesk_dataset,
                 human_readable="Zendesk",
+                authorization_required=False,
+                user_guide="https://docs.ethyca.com/user-guides/integrations/saas-integrations/zendesk",
             )
         }
         mock_delete.assert_not_called()

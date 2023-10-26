@@ -76,8 +76,9 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     key: ModuleCardKeys.CONFIGURE_CONSENT,
     name: "Manage consent",
     sortOrder: 5,
-    title: "CC",
+    title: "MC",
     scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
     requiresFlag: "configureConsent",
+    requiresPlus: true,
   },
 ];

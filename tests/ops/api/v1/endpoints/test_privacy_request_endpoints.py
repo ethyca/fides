@@ -53,7 +53,7 @@ from fides.api.schemas.messaging.messaging import (
     SubjectIdentityVerificationBodyParams,
 )
 from fides.api.schemas.policy import ActionType, PolicyResponse
-from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
+from fides.api.schemas.redis_cache import Identity
 from fides.api.task import graph_task
 from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.cache import (
@@ -76,13 +76,14 @@ from fides.common.api.scope_registry import (
 )
 from fides.common.api.v1.urn_registry import (
     CONNECTION_DATASETS,
-    PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_MANUAL_ERASURE,
     PRIVACY_REQUEST_MANUAL_INPUT,
+    PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
+    PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
@@ -3573,7 +3574,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         pr.delete(db=db)
 
 
-class TestUploadManualWebhookInputs:
+class TestUploadManualWebhookAccessInputs:
     @pytest.fixture(scope="function")
     def url(
         self,
@@ -3582,7 +3583,7 @@ class TestUploadManualWebhookInputs:
         access_manual_webhook,
         integration_manual_webhook_config,
     ):
-        return V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        return V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request_requires_input.id,
             connection_key=integration_manual_webhook_config.key,
         )
@@ -3610,7 +3611,7 @@ class TestUploadManualWebhookInputs:
         access_manual_webhook,
         integration_manual_webhook_config,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id="bad_privacy_request",
             connection_key=integration_manual_webhook_config.key,
         )
@@ -3629,7 +3630,7 @@ class TestUploadManualWebhookInputs:
         payload,
         privacy_request_requires_input,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request_requires_input.id,
             connection_key="bad_connection_key",
         )
@@ -3649,7 +3650,7 @@ class TestUploadManualWebhookInputs:
         privacy_request_requires_input,
         integration_manual_webhook_config,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request_requires_input.id,
             connection_key=integration_manual_webhook_config.key,
         )
@@ -3688,7 +3689,7 @@ class TestUploadManualWebhookInputs:
         integration_manual_webhook_config,
         access_manual_webhook,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request.id,
             connection_key=integration_manual_webhook_config.key,
         )
@@ -3696,7 +3697,7 @@ class TestUploadManualWebhookInputs:
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert (
             response.json()["detail"]
-            == f"Invalid access manual webhook upload request: privacy request '{privacy_request.id}' status = in_processing."
+            == f"Invalid manual webhook access upload request: privacy request '{privacy_request.id}' status = in_processing."
         )
 
     def test_patch_inputs_for_manual_webhook(
@@ -3716,14 +3717,14 @@ class TestUploadManualWebhookInputs:
         assert response.json() is None
 
         assert (
-            privacy_request_requires_input.get_manual_webhook_input_strict(
+            privacy_request_requires_input.get_manual_webhook_access_input_strict(
                 access_manual_webhook
             )
             == payload
         )
 
 
-class TestGetManualWebhookInputs:
+class TestUploadManualWebhookErasureInputs:
     @pytest.fixture(scope="function")
     def url(
         self,
@@ -3732,7 +3733,157 @@ class TestGetManualWebhookInputs:
         access_manual_webhook,
         integration_manual_webhook_config,
     ):
-        return V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        return V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT.format(
+            privacy_request_id=privacy_request_requires_input.id,
+            connection_key=integration_manual_webhook_config.key,
+        )
+
+    @pytest.fixture(scope="function")
+    def payload(self):
+        return {"email": False, "last_name": True}
+
+    def test_patch_inputs_not_authenticated(self, api_client: TestClient, url):
+        response = api_client.patch(url, headers={})
+        assert 401 == response.status_code
+
+    def test_patch_inputs_wrong_scopes(
+        self, api_client: TestClient, url, generate_auth_header, payload
+    ):
+        auth_header = generate_auth_header([PRIVACY_REQUEST_READ])
+        response = api_client.patch(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_patch_inputs_privacy_request_does_not_exist(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        payload,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
+            privacy_request_id="bad_privacy_request",
+            connection_key=integration_manual_webhook_config.key,
+        )
+        auth_header = generate_auth_header([PRIVACY_REQUEST_UPLOAD_DATA])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 404 == response.status_code
+        assert (
+            response.json()["detail"]
+            == "No privacy request found with id 'bad_privacy_request'."
+        )
+
+    def test_patch_inputs_connection_config_does_not_exist(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        payload,
+        privacy_request_requires_input,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
+            privacy_request_id=privacy_request_requires_input.id,
+            connection_key="bad_connection_key",
+        )
+        auth_header = generate_auth_header([PRIVACY_REQUEST_UPLOAD_DATA])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 404 == response.status_code
+        assert (
+            response.json()["detail"]
+            == "No connection config with key 'bad_connection_key'"
+        )
+
+    def test_patch_inputs_manual_webhook_does_not_exist(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        payload,
+        privacy_request_requires_input,
+        integration_manual_webhook_config,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
+            privacy_request_id=privacy_request_requires_input.id,
+            connection_key=integration_manual_webhook_config.key,
+        )
+        auth_header = generate_auth_header([PRIVACY_REQUEST_UPLOAD_DATA])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 404 == response.status_code
+        assert (
+            response.json()["detail"]
+            == "No access manual webhook exists for connection config with key 'manual_webhook_example'"
+        )
+
+    def test_supply_invalid_fields(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+        payload,
+        privacy_request_requires_input,
+    ):
+        auth_header = generate_auth_header([PRIVACY_REQUEST_UPLOAD_DATA])
+        response = api_client.patch(
+            url, headers=auth_header, json={"bad_field": "value"}
+        )
+        assert 422 == response.status_code
+        assert response.json()["detail"][0]["msg"] == "extra fields not permitted"
+
+    def test_patch_inputs_bad_privacy_request_status(
+        self,
+        api_client,
+        payload,
+        generate_auth_header,
+        privacy_request,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
+            privacy_request_id=privacy_request.id,
+            connection_key=integration_manual_webhook_config.key,
+        )
+        auth_header = generate_auth_header([PRIVACY_REQUEST_UPLOAD_DATA])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert (
+            response.json()["detail"]
+            == f"Invalid manual webhook access upload request: privacy request '{privacy_request.id}' status = in_processing."
+        )
+
+    def test_patch_inputs_for_manual_webhook(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+        payload,
+        privacy_request_requires_input,
+    ):
+        auth_header = generate_auth_header([PRIVACY_REQUEST_UPLOAD_DATA])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        assert response.json() is None
+
+        assert (
+            privacy_request_requires_input.get_manual_webhook_erasure_input_strict(
+                access_manual_webhook
+            )
+            == payload
+        )
+
+
+class TestGetManualWebhookAccessInputs:
+    @pytest.fixture(scope="function")
+    def url(
+        self,
+        db,
+        privacy_request_requires_input,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+    ):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request_requires_input.id,
             connection_key=integration_manual_webhook_config.key,
         )
@@ -3758,7 +3909,7 @@ class TestGetManualWebhookInputs:
         access_manual_webhook,
         integration_manual_webhook_config,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id="bad_privacy_request",
             connection_key=integration_manual_webhook_config.key,
         )
@@ -3776,7 +3927,7 @@ class TestGetManualWebhookInputs:
         generate_auth_header,
         privacy_request_requires_input,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request_requires_input.id,
             connection_key="bad_connection_key",
         )
@@ -3795,7 +3946,7 @@ class TestGetManualWebhookInputs:
         privacy_request_requires_input,
         integration_manual_webhook_config,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request_requires_input.id,
             connection_key=integration_manual_webhook_config.key,
         )
@@ -3815,7 +3966,7 @@ class TestGetManualWebhookInputs:
         integration_manual_webhook_config,
         access_manual_webhook,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT.format(
             privacy_request_id=privacy_request.id,
             connection_key=integration_manual_webhook_config.key,
         )
@@ -3823,7 +3974,7 @@ class TestGetManualWebhookInputs:
         response = api_client.get(url, headers=auth_header)
         assert (
             response.json()["detail"]
-            == f"Invalid access manual webhook upload request: privacy request '{privacy_request.id}' status = in_processing."
+            == f"Invalid manual webhook access upload request: privacy request '{privacy_request.id}' status = in_processing."
         )
 
     def test_no_manual_webhook_data_exists(
@@ -3852,7 +4003,7 @@ class TestGetManualWebhookInputs:
         access_manual_webhook,
         integration_manual_webhook_config,
         privacy_request_requires_input,
-        cached_input,
+        cached_access_input,
     ):
         auth_header = generate_auth_header([PRIVACY_REQUEST_VIEW_DATA])
 
@@ -3876,7 +4027,7 @@ class TestGetManualWebhookInputs:
         access_manual_webhook,
         integration_manual_webhook_config,
         privacy_request_requires_input,
-        cached_input,
+        cached_access_input,
     ):
         auth_header = generate_auth_header([PRIVACY_REQUEST_VIEW_DATA])
 
@@ -3905,7 +4056,7 @@ class TestGetManualWebhookInputs:
         access_manual_webhook,
         integration_manual_webhook_config,
         privacy_request_requires_input,
-        cached_input,
+        cached_access_input,
     ):
         auth_header = generate_auth_header([PRIVACY_REQUEST_VIEW_DATA])
         response = api_client.get(url, headers=auth_header)
@@ -3915,6 +4066,202 @@ class TestGetManualWebhookInputs:
             "fields": {
                 "email": "customer-1@example.com",
                 "last_name": "McCustomer",
+            },
+        }
+
+
+class TestGetManualWebhookErasureInputs:
+    @pytest.fixture(scope="function")
+    def url(
+        self,
+        db,
+        privacy_request_requires_input,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+    ):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT.format(
+            privacy_request_id=privacy_request_requires_input.id,
+            connection_key=integration_manual_webhook_config.key,
+        )
+
+    def test_get_inputs_not_authenticated(self, api_client: TestClient, url):
+        response = api_client.get(url, headers={})
+        assert 401 == response.status_code
+
+    def test_get_inputs_wrong_scopes(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([PRIVACY_REQUEST_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_get_inputs_privacy_request_does_not_exist(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT.format(
+            privacy_request_id="bad_privacy_request",
+            connection_key=integration_manual_webhook_config.key,
+        )
+        auth_header = generate_auth_header([PRIVACY_REQUEST_VIEW_DATA])
+        response = api_client.get(url, headers=auth_header)
+        assert 404 == response.status_code
+        assert (
+            response.json()["detail"]
+            == "No privacy request found with id 'bad_privacy_request'."
+        )
+
+    def test_get_inputs_connection_config_does_not_exist(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_request_requires_input,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT.format(
+            privacy_request_id=privacy_request_requires_input.id,
+            connection_key="bad_connection_key",
+        )
+        auth_header = generate_auth_header([PRIVACY_REQUEST_VIEW_DATA])
+        response = api_client.get(url, headers=auth_header)
+        assert 404 == response.status_code
+        assert (
+            response.json()["detail"]
+            == "No connection config with key 'bad_connection_key'"
+        )
+
+    def test_get_inputs_manual_webhook_does_not_exist(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_request_requires_input,
+        integration_manual_webhook_config,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT.format(
+            privacy_request_id=privacy_request_requires_input.id,
+            connection_key=integration_manual_webhook_config.key,
+        )
+        auth_header = generate_auth_header([PRIVACY_REQUEST_VIEW_DATA])
+        response = api_client.get(url, headers=auth_header)
+        assert 404 == response.status_code
+        assert (
+            response.json()["detail"]
+            == "No access manual webhook exists for connection config with key 'manual_webhook_example'"
+        )
+
+    def test_get_inputs_bad_privacy_request_status(
+        self,
+        api_client,
+        generate_auth_header,
+        privacy_request,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT.format(
+            privacy_request_id=privacy_request.id,
+            connection_key=integration_manual_webhook_config.key,
+        )
+        auth_header = generate_auth_header([PRIVACY_REQUEST_VIEW_DATA])
+        response = api_client.get(url, headers=auth_header)
+        assert (
+            response.json()["detail"]
+            == f"Invalid manual webhook erasure upload request: privacy request '{privacy_request.id}' status = in_processing."
+        )
+
+    def test_no_manual_webhook_data_exists(
+        self,
+        api_client,
+        url,
+        generate_auth_header,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+        privacy_request_requires_input,
+    ):
+        auth_header = generate_auth_header([PRIVACY_REQUEST_VIEW_DATA])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert response.json() == {
+            "checked": False,
+            "fields": {"email": None, "last_name": None},
+        }
+
+    def test_cached_data_extra_saved_webhook_field(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+        privacy_request_requires_input,
+        cached_erasure_input,
+    ):
+        auth_header = generate_auth_header([PRIVACY_REQUEST_VIEW_DATA])
+
+        access_manual_webhook.fields = [
+            {"pii_field": "id_no", "dsr_package_label": "id_number"}
+        ]
+        access_manual_webhook.save(db)
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert response.json() == {
+            "checked": False,
+            "fields": {"id_number": None},
+        }, "Response has checked=False, so this data needs to be re-uploaded before we can run the privacy request."
+
+    def test_cached_data_missing_saved_webhook_field(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+        privacy_request_requires_input,
+        cached_erasure_input,
+    ):
+        auth_header = generate_auth_header([PRIVACY_REQUEST_VIEW_DATA])
+
+        access_manual_webhook.fields.append(
+            {"pii_field": "id_no", "dsr_package_label": "id_number"}
+        )
+        access_manual_webhook.save(db)
+        response = api_client.get(url, headers=auth_header)
+
+        assert response.status_code == 200
+        assert response.json() == {
+            "checked": False,
+            "fields": {
+                "id_number": None,
+                "email": False,
+                "last_name": True,
+            },
+        }, "Response has checked=False. A new field has been defined on the webhook, so we should re-examine to see if that is more data we need to retrieve."
+
+    def test_get_inputs_for_manual_webhook(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+        privacy_request_requires_input,
+        cached_erasure_input,
+    ):
+        auth_header = generate_auth_header([PRIVACY_REQUEST_VIEW_DATA])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+        assert response.json() == {
+            "checked": True,
+            "fields": {
+                "email": False,
+                "last_name": True,
             },
         }
 
@@ -3989,7 +4336,7 @@ class TestResumePrivacyRequestFromRequiresInput:
         privacy_request_requires_input,
     ):
         auth_header = generate_auth_header([PRIVACY_REQUEST_CALLBACK_RESUME])
-        privacy_request_requires_input.cache_manual_webhook_input(
+        privacy_request_requires_input.cache_manual_webhook_access_input(
             access_manual_webhook,
             {},
         )
@@ -4017,7 +4364,7 @@ class TestResumePrivacyRequestFromRequiresInput:
         access_manual_webhook,
         integration_manual_webhook_config,
         privacy_request_requires_input,
-        cached_input,
+        cached_access_input,
     ):
         auth_header = generate_auth_header([PRIVACY_REQUEST_CALLBACK_RESUME])
         response = api_client.post(url, headers=auth_header)

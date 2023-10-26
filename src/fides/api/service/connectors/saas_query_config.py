@@ -450,6 +450,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         Used for scenarios when an update endpoint has required fields other than
         just the fields being updated.
         """
+
         all_value_map: Dict[str, Any] = {}
         for field_path, field in self.field_map().items():
             # only map scalar fields

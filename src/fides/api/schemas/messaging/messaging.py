@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
-from fideslang import DEFAULT_TAXONOMY
+from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra, root_validator
 
@@ -126,7 +126,7 @@ class ConsentPreferencesByUser(BaseModel):
             preference.data_use = next(
                 (
                     data_use.name
-                    for data_use in DEFAULT_TAXONOMY.data_use
+                    for data_use in DEFAULT_TAXONOMY.data_use or []
                     if data_use.fides_key == preference.data_use
                 ),
                 preference.data_use,

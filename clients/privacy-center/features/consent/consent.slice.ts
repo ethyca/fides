@@ -8,9 +8,9 @@ import {
   ComponentType,
   ConsentPreferences,
   ConsentPreferencesWithVerificationCode,
-  CurrentPrivacyPreferenceSchema,
-  LastServedNoticeSchema,
-  NoticesServedRequest,
+  LastServedConsentSchema,
+  SavePrivacyPreferencesResponse,
+  RecordConsentServedRequest,
   Page_PrivacyExperienceResponse_,
   PrivacyNoticeRegion,
   PrivacyPreferencesRequest,
@@ -77,7 +77,7 @@ export const consentApi = baseApi.injectEndpoints({
       providesTags: ["Privacy Experience"],
     }),
     updatePrivacyPreferences: build.mutation<
-      CurrentPrivacyPreferenceSchema[],
+      SavePrivacyPreferencesResponse,
       { id: string; body: PrivacyPreferencesRequest }
     >({
       query: ({ id, body }) => ({
@@ -94,8 +94,8 @@ export const consentApi = baseApi.injectEndpoints({
       }),
     }),
     updateNoticesServed: build.mutation<
-      LastServedNoticeSchema[],
-      { id: string; body: NoticesServedRequest }
+      LastServedConsentSchema[],
+      { id: string; body: RecordConsentServedRequest }
     >({
       query: ({ id, body }) => ({
         url: `${VerificationType.ConsentRequest}/${id}/notices-served`,

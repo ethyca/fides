@@ -11,8 +11,17 @@ import type { UserConsentPreference } from "./UserConsentPreference";
  * contents of the notice the user consented to at the time.
  */
 export type CurrentPrivacyPreferenceSchema = {
+  purpose_consent?: number;
+  purpose_legitimate_interests?: number;
+  special_purpose?: number;
+  vendor_consent?: string;
+  vendor_legitimate_interests?: string;
+  feature?: number;
+  special_feature?: number;
+  system_consent?: string;
+  system_legitimate_interests?: string;
   id: string;
   preference: UserConsentPreference;
-  privacy_notice_history: PrivacyNoticeHistorySchema;
-  privacy_preference_history_id: string;
+  privacy_notice_history?: PrivacyNoticeHistorySchema;
+  privacy_preference_history_id?: string;
 };

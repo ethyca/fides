@@ -25,9 +25,12 @@ export type PrivacyRequestVerboseResponse = {
   status: PrivacyRequestStatus;
   external_id?: string;
   identity?: Record<string, string>;
+  custom_privacy_request_fields?: any;
   policy: PolicyResponse;
   action_required_details?: CheckpointActionRequiredDetails;
   resume_endpoint?: string;
   days_left?: number;
+  custom_privacy_request_fields_approved_by?: string;
+  custom_privacy_request_fields_approved_at?: string;
   results: Record<string, Array<ExecutionAndAuditLogResponse>>;
 };

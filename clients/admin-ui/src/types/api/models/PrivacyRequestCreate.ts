@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { Consent } from "./Consent";
+import type { CustomPrivacyRequestField } from "./CustomPrivacyRequestField";
 import type { Identity } from "./Identity";
 
 /**
@@ -14,6 +15,7 @@ export type PrivacyRequestCreate = {
   finished_processing_at?: string;
   requested_at?: string;
   identity: Identity;
+  custom_privacy_request_fields?: Record<string, CustomPrivacyRequestField>;
   policy_key: string;
   encryption_key?: string;
   consent_preferences?: Array<Consent>;

@@ -11,6 +11,8 @@ from fides.api.common_exceptions import ValidationError
 from fides.api.custom_types import SafeStr
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_experience import (
+    ComponentType,
+    PrivacyExperience,
     PrivacyExperienceConfig,
     upsert_privacy_experiences_after_notice_update,
 )
@@ -57,12 +59,17 @@ def filter_privacy_preferences_for_propagation(
     system: Optional[System], privacy_preferences: List[PrivacyPreferenceHistory]
 ) -> List[PrivacyPreferenceHistory]:
     """Filter privacy preferences on a privacy request to just the ones that should be considered for third party
-    consent propagation"""
+    consent propagation.
+
+    Only applies to preferences saved for privacy notices here, not against individual TCF components.
+    """
 
     propagatable_preferences: List[PrivacyPreferenceHistory] = [
         pref
         for pref in privacy_preferences
-        if pref.privacy_notice_history.enforcement_level == EnforcementLevel.system_wide
+        if pref.privacy_notice_history
+        and pref.privacy_notice_history.enforcement_level
+        == EnforcementLevel.system_wide
         and pref.preference != UserConsentPreference.acknowledge
     ]
 
@@ -71,7 +78,10 @@ def filter_privacy_preferences_for_propagation(
 
     filtered_on_use: List[PrivacyPreferenceHistory] = []
     for pref in propagatable_preferences:
-        if pref.privacy_notice_history.applies_to_system(system):
+        if (
+            pref.privacy_notice_history
+            and pref.privacy_notice_history.applies_to_system(system)
+        ):
             filtered_on_use.append(pref)
     return filtered_on_use
 
@@ -603,3 +613,61 @@ def create_default_experience_config(
         experience_config_schema.id,
     )
     return None
+
+
+EEA_COUNTRIES: List[PrivacyNoticeRegion] = [
+    PrivacyNoticeRegion.be,
+    PrivacyNoticeRegion.bg,
+    PrivacyNoticeRegion.cz,
+    PrivacyNoticeRegion.dk,
+    PrivacyNoticeRegion.de,
+    PrivacyNoticeRegion.ee,
+    PrivacyNoticeRegion.ie,
+    PrivacyNoticeRegion.gr,
+    PrivacyNoticeRegion.es,
+    PrivacyNoticeRegion.fr,
+    PrivacyNoticeRegion.hr,
+    PrivacyNoticeRegion.it,
+    PrivacyNoticeRegion.cy,
+    PrivacyNoticeRegion.lv,
+    PrivacyNoticeRegion.lt,
+    PrivacyNoticeRegion.lu,
+    PrivacyNoticeRegion.hu,
+    PrivacyNoticeRegion.mt,
+    PrivacyNoticeRegion.nl,
+    PrivacyNoticeRegion.at,
+    PrivacyNoticeRegion.pl,
+    PrivacyNoticeRegion.pt,
+    PrivacyNoticeRegion.ro,
+    PrivacyNoticeRegion.si,
+    PrivacyNoticeRegion.sk,
+    PrivacyNoticeRegion.fi,
+    PrivacyNoticeRegion.se,
+    PrivacyNoticeRegion.gb_eng,
+    PrivacyNoticeRegion.gb_sct,
+    PrivacyNoticeRegion.gb_wls,
+    PrivacyNoticeRegion.gb_nir,
+    PrivacyNoticeRegion.no,
+    PrivacyNoticeRegion["is"],
+    PrivacyNoticeRegion.li,
+    PrivacyNoticeRegion.eea,  # Catch-all region - can query this Experience directly to get a generic TCF experience
+]
+
+
+def create_tcf_experiences_on_startup(db: Session) -> List[PrivacyExperience]:
+    """On startup, create TCF Overlay Experiences for all EEA Regions.  There
+    are no Privacy Notices associated with these Experiences."""
+    experiences_created: List[PrivacyExperience] = []
+    for region in EEA_COUNTRIES:
+        if not PrivacyExperience.get_experience_by_region_and_component(
+            db,
+            region.value,
+            ComponentType.tcf_overlay,
+        ):
+            experiences_created.append(
+                PrivacyExperience.create_default_experience_for_region(
+                    db, region, ComponentType.tcf_overlay
+                )
+            )
+
+    return experiences_created

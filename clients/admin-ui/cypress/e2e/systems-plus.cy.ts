@@ -1,11 +1,18 @@
 import {
   stubPlus,
   stubSystemCrud,
+  stubSystemVendors,
   stubTaxonomyEntities,
   stubVendorList,
 } from "cypress/support/stubs";
 
-import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  ADD_SYSTEMS_MANUAL_ROUTE,
+  ADD_SYSTEMS_MULTIPLE_ROUTE,
+  ADD_SYSTEMS_ROUTE,
+  DATAMAP_ROUTE,
+  SYSTEM_ROUTE,
+} from "~/features/common/nav/v2/routes";
 
 describe("System management with Plus features", () => {
   beforeEach(() => {
@@ -36,8 +43,10 @@ describe("System management with Plus features", () => {
       cy.selectOption("input-vendor_id", "Aniview LTD");
       cy.getSelectValueContainer("input-vendor_id").contains("Aniview LTD");
 
-      cy.selectOption("input-vendor_id", "Jaduda GmbH");
-      cy.getSelectValueContainer("input-vendor_id").contains("Jaduda GmbH");
+      cy.selectOption("input-vendor_id", "Anzu Virtual Reality LTD");
+      cy.getSelectValueContainer("input-vendor_id").contains(
+        "Anzu Virtual Reality LTD"
+      );
     });
 
     // some DictSuggestionTextInputs don't get populated right, causing
@@ -70,7 +79,7 @@ describe("System management with Plus features", () => {
       cy.getByTestId("save-btn").click();
       cy.wait("@putDictSystem");
       cy.wait("@getDictSystem");
-      cy.getByTestId("input-dpo").should("have.value", "info@anzu.io");
+      cy.getByTestId("input-dpo").should("have.value", "DPO@anzu.io");
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("tab-System information").click();
       // cy.pause();
@@ -155,6 +164,62 @@ describe("System management with Plus features", () => {
           expect(interception.request.body.value).to.eql(expected.value);
         });
       });
+    });
+  });
+
+  describe("bulk system/vendor adding page", () => {
+    beforeEach(() => {
+      stubSystemVendors();
+    });
+
+    it("page loads with table and rows", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+
+      cy.wait("@getSystemVendors");
+      cy.getByTestId("fidesTable");
+      cy.getByTestId("fidesTable-body")
+        .find("tr")
+        .should("have.length.greaterThan", 0);
+    });
+
+    it("upgrade modal doesn't pop up if compass is enabled", () => {
+      cy.visit(ADD_SYSTEMS_ROUTE);
+      cy.getByTestId("multiple-btn").click();
+      cy.wait("@getSystemVendors");
+      cy.getByTestId("fidesTable");
+    });
+
+    it("upgrade modal pops up if compass isn't enabled and redirects to manual add", () => {
+      stubPlus(true, {
+        core_fides_version: "2.2.0",
+        fidesplus_server: "healthy",
+        system_scanner: {
+          enabled: true,
+          cluster_health: null,
+          cluster_error: null,
+        },
+        dictionary: {
+          enabled: false,
+          service_health: null,
+          service_error: null,
+        },
+      });
+      cy.visit(ADD_SYSTEMS_ROUTE);
+      cy.getByTestId("multiple-btn").click();
+      cy.getByTestId("confirmation-modal");
+      cy.getByTestId("cancel-btn").click();
+      cy.url().should("include", ADD_SYSTEMS_MANUAL_ROUTE);
+    });
+    it("can add new systems and redirects to datamap", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.wait("@getSystemVendors");
+      cy.getByTestId("row-0").within(() => {
+        cy.get('[type="checkbox"]').check({ force: true });
+      });
+      cy.getByTestId("add-multiple-systems-btn").click();
+      cy.getByTestId("confirmation-modal");
+      cy.getByTestId("continue-btn").click();
+      cy.url().should("include", DATAMAP_ROUTE);
     });
   });
 });

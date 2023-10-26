@@ -1,16 +1,79 @@
 # This file is used by "drill", a load testing utility
+# https://github.com/fcsonline/drill
 
-concurrency: 4
+concurrency: 5 # How many instances of the `plan` get run concurrently
 base: 'http://localhost:8080'
-# There is a rate-limiter on the webserver, default is set to 2000 requests/min
-iterations: 400
-rampup: 3
+iterations: 20 # How many times to run the plan
+rampup: 1 # The number of seconds between starting concurrent runs
 
+# This plan is run in its entirety, sequentially, for each iteration
 plan:
   - name: Health Check
     request:
+      method: GET
       url: /health
 
-  - name: Worker Health Check
+  - name: Login
+    assign: login
     request:
-      url: /health/workers
+      method: POST
+      body: '{"username": "root_user", "password": "VGVzdHBhc3N3b3JkMSE="}'
+      headers:
+        Content-Type: 'application/json'
+      url: /api/v1/login
+
+  - name: Get Privacy-Experience [Basic]
+    request:
+      method: GET
+      url: /api/v1/privacy-experience
+    tags:
+      - privacy-experience
+
+  - name: Get Privacy-Experience [Include GVL]
+    request:
+      method: GET
+      url: /api/v1/privacy-experience?include_gvl=1
+    tags:
+      - privacy-experience
+
+  - name: Get Data Use
+    request:
+      method: GET
+      headers:
+        Authorization: "Bearer {{ login.body.token_data.access_token }}"
+      url: /api/v1/data_use
+
+  - name: Get Data Category
+    request:
+      method: GET
+      headers:
+        Authorization: "Bearer {{ login.body.token_data.access_token }}"
+      url: /api/v1/data_category
+
+  - name: Get Data Qualifier
+    request:
+      method: GET
+      headers:
+        Authorization: "Bearer {{ login.body.token_data.access_token }}"
+      url: /api/v1/data_qualifier
+
+  - name: Get Data Subject
+    request:
+      method: GET
+      headers:
+        Authorization: "Bearer {{ login.body.token_data.access_token }}"
+      url: /api/v1/data_subject
+
+  - name: Get Systems
+    request:
+      method: GET
+      headers:
+        Authorization: "Bearer {{ login.body.token_data.access_token }}"
+      url: /api/v1/system
+
+  - name: Get Datasets
+    request:
+      method: GET
+      headers:
+        Authorization: "Bearer {{ login.body.token_data.access_token }}"
+      url: /api/v1/dataset

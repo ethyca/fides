@@ -10,7 +10,15 @@ const useA11yDialogInstance = () => {
   const [instance, setInstance] = useState<A11yDialogLib | null>(null);
   const container = useCallback((node: Element) => {
     if (node !== null) {
-      setInstance(new A11yDialogLib(node));
+      const dialog = new A11yDialogLib(node);
+      dialog
+        .on("show", () => {
+          document.documentElement.style.overflowY = "hidden";
+        })
+        .on("hide", () => {
+          document.documentElement.style.overflowY = "";
+        });
+      setInstance(dialog);
     }
   }, []);
   return { instance, container };
@@ -18,10 +26,12 @@ const useA11yDialogInstance = () => {
 
 interface Props {
   role: "dialog" | "alertdialog";
+  className: string;
   id: string;
   title: string;
+  onClose?: () => void;
 }
-export const useA11yDialog = ({ role, id }: Props) => {
+export const useA11yDialog = ({ role, className, id, onClose }: Props) => {
   const { instance, container: ref } = useA11yDialogInstance();
   const isAlertDialog = role === "alertdialog";
   const titleId = `${id}-title`;
@@ -29,6 +39,9 @@ export const useA11yDialog = ({ role, id }: Props) => {
   const handleClose = useCallback(() => {
     if (instance) {
       instance.hide();
+    }
+    if (onClose) {
+      onClose();
     }
   }, [instance]);
 
@@ -47,6 +60,7 @@ export const useA11yDialog = ({ role, id }: Props) => {
     attributes: {
       container: {
         id,
+        className,
         ref,
         role,
         tabIndex: -1,

@@ -2,8 +2,9 @@ import { useEffect, useState, useCallback } from "preact/hooks";
 import { FidesEvent } from "./events";
 import {
   FidesOptions,
-  LastServedNoticeSchema,
-  NoticesServedRequest,
+  PrivacyExperience,
+  LastServedConsentSchema,
+  RecordConsentServedRequest,
   PrivacyNotice,
   ServingComponent,
 } from "./consent-types";
@@ -64,40 +65,75 @@ export const useDisclosure = ({ id }: { id: string }) => {
   };
 };
 
+/**
+ * Extracts the id value of each object in the list and returns a list
+ * of IDs, either strings or numbers based on the IDs' type.
+ */
+const extractIds = <T extends { id: string | number }[]>(
+  modelList?: T
+): any[] => {
+  if (!modelList) {
+    return [];
+  }
+  return modelList.map((model) => model.id);
+};
+
 export const useConsentServed = ({
   notices,
   options,
   userGeography,
-  privacyExperienceId,
+  privacyExperience,
   acknowledgeMode,
 }: {
   notices: PrivacyNotice[];
   options: FidesOptions;
   userGeography?: string;
-  privacyExperienceId?: string;
+  privacyExperience: PrivacyExperience;
   acknowledgeMode?: boolean;
 }) => {
-  const [servedNotices, setServedNotices] = useState<
-    LastServedNoticeSchema[] | undefined
-  >(undefined);
+  const [servedNotices, setServedNotices] = useState<LastServedConsentSchema[]>(
+    []
+  );
 
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
-      // Only send notices-served request when we show via the modal since that
-      // is the only time we show all notices
+      // The only time a notices served API call isn't triggered is when
+      // the BANNER is shown. Calls can be triggered for
+      // TCF_BANNER, TCF_OVERLAY, and OVERLAY
       if (
         !event.detail.extraDetails ||
-        event.detail.extraDetails.servingComponent !== ServingComponent.OVERLAY
+        event.detail.extraDetails.servingComponent === ServingComponent.BANNER
       ) {
         return;
       }
-      const request: NoticesServedRequest = {
+      const request: RecordConsentServedRequest = {
         browser_identity: event.detail.identity,
-        privacy_experience_id: privacyExperienceId,
+        privacy_experience_id: privacyExperience.id,
         user_geography: userGeography,
         acknowledge_mode: acknowledgeMode,
         privacy_notice_history_ids: notices.map(
           (n) => n.privacy_notice_history_id
+        ),
+        tcf_purpose_consents: extractIds(
+          privacyExperience?.tcf_purpose_consents
+        ),
+        tcf_purpose_legitimate_interests: extractIds(
+          privacyExperience.tcf_purpose_legitimate_interests
+        ),
+        tcf_special_purposes: extractIds(
+          privacyExperience?.tcf_special_purposes
+        ),
+        tcf_vendor_consents: extractIds(privacyExperience?.tcf_vendor_consents),
+        tcf_vendor_legitimate_interests: extractIds(
+          privacyExperience.tcf_vendor_legitimate_interests
+        ),
+        tcf_features: extractIds(privacyExperience?.tcf_features),
+        tcf_special_features: extractIds(
+          privacyExperience?.tcf_special_features
+        ),
+        tcf_system_consents: extractIds(privacyExperience?.tcf_system_consents),
+        tcf_system_legitimate_interests: extractIds(
+          privacyExperience?.tcf_system_legitimate_interests
         ),
         serving_component: event.detail.extraDetails.servingComponent,
       };
@@ -110,7 +146,7 @@ export const useConsentServed = ({
         setServedNotices(result);
       }
     },
-    [notices, options, acknowledgeMode, privacyExperienceId, userGeography]
+    [notices, options, acknowledgeMode, privacyExperience, userGeography]
   );
 
   useEffect(() => {

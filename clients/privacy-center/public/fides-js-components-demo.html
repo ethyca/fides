@@ -4,7 +4,18 @@
     <title>fides-js script demo page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <script src="./lib/fides.js"></script>
+    <!-- 
+      We use the fides*.js file directly so that we can dynamically inject options.
+      We read fidesConfig.options to determine which fides*.js bundle to use.
+    -->
+    <script>
+      (function () {
+        var src = window.fidesConfig?.options?.tcfEnabled
+          ? "./lib/fides-tcf.js"
+          : "./lib/fides.js";
+        document.write('<script src="' + src + '"><\/script>');
+      })();
+    </script>
     <script>
       // Our cypress test suite requires injecting consent options through an obj on window
       // we default to the below for dev purposes
@@ -119,7 +130,6 @@
           modalLinkId: null,
           privacyCenterUrl: "http://localhost:3000",
           fidesApiUrl: "http://localhost:8080/api/v1",
-          tcfEnabled: false,
         },
       };
       window.Fides.init(fidesConfig);
@@ -127,8 +137,10 @@
 
     <style>
       body {
-        max-width: 800px;
         margin: 16px;
+        height: 100vh;
+        overflow: scroll;
+        overflow-x: hidden;
       }
       pre {
         background-color: #eee;
@@ -146,6 +158,8 @@
         choices can be accessed by pages that live outside of the Privacy
         Center.
       </p>
+
+      <div id="fides-embed-container"></div>
 
       <h2>Was the fides global defined?</h2>
       <pre id="has-fides"></pre>

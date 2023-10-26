@@ -3,8 +3,9 @@ import { Form, Formik } from "formik";
 import React from "react";
 
 import { useFeatures } from "~/features/common/features/features.slice";
-import { PrivacyDeclaration } from "~/types/api";
+import { PrivacyDeclaration, ResourceTypes } from "~/types/api";
 
+import SystemCustomFieldGroup from "./fields/SystemCustomFieldGroup";
 import SystemDataSwitch from "./fields/SystemDataSwitch";
 import SystemDataTags from "./fields/SystemDataTags";
 import SystemDataTextField from "./fields/SystemDataTextField";
@@ -158,12 +159,16 @@ const SystemDataForm: React.FC<SystemDataFormProps> = ({ initialValues }) => {
                 tooltip="Which data security practices are employed to keep the data safe?"
               />
             </SystemDataGroup>
+            <SystemCustomFieldGroup
+              customFields={initialValues.custom_fields}
+              resourceType={ResourceTypes.SYSTEM}
+            />
             {/* Data uses */}
             {initialValues.privacy_declarations &&
               initialValues.privacy_declarations.map(
                 (_: PrivacyDeclaration, index: number) => (
                   <>
-                    <SystemDataGroup heading="Data use declaration">
+                    <SystemDataGroup heading="Data use">
                       <SystemDataTextField
                         label="Declaration name (optional)"
                         name={`privacy_declarations[${index}].name`}
@@ -171,8 +176,8 @@ const SystemDataForm: React.FC<SystemDataFormProps> = ({ initialValues }) => {
                       />
                       <SystemDataTextField
                         name={`privacy_declarations[${index}].data_use`}
-                        label="This system processes personal data"
-                        tooltip="Does this system process personal data?"
+                        label="Data use"
+                        tooltip="For which business purposes is this data used?"
                       />
                       <SystemDataTags
                         name={`privacy_declarations[${index}].data_categories`}
@@ -243,6 +248,12 @@ const SystemDataForm: React.FC<SystemDataFormProps> = ({ initialValues }) => {
                         tooltip="Which categories of personal data does this system share with third parties?"
                       />
                     </SystemDataGroup>
+                    <SystemCustomFieldGroup
+                      customFields={
+                        initialValues.privacy_declarations[0].custom_fields
+                      }
+                      resourceType={ResourceTypes.PRIVACY_DECLARATION}
+                    />
                   </>
                 )
               )}

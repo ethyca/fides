@@ -4,11 +4,24 @@
     <title>fides-js script demo page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <script src="/fides.js"></script>
+    <!-- 
+      Pass along any params to the fides.js script. For example, visiting
+      http://localhost:3000/fides-js-demo.html?geolocation=fr-id
+      will pass a geolocation query param to fides.js
+    -->
+    <script>
+      (function () {
+        const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
+        const params = new URLSearchParams(window.location.search);
+        const geolocation = params.get("geolocation");
+        const isValid = VALID_ISO_3166_LOCATION_REGEX.test(geolocation);
+        const src = `/fides.js${isValid ? `?geolocation=${geolocation}` : ""}`;
 
+        document.write('<script src="' + src + '"><\/script>');
+      })();
+    </script>
     <style>
       body {
-        max-width: 800px;
         margin: 16px;
       }
       pre {
@@ -21,7 +34,9 @@
   <body>
     <main>
       <h1>fides.js demo page</h1>
-      <p>This page exists to demonstrate and debug the fides.js script.</p>
+      <p>This page exists to demonstrate the fides.js script.</p>
+
+      <div id="fides-embed-container"></div>
 
       <h2>Was the fides global defined?</h2>
       <pre id="has-fides"></pre>

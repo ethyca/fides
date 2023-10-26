@@ -47,7 +47,7 @@ def pull_existing_resources(
                 existing_keys.append(fides_key)
 
                 server_resource = get_server_resource(
-                    url, resource_type, fides_key, headers, raw=True
+                    url, resource_type, fides_key, headers
                 )
 
                 if server_resource:
@@ -83,7 +83,6 @@ def pull_missing_resources(
             headers=headers,
             resource_type=resource,
             exclude_keys=existing_keys,
-            raw=True,
         )
         for resource in MODEL_LIST
     }

@@ -11,8 +11,14 @@ declare global {
  * query parameter. For example: `privacy-center.example.com/consent?globalPrivacyControl=true`.
  * This allows fides.js to function as if GPC is enabled while testing or demoing without
  * having to modify the browser before the script runs.
+ *
+ * GPC is not considered if TCF is enabled.
  */
 const getGlobalPrivacyControl = (): boolean | undefined => {
+  if (window.Fides.options.tcfEnabled) {
+    return false;
+  }
+
   if (typeof window.navigator?.globalPrivacyControl === "boolean") {
     return window.navigator.globalPrivacyControl;
   }

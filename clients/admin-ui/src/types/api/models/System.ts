@@ -7,7 +7,6 @@ import type { DataFlow } from "./DataFlow";
 import type { DataProtectionImpactAssessment } from "./DataProtectionImpactAssessment";
 import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
 import type { LegalBasisForProfilingEnum } from "./LegalBasisForProfilingEnum";
-import type { LegalBasisForTransfersEnum } from "./LegalBasisForTransfersEnum";
 import type { PrivacyDeclaration } from "./PrivacyDeclaration";
 import type { SystemMetadata } from "./SystemMetadata";
 
@@ -59,11 +58,11 @@ export type System = {
    */
   data_responsibility_title?: DataResponsibilityTitle;
   /**
-   * The resources to which the System sends data.
+   * The resources to which the system sends data.
    */
   egress?: Array<DataFlow>;
   /**
-   * The resources from which the System receives data.
+   * The resources from which the system receives data.
    */
   ingress?: Array<DataFlow>;
   /**
@@ -143,7 +142,7 @@ export type System = {
   /**
    * The legal basis (or bases) under which the data is transferred.
    */
-  legal_basis_for_transfers?: Array<LegalBasisForTransfersEnum>;
+  legal_basis_for_transfers?: Array<string>;
   /**
    * Whether this system requires data protection impact assessments.
    */
@@ -157,7 +156,7 @@ export type System = {
    */
   dpa_progress?: string;
   /**
-   * A URL that points to the System's publicly accessible privacy policy.
+   * A URL that points to the system's publicly accessible privacy policy.
    */
   privacy_policy?: string;
   /**
@@ -190,4 +189,24 @@ export type System = {
    * The data security practices employed by this system.
    */
   data_security_practices?: string;
+  /**
+   * The maximum storage duration, in seconds, for cookies used by this system.
+   */
+  cookie_max_age_seconds?: number;
+  /**
+   * Whether this system uses cookie storage.
+   */
+  uses_cookies?: boolean;
+  /**
+   * Whether the system's cookies are refreshed after being initially set.
+   */
+  cookie_refresh?: boolean;
+  /**
+   * Whether the system uses non-cookie methods of storage or accessing information stored on a user's device.
+   */
+  uses_non_cookie_access?: boolean;
+  /**
+   * A URL that points to the system's publicly accessible legitimate interest disclosure.
+   */
+  legitimate_interest_disclosure_url?: string;
 };

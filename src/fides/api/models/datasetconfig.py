@@ -168,7 +168,7 @@ class DatasetConfig(Base):
 
         return dataset_graph
 
-    def get_dataset_with_stubbed_collection(self) -> Dataset:
+    def get_dataset_with_stubbed_collection(self) -> GraphDataset:
         """
         Return a Dataset with a single mock Collection for use in building a graph
         where we only want one node per dataset, instead of one node per collection.  Note that
@@ -179,7 +179,7 @@ class DatasetConfig(Base):
         is that this single node represents the overall Dataset, and will execute Dataset-level requests,
         not Collection-level requests.
         """
-        dataset_graph: Dataset = self.get_graph()
+        dataset_graph = self.get_graph()
         stubbed_collection = Collection(name=dataset_graph.name, fields=[], after=set())
 
         dataset_graph.collections = [stubbed_collection]
@@ -256,7 +256,7 @@ def to_graph_field(
         data_categories=field.data_categories,
         identity=identity,
         data_type_name=data_type_name,  # type: ignore
-        references=references,
+        references=references,  # type: ignore
         is_pk=is_pk,
         length=length,
         is_array=is_array,

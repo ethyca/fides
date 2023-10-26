@@ -48,6 +48,9 @@ describe("Config wizard with plus settings", () => {
           service_health: null,
           service_error: null,
         },
+        fides_cloud: {
+          enabled: false,
+        },
       });
       cy.visit(ADD_SYSTEMS_ROUTE);
       cy.getByTestId("add-systems");
@@ -72,6 +75,9 @@ describe("Config wizard with plus settings", () => {
           enabled: true,
           service_health: null,
           service_error: null,
+        },
+        fides_cloud: {
+          enabled: false,
         },
       });
       cy.visit(ADD_SYSTEMS_ROUTE);

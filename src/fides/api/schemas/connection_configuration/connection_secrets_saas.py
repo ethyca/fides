@@ -1,7 +1,7 @@
 import abc
 from typing import Any, Dict, List, Type
 
-from fideslang import FidesDatasetReference
+from fideslang.models import FidesDatasetReference
 from pydantic import BaseModel, Extra, Field, PrivateAttr, create_model, root_validator
 from pydantic.fields import FieldInfo
 from sqlalchemy.orm import Session

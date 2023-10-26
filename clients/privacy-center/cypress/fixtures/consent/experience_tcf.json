@@ -1,0 +1,468 @@
+{
+  "items": [
+    {
+      "region": "fi",
+      "component": "tcf_overlay",
+      "experience_config": {
+        "accept_button_label": "Opt in to all",
+        "acknowledge_button_label": "OK",
+        "banner_enabled": "enabled_where_required",
+        "description": "We use cookies and similar methods to recognize visitors and remember their preferences. We may also use these technologies to gauge the effectiveness of advertising campaigns, target advertisements, and analyze website traffic. Some of these technologies are essential for ensuring the proper functioning of the service or website and cannot be disabled, while others are optional but serve to enhance the user experience in various ways.\n\nWe, in collaboration with our partners, store and/or access information on a user's device, including but not limited to IP addresses, unique identifiers, and browsing data stored in cookies, in order to process personal data. You have the option to manage your preferences by selecting the 'Manage Preferences' option located in the page's footer. To review or object to instances where our partners assert a legitimate interest in utilizing your data, please visit our vendors page.\n",
+        "disabled": false,
+        "is_default": true,
+        "privacy_policy_link_label": "Privacy Policy",
+        "privacy_policy_url": null,
+        "privacy_preferences_link_label": "Manage preferences",
+        "regions": [
+          "be",
+          "bg",
+          "cz",
+          "dk",
+          "de",
+          "ee",
+          "ie",
+          "gr",
+          "es",
+          "fr",
+          "hr",
+          "it",
+          "cy",
+          "lv",
+          "lt",
+          "lu",
+          "hu",
+          "mt",
+          "nl",
+          "at",
+          "pl",
+          "pt",
+          "ro",
+          "si",
+          "sk",
+          "fi",
+          "se",
+          "gb_eng",
+          "gb_sct",
+          "gb_wls",
+          "gb_nir",
+          "no",
+          "is",
+          "li",
+          "eea"
+        ],
+        "reject_button_label": "Opt out of all",
+        "save_button_label": "Save",
+        "title": "Manage your consent preferences",
+        "id": "a4974670-abad-471f-9084-2cb-tcf-over",
+        "component": "tcf_overlay",
+        "experience_config_history_id": "pri_2dc8a774-6f58-435a-99dd-49a85f36a8e7",
+        "version": 2,
+        "created_at": "2023-09-26T18:59:40.114515+00:00",
+        "updated_at": "2023-09-29T15:16:59.437776+00:00"
+      },
+      "id": "pri_da3252e2-b604-49fd-b493-70a9960dce66",
+      "tcf_purpose_consents": [
+        {
+          "id": 4,
+          "name": "Use profiles to select personalised advertising",
+          "description": "Advertising presented to you on this service can be based on your advertising profiles, which can reflect your activity on this service or other websites or apps (like the forms you submit, content you look at), possible interests and personal aspects.",
+          "illustrations": [
+            "An online retailer wants to advertise a limited sale on running shoes. It wants to target advertising to users who previously looked at running shoes on its mobile app. Tracking technologies might be used to recognise that you have previously used the mobile app to consult running shoes, in order to present you with the corresponding advertisement on the app.",
+            "A profile created for personalised advertising in relation to a person having searched for bike accessories on a website can be used to present the relevant advertisement for bike accessories on a mobile app of another organisation."
+          ],
+          "data_uses": [
+            "marketing.advertising.first_party.targeted",
+            "marketing.advertising.third_party.targeted"
+          ],
+          "default_preference": "opt_out",
+          "current_preference": "opt_in",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "vendors": [
+            {
+              "id": "2",
+              "name": "Captify"
+            }
+          ],
+          "systems": []
+        },
+        {
+          "id": 6,
+          "name": "Use profiles to select personalised content",
+          "description": "Content presented to you on this service can be based on your content personalisation profiles, which can reflect your activity on this or other services (for instance, the forms you submit, content you look at), possible interests and personal aspects, such as by adapting the order in which content is shown to you, so that it is even easier for you to find (non-advertising) content that matches your interests.",
+          "illustrations": [
+            "You read articles on vegetarian food on a social media platform and then use the cooking app of an unrelated company. The profile built about you on the social media platform will be used to present you vegetarian recipes on the welcome screen of the cooking app.",
+            "You have viewed three videos about rowing across different websites. An unrelated video sharing platform will recommend five other videos on rowing that may be of interest to you when you use your TV app, based on a profile built about you when you visited those different websites to watch online videos."
+          ],
+          "data_uses": ["personalize.content"],
+          "default_preference": "opt_out",
+          "current_preference": "opt_in",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "vendors": [
+            {
+              "id": "2",
+              "name": "Captify"
+            }
+          ],
+          "systems": []
+        },
+        {
+          "id": 7,
+          "name": "Measure advertising performance",
+          "description": "Information regarding which advertising is presented to you and how you interact with it can be used to determine how well an advert has worked for you or other users and whether the goals of the advertising were reached. For instance, whether you saw an ad, whether you clicked on it, whether it led you to buy a product or visit a website, etc. This is very helpful to understand the relevance of advertising campaigns.",
+          "illustrations": [
+            "You have clicked on an advertisement about a “black Friday” discount by an online shop on the website of a publisher and purchased a product. Your click will be linked to this purchase. Your interaction and that of other users will be measured to know how many clicks on the ad led to a purchase.",
+            "You are one of very few to have clicked on an advertisement about an “international appreciation day” discount by an online gift shop within the app of a publisher. The publisher wants to have reports to understand how often a specific ad placement within the app, and notably the “international appreciation day” ad, has been viewed or clicked by you and other users, in order to help the publisher and its partners (such as agencies) optimise ad placements."
+          ],
+          "data_uses": ["analytics.reporting.ad_performance"],
+          "default_preference": "opt_out",
+          "current_preference": "opt_in",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "vendors": [
+            {
+              "id": "2",
+              "name": "Captify"
+            }
+          ],
+          "systems": []
+        },
+        {
+          "id": 9,
+          "name": "Understand audiences through statistics or combinations of data from different sources",
+          "description": "Reports can be generated based on the combination of data sets (like user profiles, statistics, market research, analytics data) regarding your interactions and those of other users with advertising or (non-advertising) content to identify common characteristics (for instance, to determine which target audiences are more receptive to an ad campaign or to certain contents).",
+          "illustrations": [
+            "The owner of an online bookstore wants commercial reporting showing the proportion of visitors who consulted and left its site without buying, or consulted and bought the last celebrity autobiography of the month, as well as the average age and the male/female distribution of each category. Data relating to your navigation on its site and to your personal characteristics is then used and combined with other such data to produce these statistics.",
+            "An advertiser wants to better understand the type of audience interacting with its adverts. It calls upon a research institute to compare the characteristics of users who interacted with the ad with typical attributes of users of similar platforms, across different devices. This comparison reveals to the advertiser that its ad audience is mainly accessing the adverts through mobile devices and is likely in the 45-60 age range."
+          ],
+          "data_uses": ["analytics.reporting.campaign_insights"],
+          "default_preference": "opt_out",
+          "current_preference": "opt_in",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "vendors": [
+            {
+              "id": "2",
+              "name": "Captify"
+            }
+          ],
+          "systems": []
+        }
+      ],
+      "tcf_purpose_legitimate_interests": [
+        {
+          "id": 2,
+          "name": "Use limited data to select advertising",
+          "description": "Advertising presented to you on this service can be based on limited data, such as the website or app you are using, your non-precise location, your device type or which content you are (or have been) interacting with (for example, to limit the number of times an ad is presented to you).",
+          "illustrations": [
+            "A car manufacturer wants to promote its electric vehicles to environmentally conscious users living in the city after office hours. The advertising is presented on a page with related content (such as an article on climate change actions) after 6:30 p.m. to users whose non-precise location suggests that they are in an urban zone.",
+            "A large producer of watercolour paints wants to carry out an online advertising campaign for its latest watercolour range, diversifying its audience to reach as many amateur and professional artists as possible and avoiding showing the ad next to mismatched content (for instance, articles about how to paint your house). The number of times that the ad has been presented to you is detected and limited, to avoid presenting it too often."
+          ],
+          "data_uses": [
+            "marketing.advertising.first_party.contextual",
+            "marketing.advertising.frequency_capping",
+            "marketing.advertising.negative_targeting"
+          ],
+          "default_preference": "opt_in",
+          "current_preference": "opt_in",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "vendors": [],
+          "systems": [
+            {
+              "id": "ctl_b3dde2d5-e535-4d9a-bf6e-a3b6beb01761",
+              "name": "Fides System"
+            }
+          ]
+        }
+      ],
+      "tcf_special_purposes": [
+        {
+          "id": 1,
+          "name": "Ensure security, prevent and detect fraud, and fix errors",
+          "description": "Your data can be used to monitor for and prevent unusual and possibly fraudulent activity (for example, regarding advertising, ad clicks by bots), and ensure systems and processes work properly and securely. It can also be used to correct any problems you, the publisher or the advertiser may encounter in the delivery of content and ads and in your interaction with them.",
+          "illustrations": [
+            "An advertising intermediary delivers ads from various advertisers to its network of partnering websites. It notices a large increase in clicks on ads relating to one advertiser, and uses data regarding the source of the clicks to determine that 80% of the clicks come from bots rather than humans."
+          ],
+          "data_uses": [
+            "essential.fraud_detection",
+            "essential.service.security"
+          ],
+          "default_preference": "acknowledge",
+          "current_preference": null,
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "vendors": [
+            {
+              "id": "2",
+              "name": "Captify"
+            }
+          ],
+          "systems": [
+            {
+              "id": "ctl_b3dde2d5-e535-4d9a-bf6e-a3b6beb01761",
+              "name": "Fides System"
+            }
+          ]
+        }
+      ],
+      "tcf_features": [
+        {
+          "id": 1,
+          "name": "Match and combine data from other data sources",
+          "description": "Information about your activity on this service may be matched and combined with other information relating to you and originating from various sources (for instance your activity on a separate online service, your use of a loyalty card in-store, or your answers to a survey), in support of the purposes explained in this notice.",
+          "default_preference": "acknowledge",
+          "current_preference": null,
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "vendors": [],
+          "systems": [
+            {
+              "id": "ctl_b3dde2d5-e535-4d9a-bf6e-a3b6beb01761",
+              "name": "Fides System"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "Link different devices",
+          "description": "In support of the purposes explained in this notice, your device might be considered as likely linked to other devices that belong to you or your household (for instance because you are logged in to the same service on both your phone and your computer, or because you may use the same Internet connection on both devices).",
+          "default_preference": "acknowledge",
+          "current_preference": null,
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "vendors": [
+            {
+              "id": "2",
+              "name": "Captify"
+            }
+          ],
+          "systems": []
+        }
+      ],
+      "tcf_special_features": [
+        {
+          "id": 1,
+          "name": "Use precise geolocation data",
+          "description": "With your acceptance, your precise location (within a radius of less than 500 metres) may be used in support of the purposes explained in this notice.",
+          "default_preference": "opt_out",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "vendors": [
+            {
+              "id": "2",
+              "name": "Captify"
+            }
+          ],
+          "systems": []
+        }
+      ],
+      "tcf_vendor_consents": [
+        {
+          "id": "2",
+          "has_vendor_id": true,
+          "name": "Captify",
+          "description": "A longer description",
+          "default_preference": "opt_out",
+          "current_preference": null,
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "purpose_consents": [
+            {
+              "id": 4,
+              "name": "Use profiles to select personalised advertising",
+              "retention_period": "4"
+            },
+            {
+              "id": 6,
+              "name": "Use profiles to select personalised content",
+              "retention_period": "6"
+            },
+            {
+              "id": 7,
+              "name": "Measure advertising performance",
+              "retention_period": "7"
+            },
+            {
+              "id": 9,
+              "name": "Understand audiences through statistics or combinations of data from different sources",
+              "retention_period": "9"
+            }
+          ]
+        }
+      ],
+      "tcf_vendor_legitimate_interests": [],
+      "tcf_vendor_relationships": [
+        {
+          "cookie_max_age_seconds": 360000,
+          "cookie_refresh": true,
+          "id": "2",
+          "has_vendor_id": true,
+          "name": "Captify",
+          "description": "A longer description",
+          "special_purposes": [
+            {
+              "id": 1,
+              "name": "Ensure security, prevent and detect fraud, and fix errors",
+              "retention_period": "1"
+            }
+          ],
+          "uses_cookies": true,
+          "uses_non_cookie_access": true,
+          "features": [],
+          "special_features": [],
+          "privacy_policy_url": "https://www.example.com/privacy",
+          "legitimate_interest_disclosure_url": "https://www.example.com/legitimate_interest_disclosure"
+        }
+      ],
+      "tcf_consent_systems": [],
+      "tcf_system_legitimate_interests": [
+        {
+          "id": "ctl_b3dde2d5-e535-4d9a-bf6e-a3b6beb01761",
+          "has_vendor_id": false,
+          "name": "Fides System",
+          "description": "A system that is only in Fides",
+          "default_preference": "opt_in",
+          "current_preference": "opt_in",
+          "outdated_preference": null,
+          "current_served": null,
+          "outdated_served": null,
+          "purpose_legitimate_interests": [
+            {
+              "id": 2,
+              "name": "Use limited data to select advertising",
+              "retention_period": "2"
+            }
+          ]
+        }
+      ],
+      "tcf_system_relationships": [
+        {
+          "cookie_max_age_seconds": 400000,
+          "cookie_refresh": false,
+          "id": "ctl_b3dde2d5-e535-4d9a-bf6e-a3b6beb01761",
+          "has_vendor_id": false,
+          "name": "Fides System",
+          "description": "A system that is only in Fides",
+          "special_purposes": [
+            {
+              "id": 1,
+              "name": "Ensure security, prevent and detect fraud, and fix errors",
+              "retention_period": "1"
+            }
+          ],
+          "features": [
+            {
+              "id": 1,
+              "name": "Match and combine data from other data sources"
+            }
+          ],
+          "special_features": [],
+          "uses_cookies": true,
+          "uses_non_cookie_access": false
+        }
+      ],
+      "created_at": "2023-09-26T18:59:40.416181+00:00",
+      "updated_at": "2023-09-26T18:59:40.416181+00:00",
+      "show_banner": true,
+      "privacy_notices": [],
+      "gvl": {
+        "gvlSpecificationVersion": "3",
+        "vendorListVersion": 19,
+        "tcfPolicyVersion": 4,
+        "lastUpdated": "2023-09-21T16:07:34Z",
+        "purposes": {
+          "1": {
+            "id": 1,
+            "name": "Store and/or access information on a device",
+            "description": "Cookies, device or similar online identifiers (e.g. login-based identifiers, randomly assigned identifiers, network based identifiers) together with other information (e.g. browser type and information, language, screen size, supported technologies etc.) can be stored or read on your device to recognise it each time it connects to an app or to a website, for one or several of the purposes presented here. ",
+            "illustrations": [
+              "Most purposes explained in this notice rely on the storage or accessing of information from your device when you use an app or visit a website. For example, a vendor or publisher might need to store a cookie on your device during your first visit on a website, to be able to recognise your device during your next visits (by accessing this cookie each time)."
+            ]
+          }
+        },
+        "specialPurposes": {},
+        "features": {},
+        "specialFeatures": {},
+        "vendors": {
+          "1": {
+            "id": 1,
+            "name": "Exponential Interactive, Inc d/b/a VDX.tv",
+            "purposes": [1],
+            "legIntPurposes": [],
+            "flexiblePurposes": [],
+            "specialPurposes": [],
+            "features": [],
+            "specialFeatures": [],
+            "cookieMaxAgeSeconds": 7776000,
+            "usesCookies": true,
+            "cookieRefresh": true,
+            "usesNonCookieAccess": false,
+            "dataRetention": {
+              "stdRetention": 397,
+              "purposes": {},
+              "specialPurposes": {}
+            },
+            "urls": [
+              {
+                "langId": "en",
+                "privacy": "https://vdx.tv/privacy/",
+                "legIntClaim": "https://cdnx.exponential.com/wp-content/uploads/2018/04/Balancing-Assessment-for-Legitimate-Interest-Publishers-v2.pdf"
+              }
+            ],
+            "dataDeclaration": [1, 3, 4, 6, 8, 10, 11],
+            "deviceStorageDisclosureUrl": "https://vdxtv.expo.workers.dev"
+          },
+          "2": {
+            "id": 2,
+            "name": "Captify Technologies Limited",
+            "purposes": [1],
+            "legIntPurposes": [],
+            "flexiblePurposes": [],
+            "specialPurposes": [],
+            "features": [],
+            "specialFeatures": [],
+            "cookieMaxAgeSeconds": 31536000,
+            "usesCookies": true,
+            "cookieRefresh": true,
+            "usesNonCookieAccess": true,
+            "dataRetention": {
+              "stdRetention": 365,
+              "purposes": {},
+              "specialPurposes": {}
+            },
+            "urls": [
+              {
+                "langId": "en",
+                "privacy": "https://www.captifytechnologies.com/privacy-notice/",
+                "legIntClaim": "https://www.captifytechnologies.com/privacy-notice/"
+              }
+            ],
+            "dataDeclaration": [],
+            "deviceStorageDisclosureUrl": "https://static.cpx.to/gvl/deviceStorageDisclosure.json"
+          }
+        },
+        "stacks": {
+          "7": {
+            "id": 7,
+            "purposes": [2, 4, 7, 9],
+            "specialFeatures": [],
+            "name": "Selection of personalised advertising, advertising measurement, and audience research",
+            "description": "Advertising can be personalised based on your profile. Advertising performance can be measured. Reports can be generated based on your activity and those of others."
+          }
+        }
+      }
+    }
+  ]
+}

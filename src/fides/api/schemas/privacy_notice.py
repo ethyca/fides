@@ -145,13 +145,14 @@ class PrivacyNoticeResponse(PrivacyNoticeWithId):
     systems_applicable: bool = False
 
 
-class PrivacyNoticeResponseWithUserPreferences(PrivacyNoticeResponse):
-    """
-    If retrieving notices for a given user, also return the default preferences for that notice
-    and any saved preferences.
+class UserSpecificConsentDetails(FidesSchema):
+    """Schema for surfacing previously-saved preferences or previously-served
+    consent components
     """
 
-    default_preference: UserConsentPreference  # The default preference for this notice
+    default_preference: Optional[
+        UserConsentPreference
+    ]  # The default preference for this notice or TCF component
     current_preference: Optional[
         UserConsentPreference
     ]  # The current saved preference for the given user if it exists
@@ -160,10 +161,19 @@ class PrivacyNoticeResponseWithUserPreferences(PrivacyNoticeResponse):
     ]  # If no current preference, check if we have a preference saved for a previous version.
     current_served: Optional[
         bool
-    ]  # Do we have a record of the most recent version of this notice being served to the user?
+    ]  # Do we have a record of the most recent version of this notice or TCF component being served to the user?
     outdated_served: Optional[
         bool
-    ]  # Have we served an older version of this notice to the user?
+    ]  # Have we served an older version of this notice or TCF component to the user?
+
+
+class PrivacyNoticeResponseWithUserPreferences(
+    PrivacyNoticeResponse, UserSpecificConsentDetails
+):
+    """
+    If retrieving notices for a given user, also return the default preferences for that notice
+    and any saved preferences.
+    """
 
 
 class PrivacyNoticeHistorySchema(PrivacyNoticeCreation, PrivacyNoticeWithId):

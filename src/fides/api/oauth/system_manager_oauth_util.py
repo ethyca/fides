@@ -78,7 +78,7 @@ async def verify_oauth_client_for_system_from_request_body(
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
     system_auth_data: SystemAuthContainer = Depends(_get_system_from_request_body),
-) -> SystemSchema:
+) -> Union[str, System]:
     """
     Verifies that the access token provided in the authorization header contains the necessary scopes to be
     able to access the System found in the *request body*
@@ -88,12 +88,14 @@ async def verify_oauth_client_for_system_from_request_body(
 
     Yields a 403 forbidden error if not.
     """
-    return has_system_permissions(
+
+    system = has_system_permissions(
         system_auth_data=system_auth_data,
         authorization=authorization,
         security_scopes=security_scopes,
         db=db,
     )
+    return system
 
 
 async def verify_oauth_client_for_system_from_fides_key(
@@ -111,12 +113,14 @@ async def verify_oauth_client_for_system_from_fides_key(
 
     Yields a 403 forbidden error if not.
     """
-    return has_system_permissions(
+    system = has_system_permissions(
         system_auth_data=system_auth_data,
         authorization=authorization,
         security_scopes=security_scopes,
         db=db,
     )
+    assert isinstance(system, str)
+    return system
 
 
 def has_system_permissions(
@@ -124,7 +128,7 @@ def has_system_permissions(
     authorization: str,
     security_scopes: SecurityScopes,
     db: Session,
-) -> Union[str, SystemSchema]:
+) -> Union[str, System]:
     """
     Helper method that verifies that the token has the proper permissions to access the system(s).
 

@@ -28,13 +28,15 @@ const Toggle = ({
         onChange={() => {
           onChange(id);
         }}
-        defaultChecked={checked}
+        checked={checked}
         role="switch"
         aria-labelledby={labelId}
         disabled={disabled}
       />
       {/* Mark as `hidden` so it will fall back to a regular checkbox if CSS is not available */}
-      <span className="fides-toggle-display" hidden />
+      <span className="fides-toggle-display" hidden>
+        {checked ? "Opt-in" : "Opt-out"}
+      </span>
     </label>
   );
 };

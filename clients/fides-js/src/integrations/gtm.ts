@@ -54,6 +54,7 @@ export const gtm = () => {
         consent: window.Fides.consent,
         fides_meta: window.Fides.fides_meta,
         identity: window.Fides.identity,
+        tcf_consent: window.Fides.tcf_consent,
       },
     });
   }

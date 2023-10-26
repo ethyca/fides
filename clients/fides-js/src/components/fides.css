@@ -5,6 +5,7 @@
   /* Colors */
   --fides-overlay-primary-color: #8243f2;
   --fides-overlay-background-color: #f7fafc;
+  --fides-overlay-embed-background-color: transparent;
   --fides-overlay-font-color: #4a5568;
   --fides-overlay-font-color-dark: #2d3748;
   --fides-overlay-hover-color: #edf2f7;
@@ -13,6 +14,7 @@
   --fides-overlay-gpc-overridden-background-color: #e53e3e;
   --fides-overlay-gpc-overridden-text-color: white;
   --fides-overlay-background-dark-color: #e2e8f0;
+  --fides-overlay-width: 680px;
   /* Buttons */
   --fides-overlay-primary-button-background-color: var(
     --fides-overlay-primary-color
@@ -37,25 +39,32 @@
   /* Switches */
   --fides-overlay-primary-active-color: var(--fides-overlay-primary-color);
   --fides-overlay-primary-active-disabled-color: #bda4f7;
-  --fides-overlay-inactive-color: #cbd5e0;
+  --fides-overlay-inactive-color: #e2e8f0;
+  --fides-overlay-inactive-font-color: #a0aec0;
   --fides-overlay-disabled-color: #e1e7ee;
   /* Dividers */
   --fides-overlay-row-divider-color: #e2e8f0;
   --fides-overlay-row-hover-color: var(--fides-overlay-hover-color);
   /* Badge */
   --fides-overlay-badge-background-color: #718096;
+  --fides-overlay-badge-border-radius: 4px;
+  /* Select */
+  --fides-overlay-select-border-color: #e2e8f0;
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
   --fides-overlay-font-size-body-small: 0.875em;
   --fides-overlay-font-size-body: 0.95em;
-  --fides-overlay-font-size-title: 1.2em;
+  --fides-overlay-font-size-title: 1em;
   --fides-overlay-font-size-buttons: 1.05em;
   --fides-overlay-padding: 1.5em;
-  --fides-overlay-button-border-radius: 4px;
+  --fides-overlay-button-border-radius: 6px;
   --fides-overlay-button-padding: 0.5em 1em;
+  --fides-overlay-container-border-radius: 12px;
   --fides-overlay-component-border-radius: 4px;
   --fides-overlay-banner-offset: 48px;
+  --fides-banner-font-size-title: 1em;
+  --fides-banner-button-font-size: 1em;
 }
 
 div#fides-overlay {
@@ -88,7 +97,6 @@ div#fides-banner-container {
   display: flex;
   justify-content: center;
   visibility: visible;
-  max-height: 100%;
 }
 
 div#fides-banner {
@@ -96,8 +104,8 @@ div#fides-banner {
   background: var(--fides-overlay-background-color);
   color: var(--fides-overlay-body-font-color);
   box-sizing: border-box;
-  padding: var(--fides-overlay-padding);
-  overflow-y: scroll;
+  padding: 24px 40px 40px 40px;
+  overflow-y: hidden;
 
   display: flex;
   flex-direction: row;
@@ -105,6 +113,7 @@ div#fides-banner {
   justify-content: space-between;
   align-items: center;
   position: relative;
+  border-top: 1px solid var(--fides-overlay-primary-color);
 }
 
 div#fides-banner-inner {
@@ -131,25 +140,37 @@ div#fides-banner-container.fides-banner-top.fides-banner-hidden {
   visibility: hidden;
 }
 
-/* Responsive banner */
-@media screen and (min-width: 48em) {
-  div#fides-banner {
-    width: 75%;
-    border-radius: var(--fides-overlay-component-border-radius);
-    border: 1px solid var(--fides-overlay-primary-color);
-  }
-  div#fides-banner-container.fides-banner-bottom {
-    bottom: var(--fides-overlay-banner-offset);
-  }
-  div#fides-banner-container.fides-banner-top {
-    top: var(--fides-overlay-banner-offset);
+div#fides-banner-inner div#fides-button-group {
+  padding-top: 0px;
+  padding-bottom: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  width: 100%;
+}
+
+div#fides-banner-inner-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-column-gap: 60px;
+
+  .fides-acknowledge-button-container {
+    margin-bottom: 0px;
   }
 }
 
-@media only screen and (min-width: 80em) {
-  div#fides-banner {
-    width: 60%;
-  }
+div#fides-banner-inner-description {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+div#fides-tcf-banner-inner {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  height: 0;
+  min-height: 100%;
+  margin-top: 3em;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 div#fides-banner-heading {
@@ -159,7 +180,7 @@ div#fides-banner-heading {
 }
 
 div#fides-banner-title {
-  font-size: var(--fides-overlay-font-size-title);
+  font-size: var(--fides-banner-font-size-title);
   font-weight: 600;
   margin-top: 0.2em;
   min-width: 33%;
@@ -168,20 +189,25 @@ div#fides-banner-title {
 }
 
 div#fides-banner-description {
-  margin-top: 0.75em;
+  margin-top: 16px;
+  margin-bottom: 24px;
   line-height: 1.2em;
-  min-width: 33%;
   flex: 1;
 }
 
 div#fides-button-group {
   margin-top: 0.5em;
+  margin-bottom: var(--fides-overlay-padding);
   display: flex;
   justify-content: space-between;
+
+  padding-top: 10px;
+  background-color: var(--fides-overlay-background-color);
+  z-index: 5;
 }
 
 div.fides-acknowledge-button-container {
-  margin-top: 0.5em;
+  margin-bottom: var(--fides-overlay-padding);
   display: flex;
   justify-content: end;
 }
@@ -191,22 +217,23 @@ div.fides-banner-acknowledge .fides-banner-button {
 }
 
 button.fides-banner-button {
-  font-size: var(--fides-overlay-font-size-buttons);
+  font-size: var(--fides-banner-button-font-size);
   display: inline-block;
   flex: auto;
   cursor: pointer;
   text-align: center;
   margin: 0;
   margin-top: 0.25em;
-  margin-right: 0.5em;
   padding: var(--fides-overlay-button-padding);
   background: var(--fides-overlay-primary-button-background-color);
   color: var(--fides-overlay-primary-button-text-color);
   border: 1px solid;
+  border-radius: var(--fides-overlay-button-border-radius);
 
   font-family: inherit;
   line-height: 1.15;
   text-decoration: none;
+  font-weight: 600;
 }
 
 button.fides-banner-button:hover {
@@ -240,7 +267,9 @@ button.fides-banner-button.fides-banner-button-tertiary {
   color: var(--fides-overlay-link-font-color);
   text-decoration: underline;
   cursor: pointer;
-  line-height: 2em;
+  font-weight: 500;
+  font-size: var(--fides-overlay-font-size-body);
+  line-height: 20px;
 }
 
 /** Modal */
@@ -252,16 +281,20 @@ div.fides-modal-content {
   padding: var(--fides-overlay-padding);
   border: 1px solid var(--fides-overlay-primary-color);
   background-color: var(--fides-overlay-background-color);
-  border-radius: var(--fides-overlay-component-border-radius);
-  max-height: 100%;
-  max-width: 100%;
-  overflow-y: scroll;
+  border-radius: var(--fides-overlay-container-border-radius);
+  max-height: 680px;
+  width: var(--fides-overlay-width);
 
   z-index: 2;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+
+  display: flex;
+  flex-direction: column;
+  padding: 0px;
+  overflow: hidden;
 }
 
 .fides-modal-container,
@@ -271,6 +304,36 @@ div.fides-modal-content {
   right: 0;
   bottom: 0;
   left: 0;
+  background-color: rgba(0, 0, 0, 0.25);
+}
+
+/*Fides Embed*/
+
+div#fides-embed-container:focus-visible,
+div#fides-embed-container div#fides-modal:focus-visible {
+  outline: none;
+}
+
+/* Disable "sticky" footer when embedded */
+div#fides-embed-container div#fides-modal .fides-modal-footer {
+  position: inherit;
+}
+
+div#fides-embed-container .fides-modal-container,
+div#fides-embed-container .fides-modal-overlay {
+  position: initial;
+  background-color: var(--fides-overlay-embed-background-color);
+}
+
+div#fides-embed-container .fides-modal-content {
+  position: initial;
+  transform: none;
+  border: none;
+  max-height: none;
+}
+
+div#fides-embed-container .fides-close-button {
+  display: none;
 }
 
 .fides-modal-container {
@@ -283,6 +346,11 @@ div.fides-modal-content {
 }
 
 div#fides-modal .fides-modal-header {
+  display: flex;
+  justify-content: end;
+}
+
+div#fides-modal .fides-modal-title {
   text-align: center;
   margin-top: 0.2em;
   margin-bottom: 0.2em;
@@ -291,16 +359,55 @@ div#fides-modal .fides-modal-header {
   color: var(--fides-overlay-title-font-color);
 }
 
+div#fides-modal .fides-modal-body {
+  overflow-y: auto;
+  padding-inline: var(--fides-overlay-padding);
+  height: 100%;
+  scrollbar-gutter: stable;
+}
+
+div#fides-modal .fides-modal-footer {
+  display: flex;
+  flex-direction: column;
+  z-index: 5;
+  background-color: var(--fides-overlay-background-color);
+}
+
 div#fides-modal .fides-modal-description {
   margin: 1em 0 1em 0;
+}
+
+.fides-banner-button-group {
+  display: flex;
+  gap: 10px;
 }
 
 div#fides-modal .fides-modal-button-group {
   display: flex;
   width: 100%;
+  flex-direction: row;
+  gap: 10px;
+  margin-inline: var(--fides-overlay-padding);
 }
 
-.fides-close-button {
+/* Responsive overlay */
+@media (max-width: 48em) {
+  div.fides-modal-content {
+    width: 100%;
+  }
+
+  div#fides-modal .fides-modal-button-group {
+    flex-direction: column;
+  }
+
+  button.fides-banner-button {
+    margin: 0;
+    margin-right: 0.5em;
+    margin-bottom: 0.75em;
+  }
+}
+
+div#fides-banner .fides-close-button {
   position: absolute;
   top: 0.5em;
   right: 0.2em;
@@ -308,6 +415,14 @@ div#fides-modal .fides-modal-button-group {
   background: none;
   border: none;
   display: flex;
+}
+
+.fides-modal-header .fides-close-button {
+  padding-top: 8px;
+  padding-right: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
 }
 
 .fides-close-button:hover {
@@ -318,10 +433,17 @@ div#fides-modal .fides-modal-button-group {
   margin-bottom: 1em;
 }
 
-.fides-modal-privacy-policy {
+div#fides-banner-inner .fides-privacy-policy {
   display: block;
   text-align: center;
-  margin-top: 1.5em;
+  margin-bottom: 0px;
+  color: var(--fides-overlay-primary-color);
+}
+
+.fides-modal-content .fides-privacy-policy {
+  display: block;
+  text-align: center;
+  margin-bottom: var(--fides-overlay-padding);
   color: var(--fides-overlay-primary-color);
 }
 
@@ -351,8 +473,8 @@ div#fides-modal .fides-modal-button-group {
 }
 
 .fides-toggle .fides-toggle-display {
-  --offset: 0.1em;
-  --diameter: 1em;
+  --offset: 4px;
+  --diameter: 16px;
   /**
   Because we have a "hidden" attr on this toggle element, some CSS libs customers use may include a global
   display: none on the hidden attr. To prevent our toggles from being hidden we use !important here
@@ -360,15 +482,15 @@ div#fides-modal .fides-modal-button-group {
   display: inline-flex !important;
   align-items: center;
   justify-content: space-around;
-
-  width: calc(var(--diameter) * 2 + var(--offset) * 2);
-  height: calc(var(--diameter) + var(--offset) * 2);
   box-sizing: content-box;
-
   position: relative;
   border-radius: 100vw;
   background-color: var(--fides-overlay-inactive-color);
+  color: var(--fides-overlay-inactive-font-color);
   transition: 250ms;
+
+  width: 95px;
+  height: 24px;
 }
 
 .fides-toggle .fides-toggle-display::before {
@@ -388,14 +510,17 @@ div#fides-modal .fides-modal-button-group {
 
   background-color: #fff;
   transition: inherit;
+
+  box-shadow: 0 1.3px 2.7px rgba(0, 0, 0, 0.25);
 }
 
 /* Checked/unchecked states */
 .fides-toggle .fides-toggle-input:checked + .fides-toggle-display {
   background-color: var(--fides-overlay-primary-active-color);
+  color: var(--fides-overlay-primary-button-text-color);
 }
 .fides-toggle .fides-toggle-input:checked + .fides-toggle-display::before {
-  transform: translate(100%, -50%);
+  transform: translate(70px, -50%);
 }
 
 /* Disabled state */
@@ -432,26 +557,32 @@ div#fides-modal .fides-modal-button-group {
 /* Disclosure */
 
 .fides-disclosure-hidden {
+  display: flex;
   visibility: hidden;
+  overflow: hidden;
   height: 0px;
   margin-top: 0px;
   margin-bottom: 0px;
 }
 
 .fides-notice-toggle .fides-notice-toggle-title {
-  padding-inline: 0.5em 0;
+  padding-inline: 12px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
 }
 
 .fides-notice-toggle .fides-notice-toggle-trigger {
   width: 100%;
   display: flex;
   justify-content: space-between;
-  margin-right: 0.5em;
   min-height: 40px;
   align-items: center;
+}
+
+.fides-notice-toggle .fides-notice-toggle-trigger svg {
+  flex-shrink: 0;
 }
 
 .fides-notice-toggle .fides-notice-toggle-title:hover {
@@ -459,12 +590,40 @@ div#fides-modal .fides-modal-button-group {
   background-color: var(--fides-overlay-row-hover-color);
 }
 
-.fides-notice-toggle .disclosure-visible {
-  padding-left: 0.5em;
+#fides-tcf-banner-inner .fides-disclosure-visible {
+  padding: 12px 12px;
+}
+
+.fides-notice-toggle .fides-disclosure-visible {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 12px;
+  overflow: auto; /* prevent margin collapse */
+}
+
+.fides-notice-toggle p {
+  margin: 0;
+  margin-bottom: 1.1em;
+}
+
+.fides-notice-toggle p:last-child {
+  margin: 0;
+}
+
+.fides-notice-toggle-title .fides-flex-center {
+  align-items: center;
+  display: flex;
+  width: 100%;
+  white-space: wrap;
 }
 
 .fides-notice-toggle-expanded {
   background-color: var(--fides-overlay-row-hover-color);
+}
+
+.fides-notice-toggle-header {
+  font-weight: 600;
 }
 
 /* GPC */
@@ -492,13 +651,14 @@ div#fides-modal .fides-modal-button-group {
 .fides-gpc-label {
   font-weight: 600;
   font-size: 0.9em;
+  text-wrap: nowrap;
 }
 
 .fides-gpc-badge {
   text-transform: uppercase;
   padding: 0 4px;
   font-weight: 700;
-  border-radius: var(--fides-overlay-button-border-radius);
+  border-radius: var(--fides-overlay-badge-border-radius);
 }
 
 .fides-gpc-badge-applied,
@@ -560,7 +720,7 @@ div#fides-modal .fides-modal-button-group {
   text-transform: uppercase;
   padding: 0 4px;
   font-weight: 600;
-  border-radius: var(--fides-overlay-button-border-radius);
+  border-radius: var(--fides-overlay-badge-border-radius);
   background: var(--fides-overlay-badge-background-color);
   color: white;
   font-size: 0.7em;
@@ -593,27 +753,210 @@ div#fides-modal .fides-modal-button-group {
   border-radius: var(--fides-overlay-button-border-radius);
 }
 
-/* Table */
-
-.fides-cookies-table {
-  border-collapse: collapse;
-  width: 100%;
-  text-align: left;
-}
-
-.fides-cookies-table th {
-  text-transform: uppercase;
-}
-
-.fides-cookies-table td,
-.fides-cookies-table th {
-  border: 1px solid var(--fides-overlay-row-divider-color);
-  padding-left: 1.1em;
-  padding-right: 0.6em;
-}
-
 /* General classes */
 .fides-flex-center {
   display: flex;
   align-items: center;
+}
+
+.fides-margin-right {
+  margin-right: 0.2em;
+}
+
+/* TCF toggles */
+.fides-tcf-toggle-content {
+  margin-right: 60px;
+  font-size: 0.9em;
+  font-weight: 400;
+}
+
+.fides-tcf-purpose-vendor-title {
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+}
+
+.fides-tcf-illustration {
+  font-size: 0.9em;
+  padding: 0.8em;
+  padding-right: 60px;
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-tcf-purpose-vendor {
+  padding: 0.8em;
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-tcf-purpose-vendor-list {
+  font-weight: 400;
+  padding-left: 0;
+  list-style: none;
+  margin-left: 0;
+  margin-bottom: 0;
+}
+
+.fides-tcf-vendor-toggles {
+  display: flex;
+}
+
+.fides-legal-basis-labels {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 12px;
+}
+
+.fides-legal-basis-labels span {
+  display: inline-flex;
+  width: 95px;
+  margin-left: 16px;
+  line-height: 16px;
+  text-align: center;
+  justify-content: center;
+}
+
+/* Vendor purpose table */
+.fides-vendor-details-table {
+  width: 100%;
+}
+
+.fides-vendor-details-table th,
+.fides-vendor-details-table td {
+  text-align: left;
+  font-size: 0.9em;
+}
+
+.fides-vendor-details-table td {
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+}
+
+/* Link button */
+.fides-link-button {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  color: var(--fides-overlay-body-font-color);
+}
+
+.fides-primary-text-color {
+  color: var(--fides-overlay-primary-color);
+}
+
+/* Link */
+.fides-external-link {
+  color: var(--fides-overlay-primary-color);
+  font-weight: 500;
+  font-size: 0.9em;
+  margin-right: 1em;
+}
+
+/* Vendor info (initial layer) */
+.fides-vendor-info {
+  display: flex;
+  flex-direction: row;
+  padding: 1.1em;
+  border-radius: var(--fides-overlay-component-border-radius);
+  justify-content: space-around;
+  position: sticky;
+  top: 0;
+  gap: 30px;
+}
+
+.fides-vendor-info-label {
+  font-weight: 600;
+  font-size: 1em;
+}
+
+/* Info box */
+.fides-info-box {
+  background-color: var(--fides-overlay-background-dark-color);
+  border-radius: var(--fides-overlay-component-border-radius);
+  padding: 1.1em;
+  margin: 1em 0;
+}
+
+.fides-info-box p {
+  margin: 0;
+}
+
+.fides-tabs .tabpanel-container {
+  overflow: hidden;
+}
+
+.tabpanel-container section[hidden] {
+  display: none;
+}
+
+/* All on off buttons */
+.fides-all-on-off-buttons {
+  display: flex;
+  justify-content: end;
+  margin-bottom: 8px;
+
+  > button {
+    margin-right: 18px;
+  }
+}
+
+/* Responsive banner */
+@media screen and (min-width: 48em) {
+  div#fides-banner {
+    width: 100%;
+  }
+
+  div#fides-banner-container.fides-banner-top {
+    top: var(--fides-overlay-banner-offset);
+  }
+}
+
+@media screen and (max-width: 48em) {
+  div#fides-banner {
+    padding: 24px;
+  }
+
+  .fides-vendor-info {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  div#fides-banner-description {
+    margin-bottom: 0px;
+  }
+
+  div#fides-banner-inner div#fides-button-group {
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 24px;
+  }
+
+  .fides-banner-button-group {
+    flex-direction: column;
+  }
+
+  button.fides-banner-button {
+    margin: 0px;
+  }
+
+  div#fides-tcf-banner-inner {
+    margin-top: 24px;
+    overflow-y: revert;
+    min-height: revert;
+  }
+
+  div#fides-banner-inner-container {
+    display: flex;
+    flex-direction: column;
+    max-height: 50vh;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+  }
+
+  div#fides-privacy-policy-link {
+    order: 1;
+  }
 }

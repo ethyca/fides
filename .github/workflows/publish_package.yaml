@@ -106,10 +106,10 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
-      # Notify Fidesplus about a feature (non-prod) tag to trigger an integrated build on an alpha tag
+      # Notify Fidesplus about a feature tag to trigger an integrated build on an alpha/beta tag
       - name: Send Repository Dispatch Event
-        # only run on an alpha tag
-        if: steps.check-alpha-tag.outputs.match == 'true'
+        # only run on an alpha or beta tag
+        if: steps.check-alpha-tag.outputs.match == 'true' || steps.check-beta-tag.outputs.match == 'true'
         uses: peter-evans/repository-dispatch@v2
         with:
           client-payload: '{"tag": "${{ github.ref_name }}"}'

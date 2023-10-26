@@ -90,7 +90,7 @@ class ManualWebhookResults(FidesSchema):
     proceed: bool
 
 
-def get_access_manual_webhook_inputs(
+def get_manual_webhook_access_inputs(
     db: Session, privacy_request: PrivacyRequest, policy: Policy
 ) -> ManualWebhookResults:
     """Retrieves manually uploaded data for all AccessManualWebhooks and formats in a way
@@ -107,7 +107,33 @@ def get_access_manual_webhook_inputs(
     try:
         for manual_webhook in AccessManualWebhook.get_enabled(db):
             manual_inputs[manual_webhook.connection_config.key] = [
-                privacy_request.get_manual_webhook_input_strict(manual_webhook)
+                privacy_request.get_manual_webhook_access_input_strict(manual_webhook)
+            ]
+    except (
+        NoCachedManualWebhookEntry,
+        ValidationError,
+        ManualWebhookFieldsUnset,
+    ) as exc:
+        logger.info(exc)
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(db)
+        return ManualWebhookResults(manual_data=manual_inputs, proceed=False)
+
+    return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
+
+
+def get_manual_webhook_erasure_inputs(
+    db: Session, privacy_request: PrivacyRequest, policy: Policy
+) -> ManualWebhookResults:
+    manual_inputs: Dict[str, List[Dict[str, Optional[Any]]]] = {}
+
+    if not policy.get_rules_for_action(action_type=ActionType.erasure):
+        # Don't fetch manual inputs unless this policy has an access rule
+        return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
+    try:
+        for manual_webhook in AccessManualWebhook().get_enabled(db):
+            manual_inputs[manual_webhook.connection_config.key] = [
+                privacy_request.get_manual_webhook_erasure_input_strict(manual_webhook)
             ]
     except (
         NoCachedManualWebhookEntry,
@@ -311,10 +337,19 @@ async def run_privacy_request(
         privacy_request.start_processing(session)
 
         policy = privacy_request.policy
-        manual_webhook_results: ManualWebhookResults = get_access_manual_webhook_inputs(
-            session, privacy_request, policy
+
+        # check manual access results and pause if needed
+        manual_webhook_access_results: ManualWebhookResults = (
+            get_manual_webhook_access_inputs(session, privacy_request, policy)
         )
-        if not manual_webhook_results.proceed:
+        if not manual_webhook_access_results.proceed:
+            return
+
+        # check manual erasure results and pause if needed
+        manual_webhook_erasure_results: ManualWebhookResults = (
+            get_manual_webhook_erasure_inputs(session, privacy_request, policy)
+        )
+        if not manual_webhook_erasure_results.proceed:
             return
 
         if can_run_checkpoint(
@@ -367,7 +402,7 @@ async def run_privacy_request(
                     access_result,
                     dataset_graph,
                     privacy_request,
-                    manual_webhook_results.manual_data,
+                    manual_webhook_access_results.manual_data,
                     fides_connector_datasets,
                 )
 
@@ -491,7 +526,7 @@ def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
             and saas_config.get("consent_requests")
         ):
             consent_datasets.append(
-                dataset_config.get_dataset_with_stubbed_collection()
+                dataset_config.get_dataset_with_stubbed_collection()  # type: ignore[arg-type, assignment]
             )
 
     return DatasetGraph(*consent_datasets)

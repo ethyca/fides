@@ -14,16 +14,20 @@ import { ReactNode } from "react";
 import { useFeatures } from "~/features/common/features";
 import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
 
+type SuggestionsState = "showing" | "disabled";
+
 const AddModal = ({
   title,
   children,
   isOpen,
   onClose,
   onSuggestionClick,
+  suggestionsState,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
   title: string;
   children: ReactNode;
   onSuggestionClick: () => void;
+  suggestionsState?: SuggestionsState;
 }) => {
   const features = useFeatures();
 
@@ -33,14 +37,18 @@ const AddModal = ({
       onClose={onClose}
       isCentered
       scrollBehavior="inside"
-      size="3xl"
+      size="xl"
     >
       <ModalOverlay />
       <ModalContent textAlign="left" p={0}>
         <ModalHeader p={0}>
           <Box
+            backgroundColor="gray.50"
             px={6}
             py={4}
+            border="1px"
+            borderColor="gray.200"
+            borderTopRadius={6}
             display="flex"
             justifyContent="space-between"
             alignItems="center"
@@ -50,16 +58,28 @@ const AddModal = ({
             </Heading>
             {features.dictionaryService ? (
               <IconButton
-                icon={<SparkleIcon />}
+                icon={
+                  <SparkleIcon
+                    color={
+                      suggestionsState === "showing"
+                        ? "complimentary.500"
+                        : undefined
+                    }
+                  />
+                }
                 aria-label="See compass suggestions"
                 variant="outline"
                 borderColor="gray.200"
                 onClick={onSuggestionClick}
+                isDisabled={suggestionsState === "disabled"}
+                data-testid="sparkle-btn"
               />
             ) : null}
           </Box>
         </ModalHeader>
-        <ModalBody pb={4}>{children}</ModalBody>
+        <ModalBody pb={4} overflow="scroll">
+          {children}
+        </ModalBody>
       </ModalContent>
     </Modal>
   );

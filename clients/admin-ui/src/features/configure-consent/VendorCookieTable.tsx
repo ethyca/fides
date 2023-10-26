@@ -1,7 +1,22 @@
-import { Box, HStack, Table } from "@fidesui/react";
-import { useMemo } from "react";
+import {
+  Box,
+  Flex,
+  HStack,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  MoreIcon,
+  Table,
+  Text,
+  useDisclosure,
+  useToast,
+} from "@fidesui/react";
+import { useMemo, useState } from "react";
 import {
   Column,
+  Row,
   useFlexLayout,
   useGlobalFilter,
   useGroupBy,
@@ -10,13 +25,17 @@ import {
 } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
+import ConfirmationModal from "~/features/common/ConfirmationModal";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { PaddedCell } from "~/features/common/table";
 import GroupedTableBody from "~/features/common/table/grouped/GroupedTableBody";
 import GroupedTableHeader from "~/features/common/table/grouped/GroupedTableHeader";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+import AddVendor from "~/features/configure-consent/AddVendor";
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
-import { selectAllSystems } from "~/features/system";
+import { selectAllSystems, useDeleteSystemMutation } from "~/features/system";
+import { System } from "~/types/api";
 
-import AddButtons from "./AddButtons";
 import { DataUseCell } from "./cells";
 import { CookieBySystem, transformSystemsToCookies } from "./vendor-transform";
 
@@ -26,6 +45,19 @@ const VendorCookieTable = () => {
     () => transformSystemsToCookies(systems),
     [systems]
   );
+
+  const [systemToEdit, setSystemToEdit] = useState<System | undefined>(
+    undefined
+  );
+  const [systemToDelete, setSystemToDelete] = useState<System | undefined>(
+    undefined
+  );
+
+  const {
+    isOpen: isDeleteModalOpen,
+    onOpen: onDeleteModalOpen,
+    onClose: onDeleteModalClose,
+  } = useDisclosure();
 
   const columns: Column<CookieBySystem>[] = useMemo(
     () => [
@@ -67,8 +99,60 @@ const VendorCookieTable = () => {
     useFlexLayout,
     useResizeColumns
   );
+
   const { getTableProps, getTableBodyProps, headerGroups, prepareRow, rows } =
     tableInstance;
+
+  const [deleteSystem] = useDeleteSystemMutation();
+  const toast = useToast();
+
+  const handleDelete = async (systemFidesKey: string) => {
+    const result = await deleteSystem(systemFidesKey);
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    } else {
+      toast(successToastParams("Successfully deleted vendor"));
+    }
+    onDeleteModalClose();
+  };
+
+  const handleOpenDeleteModal = (systemFidesKey: string) => {
+    const system = systems.find((s) => systemFidesKey === s.fides_key);
+    setSystemToDelete(system);
+    onDeleteModalOpen();
+  };
+
+  const handleEdit = (systemFidesKey: string) => {
+    const system = systems.find((s) => systemFidesKey === s.fides_key);
+    setSystemToEdit(system);
+  };
+
+  const renderOverflowMenu = (row: Row<CookieBySystem>) => (
+    <Menu>
+      <MenuButton
+        as={IconButton}
+        aria-label="Show vendor options"
+        icon={<MoreIcon />}
+        size="xs"
+        variant="outline"
+        data-testid={`configure-${row.values.id}`}
+      />
+      <MenuList>
+        <MenuItem
+          data-testid={`edit-${row.values.id}`}
+          onClick={() => handleEdit(row.values.id)}
+        >
+          Manage cookies
+        </MenuItem>
+        <MenuItem
+          data-testid={`delete-${row.values.id}`}
+          onClick={() => handleOpenDeleteModal(row.values.id)}
+        >
+          Delete
+        </MenuItem>
+      </MenuList>
+    </Menu>
+  );
 
   return (
     <Box boxSize="100%" overflow="auto">
@@ -78,7 +162,31 @@ const VendorCookieTable = () => {
           setGlobalFilter={tableInstance.setGlobalFilter}
           placeholder="Search"
         />
-        <AddButtons includeCookies />
+        <Flex>
+          <Flex width="10px" />
+          <AddVendor
+            passedInSystem={systemToEdit}
+            onCloseModal={() => setSystemToEdit(undefined)}
+          />
+        </Flex>
+        <ConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={onDeleteModalClose}
+          onConfirm={() => handleDelete(systemToDelete!.fides_key)}
+          title={`Delete ${systemToDelete?.name ?? systemToDelete?.fides_key}`}
+          message={
+            <>
+              <Text>
+                This will delete the vendor{" "}
+                <Text color="complimentary.500" as="span" fontWeight="bold">
+                  {systemToDelete?.name ?? systemToDelete?.fides_key}
+                </Text>{" "}
+                and all its cookies.
+              </Text>
+              <Text>Are you sure you want to continue?</Text>
+            </>
+          }
+        />
       </HStack>
       <Table {...getTableProps()} size="sm" data-testid="datamap-table">
         <GroupedTableHeader<CookieBySystem> headerGroups={headerGroups} />
@@ -87,6 +195,7 @@ const VendorCookieTable = () => {
           renderRowSubheading={(row) => row.values.name}
           prepareRow={prepareRow}
           getTableBodyProps={getTableBodyProps}
+          renderOverflowMenu={renderOverflowMenu}
         />
       </Table>
     </Box>

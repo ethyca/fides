@@ -6,11 +6,15 @@ import { debugLog } from "./consent-utils";
  * - FidesInitialized: dispatched when initialization is complete, from Fides.init()
  * - FidesUpdated: dispatched when preferences are updated, from updateConsentPreferences() or Fides.init()
  * - FidesUIShown: dispatched when either the banner or modal is shown to the user
+ * - FidesUIChanged: dispatched when preferences are changed but not saved, i.e. "dirty".
+ * - FidesModalClosed: dispatched when the modal is closed
  */
 export type FidesEventType =
   | "FidesInitialized"
   | "FidesUpdated"
-  | "FidesUIShown";
+  | "FidesUIShown"
+  | "FidesUIChanged"
+  | "FidesModalClosed";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
 declare global {
@@ -18,6 +22,8 @@ declare global {
     FidesInitialized: FidesEvent;
     FidesUpdated: FidesEvent;
     FidesUIShown: FidesEvent;
+    FidesUIChanged: FidesEvent;
+    FidesModalClosed: FidesEvent;
   }
 }
 
@@ -27,6 +33,7 @@ declare global {
  * around.
  */
 export type FidesEventDetail = FidesCookie & {
+  debug?: boolean;
   extraDetails?: Record<string, string>;
 };
 
@@ -54,11 +61,15 @@ export const dispatchFidesEvent = (
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     const event = new CustomEvent(type, {
-      detail: { ...cookie, extraDetails },
+      detail: { ...cookie, debug, extraDetails },
     });
     debugLog(
       debug,
-      `Dispatching event type ${type} with cookie ${JSON.stringify(cookie)}`
+      `Dispatching event type ${type} ${
+        extraDetails?.servingComponent
+          ? `from ${extraDetails.servingComponent} `
+          : ""
+      }with cookie ${JSON.stringify(cookie)}`
     );
     window.dispatchEvent(event);
   }

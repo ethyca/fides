@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, List, Optional
 
+from fastapi.applications import FastAPI
+from pydantic import AnyUrl
 from sqlalchemy.orm import Session
+from starlette.middleware.cors import CORSMiddleware
 
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.schemas.storage.storage import StorageType
@@ -60,6 +63,12 @@ class StorageSettingsProxy(ConfigProxyBase):
     active_default_storage_type: StorageType
 
 
+class SecuritySettingsProxy(ConfigProxyBase):
+    prefix = "security"
+
+    cors_origins: List[AnyUrl]
+
+
 class ConfigProxy:
     """
     ConfigProxy instances allow access to "resolved" config properties
@@ -85,3 +94,21 @@ class ConfigProxy:
         self.notifications = NotificationSettingsProxy(db)
         self.execution = ExecutionSettingsProxy(db)
         self.storage = StorageSettingsProxy(db)
+        self.security = SecuritySettingsProxy(db)
+
+    def load_current_cors_domains_into_middleware(self, app: FastAPI) -> None:
+        """
+        Util function that loads the current CORS domains from
+        `ConfigProxy` into the  `CORSMiddleware` at runtime.
+        """
+        for mw in app.user_middleware:
+            if mw.cls is CORSMiddleware:
+                current_config_proxy_domains = (
+                    self.security.cors_origins
+                    if self.security.cors_origins is not None
+                    else []
+                )
+
+                mw.options["allow_origins"] = [
+                    str(domain) for domain in current_config_proxy_domains
+                ]

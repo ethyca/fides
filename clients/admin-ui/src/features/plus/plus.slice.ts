@@ -21,6 +21,7 @@ import {
   ClassifyStatusUpdatePayload,
   ClassifySystem,
   CloudConfig,
+  CustomAssetType,
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
   CustomFieldWithId,
@@ -32,8 +33,11 @@ import {
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
-
-import { DictDataUse, DictEntry, Page } from "./types";
+import {
+  DataUseDeclaration,
+  Page_DataUseDeclaration_,
+  Page_Vendor_,
+} from "~/types/dictionary-api";
 
 interface ScanParams {
   classify?: boolean;
@@ -192,7 +196,14 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Custom Fields", "Datamap"],
     }),
-
+    bulkUpdateCustomFields: build.mutation<void, any>({
+      query: (params) => ({
+        url: `plus/custom-metadata/custom-field/bulk`,
+        method: "POST",
+        body: params,
+      }),
+      invalidatesTags: ["Custom Fields", "Datamap"],
+    }),
     getAllCustomFieldDefinitions: build.query<
       CustomFieldDefinitionWithId[],
       void
@@ -245,12 +256,32 @@ const plusApi = baseApi.injectEndpoints({
       transformResponse: (list: CustomFieldDefinitionWithId[]) =>
         list.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")),
     }),
-    getAllDictionaryEntries: build.query<Page<DictEntry>, void>({
+    getAllDictionaryEntries: build.query<Page_Vendor_, void>({
       query: () => ({
-        params: { size: 1000 },
+        params: { size: 2000 },
         url: `plus/dictionary/system`,
       }),
       providesTags: ["Dictionary"],
+    }),
+    getAllSystemVendors: build.query<DictSystems[], void>({
+      query: () => ({
+        url: `plus/dictionary/system-vendors`,
+      }),
+      providesTags: ["System Vendors"],
+    }),
+    postSystemVendors: build.mutation<any, string[]>({
+      query: (vendor_ids: string[]) => ({
+        method: "post",
+        url: `plus/dictionary/system-vendors`,
+        body: { vendor_ids },
+      }),
+      invalidatesTags: [
+        "Dictionary",
+        "System Vendors",
+        "System",
+        "Datamap",
+        "System History",
+      ],
     }),
     getFidesCloudConfig: build.query<CloudConfig, void>({
       query: () => ({
@@ -260,8 +291,8 @@ const plusApi = baseApi.injectEndpoints({
       providesTags: ["Fides Cloud Config"],
     }),
     getDictionaryDataUses: build.query<
-      Page<DictDataUse>,
-      { vendor_id: number }
+      Page_DataUseDeclaration_,
+      { vendor_id: string }
     >({
       query: ({ vendor_id }) => ({
         params: { size: 1000 },
@@ -282,6 +313,18 @@ const plusApi = baseApi.injectEndpoints({
         },
       }),
       providesTags: () => ["System History"],
+    }),
+    updateCustomAsset: build.mutation<
+      void,
+      { assetType: CustomAssetType; file: File }
+    >({
+      query: ({ assetType, file }) => ({
+        url: `plus/custom-asset/${assetType}`,
+        method: "PUT",
+        body: file,
+        responseHandler: (response: { text: () => any }) => response.text(),
+      }),
+      invalidatesTags: () => ["Custom Assets"],
     }),
   }),
 });
@@ -305,12 +348,16 @@ export const {
   useUpdateScanMutation,
   useUpsertAllowListMutation,
   useUpsertCustomFieldMutation,
+  useBulkUpdateCustomFieldsMutation,
   useGetAllCustomFieldDefinitionsQuery,
   useGetAllowListQuery,
   useGetAllDictionaryEntriesQuery,
   useGetFidesCloudConfigQuery,
   useGetDictionaryDataUsesQuery,
+  useGetAllSystemVendorsQuery,
+  usePostSystemVendorsMutation,
   useGetSystemHistoryQuery,
+  useUpdateCustomAssetMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
@@ -421,7 +468,7 @@ export const selectAllCustomFieldDefinitions = createSelector(
 export type DictOption = {
   label: string;
   value: string;
-  descriptiong?: string;
+  description?: string;
 };
 
 const EMPTY_DICT_ENTRIES: DictOption[] = [];
@@ -432,13 +479,13 @@ export const selectAllDictEntries = createSelector(
   ],
   (RootState, { data }) =>
     data
-      ? (data.items
+      ? data.items
           .map((d) => ({
-            label: d.display_name ? d.display_name : d.legal_name,
-            value: d.id,
+            label: (d.name ?? d.legal_name) || "",
+            value: d.vendor_id || "",
             description: d.description ? d.description : undefined,
           }))
-          .sort((a, b) => (a.label > b.label ? 1 : -1)) as DictOption[])
+          .sort((a, b) => (a.label > b.label ? 1 : -1))
       : EMPTY_DICT_ENTRIES
 );
 
@@ -447,15 +494,15 @@ export const selectDictEntry = (vendorId: string) =>
   createSelector(
     [(state) => state, plusApi.endpoints.getAllDictionaryEntries.select()],
     (state, { data }) => {
-      const dictEntry = data?.items.find((d) => d.id.toString() === vendorId);
+      const dictEntry = data?.items.find((d) => d.vendor_id === vendorId);
 
       return dictEntry || EMPTY_DICT_ENTRY;
     }
   );
 
-const EMPTY_DATA_USES: DictDataUse[] = [];
+const EMPTY_DATA_USES: DataUseDeclaration[] = [];
 
-export const selectDictDataUses = (vendorId: number) =>
+export const selectDictDataUses = (vendorId: string) =>
   createSelector(
     [
       (state) => state,
@@ -463,3 +510,14 @@ export const selectDictDataUses = (vendorId: number) =>
     ],
     (state, { data }) => (data ? data.items : EMPTY_DATA_USES)
   );
+
+export type DictSystems = {
+  linked_system: boolean;
+  name: string;
+  vendor_id: string;
+};
+const EMPTY_DICT_SYSTEMS: DictSystems[] = [];
+export const selectAllDictSystems = createSelector(
+  [(RootState) => RootState, plusApi.endpoints.getAllSystemVendors.select()],
+  (RootState, { data }) => data || EMPTY_DICT_SYSTEMS
+);

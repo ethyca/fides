@@ -5,7 +5,8 @@ from typing import Generator
 from unittest.mock import patch
 
 import pytest
-from fideslang import DEFAULT_TAXONOMY, DataCategory, Organization
+from fideslang.default_taxonomy import DEFAULT_TAXONOMY
+from fideslang.models import DataCategory, Organization
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -432,7 +433,7 @@ async def test_load_default_dsr_policies(
     assert len(access_rule.targets) == num_rule_targets - 1
 
 
-async def test_load_orginizations(loguru_caplog, async_session, monkeypatch):
+async def test_load_organizations(loguru_caplog, async_session, monkeypatch):
     updated_default_taxonomy = DEFAULT_TAXONOMY.copy()
     current_orgs = len(updated_default_taxonomy.organization)
     updated_default_taxonomy.organization.append(

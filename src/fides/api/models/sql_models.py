@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Set, Type, TypeVar
 from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.models import Dataset as FideslangDataset
 from pydantic import BaseModel
-from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
+from sqlalchemy import BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
     ForeignKey,
@@ -25,11 +25,12 @@ from sqlalchemy import (
     cast,
     type_coerce,
 )
-from sqlalchemy.dialects.postgresql import BYTEA
+from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, BYTEA
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
+from typing_extensions import Protocol, runtime_checkable
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base
@@ -396,6 +397,15 @@ class System(Base, FidesBase):
     dpo = Column(String)
     joint_controller_info = Column(String)
     data_security_practices = Column(String)
+    cookie_max_age_seconds = Column(BIGINT)
+    uses_cookies = Column(BOOLEAN(), default=False, server_default="f", nullable=False)
+    cookie_refresh = Column(
+        BOOLEAN(), default=False, server_default="f", nullable=False
+    )
+    uses_non_cookie_access = Column(
+        BOOLEAN(), default=False, server_default="f", nullable=False
+    )
+    legitimate_interest_disclosure_url = Column(String)
 
     privacy_declarations = relationship(
         "PrivacyDeclaration",
@@ -464,6 +474,7 @@ class PrivacyDeclaration(Base):
 
     features = Column(ARRAY(String), server_default="{}", nullable=False)
     legal_basis_for_processing = Column(String)
+    flexible_legal_basis_for_processing = Column(BOOLEAN())
     impact_assessment_location = Column(String)
     retention_period = Column(String)
     processes_special_category_data = Column(
@@ -551,11 +562,10 @@ sql_model_map: Dict = {
     "evaluation": Evaluation,
 }
 
-models_with_default_field = [
-    sql_model
-    for _, sql_model in sql_model_map.items()
-    if hasattr(sql_model, "is_default")
-]
+
+@runtime_checkable
+class ModelWithDefaultField(Protocol):
+    is_default: bool
 
 
 class AllowedTypes(str, EnumType):

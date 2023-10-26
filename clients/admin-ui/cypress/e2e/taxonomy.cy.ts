@@ -30,15 +30,18 @@ describe("Taxonomy management page", () => {
     });
 
     it("Can open up accordion to see taxonomy entities", () => {
-      // should only see the 3 root level taxonomy
+      // should only see the 2 root level taxonomy
       cy.getByTestId("accordion-item-System Data").should("be.visible");
       cy.getByTestId("accordion-item-User Data").should("be.visible");
-      cy.getByTestId("accordion-item-Payment Data").should("not.be.visible");
 
       // clicking should open up accordions to render more items visible
       cy.getByTestId("accordion-item-User Data").click();
-      cy.getByTestId("accordion-item-Credentials").should("be.visible");
-      cy.getByTestId("accordion-item-Credentials").click({ force: true });
+      cy.getByTestId("accordion-item-Authorization Information").should(
+        "be.visible"
+      );
+      cy.getByTestId("accordion-item-Authorization Information").click({
+        force: true,
+      });
       cy.getByTestId("item-Password").should("be.visible");
     });
 
@@ -74,6 +77,7 @@ describe("Taxonomy management page", () => {
           name: "name",
           description: "description",
           parent_key: undefined,
+          version_added: "2.0.0",
         },
       };
       cy.intercept("PUT", "/api/v1/data_category*", taxonomyPayload).as(
@@ -103,9 +107,9 @@ describe("Taxonomy management page", () => {
         },
         {
           tab: "Data Uses",
-          name: "Improve the capability",
+          name: "Functional",
           key: "functional",
-          description: "Improve the product, service, application or system.",
+          description: "Used for specific, necessary, and legitimate purposes",
           parentKey: "",
           isParent: true,
           request: "@putDataUse",
@@ -161,12 +165,14 @@ describe("Taxonomy management page", () => {
     it("Can render the parent field", () => {
       cy.getByTestId("tab-Data Categories").click();
       cy.getByTestId(`accordion-item-User Data`).click();
-      cy.getByTestId("accordion-item-Credentials").click({ force: true });
+      cy.getByTestId("accordion-item-Authorization Information").click({
+        force: true,
+      });
       cy.getByTestId("item-Password").trigger("mouseover");
       cy.getByTestId("edit-btn").click();
       cy.getByTestId("input-parent_key").should(
         "have.value",
-        "user.credentials"
+        "user.authorization"
       );
     });
 
@@ -285,6 +291,7 @@ describe("Taxonomy management page", () => {
             values: rightValues,
             strategy: "INCLUDE",
           },
+          version_added: "2.0.0",
         };
         expect(body).to.eql(expected);
       });
@@ -477,7 +484,7 @@ describe("Taxonomy management page", () => {
       cy.getByTestId("accordion-item-User Data").trigger("mouseover");
       cy.getByTestId("delete-btn").should("not.exist");
       cy.getByTestId("accordion-item-User Data").click();
-      cy.getByTestId("item-Biometric Data").trigger("mouseover");
+      cy.getByTestId("item-Job Title").trigger("mouseover");
       cy.getByTestId("delete-btn").should("not.exist");
 
       // now try custom fields

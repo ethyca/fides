@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Tuple
 import sqlalchemy
 from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
+from fideslang.validation import FidesKey
 from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import text
@@ -32,20 +33,22 @@ SCHEMA_EXCLUSION = {
 
 def get_all_server_datasets(
     url: AnyHttpUrl, headers: Dict[str, str], exclude_datasets: List[Dataset]
-) -> Optional[List[Dataset]]:
+) -> List[Dataset]:
     """
     Get a list of all of the Datasets that exist on the server. Excludes any datasets
     provided in exclude_datasets
     """
     exclude_dataset_keys = [dataset.fides_key for dataset in exclude_datasets]
-    dataset_list = list_server_resources(
-        url=url,
-        resource_type="dataset",
-        exclude_keys=exclude_dataset_keys,
-        headers=headers,
+    raw_dataset_list = (
+        list_server_resources(
+            url=url,
+            resource_type="dataset",
+            exclude_keys=[str(x) for x in exclude_dataset_keys],
+            headers=headers,
+        )
+        or []
     )
-    if not dataset_list:
-        return None
+    dataset_list = [Dataset.parse_obj(dataset) for dataset in raw_dataset_list]
 
     return dataset_list
 
@@ -135,8 +138,8 @@ def make_dataset_key_unique(
     to avoid naming collisions.
     """
 
-    dataset.fides_key = generate_unique_fides_key(
-        dataset.fides_key, database_host, database_name
+    dataset.fides_key = FidesKey(
+        generate_unique_fides_key(dataset.fides_key, database_host, database_name)
     )
     dataset.meta = {"database_host": database_host, "database_name": database_name}
     return dataset
@@ -227,7 +230,7 @@ def print_dataset_db_scan_result(
     Prints uncategorized fields and raises an exception if coverage
     is lower than provided threshold.
     """
-    dataset_names = [dataset.name for dataset in datasets]
+    dataset_names: List[str] = [dataset.name or "" for dataset in datasets]
     output: str = "Successfully scanned the following datasets:\n"
     output += "\t{}\n".format("\n\t".join(dataset_names))
     echo_green(output)
@@ -258,8 +261,11 @@ def scan_dataset_db(
     and fields and compares them to existing datasets and prioritizes
     datasets in a local manifest (if one is provided).
     """
-    manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
-    manifest_datasets = manifest_taxonomy.dataset if manifest_taxonomy else []
+
+    if manifest_dir:
+        manifest_datasets = parse(manifest_dir).dataset or []
+    else:
+        manifest_datasets = []
 
     if not local:
         server_datasets = (
@@ -271,9 +277,9 @@ def scan_dataset_db(
     else:
         server_datasets = []
 
-    dataset_keys = [
-        dataset.fides_key for dataset in manifest_datasets + server_datasets
-    ]
+    all_datasets = manifest_datasets + server_datasets
+
+    dataset_keys = [dataset.fides_key for dataset in all_datasets]
     echo_green(
         "Loaded the following dataset manifests:\n\t{}".format(
             "\n\t".join(dataset_keys)
@@ -283,7 +289,7 @@ def scan_dataset_db(
     # Generate the collections and fields for the target database
     db_datasets = generate_db_datasets(connection_string=connection_string)
     uncategorized_fields, db_field_count = find_all_uncategorized_dataset_fields(
-        existing_datasets=manifest_datasets + server_datasets,
+        existing_datasets=all_datasets,
         source_datasets=db_datasets,
     )
     if db_field_count < 1:

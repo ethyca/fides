@@ -1,9 +1,10 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import uuid
-from typing import Dict, Generator, List, Optional
+from typing import Dict, Generator, List
 
 import pytest
-from fideslang import FidesModel, model_list
+from fideslang import model_list
+from fideslang.models import FidesModel
 
 from fides.config import FidesConfig
 from fides.core import api as _api
@@ -87,13 +88,13 @@ class TestGetServerResource:
         """
         resource_type = created_resources[0]
         resource_key = created_resources[1][0]
-        result = _api_helpers.get_server_resource(
+        result: Dict = _api_helpers.get_server_resource(
             url=test_config.cli.server_url,
             resource_type=resource_type,
             resource_key=resource_key,
             headers=test_config.user.auth_header,
         )
-        assert result.fides_key == resource_key
+        assert result.get("fides_key") == resource_key
 
     @pytest.mark.parametrize("resource_type", PARAM_MODEL_LIST)
     def test_get_server_resource_missing_resource(
@@ -132,6 +133,7 @@ class TestGetServerResources:
             existing_keys=resource_keys,
             headers=test_config.user.auth_header,
         )
+        print(result)
         assert set(resource_keys) == set(resource.fides_key for resource in result)
 
     @pytest.mark.parametrize("resource_type", PARAM_MODEL_LIST)

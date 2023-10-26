@@ -146,10 +146,12 @@ def generate_dataset_dynamodb(
         credentials_id=credentials_id,
     )
 
-    bigquery_datasets = _dataset.generate_dynamo_db_datasets(aws_config)
+    bigquery_dataset = _dataset.generate_dynamo_db_datasets(aws_config)
 
     _dataset.write_dataset_manifest(
-        file_name=output_filename, include_null=include_null, datasets=bigquery_datasets
+        file_name=output_filename,
+        include_null=include_null,
+        datasets=[bigquery_dataset],
     )
 
 

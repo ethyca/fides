@@ -17,9 +17,9 @@ import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import { messagingProviders } from "~/features/privacy-requests/constants";
 import {
-  useCreateConfigurationSettingsMutation,
   useCreateMessagingConfigurationMutation,
   useGetActiveMessagingProviderQuery,
+  usePatchConfigurationSettingsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 import MailgunEmailConfiguration from "./MailgunEmailConfiguration";
@@ -32,7 +32,7 @@ const MessagingConfiguration = () => {
   const [messagingValue, setMessagingValue] = useState("");
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
-  const [saveActiveConfiguration] = useCreateConfigurationSettingsMutation();
+  const [saveActiveConfiguration] = usePatchConfigurationSettingsMutation();
   const { data: activeMessagingProvider } =
     useGetActiveMessagingProviderQuery();
 

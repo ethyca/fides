@@ -7,6 +7,7 @@ from fides.api.models.audit_log import AuditLog
 from fides.api.models.authentication_request import AuthenticationRequest
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.custom_asset import CustomAsset
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_cloud import FidesCloud

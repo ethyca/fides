@@ -76,11 +76,13 @@ class TestGetExperienceConfigList:
         response = api_client.get(url, headers={**auth_header, **unescape_header})
         assert response.status_code == 200
         resp = response.json()
-        assert resp["total"] == 4  # Two default configs loaded on startup plus two here
+        assert (
+            resp["total"] == 5
+        )  # Three default configs loaded on startup plus two here
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 4
+        assert len(data) == 5
 
         first_config = data[0]
         assert first_config["id"] == experience_config_overlay.id
@@ -114,20 +116,29 @@ class TestGetExperienceConfigList:
         )
 
         third_config = data[2]
-        assert third_config["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
+        assert third_config["id"] == "a4974670-abad-471f-9084-2cb-tcf-over"
         assert third_config["is_default"] is True
-        assert third_config["component"] == "privacy_center"
+        assert third_config["component"] == "tcf_overlay"
         assert third_config["regions"] == []
         assert third_config["version"] == 1.0
         assert third_config["created_at"] is not None
         assert third_config["updated_at"] is not None
 
         fourth_config = data[3]
-        assert fourth_config["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        assert fourth_config["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
         assert fourth_config["is_default"] is True
-        assert fourth_config["disabled"] is False
+        assert fourth_config["component"] == "privacy_center"
         assert fourth_config["regions"] == []
-        assert fourth_config["component"] == "overlay"
+        assert fourth_config["version"] == 1.0
+        assert fourth_config["created_at"] is not None
+        assert fourth_config["updated_at"] is not None
+
+        fifth_config = data[4]
+        assert fifth_config["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        assert fifth_config["is_default"] is True
+        assert fifth_config["disabled"] is False
+        assert fifth_config["regions"] == []
+        assert fifth_config["component"] == "overlay"
 
     @pytest.mark.usefixtures(
         "privacy_experience_privacy_center",
@@ -171,11 +182,11 @@ class TestGetExperienceConfigList:
         )
         assert response.status_code == 200
         resp = response.json()
-        assert resp["total"] == 3
+        assert resp["total"] == 4
         assert resp["page"] == 1
         assert resp["size"] == 50
         data = resp["items"]
-        assert len(data) == 3
+        assert len(data) == 4
 
         config = data[0]
         assert config["id"] == experience_config_overlay.id
@@ -191,20 +202,29 @@ class TestGetExperienceConfigList:
         )
 
         second_config = data[1]
-        assert second_config["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
+        assert second_config["id"] == "a4974670-abad-471f-9084-2cb-tcf-over"
         assert second_config["is_default"] is True
-        assert second_config["component"] == "privacy_center"
+        assert second_config["component"] == "tcf_overlay"
         assert second_config["disabled"] is False
         assert second_config["version"] == 1.0
         assert second_config["created_at"] is not None
         assert second_config["updated_at"] is not None
 
         third_config = data[2]
-        assert third_config["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        assert third_config["id"] == "pri-097a-d00d-40b6-a08f-f8e50def-pri"
         assert third_config["is_default"] is True
+        assert third_config["component"] == "privacy_center"
         assert third_config["disabled"] is False
-        assert third_config["regions"] == []
-        assert third_config["component"] == "overlay"
+        assert third_config["version"] == 1.0
+        assert third_config["created_at"] is not None
+        assert third_config["updated_at"] is not None
+
+        fourth_config = data[3]
+        assert fourth_config["id"] == "pri-7ae3-f06b-4096-970f-0bbbdef-over"
+        assert fourth_config["is_default"] is True
+        assert fourth_config["disabled"] is False
+        assert fourth_config["regions"] == []
+        assert fourth_config["component"] == "overlay"
 
     @pytest.mark.usefixtures(
         "privacy_experience_overlay",
@@ -297,7 +317,7 @@ class TestCreateExperienceConfig:
             "disabled": False,
             "privacy_preferences_link_label": "Manage preferences",
             "privacy_policy_link_label": "View our privacy policy",
-            "privacy_policy_url": "example.com/privacy",
+            "privacy_policy_url": "http://example.com/privacy",
             "reject_button_label": "Reject all",
             "regions": [],
             "save_button_label": "Save",
@@ -435,7 +455,7 @@ class TestCreateExperienceConfig:
                 "description": "We take your privacy seriously",
                 "is_default": True,
                 "privacy_policy_link_label": "Manage your privacy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "reject_button_label": "No",
                 "save_button_label": "Save",
                 "title": "Manage your privacy",
@@ -448,6 +468,39 @@ class TestCreateExperienceConfig:
             response.json()["detail"]
             == "Cannot set as the default. Only one default privacy_center config can be in the system."
         )
+
+    @pytest.mark.parametrize(
+        "invalid_url",
+        [
+            "thisisnotaurl",
+            "javascript:alert('XSS: domain scope: '+document.domain)",
+        ],
+    )
+    def test_create_experience_config_with_invalid_policy_url(
+        self, api_client: TestClient, url, generate_auth_header, db, invalid_url
+    ) -> None:
+        """
+        Verify that an invalid Privacy Policy URL returns a 422.
+        """
+        auth_header = generate_auth_header(
+            scopes=[scopes.PRIVACY_EXPERIENCE_CREATE, scopes.PRIVACY_EXPERIENCE_UPDATE]
+        )
+        response = api_client.post(
+            url,
+            json={
+                "accept_button_label": "Yes",
+                "banner_enabled": "always_disabled",
+                "component": "privacy_center",
+                "description": "We take your company's privacy seriously",
+                "privacy_policy_link_label": "Manage your privacy",
+                "privacy_policy_url": invalid_url,
+                "reject_button_label": "No",
+                "save_button_label": "Save",
+                "title": "Manage your privacy",
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
 
     def test_create_experience_config_with_no_regions(
         self, api_client: TestClient, url, generate_auth_header, db
@@ -467,7 +520,7 @@ class TestCreateExperienceConfig:
                 "component": "privacy_center",
                 "description": "We take your company's privacy seriously",
                 "privacy_policy_link_label": "Manage your privacy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "reject_button_label": "No",
                 "save_button_label": "Save",
                 "title": "Manage your privacy",
@@ -483,7 +536,7 @@ class TestCreateExperienceConfig:
             resp["description"] == "We take your company's privacy seriously"
         )  # Returned in the response, unescaped, for display
         assert resp["privacy_policy_link_label"] == "Manage your privacy"
-        assert resp["privacy_policy_url"] == "example.com/privacy"
+        assert resp["privacy_policy_url"] == "http://example.com/privacy"
         assert resp["regions"] == []
         assert resp["reject_button_label"] == "No"
         assert resp["save_button_label"] == "Save"
@@ -531,7 +584,7 @@ class TestCreateExperienceConfig:
                 "component": "privacy_center",
                 "description": "We take your privacy seriously",
                 "privacy_policy_link_label": "Manage your privacy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "regions": [],
                 "reject_button_label": "No",
                 "save_button_label": "Save",
@@ -546,7 +599,7 @@ class TestCreateExperienceConfig:
         assert resp["component"] == "privacy_center"
         assert resp["description"] == "We take your privacy seriously"
         assert resp["privacy_policy_link_label"] == "Manage your privacy"
-        assert resp["privacy_policy_url"] == "example.com/privacy"
+        assert resp["privacy_policy_url"] == "http://example.com/privacy"
         assert resp["regions"] == []
         assert resp["reject_button_label"] == "No"
         assert resp["save_button_label"] == "Save"
@@ -604,7 +657,7 @@ class TestCreateExperienceConfig:
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                 "privacy_preferences_link_label": "Control your privacy",
                 "privacy_policy_link_label": "Control your privacy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "regions": ["us_ny"],
                 "reject_button_label": "Reject all",
                 "save_button_label": "Save",
@@ -625,7 +678,7 @@ class TestCreateExperienceConfig:
         )
         assert resp["privacy_preferences_link_label"] == "Control your privacy"
         assert resp["privacy_policy_link_label"] == "Control your privacy"
-        assert resp["privacy_policy_url"] == "example.com/privacy"
+        assert resp["privacy_policy_url"] == "http://example.com/privacy"
         assert resp["regions"] == ["us_ny"]
         assert resp["reject_button_label"] == "Reject all"
         assert resp["save_button_label"] == "Save"
@@ -647,7 +700,7 @@ class TestCreateExperienceConfig:
             experience_config.privacy_preferences_link_label == "Control your privacy"
         )
         assert experience_config.privacy_policy_link_label == "Control your privacy"
-        assert experience_config.privacy_policy_url == "example.com/privacy"
+        assert experience_config.privacy_policy_url == "http://example.com/privacy"
         assert experience_config.regions == [PrivacyNoticeRegion.us_ny]
         assert experience_config.reject_button_label == "Reject all"
         assert experience_config.save_button_label == "Save"
@@ -680,7 +733,9 @@ class TestCreateExperienceConfig:
             experience_config_history.privacy_policy_link_label
             == "Control your privacy"
         )
-        assert experience_config_history.privacy_policy_url == "example.com/privacy"
+        assert (
+            experience_config_history.privacy_policy_url == "http://example.com/privacy"
+        )
         assert experience_config_history.reject_button_label == "Reject all"
         assert experience_config_history.save_button_label == "Save"
         assert experience_config_history.title == "Control your privacy"
@@ -738,7 +793,7 @@ class TestCreateExperienceConfig:
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                 "privacy_preferences_link_label": "Control your privacy",
                 "privacy_policy_link_label": "Control your privacy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "regions": ["us_tx"],
                 "reject_button_label": "Reject all",
                 "save_button_label": "Save",
@@ -759,7 +814,7 @@ class TestCreateExperienceConfig:
         )
         assert resp["privacy_preferences_link_label"] == "Control your privacy"
         assert resp["privacy_policy_link_label"] == "Control your privacy"
-        assert resp["privacy_policy_url"] == "example.com/privacy"
+        assert resp["privacy_policy_url"] == "http://example.com/privacy"
         assert resp["regions"] == ["us_tx"]
         assert resp["reject_button_label"] == "Reject all"
         assert resp["save_button_label"] == "Save"
@@ -937,7 +992,7 @@ class TestUpdateExperienceConfig:
                 "disabled": False,
                 "privacy_preferences_link_label": "Manage preferences",
                 "privacy_policy_link_label": "View our privacy policy",
-                "privacy_policy_url": "example.com/privacy",
+                "privacy_policy_url": "http://example.com/privacy",
                 "reject_button_label": "Reject all",
                 "save_button_label": "Save",
                 "title": "Control your privacy",
@@ -1553,3 +1608,48 @@ class TestUpdateExperienceConfig:
         )  # Default overlay experience config linked instead
 
         privacy_experience.delete(db)
+
+    @pytest.mark.usefixtures("privacy_experience_france_tcf_overlay")
+    def test_add_regions_to_tcf_overlay(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        experience_config_tcf_overlay,
+        db,
+    ) -> None:
+        """Verify that regions can technically be added to the tcf overlay.
+
+        This is a contrived example, but tests that this workflow doesn't break for the new tcf overlay
+        """
+        fr_experience = PrivacyExperience.get_experience_by_region_and_component(
+            db=db, region="fr", component=ComponentType.tcf_overlay
+        )
+        assert fr_experience
+
+        ca_experience = PrivacyExperience.get_experience_by_region_and_component(
+            db=db, region="us_ca", component=ComponentType.tcf_overlay
+        )
+        assert not ca_experience
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        url = V1_URL_PREFIX + EXPERIENCE_CONFIG + f"/{experience_config_tcf_overlay.id}"
+        response = api_client.patch(
+            url,
+            json={
+                "regions": ["us_ca", "fr"],
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert response.json()["experience_config"]["regions"] == ["fr", "us_ca"]
+        assert response.json()["linked_regions"] == ["us_ca"]
+
+        fr_experience = PrivacyExperience.get_experience_by_region_and_component(
+            db=db, region="fr", component=ComponentType.tcf_overlay
+        )
+        assert fr_experience
+
+        ca_experience = PrivacyExperience.get_experience_by_region_and_component(
+            db=db, region="us_ca", component=ComponentType.tcf_overlay
+        )
+        assert ca_experience

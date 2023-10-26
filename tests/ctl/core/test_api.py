@@ -442,7 +442,7 @@ class TestCrud:
 @pytest.mark.unit
 class TestSystemCreate:
     @pytest.fixture(scope="function", autouse=True)
-    def remove_all_systems(self, db) -> SystemSchema:
+    def remove_all_systems(self, db) -> None:
         """Remove any systems (and privacy declarations) before test execution for clean state"""
         for privacy_declaration in PrivacyDeclaration.all(db):
             privacy_declaration.delete(db)
@@ -477,6 +477,11 @@ class TestSystemCreate:
             dpo="John Doe, CIPT",
             joint_controller_info="Jane Doe",
             data_security_practices="We encrypt all your data in transit and at rest",
+            cookie_max_age_seconds="31536000",
+            uses_cookies=True,
+            cookie_refresh=True,
+            uses_non_cookie_access=True,
+            legitimate_interest_disclosure_url="http://www.example.com/legitimate_interest_disclosure",
             privacy_declarations=[
                 models.PrivacyDeclaration(
                     name="declaration-name",
@@ -654,6 +659,14 @@ class TestSystemCreate:
             system.data_security_practices
             == "We encrypt all your data in transit and at rest"
         )
+        assert system.cookie_max_age_seconds == 31536000
+        assert system.uses_cookies is True
+        assert system.cookie_refresh is True
+        assert system.uses_non_cookie_access is True
+        assert (
+            system.legitimate_interest_disclosure_url
+            == "http://www.example.com/legitimate_interest_disclosure"
+        )
         assert system.data_stewards == []
         assert [cookie.name for cookie in systems[0].cookies] == ["essential_cookie"]
         assert [
@@ -679,6 +692,7 @@ class TestSystemCreate:
         assert privacy_decl.data_shared_with_third_parties is True
         assert privacy_decl.third_parties == "Third Party Marketing Dept."
         assert privacy_decl.shared_categories == ["user"]
+        assert privacy_decl.flexible_legal_basis_for_processing is None
 
     async def test_system_create_minimal_request_body(
         self, generate_auth_header, db, test_config, system_create_request_body
@@ -989,7 +1003,7 @@ class TestSystemUpdate:
     updated_system_name = "Updated System Name"
 
     @pytest.fixture(scope="function", autouse=True)
-    def remove_all_systems(self, db) -> SystemSchema:
+    def remove_all_systems(self, db) -> None:
         """Remove any systems (and privacy declarations) before test execution for clean state"""
         for privacy_declaration in PrivacyDeclaration.all(db):
             privacy_declaration.delete(db)
@@ -1013,6 +1027,8 @@ class TestSystemUpdate:
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=[],
+                    ingress=None,
+                    egress=None,
                 )
             ],
         )
@@ -1600,6 +1616,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        egress=None,
+                        ingress=None,
                     )
                 ]
             ),
@@ -1614,6 +1632,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        egress=None,
+                        ingress=None,
                     ),
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
@@ -1623,6 +1643,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        egress=None,
+                        ingress=None,
                     ),
                 ]
             ),
@@ -1637,6 +1659,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        ingress=None,
+                        egress=None,
                     ),
                     models.PrivacyDeclaration(
                         name="Collect data for marketing",
@@ -1646,6 +1670,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        ingress=None,
+                        egress=None,
                     ),
                 ]
             ),
@@ -1660,6 +1686,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        egress=None,
+                        ingress=None,
                     ),
                     models.PrivacyDeclaration(
                         name="declaration-name-2",
@@ -1669,6 +1697,8 @@ class TestSystemUpdate:
                         data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
+                        egress=None,
+                        ingress=None,
                     ),
                 ]
             ),
@@ -1706,15 +1736,23 @@ class TestSystemUpdate:
 
         # assert the declarations in our responses match those in our requests
         response_decs: List[dict] = result.json()["privacy_declarations"]
-        # remove the IDs from the response decs for easier matching with request payload
-        # we also are implicitly affirming the response declarations DO have an
-        # 'id' field, as we expect
+
+        assert len(response_decs) == len(
+            update_declarations
+        ), "Response declaration count doesn't match the number sent!"
         for response_dec in response_decs:
-            response_dec.pop("id")
-        for update_dec in update_declarations:
-            response_decs.remove(update_dec.dict())
-        # and assert we don't have any extra response declarations
-        assert len(response_decs) == 0
+            assert (
+                "id" in response_dec.keys()
+            ), "No 'id' field in the response declaration!"
+
+            parsed_response_declaration = models.PrivacyDeclaration.parse_obj(
+                response_dec
+            )
+            assert (
+                parsed_response_declaration in update_declarations
+            ), "The response declaration '{}' doesn't match anything in the request declarations!".format(
+                parsed_response_declaration.name
+            )
 
         # do the same for the declarations in our db record
         system = System.all(db)[0]

@@ -12,19 +12,19 @@ import {
   selectDictDataUses,
   useGetDictionaryDataUsesQuery,
 } from "~/features/plus/plus.slice";
+import { DataUseDeclaration } from "~/types/dictionary-api";
 
 import { useAppSelector } from "../../../app/hooks";
 import { DataUse } from "../../../types/api";
 import { SparkleIcon } from "../../common/Icon/SparkleIcon";
-import { DictDataUse } from "../../plus/types";
 import DataUseCheckboxTable from "./DataUseCheckboxTable";
 
 interface Props {
   alreadyHasDataUses: boolean;
   allDataUses: DataUse[];
   onCancel: () => void;
-  onAccept: (suggestions: DictDataUse[]) => void;
-  vendorId: number;
+  onAccept: (suggestions: DataUseDeclaration[]) => void;
+  vendorId: string;
 }
 
 const PrivacyDeclarationDictModalComponents = ({
@@ -34,7 +34,9 @@ const PrivacyDeclarationDictModalComponents = ({
   onAccept,
   vendorId,
 }: Props) => {
-  const [selectedDataUses, setSelectedDataUses] = useState<DictDataUse[]>([]);
+  const [selectedDataUses, setSelectedDataUses] = useState<
+    DataUseDeclaration[]
+  >([]);
 
   useGetDictionaryDataUsesQuery({ vendor_id: vendorId });
   const dictDataUses = useAppSelector(selectDictDataUses(vendorId));
@@ -43,7 +45,7 @@ const PrivacyDeclarationDictModalComponents = ({
     setSelectedDataUses(dictDataUses);
   }, [dictDataUses]);
 
-  const handleChangeChecked = (newChecked: DictDataUse[]) => {
+  const handleChangeChecked = (newChecked: DataUseDeclaration[]) => {
     setSelectedDataUses(newChecked);
   };
 

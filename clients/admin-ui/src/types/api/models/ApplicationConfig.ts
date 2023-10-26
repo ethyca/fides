@@ -4,6 +4,7 @@
 
 import type { ExecutionApplicationConfig } from "./ExecutionApplicationConfig";
 import type { NotificationApplicationConfig } from "./NotificationApplicationConfig";
+import type { SecurityApplicationConfig } from "./SecurityApplicationConfig";
 import type { StorageApplicationConfig } from "./StorageApplicationConfig";
 
 /**
@@ -17,4 +18,5 @@ export type ApplicationConfig = {
   storage?: StorageApplicationConfig;
   notifications?: NotificationApplicationConfig;
   execution?: ExecutionApplicationConfig;
+  security?: SecurityApplicationConfig;
 };

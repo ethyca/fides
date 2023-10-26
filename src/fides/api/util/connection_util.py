@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from fastapi import Depends, HTTPException
 from fideslang.validation import FidesKey
@@ -325,7 +325,7 @@ def connection_status(
 
     connector = get_connector(connection_config)
     try:
-        status: Union[ConnectionTestStatus, None] = connector.test_connection()
+        status: Optional[ConnectionTestStatus] = connector.test_connection()
 
     except (ConnectionException, ClientUnsuccessfulException) as exc:
         logger.warning(

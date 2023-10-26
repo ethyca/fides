@@ -57,7 +57,11 @@ class ApplicationConfig(Base):
 
     @classmethod
     def create_or_update(  # type: ignore[override]
-        cls, db: Session, *, data: Dict[str, Any]
+        cls,
+        db: Session,
+        *,
+        data: Dict[str, Any],
+        merge_updates: bool = True,
     ) -> ApplicationConfig:
         """
         Creates the config record if none exists, or updates the existing record.
@@ -66,12 +70,14 @@ class ApplicationConfig(Base):
         """
         existing_record = db.query(cls).first()
         if existing_record:
-            updated_record = existing_record.update(db=db, data=data)
+            updated_record = existing_record.update(
+                db=db, data=data, merge_updates=merge_updates
+            )
             return updated_record
 
         return cls.create(db=db, data=data)
 
-    def update(self, db: Session, data: Dict[str, Any]) -> ApplicationConfig:  # type: ignore[override]
+    def update(self, db: Session, data: Dict[str, Any], merge_updates: bool = True) -> ApplicationConfig:  # type: ignore[override]
         """
         Updates the config record, merging contents of the particular JSON column that
         corresponds to the updated data.
@@ -85,16 +91,23 @@ class ApplicationConfig(Base):
             if not isinstance(incoming_api_config, dict):
                 raise ValueError("`api_set` column must be a dictionary")
 
-            # update, i.e. merge, the `api_set` dict
-            self.api_set = deep_update(self.api_set, incoming_api_config)
+            if merge_updates:
+                # merge, the `api_set` dict
+                self.api_set = deep_update(self.api_set, incoming_api_config)
+            else:
+                # replace the `api_set` dict
+                self.api_set = incoming_api_config
 
         if "config_set" in data:
             incoming_config_config = data["config_set"]
             if not isinstance(incoming_config_config, dict):
                 raise ValueError("`config_set` column must be a dictionary")
 
-            # update, i.e. merge, the `config_set` dict
-            self.config_set = deep_update(self.config_set, incoming_config_config)
+            if merge_updates:
+                # update, i.e. merge, the `config_set` dict
+                self.config_set = deep_update(self.config_set, incoming_config_config)
+            else:
+                self.config_set = incoming_config_config
 
         self.save(db=db)
         return self
@@ -125,15 +138,22 @@ class ApplicationConfig(Base):
 
     @classmethod
     def update_api_set(
-        cls, db: Session, api_set_dict: Dict[str, Any]
+        cls,
+        db: Session,
+        api_set_dict: Dict[str, Any],
+        merge_updates: bool = True,
     ) -> ApplicationConfig:
         """
         Utility method to set the `api_set` column on the `applicationconfig`
         db record with the provided dictionary of data.
 
-        Updates are *merged* with any existing `api_set` data in the db.
+        Depending on `merge_updates` param, updates either:
+         - are *merged* with any existing `api_set` data in the db
+         - replace any existing `api_set` data in the db
         """
-        return cls.create_or_update(db, data={"api_set": api_set_dict})
+        return cls.create_or_update(
+            db, data={"api_set": api_set_dict}, merge_updates=merge_updates
+        )
 
     @classmethod
     def clear_api_set(cls, db: Session) -> Optional[ApplicationConfig]:
@@ -177,7 +197,7 @@ class ApplicationConfig(Base):
         if config_record:
             api_prop = get(config_record.api_set, config_property)
             if api_prop is None:
-                logger.info(f"No API-set {config_property} property found")
+                logger.debug(f"No API-set {config_property} property found")
                 return get(config_record.config_set, config_property, default_value)
             return api_prop
         logger.warning("No config record found!")

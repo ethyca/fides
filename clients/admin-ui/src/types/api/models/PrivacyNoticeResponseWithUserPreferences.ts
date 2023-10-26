@@ -13,6 +13,11 @@ import type { UserConsentPreference } from "./UserConsentPreference";
  * and any saved preferences.
  */
 export type PrivacyNoticeResponseWithUserPreferences = {
+  default_preference?: UserConsentPreference;
+  current_preference?: UserConsentPreference;
+  outdated_preference?: UserConsentPreference;
+  current_served?: boolean;
+  outdated_served?: boolean;
   name?: string;
   notice_key?: string;
   description?: string;
@@ -34,9 +39,4 @@ export type PrivacyNoticeResponseWithUserPreferences = {
   privacy_notice_history_id: string;
   cookies: Array<Cookies>;
   systems_applicable?: boolean;
-  default_preference: UserConsentPreference;
-  current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
-  current_served?: boolean;
-  outdated_served?: boolean;
 };

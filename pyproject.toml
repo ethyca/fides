@@ -43,7 +43,6 @@ module = [
   "dask.*",
   "deepdiff.*",
   "defusedxml.ElementTree.*",
-  "fideslang.*",
   "fideslog.*",
   "firebase_admin.*",
   "google.api_core.*",

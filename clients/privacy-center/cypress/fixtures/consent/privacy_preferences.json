@@ -1,50 +1,82 @@
-[
-  {
-    "id": "cur_8dd7a394-0808-4578-a10b-732ca3482299",
-    "preference": "opt_in",
-    "privacy_notice_history": {
-      "name": "Data Sales",
-      "notice_key": "data_sales",
-      "description": "Provide opt-out consent for the use of data in ways that may be considered “data sales” under US state privacy regulations.",
-      "internal_description": null,
-      "origin": null,
-      "regions": ["us_ca", "us_co"],
-      "consent_mechanism": "opt_out",
-      "data_uses": ["advertising.third_party.personalized"],
-      "enforcement_level": "frontend",
-      "disabled": false,
-      "has_gpc_flag": false,
-      "displayed_in_privacy_center": true,
-      "displayed_in_overlay": false,
-      "displayed_in_api": false,
-      "id": "pri_371e6355-9327-4294-8b42-c0db5bf53cb0",
-      "version": 1.0,
-      "privacy_notice_id": "pri_b558ab1f-5367-4f0d-94b1-ec06a81ae821"
+{
+  "preferences": [
+    {
+      "purpose_consent": null,
+      "purpose_legitimate_interests": null,
+      "special_purpose": null,
+      "vendor_consent": null,
+      "vendor_legitimate_interests": null,
+      "feature": null,
+      "special_feature": null,
+      "system_consent": null,
+      "system_legitimate_interests": null,
+      "id": "cur_6b49c3ce-48c4-4daf-8e56-008f24621bf0",
+      "preference": "opt_in",
+      "privacy_notice_history": {
+        "name": "Data Sales",
+        "notice_key": "data_sales",
+        "description": "We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of cross-contextual targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.",
+        "internal_description": "“Sale of personal“ data means the exchange of personal data for monetary or other valuable consideration. Data sharing refers to sharing of data with third parties for the purpose of cross contextual behavioral advertising. This is also closely analogous to “Targeted Advertising” as defined in other U.S. state laws and they have been combined here under one notice.",
+        "origin": "pri_309d287c-b208-4fd1-93b2-7b2ff13eddat",
+        "regions": ["us_ca", "us_co", "us_ct", "us_ia", "us_ut", "us_va"],
+        "consent_mechanism": "opt_out",
+        "data_uses": [
+          "marketing.advertising.first_party.targeted",
+          "marketing.advertising.third_party.targeted"
+        ],
+        "enforcement_level": "frontend",
+        "disabled": false,
+        "has_gpc_flag": true,
+        "displayed_in_privacy_center": true,
+        "displayed_in_overlay": true,
+        "displayed_in_api": false,
+        "id": "pri_b7dda34f-3dae-4d47-a185-3effd164a144",
+        "version": 2.0,
+        "privacy_notice_id": "pri_178018e9-b997-4742-a5d9-ce6def1f5c7c"
+      },
+      "privacy_preference_history_id": "pri_7642da6a-40e8-4b77-8d0e-2676334a7287"
     },
-    "privacy_preference_history_id": "pri_e1f47400-f285-438e-8cf2-fabec67787be"
-  },
-  {
-    "id": "cur_91597784-a836-4013-9288-b98294d6a3c9",
-    "preference": "opt_in",
-    "privacy_notice_history": {
-      "name": "Advertising",
-      "notice_key": "advertising",
-      "description": "Ensures you are correctly notifying the user about your advertising practices and for appropriate locations, collecting the users consent preferences.",
-      "internal_description": null,
-      "origin": null,
-      "regions": ["eu_ie", "eu_fr", "us_ca"],
-      "consent_mechanism": "opt_in",
-      "data_uses": ["advertising.first_party.contextual"],
-      "enforcement_level": "system_wide",
-      "disabled": false,
-      "has_gpc_flag": false,
-      "displayed_in_privacy_center": true,
-      "displayed_in_overlay": true,
-      "displayed_in_api": false,
-      "id": "pri_07ace6f0-211d-4822-8f02-b9573b19b8d6",
-      "version": 3.0,
-      "privacy_notice_id": "pri_b4360591-3cc7-400d-a5ff-a9f095ab3061"
-    },
-    "privacy_preference_history_id": "pri_9c496ef2-0953-48d5-975d-8ee29b7d723a"
-  }
-]
+    {
+      "purpose_consent": null,
+      "purpose_legitimate_interests": null,
+      "special_purpose": null,
+      "vendor_consent": null,
+      "vendor_legitimate_interests": null,
+      "feature": null,
+      "special_feature": null,
+      "system_consent": null,
+      "system_legitimate_interests": null,
+      "id": "cur_fb8e2965-8b1f-4102-a68d-c3dd62864ea1",
+      "preference": "acknowledge",
+      "privacy_notice_history": {
+        "name": "Advertising",
+        "notice_key": "advertising",
+        "description": "This website uses essential cookies and services to enable core website features and provide a seamless user experience. These cookies and services are used to facilitate features such as navigation, remember user preferences, and ensure the security of the website.",
+        "internal_description": "Essential cookies and services, also known as strictly necessary, are technologies that are crucial for the proper functioning of a website. These technologies are typically exempt from requiring user consent under privacy regulations because they are essential for the website to deliver its basic functionalities and services.",
+        "origin": "pri_51c85583-40ec-4257-95ef-db3eea860ess",
+        "regions": ["us_ca", "us_co", "us_ct", "us_ia", "us_ut", "us_va"],
+        "consent_mechanism": "opt_in",
+        "data_uses": ["essential"],
+        "enforcement_level": "not_applicable",
+        "disabled": false,
+        "has_gpc_flag": false,
+        "displayed_in_privacy_center": true,
+        "displayed_in_overlay": true,
+        "displayed_in_api": false,
+        "id": "pri_a6efe53a-247e-4220-9b5b-6c4d686adc29",
+        "version": 4.0,
+        "privacy_notice_id": "pri_c7921222-b469-41c2-b648-0c8311af5f33"
+      },
+      "privacy_preference_history_id": "pri_b0e469b5-8bcf-4696-9a6f-3ed151462f02"
+    }
+  ],
+  "purpose_consent_preferences": [],
+  "purpose_legitimate_interests_preferences": [],
+  "special_purpose_preferences": [],
+  "vendor_consent_preferences": [],
+  "vendor_legitimate_interests_preferences": [],
+  "feature_preferences": [],
+  "special_feature_preferences": [],
+  "system_consent_preferences": [],
+  "system_legitimate_interests_preferences": []
+}

@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import EmptyTableState from "~/features/system/dictionary-data-uses/EmptyTableState";
+import { transformDictDataUseToDeclaration } from "~/features/system/dictionary-form/helpers";
 import { useUpdateSystemMutation } from "~/features/system/system.slice";
 import {
   PrivacyDeclarationDisplayGroup,
@@ -29,10 +30,10 @@ import {
   System,
   SystemResponse,
 } from "~/types/api";
+import { DataUseDeclaration } from "~/types/dictionary-api";
 import { isErrorResult } from "~/types/errors";
 
 import { useFeatures } from "../../common/features";
-import { DictDataUse } from "../../plus/types";
 import PrivacyDeclarationDictModalComponents from "../dictionary-data-uses/PrivacyDeclarationDictModalComponents";
 
 interface Props {
@@ -98,38 +99,8 @@ const PrivacyDeclarationFormTab = ({
     return false;
   };
 
-  const transformDictDataUseToDeclaration = (
-    dataUse: DictDataUse
-  ): PrivacyDeclarationResponse => {
-    // fix "Legitimate Interests" capitalization for API
-    const legalBasisForProcessing =
-      dataUse.legal_basis_for_processing === "Legitimate Interests"
-        ? "Legitimate interests"
-        : dataUse.legal_basis_for_processing;
-
-    // some data categories are nested on the backend, flatten them
-    // https://github.com/ethyca/fides-services/issues/100
-    const dataCategories = dataUse.data_categories.flatMap((dc) =>
-      dc.split(",")
-    );
-
-    return {
-      data_use: dataUse.data_use,
-      data_categories: dataCategories,
-      features: dataUse.features,
-      // @ts-ignore
-      legal_basis_for_processing: legalBasisForProcessing,
-      retention_period: `${dataUse.retention_period}`,
-      cookies: dataUse.cookies.map((c) => ({
-        name: c.identifier,
-        domain: c.domains,
-        path: "/",
-      })),
-    };
-  };
-
   const handleSave = async (
-    updatedDeclarations: PrivacyDeclarationResponse[],
+    updatedDeclarations: Omit<PrivacyDeclarationResponse, "id">[],
     isDelete?: boolean
   ) => {
     // The API can return a null name, but cannot receive a null name,
@@ -224,7 +195,7 @@ const PrivacyDeclarationFormTab = ({
     setCurrentDeclaration(declarationToEdit);
   };
 
-  const handleAcceptDictSuggestions = (suggestions: DictDataUse[]) => {
+  const handleAcceptDictSuggestions = (suggestions: DataUseDeclaration[]) => {
     const newDeclarations = suggestions.map((du) =>
       transformDictDataUseToDeclaration(du)
     );
@@ -315,7 +286,7 @@ const PrivacyDeclarationFormTab = ({
             allDataUses={dataProps.allDataUses}
             onCancel={handleCloseDictModal}
             onAccept={handleAcceptDictSuggestions}
-            vendorId={Number(system.vendor_id)}
+            vendorId={system.vendor_id}
           />
         </PrivacyDeclarationFormModal>
       ) : null}

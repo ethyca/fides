@@ -22,6 +22,9 @@ const ALL_SCOPES = [
   ScopeRegistryEnum.PRIVACY_NOTICE_READ,
   ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ,
   ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ,
+  ScopeRegistryEnum.CONFIG_READ,
+  ScopeRegistryEnum.CONFIG_UPDATE,
+  ScopeRegistryEnum.CUSTOM_ASSET_UPDATE,
 ];
 
 describe("configureNavGroups", () => {
@@ -151,7 +154,7 @@ describe("configureNavGroups", () => {
   });
 
   describe("fides cloud", () => {
-    it("shows dns records page when fides cloud is enabled", () => {
+    it("shows domain records page when fides cloud is enabled", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
         userScopes: ALL_SCOPES,
@@ -163,11 +166,11 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[4].children
           .map((c) => c.title)
-          .find((title) => title === "DNS Records")
-      ).toEqual("DNS Records");
+          .find((title) => title === "Domain records")
+      ).toEqual("Domain records");
     });
 
-    it("does not show dns records page when fides cloud is disabled", () => {
+    it("does not show domain records page when fides cloud is disabled", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
         userScopes: ALL_SCOPES,
@@ -179,7 +182,69 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[4].children
           .map((c) => c.title)
-          .find((title) => title === "DNS Records")
+          .find((title) => title === "Domain records")
+      ).toEqual(undefined);
+    });
+  });
+
+  describe("fides plus", () => {
+    it("shows cors management when plus and scopes are enabled", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: [
+          ScopeRegistryEnum.CONFIG_READ,
+          ScopeRegistryEnum.CONFIG_UPDATE,
+        ],
+        flags: undefined,
+        hasPlus: true,
+        hasFidesCloud: false,
+      });
+
+      expect(
+        navGroups[1].children
+          .map((c) => ({ title: c.title, path: c.path }))
+          .find((c) => c.title === "Domains")
+      ).toEqual({
+        title: "Domains",
+        path: routes.CORS_CONFIGURATION_ROUTE,
+      });
+    });
+
+    it("hide cors management when plus is disabled", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: [
+          ScopeRegistryEnum.CONFIG_READ,
+          ScopeRegistryEnum.CONFIG_UPDATE,
+        ],
+        flags: undefined,
+        hasPlus: false,
+        hasFidesCloud: false,
+      });
+
+      expect(
+        navGroups[1].children
+          .map((c) => ({ title: c.title, path: c.path }))
+          .find((c) => c.title === "Manage domains")
+      ).toEqual(undefined);
+    });
+
+    it("hide cors management when scopes are wrong", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: [
+          ScopeRegistryEnum.ALLOW_LIST_CREATE,
+          ScopeRegistryEnum.ALLOW_LIST_UPDATE,
+        ],
+        flags: undefined,
+        hasPlus: true,
+        hasFidesCloud: false,
+      });
+
+      expect(
+        navGroups[1]?.children
+          .map((c) => ({ title: c.title, path: c.path }))
+          .find((c) => c.title === "Manage domains")
       ).toEqual(undefined);
     });
   });

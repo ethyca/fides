@@ -55,6 +55,7 @@ def get_evaluation_policies(
             resource_key=evaluate_fides_key,
             headers=headers,
         )
+        assert isinstance(server_policy_found, Policy)
         return [server_policy_found] if server_policy_found else []
 
     local_policy_keys = (
@@ -87,7 +88,7 @@ def get_all_server_policies(
     policy_list = get_server_resources(
         url=url, resource_type="policy", headers=headers, existing_keys=policy_keys
     )
-    return policy_list
+    return policy_list  # type: ignore[return-value]
 
 
 def validate_policies_exist(policies: List[Policy], evaluate_fides_key: str) -> None:
@@ -114,7 +115,7 @@ def get_fides_key_parent_hierarchy(
     current_key = fides_key
     fides_key_parent_hierarchy = []
     while True:
-        fides_key_parent_hierarchy.append(current_key)
+        fides_key_parent_hierarchy.append(FidesKey(current_key))
         found_resource_map = get_resource_by_fides_key(
             taxonomy=taxonomy, fides_key=current_key
         )
@@ -211,7 +212,9 @@ def evaluate_policy_rule(
     # A data subject does not have a hierarchical structure
     data_subject_violations = compare_rule_to_declaration(
         rule_types=policy_rule.data_subjects.values,
-        declaration_type_hierarchies=[[data_subject] for data_subject in data_subjects],
+        declaration_type_hierarchies=[
+            [FidesKey(data_subject)] for data_subject in data_subjects
+        ],
         rule_match=policy_rule.data_subjects.matches,
     )
 
@@ -240,9 +243,9 @@ def evaluate_policy_rule(
                     ",".join(data_subject_violations),
                 ),
                 violating_attributes=ViolationAttributes(
-                    data_categories=data_category_violations,
-                    data_uses=data_use_violations,
-                    data_subjects=data_subject_violations,
+                    data_categories=list(data_category_violations),
+                    data_uses=list(data_use_violations),
+                    data_subjects=list(data_subject_violations),
                     data_qualifier=data_qualifier,
                 ),
             )
@@ -255,6 +258,7 @@ def get_dataset_by_fides_key(taxonomy: Taxonomy, fides_key: str) -> Optional[Dat
     """
     Returns a dataset within the taxonomy for a given fides key
     """
+    taxonomy.dataset = getattr(taxonomy, "dataset") or []
     dataset = next(
         iter(
             [dataset for dataset in taxonomy.dataset if dataset.fides_key == fides_key]
@@ -286,12 +290,13 @@ def evaluate_dataset_reference(
             dataset.fides_key,
         )
 
+        data_qualifier = str(dataset.data_qualifier) if dataset.data_qualifier else ""
         dataset_result_violations = evaluate_policy_rule(
             taxonomy=taxonomy,
             policy_rule=policy_rule,
-            data_subjects=privacy_declaration.data_subjects,
-            data_categories=dataset.data_categories,
-            data_qualifier=dataset.data_qualifier,
+            data_subjects=[str(x) for x in privacy_declaration.data_subjects],
+            data_categories=[str(x) for x in dataset.data_categories],
+            data_qualifier=data_qualifier,
             data_use=privacy_declaration.data_use,
             declaration_violation_message=dataset_violation_message,
         )
@@ -311,8 +316,8 @@ def evaluate_dataset_reference(
             dataset_collection_result_violations = evaluate_policy_rule(
                 taxonomy=taxonomy,
                 policy_rule=policy_rule,
-                data_subjects=privacy_declaration.data_subjects,
-                data_categories=collection.data_categories,
+                data_subjects=[str(x) for x in privacy_declaration.data_subjects],
+                data_categories=[str(x) for x in collection.data_categories],
                 data_qualifier=collection.data_qualifier,
                 data_use=privacy_declaration.data_use,
                 declaration_violation_message=collection_violation_message,
@@ -333,8 +338,8 @@ def evaluate_dataset_reference(
                 field_result_violations = evaluate_policy_rule(
                     taxonomy=taxonomy,
                     policy_rule=policy_rule,
-                    data_subjects=privacy_declaration.data_subjects,
-                    data_categories=field.data_categories,
+                    data_subjects=[str(x) for x in privacy_declaration.data_subjects],
+                    data_categories=[str(x) for x in field.data_categories],
                     data_qualifier=field.data_qualifier,
                     data_use=privacy_declaration.data_use,
                     declaration_violation_message=field_violation_message,
@@ -367,12 +372,17 @@ def evaluate_privacy_declaration(
         )
     )
 
+    data_qualifier = (
+        str(privacy_declaration.data_qualifier)
+        if privacy_declaration.data_qualifier
+        else ""
+    )
     declaration_result_violations = evaluate_policy_rule(
         taxonomy=taxonomy,
         policy_rule=policy_rule,
-        data_subjects=privacy_declaration.data_subjects,
-        data_categories=privacy_declaration.data_categories,
-        data_qualifier=privacy_declaration.data_qualifier,
+        data_subjects=[str(x) for x in privacy_declaration.data_subjects],
+        data_categories=[str(x) for x in privacy_declaration.data_categories],
+        data_qualifier=data_qualifier,
         data_use=privacy_declaration.data_use,
         declaration_violation_message=declaration_violation_message,
     )
@@ -408,6 +418,8 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     each system's privacy declarations.
     """
     evaluation_violation_list = []
+    taxonomy.policy = getattr(taxonomy, "policy") or []
+    taxonomy.system = getattr(taxonomy, "system") or []
     for policy in taxonomy.policy:
         for rule in policy.rules:
             for system in taxonomy.system:
@@ -424,7 +436,7 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     )
     new_uuid = str(uuid.uuid4()).replace("-", "_")
     evaluation = Evaluation(
-        fides_key=new_uuid,
+        fides_key=FidesKey(new_uuid),
         status=status_enum,
         violations=evaluation_violation_list,
     )
@@ -469,7 +481,7 @@ def populate_referenced_keys(
 
     Recursively calls itself after every hydration to make sure there are no new missing keys.
     """
-    missing_resource_keys = get_referenced_missing_keys(taxonomy)
+    missing_resource_keys = list(get_referenced_missing_keys(taxonomy))
     keys_not_found = set(last_keys).intersection(set(missing_resource_keys))
     if keys_not_found:
         echo_red(f"Missing resource keys: {keys_not_found}")
@@ -535,6 +547,7 @@ def evaluate(
 
     # Determine which Policies will be evaluated
     policies = taxonomy.policy
+    assert policies, "At least one Policy must be present"
     if not local:
         # Append server-side Policies if not running in local_mode
         policies = get_evaluation_policies(

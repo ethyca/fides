@@ -4,7 +4,7 @@ saas_config:
   type: braze
   description: A sample schema representing the Braze connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/braze
-  version: 0.0.4
+  version: 0.0.5
 
   connector_params:
     - name: domain
@@ -125,16 +125,7 @@ saas_config:
                 identity: phone_number
             data_path: users
         update:
-          method: POST
-          path: /users/track
-          body: |
-            {
-              "attributes": [
-                {
-                  <all_object_fields>
-                }
-              ]
-            }
+          request_override: braze_user_update
     - name: subscription_groups
       requests:
         read:

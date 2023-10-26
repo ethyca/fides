@@ -57,6 +57,7 @@ export enum PrivacyNoticeRegion {
   US_WV = "us_wv",
   US_WI = "us_wi",
   US_WY = "us_wy",
+  EEA = "eea",
   BE = "be",
   BG = "bg",
   CZ = "cz",

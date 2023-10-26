@@ -1,9 +1,12 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { narrow } from "narrow-minded";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
+  ApplicationConfig,
   BulkPostPrivacyRequests,
   PrivacyRequestNotificationInfo,
+  SecurityApplicationConfig,
 } from "~/types/api";
 
 import type { RootState } from "../../app/store";
@@ -15,7 +18,7 @@ import {
   ConfigStorageDetailsRequest,
   ConfigStorageSecretsDetailsRequest,
   DenyPrivacyRequest,
-  GetUpdloadedManualWebhookDataRequest,
+  GetUploadedManualWebhookDataRequest,
   MessagingConfigResponse,
   PatchUploadManualWebhookDataRequest,
   PrivacyRequestEntity,
@@ -305,12 +308,20 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         return cloneResponse;
       },
     }),
-    getUploadedManualWebhookData: build.query<
+    getUploadedManualAccessWebhookData: build.query<
       any,
-      GetUpdloadedManualWebhookDataRequest
+      GetUploadedManualWebhookDataRequest
     >({
       query: (params) => ({
         url: `privacy-request/${params.privacy_request_id}/access_manual_webhook/${params.connection_key}`,
+      }),
+    }),
+    getUploadedManualErasureWebhookData: build.query<
+      any,
+      GetUploadedManualWebhookDataRequest
+    >({
+      query: (params) => ({
+        url: `privacy-request/${params.privacy_request_id}/erasure_manual_webhook/${params.connection_key}`,
       }),
     }),
     resumePrivacyRequestFromRequiresInput: build.mutation<any, string>({
@@ -338,15 +349,38 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Notification"],
     }),
-    createConfigurationSettings: build.mutation<
+    patchConfigurationSettings: build.mutation<
       any,
-      MessagingConfigResponse | StorageConfigResponse
+      | ApplicationConfig
+      | MessagingConfigResponse
+      | StorageConfigResponse
+      | SecurityApplicationConfig
     >({
       query: (params) => ({
         url: `/config`,
         method: "PATCH",
         body: params,
       }),
+      invalidatesTags: ["Configuration Settings"],
+    }),
+    putConfigurationSettings: build.mutation<
+      ApplicationConfig,
+      ApplicationConfig
+    >({
+      query: (params) => ({
+        url: `/config`,
+        method: "PUT",
+        body: params,
+      }),
+      invalidatesTags: ["Configuration Settings"],
+    }),
+    getConfigurationSettings: build.query<Record<string, any>, void>({
+      query: () => ({
+        url: `/config`,
+        method: "GET",
+        params: { api_set: true },
+      }),
+      providesTags: ["Configuration Settings"],
     }),
     getActiveStorage: build.query<any, void>({
       query: () => ({
@@ -412,12 +446,22 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         body: params,
       }),
     }),
-    uploadManualWebhookData: build.mutation<
+    uploadManualAccessWebhookData: build.mutation<
       any,
       PatchUploadManualWebhookDataRequest
     >({
       query: (params) => ({
         url: `privacy-request/${params.privacy_request_id}/access_manual_webhook/${params.connection_key}`,
+        method: "PATCH",
+        body: params.body,
+      }),
+    }),
+    uploadManualErasureWebhookData: build.mutation<
+      any,
+      PatchUploadManualWebhookDataRequest
+    >({
+      query: (params) => ({
+        url: `privacy-request/${params.privacy_request_id}/erasure_manual_webhook/${params.connection_key}`,
         method: "PATCH",
         body: params.body,
       }),
@@ -431,15 +475,17 @@ export const {
   useDenyRequestMutation,
   useGetAllPrivacyRequestsQuery,
   useGetNotificationQuery,
-  useGetUploadedManualWebhookDataQuery,
   useResumePrivacyRequestFromRequiresInputMutation,
   useRetryMutation,
   useSaveNotificationMutation,
-  useUploadManualWebhookDataMutation,
+  useUploadManualAccessWebhookDataMutation,
+  useUploadManualErasureWebhookDataMutation,
   useGetStorageDetailsQuery,
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,
-  useCreateConfigurationSettingsMutation,
+  usePatchConfigurationSettingsMutation,
+  usePutConfigurationSettingsMutation,
+  useGetConfigurationSettingsQuery,
   useGetMessagingConfigurationDetailsQuery,
   useGetActiveMessagingProviderQuery,
   useGetActiveStorageQuery,
@@ -447,3 +493,39 @@ export const {
   useCreateMessagingConfigurationSecretsMutation,
   useCreateTestConnectionMessageMutation,
 } = privacyRequestApi;
+
+export type CORSOrigins = Pick<SecurityApplicationConfig, "cors_origins">;
+const EMPTY_CORS_DOMAINS: CORSOrigins = {
+  cors_origins: [],
+};
+export const selectCORSOrigins = () =>
+  createSelector(
+    [
+      (state) => state,
+      privacyRequestApi.endpoints.getConfigurationSettings.select(),
+    ],
+    (_, { data }) => {
+      const hasCorsOrigins = narrow(
+        {
+          security: {
+            cors_origins: ["string"],
+          },
+        },
+        data
+      );
+
+      const corsOrigins: CORSOrigins = {
+        cors_origins: data?.security?.cors_origins,
+      };
+      return hasCorsOrigins ? corsOrigins : EMPTY_CORS_DOMAINS;
+    }
+  );
+
+export const selectApplicationConfig = () =>
+  createSelector(
+    [
+      (state) => state,
+      privacyRequestApi.endpoints.getConfigurationSettings.select(),
+    ],
+    (_, { data }) => data as ApplicationConfig
+  );

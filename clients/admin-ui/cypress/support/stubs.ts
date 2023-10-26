@@ -39,7 +39,10 @@ export const stubSystemCrud = () => {
 export const stubVendorList = () => {
   cy.intercept("GET", "/api/v1/plus/dictionary/system*", {
     fixture: "dictionary-entries.json",
-  });
+  }).as("getDictionaryEntries");
+  cy.intercept("GET", "/api/v1/plus/dictionary/data-use-declarations/*", {
+    fixture: "dictionary-declarations.json",
+  }).as("getDictionaryDeclarations");
 };
 
 export const stubOrganizationCrud = () => {
@@ -237,4 +240,10 @@ export const stubDatamap = () => {
   cy.intercept("GET", "/api/v1/system", { fixture: "systems/systems.json" }).as(
     "getSystems"
   );
+};
+
+export const stubSystemVendors = () => {
+  cy.intercept("GET", "/api/v1/plus/dictionary/created-vendors", {
+    fixture: "systems/system-vendors.json",
+  }).as("getSystemVendors");
 };

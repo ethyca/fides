@@ -55,6 +55,10 @@ class RedisConnectionError(Exception):
     """The Configured Redis instance is uncontactable."""
 
 
+class DecodeFidesStringError(Exception):
+    """Issues decoding the supplied TC String or AC String"""
+
+
 class MisconfiguredPolicyException(Exception):
     """Thrown when a Privacy Request cannot be processed due to a misconfigured Policy."""
 
@@ -103,8 +107,16 @@ class StorageConfigNotFoundException(BaseException):
     """Custom Exception - StorageConfig Not Found"""
 
 
+class SystemNotFound(BaseException):
+    """System Not Found"""
+
+
 class PrivacyNoticeHistoryNotFound(BaseException):
     """PrivacyNoticeHistory Not Found"""
+
+
+class ConsentHistorySaveError(BaseException):
+    """PrivacyPreferenceHistory or ServedNoticeHistory Save Error"""
 
 
 class IdentityNotFoundException(BaseException):

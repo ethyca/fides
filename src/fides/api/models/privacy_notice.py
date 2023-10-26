@@ -84,6 +84,7 @@ PrivacyNoticeRegion = Enum(
         ("us_wv", "us_wv"),  # west virginia
         ("us_wi", "us_wi"),  # wisconsin
         ("us_wy", "us_wy"),  # wyoming
+        ("eea", "eea"),  # european economic area
         ("be", "be"),  # belgium
         ("bg", "bg"),  # bulgaria
         ("cz", "cz"),  # czechia
@@ -202,8 +203,7 @@ class PrivacyNoticeBase:
         if not isinstance(name, str):
             raise Exception("Privacy notice keys must be generated from a string.")
         notice_key: str = re.sub(r"\s+", "_", name.lower().strip())
-        FidesKey.validate(notice_key)
-        return notice_key
+        return FidesKey(FidesKey.validate(notice_key))
 
     def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
         """
@@ -459,15 +459,13 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
     def calculate_relevant_systems(self, db: Session) -> List[FidesKey]:
         """Method to cache the relevant systems at the time to store on PrivacyPreferenceHistory for record keeping
 
-        Provided the notice's enforcement level is "system_wide" - a system is relevant if
-        their data use is an exact match or a child of the notice's data use.
+        A system is relevant if their data use is an exact match or a child of the notice's data use.
         """
         relevant_systems: List[FidesKey] = []
-        if self.enforcement_level == EnforcementLevel.system_wide:
-            for system in db.query(System):
-                if self.applies_to_system(system):
-                    relevant_systems.append(system.fides_key)
-                    continue
+        for system in db.query(System):
+            if self.applies_to_system(system):
+                relevant_systems.append(system.fides_key)
+                continue
         return relevant_systems
 
 

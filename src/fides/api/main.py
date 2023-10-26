@@ -29,7 +29,7 @@ from fides.api.middleware import handle_audit_log_resource
 from fides.api.service.privacy_request.email_batch_service import (
     initiate_scheduled_batch_email_send,
 )
-from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.ui import (
     get_admin_index_as_response,
     get_path_to_admin_ui_file,
@@ -173,12 +173,14 @@ async def setup_server() -> None:
 
     log_startup()
 
-    await run_database_startup()
+    await run_database_startup(app)
 
     check_redis()
 
     if not scheduler.running:
         scheduler.start()
+    if not async_scheduler.running:
+        async_scheduler.start()
 
     initiate_scheduled_batch_email_send()
 

@@ -1,6 +1,6 @@
 import {
   ConsentOptionCreate,
-  LastServedNoticeSchema,
+  LastServedConsentSchema,
   PrivacyNoticeResponseWithUserPreferences,
 } from "~/types/api";
 import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
@@ -342,7 +342,7 @@ describe("Privacy notice driven consent", () => {
         cy.wait("@patchPrivacyPreference").then((preferenceInterception) => {
           const { preferences } = preferenceInterception.request.body;
           const expected = interception.response?.body.map(
-            (s: LastServedNoticeSchema) => s.served_notice_history_id
+            (s: LastServedConsentSchema) => s.served_notice_history_id
           );
           expect(
             preferences.map(
