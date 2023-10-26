@@ -175,7 +175,7 @@ const SystemInformationForm = ({
         // Reset state such that isDirty will be checked again before next save
         formikHelpers.resetForm({ values });
         onSuccess(result.data);
-        dispatch(setSuggestions("hiding"));
+        dispatch(setSuggestions("initial"));
       }
     };
 
