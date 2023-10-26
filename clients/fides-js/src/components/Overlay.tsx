@@ -57,6 +57,7 @@ const Overlay: FunctionComponent<Props> = ({
     role: "alertdialog",
     className: options.fidesEmbed ? "fides-embed" : "",
     title: experience?.experience_config?.title || "",
+    useOverlowStyling: !options.fidesEmbed,
     onClose: dispatchCloseEvent,
   });
 
