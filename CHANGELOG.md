@@ -20,6 +20,9 @@ The types of changes are:
 ### Fixed
 - Removes overflow styling for embedded modal in Fides.js [#4345](https://github.com/ethyca/fides/pull/4345)
 
+### Changed
+- Updates experience API calls from Fides.js to include new meta field [#4335](https://github.com/ethyca/fides/pull/4335)
+
 ## [2.23.0](https://github.com/ethyca/fides/compare/2.22.1...2.23.0)
 
 ### Added
@@ -49,7 +52,6 @@ The types of changes are:
 - Derive cookie storage info, privacy policy and legitimate interest disclosure URLs, and data retention data from the data map instead of directly from gvl.json [#4286](https://github.com/ethyca/fides/pull/4286)
 - Updated TCF Version for backend consent reporting [#4305](https://github.com/ethyca/fides/pull/4305)
 - Update Version Hash Contents [#4313](https://github.com/ethyca/fides/pull/4313)
-- Updates experience API calls from Fides.js to include new meta field [#4335](https://github.com/ethyca/fides/pull/4335)
 
 ## [2.22.1](https://github.com/ethyca/fides/compare/2.22.0...2.22.1)
 
