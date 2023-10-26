@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.23.0...main)
 
+### Fixed
+- Removes overflow styling for embedded modal in Fides.js [#4345](https://github.com/ethyca/fides/pull/4345)
+
 ## [2.23.0](https://github.com/ethyca/fides/compare/2.22.1...2.23.0)
 
 ### Added
