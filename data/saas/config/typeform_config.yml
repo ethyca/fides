@@ -35,7 +35,7 @@ saas_config:
             - name: Content-Type
               value: application/json
           body: |
-            ["<email>"]
+            ["<delemail>"]
           param_values:
             - name: account_id
               connector_param: account_id
