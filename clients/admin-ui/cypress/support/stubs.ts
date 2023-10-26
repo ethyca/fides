@@ -241,3 +241,9 @@ export const stubDatamap = () => {
     "getSystems"
   );
 };
+
+export const stubSystemVendors = () => {
+  cy.intercept("GET", "/api/v1/plus/dictionary/created-vendors", {
+    fixture: "systems/system-vendors.json",
+  }).as("getSystemVendors");
+};
