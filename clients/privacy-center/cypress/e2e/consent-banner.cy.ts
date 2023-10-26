@@ -407,6 +407,7 @@ describe("Consent banner", () => {
 
         it("can remove all cookies when rejecting all", () => {
           cy.contains("button", "Reject Test").click();
+          cy.get("@FidesUpdated").should("have.been.calledTwice");
           cy.getAllCookies().then((allCookies) => {
             expect(allCookies.map((c) => c.name)).to.eql([CONSENT_COOKIE_NAME]);
           });
@@ -417,6 +418,7 @@ describe("Consent banner", () => {
           // opt out of the first notice
           cy.getByTestId("toggle-one").click();
           cy.getByTestId("Save test-btn").click();
+          cy.get("@FidesUpdated").should("have.been.calledTwice");
           cy.getAllCookies().then((allCookies) => {
             expect(allCookies.map((c) => c.name)).to.eql([
               CONSENT_COOKIE_NAME,
