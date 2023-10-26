@@ -39,6 +39,7 @@ from fides.api.util.endpoint_utils import human_friendly_list, transform_fields
 from fides.common.api import scope_registry
 from fides.common.api.scope_registry import PRIVACY_EXPERIENCE_UPDATE
 from fides.common.api.v1 import urn_registry as urls
+from fides.config import CONFIG
 
 router = APIRouter(tags=["Privacy Experience Config"], prefix=urls.V1_URL_PREFIX)
 
@@ -85,6 +86,11 @@ def experience_config_list(
     """
     should_unescape = request.headers.get(UNESCAPE_SAFESTR_HEADER)
     privacy_experience_config_query: Query = db.query(PrivacyExperienceConfig)
+
+    if not CONFIG.consent.tcf_enabled:
+        privacy_experience_config_query = privacy_experience_config_query.filter(
+            PrivacyExperienceConfig.component != ComponentType.tcf_overlay
+        )
 
     if component:
         privacy_experience_config_query = privacy_experience_config_query.filter(
