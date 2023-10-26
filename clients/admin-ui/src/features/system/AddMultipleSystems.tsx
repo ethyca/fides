@@ -22,6 +22,8 @@ import { useMemo, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { useFeatures } from "~/features/common/features";
+import MultipleSystemsFilter from "~/features/system/add-multipl-systems/MultipleSystemsFilterModal";
+
 import {
   extractVendorSource,
   getErrorMessage,
@@ -66,10 +68,10 @@ type Props = {
 export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   const systemText = "Vendor";
   const toast = useToast();
-  const features = useFeatures();
+  const { dictionaryService, tcf: isTcfEnabled } = useFeatures();
   const router = useRouter();
   const { isLoading: isGetLoading } = useGetAllSystemVendorsQuery(undefined, {
-    skip: !features.dictionaryService,
+    skip: !dictionaryService,
   });
   const [
     postVendorIds,
@@ -78,6 +80,11 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
 
   const dictionaryOptions = useAppSelector(selectAllDictSystems);
   const [globalFilter, setGlobalFilter] = useState();
+  const {
+    isOpen: isFilterOpen,
+    onOpen: onOpenFilter,
+    onClose: onCloseFilter,
+  } = useDisclosure();
   const { isOpen, onClose, onOpen } = useDisclosure();
 
   const allRowsAdded = dictionaryOptions.every((d) => d.linked_system);
@@ -122,6 +129,8 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         id: "vendor_id",
         cell: (props) => <VendorSourceCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Source" {...props} />,
+        enableColumnFilter: true,
+        filterFn: "arrIncludesSome",
         meta: {
           width: "80px",
         },
@@ -153,6 +162,9 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     enableGlobalFilter: true,
     state: {
       globalFilter,
+      columnVisibility: {
+        vendor_id: isTcfEnabled,
+      },
     },
     initialState: {
       rowSelection,
@@ -221,12 +233,25 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           totalSelectSystemsLength > 1 ? "s" : ""
         }`}
       />
+      <MultipleSystemsFilter
+        isOpen={isFilterOpen}
+        onClose={onCloseFilter}
+        tableInstance={tableInstance}
+      />
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={globalFilter}
           setGlobalFilter={setGlobalFilter}
           placeholder="Search"
         />
+        <Button
+          onClick={onOpenFilter}
+          data-testid="filter-multiple-systems-btn"
+          size="xs"
+          variant="outline"
+        >
+          Filter
+        </Button>
         <Tooltip
           label={toolTipText}
           shouldWrapChildren

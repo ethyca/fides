@@ -160,7 +160,7 @@ export const useFeatures = (): Features => {
   const fidesCloud = plusHealth ? !!plusHealth?.fides_cloud?.enabled : false;
 
   const tcf = plusHealth ? !!plusHealth.tcf.enabled : false;
-  
+
   const systemsCount = allSystems?.length ?? 0;
 
   const connectionsCount = initialConnections?.total ?? 0;
