@@ -6,21 +6,26 @@
 import A11yDialogLib from "a11y-dialog";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
-const useA11yDialogInstance = () => {
+const useA11yDialogInstance = (addOverlowStyling: Boolean) => {
   const [instance, setInstance] = useState<A11yDialogLib | null>(null);
-  const container = useCallback((node: Element) => {
-    if (node !== null) {
-      const dialog = new A11yDialogLib(node);
-      dialog
-        .on("show", () => {
-          document.documentElement.style.overflowY = "hidden";
-        })
-        .on("hide", () => {
-          document.documentElement.style.overflowY = "";
-        });
-      setInstance(dialog);
-    }
-  }, []);
+  const container = useCallback(
+    (node: Element) => {
+      if (node !== null) {
+        const dialog = new A11yDialogLib(node);
+        if (addOverlowStyling) {
+          dialog
+            .on("show", () => {
+              document.documentElement.style.overflowY = "hidden";
+            })
+            .on("hide", () => {
+              document.documentElement.style.overflowY = "";
+            });
+        }
+        setInstance(dialog);
+      }
+    },
+    [addOverlowStyling]
+  );
   return { instance, container };
 };
 
@@ -29,10 +34,17 @@ interface Props {
   className: string;
   id: string;
   title: string;
+  useOverlowStyling: Boolean;
   onClose?: () => void;
 }
-export const useA11yDialog = ({ role, className, id, onClose }: Props) => {
-  const { instance, container: ref } = useA11yDialogInstance();
+export const useA11yDialog = ({
+  role,
+  className,
+  id,
+  onClose,
+  useOverlowStyling,
+}: Props) => {
+  const { instance, container: ref } = useA11yDialogInstance(useOverlowStyling);
   const isAlertDialog = role === "alertdialog";
   const titleId = `${id}-title`;
 
