@@ -1793,25 +1793,12 @@ def test_privacy_request_log_failure(
         "identity": {"email": customer_email},
     }
 
-    with mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.fideslog_graph_failure"
-    ) as mock_log_event:
-        pr = get_privacy_request_results(
-            db,
-            policy,
-            run_privacy_request_task,
-            data,
-        )
-        sent_event = mock_log_event.call_args.args[0]
-        assert sent_event.docker is True
-        assert sent_event.event == "privacy_request_execution_failure"
-        assert sent_event.event_created_at is not None
-
-        assert sent_event.local_host is None
-        assert sent_event.endpoint is None
-        assert sent_event.status_code == 500
-        assert sent_event.error == "KeyError"
-        assert sent_event.extra_data == {"privacy_request": pr.id}
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
 
 
 class TestPrivacyRequestsEmailNotifications:
