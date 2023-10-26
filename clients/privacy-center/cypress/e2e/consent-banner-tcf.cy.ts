@@ -87,6 +87,11 @@ describe("Fides-js TCF", () => {
   });
 
   describe("banner appears when it should", () => {
+    beforeEach(() => {
+      cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
+        fixture: "consent/notices_served_tcf.json",
+      }).as("patchNoticesServed");
+    });
     const setAllTcfToValue = (
       experience: PrivacyExperience,
       value: UserConsentPreference | undefined
@@ -197,6 +202,9 @@ describe("Fides-js TCF", () => {
           experience: experience.items[0],
         });
       });
+      cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
+        fixture: "consent/notices_served_tcf.json",
+      }).as("patchNoticesServed");
     });
     it("can render purposes in the initial layer as a stack", () => {
       cy.get("div#fides-banner").within(() => {
@@ -243,6 +251,9 @@ describe("Fides-js TCF", () => {
           experience: experience.items[0],
         });
       });
+      cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
+        fixture: "consent/notices_served_tcf.json",
+      }).as("patchNoticesServed");
       cy.get("#fides-modal-link").click();
     });
 
