@@ -80,10 +80,10 @@ describe("Fides-js TCF", () => {
           experience: experience.items[0],
         });
       });
+      cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
+        fixture: "consent/notices_served_tcf.json",
+      }).as("patchNoticesServed");
     });
-    cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
-      fixture: "consent/notices_served_tcf.json",
-    }).as("patchNoticesServed");
   });
 
   describe("banner appears when it should", () => {
