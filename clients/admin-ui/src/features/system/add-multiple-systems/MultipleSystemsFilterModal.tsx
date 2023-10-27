@@ -62,7 +62,7 @@ const initialFilterState = {
   gacp: false,
 };
 
-const MultipleSystemsFilter = <T,>({
+const MultipleSystemsFilterModal = <T,>({
   isOpen,
   onClose,
   tableInstance,
@@ -147,4 +147,4 @@ const MultipleSystemsFilter = <T,>({
   );
 };
 
-export default MultipleSystemsFilter;
+export default MultipleSystemsFilterModal;

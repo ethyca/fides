@@ -20,14 +20,14 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import ConfirmationModal from "~/features/common/ConfirmationModal";
-import { useFeatures } from "~/features/common/features";
+import ConfirmationModal from "common/ConfirmationModal";
+import { useFeatures } from "common/features";
 import {
   extractVendorSource,
   getErrorMessage,
   isErrorResult,
   VendorSources,
-} from "~/features/common/helpers";
+} from "common/helpers";
 import {
   DefaultCell,
   DefaultHeaderCell,
@@ -39,15 +39,15 @@ import {
   RowSelectionBar,
   TableActionBar,
   TableSkeletonLoader,
-} from "~/features/common/table/v2";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
+} from "common/table/v2";
+import { errorToastParams, successToastParams } from "common/toast";
 import {
   DictSystems,
   selectAllDictSystems,
   useGetAllSystemVendorsQuery,
   usePostSystemVendorsMutation,
 } from "~/features/plus/plus.slice";
-import MultipleSystemsFilter from "~/features/system/add-multipl-systems/MultipleSystemsFilterModal";
+import MultipleSystemsFilterModal from "~/features/system/add-multiple-systems/MultipleSystemsFilterModal";
 
 export const VendorSourceCell = ({ value }: { value: string }) => (
   <Flex alignItems="center" height="100%">
@@ -233,7 +233,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           totalSelectSystemsLength > 1 ? "s" : ""
         }`}
       />
-      <MultipleSystemsFilter
+      <MultipleSystemsFilterModal
         isOpen={isFilterOpen}
         onClose={onCloseFilter}
         tableInstance={tableInstance}
