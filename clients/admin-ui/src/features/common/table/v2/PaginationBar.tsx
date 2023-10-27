@@ -71,7 +71,12 @@ export const PaginationBar = <T,>({
       </IconButton>
 
       <Menu>
-        <MenuButton as={Button} size="sm" rightIcon={<ChevronDownIcon />}>
+        <MenuButton
+          as={Button}
+          size="sm"
+          rightIcon={<ChevronDownIcon />}
+          data-testid="pagination-btn"
+        >
           {pageSize}
         </MenuButton>
         <MenuList>
@@ -81,6 +86,7 @@ export const PaginationBar = <T,>({
                 tableInstance.setPageSize(size);
               }}
               key={size}
+              data-testid={`pageSize-${size}`}
             >
               {size}
             </MenuItem>
