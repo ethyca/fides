@@ -27,8 +27,9 @@ describe("System management with Plus features", () => {
 
   describe("vendor list", () => {
     beforeEach(() => {
-      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
       stubVendorList();
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+      cy.wait("@getDictionaryEntries");
     });
 
     it("can display the vendor list dropdown", () => {
@@ -117,9 +118,9 @@ describe("System management with Plus features", () => {
           fixture: "taxonomy/custom-metadata/custom-field/list.json",
         }
       ).as("getCustomFields");
-      cy.intercept("PUT", `/api/v1/plus/custom-metadata/custom-field`, {
-        fixture: "taxonomy/custom-metadata/custom-field/update-party.json",
-      }).as("updateParty");
+      cy.intercept("POST", `/api/v1/plus/custom-metadata/custom-field/bulk`, {
+        body: {},
+      }).as("bulkUpdateCustomField");
     });
 
     it("can populate initial custom metadata", () => {
@@ -140,35 +141,31 @@ describe("System management with Plus features", () => {
 
       cy.wait("@putSystem");
 
-      // There are two custom field updates that will take place, but order is not stable
       const expectedValues = [
         {
+          custom_field_definition_id:
+            "id-custom-field-definition-pokemon-party",
           id: "id-custom-field-pokemon-party",
           resource_id: "demo_analytics_system",
           value: ["Charmander", "Eevee", "Snorlax", "Bulbasaur"],
         },
         {
+          custom_field_definition_id:
+            "id-custom-field-definition-starter-pokemon",
           id: "id-custom-field-starter-pokemon",
           resource_id: "demo_analytics_system",
           value: "Squirtle",
         },
       ];
-      cy.wait(["@updateParty", "@updateParty"]).then((interceptions) => {
-        expectedValues.forEach((expected) => {
-          const interception = interceptions.find(
-            (i) => i.request.body.id === expected.id
-          );
-          expect(interception.request.body.resource_id).to.eql(
-            expected.resource_id
-          );
-          expect(interception.request.body.value).to.eql(expected.value);
-        });
+      cy.wait("@bulkUpdateCustomField").then((interception) => {
+        expect(interception.request.body.upsert).to.eql(expectedValues);
       });
     });
   });
 
   describe("bulk system/vendor adding page", () => {
     beforeEach(() => {
+      stubPlus(true);
       stubSystemVendors();
     });
 
@@ -205,6 +202,10 @@ describe("System management with Plus features", () => {
         },
         tcf: {
           enabled: true,
+        },
+        fidesplus_version: "",
+        fides_cloud: {
+          enabled: false,
         },
       });
       cy.visit(ADD_SYSTEMS_ROUTE);
