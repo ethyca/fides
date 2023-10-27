@@ -5,7 +5,6 @@ import PrivacyPolicyLink from "../PrivacyPolicyLink";
 
 import {
   debugLog,
-  resurfaceConsent,
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "../../lib/consent-utils";
@@ -284,11 +283,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
 
   const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
 
-  const showBanner = useMemo(
-    () => experience.show_banner && resurfaceConsent(experience),
-    [experience]
-  );
-
   const { servedNotices } = useConsentServed({
     notices: [],
     options,
@@ -355,7 +349,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           onManagePreferencesClick();
           setActiveTabIndex(2);
         };
-        return showBanner ? (
+        return (
           <ConsentBanner
             bannerIsOpen={isOpen}
             onOpen={dispatchOpenBannerEvent}
@@ -384,7 +378,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               <InitialLayer experience={experience} />
             </div>
           </ConsentBanner>
-        ) : null;
+        );
       }}
       renderModalContent={() => (
         <TcfTabs
