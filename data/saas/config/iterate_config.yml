@@ -3,12 +3,16 @@ saas_config:
   name: Iterate
   type: iterate
   description: A sample schema representing the Iterate connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/iterate
   version: 0.1.0
 
   connector_params:
     - name: domain
       default_value: iteratehq.com
+      description: Your Iterate domain
     - name: access_token
+      label: Access Token
+      description: The API access token used to access Iterate
       sensitive: True
 
   client_config:
