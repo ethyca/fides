@@ -184,11 +184,18 @@ const init = async (config: FidesConfig) => {
       config.options.debug,
       "Explicit fidesString detected. Proceeding to override all TCF preferences with given fidesString"
     );
-    cookie.fides_string = config.options.fidesString;
-    cookie.tcf_consent = transformFidesStringToCookieKeys(
+    const { cookieKeys, success } = transformFidesStringToCookieKeys(
       config.options.fidesString,
       config.options.debug
     );
+    if (!success) {
+      // Treat an unsuccessful transform as if no fidesString were passed in.
+      // eslint-disable-next-line no-param-reassign
+      config.options.fidesString = null;
+    } else {
+      cookie.tcf_consent = cookieKeys;
+      cookie.fides_string = config.options.fidesString;
+    }
   } else if (
     tcfConsentCookieObjHasSomeConsentSet(cookie.tcf_consent) &&
     !cookie.fides_string &&

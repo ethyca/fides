@@ -9,38 +9,44 @@ import { decodeFidesString, idsFromAcString } from "./fidesString";
 export const transformFidesStringToCookieKeys = (
   fidesString: string,
   debug: boolean
-): TcfCookieConsent => {
+): { cookieKeys: TcfCookieConsent; success: boolean } => {
   const { tc: tcString, ac: acString } = decodeFidesString(fidesString);
-  const tcModel: TCModel = TCString.decode(tcString);
-
   const cookieKeys: TcfCookieConsent = {};
+  try {
+    const tcModel: TCModel = TCString.decode(tcString);
+    // map tc model key to cookie key
+    TCF_KEY_MAP.forEach(({ tcfModelKey, cookieKey }) => {
+      if (tcfModelKey) {
+        const items: TcfCookieKeyConsent = {};
+        (tcModel[tcfModelKey] as Vector).forEach((consented, id) => {
+          items[id] = consented;
+        });
+        cookieKeys[cookieKey] = items;
+      }
+    });
 
-  // map tc model key to cookie key
-  TCF_KEY_MAP.forEach(({ tcfModelKey, cookieKey }) => {
-    if (tcfModelKey) {
-      const items: TcfCookieKeyConsent = {};
-      (tcModel[tcfModelKey] as Vector).forEach((consented, id) => {
-        items[id] = consented;
-      });
-      cookieKeys[cookieKey] = items;
-    }
-  });
-
-  // Set AC consents, which will only be on vendor_consents
-  const acIds = idsFromAcString(acString, debug);
-  acIds.forEach((acId) => {
-    if (!cookieKeys.vendor_consent_preferences) {
-      cookieKeys.vendor_consent_preferences = { [acId]: true };
-    } else {
-      cookieKeys.vendor_consent_preferences[acId] = true;
-    }
-  });
-  debugLog(
-    debug,
-    `Generated cookie.tcf_consent from explicit fidesString.`,
-    cookieKeys
-  );
-  return cookieKeys;
+    // Set AC consents, which will only be on vendor_consents
+    const acIds = idsFromAcString(acString, debug);
+    acIds.forEach((acId) => {
+      if (!cookieKeys.vendor_consent_preferences) {
+        cookieKeys.vendor_consent_preferences = { [acId]: true };
+      } else {
+        cookieKeys.vendor_consent_preferences[acId] = true;
+      }
+    });
+    debugLog(
+      debug,
+      `Generated cookie.tcf_consent from explicit fidesString.`,
+      cookieKeys
+    );
+    return { cookieKeys, success: true };
+  } catch (error) {
+    debugLog(
+      debug,
+      `Could not decode tcString ${tcString}, it may be invalid. ${error}`
+    );
+    return { cookieKeys, success: false };
+  }
 };
 
 export const generateFidesStringFromCookieTcfConsent = async (
