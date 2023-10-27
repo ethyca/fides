@@ -22,6 +22,7 @@ The types of changes are:
 
 ### Changed
 - Updates experience API calls from Fides.js to include new meta field [#4335](https://github.com/ethyca/fides/pull/4335)
+- Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
 
 ## [2.23.0](https://github.com/ethyca/fides/compare/2.22.1...2.23.0)
 
