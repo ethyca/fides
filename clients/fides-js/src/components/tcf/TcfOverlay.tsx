@@ -5,7 +5,7 @@ import PrivacyPolicyLink from "../PrivacyPolicyLink";
 
 import {
   debugLog,
-  hasActionNeededNotices,
+  resurfaceConsent,
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "../../lib/consent-utils";
@@ -285,7 +285,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
 
   const showBanner = useMemo(
-    () => experience.show_banner && hasActionNeededNotices(experience),
+    () => experience.show_banner && resurfaceConsent(experience),
     [experience]
   );
 

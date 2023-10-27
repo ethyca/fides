@@ -13,7 +13,7 @@ import ConsentBanner from "../ConsentBanner";
 import { updateConsentPreferences } from "../../lib/preferences";
 import {
   debugLog,
-  hasActionNeededNotices,
+  resurfaceConsent,
   transformConsentToFidesUserPreference,
 } from "../../lib/consent-utils";
 
@@ -43,7 +43,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   >(initialEnabledNoticeKeys);
 
   const showBanner = useMemo(
-    () => experience.show_banner && hasActionNeededNotices(experience),
+    () => experience.show_banner && resurfaceConsent(experience),
     [experience]
   );
 

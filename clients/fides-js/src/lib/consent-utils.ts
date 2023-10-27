@@ -249,8 +249,9 @@ export const hasActionNeededTcfPreferences = (experience: PrivacyExperience) =>
 
 /**
  * Returns true if there are notices in the experience that require a user preference
+ * or if an experience's version hash does not match up.
  */
-export const hasActionNeededNotices = (experience: PrivacyExperience) => {
+export const resurfaceConsent = (experience: PrivacyExperience) => {
   if (experience.component === ComponentType.TCF_OVERLAY) {
     return hasActionNeededTcfPreferences(experience);
   }
