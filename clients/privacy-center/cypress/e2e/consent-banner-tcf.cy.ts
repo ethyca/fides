@@ -1389,6 +1389,7 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
+        cy.get("@FidesUpdated").should("have.been.calledTwice");
         cy.get("@TCFEvent2")
           .its("lastCall.args")
           .then(([tcData, success]) => {
