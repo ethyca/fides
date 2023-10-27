@@ -45,9 +45,12 @@ class HeapAuthenticationStrategy(AuthenticationStrategy):
         username: Optional[str] = assign_placeholders(self.username, secrets)
         password: Optional[int] = assign_placeholders(self.password, secrets)
 
+        assert username, "Cannot add authentication without a username!"
+        assert password, "Cannot add authentication without a password!"
+
         response = post(
             url=f"https://{domain}/api/public/v0/auth_token",
-            auth=(username, password),
+            auth=(username or "", str(password)),
         )
 
         if response.ok:
