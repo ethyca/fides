@@ -13,6 +13,7 @@ import {
 import { EXPERIENCE_KEYS_WITH_PREFERENCES } from "./tcf/constants";
 import { TCFPurposeConsentRecord } from "./tcf/types";
 import { VALID_ISO_3166_LOCATION_REGEX } from "./consent-constants";
+import type { FidesCookie } from "./cookie";
 
 /**
  * Wrapper around 'console.log' that only logs output when the 'debug' banner
@@ -225,15 +226,6 @@ const hasCurrentPreference = (
   return records.some((record) => record.current_preference);
 };
 
-const hasActionNeededTcfPreference = (
-  records: Pick<TCFPurposeConsentRecord, "current_preference">[] | undefined
-) => {
-  if (!records || records.length === 0) {
-    return false;
-  }
-  return records.some((record) => record.current_preference == null);
-};
-
 /**
  * Returns true if the user has any saved TCF preferences
  */
@@ -242,18 +234,19 @@ export const hasSavedTcfPreferences = (experience: PrivacyExperience) =>
     hasCurrentPreference(experience[key])
   );
 
-export const hasActionNeededTcfPreferences = (experience: PrivacyExperience) =>
-  EXPERIENCE_KEYS_WITH_PREFERENCES.some((key) =>
-    hasActionNeededTcfPreference(experience[key])
-  );
-
 /**
  * Returns true if there are notices in the experience that require a user preference
  * or if an experience's version hash does not match up.
  */
-export const resurfaceConsent = (experience: PrivacyExperience) => {
-  if (experience.component === ComponentType.TCF_OVERLAY) {
-    return hasActionNeededTcfPreferences(experience);
+export const resurfaceConsent = (
+  experience: PrivacyExperience,
+  cookie: FidesCookie
+) => {
+  if (
+    experience.component === ComponentType.TCF_OVERLAY &&
+    experience.meta?.version_hash
+  ) {
+    return experience.meta.version_hash !== cookie.tcf_version_hash;
   }
   return Boolean(
     experience?.privacy_notices?.some(

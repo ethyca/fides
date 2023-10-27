@@ -66,7 +66,7 @@ const Overlay: FunctionComponent<Props> = ({
       instance.show();
       onOpen();
     }
-  }, [instance, cookie, options.debug]);
+  }, [instance, onOpen]);
 
   const handleCloseModal = useCallback(() => {
     if (instance && !options.fidesEmbed) {
@@ -116,9 +116,9 @@ const Overlay: FunctionComponent<Props> = ({
   const showBanner = useMemo(
     () =>
       experience.show_banner &&
-      resurfaceConsent(experience) &&
+      resurfaceConsent(experience, cookie) &&
       !options.fidesEmbed,
-    [experience, options]
+    [experience, options, cookie]
   );
 
   const handleManagePreferencesClick = (): void => {

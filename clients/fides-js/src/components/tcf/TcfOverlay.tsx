@@ -247,6 +247,7 @@ const updateCookie = async (
     ...oldCookie,
     fides_string: tcString,
     tcf_consent: transformTcfPreferencesToCookieKeys(tcf),
+    tcf_version_hash: experience.meta?.version_hash,
   };
 };
 
