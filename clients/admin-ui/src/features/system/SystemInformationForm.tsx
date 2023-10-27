@@ -51,9 +51,9 @@ import {
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
+import VendorSelector from "~/features/system/VendorSelector";
 import { ResourceTypes, SystemResponse } from "~/types/api";
 
-import { DictSuggestionToggle } from "./dictionary-form/ToggleDictSuggestions";
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
 import {
   legalBasisForProfilingOptions,
@@ -217,22 +217,9 @@ const SystemInformationForm = ({
             </Text>
             {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 
-            <SystemFormInputGroup
-              heading="System details"
-              HeadingButton={DictSuggestionToggle}
-            >
+            <SystemFormInputGroup heading="System details">
               {features.dictionaryService ? (
-                <CustomSelect
-                  id="vendor"
-                  name="vendor_id"
-                  label="Vendor"
-                  placeholder="Select a vendor"
-                  singleValueBlock
-                  options={dictionaryOptions}
-                  tooltip="Select the vendor that matches the system"
-                  isCustomOption
-                  variant="stacked"
-                />
+                <VendorSelector options={dictionaryOptions} />
               ) : null}
               <DictSuggestionTextInput
                 id="name"
