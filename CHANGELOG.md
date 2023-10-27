@@ -49,6 +49,7 @@ The types of changes are:
 - Minor CSS improvements for the consent/TCF banners and modals [#4334](https://github.com/ethyca/fides/pull/4334)
 - Bug where not all system forms would appear to save when used with Compass [#4347](https://github.com/ethyca/fides/pull/4347)
 - Restrict TCF Privacy Experience Config if TCF is disabled [#4348](https://github.com/ethyca/fides/pull/4348)
+- Handle invalid `fides_string` when passed in as an override [#4350](https://github.com/ethyca/fides/pull/4350)
 
 ### Changed
 - Derive cookie storage info, privacy policy and legitimate interest disclosure URLs, and data retention data from the data map instead of directly from gvl.json [#4286](https://github.com/ethyca/fides/pull/4286)
