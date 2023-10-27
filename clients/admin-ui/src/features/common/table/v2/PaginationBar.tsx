@@ -1,17 +1,29 @@
 import {
+  Button,
+  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   HStack,
   IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Text,
 } from "@fidesui/react";
 import { Table as TableInstance } from "@tanstack/react-table";
 
+export const PageSizes = [25, 50, 100];
+
 type PaginationBarProps<T> = {
+  pageSizes: number[];
   tableInstance: TableInstance<T>;
 };
 
-export const PaginationBar = <T,>({ tableInstance }: PaginationBarProps<T>) => {
+export const PaginationBar = <T,>({
+  tableInstance,
+  pageSizes,
+}: PaginationBarProps<T>) => {
   const totalRows = tableInstance.getFilteredRowModel().rows.length;
   const { pageIndex } = tableInstance.getState().pagination;
   const { pageSize } = tableInstance.getState().pagination;
@@ -57,6 +69,24 @@ export const PaginationBar = <T,>({ tableInstance }: PaginationBarProps<T>) => {
       >
         next
       </IconButton>
+
+      <Menu>
+        <MenuButton as={Button} size="sm" rightIcon={<ChevronDownIcon />}>
+          {pageSize}
+        </MenuButton>
+        <MenuList>
+          {pageSizes.map((size) => (
+            <MenuItem
+              onClick={() => {
+                tableInstance.setPageSize(size);
+              }}
+              key={size}
+            >
+              {size}
+            </MenuItem>
+          ))}
+        </MenuList>
+      </Menu>
     </HStack>
   );
 };

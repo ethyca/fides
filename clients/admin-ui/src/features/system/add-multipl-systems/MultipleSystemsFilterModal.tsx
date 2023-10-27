@@ -1,8 +1,8 @@
 import {
   Box,
   Button,
+  Checkbox,
   Divider,
-  Heading,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -10,11 +10,10 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Checkbox,
   Text,
 } from "@fidesui/react";
-import React, { ReactNode, useState, useMemo } from "react";
 import { Table as TableInstance } from "@tanstack/react-table";
+import React, { useMemo, useState } from "react";
 
 type FilterCheckboxProps = {
   onChange: () => void;
@@ -32,21 +31,17 @@ const FilterCheckbox = ({
   <Checkbox
     value={value}
     key={value}
-    width="193px"
     height="20px"
-    mb="25px"
+    mb={3}
     isChecked={isChecked}
     onChange={onChange}
-    _focusWithin={{
-      bg: "gray.100",
-    }}
     colorScheme="complimentary"
+    mr={5}
   >
     <Text
       fontSize="sm"
       lineHeight={5}
       height="20px"
-      width="170px"
       textOverflow="ellipsis"
       overflow="hidden"
       whiteSpace="nowrap"
@@ -62,44 +57,40 @@ interface MultipleSystemsFilterProps<T> {
   onClose: () => void;
 }
 
+const initialFilterState = {
+  gvl: false,
+  gacp: false,
+};
+
 const MultipleSystemsFilter = <T,>({
   isOpen,
   onClose,
   tableInstance,
 }: MultipleSystemsFilterProps<T>) => {
-  const anyFiltersActive = tableInstance.getState().columnFilters.length > 0;
-  const [filters, setFilters] = useState({
-    gvl: false,
-    gacp: false,
-  });
+  const [filters, setFilters] = useState(initialFilterState);
 
-
-  useMemo(()=>{
-    const columnFilters= {
+  useMemo(() => {
+    const columnFilters: {
+      id: string;
+      value: string[];
+    } = {
       id: "vendor_id",
-      value: []
-    }
-    if(filters.gvl){
-      columnFilters.value.push("gvl")  
+      value: [],
+    };
+    if (filters.gvl) {
+      columnFilters.value.push("gvl");
     }
 
-    if(filters.gacp){
-      columnFilters.value.push("gacp")  
+    if (filters.gacp) {
+      columnFilters.value.push("gacp");
     }
-    console.log(columnFilters)
-    
-    tableInstance.setColumnFilters([columnFilters])
 
-    
-  },[filters])
+    tableInstance.setColumnFilters([columnFilters]);
+  }, [filters, tableInstance]);
 
-  
   const resetFilters = () => {
     tableInstance.setColumnFilters([]);
-    setFilters({
-      gvl: false,
-      gacp: false,
-    })
+    setFilters(initialFilterState);
   };
 
   return (
@@ -109,35 +100,24 @@ const MultipleSystemsFilter = <T,>({
         <ModalHeader>Filters</ModalHeader>
         <ModalCloseButton />
         <Divider />
-        <ModalBody maxH="85vh" padding="0px" overflowX="auto">
-          <Heading height="56px">
-            <Box
-              flex="1"
-              alignItems="center"
-              justifyContent="center"
-              textAlign="left"
-            >
-              Sources
-            </Box>
-          </Heading>
+        <ModalBody maxH="85vh" px={6} py={4} overflowX="auto">
+          <Text fontSize="md" fontWeight="bold" mb={2}>
+            Sources
+          </Text>
           <FilterCheckbox
             onChange={() => {
-              setFilters((prev) => {
-                return { ...prev, gvl: !prev.gvl };
-              });
+              setFilters((prev) => ({ ...prev, gvl: !prev.gvl }));
             }}
             displayText="GVL"
-            isChecked={filters["gvl"]}
+            isChecked={filters.gvl}
             value="gvl"
           />
           <FilterCheckbox
             onChange={() => {
-              setFilters((prev) => {
-                return { ...prev, gacp: !prev.gacp };
-              });
+              setFilters((prev) => ({ ...prev, gacp: !prev.gacp }));
             }}
             displayText="AC"
-            isChecked={filters["gacp"]}
+            isChecked={filters.gacp}
             value="gacp"
           />
         </ModalBody>

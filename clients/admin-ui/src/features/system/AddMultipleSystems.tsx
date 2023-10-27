@@ -22,8 +22,6 @@ import { useMemo, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { useFeatures } from "~/features/common/features";
-import MultipleSystemsFilter from "~/features/system/add-multipl-systems/MultipleSystemsFilterModal";
-
 import {
   extractVendorSource,
   getErrorMessage,
@@ -36,6 +34,7 @@ import {
   FidesTableV2,
   GlobalFilterV2,
   IndeterminateCheckboxCell,
+  PageSizes,
   PaginationBar,
   RowSelectionBar,
   TableActionBar,
@@ -48,6 +47,7 @@ import {
   useGetAllSystemVendorsQuery,
   usePostSystemVendorsMutation,
 } from "~/features/plus/plus.slice";
+import MultipleSystemsFilter from "~/features/system/add-multipl-systems/MultipleSystemsFilterModal";
 
 export const VendorSourceCell = ({ value }: { value: string }) => (
   <Flex alignItems="center" height="100%">
@@ -129,14 +129,14 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         id: "vendor_id",
         cell: (props) => <VendorSourceCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Source" {...props} />,
-        enableColumnFilter: true,
+        enableColumnFilter: isTcfEnabled,
         filterFn: "arrIncludesSome",
         meta: {
           width: "80px",
         },
       }),
     ],
-    [allRowsAdded, systemText]
+    [allRowsAdded, systemText, isTcfEnabled]
   );
 
   const rowSelection = useMemo(() => {
@@ -169,7 +169,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     initialState: {
       rowSelection,
       pagination: {
-        pageSize: 25,
+        pageSize: PageSizes[0],
       },
     },
   });
@@ -244,33 +244,38 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           setGlobalFilter={setGlobalFilter}
           placeholder="Search"
         />
-        <Button
-          onClick={onOpenFilter}
-          data-testid="filter-multiple-systems-btn"
-          size="xs"
-          variant="outline"
-        >
-          Filter
-        </Button>
-        <Tooltip
-          label={toolTipText}
-          shouldWrapChildren
-          placement="top"
-          isDisabled={
-            (anyNewSelectedRows && !allRowsAdded) ||
-            (anyNewSelectedRows && allRowsAdded)
-          }
-        >
-          <Button
-            onClick={onOpen}
-            data-testid="add-multiple-systems-btn"
-            size="xs"
-            variant="outline"
-            disabled={!anyNewSelectedRows}
+        <Flex>
+          {isTcfEnabled ? (
+            <Button
+              onClick={onOpenFilter}
+              data-testid="filter-multiple-systems-btn"
+              size="xs"
+              variant="outline"
+              mr={4}
+            >
+              Filter
+            </Button>
+          ) : null}
+          <Tooltip
+            label={toolTipText}
+            shouldWrapChildren
+            placement="top"
+            isDisabled={
+              (anyNewSelectedRows && !allRowsAdded) ||
+              (anyNewSelectedRows && allRowsAdded)
+            }
           >
-            Add {`${systemText}s`}
-          </Button>
-        </Tooltip>
+            <Button
+              onClick={onOpen}
+              data-testid="add-multiple-systems-btn"
+              size="xs"
+              variant="outline"
+              disabled={!anyNewSelectedRows}
+            >
+              Add {`${systemText}s`}
+            </Button>
+          </Tooltip>
+        </Flex>
       </TableActionBar>
       <FidesTableV2<MultipleSystemTable>
         tableInstance={tableInstance}
@@ -285,7 +290,10 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           />
         }
       />
-      <PaginationBar tableInstance={tableInstance} />
+      <PaginationBar<MultipleSystemTable>
+        tableInstance={tableInstance}
+        pageSizes={PageSizes}
+      />
     </Flex>
   );
 };
