@@ -272,7 +272,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
               variant="outline"
               disabled={!anyNewSelectedRows}
             >
-              Add {`${systemText}s`}
+              Add {`${systemText.toLocaleLowerCase()}s`}
             </Button>
           </Tooltip>
         </Flex>
