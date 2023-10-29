@@ -1,34 +1,30 @@
-import { ComponentChildren, VNode, h } from "preact";
+import { VNode, h } from "preact";
 import { Attributes } from "../lib/a11y-dialog";
 import { ExperienceConfig } from "../lib/consent-types";
 
 import CloseButton from "./CloseButton";
-import GpcInfo from "./GpcInfo";
-import ExperienceDescription from "./ExperienceDescription";
-import { getConsentContext } from "../fides";
+import ConsentContent from "~/components/ConsentContent";
 
 const ConsentModal = ({
   attributes,
   experience,
-  children,
-  onVendorPageClick,
   renderModalFooter,
+  renderModalContent,
 }: {
   attributes: Attributes;
   experience: ExperienceConfig;
-  children: ComponentChildren;
   onVendorPageClick?: () => void;
   renderModalFooter: () => VNode;
+  renderModalContent: () => VNode;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
-  const showGpcBadge = getConsentContext().globalPrivacyControl;
 
   return (
     // @ts-ignore A11yDialog ref obj type isn't quite the same
     <div
       data-testid="consent-modal"
       {...container}
-      className={`fides-modal-container ${attributes.container.className}`}
+      className="fides-modal-container"
     >
       <div {...overlay} className="fides-modal-overlay" />
       <div
@@ -40,27 +36,14 @@ const ConsentModal = ({
           <div />
           <CloseButton ariaLabel="Close modal" onClick={closeButton.onClick} />
         </div>
-        <div className="fides-modal-body">
-          <h1
-            data-testid="fides-modal-title"
-            {...title}
-            className="fides-modal-title"
-          >
-            {experience.title}
-          </h1>
-          <p
-            data-testid="fides-modal-description"
-            className="fides-modal-description"
-          >
-            <ExperienceDescription
-              onVendorPageClick={onVendorPageClick}
-              description={experience.description}
-            />
-          </p>
-          {showGpcBadge && <GpcInfo />}
-          {children}
-        </div>
-        <div className="fides-modal-footer">{renderModalFooter()}</div>
+        <ConsentContent
+          title={title}
+          experience={experience}
+          renderModalFooter={renderModalFooter}
+        >
+          {" "}
+          {renderModalContent()}
+        </ConsentContent>
       </div>
     </div>
   );
