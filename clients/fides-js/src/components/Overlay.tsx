@@ -10,7 +10,7 @@ import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
 import { FidesCookie } from "../lib/cookie";
-import ConsentContent from "~/components/ConsentContent";
+import ConsentContent from "./ConsentContent";
 
 interface RenderBannerProps {
   isOpen: boolean;

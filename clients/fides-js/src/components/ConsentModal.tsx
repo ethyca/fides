@@ -3,7 +3,7 @@ import { Attributes } from "../lib/a11y-dialog";
 import { ExperienceConfig } from "../lib/consent-types";
 
 import CloseButton from "./CloseButton";
-import ConsentContent from "~/components/ConsentContent";
+import ConsentContent from "./ConsentContent";
 
 const ConsentModal = ({
   attributes,

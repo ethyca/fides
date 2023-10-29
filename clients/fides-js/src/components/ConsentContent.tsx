@@ -26,7 +26,7 @@ const ConsentModal = ({
   const showGpcBadge = getConsentContext().globalPrivacyControl;
 
   return (
-    <div className={`fides-consent-content ${className}`}>
+    <div id="fides-consent-content" className={className}>
       <div className="fides-modal-body">
         <h1
           data-testid="fides-modal-title"

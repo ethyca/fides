@@ -309,31 +309,32 @@ div.fides-modal-content {
 
 /*Fides Embed*/
 
-div#fides-embed-container:focus-visible,
-div#fides-embed-container div#fides-modal:focus-visible {
-  outline: none;
-}
-
 /* Disable "sticky" footer when embedded */
-div#fides-embed-container div#fides-modal .fides-modal-footer {
+div#fides-embed-container div#fides-consent-content .fides-modal-footer {
   position: inherit;
 }
 
-div#fides-embed-container .fides-modal-container,
-div#fides-embed-container .fides-modal-overlay {
-  position: initial;
-  background-color: var(--fides-overlay-embed-background-color);
-}
-
-div#fides-embed-container .fides-modal-content {
+div#fides-embed-container div#fides-consent-content {
   position: initial;
   transform: none;
   border: none;
   max-height: none;
-}
+  display: flex;
 
-div#fides-embed-container .fides-close-button {
-  display: none;
+  font-family: var(--fides-overlay-font-family);
+  font-size: var(--fides-overlay-font-size-body);
+  color: var(--fides-overlay-body-font-color);
+  box-sizing: border-box;
+  background-color: var(--fides-overlay-background-color);
+  border-radius: var(--fides-overlay-container-border-radius);
+  width: var(--fides-overlay-width);
+
+  top: 50%;
+  left: 50%;
+
+  flex-direction: column;
+  padding: 0px;
+  overflow: hidden;
 }
 
 .fides-modal-container {
@@ -350,7 +351,7 @@ div#fides-modal .fides-modal-header {
   justify-content: end;
 }
 
-div#fides-modal .fides-modal-title {
+div#fides-consent-content .fides-modal-title {
   text-align: center;
   margin-top: 0.2em;
   margin-bottom: 0.2em;
@@ -359,21 +360,21 @@ div#fides-modal .fides-modal-title {
   color: var(--fides-overlay-title-font-color);
 }
 
-div#fides-modal .fides-modal-body {
+div#fides-consent-content .fides-modal-body {
   overflow-y: auto;
   padding-inline: var(--fides-overlay-padding);
   height: 100%;
   scrollbar-gutter: stable;
 }
 
-div#fides-modal .fides-modal-footer {
+div#fides-consent-content .fides-modal-footer {
   display: flex;
   flex-direction: column;
   z-index: 5;
   background-color: var(--fides-overlay-background-color);
 }
 
-div#fides-modal .fides-modal-description {
+div#fides-consent-content .fides-modal-description {
   margin: 1em 0 1em 0;
 }
 
@@ -382,7 +383,7 @@ div#fides-modal .fides-modal-description {
   gap: 10px;
 }
 
-div#fides-modal .fides-modal-button-group {
+div#fides-consent-content .fides-modal-button-group {
   display: flex;
   width: 100%;
   flex-direction: row;
@@ -392,11 +393,12 @@ div#fides-modal .fides-modal-button-group {
 
 /* Responsive overlay */
 @media (max-width: 48em) {
-  div.fides-modal-content {
+  div.fides-modal-content,
+  div.fides-embed {
     width: 100%;
   }
 
-  div#fides-modal .fides-modal-button-group {
+  div#fides-consent-content .fides-modal-button-group {
     flex-direction: column;
   }
 
@@ -440,7 +442,7 @@ div#fides-banner-inner .fides-privacy-policy {
   color: var(--fides-overlay-primary-color);
 }
 
-.fides-modal-content .fides-privacy-policy {
+div#fides-consent-content .fides-privacy-policy {
   display: block;
   text-align: center;
   margin-bottom: var(--fides-overlay-padding);
