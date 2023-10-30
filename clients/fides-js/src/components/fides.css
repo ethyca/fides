@@ -314,6 +314,10 @@ div#fides-embed-container div#fides-consent-content .fides-modal-footer {
   position: inherit;
 }
 
+div#fides-embed-container .fides-modal-body {
+  padding-top: 1em;
+}
+
 div#fides-embed-container div#fides-consent-content {
   position: initial;
   transform: none;
@@ -349,6 +353,10 @@ div#fides-embed-container div#fides-consent-content {
 div#fides-modal .fides-modal-header {
   display: flex;
   justify-content: end;
+}
+
+div#fides-consent-content {
+  overflow: scroll;
 }
 
 div#fides-consent-content .fides-modal-title {
@@ -394,8 +402,8 @@ div#fides-consent-content .fides-modal-button-group {
 /* Responsive overlay */
 @media (max-width: 48em) {
   div.fides-modal-content,
-  div.fides-embed {
-    width: 100%;
+  div#fides-consent-content {
+    width: 100% !important;
   }
 
   div#fides-consent-content .fides-modal-button-group {

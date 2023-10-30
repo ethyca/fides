@@ -41,7 +41,6 @@ const ConsentModal = ({
           experience={experience}
           renderModalFooter={renderModalFooter}
         >
-          {" "}
           {renderModalContent()}
         </ConsentContent>
       </div>

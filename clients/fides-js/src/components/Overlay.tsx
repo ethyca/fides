@@ -161,8 +161,7 @@ const Overlay: FunctionComponent<Props> = ({
             })
           }
         >
-          {" "}
-          {renderModalContent()}{" "}
+          {renderModalContent()}
         </ConsentContent>
       ) : (
         <ConsentModal
