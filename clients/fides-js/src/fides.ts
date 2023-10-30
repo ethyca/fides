@@ -91,14 +91,14 @@ const updateCookie = async (
   oldCookie: FidesCookie,
   experience: PrivacyExperience,
   debug?: boolean
-): Promise<FidesCookie> => {
+): Promise<{ cookie: FidesCookie; experience: PrivacyExperience }> => {
   const context = getConsentContext();
   const consent = buildCookieConsentForExperiences(
     experience,
     context,
     !!debug
   );
-  return { ...oldCookie, consent };
+  return { cookie: { ...oldCookie, consent }, experience };
 };
 
 /**
@@ -122,7 +122,11 @@ const init = async (config: FidesConfig) => {
     cookie,
     experience,
     renderOverlay,
-    updateCookie,
+    updateCookieAndExperience: ({
+      cookie: oldCookie,
+      experience: effectiveExperience,
+      debug,
+    }) => updateCookie(oldCookie, effectiveExperience, debug),
   });
   Object.assign(_Fides, updatedFides);
 
