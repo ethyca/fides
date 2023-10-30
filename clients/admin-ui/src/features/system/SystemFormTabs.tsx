@@ -2,7 +2,7 @@ import { Box, Button, Text, useToast } from "@fidesui/react";
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
@@ -109,30 +109,33 @@ const SystemFormTabs = ({
     }
   }, [activeSystem]);
 
-  const handleSuccess = (system: SystemResponse) => {
-    // show a save message if this is the first time the system was saved
-    if (activeSystem === undefined) {
-      setShowSaveMessage(true);
-    }
-    dispatch(setActiveSystem(system));
-    const toastParams = {
-      ...DEFAULT_TOAST_PARAMS,
-      description: (
-        <ToastMessage
-          onViewDatamap={() => {
-            router.push(systemOrDatamapRoute).then(() => {
+  const handleSuccess = useCallback(
+    (system: SystemResponse) => {
+      // show a save message if this is the first time the system was saved
+      if (activeSystem === undefined) {
+        setShowSaveMessage(true);
+      }
+      dispatch(setActiveSystem(system));
+      const toastParams = {
+        ...DEFAULT_TOAST_PARAMS,
+        description: (
+          <ToastMessage
+            onViewDatamap={() => {
+              router.push(systemOrDatamapRoute).then(() => {
+                toast.closeAll();
+              });
+            }}
+            onAddPrivacyDeclaration={() => {
+              setTabIndex(1);
               toast.closeAll();
-            });
-          }}
-          onAddPrivacyDeclaration={() => {
-            setTabIndex(1);
-            toast.closeAll();
-          }}
-        />
-      ),
-    };
-    toast({ ...toastParams });
-  };
+            }}
+          />
+        ),
+      };
+      toast({ ...toastParams });
+    },
+    [activeSystem, dispatch, router, systemOrDatamapRoute, toast]
+  );
 
   useEffect(() => {
     /**
@@ -151,13 +154,16 @@ const SystemFormTabs = ({
 
   const { attemptAction } = useIsAnyFormDirty();
 
-  const onTabChange = (index: number) => {
-    attemptAction().then((modalConfirmed: boolean) => {
-      if (modalConfirmed) {
-        setTabIndex(index);
-      }
-    });
-  };
+  const onTabChange = useCallback(
+    (index: number) => {
+      attemptAction().then((modalConfirmed: boolean) => {
+        if (modalConfirmed) {
+          setTabIndex(index);
+        }
+      });
+    },
+    [attemptAction]
+  );
 
   const tabData: TabData[] = [
     {
