@@ -16,7 +16,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "4c979e60882a13b0da676a6e71ba9db4" # string
+analytics_id = "50f8a5cbc7032a7aba1bc2873471e649" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -38,6 +38,9 @@ server_port = "8080" # string
 
 # Toggle whether TCF is enabled.
 tcf_enabled = false # boolean
+
+# Toggle whether Google AC Mode is enabled.
+ac_enabled = false # boolean
 
 #--------------#
 #-- DATABASE --#
