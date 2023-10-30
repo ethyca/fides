@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.23.0...main)
 
+### Changed
+- Determine if the TCF overlay needs to surface based on backend calculated version hash [#4356](https://github.com/ethyca/fides/pull/4356)
+
 ## [2.23.0](https://github.com/ethyca/fides/compare/2.22.1...2.23.0)
 
 ### Added
