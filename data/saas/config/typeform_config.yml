@@ -3,6 +3,7 @@ saas_config:
   name: typeform SaaS Config
   type: typeform
   description: A sample schema representing the typeform connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/typeform
   version: 0.1.0
 
   connector_params:
