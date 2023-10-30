@@ -119,23 +119,23 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     ]
   );
 
+  const dispatchOpenBannerEvent = useCallback(() => {
+    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+      servingComponent: ServingComponent.BANNER,
+    });
+  }, [cookie, options.debug]);
+
+  const dispatchOpenOverlayEvent = useCallback(() => {
+    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+      servingComponent: ServingComponent.OVERLAY,
+    });
+  }, [cookie, options.debug]);
+
   if (!experience.experience_config) {
     debugLog(options.debug, "No experience config found");
     return null;
   }
   const experienceConfig = experience.experience_config;
-
-  const dispatchOpenBannerEvent = () => {
-    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
-      servingComponent: ServingComponent.BANNER,
-    });
-  };
-
-  const dispatchOpenOverlayEvent = () => {
-    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
-      servingComponent: ServingComponent.OVERLAY,
-    });
-  };
 
   return (
     <Overlay
