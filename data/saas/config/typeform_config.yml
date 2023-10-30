@@ -32,6 +32,12 @@ saas_config:
         delete:
           method: DELETE
           path: /rtbf/<account_id>/responses
+          body: |
+            {
+              "emails": [
+                "<email>"
+              ]
+            }
           headers:
             - name: Content-Type
               value: application/json
