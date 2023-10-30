@@ -269,9 +269,7 @@ export const initialize = async ({
     debug?: boolean
   ) => Promise<FidesCookie>;
 } & FidesConfig): Promise<Partial<Fides>> => {
-  const shouldInitOverlay = options.isOverlayEnabled;
   let effectiveExperience = experience;
-  let fidesRegionString: string | null = null;
 
   const fidesObj: Partial<Fides> = {
     consent: cookie.consent,
@@ -285,7 +283,7 @@ export const initialize = async ({
     initialized: true,
   };
 
-  if (!shouldInitOverlay) {
+  if (!options.isOverlayEnabled) {
     return fidesObj;
   }
 
@@ -298,7 +296,10 @@ export const initialize = async ({
     return fidesObj;
   }
 
-  fidesRegionString = await retrieveEffectiveRegionString(geolocation, options);
+  const fidesRegionString = await retrieveEffectiveRegionString(
+    geolocation,
+    options
+  );
   if (!fidesRegionString) {
     debugLog(
       options.debug,
