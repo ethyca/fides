@@ -36,15 +36,19 @@ describe("System management with Plus features", () => {
       cy.getSelectValueContainer("input-vendor_id");
     });
 
-    it("contains dictionary entries", () => {
-      cy.selectOption("input-vendor_id", "Aniview LTD");
+    it("contains type ahead dictionary entries", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("A");
+      cy.get("#react-select-select-vendor_id-option-0").contains("Aniview LTD");
+      cy.get("#react-select-select-vendor_id-option-1").contains(
+        "Anzu Virtual Reality LTD"
+      );
     });
 
     it("can switch entries", () => {
-      cy.selectOption("input-vendor_id", "Aniview LTD");
+      cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
       cy.getSelectValueContainer("input-vendor_id").contains("Aniview LTD");
 
-      cy.selectOption("input-vendor_id", "Anzu Virtual Reality LTD");
+      cy.getSelectValueContainer("input-vendor_id").type("Anzu{enter}");
       cy.getSelectValueContainer("input-vendor_id").contains(
         "Anzu Virtual Reality LTD"
       );
@@ -55,7 +59,7 @@ describe("System management with Plus features", () => {
     // modal to pop up incorrectly when switching tabs
     it("can switch between tabs after populating from dictionary", () => {
       cy.wait("@getSystems");
-      cy.selectOption("input-vendor_id", "Anzu Virtual Reality LTD");
+      cy.getSelectValueContainer("input-vendor_id").type("Anzu{enter}");
       cy.getByTestId("dict-suggestions-btn").click();
       cy.getByTestId("toggle-dict-suggestions").click();
       // the form fetches the system again after saving, so update the intercept with dictionary values
