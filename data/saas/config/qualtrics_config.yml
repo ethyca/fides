@@ -10,7 +10,7 @@ saas_config:
 
   client_config:
     protocol: https
-    host: yul1.qualtrics.com
+    host: <domain>
     authentication:
       strategy: api_key
       configuration:
