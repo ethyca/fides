@@ -4,10 +4,10 @@ import {
   FidesCookie,
   FidesEndpointPaths,
   PrivacyExperience,
-  UserConsentPreference,
 } from "fides-js";
 import { CookieKeyConsent } from "fides-js/src/lib/cookie";
 import { API_URL } from "../support/constants";
+import { mockCookie } from "../support/mocks";
 import { OVERRIDE, stubConfig } from "../support/stubs";
 
 const PURPOSE_2 = {
@@ -66,10 +66,17 @@ const SPECIAL_FEATURE_1 = {
   name: "Use precise geolocation data",
   served_notice_history_id: "ser_9f3641ce-9863-4a32-b4db-ef1aac9046db",
 };
+const VERSION_HASH = "q34r3qr4";
 
 describe("Fides-js TCF", () => {
   describe("banner appears when it should", () => {
     beforeEach(() => {
+      cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
+        fixture: "consent/notices_served_tcf.json",
+      }).as("patchNoticesServed");
+    });
+
+    it("should render the banner if there is no saved version hash", () => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
@@ -80,112 +87,54 @@ describe("Fides-js TCF", () => {
           experience: experience.items[0],
         });
       });
-      cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
-        fixture: "consent/notices_served_tcf.json",
-      }).as("patchNoticesServed");
-    });
-  });
-
-  describe("banner appears when it should", () => {
-    beforeEach(() => {
-      cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
-        fixture: "consent/notices_served_tcf.json",
-      }).as("patchNoticesServed");
-    });
-    const setAllTcfToValue = (
-      experience: PrivacyExperience,
-      value: UserConsentPreference | undefined
-    ): PrivacyExperience => {
-      const consentPurposes = experience.tcf_purpose_consents?.map((p) => ({
-        ...p,
-        current_preference: value,
-      }));
-      const legintPurposes = experience.tcf_purpose_legitimate_interests?.map(
-        (p) => ({ ...p, current_preference: value })
-      );
-      const specialPurposes = experience.tcf_special_purposes?.map((p) => ({
-        ...p,
-        current_preference: value,
-      }));
-      const features = experience.tcf_features?.map((f) => ({
-        ...f,
-        current_preference: value,
-      }));
-      const specialFeatures = experience.tcf_special_features?.map((f) => ({
-        ...f,
-        current_preference: value,
-      }));
-      const consentVendors = experience.tcf_vendor_consents?.map((v) => ({
-        ...v,
-        current_preference: value,
-      }));
-      const legintVendors = experience.tcf_vendor_legitimate_interests?.map(
-        (v) => ({
-          ...v,
-          current_preference: value,
-        })
-      );
-      const consentSystems = experience.tcf_system_consents?.map((s) => ({
-        ...s,
-        current_preference: value,
-      }));
-      const legintSystems = experience.tcf_system_legitimate_interests?.map(
-        (v) => ({
-          ...v,
-          current_preference: value,
-        })
-      );
-      return {
-        ...experience,
-        tcf_purpose_consents: consentPurposes,
-        tcf_purpose_legitimate_interests: legintPurposes,
-        tcf_special_purposes: specialPurposes,
-        tcf_features: features,
-        tcf_special_features: specialFeatures,
-        tcf_vendor_consents: consentVendors,
-        tcf_vendor_legitimate_interests: legintVendors,
-        tcf_system_consents: consentSystems,
-        tcf_system_legitimate_interests: legintSystems,
-      };
-    };
-    it("banner should not appear if everything already has a preference", () => {
-      cy.fixture("consent/experience_tcf.json").then((payload) => {
-        const experience = payload.items[0];
-        const updatedExperience = setAllTcfToValue(
-          experience,
-          UserConsentPreference.OPT_IN
-        );
-        stubConfig({
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: true,
-          },
-          experience: updatedExperience,
-        });
-        cy.waitUntilFidesInitialized().then(() => {
-          cy.get("div#fides-banner").should("not.exist");
-        });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").should("have.been.calledOnce");
+        cy.get("div#fides-banner").should("be.visible");
       });
     });
-    it("should render the banner if there is even one preference that is not set", () => {
-      cy.fixture("consent/experience_tcf.json").then((payload) => {
-        const experience = payload.items[0];
-        const updatedExperience = setAllTcfToValue(
-          experience,
-          UserConsentPreference.OPT_IN
-        );
-        updatedExperience.tcf_purpose_consents![0].current_preference =
-          undefined;
+
+    it("should render the banner if the saved hash does not match", () => {
+      const cookie = mockCookie({
+        tcf_version_hash: "ec87e92ce5bc",
+      });
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig({
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
           },
-          experience: updatedExperience,
+          experience: experience.items[0],
         });
-        cy.waitUntilFidesInitialized().then(() => {
-          cy.get("div#fides-banner");
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").should("have.been.calledOnce");
+        cy.get("div#fides-banner").should("be.visible");
+      });
+    });
+
+    it("should not render the banner if the saved hashes match", () => {
+      const cookie = mockCookie({
+        tcf_version_hash: VERSION_HASH,
+      });
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+          },
+          experience: experience.items[0],
         });
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        // The banner has a delay, so in order to assert its non-existence, we have
+        // to give it a chance to come up first. Otherwise, the following gets will
+        // pass regardless.
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
+        cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.get("div#fides-banner").should("not.exist");
       });
     });
   });
@@ -1451,17 +1400,7 @@ describe("Fides-js TCF", () => {
      * Configure a valid fides_consent cookie with previously saved preferences
      */
     const setFidesCookie = () => {
-      const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
-      const CREATED_DATE = "2022-12-24T12:00:00.000Z";
-      const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
-      const cookie: FidesCookie = {
-        identity: { fides_user_device_id: uuid },
-        fides_meta: {
-          version: "0.9.0",
-          createdAt: CREATED_DATE,
-          updatedAt: UPDATED_DATE,
-        },
-        consent: {},
+      const cookie = mockCookie({
         tcf_consent: {
           purpose_consent_preferences: {
             [PURPOSE_4.id]: false,
@@ -1472,7 +1411,7 @@ describe("Fides-js TCF", () => {
           vendor_consent_preferences: { [VENDOR_1.id]: true },
         },
         fides_string: "CPziCYAPziCYAGXABBENATEIAACAAAAAAAAAABEAAAAA.IABE",
-      };
+      });
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
     };
 
