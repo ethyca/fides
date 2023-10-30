@@ -71,6 +71,7 @@ describe("System management with Plus features", () => {
               body: {
                 ...origSystem,
                 ...dictSystem,
+                fides_key: origSystem.fides_key,
                 customFieldValues: undefined,
                 data_protection_impact_assessment: undefined,
               },
@@ -87,7 +88,6 @@ describe("System management with Plus features", () => {
       cy.getByTestId("input-dpo").should("have.value", "DPO@anzu.io");
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("tab-System information").click();
-      // cy.pause();
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("confirmation-modal").should("not.exist");
     });
