@@ -12,25 +12,25 @@ saas_config:
     protocol: https
     host: yul1.qualtrics.com
     authentication:
-      strategy: no_authentication
-      configuration: {}
+      strategy: api_key
+      configuration:
+        headers:
+          -name: X-API-TOKEN
+          value: <access_token>
 
   test_request:
     method: GET
     path: /API/v3/directories
     headers:
       - name: X-API-TOKEN
-        value: rZNc7IvwrpFTYXNOuimVs9NdNGJBjAXVWAJHgYQu
+        value: <access_token>
 
   endpoints:
     - name: user
       requests:
-        read:
-          method: GET
-          path: ""
         update:
           method: POST
           path: /API/v3/op-erase-personal-data
           headers:
             - name: X-API-TOKEN
-              value: rZNc7IvwrpFTYXNOuimVs9NdNGJBjAXVWAJHgYQu
+              value: <access_token>
