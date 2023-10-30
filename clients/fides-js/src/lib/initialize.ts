@@ -269,96 +269,107 @@ export const initialize = async ({
     debug?: boolean
   ) => Promise<FidesCookie>;
 } & FidesConfig): Promise<Partial<Fides>> => {
-  let shouldInitOverlay: boolean = options.isOverlayEnabled;
+  const shouldInitOverlay = options.isOverlayEnabled;
   let effectiveExperience = experience;
   let fidesRegionString: string | null = null;
 
-  if (shouldInitOverlay) {
-    if (!validateOptions(options)) {
-      debugLog(
-        options.debug,
-        "Invalid overlay options. Skipping overlay initialization.",
-        options
-      );
-      shouldInitOverlay = false;
-    }
+  const fidesObj: Partial<Fides> = {
+    consent: cookie.consent,
+    fides_meta: cookie.fides_meta,
+    identity: cookie.identity,
+    fides_string: cookie.fides_string,
+    tcf_consent: cookie.tcf_consent,
+    experience,
+    geolocation,
+    options,
+    initialized: true,
+  };
 
-    fidesRegionString = await retrieveEffectiveRegionString(
-      geolocation,
+  if (!shouldInitOverlay) {
+    return fidesObj;
+  }
+
+  if (!validateOptions(options)) {
+    debugLog(
+      options.debug,
+      "Invalid overlay options. Skipping overlay initialization.",
       options
     );
+    return fidesObj;
+  }
 
-    let fetchedClientSideExperience = false;
+  fidesRegionString = await retrieveEffectiveRegionString(geolocation, options);
+  if (!fidesRegionString) {
+    debugLog(
+      options.debug,
+      `User location could not be obtained. Skipping overlay initialization.`
+    );
+    return fidesObj;
+  }
+  const needsFetch = !isPrivacyExperience(effectiveExperience);
+  if (needsFetch) {
+    // If no effective PrivacyExperience was pre-fetched, fetch one now from
+    // the Fides API using the current region string
+    effectiveExperience = await fetchExperience(
+      fidesRegionString,
+      options.fidesApiUrl,
+      options.debug,
+      cookie.identity.fides_user_device_id
+    );
+  }
 
-    if (!fidesRegionString) {
+  if (
+    !isPrivacyExperience(effectiveExperience) ||
+    !experienceIsValid(effectiveExperience, options)
+  ) {
+    debugLog(options.debug, `Experience is invalid ${effectiveExperience}`);
+    return fidesObj;
+  }
+
+  // At this point, we have a valid privacy experience
+  if (options.fidesString) {
+    if (needsFetch) {
+      // if tc str was explicitly passed in, we need to override the client-side-fetched experience with consent from the cookie
+      // we don't update cookie because it already has been overridden by the injected fidesString
       debugLog(
         options.debug,
-        `User location could not be obtained. Skipping overlay initialization.`
+        "Overriding preferences from client-side fetched experience with cookie fides_string consent",
+        cookie.fides_string
       );
-      shouldInitOverlay = false;
-    } else if (!isPrivacyExperience(effectiveExperience)) {
-      fetchedClientSideExperience = true;
-      // If no effective PrivacyExperience was pre-fetched, fetch one now from
-      // the Fides API using the current region string
-      effectiveExperience = await fetchExperience(
-        fidesRegionString,
-        options.fidesApiUrl,
-        options.debug,
-        cookie.identity.fides_user_device_id
+      const tcfEntities = buildTcfEntitiesFromCookie(
+        effectiveExperience,
+        cookie
       );
+      Object.assign(effectiveExperience, tcfEntities);
     }
-
-    if (
-      isPrivacyExperience(effectiveExperience) &&
-      experienceIsValid(effectiveExperience, options)
-    ) {
-      if (options.fidesString) {
-        if (fetchedClientSideExperience) {
-          // if tc str was explicitly passed in, we need to override the client-side-fetched experience with consent from the cookie
-          // we don't update cookie because it already has been overridden by the injected fidesString
-          debugLog(
-            options.debug,
-            "Overriding preferences from client-side fetched experience with cookie fides_string consent",
-            cookie.fides_string
-          );
-          const tcfEntities = buildTcfEntitiesFromCookie(
-            effectiveExperience,
-            cookie
-          );
-          Object.assign(effectiveExperience, tcfEntities);
-        }
-      } else {
-        const updatedCookie = await updateCookie(
-          cookie,
-          effectiveExperience,
-          options.debug
-        );
-        debugLog(
-          options.debug,
-          "Updated cookie based on experience",
-          updatedCookie
-        );
-        Object.assign(cookie, updatedCookie);
-      }
-      if (shouldInitOverlay) {
-        await initOverlay({
-          experience: effectiveExperience,
-          fidesRegionString: fidesRegionString as string,
-          cookie,
-          options,
-          renderOverlay,
-        }).catch(() => {});
-      }
-    }
-  }
-  if (shouldInitOverlay && isPrivacyExperience(effectiveExperience)) {
-    automaticallyApplyGPCPreferences({
+  } else {
+    const updatedCookie = await updateCookie(
       cookie,
-      fidesRegionString,
       effectiveExperience,
-      fidesOptions: options,
-    });
+      options.debug
+    );
+    debugLog(
+      options.debug,
+      "Updated cookie based on experience",
+      updatedCookie
+    );
+    Object.assign(cookie, updatedCookie);
   }
+
+  await initOverlay({
+    experience: effectiveExperience,
+    fidesRegionString,
+    cookie,
+    options,
+    renderOverlay,
+  }).catch(() => {});
+
+  automaticallyApplyGPCPreferences({
+    cookie,
+    fidesRegionString,
+    effectiveExperience,
+    fidesOptions: options,
+  });
 
   // return an object with the updated Fides values
   return {
