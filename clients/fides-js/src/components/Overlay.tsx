@@ -152,7 +152,7 @@ const Overlay: FunctionComponent<Props> = ({
       {options.fidesEmbed ? (
         <ConsentContent
           title={attributes.title}
-          className={options.fidesEmbed ? "fides-embed" : ""}
+          className="fides-embed"
           experience={experience.experience_config}
           renderModalFooter={() =>
             renderModalFooter({
