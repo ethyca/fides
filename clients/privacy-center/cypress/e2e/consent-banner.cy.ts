@@ -1360,8 +1360,6 @@ describe("Consent banner", () => {
           analytics: true,
         });
         cy.get("@FidesInitialized")
-          // TODO PROD-1280: Suppress duplicate event if the cookie state is unchanged from an early initialization?
-          // .should("have.been.calledOnce")
           .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
@@ -1409,8 +1407,6 @@ describe("Consent banner", () => {
           analytics: true,
         });
         cy.get("@FidesInitialized")
-          // TODO PROD-1280: Suppress duplicate event if the cookie state is unchanged from an early initialization?
-          // .should("have.been.calledOnce")
           .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {

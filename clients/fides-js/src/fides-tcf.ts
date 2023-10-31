@@ -224,7 +224,6 @@ const init = async (config: FidesConfig) => {
   Object.assign(_Fides, updatedFides);
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
-  // TODO PROD-1280: Suppress duplicate event if the cookie state is unchanged from an early initialization?
   dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
 };
 
