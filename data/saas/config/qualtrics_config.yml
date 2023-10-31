@@ -13,7 +13,7 @@ saas_config:
     protocol: https
     host: <domain>
     authentication:
-      strategy: api_key
+      strategy: basic
       configuration:
         headers:
           -name: X-API-TOKEN
