@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Changed
 - Refactor Fides.js embedded modal to not use A11y dialog [#4355](https://github.com/ethyca/fides/pull/4355)
+- Moved Experiences and Preferences endpoints to Plus to take advantage of dynamic GVL  [#4367](https://github.com/ethyca/fides/pull/4367)
 
 ## [2.23.0](https://github.com/ethyca/fides/compare/2.22.1...2.23.0)
 
