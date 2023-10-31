@@ -22,9 +22,6 @@ saas_config:
   test_request:
     method: GET
     path: /API/v3/directories
-    headers:
-      - name: X-API-TOKEN
-        value: <x-api-token>
 
   endpoints:
     - name: user
@@ -32,9 +29,6 @@ saas_config:
         delete:
           method: POST
           path: /API/v3/op-erase-personal-data
-          headers:
-            - name: X-API-TOKEN
-              value: <x-api-token>
           body: |
             {
               "emails": ["<email>"],
