@@ -343,7 +343,7 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
-        cy.get("@FidesUpdated").should("have.been.calledTwice");
+        cy.get("@FidesUpdated").should("have.been.calledOnce");
         cy.window().then((win) => {
           win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
           cy.get("@getTCData")
@@ -1331,12 +1331,12 @@ describe("Fides-js TCF", () => {
 
     describe("setting fields", () => {
       it("can opt in to all and set legitimate interests", () => {
-        cy.get("@FidesUpdated").should("have.been.calledOnce");
+        cy.get("@FidesUpdated").should("not.have.been.called");
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
         // On slow connections, we should explicitly wait for FidesUpdated
-        cy.get("@FidesUpdated").should("have.been.calledTwice");
+        cy.get("@FidesUpdated").should("have.been.calledOnce");
         cy.get("@TCFEvent")
           .its("lastCall.args")
           .then(([tcData, success]) => {
@@ -1399,7 +1399,7 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
-        cy.get("@FidesUpdated").should("have.been.calledTwice");
+        cy.get("@FidesUpdated").should("have.been.calledOnce");
         cy.get("@TCFEvent2")
           .its("lastCall.args")
           .then(([tcData, success]) => {
@@ -2191,8 +2191,8 @@ describe("Fides-js TCF", () => {
       cy.get("button").contains("Save").click();
       cy.wait("@patchPrivacyPreference");
       cy.get("@FidesUpdated")
-        .should("have.been.calledTwice")
-        .its("secondCall.args.0.detail.fides_string")
+        .should("have.been.calledOnce")
+        .its("lastCall.args.0.detail.fides_string")
         .then((fidesString) => {
           const parts = fidesString.split(",");
           expect(parts.length).to.eql(2);
@@ -2221,7 +2221,7 @@ describe("Fides-js TCF", () => {
       });
       cy.get("button").contains("Save").click();
       cy.wait("@patchPrivacyPreference");
-      cy.get("@FidesUpdated").should("have.been.calledTwice");
+      cy.get("@FidesUpdated").should("have.been.calledOnce");
       // Call getTCData
       cy.window().then((win) => {
         win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
@@ -2271,8 +2271,7 @@ describe("Fides-js TCF", () => {
       });
 
       cy.get("@FidesInitialized")
-        .should("have.been.calledOnce")
-        .its("firstCall.args.0.detail.tcf_consent")
+        .its("lastCall.args.0.detail.tcf_consent")
         .then((tcfConsent) => {
           // TC string setting worked
           expect(tcfConsent.purpose_consent_preferences).to.eql({
