@@ -8,10 +8,10 @@ saas_config:
   connector_params:
     - name: domain
       default_value: demo-sandbox-ethyca.ada.support
-    - name: export_access_token
-    - name: compliance_access_token
-    - name: created_since
-    - name: page
+    - name: data_export_key
+      value: <data_export_key>
+    - name: data_compliance_key
+      value: <data_compliance_key>
 
   client_config:
     protocol: https
