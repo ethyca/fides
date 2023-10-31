@@ -361,6 +361,12 @@ export const {
   useUpdateCustomAssetMutation,
 } = plusApi;
 
+export const selectHealthIsLoading: (state: RootState) => boolean =
+  createSelector(
+    plusApi.endpoints.getHealth.select(),
+    ({ isLoading }) => isLoading
+  );
+
 export const EMPTY_PLUS_HEALTH_CHECK = undefined;
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
   createSelector(

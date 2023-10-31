@@ -5,7 +5,10 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { type RootState } from "~/app/store";
 import { selectHealth } from "~/features/common/health.slice";
 import { selectInitialConnections } from "~/features/datastore-connections";
-import { selectHealth as selectPlusHealth } from "~/features/plus/plus.slice";
+import {
+  selectHealth as selectPlusHealth,
+  selectHealthIsLoading as selectPlusHealthIsLoading,
+} from "~/features/plus/plus.slice";
 import { selectAllSystems } from "~/features/system";
 import flagDefaults from "~/flags.json";
 
@@ -137,12 +140,14 @@ export type Features = {
   dictionaryService: boolean;
   fidesCloud: boolean;
   tcf: boolean;
+  isPlusHealthLoading: boolean;
 
   flags: FlagsFor<FlagConfig>;
 };
 
 export const useFeatures = (): Features => {
   const health = useAppSelector(selectHealth);
+  const isPlusHealthLoading = useAppSelector(selectPlusHealthIsLoading);
   const plusHealth = useAppSelector(selectPlusHealth);
   const allSystems = useAppSelector(selectAllSystems);
   const initialConnections = useAppSelector(selectInitialConnections);
@@ -178,5 +183,6 @@ export const useFeatures = (): Features => {
     fidesCloud,
     tcf,
     flags,
+    isPlusHealthLoading,
   };
 };
