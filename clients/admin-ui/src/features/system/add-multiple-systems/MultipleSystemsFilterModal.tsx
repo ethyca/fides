@@ -15,6 +15,8 @@ import {
 import { Table as TableInstance } from "@tanstack/react-table";
 import React, { useMemo, useState } from "react";
 
+import { VendorSources } from "~/features/common/helpers";
+
 type FilterCheckboxProps = {
   onChange: () => void;
   displayText: string;
@@ -57,9 +59,12 @@ interface MultipleSystemsFilterProps<T> {
   onClose: () => void;
 }
 
-const initialFilterState = {
-  gvl: false,
-  gacp: false,
+type FilterState = {
+  [key in keyof typeof VendorSources]: boolean;
+};
+const initialFilterState: FilterState = {
+  GVL: false,
+  AC: false,
 };
 
 const MultipleSystemsFilterModal = <T,>({
@@ -77,11 +82,11 @@ const MultipleSystemsFilterModal = <T,>({
       id: "vendor_id",
       value: [],
     };
-    if (filters.gvl) {
+    if (filters.GVL) {
       columnFilters.value.push("gvl");
     }
 
-    if (filters.gacp) {
+    if (filters.AC) {
       columnFilters.value.push("gacp");
     }
 
@@ -106,18 +111,18 @@ const MultipleSystemsFilterModal = <T,>({
           </Text>
           <FilterCheckbox
             onChange={() => {
-              setFilters((prev) => ({ ...prev, gvl: !prev.gvl }));
+              setFilters((prev) => ({ ...prev, GVL: !prev.GVL }));
             }}
             displayText="GVL"
-            isChecked={filters.gvl}
+            isChecked={filters.GVL}
             value="gvl"
           />
           <FilterCheckbox
             onChange={() => {
-              setFilters((prev) => ({ ...prev, gacp: !prev.gacp }));
+              setFilters((prev) => ({ ...prev, AC: !prev.AC }));
             }}
             displayText="AC"
-            isChecked={filters.gacp}
+            isChecked={filters.AC}
             value="gacp"
           />
         </ModalBody>
