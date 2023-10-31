@@ -48,13 +48,18 @@ const systemApi = baseApi.injectEndpoints({
     }),
     // we accept 'unknown' as well since the user can paste anything in, and we rely
     // on the backend to do the validation for us
-    createSystem: build.mutation<System, System | unknown>({
+    createSystem: build.mutation<SystemResponse, System | unknown>({
       query: (body) => ({
         url: `system/`,
         method: "POST",
         body,
       }),
-      invalidatesTags: () => ["Datamap", "System", "Datastore Connection"],
+      invalidatesTags: () => [
+        "Datamap",
+        "System",
+        "Datastore Connection",
+        "System Vendors",
+      ],
     }),
     deleteSystem: build.mutation<SystemDeleteResponse, string>({
       query: (key) => ({
@@ -62,7 +67,12 @@ const systemApi = baseApi.injectEndpoints({
         params: { resource_type: "system" },
         method: "DELETE",
       }),
-      invalidatesTags: ["System", "Datastore Connection", "Privacy Notices"],
+      invalidatesTags: [
+        "System",
+        "Datastore Connection",
+        "Privacy Notices",
+        "System Vendors",
+      ],
     }),
     upsertSystems: build.mutation<UpsertResponse, System[]>({
       query: (systems) => ({
@@ -75,6 +85,7 @@ const systemApi = baseApi.injectEndpoints({
         "System",
         "Datastore Connection",
         "System History",
+        "System Vendors",
       ],
     }),
     updateSystem: build.mutation<
@@ -93,6 +104,7 @@ const systemApi = baseApi.injectEndpoints({
         "Privacy Notices",
         "Datastore Connection",
         "System History",
+        "System Vendors",
       ],
     }),
     patchSystemConnectionConfigs: build.mutation<

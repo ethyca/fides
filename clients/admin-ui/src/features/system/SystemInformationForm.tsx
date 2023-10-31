@@ -51,9 +51,9 @@ import {
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
-import { ResourceTypes, System, SystemResponse } from "~/types/api";
+import VendorSelector from "~/features/system/VendorSelector";
+import { ResourceTypes, SystemResponse } from "~/types/api";
 
-import { DictSuggestionToggle } from "./dictionary-form/ToggleDictSuggestions";
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
 import {
   legalBasisForProfilingOptions,
@@ -80,7 +80,7 @@ const SystemHeading = ({ system }: { system?: SystemResponse }) => {
 };
 
 interface Props {
-  onSuccess: (system: System) => void;
+  onSuccess: (system: SystemResponse) => void;
   system?: SystemResponse;
   withHeader?: boolean;
   children?: React.ReactNode;
@@ -156,7 +156,9 @@ const SystemInformationForm = ({
     const systemBody = transformFormValuesToSystem(values);
 
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+      result:
+        | { data: SystemResponse }
+        | { error: FetchBaseQueryError | SerializedError }
     ) => {
       if (isErrorResult(result)) {
         const attemptedAction = isEditing ? "editing" : "creating";
@@ -172,8 +174,8 @@ const SystemInformationForm = ({
         toast.closeAll();
         // Reset state such that isDirty will be checked again before next save
         formikHelpers.resetForm({ values });
-        onSuccess(systemBody);
-        dispatch(setSuggestions("hiding"));
+        onSuccess(result.data);
+        dispatch(setSuggestions("initial"));
       }
     };
 
@@ -215,22 +217,9 @@ const SystemInformationForm = ({
             </Text>
             {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 
-            <SystemFormInputGroup
-              heading="System details"
-              HeadingButton={DictSuggestionToggle}
-            >
+            <SystemFormInputGroup heading="System details">
               {features.dictionaryService ? (
-                <CustomSelect
-                  id="vendor"
-                  name="vendor_id"
-                  label="Vendor"
-                  placeholder="Select a vendor"
-                  singleValueBlock
-                  options={dictionaryOptions}
-                  tooltip="Select the vendor that matches the system"
-                  isCustomOption
-                  variant="stacked"
-                />
+                <VendorSelector options={dictionaryOptions} />
               ) : null}
               <DictSuggestionTextInput
                 id="name"

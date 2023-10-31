@@ -1,5 +1,6 @@
 import {
   Box,
+  Flex,
   HStack,
   IconButton,
   Menu,
@@ -161,11 +162,13 @@ const VendorCookieTable = () => {
           setGlobalFilter={tableInstance.setGlobalFilter}
           placeholder="Search"
         />
-
-        <AddVendor
-          passedInSystem={systemToEdit}
-          onCloseModal={() => setSystemToEdit(undefined)}
-        />
+        <Flex>
+          <Flex width="10px" />
+          <AddVendor
+            passedInSystem={systemToEdit}
+            onCloseModal={() => setSystemToEdit(undefined)}
+          />
+        </Flex>
         <ConfirmationModal
           isOpen={isDeleteModalOpen}
           onClose={onDeleteModalClose}

@@ -196,7 +196,14 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Custom Fields", "Datamap"],
     }),
-
+    bulkUpdateCustomFields: build.mutation<void, any>({
+      query: (params) => ({
+        url: `plus/custom-metadata/custom-field/bulk`,
+        method: "POST",
+        body: params,
+      }),
+      invalidatesTags: ["Custom Fields", "Datamap"],
+    }),
     getAllCustomFieldDefinitions: build.query<
       CustomFieldDefinitionWithId[],
       void
@@ -255,6 +262,26 @@ const plusApi = baseApi.injectEndpoints({
         url: `plus/dictionary/system`,
       }),
       providesTags: ["Dictionary"],
+    }),
+    getAllSystemVendors: build.query<DictSystems[], void>({
+      query: () => ({
+        url: `plus/dictionary/system-vendors`,
+      }),
+      providesTags: ["System Vendors"],
+    }),
+    postSystemVendors: build.mutation<any, string[]>({
+      query: (vendor_ids: string[]) => ({
+        method: "post",
+        url: `plus/dictionary/system-vendors`,
+        body: { vendor_ids },
+      }),
+      invalidatesTags: [
+        "Dictionary",
+        "System Vendors",
+        "System",
+        "Datamap",
+        "System History",
+      ],
     }),
     getFidesCloudConfig: build.query<CloudConfig, void>({
       query: () => ({
@@ -321,11 +348,14 @@ export const {
   useUpdateScanMutation,
   useUpsertAllowListMutation,
   useUpsertCustomFieldMutation,
+  useBulkUpdateCustomFieldsMutation,
   useGetAllCustomFieldDefinitionsQuery,
   useGetAllowListQuery,
   useGetAllDictionaryEntriesQuery,
   useGetFidesCloudConfigQuery,
   useGetDictionaryDataUsesQuery,
+  useGetAllSystemVendorsQuery,
+  usePostSystemVendorsMutation,
   useGetSystemHistoryQuery,
   useUpdateCustomAssetMutation,
 } = plusApi;
@@ -480,3 +510,14 @@ export const selectDictDataUses = (vendorId: string) =>
     ],
     (state, { data }) => (data ? data.items : EMPTY_DATA_USES)
   );
+
+export type DictSystems = {
+  linked_system: boolean;
+  name: string;
+  vendor_id: string;
+};
+const EMPTY_DICT_SYSTEMS: DictSystems[] = [];
+export const selectAllDictSystems = createSelector(
+  [(RootState) => RootState, plusApi.endpoints.getAllSystemVendors.select()],
+  (RootState, { data }) => data || EMPTY_DICT_SYSTEMS
+);

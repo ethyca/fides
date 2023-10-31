@@ -3,6 +3,13 @@
     {
       "region": "fi",
       "component": "tcf_overlay",
+      "meta": {
+        "version_hash": "q34r3qr4",
+        "accept_all_fides_string": null,
+        "accept_all_fides_mobile_data": null,
+        "reject_all_fides_string": null,
+        "reject_all_fides_mobile_data": null
+      },
       "experience_config": {
         "accept_button_label": "Opt in to all",
         "acknowledge_button_label": "OK",

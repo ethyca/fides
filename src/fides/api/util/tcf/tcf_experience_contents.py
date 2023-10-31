@@ -18,9 +18,10 @@ from fideslang.gvl.models import Feature, Purpose
 from fideslang.models import LegalBasisForProcessingEnum
 from fideslang.validation import FidesKey
 from loguru import logger
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, not_, or_
 from sqlalchemy.engine.row import Row  # type:ignore[import]
 from sqlalchemy.orm import Query, Session
+from sqlalchemy.sql.elements import BinaryExpression, BooleanClauseList
 
 from fides.api.models.sql_models import (  # type:ignore[attr-defined]
     PrivacyDeclaration,
@@ -39,6 +40,7 @@ from fides.api.schemas.tcf import (
     TCFVendorLegitimateInterestsRecord,
     TCFVendorRelationships,
 )
+from fides.config import CONFIG
 from fides.config.helpers import load_file
 
 _gvl: Optional[Dict] = None
@@ -97,13 +99,26 @@ SystemSubSections = Union[
 ]
 
 # Common SQLAlchemy filters used below
-AC_SYSTEM_FILTER = System.vendor_id.startswith(AC_PREFIX)
-CONSENT_LEGAL_BASIS_FILTER = (
+
+# Define a special-case filter for AC Systems with no Privacy Declarations
+AC_SYSTEM_NO_PRIVACY_DECL_FILTER: BooleanClauseList = and_(
+    System.vendor_id.startswith(AC_PREFIX), PrivacyDeclaration.id.is_(None)
+)
+
+# Filter for any non-AC Systems
+NOT_AC_SYSTEM_FILTER: BooleanClauseList = or_(
+    not_(System.vendor_id.startswith(AC_PREFIX)), System.vendor_id.is_(None)
+)
+CONSENT_LEGAL_BASIS_FILTER: BinaryExpression = (
     PrivacyDeclaration.legal_basis_for_processing == LegalBasisForProcessingEnum.CONSENT
 )
-LEGITIMATE_INTEREST_LEGAL_BASIS_FILTER = (
+LEGITIMATE_INTEREST_LEGAL_BASIS_FILTER: BinaryExpression = (
     PrivacyDeclaration.legal_basis_for_processing
     == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST
+)
+
+GVL_DATA_USE_FILTER: BinaryExpression = PrivacyDeclaration.data_use.in_(
+    ALL_GVL_DATA_USES
 )
 
 
@@ -217,21 +232,28 @@ def get_matching_privacy_declarations(db: Session) -> Query:
         .filter(
             or_(
                 and_(
-                    PrivacyDeclaration.data_use.in_(ALL_GVL_DATA_USES),
-                    PrivacyDeclaration.legal_basis_for_processing.in_(
-                        [
-                            LegalBasisForProcessingEnum.CONSENT,
-                            LegalBasisForProcessingEnum.LEGITIMATE_INTEREST,
-                        ]
-                    ),
+                    GVL_DATA_USE_FILTER,
+                    PrivacyDeclaration.legal_basis_for_processing
+                    == LegalBasisForProcessingEnum.CONSENT,
                 ),
-                AC_SYSTEM_FILTER,
+                and_(
+                    GVL_DATA_USE_FILTER,
+                    PrivacyDeclaration.legal_basis_for_processing
+                    == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST,
+                    NOT_AC_SYSTEM_FILTER,
+                ),
+                AC_SYSTEM_NO_PRIVACY_DECL_FILTER,
             )
         )
         .order_by(
             PrivacyDeclaration.created_at.desc()
         )  # Order to get repeatable results when collapsing information
     )
+    if not CONFIG.consent.ac_enabled:
+        # If AC Mode is not enabled, exclude all Privacy Declarations tied to an AC-based system
+        matching_privacy_declarations = matching_privacy_declarations.filter(
+            NOT_AC_SYSTEM_FILTER
+        )
     return matching_privacy_declarations
 
 
@@ -580,7 +602,7 @@ def get_tcf_contents(
         matching_privacy_declaration_query=matching_privacy_declarations.filter(
             or_(
                 CONSENT_LEGAL_BASIS_FILTER,
-                AC_SYSTEM_FILTER,
+                AC_SYSTEM_NO_PRIVACY_DECL_FILTER,
             )
         ),
     )
@@ -815,7 +837,7 @@ def get_relevant_systems_for_tcf_attribute(  # pylint: disable=too-many-return-s
             starting_privacy_declarations.filter(
                 or_(
                     CONSENT_LEGAL_BASIS_FILTER,
-                    AC_SYSTEM_FILTER,
+                    AC_SYSTEM_NO_PRIVACY_DECL_FILTER,
                 )
             ),
             tcf_value,  # type: ignore[arg-type]

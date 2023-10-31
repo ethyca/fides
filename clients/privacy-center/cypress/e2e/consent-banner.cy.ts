@@ -407,6 +407,7 @@ describe("Consent banner", () => {
 
         it("can remove all cookies when rejecting all", () => {
           cy.contains("button", "Reject Test").click();
+          cy.get("@FidesUpdated").should("have.been.calledTwice");
           cy.getAllCookies().then((allCookies) => {
             expect(allCookies.map((c) => c.name)).to.eql([CONSENT_COOKIE_NAME]);
           });
@@ -417,6 +418,7 @@ describe("Consent banner", () => {
           // opt out of the first notice
           cy.getByTestId("toggle-one").click();
           cy.getByTestId("Save test-btn").click();
+          cy.get("@FidesUpdated").should("have.been.calledTwice");
           cy.getAllCookies().then((allCookies) => {
             expect(allCookies.map((c) => c.name)).to.eql([
               CONSENT_COOKIE_NAME,
@@ -1561,6 +1563,15 @@ describe("Consent banner", () => {
           acknowledge_mode: false,
           serving_component: "overlay",
           privacy_notice_history_ids: [historyId1, historyId2],
+          tcf_purpose_consents: [],
+          tcf_purpose_legitimate_interests: [],
+          tcf_special_purposes: [],
+          tcf_vendor_consents: [],
+          tcf_vendor_legitimate_interests: [],
+          tcf_features: [],
+          tcf_special_features: [],
+          tcf_system_consents: [],
+          tcf_system_legitimate_interests: [],
         });
         // Now opt out of the notices
         cy.getByTestId("consent-modal").within(() => {

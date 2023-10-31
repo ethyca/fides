@@ -35,7 +35,9 @@ import { updateConsentPreferences } from "../../lib/preferences";
 import {
   ButtonType,
   ConsentMethod,
+  LastServedConsentSchema,
   PrivacyExperience,
+  ServingComponent,
 } from "../../lib/consent-types";
 import { generateFidesString } from "../../lib/tcf";
 import {
@@ -45,6 +47,7 @@ import {
 import InitialLayer from "./InitialLayer";
 import TcfTabs from "./TcfTabs";
 import Button from "../Button";
+import { useConsentServed } from "../../lib/hooks";
 import VendorInfoBanner from "./VendorInfoBanner";
 import { dispatchFidesEvent } from "../../lib/events";
 
@@ -88,12 +91,51 @@ export interface UpdateEnabledIds {
   modelType: keyof EnabledIds;
 }
 
+type Category =
+  | "purpose_consent"
+  | "purpose_legitimate_interests"
+  | "special_feature"
+  | "vendor_consent"
+  | "vendor_legitimate_interests"
+  | "system_consent"
+  | "system_legitimate_interests";
+type NoticeSubMap = {
+  [key: string]: string | number;
+};
+
+type NoticeMap = Record<Category, NoticeSubMap>;
+
+const noticeMap = (servedNotices: LastServedConsentSchema[]): NoticeMap => {
+  const map: NoticeMap = {
+    purpose_consent: {},
+    purpose_legitimate_interests: {},
+    special_feature: {},
+    vendor_consent: {},
+    vendor_legitimate_interests: {},
+    system_consent: {},
+    system_legitimate_interests: {},
+  };
+
+  servedNotices.forEach((notice) => {
+    (Object.keys(map) as Category[]).forEach((key) => {
+      const value = notice[key as keyof LastServedConsentSchema];
+      if (value !== null) {
+        map[key][String(value)] = notice.served_notice_history_id;
+      }
+    });
+  });
+
+  return map;
+};
+
 const transformTcfModelToTcfSave = ({
   modelList,
   enabledIds,
+  noticeSubMap,
 }: {
   modelList: TcfModels;
   enabledIds: string[];
+  noticeSubMap: NoticeSubMap;
 }): TcfSave[] | null => {
   if (!modelList) {
     return [];
@@ -105,6 +147,7 @@ const transformTcfModelToTcfSave = ({
     return {
       id: model.id,
       preference,
+      served_notice_history_id: noticeSubMap[String(model.id)],
     };
   }) as TcfSave[];
 };
@@ -112,10 +155,13 @@ const transformTcfModelToTcfSave = ({
 const createTcfSavePayload = ({
   experience,
   enabledIds,
+  servedNotices,
 }: {
   experience: PrivacyExperience;
   enabledIds: EnabledIds;
+  servedNotices: LastServedConsentSchema[];
 }): TcfSavePreferences => {
+  const servedNoticeMap = noticeMap(servedNotices);
   const {
     tcf_system_consents: consentSystems,
     tcf_system_legitimate_interests: legintSystems,
@@ -145,30 +191,37 @@ const createTcfSavePayload = ({
     purpose_consent_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_purpose_consents,
       enabledIds: enabledIds.purposesConsent,
+      noticeSubMap: servedNoticeMap.purpose_consent,
     }) as TCFPurposeSave[],
     purpose_legitimate_interests_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_purpose_legitimate_interests,
       enabledIds: enabledIds.purposesLegint,
+      noticeSubMap: servedNoticeMap.purpose_legitimate_interests,
     }) as TCFPurposeSave[],
     special_feature_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_special_features,
       enabledIds: enabledIds.specialFeatures,
+      noticeSubMap: servedNoticeMap.special_feature,
     }) as TCFSpecialFeatureSave[],
     vendor_consent_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_vendor_consents,
       enabledIds: enabledConsentVendorIds,
+      noticeSubMap: servedNoticeMap.vendor_consent,
     }) as TCFVendorSave[],
     vendor_legitimate_interests_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_vendor_legitimate_interests,
       enabledIds: enabledLegintVendorIds,
+      noticeSubMap: servedNoticeMap.vendor_legitimate_interests,
     }) as TCFVendorSave[],
     system_consent_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_system_consents,
       enabledIds: enabledConsentSystemIds,
+      noticeSubMap: servedNoticeMap.system_consent,
     }) as TCFVendorSave[],
     system_legitimate_interests_preferences: transformTcfModelToTcfSave({
       modelList: experience.tcf_system_legitimate_interests,
       enabledIds: enabledLegintSystemIds,
+      noticeSubMap: servedNoticeMap.system_legitimate_interests,
     }) as TCFVendorSave[],
   };
 };
@@ -236,26 +289,36 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     [experience]
   );
 
+  const { servedNotices } = useConsentServed({
+    notices: [],
+    options,
+    userGeography: fidesRegionString,
+    acknowledgeMode: false,
+    privacyExperience: experience,
+  });
+
   const handleUpdateAllPreferences = useCallback(
     (enabledIds: EnabledIds) => {
-      const tcf = createTcfSavePayload({ experience, enabledIds });
+      const tcf = createTcfSavePayload({
+        experience,
+        enabledIds,
+        servedNotices,
+      });
       updateConsentPreferences({
         consentPreferencesToSave: [],
-        experienceId: experience.id,
-        fidesApiUrl: options.fidesApiUrl,
+        experience,
         consentMethod: ConsentMethod.button,
-        fidesDisableSaveApi: options.fidesDisableSaveApi,
+        options,
         userLocationString: fidesRegionString,
         cookie,
         debug: options.debug,
-        servedNotices: null, // TODO: served notices
         tcf,
         updateCookie: (oldCookie) =>
           updateCookie(oldCookie, tcf, enabledIds, experience),
       });
       setDraftIds(enabledIds);
     },
-    [cookie, experience, fidesRegionString, options]
+    [cookie, experience, fidesRegionString, options, servedNotices]
   );
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -266,6 +329,18 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   }
   const experienceConfig = experience.experience_config;
 
+  const dispatchOpenBannerEvent = () => {
+    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+      servingComponent: ServingComponent.TCF_BANNER,
+    });
+  };
+
+  const dispatchOpenOverlayEvent = () => {
+    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+      servingComponent: ServingComponent.TCF_OVERLAY,
+    });
+  };
+
   return (
     <Overlay
       options={options}
@@ -274,6 +349,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       onVendorPageClick={() => {
         setActiveTabIndex(2);
       }}
+      onOpen={dispatchOpenOverlayEvent}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => {
         const goToVendorTab = () => {
           onManagePreferencesClick();
@@ -282,10 +358,11 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         return showBanner ? (
           <ConsentBanner
             bannerIsOpen={isOpen}
+            onOpen={dispatchOpenBannerEvent}
             onClose={onClose}
             experience={experienceConfig}
             onVendorPageClick={goToVendorTab}
-            buttonGroup={
+            renderButtonGroup={({ isMobile }) => (
               <TcfConsentButtons
                 experience={experience}
                 onManagePreferencesClick={onManagePreferencesClick}
@@ -293,10 +370,11 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                   handleUpdateAllPreferences(keys);
                   onSave();
                 }}
+                isMobile={isMobile}
               >
                 <PrivacyPolicyLink experience={experienceConfig} />
               </TcfConsentButtons>
-            }
+            )}
           >
             <div id="fides-tcf-banner-inner">
               <VendorInfoBanner
@@ -308,37 +386,38 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           </ConsentBanner>
         ) : null;
       }}
-      renderModalContent={({ onClose }) => {
+      renderModalContent={() => (
+        <TcfTabs
+          experience={experience}
+          enabledIds={draftIds}
+          onChange={(updatedIds) => {
+            setDraftIds(updatedIds);
+            dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+          }}
+          activeTabIndex={activeTabIndex}
+          onTabChange={setActiveTabIndex}
+        />
+      )}
+      renderModalFooter={({ onClose, isMobile }) => {
         const onSave = (keys: EnabledIds) => {
           handleUpdateAllPreferences(keys);
           onClose();
         };
         return (
           <Fragment>
-            <TcfTabs
+            <TcfConsentButtons
               experience={experience}
-              enabledIds={draftIds}
-              onChange={(updatedIds) => {
-                setDraftIds(updatedIds);
-                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
-              }}
-              activeTabIndex={activeTabIndex}
-              onTabChange={setActiveTabIndex}
+              onSave={onSave}
+              firstButton={
+                <Button
+                  buttonType={ButtonType.SECONDARY}
+                  label={experience.experience_config?.save_button_label}
+                  onClick={() => onSave(draftIds)}
+                />
+              }
+              isMobile={isMobile}
             />
-            <div className="fides-modal-footer">
-              <TcfConsentButtons
-                experience={experience}
-                onSave={onSave}
-                firstButton={
-                  <Button
-                    buttonType={ButtonType.SECONDARY}
-                    label={experience.experience_config?.save_button_label}
-                    onClick={() => onSave(draftIds)}
-                  />
-                }
-              />
-              <PrivacyPolicyLink experience={experience.experience_config} />
-            </div>
+            <PrivacyPolicyLink experience={experience.experience_config} />
           </Fragment>
         );
       }}

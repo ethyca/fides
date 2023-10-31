@@ -1004,6 +1004,12 @@ class TestGetConnectionSecretSchema:
                     "description": "The name of the specific database within the database server that you want to connect to.",
                     "type": "string",
                 },
+                "ssh_required": {
+                    "title": "SSH Required",
+                    "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.",
+                    "default": False,
+                    "type": "boolean",
+                },
             },
             "required": ["host", "dbname"],
         }

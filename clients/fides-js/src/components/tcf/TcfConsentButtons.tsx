@@ -10,6 +10,7 @@ interface TcfConsentButtonProps {
   onSave: (keys: EnabledIds) => void;
   firstButton?: VNode;
   children?: ComponentChildren;
+  isMobile: boolean;
 }
 
 const getAllIds = (modelList: TcfModels) => {
@@ -25,6 +26,7 @@ export const TcfConsentButtons = ({
   onSave,
   firstButton,
   children,
+  isMobile,
 }: TcfConsentButtonProps) => {
   if (!experience.experience_config) {
     return null;
@@ -68,6 +70,7 @@ export const TcfConsentButtons = ({
       onAcceptAll={handleAcceptAll}
       onRejectAll={handleRejectAll}
       firstButton={firstButton}
+      isMobile={isMobile}
     >
       {children}
     </ConsentButtons>
