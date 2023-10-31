@@ -51,7 +51,6 @@ import { shopify } from "./integrations/shopify";
 import {
   FidesCookie,
   buildCookieConsentForExperiences,
-  isNewFidesCookie,
 } from "./lib/cookie";
 import {
   FidesConfig,
@@ -109,7 +108,7 @@ const init = async (config: FidesConfig) => {
     getOverrideFidesOptions();
   // eslint-disable-next-line no-param-reassign
   config.options = { ...config.options, ...overrideOptions };
-  let cookie = getInitialCookie(config);
+  const cookie = getInitialCookie(config);
   const initialFides = getInitialFides({ ...config, cookie });
   if (initialFides) {
     Object.assign(_Fides, initialFides);
@@ -126,7 +125,7 @@ const init = async (config: FidesConfig) => {
   Object.assign(_Fides, updatedFides);
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
-  // TODO: Suppress duplicate event if the cookie state is unchanged from an early initialization above?
+  // TODO PROD-1280: Suppress duplicate event if the cookie state is unchanged from an early initialization?
   dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
 };
 

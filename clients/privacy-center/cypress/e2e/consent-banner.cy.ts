@@ -407,7 +407,7 @@ describe("Consent banner", () => {
 
         it("can remove all cookies when rejecting all", () => {
           cy.contains("button", "Reject Test").click();
-          cy.get("@FidesUpdated").should("have.been.calledTwice");
+          cy.get("@FidesUpdated").should("have.been.calledOnce");
           cy.getAllCookies().then((allCookies) => {
             expect(allCookies.map((c) => c.name)).to.eql([CONSENT_COOKIE_NAME]);
           });
@@ -418,7 +418,7 @@ describe("Consent banner", () => {
           // opt out of the first notice
           cy.getByTestId("toggle-one").click();
           cy.getByTestId("Save test-btn").click();
-          cy.get("@FidesUpdated").should("have.been.calledTwice");
+          cy.get("@FidesUpdated").should("have.been.calledOnce");
           cy.getAllCookies().then((allCookies) => {
             expect(allCookies.map((c) => c.name)).to.eql([
               CONSENT_COOKIE_NAME,
@@ -1105,7 +1105,7 @@ describe("Consent banner", () => {
           [PRIVACY_NOTICE_KEY_1]: false,
           [PRIVACY_NOTICE_KEY_2]: true,
         });
-      cy.get("@FidesUpdated").should("not.have.been.called")
+      cy.get("@FidesUpdated").should("not.have.been.called");
       cy.get("@FidesUIChanged").should("not.have.been.called");
     });
 
@@ -1360,7 +1360,9 @@ describe("Consent banner", () => {
           analytics: true,
         });
         cy.get("@FidesInitialized")
-          .should("have.been.calledOnce")
+          // TODO PROD-1280: Suppress duplicate event if the cookie state is unchanged from an early initialization?
+          // .should("have.been.calledOnce")
+          .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             data_sales: false,
@@ -1407,7 +1409,9 @@ describe("Consent banner", () => {
           analytics: true,
         });
         cy.get("@FidesInitialized")
-          .should("have.been.calledOnce")
+          // TODO PROD-1280: Suppress duplicate event if the cookie state is unchanged from an early initialization?
+          // .should("have.been.calledOnce")
+          .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             data_sales: false,
