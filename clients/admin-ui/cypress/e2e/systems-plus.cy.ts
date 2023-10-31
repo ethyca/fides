@@ -11,6 +11,7 @@ import {
   ADD_SYSTEMS_MULTIPLE_ROUTE,
   ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
+  INDEX,
   SYSTEM_ROUTE,
 } from "~/features/common/nav/v2/routes";
 
@@ -241,11 +242,15 @@ describe("System management with Plus features", () => {
           cluster_error: null,
         },
         dictionary: {
-          enabled: false,
+          enabled: true,
           service_health: null,
           service_error: null,
         },
         tcf: {
+          enabled: false,
+        },
+        fidesplus_version: "",
+        fides_cloud: {
           enabled: false,
         },
       });
@@ -269,6 +274,34 @@ describe("System management with Plus features", () => {
       cy.getByTestId("pagination-btn").click();
       cy.getByTestId("pageSize-50").click();
       cy.getByTestId("fidesTable-body").find("tr").should("have.length", 50);
+    });
+
+    it("redirects to index when compass is disabled", () => {
+      stubPlus(true, {
+        core_fides_version: "2.2.0",
+        fidesplus_server: "healthy",
+        system_scanner: {
+          enabled: true,
+          cluster_health: null,
+          cluster_error: null,
+        },
+        dictionary: {
+          enabled: false,
+          service_health: null,
+          service_error: null,
+        },
+        tcf: {
+          enabled: false,
+        },
+        fidesplus_version: "",
+        fides_cloud: {
+          enabled: false,
+        },
+      });
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.location().should((location) => {
+        expect(location.pathname).to.eq(INDEX);
+      });
     });
   });
 });

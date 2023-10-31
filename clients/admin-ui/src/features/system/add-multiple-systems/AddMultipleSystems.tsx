@@ -44,7 +44,9 @@ import { useAppSelector } from "~/app/hooks";
 import { INDEX } from "~/features/common/nav/v2/routes";
 import {
   DictSystems,
+  EMPTY_PLUS_HEALTH_CHECK,
   selectAllDictSystems,
+  selectHealth,
   useGetAllSystemVendorsQuery,
   usePostSystemVendorsMutation,
 } from "~/features/plus/plus.slice";
@@ -70,6 +72,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   const systemText = "Vendor";
   const toast = useToast();
   const { dictionaryService, tcf: isTcfEnabled } = useFeatures();
+  const health = useAppSelector(selectHealth);
   const router = useRouter();
   const { isLoading: isGetLoading } = useGetAllSystemVendorsQuery(undefined, {
     skip: !dictionaryService,
@@ -215,17 +218,24 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     return true;
   }, [anyNewSelectedRows, allRowsLinkedToSystem]);
 
+  /*
+    The empty health condtional check is required because
+    the component starts to render while the plus heath check is 
+    is still loading. The hook returns `false` for everything while
+    the request is happening. This was causing this to redirect if the
+    request didn't finish fast enough.
+  */
+  if (!dictionaryService && health !== EMPTY_PLUS_HEALTH_CHECK) {
+    router.push(INDEX);
+    return null; // this prevents the empty table from flashing
+  }
+
   if (isPostLoading || isPostSuccess) {
     return (
       <Flex height="100%" justifyContent="center" alignItems="center">
         <Spinner />
       </Flex>
     );
-  }
-
-  if (!dictionaryService) {
-    router.push(INDEX);
-    return null; // this prevents the empty table from flashing
   }
 
   if (isGetLoading) {
@@ -253,11 +263,13 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           totalSelectSystemsLength > 1 ? "s" : ""
         }`}
       />
-      <MultipleSystemsFilterModal
-        isOpen={isFilterOpen}
-        onClose={onCloseFilter}
-        tableInstance={tableInstance}
-      />
+      {isFilterOpen ? (
+        <MultipleSystemsFilterModal
+          isOpen={isFilterOpen}
+          onClose={onCloseFilter}
+          tableInstance={tableInstance}
+        />
+      ) : null}
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={globalFilter}

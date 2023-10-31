@@ -360,8 +360,12 @@ export const {
   useUpdateCustomAssetMutation,
 } = plusApi;
 
+export const EMPTY_PLUS_HEALTH_CHECK = undefined;
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
-  createSelector(plusApi.endpoints.getHealth.select(), ({ data }) => data);
+  createSelector(
+    plusApi.endpoints.getHealth.select(),
+    ({ data }) => data || EMPTY_PLUS_HEALTH_CHECK
+  );
 
 export const selectDataFlowScannerStatus: (
   state: RootState
