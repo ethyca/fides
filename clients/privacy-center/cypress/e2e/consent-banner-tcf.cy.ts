@@ -45,7 +45,7 @@ const SYSTEM_1 = {
   served_notice_history_id: "ser_5b1bc497-b4ba-489d-b39c-9ff352d460b0",
 };
 const VENDOR_1 = {
-  id: "2",
+  id: "gvl.2",
   name: "Captify",
   served_notice_history_id: "ser_9f3641ce-9863-4a32-b4db-ef1aac9046db",
 };
@@ -1357,9 +1357,10 @@ describe("Fides-js TCF", () => {
               [PURPOSE_2.id]: true,
               1: false,
             });
+            const vendorIdOnly = VENDOR_1.id.split(".")[1];
             expect(tcData.vendor.consents).to.eql({
               1: false,
-              [VENDOR_1.id]: true,
+              [vendorIdOnly]: true,
             });
             expect(tcData.vendor.legitimateInterests).to.eql({});
           });
@@ -1421,9 +1422,10 @@ describe("Fides-js TCF", () => {
               [PURPOSE_2.id]: true,
               1: false,
             });
+            const vendorIdOnly = VENDOR_1.id.split(".")[1];
             expect(tcData.vendor.consents).to.eql({
               1: false,
-              [VENDOR_1.id]: true,
+              [vendorIdOnly]: true,
             });
             expect(tcData.vendor.legitimateInterests).to.eql({});
           });
@@ -1552,9 +1554,10 @@ describe("Fides-js TCF", () => {
             [PURPOSE_2.id]: true,
             1: false,
           });
+          const vendorIdOnly = VENDOR_1.id.split(".")[1];
           expect(tcData.vendor.consents).to.eql({
             1: false,
-            [VENDOR_1.id]: true,
+            [vendorIdOnly]: true,
           });
           expect(tcData.vendor.legitimateInterests).to.eql({});
           expect(tcData.specialFeatureOptins).to.eql({
