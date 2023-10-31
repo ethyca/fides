@@ -87,7 +87,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   } = useDisclosure();
   const { isOpen, onClose, onOpen } = useDisclosure();
 
-  const allRowsAdded = dictionaryOptions.every((d) => d.linked_system);
+  const allRowsLinkedToSystem = dictionaryOptions.every((d) => d.linked_system);
   const columns = useMemo(
     () => [
       columnHelper.display({
@@ -101,7 +101,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
                   .getSelectedRowModel()
                   .rows.filter((r) => !r.original.linked_system).length > 0,
               onChange: table.getToggleAllRowsSelectedHandler(),
-              manualDisable: allRowsAdded,
+              manualDisable: allRowsLinkedToSystem,
             }}
           />
         ),
@@ -136,7 +136,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         },
       }),
     ],
-    [allRowsAdded, systemText, isTcfEnabled]
+    [allRowsLinkedToSystem, systemText, isTcfEnabled]
   );
 
   const rowSelection = useMemo(() => {
@@ -200,6 +200,20 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     .getSelectedRowModel()
     .rows.some((row) => !row.original.linked_system);
 
+  const isTooltipDisabled = useMemo(() => {
+    /*
+      The tooltip surrounding the add button is conditionally displayed.
+
+      It displays if no rows have been selected or if all of the vendors
+      are already linked to systems
+    */
+    if (!anyNewSelectedRows || allRowsLinkedToSystem) {
+      return false;
+    }
+
+    return true;
+  }, [anyNewSelectedRows, allRowsLinkedToSystem]);
+
   if (isPostLoading || isPostSuccess) {
     return (
       <Flex height="100%" justifyContent="center" alignItems="center">
@@ -212,7 +226,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
 
-  const toolTipText = allRowsAdded
+  const toolTipText = allRowsLinkedToSystem
     ? `All ${systemText.toLocaleLowerCase()} have already been added`
     : `Select a ${systemText.toLocaleLowerCase()} `;
 
@@ -260,10 +274,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
             label={toolTipText}
             shouldWrapChildren
             placement="top"
-            isDisabled={
-              (anyNewSelectedRows && !allRowsAdded) ||
-              (anyNewSelectedRows && allRowsAdded)
-            }
+            isDisabled={isTooltipDisabled}
           >
             <Button
               onClick={onOpen}
