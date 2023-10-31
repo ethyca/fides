@@ -32,6 +32,9 @@ saas_config:
         update:
           method: POST
           path: /API/v3/op-erase-personal-data
+          headers:
+            - name: X-API-TOKEN
+              value: <access_token>
           body: |
             {
               "emails": [
@@ -40,6 +43,3 @@ saas_config:
                   ],
               "searchOnly": false
             }
-          # headers:
-          #   - name: X-API-TOKEN
-          #     value: <access_token>
