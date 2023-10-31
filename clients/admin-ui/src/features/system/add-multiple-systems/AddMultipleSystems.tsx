@@ -30,7 +30,7 @@ import {
   FidesTableV2,
   GlobalFilterV2,
   IndeterminateCheckboxCell,
-  PageSizes,
+  PAGE_SIZES,
   PaginationBar,
   RowSelectionBar,
   TableActionBar,
@@ -169,7 +169,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     initialState: {
       rowSelection,
       pagination: {
-        pageSize: PageSizes[0],
+        pageSize: PAGE_SIZES[0],
       },
     },
   });
@@ -292,7 +292,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       />
       <PaginationBar<MultipleSystemTable>
         tableInstance={tableInstance}
-        pageSizes={PageSizes}
+        pageSizes={PAGE_SIZES}
       />
     </Flex>
   );

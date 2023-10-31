@@ -13,7 +13,7 @@ import {
 } from "@fidesui/react";
 import { Table as TableInstance } from "@tanstack/react-table";
 
-export const PageSizes = [25, 50, 100];
+export const PAGE_SIZES = [25, 50, 100];
 
 type PaginationBarProps<T> = {
   pageSizes: number[];
