@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Optional
 
 from fideslang.gvl import (
     GVL_FEATURES,
@@ -7,7 +7,7 @@ from fideslang.gvl import (
     MAPPED_SPECIAL_PURPOSES,
 )
 from fideslang.gvl.models import Feature, MappedPurpose
-from pydantic import AnyUrl, Field, root_validator, validator
+from pydantic import AnyUrl, root_validator, validator
 
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
@@ -226,71 +226,3 @@ class TCFSpecialFeatureSave(TCFPreferenceSaveBase):
                 f"Cannot save preferences against invalid special feature id: '{value}'"
             )
         return value
-
-
-BinaryChoice = Literal[0, 1]
-
-
-class TCMobileData(FidesSchema):
-    """Pre-parsed TC data and TC string for a CMP SDK:
-
-    https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#in-app-details
-    """
-
-    IABTCF_CmpSdkID: Optional[int] = Field(
-        description="The unsigned integer ID of CMP SDK"
-    )
-    IABTCF_CmpSdkVersion: Optional[int] = Field(
-        description="The unsigned integer version number of CMP SDK"
-    )
-    IABTCF_PolicyVersion: Optional[int] = Field(
-        description="The unsigned integer representing the version of the TCF that these consents adhere to."
-    )
-    IABTCF_gdprApplies: Optional[BinaryChoice] = Field(
-        description="1: GDPR applies in current context, 0 - GDPR does not apply in current context, None=undetermined"
-    )
-    IABTCF_PublisherCC: Optional[str] = Field(
-        default="AA", description="Two-letter ISO 3166-1 alpha-2 code"
-    )
-    IABTCF_PurposeOneTreatment: Optional[BinaryChoice] = Field(
-        description="Vendors can use this value to determine whether consent for purpose one is required. 0: "
-        "no special treatment. 1: purpose one not disclosed"
-    )
-    IABTCF_UseNonStandardTexts: Optional[BinaryChoice] = Field(
-        description="1 - CMP uses customized stack descriptions and/or modified or supplemented standard illustrations."
-        "0 - CMP did not use a non-standard stack desc. and/or modified or supplemented Illustrations"
-    )
-    IABTCF_TCString: Optional[str] = Field(description="Fully encoded TC string")
-    IABTCF_VendorConsents: Optional[str] = Field(
-        description="Binary string: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the "
-        "consent status for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is consent "
-        "true for vendor ID 1"
-    )
-    IABTCF_VendorLegitimateInterests: Optional[str] = Field(
-        description="Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the "
-        "legitimate interest status for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is "
-        "legitimate interest established true for vendor ID 1"
-    )
-    IABTCF_PurposeConsents: Optional[str] = Field(
-        description="Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the "
-        "consent status for purpose ID n+1; false and true respectively. eg. '1' at index 0 is consent "
-        "true for purpose ID 1"
-    )
-    IABTCF_PurposeLegitimateInterests: Optional[str] = Field(
-        description="Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the"
-        " legitimate interest status for purpose ID n+1; false and true respectively. eg. '1' at index 0 "
-        "is legitimate interest established true for purpose ID 1"
-    )
-    IABTCF_SpecialFeaturesOptIns: Optional[str] = Field(
-        description="Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates "
-        "the opt-in status for special feature ID n+1; false and true respectively. eg. '1' at index 0 is "
-        "opt-in true for special feature ID 1"
-    )
-    # IABTCF_PublisherRestrictions{ID}  # TODO this field has dynamic keys.  Add when we start surfacing publisher restrictions
-    IABTCF_PublisherConsent: Optional[str] = None
-    IABTCF_PublisherLegitimateInterests: Optional[str] = None
-    IABTCF_PublisherCustomPurposesConsents: Optional[str] = None
-    IABTCF_PublisherCustomPurposesLegitimateInterests: Optional[str] = None
-    IABTCF_AddtlConsent: Optional[
-        str
-    ] = None  # TODO: placholder for Google Additional Consent Mode string, needs to be populated!
