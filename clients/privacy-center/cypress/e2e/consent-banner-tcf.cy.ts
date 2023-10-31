@@ -1144,7 +1144,7 @@ describe("Fides-js TCF", () => {
           experience: experience.items[0],
         });
       });
-      cy.getByTestId("consent-modal").within(() => {
+      cy.getByTestId("consent-content").within(() => {
         cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).click();
         cy.get("#fides-tab-Features").click();
         cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).click();
@@ -1179,7 +1179,7 @@ describe("Fides-js TCF", () => {
         });
       });
       // embed modal should not close on preferences save
-      cy.getByTestId("consent-modal").should("exist");
+      cy.getByTestId("consent-content").should("exist");
       // Verify the cookie on save
       cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
         const cookieKeyConsent: FidesCookie = JSON.parse(
