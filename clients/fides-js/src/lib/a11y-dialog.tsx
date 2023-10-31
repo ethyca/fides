@@ -31,7 +31,6 @@ const useA11yDialogInstance = (addOverlowStyling: Boolean) => {
 
 interface Props {
   role: "dialog" | "alertdialog";
-  className: string;
   id: string;
   title: string;
   useOverlowStyling: Boolean;
@@ -39,7 +38,6 @@ interface Props {
 }
 export const useA11yDialog = ({
   role,
-  className,
   id,
   onClose,
   useOverlowStyling,
@@ -72,7 +70,6 @@ export const useA11yDialog = ({
     attributes: {
       container: {
         id,
-        className,
         ref,
         role,
         tabIndex: -1,

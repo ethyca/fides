@@ -48,7 +48,11 @@ const VendorSelector = ({ disabled, options }: Props) => {
             </Label>
             <QuestionTooltip label="Enter the vendor to associate with the system" />
           </Flex>
-          <Flex position="relative" width="100%">
+          <Flex
+            position="relative"
+            width="100%"
+            data-testid={`input-${field.name}`}
+          >
             <Select
               options={suggestions}
               onBlur={(e) => {

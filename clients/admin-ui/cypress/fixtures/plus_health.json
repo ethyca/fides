@@ -11,7 +11,7 @@
     "service_health": null,
     "service_error": null
   },
-  "tcf": {
-    "enabled": true
-  }
+  "fidesplus_version": "2.2.0",
+  "fides_cloud": { "enabled": true },
+  "tcf": { "enabled": true }
 }

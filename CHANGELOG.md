@@ -17,12 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.23.0...main)
 
-### Fixed
-- Removes overflow styling for embedded modal in Fides.js [#4345](https://github.com/ethyca/fides/pull/4345)
-
 ### Changed
 - Updates experience API calls from Fides.js to include new meta field [#4335](https://github.com/ethyca/fides/pull/4335)
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
+- Refactor Fides.js embedded modal to not use A11y dialog [#4355](https://github.com/ethyca/fides/pull/4355)
 
 ## [2.23.0](https://github.com/ethyca/fides/compare/2.22.1...2.23.0)
 
@@ -51,12 +49,14 @@ The types of changes are:
 - Consistent font sizes for labels in the system form and data use forms in the Admin UI [#4346](https://github.com/ethyca/fides/pull/4346)
 - Bug where not all system forms would appear to save when used with Compass [#4347](https://github.com/ethyca/fides/pull/4347)
 - Restrict TCF Privacy Experience Config if TCF is disabled [#4348](https://github.com/ethyca/fides/pull/4348)
+- Removes overflow styling for embedded modal in Fides.js [#4345](https://github.com/ethyca/fides/pull/4345)
 
 ### Changed
 - Derive cookie storage info, privacy policy and legitimate interest disclosure URLs, and data retention data from the data map instead of directly from gvl.json [#4286](https://github.com/ethyca/fides/pull/4286)
 - Updated TCF Version for backend consent reporting [#4305](https://github.com/ethyca/fides/pull/4305)
 - Update Version Hash Contents [#4313](https://github.com/ethyca/fides/pull/4313)
 - Change vendor selector on system information form to typeahead[#4333](https://github.com/ethyca/fides/pull/4333)
+- Updates experience API calls from Fides.js to include new meta field [#4335](https://github.com/ethyca/fides/pull/4335)
 
 ## [2.22.1](https://github.com/ethyca/fides/compare/2.22.0...2.22.1)
 
