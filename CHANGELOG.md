@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.23.0...main)
 
+### Changed
+- Refactor Fides.js embedded modal to not use A11y dialog [#4355](https://github.com/ethyca/fides/pull/4355)
+
 ## [2.23.0](https://github.com/ethyca/fides/compare/2.22.1...2.23.0)
 
 ### Added
