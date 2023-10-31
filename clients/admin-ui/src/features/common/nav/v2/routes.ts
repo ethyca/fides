@@ -1,5 +1,5 @@
 // Home page
-export const INDEX = "/";
+export const INDEX_ROUTE = "/";
 
 // Data map group
 export const ADD_SYSTEMS_ROUTE = "/add-systems";

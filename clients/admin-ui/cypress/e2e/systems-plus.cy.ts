@@ -11,7 +11,7 @@ import {
   ADD_SYSTEMS_MULTIPLE_ROUTE,
   ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
-  INDEX,
+  INDEX_ROUTE,
   SYSTEM_ROUTE,
 } from "~/features/common/nav/v2/routes";
 
@@ -300,7 +300,7 @@ describe("System management with Plus features", () => {
       });
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.location().should((location) => {
-        expect(location.pathname).to.eq(INDEX);
+        expect(location.pathname).to.eq(INDEX_ROUTE);
       });
     });
   });

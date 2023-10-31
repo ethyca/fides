@@ -41,7 +41,7 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { INDEX } from "~/features/common/nav/v2/routes";
+import { INDEX_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   DictSystems,
   EMPTY_PLUS_HEALTH_CHECK,
@@ -226,7 +226,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     request didn't finish fast enough.
   */
   if (!dictionaryService && health !== EMPTY_PLUS_HEALTH_CHECK) {
-    router.push(INDEX);
+    router.push(INDEX_ROUTE);
     return null; // this prevents the empty table from flashing
   }
 
