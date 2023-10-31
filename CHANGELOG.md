@@ -22,6 +22,7 @@ The types of changes are:
 - Refactor Fides.js embedded modal to not use A11y dialog [#4355](https://github.com/ethyca/fides/pull/4355)
 
 ### Fixed
+- Handle invalid `fides_string` when passed in as an override [#4350](https://github.com/ethyca/fides/pull/4350)
 - Bug where vendor opt-ins would not initialize properly based on a `fides_string` in the TCF overlay [#4368](https://github.com/ethyca/fides/pull/4368)
 
 ## [2.23.0](https://github.com/ethyca/fides/compare/2.22.1...2.23.0)
