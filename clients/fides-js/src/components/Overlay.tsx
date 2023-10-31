@@ -10,6 +10,7 @@ import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
 import { FidesCookie } from "../lib/cookie";
+import ConsentContent from "./ConsentContent";
 
 interface RenderBannerProps {
   isOpen: boolean;
@@ -55,7 +56,6 @@ const Overlay: FunctionComponent<Props> = ({
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
     role: "alertdialog",
-    className: options.fidesEmbed ? "fides-embed" : "",
     title: experience?.experience_config?.title || "",
     useOverlowStyling: !options.fidesEmbed,
     onClose: dispatchCloseEvent,
@@ -149,19 +149,34 @@ const Overlay: FunctionComponent<Props> = ({
             onManagePreferencesClick: handleManagePreferencesClick,
           })
         : null}
-      <ConsentModal
-        attributes={attributes}
-        experience={experience.experience_config}
-        onVendorPageClick={onVendorPageClick}
-        renderModalFooter={() =>
-          renderModalFooter({
-            onClose: handleCloseModal,
-            isMobile: false,
-          })
-        }
-      >
-        {renderModalContent()}
-      </ConsentModal>
+      {options.fidesEmbed ? (
+        <ConsentContent
+          title={attributes.title}
+          className="fides-embed"
+          experience={experience.experience_config}
+          renderModalFooter={() =>
+            renderModalFooter({
+              onClose: handleCloseModal,
+              isMobile: false,
+            })
+          }
+        >
+          {renderModalContent()}
+        </ConsentContent>
+      ) : (
+        <ConsentModal
+          attributes={attributes}
+          experience={experience.experience_config}
+          onVendorPageClick={onVendorPageClick}
+          renderModalFooter={() =>
+            renderModalFooter({
+              onClose: handleCloseModal,
+              isMobile: false,
+            })
+          }
+          renderModalContent={renderModalContent}
+        />
+      )}
     </div>
   );
 };
