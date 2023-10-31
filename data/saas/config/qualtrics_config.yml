@@ -29,7 +29,7 @@ saas_config:
   endpoints:
     - name: user
       requests:
-        update:
+        delete:
           method: POST
           path: /API/v3/op-erase-personal-data
           headers:
@@ -37,9 +37,9 @@ saas_config:
               value: <x-api-token>
           body: |
             {
-              "emails": [
-                  "test1@qualtrics.com",
-                  "test2@qualtrics.com"
-                  ],
+              "emails": ["<email>"],
               "searchOnly": false
             }
+          param_values:
+            - name: email
+              identity: email
