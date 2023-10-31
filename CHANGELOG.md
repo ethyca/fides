@@ -20,7 +20,11 @@ The types of changes are:
 ### Changed
 - Updates experience API calls from Fides.js to include new meta field [#4335](https://github.com/ethyca/fides/pull/4335)
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
+- Determine if the TCF overlay needs to surface based on backend calculated version hash [#4356](https://github.com/ethyca/fides/pull/4356)
 - Refactor Fides.js embedded modal to not use A11y dialog [#4355](https://github.com/ethyca/fides/pull/4355)
+
+### Fixed
+- Bug where vendor opt-ins would not initialize properly based on a `fides_string` in the TCF overlay [#4368](https://github.com/ethyca/fides/pull/4368)
 
 ## [2.23.0](https://github.com/ethyca/fides/compare/2.22.1...2.23.0)
 

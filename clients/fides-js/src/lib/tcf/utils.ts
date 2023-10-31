@@ -17,10 +17,14 @@ export const transformFidesStringToCookieKeys = (
 
   // map tc model key to cookie key
   TCF_KEY_MAP.forEach(({ tcfModelKey, cookieKey }) => {
+    const isVendorKey =
+      tcfModelKey === "vendorConsents" ||
+      tcfModelKey === "vendorLegitimateInterests";
     if (tcfModelKey) {
       const items: TcfCookieKeyConsent = {};
       (tcModel[tcfModelKey] as Vector).forEach((consented, id) => {
-        items[id] = consented;
+        const key = isVendorKey ? `gvl.${id}` : id;
+        items[key] = consented;
       });
       cookieKeys[cookieKey] = items;
     }
