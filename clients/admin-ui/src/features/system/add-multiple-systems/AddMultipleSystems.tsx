@@ -41,6 +41,7 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { INDEX } from "~/features/common/nav/v2/routes";
 import {
   DictSystems,
   selectAllDictSystems,
@@ -220,6 +221,11 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         <Spinner />
       </Flex>
     );
+  }
+
+  if (!dictionaryService) {
+    router.push(INDEX);
+    return null; // this prevents the empty table from flashing
   }
 
   if (isGetLoading) {
