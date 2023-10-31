@@ -54,7 +54,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     if (bannerIsOpen) {
       onOpen();
     }
-  }, [bannerIsOpen]);
+  }, [bannerIsOpen, onOpen]);
 
   return (
     <div
