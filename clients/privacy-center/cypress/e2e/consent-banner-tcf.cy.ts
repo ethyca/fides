@@ -45,7 +45,7 @@ const SYSTEM_1 = {
   served_notice_history_id: "ser_5b1bc497-b4ba-489d-b39c-9ff352d460b0",
 };
 const VENDOR_1 = {
-  id: "2",
+  id: "gvl.2",
   name: "Captify",
   served_notice_history_id: "ser_9f3641ce-9863-4a32-b4db-ef1aac9046db",
 };
@@ -1357,9 +1357,10 @@ describe("Fides-js TCF", () => {
               [PURPOSE_2.id]: true,
               1: false,
             });
+            const vendorIdOnly = VENDOR_1.id.split(".")[1];
             expect(tcData.vendor.consents).to.eql({
               1: false,
-              [VENDOR_1.id]: true,
+              [vendorIdOnly]: true,
             });
             expect(tcData.vendor.legitimateInterests).to.eql({});
           });
@@ -1421,9 +1422,10 @@ describe("Fides-js TCF", () => {
               [PURPOSE_2.id]: true,
               1: false,
             });
+            const vendorIdOnly = VENDOR_1.id.split(".")[1];
             expect(tcData.vendor.consents).to.eql({
               1: false,
-              [VENDOR_1.id]: true,
+              [vendorIdOnly]: true,
             });
             expect(tcData.vendor.legitimateInterests).to.eql({});
           });
@@ -1552,9 +1554,10 @@ describe("Fides-js TCF", () => {
             [PURPOSE_2.id]: true,
             1: false,
           });
+          const vendorIdOnly = VENDOR_1.id.split(".")[1];
           expect(tcData.vendor.consents).to.eql({
             1: false,
-            [VENDOR_1.id]: true,
+            [vendorIdOnly]: true,
           });
           expect(tcData.vendor.legitimateInterests).to.eql({});
           expect(tcData.specialFeatureOptins).to.eql({
@@ -1931,6 +1934,46 @@ describe("Fides-js TCF", () => {
           });
           expect(tcData.purpose.legitimateInterests).to.eql({});
           expect(tcData.vendor.consents).to.eql({});
+          expect(tcData.vendor.legitimateInterests).to.eql({});
+        });
+    });
+    it("can use a fides_string to override a vendor consent", () => {
+      // Opts in to all
+      const fidesStringOverride =
+        "CP0gqMAP0gqMAGXABBENATEIABaAAEAAAAAAABEAAAAA,1~";
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+            fidesString: fidesStringOverride,
+          },
+          experience: experience.items[0],
+        });
+      });
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+      });
+      // Open the modal
+      cy.get("#fides-modal-link").click();
+
+      // Verify the vendor toggle
+      // this vendor is set to null in the experience but true in the string
+      cy.get("#fides-tab-Vendors").click();
+      cy.getByTestId(`toggle-${VENDOR_1.name}-consent`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+
+      // verify CMP API
+      cy.get("@TCFEvent")
+        .its("lastCall.args")
+        .then(([tcData, success]) => {
+          expect(success).to.eql(true);
+          expect(tcData.eventStatus).to.eql("cmpuishown");
+          expect(tcData.vendor.consents).to.eql({
+            1: false,
+            2: true,
+          });
           expect(tcData.vendor.legitimateInterests).to.eql({});
         });
     });
