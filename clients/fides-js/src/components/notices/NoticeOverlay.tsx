@@ -13,7 +13,6 @@ import ConsentBanner from "../ConsentBanner";
 import { updateConsentPreferences } from "../../lib/preferences";
 import {
   debugLog,
-  hasActionNeededNotices,
   transformConsentToFidesUserPreference,
 } from "../../lib/consent-utils";
 
@@ -41,11 +40,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
     Array<PrivacyNotice["notice_key"]>
   >(initialEnabledNoticeKeys);
-
-  const showBanner = useMemo(
-    () => experience.show_banner && hasActionNeededNotices(experience),
-    [experience]
-  );
 
   const privacyNotices = useMemo(
     () => experience.privacy_notices ?? [],
@@ -125,23 +119,23 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     ]
   );
 
+  const dispatchOpenBannerEvent = useCallback(() => {
+    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+      servingComponent: ServingComponent.BANNER,
+    });
+  }, [cookie, options.debug]);
+
+  const dispatchOpenOverlayEvent = useCallback(() => {
+    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+      servingComponent: ServingComponent.OVERLAY,
+    });
+  }, [cookie, options.debug]);
+
   if (!experience.experience_config) {
     debugLog(options.debug, "No experience config found");
     return null;
   }
   const experienceConfig = experience.experience_config;
-
-  const dispatchOpenBannerEvent = () => {
-    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
-      servingComponent: ServingComponent.BANNER,
-    });
-  };
-
-  const dispatchOpenOverlayEvent = () => {
-    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
-      servingComponent: ServingComponent.OVERLAY,
-    });
-  };
 
   return (
     <Overlay
@@ -149,32 +143,28 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       experience={experience}
       cookie={cookie}
       onOpen={dispatchOpenOverlayEvent}
-      renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) =>
-        showBanner ? (
-          <ConsentBanner
-            bannerIsOpen={isOpen}
-            onOpen={dispatchOpenBannerEvent}
-            onClose={onClose}
-            experience={experienceConfig}
-            renderButtonGroup={({ isMobile }) => (
-              <NoticeConsentButtons
-                experience={experience}
-                onManagePreferencesClick={onManagePreferencesClick}
-                enabledKeys={draftEnabledNoticeKeys}
-                onSave={(keys) => {
-                  handleUpdatePreferences(keys);
-                  onSave();
-                }}
-                isAcknowledge={isAllNoticeOnly}
-                middleButton={
-                  <PrivacyPolicyLink experience={experienceConfig} />
-                }
-                isMobile={isMobile}
-              />
-            )}
-          />
-        ) : null
-      }
+      renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (
+        <ConsentBanner
+          bannerIsOpen={isOpen}
+          onOpen={dispatchOpenBannerEvent}
+          onClose={onClose}
+          experience={experienceConfig}
+          renderButtonGroup={({ isMobile }) => (
+            <NoticeConsentButtons
+              experience={experience}
+              onManagePreferencesClick={onManagePreferencesClick}
+              enabledKeys={draftEnabledNoticeKeys}
+              onSave={(keys) => {
+                handleUpdatePreferences(keys);
+                onSave();
+              }}
+              isAcknowledge={isAllNoticeOnly}
+              middleButton={<PrivacyPolicyLink experience={experienceConfig} />}
+              isMobile={isMobile}
+            />
+          )}
+        />
+      )}
       renderModalContent={() => (
         <div>
           <div className="fides-modal-notices">

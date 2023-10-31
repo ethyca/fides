@@ -9,6 +9,7 @@ import {
 import {
   ConsentMechanism,
   Cookies,
+  ExperienceMeta,
   LegacyConsentConfig,
   PrivacyExperience,
   SaveConsentPreference,
@@ -60,6 +61,7 @@ export interface FidesCookie {
   fides_meta: CookieMeta;
   fides_string?: string;
   tcf_consent: TcfCookieConsent;
+  tcf_version_hash?: ExperienceMeta["version_hash"];
 }
 
 /**

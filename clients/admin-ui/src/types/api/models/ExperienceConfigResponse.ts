@@ -39,7 +39,7 @@ export type ExperienceConfigResponse = {
    */
   privacy_policy_link_label?: string;
   /**
-   * Overlay and Privacy Center 'Privacy policy URl'
+   * Overlay and Privacy Center 'Privacy policy URL
    */
   privacy_policy_url?: string;
   /**

@@ -276,7 +276,7 @@
       ],
       "tcf_vendor_consents": [
         {
-          "id": "2",
+          "id": "gvl.2",
           "has_vendor_id": true,
           "name": "Captify",
           "description": "A longer description",
@@ -314,7 +314,7 @@
         {
           "cookie_max_age_seconds": 360000,
           "cookie_refresh": true,
-          "id": "2",
+          "id": "gvl.2",
           "has_vendor_id": true,
           "name": "Captify",
           "description": "A longer description",
