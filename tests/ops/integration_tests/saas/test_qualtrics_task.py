@@ -49,3 +49,4 @@ class TestqualtricsConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": qualtrics_erasure_identity_email},
         )
+        assert erasure_results == {""}
