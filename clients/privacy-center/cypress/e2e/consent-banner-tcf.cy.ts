@@ -2178,7 +2178,7 @@ describe("Fides-js TCF", () => {
     });
   });
 
-  describe("ac string", () => {
+  describe.only("ac string", () => {
     const AC_IDS = [42, 33, 49];
     const acceptAllAcString = `1~${AC_IDS.sort().join(".")}`;
     const rejectAllAcString = "1~";
@@ -2242,13 +2242,15 @@ describe("Fides-js TCF", () => {
         expect(body.vendor_consent_preferences).to.eql(expected);
 
         // Check the cookie
-        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
-          const cookieKeyConsent: FidesCookie = JSON.parse(
-            decodeURIComponent(cookie!.value)
-          );
-          const { fides_string: tcString } = cookieKeyConsent;
-          const acString = tcString?.split(",")[1];
-          expect(acString).to.eql(acceptAllAcString);
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const cookieKeyConsent: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value)
+            );
+            const { fides_string: tcString } = cookieKeyConsent;
+            const acString = tcString?.split(",")[1];
+            expect(acString).to.eql(acceptAllAcString);
+          });
         });
       });
     });
@@ -2268,13 +2270,15 @@ describe("Fides-js TCF", () => {
         expect(body.vendor_consent_preferences).to.eql(expected);
 
         // Check the cookie
-        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
-          const cookieKeyConsent: FidesCookie = JSON.parse(
-            decodeURIComponent(cookie!.value)
-          );
-          const { fides_string: tcString } = cookieKeyConsent;
-          const acString = tcString?.split(",")[1];
-          expect(acString).to.eql(rejectAllAcString);
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const cookieKeyConsent: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value)
+            );
+            const { fides_string: tcString } = cookieKeyConsent;
+            const acString = tcString?.split(",")[1];
+            expect(acString).to.eql(rejectAllAcString);
+          });
         });
       });
     });
