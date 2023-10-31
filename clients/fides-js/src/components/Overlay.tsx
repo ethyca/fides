@@ -2,7 +2,7 @@ import { h, FunctionComponent, VNode } from "preact";
 import { useEffect, useState, useCallback, useMemo } from "preact/hooks";
 import { FidesOptions, PrivacyExperience } from "../lib/consent-types";
 
-import { debugLog, resurfaceConsent } from "../lib/consent-utils";
+import { debugLog, shouldResurfaceConsent } from "../lib/consent-utils";
 
 import "./fides.css";
 import { useA11yDialog } from "../lib/a11y-dialog";
@@ -116,7 +116,7 @@ const Overlay: FunctionComponent<Props> = ({
   const showBanner = useMemo(
     () =>
       experience.show_banner &&
-      resurfaceConsent(experience, cookie) &&
+      shouldResurfaceConsent(experience, cookie) &&
       !options.fidesEmbed,
     [experience, options, cookie]
   );

@@ -238,7 +238,7 @@ export const hasSavedTcfPreferences = (experience: PrivacyExperience) =>
  * Returns true if there are notices in the experience that require a user preference
  * or if an experience's version hash does not match up.
  */
-export const resurfaceConsent = (
+export const shouldResurfaceConsent = (
   experience: PrivacyExperience,
   cookie: FidesCookie
 ) => {
