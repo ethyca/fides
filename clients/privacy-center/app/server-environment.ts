@@ -178,6 +178,21 @@ export const validateConfig = (
       };
     }
   }
+
+  // Validate that each hidden field in custom_privacy_request_fields has a default value
+  config.actions.forEach((action) => {
+    Object.entries(action.custom_privacy_request_fields || {}).forEach(
+      ([key, field]) => {
+        if (field.hidden && field.default_value === undefined) {
+          return {
+            isValid: false,
+            message: `Default value required for hidden field '${key}' in action '${action.policy_key}'`,
+          };
+        }
+      }
+    );
+  });
+
   return { isValid: true, message: "Config is valid" };
 };
 
