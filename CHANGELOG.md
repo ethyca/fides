@@ -20,6 +20,9 @@ The types of changes are:
 ### Changed
 - Refactor Fides.js embedded modal to not use A11y dialog [#4355](https://github.com/ethyca/fides/pull/4355)
 
+### Fixed
+- Handle invalid `fides_string` when passed in as an override [#4350](https://github.com/ethyca/fides/pull/4350)
+
 ## [2.23.0](https://github.com/ethyca/fides/compare/2.22.1...2.23.0)
 
 ### Added
@@ -47,7 +50,6 @@ The types of changes are:
 - Consistent font sizes for labels in the system form and data use forms in the Admin UI [#4346](https://github.com/ethyca/fides/pull/4346)
 - Bug where not all system forms would appear to save when used with Compass [#4347](https://github.com/ethyca/fides/pull/4347)
 - Restrict TCF Privacy Experience Config if TCF is disabled [#4348](https://github.com/ethyca/fides/pull/4348)
-- Handle invalid `fides_string` when passed in as an override [#4350](https://github.com/ethyca/fides/pull/4350)
 - Removes overflow styling for embedded modal in Fides.js [#4345](https://github.com/ethyca/fides/pull/4345)
 
 ### Changed
