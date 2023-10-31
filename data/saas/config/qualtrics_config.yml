@@ -13,18 +13,18 @@ saas_config:
     protocol: https
     host: <domain>
     authentication:
-      strategy: basic
+      strategy: api_key
       configuration:
         headers:
-          -name: X-API-TOKEN
-          value: <access_token>
+          - name: X-API-TOKEN
+            value: <x-api-token>
 
   test_request:
     method: GET
     path: /API/v3/directories
     headers:
       - name: X-API-TOKEN
-        value: <access_token>
+        value: <x-api-token>
 
   endpoints:
     - name: user
@@ -34,7 +34,7 @@ saas_config:
           path: /API/v3/op-erase-personal-data
           headers:
             - name: X-API-TOKEN
-              value: <access_token>
+              value: <x-api-token>
           body: |
             {
               "emails": [

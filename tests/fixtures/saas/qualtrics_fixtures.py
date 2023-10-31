@@ -17,8 +17,8 @@ def qualtrics_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "qualtrics.domain") or secrets["domain"],
         # add the rest of your secrets here
-        "access_token": pydash.get(saas_config, "qualtrics.access_token")
-        or secrets["access_token"],
+        "x-api-token": pydash.get(saas_config, "qualtrics.x-api-token")
+        or secrets["x-api-token"],
         "identity_email": pydash.get(saas_config, "qualtrics.identity_email")
         or secrets["identity_email"],
     }
