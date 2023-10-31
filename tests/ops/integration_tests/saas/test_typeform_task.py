@@ -16,7 +16,10 @@ class TestTypeformConnector:
         erasure_policy_string_rewrite: Policy,
         typeform_erasure_identity_email: str,
     ):
-        (erasure_results,) = await typeform_runner.non_strict_erasure_request(
+        (
+            access_results,
+            erasure_results,
+        ) = await typeform_runner.non_strict_erasure_request(
             access_policy=policy,
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": typeform_erasure_identity_email},

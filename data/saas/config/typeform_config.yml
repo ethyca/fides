@@ -31,13 +31,11 @@ saas_config:
       requests:
         delete:
           method: DELETE
-          path: /rtbf/01HBTR1083BSJT4P4PFP9RECQP/responses
-
+          path: /rtbf/<account_id>/responses
           body: |
-            {
-              "email": ["<email>"]
-            }
-
+            ["<email>"]
           param_values:
             - name: email
               identity: email
+            - name: account_id
+              connector_param: account_id
