@@ -126,21 +126,21 @@ const updateCookieAndExperience = async ({
   cookie,
   experience,
   debug = false,
-  hasFidesStringOverride,
+  hasValidFidesStringOverride,
   isExperienceClientSideFetched,
 }: {
   cookie: FidesCookie;
   experience: PrivacyExperience;
   debug?: boolean;
-  hasFidesStringOverride: boolean;
+  hasValidFidesStringOverride: boolean;
   isExperienceClientSideFetched: boolean;
 }): Promise<{
   cookie: FidesCookie;
   experience: Partial<PrivacyExperience>;
 }> => {
-  // If string override exists, the cookie is already okay, but the experience may not be.
-  if (hasFidesStringOverride) {
-    // If we didn't get the experience until the client side fetch, we need to update the fetched
+  // If string override exists and is valid, the cookie has already been overridden
+  if (hasValidFidesStringOverride) {
+    // However, if we didn't get the experience until the client side fetch, we need to update the fetched
     // experience based on the cookie here.
     if (isExperienceClientSideFetched) {
       debugLog(
@@ -156,7 +156,7 @@ const updateCookieAndExperience = async ({
     return { cookie, experience };
   }
 
-  // ignore server-side prefs if user has no prefs to override
+  // If user has no prefs saved, we don't need to override the prefs on the cookie
   if (!hasSavedTcfPreferences(experience)) {
     return { cookie: { ...cookie, fides_string: "" }, experience };
   }
@@ -239,7 +239,7 @@ const init = async (config: FidesConfig) => {
   // eslint-disable-next-line no-param-reassign
   config.options = { ...config.options, ...overrideOptions };
   const cookie = getInitialCookie(config);
-  let hasFidesStringOverride = !!config.options.fidesString;
+  let hasValidFidesStringOverride = !!config.options.fidesString;
   if (config.options.fidesString) {
     const { cookie: updatedCookie, success } = updateFidesCookieFromString(
       cookie,
@@ -249,7 +249,7 @@ const init = async (config: FidesConfig) => {
     if (success) {
       Object.assign(cookie, updatedCookie);
     } else {
-      hasFidesStringOverride = false;
+      hasValidFidesStringOverride = false;
     }
   } else if (
     tcfConsentCookieObjHasSomeConsentSet(cookie.tcf_consent) &&
@@ -284,7 +284,7 @@ const init = async (config: FidesConfig) => {
     experience,
     renderOverlay,
     updateCookieAndExperience: (props) =>
-      updateCookieAndExperience({ ...props, hasFidesStringOverride }),
+      updateCookieAndExperience({ ...props, hasValidFidesStringOverride }),
   });
   Object.assign(_Fides, updatedFides);
 
