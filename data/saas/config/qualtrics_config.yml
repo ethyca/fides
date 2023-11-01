@@ -10,7 +10,7 @@ saas_config:
       description: The domain part of the URL for your Typeform instance. For example, when logged into our Ethyca account our URL looks like this https://ethycadev.qualtrics.com/homepage/ui and for us we would enter ethycadev.qualtrics.com.
     - name: api_key
       label: API key
-      senstive: True
+      sensitive: true
       description: The API key/token for your Qualtrics account (see https://www.qualtrics.com/support/integrations/api-integration/overview/ for more details).
 
   client_config:
