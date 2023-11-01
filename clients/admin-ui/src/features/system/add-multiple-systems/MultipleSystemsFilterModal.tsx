@@ -15,7 +15,7 @@ import {
 import { Table as TableInstance } from "@tanstack/react-table";
 import React, { useMemo, useState } from "react";
 
-import { VendorSources } from "~/features/common/helpers";
+import { vendorSourceLabels, VendorSources } from "~/features/common/helpers";
 
 type FilterCheckboxProps = {
   onChange: () => void;
@@ -113,7 +113,7 @@ const MultipleSystemsFilterModal = <T,>({
             onChange={() => {
               setFilters((prev) => ({ ...prev, GVL: !prev.GVL }));
             }}
-            displayText="GVL"
+            displayText={vendorSourceLabels.gvl.fullName}
             isChecked={filters.GVL}
             value="gvl"
           />
@@ -121,7 +121,7 @@ const MultipleSystemsFilterModal = <T,>({
             onChange={() => {
               setFilters((prev) => ({ ...prev, AC: !prev.AC }));
             }}
-            displayText="AC"
+            displayText={vendorSourceLabels.gacp.fullName}
             isChecked={filters.AC}
             value="gacp"
           />

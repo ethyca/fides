@@ -23,7 +23,6 @@ import {
   getErrorMessage,
   isErrorResult,
   vendorSourceLabels,
-  VendorSources,
 } from "common/helpers";
 import {
   DefaultCell,
