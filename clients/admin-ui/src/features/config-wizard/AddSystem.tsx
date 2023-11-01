@@ -90,7 +90,7 @@ const AddSystem = () => {
           <SystemOption
             label="Add multiple systems"
             icon={<ManualSetupIcon boxSize={8} />}
-            description="Choose vendors to include as systems within your data map and use Fides Compass to automatically populate system details."
+            description="Choose vendors and automatically populate system details"
             onClick={() => {
               if (isCompassEnabled) {
                 dispatch(setAddSystemsMethod(SystemMethods.MANUAL));

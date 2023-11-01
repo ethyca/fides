@@ -27,23 +27,28 @@ describe("System management with Plus features", () => {
 
   describe("vendor list", () => {
     beforeEach(() => {
-      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
       stubVendorList();
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+      cy.wait("@getDictionaryEntries");
     });
 
     it("can display the vendor list dropdown", () => {
       cy.getSelectValueContainer("input-vendor_id");
     });
 
-    it("contains dictionary entries", () => {
-      cy.selectOption("input-vendor_id", "Aniview LTD");
+    it("contains type ahead dictionary entries", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("A");
+      cy.get("#react-select-select-vendor_id-option-0").contains("Aniview LTD");
+      cy.get("#react-select-select-vendor_id-option-1").contains(
+        "Anzu Virtual Reality LTD"
+      );
     });
 
     it("can switch entries", () => {
-      cy.selectOption("input-vendor_id", "Aniview LTD");
+      cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
       cy.getSelectValueContainer("input-vendor_id").contains("Aniview LTD");
 
-      cy.selectOption("input-vendor_id", "Anzu Virtual Reality LTD");
+      cy.getSelectValueContainer("input-vendor_id").type("Anzu{enter}");
       cy.getSelectValueContainer("input-vendor_id").contains(
         "Anzu Virtual Reality LTD"
       );
@@ -54,7 +59,7 @@ describe("System management with Plus features", () => {
     // modal to pop up incorrectly when switching tabs
     it("can switch between tabs after populating from dictionary", () => {
       cy.wait("@getSystems");
-      cy.selectOption("input-vendor_id", "Anzu Virtual Reality LTD");
+      cy.getSelectValueContainer("input-vendor_id").type("Anzu{enter}");
       cy.getByTestId("dict-suggestions-btn").click();
       cy.getByTestId("toggle-dict-suggestions").click();
       // the form fetches the system again after saving, so update the intercept with dictionary values
@@ -66,6 +71,7 @@ describe("System management with Plus features", () => {
               body: {
                 ...origSystem,
                 ...dictSystem,
+                fides_key: origSystem.fides_key,
                 customFieldValues: undefined,
                 data_protection_impact_assessment: undefined,
               },
@@ -82,7 +88,6 @@ describe("System management with Plus features", () => {
       cy.getByTestId("input-dpo").should("have.value", "DPO@anzu.io");
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("tab-System information").click();
-      // cy.pause();
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("confirmation-modal").should("not.exist");
     });
@@ -117,9 +122,9 @@ describe("System management with Plus features", () => {
           fixture: "taxonomy/custom-metadata/custom-field/list.json",
         }
       ).as("getCustomFields");
-      cy.intercept("PUT", `/api/v1/plus/custom-metadata/custom-field`, {
-        fixture: "taxonomy/custom-metadata/custom-field/update-party.json",
-      }).as("updateParty");
+      cy.intercept("POST", `/api/v1/plus/custom-metadata/custom-field/bulk`, {
+        body: {},
+      }).as("bulkUpdateCustomField");
     });
 
     it("can populate initial custom metadata", () => {
@@ -140,35 +145,31 @@ describe("System management with Plus features", () => {
 
       cy.wait("@putSystem");
 
-      // There are two custom field updates that will take place, but order is not stable
       const expectedValues = [
         {
+          custom_field_definition_id:
+            "id-custom-field-definition-pokemon-party",
           id: "id-custom-field-pokemon-party",
           resource_id: "demo_analytics_system",
           value: ["Charmander", "Eevee", "Snorlax", "Bulbasaur"],
         },
         {
+          custom_field_definition_id:
+            "id-custom-field-definition-starter-pokemon",
           id: "id-custom-field-starter-pokemon",
           resource_id: "demo_analytics_system",
           value: "Squirtle",
         },
       ];
-      cy.wait(["@updateParty", "@updateParty"]).then((interceptions) => {
-        expectedValues.forEach((expected) => {
-          const interception = interceptions.find(
-            (i) => i.request.body.id === expected.id
-          );
-          expect(interception.request.body.resource_id).to.eql(
-            expected.resource_id
-          );
-          expect(interception.request.body.value).to.eql(expected.value);
-        });
+      cy.wait("@bulkUpdateCustomField").then((interception) => {
+        expect(interception.request.body.upsert).to.eql(expectedValues);
       });
     });
   });
 
   describe("bulk system/vendor adding page", () => {
     beforeEach(() => {
+      stubPlus(true);
       stubSystemVendors();
     });
 
@@ -202,6 +203,10 @@ describe("System management with Plus features", () => {
           enabled: false,
           service_health: null,
           service_error: null,
+        },
+        fidesplus_version: "",
+        fides_cloud: {
+          enabled: false,
         },
       });
       cy.visit(ADD_SYSTEMS_ROUTE);

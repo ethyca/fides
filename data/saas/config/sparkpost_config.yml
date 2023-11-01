@@ -3,13 +3,16 @@ saas_config:
   name: SparkPost
   type: sparkpost
   description: A sample schema representing the SparkPost connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/sparkpost
   version: 0.1.0
 
   connector_params:
     - name: domain
       default_value: api.sparkpost.com
+      description: Your Sparkpost domain
     - name: api_key
       label: API key
+      description: The API access token used with Sparkpost
       sensitive: true
 
   client_config:
