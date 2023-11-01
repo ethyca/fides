@@ -268,17 +268,21 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           setGlobalFilter={setGlobalFilter}
           placeholder="Search"
         />
-        <Flex>
+        <Flex alignItems="center">
           {isTcfEnabled ? (
-            <Button
-              onClick={onOpenFilter}
-              data-testid="filter-multiple-systems-btn"
-              size="xs"
-              variant="outline"
-              mr={4}
-            >
-              Filter
-            </Button>
+            // Wrap in a span so it is consistent height with the add button, whose
+            // Tooltip wraps a span
+            <span>
+              <Button
+                onClick={onOpenFilter}
+                data-testid="filter-multiple-systems-btn"
+                size="xs"
+                variant="outline"
+                mr={4}
+              >
+                Filter
+              </Button>
+            </span>
           ) : null}
           <Tooltip
             label={toolTipText}
