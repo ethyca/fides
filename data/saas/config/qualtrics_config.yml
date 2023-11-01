@@ -11,7 +11,7 @@ saas_config:
     - name: api_key
       label: API key
       senstive: True
-      description: TDB
+      description: The API key/token for your Qualtrics account (see https://www.qualtrics.com/support/integrations/api-integration/overview/ for more details).
 
   client_config:
     protocol: https
