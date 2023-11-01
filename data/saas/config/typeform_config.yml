@@ -10,6 +10,10 @@ saas_config:
     - name: domain
       default_value: api.typeform.com
       description: The domain part of the URL for your Typeform instance
+    - name: api_key
+      label: API key
+      senstive: True
+      description: The API key/token for your Typeform account (see https://www.typeform.com/developers/get-started/personal-access-token/ for more details).
     - name: account_id
       default_value: <account_id>
       scrict: True
