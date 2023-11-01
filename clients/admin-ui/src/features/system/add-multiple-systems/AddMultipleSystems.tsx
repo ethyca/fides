@@ -52,7 +52,7 @@ import {
 import MultipleSystemsFilterModal from "~/features/system/add-multiple-systems/MultipleSystemsFilterModal";
 
 export const VendorSourceCell = ({ value }: { value: string }) => (
-  <Flex alignItems="center" height="100%">
+  <Flex alignItems="center" justifyContent="center" height="100%" mr="2">
     <Badge>
       {extractVendorSource(value) === VendorSources.GVL ? "GVL" : "AC"}
     </Badge>
