@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: typeform SaaS Config
+  name: Typeform
   type: typeform
   description: A sample schema representing the typeform connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/typeform
@@ -12,6 +12,7 @@ saas_config:
       description: The domain part of the URL for your Typeform instance
     - name: account_id
       default_value: <account_id>
+      scrict: True
       description: The account id of your Typeform instance. Notes on how to discover your account id available here https://community.typeform.com/typeform-developers-44/account-id-parameter-4027
 
   client_config:
