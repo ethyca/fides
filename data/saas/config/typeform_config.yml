@@ -15,7 +15,6 @@ saas_config:
       senstive: True
       description: The API key/token for your Typeform account (see https://www.typeform.com/developers/get-started/personal-access-token/ for more details).
     - name: account_id
-      default_value: <account_id>
       scrict: True
       description: The account id of your Typeform instance. Notes on how to discover your account id available here https://community.typeform.com/typeform-developers-44/account-id-parameter-4027
 
