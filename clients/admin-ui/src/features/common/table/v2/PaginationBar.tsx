@@ -1,6 +1,5 @@
 import {
   Button,
-  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   HStack,
@@ -31,20 +30,42 @@ export const PaginationBar = <T,>({
   const endRange = pageIndex * pageSize + pageSize;
 
   return (
-    <HStack mt={3} mb={1}>
-      <Text
-        fontSize="xs"
-        lineHeight={4}
-        fontWeight="semibold"
-        userSelect="none"
-        style={{
-          fontVariantNumeric: "tabular-nums",
-        }}
-        minWidth="122px"
-      >
-        {startRange}-{endRange <= totalRows ? endRange : totalRows} of{" "}
-        {totalRows}
-      </Text>
+    <HStack ml={1} mt={3} mb={1}>
+      <Menu>
+        <MenuButton
+          as={Button}
+          size="xs"
+          variant="ghost"
+          data-testid="pagination-btn"
+        >
+          <Text
+            fontSize="xs"
+            lineHeight={4}
+            fontWeight="semibold"
+            userSelect="none"
+            style={{
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {startRange}-{endRange <= totalRows ? endRange : totalRows} of{" "}
+            {totalRows}
+          </Text>
+        </MenuButton>
+        <MenuList minWidth="0">
+          {pageSizes.map((size) => (
+            <MenuItem
+              onClick={() => {
+                tableInstance.setPageSize(size);
+              }}
+              key={size}
+              data-testid={`pageSize-${size}`}
+              fontSize="xs"
+            >
+              {size} per view
+            </MenuItem>
+          ))}
+        </MenuList>
+      </Menu>
       <IconButton
         icon={<ChevronLeftIcon />}
         size="xs"
@@ -69,30 +90,6 @@ export const PaginationBar = <T,>({
       >
         next
       </IconButton>
-
-      <Menu>
-        <MenuButton
-          as={Button}
-          size="sm"
-          rightIcon={<ChevronDownIcon />}
-          data-testid="pagination-btn"
-        >
-          {pageSize}
-        </MenuButton>
-        <MenuList>
-          {pageSizes.map((size) => (
-            <MenuItem
-              onClick={() => {
-                tableInstance.setPageSize(size);
-              }}
-              key={size}
-              data-testid={`pageSize-${size}`}
-            >
-              {size}
-            </MenuItem>
-          ))}
-        </MenuList>
-      </Menu>
     </HStack>
   );
 };
