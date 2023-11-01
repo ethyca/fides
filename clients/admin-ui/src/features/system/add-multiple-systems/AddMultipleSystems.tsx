@@ -44,7 +44,9 @@ import { useAppSelector } from "~/app/hooks";
 import { INDEX_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   DictSystems,
+  EMPTY_PLUS_HEALTH_CHECK,
   selectAllDictSystems,
+  selectHealth,
   useGetAllSystemVendorsQuery,
   usePostSystemVendorsMutation,
 } from "~/features/plus/plus.slice";
@@ -69,11 +71,8 @@ type Props = {
 export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   const systemText = "Vendor";
   const toast = useToast();
-  const {
-    dictionaryService,
-    tcf: isTcfEnabled,
-    isPlusHealthLoading,
-  } = useFeatures();
+  const { dictionaryService, tcf: isTcfEnabled } = useFeatures();
+  const health = useAppSelector(selectHealth);
   const router = useRouter();
   const { isLoading: isGetLoading } = useGetAllSystemVendorsQuery(undefined, {
     skip: !dictionaryService,
@@ -219,7 +218,14 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     return true;
   }, [anyNewSelectedRows, allRowsLinkedToSystem]);
 
-  if (!dictionaryService && !isPlusHealthLoading) {
+  /*
+    The empty health condtional check is required because
+    the component starts to render while the plus heath check is 
+    is still loading. The hook returns `false` for everything while
+    the request is happening. This was causing this to redirect if the
+    request didn't finish fast enough.
+  */
+  if (!dictionaryService && health !== EMPTY_PLUS_HEALTH_CHECK) {
     router.push(INDEX_ROUTE);
     return null; // this prevents the empty table from flashing
   }
