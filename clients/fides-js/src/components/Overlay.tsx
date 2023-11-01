@@ -2,7 +2,7 @@ import { h, FunctionComponent, VNode } from "preact";
 import { useEffect, useState, useCallback, useMemo } from "preact/hooks";
 import { FidesOptions, PrivacyExperience } from "../lib/consent-types";
 
-import { debugLog, hasActionNeededNotices } from "../lib/consent-utils";
+import { debugLog, shouldResurfaceConsent } from "../lib/consent-utils";
 
 import "./fides.css";
 import { useA11yDialog } from "../lib/a11y-dialog";
@@ -66,7 +66,7 @@ const Overlay: FunctionComponent<Props> = ({
       instance.show();
       onOpen();
     }
-  }, [instance, cookie, options.debug]);
+  }, [instance, onOpen]);
 
   const handleCloseModal = useCallback(() => {
     if (instance && !options.fidesEmbed) {
@@ -116,9 +116,9 @@ const Overlay: FunctionComponent<Props> = ({
   const showBanner = useMemo(
     () =>
       experience.show_banner &&
-      hasActionNeededNotices(experience) &&
+      shouldResurfaceConsent(experience, cookie) &&
       !options.fidesEmbed,
-    [experience, options]
+    [experience, options, cookie]
   );
 
   const handleManagePreferencesClick = (): void => {
