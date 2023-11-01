@@ -31,6 +31,7 @@ import { System } from "~/types/api";
 import { getErrorMessage, isErrorResult } from "../common/helpers";
 import { errorToastParams, successToastParams } from "../common/toast";
 import AddModal from "./AddModal";
+import { AddMultipleVendors } from "./AddMultipleVendors";
 import { EMPTY_DECLARATION, FormValues } from "./constants";
 import DataUsesForm from "./DataUsesForm";
 
@@ -200,6 +201,9 @@ const AddVendor = ({
 
   return (
     <>
+      <Box mr={2}>
+        <AddMultipleVendors onCancel={modal.onOpen} />
+      </Box>
       <Button
         onClick={modal.onOpen}
         data-testid="add-vendor-btn"

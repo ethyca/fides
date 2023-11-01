@@ -4,7 +4,7 @@ saas_config:
   type: hubspot
   description: A sample schema representing the HubSpot connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/hubspot
-  version: 0.0.4
+  version: 0.0.5
 
   connector_params:
     - name: domain
@@ -56,12 +56,7 @@ saas_config:
               source: body
               path: paging.next.link
         update:
-          path: /crm/v3/objects/contacts/<contactId>
-          method: PATCH
-          body: |
-            {
-              <masked_object_fields>
-            }
+          request_override: hubspot_contacts_update
           param_values:
             - name: contactId
               references:

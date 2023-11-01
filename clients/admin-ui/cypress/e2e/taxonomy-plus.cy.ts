@@ -228,33 +228,26 @@ describe("Taxonomy management with Plus features", () => {
         cy.getSelectValueContainer(testIdMulti).contains(value);
       });
 
-      cy.intercept(
-        "DELETE",
-        `/api/v1/plus/custom-metadata/custom-field/id-custom-field-starter-pokemon`,
-        {
-          statusCode: 204,
-        }
-      ).as("deleteStarter");
-      cy.intercept("PUT", `/api/v1/plus/custom-metadata/custom-field`, {
-        fixture: "taxonomy/custom-metadata/custom-field/update-party.json",
-      }).as("updateParty");
+      cy.intercept("POST", `/api/v1/plus/custom-metadata/custom-field/bulk`, {
+        body: {},
+      }).as("bulkUpdateCustomField");
 
       cy.getByTestId("submit-btn").click();
 
-      cy.wait(["@updateParty", "@deleteStarter"]).then(
-        ([updatePartyInterception]) => {
-          expect(updatePartyInterception.request.body.id).to.eql(
-            "id-custom-field-pokemon-party"
-          );
-          expect(updatePartyInterception.request.body.resource_id).to.eql(
-            RESOURCE_CHILD.key
-          );
-          expect(updatePartyInterception.request.body.value).to.eql([
-            "Charmander",
-            "Eevee",
-          ]);
-        }
-      );
+      cy.wait("@bulkUpdateCustomField").then((interception) => {
+        const { body } = interception.request;
+        expect(body.resource_id).to.eql(RESOURCE_CHILD.key);
+        expect(body.delete).to.eql(["id-custom-field-starter-pokemon"]);
+        expect(body.upsert).to.eql([
+          {
+            custom_field_definition_id:
+              "id-custom-field-definition-pokemon-party",
+            resource_id: "user.job_title",
+            id: "id-custom-field-pokemon-party",
+            value: ["Charmander", "Eevee"],
+          },
+        ]);
+      });
     });
   });
 });

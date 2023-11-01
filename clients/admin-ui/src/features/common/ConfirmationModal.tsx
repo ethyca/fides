@@ -17,6 +17,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  onCancel?: () => void;
   title?: string;
   message?: ReactNode;
   cancelButtonText?: string;
@@ -33,6 +34,7 @@ const ConfirmationModal = ({
   isOpen,
   onClose,
   onConfirm,
+  onCancel,
   title,
   message,
   cancelButtonText,
@@ -66,7 +68,12 @@ const ConfirmationModal = ({
           <Button
             variant="outline"
             mr={3}
-            onClick={onClose}
+            onClick={() => {
+              if (onCancel) {
+                onCancel();
+              }
+              onClose();
+            }}
             data-testid="cancel-btn"
             isDisabled={isLoading}
             {...cancelButtonThemingProps}

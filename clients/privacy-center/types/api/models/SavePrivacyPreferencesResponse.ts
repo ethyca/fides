@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 import type { CurrentPrivacyPreferenceSchema } from "./CurrentPrivacyPreferenceSchema";
-import type { TCMobileData } from "./TCMobileData";
+import { TCMobileData } from "fides-js";
 
 /**
  * Response schema when saving privacy preferences

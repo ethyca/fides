@@ -1,13 +1,25 @@
-import { Box, Heading, SimpleGrid, Stack, Text } from "@fidesui/react";
+import {
+  Box,
+  Heading,
+  SimpleGrid,
+  Stack,
+  Text,
+  useDisclosure,
+} from "@fidesui/react";
 import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
+import { useFeatures } from "~/features/common/features";
 import {
   AWSLogoIcon,
   ManualSetupIcon,
   OktaLogoIcon,
 } from "~/features/common/Icon";
-import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  ADD_SYSTEMS_MANUAL_ROUTE,
+  ADD_SYSTEMS_MULTIPLE_ROUTE,
+} from "~/features/common/nav/v2/routes";
+import { UpgradeModal } from "~/features/common/UpgradeModal";
 import { ValidTargets } from "~/types/api";
 
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
@@ -30,6 +42,8 @@ const SectionTitle = ({ children }: { children: string }) => (
 const AddSystem = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { isOpen, onClose, onOpen } = useDisclosure();
+  const { dictionaryService: isCompassEnabled } = useFeatures();
 
   return (
     <Stack spacing={9} data-testid="add-systems">
@@ -50,6 +64,16 @@ const AddSystem = () => {
           systems to your map.
         </Text>
       </Stack>
+      <UpgradeModal
+        isOpen={isOpen}
+        onConfirm={() => {
+          window.open("https://fid.es/upgrade-compass");
+        }}
+        onCancel={() => {
+          router.push(ADD_SYSTEMS_MANUAL_ROUTE);
+        }}
+        onClose={onClose}
+      />
       <Box data-testid="manual-options">
         <SectionTitle>Manually add systems</SectionTitle>
         <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing="4">
@@ -62,6 +86,20 @@ const AddSystem = () => {
               router.push(ADD_SYSTEMS_MANUAL_ROUTE);
             }}
             data-testid="manual-btn"
+          />
+          <SystemOption
+            label="Add multiple systems"
+            icon={<ManualSetupIcon boxSize={8} />}
+            description="Choose vendors and automatically populate system details"
+            onClick={() => {
+              if (isCompassEnabled) {
+                dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
+                router.push(ADD_SYSTEMS_MULTIPLE_ROUTE);
+              } else {
+                onOpen();
+              }
+            }}
+            data-testid="multiple-btn"
           />
         </SimpleGrid>
       </Box>

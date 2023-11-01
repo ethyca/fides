@@ -1,12 +1,18 @@
 import { h, FunctionComponent, ComponentChildren, VNode } from "preact";
+import { useState, useEffect } from "preact/hooks";
 import { getConsentContext } from "../lib/consent-context";
 import { ExperienceConfig } from "../lib/consent-types";
 import CloseButton from "./CloseButton";
 import { GpcBadge } from "./GpcBadge";
 import ExperienceDescription from "./ExperienceDescription";
 
+interface ButtonGroupProps {
+  isMobile: boolean;
+}
+
 interface BannerProps {
   experience: ExperienceConfig;
+  onOpen: () => void;
   onClose: () => void;
   bannerIsOpen: boolean;
   /**
@@ -15,18 +21,41 @@ interface BannerProps {
    * */
   children?: ComponentChildren;
   onVendorPageClick?: () => void;
-  buttonGroup: VNode;
+  renderButtonGroup: (props: ButtonGroupProps) => VNode;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
   experience,
+  onOpen,
   onClose,
   bannerIsOpen,
   children,
   onVendorPageClick,
-  buttonGroup,
+  renderButtonGroup,
 }) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   const showGpcBadge = getConsentContext().globalPrivacyControl;
+
+  useEffect(() => {
+    if (bannerIsOpen) {
+      onOpen();
+    }
+  }, [bannerIsOpen, onOpen]);
+
   return (
     <div
       id="fides-banner-container"
@@ -66,8 +95,9 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
               </div>
             </div>
             {children}
-            {buttonGroup}
+            {!isMobile && renderButtonGroup({ isMobile })}
           </div>
+          {isMobile && renderButtonGroup({ isMobile })}
         </div>
       </div>
     </div>

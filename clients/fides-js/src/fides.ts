@@ -48,11 +48,7 @@ import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 
-import {
-  FidesCookie,
-  buildCookieConsentForExperiences,
-  isNewFidesCookie,
-} from "./lib/cookie";
+import { FidesCookie, buildCookieConsentForExperiences } from "./lib/cookie";
 import {
   FidesConfig,
   FidesOptionOverrides,
@@ -91,14 +87,14 @@ const updateCookie = async (
   oldCookie: FidesCookie,
   experience: PrivacyExperience,
   debug?: boolean
-): Promise<FidesCookie> => {
+): Promise<{ cookie: FidesCookie; experience: PrivacyExperience }> => {
   const context = getConsentContext();
   const consent = buildCookieConsentForExperiences(
     experience,
     context,
     !!debug
   );
-  return { ...oldCookie, consent };
+  return { cookie: { ...oldCookie, consent }, experience };
 };
 
 /**
@@ -114,26 +110,23 @@ const init = async (config: FidesConfig) => {
   if (initialFides) {
     Object.assign(_Fides, initialFides);
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
-    dispatchFidesEvent("FidesUpdated", cookie, config.options.debug);
   }
   const experience = initialFides?.experience ?? config.experience;
   const updatedFides = await initialize({
     ...config,
-    experience,
     cookie,
+    experience,
     renderOverlay,
-    updateCookie,
+    updateCookieAndExperience: ({
+      cookie: oldCookie,
+      experience: effectiveExperience,
+      debug,
+    }) => updateCookie(oldCookie, effectiveExperience, debug),
   });
   Object.assign(_Fides, updatedFides);
 
-  // Dispatch the "FidesInitialized" event to update listeners with the initial
-  // state. Skip if we already initialized due to an existing cookie.
-  // For convenience, also dispatch the "FidesUpdated" event; this allows
-  // listeners to ignore the initialization event if they prefer
-  if (isNewFidesCookie(cookie)) {
-    dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
-  }
-  dispatchFidesEvent("FidesUpdated", cookie, config.options.debug);
+  // Dispatch the "FidesInitialized" event to update listeners with the initial state.
+  dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
 };
 
 // The global Fides object; this is bound to window.Fides if available
@@ -156,6 +149,7 @@ _Fides = {
     fidesEmbed: false,
     fidesDisableSaveApi: false,
     fidesString: null,
+    apiOptions: null,
   },
   fides_meta: {},
   identity: {},

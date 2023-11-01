@@ -109,4 +109,4 @@ class TestSystemHistory:
         ).all()
         assert len(system_histories) == 3
         for system_history in system_histories:
-            system_history.edited_by == CONFIG.security.root_username
+            assert system_history.edited_by == CONFIG.security.root_username

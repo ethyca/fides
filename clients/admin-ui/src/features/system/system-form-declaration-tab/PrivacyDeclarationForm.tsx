@@ -226,7 +226,7 @@ export const PrivacyDeclarationFormComponents = ({
             </Box>
           </Collapse>
         </Stack>
-        <Box mt={5}>
+        <Box mt={5} pl={4}>
           <CustomSwitch
             name="flexible_legal_basis_for_processing"
             label="This legal basis is flexible"

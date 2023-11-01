@@ -4,7 +4,6 @@
 
 import type { ComponentType } from "./ComponentType";
 import type { ExperienceConfigResponse } from "./ExperienceConfigResponse";
-import type { ExperienceMeta } from "./ExperienceMeta";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { PrivacyNoticeResponseWithUserPreferences } from "./PrivacyNoticeResponseWithUserPreferences";
 import type { TCFFeatureRecord } from "./TCFFeatureRecord";
@@ -15,6 +14,7 @@ import type { TCFSpecialPurposeRecord } from "./TCFSpecialPurposeRecord";
 import type { TCFVendorConsentRecord } from "./TCFVendorConsentRecord";
 import type { TCFVendorLegitimateInterestsRecord } from "./TCFVendorLegitimateInterestsRecord";
 import type { TCFVendorRelationships } from "./TCFVendorRelationships";
+import { ExperienceMeta } from "fides-js";
 
 /**
  * An API representation of a PrivacyExperience used for response payloads

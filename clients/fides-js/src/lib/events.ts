@@ -4,7 +4,7 @@ import { debugLog } from "./consent-utils";
 /**
  * Defines the available event names:
  * - FidesInitialized: dispatched when initialization is complete, from Fides.init()
- * - FidesUpdated: dispatched when preferences are updated, from updateConsentPreferences() or Fides.init()
+ * - FidesUpdated: dispatched when preferences are updated from updateConsentPreferences()
  * - FidesUIShown: dispatched when either the banner or modal is shown to the user
  * - FidesUIChanged: dispatched when preferences are changed but not saved, i.e. "dirty".
  * - FidesModalClosed: dispatched when the modal is closed
@@ -45,11 +45,13 @@ export type FidesEvent = CustomEvent<FidesEventDetail>;
  *
  * Example usage:
  * ```
+ * window.addEventListener("FidesInitialized", (evt) => console.log("Fides.consent initialized:", evt.detail.consent));
  * window.addEventListener("FidesUpdated", (evt) => console.log("Fides.consent updated:", evt.detail.consent));
  * ```
  *
- * The snippet above will print a console log whenever consent preferences are initialized/updated, like:
+ * The snippet above will print a console log whenever consent preferences are updated, like:
  * ```
+ * Fides.consent initialized: { data_sales_and_sharing: false }
  * Fides.consent updated: { data_sales_and_sharing: true }
  * ```
  */
@@ -65,7 +67,11 @@ export const dispatchFidesEvent = (
     });
     debugLog(
       debug,
-      `Dispatching event type ${type} with cookie ${JSON.stringify(cookie)}`
+      `Dispatching event type ${type} ${
+        extraDetails?.servingComponent
+          ? `from ${extraDetails.servingComponent} `
+          : ""
+      }with cookie ${JSON.stringify(cookie)}`
     );
     window.dispatchEvent(event);
   }
