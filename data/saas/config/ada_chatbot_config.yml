@@ -16,6 +16,11 @@ saas_config:
   client_config:
     protocol: https
     host: <domain>
+    query_params:
+      - name: created_since
+        value: <created_since>
+      - name: page_size
+        value: <page>
     authentication:
       strategy: bearer
       configuration:
@@ -24,11 +29,6 @@ saas_config:
   test_request:
     method: GET
     path: /data_api/v1.2/conversations
-    query_params:
-      - name: created_since
-        value: <created_since>
-      - name: page_size
-        value: <page>
 
   endpoints:
     - name: conversations
@@ -36,11 +36,6 @@ saas_config:
         read:
           method: GET
           path: /data_api/v1.2/conversations
-          query_params:
-            - name: created_since
-              value: <created_since>
-            - name: page_size
-              value: <page>
           data_path: data
           postprocessors:
             - strategy: filter
@@ -57,10 +52,6 @@ saas_config:
           method: GET
           path: /data_api/v1.2/messages
           query_params:
-            - name: created_since
-              value: <created_since>
-            - name: page_size
-              value: <page>
             - name: conversation_id
               value: <conversations__id>
           data_path: data
