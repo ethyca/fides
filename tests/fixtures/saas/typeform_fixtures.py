@@ -22,8 +22,7 @@ def typeform_secrets(saas_config) -> Dict[str, Any]:
         or secrets["identity_email"],
         "account_id": pydash.get(saas_config, "typeform.account_id")
         or secrets["account_id"],
-        "bearer-token": pydash.get(saas_config, "typeform.bearer-token")
-        or secrets["bearer-token"],
+        "api_key": pydash.get(saas_config, "typeform.api_key") or secrets["api_key"],
         "delemail": pydash.get(saas_config, "typeform.delemail") or secrets["delemail"],
     }
 
