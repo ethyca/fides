@@ -9,7 +9,7 @@ saas_config:
   connector_params:
     - name: domain
       default_value: api.typeform.com
-      description: The domain part of the URL for your Typeform instance
+      description: The default value in this case should be taken as the domain here refers to the domain related to the request endpoints we will be using.
     - name: api_key
       label: API key
       senstive: True
