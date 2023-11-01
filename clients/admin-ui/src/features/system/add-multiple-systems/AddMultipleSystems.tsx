@@ -22,6 +22,7 @@ import {
   extractVendorSource,
   getErrorMessage,
   isErrorResult,
+  vendorSourceLabels,
   VendorSources,
 } from "common/helpers";
 import {
@@ -51,13 +52,17 @@ import {
 } from "~/features/plus/plus.slice";
 import MultipleSystemsFilterModal from "~/features/system/add-multiple-systems/MultipleSystemsFilterModal";
 
-export const VendorSourceCell = ({ value }: { value: string }) => (
-  <Flex alignItems="center" justifyContent="center" height="100%" mr="2">
-    <Badge>
-      {extractVendorSource(value) === VendorSources.GVL ? "GVL" : "AC"}
-    </Badge>
-  </Flex>
-);
+export const VendorSourceCell = ({ value }: { value: string }) => {
+  const source = extractVendorSource(value);
+  const labels = vendorSourceLabels[source] ?? { label: "", fullName: "" };
+  return (
+    <Flex alignItems="center" justifyContent="center" height="100%" mr="2">
+      <Tooltip label={labels.fullName} placement="top">
+        <Badge>{labels.label}</Badge>
+      </Tooltip>
+    </Flex>
+  );
+};
 
 type MultipleSystemTable = DictSystems;
 
@@ -269,21 +274,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           placeholder="Search"
         />
         <Flex alignItems="center">
-          {isTcfEnabled ? (
-            // Wrap in a span so it is consistent height with the add button, whose
-            // Tooltip wraps a span
-            <span>
-              <Button
-                onClick={onOpenFilter}
-                data-testid="filter-multiple-systems-btn"
-                size="xs"
-                variant="outline"
-                mr={4}
-              >
-                Filter
-              </Button>
-            </span>
-          ) : null}
           <Tooltip
             label={toolTipText}
             shouldWrapChildren
@@ -296,10 +286,25 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
               size="xs"
               variant="outline"
               disabled={!anyNewSelectedRows}
+              mr={4}
             >
               Add {`${systemText.toLocaleLowerCase()}s`}
             </Button>
           </Tooltip>
+          {isTcfEnabled ? (
+            // Wrap in a span so it is consistent height with the add button, whose
+            // Tooltip wraps a span
+            <span>
+              <Button
+                onClick={onOpenFilter}
+                data-testid="filter-multiple-systems-btn"
+                size="xs"
+                variant="outline"
+              >
+                Filter
+              </Button>
+            </span>
+          ) : null}
         </Flex>
       </TableActionBar>
       <FidesTableV2<MultipleSystemTable>
