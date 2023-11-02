@@ -16,7 +16,7 @@ import {
   ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
 } from "~/features/common/nav/v2/routes";
-import { AddMultipleSystems } from "~/features/system/AddMultipleSystems";
+import { AddMultipleSystems } from "~/features/system/add-multiple-systems/AddMultipleSystems";
 
 const DESCRIBE_SYSTEM_COPY =
   "Select your vendors below and they will be added as systems to your data map. Fides Compass will automatically populate the system information so that you can quickly configure privacy requests and consent. To add custom systems or unlisted vendors, please";
