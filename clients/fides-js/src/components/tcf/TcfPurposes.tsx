@@ -57,9 +57,6 @@ const SpecialPurposeBlock = ({
   onChange: (newIds: string[]) => void;
   hideToggles?: boolean;
 }) => {
-  const allChecked = allSpecialPurposes.every(
-    (p) => enabledIds.indexOf(`${p.id}`) !== -1
-  );
   const handleToggle = (purpose: TCFPurposeRecord) => {
     const purposeId = `${purpose.id}`;
     if (enabledIds.indexOf(purposeId) !== -1) {
@@ -68,23 +65,10 @@ const SpecialPurposeBlock = ({
       onChange([...enabledIds, purposeId]);
     }
   };
-  const handleToggleAll = () => {
-    if (allChecked) {
-      onChange([]);
-    } else {
-      onChange(allSpecialPurposes.map((p) => `${p.id}`));
-    }
-  };
 
   return (
     <div>
-      <DataUseToggle
-        dataUse={{ key: label, name: label }}
-        onToggle={handleToggleAll}
-        checked={allChecked}
-        isHeader
-        includeToggle={!hideToggles}
-      />
+      <div className="fides-record-header">{label}</div>
       {allSpecialPurposes.map((p) => {
         const dataUse = { key: p.name, name: p.name };
         return (

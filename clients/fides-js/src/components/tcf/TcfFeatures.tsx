@@ -41,13 +41,17 @@ const FeatureBlock = ({
 
   return (
     <div>
-      <DataUseToggle
-        dataUse={{ key: label, name: label }}
-        onToggle={handleToggleAll}
-        checked={allChecked}
-        isHeader
-        includeToggle={!hideToggles}
-      />
+      {hideToggles ? (
+        <div className="fides-record-header">{label}</div>
+      ) : (
+        <DataUseToggle
+          dataUse={{ key: label, name: label }}
+          onToggle={handleToggleAll}
+          checked={allChecked}
+          isHeader
+          includeToggle
+        />
+      )}
       {allFeatures.map((f) => {
         const vendors = [...(f.vendors || []), ...(f.systems || [])];
         return (
