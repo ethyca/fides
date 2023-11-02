@@ -73,6 +73,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "PRIVACY_CENTER_URL"
   | "FIDES_EMBED"
   | "FIDES_DISABLE_SAVE_API"
+  | "FIDES_DISABLE_BANNER"
   | "FIDES_STRING"
   | "IS_FORCED_TCF"
 >;
@@ -330,6 +331,7 @@ export const loadPrivacyCenterEnvironment =
       PRIVACY_CENTER_URL: settings.PRIVACY_CENTER_URL,
       FIDES_EMBED: settings.FIDES_EMBED,
       FIDES_DISABLE_SAVE_API: settings.FIDES_DISABLE_SAVE_API,
+      FIDES_DISABLE_BANNER: settings.FIDES_DISABLE_BANNER,
       FIDES_STRING: settings.FIDES_STRING,
       IS_FORCED_TCF: settings.IS_FORCED_TCF,
     };
