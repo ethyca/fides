@@ -137,6 +137,28 @@ describe("Fides-js TCF", () => {
         cy.get("div#fides-banner").should("not.exist");
       });
     });
+    it("should not render the banner if fides_disable_banner is true", () => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+            fidesDisableBanner: true,
+          },
+          experience: experience.items[0],
+        });
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        // The banner has a delay, so in order to assert its non-existence, we have
+        // to give it a chance to come up first. Otherwise, the following gets will
+        // pass regardless.
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
+        cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.get("div#fides-banner").should("not.exist");
+      });
+    });
   });
 
   describe("initial layer", () => {
@@ -1047,6 +1069,7 @@ describe("Fides-js TCF", () => {
         });
       });
       cy.get("#fides-tab-Purposes");
+      cy.get("@FidesUIShown").should("have.been.calledOnce");
       // Purposes
       cy.getByTestId("toggle-Purposes").within(() => {
         cy.get("input").should("be.checked");
@@ -1079,6 +1102,25 @@ describe("Fides-js TCF", () => {
       cy.get("#fides-tab-Vendors").click();
       cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
         cy.get("input").should("be.checked");
+      });
+    });
+    it("automatically renders the second layer even when fides_disable_banner is true", () => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+            fidesEmbed: true,
+            fidesDisableBanner: true,
+          },
+          experience: experience.items[0],
+        });
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").should("have.been.calledOnce");
+        cy.get("div#fides-banner").should("not.exist");
+        cy.get("div#fides-consent-content").should("exist");
       });
     });
     it("can opt in to some and opt out of others", () => {

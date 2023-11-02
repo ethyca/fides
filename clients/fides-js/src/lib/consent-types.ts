@@ -72,6 +72,9 @@ export type FidesOptions = {
   // Whether we should disable saving consent preferences to the Fides API.
   fidesDisableSaveApi: boolean;
 
+  // Whether we should disable the banner
+  fidesDisableBanner: boolean;
+
   // An explicitly passed-in TC string that supersedes the cookie, and prevents any API calls to fetch
   // experiences / preferences. Only available when TCF is enabled. Optional.
   fidesString: string | null;
@@ -341,12 +344,13 @@ export type UserGeolocation = {
 export type OverrideOptions = {
   fides_string: string;
   fides_disable_save_api: boolean;
+  fides_disable_banner: boolean;
   fides_embed: boolean;
 };
 
 export type FidesOptionOverrides = Pick<
   FidesOptions,
-  "fidesString" | "fidesDisableSaveApi" | "fidesEmbed"
+  "fidesString" | "fidesDisableSaveApi" | "fidesEmbed" | "fidesDisableBanner"
 >;
 
 export enum ButtonType {
