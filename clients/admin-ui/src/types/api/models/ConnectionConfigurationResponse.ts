@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { ActionType } from "~/features/privacy-requests/types";
-import type { AccessLevel } from "./AccessLevel";
-import type { ConnectionType } from "./ConnectionType";
-import type { SaaSConfigBase } from "./SaaSConfigBase";
+import type { AccessLevel } from './AccessLevel';
+import type { ActionType } from './ActionType';
+import type { ConnectionType } from './ConnectionType';
+import type { SaaSConfigBase } from './SaaSConfigBase';
 
 /**
  * Describes the returned schema for a ConnectionConfiguration.
@@ -24,5 +24,6 @@ export type ConnectionConfigurationResponse = {
   saas_config?: SaaSConfigBase;
   secrets?: any;
   authorized?: boolean;
-  enabled_actions: Array<ActionType>;
+  enabled_actions?: Array<ActionType>;
 };
+

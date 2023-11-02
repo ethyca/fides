@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { ActionType } from "~/features/privacy-requests/types";
+import type { ActionType } from "./ActionType";
 import type { ConnectionType } from "./ConnectionType";
 import type { SystemType } from "./SystemType";
 
