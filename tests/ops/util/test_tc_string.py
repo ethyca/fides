@@ -335,7 +335,7 @@ class TestBuildTCModel:
         m = TCModel(
             vendor_legitimate_interests=[66]
         )  # This vendor doesn't have leg int purposes, or special purposes. It does have flexible purposes,
-        # but this isn't an option right now, as is_service_specific is True
+        # but this isn't yet supported
         assert m.vendor_legitimate_interests == []
 
         m = TCModel(
