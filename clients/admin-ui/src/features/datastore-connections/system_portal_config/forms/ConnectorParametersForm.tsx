@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   ButtonGroup,
   CircleHelpIcon,
@@ -16,7 +17,7 @@ import {
   Tooltip,
   VStack,
 } from "@fidesui/react";
-import { Option } from "common/form/inputs";
+import { Option, SelectInput } from "common/form/inputs";
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaReponse,
@@ -28,6 +29,7 @@ import _ from "lodash";
 import React from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
+import { useFeatures } from "~/features/common/features";
 import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
 import DatasetConfigField from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import {
@@ -95,6 +97,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 }) => {
   const [trigger, { isLoading, isFetching }] =
     useLazyGetDatastoreConnectionStatusQuery();
+  const { plus: isPlusEnabled } = useFeatures();
 
   const validateField = (label: string, value: string, type?: string) => {
     let error;
@@ -228,6 +231,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         connectionConfig.connection_type === ConnectionType.SAAS
           ? (connectionConfig.saas_config?.fides_key as string)
           : connectionConfig.key;
+      initialValues.enabled_actions = (
+        connectionConfig.enabled_actions || []
+      ).map((action) => action.toString());
 
       // @ts-ignore
       initialValues.secrets = { ...connectionConfig.secrets };
@@ -248,6 +254,13 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
       return initialValues;
     }
+
+    if (_.isEmpty(initialValues.enabled_actions)) {
+      initialValues.enabled_actions = connectionOption.supported_actions.map(
+        (action) => action.toString()
+      );
+    }
+
     return fillInDefaults(initialValues, secretsSchema);
   };
 
@@ -351,7 +364,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                 <Field id="instance_key" name="instance_key">
                   {({ field }: { field: FieldInputProps<string> }) => (
                     <FormControl display="flex">
-                      {getFormLabel("instance_key", "Integration Identifier")}
+                      {getFormLabel("instance_key", "Integration identifier")}
                       <VStack align="flex-start" w="inherit">
                         <Input
                           {...field}
@@ -386,7 +399,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                 </Field>
               )}
               {/* Dynamic connector secret fields */}
-
               {connectionOption.type !== SystemType.MANUAL && secretsSchema
                 ? Object.entries(secretsSchema.properties).map(
                     ([key, item]) => {
@@ -398,6 +410,70 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                     }
                   )
                 : null}
+              {isPlusEnabled &&
+                connectionOption.supported_actions.length > 1 && (
+                  <Field
+                    id="enabled_actions"
+                    name="enabled_actions"
+                    validate={(value: string[]) => {
+                      let error;
+                      if (!value || value.length === 0) {
+                        error = "At least one action must be selected.";
+                      }
+                      return error;
+                    }}
+                  >
+                    {({
+                      field,
+                      form,
+                    }: {
+                      field: FieldInputProps<string>;
+                      form: any;
+                    }) => (
+                      <FormControl
+                        display="flex"
+                        isInvalid={
+                          form.touched.enabled_actions &&
+                          form.errors.enabled_actions
+                        }
+                      >
+                        {getFormLabel("enabled_actions", "Enabled actions")}
+                        <VStack align="flex-start" w="inherit">
+                          <Box width="100%">
+                            <SelectInput
+                              options={connectionOption.supported_actions.map(
+                                (action) => ({
+                                  label: action,
+                                  value: action,
+                                })
+                              )}
+                              fieldName={field.name}
+                              size="sm"
+                              isMulti
+                            />
+                          </Box>
+                          <FormErrorMessage>
+                            {props.errors.enabled_actions}
+                          </FormErrorMessage>
+                        </VStack>
+                        <Tooltip
+                          aria-label="The privacy request actions (access, erasure, or consent) to enable from the actions supported by this integration."
+                          hasArrow
+                          label="The privacy request actions (access, erasure, or consent) to enable from the actions supported by this integration."
+                          placement="right-start"
+                          openDelay={500}
+                        >
+                          <Flex alignItems="center" h="32px">
+                            <CircleHelpIcon
+                              marginLeft="8px"
+                              _hover={{ cursor: "pointer" }}
+                            />
+                          </Flex>
+                        </Tooltip>
+                      </FormControl>
+                    )}
+                  </Field>
+                )}
               {SystemType.DATABASE === connectionOption.type &&
               !isCreatingConnectionConfig ? (
                 <DatasetConfigField

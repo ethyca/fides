@@ -1005,7 +1005,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "ssh_required": {
-                    "title": "SSH Required",
+                    "title": "SSH required",
                     "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.",
                     "default": False,
                     "type": "boolean",
@@ -1059,7 +1059,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "ssh_required": {
-                    "title": "SSH Required",
+                    "title": "SSH required",
                     "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
                     "default": False,
                     "type": "boolean",
@@ -1113,7 +1113,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "ssh_required": {
-                    "title": "SSH Required",
+                    "title": "SSH required",
                     "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your Redshift database is behind a firewall and requires SSH tunneling for remote connections.",
                     "default": False,
                     "type": "boolean",

@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import { ActionType } from "~/features/privacy-requests/types";
 import type { AccessLevel } from "./AccessLevel";
 import type { ConnectionType } from "./ConnectionType";
 import type { SaaSConfigBase } from "./SaaSConfigBase";
@@ -23,4 +24,5 @@ export type ConnectionConfigurationResponse = {
   saas_config?: SaaSConfigBase;
   secrets?: any;
   authorized?: boolean;
+  enabled_actions: Array<ActionType>;
 };

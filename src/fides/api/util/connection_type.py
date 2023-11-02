@@ -157,6 +157,7 @@ def get_connection_types(
                     identifier=item,
                     type=SystemType.database,
                     human_readable=ConnectionType(item).human_readable,
+                    supported_actions=[ActionType.access, ActionType.erasure],
                 )
                 for item in database_types
             ]
@@ -181,6 +182,7 @@ def get_connection_types(
                         encoded_icon=connector_template.icon,
                         authorization_required=connector_template.authorization_required,
                         user_guide=connector_template.user_guide,
+                        supported_actions=connector_template.enabled_actions,
                     )
                 )
 
@@ -201,6 +203,7 @@ def get_connection_types(
                     identifier=item,
                     type=SystemType.manual,
                     human_readable=ConnectionType(item).human_readable,
+                    supported_actions=[ActionType.access],
                 )
                 for item in manual_types
             ]
@@ -229,11 +232,16 @@ def get_connection_types(
         connection_system_types.extend(
             [
                 ConnectionSystemTypeMap(
-                    identifier=item,
+                    identifier=email_type,
                     type=SystemType.email,
-                    human_readable=ConnectionType(item).human_readable,
+                    human_readable=ConnectionType(email_type).human_readable,
+                    supported_actions=[
+                        "consent"
+                        if email_type in CONSENT_EMAIL_CONNECTOR_TYPES
+                        else "erasure"
+                    ],
                 )
-                for item in email_types
+                for email_type in email_types
             ]
         )
     return connection_system_types

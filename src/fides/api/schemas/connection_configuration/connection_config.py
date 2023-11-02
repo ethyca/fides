@@ -110,6 +110,7 @@ class ConnectionConfigurationResponse(BaseModel):
     saas_config: Optional[SaaSConfigBase]
     secrets: Optional[Dict[str, Any]]
     authorized: Optional[bool] = False
+    enabled_actions: Optional[List[ActionType]]
 
     @root_validator()
     def mask_sensitive_values(cls, values: Dict[str, Any]) -> Dict[str, Any]:

@@ -1,8 +1,9 @@
-from typing import Optional
+from typing import List, Optional
 
 from fideslang.models import Dataset
 from pydantic import BaseModel, validator
 
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.util.saas_util import load_config_from_string, load_dataset_from_string
 
@@ -19,6 +20,11 @@ class ConnectorTemplate(BaseModel):
     human_readable: str
     authorization_required: bool
     user_guide: Optional[str]
+    enabled_actions: List[ActionType] = [
+        ActionType.access,
+        ActionType.erasure,
+        ActionType.consent,
+    ]
 
     @validator("config")
     def validate_config(cls, config: str) -> str:

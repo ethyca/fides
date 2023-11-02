@@ -339,6 +339,10 @@ def create_connection_config_from_template_no_save(
     if template_values.name:
         data["name"] = template_values.name
 
+    enabled_actions = getattr(template_values, "enabled_actions", None)
+    if enabled_actions is not None:
+        data["enabled_actions"] = enabled_actions
+
     if system_id:
         data["system_id"] = system_id
 
