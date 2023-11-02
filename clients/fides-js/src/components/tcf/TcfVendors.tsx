@@ -228,19 +228,24 @@ const TcfVendors = ({
     LEGAL_BASIS_OPTIONS[0]
   );
   const activeData: {
-    items: VendorRecord[];
+    gvlVendors: VendorRecord[];
+    otherVendors: VendorRecord[];
     enabledIds: string[];
     modelType: keyof EnabledIds;
   } = useMemo(() => {
+    const gvlVendors = vendors.filter((v) => v.isGvl);
+    const otherVendors = vendors.filter((v) => !v.isGvl);
     if (activeLegalBasisOption.value === LegalBasisEnum.CONSENT) {
       return {
-        items: vendors.filter((v) => v.isConsent),
+        gvlVendors: gvlVendors.filter((v) => v.isConsent),
+        otherVendors: otherVendors.filter((v) => v.isConsent),
         enabledIds: enabledVendorConsentIds,
         modelType: "vendorsConsent",
       };
     }
     return {
-      items: vendors.filter((v) => v.isLegint),
+      gvlVendors: gvlVendors.filter((v) => v.isLegint),
+      otherVendors: otherVendors.filter((v) => v.isLegint),
       enabledIds: enabledVendorLegintIds,
       modelType: "vendorsLegint",
     };
@@ -251,11 +256,6 @@ const TcfVendors = ({
     enabledVendorLegintIds,
   ]);
 
-  if (!vendors || vendors.length === 0) {
-    // TODO: empty state?
-    return null;
-  }
-
   return (
     <div>
       <RadioGroup
@@ -265,14 +265,25 @@ const TcfVendors = ({
       />
       {allOnOffButtons}
       <RecordsList<VendorRecord>
-        title="Vendors"
-        items={activeData.items}
+        title="IAB TCF vendors"
+        items={activeData.gvlVendors}
         enabledIds={activeData.enabledIds}
         onToggle={(newEnabledIds) =>
           onChange({ newEnabledIds, modelType: activeData.modelType })
         }
         renderBadgeLabel={(vendor) =>
           vendorGvlEntry(vendor.id, experience.gvl) ? "IAB TCF" : undefined
+        }
+        renderToggleChild={(vendor) => (
+          <ToggleChild vendor={vendor} experience={experience} />
+        )}
+      />
+      <RecordsList<VendorRecord>
+        title="Other vendors"
+        items={activeData.otherVendors}
+        enabledIds={activeData.enabledIds}
+        onToggle={(newEnabledIds) =>
+          onChange({ newEnabledIds, modelType: activeData.modelType })
         }
         renderToggleChild={(vendor) => (
           <ToggleChild vendor={vendor} experience={experience} />

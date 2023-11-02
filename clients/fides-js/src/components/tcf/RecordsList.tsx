@@ -25,7 +25,7 @@ const RecordsList = <T extends Item>({
   onToggle,
   hideToggles,
 }: Props<T>) => {
-  const handleToggleIndividual = (item: T) => {
+  const handleToggle = (item: T) => {
     const purposeId = `${item.id}`;
     if (enabledIds.indexOf(purposeId) !== -1) {
       onToggle(enabledIds.filter((e) => e !== purposeId));
@@ -44,7 +44,7 @@ const RecordsList = <T extends Item>({
             name: item.name,
           }}
           onToggle={() => {
-            handleToggleIndividual(item);
+            handleToggle(item);
           }}
           checked={enabledIds.indexOf(`${item.id}`) !== -1}
           badge={renderBadgeLabel ? renderBadgeLabel(item) : undefined}
