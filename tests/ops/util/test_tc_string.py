@@ -335,7 +335,7 @@ class TestBuildTCModel:
         m = TCModel(
             vendor_legitimate_interests=[66]
         )  # This vendor doesn't have leg int purposes, or special purposes. It does have flexible purposes,
-        # but this isn't an option right now, as is_service_specific is False
+        # but this isn't an option right now, as is_service_specific is True
         assert m.vendor_legitimate_interests == []
 
         m = TCModel(
@@ -381,7 +381,7 @@ class TestBuildTCModel:
         assert decoded.consent_language == b"EN"
         assert decoded.vendor_list_version == 24
         assert decoded.tcf_policy_version == 4
-        assert decoded.is_service_specific is False
+        assert decoded.is_service_specific is True
         assert decoded.use_non_standard_stacks is False
         assert decoded.special_features_optin == {
             1: False,
@@ -487,7 +487,7 @@ class TestBuildTCModel:
         assert decoded.consent_language == b"EN"
         assert decoded.vendor_list_version == 24
         assert decoded.tcf_policy_version == 4
-        assert decoded.is_service_specific is False
+        assert decoded.is_service_specific is True
         assert decoded.use_non_standard_stacks is False
         assert decoded.special_features_optin == {
             1: False,
@@ -621,7 +621,7 @@ class TestBuildTCModel:
         assert decoded.consent_language == b"EN"
         assert decoded.vendor_list_version == 24
         assert decoded.tcf_policy_version == 4
-        assert decoded.is_service_specific is False
+        assert decoded.is_service_specific is True
         assert decoded.use_non_standard_stacks is False
         assert decoded.special_features_optin == {
             1: False,
@@ -825,7 +825,7 @@ class TestBuildTCModel:
         assert decoded.consent_language == b"EN"
         assert decoded.vendor_list_version == 24
         assert decoded.tcf_policy_version == 4
-        assert decoded.is_service_specific is False
+        assert decoded.is_service_specific is True
         assert decoded.use_non_standard_stacks is False
         assert decoded.special_features_optin == {
             1: False,
@@ -1043,7 +1043,7 @@ class TestBuildTCModel:
         assert decoded.consent_language == b"EN"
         assert decoded.vendor_list_version == 24
         assert decoded.tcf_policy_version == 4
-        assert decoded.is_service_specific is False
+        assert decoded.is_service_specific is True
         assert decoded.use_non_standard_stacks is False
         assert decoded.special_features_optin == {
             1: False,
@@ -1162,7 +1162,7 @@ class TestBuildTCModel:
         assert decoded.consent_language == b"EN"
         assert decoded.vendor_list_version == 24
         assert decoded.tcf_policy_version == 4
-        assert decoded.is_service_specific is False
+        assert decoded.is_service_specific is True
         assert decoded.use_non_standard_stacks is False
         assert decoded.special_features_optin == {
             1: False,
@@ -1270,7 +1270,7 @@ class TestBuildTCModel:
         assert decoded.consent_language == b"EN"
         assert decoded.vendor_list_version == 24
         assert decoded.tcf_policy_version == 4
-        assert decoded.is_service_specific is False
+        assert decoded.is_service_specific is True
         assert decoded.use_non_standard_stacks is False
         assert decoded.special_features_optin == {
             1: False,
@@ -1379,7 +1379,7 @@ class TestBuildTCModel:
         assert decoded.consent_language == b"EN"
         assert decoded.vendor_list_version == 24
         assert decoded.tcf_policy_version == 4
-        assert decoded.is_service_specific is False
+        assert decoded.is_service_specific is True
         assert decoded.use_non_standard_stacks is False
         assert decoded.special_features_optin == {
             1: False,

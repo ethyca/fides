@@ -22,6 +22,7 @@ from fides.api.util.tcf.tcf_experience_contents import (
 CMP_ID: int = 407
 CMP_VERSION = 1
 CONSENT_SCREEN = 1  # TODO On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
+IS_SERVICE_SPECIFIC = True
 
 FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6]
 gvl: Dict = load_gvl()
@@ -447,6 +448,7 @@ def convert_tcf_contents_to_tc_model(
         cmp_id=CMP_ID,
         cmp_version=CMP_VERSION,
         consent_screen=CONSENT_SCREEN,
+        is_service_specific=IS_SERVICE_SPECIFIC,
         vendor_list_version=gvl.get("vendorListVersion"),
         policy_version=gvl.get("tcfPolicyVersion"),
         special_feature_optins=special_feature_opt_ins if consented else [],
