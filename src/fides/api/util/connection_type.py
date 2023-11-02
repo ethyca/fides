@@ -174,7 +174,7 @@ def get_connection_types(
                     identifier=item,
                     type=SystemType.manual,
                     human_readable=ConnectionType(item).human_readable,
-                    supported_actions=[ActionType.access],
+                    supported_actions=[ActionType.access, ActionType.erasure],
                 )
                 for item in manual_types
             ]
