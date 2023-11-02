@@ -38,6 +38,7 @@ import {
 } from "~/features/system/system.slice";
 import {
   AccessLevel,
+  ActionType,
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -130,7 +131,7 @@ export const patchConnectionConfig = async (
       disabled: false,
       key,
       ...(values.enabled_actions
-        ? { enabled_actions: values.enabled_actions }
+        ? { enabled_actions: values.enabled_actions as ActionType[] }
         : {}),
     };
   const payload = await patchFunc({
