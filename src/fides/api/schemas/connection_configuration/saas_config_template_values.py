@@ -1,7 +1,7 @@
 from typing import Optional
 
 from fideslang.validation import FidesKey
-from pydantic import BaseModel
+from pydantic import BaseModel, Extra
 
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
 
@@ -14,3 +14,6 @@ class SaasConnectionTemplateValues(BaseModel):
     description: Optional[str]  # For ConnectionConfig
     secrets: connection_secrets_schemas  # For ConnectionConfig
     instance_key: FidesKey  # For DatasetConfig.fides_key
+
+    class Config:
+        extra = Extra.ignore

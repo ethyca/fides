@@ -738,6 +738,31 @@ class TestPatchConnections:
         assert response.json()["succeeded"][0]["name"] is None
         assert response.json()["succeeded"][1]["name"] is None
 
+    def test_patch_connections_ignore_enabled_actions(
+        self, db, api_client: TestClient, generate_auth_header, url
+    ) -> None:
+        payload = [
+            {
+                "name": "My Connection",
+                "key": "my_connection",
+                "connection_type": "postgres",
+                "access": "write",
+                "enabled_actions": ["access"],
+            }
+        ]
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+
+        assert 200 == response.status_code
+        response_body = response.json()
+        assert response_body["succeeded"][0]["enabled_actions"] is None
+
+        connection_config = ConnectionConfig.filter(
+            db=db, conditions=(ConnectionConfig.key == "my_connection")
+        ).first()
+        assert connection_config.enabled_actions is None
+
 
 class TestGetConnections:
     @pytest.fixture(scope="function")
@@ -782,6 +807,7 @@ class TestGetConnections:
             "disabled",
             "description",
             "authorized",
+            "enabled_actions",
         }
 
         assert connection["key"] == "my_postgres_db_1"
@@ -1194,6 +1220,7 @@ class TestGetConnection:
             "saas_config",
             "secrets",
             "authorized",
+            "enabled_actions",
         }
 
         assert response_body["key"] == "my_postgres_db_1"

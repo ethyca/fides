@@ -155,9 +155,9 @@ def get_connection_types(
                     )
                 )
 
-    if (
-        system_type == SystemType.manual or system_type is None
-    ) and ActionType.access in action_types:
+    if (system_type == SystemType.manual or system_type is None) and (
+        ActionType.access in action_types or ActionType.erasure in action_types
+    ):
         manual_types: list[str] = sorted(
             [
                 manual_type.value
@@ -206,7 +206,7 @@ def get_connection_types(
                     human_readable=ConnectionType(email_type).human_readable,
                     supported_actions=[
                         ActionType.consent
-                        if email_type in CONSENT_EMAIL_CONNECTOR_TYPES
+                        if ConnectionType(email_type) in CONSENT_EMAIL_CONNECTOR_TYPES
                         else ActionType.erasure
                     ],
                 )

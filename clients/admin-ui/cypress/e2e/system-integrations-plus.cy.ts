@@ -14,7 +14,7 @@ describe("System integrations", () => {
     cy.intercept("GET", "/api/v1/connection_type/postgres/secret", {
       fixture: "connectors/postgres_secret.json",
     }).as("getPostgresConnectorSecret");
-    stubPlus(false);
+    stubPlus(true);
     stubSystemCrud();
     cy.visit(SYSTEM_ROUTE);
   });
@@ -68,8 +68,14 @@ describe("System integrations", () => {
         .click();
     });
 
-    it("should not display disabled actions field", () => {
-      cy.getByTestId("enabled-actions").should("not.exist");
+    // Verify Postgres shows access and erasure by default
+    it("should display disabled actions field", () => {
+      cy.getByTestId("enabled-actions").should("exist");
+      cy.getByTestId("enabled-actions").within(() => {
+        cy.contains("access");
+        cy.contains("erasure");
+        cy.contains("consent").should("not.exist");
+      });
     });
   });
 });

@@ -28,14 +28,13 @@ class CreateConnectionConfiguration(BaseModel):
     access: AccessLevel
     disabled: Optional[bool] = False
     description: Optional[str]
-    enabled_actions: Optional[List[ActionType]] = None
 
     class Config:
         """Restrict adding other fields through this schema and set orm_mode to support mapping to ConnectionConfig"""
 
         orm_mode = True
         use_enum_values = True
-        extra = Extra.forbid
+        extra = Extra.ignore
 
 
 class CreateConnectionConfigurationWithSecrets(CreateConnectionConfiguration):
@@ -46,7 +45,7 @@ class CreateConnectionConfigurationWithSecrets(CreateConnectionConfiguration):
 
     class Config:
         orm_mode = True
-        extra = Extra.forbid
+        extra = Extra.ignore
 
 
 def mask_sensitive_fields(

@@ -431,6 +431,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                       form: any;
                     }) => (
                       <FormControl
+                        data-testid="enabled-actions"
                         display="flex"
                         isInvalid={
                           form.touched.enabled_actions &&
