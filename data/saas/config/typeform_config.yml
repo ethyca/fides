@@ -12,7 +12,7 @@ saas_config:
       description: The default value in this case should be taken as the domain here refers to the domain related to the request endpoints we will be using.
     - name: api_key
       label: API key
-      senstive: True
+      sensitive: True
       description: The API key/token for your Typeform account (see https://www.typeform.com/developers/get-started/personal-access-token/ for more details).
     - name: account_id
       sensitive: True
