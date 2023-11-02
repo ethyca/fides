@@ -15,7 +15,7 @@ import {
   vendorGvlEntry,
 } from "../../lib/tcf/vendors";
 import ExternalLink from "../ExternalLink";
-import DoubleToggleTable from "./DoubleToggleTable";
+import RecordsByLegalBasis from "./RecordsByLegalBasis";
 
 const FILTERS = [{ name: "All vendors" }, { name: "IAB TCF vendors" }];
 
@@ -199,7 +199,7 @@ const TcfVendors = ({
     <div>
       <FilterButtons filters={FILTERS} onChange={handleFilter} />
       {allOnOffButtons}
-      <DoubleToggleTable<VendorRecord>
+      <RecordsByLegalBasis<VendorRecord>
         title="Vendors"
         items={vendorsToDisplay}
         enabledConsentIds={enabledVendorConsentIds}

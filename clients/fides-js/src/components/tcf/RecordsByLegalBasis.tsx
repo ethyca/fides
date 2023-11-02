@@ -27,7 +27,7 @@ interface Props<T extends Item> {
   legintModelType: keyof EnabledIds;
 }
 
-const DoubleToggleTable = <T extends Item>({
+const RecordsByLegalBasis = <T extends Item>({
   items,
   title,
   enabledConsentIds,
@@ -168,4 +168,4 @@ const DoubleToggleTable = <T extends Item>({
   );
 };
 
-export default DoubleToggleTable;
+export default RecordsByLegalBasis;

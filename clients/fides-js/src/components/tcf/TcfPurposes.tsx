@@ -9,7 +9,7 @@ import {
   TCFPurposeLegitimateInterestsRecord,
 } from "../../lib/tcf/types";
 import { UpdateEnabledIds } from "./TcfOverlay";
-import DoubleToggleTable from "./DoubleToggleTable";
+import RecordsByLegalBasis from "./RecordsByLegalBasis";
 import { getUniquePurposeRecords } from "../../lib/tcf/purposes";
 
 type TCFPurposeRecord =
@@ -132,7 +132,7 @@ const TcfPurposes = ({
 
   return (
     <div>
-      <DoubleToggleTable<PurposeRecord>
+      <RecordsByLegalBasis<PurposeRecord>
         title="Purposes"
         items={uniquePurposes}
         enabledConsentIds={enabledPurposeConsentIds}
