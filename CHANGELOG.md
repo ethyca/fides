@@ -18,7 +18,6 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.23.1...main)
 
 ### Changed
-- Updates experience API calls from Fides.js to include new meta field [#4335](https://github.com/ethyca/fides/pull/4335)
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
 - Determine if the TCF overlay needs to surface based on backend calculated version hash [#4356](https://github.com/ethyca/fides/pull/4356)
 
