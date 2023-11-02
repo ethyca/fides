@@ -636,6 +636,12 @@ div#fides-consent-content .fides-privacy-policy {
   font-weight: 600;
 }
 
+.fides-record-header {
+  font-weight: 600;
+  padding: 12px 12px;
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+}
+
 /* GPC */
 .fides-gpc-banner {
   border: 1px solid var(--fides-overlay-primary-color);
@@ -742,12 +748,10 @@ div#fides-consent-content .fides-privacy-policy {
 /* Filter button */
 
 .fides-filter-button-group {
-  background-color: var(
-    --fides-overlay-secondary-button-background-hover-color
-  );
-  border-radius: var(--fides-overlay-button-border-radius);
-  width: fit-content;
-  padding: 0.3em;
+  display: flex;
+  border: 1px solid var(--fides-overlay-row-divider-color);
+  padding: 4px;
+  margin-bottom: 22px;
 }
 
 .fides-filter-button {
@@ -755,12 +759,12 @@ div#fides-consent-content .fides-privacy-policy {
   border: none;
   padding: 0.3em 1em;
   cursor: pointer;
+  flex: 1;
 }
 
 .fides-filter-button[aria-checked="true"] {
   background-color: var(--fides-overlay-primary-button-background-color);
   color: var(--fides-overlay-primary-button-text-color);
-  border-radius: var(--fides-overlay-button-border-radius);
 }
 
 /* General classes */
@@ -808,24 +812,6 @@ div#fides-consent-content .fides-privacy-policy {
 
 .fides-tcf-vendor-toggles {
   display: flex;
-}
-
-.fides-legal-basis-labels {
-  display: flex;
-  align-items: center;
-  justify-content: end;
-  font-size: 12px;
-  font-weight: 600;
-  margin-right: 12px;
-}
-
-.fides-legal-basis-labels span {
-  display: inline-flex;
-  width: 95px;
-  margin-left: 16px;
-  line-height: 16px;
-  text-align: center;
-  justify-content: center;
 }
 
 /* Vendor purpose table */

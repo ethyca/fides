@@ -1,5 +1,5 @@
 import { Fragment, VNode, h } from "preact";
-import { useMemo, useState } from "preact/hooks";
+import { useMemo } from "preact/hooks";
 import { Vendor } from "@iabtechlabtcf/core";
 import {
   GvlDataCategories,
@@ -9,15 +9,12 @@ import {
 } from "../../lib/tcf/types";
 import { PrivacyExperience } from "../../lib/consent-types";
 import { UpdateEnabledIds } from "./TcfOverlay";
-import FilterButtons from "./FilterButtons";
 import {
   transformExperienceToVendorRecords,
   vendorGvlEntry,
 } from "../../lib/tcf/vendors";
 import ExternalLink from "../ExternalLink";
 import RecordsByLegalBasis from "./RecordsByLegalBasis";
-
-const FILTERS = [{ name: "All vendors" }, { name: "IAB TCF vendors" }];
 
 const VendorDetails = ({
   label,
@@ -170,8 +167,6 @@ const TcfVendors = ({
   onChange: (payload: UpdateEnabledIds) => void;
   allOnOffButtons: VNode;
 }) => {
-  const [isFiltered, setIsFiltered] = useState(false);
-
   // Combine the various vendor objects into one object for convenience
   const vendors = useMemo(
     () => transformExperienceToVendorRecords(experience),
@@ -183,25 +178,12 @@ const TcfVendors = ({
     return null;
   }
 
-  const handleFilter = (index: number) => {
-    if (index === 0) {
-      setIsFiltered(false);
-    } else {
-      setIsFiltered(true);
-    }
-  };
-
-  const vendorsToDisplay = isFiltered
-    ? vendors.filter((v) => vendorGvlEntry(v.id, experience.gvl))
-    : vendors;
-
   return (
     <div>
-      <FilterButtons filters={FILTERS} onChange={handleFilter} />
       {allOnOffButtons}
       <RecordsByLegalBasis<VendorRecord>
         title="Vendors"
-        items={vendorsToDisplay}
+        items={vendors}
         enabledConsentIds={enabledVendorConsentIds}
         enabledLegintIds={enabledVendorLegintIds}
         onToggle={onChange}

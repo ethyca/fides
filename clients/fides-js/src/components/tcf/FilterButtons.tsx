@@ -2,35 +2,36 @@ import { h } from "preact";
 import { useState } from "preact/hooks";
 
 interface Filter {
-  name: string;
+  label: string;
+  value: string;
 }
 
-const FilterButtons = ({
+const FilterButtons = <T extends Filter>({
   filters,
   onChange,
 }: {
-  filters: Filter[];
-  onChange: (idx: number) => void;
+  filters: T[];
+  onChange: (filter: T) => void;
 }) => {
-  const [activeButtonIndex, setActiveButtonIndex] = useState(0);
-  const handleClick = (idx: number) => {
-    setActiveButtonIndex(idx);
-    onChange(idx);
+  const [active, setActive] = useState(filters[0]);
+  const handleClick = (filter: T) => {
+    setActive(filter);
+    onChange(filter);
   };
 
   return (
     <div className="fides-filter-button-group">
-      {filters.map(({ name }, idx) => {
-        const selected = idx === activeButtonIndex;
+      {filters.map((filter) => {
+        const selected = filter.value === active.value;
         return (
           <button
             role="radio"
             type="button"
             aria-checked={selected}
-            onClick={() => handleClick(idx)}
+            onClick={() => handleClick(filter)}
             className="fides-filter-button"
           >
-            {name}
+            {filter.label}
           </button>
         );
       })}
