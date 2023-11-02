@@ -25,6 +25,10 @@ const RecordsList = <T extends Item>({
   onToggle,
   hideToggles,
 }: Props<T>) => {
+  if (items.length === 0) {
+    return null;
+  }
+
   const handleToggle = (item: T) => {
     const purposeId = `${item.id}`;
     if (enabledIds.indexOf(purposeId) !== -1) {
@@ -35,7 +39,7 @@ const RecordsList = <T extends Item>({
   };
 
   return (
-    <div>
+    <div data-testid={`records-list-${title}`}>
       <div className="fides-record-header">{title}</div>
       {items.map((item) => (
         <DataUseToggle
