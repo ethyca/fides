@@ -4,7 +4,6 @@ import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
 import { getConsentContext } from "./consent-context";
 import {
-  buildTcfEntitiesFromCookie,
   CookieIdentity,
   CookieKeyConsent,
   CookieMeta,
@@ -259,15 +258,28 @@ export const initialize = async ({
   experience,
   geolocation,
   renderOverlay,
-  updateCookie,
+  updateCookieAndExperience,
 }: {
   cookie: FidesCookie;
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
-  updateCookie: (
-    oldCookie: FidesCookie,
-    experience: PrivacyExperience,
-    debug?: boolean
-  ) => Promise<FidesCookie>;
+  /**
+   * Once we for sure have a valid experience, this is another chance to update values
+   * before the overlay renders.
+   */
+  updateCookieAndExperience: ({
+    cookie,
+    experience,
+    debug,
+    isExperienceClientSideFetched,
+  }: {
+    cookie: FidesCookie;
+    experience: PrivacyExperience;
+    debug?: boolean;
+    isExperienceClientSideFetched: boolean;
+  }) => Promise<{
+    cookie: FidesCookie;
+    experience: Partial<PrivacyExperience>;
+  }>;
 } & FidesConfig): Promise<Partial<Fides>> => {
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
   let effectiveExperience = experience;
@@ -312,34 +324,15 @@ export const initialize = async ({
       isPrivacyExperience(effectiveExperience) &&
       experienceIsValid(effectiveExperience, options)
     ) {
-      if (options.fidesString) {
-        if (fetchedClientSideExperience) {
-          // if tc str was explicitly passed in, we need to override the client-side-fetched experience with consent from the cookie
-          // we don't update cookie because it already has been overridden by the injected fidesString
-          debugLog(
-            options.debug,
-            "Overriding preferences from client-side fetched experience with cookie fides_string consent",
-            cookie.fides_string
-          );
-          const tcfEntities = buildTcfEntitiesFromCookie(
-            effectiveExperience,
-            cookie
-          );
-          Object.assign(effectiveExperience, tcfEntities);
-        }
-      } else {
-        const updatedCookie = await updateCookie(
-          cookie,
-          effectiveExperience,
-          options.debug
-        );
-        debugLog(
-          options.debug,
-          "Updated cookie based on experience",
-          updatedCookie
-        );
-        Object.assign(cookie, updatedCookie);
-      }
+      const updated = await updateCookieAndExperience({
+        cookie,
+        experience: effectiveExperience,
+        debug: options.debug,
+        isExperienceClientSideFetched: fetchedClientSideExperience,
+      });
+      debugLog(options.debug, "Updated cookie and experience", updated);
+      Object.assign(cookie, updated.cookie);
+      Object.assign(effectiveExperience, updated.experience);
       if (shouldInitOverlay) {
         await initOverlay({
           experience: effectiveExperience,
