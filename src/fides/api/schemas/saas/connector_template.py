@@ -20,11 +20,7 @@ class ConnectorTemplate(BaseModel):
     human_readable: str
     authorization_required: bool
     user_guide: Optional[str]
-    enabled_actions: List[ActionType] = [
-        ActionType.access,
-        ActionType.erasure,
-        ActionType.consent,
-    ]
+    supported_actions: List[ActionType]
 
     @validator("config")
     def validate_config(cls, config: str) -> str:

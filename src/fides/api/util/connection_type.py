@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Set
+from typing import Any, List, Set
 
 import yaml
 
@@ -94,38 +94,9 @@ def get_connection_types(
         if template is None:  # shouldn't happen, but we can be safe
             return False
 
-        saas_config = SaaSConfig(**yaml.safe_load(template.config).get("saas_config"))
-        has_access = bool(
-            next(
-                (
-                    request.read
-                    for request in [
-                        endpoint.requests for endpoint in saas_config.endpoints
-                    ]
-                ),
-                None,
-            )
-        )
-        has_erasure = (
-            bool(
-                next(
-                    (
-                        request.update or request.delete
-                        for request in [
-                            endpoint.requests for endpoint in saas_config.endpoints
-                        ]
-                    ),
-                    None,
-                )
-            )
-            or saas_config.data_protection_request
-        )
-        has_consent = saas_config.consent_requests
-
-        return bool(
-            (ActionType.consent in action_types and has_consent)
-            or (ActionType.access in action_types and has_access)
-            or (ActionType.erasure in action_types and has_erasure)
+        # Check if the necessary actions are supported
+        return any(
+            action_type in template.supported_actions for action_type in action_types
         )
 
     connection_system_types: list[ConnectionSystemTypeMap] = []
@@ -182,7 +153,7 @@ def get_connection_types(
                         encoded_icon=connector_template.icon,
                         authorization_required=connector_template.authorization_required,
                         user_guide=connector_template.user_guide,
-                        supported_actions=connector_template.enabled_actions,
+                        supported_actions=connector_template.supported_actions,
                     )
                 )
 
@@ -236,9 +207,9 @@ def get_connection_types(
                     type=SystemType.email,
                     human_readable=ConnectionType(email_type).human_readable,
                     supported_actions=[
-                        "consent"
+                        ActionType.consent
                         if email_type in CONSENT_EMAIL_CONNECTOR_TYPES
-                        else "erasure"
+                        else ActionType.erasure
                     ],
                 )
                 for email_type in email_types

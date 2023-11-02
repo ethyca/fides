@@ -70,15 +70,15 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
         logger.info("Loading connectors templates from the data/saas directory")
         for file in os.listdir("data/saas/config"):
             if file.endswith(".yml"):
-                config_file = os.path.join("data/saas/config", file)
-                config_dict = load_config(config_file)
-                connector_type = config_dict["type"]
-                human_readable = config_dict["name"]
-                user_guide = config_dict.get("user_guide")
-                authentication = config_dict["client_config"].get("authentication")
+                config_path = os.path.join("data/saas/config", file)
+                config = SaaSConfig(**load_config(config_path))
+
+                connector_type = config.type
+
+                authentication = config.client_config.authentication
                 authorization_required = (
                     authentication is not None
-                    and authentication.get("strategy")
+                    and authentication.strategy
                     == OAuth2AuthorizationCodeAuthenticationStrategy.name
                 )
 
@@ -95,14 +95,15 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
                     FileConnectorTemplateLoader.get_connector_templates()[
                         connector_type
                     ] = ConnectorTemplate(
-                        config=load_yaml_as_string(config_file),
+                        config=load_yaml_as_string(config_path),
                         dataset=load_yaml_as_string(
                             f"data/saas/dataset/{connector_type}_dataset.yml"
                         ),
                         icon=icon,
-                        human_readable=human_readable,
+                        human_readable=config.name,
                         authorization_required=authorization_required,
-                        user_guide=user_guide,
+                        user_guide=config.user_guide,
+                        supported_actions=config.supported_actions,
                     )
                 except Exception:
                     logger.exception("Unable to load {} connector", connector_type)
@@ -175,6 +176,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             human_readable=template.name,
             authorization_required=authorization_required,
             user_guide=config.user_guide,
+            supported_actions=config.supported_actions,
         )
 
         # register the template in the loader's template dictionary
