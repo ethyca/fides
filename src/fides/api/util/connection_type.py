@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Set
-
-import yaml
+from typing import Any, Set
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import ConnectionType
