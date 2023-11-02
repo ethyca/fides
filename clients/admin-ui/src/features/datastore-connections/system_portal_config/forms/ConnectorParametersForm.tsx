@@ -418,7 +418,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                     validate={(value: string[]) => {
                       let error;
                       if (!value || value.length === 0) {
-                        error = "At least one action must be selected.";
+                        error = "At least one action must be selected";
                       }
                       return error;
                     }}
