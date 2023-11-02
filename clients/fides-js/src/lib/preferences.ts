@@ -1,6 +1,5 @@
 import {
   ConsentMethod,
-  ConsentOptionCreate,
   FidesOptions,
   LastServedConsentSchema,
   PrivacyExperience,
@@ -25,8 +24,8 @@ async function savePreferencesApi(
   options: FidesOptions,
   cookie: FidesCookie,
   experience: PrivacyExperience,
-  fidesUserPreferences: Array<ConsentOptionCreate> | undefined,
   consentMethod: ConsentMethod,
+  consentPreferencesToSave?: Array<SaveConsentPreference>,
   tcf?: TcfSavePreferences,
   userLocationString?: string
 ) {
@@ -38,6 +37,15 @@ async function savePreferencesApi(
       experience
     );
   } else {
+    debugLog(options.debug, "Saving preferences to Fides API");
+    // Derive the Fides user preferences array from consent preferences
+    const fidesUserPreferences = consentPreferencesToSave?.map(
+      (preference) => ({
+        privacy_notice_history_id: preference.notice.privacy_notice_history_id,
+        preference: preference.consentPreference,
+        served_notice_history_id: preference.servedNoticeHistoryId,
+      })
+    );
     const privacyPreferenceCreate: PrivacyPreferencesRequest = {
       browser_identity: cookie.identity,
       preferences: fidesUserPreferences,
@@ -46,7 +54,6 @@ async function savePreferencesApi(
       method: consentMethod,
       ...(tcf ?? []),
     };
-    debugLog(options.debug, "Saving preferences to Fides API");
     await patchUserPreferenceToFidesServer(
       privacyPreferenceCreate,
       options.fidesApiUrl,
@@ -71,7 +78,6 @@ export const updateConsentPreferences = async ({
   options,
   userLocationString,
   cookie,
-  servedNotices,
   tcf,
   updateCookie,
 }: {
@@ -81,29 +87,11 @@ export const updateConsentPreferences = async ({
   options: FidesOptions;
   userLocationString?: string;
   cookie: FidesCookie;
+  debug?: boolean;
   servedNotices?: Array<LastServedConsentSchema> | null;
   tcf?: TcfSavePreferences;
   updateCookie: (oldCookie: FidesCookie) => Promise<FidesCookie>;
 }) => {
-  // Derive the Fides user preferences array from privacy notices
-  const fidesUserPreferences: Array<ConsentOptionCreate> | undefined =
-    consentPreferencesToSave
-      ? consentPreferencesToSave.map(({ notice, consentPreference }) => {
-          const servedNotice = servedNotices
-            ? servedNotices.find(
-                (n) =>
-                  n.privacy_notice_history?.id ===
-                  notice.privacy_notice_history_id
-              )
-            : undefined;
-          return {
-            privacy_notice_history_id: notice.privacy_notice_history_id,
-            preference: consentPreference,
-            served_notice_history_id: servedNotice?.served_notice_history_id,
-          };
-        })
-      : undefined;
-
   // 1. Update the cookie object based on new preferences
   const updatedCookie = await updateCookie(cookie);
   Object.assign(cookie, updatedCookie);
@@ -121,8 +109,8 @@ export const updateConsentPreferences = async ({
         options,
         cookie,
         experience,
-        fidesUserPreferences,
         consentMethod,
+        consentPreferencesToSave,
         tcf,
         userLocationString
       );

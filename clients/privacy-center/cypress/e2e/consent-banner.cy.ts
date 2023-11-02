@@ -407,6 +407,7 @@ describe("Consent banner", () => {
 
         it("can remove all cookies when rejecting all", () => {
           cy.contains("button", "Reject Test").click();
+          cy.get("@FidesUpdated").should("have.been.calledOnce");
           cy.getAllCookies().then((allCookies) => {
             expect(allCookies.map((c) => c.name)).to.eql([CONSENT_COOKIE_NAME]);
           });
@@ -417,6 +418,7 @@ describe("Consent banner", () => {
           // opt out of the first notice
           cy.getByTestId("toggle-one").click();
           cy.getByTestId("Save test-btn").click();
+          cy.get("@FidesUpdated").should("have.been.calledOnce");
           cy.getAllCookies().then((allCookies) => {
             expect(allCookies.map((c) => c.name)).to.eql([
               CONSENT_COOKIE_NAME,
@@ -1088,7 +1090,7 @@ describe("Consent banner", () => {
 
     // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
     // register listeners for these window events
-    it("emits both a FidesInitialized and FidesUpdated event when initialized", () => {
+    it("emits a FidesInitialized but not a FidesUpdated event when initialized", () => {
       cy.window()
         .its("Fides")
         .its("consent")
@@ -1103,51 +1105,47 @@ describe("Consent banner", () => {
           [PRIVACY_NOTICE_KEY_1]: false,
           [PRIVACY_NOTICE_KEY_2]: true,
         });
-      cy.get("@FidesUpdated")
-        .should("have.been.calledOnce")
-        .its("firstCall.args.0.detail.consent")
-        .should("deep.equal", {
-          [PRIVACY_NOTICE_KEY_1]: false,
-          [PRIVACY_NOTICE_KEY_2]: true,
-        });
+      cy.get("@FidesUpdated").should("not.have.been.called");
       cy.get("@FidesUIChanged").should("not.have.been.called");
     });
 
     describe("when preferences are changed / saved", () => {
-      it("emits another FidesUpdated event when reject all is clicked", () => {
+      it("emits a FidesUpdated event when reject all is clicked", () => {
         cy.contains("button", "Reject Test").should("be.visible").click();
         cy.get("@FidesUIChanged").should("not.have.been.called");
-        cy.get("@FidesUpdated")
-          .should("have.been.calledTwice")
-          // First call should be from initialization, before the user rejects all
+        cy.get("@FidesInitialized")
+          // First event, before the user rejects all
+          .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: true,
           });
         cy.get("@FidesUpdated")
-          // Second call is when the user rejects all
-          .its("secondCall.args.0.detail.consent")
+          // Update event, when the user rejects all
+          .should("have.been.calledOnce")
+          .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: true,
           });
       });
 
-      it("emits another FidesUpdated event when accept all is clicked", () => {
+      it("emits a FidesUpdated event when accept all is clicked", () => {
         cy.contains("button", "Accept Test").should("be.visible").click();
         cy.get("@FidesUIChanged").should("not.have.been.called");
-        cy.get("@FidesUpdated")
-          .should("have.been.calledTwice")
-          // First call should be from initialization, before the user accepts all
+        cy.get("@FidesInitialized")
+          // First event, before the user accepts all
+          .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: true,
           });
         cy.get("@FidesUpdated")
-          // Second call is when the user accepts all
-          .its("secondCall.args.0.detail.consent")
+          // Update event, when the user accepts all
+          .should("have.been.calledOnce")
+          .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: true,
             [PRIVACY_NOTICE_KEY_2]: true,
@@ -1161,17 +1159,18 @@ describe("Consent banner", () => {
         cy.getByTestId("toggle-Test privacy notice").click();
         cy.getByTestId("consent-modal").contains("Save").click();
         cy.get("@FidesUIChanged").should("have.been.calledOnce");
-        cy.get("@FidesUpdated")
-          .should("have.been.calledTwice")
-          // First call should be from initialization, before the user saved preferences
+        cy.get("@FidesInitialized")
+          // First event, before the user saved preferences
+          .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: true,
           });
         cy.get("@FidesUpdated")
-          // Second call is when the user saved preferences and opted-in to the first notice
-          .its("secondCall.args.0.detail.consent")
+          // Update event, when the user saved preferences and opted-in to the first notice
+          .should("have.been.calledOnce")
+          .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: true,
             [PRIVACY_NOTICE_KEY_2]: true,
@@ -1253,21 +1252,14 @@ describe("Consent banner", () => {
             [PRIVACY_NOTICE_KEY_2]: true,
           });
         cy.get("@FidesInitialized")
-          .should("have.been.calledOnce")
+          .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             data_sales: false,
             tracking: false,
             analytics: true,
           });
-        cy.get("@FidesUpdated")
-          .its("firstCall.args.0.detail.consent")
-          .should("deep.equal", {
-            data_sales: false,
-            tracking: false,
-            analytics: true,
-          });
-        cy.get("@FidesUpdated")
+        cy.get("@FidesInitialized")
           .its("secondCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: false,
@@ -1314,21 +1306,14 @@ describe("Consent banner", () => {
             [PRIVACY_NOTICE_KEY_2]: true,
           });
         cy.get("@FidesInitialized")
-          .should("have.been.calledOnce")
+          .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             data_sales: false,
             tracking: false,
             analytics: true,
           });
-        cy.get("@FidesUpdated")
-          .its("firstCall.args.0.detail.consent")
-          .should("deep.equal", {
-            data_sales: false,
-            tracking: false,
-            analytics: true,
-          });
-        cy.get("@FidesUpdated")
+        cy.get("@FidesInitialized")
           .its("secondCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: false,
@@ -1375,22 +1360,8 @@ describe("Consent banner", () => {
           analytics: true,
         });
         cy.get("@FidesInitialized")
-          .should("have.been.calledOnce")
+          .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
-          .should("deep.equal", {
-            data_sales: false,
-            tracking: false,
-            analytics: true,
-          });
-        cy.get("@FidesUpdated")
-          .its("firstCall.args.0.detail.consent")
-          .should("deep.equal", {
-            data_sales: false,
-            tracking: false,
-            analytics: true,
-          });
-        cy.get("@FidesUpdated")
-          .its("secondCall.args.0.detail.consent")
           .should("deep.equal", {
             data_sales: false,
             tracking: false,
@@ -1436,22 +1407,8 @@ describe("Consent banner", () => {
           analytics: true,
         });
         cy.get("@FidesInitialized")
-          .should("have.been.calledOnce")
+          .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
-          .should("deep.equal", {
-            data_sales: false,
-            tracking: false,
-            analytics: true,
-          });
-        cy.get("@FidesUpdated")
-          .its("firstCall.args.0.detail.consent")
-          .should("deep.equal", {
-            data_sales: false,
-            tracking: false,
-            analytics: true,
-          });
-        cy.get("@FidesUpdated")
-          .its("secondCall.args.0.detail.consent")
           .should("deep.equal", {
             data_sales: false,
             tracking: false,
@@ -1561,6 +1518,15 @@ describe("Consent banner", () => {
           acknowledge_mode: false,
           serving_component: "overlay",
           privacy_notice_history_ids: [historyId1, historyId2],
+          tcf_purpose_consents: [],
+          tcf_purpose_legitimate_interests: [],
+          tcf_special_purposes: [],
+          tcf_vendor_consents: [],
+          tcf_vendor_legitimate_interests: [],
+          tcf_features: [],
+          tcf_special_features: [],
+          tcf_system_consents: [],
+          tcf_system_legitimate_interests: [],
         });
         // Now opt out of the notices
         cy.getByTestId("consent-modal").within(() => {

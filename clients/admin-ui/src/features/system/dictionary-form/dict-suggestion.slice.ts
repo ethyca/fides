@@ -2,14 +2,16 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { type RootState } from "~/app/store";
 
-export type Suggestions = "showing" | "hiding";
+// `initial` is like `hiding`, although it helps to know when we are setting
+// an initial value vs reverting to a previous value
+export type Suggestions = "showing" | "hiding" | "initial";
 
 type State = {
   suggestions: Suggestions;
   lockedForGVL: boolean;
 };
 const initialState: State = {
-  suggestions: "hiding",
+  suggestions: "initial",
   lockedForGVL: false,
 };
 
@@ -18,8 +20,12 @@ export const dictSuggestionsSlice = createSlice({
   initialState,
   reducers: {
     toggleSuggestions: (draftState) => {
-      draftState.suggestions =
-        draftState.suggestions === "hiding" ? "showing" : "hiding";
+      if (draftState.suggestions === "initial") {
+        draftState.suggestions = "showing";
+      } else {
+        draftState.suggestions =
+          draftState.suggestions === "hiding" ? "showing" : "hiding";
+      }
     },
     setSuggestions: (draftState, action: PayloadAction<Suggestions>) => {
       draftState.suggestions = action.payload;

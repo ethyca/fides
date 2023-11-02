@@ -289,6 +289,7 @@ export const SelectInput = ({
         option: (provided, state) => ({
           ...provided,
           background: state.isSelected || state.isFocused ? "gray.50" : "unset",
+          color: textColor ?? "gray.600",
         }),
         dropdownIndicator: (provided) => ({
           ...provided,
@@ -1020,7 +1021,7 @@ export const CustomSwitch = ({
       <FormControl isInvalid={isInvalid} width="full">
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <HStack spacing={1}>
-            <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={0}>
+            <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={0}>
               {label}
             </Label>
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}

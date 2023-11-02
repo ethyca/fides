@@ -1,6 +1,7 @@
 export const COMPONENT_MAP = new Map([
   ["overlay", "Overlay"],
   ["privacy_center", "Privacy center"],
+  ["tcf_overlay", "TCF overlay"],
 ]);
 
 export const BANNER_ENABLED_MAP = new Map([
