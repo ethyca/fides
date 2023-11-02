@@ -10,7 +10,7 @@ import {
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik, FormikHelpers } from "formik";
-import { ChangeEvent, useMemo } from "react";
+import { useMemo } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -253,7 +253,10 @@ const SystemInformationForm = ({
 
             <SystemFormInputGroup heading="System details">
               {features.dictionaryService ? (
-                <VendorSelector options={dictionaryOptions} />
+                <VendorSelector
+                  options={dictionaryOptions}
+                  handleVendorSelected={handleVendorSelected}
+                />
               ) : null}
               <DictSuggestionTextInput
                 id="name"
