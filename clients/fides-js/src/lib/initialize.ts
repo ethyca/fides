@@ -143,7 +143,7 @@ const automaticallyApplyGPCPreferences = ({
 };
 
 /**
- * Gets and validates Fides override options provided through URL query params, cookie or window obj.
+ * Gets and validates Fides override options provided through URL query params, cookie, or window obj.
  *
  * If the same override option is provided in multiple ways, load the value in this order:
  * 1) query param  (top priority)
@@ -320,6 +320,7 @@ export const initialize = async ({
       isPrivacyExperience(effectiveExperience) &&
       experienceIsValid(effectiveExperience, options)
     ) {
+      // get custom prefs
       const updated = await updateCookieAndExperience({
         cookie,
         experience: effectiveExperience,
