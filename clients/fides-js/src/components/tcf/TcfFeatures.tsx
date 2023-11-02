@@ -4,19 +4,40 @@ import { TCFFeatureRecord } from "../../lib/tcf/types";
 import { PrivacyExperience } from "../../lib/consent-types";
 import type { UpdateEnabledIds } from "./TcfOverlay";
 import DataUseToggle from "../DataUseToggle";
+import RecordsList from "./RecordsList";
+
+const FeatureChildren = ({ feature }: { feature: TCFFeatureRecord }) => {
+  const vendors = [...(feature.vendors || []), ...(feature.systems || [])];
+  return (
+    <div>
+      <p className="fides-tcf-toggle-content">{feature.description}</p>
+      {vendors.length ? (
+        <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
+          <span className="fides-tcf-purpose-vendor-title">
+            Vendors we use for this feature
+            <span>{vendors.length} vendor(s)</span>
+          </span>
+          <ul className="fides-tcf-purpose-vendor-list">
+            {vendors.map((v) => (
+              <li>{v.name}</li>
+            ))}
+          </ul>
+        </p>
+      ) : null}
+    </div>
+  );
+};
 
 const FeatureBlock = ({
   label,
   allFeatures,
   enabledIds,
   onChange,
-  hideToggles,
 }: {
   label: string;
   allFeatures: TCFFeatureRecord[] | undefined;
   enabledIds: string[];
   onChange: (newIds: string[]) => void;
-  hideToggles?: boolean;
 }) => {
   if (!allFeatures || allFeatures.length === 0) {
     return null;
@@ -41,47 +62,24 @@ const FeatureBlock = ({
 
   return (
     <div>
-      {hideToggles ? (
-        <div className="fides-record-header">{label}</div>
-      ) : (
+      <DataUseToggle
+        dataUse={{ key: label, name: label }}
+        onToggle={handleToggleAll}
+        checked={allChecked}
+        isHeader
+        includeToggle
+      />
+      {allFeatures.map((f) => (
         <DataUseToggle
-          dataUse={{ key: label, name: label }}
-          onToggle={handleToggleAll}
-          checked={allChecked}
-          isHeader
-          includeToggle
-        />
-      )}
-      {allFeatures.map((f) => {
-        const vendors = [...(f.vendors || []), ...(f.systems || [])];
-        return (
-          <DataUseToggle
-            dataUse={{ key: `${f.id}`, name: f.name }}
-            onToggle={() => {
-              handleToggle(f);
-            }}
-            checked={enabledIds.indexOf(`${f.id}`) !== -1}
-            includeToggle={!hideToggles}
-          >
-            <div>
-              <p className="fides-tcf-toggle-content">{f.description}</p>
-              {vendors.length ? (
-                <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
-                  <span className="fides-tcf-purpose-vendor-title">
-                    Vendors we use for this feature
-                    <span>{vendors.length} vendor(s)</span>
-                  </span>
-                  <ul className="fides-tcf-purpose-vendor-list">
-                    {vendors.map((v) => (
-                      <li>{v.name}</li>
-                    ))}
-                  </ul>
-                </p>
-              ) : null}
-            </div>
-          </DataUseToggle>
-        );
-      })}
+          dataUse={{ key: `${f.id}`, name: f.name }}
+          onToggle={() => {
+            handleToggle(f);
+          }}
+          checked={enabledIds.indexOf(`${f.id}`) !== -1}
+        >
+          <FeatureChildren feature={f} />
+        </DataUseToggle>
+      ))}
     </div>
   );
 };
@@ -100,13 +98,14 @@ const TcfFeatures = ({
   onChange: (payload: UpdateEnabledIds) => void;
 }) => (
   <div>
-    <FeatureBlock
-      label="Features"
-      allFeatures={allFeatures}
+    <RecordsList<TCFFeatureRecord>
+      title="Features"
+      items={allFeatures ?? []}
       enabledIds={enabledFeatureIds}
-      onChange={(newEnabledIds) =>
+      onToggle={(newEnabledIds) =>
         onChange({ newEnabledIds, modelType: "features" })
       }
+      renderToggleChild={(f) => <FeatureChildren feature={f} />}
       hideToggles
     />
     <FeatureBlock

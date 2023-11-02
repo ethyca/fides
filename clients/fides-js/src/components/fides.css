@@ -732,7 +732,7 @@ div#fides-consent-content .fides-privacy-policy {
   display: inline-flex;
   align-items: center;
   height: 18px;
-  margin-left: 0.6em;
+  margin-right: 8px;
   text-transform: uppercase;
   padding: 0 4px;
   font-weight: 600;
@@ -745,16 +745,16 @@ div#fides-consent-content .fides-privacy-policy {
   background-color: var(--fides-overlay-background-dark-color);
 }
 
-/* Filter button */
+/* Radio button group */
 
-.fides-filter-button-group {
+.fides-radio-button-group {
   display: flex;
   border: 1px solid var(--fides-overlay-row-divider-color);
   padding: 4px;
   margin-bottom: 22px;
 }
 
-.fides-filter-button {
+.fides-radio-button {
   background-color: transparent;
   border: none;
   padding: 0.3em 1em;
@@ -762,7 +762,7 @@ div#fides-consent-content .fides-privacy-policy {
   flex: 1;
 }
 
-.fides-filter-button[aria-checked="true"] {
+.fides-radio-button[aria-checked="true"] {
   background-color: var(--fides-overlay-primary-button-background-color);
   color: var(--fides-overlay-primary-button-text-color);
 }
@@ -775,6 +775,10 @@ div#fides-consent-content .fides-privacy-policy {
 
 .fides-margin-right {
   margin-right: 0.2em;
+}
+
+.fides-justify-space-between {
+  justify-content: space-between;
 }
 
 /* TCF toggles */

@@ -1,11 +1,13 @@
 import { Fragment, VNode, h } from "preact";
-import { useMemo } from "preact/hooks";
+import { useMemo, useState } from "preact/hooks";
 import { Vendor } from "@iabtechlabtcf/core";
 import {
   GvlDataCategories,
   GvlDataDeclarations,
   VendorRecord,
   EmbeddedPurpose,
+  LegalBasisEnum,
+  EnabledIds,
 } from "../../lib/tcf/types";
 import { PrivacyExperience } from "../../lib/consent-types";
 import { UpdateEnabledIds } from "./TcfOverlay";
@@ -14,7 +16,9 @@ import {
   vendorGvlEntry,
 } from "../../lib/tcf/vendors";
 import ExternalLink from "../ExternalLink";
-import RecordsByLegalBasis from "./RecordsByLegalBasis";
+import RecordsList from "./RecordsList";
+import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
+import RadioGroup from "./RadioGroup";
 
 const VendorDetails = ({
   label,
@@ -154,6 +158,53 @@ const StorageDisclosure = ({ vendor }: { vendor: VendorRecord }) => {
   return <p>{disclosure}</p>;
 };
 
+const ToggleChild = ({
+  vendor,
+  experience,
+}: {
+  vendor: VendorRecord;
+  experience: PrivacyExperience;
+}) => {
+  const gvlVendor = vendorGvlEntry(vendor.id, experience.gvl);
+  const dataCategories: GvlDataCategories | undefined =
+    // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
+    experience.gvl?.dataCategories;
+  const hasUrls =
+    vendor.privacy_policy_url || vendor.legitimate_interest_disclosure_url;
+  return (
+    <Fragment>
+      <StorageDisclosure vendor={vendor} />
+      {hasUrls && (
+        <div>
+          {vendor.privacy_policy_url && (
+            <ExternalLink href={vendor.privacy_policy_url}>
+              Privacy policy
+            </ExternalLink>
+          )}
+          {vendor.legitimate_interest_disclosure_url && (
+            <ExternalLink href={vendor.legitimate_interest_disclosure_url}>
+              Legitimate interest disclosure
+            </ExternalLink>
+          )}
+        </div>
+      )}
+      <PurposeVendorDetails
+        purposes={[
+          ...(vendor.purpose_consents || []),
+          ...(vendor.purpose_legitimate_interests || []),
+        ]}
+        specialPurposes={vendor.special_purposes}
+      />
+      <VendorDetails label="Features" lineItems={vendor.features} />
+      <VendorDetails
+        label="Special features"
+        lineItems={vendor.special_features}
+      />
+      <DataCategories gvlVendor={gvlVendor} dataCategories={dataCategories} />
+    </Fragment>
+  );
+};
+
 const TcfVendors = ({
   experience,
   enabledVendorConsentIds,
@@ -173,6 +224,33 @@ const TcfVendors = ({
     [experience]
   );
 
+  const [activeLegalBasisOption, setActiveLegalBasisOption] = useState(
+    LEGAL_BASIS_OPTIONS[0]
+  );
+  const activeData: {
+    items: VendorRecord[];
+    enabledIds: string[];
+    modelType: keyof EnabledIds;
+  } = useMemo(() => {
+    if (activeLegalBasisOption.value === LegalBasisEnum.CONSENT) {
+      return {
+        items: vendors.filter((v) => v.isConsent),
+        enabledIds: enabledVendorConsentIds,
+        modelType: "vendorsConsent",
+      };
+    }
+    return {
+      items: vendors.filter((v) => v.isLegint),
+      enabledIds: enabledVendorLegintIds,
+      modelType: "vendorsLegint",
+    };
+  }, [
+    activeLegalBasisOption,
+    vendors,
+    enabledVendorConsentIds,
+    enabledVendorLegintIds,
+  ]);
+
   if (!vendors || vendors.length === 0) {
     // TODO: empty state?
     return null;
@@ -180,64 +258,25 @@ const TcfVendors = ({
 
   return (
     <div>
+      <RadioGroup
+        options={LEGAL_BASIS_OPTIONS}
+        active={activeLegalBasisOption}
+        onChange={setActiveLegalBasisOption}
+      />
       {allOnOffButtons}
-      <RecordsByLegalBasis<VendorRecord>
+      <RecordsList<VendorRecord>
         title="Vendors"
-        items={vendors}
-        enabledConsentIds={enabledVendorConsentIds}
-        enabledLegintIds={enabledVendorLegintIds}
-        onToggle={onChange}
-        consentModelType="vendorsConsent"
-        legintModelType="vendorsLegint"
+        items={activeData.items}
+        enabledIds={activeData.enabledIds}
+        onToggle={(newEnabledIds) =>
+          onChange({ newEnabledIds, modelType: activeData.modelType })
+        }
         renderBadgeLabel={(vendor) =>
           vendorGvlEntry(vendor.id, experience.gvl) ? "IAB TCF" : undefined
         }
-        renderToggleChild={(vendor) => {
-          const gvlVendor = vendorGvlEntry(vendor.id, experience.gvl);
-          const dataCategories: GvlDataCategories | undefined =
-            // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
-            experience.gvl?.dataCategories;
-          const hasUrls =
-            vendor.privacy_policy_url ||
-            vendor.legitimate_interest_disclosure_url;
-          return (
-            <Fragment>
-              <StorageDisclosure vendor={vendor} />
-              {hasUrls && (
-                <div>
-                  {vendor.privacy_policy_url && (
-                    <ExternalLink href={vendor.privacy_policy_url}>
-                      Privacy policy
-                    </ExternalLink>
-                  )}
-                  {vendor.legitimate_interest_disclosure_url && (
-                    <ExternalLink
-                      href={vendor.legitimate_interest_disclosure_url}
-                    >
-                      Legitimate interest disclosure
-                    </ExternalLink>
-                  )}
-                </div>
-              )}
-              <PurposeVendorDetails
-                purposes={[
-                  ...(vendor.purpose_consents || []),
-                  ...(vendor.purpose_legitimate_interests || []),
-                ]}
-                specialPurposes={vendor.special_purposes}
-              />
-              <VendorDetails label="Features" lineItems={vendor.features} />
-              <VendorDetails
-                label="Special features"
-                lineItems={vendor.special_features}
-              />
-              <DataCategories
-                gvlVendor={gvlVendor}
-                dataCategories={dataCategories}
-              />
-            </Fragment>
-          );
-        }}
+        renderToggleChild={(vendor) => (
+          <ToggleChild vendor={vendor} experience={experience} />
+        )}
       />
     </div>
   );
