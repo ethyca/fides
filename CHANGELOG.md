@@ -23,6 +23,9 @@ The types of changes are:
 
 ## [2.23.1](https://github.com/ethyca/fides/compare/2.23.0...2.23.1)
 
+### Added
+- Added Erasure Connector for Qualtrics [4371](https://github.com/ethyca/fides/pull/4371)
+
 ### Changed
 - Refactor Fides.js embedded modal to not use A11y dialog [#4355](https://github.com/ethyca/fides/pull/4355)
 - Only call `FidesUpdated` when a preference has been saved, not during initialization [#4365](https://github.com/ethyca/fides/pull/4365)
