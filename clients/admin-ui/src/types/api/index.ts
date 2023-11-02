@@ -352,6 +352,7 @@ export { ValidationStatus } from "./models/ValidationStatus";
 export { ValidationTarget } from "./models/ValidationTarget";
 export { ValidTargets } from "./models/ValidTargets";
 export type { ValuesList } from "./models/ValuesList";
+export type { VendorIds } from "./models/VendorIds";
 export type { VerificationCode } from "./models/VerificationCode";
 export type { Violation } from "./models/Violation";
 export type { ViolationAttributes } from "./models/ViolationAttributes";
