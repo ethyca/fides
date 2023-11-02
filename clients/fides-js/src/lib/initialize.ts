@@ -320,7 +320,6 @@ export const initialize = async ({
       isPrivacyExperience(effectiveExperience) &&
       experienceIsValid(effectiveExperience, options)
     ) {
-      // get custom prefs
       const updated = await updateCookieAndExperience({
         cookie,
         experience: effectiveExperience,
