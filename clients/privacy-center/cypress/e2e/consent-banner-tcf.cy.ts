@@ -292,7 +292,7 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
-        cy.get("@FidesUpdated").should("have.been.calledTwice");
+        cy.get("@FidesUpdated").should("have.been.calledOnce");
         cy.window().then((win) => {
           win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
           cy.get("@getTCData")
@@ -1280,12 +1280,12 @@ describe("Fides-js TCF", () => {
 
     describe("setting fields", () => {
       it("can opt in to all and set legitimate interests", () => {
-        cy.get("@FidesUpdated").should("have.been.calledOnce");
+        cy.get("@FidesUpdated").should("not.have.been.called");
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
         // On slow connections, we should explicitly wait for FidesUpdated
-        cy.get("@FidesUpdated").should("have.been.calledTwice");
+        cy.get("@FidesUpdated").should("have.been.calledOnce");
         cy.get("@TCFEvent")
           .its("lastCall.args")
           .then(([tcData, success]) => {
@@ -1349,7 +1349,7 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
-        cy.get("@FidesUpdated").should("have.been.calledTwice");
+        cy.get("@FidesUpdated").should("have.been.calledOnce");
         cy.get("@TCFEvent2")
           .its("lastCall.args")
           .then(([tcData, success]) => {
@@ -1876,6 +1876,106 @@ describe("Fides-js TCF", () => {
           expect(tcData.vendor.legitimateInterests).to.eql({});
         });
     });
+
+    /**
+     * TEST CASE #8:
+     * 😬 1) fides_string override option exists but is invalid (via config.options.fidesString)
+     * ❌ 2) DEFER: preferences API (via a custom function)
+     * ❌ 3) local cookie (via fides_consent cookie)
+     * ❌ 4) "prefetched" experience (via config.options.experience)
+     * ✅ 5) experience API (via GET /privacy-experience)
+     *
+     * EXPECTED RESULT: ignore invalid fides_string option and render experience as-is
+     */
+    it("can handle an invalid fides_string option and continue rendering the experience", () => {
+      const fidesStringOverride = "invalid-string,1~";
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        cy.fixture("consent/geolocation_tcf.json").then((geo) => {
+          stubConfig(
+            {
+              options: {
+                isOverlayEnabled: true,
+                tcfEnabled: true,
+                fidesString: fidesStringOverride,
+              },
+              experience: OVERRIDE.UNDEFINED,
+            },
+            geo,
+            experience
+          );
+        });
+      });
+
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.window().then((win) => {
+          win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+        });
+      });
+
+      cy.get("#fides-modal-link").click();
+
+      // Verify that all these are equal to the default experience, as if
+      // there had been no overrides.
+      // Purposes
+      cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_6.name}-consent`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_7.name}-consent`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_9.name}-consent`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      // Features
+      cy.get("#fides-tab-Features").click();
+      cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+      // Vendors
+      cy.get("#fides-tab-Vendors").click();
+      cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      cy.getByTestId(`toggle-${VENDOR_1.name}-consent`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+
+      // verify CMP API
+      cy.get("@TCFEvent")
+        .its("lastCall.args")
+        .then(([tcData, success]) => {
+          expect(success).to.eql(true);
+
+          // Make sure our invalid fides string does not make it into tcData
+          expect(tcData.tcString).to.be.a("string");
+          expect(tcData.tcString).to.not.contain("invalid");
+          expect(tcData.eventStatus).to.eql("cmpuishown");
+          expect(tcData.purpose.consents).to.eql({
+            [PURPOSE_2.id]: true,
+            [PURPOSE_4.id]: true,
+            [PURPOSE_6.id]: true,
+            [PURPOSE_7.id]: true,
+            [PURPOSE_9.id]: true,
+            1: false,
+            2: false,
+            3: false,
+            5: false,
+            8: false,
+          });
+          expect(tcData.purpose.legitimateInterests).to.eql({
+            [PURPOSE_2.id]: true,
+            1: false,
+          });
+          expect(tcData.vendor.consents).to.eql({});
+          expect(tcData.vendor.legitimateInterests).to.eql({});
+        });
+    });
     it("can use a fides_string to override a vendor consent", () => {
       // Opts in to all
       const fidesStringOverride =
@@ -2125,13 +2225,15 @@ describe("Fides-js TCF", () => {
         expect(body.vendor_consent_preferences).to.eql(expected);
 
         // Check the cookie
-        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
-          const cookieKeyConsent: FidesCookie = JSON.parse(
-            decodeURIComponent(cookie!.value)
-          );
-          const { fides_string: tcString } = cookieKeyConsent;
-          const acString = tcString?.split(",")[1];
-          expect(acString).to.eql(acceptAllAcString);
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const cookieKeyConsent: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value)
+            );
+            const { fides_string: tcString } = cookieKeyConsent;
+            const acString = tcString?.split(",")[1];
+            expect(acString).to.eql(acceptAllAcString);
+          });
         });
       });
     });
@@ -2151,13 +2253,15 @@ describe("Fides-js TCF", () => {
         expect(body.vendor_consent_preferences).to.eql(expected);
 
         // Check the cookie
-        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
-          const cookieKeyConsent: FidesCookie = JSON.parse(
-            decodeURIComponent(cookie!.value)
-          );
-          const { fides_string: tcString } = cookieKeyConsent;
-          const acString = tcString?.split(",")[1];
-          expect(acString).to.eql(rejectAllAcString);
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const cookieKeyConsent: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value)
+            );
+            const { fides_string: tcString } = cookieKeyConsent;
+            const acString = tcString?.split(",")[1];
+            expect(acString).to.eql(rejectAllAcString);
+          });
         });
       });
     });
@@ -2173,8 +2277,8 @@ describe("Fides-js TCF", () => {
       cy.get("button").contains("Save").click();
       cy.wait("@patchPrivacyPreference");
       cy.get("@FidesUpdated")
-        .should("have.been.calledTwice")
-        .its("secondCall.args.0.detail.fides_string")
+        .should("have.been.calledOnce")
+        .its("lastCall.args.0.detail.fides_string")
         .then((fidesString) => {
           const parts = fidesString.split(",");
           expect(parts.length).to.eql(2);
@@ -2203,7 +2307,7 @@ describe("Fides-js TCF", () => {
       });
       cy.get("button").contains("Save").click();
       cy.wait("@patchPrivacyPreference");
-      cy.get("@FidesUpdated").should("have.been.calledTwice");
+      cy.get("@FidesUpdated").should("have.been.calledOnce");
       // Call getTCData
       cy.window().then((win) => {
         win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
@@ -2253,8 +2357,7 @@ describe("Fides-js TCF", () => {
       });
 
       cy.get("@FidesInitialized")
-        .should("have.been.calledOnce")
-        .its("firstCall.args.0.detail.tcf_consent")
+        .its("lastCall.args.0.detail.tcf_consent")
         .then((tcfConsent) => {
           // TC string setting worked
           expect(tcfConsent.purpose_consent_preferences).to.eql({
