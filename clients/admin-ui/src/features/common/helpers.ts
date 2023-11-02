@@ -154,6 +154,17 @@ export enum VendorSources {
   AC = "gacp",
 }
 
+export const vendorSourceLabels = {
+  [VendorSources.GVL]: {
+    label: "GVL",
+    fullName: "Global Vendor List",
+  },
+  [VendorSources.AC]: {
+    label: "AC",
+    fullName: "Google Additional Consent List",
+  },
+};
+
 export const extractVendorSource = (vendorId: string) => {
   const source = vendorId.split(".")[0];
   if (source === VendorSources.AC) {

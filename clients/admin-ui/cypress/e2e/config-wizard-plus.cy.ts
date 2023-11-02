@@ -48,6 +48,9 @@ describe("Config wizard with plus settings", () => {
           service_health: null,
           service_error: null,
         },
+        tcf: {
+          enabled: false,
+        },
         fides_cloud: {
           enabled: false,
         },
@@ -75,6 +78,9 @@ describe("Config wizard with plus settings", () => {
           enabled: true,
           service_health: null,
           service_error: null,
+        },
+        tcf: {
+          enabled: false,
         },
         fides_cloud: {
           enabled: false,
