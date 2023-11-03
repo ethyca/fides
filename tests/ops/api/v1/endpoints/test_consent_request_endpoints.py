@@ -16,7 +16,6 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.api.schemas.messaging.messaging import MessagingServiceType
-from fides.api.util.consent_util import get_fides_user_device_id_provided_identity
 from fides.common.api.scope_registry import CONNECTION_READ, CONSENT_READ
 from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST,
