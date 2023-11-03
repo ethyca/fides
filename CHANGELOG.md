@@ -28,6 +28,7 @@ The types of changes are:
 ### Changed
 - Refactor Fides.js embedded modal to not use A11y dialog [#4355](https://github.com/ethyca/fides/pull/4355)
 - Only call `FidesUpdated` when a preference has been saved, not during initialization [#4365](https://github.com/ethyca/fides/pull/4365)
+- Updated double toggle styling in favor of single toggles with a radio group to select legal basis [#4376](https://github.com/ethyca/fides/pull/4376)
 
 ### Fixed
 - Handle invalid `fides_string` when passed in as an override [#4350](https://github.com/ethyca/fides/pull/4350)
