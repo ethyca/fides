@@ -17,9 +17,10 @@ def ada_chatbot_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "ada_chatbot.domain") or secrets["domain"],
         # add the rest of your secrets here
-        "data_compliance_key": pydash.get(
-            saas_config, "ada_chatbot.data_compliance_key"
-        or secrets["data_compliance_key"],
+        "compliance_access_token": pydash.get(
+            saas_config, "ada_chatbot.compliance_access_token"
+        )
+        or secrets["compliance_access_token"],
         "identity_email": pydash.get(saas_config, "ada_chatbot.identity_email")
         or secrets["identity_email"],
     }

@@ -1,8 +1,8 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Ada Chatbot (MG) SaaS Config
-  type: ada_chatbot_(mg)
-  description: A sample schema representing the Ada Chatbot (MG) connector for Fides
+  name: Ada Chatbot
+  type: ada_chatbot
+  description: A sample schema representing the Ada Chatbot connector for Fides
   version: 0.1.0
 
   connector_params:
@@ -17,6 +17,9 @@ saas_config:
       configuration:
         token: <compliance_access_token>
 
+  # In this case, since there is currently no quick easy way to gather up user info. Ada also uses two different API keys so while we could pick
+  # a different endpoint to test that is a READ, those only use the data export api key. For the erasure though it requires the data compliance api
+  # key.
   test_request:
     method: POST
     path: /api/v1/data-subject-request
