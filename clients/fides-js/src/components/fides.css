@@ -980,3 +980,12 @@ div#fides-consent-content .fides-privacy-policy {
     order: 1;
   }
 }
+/* TCF should always be full width and not floating */
+.fides-tcf-banner-container{
+  bottom: 0 !important;
+}
+.fides-tcf-banner-container #fides-banner {
+  width: 100%;
+  border-radius: 0;
+  border-width: 1px 0 0 0;
+ }
