@@ -1100,6 +1100,7 @@ describe("Fides-js TCF", () => {
 
         cy.get("#fides-tab-Vendors").click();
         cy.getByTestId(`toggle-${SYSTEM_1.name}`).click();
+      })
         cy.get("button").contains("Save").click();
         cy.wait("@patchPrivacyPreference").then((interception) => {
           const { body } = interception.request;
@@ -1126,7 +1127,6 @@ describe("Fides-js TCF", () => {
           ]);
           expect(body.system_consent_preferences).to.eql([]);
         });
-      });
       // embed modal should not close on preferences save
       cy.getByTestId("consent-content").should("exist");
       // Verify the cookie on save
