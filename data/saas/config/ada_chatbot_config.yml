@@ -1,75 +1,42 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Ada Chatbot
-  type: ada_chatbot
-  description: A sample schema representing the Ada Chatbot connector for Fides
+  name: Ada Chatbot (MG) SaaS Config
+  type: ada_chatbot_(mg)
+  description: A sample schema representing the Ada Chatbot (MG) connector for Fides
   version: 0.1.0
 
   connector_params:
+    - name: compliance_access_token
     - name: domain
-      default_value: demo-sandbox-ethyca.ada.support
-    - name: data_export_key
-      value: <data_export_key>
-    - name: data_compliance_key
-      value: <data_compliance_key>
 
   client_config:
     protocol: https
     host: <domain>
-    query_params:
-      - name: created_since
-        value: <created_since>
-      - name: page_size
-        value: <page>
     authentication:
       strategy: bearer
       configuration:
-        token: <export_access_token>
+        token: <compliance_access_token>
 
   test_request:
-    method: GET
-    path: /data_api/v1.2/conversations
+    method: POST
+    path: /api/v1/data-subject-request
+    body: |
+      {
+        "type": "ERASURE",
+        "email": "supertest@ethyca.com"
+      }
 
   endpoints:
-    - name: conversations
+    - name: chatter
       requests:
-        read:
-          method: GET
-          path: /data_api/v1.2/conversations
-          data_path: data
-          postprocessors:
-            - strategy: filter
-              configuration:
-                field: variables.email
-                value:
-                  identity: email
+        update:
+          method: POST
+          path: /api/v1/data-subject-request
+          body: |
+            {
+              "type": "ERASURE",
+              "email": "<email>"
+            }
           param_values:
-            - name: placeholder
+            - name: email
               identity: email
-    - name: messages
-      requests:
-        read:
-          method: GET
-          path: /data_api/v1.2/messages
-          query_params:
-            - name: conversation_id
-              value: <conversations__id>
-          data_path: data
-          postprocessors:
-            - strategy: filter
-              configuration:
-                field: chatter_id
-                value: 649d4fb2da41d34da975c0d0
-          pagination:
-            strategy: link
-            configuration:
-              source: body
-              path: next_page_uri
-          param_values:
-            - name: placeholder
-              identity: email
-            - name: conversations__id
-              references:
-                - dataset: <instance_fides_key>
-                  field: conversations._id
-                  direction: from
