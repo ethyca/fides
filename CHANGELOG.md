@@ -21,6 +21,7 @@ The types of changes are:
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
 - Determine if the TCF overlay needs to surface based on backend calculated version hash [#4356](https://github.com/ethyca/fides/pull/4356)
 - "is_service_specific" default updated when building TC strings on the backend [#4377](https://github.com/ethyca/fides/pull/4377)
+- Redact cli, database, and redis configuration information from GET api/v1/config API request responses. [#4379](https://github.com/ethyca/fides/pull/4379)
 
 
 ## [2.23.1](https://github.com/ethyca/fides/compare/2.23.0...2.23.1)
