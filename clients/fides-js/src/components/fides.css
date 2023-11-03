@@ -230,7 +230,7 @@ button.fides-banner-button {
   border: 1px solid;
   border-radius: var(--fides-overlay-button-border-radius);
 
-  font-family: inherit;
+  font-family: var(--fides-overlay-font-family);
   line-height: 1.15;
   text-decoration: none;
   font-weight: 600;
@@ -331,6 +331,8 @@ div#fides-embed-container div#fides-consent-content {
   box-sizing: border-box;
   background-color: var(--fides-overlay-background-color);
   border-radius: var(--fides-overlay-container-border-radius);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
   width: var(--fides-overlay-width);
 
   top: 50%;
@@ -356,7 +358,7 @@ div#fides-modal .fides-modal-header {
 }
 
 div#fides-consent-content {
-  overflow: scroll;
+  overflow: auto;
 }
 
 div#fides-consent-content .fides-modal-title {
@@ -375,11 +377,15 @@ div#fides-consent-content .fides-modal-body {
   scrollbar-gutter: stable;
 }
 
-div#fides-consent-content .fides-modal-footer {
+.fides-modal-footer {
   display: flex;
   flex-direction: column;
   z-index: 5;
   background-color: var(--fides-overlay-background-color);
+  bottom: 0px;
+  width: var(--fides-overlay-width);
+  border-bottom-left-radius: var(--fides-overlay-component-border-radius);
+  border-bottom-right-radius: var(--fides-overlay-component-border-radius);
 }
 
 div#fides-consent-content .fides-modal-description {
@@ -391,7 +397,7 @@ div#fides-consent-content .fides-modal-description {
   gap: 10px;
 }
 
-div#fides-consent-content .fides-modal-button-group {
+.fides-modal-button-group {
   display: flex;
   width: 100%;
   flex-direction: row;
@@ -406,7 +412,7 @@ div#fides-consent-content .fides-modal-button-group {
     width: 100% !important;
   }
 
-  div#fides-consent-content .fides-modal-button-group {
+  .fides-modal-button-group {
     flex-direction: column;
   }
 
@@ -450,11 +456,12 @@ div#fides-banner-inner .fides-privacy-policy {
   color: var(--fides-overlay-primary-color);
 }
 
-div#fides-consent-content .fides-privacy-policy {
+.fides-privacy-policy {
   display: block;
   text-align: center;
   margin-bottom: var(--fides-overlay-padding);
   color: var(--fides-overlay-primary-color);
+  font-family: var(--fides-overlay-font-family);
 }
 
 /** Toggle, adapted from https://kittygiraudel.com/2021/04/05/an-accessible-toggle/ */
@@ -977,6 +984,9 @@ div#fides-consent-content .fides-privacy-policy {
 
   div#fides-privacy-policy-link {
     order: 1;
+  }
+  .fides-modal-footer {
+    width: 100%;
   }
 }
 /* TCF should always be full width and not floating */

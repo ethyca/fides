@@ -1,4 +1,4 @@
-import { ComponentChildren, VNode, h } from "preact";
+import { ComponentChildren, VNode, h, Fragment } from "preact";
 import { HTMLAttributes } from "react";
 import { ExperienceConfig } from "../lib/consent-types";
 
@@ -26,7 +26,7 @@ const ConsentModal = ({
   const showGpcBadge = getConsentContext().globalPrivacyControl;
 
   return (
-    <div
+    <Fragment><div
       data-testid="consent-content"
       id="fides-consent-content"
       className={className}
@@ -45,14 +45,12 @@ const ConsentModal = ({
         >
           <ExperienceDescription
             onVendorPageClick={onVendorPageClick}
-            description={experience.description}
-          />
+            description={experience.description} />
         </p>
         {showGpcBadge && <GpcInfo />}
         {children}
       </div>
-      <div className="fides-modal-footer">{renderModalFooter()}</div>
-    </div>
+    </div><div className="fides-modal-footer">{renderModalFooter()}</div></Fragment>
   );
 };
 
