@@ -13,9 +13,6 @@ saas_config:
     - name: access_key_secret
       description: Check Gong's documentation for how to create/find this value https://help.gong.io/hc/en-us/articles/360042449451-Receive-access-to-the-API
       sensitive: true
-    # - name: token         ## commenting out as I believe we may not need it. REMOVE if we verify.
-    #   description:
-    #   sensitive: true
 
   client_config:
     protocol: https
@@ -47,5 +44,5 @@ saas_config:
           path: /v2/data-privacy/erase-data-for-email-address
           body: |
             {
-              "emailAddress": <email>
+              "emailAddress": <delemail>
             }
