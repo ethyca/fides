@@ -916,11 +916,21 @@ div#fides-consent-content .fides-privacy-policy {
 /* Responsive banner */
 @media screen and (min-width: 48em) {
   div#fides-banner {
-    width: 100%;
+    width: 75%;
+    border-radius: var(--fides-overlay-component-border-radius);
+    border: 1px solid var(--fides-overlay-primary-color);
   }
 
-  div#fides-banner-container.fides-banner-top {
-    top: var(--fides-overlay-banner-offset);
+  div#fides-banner-container.fides-banner-bottom {
+    bottom: var(--fides-overlay-banner-offset);
+  }
+}
+
+@media only screen and (min-width: 80em) {
+  div#fides-banner {
+    width: 60%;
+    border: 1px solid var(--fides-overlay-primary-color);
+
   }
 }
 
