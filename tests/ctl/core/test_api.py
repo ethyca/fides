@@ -606,9 +606,7 @@ class TestSystemCreate:
 
         assert result.status_code == HTTP_201_CREATED
         json_results = result.json()
-        assert json_results["cookies"] == [
-            {"name": "essential_cookie", "path": "/", "domain": "example.com"}
-        ]
+        assert json_results["cookies"] == []  # No cookies at System level
         assert json_results["privacy_declarations"][0]["cookies"] == [
             {"name": "essential_cookie", "path": "/", "domain": "example.com"}
         ]
@@ -668,7 +666,7 @@ class TestSystemCreate:
             == "http://www.example.com/legitimate_interest_disclosure"
         )
         assert system.data_stewards == []
-        assert [cookie.name for cookie in systems[0].cookies] == ["essential_cookie"]
+        assert [cookie.name for cookie in systems[0].cookies] == []
         assert [
             cookie.name for cookie in systems[0].privacy_declarations[0].cookies
         ] == ["essential_cookie"]
@@ -1034,7 +1032,36 @@ class TestSystemUpdate:
         )
 
     @pytest.fixture(scope="function")
-    def system_update_request_body_with_cookies(self, system) -> SystemSchema:
+    def system_update_request_body_with_system_cookies(self, system) -> SystemSchema:
+        return SystemSchema(
+            organization_fides_key=1,
+            registryId=1,
+            fides_key=system.fides_key,
+            system_type="SYSTEM",
+            name=self.updated_system_name,
+            description="Test Policy",
+            cookies=[
+                {"name": "my_system_cookie", "domain": "example.com"},
+                {"name": "my_other_system_cookie"},
+            ],
+            privacy_declarations=[
+                models.PrivacyDeclaration(
+                    name="declaration-name",
+                    data_categories=[],
+                    data_use="essential",
+                    data_subjects=[],
+                    data_qualifier="aggregated_data",
+                    dataset_references=[],
+                    ingress=None,
+                    egress=None,
+                )
+            ],
+        )
+
+    @pytest.fixture(scope="function")
+    def system_update_request_body_with_privacy_declaration_cookies(
+        self, system
+    ) -> SystemSchema:
         return SystemSchema(
             organization_fides_key=1,
             registryId=1,
@@ -1569,38 +1596,78 @@ class TestSystemUpdate:
                 if isinstance(decl_val, typing.Hashable):
                     assert decl_val == json_results["privacy_declarations"][i][field]
 
-    def test_system_update_privacy_declaration_cookies(
+    def test_system_update_system_cookies(
         self,
         test_config,
-        system_update_request_body_with_cookies,
+        system_update_request_body_with_system_cookies,
         system,
         db,
         generate_system_manager_header,
     ):
         assert system.name != self.updated_system_name
+        assert len(system.cookies) == 1
 
         auth_header = generate_system_manager_header([system.id])
         result = _api.update(
             url=test_config.cli.server_url,
             headers=auth_header,
             resource_type="system",
-            json_resource=system_update_request_body_with_cookies.json(
+            json_resource=system_update_request_body_with_system_cookies.json(
                 exclude_none=True
             ),
         )
         assert result.status_code == HTTP_200_OK
         assert result.json()["name"] == self.updated_system_name
+        # System level cookies removed
         assert result.json()["cookies"] == [
+            {"name": "my_system_cookie", "domain": "example.com", "path": None},
+            {"name": "my_other_system_cookie", "domain": None, "path": None},
+        ]
+
+        # Privacy declaration cookies added
+        assert result.json()["privacy_declarations"][0]["cookies"] == []
+
+        db.refresh(system)
+        assert system.name == self.updated_system_name
+        assert len(system.cookies) == 2
+        assert len(system.privacy_declarations[0].cookies) == 0
+
+    def test_system_update_privacy_declaration_cookies(
+        self,
+        test_config,
+        system_update_request_body_with_privacy_declaration_cookies,
+        system,
+        db,
+        generate_system_manager_header,
+    ):
+        assert system.name != self.updated_system_name
+        assert len(system.cookies) == 1
+
+        auth_header = generate_system_manager_header([system.id])
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body_with_privacy_declaration_cookies.json(
+                exclude_none=True
+            ),
+        )
+        assert result.status_code == HTTP_200_OK
+        assert result.json()["name"] == self.updated_system_name
+        # System level cookies removed
+        assert result.json()["cookies"] == []
+        # Privacy declaration cookies added
+        assert result.json()["privacy_declarations"][0]["cookies"] == [
             {"name": "my_cookie", "path": None, "domain": "example.com"},
             {"name": "my_other_cookie", "path": None, "domain": None},
-            {"name": "test_cookie", "path": "/", "domain": None},
         ]
 
         db.refresh(system)
         assert system.name == self.updated_system_name
         assert (
-            len(system.cookies) == 3
-        )  # Two from the current privacy declaration, one from the previous privacy declaration that was deleted, but still linked to the system
+            len(system.cookies)
+            == 0  # System cookies were deleted because they weren't in the request
+        )  # Two from the current privacy declaration
         assert len(system.privacy_declarations[0].cookies) == 2
 
     @pytest.mark.parametrize(
