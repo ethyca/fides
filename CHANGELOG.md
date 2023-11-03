@@ -15,13 +15,17 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.23.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.23.2...main)
 
 ### Changed
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
 - Determine if the TCF overlay needs to surface based on backend calculated version hash [#4356](https://github.com/ethyca/fides/pull/4356)
 - "is_service_specific" default updated when building TC strings on the backend [#4377](https://github.com/ethyca/fides/pull/4377)
 
+## [2.23.2](https://github.com/ethyca/fides/compare/2.23.1...2.23.2)
+
+### Fixed
+- Fixed fides.css to vary banner width based on tcf [[#4381](https://github.com/ethyca/fides/issues/4381)]
 
 ## [2.23.1](https://github.com/ethyca/fides/compare/2.23.0...2.23.1)
 
