@@ -1151,32 +1151,32 @@ describe("Fides-js TCF", () => {
 
         cy.get("#fides-tab-Vendors").click();
         cy.getByTestId(`toggle-${SYSTEM_1.name}`).click();
-        cy.get("button").contains("Save").click();
-        cy.wait("@patchPrivacyPreference").then((interception) => {
-          const { body } = interception.request;
-          expect(body.purpose_consent_preferences).to.eql([
-            { id: PURPOSE_4.id, preference: "opt_out" },
-            { id: PURPOSE_6.id, preference: "opt_in" },
-            { id: PURPOSE_7.id, preference: "opt_in" },
-            { id: PURPOSE_9.id, preference: "opt_in" },
-          ]);
-          expect(body.purpose_legitimate_interests_preferences).to.eql([
-            { id: PURPOSE_2.id, preference: "opt_in" },
-          ]);
-          expect(body.special_purpose_preferences).to.eql(undefined);
-          expect(body.feature_preferences).to.eql(undefined);
-          expect(body.special_feature_preferences).to.eql([
-            { id: SPECIAL_FEATURE_1.id, preference: "opt_in" },
-          ]);
-          expect(body.vendor_consent_preferences).to.eql([
-            { id: VENDOR_1.id, preference: "opt_out" },
-          ]);
-          expect(body.vendor_legitimate_interests_preferences).to.eql([]);
-          expect(body.system_legitimate_interests_preferences).to.eql([
-            { id: SYSTEM_1.id, preference: "opt_out" },
-          ]);
-          expect(body.system_consent_preferences).to.eql([]);
-        });
+      });
+      cy.get("button").contains("Save").click();
+      cy.wait("@patchPrivacyPreference").then((interception) => {
+        const { body } = interception.request;
+        expect(body.purpose_consent_preferences).to.eql([
+          { id: PURPOSE_4.id, preference: "opt_out" },
+          { id: PURPOSE_6.id, preference: "opt_in" },
+          { id: PURPOSE_7.id, preference: "opt_in" },
+          { id: PURPOSE_9.id, preference: "opt_in" },
+        ]);
+        expect(body.purpose_legitimate_interests_preferences).to.eql([
+          { id: PURPOSE_2.id, preference: "opt_in" },
+        ]);
+        expect(body.special_purpose_preferences).to.eql(undefined);
+        expect(body.feature_preferences).to.eql(undefined);
+        expect(body.special_feature_preferences).to.eql([
+          { id: SPECIAL_FEATURE_1.id, preference: "opt_in" },
+        ]);
+        expect(body.vendor_consent_preferences).to.eql([
+          { id: VENDOR_1.id, preference: "opt_out" },
+        ]);
+        expect(body.vendor_legitimate_interests_preferences).to.eql([]);
+        expect(body.system_legitimate_interests_preferences).to.eql([
+          { id: SYSTEM_1.id, preference: "opt_out" },
+        ]);
+        expect(body.system_consent_preferences).to.eql([]);
       });
       // embed modal should not close on preferences save
       cy.getByTestId("consent-content").should("exist");

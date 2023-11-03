@@ -59,9 +59,10 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   return (
     <div
       id="fides-banner-container"
-      className={`fides-banner fides-banner-bottom ${
-        bannerIsOpen ? "" : "fides-banner-hidden"
-      } `}
+      className={`fides-banner 
+        fides-banner-bottom 
+        ${bannerIsOpen ? "" : "fides-banner-hidden"} 
+        ${window.Fides.options.tcfEnabled ? "fides-tcf-banner-container" : ""}`}
     >
       <div id="fides-banner">
         <div id="fides-banner-inner">
