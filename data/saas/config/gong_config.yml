@@ -8,8 +8,14 @@ saas_config:
   connector_params:
     - name: domain
     - name: access_key
+      description: Check Gong's documentation for how to create/find this value https://help.gong.io/hc/en-us/articles/360042449451-Receive-access-to-the-API
+      sensitive: true
     - name: access_key_secret
-    - name: token
+      description: Check Gong's documentation for how to create/find this value https://help.gong.io/hc/en-us/articles/360042449451-Receive-access-to-the-API
+      sensitive: true
+    # - name: token         ## commenting out as I believe we may not need it. REMOVE if we verify.
+    #   description:
+    #   sensitive: true
 
   client_config:
     protocol: https
