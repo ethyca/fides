@@ -363,44 +363,12 @@ describe("Fides-js TCF", () => {
         });
       });
 
-      // TODO: come back to this once we decide on toggle all logic
-      it.skip("can group toggle and fire FidesUIChanged events", () => {
-        // Toggle just legitimate interests
-        cy.getByTestId("toggle-Purposes").click();
-        cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
-          cy.get("input").should("not.be.checked");
-        });
+      it("can fire FidesUIChanged events", () => {
+        cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
         cy.get("@FidesUIChanged").its("callCount").should("equal", 1);
 
-        // Toggle a child back on
-        cy.getByTestId(`toggle-${PURPOSE_2.name}`).click();
-        cy.getByTestId("toggle-Purposes").within(() => {
-          cy.get("input").should("be.checked");
-        });
+        cy.getByTestId(`toggle-${PURPOSE_6.name}`).click();
         cy.get("@FidesUIChanged").its("callCount").should("equal", 2);
-
-        // Do the same for consent column
-        cy.getByTestId("toggle-all-Purposes-consent").click();
-        cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
-          cy.get("input").should("not.be.checked");
-        });
-        cy.get("@FidesUIChanged").its("callCount").should("equal", 3);
-        // Toggle back on
-        cy.getByTestId("toggle-all-Purposes-consent").click();
-        cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
-          cy.get("input").should("be.checked");
-        });
-        cy.get("@FidesUIChanged").its("callCount").should("equal", 4);
-
-        // Try the all on/all off button
-        cy.get("button").contains("All off").click();
-        cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
-          cy.get("input").should("not.be.checked");
-        });
-        cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
-          cy.get("input").should("not.be.checked");
-        });
-        cy.get("@FidesUIChanged").its("callCount").should("equal", 5);
       });
 
       it("can handle group toggle empty states", () => {
@@ -417,32 +385,6 @@ describe("Fides-js TCF", () => {
           cy.waitUntilFidesInitialized().then(() => {
             cy.get("#fides-modal-link").click();
             cy.getByTestId(`records-list-Purposes`).should("not.exist");
-          });
-        });
-      });
-
-      it("can handle all on/all off empty states", () => {
-        cy.fixture("consent/experience_tcf.json").then((payload) => {
-          const experience = payload.items[0];
-          const updatedExperience = {
-            ...experience,
-            tcf_purpose_consents: [],
-            tcf_purpose_legitimate_interests: [],
-          };
-          stubConfig({
-            options: {
-              isOverlayEnabled: true,
-              tcfEnabled: true,
-            },
-            experience: updatedExperience,
-          });
-          cy.waitUntilFidesInitialized().then(() => {
-            cy.get("#fides-modal-link").click();
-            // Should not show up on the purpose tab
-            cy.get(".fides-all-on-off-buttons").should("not.be.visible");
-            // But should show up in Features
-            cy.get("#fides-tab-Features").click();
-            cy.get(".fides-all-on-off-buttons").should("be.visible");
           });
         });
       });
@@ -2154,16 +2096,14 @@ describe("Fides-js TCF", () => {
     it("can opt in to AC vendors and generate string", () => {
       cy.get("#fides-tab-Vendors").click();
       AC_IDS.forEach((id) => {
-        cy.getByTestId(`toggle-AC ${id}`);
-      });
-      cy.get("section#fides-panel-Vendors").within(() => {
-        cy.get("button").contains("All on").click();
+        // Turn all ACs on
+        cy.getByTestId(`toggle-AC ${id}`).click();
       });
       cy.get("button").contains("Save").click();
       cy.wait("@patchPrivacyPreference").then((interception) => {
         const { body } = interception.request;
         const expected = [
-          { id: VENDOR_1.id, preference: "opt_in" },
+          { id: VENDOR_1.id, preference: "opt_out" },
           ...AC_IDS.map((id) => ({ id: `gacp.${id}`, preference: "opt_in" })),
         ];
         expect(body.vendor_consent_preferences).to.eql(expected);
@@ -2184,10 +2124,9 @@ describe("Fides-js TCF", () => {
 
     it("can opt out of AC vendors and generate string", () => {
       cy.get("#fides-tab-Vendors").click();
-      cy.get("section#fides-panel-Vendors").within(() => {
-        cy.get("button").contains("All off").click();
+      cy.getByTestId("consent-content").within(() => {
+        cy.get("button").contains("Opt out of all").click();
       });
-      cy.get("button").contains("Save").click();
       cy.wait("@patchPrivacyPreference").then((interception) => {
         const { body } = interception.request;
         const expected = [
@@ -2215,10 +2154,9 @@ describe("Fides-js TCF", () => {
         win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
       });
       cy.get("#fides-tab-Vendors").click();
-      cy.get("section#fides-panel-Vendors").within(() => {
-        cy.get("button").contains("All on").click();
+      cy.getByTestId("consent-content").within(() => {
+        cy.get("button").contains("Opt in to all").click();
       });
-      cy.get("button").contains("Save").click();
       cy.wait("@patchPrivacyPreference");
       cy.get("@FidesUpdated")
         .should("have.been.calledOnce")
@@ -2246,10 +2184,9 @@ describe("Fides-js TCF", () => {
 
     it("can get `addtlConsents` from getTCData custom function", () => {
       cy.get("#fides-tab-Vendors").click();
-      cy.get("section#fides-panel-Vendors").within(() => {
-        cy.get("button").contains("All on").click();
+      cy.getByTestId("consent-content").within(() => {
+        cy.get("button").contains("Opt in to all").click();
       });
-      cy.get("button").contains("Save").click();
       cy.wait("@patchPrivacyPreference");
       cy.get("@FidesUpdated").should("have.been.calledOnce");
       // Call getTCData
