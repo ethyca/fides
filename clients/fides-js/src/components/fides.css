@@ -499,8 +499,11 @@ div#fides-consent-content .fides-privacy-policy {
   color: var(--fides-overlay-inactive-font-color);
   transition: 250ms;
 
-  width: 95px;
+  /* total width 50 (34 + 2x8) */
+  padding-inline: 8px;
+  width: 34px;
   height: 24px;
+  justify-content: end;
 }
 
 .fides-toggle .fides-toggle-display::before {
@@ -528,9 +531,10 @@ div#fides-consent-content .fides-privacy-policy {
 .fides-toggle .fides-toggle-input:checked + .fides-toggle-display {
   background-color: var(--fides-overlay-primary-active-color);
   color: var(--fides-overlay-primary-button-text-color);
+  justify-content: start;
 }
 .fides-toggle .fides-toggle-input:checked + .fides-toggle-display::before {
-  transform: translate(70px, -50%);
+  transform: translate(26px, -50%);
 }
 
 /* Disabled state */
@@ -870,6 +874,7 @@ div#fides-consent-content .fides-privacy-policy {
 .fides-vendor-info-label {
   font-weight: 600;
   font-size: 1em;
+  margin-right: 4px;
 }
 
 /* Info box */
