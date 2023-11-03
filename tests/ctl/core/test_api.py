@@ -28,6 +28,7 @@ from fides.api.db.crud import get_resource
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System
+from fides.api.models.system_history import SystemHistory
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.api.schemas.system import PrivacyDeclarationResponse, SystemResponse
 from fides.api.schemas.taxonomy_extensions import (
@@ -1631,6 +1632,15 @@ class TestSystemUpdate:
         assert system.name == self.updated_system_name
         assert len(system.cookies) == 2
         assert len(system.privacy_declarations[0].cookies) == 0
+
+        system_history = (
+            db.query(SystemHistory).filter(SystemHistory.system_id == system.id).first()
+        )
+        cookie_history = system_history.after["cookies"]
+        assert {cookie["name"] for cookie in cookie_history} == {
+            "my_system_cookie",
+            "my_other_system_cookie",
+        }
 
     def test_system_update_privacy_declaration_cookies(
         self,
