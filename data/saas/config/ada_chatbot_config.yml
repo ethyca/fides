@@ -33,7 +33,7 @@ saas_config:
   endpoints:
     - name: chatter
       requests:
-        update:
+        delete:
           method: POST
           path: /api/v1/data-subject-request
           body: |
