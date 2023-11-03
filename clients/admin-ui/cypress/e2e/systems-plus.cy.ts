@@ -11,6 +11,7 @@ import {
   ADD_SYSTEMS_MULTIPLE_ROUTE,
   ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
+  INDEX_ROUTE,
   SYSTEM_ROUTE,
 } from "~/features/common/nav/v2/routes";
 
@@ -204,6 +205,9 @@ describe("System management with Plus features", () => {
           service_health: null,
           service_error: null,
         },
+        tcf: {
+          enabled: true,
+        },
         fidesplus_version: "",
         fides_cloud: {
           enabled: false,
@@ -215,6 +219,7 @@ describe("System management with Plus features", () => {
       cy.getByTestId("cancel-btn").click();
       cy.url().should("include", ADD_SYSTEMS_MANUAL_ROUTE);
     });
+
     it("can add new systems and redirects to datamap", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.wait("@getSystemVendors");
@@ -225,6 +230,78 @@ describe("System management with Plus features", () => {
       cy.getByTestId("confirmation-modal");
       cy.getByTestId("continue-btn").click();
       cy.url().should("include", DATAMAP_ROUTE);
+    });
+
+    it("filter button and sources column are hidden when TCF is disabled", () => {
+      stubPlus(true, {
+        core_fides_version: "2.2.0",
+        fidesplus_server: "healthy",
+        system_scanner: {
+          enabled: true,
+          cluster_health: null,
+          cluster_error: null,
+        },
+        dictionary: {
+          enabled: true,
+          service_health: null,
+          service_error: null,
+        },
+        tcf: {
+          enabled: false,
+        },
+        fidesplus_version: "",
+        fides_cloud: {
+          enabled: false,
+        },
+      });
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.getByTestId("filter-multiple-systems-btn").should("not.exist");
+      cy.getByTestId("column-vendor_id").should("not.exist");
+    });
+
+    it("filter button and sources column are shown when TCF is enabled", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.getByTestId("filter-multiple-systems-btn").should("exist");
+      cy.getByTestId("column-vendor_id").should("exist");
+    });
+
+    it("pagination menu updates pagesize", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+
+      cy.wait("@getSystemVendors");
+      cy.getByTestId("fidesTable");
+      cy.getByTestId("fidesTable-body").find("tr").should("have.length", 25);
+      cy.getByTestId("pagination-btn").click();
+      cy.getByTestId("pageSize-50").click();
+      cy.getByTestId("fidesTable-body").find("tr").should("have.length", 50);
+    });
+
+    it("redirects to index when compass is disabled", () => {
+      stubPlus(true, {
+        core_fides_version: "2.2.0",
+        fidesplus_server: "healthy",
+        system_scanner: {
+          enabled: true,
+          cluster_health: null,
+          cluster_error: null,
+        },
+        dictionary: {
+          enabled: false,
+          service_health: null,
+          service_error: null,
+        },
+        tcf: {
+          enabled: false,
+        },
+        fidesplus_version: "",
+        fides_cloud: {
+          enabled: false,
+        },
+      });
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.location().should((location) => {
+        expect(location.pathname).to.eq(INDEX_ROUTE);
+      });
     });
   });
 });
