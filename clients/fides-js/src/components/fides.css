@@ -930,7 +930,6 @@ div#fides-consent-content .fides-privacy-policy {
   div#fides-banner {
     width: 60%;
     border: 1px solid var(--fides-overlay-primary-color);
-
   }
 }
 
@@ -981,11 +980,11 @@ div#fides-consent-content .fides-privacy-policy {
   }
 }
 /* TCF should always be full width and not floating */
-.fides-tcf-banner-container{
+.fides-tcf-banner-container {
   bottom: 0 !important;
 }
 .fides-tcf-banner-container #fides-banner {
   width: 100%;
   border-radius: 0;
   border-width: 1px 0 0 0;
- }
+}
