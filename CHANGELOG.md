@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.23.1...main)
 
+# Added
+- Backend System-level Cookie Support [#4383](https://github.com/ethyca/fides/pull/4383)
+
 ### Changed
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
 - Determine if the TCF overlay needs to surface based on backend calculated version hash [#4356](https://github.com/ethyca/fides/pull/4356)
