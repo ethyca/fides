@@ -8,6 +8,7 @@ saas_config:
 
   connector_params:
     - name: compliance_access_token
+      sensitive: True
     - name: domain
 
   client_config:

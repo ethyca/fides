@@ -35,6 +35,7 @@ class TestAda_chatbotConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": ada_chatbot_erasure_identity_email},
         )
+        assert erasure_results == {"ada_chatbot_instance:chatter": 1}
 
     async def test_non_strict_erasure_request(
         self,
