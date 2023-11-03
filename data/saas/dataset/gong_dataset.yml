@@ -1,0 +1,16 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: gong
+    description: A sample dataset representing the Gong connector for Fides
+    collections:
+      - name: user
+        fields:
+          - name: requestId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: emails
+          - name: calls
+          - name: meetings
+          - name: customerData
+          - name: customerEngagement
