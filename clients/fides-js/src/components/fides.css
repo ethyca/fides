@@ -752,6 +752,9 @@ div#fides-consent-content .fides-privacy-policy {
 /* Radio button group */
 
 .fides-radio-button-group {
+  background-color: var(
+    --fides-overlay-secondary-button-background-hover-color
+  );
   display: flex;
   border: 1px solid var(--fides-overlay-row-divider-color);
   padding: 4px;
