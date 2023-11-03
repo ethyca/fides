@@ -4,7 +4,7 @@
 concurrency: 5 # How many instances of the `plan` get run concurrently
 base: 'http://localhost:8080'
 iterations: 20 # How many times to run the plan
-rampup: 1 # The number of seconds between starting concurrent runs
+rampup: 2 # The number of seconds between starting concurrent runs
 
 # This plan is run in its entirety, sequentially, for each iteration
 plan:

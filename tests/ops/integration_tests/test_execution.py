@@ -768,38 +768,14 @@ async def test_restart_graph_from_failure(
     integration_mongodb_config.save(db)
 
     # Rerun access request using cached results
-    with mock.patch("fides.api.task.graph_task.fideslog_graph_rerun") as mock_log_event:
-        await graph_task.run_access_request(
-            privacy_request,
-            policy,
-            mongo_postgres_dataset_graph,
-            [integration_postgres_config, integration_mongodb_config],
-            {"email": "customer-1@example.com"},
-            db,
-        )
-
-        # Assert analytics event created - before and after graph on rerun did not change
-        analytics_event = mock_log_event.call_args.args[0]
-        assert analytics_event.docker is True
-        assert analytics_event.event == "rerun_access_graph"
-        assert analytics_event.event_created_at is not None
-        assert analytics_event.extra_data == {
-            "prev_collection_count": 20,
-            "curr_collection_count": 20,
-            "added_collection_count": 0,
-            "removed_collection_count": 0,
-            "added_edge_count": 0,
-            "removed_edge_count": 0,
-            "already_processed_access_collection_count": 5,
-            "already_processed_erasure_collection_count": 0,
-            "skipped_added_edge_count": 0,
-            "privacy_request": privacy_request.id,
-        }
-
-        assert analytics_event.error is None
-        assert analytics_event.status_code is None
-        assert analytics_event.endpoint is None
-        assert analytics_event.local_host is None
+    await graph_task.run_access_request(
+        privacy_request,
+        policy,
+        mongo_postgres_dataset_graph,
+        [integration_postgres_config, integration_mongodb_config],
+        {"email": "customer-1@example.com"},
+        db,
+    )
 
     assert (
         db.query(ExecutionLog)
@@ -897,39 +873,15 @@ async def test_restart_graph_from_failure_during_erasure(
     integration_postgres_config.save(db)
 
     # Rerun erasure portion of request using cached results
-    with mock.patch("fides.api.task.graph_task.fideslog_graph_rerun") as mock_log_event:
-        await graph_task.run_erasure(
-            privacy_request,
-            policy,
-            mongo_postgres_dataset_graph,
-            [integration_postgres_config, integration_mongodb_config],
-            {"email": "customer-1@example.com"},
-            get_cached_data_for_erasures(privacy_request.id),
-            db,
-        )
-
-        # Assert analytics event created - before and after graph on rerun did not change
-        analytics_event = mock_log_event.call_args.args[0]
-        assert analytics_event.docker is True
-        assert analytics_event.event == "rerun_erasure_graph"
-        assert analytics_event.event_created_at is not None
-        assert analytics_event.extra_data == {
-            "prev_collection_count": 20,
-            "curr_collection_count": 20,
-            "added_collection_count": 0,
-            "removed_collection_count": 0,
-            "added_edge_count": 0,
-            "removed_edge_count": 0,
-            "already_processed_access_collection_count": 20,
-            "already_processed_erasure_collection_count": 9,
-            "skipped_added_edge_count": 0,
-            "privacy_request": privacy_request.id,
-        }
-
-        assert analytics_event.error is None
-        assert analytics_event.status_code is None
-        assert analytics_event.endpoint is None
-        assert analytics_event.local_host is None
+    await graph_task.run_erasure(
+        privacy_request,
+        policy,
+        mongo_postgres_dataset_graph,
+        [integration_postgres_config, integration_mongodb_config],
+        {"email": "customer-1@example.com"},
+        get_cached_data_for_erasures(privacy_request.id),
+        db,
+    )
 
     assert (
         db.query(ExecutionLog)

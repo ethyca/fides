@@ -57,7 +57,7 @@ def format_graph_for_caching(
 
 
 class GraphDiff(FidesSchema):
-    """A more detailed description about how two graphs differ. Do not send these details to FidesLog."""
+    """A more detailed description about how two graphs differ."""
 
     previous_collections: List[str] = []
     current_collections: List[str] = []
@@ -71,7 +71,7 @@ class GraphDiff(FidesSchema):
 
 
 class GraphDiffSummary(FidesSchema):
-    """A summary about how two graphs have changed. This can be sent to FidesLog."""
+    """A summary about how two graphs have changed."""
 
     prev_collection_count: int = 0
     curr_collection_count: int = 0

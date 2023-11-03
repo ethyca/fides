@@ -258,7 +258,14 @@ def load_tests(session: nox.Session) -> None:
     https://github.com/fcsonline/drill
     """
     session.run(
-        "drill", "-b", "noxfiles/drill.yml", "--quiet", "--stats", external=True
+        "drill",
+        "-b",
+        "noxfiles/drill.yml",
+        "--quiet",
+        "--stats",
+        "--timeout",
+        "10",  # Our server runs more slowly in CI
+        external=True,
     )
 
 

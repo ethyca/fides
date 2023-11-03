@@ -20,10 +20,6 @@ from fides.api.common_exceptions import (
     SkippingConsentPropagation,
     TraversalError,
 )
-from fides.api.graph.analytics_events import (
-    fideslog_graph_rerun,
-    prepare_rerun_graph_analytics_event,
-)
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -746,13 +742,7 @@ async def run_access_request(
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
         update_mapping_from_cache(dsk, resources, start_function)
 
-        await fideslog_graph_rerun(
-            prepare_rerun_graph_analytics_event(
-                privacy_request, env, end_nodes, resources, ActionType.access
-            )
-        )
-
-        # cache access graph for use in logging/analytics event
+        # cache access graph for use in logging events
         privacy_request.cache_access_graph(format_graph_for_caching(env, end_nodes))
 
         # cache a map of collections -> data uses for the output package of access requests
@@ -822,10 +812,8 @@ async def run_erasure(  # pylint: disable = too-many-arguments
             if not tn.is_root_node():
                 data[tn.address] = GraphTask(tn, resources)
 
-        # We store the end nodes from the traversal for analytics purposes
-        # but we generate a separate erasure_end_nodes list for the actual erasure traversal
         env: Dict[CollectionAddress, Any] = {}
-        access_end_nodes = traversal.traverse(env, collect_tasks_fn)
+        traversal.traverse(env, collect_tasks_fn)
         erasure_end_nodes = list(graph.nodes.keys())
 
         def termination_fn(*dependent_values: int) -> Dict[str, int]:
@@ -861,11 +849,6 @@ async def run_erasure(  # pylint: disable = too-many-arguments
         # terminator function reads and returns the cached erasure results for the entire erasure traversal
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *erasure_end_nodes)
         update_erasure_mapping_from_cache(dsk, resources)
-        await fideslog_graph_rerun(
-            prepare_rerun_graph_analytics_event(
-                privacy_request, env, access_end_nodes, resources, ActionType.erasure
-            )
-        )
 
         # using an existing function from dask.core to detect cycles in the generated graph
         collection_cycle = getcycle(dsk, None)

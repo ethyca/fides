@@ -2,7 +2,6 @@
 
 import rich_click as click
 
-from fides.cli.utils import with_analytics
 from fides.core import annotate_dataset as _annotate_dataset
 
 
@@ -30,7 +29,6 @@ def annotate(ctx: click.Context) -> None:
     default=False,
     help="Validate annotation inputs.",
 )
-@with_analytics
 def annotate_dataset(
     ctx: click.Context, input_filename: str, all_members: bool, validate: bool
 ) -> None:

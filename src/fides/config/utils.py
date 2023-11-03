@@ -39,7 +39,6 @@ def get_dev_mode() -> bool:
 
 CONFIG_KEY_ALLOWLIST = {
     "cli": ["server_host", "server_port"],
-    "user": ["analytics_opt_out"],
     "logging": ["level"],
     "database": [
         "server",

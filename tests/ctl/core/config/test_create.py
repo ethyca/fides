@@ -17,10 +17,10 @@ from fides.config.create import (
 def test_create_and_update_config_file_opt_in(
     tmpdir: LocalPath, test_config: FidesConfig
 ) -> None:
-    """Test that config creation works when opting-in to analytics."""
+    """Test that config creation works."""
 
     create_and_update_config_file(
-        config=test_config, fides_directory_location=str(tmpdir), opt_in=True
+        config=test_config, fides_directory_location=str(tmpdir)
     )
     assert True
 

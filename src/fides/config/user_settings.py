@@ -28,10 +28,6 @@ class UserSettings(FidesSettings):
         description="Authentication header built automatically from the credentials file.",
         exclude=True,
     )
-    analytics_opt_out: bool = Field(
-        default=True,
-        description="When set to true, prevents sending privacy-respecting anonymous analytics data to Ethyca.",
-    )
     encryption_key: str = Field(
         default="test_encryption_key",
         description="An arbitrary string used to encrypt the user data stored in the database. Encryption is implemented using PGP.",

@@ -15,7 +15,7 @@ from fides.config.utils import replace_config_value
 def test_change_config() -> Generator:
     """Create a dictionary to be used as an example config file"""
 
-    yield {"cli": {"analytics_id": "initial_id"}}
+    yield {"security": {"env": "dev"}}
 
 
 @pytest.mark.unit
@@ -54,19 +54,12 @@ def test_update_config_file_new_value(
         dump(test_change_config, config_file)
 
     config_updates = {
-        "cli": {"analytics_id": "updated_id"},
-        "user": {"analytics_opt_out": True},
+        "security": {"env": "dev"},
     }
 
     update_config_file(config_updates, config_path)
 
     updated_config = load(config_path)
 
-    assert updated_config["cli"] is not None, "updated_config.cli should exist"
-    assert (
-        updated_config["cli"]["analytics_id"] == "updated_id"
-    ), "updated_config.cli.analytics_id should be 'updated_id'"
-    assert updated_config["user"] is not None, "updated_config.user should exist"
-    assert updated_config["user"][
-        "analytics_opt_out"
-    ], "updated_config.user.analytics_opt_out should be True"
+    assert updated_config["security"] is not None
+    assert updated_config["security"]["env"] == "dev"

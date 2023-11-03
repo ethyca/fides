@@ -10,7 +10,6 @@ warnings.filterwarnings("ignore", category=UserWarning, module="snowflake")
 from importlib.metadata import version
 from platform import system
 
-from fideslog.sdk.python.client import AnalyticsClient
 from rich_click import Context, echo, group, option, pass_context, secho, version_option
 
 import fides
@@ -111,17 +110,6 @@ def cli(ctx: Context, config_path: str, local: bool) -> None:
     # Check the server health and version if an API command is invoked
     if command in SERVER_CHECK_COMMAND_NAMES:
         check_server(VERSION, str(config.cli.server_url), quiet=True)
-
-    # Analytics requires explicit opt-in
-    no_analytics = config.user.analytics_opt_out
-    if not no_analytics:
-        ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
-            client_id=config.cli.analytics_id,
-            developer_mode=config.test_mode,
-            os=system(),
-            product_name=APP + "-cli",
-            production_version=version(PACKAGE),
-        )
 
     # Setting the config context after all mutations
     ctx.obj["CONFIG"] = config

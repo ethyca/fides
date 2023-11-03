@@ -18,10 +18,6 @@ from fides.core.deploy import (
 )
 
 
-# NOTE: This behaves similarly to 'init' in that it is excluded from analytics
-# in the main CLI logic. This allows us to run `fides init` _during_ the deploy
-# command, once the sample project server is accessible, to allow us to
-# immediately register it
 @click.group(name="deploy")
 @click.pass_context
 def deploy(ctx: click.Context) -> None:
