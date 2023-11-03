@@ -19,7 +19,7 @@ saas_config:
 
   client_config:
     protocol: https
-    host: api.gong.io
+    host: <domain>
     authentication:
       strategy: basic
       configuration:
