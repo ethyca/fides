@@ -10,7 +10,10 @@ class TestAda_chatbotConnector:
         ada_chatbot_runner.test_connection()
 
     async def test_access_request(
-        self, ada_chatbot_runner: ConnectorRunner, policy, ada_chatbot_identity_email: str
+        self,
+        ada_chatbot_runner: ConnectorRunner,
+        policy,
+        ada_chatbot_identity_email: str,
     ):
         access_results = await ada_chatbot_runner.access_request(
             access_policy=policy, identities={"email": ada_chatbot_identity_email}
@@ -49,3 +52,4 @@ class TestAda_chatbotConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": ada_chatbot_erasure_identity_email},
         )
+        assert erasure_results == {"ada_chatbot_instance:chatter": 1}
