@@ -7,7 +7,6 @@ import TcfFeatures from "./TcfFeatures";
 import TcfVendors from "./TcfVendors";
 import InfoBox from "../InfoBox";
 import { EnabledIds } from "../../lib/tcf/types";
-import AllOnOffButtons from "./AllOnOffButtons";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";
@@ -44,14 +43,6 @@ const TcfTabs = ({
             specific purposes, based on consent or legitimate interest, using
             the toggles below.
           </InfoBox>
-          <AllOnOffButtons
-            enabledIds={enabledIds}
-            onChange={onChange}
-            modelTypeMappings={{
-              purposesLegint: experience.tcf_purpose_legitimate_interests,
-              purposesConsent: experience.tcf_purpose_consents,
-            }}
-          />
           <TcfPurposes
             allPurposesConsent={experience.tcf_purpose_consents}
             allPurposesLegint={experience.tcf_purpose_legitimate_interests}
@@ -73,13 +64,6 @@ const TcfTabs = ({
             being processed. You may exercise your rights for special features
             using the toggles below.
           </InfoBox>
-          <AllOnOffButtons
-            enabledIds={enabledIds}
-            onChange={onChange}
-            modelTypeMappings={{
-              specialFeatures: experience.tcf_special_features,
-            }}
-          />
           <TcfFeatures
             allFeatures={experience.tcf_features}
             allSpecialFeatures={experience.tcf_special_features}
@@ -104,22 +88,6 @@ const TcfTabs = ({
             enabledVendorConsentIds={enabledIds.vendorsConsent}
             enabledVendorLegintIds={enabledIds.vendorsLegint}
             onChange={handleUpdateDraftState}
-            allOnOffButtons={
-              <AllOnOffButtons
-                enabledIds={enabledIds}
-                onChange={onChange}
-                modelTypeMappings={{
-                  vendorsConsent: [
-                    ...(experience.tcf_vendor_consents || []),
-                    ...(experience.tcf_system_consents || []),
-                  ],
-                  vendorsLegint: [
-                    ...(experience.tcf_vendor_legitimate_interests || []),
-                    ...(experience.tcf_system_legitimate_interests || []),
-                  ],
-                }}
-              />
-            }
           />
         </div>
       ),

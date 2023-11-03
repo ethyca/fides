@@ -1,4 +1,4 @@
-import { Fragment, VNode, h } from "preact";
+import { Fragment, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { Vendor } from "@iabtechlabtcf/core";
 import {
@@ -210,13 +210,11 @@ const TcfVendors = ({
   enabledVendorConsentIds,
   enabledVendorLegintIds,
   onChange,
-  allOnOffButtons,
 }: {
   experience: PrivacyExperience;
   enabledVendorConsentIds: string[];
   enabledVendorLegintIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
-  allOnOffButtons: VNode;
 }) => {
   // Combine the various vendor objects into one object for convenience
   const vendors = useMemo(
@@ -263,7 +261,6 @@ const TcfVendors = ({
         active={activeLegalBasisOption}
         onChange={setActiveLegalBasisOption}
       />
-      {allOnOffButtons}
       <RecordsList<VendorRecord>
         title="IAB TCF vendors"
         items={activeData.gvlVendors}

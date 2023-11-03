@@ -892,17 +892,6 @@ div#fides-consent-content .fides-privacy-policy {
   display: none;
 }
 
-/* All on off buttons */
-.fides-all-on-off-buttons {
-  display: flex;
-  justify-content: end;
-  margin-bottom: 8px;
-
-  > button {
-    margin-right: 18px;
-  }
-}
-
 /* Responsive banner */
 @media screen and (min-width: 48em) {
   div#fides-banner {
