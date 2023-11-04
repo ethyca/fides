@@ -1,8 +1,9 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra
 
+from fides.api.models.connectionconfig import AccessLevel, ConnectionType
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
 
 
@@ -17,3 +18,18 @@ class SaasConnectionTemplateValues(BaseModel):
 
     class Config:
         extra = Extra.ignore
+
+    def generate_config_data_from_template(
+        self, config_from_template: Dict
+    ) -> Dict[str, Any]:
+        """Generate a config data object (dict) based on the template values"""
+        data = {
+            "key": self.key if self.key else self.instance_key,
+            "description": self.description,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,  # does this need to be passed as a method arg instead?
+            "saas_config": config_from_template,
+        }
+        if self.name:
+            data["name"] = self.name
+        return data
