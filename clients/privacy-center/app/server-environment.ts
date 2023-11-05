@@ -101,6 +101,8 @@ const loadConfigFile = async (
   if (!fsPromises) {
     throw new Error("Unable to load 'fs' module!");
   }
+  console.log("Load config file using urls:", urls);
+  console.log("Using current PWD", process.cwd());
 
   // Loop through the provided URLs, testing each one in order, and return the
   // first file that loads.
@@ -141,6 +143,7 @@ const loadConfigFile = async (
       );
     }
   }
+  console.warn("Failed to load any config files!");
   /* eslint-enable no-restricted-syntax,no-continue,no-await-in-loop */
 };
 
@@ -202,7 +205,6 @@ export const loadConfigFromFile = async (
     "file:///app/config/config.json",
     "file:./config/config.json",
   ];
-  console.log("Load config file using urls:", urls);
   const file = await loadConfigFile(urls);
   if (file) {
     const config = transformConfig(JSON.parse(file));
