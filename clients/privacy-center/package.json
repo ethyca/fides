@@ -6,6 +6,7 @@
     "dev": "next dev",
     "dev:windows": "next dev",
     "build": "next build",
+    "build:vercel": "cp config/config.* public/config/ && turbo build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "lint-staged --diff=main",

@@ -109,8 +109,8 @@ const loadConfigFile = async (
   readdirSync(".").forEach(file => {
     console.log(file);
   });
-  console.log(`Listing ./config dir (${process.cwd()})...`);
-  readdirSync("./config").forEach(file => {
+  console.log(`Listing .next dir (${process.cwd()})...`);
+  readdirSync(".next").forEach(file => {
     console.log(file);
   });
 
