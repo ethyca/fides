@@ -120,7 +120,7 @@ const Login: NextPage = () => {
                   colorScheme="primary"
                   display={["none", "none", "block"]}
                 >
-                  Sign in to your account
+                  Sign in to your account (Vercel Preview!)
                 </Heading>
                 <Box
                   bg="white"
