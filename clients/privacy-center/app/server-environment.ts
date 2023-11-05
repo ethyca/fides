@@ -8,6 +8,8 @@
  * During server-side rendering, call loadPrivacyCenterEnvironment() to initialize the environment values for the App.
  */
 import { URL } from "url";
+// TODO: remove, obviously
+import { readdirSync } from "fs";
 
 import {
   isV1ConsentConfig,
@@ -101,8 +103,16 @@ const loadConfigFile = async (
   if (!fsPromises) {
     throw new Error("Unable to load 'fs' module!");
   }
+  // TODO: testing
   console.log("Load config file using urls:", urls);
-  console.log("Using current PWD", process.cwd());
+  console.log(`Listing current working dir (${process.cwd()})...`);
+  readdirSync(".").forEach(file => {
+    console.log(file);
+  });
+  console.log(`Listing ./config dir (${process.cwd()})...`);
+  readdirSync("./config").forEach(file => {
+    console.log(file);
+  });
 
   // Loop through the provided URLs, testing each one in order, and return the
   // first file that loads.
