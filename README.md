@@ -12,7 +12,7 @@
 
 ![Fides banner](docs/fides/docs/img/fides-banner.png "Fides banner")
 
-Edit readme test.
+Edit readme test 2.
 
 ## :zap: Overview
 
