@@ -9,6 +9,7 @@ import {
   Heading,
   Input,
   Stack,
+  Text,
   useToast,
 } from "@fidesui/react";
 import Head from "common/Head";
@@ -219,6 +220,9 @@ const Login: NextPage = () => {
                     </chakra.form>
                   </Stack>
                 </Box>
+                <Text fontSize="sm">
+                  (Preview Environment)
+                </Text>
               </Stack>
             </Stack>
           </main>
