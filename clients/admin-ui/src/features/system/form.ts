@@ -124,6 +124,7 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
     fidesctl_meta: formValues.fidesctl_meta,
     organization_fides_key: formValues.organization_fides_key,
     dpa_progress: formValues.dpa_progress,
+    cookies: formValues.cookies,
     cookie_max_age_seconds: formValues.cookie_max_age_seconds
       ? formValues.cookie_max_age_seconds
       : undefined,
