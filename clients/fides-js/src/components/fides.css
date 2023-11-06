@@ -53,18 +53,18 @@
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
-  --fides-overlay-font-size-body-small: 0.875em;
-  --fides-overlay-font-size-body: 0.95em;
-  --fides-overlay-font-size-title: 1em;
-  --fides-overlay-font-size-buttons: 1.05em;
-  --fides-overlay-padding: 1.5em;
+  --fides-overlay-font-size-body-small: 12px;
+  --fides-overlay-font-size-body: 14px;
+  --fides-overlay-font-size-title: 16px;
+  --fides-overlay-font-size-buttons: 14px;
+  --fides-overlay-padding: 24px;
   --fides-overlay-button-border-radius: 6px;
-  --fides-overlay-button-padding: 0.5em 1em;
+  --fides-overlay-button-padding: 8px 16px;
   --fides-overlay-container-border-radius: 12px;
   --fides-overlay-component-border-radius: 4px;
   --fides-overlay-banner-offset: 48px;
-  --fides-banner-font-size-title: 1em;
-  --fides-banner-button-font-size: 1em;
+  --fides-banner-font-size-title: 16px;
+  --fides-banner-button-font-size: 14px;
 }
 
 div#fides-overlay {
@@ -104,7 +104,7 @@ div#fides-banner {
   background: var(--fides-overlay-background-color);
   color: var(--fides-overlay-body-font-color);
   box-sizing: border-box;
-  padding: 24px 40px 40px 40px;
+  padding: 24px;
   overflow-y: hidden;
 
   display: flex;
@@ -182,16 +182,17 @@ div#fides-banner-heading {
 div#fides-banner-title {
   font-size: var(--fides-banner-font-size-title);
   font-weight: 600;
-  margin-top: 0.2em;
+  line-height: 24px;
   min-width: 33%;
   flex: 1;
   color: var(--fides-overlay-title-font-color);
 }
 
 div#fides-banner-description {
-  margin-top: 16px;
-  margin-bottom: 24px;
-  line-height: 1.2em;
+  margin-top: 12px;
+  margin-bottom: 16px;
+  line-height: 16px;
+  font-size: var(--fides-overlay-font-size-body-small);
   flex: 1;
 }
 
@@ -363,8 +364,7 @@ div#fides-consent-content {
 
 div#fides-consent-content .fides-modal-title {
   text-align: center;
-  margin-top: 0.2em;
-  margin-bottom: 0.2em;
+  margin: 0;
   font-weight: 600;
   font-size: var(--fides-overlay-font-size-title);
   color: var(--fides-overlay-title-font-color);
@@ -389,7 +389,7 @@ div#fides-consent-content .fides-modal-body {
 }
 
 div#fides-consent-content .fides-modal-description {
-  margin: 1em 0 1em 0;
+  margin: 8px 0 24px 0;
 }
 
 .fides-banner-button-group {
@@ -997,4 +997,5 @@ div#fides-banner-inner .fides-privacy-policy {
   width: 100%;
   border-radius: 0;
   border-width: 1px 0 0 0;
+  padding: 24px 40px 40px 40px;
 }
