@@ -52,6 +52,28 @@ describe("validateConfig", () => {
         message: "Cannot have more than one consent option be executable",
       },
     },
+    {
+      name: "hidden fields with missing default values",
+      config: produce(v2ConsentJson, (draftConfig) => {
+        draftConfig.actions[0].custom_privacy_request_fields = {
+          tenant_id: {
+            label: "Tenant ID",
+            hidden: true,
+          },
+        };
+        draftConfig.actions[1].custom_privacy_request_fields = {
+          tenant_id: {
+            label: "Tenant ID",
+            hidden: true,
+          },
+        };
+      }),
+      expected: {
+        isValid: false,
+        message:
+          "A default_value is required for hidden field(s) 'tenant_id' in the action with policy_key 'default_access_policy', 'tenant_id' in the action with policy_key 'default_erasure_policy'",
+      },
+    },
   ];
 
   testCases.forEach((tc) => {

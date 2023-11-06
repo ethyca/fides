@@ -179,19 +179,30 @@ export const validateConfig = (
     }
   }
 
-  // Validate that each hidden field in custom_privacy_request_fields has a default value
-  config.actions.forEach((action) => {
-    Object.entries(action.custom_privacy_request_fields || {}).forEach(
-      ([key, field]) => {
-        if (field.hidden && field.default_value === undefined) {
-          return {
-            isValid: false,
-            message: `Default value required for hidden field '${key}' in action '${action.policy_key}'`,
-          };
-        }
-      }
-    );
+  const invalidFieldMessages = config.actions.flatMap((action) => {
+    const invalidFields = Object.entries(
+      action.custom_privacy_request_fields || {}
+    )
+      .filter(([, field]) => field.hidden && field.default_value === undefined)
+      .map(([key]) => `'${key}'`);
+
+    return invalidFields.length > 0
+      ? [
+          `${invalidFields.join(", ")} in the action with policy_key '${
+            action.policy_key
+          }'`,
+        ]
+      : [];
   });
+
+  if (invalidFieldMessages.length > 0) {
+    return {
+      isValid: false,
+      message: `A default_value is required for hidden field(s) ${invalidFieldMessages.join(
+        ", "
+      )}`,
+    };
+  }
 
   return { isValid: true, message: "Config is valid" };
 };
