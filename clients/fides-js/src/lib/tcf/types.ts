@@ -88,6 +88,7 @@ export type TCFSpecialPurposeRecord = {
   outdated_served?: boolean;
   vendors?: Array<EmbeddedVendor>;
   systems?: Array<EmbeddedVendor>;
+  legal_bases?: Array<string>;
 };
 
 export type TCFSpecialPurposeSave = {
