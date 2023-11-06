@@ -15,7 +15,7 @@ class TestGongConnector:
         access_results = await gong_runner.access_request(
             access_policy=policy, identities={"email": gong_identity_email}
         )
-        assert access_results["gong_instance:user"][0] == gong_identity_email
+        assert access_results == {"gong_instance:user": 1}
 
     async def test_strict_erasure_request(
         self,
