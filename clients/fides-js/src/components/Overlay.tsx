@@ -57,7 +57,6 @@ const Overlay: FunctionComponent<Props> = ({
     id: "fides-modal",
     role: "alertdialog",
     title: experience?.experience_config?.title || "",
-    useOverlowStyling: !options.fidesEmbed,
     onClose: dispatchCloseEvent,
   });
 
@@ -76,10 +75,10 @@ const Overlay: FunctionComponent<Props> = ({
   }, [instance, dispatchCloseEvent, options.fidesEmbed]);
 
   useEffect(() => {
-    if (options.fidesEmbed && instance) {
-      handleOpenModal();
+    if (options.fidesEmbed) {
+      onOpen();
     }
-  }, [options, instance, handleOpenModal]);
+  }, [options, onOpen]);
 
   useEffect(() => {
     const delayBanner = setTimeout(() => {
@@ -115,6 +114,7 @@ const Overlay: FunctionComponent<Props> = ({
 
   const showBanner = useMemo(
     () =>
+      !options.fidesDisableBanner &&
       experience.show_banner &&
       shouldResurfaceConsent(experience, cookie) &&
       !options.fidesEmbed,

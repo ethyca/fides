@@ -72,12 +72,24 @@ export type FidesOptions = {
   // Whether we should disable saving consent preferences to the Fides API.
   fidesDisableSaveApi: boolean;
 
+  // Whether we should disable the banner
+  fidesDisableBanner: boolean;
+
   // An explicitly passed-in TC string that supersedes the cookie, and prevents any API calls to fetch
   // experiences / preferences. Only available when TCF is enabled. Optional.
   fidesString: string | null;
 
   // Allows for explicit overrides on various internal API calls made from Fides.
   apiOptions: FidesApiOptions | null;
+};
+
+export type GetPreferencesFnResp = {
+  // Overrides the value for Fides.consent for the user’s notice-based preferences (e.g. { data_sales: false })
+  consent?: CookieKeyConsent;
+  // Overrides the value for Fides.fides_string for the user’s TCF+AC preferences (e.g. 1a2a3a.AAABA,1~123.121)
+  fides_string?: string;
+  // An explicit version hash for provided fides_string when calculating whether consent should be re-triggered
+  version_hash?: string;
 };
 
 export type FidesApiOptions = {
@@ -88,11 +100,17 @@ export type FidesApiOptions = {
    * @param {string} fides_string - updated version of Fides.fides_string with the user's saved preferences for TC/AC/etc notices
    * @param {object} experience - current version of the privacy experience that was shown to the user
    */
-  savePreferencesFn: (
+  savePreferencesFn?: (
     consent: CookieKeyConsent,
     fides_string: string | undefined,
     experience: PrivacyExperience
   ) => Promise<void>;
+  /**
+   * Intake a custom function that is used to override users' saved preferences.
+   *
+   * @param {object} fides - global Fides obj containing global config options and other state at time of init
+   */
+  getPreferencesFn?: (fides: FidesConfig) => Promise<GetPreferencesFnResp>;
 };
 
 export class SaveConsentPreference {
@@ -341,13 +359,19 @@ export type UserGeolocation = {
 export type OverrideOptions = {
   fides_string: string;
   fides_disable_save_api: boolean;
+  fides_disable_banner: boolean;
   fides_embed: boolean;
 };
 
 export type FidesOptionOverrides = Pick<
   FidesOptions,
-  "fidesString" | "fidesDisableSaveApi" | "fidesEmbed"
+  "fidesString" | "fidesDisableSaveApi" | "fidesEmbed" | "fidesDisableBanner"
 >;
+
+export type FidesOverrides = {
+  overrideOptions: Partial<FidesOptionOverrides>;
+  overrideConsentPrefs: GetPreferencesFnResp | null;
+};
 
 export enum ButtonType {
   PRIMARY = "primary",
