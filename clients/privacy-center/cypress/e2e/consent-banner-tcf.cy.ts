@@ -178,6 +178,28 @@ describe("Fides-js TCF", () => {
         cy.get("div#fides-banner").should("not.exist");
       });
     });
+    it("should not render the banner if fides_disable_banner is true", () => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+            fidesDisableBanner: true,
+          },
+          experience: experience.items[0],
+        });
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        // The banner has a delay, so in order to assert its non-existence, we have
+        // to give it a chance to come up first. Otherwise, the following gets will
+        // pass regardless.
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
+        cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.get("div#fides-banner").should("not.exist");
+      });
+    });
   });
 
   describe("initial layer", () => {
@@ -1008,7 +1030,63 @@ describe("Fides-js TCF", () => {
         });
       });
       cy.get("#fides-tab-Purposes");
+<<<<<<< HEAD
       checkDefaultExperienceRender();
+=======
+      cy.get("@FidesUIShown").should("have.been.calledOnce");
+      // Purposes
+      cy.getByTestId("toggle-Purposes").within(() => {
+        cy.get("input").should("be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_9.name}-consent`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      cy.get(".fides-notice-toggle-header").contains("Special purposes");
+      cy.get(".fides-notice-toggle-title").contains(SPECIAL_PURPOSE_1.name);
+      cy.getByTestId("toggle-Special purposes").should("not.exist");
+      cy.getByTestId(`toggle-${SPECIAL_PURPOSE_1.name}`).should("not.exist");
+
+      cy.get("#fides-tab-Features").click();
+      cy.get(".fides-notice-toggle-header").contains("Features");
+      cy.get(".fides-notice-toggle-title").contains(FEATURE_1.name);
+      cy.get(".fides-notice-toggle-title").contains(FEATURE_2.name);
+      cy.getByTestId(`toggle-${FEATURE_1.name}`).should("not.exist");
+      cy.getByTestId(`toggle-${FEATURE_2.name}`).should("not.exist");
+      cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+
+      // Vendors
+      cy.get("#fides-tab-Vendors").click();
+      cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+>>>>>>> main
+    });
+    it("automatically renders the second layer even when fides_disable_banner is true", () => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+            fidesEmbed: true,
+            fidesDisableBanner: true,
+          },
+          experience: experience.items[0],
+        });
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").should("have.been.calledOnce");
+        cy.get("div#fides-banner").should("not.exist");
+        cy.get("div#fides-consent-content").should("exist");
+      });
     });
     it("can opt in to some and opt out of others", () => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
@@ -1032,32 +1110,32 @@ describe("Fides-js TCF", () => {
           cy.get("button").contains("Legitimate interest").click();
         });
         cy.getByTestId(`toggle-${SYSTEM_1.name}`).click();
-        cy.get("button").contains("Save").click();
-        cy.wait("@patchPrivacyPreference").then((interception) => {
-          const { body } = interception.request;
-          expect(body.purpose_consent_preferences).to.eql([
-            { id: PURPOSE_4.id, preference: "opt_out" },
-            { id: PURPOSE_6.id, preference: "opt_in" },
-            { id: PURPOSE_7.id, preference: "opt_in" },
-            { id: PURPOSE_9.id, preference: "opt_in" },
-          ]);
-          expect(body.purpose_legitimate_interests_preferences).to.eql([
-            { id: PURPOSE_2.id, preference: "opt_in" },
-          ]);
-          expect(body.special_purpose_preferences).to.eql(undefined);
-          expect(body.feature_preferences).to.eql(undefined);
-          expect(body.special_feature_preferences).to.eql([
-            { id: SPECIAL_FEATURE_1.id, preference: "opt_in" },
-          ]);
-          expect(body.vendor_consent_preferences).to.eql([
-            { id: VENDOR_1.id, preference: "opt_out" },
-          ]);
-          expect(body.vendor_legitimate_interests_preferences).to.eql([]);
-          expect(body.system_legitimate_interests_preferences).to.eql([
-            { id: SYSTEM_1.id, preference: "opt_out" },
-          ]);
-          expect(body.system_consent_preferences).to.eql([]);
-        });
+      });
+      cy.get("button").contains("Save").click();
+      cy.wait("@patchPrivacyPreference").then((interception) => {
+        const { body } = interception.request;
+        expect(body.purpose_consent_preferences).to.eql([
+          { id: PURPOSE_4.id, preference: "opt_out" },
+          { id: PURPOSE_6.id, preference: "opt_in" },
+          { id: PURPOSE_7.id, preference: "opt_in" },
+          { id: PURPOSE_9.id, preference: "opt_in" },
+        ]);
+        expect(body.purpose_legitimate_interests_preferences).to.eql([
+          { id: PURPOSE_2.id, preference: "opt_in" },
+        ]);
+        expect(body.special_purpose_preferences).to.eql(undefined);
+        expect(body.feature_preferences).to.eql(undefined);
+        expect(body.special_feature_preferences).to.eql([
+          { id: SPECIAL_FEATURE_1.id, preference: "opt_in" },
+        ]);
+        expect(body.vendor_consent_preferences).to.eql([
+          { id: VENDOR_1.id, preference: "opt_out" },
+        ]);
+        expect(body.vendor_legitimate_interests_preferences).to.eql([]);
+        expect(body.system_legitimate_interests_preferences).to.eql([
+          { id: SYSTEM_1.id, preference: "opt_out" },
+        ]);
+        expect(body.system_consent_preferences).to.eql([]);
       });
       // embed modal should not close on preferences save
       cy.getByTestId("consent-content").should("exist");
