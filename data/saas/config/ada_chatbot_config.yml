@@ -9,8 +9,11 @@ saas_config:
   connector_params:
     - name: compliance_access_token
       sensitive: True
+      description:
+      label:
     - name: domain
       description:
+      label:
 
   client_config:
     protocol: https
