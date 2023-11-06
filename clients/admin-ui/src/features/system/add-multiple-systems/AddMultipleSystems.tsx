@@ -16,44 +16,52 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
-
-import { useAppSelector } from "~/app/hooks";
-import ConfirmationModal from "~/features/common/ConfirmationModal";
-import { useFeatures } from "~/features/common/features";
+import ConfirmationModal from "common/ConfirmationModal";
+import { useFeatures } from "common/features";
 import {
   extractVendorSource,
   getErrorMessage,
   isErrorResult,
-  VendorSources,
-} from "~/features/common/helpers";
+  vendorSourceLabels,
+} from "common/helpers";
 import {
   DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
   GlobalFilterV2,
   IndeterminateCheckboxCell,
+  PAGE_SIZES,
   PaginationBar,
   RowSelectionBar,
   TableActionBar,
   TableSkeletonLoader,
-} from "~/features/common/table/v2";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
+} from "common/table/v2";
+import { errorToastParams, successToastParams } from "common/toast";
+import { useRouter } from "next/router";
+import { useMemo, useState } from "react";
+
+import { useAppSelector } from "~/app/hooks";
+import { INDEX_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   DictSystems,
   selectAllDictSystems,
   useGetAllSystemVendorsQuery,
+  useGetHealthQuery,
   usePostSystemVendorsMutation,
 } from "~/features/plus/plus.slice";
+import MultipleSystemsFilterModal from "~/features/system/add-multiple-systems/MultipleSystemsFilterModal";
 
-export const VendorSourceCell = ({ value }: { value: string }) => (
-  <Flex alignItems="center" height="100%">
-    <Badge>
-      {extractVendorSource(value) === VendorSources.GVL ? "GVL" : "AC"}
-    </Badge>
-  </Flex>
-);
+export const VendorSourceCell = ({ value }: { value: string }) => {
+  const source = extractVendorSource(value);
+  const labels = vendorSourceLabels[source] ?? { label: "", fullName: "" };
+  return (
+    <Flex alignItems="center" justifyContent="center" height="100%" mr="2">
+      <Tooltip label={labels.fullName} placement="top">
+        <Badge>{labels.label}</Badge>
+      </Tooltip>
+    </Flex>
+  );
+};
 
 type MultipleSystemTable = DictSystems;
 
@@ -66,10 +74,11 @@ type Props = {
 export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   const systemText = "Vendor";
   const toast = useToast();
-  const features = useFeatures();
+  const { dictionaryService, tcf: isTcfEnabled } = useFeatures();
+  const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const router = useRouter();
   const { isLoading: isGetLoading } = useGetAllSystemVendorsQuery(undefined, {
-    skip: !features.dictionaryService,
+    skip: !dictionaryService,
   });
   const [
     postVendorIds,
@@ -78,9 +87,14 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
 
   const dictionaryOptions = useAppSelector(selectAllDictSystems);
   const [globalFilter, setGlobalFilter] = useState();
+  const {
+    isOpen: isFilterOpen,
+    onOpen: onOpenFilter,
+    onClose: onCloseFilter,
+  } = useDisclosure();
   const { isOpen, onClose, onOpen } = useDisclosure();
 
-  const allRowsAdded = dictionaryOptions.every((d) => d.linked_system);
+  const allRowsLinkedToSystem = dictionaryOptions.every((d) => d.linked_system);
   const columns = useMemo(
     () => [
       columnHelper.display({
@@ -94,7 +108,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
                   .getSelectedRowModel()
                   .rows.filter((r) => !r.original.linked_system).length > 0,
               onChange: table.getToggleAllRowsSelectedHandler(),
-              manualDisable: allRowsAdded,
+              manualDisable: allRowsLinkedToSystem,
             }}
           />
         ),
@@ -122,12 +136,14 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         id: "vendor_id",
         cell: (props) => <VendorSourceCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Source" {...props} />,
+        enableColumnFilter: isTcfEnabled,
+        filterFn: "arrIncludesSome",
         meta: {
           width: "80px",
         },
       }),
     ],
-    [allRowsAdded, systemText]
+    [allRowsLinkedToSystem, systemText, isTcfEnabled]
   );
 
   const rowSelection = useMemo(() => {
@@ -153,11 +169,14 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     enableGlobalFilter: true,
     state: {
       globalFilter,
+      columnVisibility: {
+        vendor_id: isTcfEnabled,
+      },
     },
     initialState: {
       rowSelection,
       pagination: {
-        pageSize: 25,
+        pageSize: PAGE_SIZES[0],
       },
     },
   });
@@ -188,6 +207,25 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     .getSelectedRowModel()
     .rows.some((row) => !row.original.linked_system);
 
+  const isTooltipDisabled = useMemo(() => {
+    /*
+      The tooltip surrounding the add button is conditionally displayed.
+
+      It displays if no rows have been selected or if all of the vendors
+      are already linked to systems
+    */
+    if (!anyNewSelectedRows || allRowsLinkedToSystem) {
+      return false;
+    }
+
+    return true;
+  }, [anyNewSelectedRows, allRowsLinkedToSystem]);
+
+  if (!dictionaryService && !isLoadingHealthCheck) {
+    router.push(INDEX_ROUTE);
+    return null; // this prevents the empty table from flashing
+  }
+
   if (isPostLoading || isPostSuccess) {
     return (
       <Flex height="100%" justifyContent="center" alignItems="center">
@@ -200,7 +238,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
 
-  const toolTipText = allRowsAdded
+  const toolTipText = allRowsLinkedToSystem
     ? `All ${systemText.toLocaleLowerCase()} have already been added`
     : `Select a ${systemText.toLocaleLowerCase()} `;
 
@@ -221,31 +259,52 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           totalSelectSystemsLength > 1 ? "s" : ""
         }`}
       />
+      {isFilterOpen ? (
+        <MultipleSystemsFilterModal
+          isOpen={isFilterOpen}
+          onClose={onCloseFilter}
+          tableInstance={tableInstance}
+        />
+      ) : null}
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={globalFilter}
           setGlobalFilter={setGlobalFilter}
           placeholder="Search"
         />
-        <Tooltip
-          label={toolTipText}
-          shouldWrapChildren
-          placement="top"
-          isDisabled={
-            (anyNewSelectedRows && !allRowsAdded) ||
-            (anyNewSelectedRows && allRowsAdded)
-          }
-        >
-          <Button
-            onClick={onOpen}
-            data-testid="add-multiple-systems-btn"
-            size="xs"
-            variant="outline"
-            disabled={!anyNewSelectedRows}
+        <Flex alignItems="center">
+          <Tooltip
+            label={toolTipText}
+            shouldWrapChildren
+            placement="top"
+            isDisabled={isTooltipDisabled}
           >
-            Add {`${systemText}s`}
-          </Button>
-        </Tooltip>
+            <Button
+              onClick={onOpen}
+              data-testid="add-multiple-systems-btn"
+              size="xs"
+              variant="outline"
+              disabled={!anyNewSelectedRows}
+              mr={4}
+            >
+              Add {`${systemText.toLocaleLowerCase()}s`}
+            </Button>
+          </Tooltip>
+          {isTcfEnabled ? (
+            // Wrap in a span so it is consistent height with the add button, whose
+            // Tooltip wraps a span
+            <span>
+              <Button
+                onClick={onOpenFilter}
+                data-testid="filter-multiple-systems-btn"
+                size="xs"
+                variant="outline"
+              >
+                Filter
+              </Button>
+            </span>
+          ) : null}
+        </Flex>
       </TableActionBar>
       <FidesTableV2<MultipleSystemTable>
         tableInstance={tableInstance}
@@ -260,7 +319,10 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           />
         }
       />
-      <PaginationBar tableInstance={tableInstance} />
+      <PaginationBar<MultipleSystemTable>
+        tableInstance={tableInstance}
+        pageSizes={PAGE_SIZES}
+      />
     </Flex>
   );
 };

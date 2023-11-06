@@ -28,7 +28,6 @@ from fides.api.schemas.tcf import (
     TCFSpecialFeatureSave,
     TCFSpecialPurposeSave,
     TCFVendorSave,
-    TCMobileData,
 )
 from fides.api.util.tcf.tcf_experience_contents import (
     TCF_SECTION_MAPPING,
@@ -319,22 +318,6 @@ class CurrentPrivacyPreferenceSchema(TCFAttributes):
     preference: UserConsentPreference
     privacy_notice_history: Optional[PrivacyNoticeHistorySchema]
     privacy_preference_history_id: Optional[str]
-
-
-class SavePrivacyPreferencesResponse(FidesSchema):
-    """Response schema when saving privacy preferences"""
-
-    preferences: List[CurrentPrivacyPreferenceSchema] = []
-    purpose_consent_preferences: List[CurrentPrivacyPreferenceSchema] = []
-    purpose_legitimate_interests_preferences: List[CurrentPrivacyPreferenceSchema] = []
-    special_purpose_preferences: List[CurrentPrivacyPreferenceSchema] = []
-    vendor_consent_preferences: List[CurrentPrivacyPreferenceSchema] = []
-    vendor_legitimate_interests_preferences: List[CurrentPrivacyPreferenceSchema] = []
-    feature_preferences: List[CurrentPrivacyPreferenceSchema] = []
-    special_feature_preferences: List[CurrentPrivacyPreferenceSchema] = []
-    system_consent_preferences: List[CurrentPrivacyPreferenceSchema] = []
-    system_legitimate_interests_preferences: List[CurrentPrivacyPreferenceSchema] = []
-    fides_mobile_data: Optional[TCMobileData] = None
 
 
 class CurrentPrivacyPreferenceReportingSchema(TCFAttributes):

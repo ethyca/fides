@@ -98,6 +98,9 @@ describe("Consent configuration", () => {
             service_health: null,
             service_error: null,
           },
+          tcf: {
+            enabled: false,
+          },
           fides_cloud: {
             enabled: false,
           },
@@ -724,6 +727,9 @@ describe("Consent configuration", () => {
           service_health: null,
           service_error: null,
         },
+        tcf: {
+          enabled: false,
+        },
         fides_cloud: {
           enabled: false,
         },
@@ -764,6 +770,9 @@ describe("Consent configuration", () => {
           enabled: false,
           service_health: null,
           service_error: null,
+        },
+        tcf: {
+          enabled: false,
         },
         fides_cloud: {
           enabled: false,

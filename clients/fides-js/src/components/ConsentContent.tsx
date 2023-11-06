@@ -1,4 +1,4 @@
-import { ComponentChildren, VNode, h } from "preact";
+import { ComponentChildren, VNode, h, Fragment } from "preact";
 import { HTMLAttributes } from "react";
 import { ExperienceConfig } from "../lib/consent-types";
 
@@ -26,33 +26,35 @@ const ConsentModal = ({
   const showGpcBadge = getConsentContext().globalPrivacyControl;
 
   return (
-    <div
-      data-testid="consent-content"
-      id="fides-consent-content"
-      className={className}
-    >
-      <div className="fides-modal-body">
-        <h1
-          data-testid="fides-modal-title"
-          {...title}
-          className="fides-modal-title"
-        >
-          {experience.title}
-        </h1>
-        <p
-          data-testid="fides-modal-description"
-          className="fides-modal-description"
-        >
-          <ExperienceDescription
-            onVendorPageClick={onVendorPageClick}
-            description={experience.description}
-          />
-        </p>
-        {showGpcBadge && <GpcInfo />}
-        {children}
+    <Fragment>
+      <div
+        data-testid="consent-content"
+        id="fides-consent-content"
+        className={className}
+      >
+        <div className="fides-modal-body">
+          <h1
+            data-testid="fides-modal-title"
+            {...title}
+            className="fides-modal-title"
+          >
+            {experience.title}
+          </h1>
+          <p
+            data-testid="fides-modal-description"
+            className="fides-modal-description"
+          >
+            <ExperienceDescription
+              onVendorPageClick={onVendorPageClick}
+              description={experience.description}
+            />
+          </p>
+          {showGpcBadge && <GpcInfo />}
+          {children}
+        </div>
       </div>
       <div className="fides-modal-footer">{renderModalFooter()}</div>
-    </div>
+    </Fragment>
   );
 };
 
