@@ -22,7 +22,6 @@ class TestqualtricsConnector:
         policy: Policy,
         erasure_policy_string_rewrite: Policy,
         qualtrics_erasure_identity_email: str,
-        qualtrics_erasure_data,
     ):
         (
             access_results,

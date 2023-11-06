@@ -58,14 +58,10 @@ def qualtrics_runner(
     db,
     cache,
     qualtrics_secrets,
-    qualtrics_external_references,
-    qualtrics_erasure_external_references,
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
         cache,
         "qualtrics",
         qualtrics_secrets,
-        external_references=qualtrics_external_references,
-        erasure_external_references=qualtrics_erasure_external_references,
     )
