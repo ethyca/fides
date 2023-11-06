@@ -113,6 +113,10 @@ export type System = {
    */
   vendor_id?: string;
   /**
+   * If specified, the unique identifier for the vendor that was previously associated with this system.
+   */
+  previous_vendor_id?: string;
+  /**
    * Referenced Dataset fides keys used by the system.
    */
   dataset_references?: Array<string>;
