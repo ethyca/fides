@@ -148,6 +148,7 @@ _Fides = {
     tcfEnabled: false,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
+    fidesDisableBanner: false,
     fidesString: null,
     apiOptions: null,
   },

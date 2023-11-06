@@ -197,11 +197,7 @@ export const getInitialCookie = ({ consent, options }: FidesConfig) => {
   );
 
   // Load any existing user preferences from the browser cookie
-  const cookie: FidesCookie = getOrMakeFidesCookie(
-    consentDefaults,
-    options.debug
-  );
-  return cookie;
+  return getOrMakeFidesCookie(consentDefaults, options.debug);
 };
 
 /**
