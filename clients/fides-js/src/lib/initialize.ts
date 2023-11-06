@@ -22,6 +22,8 @@ import {
   FidesConfig,
   FidesOptionOverrides,
   FidesOptions,
+  FidesOverrides,
+  GetPreferencesFnResp,
   PrivacyExperience,
   SaveConsentPreference,
   UserGeolocation,
@@ -37,7 +39,7 @@ import {
 import { fetchExperience } from "../services/fides/api";
 import { getGeolocation } from "../services/external/geolocation";
 import { OverlayProps } from "../components/types";
-import { updateConsentPreferences } from "./preferences";
+import { getConsentPreferences, updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
 import { TcfCookieConsent } from "./tcf/types";
@@ -143,14 +145,18 @@ const automaticallyApplyGPCPreferences = ({
 };
 
 /**
- * Gets and validates Fides override options provided through URL query params, cookie, or window obj.
+ * Gets and validates override options provided through URL query params, cookie, or window obj,
+ * and optionally retrieves consent preference overrides if a custom fn was defined in the config.
+ *
  *
  * If the same override option is provided in multiple ways, load the value in this order:
  * 1) query param  (top priority)
  * 2) window obj   (second priority)
  * 3) cookie value (last priority)
  */
-export const getOverrideFidesOptions = (): Partial<FidesOptionOverrides> => {
+export const getOverrides = async (
+  config: FidesConfig
+): Promise<Partial<FidesOverrides>> => {
   const overrideOptions: Partial<FidesOptionOverrides> = {};
   if (typeof window !== "undefined") {
     // Grab query params if provided in the URL (e.g. "?fides_string=123...")
@@ -180,7 +186,12 @@ export const getOverrideFidesOptions = (): Partial<FidesOptionOverrides> => {
       }
     );
   }
-  return overrideOptions;
+  const overrideConsentPrefs: GetPreferencesFnResp | null =
+    await getConsentPreferences(config);
+  if (!overrideOptions.fidesString && overrideConsentPrefs?.fides_string) {
+    overrideOptions.fidesString = overrideConsentPrefs.fides_string;
+  }
+  return { overrideOptions, overrideConsentPrefs };
 };
 
 /**

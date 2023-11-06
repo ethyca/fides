@@ -368,6 +368,11 @@ export type FidesOptionOverrides = Pick<
   "fidesString" | "fidesDisableSaveApi" | "fidesEmbed" | "fidesDisableBanner"
 >;
 
+export type FidesOverrides = {
+  overrideOptions: Partial<FidesOptionOverrides>;
+  overrideConsentPrefs: GetPreferencesFnResp | null;
+};
+
 export enum ButtonType {
   PRIMARY = "primary",
   SECONDARY = "secondary",

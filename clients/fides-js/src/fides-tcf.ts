@@ -52,8 +52,7 @@ import { shopify } from "./integrations/shopify";
 
 import {
   FidesConfig,
-  FidesOptionOverrides,
-  GetPreferencesFnResp,
+  FidesOverrides,
   OverrideOptions,
   PrivacyExperience,
   UserConsentPreference,
@@ -63,7 +62,7 @@ import { generateFidesString, initializeCmpApi } from "./lib/tcf";
 import {
   getInitialCookie,
   getInitialFides,
-  getOverrideFidesOptions,
+  getOverrides,
   initialize,
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
@@ -90,7 +89,6 @@ import {
   generateFidesStringFromCookieTcfConsent,
   transformFidesStringToCookieKeys,
 } from "./lib/tcf/utils";
-import { getConsentPreferences } from "./lib/preferences";
 
 declare global {
   interface Window {
@@ -219,16 +217,13 @@ const updateFidesCookieFromString = (
   );
   try {
     const cookieKeys = transformFidesStringToCookieKeys(fidesString, debug);
-    const updatedCookie = {
-      ...cookie,
-      tcf_consent: cookieKeys,
-      fides_string: fidesString,
-    };
-    if (fidesStringVersionHash) {
-      updatedCookie.tcf_version_hash = fidesStringVersionHash;
-    }
     return {
-      cookie: updatedCookie,
+      cookie: {
+        ...cookie,
+        tcf_consent: cookieKeys,
+        fides_string: fidesString,
+        tcf_version_hash: fidesStringVersionHash ?? cookie.tcf_version_hash,
+      },
       success: true,
     };
   } catch (error) {
@@ -244,27 +239,20 @@ const updateFidesCookieFromString = (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const overrideOptions: Partial<FidesOptionOverrides> =
-    getOverrideFidesOptions();
-  const customPrefs: GetPreferencesFnResp | null = await getConsentPreferences(
-    config
-  );
-  if (!overrideOptions.fidesString && customPrefs?.fides_string) {
-    overrideOptions.fidesString = customPrefs.fides_string;
-  }
+  const overrides: Partial<FidesOverrides> = await getOverrides(config);
   // eslint-disable-next-line no-param-reassign
-  config.options = { ...config.options, ...overrideOptions };
-  const cookie = getInitialCookie(config);
-  if (customPrefs?.consent) {
-    cookie.consent = customPrefs.consent;
-  }
+  config.options = { ...config.options, ...overrides.overrideOptions };
+  const cookie = {
+    ...getInitialCookie(config),
+    ...overrides.overrideConsentPrefs?.consent,
+  };
   let hasValidFidesStringOverride = !!config.options.fidesString;
   if (config.options.fidesString) {
     const { cookie: updatedCookie, success } = updateFidesCookieFromString(
       cookie,
       config.options.fidesString,
       config.options.debug,
-      customPrefs?.version_hash
+      overrides.overrideConsentPrefs?.version_hash
     );
     if (success) {
       Object.assign(cookie, updatedCookie);
