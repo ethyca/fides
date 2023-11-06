@@ -32,7 +32,7 @@ saas_config:
     body: |
       {
         "type": "ERASURE",
-        "email": "supertest@ethyca.com"
+        "email": "checkmycreds@ethyca.com"
       }
 
   endpoints:
