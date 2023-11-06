@@ -329,21 +329,9 @@ def create_connection_config_from_template_no_save(
         template.config, "<instance_fides_key>", template_values.instance_key
     )
 
-    data = {
-        "key": template_values.key
-        if template_values.key
-        else template_values.instance_key,
-        "description": template_values.description,
-        "connection_type": ConnectionType.saas,
-        "access": AccessLevel.write,
-        "saas_config": config_from_template,
-    }
-    if template_values.name:
-        data["name"] = template_values.name
-
-    enabled_actions = getattr(template_values, "enabled_actions", None)
-    if enabled_actions is not None:
-        data["enabled_actions"] = enabled_actions
+    data = template_values.generate_config_data_from_template(
+        config_from_template=config_from_template
+    )
 
     if system_id:
         data["system_id"] = system_id
