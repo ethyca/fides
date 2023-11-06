@@ -146,6 +146,7 @@ export default async function handler(
         environment.settings.FIDES_API_URL,
       fidesEmbed: environment.settings.FIDES_EMBED,
       fidesDisableSaveApi: environment.settings.FIDES_DISABLE_SAVE_API,
+      fidesDisableBanner: environment.settings.FIDES_DISABLE_BANNER,
       fidesString,
       // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
       apiOptions: null,
