@@ -411,6 +411,57 @@ describe("Fides-js TCF", () => {
         });
       });
 
+      it("separates purpose tab by legal bases", () => {
+        const legintSpecialPurposeName = "Legint special purpose";
+        cy.fixture("consent/experience_tcf.json").then((payload) => {
+          const experience = payload.items[0];
+          const specialPurposeCopy = JSON.parse(
+            JSON.stringify(experience.tcf_special_purposes[0])
+          );
+          const legintSpecialPurpose = {
+            ...specialPurposeCopy,
+            id: 2,
+            name: legintSpecialPurposeName,
+            legal_bases: ["Legitimate interests"],
+          };
+          experience.tcf_special_purposes.push(legintSpecialPurpose);
+          stubConfig({
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+            },
+            experience,
+          });
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.get("#fides-modal-link").click();
+            // First check consent page
+            const consentPurposes = [
+              PURPOSE_4,
+              PURPOSE_6,
+              PURPOSE_7,
+              PURPOSE_9,
+            ];
+            consentPurposes.forEach((p) => {
+              cy.getByTestId(`toggle-${p.name}`);
+            });
+            cy.get("span").contains(SPECIAL_PURPOSE_1.name);
+            cy.get("span")
+              .contains(legintSpecialPurposeName)
+              .should("not.exist");
+            cy.getByTestId(`toggle-${PURPOSE_2.name}`).should("not.exist");
+
+            // Now check legint page
+            cy.get("button").contains("Legitimate interest").click();
+            consentPurposes.forEach((p) => {
+              cy.getByTestId(`toggle-${p.name}`).should("not.exist");
+            });
+            cy.getByTestId(`toggle-${PURPOSE_2.name}`);
+            cy.get("span").contains(legintSpecialPurposeName);
+            cy.get("span").contains(SPECIAL_PURPOSE_1.name).should("not.exist");
+          });
+        });
+      });
+
       it("renders toggles in both legal bases views if both exist", () => {
         cy.fixture("consent/experience_tcf.json").then((payload) => {
           const experience = payload.items[0];
@@ -1955,25 +2006,26 @@ describe("Fides-js TCF", () => {
 
       // Verify the toggles
       // Purposes
+      cy.getByTestId(`toggle-${PURPOSE_4.name}`).within(() => {
+        // this purpose was previously set to true from the experience, but it is overridden by the fides_string
+        cy.get("input").should("not.be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_6.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_7.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_9.name}`).within(() => {
+        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
+        // it should use the default preference set in the experience which is false
+        cy.get("input").should("not.be.checked");
+      });
+      cy.get("button").contains("Legitimate interest").click();
       cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
         // this purpose is set to true in the experience, but since it was not defined in the fides_string,
         // it should use the default preference set in the experience which is true
         cy.get("input").should("be.checked");
-      });
-      cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
-        // this purpose was previously set to true from the experience, but it is overridden by the fides_string
-        cy.get("input").should("not.be.checked");
-      });
-      cy.getByTestId(`toggle-${PURPOSE_6.name}-consent`).within(() => {
-        cy.get("input").should("not.be.checked");
-      });
-      cy.getByTestId(`toggle-${PURPOSE_7.name}-consent`).within(() => {
-        cy.get("input").should("be.checked");
-      });
-      cy.getByTestId(`toggle-${PURPOSE_9.name}-consent`).within(() => {
-        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-        // it should use the default preference set in the experience which is false
-        cy.get("input").should("not.be.checked");
       });
       // Features
       cy.get("#fides-tab-Features").click();
@@ -1981,14 +2033,17 @@ describe("Fides-js TCF", () => {
         cy.get("input").should("be.checked");
       });
       // Vendors
+      cy.get("#fides-tab-Vendors").click();
+      cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+      cy.get("#fides-panel-Vendors").within(() => {
+        cy.get("button").contains("Legitimate interest").click();
+      });
       // this purpose is set to true in the experience, but since it was not defined in the fides_string,
       // it should use the default preference set in the experience which is true
-      cy.get("#fides-tab-Vendors").click();
       cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
         cy.get("input").should("be.checked");
-      });
-      cy.getByTestId(`toggle-${VENDOR_1.name}-consent`).within(() => {
-        cy.get("input").should("not.be.checked");
       });
 
       // verify CMP API
@@ -2070,25 +2125,26 @@ describe("Fides-js TCF", () => {
 
       // Verify the toggles
       // Purposes
+      cy.getByTestId(`toggle-${PURPOSE_4.name}`).within(() => {
+        // this purpose was previously set to true from the experience, but it is overridden by the fides_string
+        cy.get("input").should("not.be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_6.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_7.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_9.name}`).within(() => {
+        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
+        // it should use the default preference set in the experience which is false
+        cy.get("input").should("not.be.checked");
+      });
+      cy.get("button").contains("Legitimate interest").click();
       cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
         // this purpose is set to true in the experience, but since it was not defined in the fides_string,
         // it should use the default preference set in the experience which is true
         cy.get("input").should("be.checked");
-      });
-      cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
-        // this purpose was previously set to true from the experience, but it is overridden by the fides_string
-        cy.get("input").should("not.be.checked");
-      });
-      cy.getByTestId(`toggle-${PURPOSE_6.name}-consent`).within(() => {
-        cy.get("input").should("not.be.checked");
-      });
-      cy.getByTestId(`toggle-${PURPOSE_7.name}-consent`).within(() => {
-        cy.get("input").should("be.checked");
-      });
-      cy.getByTestId(`toggle-${PURPOSE_9.name}-consent`).within(() => {
-        // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-        // it should use the default preference set in the experience which is false
-        cy.get("input").should("not.be.checked");
       });
       // Features
       cy.get("#fides-tab-Features").click();
@@ -2099,11 +2155,14 @@ describe("Fides-js TCF", () => {
       // this purpose is set to true in the experience, but since it was not defined in the fides_string,
       // it should use the default preference set in the experience which is true
       cy.get("#fides-tab-Vendors").click();
+      cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+      cy.get("#fides-panel-Vendors").within(() => {
+        cy.get("button").contains("Legitimate interest").click();
+      });
       cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
         cy.get("input").should("be.checked");
-      });
-      cy.getByTestId(`toggle-${VENDOR_1.name}-consent`).within(() => {
-        cy.get("input").should("not.be.checked");
       });
 
       // verify CMP API
