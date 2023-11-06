@@ -22,6 +22,7 @@ The types of changes are:
 
 ### Added
 - Added support for a custom get preferences API call provided through Fides.init [#4375](https://github.com/ethyca/fides/pull/4375)
+- Hidden custom privacy request fields in the Privacy Center [#4370](https://github.com/ethyca/fides/pull/4370)
 
 ### Changed
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
