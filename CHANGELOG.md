@@ -24,6 +24,7 @@ The types of changes are:
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
 - Determine if the TCF overlay needs to surface based on backend calculated version hash [#4356](https://github.com/ethyca/fides/pull/4356)
 - Moved Experiences and Preferences endpoints to Plus to take advantage of dynamic GVL  [#4367](https://github.com/ethyca/fides/pull/4367)
+- Add legal bases to Special Purpose schemas on the backend for display [#4387](https://github.com/ethyca/fides/pull/4387)
 - "is_service_specific" default updated when building TC strings on the backend [#4377](https://github.com/ethyca/fides/pull/4377)
 - Redact cli, database, and redis configuration information from GET api/v1/config API request responses. [#4379](https://github.com/ethyca/fides/pull/4379)
 
