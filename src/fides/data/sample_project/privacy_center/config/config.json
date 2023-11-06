@@ -19,8 +19,7 @@
       },
       "custom_privacy_request_fields": {
         "first_name": {
-          "label": "First name",
-          "required": true
+          "label": "First name"
         },
         "last_name": {
           "label": "Last name",

@@ -205,12 +205,15 @@ const usePrivacyRequestForm = ({
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
           .filter(([, field]) => !field.hidden)
-          .map(([key, { label, required }]) => [
-            key,
-            required
-              ? Yup.string().required(`${label} is required`)
-              : Yup.string().notRequired(),
-          ])
+          .map(([key, { label, required }]) => {
+            const isRequired = required !== false;
+            return [
+              key,
+              isRequired
+                ? Yup.string().required(`${label} is required`)
+                : Yup.string().notRequired(),
+            ];
+          })
       ),
     }),
   });
@@ -356,7 +359,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                   key={key}
                   id={key}
                   isInvalid={touched[key] && Boolean(errors[key])}
-                  isRequired={item.required}
+                  isRequired={item.required !== false}
                 >
                   <FormLabel fontSize="sm">{item.label}</FormLabel>
                   <Input
