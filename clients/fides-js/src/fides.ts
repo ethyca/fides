@@ -51,7 +51,7 @@ import { shopify } from "./integrations/shopify";
 import { FidesCookie, buildCookieConsentForExperiences } from "./lib/cookie";
 import {
   FidesConfig,
-  FidesOptionOverrides,
+  FidesOverrides,
   OverrideOptions,
   PrivacyExperience,
 } from "./lib/consent-types";
@@ -62,7 +62,7 @@ import {
   initialize,
   getInitialCookie,
   getInitialFides,
-  getOverrideFidesOptions,
+  getOverrides,
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 
@@ -101,11 +101,13 @@ const updateCookie = async (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const overrideOptions: Partial<FidesOptionOverrides> =
-    getOverrideFidesOptions();
+  const overrides: Partial<FidesOverrides> = await getOverrides(config);
   // eslint-disable-next-line no-param-reassign
-  config.options = { ...config.options, ...overrideOptions };
-  const cookie = getInitialCookie(config);
+  config.options = { ...config.options, ...overrides.overrideOptions };
+  const cookie = {
+    ...getInitialCookie(config),
+    ...overrides.overrideConsentPrefs?.consent,
+  };
   const initialFides = getInitialFides({ ...config, cookie });
   if (initialFides) {
     Object.assign(_Fides, initialFides);
