@@ -4,6 +4,7 @@ import { validateConfig } from "~/app/server-environment";
 import minimalJson from "~/config/examples/minimal.json";
 import fullJson from "~/config/examples/full.json";
 import v2ConsentJson from "~/config/examples/v2Consent.json";
+import customFields from "~/config/examples/customFields.json";
 
 describe("validateConfig", () => {
   const testCases = [
@@ -54,20 +55,7 @@ describe("validateConfig", () => {
     },
     {
       name: "hidden fields with missing default values",
-      config: produce(v2ConsentJson, (draftConfig) => {
-        draftConfig.actions[0].custom_privacy_request_fields = {
-          tenant_id: {
-            label: "Tenant ID",
-            hidden: true,
-          },
-        };
-        draftConfig.actions[1].custom_privacy_request_fields = {
-          tenant_id: {
-            label: "Tenant ID",
-            hidden: true,
-          },
-        };
-      }),
+      config: customFields,
       expected: {
         isValid: false,
         message:
