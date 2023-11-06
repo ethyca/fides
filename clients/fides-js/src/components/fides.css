@@ -100,7 +100,7 @@ div#fides-banner-container {
 }
 
 div#fides-banner {
-  font-size: var(--fides-overlay-font-size-body-small);
+  font-size: var(--fides-overlay-font-size-body);
   background: var(--fides-overlay-background-color);
   color: var(--fides-overlay-body-font-color);
   box-sizing: border-box;
@@ -168,7 +168,7 @@ div#fides-tcf-banner-inner {
   grid-row: 1 / 3;
   height: 0;
   min-height: 100%;
-  margin-top: 48px;
+  margin-top: 40px;
   overflow-y: auto;
   scrollbar-gutter: stable;
 }
@@ -192,7 +192,7 @@ div#fides-banner-description {
   margin-top: 12px;
   margin-bottom: 16px;
   line-height: 16px;
-  font-size: var(--fides-overlay-font-size-body-small);
+  font-size: var(--fides-overlay-font-size-body);
   flex: 1;
 }
 
@@ -876,7 +876,7 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-vendor-info {
   display: flex;
   flex-direction: row;
-  padding: 18px;
+  padding: 16px 12px;
   border-radius: var(--fides-overlay-component-border-radius);
   justify-content: space-around;
   position: sticky;
@@ -886,7 +886,7 @@ div#fides-banner-inner .fides-privacy-policy {
 
 .fides-vendor-info-label {
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 /* Info box */
