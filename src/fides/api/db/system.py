@@ -167,7 +167,7 @@ async def upsert_cookies(
 
     if privacy_declaration and system:
         # Dev-level error
-        raise Exception(
+        raise ValueError(
             "Supply either system or privacy declaration, not both, to upsert cookies"
         )
 
