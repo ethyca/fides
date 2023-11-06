@@ -10,6 +10,7 @@ saas_config:
     - name: compliance_access_token
       sensitive: True
     - name: domain
+      description:
 
   client_config:
     protocol: https
