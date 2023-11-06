@@ -209,6 +209,10 @@ export type SystemResponse = {
    * A URL that points to the system's publicly accessible legitimate interest disclosure.
    */
   legitimate_interest_disclosure_url?: string;
+  /**
+   * System-level cookies unassociated with a data use to deliver services and functionality
+   */
+  cookies?: Array<Cookies>;
   created_at: string;
   /**
    *
@@ -220,5 +224,4 @@ export type SystemResponse = {
    * System managers of the current system
    */
   data_stewards?: Array<UserResponse>;
-  cookies?: Array<Cookies>;
 };
