@@ -51,7 +51,7 @@
     "lodash.snakecase": "^4.1.1",
     "msw": "^1.2.1",
     "narrow-minded": "^1.2.1",
-    "next": "^12.3.4",
+    "next": "^13.5.0",
     "react": "^17.0.2",
     "react-cytoscapejs": "^2.0.0",
     "react-dnd": "^15.0.1",
