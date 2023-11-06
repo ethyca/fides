@@ -11,7 +11,7 @@ import {
   TCFSpecialPurposeRecord,
 } from "../../lib/tcf/types";
 import { UpdateEnabledIds } from "./TcfOverlay";
-import { getUniquePurposeRecords } from "../../lib/tcf/purposes";
+import { getUniquePurposeRecords, hasLegalBasis } from "../../lib/tcf/purposes";
 import RecordsList from "./RecordsList";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import RadioGroup from "./RadioGroup";
@@ -84,13 +84,15 @@ const TcfPurposes = ({
     specialPurposes: TCFSpecialPurposeRecord[];
     enabledSpecialPurposeIds: string[];
   } = useMemo(() => {
+    const specialPurposes = allSpecialPurposes ?? [];
     if (activeLegalBasisOption.value === LegalBasisEnum.CONSENT) {
       return {
         purposes: uniquePurposes.filter((p) => p.isConsent),
         purposeModelType: "purposesConsent",
         enabledPurposeIds: enabledPurposeConsentIds,
-        // TODO: do we need to filter special purposes too?
-        specialPurposes: allSpecialPurposes ?? [],
+        specialPurposes: specialPurposes.filter((sp) =>
+          hasLegalBasis(sp, LegalBasisEnum.CONSENT)
+        ),
         enabledSpecialPurposeIds,
       };
     }
@@ -98,7 +100,9 @@ const TcfPurposes = ({
       purposes: uniquePurposes.filter((p) => p.isLegint),
       purposeModelType: "purposesLegint",
       enabledPurposeIds: enabledPurposeLegintIds,
-      specialPurposes: allSpecialPurposes ?? [],
+      specialPurposes: specialPurposes.filter((sp) =>
+        hasLegalBasis(sp, LegalBasisEnum.LEGITIMATE_INTERESTS)
+      ),
       enabledSpecialPurposeIds,
     };
   }, [
