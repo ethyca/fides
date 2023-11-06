@@ -248,43 +248,50 @@ class TestPatchConnections:
         assert config.secrets == payload[0]["secrets"]
 
     @pytest.mark.parametrize(
-        "payload",
+        "payload, expected",
         [
-            [
-                {
-                    "name": "My Main Postgres DB",
-                    "key": "postgres_key",
-                    "connection_type": "postgres",
-                    "access": "write",
-                    "secrets": {
-                        "username": "test",
-                        "password": "test",
-                        "dbname": "test",
-                        "db_schema": "test",
+            (
+                [
+                    {
+                        "name": "My Main Postgres DB",
+                        "key": "postgres_key",
+                        "connection_type": "postgres",
+                        "access": "write",
+                        "secrets": {
+                            "username": "test",
+                            "password": "test",
+                            "dbname": "test",
+                            "db_schema": "test",
+                        },
+                        "port": 5432,
                     },
-                    "port": 5432,
-                },
-            ],
-            [
-                {
-                    "instance_key": "mailchimp_instance_1",
-                    "secrets": {
-                        "bad": "test_mailchimp",
+                ],
+                200,
+            ),
+            (
+                [
+                    {
+                        "instance_key": "mailchimp_instance_1",
+                        "secrets": {
+                            "bad": "test_mailchimp",
+                        },
+                        "name": "My Mailchimp Test",
+                        "description": "Mailchimp ConnectionConfig description",
+                        "saas_connector_type": "mailchimp",
+                        "key": "mailchimp_1",
                     },
-                    "name": "My Mailchimp Test",
-                    "description": "Mailchimp ConnectionConfig description",
-                    "saas_connector_type": "mailchimp",
-                    "key": "mailchimp_1",
-                },
-            ],
+                ],
+                422,
+            ),
         ],
     )
     def test_patch_connection_invalid_secrets(
-        self, payload, url, api_client, generate_auth_header
+        self, payload, expected, url, api_client, generate_auth_header
     ):
+        # extra fields are ignored but missing fields are still invalid
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         response = api_client.patch(url, headers=auth_header, json=payload)
-        assert response.status_code == 422
+        assert response.status_code == expected
 
     def test_patch_connections_bulk_create(
         self, api_client: TestClient, db: Session, generate_auth_header, url, payload
@@ -639,7 +646,6 @@ class TestPatchConnections:
             "access": "write",
             "disabled": False,
             "description": None,
-            "enabled_actions": None,
         }
         assert response_body["failed"][1]["data"] == {
             "name": "My Mongo DB",
@@ -648,7 +654,6 @@ class TestPatchConnections:
             "access": "read",
             "disabled": False,
             "description": None,
-            "enabled_actions": None,
         }
 
     @mock.patch("fides.api.main.prepare_and_log_request")
