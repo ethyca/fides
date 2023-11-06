@@ -1030,44 +1030,8 @@ describe("Fides-js TCF", () => {
         });
       });
       cy.get("#fides-tab-Purposes");
-<<<<<<< HEAD
-      checkDefaultExperienceRender();
-=======
       cy.get("@FidesUIShown").should("have.been.calledOnce");
-      // Purposes
-      cy.getByTestId("toggle-Purposes").within(() => {
-        cy.get("input").should("be.checked");
-      });
-      cy.getByTestId(`toggle-${PURPOSE_4.name}-consent`).within(() => {
-        cy.get("input").should("be.checked");
-      });
-      cy.getByTestId(`toggle-${PURPOSE_9.name}-consent`).within(() => {
-        cy.get("input").should("be.checked");
-      });
-      cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
-        cy.get("input").should("be.checked");
-      });
-      cy.get(".fides-notice-toggle-header").contains("Special purposes");
-      cy.get(".fides-notice-toggle-title").contains(SPECIAL_PURPOSE_1.name);
-      cy.getByTestId("toggle-Special purposes").should("not.exist");
-      cy.getByTestId(`toggle-${SPECIAL_PURPOSE_1.name}`).should("not.exist");
-
-      cy.get("#fides-tab-Features").click();
-      cy.get(".fides-notice-toggle-header").contains("Features");
-      cy.get(".fides-notice-toggle-title").contains(FEATURE_1.name);
-      cy.get(".fides-notice-toggle-title").contains(FEATURE_2.name);
-      cy.getByTestId(`toggle-${FEATURE_1.name}`).should("not.exist");
-      cy.getByTestId(`toggle-${FEATURE_2.name}`).should("not.exist");
-      cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).within(() => {
-        cy.get("input").should("not.be.checked");
-      });
-
-      // Vendors
-      cy.get("#fides-tab-Vendors").click();
-      cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
-        cy.get("input").should("be.checked");
-      });
->>>>>>> main
+      checkDefaultExperienceRender();
     });
     it("automatically renders the second layer even when fides_disable_banner is true", () => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
@@ -2202,7 +2166,7 @@ describe("Fides-js TCF", () => {
 
     it("can opt out of AC vendors and generate string", () => {
       cy.get("#fides-tab-Vendors").click();
-      cy.getByTestId("consent-content").within(() => {
+      cy.getByTestId("consent-modal").within(() => {
         cy.get("button").contains("Opt out of all").click();
       });
       cy.wait("@patchPrivacyPreference").then((interception) => {
@@ -2232,7 +2196,7 @@ describe("Fides-js TCF", () => {
         win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
       });
       cy.get("#fides-tab-Vendors").click();
-      cy.getByTestId("consent-content").within(() => {
+      cy.getByTestId("consent-modal").within(() => {
         cy.get("button").contains("Opt in to all").click();
       });
       cy.wait("@patchPrivacyPreference");
@@ -2262,7 +2226,7 @@ describe("Fides-js TCF", () => {
 
     it("can get `addtlConsents` from getTCData custom function", () => {
       cy.get("#fides-tab-Vendors").click();
-      cy.getByTestId("consent-content").within(() => {
+      cy.getByTestId("consent-modal").within(() => {
         cy.get("button").contains("Opt in to all").click();
       });
       cy.wait("@patchPrivacyPreference");
