@@ -412,7 +412,7 @@ div#fides-consent-content .fides-modal-description {
 }
 
 /* Responsive overlay */
-@media (max-width: 768px) {
+@media (max-width: 48em) {
   div.fides-modal-content,
   div#fides-consent-content {
     width: 100% !important;
