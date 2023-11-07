@@ -34,7 +34,7 @@ The types of changes are:
 
 ### Fixed 
 - Fix button arrangment and spacing for TCF and non-TCF consent overlay banner and modal [#4391](https://github.com/ethyca/fides/pull/4391)
-- Replaced h1 element with p to use exisitng fides styles in consent modal [#4396](https://github.com/ethyca/fides/pull/4396)
+- Replaced h1 element with div to use exisitng fides styles in consent modal [#4399](https://github.com/ethyca/fides/pull/4399)
 
 ## [2.23.2](https://github.com/ethyca/fides/compare/2.23.1...2.23.2)
 
