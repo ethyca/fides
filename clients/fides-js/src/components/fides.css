@@ -193,7 +193,6 @@ div#fides-banner-title {
 div#fides-banner-description {
   margin-top: 16px;
   margin-bottom: 24px;
-  line-height: 1em;
   font-size: var(--fides-overlay-font-size-body);
   flex: 1;
 }
@@ -232,7 +231,6 @@ button.fides-banner-button {
   border-radius: var(--fides-overlay-button-border-radius);
 
   font-family: var(--fides-overlay-font-family);
-  line-height: 1em;
   text-decoration: none;
   font-weight: 600;
 }
