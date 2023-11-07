@@ -75,7 +75,7 @@ div#fides-overlay {
   white-space: pre-line;
 
   /* CSS reset values, adapted from https://www.joshwcomeau.com/css/custom-css-reset/ */
-  line-height: calc(16px + 6px);
+  line-height: calc(1em + 0.4rem);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -182,7 +182,7 @@ div#fides-banner-heading {
 div#fides-banner-title {
   font-size: var(--fides-banner-font-size-title);
   font-weight: 600;
-  line-height: 24px;
+  line-height: 1.5em;
   min-width: 33%;
   flex: 1;
   color: var(--fides-overlay-title-font-color);
@@ -191,7 +191,7 @@ div#fides-banner-title {
 div#fides-banner-description {
   margin-top: 16px;
   margin-bottom: 24px;
-  line-height: 16px;
+  line-height: 1em;
   font-size: var(--fides-overlay-font-size-body);
   flex: 1;
 }
@@ -230,7 +230,7 @@ button.fides-banner-button {
   border-radius: var(--fides-overlay-button-border-radius);
 
   font-family: var(--fides-overlay-font-family);
-  line-height: 16px;
+  line-height: 1em;
   text-decoration: none;
   font-weight: 600;
 }
@@ -268,7 +268,7 @@ button.fides-banner-button.fides-banner-button-tertiary {
   cursor: pointer;
   font-weight: 500;
   font-size: var(--fides-overlay-font-size-body);
-  line-height: 20px;
+  line-height: 1.25em;
 }
 
 /** Modal */
@@ -836,7 +836,7 @@ div#fides-banner-inner .fides-privacy-policy {
   display: inline-flex;
   width: 95px;
   margin-left: 16px;
-  line-height: 16px;
+  line-height: 1em;
   text-align: center;
   justify-content: center;
 }
