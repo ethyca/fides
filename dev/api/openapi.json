@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.23.3b0.post0.dev2"
+    "version": "2.23.3b0.post0.dev3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13516,6 +13516,11 @@
             "type": "string",
             "description": "The unique identifier for the vendor that's associated with this system."
           },
+          "previous_vendor_id": {
+            "title": "Previous Vendor Id",
+            "type": "string",
+            "description": "If specified, the unique identifier for the vendor that was previously associated with this system."
+          },
           "dataset_references": {
             "title": "Dataset References",
             "type": "array",
@@ -13655,6 +13660,14 @@
             "type": "string",
             "description": "A URL that points to the system's publicly accessible legitimate interest disclosure.",
             "format": "uri"
+          },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            },
+            "description": "System-level cookies unassociated with a data use to deliver services and functionality"
           },
           "created_at": {
             "title": "Created At",
@@ -21609,6 +21622,11 @@
             "type": "string",
             "description": "The unique identifier for the vendor that's associated with this system."
           },
+          "previous_vendor_id": {
+            "title": "Previous Vendor Id",
+            "type": "string",
+            "description": "If specified, the unique identifier for the vendor that was previously associated with this system."
+          },
           "dataset_references": {
             "title": "Dataset References",
             "type": "array",
@@ -21748,6 +21766,14 @@
             "type": "string",
             "description": "A URL that points to the system's publicly accessible legitimate interest disclosure.",
             "format": "uri"
+          },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            },
+            "description": "System-level cookies unassociated with a data use to deliver services and functionality"
           }
         },
         "description": "The System resource model.\n\nDescribes an application and includes a list of PrivacyDeclaration resources."
@@ -21907,6 +21933,11 @@
             "type": "string",
             "description": "The unique identifier for the vendor that's associated with this system."
           },
+          "previous_vendor_id": {
+            "title": "Previous Vendor Id",
+            "type": "string",
+            "description": "If specified, the unique identifier for the vendor that was previously associated with this system."
+          },
           "dataset_references": {
             "title": "Dataset References",
             "type": "array",
@@ -22047,6 +22078,14 @@
             "description": "A URL that points to the system's publicly accessible legitimate interest disclosure.",
             "format": "uri"
           },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            },
+            "description": "System-level cookies unassociated with a data use to deliver services and functionality"
+          },
           "created_at": {
             "title": "Created At",
             "type": "string",
@@ -22068,14 +22107,6 @@
               "$ref": "#/components/schemas/UserResponse"
             },
             "description": "System managers of the current system"
-          },
-          "cookies": {
-            "title": "Cookies",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Cookies"
-            },
-            "default": []
           }
         },
         "description": "Extension of base pydantic response model to include additional relationship fields that\nmay require extra DB queries, like `privacy_declarations`, connection_config fields and cookies.\n\nThis response model is generally useful for an API that returns a detailed view of _single_\nSystem record. Attempting to return bulk results with this model can lead to n+1 query issues."
