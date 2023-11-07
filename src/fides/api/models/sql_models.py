@@ -745,4 +745,5 @@ class Cookies(Base):
         UniqueConstraint(
             "name", "privacy_declaration_id", name="_cookie_name_privacy_declaration_uc"
         ),
+        UniqueConstraint("name", "system_id", name="_cookie_name_system_uc"),
     )
