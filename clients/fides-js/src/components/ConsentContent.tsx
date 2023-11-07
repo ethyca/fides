@@ -33,13 +33,13 @@ const ConsentModal = ({
         className={className}
       >
         <div className="fides-modal-body">
-          <h1
+          <p
             data-testid="fides-modal-title"
             {...title}
             className="fides-modal-title"
           >
             {experience.title}
-          </h1>
+          </p>
           <p
             data-testid="fides-modal-description"
             className="fides-modal-description"
