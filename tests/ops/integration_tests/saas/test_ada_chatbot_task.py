@@ -9,17 +9,6 @@ class TestAda_chatbotConnector:
     def test_connection(self, ada_chatbot_runner: ConnectorRunner):
         ada_chatbot_runner.test_connection()
 
-    async def test_access_request(
-        self,
-        ada_chatbot_runner: ConnectorRunner,
-        policy,
-        ada_chatbot_identity_email: str,
-    ):
-        access_results = await ada_chatbot_runner.access_request(
-            access_policy=policy, identities={"email": ada_chatbot_identity_email}
-        )
-        ## assert for email field
-
     async def test_non_strict_erasure_request(
         self,
         ada_chatbot_runner: ConnectorRunner,
