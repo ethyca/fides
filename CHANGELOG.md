@@ -19,13 +19,10 @@ The types of changes are:
 
 ### Added
 - Adds fides_disable_banner config option to Fides.js [#4378](https://github.com/ethyca/fides/pull/4378)
-
-### Added
 - Added support for a custom get preferences API call provided through Fides.init [#4375](https://github.com/ethyca/fides/pull/4375)
 - Hidden custom privacy request fields in the Privacy Center [#4370](https://github.com/ethyca/fides/pull/4370)
-
-# Added
 - Backend System-level Cookie Support [#4383](https://github.com/ethyca/fides/pull/4383)
+- High Level Tracking of Compass System Sync [#4397](https://github.com/ethyca/fides/pull/4397)
 
 ### Changed
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
