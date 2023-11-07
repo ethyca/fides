@@ -255,7 +255,10 @@ async def update(
     to add additional "system manager" permission checks.
     """
     await validate_privacy_declarations(db, resource)
-    return await update_system(resource, db, current_user.id if current_user else None)
+    updated_system, _ = await update_system(
+        resource, db, current_user.id if current_user else None
+    )
+    return updated_system
 
 
 @SYSTEM_ROUTER.post(

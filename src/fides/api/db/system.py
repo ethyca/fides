@@ -233,7 +233,7 @@ async def upsert_cookies(
 
 async def update_system(
     resource: SystemSchema, db: AsyncSession, current_user_id: Optional[str] = None
-) -> Dict:
+) -> Tuple[Dict, bool]:
     """Helper function to share core system update logic for wrapping endpoint functions"""
     system: System = await get_resource(
         sql_model=System, fides_key=resource.fides_key, async_session=db
@@ -267,7 +267,8 @@ async def update_system(
         )  # Upsert the associated cookies at the System-level
 
         await db.refresh(updated_system)
-        _audit_system_changes(
+
+        system_updated: bool = _audit_system_changes(
             db,
             system.id,
             current_user_id,
@@ -275,7 +276,7 @@ async def update_system(
             SystemSchema.from_orm(updated_system).dict(),
         )
 
-    return updated_system
+    return updated_system, system_updated
 
 
 def _audit_system_changes(
@@ -284,7 +285,7 @@ def _audit_system_changes(
     current_user_id: Optional[str],
     existing_system: Dict[str, Any],
     updated_system: Dict[str, Any],
-) -> None:
+) -> bool:
     """
     Audits changes made to a system and logs them in the SystemHistory table.
     The function creates separate SystemHistory entries for general changes,
@@ -309,8 +310,12 @@ def _audit_system_changes(
     # Get the current datetime
     now = datetime.now()
 
+    system_updated: bool = False
+
     # Create a SystemHistory entry for general changes
     if DeepDiff(existing_system, updated_system, ignore_order=True):
+        system_updated = True
+
         SystemHistory(
             user_id=current_user_id,
             system_id=system_id,
@@ -321,6 +326,8 @@ def _audit_system_changes(
 
     # Create a SystemHistory entry for changes to privacy_declarations
     if DeepDiff(privacy_existing, privacy_updated, ignore_order=True):
+        system_updated = True
+
         SystemHistory(
             user_id=current_user_id,
             system_id=system_id,
@@ -331,6 +338,8 @@ def _audit_system_changes(
 
     # Create a SystemHistory entry for changes to egress and ingress
     if DeepDiff(egress_ingress_existing, egress_ingress_updated, ignore_order=True):
+        system_updated = True
+
         SystemHistory(
             user_id=current_user_id,
             system_id=system_id,
@@ -338,6 +347,8 @@ def _audit_system_changes(
             after=egress_ingress_updated,
             created_at=now,
         ).save(db=db)
+
+    return system_updated
 
 
 async def create_system(
