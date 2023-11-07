@@ -53,18 +53,20 @@
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
-  --fides-overlay-font-size-body-small: 0.75em;
-  --fides-overlay-font-size-body: 0.875em;
-  --fides-overlay-font-size-title: 1em;
-  --fides-overlay-font-size-buttons: 0.875em;
+  --12px: 0.75rem;
+  --14px: 0.875rem;
+  --15px: 0.9375rem;
+  --16px: 1rem;
+  --fides-overlay-font-size-body-small: var(--12px);
+  --fides-overlay-font-size-body: var(--14px);
+  --fides-overlay-font-size-title: var(--16px);
+  --fides-overlay-font-size-buttons: var(--14px);
   --fides-overlay-padding: 24px;
   --fides-overlay-button-border-radius: 6px;
   --fides-overlay-button-padding: 8px 16px;
   --fides-overlay-container-border-radius: 12px;
   --fides-overlay-component-border-radius: 4px;
   --fides-overlay-banner-offset: 48px;
-  --fides-banner-font-size-title: 1em;
-  --fides-banner-button-font-size: 0.875em;
 }
 
 div#fides-overlay {
@@ -180,7 +182,7 @@ div#fides-banner-heading {
 }
 
 div#fides-banner-title {
-  font-size: var(--fides-banner-font-size-title);
+  font-size: var(--fides-overlay-font-size-title);
   font-weight: 600;
   line-height: 1.5em;
   min-width: 33%;
@@ -216,7 +218,7 @@ div.fides-banner-acknowledge .fides-banner-button {
 }
 
 button.fides-banner-button {
-  font-size: var(--fides-banner-button-font-size);
+  font-size: var(--fides-overlay-font-size-buttons);
   display: inline-block;
   flex: auto;
   cursor: pointer;
@@ -512,8 +514,11 @@ div#fides-banner-inner .fides-privacy-policy {
   color: var(--fides-overlay-inactive-font-color);
   transition: 250ms;
 
-  width: 95px;
+  /* total width 50 (34 + 2x8) */
+  padding-inline: 8px;
+  width: 34px;
   height: 24px;
+  justify-content: end;
 }
 
 .fides-toggle .fides-toggle-display::before {
@@ -541,9 +546,10 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-toggle .fides-toggle-input:checked + .fides-toggle-display {
   background-color: var(--fides-overlay-primary-active-color);
   color: var(--fides-overlay-primary-button-text-color);
+  justify-content: start;
 }
 .fides-toggle .fides-toggle-input:checked + .fides-toggle-display::before {
-  transform: translate(70px, -50%);
+  transform: translate(26px, -50%);
 }
 
 /* Disabled state */
@@ -649,6 +655,12 @@ div#fides-banner-inner .fides-privacy-policy {
   font-weight: 600;
 }
 
+.fides-record-header {
+  font-weight: 600;
+  padding: 12px 12px;
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+}
+
 /* GPC */
 .fides-gpc-banner {
   border: 1px solid var(--fides-overlay-primary-color);
@@ -673,7 +685,7 @@ div#fides-banner-inner .fides-privacy-policy {
 
 .fides-gpc-label {
   font-weight: 600;
-  font-size: var();
+  font-size: var(--fides-overlay-font-size-body);
   text-wrap: nowrap;
 }
 
@@ -739,7 +751,7 @@ div#fides-banner-inner .fides-privacy-policy {
   display: inline-flex;
   align-items: center;
   height: 18px;
-  margin-left: 10px;
+  margin-right: 8px;
   text-transform: uppercase;
   padding: 0 4px;
   font-weight: 600;
@@ -752,28 +764,29 @@ div#fides-banner-inner .fides-privacy-policy {
   background-color: var(--fides-overlay-background-dark-color);
 }
 
-/* Filter button */
+/* Radio button group */
 
-.fides-filter-button-group {
+.fides-radio-button-group {
   background-color: var(
     --fides-overlay-secondary-button-background-hover-color
   );
-  border-radius: var(--fides-overlay-button-border-radius);
-  width: fit-content;
-  padding: 5px;
+  display: flex;
+  border: 1px solid var(--fides-overlay-row-divider-color);
+  padding: 4px;
+  margin-bottom: 22px;
 }
 
-.fides-filter-button {
+.fides-radio-button {
   background-color: transparent;
   border: none;
   padding: 5px 16px;
   cursor: pointer;
+  flex: 1;
 }
 
-.fides-filter-button[aria-checked="true"] {
+.fides-radio-button[aria-checked="true"] {
   background-color: var(--fides-overlay-primary-button-background-color);
   color: var(--fides-overlay-primary-button-text-color);
-  border-radius: var(--fides-overlay-button-border-radius);
 }
 
 /* General classes */
@@ -786,10 +799,14 @@ div#fides-banner-inner .fides-privacy-policy {
   margin-right: 3px;
 }
 
+.fides-justify-space-between {
+  justify-content: space-between;
+}
+
 /* TCF toggles */
 .fides-tcf-toggle-content {
   margin-right: 60px;
-  font-size: 0.875em;
+  font-size: var(--fides-overlay-font-size-body-small);
   font-weight: 400;
 }
 
@@ -800,7 +817,7 @@ div#fides-banner-inner .fides-privacy-policy {
 }
 
 .fides-tcf-illustration {
-  font-size: 0.875em;
+  font-size: var(--fides-overlay-font-size-body-small);
   padding: 13px;
   padding-right: 60px;
   border-radius: var(--fides-overlay-component-border-radius);
@@ -823,24 +840,6 @@ div#fides-banner-inner .fides-privacy-policy {
   display: flex;
 }
 
-.fides-legal-basis-labels {
-  display: flex;
-  align-items: center;
-  justify-content: end;
-  font-size: var(--fides-overlay-font-size-body-small);
-  font-weight: 600;
-  margin-right: 12px;
-}
-
-.fides-legal-basis-labels span {
-  display: inline-flex;
-  width: 95px;
-  margin-left: 16px;
-  line-height: 1em;
-  text-align: center;
-  justify-content: center;
-}
-
 /* Vendor purpose table */
 .fides-vendor-details-table {
   width: 100%;
@@ -849,7 +848,7 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-vendor-details-table th,
 .fides-vendor-details-table td {
   text-align: left;
-  font-size: 0.875em;
+  font-size: var(--fides-overlay-font-size-body-small);
 }
 
 .fides-vendor-details-table td {
@@ -874,7 +873,7 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-external-link {
   color: var(--fides-overlay-primary-color);
   font-weight: 500;
-  font-size: 0.875em;
+  font-size: var(--fides-overlay-font-size-body-small);
   margin-right: 16px;
 }
 
@@ -893,7 +892,8 @@ div#fides-banner-inner .fides-privacy-policy {
 
 .fides-vendor-info-label {
   font-weight: 600;
-  font-size: 0.875em;
+  font-size: var(--fides-overlay-font-size-body-small);
+  margin-right: 4px;
 }
 
 /* Info box */
@@ -914,17 +914,6 @@ div#fides-banner-inner .fides-privacy-policy {
 
 .tabpanel-container section[hidden] {
   display: none;
-}
-
-/* All on off buttons */
-.fides-all-on-off-buttons {
-  display: flex;
-  justify-content: end;
-  margin-bottom: 8px;
-
-  > button {
-    margin-right: 18px;
-  }
 }
 
 /* Responsive banner */

@@ -1,5 +1,5 @@
 import { ComponentChildren, VNode, h, Fragment } from "preact";
-import { HTMLAttributes } from "react";
+import type { HTMLAttributes } from "react";
 import { ExperienceConfig } from "../lib/consent-types";
 
 import GpcInfo from "./GpcInfo";
@@ -33,13 +33,13 @@ const ConsentModal = ({
         className={className}
       >
         <div className="fides-modal-body">
-          <h1
+          <p
             data-testid="fides-modal-title"
             {...title}
             className="fides-modal-title"
           >
             {experience.title}
-          </h1>
+          </p>
           <p
             data-testid="fides-modal-description"
             className="fides-modal-description"

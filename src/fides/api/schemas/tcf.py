@@ -52,6 +52,10 @@ class TCFPurposeLegitimateInterestsRecord(NonVendorSection, MappedPurpose):
 
 
 class TCFSpecialPurposeRecord(NonVendorSection, MappedPurpose):
+    """Schema for a TCF Special Purpose returned in the TCF Overlay Experience"""
+
+    legal_bases: List[str] = []  # Legal basis for processing
+
     @root_validator
     def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Default preference for special purposes is acknowledge"""
