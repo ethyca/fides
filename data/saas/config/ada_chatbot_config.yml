@@ -1,0 +1,84 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Ada Chatbot
+  type: ada_chatbot
+  description: A sample schema representing the Ada Chatbot connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: demo-sandbox-ethyca.ada.support
+    - name: export_access_token
+    - name: compliance_access_token
+    - name: created_since
+    - name: page
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: bearer
+      configuration:
+        token: <export_access_token>
+
+  test_request:
+    method: GET
+    path: /data_api/v1.2/conversations
+    query_params:
+      - name: created_since
+        value: <created_since>
+      - name: page_size
+        value: <page>
+
+  endpoints:
+    - name: conversations
+      requests:
+        read:
+          method: GET
+          path: /data_api/v1.2/conversations
+          query_params:
+            - name: created_since
+              value: <created_since>
+            - name: page_size
+              value: <page>
+          data_path: data
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: variables.email
+                value:
+                  identity: email
+          param_values:
+            - name: placeholder
+              identity: email
+    - name: messages
+      requests:
+        read:
+          method: GET
+          path: /data_api/v1.2/messages
+          query_params:
+            - name: created_since
+              value: <created_since>
+            - name: page_size
+              value: <page>
+            - name: conversation_id
+              value: <conversations__id>
+          data_path: data
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: chatter_id
+                value: 649d4fb2da41d34da975c0d0
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: next_page_uri
+          param_values:
+            - name: placeholder
+              identity: email
+            - name: conversations__id
+              references:
+                - dataset: <instance_fides_key>
+                  field: conversations._id
+                  direction: from

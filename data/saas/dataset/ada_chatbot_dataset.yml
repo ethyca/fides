@@ -1,0 +1,175 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: Ada Chatbot Dataset
+    description: A sample dataset representing the Ada Chatbot connector for Fides
+    collections:
+      - name: conversations
+        fields:
+          - name: _id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+              primary_key: True
+          - name: agent_id
+          - name: agent_name
+          - name: browser
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: browser_version
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: chatter_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: csat
+          - name: date_created
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: date_updated
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: device
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: is_engaged
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: is_escalated
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: is_test_user
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: language
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: metavariables
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: browser
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: browser_version
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: device
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: initialurl
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: introshown
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: language
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: last_answer_id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: last_question_asked
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: test_user
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: user_agent
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+          - name: oauth_channel
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: platform
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: variables
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: email
+                data_categories: [user.contact.email]
+                fidesops_meta:
+                  data_type: string
+              - name: userName
+                data_categories: [user.name]
+                fidesops_meta:
+                  data_type: string
+      - name: messages
+        fields:
+          - name: _id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+              primary_key: True
+          - name: answer_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: answer_title
+          - name: chatter_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: conversation_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: date_created
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: link_was_clicked
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: message_data
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: _type
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: external_chat_id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: reviewable_message
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
+          - name: recipient
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: review
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: sender
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
