@@ -370,6 +370,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                 <PrivacyPolicyLink experience={experienceConfig} />
               </TcfConsentButtons>
             )}
+            className="fides-tcf-banner-container"
           >
             <div id="fides-tcf-banner-inner">
               <VendorInfoBanner
