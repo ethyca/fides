@@ -48,13 +48,13 @@ export const ConsentButtons = ({
       {firstButton || null}
       <Button
         buttonType={ButtonType.PRIMARY}
-        label={experienceConfig.accept_button_label}
-        onClick={onAcceptAll}
+        label={experienceConfig.reject_button_label}
+        onClick={onRejectAll}
       />
       <Button
         buttonType={ButtonType.PRIMARY}
-        label={experienceConfig.reject_button_label}
-        onClick={onRejectAll}
+        label={experienceConfig.accept_button_label}
+        onClick={onAcceptAll}
       />
     </div>
     {children}
