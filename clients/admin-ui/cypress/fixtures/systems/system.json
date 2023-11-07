@@ -44,5 +44,6 @@
   "responsibility": "Controller",
   "dpo": "Derek P. Officer",
   "joint_controller": "Julia Controller",
-  "data_security_practices": []
+  "data_security_practices": [],
+  "cookies": []
 }
