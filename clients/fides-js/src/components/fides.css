@@ -403,6 +403,14 @@ div#fides-consent-content .fides-modal-description {
   margin-inline: var(--fides-overlay-padding);
 }
 
+.fides-tcf-banner-container
+  div#fides-banner
+  div#fides-banner-inner
+  div#fides-button-group
+  .fides-banner-button-group {
+  padding-left: 24px;
+}
+
 /* Responsive overlay */
 @media (max-width: 768px) {
   div.fides-modal-content,
@@ -987,6 +995,13 @@ div#fides-banner-inner .fides-privacy-policy {
   .fides-modal-footer {
     width: 100%;
   }
+  .fides-tcf-banner-container
+    div#fides-banner
+    div#fides-banner-inner
+    div#fides-button-group
+    .fides-banner-button-group {
+    padding-left: 0;
+  }
 }
 /* TCF should always be full width and not floating */
 .fides-tcf-banner-container {
@@ -1010,11 +1025,4 @@ div#fides-banner-inner .fides-privacy-policy {
   div#fides-button-group
   div#fides-privacy-policy-link {
   margin-left: auto;
-}
-.fides-tcf-banner-container
-  div#fides-banner
-  div#fides-banner-inner
-  div#fides-button-group
-  .fides-banner-button-group {
-  padding-left: 24px;
 }
