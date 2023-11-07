@@ -45,7 +45,9 @@ class DsrReportBuilder:
             return json.dumps(value, indent=indent, default=storage_json_encoder)
 
         jinja2.filters.FILTERS["pretty_print"] = pretty_print
-        self.template_loader = Environment(loader=FileSystemLoader(DSR_DIRECTORY))
+        self.template_loader = Environment(
+            loader=FileSystemLoader(DSR_DIRECTORY), autoescape=True
+        )
 
         # to pass in custom colors in the future
         self.template_data: Dict[str, Any] = {
@@ -75,7 +77,8 @@ class DsrReportBuilder:
         }
         report_data.update(self.template_data)
         template = self.template_loader.get_template(template_path)
-        return template.render(report_data)
+        rendered_template = template.render(report_data)
+        return rendered_template
 
     def _add_file(self, filename: str, contents: str) -> None:
         """Helper to add a file to the zip archive"""

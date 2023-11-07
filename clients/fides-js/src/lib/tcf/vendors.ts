@@ -66,11 +66,13 @@ const transformVendorDataToVendorRecords = ({
   legints,
   relationships,
   isFidesSystem,
+  gvl,
 }: {
   consents: TCFVendorConsentRecord[];
   legints: TCFVendorLegitimateInterestsRecord[];
   relationships: TCFVendorRelationships[];
   isFidesSystem: boolean;
+  gvl: PrivacyExperience["gvl"];
 }) => {
   const records: VendorRecord[] = [];
   relationships.forEach((relationship) => {
@@ -83,6 +85,7 @@ const transformVendorDataToVendorRecords = ({
       isFidesSystem,
       isConsent: !!vendorConsent,
       isLegint: !!vendorLegint,
+      isGvl: !!vendorGvlEntry(relationship.id, gvl),
     };
     records.push(record);
   });
@@ -106,12 +109,14 @@ export const transformExperienceToVendorRecords = (
     legints: legintVendors,
     relationships: vendorRelationships,
     isFidesSystem: false,
+    gvl: experience.gvl,
   });
   const systemRecords = transformVendorDataToVendorRecords({
     consents: consentSystems,
     legints: legintSystems,
     relationships: systemRelationships,
     isFidesSystem: true,
+    gvl: experience.gvl,
   });
 
   const records = [...vendorRecords, ...systemRecords];

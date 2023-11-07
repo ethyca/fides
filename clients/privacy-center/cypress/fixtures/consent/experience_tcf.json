@@ -217,7 +217,8 @@
               "id": "ctl_b3dde2d5-e535-4d9a-bf6e-a3b6beb01761",
               "name": "Fides System"
             }
-          ]
+          ],
+          "legal_bases": ["Consent"]
         }
       ],
       "tcf_features": [
