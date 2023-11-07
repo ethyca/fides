@@ -53,18 +53,18 @@
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
-  --fides-overlay-font-size-body-small: 12px;
-  --fides-overlay-font-size-body: 14px;
-  --fides-overlay-font-size-title: 16px;
-  --fides-overlay-font-size-buttons: 14px;
+  --fides-overlay-font-size-body-small: 0.75em;
+  --fides-overlay-font-size-body: 0.875em;
+  --fides-overlay-font-size-title: 1em;
+  --fides-overlay-font-size-buttons: 0.875em;
   --fides-overlay-padding: 24px;
   --fides-overlay-button-border-radius: 6px;
   --fides-overlay-button-padding: 8px 16px;
   --fides-overlay-container-border-radius: 12px;
   --fides-overlay-component-border-radius: 4px;
   --fides-overlay-banner-offset: 48px;
-  --fides-banner-font-size-title: 16px;
-  --fides-banner-button-font-size: 14px;
+  --fides-banner-font-size-title: 1em;
+  --fides-banner-button-font-size: 0.875em;
 }
 
 div#fides-overlay {
@@ -673,7 +673,7 @@ div#fides-banner-inner .fides-privacy-policy {
 
 .fides-gpc-label {
   font-weight: 600;
-  font-size: 14px;
+  font-size: var();
   text-wrap: nowrap;
 }
 
@@ -746,7 +746,7 @@ div#fides-banner-inner .fides-privacy-policy {
   border-radius: var(--fides-overlay-badge-border-radius);
   background: var(--fides-overlay-badge-background-color);
   color: white;
-  font-size: 12px;
+  font-size: var(--fides-overlay-font-size-body-small);
 }
 .fides-background-dark {
   background-color: var(--fides-overlay-background-dark-color);
@@ -789,7 +789,7 @@ div#fides-banner-inner .fides-privacy-policy {
 /* TCF toggles */
 .fides-tcf-toggle-content {
   margin-right: 60px;
-  font-size: 14px;
+  font-size: 0.875em;
   font-weight: 400;
 }
 
@@ -800,7 +800,7 @@ div#fides-banner-inner .fides-privacy-policy {
 }
 
 .fides-tcf-illustration {
-  font-size: 14px;
+  font-size: 0.875em;
   padding: 13px;
   padding-right: 60px;
   border-radius: var(--fides-overlay-component-border-radius);
@@ -827,7 +827,7 @@ div#fides-banner-inner .fides-privacy-policy {
   display: flex;
   align-items: center;
   justify-content: end;
-  font-size: 12px;
+  font-size: var(--fides-overlay-font-size-body-small);
   font-weight: 600;
   margin-right: 12px;
 }
@@ -849,7 +849,7 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-vendor-details-table th,
 .fides-vendor-details-table td {
   text-align: left;
-  font-size: 14px;
+  font-size: 0.875em;
 }
 
 .fides-vendor-details-table td {
@@ -874,7 +874,7 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-external-link {
   color: var(--fides-overlay-primary-color);
   font-weight: 500;
-  font-size: 14px;
+  font-size: 0.875em;
   margin-right: 16px;
 }
 
@@ -893,7 +893,7 @@ div#fides-banner-inner .fides-privacy-policy {
 
 .fides-vendor-info-label {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 0.875em;
 }
 
 /* Info box */
