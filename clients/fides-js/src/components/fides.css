@@ -189,8 +189,8 @@ div#fides-banner-title {
 }
 
 div#fides-banner-description {
-  margin-top: 12px;
-  margin-bottom: 16px;
+  margin-top: 16px;
+  margin-bottom: 24px;
   line-height: 16px;
   font-size: var(--fides-overlay-font-size-body);
   flex: 1;
@@ -201,8 +201,6 @@ div#fides-button-group {
   margin-bottom: var(--fides-overlay-padding);
   display: flex;
   justify-content: space-between;
-
-  padding-top: 10px;
   background-color: var(--fides-overlay-background-color);
   z-index: 5;
 }
@@ -394,14 +392,14 @@ div#fides-consent-content .fides-modal-description {
 
 .fides-banner-button-group {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .fides-modal-button-group {
   display: flex;
   width: 100%;
   flex-direction: row;
-  gap: 10px;
+  gap: 12px;
   margin-inline: var(--fides-overlay-padding);
 }
 
@@ -882,6 +880,7 @@ div#fides-banner-inner .fides-privacy-policy {
   position: sticky;
   top: 0;
   gap: 30px;
+  margin-bottom: 16px;
 }
 
 .fides-vendor-info-label {
@@ -891,10 +890,10 @@ div#fides-banner-inner .fides-privacy-policy {
 
 /* Info box */
 .fides-info-box {
-  background-color: var(--fides-overlay-background-dark-color);
+  background-color: var(--fides-overlay-hover-color);
   border-radius: var(--fides-overlay-component-border-radius);
-  padding: 18px;
-  margin: 16px 0;
+  padding: 16px;
+  margin: 10px 0;
 }
 
 .fides-info-box p {
@@ -998,4 +997,24 @@ div#fides-banner-inner .fides-privacy-policy {
   border-radius: 0;
   border-width: 1px 0 0 0;
   padding: 24px 40px 40px 40px;
+}
+.fides-tcf-banner-container
+  div#fides-banner
+  div#fides-banner-inner
+  div#fides-button-group {
+  justify-content: flex-start;
+}
+.fides-tcf-banner-container
+  div#fides-banner
+  div#fides-banner-inner
+  div#fides-button-group
+  div#fides-privacy-policy-link {
+  margin-left: auto;
+}
+.fides-tcf-banner-container
+  div#fides-banner
+  div#fides-banner-inner
+  div#fides-button-group
+  .fides-banner-button-group {
+  padding-left: 24px;
 }
