@@ -1,7 +1,9 @@
 import {
+  LegalBasisEnum,
   PurposeRecord,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
+  TCFSpecialPurposeRecord,
 } from "./types";
 
 export const getUniquePurposeRecords = ({
@@ -35,4 +37,18 @@ export const getUniquePurposeRecords = ({
   });
 
   return { uniquePurposeIds: uniqueIds, uniquePurposes: purposes };
+};
+
+/**
+ * Returns whether or not a special purpose has a specificed LegalBasisEnum
+ */
+export const hasLegalBasis = (
+  specialPurpose: TCFSpecialPurposeRecord,
+  legalBasis: LegalBasisEnum
+) => {
+  const { legal_bases: legalBases } = specialPurpose;
+  if (!legalBases) {
+    return false;
+  }
+  return !!legalBases.find((basis) => basis === legalBasis);
 };

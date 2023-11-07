@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { ContactDetails } from "./ContactDetails";
+import type { Cookies } from "./Cookies";
 import type { DataFlow } from "./DataFlow";
 import type { DataProtectionImpactAssessment } from "./DataProtectionImpactAssessment";
 import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
@@ -112,6 +113,10 @@ export type System = {
    */
   vendor_id?: string;
   /**
+   * If specified, the unique identifier for the vendor that was previously associated with this system.
+   */
+  previous_vendor_id?: string;
+  /**
    * Referenced Dataset fides keys used by the system.
    */
   dataset_references?: Array<string>;
@@ -209,4 +214,8 @@ export type System = {
    * A URL that points to the system's publicly accessible legitimate interest disclosure.
    */
   legitimate_interest_disclosure_url?: string;
+  /**
+   * System-level cookies unassociated with a data use to deliver services and functionality
+   */
+  cookies?: Array<Cookies>;
 };

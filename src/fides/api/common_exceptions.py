@@ -55,10 +55,6 @@ class RedisConnectionError(Exception):
     """The Configured Redis instance is uncontactable."""
 
 
-class DecodeFidesStringError(Exception):
-    """Issues decoding the supplied TC String or AC String"""
-
-
 class MisconfiguredPolicyException(Exception):
     """Thrown when a Privacy Request cannot be processed due to a misconfigured Policy."""
 

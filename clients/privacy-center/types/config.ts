@@ -10,7 +10,9 @@ export type CustomPrivacyRequestFields = Record<
   string,
   {
     label: string;
-    required: boolean;
+    required?: boolean;
+    default_value?: string;
+    hidden?: boolean;
   }
 >;
 
