@@ -145,7 +145,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       onOpen={dispatchOpenOverlayEvent}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (
         <ConsentBanner
-          isTCF={false}
           bannerIsOpen={isOpen}
           onOpen={dispatchOpenBannerEvent}
           onClose={onClose}
