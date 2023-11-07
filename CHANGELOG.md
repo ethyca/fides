@@ -15,7 +15,7 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.23.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.23.3...main)
 
 ### Changed
 - Determine if the TCF overlay needs to surface based on backend calculated version hash [#4356](https://github.com/ethyca/fides/pull/4356)
@@ -23,9 +23,14 @@ The types of changes are:
 - "is_service_specific" default updated when building TC strings on the backend [#4377](https://github.com/ethyca/fides/pull/4377)
 - Redact cli, database, and redis configuration information from GET api/v1/config API request responses. [#4379](https://github.com/ethyca/fides/pull/4379)
 
+## [2.23.3](https://github.com/ethyca/fides/compare/2.23.2...2.23.3)
+
 ### Fixed 
 - Fix button arrangment and spacing for TCF and non-TCF consent overlay banner and modal [#4391](https://github.com/ethyca/fides/pull/4391)
 - Replaced h1 element with div to use exisitng fides styles in consent modal [#4399](https://github.com/ethyca/fides/pull/4399)
+
+### Security 
+-- Fix an HTML Injection vulnerability in DSR Packages
 
 ## [2.23.2](https://github.com/ethyca/fides/compare/2.23.1...2.23.2)
 
@@ -63,7 +68,6 @@ The types of changes are:
 
 ### Fixed
 
-- Fix an HTML Injection vulnerability in DSR Packages
 - Cleans up CSS for fidesEmbed mode [#4306](https://github.com/ethyca/fides/pull/4306)
 - Stacks that do not have any purposes will no longer render an empty purpose block [#4278](https://github.com/ethyca/fides/pull/4278)
 - Forcing hidden sections to use display none [#4299](https://github.com/ethyca/fides/pull/4299)
