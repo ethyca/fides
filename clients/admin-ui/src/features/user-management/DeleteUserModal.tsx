@@ -9,6 +9,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Stack,
+  Text,
   UseDisclosureReturn,
   useToast,
 } from "@fidesui/react";
@@ -54,13 +55,9 @@ const useDeleteUserModal = ({
   };
 
   const validationSchema = Yup.object().shape({
-    username: Yup.string()
-      .required()
-      .oneOf([username], "Username must match this user's")
-      .label("Username"),
     usernameConfirmation: Yup.string()
       .required()
-      .oneOf([Yup.ref("username")], "Usernames must match")
+      .oneOf([username], "Username must match this user's")
       .label("Username confirmation"),
   });
 
@@ -95,8 +92,8 @@ const DeleteUserModal = ({
               <ModalHeader>Delete User</ModalHeader>
               <ModalCloseButton />
               <ModalBody>
+                <Text mb={2} fontStyle="italic">{user.username}</Text>
                 <Stack direction="column" spacing={4}>
-                  <CustomTextInput name="username" label="Enter username" />
                   <CustomTextInput
                     name="usernameConfirmation"
                     label="Confirm username"
