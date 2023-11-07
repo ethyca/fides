@@ -978,6 +978,7 @@ div#fides-banner-inner .fides-privacy-policy {
 
   div#fides-privacy-policy-link {
     order: 1;
+    width: 100%;
   }
   .fides-modal-footer {
     width: 100%;
@@ -1006,10 +1007,6 @@ div#fides-banner-inner .fides-privacy-policy {
   div#fides-button-group {
   justify-content: flex-start;
 }
-.fides-tcf-banner-container
-  div#fides-banner
-  div#fides-banner-inner
-  div#fides-button-group
-  div#fides-privacy-policy-link {
+#fides-privacy-policy-link {
   margin-left: auto;
 }
