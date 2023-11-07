@@ -1,5 +1,5 @@
 import { ComponentChildren, VNode, h, Fragment } from "preact";
-import { HTMLAttributes } from "react";
+import type { HTMLAttributes } from "react";
 import { ExperienceConfig } from "../lib/consent-types";
 
 import GpcInfo from "./GpcInfo";

@@ -506,8 +506,11 @@ div#fides-banner-inner .fides-privacy-policy {
   color: var(--fides-overlay-inactive-font-color);
   transition: 250ms;
 
-  width: 95px;
+  /* total width 50 (34 + 2x8) */
+  padding-inline: 8px;
+  width: 34px;
   height: 24px;
+  justify-content: end;
 }
 
 .fides-toggle .fides-toggle-display::before {
@@ -535,9 +538,10 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-toggle .fides-toggle-input:checked + .fides-toggle-display {
   background-color: var(--fides-overlay-primary-active-color);
   color: var(--fides-overlay-primary-button-text-color);
+  justify-content: start;
 }
 .fides-toggle .fides-toggle-input:checked + .fides-toggle-display::before {
-  transform: translate(70px, -50%);
+  transform: translate(26px, -50%);
 }
 
 /* Disabled state */
@@ -643,6 +647,12 @@ div#fides-banner-inner .fides-privacy-policy {
   font-weight: 600;
 }
 
+.fides-record-header {
+  font-weight: 600;
+  padding: 12px 12px;
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+}
+
 /* GPC */
 .fides-gpc-banner {
   border: 1px solid var(--fides-overlay-primary-color);
@@ -733,7 +743,7 @@ div#fides-banner-inner .fides-privacy-policy {
   display: inline-flex;
   align-items: center;
   height: 18px;
-  margin-left: 0.6em;
+  margin-right: 8px;
   text-transform: uppercase;
   padding: 0 4px;
   font-weight: 600;
@@ -746,28 +756,29 @@ div#fides-banner-inner .fides-privacy-policy {
   background-color: var(--fides-overlay-background-dark-color);
 }
 
-/* Filter button */
+/* Radio button group */
 
-.fides-filter-button-group {
+.fides-radio-button-group {
   background-color: var(
     --fides-overlay-secondary-button-background-hover-color
   );
-  border-radius: var(--fides-overlay-button-border-radius);
-  width: fit-content;
-  padding: 0.3em;
+  display: flex;
+  border: 1px solid var(--fides-overlay-row-divider-color);
+  padding: 4px;
+  margin-bottom: 22px;
 }
 
-.fides-filter-button {
+.fides-radio-button {
   background-color: transparent;
   border: none;
   padding: 0.3em 1em;
   cursor: pointer;
+  flex: 1;
 }
 
-.fides-filter-button[aria-checked="true"] {
+.fides-radio-button[aria-checked="true"] {
   background-color: var(--fides-overlay-primary-button-background-color);
   color: var(--fides-overlay-primary-button-text-color);
-  border-radius: var(--fides-overlay-button-border-radius);
 }
 
 /* General classes */
@@ -778,6 +789,10 @@ div#fides-banner-inner .fides-privacy-policy {
 
 .fides-margin-right {
   margin-right: 0.2em;
+}
+
+.fides-justify-space-between {
+  justify-content: space-between;
 }
 
 /* TCF toggles */
@@ -815,24 +830,6 @@ div#fides-banner-inner .fides-privacy-policy {
 
 .fides-tcf-vendor-toggles {
   display: flex;
-}
-
-.fides-legal-basis-labels {
-  display: flex;
-  align-items: center;
-  justify-content: end;
-  font-size: 12px;
-  font-weight: 600;
-  margin-right: 12px;
-}
-
-.fides-legal-basis-labels span {
-  display: inline-flex;
-  width: 95px;
-  margin-left: 16px;
-  line-height: 16px;
-  text-align: center;
-  justify-content: center;
 }
 
 /* Vendor purpose table */
@@ -887,6 +884,7 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-vendor-info-label {
   font-weight: 600;
   font-size: 1em;
+  margin-right: 4px;
 }
 
 /* Info box */
@@ -907,17 +905,6 @@ div#fides-banner-inner .fides-privacy-policy {
 
 .tabpanel-container section[hidden] {
   display: none;
-}
-
-/* All on off buttons */
-.fides-all-on-off-buttons {
-  display: flex;
-  justify-content: end;
-  margin-bottom: 8px;
-
-  > button {
-    margin-right: 18px;
-  }
 }
 
 /* Responsive banner */
