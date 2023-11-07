@@ -43,7 +43,14 @@
       "link": null
     },
     "ingress": [],
-    "egress": []
+    "egress": [],
+    "cookies": [
+      {
+        "name": "test_cookie",
+        "path": "/",
+        "domain": "https://www.example.com"
+      }
+    ]
   },
   {
     "fides_key": "demo_analytics_system",
@@ -84,7 +91,8 @@
       "is_required": true,
       "progress": "Complete",
       "link": "https://example.org/analytics_system_data_protection_impact_assessment"
-    }
+    },
+    "cookies": []
   },
   {
     "fides_key": "demo_marketing_system",
@@ -125,6 +133,7 @@
       "is_required": false,
       "progress": null,
       "link": null
-    }
+    },
+    "cookies": []
   }
 ]

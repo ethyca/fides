@@ -112,6 +112,10 @@ export type SystemResponse = {
    */
   vendor_id?: string;
   /**
+   * If specified, the unique identifier for the vendor that was previously associated with this system.
+   */
+  previous_vendor_id?: string;
+  /**
    * Referenced Dataset fides keys used by the system.
    */
   dataset_references?: Array<string>;
@@ -209,6 +213,10 @@ export type SystemResponse = {
    * A URL that points to the system's publicly accessible legitimate interest disclosure.
    */
   legitimate_interest_disclosure_url?: string;
+  /**
+   * System-level cookies unassociated with a data use to deliver services and functionality
+   */
+  cookies?: Array<Cookies>;
   created_at: string;
   /**
    *
@@ -220,5 +228,4 @@ export type SystemResponse = {
    * System managers of the current system
    */
   data_stewards?: Array<UserResponse>;
-  cookies?: Array<Cookies>;
 };

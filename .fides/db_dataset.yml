@@ -1088,6 +1088,9 @@ dataset:
     - name: vendor_id
       data_categories:
       - system.operations
+    - name: previous_vendor_id
+      data_categories:
+        - system.operations
     - name: dataset_references
       data_categories:
       - system.operations

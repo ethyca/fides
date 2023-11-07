@@ -375,6 +375,7 @@ class System(Base, FidesBase):
     ingress = Column(JSON)
 
     vendor_id = Column(String)
+    previous_vendor_id = Column(String)
     dataset_references = Column(ARRAY(String), server_default="{}", nullable=False)
     processes_personal_data = Column(BOOLEAN(), server_default="t", nullable=False)
     exempt_from_privacy_regulations = Column(
@@ -720,9 +721,9 @@ class Cookies(Base):
 
     privacy_declaration_id = Column(
         String,
-        ForeignKey(PrivacyDeclaration.id_field_path, ondelete="SET NULL"),
+        ForeignKey(PrivacyDeclaration.id_field_path, ondelete="CASCADE"),
         index=True,
-    )  # If privacy declaration is deleted, just set to null and still keep this connected to the system.
+    )  # If privacy declaration is deleted, remove the associated cookies.
 
     system = relationship(
         "System",
@@ -735,6 +736,7 @@ class Cookies(Base):
     privacy_declaration = relationship(
         "PrivacyDeclaration",
         back_populates="cookies",
+        cascade="all,delete",
         uselist=False,
         lazy="joined",  # Joined is intentional, instead of selectin
     )

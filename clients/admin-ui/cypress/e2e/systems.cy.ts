@@ -261,6 +261,7 @@ describe("System management page", () => {
         }).as("getFidesctlSystem");
       });
       cy.visit(SYSTEM_ROUTE);
+      cy.wait("@getUserPermission");
     });
 
     it("Can go directly to a system's edit page", () => {
@@ -278,11 +279,27 @@ describe("System management page", () => {
     });
 
     it("Can go to a system's edit page by clicking its card", () => {
-      cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("system-box").click();
       });
       cy.url().should("contain", "/systems/configure/fidesctl_system");
+    });
+
+    it("Can persist fields not directly in the form", () => {
+      cy.visit("/systems/configure/fidesctl_system");
+      cy.wait("@getFidesctlSystem");
+      cy.getByTestId("input-name").type("edit");
+      cy.getByTestId("save-btn").click();
+      cy.wait("@putSystem").then((interception) => {
+        const { body } = interception.request;
+        expect(body.cookies).to.eql([
+          {
+            name: "test_cookie",
+            path: "/",
+            domain: "https://www.example.com",
+          },
+        ]);
+      });
     });
 
     it.skip("Can go through the edit flow", () => {
