@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseConfig, create_model
-from sqlalchemy import Column, ForeignKey, String, text
+from sqlalchemy import Column, ForeignKey, String, or_, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Session, relationship
@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, relationship
 from fides.api.db.base_class import Base
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.policy import ActionType
 
 
 class AccessManualWebhook(Base):
@@ -103,15 +104,25 @@ class AccessManualWebhook(Base):
         }
 
     @classmethod
-    def get_enabled(cls, db: Session) -> List["AccessManualWebhook"]:
+    def get_enabled(
+        cls, db: Session, action_type: Optional[ActionType] = None
+    ) -> List["AccessManualWebhook"]:
         """Get all enabled access manual webhooks with fields"""
-        return (
-            db.query(cls)
-            .filter(
-                AccessManualWebhook.connection_config_id == ConnectionConfig.id,
-                ConnectionConfig.disabled.is_(False),
-                AccessManualWebhook.fields != text("'null'"),
-                AccessManualWebhook.fields != "[]",
-            )
-            .all()
+
+        query = db.query(cls).filter(
+            AccessManualWebhook.connection_config_id == ConnectionConfig.id,
+            ConnectionConfig.disabled.is_(False),
+            AccessManualWebhook.fields != text("'null'"),
+            AccessManualWebhook.fields != "[]",
         )
+
+        # Add action_type filter only if action_type is provided
+        if action_type is not None:
+            query = query.filter(
+                or_(
+                    ConnectionConfig.enabled_actions.contains(action_type),
+                    ConnectionConfig.enabled_actions.is_(None),
+                )
+            )
+
+        return query.all()

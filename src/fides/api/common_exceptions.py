@@ -135,6 +135,10 @@ class CollectionDisabled(BaseException):
     """Collection is attached to disabled ConnectionConfig"""
 
 
+class ActionDisabled(BaseException):
+    """Collection is attached to a ConnectionConfig that has not enabled the given action"""
+
+
 class NotSupportedForCollection(BaseException):
     """The given action is not supported for this type of collection"""
 
