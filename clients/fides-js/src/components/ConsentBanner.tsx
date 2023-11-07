@@ -22,6 +22,7 @@ interface BannerProps {
   children?: ComponentChildren;
   onVendorPageClick?: () => void;
   renderButtonGroup: (props: ButtonGroupProps) => VNode;
+  isTCF: boolean;
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
@@ -32,6 +33,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   children,
   onVendorPageClick,
   renderButtonGroup,
+  isTCF,
 }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -62,7 +64,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
       className={`fides-banner 
         fides-banner-bottom 
         ${bannerIsOpen ? "" : "fides-banner-hidden"} 
-        ${window.Fides.options.tcfEnabled ? "fides-tcf-banner-container" : ""}`}
+        ${isTCF ? "fides-tcf-banner-container" : ""}`}
     >
       <div id="fides-banner">
         <div id="fides-banner-inner">

@@ -352,6 +352,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         };
         return (
           <ConsentBanner
+            isTCF
             bannerIsOpen={isOpen}
             onOpen={dispatchOpenBannerEvent}
             onClose={onClose}
