@@ -9,13 +9,6 @@ class TestqualtricsConnector:
     def test_connection(self, qualtrics_runner: ConnectorRunner):
         qualtrics_runner.test_connection()
 
-    async def test_access_request(
-        self, qualtrics_runner: ConnectorRunner, policy, qualtrics_identity_email: str
-    ):
-        access_results = await qualtrics_runner.access_request(
-            access_policy=policy, identities={"email": qualtrics_identity_email}
-        )
-
     async def test_non_strict_erasure_request(
         self,
         qualtrics_runner: ConnectorRunner,

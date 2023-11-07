@@ -3,6 +3,7 @@ saas_config:
   name: Qualtrics
   type: qualtrics
   description: A sample schema representing the Qualtrics connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/qualtrics
   version: 0.1.0
 
   connector_params:
