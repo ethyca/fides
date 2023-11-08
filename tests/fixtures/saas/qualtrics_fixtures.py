@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generator
+from typing import Any, Dict
 
 import pydash
 import pytest
@@ -16,7 +16,6 @@ secrets = get_secrets("qualtrics")
 def qualtrics_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "qualtrics.domain") or secrets["domain"],
-        # add the rest of your secrets here
         "api_key": pydash.get(saas_config, "qualtrics.api_key") or secrets["api_key"],
         "identity_email": pydash.get(saas_config, "qualtrics.identity_email")
         or secrets["identity_email"],
@@ -33,24 +32,6 @@ def qualtrics_identity_email(saas_config) -> str:
 @pytest.fixture
 def qualtrics_erasure_identity_email() -> str:
     return generate_random_email()
-
-
-@pytest.fixture
-def qualtrics_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def qualtrics_erasure_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def qualtrics_erasure_data(
-    qualtrics_erasure_identity_email: str,
-) -> Generator:
-    # create the data needed for erasure tests here
-    yield {}
 
 
 @pytest.fixture

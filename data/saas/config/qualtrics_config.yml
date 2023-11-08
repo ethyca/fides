@@ -9,7 +9,7 @@ saas_config:
   connector_params:
     - name: domain
       label: Domain
-      description: The domain part of the URL for your Typeform instance. For example, when logged into our Ethyca account our URL looks like this https://ethycadev.qualtrics.com/homepage/ui and for us we would enter ethycadev.qualtrics.com.
+      description: The domain part of the URL for your Qualtrics instance. For example, when logged into our Ethyca account our URL looks like this https://ethycadev.qualtrics.com/homepage/ui and for us we would enter ethycadev.qualtrics.com.
     - name: api_key
       label: API key
       sensitive: true

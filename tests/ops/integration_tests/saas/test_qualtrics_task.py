@@ -5,7 +5,7 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
 @pytest.mark.integration_saas
-class TestqualtricsConnector:
+class TestQualtricsConnector:
     def test_connection(self, qualtrics_runner: ConnectorRunner):
         qualtrics_runner.test_connection()
 
