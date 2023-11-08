@@ -4,10 +4,13 @@ from fideslang.models import Dataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import ActionType
 from fides.api.models.datasetconfig import convert_dataset_to_graph
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.task import graph_task
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from tests.ops.integration_tests.saas.connector_runner import dataset_config
+from tests.ops.service.privacy_request.test_request_runner_service import (
+    get_privacy_request_results,
+)
 
 
 class TestEnabledActions:
@@ -112,3 +115,90 @@ class TestEnabledActions:
         assert {key.split(":")[0] for key in erasure_results} == {
             mongo_dataset,
         }
+
+    @pytest.mark.asyncio
+    async def test_access_disabled_for_manual_webhook_integrations(
+        self,
+        db,
+        policy,
+        integration_postgres_config,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        run_privacy_request_task,
+    ) -> None:
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": "customer-1@example.com"},
+            },
+        )
+        db.refresh(pr)
+
+        # verify the request is paused if the manual webhook has the access action enabled
+        assert pr.status == PrivacyRequestStatus.requires_input
+
+        integration_manual_webhook_config.enabled_actions = [ActionType.erasure]
+        integration_manual_webhook_config.save(db)
+
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": "customer-1@example.com"},
+            },
+        )
+        db.refresh(pr)
+
+        # verify the request completes if the manual webhook has the access action disabled
+        assert pr.status == PrivacyRequestStatus.complete
+
+    @pytest.mark.asyncio
+    async def test_erasure_disabled_for_manual_webhook_integrations(
+        self,
+        db,
+        policy,
+        erasure_policy,
+        integration_postgres_config,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+        run_privacy_request_task,
+    ) -> None:
+        pr = get_privacy_request_results(
+            db,
+            erasure_policy,
+            run_privacy_request_task,
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": "customer-1@example.com"},
+            },
+        )
+        db.refresh(pr)
+
+        # verify the request is paused if the manual webhook has the erasure action enabled
+        assert pr.status == PrivacyRequestStatus.requires_input
+
+        integration_manual_webhook_config.enabled_actions = [ActionType.access]
+        integration_manual_webhook_config.save(db)
+
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": "customer-1@example.com"},
+            },
+        )
+        db.refresh(pr)
+
+        # verify the request completes if the manual webhook has the erasure action disabled
+        assert pr.status == PrivacyRequestStatus.complete
