@@ -10,7 +10,7 @@ saas_config:
     - name: compliance_access_token
       sensitive: True
       description: The Data Compliance API value. This value can be seen by going to the Settings --> Integrations within the Admin GUI (https://developers.ada.cx/reference/authentication)
-      label: Data Compliance API
+      label: Data Compliance API access token
     - name: domain
       description: The Domain used for your Ada Chatbot instance. For example, when looking at our instance settings the URL for our instance shows https://demo-sandbox-ethyca.ada.support/ so we would use demo-sandbox-ethyca.ada.support
       label: Domain
