@@ -38,6 +38,7 @@ The types of changes are:
 - Fix button arrangment and spacing for TCF and non-TCF consent overlay banner and modal [#4391](https://github.com/ethyca/fides/pull/4391)
 - Replaced h1 element with div to use exisitng fides styles in consent modal [#4399](https://github.com/ethyca/fides/pull/4399)
 - Fixed privacy policy alignment for non-TCF consent overlay banner and modal [#4403](https://github.com/ethyca/fides/pull/4403)
+- Fix dynamic class name for TCF-variant of consent banner [#4404](https://github.com/ethyca/fides/pull/4403)
 
 ### Security
 -- Fix an HTML Injection vulnerability in DSR Packages
