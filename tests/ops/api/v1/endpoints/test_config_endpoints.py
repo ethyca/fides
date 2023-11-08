@@ -936,11 +936,12 @@ class TestGetConnections:
         assert resp.status_code == 200
 
         config = resp.json()
-        assert "database" in config
-        assert "password" not in config["database"]
-        assert "redis" in config
-        assert "password" not in config["redis"]
+
         assert "security" in config
+        assert "user" in config
+        assert "logging" in config
+        assert "notifications" in config
+
         security_keys = set(config["security"].keys())
         assert (
             len(
@@ -957,3 +958,81 @@ class TestGetConnections:
             )
             == 0
         )
+
+        user_keys = set(config["user"].keys())
+        assert (
+            len(
+                user_keys.difference(
+                    set(
+                        [
+                            "analytics_opt_out",
+                        ]
+                    )
+                )
+            )
+            == 0
+        )
+
+        logging_keys = set(config["logging"].keys())
+        assert (
+            len(
+                logging_keys.difference(
+                    set(
+                        [
+                            "level",
+                        ]
+                    )
+                )
+            )
+            == 0
+        )
+
+        notifications_keys = set(config["notifications"].keys())
+        assert (
+            len(
+                notifications_keys.difference(
+                    set(
+                        [
+                            "send_request_completion_notification",
+                            "send_request_receipt_notification",
+                            "send_request_review_notification",
+                            "notification_service_type",
+                        ]
+                    )
+                )
+            )
+            == 0
+        )
+
+        execution_keys = set(config["execution"].keys())
+        assert (
+            len(
+                execution_keys.difference(
+                    set(
+                        [
+                            "task_retry_count",
+                            "task_retry_delay",
+                            "task_retry_backoff",
+                            "require_manual_request_approval",
+                            "subject_identity_verification_required",
+                        ]
+                    )
+                )
+            )
+            == 0
+        )
+
+        if "storage" in config:  # storage not necessarily in config in test runtime
+            storage_keys = set(config["storage"].keys())
+            assert (
+                len(
+                    storage_keys.difference(
+                        set(
+                            [
+                                "active_default_storage_type",
+                            ]
+                        )
+                    )
+                )
+                == 0
+            )

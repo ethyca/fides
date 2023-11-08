@@ -52,7 +52,7 @@ import { shopify } from "./integrations/shopify";
 
 import {
   FidesConfig,
-  FidesOptionOverrides,
+  FidesOverrides,
   OverrideOptions,
   PrivacyExperience,
   UserConsentPreference,
@@ -62,7 +62,7 @@ import { generateFidesString, initializeCmpApi } from "./lib/tcf";
 import {
   getInitialCookie,
   getInitialFides,
-  getOverrideFidesOptions,
+  getOverrides,
   initialize,
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
@@ -202,13 +202,14 @@ const updateCookieAndExperience = async ({
 };
 
 /**
- * If a fidesString is explicitly passed in, we override the associated cookie props, which are then
- * used to override associated props in the experience.
+ * If a fidesString is provided either explicitly or retrieved with a custom get preferences fn,
+ * we override the associated cookie props, which are then used to override associated props in the experience.
  */
 const updateFidesCookieFromString = (
   cookie: FidesCookie,
   fidesString: string,
-  debug: boolean
+  debug: boolean,
+  fidesStringVersionHash: string | undefined
 ): { cookie: FidesCookie; success: boolean } => {
   debugLog(
     debug,
@@ -217,7 +218,12 @@ const updateFidesCookieFromString = (
   try {
     const cookieKeys = transformFidesStringToCookieKeys(fidesString, debug);
     return {
-      cookie: { ...cookie, tcf_consent: cookieKeys, fides_string: fidesString },
+      cookie: {
+        ...cookie,
+        tcf_consent: cookieKeys,
+        fides_string: fidesString,
+        tcf_version_hash: fidesStringVersionHash ?? cookie.tcf_version_hash,
+      },
       success: true,
     };
   } catch (error) {
@@ -233,17 +239,20 @@ const updateFidesCookieFromString = (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const overrideOptions: Partial<FidesOptionOverrides> =
-    getOverrideFidesOptions();
+  const overrides: Partial<FidesOverrides> = await getOverrides(config);
   // eslint-disable-next-line no-param-reassign
-  config.options = { ...config.options, ...overrideOptions };
-  const cookie = getInitialCookie(config);
+  config.options = { ...config.options, ...overrides.overrideOptions };
+  const cookie = {
+    ...getInitialCookie(config),
+    ...overrides.overrideConsentPrefs?.consent,
+  };
   let hasValidFidesStringOverride = !!config.options.fidesString;
   if (config.options.fidesString) {
     const { cookie: updatedCookie, success } = updateFidesCookieFromString(
       cookie,
       config.options.fidesString,
-      config.options.debug
+      config.options.debug,
+      overrides.overrideConsentPrefs?.version_hash
     );
     if (success) {
       Object.assign(cookie, updatedCookie);
@@ -309,6 +318,7 @@ _Fides = {
     tcfEnabled: true,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
+    fidesDisableBanner: false,
     fidesString: null,
     apiOptions: null,
   },

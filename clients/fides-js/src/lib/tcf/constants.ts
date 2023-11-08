@@ -1,5 +1,10 @@
 import { TCModel } from "@iabtechlabtcf/core";
-import { EnabledIds, TcfExperienceRecords, TcfModelType } from "./types";
+import {
+  EnabledIds,
+  LegalBasisEnum,
+  TcfExperienceRecords,
+  TcfModelType,
+} from "./types";
 
 /**
  * We store all of our preference strings (TC, AC, etc.) together as one string so that
@@ -60,3 +65,8 @@ export const EXPERIENCE_KEYS_WITH_PREFERENCES = TCF_KEY_MAP.filter(
   ({ experienceKey }) =>
     experienceKey !== "tcf_features" && experienceKey !== "tcf_special_purposes"
 ).map((key) => key.experienceKey);
+
+export const LEGAL_BASIS_OPTIONS = [
+  { label: "Consent", value: LegalBasisEnum.CONSENT },
+  { label: "Legitimate interest", value: LegalBasisEnum.LEGITIMATE_INTERESTS },
+];

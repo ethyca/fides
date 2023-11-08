@@ -38,32 +38,13 @@ def get_dev_mode() -> bool:
 
 
 CONFIG_KEY_ALLOWLIST = {
-    "cli": ["server_host", "server_port"],
     "user": ["analytics_opt_out"],
     "logging": ["level"],
-    "database": [
-        "server",
-        "user",
-        "port",
-        "db",
-        "api_engine_pool_size",
-        "api_engine_max_overflow",
-        "task_engine_pool_size",
-        "task_engine_max_overflow",
-    ],
     "notifications": [
         "send_request_completion_notification",
         "send_request_receipt_notification",
         "send_request_review_notification",
         "notification_service_type",
-    ],
-    "redis": [
-        "host",
-        "port",
-        "charset",
-        "decode_responses",
-        "default_ttl_seconds",
-        "db_index",
     ],
     "security": [
         "cors_origins",

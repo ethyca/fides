@@ -15,7 +15,15 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.23.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.23.3...main)
+
+### Added
+- Adds fides_disable_banner config option to Fides.js [#4378](https://github.com/ethyca/fides/pull/4378)
+- Added support for a custom get preferences API call provided through Fides.init [#4375](https://github.com/ethyca/fides/pull/4375)
+- Hidden custom privacy request fields in the Privacy Center [#4370](https://github.com/ethyca/fides/pull/4370)
+- Backend System-level Cookie Support [#4383](https://github.com/ethyca/fides/pull/4383)
+- High Level Tracking of Compass System Sync [#4397](https://github.com/ethyca/fides/pull/4397)
+- Erasure support for Qualtrics [#4371](https://github.com/ethyca/fides/pull/4371)
 
 ## Added
 
@@ -24,14 +32,33 @@ The types of changes are:
 ### Changed
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
 - Determine if the TCF overlay needs to surface based on backend calculated version hash [#4356](https://github.com/ethyca/fides/pull/4356)
+- Moved Experiences and Preferences endpoints to Plus to take advantage of dynamic GVL  [#4367](https://github.com/ethyca/fides/pull/4367)
+- Add legal bases to Special Purpose schemas on the backend for display [#4387](https://github.com/ethyca/fides/pull/4387)
 - "is_service_specific" default updated when building TC strings on the backend [#4377](https://github.com/ethyca/fides/pull/4377)
+- Redact cli, database, and redis configuration information from GET api/v1/config API request responses. [#4379](https://github.com/ethyca/fides/pull/4379)
 
+## [2.23.3](https://github.com/ethyca/fides/compare/2.23.2...2.23.3)
+
+### Fixed
+- Fix button arrangment and spacing for TCF and non-TCF consent overlay banner and modal [#4391](https://github.com/ethyca/fides/pull/4391)
+- Replaced h1 element with div to use exisitng fides styles in consent modal [#4399](https://github.com/ethyca/fides/pull/4399)
+- Fixed privacy policy alignment for non-TCF consent overlay banner and modal [#4403](https://github.com/ethyca/fides/pull/4403)
+- Fix dynamic class name for TCF-variant of consent banner [#4404](https://github.com/ethyca/fides/pull/4403)
+
+### Security
+-- Fix an HTML Injection vulnerability in DSR Packages
+
+## [2.23.2](https://github.com/ethyca/fides/compare/2.23.1...2.23.2)
+
+### Fixed
+- Fixed fides.css to vary banner width based on tcf [[#4381](https://github.com/ethyca/fides/issues/4381)]
 
 ## [2.23.1](https://github.com/ethyca/fides/compare/2.23.0...2.23.1)
 
 ### Changed
 - Refactor Fides.js embedded modal to not use A11y dialog [#4355](https://github.com/ethyca/fides/pull/4355)
 - Only call `FidesUpdated` when a preference has been saved, not during initialization [#4365](https://github.com/ethyca/fides/pull/4365)
+- Updated double toggle styling in favor of single toggles with a radio group to select legal basis [#4376](https://github.com/ethyca/fides/pull/4376)
 
 ### Fixed
 

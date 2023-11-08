@@ -35,7 +35,7 @@ const Toggle = ({
       />
       {/* Mark as `hidden` so it will fall back to a regular checkbox if CSS is not available */}
       <span className="fides-toggle-display" hidden>
-        {checked ? "Opt-in" : "Opt-out"}
+        {checked ? "On" : "Off"}
       </span>
     </label>
   );

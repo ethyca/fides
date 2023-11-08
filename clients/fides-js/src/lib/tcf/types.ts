@@ -88,6 +88,7 @@ export type TCFSpecialPurposeRecord = {
   outdated_served?: boolean;
   vendors?: Array<EmbeddedVendor>;
   systems?: Array<EmbeddedVendor>;
+  legal_bases?: Array<string>;
 };
 
 export type TCFSpecialPurposeSave = {
@@ -261,6 +262,7 @@ export type VendorRecord = TCFVendorConsentRecord &
     isFidesSystem: boolean;
     isConsent: boolean;
     isLegint: boolean;
+    isGvl: boolean;
   };
 
 export interface PurposeRecord extends TCFPurposeConsentRecord {
