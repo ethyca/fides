@@ -10,6 +10,7 @@ interface TcfConsentButtonProps {
   onSave: (keys: EnabledIds) => void;
   firstButton?: VNode;
   isMobile: boolean;
+  includePrivacyPolicy?: boolean;
 }
 
 const getAllIds = (modelList: TcfModels) => {
@@ -25,6 +26,7 @@ export const TcfConsentButtons = ({
   onSave,
   firstButton,
   isMobile,
+  includePrivacyPolicy,
 }: TcfConsentButtonProps) => {
   if (!experience.experience_config) {
     return null;
@@ -69,6 +71,7 @@ export const TcfConsentButtons = ({
       onRejectAll={handleRejectAll}
       firstButton={firstButton}
       isMobile={isMobile}
+      includePrivacyPolicy={includePrivacyPolicy}
     />
   );
 };

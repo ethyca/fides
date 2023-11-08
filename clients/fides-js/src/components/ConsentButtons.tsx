@@ -16,6 +16,7 @@ export const ConsentButtons = ({
   onAcceptAll,
   onRejectAll,
   isMobile,
+  includePrivacyPolicy,
 }: {
   experienceConfig: ExperienceConfig;
   onManagePreferencesClick?: () => void;
@@ -23,6 +24,7 @@ export const ConsentButtons = ({
   onAcceptAll: () => void;
   onRejectAll: () => void;
   isMobile: boolean;
+  includePrivacyPolicy?: boolean;
 }) => (
   <div id="fides-button-group">
     {onManagePreferencesClick ? (
@@ -34,7 +36,9 @@ export const ConsentButtons = ({
         />
       </div>
     ) : null}
-    <PrivacyPolicyLink experience={experienceConfig} />
+    {includePrivacyPolicy ? (
+      <PrivacyPolicyLink experience={experienceConfig} />
+    ) : null}
     <div
       className={
         firstButton ? "fides-modal-button-group" : "fides-banner-button-group"
@@ -129,6 +133,7 @@ export const NoticeConsentButtons = ({
         ) : undefined
       }
       isMobile={isMobile}
+      includePrivacyPolicy={!isInModal}
     />
   );
 };
