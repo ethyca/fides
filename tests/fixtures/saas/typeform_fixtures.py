@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generator
+from typing import Any, Dict
 
 import pydash
 import pytest
@@ -16,14 +16,9 @@ secrets = get_secrets("typeform")
 def typeform_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "typeform.domain") or secrets["domain"],
-        # add the rest of your secrets here
-        "email": pydash.get(saas_config, "typeform.email") or secrets["email"],
-        "identity_email": pydash.get(saas_config, "typeform.identity_email")
-        or secrets["identity_email"],
         "account_id": pydash.get(saas_config, "typeform.account_id")
         or secrets["account_id"],
         "api_key": pydash.get(saas_config, "typeform.api_key") or secrets["api_key"],
-        "delemail": pydash.get(saas_config, "typeform.delemail") or secrets["delemail"],
     }
 
 
@@ -40,36 +35,5 @@ def typeform_erasure_identity_email() -> str:
 
 
 @pytest.fixture
-def typeform_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def typeform_erasure_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def typeform_erasure_data(
-    typeform_erasure_identity_email: str,
-) -> Generator:
-    # create the data needed for erasure tests here
-    yield {}
-
-
-@pytest.fixture
-def typeform_runner(
-    db,
-    cache,
-    typeform_secrets,
-    typeform_external_references,
-    typeform_erasure_external_references,
-) -> ConnectorRunner:
-    return ConnectorRunner(
-        db,
-        cache,
-        "typeform",
-        typeform_secrets,
-        external_references=typeform_external_references,
-        erasure_external_references=typeform_erasure_external_references,
-    )
+def typeform_runner(db, cache, typeform_secrets) -> ConnectorRunner:
+    return ConnectorRunner(db, cache, "typeform", typeform_secrets)

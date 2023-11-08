@@ -24,6 +24,7 @@ The types of changes are:
 - Backend System-level Cookie Support [#4383](https://github.com/ethyca/fides/pull/4383)
 - High Level Tracking of Compass System Sync [#4397](https://github.com/ethyca/fides/pull/4397)
 - Erasure support for Qualtrics [#4371](https://github.com/ethyca/fides/pull/4371)
+- Erasure support for Typeform [#4366](https://github.com/ethyca/fides/pull/4366)
 
 ### Changed
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
@@ -78,7 +79,6 @@ The types of changes are:
 - Access and erasure support for Iterate [#4332](https://github.com/ethyca/fides/pull/4332)
 - SSH Support for MySQL connections [#4310](https://github.com/ethyca/fides/pull/4310)
 - Added served notice history IDs to the TCF privacy preference API calls [#4161](https://github.com/ethyca/fides/pull/4161)
-- Added Erasure Connector for Typeform [#4366](https://github.com/ethyca/fides/pull/4366)
 
 ### Fixed
 

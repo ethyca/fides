@@ -14,11 +14,7 @@ db_index = 0
 
 [security]
 env = "prod"
-cors_origins = [
-    "http://localhost:8080",
-    "http://localhost:3001",
-    "http://localhost:3000",
-]
+cors_origins = [ "http://localhost:8080", "http://localhost:3001", "http://localhost:3000" ]
 app_encryption_key = "examplevalidprojectencryptionkey"
 oauth_root_client_id = "fidesadmin"
 oauth_root_client_secret = "fidesadminsecret"
@@ -33,7 +29,7 @@ server_host = "fides"
 server_port = 8080
 
 [credentials]
-app_postgres = { connection_string = "postgresql+psycopg2://postgres:postgres@fides-db:5432/fides" }
+app_postgres = {connection_string="postgresql+psycopg2://postgres:postgres@fides-db:5432/fides"}
 
 [user]
 analytics_opt_out = false

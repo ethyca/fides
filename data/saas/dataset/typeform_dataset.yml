@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: typeform
-    description: A sample dataset representing the typeform connector for Fides
+    name: Typeform Dataset
+    description: A sample dataset representing the Typeform connector for Fides
     collections:
       - name: user
         fields: []
