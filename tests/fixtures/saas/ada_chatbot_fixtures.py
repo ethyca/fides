@@ -16,13 +16,10 @@ secrets = get_secrets("ada_chatbot")
 def ada_chatbot_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "ada_chatbot.domain") or secrets["domain"],
-        # add the rest of your secrets here
         "compliance_access_token": pydash.get(
             saas_config, "ada_chatbot.compliance_access_token"
         )
         or secrets["compliance_access_token"],
-        "identity_email": pydash.get(saas_config, "ada_chatbot.identity_email")
-        or secrets["identity_email"],
     }
 
 
@@ -40,36 +37,5 @@ def ada_chatbot_erasure_identity_email() -> str:
 
 
 @pytest.fixture
-def ada_chatbot_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def ada_chatbot_erasure_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def ada_chatbot_erasure_data(
-    ada_chatbot_erasure_identity_email: str,
-) -> Generator:
-    # create the data needed for erasure tests here
-    yield {}
-
-
-@pytest.fixture
-def ada_chatbot_runner(
-    db,
-    cache,
-    ada_chatbot_secrets,
-    ada_chatbot_external_references,
-    ada_chatbot_erasure_external_references,
-) -> ConnectorRunner:
-    return ConnectorRunner(
-        db,
-        cache,
-        "ada_chatbot",
-        ada_chatbot_secrets,
-        external_references=ada_chatbot_external_references,
-        erasure_external_references=ada_chatbot_erasure_external_references,
-    )
+def ada_chatbot_runner(db, cache, ada_chatbot_secrets) -> ConnectorRunner:
+    return ConnectorRunner(db, cache, "ada_chatbot", ada_chatbot_secrets)

@@ -15,7 +15,6 @@ class TestAda_chatbotConnector:
         policy: Policy,
         erasure_policy_string_rewrite: Policy,
         ada_chatbot_erasure_identity_email: str,
-        ada_chatbot_erasure_data,
     ):
         (
             access_results,
