@@ -53,18 +53,20 @@
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
-  --fides-overlay-font-size-body-small: 0.875em;
-  --fides-overlay-font-size-body: 0.95em;
-  --fides-overlay-font-size-title: 1em;
-  --fides-overlay-font-size-buttons: 1.05em;
-  --fides-overlay-padding: 1.5em;
+  --12px: 0.75rem;
+  --14px: 0.875rem;
+  --15px: 0.9375rem;
+  --16px: 1rem;
+  --fides-overlay-font-size-body-small: var(--12px);
+  --fides-overlay-font-size-body: var(--14px);
+  --fides-overlay-font-size-title: var(--16px);
+  --fides-overlay-font-size-buttons: var(--14px);
+  --fides-overlay-padding: 24px;
   --fides-overlay-button-border-radius: 6px;
-  --fides-overlay-button-padding: 0.5em 1em;
+  --fides-overlay-button-padding: 8px 16px;
   --fides-overlay-container-border-radius: 12px;
   --fides-overlay-component-border-radius: 4px;
   --fides-overlay-banner-offset: 48px;
-  --fides-banner-font-size-title: 1em;
-  --fides-banner-button-font-size: 1em;
 }
 
 div#fides-overlay {
@@ -100,11 +102,11 @@ div#fides-banner-container {
 }
 
 div#fides-banner {
-  font-size: var(--fides-overlay-font-size-body-small);
+  font-size: var(--fides-overlay-font-size-body);
   background: var(--fides-overlay-background-color);
   color: var(--fides-overlay-body-font-color);
   box-sizing: border-box;
-  padding: 24px 40px 40px 40px;
+  padding: 24px;
   overflow-y: hidden;
 
   display: flex;
@@ -168,21 +170,21 @@ div#fides-tcf-banner-inner {
   grid-row: 1 / 3;
   height: 0;
   min-height: 100%;
-  margin-top: 3em;
+  margin-top: 40px;
   overflow-y: auto;
   scrollbar-gutter: stable;
 }
 
 div#fides-banner-heading {
   display: flex;
-  margin-right: 0.8em;
+  margin-right: 13px;
   align-items: center;
 }
 
 div#fides-banner-title {
-  font-size: var(--fides-banner-font-size-title);
+  font-size: var(--fides-overlay-font-size-title);
   font-weight: 600;
-  margin-top: 0.2em;
+  line-height: 1.5em;
   min-width: 33%;
   flex: 1;
   color: var(--fides-overlay-title-font-color);
@@ -191,17 +193,15 @@ div#fides-banner-title {
 div#fides-banner-description {
   margin-top: 16px;
   margin-bottom: 24px;
-  line-height: 1.2em;
+  font-size: var(--fides-overlay-font-size-body);
   flex: 1;
 }
 
 div#fides-button-group {
-  margin-top: 0.5em;
+  margin-top: 8px;
   margin-bottom: var(--fides-overlay-padding);
   display: flex;
   justify-content: space-between;
-
-  padding-top: 10px;
   background-color: var(--fides-overlay-background-color);
   z-index: 5;
 }
@@ -217,13 +217,13 @@ div.fides-banner-acknowledge .fides-banner-button {
 }
 
 button.fides-banner-button {
-  font-size: var(--fides-banner-button-font-size);
+  font-size: var(--fides-overlay-font-size-buttons);
   display: inline-block;
   flex: auto;
   cursor: pointer;
   text-align: center;
   margin: 0;
-  margin-top: 0.25em;
+  margin-top: 4px;
   padding: var(--fides-overlay-button-padding);
   background: var(--fides-overlay-primary-button-background-color);
   color: var(--fides-overlay-primary-button-text-color);
@@ -231,7 +231,6 @@ button.fides-banner-button {
   border-radius: var(--fides-overlay-button-border-radius);
 
   font-family: var(--fides-overlay-font-family);
-  line-height: 1.15;
   text-decoration: none;
   font-weight: 600;
 }
@@ -269,7 +268,7 @@ button.fides-banner-button.fides-banner-button-tertiary {
   cursor: pointer;
   font-weight: 500;
   font-size: var(--fides-overlay-font-size-body);
-  line-height: 20px;
+  line-height: 1.25em;
 }
 
 /** Modal */
@@ -315,7 +314,7 @@ div#fides-embed-container div#fides-consent-content .fides-modal-footer {
 }
 
 div#fides-embed-container .fides-modal-body {
-  padding-top: 1em;
+  padding-top: 16px;
 }
 
 div#fides-embed-container div#fides-consent-content {
@@ -363,8 +362,7 @@ div#fides-consent-content {
 
 div#fides-consent-content .fides-modal-title {
   text-align: center;
-  margin-top: 0.2em;
-  margin-bottom: 0.2em;
+  margin: 0;
   font-weight: 600;
   font-size: var(--fides-overlay-font-size-title);
   color: var(--fides-overlay-title-font-color);
@@ -389,20 +387,28 @@ div#fides-consent-content .fides-modal-body {
 }
 
 div#fides-consent-content .fides-modal-description {
-  margin: 1em 0 1em 0;
+  margin: 8px 0 24px 0;
 }
 
 .fides-banner-button-group {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .fides-modal-button-group {
   display: flex;
   width: 100%;
   flex-direction: row;
-  gap: 10px;
+  gap: 12px;
   margin-inline: var(--fides-overlay-padding);
+}
+
+.fides-tcf-banner-container
+  div#fides-banner
+  div#fides-banner-inner
+  div#fides-button-group
+  .fides-banner-button-group {
+  padding-left: 24px;
 }
 
 /* Responsive overlay */
@@ -418,15 +424,15 @@ div#fides-consent-content .fides-modal-description {
 
   button.fides-banner-button {
     margin: 0;
-    margin-right: 0.5em;
-    margin-bottom: 0.75em;
+    margin-right: 8px;
+    margin-bottom: 12px;
   }
 }
 
 div#fides-banner .fides-close-button {
   position: absolute;
-  top: 0.5em;
-  right: 0.2em;
+  top: 8px;
+  right: 3px;
   cursor: pointer;
   background: none;
   border: none;
@@ -446,7 +452,7 @@ div#fides-banner .fides-close-button {
 }
 
 .fides-modal-notices {
-  margin-bottom: 1em;
+  margin-bottom: 16px;
 }
 
 div#fides-banner-inner .fides-privacy-policy {
@@ -625,7 +631,7 @@ div#fides-banner-inner .fides-privacy-policy {
 
 .fides-notice-toggle p {
   margin: 0;
-  margin-bottom: 1.1em;
+  margin-bottom: 18px;
 }
 
 .fides-notice-toggle p:last-child {
@@ -658,8 +664,8 @@ div#fides-banner-inner .fides-privacy-policy {
   border: 1px solid var(--fides-overlay-primary-color);
   border-radius: var(--fides-overlay-component-border-radius);
   display: flex;
-  padding: 1.1em;
-  margin-bottom: 1em;
+  padding: 18px;
+  margin-bottom: 16px;
 }
 
 .fides-gpc-banner p {
@@ -668,7 +674,7 @@ div#fides-banner-inner .fides-privacy-policy {
 
 .fides-gpc-warning {
   color: var(--fides-overlay-primary-color);
-  margin-right: 0.5em;
+  margin-right: 8px;
 }
 
 .fides-gpc-header {
@@ -677,7 +683,7 @@ div#fides-banner-inner .fides-privacy-policy {
 
 .fides-gpc-label {
   font-weight: 600;
-  font-size: 0.9em;
+  font-size: var(--fides-overlay-font-size-body);
   text-wrap: nowrap;
 }
 
@@ -717,7 +723,7 @@ div#fides-banner-inner .fides-privacy-policy {
   border-bottom: 1px solid var(--fides-overlay-row-divider-color);
   color: var(--fides-overlay-body-font-color);
   font-weight: 500;
-  padding: 0.6em 1.2em;
+  padding: 10px 20px;
   cursor: pointer;
   width: 100%;
 }
@@ -750,7 +756,7 @@ div#fides-banner-inner .fides-privacy-policy {
   border-radius: var(--fides-overlay-badge-border-radius);
   background: var(--fides-overlay-badge-background-color);
   color: white;
-  font-size: 0.7em;
+  font-size: var(--fides-overlay-font-size-body-small);
 }
 .fides-background-dark {
   background-color: var(--fides-overlay-background-dark-color);
@@ -771,7 +777,7 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-radio-button {
   background-color: transparent;
   border: none;
-  padding: 0.3em 1em;
+  padding: 5px 16px;
   cursor: pointer;
   flex: 1;
 }
@@ -788,7 +794,7 @@ div#fides-banner-inner .fides-privacy-policy {
 }
 
 .fides-margin-right {
-  margin-right: 0.2em;
+  margin-right: 3px;
 }
 
 .fides-justify-space-between {
@@ -798,7 +804,7 @@ div#fides-banner-inner .fides-privacy-policy {
 /* TCF toggles */
 .fides-tcf-toggle-content {
   margin-right: 60px;
-  font-size: 0.9em;
+  font-size: var(--fides-overlay-font-size-body-small);
   font-weight: 400;
 }
 
@@ -809,14 +815,14 @@ div#fides-banner-inner .fides-privacy-policy {
 }
 
 .fides-tcf-illustration {
-  font-size: 0.9em;
-  padding: 0.8em;
+  font-size: var(--fides-overlay-font-size-body-small);
+  padding: 13px;
   padding-right: 60px;
   border-radius: var(--fides-overlay-component-border-radius);
 }
 
 .fides-tcf-purpose-vendor {
-  padding: 0.8em;
+  padding: 13px;
   border-radius: var(--fides-overlay-component-border-radius);
 }
 
@@ -840,7 +846,7 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-vendor-details-table th,
 .fides-vendor-details-table td {
   text-align: left;
-  font-size: 0.9em;
+  font-size: var(--fides-overlay-font-size-body-small);
 }
 
 .fides-vendor-details-table td {
@@ -865,34 +871,35 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-external-link {
   color: var(--fides-overlay-primary-color);
   font-weight: 500;
-  font-size: 0.9em;
-  margin-right: 1em;
+  font-size: var(--fides-overlay-font-size-body-small);
+  margin-right: 16px;
 }
 
 /* Vendor info (initial layer) */
 .fides-vendor-info {
   display: flex;
   flex-direction: row;
-  padding: 1.1em;
+  padding: 16px 12px;
   border-radius: var(--fides-overlay-component-border-radius);
   justify-content: space-around;
   position: sticky;
   top: 0;
   gap: 30px;
+  margin-bottom: 16px;
 }
 
 .fides-vendor-info-label {
   font-weight: 600;
-  font-size: 1em;
+  font-size: var(--fides-overlay-font-size-body-small);
   margin-right: 4px;
 }
 
 /* Info box */
 .fides-info-box {
-  background-color: var(--fides-overlay-background-dark-color);
+  background-color: var(--fides-overlay-hover-color);
   border-radius: var(--fides-overlay-component-border-radius);
-  padding: 1.1em;
-  margin: 1em 0;
+  padding: 16px;
+  margin: 10px 0;
 }
 
 .fides-info-box p {
@@ -908,7 +915,7 @@ div#fides-banner-inner .fides-privacy-policy {
 }
 
 /* Responsive banner */
-@media screen and (min-width: 48em) {
+@media screen and (min-width: 768px) {
   div#fides-banner {
     width: 75%;
     border-radius: var(--fides-overlay-component-border-radius);
@@ -920,14 +927,14 @@ div#fides-banner-inner .fides-privacy-policy {
   }
 }
 
-@media only screen and (min-width: 80em) {
+@media only screen and (min-width: 1280px) {
   div#fides-banner {
     width: 60%;
     border: 1px solid var(--fides-overlay-primary-color);
   }
 }
 
-@media screen and (max-width: 48em) {
+@media screen and (max-width: 768px) {
   div#fides-banner {
     padding: 24px;
   }
@@ -971,9 +978,17 @@ div#fides-banner-inner .fides-privacy-policy {
 
   div#fides-privacy-policy-link {
     order: 1;
+    width: 100%;
   }
   .fides-modal-footer {
     width: 100%;
+  }
+  .fides-tcf-banner-container
+    div#fides-banner
+    div#fides-banner-inner
+    div#fides-button-group
+    .fides-banner-button-group {
+    padding-left: 0;
   }
 }
 /* TCF should always be full width and not floating */
@@ -984,4 +999,14 @@ div#fides-banner-inner .fides-privacy-policy {
   width: 100%;
   border-radius: 0;
   border-width: 1px 0 0 0;
+  padding: 24px 40px 40px 40px;
+}
+.fides-tcf-banner-container
+  div#fides-banner
+  div#fides-banner-inner
+  div#fides-button-group {
+  justify-content: flex-start;
+}
+.fides-tcf-banner-container #fides-privacy-policy-link {
+  margin-left: auto;
 }
