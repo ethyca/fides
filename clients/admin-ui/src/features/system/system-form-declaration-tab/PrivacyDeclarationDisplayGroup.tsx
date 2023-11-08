@@ -12,6 +12,8 @@ import {
   Stack,
   Text,
 } from "@fidesui/react";
+import { useAppSelector } from "~/app/hooks";
+import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 
 import { DataUse, PrivacyDeclarationResponse } from "~/types/api";
 
@@ -126,6 +128,8 @@ export const PrivacyDeclarationDisplayGroup = ({
     return "";
   };
 
+  const lockedForGVL = useAppSelector(selectLockedForGVL);
+
   return (
     <PrivacyDeclarationTabTable
       heading={heading}
@@ -141,18 +145,20 @@ export const PrivacyDeclarationDisplayGroup = ({
         ) : null
       }
       footerButton={
-        <Button
-          onClick={handleAdd}
-          size="xs"
-          px={2}
-          py={1}
-          backgroundColor="primary.800"
-          color="white"
-          fontWeight="600"
-          rightIcon={<AddIcon />}
-        >
-          Add data use
-        </Button>
+        !lockedForGVL ? (
+          <Button
+            onClick={handleAdd}
+            size="xs"
+            px={2}
+            py={1}
+            backgroundColor="primary.800"
+            color="white"
+            fontWeight="600"
+            rightIcon={<AddIcon />}
+          >
+            Add data use
+          </Button>
+        ) : null
       }
     >
       {declarations.map((pd) => (

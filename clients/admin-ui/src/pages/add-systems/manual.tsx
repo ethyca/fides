@@ -11,7 +11,7 @@ import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import SystemFormTabs from "~/features/system/SystemFormTabs";
-import GVLNotice from "~/pages/GVLNotice";
+import GVLNotice from "~/features/system/GVLNotice";
 import { ConnectionSystemTypeMap } from "~/types/api";
 
 const DESCRIBE_SYSTEM_COPY =

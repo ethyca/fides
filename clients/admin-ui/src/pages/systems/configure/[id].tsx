@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
+import { extractVendorSource, VendorSources } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
@@ -27,7 +28,7 @@ import {
   setLockedForGVL,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import EditSystemFlow from "~/features/system/EditSystemFlow";
-import GVLNotice from "~/pages/GVLNotice";
+import GVLNotice from "~/features/system/GVLNotice";
 
 const INTEGRATION_TAB_INDEX = 3; // this needs to be updated if the order of the tabs changes
 
@@ -57,7 +58,7 @@ const ConfigureSystem: NextPage = () => {
       const locked =
         isTCFEnabled &&
         !!system.vendor_id &&
-        system.vendor_id.split(".")[0] === "gvl";
+        extractVendorSource(system.fides_key) === VendorSources.GVL;
       dispatch(setLockedForGVL(locked));
     }
   }, [system, dispatch, isTCFEnabled]);

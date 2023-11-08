@@ -5,11 +5,13 @@ import EmptyTableState from "~/features/common/table/EmptyTableState";
 const GVLNotice = () => (
   <Box mb="6" maxW="720px">
     <EmptyTableState
-      title="This system is part of the TCF Global Vendor Listing"
+      title="This system is part of the TCF Global Vendor List (GVL)"
       description={
         <Text>
-          Some form elements below will be disabled as they cannot be edited if
-          they are populated directly from the Global Vendor List.{" "}
+          As a result, the system fields are not editable as they come directly
+          from Fides Compass and the Global Vendor List (GVL). In some cases
+          where the legal basis has been declared to be flexible, you may update
+          the legal basis for particular data uses.{" "}
           <Link
             href="https://fid.es/tcf_gvl"
             isExternal
