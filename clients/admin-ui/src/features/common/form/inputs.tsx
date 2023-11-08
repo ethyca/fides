@@ -604,7 +604,6 @@ export const CustomSelect = ({
                 isCustomOption={isCustomOption}
                 singleValueBlock={singleValueBlock}
                 menuPosition={props.menuPosition}
-                onChange={!isFormikOnChange ? onChange : undefined}
                 textColor={textColor}
               />
               <ErrorMessage
