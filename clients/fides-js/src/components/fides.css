@@ -1002,12 +1002,6 @@ div#fides-banner-inner .fides-privacy-policy {
   border-width: 1px 0 0 0;
   padding: 24px 40px 40px 40px;
 }
-.fides-tcf-banner-container
-  div#fides-banner
-  div#fides-banner-inner
-  div#fides-button-group {
-  justify-content: flex-start;
-}
 .fides-tcf-banner-container #fides-privacy-policy-link {
-  margin-left: auto;
+  margin: auto;
 }

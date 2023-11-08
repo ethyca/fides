@@ -1,4 +1,4 @@
-import { ComponentChildren, h, VNode } from "preact";
+import { h, VNode } from "preact";
 import Button from "./Button";
 import {
   ButtonType,
@@ -7,26 +7,21 @@ import {
   PrivacyNotice,
   ExperienceConfig,
 } from "../lib/consent-types";
+import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
 export const ConsentButtons = ({
   experienceConfig,
   onManagePreferencesClick,
   firstButton,
-  middleButton,
   onAcceptAll,
   onRejectAll,
-  children,
   isMobile,
 }: {
   experienceConfig: ExperienceConfig;
   onManagePreferencesClick?: () => void;
   firstButton?: VNode;
-  /** Used to add a button between the "manage preferences" button and the "accept/reject" buttons */
-  middleButton?: VNode;
   onAcceptAll: () => void;
   onRejectAll: () => void;
-  /** Added as siblings to the button group after the "accept/reject" buttons */
-  children?: ComponentChildren;
   isMobile: boolean;
 }) => (
   <div id="fides-button-group">
@@ -39,7 +34,7 @@ export const ConsentButtons = ({
         />
       </div>
     ) : null}
-    {middleButton || null}
+    <PrivacyPolicyLink experience={experienceConfig} />
     <div
       className={
         firstButton ? "fides-modal-button-group" : "fides-banner-button-group"
@@ -57,7 +52,6 @@ export const ConsentButtons = ({
         onClick={onAcceptAll}
       />
     </div>
-    {children}
   </div>
 );
 
@@ -70,8 +64,6 @@ interface NoticeConsentButtonProps {
   enabledKeys: NoticeKeys;
   isAcknowledge: boolean;
   isInModal?: boolean;
-  children?: ComponentChildren;
-  middleButton?: VNode;
   isMobile: boolean;
 }
 
@@ -82,8 +74,6 @@ export const NoticeConsentButtons = ({
   enabledKeys,
   isInModal,
   isAcknowledge,
-  children,
-  middleButton,
   isMobile,
 }: NoticeConsentButtonProps) => {
   if (!experience.experience_config || !experience.privacy_notices) {
@@ -138,10 +128,7 @@ export const NoticeConsentButtons = ({
           />
         ) : undefined
       }
-      middleButton={middleButton}
       isMobile={isMobile}
-    >
-      {children}
-    </ConsentButtons>
+    />
   );
 };

@@ -366,9 +366,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                   onSave();
                 }}
                 isMobile={isMobile}
-              >
-                <PrivacyPolicyLink experience={experienceConfig} />
-              </TcfConsentButtons>
+              />
             )}
             className="fides-tcf-banner-container"
           >

@@ -1,4 +1,4 @@
-import { ComponentChildren, VNode, h } from "preact";
+import { VNode, h } from "preact";
 
 import { PrivacyExperience } from "../../lib/consent-types";
 import { ConsentButtons } from "../ConsentButtons";
@@ -9,7 +9,6 @@ interface TcfConsentButtonProps {
   onManagePreferencesClick?: () => void;
   onSave: (keys: EnabledIds) => void;
   firstButton?: VNode;
-  children?: ComponentChildren;
   isMobile: boolean;
 }
 
@@ -25,7 +24,6 @@ export const TcfConsentButtons = ({
   onManagePreferencesClick,
   onSave,
   firstButton,
-  children,
   isMobile,
 }: TcfConsentButtonProps) => {
   if (!experience.experience_config) {
@@ -71,8 +69,6 @@ export const TcfConsentButtons = ({
       onRejectAll={handleRejectAll}
       firstButton={firstButton}
       isMobile={isMobile}
-    >
-      {children}
-    </ConsentButtons>
+    />
   );
 };
