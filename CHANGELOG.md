@@ -23,6 +23,7 @@ The types of changes are:
 - Hidden custom privacy request fields in the Privacy Center [#4370](https://github.com/ethyca/fides/pull/4370)
 - Backend System-level Cookie Support [#4383](https://github.com/ethyca/fides/pull/4383)
 - High Level Tracking of Compass System Sync [#4397](https://github.com/ethyca/fides/pull/4397)
+- Erasure support for Qualtrics [#4371](https://github.com/ethyca/fides/pull/4371)
 
 ### Changed
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
@@ -34,11 +35,13 @@ The types of changes are:
 
 ## [2.23.3](https://github.com/ethyca/fides/compare/2.23.2...2.23.3)
 
-### Fixed 
+### Fixed
 - Fix button arrangment and spacing for TCF and non-TCF consent overlay banner and modal [#4391](https://github.com/ethyca/fides/pull/4391)
 - Replaced h1 element with div to use exisitng fides styles in consent modal [#4399](https://github.com/ethyca/fides/pull/4399)
+- Fixed privacy policy alignment for non-TCF consent overlay banner and modal [#4403](https://github.com/ethyca/fides/pull/4403)
+- Fix dynamic class name for TCF-variant of consent banner [#4404](https://github.com/ethyca/fides/pull/4403)
 
-### Security 
+### Security
 -- Fix an HTML Injection vulnerability in DSR Packages
 
 ## [2.23.2](https://github.com/ethyca/fides/compare/2.23.1...2.23.2)
