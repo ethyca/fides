@@ -12,9 +12,9 @@ import {
   Stack,
   Text,
 } from "@fidesui/react";
+
 import { useAppSelector } from "~/app/hooks";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
-
 import { DataUse, PrivacyDeclarationResponse } from "~/types/api";
 
 import { SparkleIcon } from "../../common/Icon/SparkleIcon";

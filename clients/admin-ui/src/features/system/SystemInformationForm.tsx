@@ -177,16 +177,14 @@ const SystemInformationForm = ({
           `A problem occurred while fetching data uses from the GVL for your system.  Please try again.`
         );
         toast({ status: "error", description: dataUseErrorMsg });
-      } else {
-        if (
-          dataUseQueryResult.data &&
-          dataUseQueryResult.data.items.length > 0
-        ) {
-          dictionaryDeclarations = dataUseQueryResult.data.items.map((dec) => ({
-            ...transformDictDataUseToDeclaration(dec),
-            name: dec.name ?? "",
-          }));
-        }
+      } else if (
+        dataUseQueryResult.data &&
+        dataUseQueryResult.data.items.length > 0
+      ) {
+        dictionaryDeclarations = dataUseQueryResult.data.items.map((dec) => ({
+          ...transformDictDataUseToDeclaration(dec),
+          name: dec.name ?? "",
+        }));
       }
     }
 
