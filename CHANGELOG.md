@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.23.3...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.24.0...main)
+
+## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
 
 ### Added
 - Adds fides_disable_banner config option to Fides.js [#4378](https://github.com/ethyca/fides/pull/4378)
