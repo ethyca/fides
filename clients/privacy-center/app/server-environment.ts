@@ -49,6 +49,7 @@ export interface PrivacyCenterSettings {
   PRIVACY_CENTER_URL: string; // e.g. http://localhost:3000
   FIDES_EMBED: boolean | false; // (optional) Whether we should "embed" the fides.js overlay UI (ie. “Layer 2”) into a web page
   FIDES_DISABLE_SAVE_API: boolean | false; // (optional) Whether we should disable saving consent preferences to the Fides API
+  FIDES_DISABLE_BANNER: boolean | false; // (optional) Whether we should disable showing the banner
   FIDES_STRING: string | null; // (optional) An explicitly passed-in string that supersedes the cookie. Can contain both TC and AC strings
   IS_FORCED_TCF: boolean; // whether to force the privacy center to use the fides-tcf.js bundle
 }
@@ -72,6 +73,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "PRIVACY_CENTER_URL"
   | "FIDES_EMBED"
   | "FIDES_DISABLE_SAVE_API"
+  | "FIDES_DISABLE_BANNER"
   | "FIDES_STRING"
   | "IS_FORCED_TCF"
 >;
@@ -178,6 +180,32 @@ export const validateConfig = (
       };
     }
   }
+
+  const invalidFieldMessages = config.actions.flatMap((action) => {
+    const invalidFields = Object.entries(
+      action.custom_privacy_request_fields || {}
+    )
+      .filter(([, field]) => field.hidden && field.default_value === undefined)
+      .map(([key]) => `'${key}'`);
+
+    return invalidFields.length > 0
+      ? [
+          `${invalidFields.join(", ")} in the action with policy_key '${
+            action.policy_key
+          }'`,
+        ]
+      : [];
+  });
+
+  if (invalidFieldMessages.length > 0) {
+    return {
+      isValid: false,
+      message: `A default_value is required for hidden field(s) ${invalidFieldMessages.join(
+        ", "
+      )}`,
+    };
+  }
+
   return { isValid: true, message: "Config is valid" };
 };
 
@@ -298,6 +326,10 @@ export const loadPrivacyCenterEnvironment =
         .FIDES_PRIVACY_CENTER__FIDES_DISABLE_SAVE_API
         ? process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_SAVE_API === "true"
         : false,
+      FIDES_DISABLE_BANNER: process.env
+        .FIDES_PRIVACY_CENTER__FIDES_DISABLE_BANNER
+        ? process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_BANNER === "true"
+        : false,
       FIDES_STRING: process.env.FIDES_PRIVACY_CENTER__FIDES_STRING || null,
       IS_FORCED_TCF: process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF
         ? process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF === "true"
@@ -325,6 +357,7 @@ export const loadPrivacyCenterEnvironment =
       PRIVACY_CENTER_URL: settings.PRIVACY_CENTER_URL,
       FIDES_EMBED: settings.FIDES_EMBED,
       FIDES_DISABLE_SAVE_API: settings.FIDES_DISABLE_SAVE_API,
+      FIDES_DISABLE_BANNER: settings.FIDES_DISABLE_BANNER,
       FIDES_STRING: settings.FIDES_STRING,
       IS_FORCED_TCF: settings.IS_FORCED_TCF,
     };
