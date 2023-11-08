@@ -3,6 +3,7 @@ import {
   Button,
   Collapse,
   Heading,
+  Input,
   Stack,
   Text,
   useToast,
@@ -72,11 +73,6 @@ import {
   responsibilityOptions,
 } from "./SystemInformationFormSelectOptions";
 
-const ValidationSchema = Yup.object().shape({
-  name: Yup.string().required().label("System name"),
-  privacy_policy: Yup.string().min(1).url().nullable(),
-});
-
 const SystemHeading = ({ system }: { system?: SystemResponse }) => {
   const isManual = !system;
   const headingName = isManual
@@ -103,6 +99,8 @@ const SystemInformationForm = ({
   withHeader,
   children,
 }: Props) => {
+  const systems = useAppSelector(selectAllSystems);
+
   const dispatch = useAppDispatch();
   const customFields = useCustomFields({
     resourceType: ResourceTypes.SYSTEM,
@@ -125,6 +123,23 @@ const SystemInformationForm = ({
     [passedInSystem, customFields.customFieldValues]
   );
 
+  const ValidationSchema = useMemo(
+    () =>
+      Yup.object().shape({
+        name: Yup.string()
+          .required()
+          .label("System name")
+          .notOneOf(
+            systems
+              .filter((s) => s.name !== initialValues.name)
+              .map((s) => s.name),
+            "System must have a unique name"
+          ),
+        privacy_policy: Yup.string().min(1).url().nullable(),
+      }),
+    [systems, initialValues.name]
+  );
+
   const features = useFeatures();
 
   const [createSystemMutationTrigger, createSystemMutationResult] =
@@ -139,7 +154,6 @@ const SystemInformationForm = ({
   const dictionaryOptions = useAppSelector(selectAllDictEntries);
   const lockedForGVL = useAppSelector(selectLockedForGVL);
 
-  const systems = useAppSelector(selectAllSystems);
   const isEditing = useMemo(
     () =>
       Boolean(
@@ -167,14 +181,14 @@ const SystemInformationForm = ({
     formikHelpers: FormikHelpers<FormValues>
   ) => {
     let dictionaryDeclarations;
-    if (lockedForGVL && values.privacy_declarations.length === 0) {
+    if (values.vendor_id && values.privacy_declarations.length === 0) {
       const dataUseQueryResult = await getDictionaryDataUseTrigger({
         vendor_id: values.vendor_id!,
       });
       if (dataUseQueryResult.isError) {
         const dataUseErrorMsg = getErrorMessage(
           dataUseQueryResult.error,
-          `A problem occurred while fetching data uses from the GVL for your system.  Please try again.`
+          `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`
         );
         toast({ status: "error", description: dataUseErrorMsg });
       } else if (
@@ -232,12 +246,17 @@ const SystemInformationForm = ({
     handleResult(result);
   };
 
-  const handleVendorSelected = (newVendorId: string) => {
+  const handleVendorSelected = (newVendorId: string | undefined) => {
+    if (!newVendorId) {
+      dispatch(setSuggestions("hiding"));
+      dispatch(setLockedForGVL(false));
+      return;
+    }
+    dispatch(setSuggestions("showing"));
     if (
       features.tcf &&
       extractVendorSource(newVendorId) === VendorSources.GVL
     ) {
-      dispatch(setSuggestions("showing"));
       dispatch(setLockedForGVL(true));
     } else {
       dispatch(setLockedForGVL(false));
@@ -272,19 +291,22 @@ const SystemInformationForm = ({
 
             <SystemFormInputGroup heading="System details">
               {features.dictionaryService ? (
-                <VendorSelector
-                  options={dictionaryOptions}
-                  onVendorSelected={handleVendorSelected}
+                <>
+                  <VendorSelector
+                    options={dictionaryOptions}
+                    onVendorSelected={handleVendorSelected}
+                  />
+                  <Input id="vendor_id" name="vendor_id" display="none" />
+                </>
+              ) : (
+                <CustomTextInput
+                  id="name"
+                  name="name"
+                  isRequired
+                  label="System name"
+                  tooltip="Give the system a unique and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
                 />
-              ) : null}
-              <DictSuggestionTextInput
-                id="name"
-                name="name"
-                dictField={(vendor) => vendor.name ?? (vendor.legal_name || "")}
-                isRequired
-                label="System name"
-                tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-              />
+              )}
               {passedInSystem?.fides_key && (
                 <CustomTextInput
                   id="fides_key"

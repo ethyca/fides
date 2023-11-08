@@ -1,24 +1,97 @@
-import { Flex, FormControl, HStack, Text, VStack } from "@fidesui/react";
-import { Select, SingleValue } from "chakra-react-select";
+import {
+  Flex,
+  FormControl,
+  HStack,
+  IconButton,
+  Spacer,
+  Text,
+  VStack,
+} from "@fidesui/react";
+import {
+  ActionMeta,
+  chakraComponents,
+  CreatableSelect,
+  GroupBase,
+  OptionProps,
+  SingleValue,
+} from "chakra-react-select";
 import { useField, useFormikContext } from "formik";
-import { useState } from "react";
+import React, { useState } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import { ErrorMessage, Label, Option } from "~/features/common/form/inputs";
+import { CompassIcon } from "~/features/common/Icon/CompassIcon";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { DictOption } from "~/features/plus/plus.slice";
-import { DictSuggestionToggle } from "~/features/system/dictionary-form/ToggleDictSuggestions";
+import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
+import { FormValues } from "~/features/system/form";
+
+const CompassButton = ({
+  active,
+  disabled,
+  onRefreshSuggestions,
+}: {
+  active: boolean;
+  disabled: boolean;
+  onRefreshSuggestions: () => void;
+}) => (
+  <VStack>
+    <Spacer minHeight="18px" />
+    <IconButton
+      size="sm"
+      isDisabled={disabled}
+      onClick={() => onRefreshSuggestions()}
+      aria-label="Update information from Compass"
+      bg={active ? "complimentary.500" : "gray.100"}
+      icon={<CompassIcon color={active ? "white" : "gray.700"} boxSize={4} />}
+    />
+  </VStack>
+);
 
 interface Props {
   disabled?: boolean;
   options: DictOption[];
-  onVendorSelected: (vendorId: string) => void;
+  onVendorSelected: (vendorId: string | undefined) => void;
 }
 
+const CustomDictOption: React.FC<
+  OptionProps<Option, false, GroupBase<Option>>
+> = ({ children, ...props }) => (
+  <chakraComponents.Option {...props} type="option">
+    <Flex flexDirection="column" padding={2}>
+      <Text color="gray.700" fontSize="14px" lineHeight={5} fontWeight="medium">
+        {props.data.label}
+      </Text>
+
+      {props.data.description ? (
+        <Text
+          color="gray.500"
+          fontSize="12px"
+          lineHeight={4}
+          fontWeight="normal"
+        >
+          {props.data.description}
+        </Text>
+      ) : null}
+    </Flex>
+  </chakraComponents.Option>
+);
+
 const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
-  const [initialField, meta, { setValue }] = useField({ name: "vendor_id" });
+  const isShowingSuggestions = useAppSelector(selectSuggestions);
+  const [initialField, meta, { setValue }] = useField({
+    name: "name",
+  });
   const isInvalid = !!(meta.touched && meta.error);
   const field = { ...initialField, value: initialField.value ?? "" };
-  const { touched, setTouched } = useFormikContext();
+  const { touched, values, setTouched, setFieldValue } =
+    useFormikContext<FormValues>();
+
+  const selected = options.find((o) => o.value === field.value) ?? {
+    label: field.value,
+    value: field.value,
+    description: "",
+  };
 
   const [searchParam, setSearchParam] = useState<string>("");
 
@@ -33,20 +106,31 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
     }
   };
 
-  const handleChange = (newValue: SingleValue<Option>) => {
+  const handleChange = (
+    newValue: SingleValue<Option>,
+    actionMeta: ActionMeta<Option>
+  ) => {
+    setValue(newValue ? newValue.label : "");
+    setTouched({ ...touched, name: true });
     if (newValue) {
-      setValue(newValue.value);
-      onVendorSelected(newValue.value);
+      const newVendorId = options.some((opt) => opt.value === newValue.value)
+        ? newValue.value
+        : undefined;
+      setFieldValue("vendor_id", newVendorId);
+      onVendorSelected(newVendorId);
+    } else if (actionMeta.action === "clear") {
+      setFieldValue("vendor_id", undefined);
+      onVendorSelected(undefined);
     }
   };
 
   return (
-    <HStack alignItems="flex-end">
+    <HStack alignItems="flex-start">
       <FormControl isInvalid={isInvalid}>
         <VStack alignItems="start" position="relative">
           <Flex alignItems="center">
-            <Label htmlFor="vendor" fontSize="xs" my={0} mr={1}>
-              Vendor
+            <Label htmlFor="name" fontSize="xs" my={0} mr={1}>
+              System name
             </Label>
             <QuestionTooltip label="Enter the vendor to associate with the system" />
           </Flex>
@@ -55,16 +139,19 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
             width="100%"
             data-testid={`input-${field.name}`}
           >
-            <Select
+            <CreatableSelect
               options={suggestions}
+              value={selected}
               onBlur={(e) => {
-                setTouched({ ...touched, test_vendor: true });
+                setTouched({ ...touched, name: true });
                 field.onBlur(e);
               }}
-              onChange={handleChange}
+              onChange={(newValue, actionMeta) =>
+                handleChange(newValue, actionMeta)
+              }
               onInputChange={(e) => setSearchParam(e)}
               inputValue={searchParam}
-              name="vendor_id"
+              name="name"
               size="sm"
               onKeyDown={(e) => {
                 if (e.key === "Tab") {
@@ -72,12 +159,14 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
                 }
               }}
               classNamePrefix="custom-select"
-              placeholder="Enter vendor name..."
-              instanceId="select-vendor_id"
+              placeholder="Enter system name..."
+              instanceId="select-name"
               isDisabled={disabled}
               menuPosition="absolute"
               isSearchable
               isClearable
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              formatCreateLabel={(_value) => null}
               chakraStyles={{
                 container: (provided) => ({
                   ...provided,
@@ -91,7 +180,10 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
                 }),
                 menu: (provided) => ({
                   ...provided,
-                  visibility: searchParam ? "visible" : "hidden",
+                  visibility:
+                    searchParam && suggestions.length > 0
+                      ? "visible"
+                      : "hidden",
                 }),
                 dropdownIndicator: (provided) => ({
                   ...provided,
@@ -102,6 +194,7 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
                   display: "none",
                 }),
               }}
+              components={{ Option: CustomDictOption }}
             />
             <Text
               aria-hidden
@@ -126,12 +219,16 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
           </Flex>
           <ErrorMessage
             isInvalid={isInvalid}
-            message="test"
-            fieldName="vendor"
+            message={meta.error}
+            fieldName="name"
           />
         </VStack>
       </FormControl>
-      <DictSuggestionToggle />
+      <CompassButton
+        active={!!values.vendor_id}
+        disabled={!values.vendor_id || isShowingSuggestions === "showing"}
+        onRefreshSuggestions={() => onVendorSelected(values.vendor_id)}
+      />
     </HStack>
   );
 };
