@@ -8,11 +8,11 @@ saas_config:
 
   connector_params:
     - name: domain
-      description: The Domain used for your Ada Chatbot instance. For example, when looking at our instance settings the URL for our instance shows https://demo-sandbox-ethyca.ada.support/ so we would use demo-sandbox-ethyca.ada.support
+      description: The domain required for your Ada Chatbot setup. For instance, if the settings indicate a URL such as https://demo-sandbox-ethyca.ada.support/, your domain would be demo-sandbox-ethyca.ada.support.
       label: Domain
     - name: compliance_access_token
       sensitive: True
-      description: The Data Compliance API access token. This value can be seen by going to the Settings --> Integrations within the Admin GUI (https://developers.ada.cx/reference/authentication)
+      description: The Data Compliance API access token. This value can be seen by going to the Settings -> Integrations within the Admin GUI (https://developers.ada.cx/reference/authentication)
       label: API access token
 
   client_config:
