@@ -27,7 +27,7 @@ const PrivacyDeclarationRow = ({
 }: {
   declaration: PrivacyDeclarationResponse;
   title?: string;
-  handleDelete: (dec: PrivacyDeclarationResponse) => void;
+  handleDelete?: (dec: PrivacyDeclarationResponse) => void;
   handleEdit: (dec: PrivacyDeclarationResponse) => void;
 }) => (
   <>
@@ -44,15 +44,17 @@ const PrivacyDeclarationRow = ({
           </LinkOverlay>
         </LinkBox>
         <Spacer />
-        <IconButton
-          aria-label="delete-declaration"
-          variant="outline"
-          zIndex={2}
-          size="sm"
-          onClick={() => handleDelete(declaration)}
-        >
-          <DeleteIcon />
-        </IconButton>
+        {handleDelete ? (
+          <IconButton
+            aria-label="delete-declaration"
+            variant="outline"
+            zIndex={2}
+            size="sm"
+            onClick={() => handleDelete(declaration)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        ) : null}
       </HStack>
     </Box>
     <Divider />
@@ -166,7 +168,7 @@ export const PrivacyDeclarationDisplayGroup = ({
           declaration={pd}
           key={pd.id}
           title={declarationTitle(pd)}
-          handleDelete={handleDelete}
+          handleDelete={!lockedForGVL ? handleDelete : undefined}
           handleEdit={handleEdit}
         />
       ))}

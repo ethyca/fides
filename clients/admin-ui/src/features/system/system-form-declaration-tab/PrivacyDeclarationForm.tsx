@@ -110,9 +110,11 @@ export const PrivacyDeclarationFormComponents = ({
   values,
   includeCustomFields,
   privacyDeclarationId,
+  lockedForGVL,
 }: DataProps & {
   values: FormValues;
   privacyDeclarationId?: string;
+  lockedForGVL?: boolean;
 }) => {
   const legalBasisForProcessingOptions = useMemo(
     () =>
@@ -150,8 +152,6 @@ export const PrivacyDeclarationFormComponents = ({
         : [],
     [allDatasets]
   );
-
-  const lockedForGVL = useAppSelector(selectLockedForGVL);
 
   return (
     <Stack spacing={4}>
@@ -261,7 +261,7 @@ export const PrivacyDeclarationFormComponents = ({
           variant="stacked"
           options={[]}
           disableMenu
-          disabled={lockedForGVL}
+          isDisabled={lockedForGVL}
           isMulti
         />
       </SystemFormInputGroup>
@@ -461,6 +461,8 @@ export const PrivacyDeclarationForm = ({
     privacyDeclarationId: passedInInitialValues?.id,
   });
 
+  const lockedForGVL = useAppSelector(selectLockedForGVL);
+
   return (
     <Formik
       enableReinitialize
@@ -472,7 +474,11 @@ export const PrivacyDeclarationForm = ({
         <Form data-testid="declaration-form">
           <FormGuard id="PrivacyDeclaration" name="New Privacy Declaration" />
           <Stack spacing={4}>
-            <PrivacyDeclarationFormComponents values={values} {...dataProps} />
+            <PrivacyDeclarationFormComponents
+              values={values}
+              lockedForGVL={lockedForGVL}
+              {...dataProps}
+            />
             <Flex w="100%">
               <Button
                 variant="outline"
@@ -482,16 +488,20 @@ export const PrivacyDeclarationForm = ({
               >
                 Cancel
               </Button>
-              <Spacer />
-              <Button
-                colorScheme="primary"
-                size="sm"
-                type="submit"
-                disabled={!dirty}
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
+              {!lockedForGVL ? (
+                <>
+                  <Spacer />
+                  <Button
+                    colorScheme="primary"
+                    size="sm"
+                    type="submit"
+                    disabled={!dirty}
+                    data-testid="save-btn"
+                  >
+                    Save
+                  </Button>
+                </>
+              ) : null}
             </Flex>
           </Stack>
         </Form>

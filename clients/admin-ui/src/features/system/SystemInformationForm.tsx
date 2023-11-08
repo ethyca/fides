@@ -233,6 +233,7 @@ const SystemInformationForm = ({
   };
 
   const handleVendorSelected = (newVendorId: string) => {
+    console.log("hello from handleVendorSelected");
     if (
       features.tcf &&
       extractVendorSource(newVendorId) === VendorSources.GVL
@@ -437,7 +438,7 @@ const SystemInformationForm = ({
                         label="This system requires Data Privacy Assessments"
                         tooltip="Does this system require (DPA/DPIA) assessments?"
                         variant="stacked"
-                        disabled={lockedForGVL}
+                        isDisabled={lockedForGVL}
                       />
                       <Collapse
                         in={values.requires_data_protection_assessments}
