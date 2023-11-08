@@ -285,6 +285,7 @@ const SystemInformationForm = ({
                 isRequired
                 label="System name"
                 tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                disabled={lockedForGVL}
               />
               {passedInSystem?.fides_key && (
                 <CustomTextInput
@@ -318,7 +319,7 @@ const SystemInformationForm = ({
                 }
                 tooltip="Are there any tags to associate with this system?"
                 isMulti
-                disabled={lockedForGVL}
+                isDisabled={lockedForGVL}
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Dataset reference">
@@ -329,7 +330,7 @@ const SystemInformationForm = ({
                 tooltip="Is there a dataset configured for this system?"
                 isMulti
                 variant="stacked"
-                disabled={lockedForGVL}
+                isDisabled={lockedForGVL}
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Data processing properties">
