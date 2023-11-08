@@ -439,6 +439,46 @@ class TestCrud:
         assert resp["message"] == "resource deleted"
         assert resp["resource"]["fides_key"] == manifest.fides_key
 
+    def test_api_delete_foreign_reference(
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        generate_auth_header,
+    ) -> None:
+        endpoint = "dataset"
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{DELETE}",
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
+        # Create the Dataset
+        manifest = resources_dict[endpoint]
+        resource_key = manifest.fides_key
+        print(manifest.json(exclude_none=True))
+        auth_header = generate_auth_header(scopes=token_scopes)
+        result = _api.create(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            json_resource=manifest.json(exclude_none=True),
+            headers=auth_header,
+        )
+        print(result.text)
+        assert result.status_code == 201
+
+        # Link the dataset to something else
+
+        result = _api.delete(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            resource_id=resource_key,
+            headers=auth_header,
+        )
+        print(result.text)
+        assert result.status_code == 422
+        resp = result.json()
+        assert resp["detail"] == "Foreign References to object found!"
+
 
 @pytest.mark.unit
 class TestSystemCreate:

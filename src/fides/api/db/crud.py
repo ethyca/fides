@@ -11,9 +11,12 @@ from sqlalchemy import delete as _delete
 from sqlalchemy import or_
 from sqlalchemy import update as _update
 from sqlalchemy.dialects.postgresql import Insert as _insert
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy_utils import get_referencing_foreign_keys, dependent_objects
+from fastapi import HTTPException
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.db.base import Base  # type: ignore[attr-defined]
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
@@ -308,6 +311,7 @@ async def delete_resource(
 
         async with async_session.begin():
             try:
+                # Automatically delete related resources if they are CTL objects
                 if hasattr(sql_model, "parent_key"):
                     log.debug("Deleting resource and its children")
                     query = (
@@ -321,9 +325,19 @@ async def delete_resource(
                         .execution_options(synchronize_session=False)
                     )
                 else:
+                    # Check for foreign references first so we can warn the User
+
                     log.debug("Deleting resource")
                     query = _delete(sql_model).where(sql_model.fides_key == fides_key)
                 await async_session.execute(query)
+            except IntegrityError:
+                log.bind(error="SQL Query integrity error!").info(  # type: ignore[index]
+                    "Failed to delete resource! There are objects that rely on this one."
+                )
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="Foreign References to object found!",
+                )
             except SQLAlchemyError:
                 error = errors.QueryError()
                 log.bind(error=error.detail["error"]).info(  # type: ignore[index]
