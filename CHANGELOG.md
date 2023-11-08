@@ -24,6 +24,7 @@ The types of changes are:
 - Backend System-level Cookie Support [#4383](https://github.com/ethyca/fides/pull/4383)
 - High Level Tracking of Compass System Sync [#4397](https://github.com/ethyca/fides/pull/4397)
 - Erasure support for Qualtrics [#4371](https://github.com/ethyca/fides/pull/4371)
+- Erasure support for Ada Chatbot [#4382](https://github.com/ethyca/fides/pull/4382)
 - Erasure support for Typeform [#4366](https://github.com/ethyca/fides/pull/4366)
 
 ### Changed
@@ -32,6 +33,7 @@ The types of changes are:
 - Moved Experiences and Preferences endpoints to Plus to take advantage of dynamic GVL  [#4367](https://github.com/ethyca/fides/pull/4367)
 - Add legal bases to Special Purpose schemas on the backend for display [#4387](https://github.com/ethyca/fides/pull/4387)
 - "is_service_specific" default updated when building TC strings on the backend [#4377](https://github.com/ethyca/fides/pull/4377)
+- "isServiceSpecific" default updated when building TC strings on the frontend [#4384](https://github.com/ethyca/fides/pull/4384)
 - Redact cli, database, and redis configuration information from GET api/v1/config API request responses. [#4379](https://github.com/ethyca/fides/pull/4379)
 
 ## [2.23.3](https://github.com/ethyca/fides/compare/2.23.2...2.23.3)
