@@ -33,6 +33,7 @@ The types of changes are:
 - "is_service_specific" default updated when building TC strings on the backend [#4377](https://github.com/ethyca/fides/pull/4377)
 - "isServiceSpecific" default updated when building TC strings on the frontend [#4384](https://github.com/ethyca/fides/pull/4384)
 - Redact cli, database, and redis configuration information from GET api/v1/config API request responses. [#4379](https://github.com/ethyca/fides/pull/4379)
+- Button ordering in fides.js UI [#4407](https://github.com/ethyca/fides/pull/4407)
 
 ## [2.23.3](https://github.com/ethyca/fides/compare/2.23.2...2.23.3)
 
