@@ -61,10 +61,9 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   return (
     <div
       id="fides-banner-container"
-      className={`fides-banner 
-        fides-banner-bottom 
+      className={`fides-banner fides-banner-bottom 
         ${bannerIsOpen ? "" : "fides-banner-hidden"} 
-        ${className ? className : ""}`}
+        ${className || ""}`}
     >
       <div id="fides-banner">
         <div id="fides-banner-inner">
