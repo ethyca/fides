@@ -125,13 +125,11 @@ const updateCookieAndExperience = async ({
   cookie,
   experience,
   debug = false,
-  hasValidFidesStringOverride,
   isExperienceClientSideFetched,
 }: {
   cookie: FidesCookie;
   experience: PrivacyExperience;
   debug?: boolean;
-  hasValidFidesStringOverride: boolean;
   isExperienceClientSideFetched: boolean;
 }): Promise<{
   cookie: FidesCookie;
@@ -145,13 +143,13 @@ const updateCookieAndExperience = async ({
 
   // If cookie.fides_string exists, update the fetched experience based on the cookie here.
   if (cookie.fides_string) {
-      debugLog(
-          debug,
-          "Overriding preferences from client-side fetched experience with cookie fides_string consent",
-          cookie.fides_string
-      );
-      const tcfEntities = buildTcfEntitiesFromCookie(experience, cookie);
-      return { cookie, experience: tcfEntities };
+    debugLog(
+      debug,
+      "Overriding preferences from client-side fetched experience with cookie fides_string consent",
+      cookie.fides_string
+    );
+    const tcfEntities = buildTcfEntitiesFromCookie(experience, cookie);
+    return { cookie, experience: tcfEntities };
   }
 
   // If user has no prefs saved, we don't need to override the prefs on the cookie
@@ -246,7 +244,6 @@ const init = async (config: FidesConfig) => {
     ...getInitialCookie(config),
     ...overrides.overrideConsentPrefs?.consent,
   };
-  let hasValidFidesStringOverride = !!config.options.fidesString;
   if (config.options.fidesString) {
     const { cookie: updatedCookie, success } = updateFidesCookieFromString(
       cookie,
@@ -256,8 +253,6 @@ const init = async (config: FidesConfig) => {
     );
     if (success) {
       Object.assign(cookie, updatedCookie);
-    } else {
-      hasValidFidesStringOverride = false;
     }
   } else if (
     tcfConsentCookieObjHasSomeConsentSet(cookie.tcf_consent) &&
@@ -291,7 +286,7 @@ const init = async (config: FidesConfig) => {
     experience,
     renderOverlay,
     updateCookieAndExperience: (props) =>
-      updateCookieAndExperience({ ...props, hasValidFidesStringOverride }),
+      updateCookieAndExperience({ ...props }),
   });
   Object.assign(_Fides, updatedFides);
 
