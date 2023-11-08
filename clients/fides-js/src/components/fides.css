@@ -1021,6 +1021,6 @@ div#fides-banner-inner .fides-privacy-policy {
   div#fides-button-group {
   justify-content: flex-start;
 }
-#fides-privacy-policy-link {
+.fides-tcf-banner-container #fides-privacy-policy-link {
   margin-left: auto;
 }
