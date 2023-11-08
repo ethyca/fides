@@ -23,6 +23,7 @@ The types of changes are:
 - Hidden custom privacy request fields in the Privacy Center [#4370](https://github.com/ethyca/fides/pull/4370)
 - Backend System-level Cookie Support [#4383](https://github.com/ethyca/fides/pull/4383)
 - High Level Tracking of Compass System Sync [#4397](https://github.com/ethyca/fides/pull/4397)
+- Erasure support for Qualtrics [#4371](https://github.com/ethyca/fides/pull/4371)
 
 ### Changed
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
@@ -47,9 +48,6 @@ The types of changes are:
 - Fixed fides.css to vary banner width based on tcf [[#4381](https://github.com/ethyca/fides/issues/4381)]
 
 ## [2.23.1](https://github.com/ethyca/fides/compare/2.23.0...2.23.1)
-
-### Added
-- Added Erasure Connector for Qualtrics [4371](https://github.com/ethyca/fides/pull/4371)
 
 ### Changed
 - Refactor Fides.js embedded modal to not use A11y dialog [#4355](https://github.com/ethyca/fides/pull/4355)
