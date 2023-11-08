@@ -25,6 +25,7 @@ The types of changes are:
 - High Level Tracking of Compass System Sync [#4397](https://github.com/ethyca/fides/pull/4397)
 - Erasure support for Qualtrics [#4371](https://github.com/ethyca/fides/pull/4371)
 - Erasure support for Ada Chatbot [#4382](https://github.com/ethyca/fides/pull/4382)
+- Erasure support for Typeform [#4366](https://github.com/ethyca/fides/pull/4366)
 
 ### Changed
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
