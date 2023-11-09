@@ -9,6 +9,7 @@ import {
   ServingComponent,
 } from "./consent-types";
 import { patchNoticesServed } from "../services/fides/api";
+import { customPatchNoticesServed } from "../services/external/notices-served";
 
 /**
  * Hook which tracks if the app has mounted yet.
@@ -137,11 +138,16 @@ export const useConsentServed = ({
         ),
         serving_component: event.detail.extraDetails.servingComponent,
       };
-      const result = await patchNoticesServed({
-        request,
-        fidesApiUrl: options.fidesApiUrl,
-        debug: options.debug,
-      });
+      let result;
+      if (options.apiOptions?.patchNoticesServedFn) {
+        result = await customPatchNoticesServed(options, request);
+      } else {
+        result = await patchNoticesServed({
+          request,
+          fidesApiUrl: options.fidesApiUrl,
+          debug: options.debug,
+        });
+      }
       if (result) {
         setServedNotices(result);
       }

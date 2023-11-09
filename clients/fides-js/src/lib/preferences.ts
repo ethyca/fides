@@ -1,8 +1,6 @@
 import {
   ConsentMethod,
-  FidesConfig,
   FidesOptions,
-  GetPreferencesFnResp,
   LastServedConsentSchema,
   PrivacyExperience,
   PrivacyPreferencesRequest,
@@ -18,28 +16,7 @@ import {
 import { dispatchFidesEvent } from "./events";
 import { patchUserPreferenceToFidesServer } from "../services/fides/api";
 import { TcfSavePreferences } from "./tcf/types";
-
-/**
- * Helper function to get preferences from an external API
- */
-export async function getConsentPreferences(
-  config: FidesConfig
-): Promise<GetPreferencesFnResp | null> {
-  if (!config.options.apiOptions?.getPreferencesFn) {
-    return null;
-  }
-  debugLog(config.options.debug, "Calling custom get preferences fn");
-  try {
-    return await config.options.apiOptions.getPreferencesFn(config);
-  } catch (e) {
-    debugLog(
-      config.options.debug,
-      "Error retrieving preferences from API, continuing. Error: ",
-      e
-    );
-    return null;
-  }
-}
+import { customSaveConsentPreferences } from "../services/external/preferences";
 
 /**
  * Helper function to save preferences to an API, either custom or internal
@@ -54,11 +31,11 @@ async function savePreferencesApi(
   userLocationString?: string
 ) {
   if (options.apiOptions?.savePreferencesFn) {
-    debugLog(options.debug, "Calling custom save preferences fn");
-    await options.apiOptions.savePreferencesFn(
+    await customSaveConsentPreferences(
+      options,
       cookie.consent,
-      cookie.fides_string,
-      experience
+      experience,
+      cookie.fides_string
     );
   } else {
     debugLog(options.debug, "Saving preferences to Fides API");

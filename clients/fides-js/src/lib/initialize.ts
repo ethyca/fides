@@ -39,11 +39,13 @@ import {
 import { fetchExperience } from "../services/fides/api";
 import { getGeolocation } from "../services/external/geolocation";
 import { OverlayProps } from "../components/types";
-import { getConsentPreferences, updateConsentPreferences } from "./preferences";
+import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
 import { TcfCookieConsent } from "./tcf/types";
 import { FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP } from "./consent-constants";
+import { customGetConsentPreferences } from "../services/external/preferences";
+import { customGetPrivacyExperience } from "../services/external/experience";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -187,7 +189,7 @@ export const getOverrides = async (
     );
   }
   const overrideConsentPrefs: GetPreferencesFnResp | null =
-    await getConsentPreferences(config);
+    await customGetConsentPreferences(config);
   if (!overrideOptions.fidesString && overrideConsentPrefs?.fides_string) {
     overrideOptions.fidesString = overrideConsentPrefs.fides_string;
   }
@@ -317,14 +319,21 @@ export const initialize = async ({
       shouldInitOverlay = false;
     } else if (!isPrivacyExperience(effectiveExperience)) {
       fetchedClientSideExperience = true;
-      // If no effective PrivacyExperience was pre-fetched, fetch one now from
-      // the Fides API using the current region string
-      effectiveExperience = await fetchExperience(
-        fidesRegionString,
-        options.fidesApiUrl,
-        options.debug,
-        cookie.identity.fides_user_device_id
-      );
+      // If no effective PrivacyExperience was pre-fetched, fetch one using the current region string
+      if (options.apiOptions?.getPrivacyExperienceFn) {
+        effectiveExperience = await customGetPrivacyExperience(
+          options,
+          fidesRegionString,
+          cookie.identity.fides_user_device_id
+        );
+      } else {
+        effectiveExperience = await fetchExperience(
+          fidesRegionString,
+          options.fidesApiUrl,
+          options.debug,
+          cookie.identity.fides_user_device_id
+        );
+      }
     }
 
     if (
