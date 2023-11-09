@@ -321,8 +321,10 @@ export const initialize = async ({
       // If no effective PrivacyExperience was pre-fetched, fetch one using the current region string
       effectiveExperience = await fetchExperience(
         fidesRegionString,
-        options,
-        cookie.identity.fides_user_device_id
+        options.fidesApiUrl,
+        options.debug,
+        options.apiOptions,
+        cookie.identity.fides_user_device_id,
       );
     }
 

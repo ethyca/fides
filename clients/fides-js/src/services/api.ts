@@ -1,6 +1,6 @@
 import {
   ComponentType,
-  EmptyExperience,
+  EmptyExperience, FidesApiOptions,
   FidesOptions,
   LastServedConsentSchema,
   PrivacyExperience,
@@ -22,23 +22,25 @@ export enum FidesEndpointPaths {
  */
 export const fetchExperience = async (
   userLocationString: string,
-  options: FidesOptions,
+  fidesApiUrl: string,
+  debug: boolean,
+  apiOptions?: FidesApiOptions | null,
   fidesUserDeviceId?: string | null
 ): Promise<PrivacyExperience | EmptyExperience> => {
   debugLog(
-    options.debug,
+    debug,
     `Fetching experience for userId: ${fidesUserDeviceId} in location: ${userLocationString}`
   );
-  if (options.apiOptions?.getPrivacyExperienceFn) {
-    debugLog(options.debug, "Calling custom fetch experience fn");
+  if (apiOptions?.getPrivacyExperienceFn) {
+    debugLog(debug, "Calling custom fetch experience fn");
     try {
-      return await options.apiOptions.getPrivacyExperienceFn(
+      return await apiOptions.getPrivacyExperienceFn(
         userLocationString,
         fidesUserDeviceId
       );
     } catch (e) {
       debugLog(
-        options.debug,
+        debug,
         "Error fetching experience from custom API, returning {}. Error: ",
         e
       );
@@ -46,7 +48,7 @@ export const fetchExperience = async (
     }
   }
 
-  debugLog(options.debug, "Calling Fides GET experience API");
+  debugLog(debug, "Calling Fides GET experience API");
   const fetchOptions: RequestInit = {
     method: "GET",
     mode: "cors",
@@ -67,12 +69,12 @@ export const fetchExperience = async (
   }
   params = new URLSearchParams(params);
   const response = await fetch(
-    `${options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
+    `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
     fetchOptions
   );
   if (!response.ok) {
     debugLog(
-      options.debug,
+      debug,
       "Error getting experience from Fides API, returning {}. Response:",
       response
     );
@@ -84,14 +86,14 @@ export const fetchExperience = async (
     // that have no relevant experiences
     const experience = (body.items && body.items[0]) ?? {};
     debugLog(
-      options.debug,
+      debug,
       "Got experience response from Fides API, returning: ",
       experience
     );
     return experience;
   } catch (e) {
     debugLog(
-      options.debug,
+      debug,
       "Error parsing experience response body from Fides API, returning {}. Response:",
       response
     );
