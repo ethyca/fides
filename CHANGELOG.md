@@ -32,6 +32,10 @@ The types of changes are:
 - Erasure support for Ada Chatbot [#4382](https://github.com/ethyca/fides/pull/4382)
 - Erasure support for Typeform [#4366](https://github.com/ethyca/fides/pull/4366)
 
+## Added
+
+- Added notice that a system is GVL when adding/editing from system form [#4327](https://github.com/ethyca/fides/pull/4327)
+
 ### Changed
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
 - Determine if the TCF overlay needs to surface based on backend calculated version hash [#4356](https://github.com/ethyca/fides/pull/4356)
@@ -65,6 +69,7 @@ The types of changes are:
 - Updated double toggle styling in favor of single toggles with a radio group to select legal basis [#4376](https://github.com/ethyca/fides/pull/4376)
 
 ### Fixed
+
 - Handle invalid `fides_string` when passed in as an override [#4350](https://github.com/ethyca/fides/pull/4350)
 - Bug where vendor opt-ins would not initialize properly based on a `fides_string` in the TCF overlay [#4368](https://github.com/ethyca/fides/pull/4368)
 
@@ -100,6 +105,7 @@ The types of changes are:
 - Removes overflow styling for embedded modal in Fides.js [#4345](https://github.com/ethyca/fides/pull/4345)
 
 ### Changed
+
 - Derive cookie storage info, privacy policy and legitimate interest disclosure URLs, and data retention data from the data map instead of directly from gvl.json [#4286](https://github.com/ethyca/fides/pull/4286)
 - Updated TCF Version for backend consent reporting [#4305](https://github.com/ethyca/fides/pull/4305)
 - Update Version Hash Contents [#4313](https://github.com/ethyca/fides/pull/4313)
@@ -109,9 +115,11 @@ The types of changes are:
 ## [2.22.1](https://github.com/ethyca/fides/compare/2.22.0...2.22.1)
 
 ### Added
+
 - Custom fields are now included in system history change tracking [#4294](https://github.com/ethyca/fides/pull/4294)
 
 ### Security
+
 - Added hostname checks for external SaaS connector URLs [CVE-2023-46124](https://github.com/ethyca/fides/security/advisories/GHSA-jq3w-9mgf-43m4)
 - Use a Pydantic URL type for privacy policy URLs [CVE-2023-46126](https://github.com/ethyca/fides/security/advisories/GHSA-fgjj-5jmr-gh83)
 - Remove the CONFIG_READ scope from the Viewer role [CVE-2023-46125](https://github.com/ethyca/fides/security/advisories/GHSA-rjxg-rpg3-9r89)
@@ -119,6 +127,7 @@ The types of changes are:
 ## [2.22.0](https://github.com/ethyca/fides/compare/2.21.0...2.22.0)
 
 ### Added
+
 - Added an option to link to vendor tab from an experience config description [#4191](https://github.com/ethyca/fides/pull/4191)
 - Added two toggles for vendors in the TCF overlay, one for Consent, and one for Legitimate Interest [#4189](https://github.com/ethyca/fides/pull/4189)
 - Added two toggles for purposes in the TCF overlay, one for Consent, and one for Legitimate Interest [#4234](https://github.com/ethyca/fides/pull/4234)
@@ -127,6 +136,7 @@ The types of changes are:
 - Support for `gvl` prefixed vendor IDs [#4247](https://github.com/ethyca/fides/pull/4247)
 
 ### Changed
+
 - Removed `TCF_ENABLED` environment variable from the privacy center in favor of dynamically figuring out which `fides-js` bundle to send [#4131](https://github.com/ethyca/fides/pull/4131)
 - Updated copy of info boxes on each TCF tab [#4191](https://github.com/ethyca/fides/pull/4191)
 - Clarified messages for error messages presented during connector upload [#4198](https://github.com/ethyca/fides/pull/4198)
@@ -146,6 +156,7 @@ The types of changes are:
 - Changed naming convention "fides_string" instead of "tc_string" for developer friendly consent API's [#4267](https://github.com/ethyca/fides/pull/4267)
 
 ### Fixed
+
 - TCF overlay can initialize its consent preferences from a cookie [#4124](https://github.com/ethyca/fides/pull/4124)
 - Various improvements to the TCF modal such as vendor storage disclosures, vendor counts, privacy policies, etc. [#4167](https://github.com/ethyca/fides/pull/4167)
 - An issue where Braze could not mask an email due to formatting [#4187](https://github.com/ethyca/fides/pull/4187)
@@ -160,6 +171,7 @@ The types of changes are:
 ## [2.21.0](https://github.com/ethyca/fides/compare/2.20.2...2.21.0)
 
 ### Added
+
 - "Add a vendor" flow to configuring consent page [#4107](https://github.com/ethyca/fides/pull/4107)
 - Initial TCF Backend Support [#3804](https://github.com/ethyca/fides/pull/3804)
 - Add initial layer to TCF modal [#3956](https://github.com/ethyca/fides/pull/3956)
@@ -177,6 +189,7 @@ The types of changes are:
 - Added fides.css customization for Plus users [#4136](https://github.com/ethyca/fides/pull/4136)
 
 ### Changed
+
 - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
 - CORS configuration page [#4073](https://github.com/ethyca/fides/pull/4073)
 - Refactored `fides.js` components so that they can take data structures that are not necessarily privacy notices [#3870](https://github.com/ethyca/fides/pull/3870)
@@ -186,12 +199,14 @@ The types of changes are:
 - Misc copy changes for the system history table and modal [#4146](https://github.com/ethyca/fides/pull/4146)
 
 ### Fixed
-- Allows CDN to cache empty experience responses from fides.js API  [#4113](https://github.com/ethyca/fides/pull/4113)
+
+- Allows CDN to cache empty experience responses from fides.js API [#4113](https://github.com/ethyca/fides/pull/4113)
 - Fixed `identity_special_purpose` unique constraint definition [#4174](https://github.com/ethyca/fides/pull/4174/files)
 
 ## [2.20.2](https://github.com/ethyca/fides/compare/2.20.1...2.20.2)
 
 ### Fixed
+
 - added version_added, version_deprecated, and replaced_by to data use, data subject, and data category APIs [#4135](https://github.com/ethyca/fides/pull/4135)
 - Update fides.js to not fetch experience client-side if pre-fetched experience is empty [#4149](https://github.com/ethyca/fides/pull/4149)
 - Erasure privacy requests now pause for input if there are any manual process integrations [#4115](https://github.com/ethyca/fides/pull/4115)
@@ -206,6 +221,7 @@ The types of changes are:
 ## [2.20.0](https://github.com/ethyca/fides/compare/2.19.1...2.20.0)
 
 ### Added
+
 - Initial page for configuring consent [#4069](https://github.com/ethyca/fides/pull/4069)
 - Vendor cookie table for configuring consent [#4082](https://github.com/ethyca/fides/pull/4082)
 
@@ -242,7 +258,6 @@ The types of changes are:
 - System history UI with diff modal [#4021](https://github.com/ethyca/fides/pull/4021)
 - Relax system legal basis for transfers to be any string [#4049](https://github.com/ethyca/fides/pull/4049)
 
-
 ## [2.19.0](https://github.com/ethyca/fides/compare/2.18.0...2.19.0)
 
 ### Added
@@ -261,7 +276,7 @@ The types of changes are:
 - Fixed dataset issue that was preventing the Vend connector from loading during server startup [#3923](https://github.com/ethyca/fides/pull/3923)
 - Adding version check to version-dependent migration script [#3951](https://github.com/ethyca/fides/pull/3951)
 - Fixed a bug where some fields were not saving correctly on the system form [#3975](https://github.com/ethyca/fides/pull/3975)
-- Changed "retention period" field in privacy declaration form from number input to text input  [#3980](https://github.com/ethyca/fides/pull/3980)
+- Changed "retention period" field in privacy declaration form from number input to text input [#3980](https://github.com/ethyca/fides/pull/3980)
 - Fixed issue where unsaved changes modal appears incorrectly [#4005](https://github.com/ethyca/fides/pull/4005)
 - Fixed banner resurfacing after user consent for pre-fetch experience [#4009](https://github.com/ethyca/fides/pull/4009)
 
@@ -275,6 +290,7 @@ The types of changes are:
 - Admin ui supports fides cloud config API [#4034](https://github.com/ethyca/fides/pull/4034)
 
 ### Security
+
 - Resolve custom integration upload RCE vulnerability [CVE-2023-41319](https://github.com/ethyca/fides/security/advisories/GHSA-p6p2-qq95-vq5h)
 
 ## [2.18.0](https://github.com/ethyca/fides/compare/2.17.0...2.18.0)
@@ -289,6 +305,7 @@ The types of changes are:
 - Changes in the `data` directory now trigger a server reload (for local development) [#3874](https://github.com/ethyca/fides/pull/3874)
 
 ### Fixed
+
 - Fix datamap zoom for low system counts [#3835](https://github.com/ethyca/fides/pull/3835)
 - Fixed connector forms with external dataset reference fields [#3873](https://github.com/ethyca/fides/pull/3873)
 - Fix ability to make server side API calls from privacy-center [#3895](https://github.com/ethyca/fides/pull/3895)
@@ -335,6 +352,7 @@ The types of changes are:
 - Erasure support for Heap [#3599](https://github.com/ethyca/fides/pull/3599)
 
 ### Fixed
+
 - Privacy notice UI's list of possible regions now matches the backend's list [#3787](https://github.com/ethyca/fides/pull/3787)
 - Admin UI "property does not existing" build issue [#3831](https://github.com/ethyca/fides/pull/3831)
 - Flagging sensitive inputs as passwords to mask values during entry [#3843](https://github.com/ethyca/fides/pull/3843)
@@ -379,23 +397,28 @@ The types of changes are:
 - Enable privacy notice and privacy experience feature flags by default [#3773](https://github.com/ethyca/fides/pull/3773)
 
 ### Security
+
 - Resolve Zip bomb file upload vulnerability [CVE-2023-37480](https://github.com/ethyca/fides/security/advisories/GHSA-g95c-2jgm-hqc6)
 - Resolve SVG bomb (billion laughs) file upload vulnerability [CVE-2023-37481](https://github.com/ethyca/fides/security/advisories/GHSA-3rw2-wfc8-wmj5)
 
 ## [2.15.1](https://github.com/ethyca/fides/compare/2.15.0...2.15.1)
 
 ### Added
+
 - Set `sslmode` to `prefer` if connecting to Redshift via ssh [#3685](https://github.com/ethyca/fides/pull/3685)
 
 ### Changed
+
 - Privacy center action cards are now able to expand to accommodate longer text [#3669](https://github.com/ethyca/fides/pull/3669)
 - Update integration endpoint permissions [#3707](https://github.com/ethyca/fides/pull/3707)
 
 ### Fixed
+
 - Handle names with a double underscore when processing access and erasure requests [#3688](https://github.com/ethyca/fides/pull/3688)
 - Allow Privacy Notices banner and modal to scroll as needed [#3713](https://github.com/ethyca/fides/pull/3713)
 
 ### Security
+
 - Resolve path traversal vulnerability in webserver API [CVE-2023-36827](https://github.com/ethyca/fides/security/advisories/GHSA-r25m-cr6v-p9hq)
 
 ## [2.15.0](https://github.com/ethyca/fides/compare/2.14.1...2.15.0)
