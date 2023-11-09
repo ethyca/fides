@@ -120,7 +120,7 @@ class AccessManualWebhook(Base):
         if action_type is not None:
             query = query.filter(
                 or_(
-                    ConnectionConfig.enabled_actions.contains(action_type),
+                    ConnectionConfig.enabled_actions.contains([action_type]),
                     ConnectionConfig.enabled_actions.is_(None),
                 )
             )

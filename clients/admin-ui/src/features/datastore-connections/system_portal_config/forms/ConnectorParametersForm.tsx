@@ -437,6 +437,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                           form.touched.enabled_actions &&
                           form.errors.enabled_actions
                         }
+                        isRequired
                       >
                         {getFormLabel("enabled_actions", "Enabled actions")}
                         <VStack align="flex-start" w="inherit">
