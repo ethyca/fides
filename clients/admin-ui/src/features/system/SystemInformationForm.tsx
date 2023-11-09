@@ -181,14 +181,22 @@ const SystemInformationForm = ({
     formikHelpers: FormikHelpers<FormValues>
   ) => {
     let dictionaryDeclarations;
+<<<<<<< HEAD
     if (values.vendor_id && values.privacy_declarations.length === 0) {
+=======
+    if (lockedForGVL && values.privacy_declarations.length === 0) {
+>>>>>>> main
       const dataUseQueryResult = await getDictionaryDataUseTrigger({
         vendor_id: values.vendor_id!,
       });
       if (dataUseQueryResult.isError) {
         const dataUseErrorMsg = getErrorMessage(
           dataUseQueryResult.error,
+<<<<<<< HEAD
           `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`
+=======
+          `A problem occurred while fetching data uses from the GVL for your system.  Please try again.`
+>>>>>>> main
         );
         toast({ status: "error", description: dataUseErrorMsg });
       } else if (
@@ -246,6 +254,7 @@ const SystemInformationForm = ({
     handleResult(result);
   };
 
+<<<<<<< HEAD
   const handleVendorSelected = (newVendorId: string | undefined) => {
     if (!newVendorId) {
       dispatch(setSuggestions("hiding"));
@@ -253,10 +262,18 @@ const SystemInformationForm = ({
       return;
     }
     dispatch(setSuggestions("showing"));
+=======
+  const handleVendorSelected = (newVendorId: string) => {
+    console.log("hello from handleVendorSelected");
+>>>>>>> main
     if (
       features.tcf &&
       extractVendorSource(newVendorId) === VendorSources.GVL
     ) {
+<<<<<<< HEAD
+=======
+      dispatch(setSuggestions("showing"));
+>>>>>>> main
       dispatch(setLockedForGVL(true));
     } else {
       dispatch(setLockedForGVL(false));
@@ -291,6 +308,7 @@ const SystemInformationForm = ({
 
             <SystemFormInputGroup heading="System details">
               {features.dictionaryService ? (
+<<<<<<< HEAD
                 <>
                   <VendorSelector
                     options={dictionaryOptions}
@@ -307,6 +325,22 @@ const SystemInformationForm = ({
                   tooltip="Give the system a unique and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
                 />
               )}
+=======
+                <VendorSelector
+                  options={dictionaryOptions}
+                  onVendorSelected={handleVendorSelected}
+                />
+              ) : null}
+              <DictSuggestionTextInput
+                id="name"
+                name="name"
+                dictField={(vendor) => vendor.name ?? (vendor.legal_name || "")}
+                isRequired
+                label="System name"
+                tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                disabled={lockedForGVL}
+              />
+>>>>>>> main
               {passedInSystem?.fides_key && (
                 <CustomTextInput
                   id="fides_key"
@@ -339,7 +373,11 @@ const SystemInformationForm = ({
                 }
                 tooltip="Are there any tags to associate with this system?"
                 isMulti
+<<<<<<< HEAD
                 disabled={lockedForGVL}
+=======
+                isDisabled={lockedForGVL}
+>>>>>>> main
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Dataset reference">
@@ -350,7 +388,11 @@ const SystemInformationForm = ({
                 tooltip="Is there a dataset configured for this system?"
                 isMulti
                 variant="stacked"
+<<<<<<< HEAD
                 disabled={lockedForGVL}
+=======
+                isDisabled={lockedForGVL}
+>>>>>>> main
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Data processing properties">
@@ -459,7 +501,11 @@ const SystemInformationForm = ({
                         label="This system requires Data Privacy Assessments"
                         tooltip="Does this system require (DPA/DPIA) assessments?"
                         variant="stacked"
+<<<<<<< HEAD
                         disabled={lockedForGVL}
+=======
+                        isDisabled={lockedForGVL}
+>>>>>>> main
                       />
                       <Collapse
                         in={values.requires_data_protection_assessments}
