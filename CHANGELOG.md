@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.24.0...main)
 
+### Added
+- Adds support for custom get experiences fn and custom patch notices served fn [#4410](https://github.com/ethyca/fides/pull/4410)
+
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
 
 ### Added
