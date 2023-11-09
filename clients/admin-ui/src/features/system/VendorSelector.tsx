@@ -51,7 +51,6 @@ const CompassButton = ({
 interface Props {
   disabled?: boolean;
   options: DictOption[];
-<<<<<<< HEAD
   onVendorSelected: (vendorId: string | undefined) => void;
 }
 
@@ -83,13 +82,6 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
   const [initialField, meta, { setValue }] = useField({
     name: "name",
   });
-=======
-  onVendorSelected: (vendorId: string) => void;
-}
-
-const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
-  const [initialField, meta, { setValue }] = useField({ name: "vendor_id" });
->>>>>>> main
   const isInvalid = !!(meta.touched && meta.error);
   const field = { ...initialField, value: initialField.value ?? "" };
   const { touched, values, setTouched, setFieldValue } =
@@ -121,7 +113,6 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
     setValue(newValue ? newValue.label : "");
     setTouched({ ...touched, name: true });
     if (newValue) {
-<<<<<<< HEAD
       const newVendorId = options.some((opt) => opt.value === newValue.value)
         ? newValue.value
         : undefined;
@@ -130,10 +121,6 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
     } else if (actionMeta.action === "clear") {
       setFieldValue("vendor_id", undefined);
       onVendorSelected(undefined);
-=======
-      setValue(newValue.value);
-      onVendorSelected(newValue.value);
->>>>>>> main
     }
   };
 
