@@ -14,6 +14,10 @@ import {
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
+import {
+  setLockedForGVL,
+  setSuggestions,
+} from "~/features/system/dictionary-form/dict-suggestion.slice";
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
 import { SystemResponse } from "~/types/api";
 
@@ -145,6 +149,8 @@ const SystemFormTabs = ({
      */
     if (isCreate) {
       dispatch(setActiveSystem(undefined));
+      dispatch(setSuggestions("initial"));
+      dispatch(setLockedForGVL(false));
     }
     return () => {
       // on unmount, unset the active system

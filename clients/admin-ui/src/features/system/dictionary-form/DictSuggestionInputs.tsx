@@ -154,6 +154,7 @@ export const DictSuggestionTextInput = ({
 export const DictSuggestionTextArea = ({
   label,
   tooltip,
+  disabled,
   isRequired = false,
   dictField,
   name,
@@ -183,6 +184,7 @@ export const DictSuggestionTextArea = ({
               ? "complimentary.500"
               : "gray.800"
           }
+          isDisabled={disabled}
         />
         <ErrorMessage
           isInvalid={isInvalid}
@@ -200,6 +202,7 @@ export const DictSuggestionSwitch = ({
   dictField,
   name,
   id,
+  disabled,
 }: Props) => {
   const { field, isInvalid, error } = useDictSuggestion(
     name,
@@ -225,6 +228,7 @@ export const DictSuggestionSwitch = ({
             mr={2}
             data-testid={`input-${field.name}`}
             size="sm"
+            isDisabled={disabled}
           />
         </HStack>
       </Box>
@@ -375,6 +379,7 @@ export const DictSuggestionNumberInput = ({
   dictField,
   name,
   id,
+  disabled,
 }: Props) => {
   const { field, isInvalid, error, isShowingSuggestions } = useDictSuggestion(
     name,
@@ -411,6 +416,7 @@ export const DictSuggestionNumberInput = ({
                 ? "complimentary.500"
                 : "gray.800"
             }
+            isDisabled={disabled}
           >
             <NumberInputField />
             <NumberInputStepper>
