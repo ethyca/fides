@@ -153,8 +153,6 @@ export const PrivacyDeclarationFormComponents = ({
     [allDatasets]
   );
 
-  const lockedForGVL = useAppSelector(selectLockedForGVL);
-
   return (
     <Stack spacing={4}>
       <SystemFormInputGroup heading="Data use declaration">
@@ -263,11 +261,7 @@ export const PrivacyDeclarationFormComponents = ({
           variant="stacked"
           options={[]}
           disableMenu
-<<<<<<< HEAD
-          disabled={lockedForGVL}
-=======
           isDisabled={lockedForGVL}
->>>>>>> main
           isMulti
         />
       </SystemFormInputGroup>
