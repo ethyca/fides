@@ -13,6 +13,8 @@ import {
   Text,
 } from "@fidesui/react";
 
+import { useAppSelector } from "~/app/hooks";
+import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { DataUse, PrivacyDeclarationResponse } from "~/types/api";
 
 import { SparkleIcon } from "../../common/Icon/SparkleIcon";
@@ -25,7 +27,7 @@ const PrivacyDeclarationRow = ({
 }: {
   declaration: PrivacyDeclarationResponse;
   title?: string;
-  handleDelete: (dec: PrivacyDeclarationResponse) => void;
+  handleDelete?: (dec: PrivacyDeclarationResponse) => void;
   handleEdit: (dec: PrivacyDeclarationResponse) => void;
 }) => (
   <>
@@ -42,15 +44,17 @@ const PrivacyDeclarationRow = ({
           </LinkOverlay>
         </LinkBox>
         <Spacer />
-        <IconButton
-          aria-label="delete-declaration"
-          variant="outline"
-          zIndex={2}
-          size="sm"
-          onClick={() => handleDelete(declaration)}
-        >
-          <DeleteIcon />
-        </IconButton>
+        {handleDelete ? (
+          <IconButton
+            aria-label="delete-declaration"
+            variant="outline"
+            zIndex={2}
+            size="sm"
+            onClick={() => handleDelete(declaration)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        ) : null}
       </HStack>
     </Box>
     <Divider />
@@ -126,6 +130,8 @@ export const PrivacyDeclarationDisplayGroup = ({
     return "";
   };
 
+  const lockedForGVL = useAppSelector(selectLockedForGVL);
+
   return (
     <PrivacyDeclarationTabTable
       heading={heading}
@@ -141,18 +147,20 @@ export const PrivacyDeclarationDisplayGroup = ({
         ) : null
       }
       footerButton={
-        <Button
-          onClick={handleAdd}
-          size="xs"
-          px={2}
-          py={1}
-          backgroundColor="primary.800"
-          color="white"
-          fontWeight="600"
-          rightIcon={<AddIcon />}
-        >
-          Add data use
-        </Button>
+        !lockedForGVL ? (
+          <Button
+            onClick={handleAdd}
+            size="xs"
+            px={2}
+            py={1}
+            backgroundColor="primary.800"
+            color="white"
+            fontWeight="600"
+            rightIcon={<AddIcon />}
+          >
+            Add data use
+          </Button>
+        ) : null
       }
     >
       {declarations.map((pd) => (
@@ -160,7 +168,7 @@ export const PrivacyDeclarationDisplayGroup = ({
           declaration={pd}
           key={pd.id}
           title={declarationTitle(pd)}
-          handleDelete={handleDelete}
+          handleDelete={!lockedForGVL ? handleDelete : undefined}
           handleEdit={handleEdit}
         />
       ))}

@@ -55,6 +55,11 @@ describe("System management with Plus features", () => {
       );
     });
 
+    it("locks editing for a GVL vendor when TCF is enabled", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
+      cy.getByTestId("locked-for-GVL-notice");
+    });
+
     // some DictSuggestionTextInputs don't get populated right, causing
     // the form to be mistakenly marked as dirty and the "unsaved changes"
     // modal to pop up incorrectly when switching tabs
