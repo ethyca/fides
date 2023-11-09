@@ -11,9 +11,10 @@ import { DictSuggestionToggle } from "~/features/system/dictionary-form/ToggleDi
 interface Props {
   disabled?: boolean;
   options: DictOption[];
+  onVendorSelected: (vendorId: string) => void;
 }
 
-const VendorSelector = ({ disabled, options }: Props) => {
+const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
   const [initialField, meta, { setValue }] = useField({ name: "vendor_id" });
   const isInvalid = !!(meta.touched && meta.error);
   const field = { ...initialField, value: initialField.value ?? "" };
@@ -35,6 +36,7 @@ const VendorSelector = ({ disabled, options }: Props) => {
   const handleChange = (newValue: SingleValue<Option>) => {
     if (newValue) {
       setValue(newValue.value);
+      onVendorSelected(newValue.value);
     }
   };
 

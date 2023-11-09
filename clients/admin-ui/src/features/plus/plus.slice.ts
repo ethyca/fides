@@ -355,6 +355,7 @@ export const {
   useGetAllDictionaryEntriesQuery,
   useGetFidesCloudConfigQuery,
   useGetDictionaryDataUsesQuery,
+  useLazyGetDictionaryDataUsesQuery,
   useGetAllSystemVendorsQuery,
   usePostSystemVendorsMutation,
   useGetSystemHistoryQuery,

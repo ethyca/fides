@@ -4,10 +4,13 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import Layout from "~/features/common/Layout";
 import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
+import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
+import GVLNotice from "~/features/system/GVLNotice";
 import SystemFormTabs from "~/features/system/SystemFormTabs";
 import { ConnectionSystemTypeMap } from "~/types/api";
 
@@ -39,6 +42,8 @@ const NewManualSystem: NextPage = () => {
     return JSON.parse(value);
   }, [connectorType]);
 
+  const lockedForGVL = useAppSelector(selectLockedForGVL);
+
   return (
     <Layout title="Describe your system">
       <Box mb={4}>
@@ -62,6 +67,7 @@ const NewManualSystem: NextPage = () => {
           </Breadcrumb>
         </Box>
       </Box>
+      {lockedForGVL ? <GVLNotice /> : null}
       <Box w={{ base: "100%", md: "75%" }}>
         <Text fontSize="sm" mb={8}>
           {DESCRIBE_SYSTEM_COPY}
