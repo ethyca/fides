@@ -13,6 +13,7 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 )
 
 
+@pytest.mark.integration
 class TestEnabledActions:
     @pytest.fixture(scope="function")
     def mongo_postgres_dataset_graph(
