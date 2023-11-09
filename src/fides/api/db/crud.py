@@ -5,17 +5,16 @@ generated programmatically for each resource.
 from collections import defaultdict
 from typing import Any, Dict, List, Tuple
 
+from fastapi import HTTPException
 from loguru import logger as log
 from sqlalchemy import and_, column
 from sqlalchemy import delete as _delete
 from sqlalchemy import or_
 from sqlalchemy import update as _update
 from sqlalchemy.dialects.postgresql import Insert as _insert
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy_utils import get_referencing_foreign_keys, dependent_objects
-from fastapi import HTTPException
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.db.base import Base  # type: ignore[attr-defined]
@@ -325,18 +324,21 @@ async def delete_resource(
                         .execution_options(synchronize_session=False)
                     )
                 else:
-                    # Check for foreign references first so we can warn the User
-
                     log.debug("Deleting resource")
                     query = _delete(sql_model).where(sql_model.fides_key == fides_key)
                 await async_session.execute(query)
-            except IntegrityError:
-                log.bind(error="SQL Query integrity error!").info(  # type: ignore[index]
-                    "Failed to delete resource! There are objects that rely on this one."
-                )
+            except IntegrityError as err:
+                raw_error_text: str = err.orig.args[0]
+
+                if "violates foreign key constraint" in raw_error_text:
+                    error_message = "Failed to delete resource! Foreign key constraint found, try deleting related objects first."
+                else:
+                    error_message = "Failed to delete resource!"
+
+                log.bind(error="SQL Query integrity error!").error(raw_error_text)
                 raise HTTPException(
                     status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail="Foreign References to object found!",
+                    detail=error_message,
                 )
             except SQLAlchemyError:
                 error = errors.QueryError()
