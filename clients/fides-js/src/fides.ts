@@ -48,7 +48,11 @@ import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 
-import { FidesCookie, buildCookieConsentForExperiences } from "./lib/cookie";
+import {
+  FidesCookie,
+  buildCookieConsentForExperiences,
+  updateExperienceFromCookieConsent,
+} from "./lib/cookie";
 import {
   FidesConfig,
   FidesOverrides,
@@ -86,8 +90,23 @@ let _Fides: Fides;
 const updateCookie = async (
   oldCookie: FidesCookie,
   experience: PrivacyExperience,
-  debug?: boolean
+  debug?: boolean,
+  isExperienceClientSideFetched?: boolean
 ): Promise<{ cookie: FidesCookie; experience: PrivacyExperience }> => {
+  if (!isExperienceClientSideFetched) {
+    // If it's not client side fetched, we don't update anything since the cookie has already
+    // been updated earlier.
+    return { cookie: oldCookie, experience };
+  }
+  if (oldCookie.consent) {
+    // if we already have preferences on the cookie, update experience with those preferences
+    const updatedExperience = updateExperienceFromCookieConsent({
+      experience,
+      cookie: oldCookie,
+      debug,
+    });
+    return { cookie: oldCookie, experience: updatedExperience };
+  }
   const context = getConsentContext();
   const consent = buildCookieConsentForExperiences(
     experience,
@@ -123,7 +142,14 @@ const init = async (config: FidesConfig) => {
       cookie: oldCookie,
       experience: effectiveExperience,
       debug,
-    }) => updateCookie(oldCookie, effectiveExperience, debug),
+      isExperienceClientSideFetched,
+    }) =>
+      updateCookie(
+        oldCookie,
+        effectiveExperience,
+        debug,
+        isExperienceClientSideFetched
+      ),
   });
   Object.assign(_Fides, updatedFides);
 

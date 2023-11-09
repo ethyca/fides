@@ -157,7 +157,8 @@ const updateCookieAndExperience = async ({
     return { cookie, experience };
   }
 
-  // If the user has prefs on a client-side fetched experience, but there is no fides_string, we
+  // If the user has prefs on a client-side fetched experience, but there is no fides_string,
+  // we need to use the prefs on the experience to generate a fidesString and cookie.tcf_consent
   const tcSavePrefs: TcfSavePreferences = {};
   const enabledIds: EnabledIds = {
     purposesConsent: [],
