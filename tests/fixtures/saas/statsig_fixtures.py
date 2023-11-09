@@ -19,8 +19,10 @@ def statsig_secrets(saas_config) -> Dict[str, Any]:
         # add the rest of your secrets here
         "email": pydash.get(saas_config, "statsig.email") or secrets["email"],
         "user_id": pydash.get(saas_config, "statsig.user_id") or secrets["user_id"],
-        "STATSIG-API-KEY": pydash.get(saas_config, "statsig.STATSIG-API-KEY")
-        or secrets["STATSIG-API-KEY"],
+        "STATSIG-CONSOLE-API-KEY": pydash.get(
+            saas_config, "statsig.STATSIG-CONSOLE-API-KEY"
+        )
+        or secrets["STATSIG-CONSOLE-API-KEY"],
         "STATSIG-SERVER-API-KEY": pydash.get(
             saas_config, "statsig.STATSIG-SERVER-API-KEY"
         )

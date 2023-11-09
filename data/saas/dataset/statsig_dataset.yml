@@ -4,28 +4,4 @@ dataset:
     description: A sample dataset representing the Statsig connector for Fides
     collections:
       - name: user
-        fields:
-          - name: message
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: data
-            fidesops_meta:
-              data_type: object
-            fields:
-              - name: email
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: firstName
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: lastName
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: role
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
+        fields: []
