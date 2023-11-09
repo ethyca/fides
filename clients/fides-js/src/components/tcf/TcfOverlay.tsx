@@ -408,6 +408,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                   buttonType={ButtonType.SECONDARY}
                   label={experience.experience_config?.save_button_label}
                   onClick={() => onSave(draftIds)}
+                  id="fides-save-button"
                 />
               }
               isMobile={isMobile}
