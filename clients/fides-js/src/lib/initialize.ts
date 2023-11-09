@@ -36,7 +36,7 @@ import {
   transformConsentToFidesUserPreference,
   validateOptions,
 } from "./consent-utils";
-import { fetchExperience } from "../services/fides/api";
+import { fetchExperience } from "../services/api";
 import { getGeolocation } from "../services/external/geolocation";
 import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
@@ -45,7 +45,6 @@ import { initOverlay } from "./consent";
 import { TcfCookieConsent } from "./tcf/types";
 import { FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP } from "./consent-constants";
 import { customGetConsentPreferences } from "../services/external/preferences";
-import { customGetPrivacyExperience } from "../services/external/experience";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -320,20 +319,11 @@ export const initialize = async ({
     } else if (!isPrivacyExperience(effectiveExperience)) {
       fetchedClientSideExperience = true;
       // If no effective PrivacyExperience was pre-fetched, fetch one using the current region string
-      if (options.apiOptions?.getPrivacyExperienceFn) {
-        effectiveExperience = await customGetPrivacyExperience(
-          options,
-          fidesRegionString,
-          cookie.identity.fides_user_device_id
-        );
-      } else {
-        effectiveExperience = await fetchExperience(
-          fidesRegionString,
-          options.fidesApiUrl,
-          options.debug,
-          cookie.identity.fides_user_device_id
-        );
-      }
+      effectiveExperience = await fetchExperience(
+        fidesRegionString,
+        options,
+        cookie.identity.fides_user_device_id
+      );
     }
 
     if (

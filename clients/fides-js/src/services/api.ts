@@ -1,12 +1,14 @@
 import {
   ComponentType,
   EmptyExperience,
+  FidesOptions,
   LastServedConsentSchema,
   PrivacyExperience,
   PrivacyPreferencesRequest,
   RecordConsentServedRequest,
-} from "../../lib/consent-types";
-import { debugLog } from "../../lib/consent-utils";
+} from "../lib/consent-types";
+import { debugLog } from "../lib/consent-utils";
+import { FidesCookie } from "../lib/cookie";
 
 export enum FidesEndpointPaths {
   PRIVACY_EXPERIENCE = "/privacy-experience",
@@ -20,14 +22,31 @@ export enum FidesEndpointPaths {
  */
 export const fetchExperience = async (
   userLocationString: string,
-  fidesApiUrl: string,
-  debug: boolean,
+  options: FidesOptions,
   fidesUserDeviceId?: string | null
 ): Promise<PrivacyExperience | EmptyExperience> => {
   debugLog(
-    debug,
+    options.debug,
     `Fetching experience for userId: ${fidesUserDeviceId} in location: ${userLocationString}`
   );
+  if (options.apiOptions?.getPrivacyExperienceFn) {
+    debugLog(options.debug, "Calling custom fetch experience fn");
+    try {
+      return await options.apiOptions.getPrivacyExperienceFn(
+        userLocationString,
+        fidesUserDeviceId
+      );
+    } catch (e) {
+      debugLog(
+        options.debug,
+        "Error fetching experience from custom API, returning {}. Error: ",
+        e
+      );
+      return {};
+    }
+  }
+
+  debugLog(options.debug, "Calling Fides GET experience API");
   const fetchOptions: RequestInit = {
     method: "GET",
     mode: "cors",
@@ -48,12 +67,12 @@ export const fetchExperience = async (
   }
   params = new URLSearchParams(params);
   const response = await fetch(
-    `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
+    `${options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
     fetchOptions
   );
   if (!response.ok) {
     debugLog(
-      debug,
+      options.debug,
       "Error getting experience from Fides API, returning {}. Response:",
       response
     );
@@ -65,14 +84,14 @@ export const fetchExperience = async (
     // that have no relevant experiences
     const experience = (body.items && body.items[0]) ?? {};
     debugLog(
-      debug,
+      options.debug,
       "Got experience response from Fides API, returning: ",
       experience
     );
     return experience;
   } catch (e) {
     debugLog(
-      debug,
+      options.debug,
       "Error parsing experience response body from Fides API, returning {}. Response:",
       response
     );
@@ -89,25 +108,45 @@ const PATCH_FETCH_OPTIONS: RequestInit = {
 };
 
 /**
- * Sends user consent preference downstream to Fides
+ * Sends user consent preference downstream to Fides or custom API
  */
-export const patchUserPreferenceToFidesServer = async (
+export const patchUserPreference = async (
   preferences: PrivacyPreferencesRequest,
-  fidesApiUrl: string,
-  debug: boolean
+  options: FidesOptions,
+  cookie: FidesCookie,
+  experience: PrivacyExperience
 ): Promise<void> => {
-  debugLog(debug, "Saving user consent preference...", preferences);
+  debugLog(options.debug, "Saving user consent preference...", preferences);
+  if (options.apiOptions?.savePreferencesFn) {
+    debugLog(options.debug, "Calling custom save preferences fn");
+    try {
+      await options.apiOptions.savePreferencesFn(
+        cookie.consent,
+        cookie.fides_string,
+        experience
+      );
+    } catch (e) {
+      debugLog(
+        options.debug,
+        "Error saving preferences to custom API, continuing. Error: ",
+        e
+      );
+      return Promise.reject(e);
+    }
+    return Promise.resolve();
+  }
+  debugLog(options.debug, "Calling Fides save preferences API");
   const fetchOptions: RequestInit = {
     ...PATCH_FETCH_OPTIONS,
     body: JSON.stringify(preferences),
   };
   const response = await fetch(
-    `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_PREFERENCES}`,
+    `${options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_PREFERENCES}`,
     fetchOptions
   );
   if (!response.ok) {
     debugLog(
-      debug,
+      options.debug,
       "Error patching user preference Fides API. Response:",
       response
     );
@@ -117,24 +156,40 @@ export const patchUserPreferenceToFidesServer = async (
 
 export const patchNoticesServed = async ({
   request,
-  fidesApiUrl,
-  debug,
+  options,
 }: {
   request: RecordConsentServedRequest;
-  fidesApiUrl: string;
-  debug: boolean;
+  options: FidesOptions;
 }): Promise<Array<LastServedConsentSchema> | null> => {
-  debugLog(debug, "Saving that notices were served...");
+  debugLog(options.debug, "Saving that notices were served...");
+  if (options.apiOptions?.patchNoticesServedFn) {
+    debugLog(options.debug, "Calling custom patch notices served fn");
+    try {
+      return await options.apiOptions.patchNoticesServedFn(request);
+    } catch (e) {
+      debugLog(
+        options.debug,
+        "Error patching notices served to custom API, continuing. Error: ",
+        e
+      );
+      return null;
+    }
+  }
+  debugLog(options.debug, "Calling Fides patch notices served API");
   const fetchOptions: RequestInit = {
     ...PATCH_FETCH_OPTIONS,
     body: JSON.stringify(request),
   };
   const response = await fetch(
-    `${fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
+    `${options.fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
     fetchOptions
   );
   if (!response.ok) {
-    debugLog(debug, "Error patching notices served. Response:", response);
+    debugLog(
+      options.debug,
+      "Error patching notices served. Response:",
+      response
+    );
     return null;
   }
   return response.json();
