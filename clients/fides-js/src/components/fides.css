@@ -407,9 +407,8 @@ div#fides-consent-content .fides-modal-description {
 .fides-tcf-banner-container
   div#fides-banner
   div#fides-banner-inner
-  div#fides-button-group
-  .fides-banner-button-group {
-  padding-left: 24px;
+  div#fides-button-group {
+  gap: 12px;
 }
 
 /* Responsive overlay */
