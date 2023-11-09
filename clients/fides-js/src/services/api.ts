@@ -1,6 +1,7 @@
 import {
   ComponentType,
-  EmptyExperience, FidesApiOptions,
+  EmptyExperience,
+  FidesApiOptions,
   FidesOptions,
   LastServedConsentSchema,
   PrivacyExperience,
