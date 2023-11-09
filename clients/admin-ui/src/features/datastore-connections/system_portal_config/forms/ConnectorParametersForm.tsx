@@ -418,7 +418,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                     validate={(value: string[]) => {
                       let error;
                       if (!value || value.length === 0) {
-                        error = "At least one action must be selected";
+                        error = "At least one request type must be selected";
                       }
                       return error;
                     }}
@@ -437,8 +437,10 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                           form.touched.enabled_actions &&
                           form.errors.enabled_actions
                         }
+                        isRequired
                       >
-                        {getFormLabel("enabled_actions", "Enabled actions")}
+                        {/* Known as enabled_actions throughout the front-end and back-end but it's displayed to the user as "Request types" */}
+                        {getFormLabel("enabled_actions", "Request types")}
                         <VStack align="flex-start" w="inherit">
                           <Box width="100%">
                             <SelectInput
@@ -458,9 +460,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                           </FormErrorMessage>
                         </VStack>
                         <Tooltip
-                          aria-label="The privacy request actions (access, erasure, or consent) to enable from the actions supported by this integration."
+                          aria-label="The request types that are supported for this integration."
                           hasArrow
-                          label="The privacy request actions (access, erasure, or consent) to enable from the actions supported by this integration."
+                          label="The request types that are supported for this integration."
                           placement="right-start"
                           openDelay={500}
                         >

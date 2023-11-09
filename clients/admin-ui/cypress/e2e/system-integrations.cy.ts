@@ -68,7 +68,7 @@ describe("System integrations", () => {
         .click();
     });
 
-    it("should not display disabled actions field", () => {
+    it("should not Request types (enabled-actions) field", () => {
       cy.getByTestId("enabled-actions").should("not.exist");
     });
   });

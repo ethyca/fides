@@ -69,7 +69,7 @@ describe("System integrations", () => {
     });
 
     // Verify Postgres shows access and erasure by default
-    it("should display disabled actions field", () => {
+    it("should display Request types (enabled-actions) field", () => {
       cy.getByTestId("enabled-actions").should("exist");
       cy.getByTestId("enabled-actions").within(() => {
         cy.contains("access");
