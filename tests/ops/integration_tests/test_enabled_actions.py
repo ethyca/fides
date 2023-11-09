@@ -191,7 +191,7 @@ class TestEnabledActions:
 
         pr = get_privacy_request_results(
             db,
-            policy,
+            erasure_policy,
             run_privacy_request_task,
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
