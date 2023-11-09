@@ -6,7 +6,7 @@
  */
 
 import { CmpApi, TCData } from "@iabtechlabtcf/cmpapi";
-import { TCModel, TCString, GVL } from "@iabtechlabtcf/core";
+import { TCModel, TCString, GVL, Segment } from "@iabtechlabtcf/core";
 import { makeStub } from "./tcf/stub";
 
 import { EnabledIds } from "./tcf/types";
@@ -73,6 +73,7 @@ export const generateFidesString = async ({
     tcModel.cmpId = CMP_ID;
     tcModel.cmpVersion = CMP_VERSION;
     tcModel.consentScreen = 1; // todo- On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
+    tcModel.isServiceSpecific = true;
 
     // Narrow the GVL to say we've only showed these vendors provided by our experience
     tcModel.gvl.narrowVendorsTo(uniqueGvlVendorIds(experience));
@@ -131,7 +132,10 @@ export const generateFidesString = async ({
       // the user is not given choice by a CMP.
       // See https://iabeurope.eu/iab-europe-transparency-consent-framework-policies/
       // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/issues/63#issuecomment-581798996
-      encodedString = TCString.encode(tcModel);
+      encodedString = TCString.encode(tcModel, {
+        // We choose just CORE and VENDORS_DISCLOSED for now (PROD#1312)
+        segments: [Segment.CORE, Segment.VENDORS_DISCLOSED],
+      });
 
       // Attach the AC string
       const acString = generateAcString({ tcStringPreferences });
