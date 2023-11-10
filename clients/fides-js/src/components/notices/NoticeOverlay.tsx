@@ -159,7 +159,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
                 onSave();
               }}
               isAcknowledge={isAllNoticeOnly}
-              middleButton={<PrivacyPolicyLink experience={experienceConfig} />}
               isMobile={isMobile}
             />
           )}
