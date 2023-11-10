@@ -40,6 +40,9 @@ The types of changes are:
 - "isServiceSpecific" default updated when building TC strings on the frontend [#4384](https://github.com/ethyca/fides/pull/4384)
 - Redact cli, database, and redis configuration information from GET api/v1/config API request responses. [#4379](https://github.com/ethyca/fides/pull/4379)
 
+### Fixed
+- Persist bulk system add filter modal state [#4412](https://github.com/ethyca/fides/pull/4412)
+
 ## [2.23.3](https://github.com/ethyca/fides/compare/2.23.2...2.23.3)
 
 ### Fixed
