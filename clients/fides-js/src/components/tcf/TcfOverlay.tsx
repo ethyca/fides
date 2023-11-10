@@ -1,5 +1,5 @@
-import { h, FunctionComponent, Fragment } from "preact";
-import { useState, useCallback, useMemo } from "preact/hooks";
+import {Fragment, FunctionComponent, h} from "preact";
+import {useCallback, useMemo, useState} from "preact/hooks";
 import ConsentBanner from "../ConsentBanner";
 import PrivacyPolicyLink from "../PrivacyPolicyLink";
 
@@ -11,26 +11,26 @@ import {
 
 import "../fides.css";
 import Overlay from "../Overlay";
-import { TcfConsentButtons } from "./TcfConsentButtons";
-import { OverlayProps } from "../types";
+import {TcfConsentButtons} from "./TcfConsentButtons";
+import {OverlayProps} from "../types";
 
 import type {
   EnabledIds,
   TCFFeatureRecord,
   TCFFeatureSave,
+  TcfModels,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
   TCFPurposeSave,
+  TcfSavePreferences,
   TCFSpecialFeatureSave,
   TCFSpecialPurposeSave,
-  TCFVendorSave,
-  TcfSavePreferences,
   TCFVendorConsentRecord,
   TCFVendorLegitimateInterestsRecord,
-  TcfModels,
+  TCFVendorSave,
 } from "../../lib/tcf/types";
 
-import { updateConsentPreferences } from "../../lib/preferences";
+import {updateConsentPreferences} from "../../lib/preferences";
 import {
   ButtonType,
   ConsentMethod,
@@ -38,17 +38,14 @@ import {
   PrivacyExperience,
   ServingComponent,
 } from "../../lib/consent-types";
-import { generateFidesString } from "../../lib/tcf";
-import {
-  FidesCookie,
-  transformTcfPreferencesToCookieKeys,
-} from "../../lib/cookie";
+import {generateFidesString} from "../../lib/tcf";
+import {FidesCookie, transformTcfPreferencesToCookieKeys,} from "../../lib/cookie";
 import InitialLayer from "./InitialLayer";
 import TcfTabs from "./TcfTabs";
 import Button from "../Button";
-import { useConsentServed } from "../../lib/hooks";
+import {useConsentServed} from "../../lib/hooks";
 import VendorInfoBanner from "./VendorInfoBanner";
-import { dispatchFidesEvent } from "../../lib/events";
+import {dispatchFidesEvent} from "../../lib/events";
 
 const resolveConsentValueFromTcfModel = (
   model:
@@ -293,7 +290,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   });
 
   const handleUpdateAllPreferences = useCallback(
-    (enabledIds: EnabledIds) => {
+    (consentMethod: ConsentMethod, enabledIds: EnabledIds) => {
       const tcf = createTcfSavePayload({
         experience,
         enabledIds,
@@ -302,7 +299,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       updateConsentPreferences({
         consentPreferencesToSave: [],
         experience,
-        consentMethod: ConsentMethod.button,
+        consentMethod,
         options,
         userLocationString: fidesRegionString,
         cookie,
@@ -361,8 +358,8 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               <TcfConsentButtons
                 experience={experience}
                 onManagePreferencesClick={onManagePreferencesClick}
-                onSave={(keys) => {
-                  handleUpdateAllPreferences(keys);
+                onSave={(consentMethod: ConsentMethod, keys: EnabledIds) => {
+                  handleUpdateAllPreferences(consentMethod, keys);
                   onSave();
                 }}
                 isMobile={isMobile}
@@ -394,8 +391,8 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         />
       )}
       renderModalFooter={({ onClose, isMobile }) => {
-        const onSave = (keys: EnabledIds) => {
-          handleUpdateAllPreferences(keys);
+        const onSave = (consentMethod: ConsentMethod, keys: EnabledIds) => {
+          handleUpdateAllPreferences(consentMethod, keys);
           onClose();
         };
         return (
@@ -407,7 +404,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                 <Button
                   buttonType={ButtonType.SECONDARY}
                   label={experience.experience_config?.save_button_label}
-                  onClick={() => onSave(draftIds)}
+                  onClick={() => onSave(ConsentMethod.save, draftIds)}
                   className="fides-save-button"
                 />
               }
