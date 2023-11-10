@@ -1655,19 +1655,21 @@ def resume_privacy_request_from_requires_input(
             detail=f"Cannot resume privacy request from 'requires_input': privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
+    action_type = None
+    if privacy_request.policy.get_rules_for_action(ActionType.access):
+        action_type = ActionType.access
+    elif privacy_request.policy.get_rules_for_action(ActionType.erasure):
+        action_type = ActionType.erasure
+
     access_manual_webhooks: List[AccessManualWebhook] = AccessManualWebhook.get_enabled(
-        db
+        db, action_type
     )
     try:
         for manual_webhook in access_manual_webhooks:
             # check the access or erasure cache based on the privacy request's action type
-            if privacy_request.policy.get_rules_for_action(
-                action_type=ActionType.access
-            ):
+            if action_type == ActionType.access:
                 privacy_request.get_manual_webhook_access_input_strict(manual_webhook)
-            if privacy_request.policy.get_rules_for_action(
-                action_type=ActionType.erasure
-            ):
+            if action_type == ActionType.erasure:
                 privacy_request.get_manual_webhook_erasure_input_strict(manual_webhook)
     except (
         NoCachedManualWebhookEntry,

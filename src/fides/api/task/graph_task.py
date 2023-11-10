@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 import copy
 import traceback
 from abc import ABC
@@ -13,6 +14,7 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
+    ActionDisabled,
     CollectionDisabled,
     NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
@@ -89,6 +91,7 @@ def retry(
             for attempt in range(CONFIG.execution.task_retry_count + 1):
                 try:
                     self.skip_if_disabled()
+                    self.skip_if_action_disabled(action_type)
                     # Create ExecutionLog with status in_processing or retrying
                     if attempt:
                         self.log_retry(action_type)
@@ -115,6 +118,7 @@ def retry(
                     return 0
                 except (
                     CollectionDisabled,
+                    ActionDisabled,
                     NotSupportedForCollection,
                 ) as exc:
                     traceback.print_exc()
@@ -533,6 +537,23 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 f"ConnectionConfig {connection_config.key} is disabled.",
             )
 
+    def skip_if_action_disabled(self, action_type: ActionType) -> None:
+        """Skip execution for the given collection if it is attached to a ConnectionConfig that does not have the given action_type enabled."""
+
+        # the access action is never disabled since it provides data that is needed for erasure requests
+        if action_type == ActionType.access:
+            return
+
+        connection_config: ConnectionConfig = self.connector.configuration
+        if (
+            connection_config.enabled_actions is not None
+            and action_type not in connection_config.enabled_actions
+        ):
+            raise ActionDisabled(
+                f"Skipping collection {self.traversal_node.node.address}. "
+                f"The {action_type} action is disabled for connection config with key '{connection_config.key}'.",
+            )
+
     @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run an access request on a single node."""
@@ -762,7 +783,33 @@ async def run_access_request(
         privacy_request.cache_data_use_map(_format_data_use_map_for_caching(env))
 
         v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
-        return v.compute()
+        access_results = v.compute()
+        filtered_access_results = filter_by_enabled_actions(
+            access_results, connection_configs
+        )
+        return filtered_access_results
+
+
+def filter_by_enabled_actions(
+    access_results: Dict[str, Any], connection_configs: List[ConnectionConfig]
+) -> Dict[str, Any]:
+    """Removes any access results that are associated with a connection config that doesn't have the access action enabled."""
+
+    # create a map between the dataset and its connection config's enabled actions
+    dataset_enabled_actions = {}
+    for config in connection_configs:
+        for dataset in config.datasets:
+            dataset_enabled_actions[dataset.fides_key] = config.enabled_actions
+
+    # use the enabled actions map to filter out the access results
+    filtered_access_results = {}
+    for key, value in access_results.items():
+        dataset_name = key.split(":")[0]
+        enabled_action = dataset_enabled_actions.get(dataset_name)
+        if enabled_action is None or ActionType.access in enabled_action:
+            filtered_access_results[key] = value
+
+    return filtered_access_results
 
 
 def get_cached_data_for_erasures(

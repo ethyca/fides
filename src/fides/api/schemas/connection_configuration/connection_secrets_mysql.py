@@ -37,7 +37,7 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
     )
     ssh_required: bool = Field(
         False,
-        title="SSH Required",
+        title="SSH required",
         description="Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.",
     )
 
