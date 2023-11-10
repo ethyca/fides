@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.23.3b3.post0.dev12"
+    "version": "2.23.3b3.post0.dev13"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -14188,6 +14188,12 @@
             "title": "Authorized",
             "type": "boolean",
             "default": false
+          },
+          "enabled_actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionType"
+            }
           }
         },
         "description": "Describes the returned schema for a ConnectionConfiguration."
@@ -14197,7 +14203,8 @@
         "required": [
           "identifier",
           "type",
-          "human_readable"
+          "human_readable",
+          "supported_actions"
         ],
         "type": "object",
         "properties": {
@@ -14231,6 +14238,12 @@
           "user_guide": {
             "title": "User Guide",
             "type": "string"
+          },
+          "supported_actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionType"
+            }
           }
         },
         "description": "Describes the returned schema for connection types"
@@ -14834,12 +14847,6 @@
             "title": "Description",
             "type": "string"
           },
-          "enabled_actions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ActionType"
-            }
-          },
           "secrets": {
             "title": "Secrets",
             "anyOf": [
@@ -14895,7 +14902,6 @@
             "type": "string"
           }
         },
-        "additionalProperties": false,
         "description": "Schema for creating a connection configuration including secrets."
       },
       "CurrentPrivacyPreferenceReportingSchema": {
@@ -17702,7 +17708,7 @@
             "description": "The name of the specific database within the database server that you want to connect to."
           },
           "ssh_required": {
-            "title": "SSH Required",
+            "title": "SSH required",
             "type": "boolean",
             "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.",
             "default": false
@@ -18885,7 +18891,7 @@
             "description": "The default schema to be used for the database connection (defaults to public)."
           },
           "ssh_required": {
-            "title": "SSH Required",
+            "title": "SSH required",
             "type": "boolean",
             "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
             "default": false
@@ -20317,7 +20323,7 @@
             "description": "The default schema to be used for the database connection (defaults to public)."
           },
           "ssh_required": {
-            "title": "SSH Required",
+            "title": "SSH required",
             "type": "boolean",
             "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your Redshift database is behind a firewall and requires SSH tunneling for remote connections.",
             "default": false
@@ -22213,7 +22219,7 @@
             "description": "The default schema to be used for the database connection (defaults to public)."
           },
           "ssh_required": {
-            "title": "SSH Required",
+            "title": "SSH required",
             "type": "boolean",
             "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
             "default": false
