@@ -18,11 +18,16 @@ import { useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DocsLink from "~/features/common/DocsLink";
+import { useFeatures } from "~/features/common/features";
 import RightArrow from "~/features/common/Icon/RightArrow";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import TestConnectionMessage from "~/features/datastore-connections/system_portal_config/TestConnectionMessage";
 import TestData from "~/features/datastore-connections/TestData";
+import {
+  useCreatePlusSaasConnectionConfigMutation,
+  usePatchPlusSystemConnectionConfigsMutation,
+} from "~/features/plus/plus.slice";
 import {
   ConnectionConfigSecretsRequest,
   selectActiveSystem,
@@ -33,6 +38,7 @@ import {
 } from "~/features/system/system.slice";
 import {
   AccessLevel,
+  ActionType,
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -80,6 +86,9 @@ const createSaasConnector = async (
     instance_key: generateIntegrationKey(systemFidesKey, connectionOption),
     saas_connector_type: connectionOption.identifier,
     secrets: {},
+    ...(values.enabled_actions
+      ? { enabled_actions: values.enabled_actions }
+      : {}),
   };
 
   const params: CreateSaasConnectionConfig = {
@@ -111,6 +120,7 @@ export const patchConnectionConfig = async (
     ? connectionConfig.key
     : generateIntegrationKey(systemFidesKey, connectionOption);
 
+  // the enabled_actions are conditionally added if plus is enabled
   const params1: Omit<ConnectionConfigurationResponse, "created_at" | "name"> =
     {
       access: AccessLevel.WRITE,
@@ -120,6 +130,9 @@ export const patchConnectionConfig = async (
       description: values.description,
       disabled: false,
       key,
+      ...(values.enabled_actions
+        ? { enabled_actions: values.enabled_actions as ActionType[] }
+        : {}),
     };
   const payload = await patchFunc({
     systemFidesKey,
@@ -211,15 +224,20 @@ export const useConnectorForm = ({
   });
 
   const [createSassConnectionConfig] = useCreateSassConnectionConfigMutation();
+  const [createPlusSaasConnectionConfig] =
+    useCreatePlusSaasConnectionConfigMutation();
   const [getAuthorizationUrl] = useLazyGetAuthorizationUrlQuery();
   const [updateSystemConnectionSecrets] =
     usePatchSystemConnectionSecretsMutation();
   const [patchDatastoreConnection] = usePatchSystemConnectionConfigsMutation();
+  const [patchPlusDatastoreConnection] =
+    usePatchPlusSystemConnectionConfigsMutation();
   const [deleteDatastoreConnection, deleteDatastoreConnectionResult] =
     useDeleteSystemConnectionConfigMutation();
   const { data: allDatasetConfigs } = useGetConnectionConfigDatasetConfigsQuery(
     connectionConfig?.key || ""
   );
+  const { plus: isPlusEnabled } = useFeatures();
 
   const originalSecrets = useMemo(
     () => (connectionConfig ? { ...connectionConfig.secrets } : {}),
@@ -255,7 +273,9 @@ export const useConnectorForm = ({
           secretsSchema!,
           connectionOption,
           systemFidesKey,
-          createSassConnectionConfig
+          isPlusEnabled
+            ? createPlusSaasConnectionConfig
+            : createSassConnectionConfig
         );
         // eslint-disable-next-line no-param-reassign
         connectionConfig = response.connection;
@@ -265,7 +285,9 @@ export const useConnectorForm = ({
           connectionOption,
           systemFidesKey,
           connectionConfig!,
-          patchDatastoreConnection
+          isPlusEnabled
+            ? patchPlusDatastoreConnection
+            : patchDatastoreConnection
         );
         if (
           !connectionConfig &&

@@ -34,7 +34,8 @@
       "identifier": "postgres",
       "type": "database",
       "human_readable": "PostgreSQL",
-      "encoded_icon": null
+      "encoded_icon": null,
+      "supported_actions": ["access", "erasure"]
     },
     {
       "identifier": "redshift",

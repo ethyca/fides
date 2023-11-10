@@ -38,6 +38,7 @@ def embedded_http_connection_config(connection_config: ConnectionConfig) -> Dict
         "saas_config": None,
         "secrets": None,
         "authorized": False,
+        "enabled_actions": None,
     }
 
 
