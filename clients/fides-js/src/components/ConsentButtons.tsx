@@ -90,7 +90,10 @@ export const NoticeConsentButtons = ({
   const { experience_config: config, privacy_notices: notices } = experience;
 
   const handleAcceptAll = () => {
-    onSave(ConsentMethod.accept, notices.map((n) => n.notice_key));
+    onSave(
+      ConsentMethod.accept,
+      notices.map((n) => n.notice_key)
+    );
   };
 
   const handleRejectAll = () => {

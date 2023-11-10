@@ -1,5 +1,5 @@
-import {Fragment, FunctionComponent, h} from "preact";
-import {useCallback, useMemo, useState} from "preact/hooks";
+import { Fragment, FunctionComponent, h } from "preact";
+import { useCallback, useMemo, useState } from "preact/hooks";
 import ConsentBanner from "../ConsentBanner";
 import PrivacyPolicyLink from "../PrivacyPolicyLink";
 
@@ -11,8 +11,8 @@ import {
 
 import "../fides.css";
 import Overlay from "../Overlay";
-import {TcfConsentButtons} from "./TcfConsentButtons";
-import {OverlayProps} from "../types";
+import { TcfConsentButtons } from "./TcfConsentButtons";
+import { OverlayProps } from "../types";
 
 import type {
   EnabledIds,
@@ -30,7 +30,7 @@ import type {
   TCFVendorSave,
 } from "../../lib/tcf/types";
 
-import {updateConsentPreferences} from "../../lib/preferences";
+import { updateConsentPreferences } from "../../lib/preferences";
 import {
   ButtonType,
   ConsentMethod,
@@ -38,14 +38,17 @@ import {
   PrivacyExperience,
   ServingComponent,
 } from "../../lib/consent-types";
-import {generateFidesString} from "../../lib/tcf";
-import {FidesCookie, transformTcfPreferencesToCookieKeys,} from "../../lib/cookie";
+import { generateFidesString } from "../../lib/tcf";
+import {
+  FidesCookie,
+  transformTcfPreferencesToCookieKeys,
+} from "../../lib/cookie";
 import InitialLayer from "./InitialLayer";
 import TcfTabs from "./TcfTabs";
 import Button from "../Button";
-import {useConsentServed} from "../../lib/hooks";
+import { useConsentServed } from "../../lib/hooks";
 import VendorInfoBanner from "./VendorInfoBanner";
-import {dispatchFidesEvent} from "../../lib/events";
+import { dispatchFidesEvent } from "../../lib/events";
 
 const resolveConsentValueFromTcfModel = (
   model:

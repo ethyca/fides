@@ -86,7 +86,10 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   };
 
   const handleUpdatePreferences = useCallback(
-    (consentMethod: ConsentMethod, enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>) => {
+    (
+      consentMethod: ConsentMethod,
+      enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>
+    ) => {
       const consentPreferencesToSave = createConsentPreferencesToSave(
         privacyNotices,
         enabledPrivacyNoticeKeys,
@@ -154,7 +157,10 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               experience={experience}
               onManagePreferencesClick={onManagePreferencesClick}
               enabledKeys={draftEnabledNoticeKeys}
-              onSave={(consentMethod: ConsentMethod, keys: Array<PrivacyNotice["notice_key"]>) => {
+              onSave={(
+                consentMethod: ConsentMethod,
+                keys: Array<PrivacyNotice["notice_key"]>
+              ) => {
                 handleUpdatePreferences(consentMethod, keys);
                 onSave();
               }}
@@ -183,7 +189,10 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           <NoticeConsentButtons
             experience={experience}
             enabledKeys={draftEnabledNoticeKeys}
-            onSave={(consentMethod: ConsentMethod, keys: Array<PrivacyNotice["notice_key"]>) => {
+            onSave={(
+              consentMethod: ConsentMethod,
+              keys: Array<PrivacyNotice["notice_key"]>
+            ) => {
               handleUpdatePreferences(consentMethod, keys);
               onClose();
             }}

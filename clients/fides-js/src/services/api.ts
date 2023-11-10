@@ -1,5 +1,6 @@
 import {
-  ComponentType, ConsentMethod,
+  ComponentType,
+  ConsentMethod,
   EmptyExperience,
   FidesApiOptions,
   FidesOptions,
