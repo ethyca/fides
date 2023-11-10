@@ -233,7 +233,6 @@ const SystemInformationForm = ({
   };
 
   const handleVendorSelected = (newVendorId: string) => {
-    console.log("hello from handleVendorSelected");
     if (
       features.tcf &&
       extractVendorSource(newVendorId) === VendorSources.GVL
