@@ -97,24 +97,24 @@ describe("Consent banner", () => {
           );
           cy.get("div#fides-button-group").within(() => {
             cy.get(
-              "button.fides-banner-button.fides-banner-button-tertiary"
+              "button#fides-banner-button-tertiary.fides-banner-button.fides-banner-button-tertiary"
             ).contains("Manage preferences");
             cy.get(
-              "button.fides-banner-button.fides-banner-button-primary"
+              "button#fides-banner-button-primary.fides-banner-button.fides-banner-button-primary"
             ).contains("Reject Test");
             cy.get(
-              "button.fides-banner-button.fides-banner-button-primary"
+              "button#fides-banner-button-primary.fides-banner-button.fides-banner-button-primary"
             ).contains("Accept Test");
             // Order matters - it should always be secondary, then primary!
             cy.get("button")
               .eq(0)
-              .should("have.class", "fides-banner-button-tertiary");
+              .should("have.id", "fides-banner-button-tertiary");
             cy.get("button")
               .eq(1)
-              .should("have.class", "fides-banner-button-primary");
+              .should("have.id", "fides-banner-button-primary");
             cy.get("button")
               .eq(2)
-              .should("have.class", "fides-banner-button-primary");
+              .should("have.id", "fides-banner-button-primary");
           });
         });
       });
