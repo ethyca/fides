@@ -204,7 +204,7 @@ describe("Consent banner", () => {
               ],
               privacy_experience_id: "132345243",
               user_geography: "us_ca",
-              method: ConsentMethod.button,
+              method: ConsentMethod.save,
             };
             // uuid is generated automatically if the user has no saved consent cookie
             generatedUserDeviceId = body.browser_identity.fides_user_device_id;
@@ -336,7 +336,7 @@ describe("Consent banner", () => {
             ],
             privacy_experience_id: "132345243",
             user_geography: "us_ca",
-            method: ConsentMethod.button,
+            method: ConsentMethod.save,
           };
           expect(body).to.eql(expected);
         });
@@ -1586,6 +1586,9 @@ describe("Consent banner", () => {
               (p: ConsentOptionCreate) => p.served_notice_history_id
             )
           ).to.eql(expected);
+          expect(preferenceInterception.request.body.method).to.eql(
+            ConsentMethod.reject
+          );
         });
       });
     });
