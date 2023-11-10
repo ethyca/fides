@@ -58,7 +58,7 @@ import {
   UserConsentPreference,
 } from "./lib/consent-types";
 
-import { generateFidesString, initializeCmpApi } from "./lib/tcf";
+import { generateFidesString, initializeTcfCmpApi } from "./lib/tcf";
 import {
   getInitialCookie,
   getInitialFides,
@@ -89,6 +89,7 @@ import {
   generateFidesStringFromCookieTcfConsent,
   transformFidesStringToCookieKeys,
 } from "./lib/tcf/utils";
+import type { GppFunction } from "./lib/gpp/types";
 
 declare global {
   interface Window {
@@ -104,6 +105,8 @@ declare global {
       // DEFER (PROD-1243): support a configurable "custom options" path
       tc_info: OverrideOptions;
     };
+    __gpp?: GppFunction;
+    __gppLocator?: Window;
   }
 }
 
@@ -279,7 +282,7 @@ const init = async (config: FidesConfig) => {
   }
   const initialFides = getInitialFides({ ...config, cookie });
   // Initialize the CMP API early so that listeners are established
-  initializeCmpApi();
+  initializeTcfCmpApi();
   if (initialFides) {
     Object.assign(_Fides, initialFides);
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
