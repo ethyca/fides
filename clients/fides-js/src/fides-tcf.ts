@@ -286,8 +286,7 @@ const init = async (config: FidesConfig) => {
     cookie,
     experience,
     renderOverlay,
-    updateCookieAndExperience: (props) =>
-      updateCookieAndExperience({ ...props }),
+    updateCookieAndExperience,
   });
   Object.assign(_Fides, updatedFides);
 

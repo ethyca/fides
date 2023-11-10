@@ -52,6 +52,7 @@ import {
   FidesCookie,
   buildCookieConsentForExperiences,
   updateExperienceFromCookieConsent,
+  consentCookieObjHasSomeConsentSet,
 } from "./lib/cookie";
 import {
   FidesConfig,
@@ -93,7 +94,10 @@ const updateCookie = async (
   debug?: boolean,
   isExperienceClientSideFetched?: boolean
 ): Promise<{ cookie: FidesCookie; experience: PrivacyExperience }> => {
-  if (isExperienceClientSideFetched && oldCookie.consent) {
+  const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
+    oldCookie.consent
+  );
+  if (isExperienceClientSideFetched && preferencesExistOnCookie) {
     // if we already have preferences on the cookie, update client-side experience with those preferences
     const updatedExperience = updateExperienceFromCookieConsent({
       experience,
