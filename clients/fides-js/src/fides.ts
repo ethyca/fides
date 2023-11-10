@@ -93,13 +93,8 @@ const updateCookie = async (
   debug?: boolean,
   isExperienceClientSideFetched?: boolean
 ): Promise<{ cookie: FidesCookie; experience: PrivacyExperience }> => {
-  if (!isExperienceClientSideFetched) {
-    // If it's not client side fetched, we don't update anything since the cookie has already
-    // been updated earlier.
-    return { cookie: oldCookie, experience };
-  }
-  if (oldCookie.consent) {
-    // if we already have preferences on the cookie, update experience with those preferences
+  if (isExperienceClientSideFetched && oldCookie.consent) {
+    // if we already have preferences on the cookie, update client-side experience with those preferences
     const updatedExperience = updateExperienceFromCookieConsent({
       experience,
       cookie: oldCookie,

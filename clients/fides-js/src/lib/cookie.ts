@@ -314,7 +314,7 @@ export const buildTcfEntitiesFromCookie = (
 
 /**
  * Updates prefetched experience, based on:
- * 1) experience: pre-fetched experience-based consent configuration that does not contain user preference.
+ * 1) experience: pre-fetched or client-side experience-based consent configuration
  * 2) cookie: cookie containing user preference.
  *
  * Returns updated experience with user preferences.
