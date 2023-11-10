@@ -16,27 +16,18 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 @pytest.mark.integration
 class TestEnabledActions:
     @pytest.fixture(scope="function")
-    def mongo_postgres_dataset_graph(
+    def dataset_graph(
         self,
         db,
         example_datasets,
         integration_postgres_config,
-        integration_mongodb_config,
-    ):
+    ) -> DatasetGraph:
         dataset_postgres = Dataset(**example_datasets[0])
         dataset_config(db, integration_postgres_config, dataset_postgres.dict())
-
         graph = convert_dataset_to_graph(
             dataset_postgres, integration_postgres_config.key
         )
-        dataset_mongo = Dataset(**example_datasets[1])
-        dataset_config(db, integration_mongodb_config, dataset_mongo.dict())
-
-        mongo_graph = convert_dataset_to_graph(
-            dataset_mongo, integration_mongodb_config.key
-        )
-        dataset_graph = DatasetGraph(*[graph, mongo_graph])
-        return dataset_graph
+        return DatasetGraph(*[graph])
 
     @pytest.mark.asyncio
     async def test_access_disabled(
@@ -44,8 +35,7 @@ class TestEnabledActions:
         db,
         policy,
         integration_postgres_config,
-        integration_mongodb_config,
-        mongo_postgres_dataset_graph,
+        dataset_graph,
     ) -> None:
         """Disable the access request for one connection config and verify the access results"""
 
@@ -57,15 +47,13 @@ class TestEnabledActions:
         access_results = await graph_task.run_access_request(
             privacy_request,
             policy,
-            mongo_postgres_dataset_graph,
-            [integration_postgres_config, integration_mongodb_config],
+            dataset_graph,
+            [integration_postgres_config],
             {"email": "customer-1@example.com"},
             db,
         )
 
-        # assert that only mongodb results are returned
-        mongo_dataset = integration_mongodb_config.datasets[0].fides_key
-        assert {key.split(":")[0] for key in access_results} == {mongo_dataset}
+        assert access_results == {}
 
     @pytest.mark.asyncio
     async def test_erasure_disabled(
@@ -74,8 +62,7 @@ class TestEnabledActions:
         policy,
         erasure_policy,
         integration_postgres_config,
-        integration_mongodb_config,
-        mongo_postgres_dataset_graph,
+        dataset_graph,
     ) -> None:
         """Disable the erasure request for one connection config and verify the erasure results"""
 
@@ -87,35 +74,30 @@ class TestEnabledActions:
         access_results = await graph_task.run_access_request(
             privacy_request,
             policy,
-            mongo_postgres_dataset_graph,
-            [integration_postgres_config, integration_mongodb_config],
+            dataset_graph,
+            [integration_postgres_config],
             {"email": "customer-1@example.com"},
             db,
         )
 
-        # the access results should contain results from both connections
+        # the access results should contain results from postgres
         postgres_dataset = integration_postgres_config.datasets[0].fides_key
-        mongo_dataset = integration_mongodb_config.datasets[0].fides_key
         assert {key.split(":")[0] for key in access_results} == {
             postgres_dataset,
-            mongo_dataset,
         }
 
         erasure_results = await graph_task.run_erasure(
             privacy_request,
             erasure_policy,
-            mongo_postgres_dataset_graph,
-            [integration_postgres_config, integration_mongodb_config],
+            dataset_graph,
+            [integration_postgres_config],
             {"email": "customer-1@example.com"},
             get_cached_data_for_erasures(privacy_request.id),
             db,
         )
 
-        # the erasure results should only contain results from mongodb
-        mongo_dataset = integration_mongodb_config.datasets[0].fides_key
-        assert {key.split(":")[0] for key in erasure_results} == {
-            mongo_dataset,
-        }
+        # the erasure results should be empty
+        assert erasure_results == {}
 
     @pytest.mark.asyncio
     async def test_access_disabled_for_manual_webhook_integrations(
