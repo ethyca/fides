@@ -1487,10 +1487,7 @@ describe("Fides-js TCF", () => {
             8: false,
             9: true,
           });
-          expect(tcData.purpose.legitimateInterests).to.eql({
-            [PURPOSE_2.id]: true,
-            1: false,
-          });
+          expect(tcData.purpose.legitimateInterests).to.eql({});
           const vendorIdOnly = VENDOR_1.id.split(".")[1];
           expect(tcData.vendor.consents).to.eql({
             1: false,
@@ -2185,6 +2182,99 @@ describe("Fides-js TCF", () => {
           expect(tcData.purpose.legitimateInterests).to.eql({});
           expect(tcData.vendor.consents).to.eql({});
           expect(tcData.vendor.legitimateInterests).to.eql({});
+        });
+    });
+    /**
+     * TEST CASE #11:
+     * ❌ 1) fides_string override option (via config.options.fidesString)
+     * ❌ 2) preferences API (via a custom function)
+     * ✅ 3) local cookie (via fides_consent cookie)
+     * ❌ 4) "prefetched" experience (via config.options.experience)
+     * ✅ 5) experience API (via GET /privacy-experience)
+     *
+     * EXPECTED RESULT: prefers preferences from local cookie instead of from client-side experience
+     */
+    it("prefers preferences from fides_string option when both fides_string option and cookie exist and experience is fetched from API", () => {
+      setFidesCookie();
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        cy.fixture("consent/geolocation_tcf.json").then((geo) => {
+          stubConfig(
+            {
+              options: {
+                isOverlayEnabled: true,
+                tcfEnabled: true,
+                fidesString: undefined,
+              },
+              experience: OVERRIDE.UNDEFINED,
+            },
+            geo,
+            experience
+          );
+        });
+      });
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+      });
+      // Open the modal
+      cy.get("#fides-modal-link").click();
+
+      // Verify the toggles
+      // Purposes
+      cy.getByTestId(`toggle-${PURPOSE_4.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+      cy.getByTestId(`toggle-${PURPOSE_9.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      // also verify that a purpose that was not part of the cookie is also opted out
+      // (since it should have no current_preference, and default behavior is opt out)
+      cy.getByTestId(`toggle-${PURPOSE_6.name}`).within(() => {
+        cy.get("input").should("not.be.checked");
+      });
+      // Features
+      cy.get("#fides-tab-Features").click();
+      cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      // Vendors
+      cy.get("#fides-tab-Vendors").click();
+      cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
+        cy.get("input").should("be.checked");
+      });
+      cy.get("#fides-panel-Vendors").within(() => {
+        cy.get("button").contains("Legitimate interest").click();
+        cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
+          cy.get("input").should("not.be.checked");
+        });
+      });
+
+      // verify CMP API
+      cy.get("@TCFEvent")
+        .its("lastCall.args")
+        .then(([tcData, success]) => {
+          expect(success).to.eql(true);
+          expect(tcData.eventStatus).to.eql("cmpuishown");
+          expect(tcData.purpose.consents).to.eql({
+            [PURPOSE_4.id]: false,
+            [PURPOSE_6.id]: false,
+            [PURPOSE_7.id]: false,
+            2: false,
+            1: false,
+            3: false,
+            5: false,
+            8: false,
+            9: true,
+          });
+          expect(tcData.purpose.legitimateInterests).to.eql({});
+          const vendorIdOnly = VENDOR_1.id.split(".")[1];
+          expect(tcData.vendor.consents).to.eql({
+            1: false,
+            [vendorIdOnly]: true,
+          });
+          expect(tcData.vendor.legitimateInterests).to.eql({});
+          expect(tcData.specialFeatureOptins).to.eql({
+            [SPECIAL_FEATURE_1.id]: true,
+          });
         });
     });
     it("can use a fides_string to override a vendor consent", () => {
