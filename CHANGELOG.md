@@ -22,6 +22,8 @@ The types of changes are:
 
 ### Changed
 - Button ordering in fides.js UI [#4407](https://github.com/ethyca/fides/pull/4407)
+- Add different classnames to consent buttons for easier selection [#4411](https://github.com/ethyca/fides/pull/4411)
+
 
 ### Fixed
 - User preferences from cookie should always override experience preferences [#4405](https://github.com/ethyca/fides/pull/4405)

@@ -118,6 +118,10 @@ describe("Privacy notice driven consent", () => {
         expect(
           preferences.map((p: ConsentOptionCreate) => p.preference)
         ).to.eql(["opt_in", "opt_in", "acknowledge"]);
+        // Wait for toast so that we know cookie is ready to be inspected
+        cy.get("#toast-1-title").contains(
+          "Your consent preferences have been saved"
+        );
         // Should update the cookie
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
