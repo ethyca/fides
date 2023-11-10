@@ -31,6 +31,7 @@ const FilterCheckbox = ({
   value,
 }: FilterCheckboxProps) => (
   <Checkbox
+    id={`checkbox-${value}`}
     value={value}
     key={value}
     height="20px"
@@ -138,6 +139,7 @@ const MultipleSystemsFilterModal = <T,>({
               Reset Filters
             </Button>
             <Button
+              data-testid="filter-done-btn"
               colorScheme="primary"
               size="sm"
               onClick={onClose}
