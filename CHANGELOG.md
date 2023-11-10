@@ -45,6 +45,7 @@ The types of changes are:
 
 ### Fixed
 - Persist bulk system add filter modal state [#4412](https://github.com/ethyca/fides/pull/4412)
+- Fixing labels for request type field [#4414](https://github.com/ethyca/fides/pull/4414)
 
 ## [2.23.3](https://github.com/ethyca/fides/compare/2.23.2...2.23.3)
 

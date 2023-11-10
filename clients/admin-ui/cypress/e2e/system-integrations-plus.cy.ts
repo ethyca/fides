@@ -72,9 +72,9 @@ describe("System integrations", () => {
     it("should display Request types (enabled-actions) field", () => {
       cy.getByTestId("enabled-actions").should("exist");
       cy.getByTestId("enabled-actions").within(() => {
-        cy.contains("access");
-        cy.contains("erasure");
-        cy.contains("consent").should("not.exist");
+        cy.contains("Access");
+        cy.contains("Erasure");
+        cy.contains("Consent").should("not.exist");
       });
     });
   });
