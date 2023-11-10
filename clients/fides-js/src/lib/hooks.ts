@@ -8,7 +8,7 @@ import {
   PrivacyNotice,
   ServingComponent,
 } from "./consent-types";
-import { patchNoticesServed } from "../services/fides/api";
+import { patchNoticesServed } from "../services/api";
 
 /**
  * Hook which tracks if the app has mounted yet.
@@ -139,8 +139,7 @@ export const useConsentServed = ({
       };
       const result = await patchNoticesServed({
         request,
-        fidesApiUrl: options.fidesApiUrl,
-        debug: options.debug,
+        options,
       });
       if (result) {
         setServedNotices(result);
