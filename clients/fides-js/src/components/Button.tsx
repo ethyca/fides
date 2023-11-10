@@ -5,19 +5,19 @@ interface ButtonProps {
   buttonType: ButtonType;
   label?: string;
   onClick?: () => void;
-  id?: string;
+  className?: string;
 }
 
 const Button: FunctionComponent<ButtonProps> = ({
   buttonType,
   label,
   onClick,
-  id,
+  className = "",
 }) => (
   <button
     type="button"
-    id={id}
-    className={`fides-banner-button fides-banner-button-${buttonType.valueOf()}`}
+    id={`fides-banner-button-${buttonType.valueOf()}`}
+    className={`fides-banner-button fides-banner-button-${buttonType.valueOf()} ${className}`}
     onClick={onClick}
     data-testid={`${label}-btn`}
   >

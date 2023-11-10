@@ -33,7 +33,7 @@ export const ConsentButtons = ({
           buttonType={isMobile ? ButtonType.SECONDARY : ButtonType.TERTIARY}
           label={experienceConfig.privacy_preferences_link_label}
           onClick={onManagePreferencesClick}
-          id="fides-manage-preferences-button"
+          className="fides-manage-preferences-button"
         />
       </div>
     ) : null}
@@ -50,13 +50,13 @@ export const ConsentButtons = ({
         buttonType={ButtonType.PRIMARY}
         label={experienceConfig.reject_button_label}
         onClick={onRejectAll}
-        id="fides-reject-all-button"
+        className="fides-reject-all-button"
       />
       <Button
         buttonType={ButtonType.PRIMARY}
         label={experienceConfig.accept_button_label}
         onClick={onAcceptAll}
-        id="fides-accept-all-button"
+        className="fides-accept-all-button"
       />
     </div>
   </div>
@@ -115,6 +115,7 @@ export const NoticeConsentButtons = ({
           buttonType={ButtonType.PRIMARY}
           label={config.acknowledge_button_label}
           onClick={handleAcceptAll}
+          className="fides-acknowledge-button"
         />
       </div>
     );
@@ -132,6 +133,7 @@ export const NoticeConsentButtons = ({
             buttonType={ButtonType.SECONDARY}
             label={config.save_button_label}
             onClick={handleSave}
+            className="fides-save-button"
           />
         ) : undefined
       }
