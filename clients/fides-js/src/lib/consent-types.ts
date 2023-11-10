@@ -96,11 +96,13 @@ export type FidesApiOptions = {
   /**
    * Intake a custom function that is called instead of the internal Fides API to save user preferences.
    *
+   * @param {object} consentMethod - method that was used to obtain consent
    * @param {object} consent - updated version of Fides.consent with the user's saved preferences for Fides notices
    * @param {string} fides_string - updated version of Fides.fides_string with the user's saved preferences for TC/AC/etc notices
    * @param {object} experience - current version of the privacy experience that was shown to the user
    */
   savePreferencesFn?: (
+    consentMethod: ConsentMethod,
     consent: CookieKeyConsent,
     fides_string: string | undefined,
     experience: PrivacyExperience

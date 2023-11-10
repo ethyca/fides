@@ -45,6 +45,7 @@ async function savePreferencesApi(
     ...(tcf ?? []),
   };
   await patchUserPreference(
+    consentMethod,
     privacyPreferenceCreate,
     options,
     cookie,
