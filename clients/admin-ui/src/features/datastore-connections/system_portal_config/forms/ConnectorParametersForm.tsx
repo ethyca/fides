@@ -410,73 +410,75 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                     }
                   )
                 : null}
-              {isPlusEnabled &&
-                connectionOption.supported_actions.length > 1 && (
-                  <Field
-                    id="enabled_actions"
-                    name="enabled_actions"
-                    validate={(value: string[]) => {
-                      let error;
-                      if (!value || value.length === 0) {
-                        error = "At least one request type must be selected";
+              {isPlusEnabled && (
+                <Field
+                  id="enabled_actions"
+                  name="enabled_actions"
+                  validate={(value: string[]) => {
+                    let error;
+                    if (!value || value.length === 0) {
+                      error = "At least one request type must be selected";
+                    }
+                    return error;
+                  }}
+                >
+                  {({
+                    field,
+                    form,
+                  }: {
+                    field: FieldInputProps<string>;
+                    form: any;
+                  }) => (
+                    <FormControl
+                      data-testid="enabled-actions"
+                      display="flex"
+                      isInvalid={
+                        form.touched.enabled_actions &&
+                        form.errors.enabled_actions
                       }
-                      return error;
-                    }}
-                  >
-                    {({
-                      field,
-                      form,
-                    }: {
-                      field: FieldInputProps<string>;
-                      form: any;
-                    }) => (
-                      <FormControl
-                        data-testid="enabled-actions"
-                        display="flex"
-                        isInvalid={
-                          form.touched.enabled_actions &&
-                          form.errors.enabled_actions
-                        }
-                        isRequired
+                      isRequired
+                    >
+                      {/* Known as enabled_actions throughout the front-end and back-end but it's displayed to the user as "Request types" */}
+                      {getFormLabel("enabled_actions", "Request types")}
+                      <VStack align="flex-start" w="inherit">
+                        <Box width="100%">
+                          <SelectInput
+                            options={connectionOption.supported_actions.map(
+                              (action) => ({
+                                label: _.upperFirst(action),
+                                value: action,
+                              })
+                            )}
+                            fieldName={field.name}
+                            size="sm"
+                            isMulti
+                            isDisabled={
+                              connectionOption.supported_actions.length == 1
+                            }
+                          />
+                        </Box>
+                        <FormErrorMessage>
+                          {props.errors.enabled_actions}
+                        </FormErrorMessage>
+                      </VStack>
+                      <Tooltip
+                        aria-label="The request types that are supported for this integration."
+                        hasArrow
+                        label="The request types that are supported for this integration."
+                        placement="right-start"
+                        openDelay={500}
                       >
-                        {/* Known as enabled_actions throughout the front-end and back-end but it's displayed to the user as "Request types" */}
-                        {getFormLabel("enabled_actions", "Request types")}
-                        <VStack align="flex-start" w="inherit">
-                          <Box width="100%">
-                            <SelectInput
-                              options={connectionOption.supported_actions.map(
-                                (action) => ({
-                                  label: action,
-                                  value: action,
-                                })
-                              )}
-                              fieldName={field.name}
-                              size="sm"
-                              isMulti
-                            />
-                          </Box>
-                          <FormErrorMessage>
-                            {props.errors.enabled_actions}
-                          </FormErrorMessage>
-                        </VStack>
-                        <Tooltip
-                          aria-label="The request types that are supported for this integration."
-                          hasArrow
-                          label="The request types that are supported for this integration."
-                          placement="right-start"
-                          openDelay={500}
-                        >
-                          <Flex alignItems="center" h="32px">
-                            <CircleHelpIcon
-                              marginLeft="8px"
-                              _hover={{ cursor: "pointer" }}
-                            />
-                          </Flex>
-                        </Tooltip>
-                      </FormControl>
-                    )}
-                  </Field>
-                )}
+                        <Flex alignItems="center" h="32px">
+                          <CircleHelpIcon
+                            marginLeft="8px"
+                            _hover={{ cursor: "pointer" }}
+                          />
+                        </Flex>
+                      </Tooltip>
+                    </FormControl>
+                  )}
+                </Field>
+              )}
               {SystemType.DATABASE === connectionOption.type &&
               !isCreatingConnectionConfig ? (
                 <DatasetConfigField
