@@ -453,7 +453,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                             size="sm"
                             isMulti
                             isDisabled={
-                              connectionOption.supported_actions.length == 1
+                              connectionOption.supported_actions.length === 1
                             }
                           />
                         </Box>

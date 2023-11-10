@@ -269,7 +269,9 @@ export const SelectInput = ({
 
   if (isDisabled) {
     // prevent the tags from being removed if the input is disabled
-    components.MultiValueRemove = () => null;
+    components.MultiValueRemove = function CustomMultiValueRemove() {
+      return null;
+    };
   }
 
   return (
