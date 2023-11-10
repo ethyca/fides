@@ -109,7 +109,7 @@ def get_manual_webhook_access_inputs(
         return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
 
     try:
-        for manual_webhook in AccessManualWebhook.get_enabled(db):
+        for manual_webhook in AccessManualWebhook.get_enabled(db, ActionType.access):
             manual_inputs[manual_webhook.connection_config.key] = [
                 privacy_request.get_manual_webhook_access_input_strict(manual_webhook)
             ]
@@ -135,7 +135,7 @@ def get_manual_webhook_erasure_inputs(
         # Don't fetch manual inputs unless this policy has an access rule
         return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
     try:
-        for manual_webhook in AccessManualWebhook().get_enabled(db):
+        for manual_webhook in AccessManualWebhook().get_enabled(db, ActionType.erasure):
             manual_inputs[manual_webhook.connection_config.key] = [
                 privacy_request.get_manual_webhook_erasure_input_strict(manual_webhook)
             ]

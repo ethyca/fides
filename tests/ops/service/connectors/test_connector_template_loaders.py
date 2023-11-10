@@ -1,4 +1,3 @@
-import os
 from io import BytesIO
 from unittest import mock
 from unittest.mock import MagicMock
@@ -8,6 +7,7 @@ import pytest
 
 from fides.api.common_exceptions import NoSuchSaaSRequestOverrideException
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
@@ -27,7 +27,6 @@ from fides.api.util.saas_util import (
     load_yaml_as_string,
     replace_version,
 )
-from fides.config import CONFIG
 from tests.ops.test_helpers.saas_test_utils import create_zip_file
 
 
@@ -189,6 +188,7 @@ class TestCustomConnectorTemplateLoader:
                 human_readable="Planet Express",
                 authorization_required=False,
                 user_guide=None,
+                supported_actions=[ActionType.access],
             )
         }
 
@@ -382,6 +382,7 @@ class TestCustomConnectorTemplateLoader:
                 human_readable="Planet Express",
                 authorization_required=False,
                 user_guide=None,
+                supported_actions=[ActionType.access],
             )
         }
         mock_delete.assert_not_called()
@@ -427,6 +428,7 @@ class TestCustomConnectorTemplateLoader:
                 human_readable="Zendesk",
                 authorization_required=False,
                 user_guide="https://docs.ethyca.com/user-guides/integrations/saas-integrations/zendesk",
+                supported_actions=[ActionType.access, ActionType.erasure],
             )
         }
         mock_delete.assert_not_called()

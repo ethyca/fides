@@ -28,10 +28,8 @@ The types of changes are:
 - Erasure support for Qualtrics [#4371](https://github.com/ethyca/fides/pull/4371)
 - Erasure support for Ada Chatbot [#4382](https://github.com/ethyca/fides/pull/4382)
 - Erasure support for Typeform [#4366](https://github.com/ethyca/fides/pull/4366)
-
-## Added
-
 - Added notice that a system is GVL when adding/editing from system form [#4327](https://github.com/ethyca/fides/pull/4327)
+- Added the ability to select the request types to enable per integration (for plus users) [#4374](https://github.com/ethyca/fides/pull/4374)
 
 ### Changed
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
