@@ -270,6 +270,15 @@ describe("System management with Plus features", () => {
       cy.getByTestId("column-vendor_id").should("exist");
     });
 
+    it("filter modal state is persisted after modal is closed", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.getByTestId("filter-multiple-systems-btn").click();
+      cy.get("#checkbox-gvl").check({ force: true });
+      cy.getByTestId("filter-done-btn").click();
+      cy.getByTestId("filter-multiple-systems-btn").click();
+      cy.get("#checkbox-gvl").should("be.checked");
+    });
+
     it("pagination menu updates pagesize", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
 
