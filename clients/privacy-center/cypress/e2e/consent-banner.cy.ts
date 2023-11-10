@@ -9,6 +9,8 @@ import {
   UserConsentPreference,
 } from "fides-js";
 
+import { RecordConsentServedRequest } from "fides-js/src/lib/consent-types";
+
 import { mockPrivacyNotice } from "../support/mocks";
 
 import { OVERRIDE, stubConfig } from "../support/stubs";
@@ -807,7 +809,7 @@ describe("Consent banner", () => {
 
     describe("when neither experience nor geolocation is provided, but geolocationApiUrl is defined", () => {
       describe("when geolocation is successful", () => {
-        beforeEach(() => {
+        it("fetches geolocation and experience renders the banner", () => {
           const geoLocationUrl = "https://some-geolocation-api.com";
           stubConfig({
             experience: OVERRIDE.UNDEFINED,
@@ -817,9 +819,6 @@ describe("Consent banner", () => {
               geolocationApiUrl: geoLocationUrl,
             },
           });
-        });
-
-        it("fetches geolocation and experience renders the banner", () => {
           cy.wait("@getGeolocation");
           cy.wait("@getPrivacyExperience").then((interception) => {
             expect(interception.request.query.region).to.eq("us_ca");
@@ -833,10 +832,54 @@ describe("Consent banner", () => {
               "Config from mocked Fides API is overriding this banner description."
             );
           });
+          cy.get("#fides-modal-link").should("be.visible");
         });
 
-        it("shows the modal link", () => {
-          cy.get("#fides-modal-link").should("be.visible");
+        describe("when custom experience fn is provided in Fides.init()", () => {
+          it("should skip calling Fides API cor experience and instead call the custom fn", () => {
+            cy.fixture("consent/experience.json").then((privacyExperience) => {
+              const apiOptions = {
+                /* eslint-disable @typescript-eslint/no-unused-vars */
+                getPrivacyExperienceFn: async (
+                  userLocationString: string,
+                  fidesUserDeviceId?: string | null
+                ) => privacyExperience.items[0],
+                /* eslint-enable @typescript-eslint/no-unused-vars */
+              };
+              const spyObject = cy.spy(apiOptions, "getPrivacyExperienceFn");
+              stubConfig({
+                options: {
+                  isOverlayEnabled: true,
+                  apiOptions,
+                },
+                geolocation: {
+                  country: "US",
+                  location: "US-CA",
+                  region: "CA",
+                },
+                experience: OVERRIDE.UNDEFINED,
+              });
+              cy.waitUntilFidesInitialized().then(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                expect(spyObject).to.be.called;
+                const spy = spyObject.getCalls();
+                const { args } = spy[0];
+                expect(args[0]).to.equal("us_ca");
+                // timeout means Fides API call not made, which is expected
+                cy.on("fail", (error) => {
+                  if (error.message.indexOf("Timed out retrying") !== 0) {
+                    throw error;
+                  }
+                });
+                // check that  Fides experience API is not called
+                cy.wait("@getPrivacyExperience", {
+                  requestTimeout: 100,
+                }).then((xhr) => {
+                  assert.isNull(xhr?.response?.body);
+                });
+              });
+            });
+          });
         });
       });
 
@@ -1572,6 +1615,61 @@ describe("Consent banner", () => {
       cy.get("#fides-modal-link").click();
       cy.wait("@patchNoticesServed").then((interception) => {
         expect(interception.request.body.acknowledge_mode).to.eql(true);
+      });
+    });
+    it("can call custom notices served fn instead of Fides API", () => {
+      /* eslint-disable @typescript-eslint/no-unused-vars */
+      const apiOptions = {
+        patchNoticesServedFn: async (request: RecordConsentServedRequest) =>
+          null,
+      };
+      /* eslint-enable @typescript-eslint/no-unused-vars */
+      const spyObject = cy.spy(apiOptions, "patchNoticesServedFn");
+      stubConfig({
+        experience: {
+          id: experienceId,
+          show_banner: false,
+          privacy_notices: [
+            mockPrivacyNotice({
+              name: "Data Sales and Sharing",
+              notice_key: "data_sales_and_sharing",
+              privacy_notice_history_id: historyId1,
+            }),
+            mockPrivacyNotice({
+              name: "Essential",
+              notice_key: "essential",
+              privacy_notice_history_id: historyId2,
+            }),
+          ],
+        },
+        options: {
+          apiOptions,
+        },
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.get("#fides-modal-link").click();
+        cy.get("@FidesUIShown").then(() => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+          expect(spyObject).to.be.called;
+          const spy = spyObject.getCalls();
+          const { args } = spy[0];
+          expect(args[0]).to.contains({
+            serving_component: "overlay",
+          });
+          // timeout means API call not made, which is expected
+          cy.on("fail", (error) => {
+            if (error.message.indexOf("Timed out retrying") !== 0) {
+              throw error;
+            }
+          });
+          // check that notices aren't patched to Fides API
+          cy.wait("@patchNoticesServed", {
+            requestTimeout: 100,
+          }).then((xhr) => {
+            assert.isNull(xhr?.response?.body);
+          });
+        });
       });
     });
   });

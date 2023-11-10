@@ -111,6 +111,24 @@ export type FidesApiOptions = {
    * @param {object} fides - global Fides obj containing global config options and other state at time of init
    */
   getPreferencesFn?: (fides: FidesConfig) => Promise<GetPreferencesFnResp>;
+  /**
+   * Intake a custom function that is used to fetch privacy experience.
+   *
+   * @param {string} userLocationString - user location
+   * @param {string} fidesUserDeviceId - (optional) Fides user device id, if known
+   */
+  getPrivacyExperienceFn?: (
+    userLocationString: string,
+    fidesUserDeviceId?: string | null
+  ) => Promise<PrivacyExperience | EmptyExperience>;
+  /**
+   * Intake a custom function that is used to save notices served for reporting purposes.
+   *
+   * @param {object} request - consent served records to save
+   */
+  patchNoticesServedFn?: (
+    request: RecordConsentServedRequest
+  ) => Promise<Array<LastServedConsentSchema> | null>;
 };
 
 export class SaveConsentPreference {

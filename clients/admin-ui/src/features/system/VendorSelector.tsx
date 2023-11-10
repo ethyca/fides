@@ -42,7 +42,6 @@ const CustomDictOption: React.FC<
     </Flex>
   </chakraComponents.Option>
 );
-
 const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
   const [initialField, meta, { setValue }] = useField({ name: "vendor_id" });
   const isInvalid = !!(meta.touched && meta.error);

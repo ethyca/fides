@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.24.0...main)
 
+### Added
+- Adds support for custom get experiences fn and custom patch notices served fn [#4410](https://github.com/ethyca/fides/pull/4410)
+
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
 
 ### Added
@@ -39,6 +42,10 @@ The types of changes are:
 - "is_service_specific" default updated when building TC strings on the backend [#4377](https://github.com/ethyca/fides/pull/4377)
 - "isServiceSpecific" default updated when building TC strings on the frontend [#4384](https://github.com/ethyca/fides/pull/4384)
 - Redact cli, database, and redis configuration information from GET api/v1/config API request responses. [#4379](https://github.com/ethyca/fides/pull/4379)
+
+### Fixed
+- Persist bulk system add filter modal state [#4412](https://github.com/ethyca/fides/pull/4412)
+- Fixing labels for request type field [#4414](https://github.com/ethyca/fides/pull/4414)
 
 ## [2.23.3](https://github.com/ethyca/fides/compare/2.23.2...2.23.3)
 
