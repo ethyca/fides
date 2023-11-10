@@ -678,44 +678,48 @@ describe("Fides-js TCF", () => {
           });
         });
         // Verify the cookie on save
-        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
-          const cookieKeyConsent: FidesCookie = JSON.parse(
-            decodeURIComponent(cookie!.value)
-          );
-          [PURPOSE_4.id, PURPOSE_9.id, PURPOSE_6.id, PURPOSE_7.id].forEach(
-            (pid) => {
-              expect(cookieKeyConsent.tcf_consent.purpose_consent_preferences)
-                .property(`${pid}`)
-                .is.eql(false);
-            }
-          );
-          expect(
-            cookieKeyConsent.tcf_consent
-              .purpose_legitimate_interests_preferences
-          )
-            .property(`${PURPOSE_2.id}`)
-            .is.eql(false);
-          expect(cookieKeyConsent.tcf_consent.special_feature_preferences)
-            .property(`${SPECIAL_FEATURE_1.id}`)
-            .is.eql(false);
-          expect(cookieKeyConsent.tcf_consent.vendor_consent_preferences)
-            .property(`${VENDOR_1.id}`)
-            .is.eql(false);
-          expect(
-            cookieKeyConsent.tcf_consent.vendor_legitimate_interests_preferences
-          ).to.eql({});
-          expect(
-            cookieKeyConsent.tcf_consent.system_consent_preferences
-          ).to.eql({});
-          expect(
-            cookieKeyConsent.tcf_consent.system_legitimate_interests_preferences
-          )
-            .property(`${SYSTEM_1.id}`)
-            .is.eql(false);
-          // Confirm vendors_disclosed section
-          expect(
-            cookieKeyConsent.fides_string?.endsWith(expectedEndOfFidesString)
-          ).to.eql(true);
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const cookieKeyConsent: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value)
+            );
+            [PURPOSE_4.id, PURPOSE_9.id, PURPOSE_6.id, PURPOSE_7.id].forEach(
+              (pid) => {
+                expect(cookieKeyConsent.tcf_consent.purpose_consent_preferences)
+                  .property(`${pid}`)
+                  .is.eql(false);
+              }
+            );
+            expect(
+              cookieKeyConsent.tcf_consent
+                .purpose_legitimate_interests_preferences
+            )
+              .property(`${PURPOSE_2.id}`)
+              .is.eql(false);
+            expect(cookieKeyConsent.tcf_consent.special_feature_preferences)
+              .property(`${SPECIAL_FEATURE_1.id}`)
+              .is.eql(false);
+            expect(cookieKeyConsent.tcf_consent.vendor_consent_preferences)
+              .property(`${VENDOR_1.id}`)
+              .is.eql(false);
+            expect(
+              cookieKeyConsent.tcf_consent
+                .vendor_legitimate_interests_preferences
+            ).to.eql({});
+            expect(
+              cookieKeyConsent.tcf_consent.system_consent_preferences
+            ).to.eql({});
+            expect(
+              cookieKeyConsent.tcf_consent
+                .system_legitimate_interests_preferences
+            )
+              .property(`${SYSTEM_1.id}`)
+              .is.eql(false);
+            // Confirm vendors_disclosed section
+            expect(
+              cookieKeyConsent.fides_string?.endsWith(expectedEndOfFidesString)
+            ).to.eql(true);
+          });
         });
       });
 

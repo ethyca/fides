@@ -17,8 +17,13 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.24.0...main)
 
+### Added
+- Adds support for custom get experiences fn and custom patch notices served fn [#4410](https://github.com/ethyca/fides/pull/4410)
+
 ### Changed
+- Button ordering in fides.js UI [#4407](https://github.com/ethyca/fides/pull/4407)
 - Add different classnames to consent buttons for easier selection [#4411](https://github.com/ethyca/fides/pull/4411)
+
 
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
 
@@ -31,10 +36,8 @@ The types of changes are:
 - Erasure support for Qualtrics [#4371](https://github.com/ethyca/fides/pull/4371)
 - Erasure support for Ada Chatbot [#4382](https://github.com/ethyca/fides/pull/4382)
 - Erasure support for Typeform [#4366](https://github.com/ethyca/fides/pull/4366)
-
-## Added
-
 - Added notice that a system is GVL when adding/editing from system form [#4327](https://github.com/ethyca/fides/pull/4327)
+- Added the ability to select the request types to enable per integration (for plus users) [#4374](https://github.com/ethyca/fides/pull/4374)
 
 ### Changed
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
@@ -44,7 +47,6 @@ The types of changes are:
 - "is_service_specific" default updated when building TC strings on the backend [#4377](https://github.com/ethyca/fides/pull/4377)
 - "isServiceSpecific" default updated when building TC strings on the frontend [#4384](https://github.com/ethyca/fides/pull/4384)
 - Redact cli, database, and redis configuration information from GET api/v1/config API request responses. [#4379](https://github.com/ethyca/fides/pull/4379)
-- Button ordering in fides.js UI [#4407](https://github.com/ethyca/fides/pull/4407)
 
 ## [2.23.3](https://github.com/ethyca/fides/compare/2.23.2...2.23.3)
 

@@ -15,6 +15,7 @@ from fides.api.graph.config import (
 )
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
 
 
@@ -477,6 +478,35 @@ class SaaSConfig(SaaSConfigBase):
                 )
             reference = FidesDatasetReference.parse_obj(secrets[reference])
         return reference
+
+    @property
+    def supported_actions(self) -> List[ActionType]:
+        """Returns a list containing the privacy actions supported by the SaaS config."""
+
+        supported_actions = []
+
+        # check for access
+        if any(
+            requests.read
+            for requests in [endpoint.requests for endpoint in self.endpoints]
+        ):
+            supported_actions.append(ActionType.access)
+
+        # check for erasure
+        if (
+            any(
+                request.update or request.delete
+                for request in [endpoint.requests for endpoint in self.endpoints]
+            )
+            or self.data_protection_request
+        ):
+            supported_actions.append(ActionType.erasure)
+
+        # check for consent
+        if self.consent_requests:
+            supported_actions.append(ActionType.consent)
+
+        return supported_actions
 
 
 class SaaSConfigValidationDetails(FidesSchema):

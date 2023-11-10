@@ -66,7 +66,7 @@ class ConnectorRunner:
 
         # create and save the connection config and dataset config to the database
         self.connection_config = _connection_config(db, self.config, secrets)
-        self.dataset_config = _dataset_config(db, self.connection_config, self.dataset)
+        self.dataset_config = dataset_config(db, self.connection_config, self.dataset)
 
     def test_connection(self):
         """Connection test using the connectors test_request"""
@@ -257,11 +257,13 @@ def _external_connection_config(db: Session, fides_key) -> ConnectionConfig:
     return connection_config
 
 
-def _dataset_config(
+def dataset_config(
     db: Session,
     connection_config: ConnectionConfig,
     dataset: Dict[str, Any],
 ) -> DatasetConfig:
+    """Helper function to persist a dataset config and link it to a connection config."""
+
     fides_key = dataset["fides_key"]
     connection_config.name = fides_key
     connection_config.key = fides_key
@@ -331,7 +333,7 @@ def _process_external_references(
             db, f"{connector_type}_external_dataset"
         )
         graph_list.append(
-            _dataset_config(
+            dataset_config(
                 db,
                 external_connection_config,
                 _external_dataset(
