@@ -19,7 +19,7 @@ The types of changes are:
 
 ### Added
 - Adds support for custom get experiences fn and custom patch notices served fn [#4410](https://github.com/ethyca/fides/pull/4410)
-- Adds more granularity to tracking consent method, updates custom save preferences fn to take consent method [#4419](https://github.com/ethyca/fides/pull/4419)
+- Adds more granularity to tracking consent method, updates custom savePreferencesFn and FidesUpdated event to take consent method [#4419](https://github.com/ethyca/fides/pull/4419)
 
 ### Changed
 - Button ordering in fides.js UI [#4407](https://github.com/ethyca/fides/pull/4407)

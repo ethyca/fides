@@ -131,5 +131,5 @@ export const updateConsentPreferences = async ({
   }
 
   // 6. Dispatch a "FidesUpdated" event
-  dispatchFidesEvent("FidesUpdated", cookie, options.debug);
+  dispatchFidesEvent("FidesUpdated", cookie, options.debug, { consentMethod });
 };

@@ -323,7 +323,12 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
-        cy.get("@FidesUpdated").should("have.been.calledOnce");
+        cy.get("@FidesUpdated")
+          .should("have.been.calledOnce")
+          .its("lastCall.args.0.detail.extraDetails.consentMethod")
+          .then((consentMethod) => {
+            expect(consentMethod).to.eql(ConsentMethod.accept);
+          });
         cy.window().then((win) => {
           win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
           cy.get("@getTCData")
@@ -871,20 +876,24 @@ describe("Fides-js TCF", () => {
             cy.get("#fides-modal-link").click();
             cy.getByTestId("consent-modal").within(() => {
               cy.get("button").contains("Opt out of all").click();
-              cy.get("@FidesUpdated").then(() => {
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                expect(spyObject).to.be.called;
-                const spy = spyObject.getCalls();
-                const { args } = spy[0];
-                expect(args[0]).to.equal(ConsentMethod.reject);
-                expect(args[1]).to.deep.equal({
-                  data_sales: true,
-                  tracking: false,
+              cy.get("@FidesUpdated")
+                .should("have.been.calledOnce")
+                .its("lastCall.args.0.detail.extraDetails.consentMethod")
+                .then((consentMethod) => {
+                  expect(consentMethod).to.eql(ConsentMethod.accept);
+                  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                  expect(spyObject).to.be.called;
+                  const spy = spyObject.getCalls();
+                  const { args } = spy[0];
+                  expect(args[0]).to.equal(ConsentMethod.reject);
+                  expect(args[1]).to.deep.equal({
+                    data_sales: true,
+                    tracking: false,
+                  });
+                  // the TC str is dynamically updated upon save preferences with diff timestamp, so we do a fuzzy match
+                  expect(args[2]).to.contain(".IABE,1~");
+                  expect(args[3]).to.deep.equal(privacyExperience.items[0]);
                 });
-                // the TC str is dynamically updated upon save preferences with diff timestamp, so we do a fuzzy match
-                expect(args[2]).to.contain(".IABE,1~");
-                expect(args[3]).to.deep.equal(privacyExperience.items[0]);
-              });
               // timeout means API call not made, which is expected
               cy.on("fail", (error) => {
                 if (error.message.indexOf("Timed out retrying") !== 0) {
@@ -1293,7 +1302,12 @@ describe("Fides-js TCF", () => {
           cy.get("button").contains("Opt in to all").click();
         });
         // On slow connections, we should explicitly wait for FidesUpdated
-        cy.get("@FidesUpdated").should("have.been.calledOnce");
+        cy.get("@FidesUpdated")
+          .should("have.been.calledOnce")
+          .its("lastCall.args.0.detail.extraDetails.consentMethod")
+          .then((consentMethod) => {
+            expect(consentMethod).to.eql(ConsentMethod.accept);
+          });
         cy.get("@TCFEvent")
           .its("lastCall.args")
           .then(([tcData, success]) => {
@@ -1357,7 +1371,12 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
-        cy.get("@FidesUpdated").should("have.been.calledOnce");
+        cy.get("@FidesUpdated")
+          .should("have.been.calledOnce")
+          .its("lastCall.args.0.detail.extraDetails.consentMethod")
+          .then((consentMethod) => {
+            expect(consentMethod).to.eql(ConsentMethod.accept);
+          });
         cy.get("@TCFEvent2")
           .its("lastCall.args")
           .then(([tcData, success]) => {
@@ -2622,7 +2641,12 @@ describe("Fides-js TCF", () => {
       cy.wait("@patchPrivacyPreference").then((interception) => {
         expect(interception.request.body.method).to.eql(ConsentMethod.accept);
       });
-      cy.get("@FidesUpdated").should("have.been.calledOnce");
+      cy.get("@FidesUpdated")
+        .should("have.been.calledOnce")
+        .its("lastCall.args.0.detail.extraDetails.consentMethod")
+        .then((consentMethod) => {
+          expect(consentMethod).to.eql(ConsentMethod.accept);
+        });
       // Call getTCData
       cy.window().then((win) => {
         win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
