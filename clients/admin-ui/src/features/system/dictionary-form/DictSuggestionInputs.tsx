@@ -395,13 +395,16 @@ export const DictSuggestionCreatableSelect = ({
     dictField
   );
 
-  const selected = field.value.map(
-    (fieldValue: string) =>
-      options.find((o) => o.value === fieldValue) ?? {
-        value: fieldValue,
-        label: fieldValue,
-      }
-  );
+  const selected =
+    field.value.length > 0
+      ? field.value.map(
+          (fieldValue: string) =>
+            options.find((o) => o.value === fieldValue) ?? {
+              value: fieldValue,
+              label: fieldValue,
+            }
+        )
+      : [];
 
   const { setFieldValue } = useFormikContext();
 
