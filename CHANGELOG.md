@@ -18,7 +18,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.24.0...main)
 
 ### Changed
-- Button components in `fides.js` now take dynamic IDs [#4411](https://github.com/ethyca/fides/pull/4411)
+- Add different classnames to consent buttons for easier selection [#4411](https://github.com/ethyca/fides/pull/4411)
 
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
 
