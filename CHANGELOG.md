@@ -23,6 +23,9 @@ The types of changes are:
 ### Changed
 - Button ordering in fides.js UI [#4407](https://github.com/ethyca/fides/pull/4407)
 
+### Fixed
+- User preferences from cookie should always override experience preferences [#4405](https://github.com/ethyca/fides/pull/4405)
+
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
 
 ### Added
