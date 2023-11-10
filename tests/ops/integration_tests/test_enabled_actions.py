@@ -27,7 +27,7 @@ class TestEnabledActions:
         graph = convert_dataset_to_graph(
             dataset_postgres, integration_postgres_config.key
         )
-        return DatasetGraph(*[graph])
+        return DatasetGraph(graph)
 
     @pytest.mark.asyncio
     async def test_access_disabled(
