@@ -1,4 +1,4 @@
-import { ComponentChildren, h, VNode } from "preact";
+import { h, VNode } from "preact";
 import Button from "./Button";
 import {
   ButtonType,
@@ -7,27 +7,24 @@ import {
   PrivacyNotice,
   ExperienceConfig,
 } from "../lib/consent-types";
+import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
 export const ConsentButtons = ({
   experienceConfig,
   onManagePreferencesClick,
   firstButton,
-  middleButton,
   onAcceptAll,
   onRejectAll,
-  children,
   isMobile,
+  includePrivacyPolicy,
 }: {
   experienceConfig: ExperienceConfig;
   onManagePreferencesClick?: () => void;
   firstButton?: VNode;
-  /** Used to add a button between the "manage preferences" button and the "accept/reject" buttons */
-  middleButton?: VNode;
   onAcceptAll: () => void;
   onRejectAll: () => void;
-  /** Added as siblings to the button group after the "accept/reject" buttons */
-  children?: ComponentChildren;
   isMobile: boolean;
+  includePrivacyPolicy?: boolean;
 }) => (
   <div id="fides-button-group">
     {onManagePreferencesClick ? (
@@ -36,10 +33,13 @@ export const ConsentButtons = ({
           buttonType={isMobile ? ButtonType.SECONDARY : ButtonType.TERTIARY}
           label={experienceConfig.privacy_preferences_link_label}
           onClick={onManagePreferencesClick}
+          className="fides-manage-preferences-button"
         />
       </div>
     ) : null}
-    {middleButton || null}
+    {includePrivacyPolicy ? (
+      <PrivacyPolicyLink experience={experienceConfig} />
+    ) : null}
     <div
       className={
         firstButton ? "fides-modal-button-group" : "fides-banner-button-group"
@@ -50,14 +50,15 @@ export const ConsentButtons = ({
         buttonType={ButtonType.PRIMARY}
         label={experienceConfig.reject_button_label}
         onClick={onRejectAll}
+        className="fides-reject-all-button"
       />
       <Button
         buttonType={ButtonType.PRIMARY}
         label={experienceConfig.accept_button_label}
         onClick={onAcceptAll}
+        className="fides-accept-all-button"
       />
     </div>
-    {children}
   </div>
 );
 
@@ -70,8 +71,6 @@ interface NoticeConsentButtonProps {
   enabledKeys: NoticeKeys;
   isAcknowledge: boolean;
   isInModal?: boolean;
-  children?: ComponentChildren;
-  middleButton?: VNode;
   isMobile: boolean;
 }
 
@@ -82,8 +81,6 @@ export const NoticeConsentButtons = ({
   enabledKeys,
   isInModal,
   isAcknowledge,
-  children,
-  middleButton,
   isMobile,
 }: NoticeConsentButtonProps) => {
   if (!experience.experience_config || !experience.privacy_notices) {
@@ -118,6 +115,7 @@ export const NoticeConsentButtons = ({
           buttonType={ButtonType.PRIMARY}
           label={config.acknowledge_button_label}
           onClick={handleAcceptAll}
+          className="fides-acknowledge-button"
         />
       </div>
     );
@@ -135,13 +133,12 @@ export const NoticeConsentButtons = ({
             buttonType={ButtonType.SECONDARY}
             label={config.save_button_label}
             onClick={handleSave}
+            className="fides-save-button"
           />
         ) : undefined
       }
-      middleButton={middleButton}
       isMobile={isMobile}
-    >
-      {children}
-    </ConsentButtons>
+      includePrivacyPolicy={!isInModal}
+    />
   );
 };

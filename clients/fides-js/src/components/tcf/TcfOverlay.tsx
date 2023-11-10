@@ -366,9 +366,8 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                   onSave();
                 }}
                 isMobile={isMobile}
-              >
-                <PrivacyPolicyLink experience={experienceConfig} />
-              </TcfConsentButtons>
+                includePrivacyPolicy
+              />
             )}
             className="fides-tcf-banner-container"
           >
@@ -409,6 +408,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                   buttonType={ButtonType.SECONDARY}
                   label={experience.experience_config?.save_button_label}
                   onClick={() => onSave(draftIds)}
+                  className="fides-save-button"
                 />
               }
               isMobile={isMobile}
