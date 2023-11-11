@@ -852,12 +852,12 @@ describe("Fides-js TCF", () => {
       it("calls custom save preferences API fn instead of internal Fides API when it is provided in Fides.init", () => {
         const apiOptions = {
           /* eslint-disable @typescript-eslint/no-unused-vars */
-          savePreferencesFn: (
+          savePreferencesFn: async (
             consentMethod: ConsentMethod,
             consent: CookieKeyConsent,
             fides_string: string | undefined,
             experience: PrivacyExperience
-          ): Promise<void> => new Promise(() => {}),
+          ): Promise<void> => {},
           /* eslint-enable @typescript-eslint/no-unused-vars */
         };
         const spyObject = cy
@@ -880,7 +880,7 @@ describe("Fides-js TCF", () => {
                 .should("have.been.calledOnce")
                 .its("lastCall.args.0.detail.extraDetails.consentMethod")
                 .then((consentMethod) => {
-                  expect(consentMethod).to.eql(ConsentMethod.accept);
+                  expect(consentMethod).to.eql(ConsentMethod.reject);
                   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                   expect(spyObject).to.be.called;
                   const spy = spyObject.getCalls();
@@ -893,19 +893,19 @@ describe("Fides-js TCF", () => {
                   // the TC str is dynamically updated upon save preferences with diff timestamp, so we do a fuzzy match
                   expect(args[2]).to.contain(".IABE,1~");
                   expect(args[3]).to.deep.equal(privacyExperience.items[0]);
+                  // timeout means API call not made, which is expected
+                  cy.on("fail", (error) => {
+                    if (error.message.indexOf("Timed out retrying") !== 0) {
+                      throw error;
+                    }
+                  });
+                  // check that preferences aren't sent to Fides API
+                  cy.wait("@patchPrivacyPreference", {
+                    requestTimeout: 100,
+                  }).then((xhr) => {
+                    assert.isNull(xhr?.response?.body);
+                  });
                 });
-              // timeout means API call not made, which is expected
-              cy.on("fail", (error) => {
-                if (error.message.indexOf("Timed out retrying") !== 0) {
-                  throw error;
-                }
-              });
-              // check that preferences aren't sent to Fides API
-              cy.wait("@patchPrivacyPreference", {
-                requestTimeout: 100,
-              }).then((xhr) => {
-                assert.isNull(xhr?.response?.body);
-              });
             });
           });
         });
