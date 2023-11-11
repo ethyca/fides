@@ -1,11 +1,12 @@
-import { h, VNode } from "preact";
+import { VNode, h } from "preact";
 import Button from "./Button";
 import {
   ButtonType,
-  PrivacyExperience,
   ConsentMechanism,
-  PrivacyNotice,
+  ConsentMethod,
   ExperienceConfig,
+  PrivacyExperience,
+  PrivacyNotice,
 } from "../lib/consent-types";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
@@ -66,7 +67,7 @@ type NoticeKeys = Array<PrivacyNotice["notice_key"]>;
 
 interface NoticeConsentButtonProps {
   experience: PrivacyExperience;
-  onSave: (noticeKeys: NoticeKeys) => void;
+  onSave: (consentMethod: ConsentMethod, noticeKeys: NoticeKeys) => void;
   onManagePreferencesClick?: () => void;
   enabledKeys: NoticeKeys;
   isAcknowledge: boolean;
@@ -89,11 +90,15 @@ export const NoticeConsentButtons = ({
   const { experience_config: config, privacy_notices: notices } = experience;
 
   const handleAcceptAll = () => {
-    onSave(notices.map((n) => n.notice_key));
+    onSave(
+      ConsentMethod.accept,
+      notices.map((n) => n.notice_key)
+    );
   };
 
   const handleRejectAll = () => {
     onSave(
+      ConsentMethod.reject,
       notices
         .filter((n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY)
         .map((n) => n.notice_key)
@@ -101,7 +106,7 @@ export const NoticeConsentButtons = ({
   };
 
   const handleSave = () => {
-    onSave(enabledKeys);
+    onSave(ConsentMethod.save, enabledKeys);
   };
 
   if (isAcknowledge) {

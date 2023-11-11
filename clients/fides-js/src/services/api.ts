@@ -1,5 +1,6 @@
 import {
   ComponentType,
+  ConsentMethod,
   EmptyExperience,
   FidesApiOptions,
   FidesOptions,
@@ -114,6 +115,7 @@ const PATCH_FETCH_OPTIONS: RequestInit = {
  * Sends user consent preference downstream to Fides or custom API
  */
 export const patchUserPreference = async (
+  consentMethod: ConsentMethod,
   preferences: PrivacyPreferencesRequest,
   options: FidesOptions,
   cookie: FidesCookie,
@@ -124,6 +126,7 @@ export const patchUserPreference = async (
     debugLog(options.debug, "Calling custom save preferences fn");
     try {
       await options.apiOptions.savePreferencesFn(
+        consentMethod,
         cookie.consent,
         cookie.fides_string,
         experience
