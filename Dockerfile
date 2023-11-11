@@ -5,6 +5,7 @@ ARG PYTHON_VERSION="3.10.12"
 #########################
 FROM python:${PYTHON_VERSION}-slim-bullseye as compile_image
 
+
 # Install auxiliary software
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -54,6 +55,9 @@ RUN pip install --no-cache-dir install -r dev-requirements.txt
 ##################
 FROM python:${PYTHON_VERSION}-slim-bullseye as backend
 
+RUN adduser --system --uid 1001 fidesuser
+
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
@@ -84,6 +88,7 @@ RUN git config --global --add safe.directory /fides
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=true
 
+USER fidesuser
 EXPOSE 8080
 CMD [ "fides", "webserver" ]
 
@@ -92,7 +97,11 @@ CMD [ "fides", "webserver" ]
 #############################
 FROM backend as dev
 
+USER root
+
 RUN pip install -e . --no-deps
+
+USER fidesuser
 
 ###################
 ## Frontend Base ##
