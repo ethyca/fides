@@ -45,6 +45,7 @@ async function savePreferencesApi(
     ...(tcf ?? []),
   };
   await patchUserPreference(
+    consentMethod,
     privacyPreferenceCreate,
     options,
     cookie,
@@ -130,5 +131,5 @@ export const updateConsentPreferences = async ({
   }
 
   // 6. Dispatch a "FidesUpdated" event
-  dispatchFidesEvent("FidesUpdated", cookie, options.debug);
+  dispatchFidesEvent("FidesUpdated", cookie, options.debug, { consentMethod });
 };

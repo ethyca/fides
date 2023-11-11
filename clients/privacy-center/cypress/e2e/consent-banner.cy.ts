@@ -204,7 +204,7 @@ describe("Consent banner", () => {
               ],
               privacy_experience_id: "132345243",
               user_geography: "us_ca",
-              method: ConsentMethod.button,
+              method: ConsentMethod.save,
             };
             // uuid is generated automatically if the user has no saved consent cookie
             generatedUserDeviceId = body.browser_identity.fides_user_device_id;
@@ -336,7 +336,7 @@ describe("Consent banner", () => {
             ],
             privacy_experience_id: "132345243",
             user_geography: "us_ca",
-            method: ConsentMethod.button,
+            method: ConsentMethod.save,
           };
           expect(body).to.eql(expected);
         });
@@ -409,7 +409,12 @@ describe("Consent banner", () => {
 
         it("can remove all cookies when rejecting all", () => {
           cy.contains("button", "Reject Test").click();
-          cy.get("@FidesUpdated").should("have.been.calledOnce");
+          cy.get("@FidesUpdated")
+            .should("have.been.calledOnce")
+            .its("lastCall.args.0.detail.extraDetails.consentMethod")
+            .then((consentMethod) => {
+              expect(consentMethod).to.eql(ConsentMethod.reject);
+            });
           cy.getAllCookies().then((allCookies) => {
             expect(allCookies.map((c) => c.name)).to.eql([CONSENT_COOKIE_NAME]);
           });
@@ -420,7 +425,12 @@ describe("Consent banner", () => {
           // opt out of the first notice
           cy.getByTestId("toggle-one").click();
           cy.getByTestId("Save test-btn").click();
-          cy.get("@FidesUpdated").should("have.been.calledOnce");
+          cy.get("@FidesUpdated")
+            .should("have.been.calledOnce")
+            .its("lastCall.args.0.detail.extraDetails.consentMethod")
+            .then((consentMethod) => {
+              expect(consentMethod).to.eql(ConsentMethod.save);
+            });
           cy.getAllCookies().then((allCookies) => {
             expect(allCookies.map((c) => c.name)).to.eql([
               CONSENT_COOKIE_NAME,
@@ -1172,6 +1182,11 @@ describe("Consent banner", () => {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: true,
           });
+        cy.get("@FidesUpdated")
+          .its("lastCall.args.0.detail.extraDetails.consentMethod")
+          .then((consentMethod) => {
+            expect(consentMethod).to.eql(ConsentMethod.reject);
+          });
       });
 
       it("emits a FidesUpdated event when accept all is clicked", () => {
@@ -1193,6 +1208,11 @@ describe("Consent banner", () => {
             [PRIVACY_NOTICE_KEY_1]: true,
             [PRIVACY_NOTICE_KEY_2]: true,
           });
+        cy.get("@FidesUpdated")
+          .its("lastCall.args.0.detail.extraDetails.consentMethod")
+          .then((consentMethod) => {
+            expect(consentMethod).to.eql(ConsentMethod.accept);
+          });
       });
 
       it("emits a FidesUIChanged event when preferences are changed and a FidesUpdated event when preferences are saved", () => {
@@ -1210,6 +1230,7 @@ describe("Consent banner", () => {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: true,
           });
+
         cy.get("@FidesUpdated")
           // Update event, when the user saved preferences and opted-in to the first notice
           .should("have.been.calledOnce")
@@ -1217,6 +1238,11 @@ describe("Consent banner", () => {
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: true,
             [PRIVACY_NOTICE_KEY_2]: true,
+          });
+        cy.get("@FidesUpdated")
+          .its("lastCall.args.0.detail.extraDetails.consentMethod")
+          .then((consentMethod) => {
+            expect(consentMethod).to.eql(ConsentMethod.save);
           });
       });
     });
@@ -1586,6 +1612,9 @@ describe("Consent banner", () => {
               (p: ConsentOptionCreate) => p.served_notice_history_id
             )
           ).to.eql(expected);
+          expect(preferenceInterception.request.body.method).to.eql(
+            ConsentMethod.reject
+          );
         });
       });
     });

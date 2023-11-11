@@ -52,7 +52,11 @@ class RequestOrigin(Enum):
 
 
 class ConsentMethod(Enum):
-    button = "button"
+    button = "button"  # deprecated- keeping for backwards-compatibility
+    reject = "reject"
+    accept = "accept"
+    save = "save"
+    dismiss = "dismiss"
     gpc = "gpc"
     individual_notice = "individual_notice"
 
