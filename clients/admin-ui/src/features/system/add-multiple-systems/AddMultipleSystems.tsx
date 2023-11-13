@@ -6,6 +6,7 @@ import {
   Flex,
   Spinner,
   Text,
+  Tag,
   Tooltip,
   useDisclosure,
   useToast,
@@ -257,7 +258,14 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   const totalSelectSystemsLength = tableInstance
     .getSelectedRowModel()
     .rows.filter((r) => !r.original.linked_system).length;
+  console.log(tableInstance.getState().columnFilters);
 
+  const totalFilters =
+    tableInstance.getState().columnFilters.length > 0
+      ? tableInstance
+          .getState()
+          .columnFilters.filter((c) => c.id === "vendor_id")[0].value.length
+      : 0;
   return (
     <Flex flex={1} direction="column" overflow="auto">
       <ConfirmationModal
@@ -322,7 +330,13 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
                 size="xs"
                 variant="outline"
               >
-                Filter
+                Filter{" "}
+                {totalFilters > 0 ? (
+                  <Tag borderRadius="full" size="sm" ml={2}>
+                    {" "}
+                    {totalFilters}{" "}
+                  </Tag>
+                ) : null}
               </Button>
             </span>
           ) : null}
