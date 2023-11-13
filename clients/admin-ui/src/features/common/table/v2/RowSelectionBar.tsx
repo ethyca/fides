@@ -4,14 +4,14 @@ import { Table as TableInstance } from "@tanstack/react-table";
 type RowSelectionBarProps<T> = {
   tableInstance: TableInstance<T>;
   selectedRows: number;
+  isOpen: boolean;
 };
 
 export const RowSelectionBar = <T,>({
   tableInstance,
   selectedRows,
+  isOpen,
 }: RowSelectionBarProps<T>) => {
-  const isOpen = selectedRows !== 0;
-
   if (!isOpen) {
     return null;
   }

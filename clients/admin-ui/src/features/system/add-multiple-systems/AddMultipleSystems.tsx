@@ -1,9 +1,11 @@
 /* eslint-disable react/no-unstable-nested-components */
 import {
   Badge,
+  Box,
   Button,
   Flex,
   Spinner,
+  Text,
   Tooltip,
   useDisclosure,
   useToast,
@@ -93,6 +95,8 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     onClose: onCloseFilter,
   } = useDisclosure();
   const { isOpen, onClose, onOpen } = useDisclosure();
+  const [isRowSelectionBarOpen, setIsRowSelectionBarOpen] =
+    useState<boolean>(false);
 
   const allRowsLinkedToSystem = dictionaryOptions.every((d) => d.linked_system);
   const columns = useMemo(
@@ -102,13 +106,19 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         header: ({ table }) => (
           <IndeterminateCheckboxCell
             {...{
-              checked: table.getIsAllRowsSelected(),
-              indeterminate:
+              checked: table.getIsAllPageRowsSelected(),
+              indeterminate: table
+                .getPaginationRowModel()
+                .rows.some((r) => r.getIsSelected()),
+              onChange: (e) => {
+                table.getToggleAllPageRowsSelectedHandler()(e);
+                setIsRowSelectionBarOpen((prev) => !prev);
+              },
+              manualDisable:
+                allRowsLinkedToSystem ||
                 table
-                  .getSelectedRowModel()
-                  .rows.filter((r) => !r.original.linked_system).length > 0,
-              onChange: table.getToggleAllRowsSelectedHandler(),
-              manualDisable: allRowsLinkedToSystem,
+                  .getPaginationRowModel()
+                  .rows.filter((r) => r.original.linked_system).length > 0,
             }}
           />
         ),
@@ -265,12 +275,20 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         tableInstance={tableInstance}
       />
       <TableActionBar>
-        <GlobalFilterV2
-          globalFilter={globalFilter}
-          setGlobalFilter={setGlobalFilter}
-          placeholder="Search"
-        />
-        <Flex alignItems="center">
+        <Flex alignItems="center" grow="1">
+          <Box maxW="420px" width="100%">
+            <GlobalFilterV2
+              globalFilter={globalFilter}
+              setGlobalFilter={setGlobalFilter}
+              placeholder="Search"
+            />
+          </Box>
+          {totalSelectSystemsLength > 0 ? (
+            <Text fontWeight="700" fontSize="sm" lineHeight="2" ml={4}>
+              {totalSelectSystemsLength} selected
+            </Text>
+          ) : null}
+
           <Tooltip
             label={toolTipText}
             shouldWrapChildren
@@ -283,11 +301,13 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
               size="xs"
               variant="outline"
               disabled={!anyNewSelectedRows}
-              mr={4}
+              ml={4}
             >
-              Add {`${systemText.toLocaleLowerCase()}s`}
+              Add
             </Button>
           </Tooltip>
+        </Flex>
+        <Flex alignItems="center">
           {isTcfEnabled ? (
             // Wrap in a span so it is consistent height with the add button, whose
             // Tooltip wraps a span
@@ -309,11 +329,8 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         rowActionBar={
           <RowSelectionBar<MultipleSystemTable>
             tableInstance={tableInstance}
-            selectedRows={
-              tableInstance
-                .getSelectedRowModel()
-                .rows.filter((r) => !r.original.linked_system).length
-            }
+            selectedRows={totalSelectSystemsLength}
+            isOpen={isRowSelectionBarOpen}
           />
         }
       />
