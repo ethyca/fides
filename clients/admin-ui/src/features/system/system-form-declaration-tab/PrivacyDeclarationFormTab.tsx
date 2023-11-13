@@ -232,10 +232,7 @@ const PrivacyDeclarationFormTab = ({
         <EmptyTableState
           title="You don't have a data use set up for this system yet."
           description='A Data Use is the purpose for which data is used in a system. In Fides, a system may have more than one Data Use. For example, a CRM system may be used both for "Customer Support" and also for "Email Marketing", each of these is a Data Use.'
-          dictAvailable={features.dictionaryService}
           handleAdd={handleOpenNewForm}
-          handleDictSuggestion={handleOpenDictModal}
-          vendorSelected={!!system.vendor_id}
         />
       ) : (
         <PrivacyDeclarationDisplayGroup
