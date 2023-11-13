@@ -572,9 +572,9 @@ export const selectAllDictSystems = createSelector(
               .split(" ")
               .map((word) =>
                 word.charAt(0) === "("
-                  ? "(" +
-                    word.charAt(1).toUpperCase() +
-                    word.slice(2).toLowerCase()
+                  ? `(${word.charAt(1).toUpperCase()}${word
+                      .slice(2)
+                      .toLowerCase()}`
                   : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
               )
               .join(" ");

@@ -5,8 +5,8 @@ import {
   Button,
   Flex,
   Spinner,
-  Text,
   Tag,
+  Text,
   Tooltip,
   useDisclosure,
   useToast,
@@ -258,13 +258,14 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   const totalSelectSystemsLength = tableInstance
     .getSelectedRowModel()
     .rows.filter((r) => !r.original.linked_system).length;
-  console.log(tableInstance.getState().columnFilters);
 
   const totalFilters =
     tableInstance.getState().columnFilters.length > 0
-      ? tableInstance
+      ? // @ts-ignore
+        (tableInstance
           .getState()
-          .columnFilters.filter((c) => c.id === "vendor_id")[0].value.length
+          .columnFilters.filter((c) => c.id === "vendor_id")[0].value
+          .length as number)
       : 0;
   return (
     <Flex flex={1} direction="column" overflow="auto">
@@ -287,7 +288,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         tableInstance={tableInstance}
       />
       <TableActionBar>
-        <Flex alignItems="center" grow="1">
+        <Flex alignItems="center" grow={1}>
           <Box maxW="420px" width="100%">
             <GlobalFilterV2
               globalFilter={globalFilter}
