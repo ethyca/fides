@@ -28,6 +28,7 @@ import {
   extractVendorSource,
   getErrorMessage,
   isErrorResult,
+  isFetchBaseQueryError,
   VendorSources,
 } from "~/features/common/helpers";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
@@ -185,11 +186,16 @@ const SystemInformationForm = ({
         vendor_id: values.vendor_id!,
       });
       if (dataUseQueryResult.isError) {
-        const dataUseErrorMsg = getErrorMessage(
-          dataUseQueryResult.error,
-          `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`
-        );
-        toast({ status: "error", description: dataUseErrorMsg });
+        const isNotFoundError =
+          isFetchBaseQueryError(dataUseQueryResult.error) &&
+          dataUseQueryResult.error.status === 404;
+        if (!isNotFoundError) {
+          const dataUseErrorMsg = getErrorMessage(
+            dataUseQueryResult.error,
+            `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`
+          );
+          toast({ status: "error", description: dataUseErrorMsg });
+        }
       } else if (
         dataUseQueryResult.data &&
         dataUseQueryResult.data.items.length > 0
