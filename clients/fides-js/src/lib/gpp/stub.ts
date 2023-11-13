@@ -161,7 +161,7 @@ export const makeStub = () => {
     return null;
   };
 
-  const postMessageEventHandler = (event: MessageEvent<any>) => {
+  const postMessageEventHandler = (event: MessageEvent<MessageData>) => {
     const msgIsString = typeof event.data === "string";
     let json = {};
 
