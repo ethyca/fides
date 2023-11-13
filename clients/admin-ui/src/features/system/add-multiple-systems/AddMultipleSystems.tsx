@@ -267,7 +267,9 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         onClose={onClose}
         onConfirm={addVendors}
         title="Confirmation"
-        message={`You are about to add ${totalSelectSystemsLength} ${systemText.toLocaleLowerCase()}${
+        message={`You are about to add ${totalSelectSystemsLength.toLocaleString(
+          "en"
+        )} ${systemText.toLocaleLowerCase()}${
           totalSelectSystemsLength > 1 ? "s" : ""
         }`}
       />
@@ -287,7 +289,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           </Box>
           {totalSelectSystemsLength > 0 ? (
             <Text fontWeight="700" fontSize="sm" lineHeight="2" ml={4}>
-              {totalSelectSystemsLength} selected
+              {totalSelectSystemsLength.toLocaleString("en")} selected
             </Text>
           ) : null}
 
