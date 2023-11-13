@@ -3,13 +3,21 @@
  * Refactored to share code with the TCF version
  */
 
+import {
+  CmpDisplayStatus,
+  CmpStatus,
+  PingData,
+  SignalStatus,
+} from "@iabgpp/cmpapi";
 import { GPP_FRAME_NAME, addFrame, locateFrame } from "../cmp-stubs";
+import { GppCallback, GppFunction } from "./types";
+import { SUPPORTED_APIS } from "./constants";
 
 /* eslint-disable no-underscore-dangle */
 
 interface GppEvent {
   id: number;
-  callback: () => void;
+  callback: GppCallback;
   parameter: any;
 }
 
@@ -30,44 +38,30 @@ export const makeStub = () => {
   const events: GppEvent[] = [];
   let lastId: number | undefined;
 
-  const gppAPIHandler = (...args: any[]) => {
-    if (!args.length || (args.length === 1 && args[0] === "queue")) {
+  const gppAPIHandler: GppFunction = (cmd, callback, parameter, version) => {
+    if (cmd === "queue") {
       return queue;
     }
 
-    if (args.length === 1 && args[0] === "events") {
+    if (cmd === "events") {
       return events;
     }
 
-    const cmd = args[0];
-    const callback = args.length > 1 ? args[1] : null;
-    const params = args.length > 2 ? args[2] : null;
+    const pingData: PingData = {
+      gppVersion: "1.1", // must be “Version.Subversion”, current: “1.1”
+      cmpStatus: CmpStatus.STUB, // possible values: stub, loading, loaded, error
+      cmpDisplayStatus: CmpDisplayStatus.HIDDEN, // possible values: hidden, visible, disabled
+      signalStatus: SignalStatus.NOT_READY, // possible values: not ready, ready
+      supportedAPIs: SUPPORTED_APIS,
+      cmpId: 0, // IAB assigned CMP ID, may be 0 during stub/loading
+      sectionList: [],
+      applicableSections: [],
+      gppString: "",
+      parsedSections: {},
+    };
+
     if (cmd === "ping") {
-      callback(
-        {
-          gppVersion: "1.1", // must be “Version.Subversion”, current: “1.1”
-          cmpStatus: "stub", // possible values: stub, loading, loaded, error
-          cmpDisplayStatus: "hidden", // possible values: hidden, visible, disabled
-          signalStatus: "not ready", // possible values: not ready, ready
-          supportedAPIs: [
-            "2:tcfeuv2",
-            "5:tcfcav1",
-            "6:uspv1",
-            "7:usnatv1",
-            "8:uscav1",
-            "9:usvav1",
-            "10:uscov1",
-            "11:usutv1",
-            "12:usctv1",
-          ], // list of supported APIs
-          cmpId: 0, // IAB assigned CMP ID, may be 0 during stub/loading
-          sectionList: [],
-          applicableSections: [],
-          gppString: "",
-          parsedSections: {},
-        },
-        true
-      );
+      callback(pingData, true);
     } else if (cmd === "addEventListener") {
       if (!lastId) {
         lastId = 0;
@@ -77,35 +71,14 @@ export const makeStub = () => {
       events.push({
         id: listenerId,
         callback,
-        parameter: params,
+        parameter,
       });
       callback(
         {
           eventName: "listenerRegistered",
           listenerId, // Registered ID of the listener
           data: true, // positive signal
-          pingData: {
-            gppVersion: "1.1", // must be “Version.Subversion”, current: “1.1”
-            cmpStatus: "stub", // possible values: stub, loading, loaded, error
-            cmpDisplayStatus: "hidden", // possible values: hidden, visible, disabled
-            signalStatus: "not ready", // possible values: not ready, ready
-            supportedAPIs: [
-              "2:tcfeuv2",
-              "5:tcfcav1",
-              "6:uspv1",
-              "7:usnatv1",
-              "8:uscav1",
-              "9:usvav1",
-              "10:uscov1",
-              "11:usutv1",
-              "12:usctv1",
-            ], // list of supported APIs
-            cmpId: 0, // IAB assigned CMP ID, may be 0 during stub/loading
-            sectionList: [],
-            applicableSections: [],
-            gppString: "",
-            parsedSections: {},
-          },
+          pingData,
         },
         true
       );
@@ -113,7 +86,7 @@ export const makeStub = () => {
       let success = false;
       // eslint-disable-next-line no-plusplus
       for (let i = 0; i < events.length; i++) {
-        if (events[i].id === params) {
+        if (events[i].id === parameter) {
           events.splice(i, 1);
           success = true;
           break;
@@ -122,30 +95,9 @@ export const makeStub = () => {
       callback(
         {
           eventName: "listenerRemoved",
-          listenerId: params, // Registered ID of the listener
+          listenerId: parameter as number, // Registered ID of the listener
           data: success, // status info
-          pingData: {
-            gppVersion: "1.1", // must be “Version.Subversion”, current: “1.1”
-            cmpStatus: "stub", // possible values: stub, loading, loaded, error
-            cmpDisplayStatus: "hidden", // possible values: hidden, visible, disabled
-            signalStatus: "not ready", // possible values: not ready, ready
-            supportedAPIs: [
-              "2:tcfeuv2",
-              "5:tcfcav1",
-              "6:uspv1",
-              "7:usnatv1",
-              "8:uscav1",
-              "9:usvav1",
-              "10:uscov1",
-              "11:usutv1",
-              "12:usctv1",
-            ], // list of supported APIs
-            cmpId: 0, // IAB assigned CMP ID, may be 0 during stub/loading
-            sectionList: [],
-            applicableSections: [],
-            gppString: "",
-            parsedSections: {},
-          },
+          pingData,
         },
         true
       );
@@ -156,7 +108,7 @@ export const makeStub = () => {
     }
     // queue all other commands
     else {
-      queue.push([].slice.apply(args));
+      queue.push([].slice.apply([cmd, callback, parameter, version]));
     }
     return null;
   };
