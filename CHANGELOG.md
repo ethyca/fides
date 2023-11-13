@@ -17,11 +17,6 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.24.0...main)
 
-### Added
-- Adds support for custom get experiences fn and custom patch notices served fn [#4410](https://github.com/ethyca/fides/pull/4410)
-
-### Fixed
-- User preferences from cookie should always override experience preferences [#4405](https://github.com/ethyca/fides/pull/4405)
 
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
 
@@ -36,6 +31,8 @@ The types of changes are:
 - Erasure support for Typeform [#4366](https://github.com/ethyca/fides/pull/4366)
 - Added notice that a system is GVL when adding/editing from system form [#4327](https://github.com/ethyca/fides/pull/4327)
 - Added the ability to select the request types to enable per integration (for plus users) [#4374](https://github.com/ethyca/fides/pull/4374)
+- Adds support for custom get experiences fn and custom patch notices served fn [#4410](https://github.com/ethyca/fides/pull/4410)
+- Adds more granularity to tracking consent method, updates custom savePreferencesFn and FidesUpdated event to take consent method [#4419](https://github.com/ethyca/fides/pull/4419)
 
 ### Changed
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
@@ -45,10 +42,13 @@ The types of changes are:
 - "is_service_specific" default updated when building TC strings on the backend [#4377](https://github.com/ethyca/fides/pull/4377)
 - "isServiceSpecific" default updated when building TC strings on the frontend [#4384](https://github.com/ethyca/fides/pull/4384)
 - Redact cli, database, and redis configuration information from GET api/v1/config API request responses. [#4379](https://github.com/ethyca/fides/pull/4379)
+- Button ordering in fides.js UI [#4407](https://github.com/ethyca/fides/pull/4407)
+- Add different classnames to consent buttons for easier selection [#4411](https://github.com/ethyca/fides/pull/4411)
 
 ### Fixed
 - Persist bulk system add filter modal state [#4412](https://github.com/ethyca/fides/pull/4412)
 - Fixing labels for request type field [#4414](https://github.com/ethyca/fides/pull/4414)
+- User preferences from cookie should always override experience preferences [#4405](https://github.com/ethyca/fides/pull/4405)
 
 ## [2.23.3](https://github.com/ethyca/fides/compare/2.23.2...2.23.3)
 
