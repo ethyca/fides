@@ -563,5 +563,26 @@ export type DictSystems = {
 const EMPTY_DICT_SYSTEMS: DictSystems[] = [];
 export const selectAllDictSystems = createSelector(
   [(RootState) => RootState, plusApi.endpoints.getAllSystemVendors.select()],
-  (RootState, { data }) => data || EMPTY_DICT_SYSTEMS
+  (RootState, { data }) =>
+    data
+      ? data
+          .slice()
+          .map((ds) => {
+            const name = ds.name
+              .split(" ")
+              .map((word) =>
+                word.charAt(0) === "("
+                  ? "(" +
+                    word.charAt(1).toUpperCase() +
+                    word.slice(2).toLowerCase()
+                  : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+              )
+              .join(" ");
+            return {
+              ...ds,
+              name,
+            };
+          })
+          .sort((a, b) => a.name.localeCompare(b.name))
+      : EMPTY_DICT_SYSTEMS
 );
