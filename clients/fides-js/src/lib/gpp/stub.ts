@@ -1,41 +1,49 @@
-// Typescript adaptation of https://github.com/IABTechLab/iabgpp-es/blob/master/modules/stub
+/**
+ * Typescript adaptation of https://github.com/IABTechLab/iabgpp-es/blob/master/modules/stub
+ * Refactored to share code with the TCF version
+ */
+
+import { GPP_FRAME_NAME, addFrame, locateFrame } from "../cmp-stubs";
 
 /* eslint-disable no-underscore-dangle */
 
-const GPP_LOCATOR_NAME = "__gppLocator";
+interface GppEvent {
+  id: number;
+  callback: () => void;
+  parameter: any;
+}
+
+interface MessageData {
+  __gppCall: {
+    command: string;
+    parameter?: string | number;
+    version: string;
+    callId: string | number;
+  };
+}
+
+const isMessageData = (data: unknown): data is MessageData =>
+  typeof data === "object" && data != null && "__gppCall" in data;
 
 export const makeStub = () => {
-  const addFrame = () => {
-    if (!window.frames[GPP_LOCATOR_NAME]) {
-      if (document.body) {
-        const i = document.createElement("iframe");
-        i.style.cssText = "display:none";
-        i.name = GPP_LOCATOR_NAME;
-        document.body.appendChild(i);
-      } else {
-        window.setTimeout(addFrame, 10);
-      }
-    }
-  };
+  const queue: any[] = [];
+  const events: GppEvent[] = [];
+  let lastId: number | undefined;
 
-  const gppAPIHandler = () => {
-    const b = arguments;
-    __gpp.queue = __gpp.queue || [];
-    __gpp.events = __gpp.events || [];
-
-    if (!b.length || (b.length == 1 && b[0] == "queue")) {
-      return __gpp.queue;
+  const gppAPIHandler = (...args: any[]) => {
+    if (!args.length || (args.length === 1 && args[0] === "queue")) {
+      return queue;
     }
 
-    if (b.length == 1 && b[0] == "events") {
-      return __gpp.events;
+    if (args.length === 1 && args[0] === "events") {
+      return events;
     }
 
-    const cmd = b[0];
-    const clb = b.length > 1 ? b[1] : null;
-    const par = b.length > 2 ? b[2] : null;
+    const cmd = args[0];
+    const callback = args.length > 1 ? args[1] : null;
+    const params = args.length > 2 ? args[2] : null;
     if (cmd === "ping") {
-      clb(
+      callback(
         {
           gppVersion: "1.1", // must be “Version.Subversion”, current: “1.1”
           cmpStatus: "stub", // possible values: stub, loading, loaded, error
@@ -61,20 +69,20 @@ export const makeStub = () => {
         true
       );
     } else if (cmd === "addEventListener") {
-      if (!("lastId" in __gpp)) {
-        __gpp.lastId = 0;
+      if (!lastId) {
+        lastId = 0;
       }
-      __gpp.lastId++;
-      const lnr = __gpp.lastId;
-      __gpp.events.push({
-        id: lnr,
-        callback: clb,
-        parameter: par,
+      lastId += 1;
+      const listenerId = lastId;
+      events.push({
+        id: listenerId,
+        callback,
+        parameter: params,
       });
-      clb(
+      callback(
         {
           eventName: "listenerRegistered",
-          listenerId: lnr, // Registered ID of the listener
+          listenerId, // Registered ID of the listener
           data: true, // positive signal
           pingData: {
             gppVersion: "1.1", // must be “Version.Subversion”, current: “1.1”
@@ -103,17 +111,18 @@ export const makeStub = () => {
       );
     } else if (cmd === "removeEventListener") {
       let success = false;
-      for (let i = 0; i < __gpp.events.length; i++) {
-        if (__gpp.events[i].id == par) {
-          __gpp.events.splice(i, 1);
+      // eslint-disable-next-line no-plusplus
+      for (let i = 0; i < events.length; i++) {
+        if (events[i].id === params) {
+          events.splice(i, 1);
           success = true;
           break;
         }
       }
-      clb(
+      callback(
         {
           eventName: "listenerRemoved",
-          listenerId: par, // Registered ID of the listener
+          listenerId: params, // Registered ID of the listener
           data: success, // status info
           pingData: {
             gppVersion: "1.1", // must be “Version.Subversion”, current: “1.1”
@@ -141,23 +150,38 @@ export const makeStub = () => {
         true
       );
     } else if (cmd === "hasSection") {
-      clb(false, true);
+      callback(false, true);
     } else if (cmd === "getSection" || cmd === "getField") {
-      clb(null, true);
+      callback(null, true);
     }
     // queue all other commands
     else {
-      __gpp.queue.push([].slice.apply(b));
+      queue.push([].slice.apply(args));
     }
+    return null;
   };
+
   const postMessageEventHandler = (event: MessageEvent<any>) => {
     const msgIsString = typeof event.data === "string";
-    try {
-      var json = msgIsString ? JSON.parse(event.data) : event.data;
-    } catch (e) {
-      var json = null;
+    let json = {};
+
+    if (msgIsString) {
+      try {
+        json = JSON.parse(event.data);
+      } catch (ignore) {
+        json = {};
+      }
+    } else {
+      json = event.data;
     }
-    if (typeof json === "object" && json !== null && "__gppCall" in json) {
+
+    if (!isMessageData(json)) {
+      return null;
+    }
+
+    const payload = json.__gppCall;
+
+    if (payload && window.__gpp) {
       const i = json.__gppCall;
       window.__gpp(
         i.command,
@@ -169,18 +193,26 @@ export const makeStub = () => {
               callId: i.callId,
             },
           };
-          event.source.postMessage(
-            msgIsString ? JSON.stringify(returnMsg) : returnMsg,
-            "*"
-          );
+
+          if (event && event.source && event.source.postMessage) {
+            event.source.postMessage(
+              msgIsString ? JSON.stringify(returnMsg) : returnMsg,
+              //   @ts-ignore
+              "*"
+            );
+          }
         },
-        "parameter" in i ? i.parameter : null,
+        "parameter" in i ? i.parameter : undefined,
         "version" in i ? i.version : "1.1"
       );
     }
+    return null;
   };
-  if (!("__gpp" in window) || typeof window.__gpp !== "function") {
-    addFrame();
+
+  const cmpFrame = locateFrame(GPP_FRAME_NAME);
+
+  if (!cmpFrame) {
+    addFrame(GPP_FRAME_NAME);
     window.__gpp = gppAPIHandler;
     window.addEventListener("message", postMessageEventHandler, false);
   }
