@@ -109,7 +109,8 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
               checked: table.getIsAllPageRowsSelected(),
               indeterminate: table
                 .getPaginationRowModel()
-                .rows.some((r) => r.getIsSelected()),
+                .rows.filter((r) => !r.original.linked_system)
+                .some((r) => r.getIsSelected()),
               onChange: (e) => {
                 table.getToggleAllPageRowsSelectedHandler()(e);
                 setIsRowSelectionBarOpen((prev) => !prev);
@@ -118,7 +119,8 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
                 allRowsLinkedToSystem ||
                 table
                   .getPaginationRowModel()
-                  .rows.filter((r) => r.original.linked_system).length > 0,
+                  .rows.filter((r) => r.original.linked_system).length ===
+                  table.getState().pagination.pageSize,
             }}
           />
         ),
