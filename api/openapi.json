@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.23.3"
+    "version": "2.24.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -7840,221 +7840,6 @@
         ]
       }
     },
-    "/api/v1/privacy-experience-meta": {
-      "get": {
-        "tags": [
-          "Privacy Experience"
-        ],
-        "summary": "Get Privacy Experience Meta",
-        "description": "Minimal Developer Friendly Privacy Experience endpoint that returns only the meta object,\nthe component, and the region.",
-        "operationId": "get_privacy_experience_meta_api_v1_privacy_experience_meta_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Region",
-              "type": "string"
-            },
-            "name": "region",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "$ref": "#/components/schemas/ComponentType"
-            },
-            "name": "component",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Page",
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 1
-            },
-            "name": "page",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Size",
-              "maximum": 100.0,
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 50
-            },
-            "name": "size",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Page_PrivacyExperienceMetaResponse_"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/privacy-experience": {
-      "get": {
-        "tags": [
-          "Privacy Experience"
-        ],
-        "summary": "Privacy Experience List",
-        "description": "Public endpoint that returns a list of PrivacyExperience records for individual regions with\nrelevant privacy notices or tcf contents embedded in the response.\n\n'show_disabled' query params are passed along to further filter\nnotices as well.\n\n:param db:\n:param params:\n:param show_disabled: If False, returns only enabled Experiences and Notices\n:param region: Return the Experiences for the given region\n:param component: Returns Experiences of the given component type\n:param content_required: Return if the Experience has content. (Alias for has_notices query_param)\n:param has_config: If True, returns Experiences with copy. If False, returns just Experiences without copy.\n:param fides_user_device_id: Supplement the response with current saved preferences of the given user\n:param systems_applicable: Only return embedded Notices associated with systems.\n:param include_gvl: Embeds gvl.json in the response provided we also have TCF content\n:param include_meta: If True, returns TCF Experience meta if applicable\n:param request:\n:param response:\n:return:",
-        "operationId": "privacy_experience_list_api_v1_privacy_experience_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Show Disabled",
-              "type": "boolean",
-              "default": true
-            },
-            "name": "show_disabled",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Region",
-              "type": "string"
-            },
-            "name": "region",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "$ref": "#/components/schemas/ComponentType"
-            },
-            "name": "component",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Has Notices",
-              "type": "boolean"
-            },
-            "name": "has_notices",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Has Config",
-              "type": "boolean"
-            },
-            "name": "has_config",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Fides User Device Id",
-              "type": "string"
-            },
-            "name": "fides_user_device_id",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Systems Applicable",
-              "type": "boolean",
-              "default": false
-            },
-            "name": "systems_applicable",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Include Gvl",
-              "type": "boolean",
-              "default": false
-            },
-            "name": "include_gvl",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Include Meta",
-              "type": "boolean",
-              "default": false
-            },
-            "name": "include_meta",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Page",
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 1
-            },
-            "name": "page",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Size",
-              "maximum": 100.0,
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 50
-            },
-            "name": "size",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Page_PrivacyExperienceResponse_"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/experience-config": {
       "get": {
         "tags": [
@@ -8589,177 +8374,6 @@
             ]
           }
         ]
-      }
-    },
-    "/api/v1/consent-request/{consent_request_id}/verify-for-privacy-preferences": {
-      "post": {
-        "tags": [
-          "Privacy Preference"
-        ],
-        "summary": "Consent Request Verify For Privacy Preferences",
-        "description": "Retrieves the most recently saved privacy preferences through the Privacy Center\n\nVerifies the verification code and retrieves CurrentPrivacyPreferences, which are the latest\npreferences saved for each PrivacyNotice or TCF component",
-        "operationId": "consent_request_verify_for_privacy_preferences_api_v1_consent_request__consent_request_id__verify_for_privacy_preferences_post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Consent Request Id",
-              "type": "string"
-            },
-            "name": "consent_request_id",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Page",
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 1
-            },
-            "name": "page",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Size",
-              "maximum": 100.0,
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 50
-            },
-            "name": "size",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VerificationCode"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Page_CurrentPrivacyPreferenceSchema_"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/consent-request/{consent_request_id}/privacy-preferences": {
-      "patch": {
-        "tags": [
-          "Privacy Preference"
-        ],
-        "summary": "Save Privacy Preferences With Verified Identity",
-        "description": "Saves privacy preferences in the privacy center.\n\nThe ConsentRequest may have been created under an email, phone number, *or* fides user device id.\nPreferences can be saved under both an email *and* a fides user device id, if the email was persisted\nwith the ConsentRequest and the fides user device id is passed in with this secondary request.\n\nCreates historical records for these preferences for record keeping, and also updates current preferences.\nCreates a privacy request to propagate preferences to third party systems where applicable.",
-        "operationId": "save_privacy_preferences_with_verified_identity_api_v1_consent_request__consent_request_id__privacy_preferences_patch",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Consent Request Id",
-              "type": "string"
-            },
-            "name": "consent_request_id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PrivacyPreferencesRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SavePrivacyPreferencesResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/privacy-preferences": {
-      "patch": {
-        "tags": [
-          "Privacy Preference"
-        ],
-        "summary": "Save Privacy Preferences",
-        "description": "Saves privacy preferences with respect to a fides user device id.\n\nCreates historical records for these preferences for record keeping, and also updates current preferences.\nCreates a privacy request to propagate preferences to third party systems if applicable.",
-        "operationId": "save_privacy_preferences_api_v1_privacy_preferences_patch",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PrivacyPreferencesRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SavePrivacyPreferencesResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
       }
     },
     "/api/v1/current-privacy-preferences": {
@@ -13902,6 +13516,11 @@
             "type": "string",
             "description": "The unique identifier for the vendor that's associated with this system."
           },
+          "previous_vendor_id": {
+            "title": "Previous Vendor Id",
+            "type": "string",
+            "description": "If specified, the unique identifier for the vendor that was previously associated with this system."
+          },
           "dataset_references": {
             "title": "Dataset References",
             "type": "array",
@@ -14041,6 +13660,14 @@
             "type": "string",
             "description": "A URL that points to the system's publicly accessible legitimate interest disclosure.",
             "format": "uri"
+          },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            },
+            "description": "System-level cookies unassociated with a data use to deliver services and functionality"
           },
           "created_at": {
             "title": "Created At",
@@ -14561,6 +14188,12 @@
             "title": "Authorized",
             "type": "boolean",
             "default": false
+          },
+          "enabled_actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionType"
+            }
           }
         },
         "description": "Describes the returned schema for a ConnectionConfiguration."
@@ -14570,7 +14203,8 @@
         "required": [
           "identifier",
           "type",
-          "human_readable"
+          "human_readable",
+          "supported_actions"
         ],
         "type": "object",
         "properties": {
@@ -14604,6 +14238,12 @@
           "user_guide": {
             "title": "User Guide",
             "type": "string"
+          },
+          "supported_actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionType"
+            }
           }
         },
         "description": "Describes the returned schema for connection types"
@@ -14741,32 +14381,14 @@
         "title": "ConsentMethod",
         "enum": [
           "button",
+          "reject",
+          "accept",
+          "save",
+          "dismiss",
           "gpc",
           "individual_notice"
         ],
         "description": "An enumeration."
-      },
-      "ConsentOptionCreate": {
-        "title": "ConsentOptionCreate",
-        "required": [
-          "privacy_notice_history_id",
-          "preference"
-        ],
-        "type": "object",
-        "properties": {
-          "privacy_notice_history_id": {
-            "title": "Privacy Notice History Id",
-            "type": "string"
-          },
-          "preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "served_notice_history_id": {
-            "title": "Served Notice History Id",
-            "type": "string"
-          }
-        },
-        "description": "Schema for saving the user's preference for a given notice"
       },
       "ConsentPreferences": {
         "title": "ConsentPreferences",
@@ -15229,12 +14851,6 @@
             "title": "Description",
             "type": "string"
           },
-          "enabled_actions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ActionType"
-            }
-          },
           "secrets": {
             "title": "Secrets",
             "anyOf": [
@@ -15290,7 +14906,6 @@
             "type": "string"
           }
         },
-        "additionalProperties": false,
         "description": "Schema for creating a connection configuration including secrets."
       },
       "CurrentPrivacyPreferenceReportingSchema": {
@@ -15362,67 +14977,6 @@
             "title": "Created At",
             "type": "string",
             "format": "date-time"
-          }
-        },
-        "description": "Schema to represent the latest saved preference for a given privacy notice\nNote that we return the privacy notice *history* record here though which has the\ncontents of the notice the user consented to at the time."
-      },
-      "CurrentPrivacyPreferenceSchema": {
-        "title": "CurrentPrivacyPreferenceSchema",
-        "required": [
-          "id",
-          "preference"
-        ],
-        "type": "object",
-        "properties": {
-          "purpose_consent": {
-            "title": "The TCF purpose with consent legal basis that was served or saved against",
-            "type": "integer"
-          },
-          "purpose_legitimate_interests": {
-            "title": "The TCF purpose with a legitimate interests basis that was served or saved against",
-            "type": "integer"
-          },
-          "special_purpose": {
-            "title": "The TCF special purpose that was served or saved against",
-            "type": "integer"
-          },
-          "vendor_consent": {
-            "title": "The TCF vendor with a consent legal basis that was served or saved against",
-            "type": "string"
-          },
-          "vendor_legitimate_interests": {
-            "title": "The TCF vendor with a legitimate interests legal basis that was served or saved against",
-            "type": "string"
-          },
-          "feature": {
-            "title": "The TCF feature that was served or saved against",
-            "type": "integer"
-          },
-          "special_feature": {
-            "title": "The TCF special feature that was served or saved against",
-            "type": "integer"
-          },
-          "system_consent": {
-            "title": "The System id with a legal basis of consent that was served or saved against. Used when we don't know what vendor corresponds to the system, so we save preferences against the system directly",
-            "type": "string"
-          },
-          "system_legitimate_interests": {
-            "title": "The System id with a legal basis of legitimate interests that consent was served or saved against. Used when we don't know what vendor corresponds to the system, so we save preferences against the system directly",
-            "type": "string"
-          },
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "privacy_notice_history": {
-            "$ref": "#/components/schemas/PrivacyNoticeHistorySchema"
-          },
-          "privacy_preference_history_id": {
-            "title": "Privacy Preference History Id",
-            "type": "string"
           }
         },
         "description": "Schema to represent the latest saved preference for a given privacy notice\nNote that we return the privacy notice *history* record here though which has the\ncontents of the notice the user consented to at the time."
@@ -16472,67 +16026,6 @@
         "additionalProperties": false,
         "description": "EmailDocsSchema Secrets Schema for API Docs"
       },
-      "EmbeddedLineItem": {
-        "title": "EmbeddedLineItem",
-        "required": [
-          "id",
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          }
-        },
-        "description": "Sparse details for an embedded TCF line item within another TCF component. Read-only."
-      },
-      "EmbeddedPurpose": {
-        "title": "EmbeddedPurpose",
-        "required": [
-          "id",
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "retention_period": {
-            "title": "Retention Period",
-            "type": "string"
-          }
-        },
-        "description": "Sparse details for an embedded purpose beneath a system or vendor section.  Read-only."
-      },
-      "EmbeddedVendor": {
-        "title": "EmbeddedVendor",
-        "required": [
-          "id",
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          }
-        },
-        "description": "Sparse details for an embedded vendor beneath a purpose or feature section. Read-only."
-      },
       "Endpoint": {
         "title": "Endpoint",
         "required": [
@@ -17056,34 +16549,6 @@
         },
         "additionalProperties": false,
         "description": "Updating ExperienceConfig. Note that component cannot be updated once its created"
-      },
-      "ExperienceMeta": {
-        "title": "ExperienceMeta",
-        "type": "object",
-        "properties": {
-          "version_hash": {
-            "title": "Version Hash",
-            "type": "string",
-            "description": "A hashed value that can be compared to previously-fetched hash values to determine if the Experience has meaningfully changed"
-          },
-          "accept_all_fides_string": {
-            "title": "Accept All Fides String",
-            "type": "string",
-            "description": "The fides string (TC String + AC String) corresponding to a user opting in to all available options"
-          },
-          "accept_all_fides_mobile_data": {
-            "$ref": "#/components/schemas/TCMobileData"
-          },
-          "reject_all_fides_string": {
-            "title": "Reject All Fides String",
-            "type": "string",
-            "description": "The fides string (TC String + AC String) corresponding to a user opting out of all available options"
-          },
-          "reject_all_fides_mobile_data": {
-            "$ref": "#/components/schemas/TCMobileData"
-          }
-        },
-        "description": "Supplements experience with developer-friendly meta information"
       },
       "ExtendedIdentityTypes": {
         "title": "ExtendedIdentityTypes",
@@ -18247,7 +17712,7 @@
             "description": "The name of the specific database within the database server that you want to connect to."
           },
           "ssh_required": {
-            "title": "SSH Required",
+            "title": "SSH required",
             "type": "boolean",
             "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.",
             "default": false
@@ -18597,45 +18062,6 @@
           }
         }
       },
-      "Page_CurrentPrivacyPreferenceSchema_": {
-        "title": "Page[CurrentPrivacyPreferenceSchema]",
-        "required": [
-          "items",
-          "total",
-          "page",
-          "size"
-        ],
-        "type": "object",
-        "properties": {
-          "items": {
-            "title": "Items",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
-            }
-          },
-          "total": {
-            "title": "Total",
-            "minimum": 0.0,
-            "type": "integer"
-          },
-          "page": {
-            "title": "Page",
-            "minimum": 1.0,
-            "type": "integer"
-          },
-          "size": {
-            "title": "Size",
-            "minimum": 1.0,
-            "type": "integer"
-          },
-          "pages": {
-            "title": "Pages",
-            "minimum": 0.0,
-            "type": "integer"
-          }
-        }
-      },
       "Page_DatasetConfigSchema_": {
         "title": "Page[DatasetConfigSchema]",
         "required": [
@@ -18885,84 +18311,6 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PolicyWebhookResponse"
-            }
-          },
-          "total": {
-            "title": "Total",
-            "minimum": 0.0,
-            "type": "integer"
-          },
-          "page": {
-            "title": "Page",
-            "minimum": 1.0,
-            "type": "integer"
-          },
-          "size": {
-            "title": "Size",
-            "minimum": 1.0,
-            "type": "integer"
-          },
-          "pages": {
-            "title": "Pages",
-            "minimum": 0.0,
-            "type": "integer"
-          }
-        }
-      },
-      "Page_PrivacyExperienceMetaResponse_": {
-        "title": "Page[PrivacyExperienceMetaResponse]",
-        "required": [
-          "items",
-          "total",
-          "page",
-          "size"
-        ],
-        "type": "object",
-        "properties": {
-          "items": {
-            "title": "Items",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrivacyExperienceMetaResponse"
-            }
-          },
-          "total": {
-            "title": "Total",
-            "minimum": 0.0,
-            "type": "integer"
-          },
-          "page": {
-            "title": "Page",
-            "minimum": 1.0,
-            "type": "integer"
-          },
-          "size": {
-            "title": "Size",
-            "minimum": 1.0,
-            "type": "integer"
-          },
-          "pages": {
-            "title": "Pages",
-            "minimum": 0.0,
-            "type": "integer"
-          }
-        }
-      },
-      "Page_PrivacyExperienceResponse_": {
-        "title": "Page[PrivacyExperienceResponse]",
-        "required": [
-          "items",
-          "total",
-          "page",
-          "size"
-        ],
-        "type": "object",
-        "properties": {
-          "items": {
-            "title": "Items",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrivacyExperienceResponse"
             }
           },
           "total": {
@@ -19547,7 +18895,7 @@
             "description": "The default schema to be used for the database connection (defaults to public)."
           },
           "ssh_required": {
-            "title": "SSH Required",
+            "title": "SSH required",
             "type": "boolean",
             "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
             "default": false
@@ -19850,181 +19198,6 @@
           }
         },
         "description": "Extension of base pydantic model to include DB `id` field in the response"
-      },
-      "PrivacyExperienceMetaResponse": {
-        "title": "PrivacyExperienceMetaResponse",
-        "required": [
-          "id",
-          "region"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "region": {
-            "$ref": "#/components/schemas/PrivacyNoticeRegion"
-          },
-          "component": {
-            "$ref": "#/components/schemas/ComponentType"
-          },
-          "meta": {
-            "$ref": "#/components/schemas/ExperienceMeta"
-          }
-        },
-        "description": "Privacy Experience Response only containing region, component, id, and meta information"
-      },
-      "PrivacyExperienceResponse": {
-        "title": "PrivacyExperienceResponse",
-        "required": [
-          "region",
-          "id",
-          "created_at",
-          "updated_at"
-        ],
-        "type": "object",
-        "properties": {
-          "region": {
-            "$ref": "#/components/schemas/PrivacyNoticeRegion"
-          },
-          "component": {
-            "$ref": "#/components/schemas/ComponentType"
-          },
-          "experience_config": {
-            "title": "Experience Config",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ExperienceConfigResponse"
-              }
-            ],
-            "description": "The Experience copy or language"
-          },
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "tcf_purpose_consents": {
-            "title": "Tcf Purpose Consents",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFPurposeConsentRecord"
-            },
-            "default": []
-          },
-          "tcf_purpose_legitimate_interests": {
-            "title": "Tcf Purpose Legitimate Interests",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFPurposeLegitimateInterestsRecord"
-            },
-            "default": []
-          },
-          "tcf_special_purposes": {
-            "title": "Tcf Special Purposes",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFSpecialPurposeRecord"
-            },
-            "default": []
-          },
-          "tcf_features": {
-            "title": "Tcf Features",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFFeatureRecord"
-            },
-            "default": []
-          },
-          "tcf_special_features": {
-            "title": "Tcf Special Features",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFSpecialFeatureRecord"
-            },
-            "default": []
-          },
-          "tcf_vendor_consents": {
-            "title": "Tcf Vendor Consents",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFVendorConsentRecord"
-            },
-            "default": []
-          },
-          "tcf_vendor_legitimate_interests": {
-            "title": "Tcf Vendor Legitimate Interests",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFVendorLegitimateInterestsRecord"
-            },
-            "default": []
-          },
-          "tcf_vendor_relationships": {
-            "title": "Tcf Vendor Relationships",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFVendorRelationships"
-            },
-            "default": []
-          },
-          "tcf_system_consents": {
-            "title": "Tcf System Consents",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFVendorConsentRecord"
-            },
-            "default": []
-          },
-          "tcf_system_legitimate_interests": {
-            "title": "Tcf System Legitimate Interests",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFVendorLegitimateInterestsRecord"
-            },
-            "default": []
-          },
-          "tcf_system_relationships": {
-            "title": "Tcf System Relationships",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFVendorRelationships"
-            },
-            "default": []
-          },
-          "created_at": {
-            "title": "Created At",
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_at": {
-            "title": "Updated At",
-            "type": "string",
-            "format": "date-time"
-          },
-          "show_banner": {
-            "title": "Show Banner",
-            "type": "boolean",
-            "description": "Whether the experience should show a banner"
-          },
-          "privacy_notices": {
-            "title": "Privacy Notices",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrivacyNoticeResponseWithUserPreferences"
-            },
-            "description": "The Privacy Notices associated with this experience, if applicable"
-          },
-          "gvl": {
-            "title": "Gvl",
-            "type": "object"
-          },
-          "meta": {
-            "$ref": "#/components/schemas/ExperienceMeta"
-          }
-        },
-        "additionalProperties": false,
-        "description": "An API representation of a PrivacyExperience used for response payloads"
       },
       "PrivacyNoticeCreation": {
         "title": "PrivacyNoticeCreation",
@@ -20428,140 +19601,6 @@
         "additionalProperties": false,
         "description": "An API representation of a PrivacyNotice used for response payloads"
       },
-      "PrivacyNoticeResponseWithUserPreferences": {
-        "title": "PrivacyNoticeResponseWithUserPreferences",
-        "required": [
-          "id",
-          "created_at",
-          "updated_at",
-          "version",
-          "privacy_notice_history_id",
-          "cookies"
-        ],
-        "type": "object",
-        "properties": {
-          "default_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "outdated_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_served": {
-            "title": "Current Served",
-            "type": "boolean"
-          },
-          "outdated_served": {
-            "title": "Outdated Served",
-            "type": "boolean"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "notice_key": {
-            "title": "Notice Key",
-            "pattern": "^[a-zA-Z0-9_.<>-]+$",
-            "type": "string"
-          },
-          "description": {
-            "title": "Description",
-            "type": "string"
-          },
-          "internal_description": {
-            "title": "Internal Description",
-            "type": "string"
-          },
-          "origin": {
-            "title": "Origin",
-            "type": "string"
-          },
-          "regions": {
-            "minItems": 1,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrivacyNoticeRegion"
-            }
-          },
-          "consent_mechanism": {
-            "$ref": "#/components/schemas/ConsentMechanism"
-          },
-          "data_uses": {
-            "title": "Data Uses",
-            "minItems": 1,
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "enforcement_level": {
-            "$ref": "#/components/schemas/EnforcementLevel"
-          },
-          "disabled": {
-            "title": "Disabled",
-            "type": "boolean",
-            "default": false
-          },
-          "has_gpc_flag": {
-            "title": "Has Gpc Flag",
-            "type": "boolean",
-            "default": false
-          },
-          "displayed_in_privacy_center": {
-            "title": "Displayed In Privacy Center",
-            "type": "boolean",
-            "default": false
-          },
-          "displayed_in_overlay": {
-            "title": "Displayed In Overlay",
-            "type": "boolean",
-            "default": false
-          },
-          "displayed_in_api": {
-            "title": "Displayed In Api",
-            "type": "boolean",
-            "default": false
-          },
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "created_at": {
-            "title": "Created At",
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_at": {
-            "title": "Updated At",
-            "type": "string",
-            "format": "date-time"
-          },
-          "version": {
-            "title": "Version",
-            "type": "number"
-          },
-          "privacy_notice_history_id": {
-            "title": "Privacy Notice History Id",
-            "type": "string"
-          },
-          "cookies": {
-            "title": "Cookies",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Cookies"
-            }
-          },
-          "systems_applicable": {
-            "title": "Systems Applicable",
-            "type": "boolean",
-            "default": false
-          }
-        },
-        "additionalProperties": false,
-        "description": "If retrieving notices for a given user, also return the default preferences for that notice\nand any saved preferences."
-      },
       "PrivacyNoticeWithId": {
         "title": "PrivacyNoticeWithId",
         "required": [
@@ -20643,134 +19682,6 @@
         },
         "additionalProperties": false,
         "description": "An API representation of a PrivacyNotice that includes an `id` field.\nUsed to help model API responses and update payloads"
-      },
-      "PrivacyPreferencesRequest": {
-        "title": "PrivacyPreferencesRequest",
-        "required": [
-          "browser_identity"
-        ],
-        "type": "object",
-        "properties": {
-          "purpose_consent_preferences": {
-            "title": "Purpose Consent Preferences",
-            "maxItems": 200,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFPurposeSave"
-            },
-            "default": []
-          },
-          "purpose_legitimate_interests_preferences": {
-            "title": "Purpose Legitimate Interests Preferences",
-            "maxItems": 200,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFPurposeSave"
-            },
-            "default": []
-          },
-          "vendor_consent_preferences": {
-            "title": "Vendor Consent Preferences",
-            "maxItems": 200,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFVendorSave"
-            },
-            "default": []
-          },
-          "vendor_legitimate_interests_preferences": {
-            "title": "Vendor Legitimate Interests Preferences",
-            "maxItems": 200,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFVendorSave"
-            },
-            "default": []
-          },
-          "special_feature_preferences": {
-            "title": "Special Feature Preferences",
-            "maxItems": 200,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFSpecialFeatureSave"
-            },
-            "default": []
-          },
-          "browser_identity": {
-            "$ref": "#/components/schemas/Identity"
-          },
-          "code": {
-            "title": "Code",
-            "type": "string"
-          },
-          "fides_string": {
-            "title": "Fides String",
-            "type": "string",
-            "description": "If supplied, TC strings and AC strings are decoded and preferences saved for purpose_consent, purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features"
-          },
-          "preferences": {
-            "title": "Preferences",
-            "maxItems": 200,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ConsentOptionCreate"
-            },
-            "default": []
-          },
-          "special_purpose_preferences": {
-            "title": "Special Purpose Preferences",
-            "maxItems": 200,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFSpecialPurposeSave"
-            },
-            "default": []
-          },
-          "feature_preferences": {
-            "title": "Feature Preferences",
-            "maxItems": 200,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFFeatureSave"
-            },
-            "default": []
-          },
-          "system_consent_preferences": {
-            "title": "System Consent Preferences",
-            "maxItems": 200,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFVendorSave"
-            },
-            "default": []
-          },
-          "system_legitimate_interests_preferences": {
-            "title": "System Legitimate Interests Preferences",
-            "maxItems": 200,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TCFVendorSave"
-            },
-            "default": []
-          },
-          "policy_key": {
-            "title": "Policy Key",
-            "pattern": "^[a-zA-Z0-9_.<>-]+$",
-            "type": "string"
-          },
-          "privacy_experience_id": {
-            "title": "Privacy Experience Id",
-            "type": "string"
-          },
-          "user_geography": {
-            "title": "User Geography",
-            "type": "string"
-          },
-          "method": {
-            "$ref": "#/components/schemas/ConsentMethod"
-          }
-        },
-        "description": "Request body for creating PrivacyPreferences.\n\n\n\"preferences\" key reserved for saving preferences against a privacy notice.\n\nNew *_preferences fields are used for saving preferences against various tcf components."
       },
       "PrivacyRequestCreate": {
         "title": "PrivacyRequestCreate",
@@ -21416,7 +20327,7 @@
             "description": "The default schema to be used for the database connection (defaults to public)."
           },
           "ssh_required": {
-            "title": "SSH Required",
+            "title": "SSH required",
             "type": "boolean",
             "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your Redshift database is behind a firewall and requires SSH tunneling for remote connections.",
             "default": false
@@ -22046,96 +20957,6 @@
           }
         },
         "description": "Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template"
-      },
-      "SavePrivacyPreferencesResponse": {
-        "title": "SavePrivacyPreferencesResponse",
-        "type": "object",
-        "properties": {
-          "preferences": {
-            "title": "Preferences",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
-            },
-            "default": []
-          },
-          "purpose_consent_preferences": {
-            "title": "Purpose Consent Preferences",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
-            },
-            "default": []
-          },
-          "purpose_legitimate_interests_preferences": {
-            "title": "Purpose Legitimate Interests Preferences",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
-            },
-            "default": []
-          },
-          "special_purpose_preferences": {
-            "title": "Special Purpose Preferences",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
-            },
-            "default": []
-          },
-          "vendor_consent_preferences": {
-            "title": "Vendor Consent Preferences",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
-            },
-            "default": []
-          },
-          "vendor_legitimate_interests_preferences": {
-            "title": "Vendor Legitimate Interests Preferences",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
-            },
-            "default": []
-          },
-          "feature_preferences": {
-            "title": "Feature Preferences",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
-            },
-            "default": []
-          },
-          "special_feature_preferences": {
-            "title": "Special Feature Preferences",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
-            },
-            "default": []
-          },
-          "system_consent_preferences": {
-            "title": "System Consent Preferences",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
-            },
-            "default": []
-          },
-          "system_legitimate_interests_preferences": {
-            "title": "System Legitimate Interests Preferences",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
-            },
-            "default": []
-          },
-          "fides_mobile_data": {
-            "$ref": "#/components/schemas/TCMobileData"
-          }
-        },
-        "description": "Response schema when saving privacy preferences"
       },
       "ScopeRegistryEnum": {
         "title": "ScopeRegistryEnum",
@@ -22811,6 +21632,11 @@
             "type": "string",
             "description": "The unique identifier for the vendor that's associated with this system."
           },
+          "previous_vendor_id": {
+            "title": "Previous Vendor Id",
+            "type": "string",
+            "description": "If specified, the unique identifier for the vendor that was previously associated with this system."
+          },
           "dataset_references": {
             "title": "Dataset References",
             "type": "array",
@@ -22950,6 +21776,14 @@
             "type": "string",
             "description": "A URL that points to the system's publicly accessible legitimate interest disclosure.",
             "format": "uri"
+          },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            },
+            "description": "System-level cookies unassociated with a data use to deliver services and functionality"
           }
         },
         "description": "The System resource model.\n\nDescribes an application and includes a list of PrivacyDeclaration resources."
@@ -23109,6 +21943,11 @@
             "type": "string",
             "description": "The unique identifier for the vendor that's associated with this system."
           },
+          "previous_vendor_id": {
+            "title": "Previous Vendor Id",
+            "type": "string",
+            "description": "If specified, the unique identifier for the vendor that was previously associated with this system."
+          },
           "dataset_references": {
             "title": "Dataset References",
             "type": "array",
@@ -23249,6 +22088,14 @@
             "description": "A URL that points to the system's publicly accessible legitimate interest disclosure.",
             "format": "uri"
           },
+          "cookies": {
+            "title": "Cookies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cookies"
+            },
+            "description": "System-level cookies unassociated with a data use to deliver services and functionality"
+          },
           "created_at": {
             "title": "Created At",
             "type": "string",
@@ -23270,14 +22117,6 @@
               "$ref": "#/components/schemas/UserResponse"
             },
             "description": "System managers of the current system"
-          },
-          "cookies": {
-            "title": "Cookies",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Cookies"
-            },
-            "default": []
           }
         },
         "description": "Extension of base pydantic response model to include additional relationship fields that\nmay require extra DB queries, like `privacy_declarations`, connection_config fields and cookies.\n\nThis response model is generally useful for an API that returns a detailed view of _single_\nSystem record. Attempting to return bulk results with this model can lead to n+1 query issues."
@@ -23291,757 +22130,6 @@
           "email"
         ],
         "description": "An enumeration."
-      },
-      "TCFFeatureRecord": {
-        "title": "TCFFeatureRecord",
-        "required": [
-          "id",
-          "name",
-          "description"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "integer",
-            "description": "Official GVL feature ID or special feature ID"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string",
-            "description": "Name of the GVL feature or special feature."
-          },
-          "description": {
-            "title": "Description",
-            "type": "string",
-            "description": "Description of the GVL feature or special feature."
-          },
-          "default_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "outdated_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_served": {
-            "title": "Current Served",
-            "type": "boolean"
-          },
-          "outdated_served": {
-            "title": "Outdated Served",
-            "type": "boolean"
-          },
-          "vendors": {
-            "title": "Vendors",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmbeddedVendor"
-            },
-            "default": []
-          },
-          "systems": {
-            "title": "Systems",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmbeddedVendor"
-            },
-            "default": []
-          }
-        },
-        "description": "Schema for a TCF Feature: returned in the TCF Overlay Experience"
-      },
-      "TCFFeatureSave": {
-        "title": "TCFFeatureSave",
-        "required": [
-          "id",
-          "preference"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "served_notice_history_id": {
-            "title": "Served Notice History Id",
-            "type": "string"
-          }
-        },
-        "description": "Schema for saving a user's preference with respect to a TCF feature"
-      },
-      "TCFPurposeConsentRecord": {
-        "title": "TCFPurposeConsentRecord",
-        "required": [
-          "id",
-          "name",
-          "description",
-          "illustrations",
-          "data_uses"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "integer",
-            "description": "Official GVL purpose ID. Used for linking with other records, e.g. vendors, cookies, etc."
-          },
-          "name": {
-            "title": "Name",
-            "type": "string",
-            "description": "Name of the GVL purpose."
-          },
-          "description": {
-            "title": "Description",
-            "type": "string",
-            "description": "Description of the GVL purpose."
-          },
-          "illustrations": {
-            "title": "Illustrations",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Illustrative examples of the purpose."
-          },
-          "data_uses": {
-            "title": "Data Uses",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "The fideslang default taxonomy data uses that are associated with the purpose."
-          },
-          "default_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "outdated_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_served": {
-            "title": "Current Served",
-            "type": "boolean"
-          },
-          "outdated_served": {
-            "title": "Outdated Served",
-            "type": "boolean"
-          },
-          "vendors": {
-            "title": "Vendors",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmbeddedVendor"
-            },
-            "default": []
-          },
-          "systems": {
-            "title": "Systems",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmbeddedVendor"
-            },
-            "default": []
-          }
-        },
-        "description": "Schema for a TCF Purpose with Consent Legal Basis returned in the TCF Overlay Experience"
-      },
-      "TCFPurposeLegitimateInterestsRecord": {
-        "title": "TCFPurposeLegitimateInterestsRecord",
-        "required": [
-          "id",
-          "name",
-          "description",
-          "illustrations",
-          "data_uses"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "integer",
-            "description": "Official GVL purpose ID. Used for linking with other records, e.g. vendors, cookies, etc."
-          },
-          "name": {
-            "title": "Name",
-            "type": "string",
-            "description": "Name of the GVL purpose."
-          },
-          "description": {
-            "title": "Description",
-            "type": "string",
-            "description": "Description of the GVL purpose."
-          },
-          "illustrations": {
-            "title": "Illustrations",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Illustrative examples of the purpose."
-          },
-          "data_uses": {
-            "title": "Data Uses",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "The fideslang default taxonomy data uses that are associated with the purpose."
-          },
-          "default_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "outdated_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_served": {
-            "title": "Current Served",
-            "type": "boolean"
-          },
-          "outdated_served": {
-            "title": "Outdated Served",
-            "type": "boolean"
-          },
-          "vendors": {
-            "title": "Vendors",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmbeddedVendor"
-            },
-            "default": []
-          },
-          "systems": {
-            "title": "Systems",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmbeddedVendor"
-            },
-            "default": []
-          }
-        },
-        "description": "Schema for a TCF Purpose with Legitimate Interests Legal Basis returned in the TCF Overlay Experience"
-      },
-      "TCFPurposeSave": {
-        "title": "TCFPurposeSave",
-        "required": [
-          "id",
-          "preference"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "served_notice_history_id": {
-            "title": "Served Notice History Id",
-            "type": "string"
-          }
-        },
-        "description": "Schema for saving preferences with respect to a TCF Purpose"
-      },
-      "TCFSpecialFeatureRecord": {
-        "title": "TCFSpecialFeatureRecord",
-        "required": [
-          "id",
-          "name",
-          "description"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "integer",
-            "description": "Official GVL feature ID or special feature ID"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string",
-            "description": "Name of the GVL feature or special feature."
-          },
-          "description": {
-            "title": "Description",
-            "type": "string",
-            "description": "Description of the GVL feature or special feature."
-          },
-          "default_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "outdated_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_served": {
-            "title": "Current Served",
-            "type": "boolean"
-          },
-          "outdated_served": {
-            "title": "Outdated Served",
-            "type": "boolean"
-          },
-          "vendors": {
-            "title": "Vendors",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmbeddedVendor"
-            },
-            "default": []
-          },
-          "systems": {
-            "title": "Systems",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmbeddedVendor"
-            },
-            "default": []
-          }
-        },
-        "description": "Schema for a TCF Special Feature: returned in the TCF Overlay Experience"
-      },
-      "TCFSpecialFeatureSave": {
-        "title": "TCFSpecialFeatureSave",
-        "required": [
-          "id",
-          "preference"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "served_notice_history_id": {
-            "title": "Served Notice History Id",
-            "type": "string"
-          }
-        },
-        "description": "Schema for saving a user's preference with respect to a TCF special feature"
-      },
-      "TCFSpecialPurposeRecord": {
-        "title": "TCFSpecialPurposeRecord",
-        "required": [
-          "id",
-          "name",
-          "description",
-          "illustrations",
-          "data_uses"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "integer",
-            "description": "Official GVL purpose ID. Used for linking with other records, e.g. vendors, cookies, etc."
-          },
-          "name": {
-            "title": "Name",
-            "type": "string",
-            "description": "Name of the GVL purpose."
-          },
-          "description": {
-            "title": "Description",
-            "type": "string",
-            "description": "Description of the GVL purpose."
-          },
-          "illustrations": {
-            "title": "Illustrations",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Illustrative examples of the purpose."
-          },
-          "data_uses": {
-            "title": "Data Uses",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "The fideslang default taxonomy data uses that are associated with the purpose."
-          },
-          "default_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "outdated_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_served": {
-            "title": "Current Served",
-            "type": "boolean"
-          },
-          "outdated_served": {
-            "title": "Outdated Served",
-            "type": "boolean"
-          },
-          "vendors": {
-            "title": "Vendors",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmbeddedVendor"
-            },
-            "default": []
-          },
-          "systems": {
-            "title": "Systems",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmbeddedVendor"
-            },
-            "default": []
-          }
-        },
-        "description": "Common details for non-vendor TCF sections.  Includes previously-saved preferences and\nrecords where consent was previously served if applicable."
-      },
-      "TCFSpecialPurposeSave": {
-        "title": "TCFSpecialPurposeSave",
-        "required": [
-          "id",
-          "preference"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "served_notice_history_id": {
-            "title": "Served Notice History Id",
-            "type": "string"
-          }
-        },
-        "description": "Schema for saving preferences with respect to a TCF Special Purpose"
-      },
-      "TCFVendorConsentRecord": {
-        "title": "TCFVendorConsentRecord",
-        "required": [
-          "id"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "has_vendor_id": {
-            "title": "Has Vendor Id",
-            "type": "boolean"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "description": {
-            "title": "Description",
-            "type": "string"
-          },
-          "default_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "outdated_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_served": {
-            "title": "Current Served",
-            "type": "boolean"
-          },
-          "outdated_served": {
-            "title": "Outdated Served",
-            "type": "boolean"
-          },
-          "purpose_consents": {
-            "title": "Purpose Consents",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmbeddedPurpose"
-            },
-            "default": []
-          }
-        },
-        "description": "Schema for a TCF Vendor with Consent legal basis"
-      },
-      "TCFVendorLegitimateInterestsRecord": {
-        "title": "TCFVendorLegitimateInterestsRecord",
-        "required": [
-          "id"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "has_vendor_id": {
-            "title": "Has Vendor Id",
-            "type": "boolean"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "description": {
-            "title": "Description",
-            "type": "string"
-          },
-          "default_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "outdated_preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "current_served": {
-            "title": "Current Served",
-            "type": "boolean"
-          },
-          "outdated_served": {
-            "title": "Outdated Served",
-            "type": "boolean"
-          },
-          "purpose_legitimate_interests": {
-            "title": "Purpose Legitimate Interests",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmbeddedPurpose"
-            },
-            "default": []
-          }
-        },
-        "description": "Schema for a TCF Vendor with Legitimate interests legal basis"
-      },
-      "TCFVendorRelationships": {
-        "title": "TCFVendorRelationships",
-        "required": [
-          "id"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "has_vendor_id": {
-            "title": "Has Vendor Id",
-            "type": "boolean"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "description": {
-            "title": "Description",
-            "type": "string"
-          },
-          "special_purposes": {
-            "title": "Special Purposes",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmbeddedPurpose"
-            },
-            "default": []
-          },
-          "features": {
-            "title": "Features",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmbeddedLineItem"
-            },
-            "default": []
-          },
-          "special_features": {
-            "title": "Special Features",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmbeddedLineItem"
-            },
-            "default": []
-          },
-          "cookie_max_age_seconds": {
-            "title": "Cookie Max Age Seconds",
-            "type": "integer"
-          },
-          "uses_cookies": {
-            "title": "Uses Cookies",
-            "type": "boolean"
-          },
-          "cookie_refresh": {
-            "title": "Cookie Refresh",
-            "type": "boolean"
-          },
-          "uses_non_cookie_access": {
-            "title": "Uses Non Cookie Access",
-            "type": "boolean"
-          },
-          "legitimate_interest_disclosure_url": {
-            "title": "Legitimate Interest Disclosure Url",
-            "maxLength": 65536,
-            "minLength": 1,
-            "type": "string",
-            "format": "uri"
-          },
-          "privacy_policy_url": {
-            "title": "Privacy Policy Url",
-            "maxLength": 65536,
-            "minLength": 1,
-            "type": "string",
-            "format": "uri"
-          }
-        },
-        "description": "Collects the other relationships for a given vendor - no preferences are saved here"
-      },
-      "TCFVendorSave": {
-        "title": "TCFVendorSave",
-        "required": [
-          "id",
-          "preference"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "preference": {
-            "$ref": "#/components/schemas/UserConsentPreference"
-          },
-          "served_notice_history_id": {
-            "title": "Served Notice History Id",
-            "type": "string"
-          }
-        },
-        "description": "Base schema for saving preferences with respect to a TCF Vendor or a System\nTODO: TCF Add validation for allowable vendors (in GVL or dictionary?)"
-      },
-      "TCMobileData": {
-        "title": "TCMobileData",
-        "type": "object",
-        "properties": {
-          "IABTCF_CmpSdkID": {
-            "title": "Iabtcf Cmpsdkid",
-            "type": "integer",
-            "description": "The unsigned integer ID of CMP SDK"
-          },
-          "IABTCF_CmpSdkVersion": {
-            "title": "Iabtcf Cmpsdkversion",
-            "type": "integer",
-            "description": "The unsigned integer version number of CMP SDK"
-          },
-          "IABTCF_PolicyVersion": {
-            "title": "Iabtcf Policyversion",
-            "type": "integer",
-            "description": "The unsigned integer representing the version of the TCF that these consents adhere to."
-          },
-          "IABTCF_gdprApplies": {
-            "title": "Iabtcf Gdprapplies",
-            "enum": [
-              0,
-              1
-            ],
-            "type": "integer",
-            "description": "1: GDPR applies in current context, 0 - GDPR does not apply in current context, None=undetermined"
-          },
-          "IABTCF_PublisherCC": {
-            "title": "Iabtcf Publishercc",
-            "type": "string",
-            "description": "Two-letter ISO 3166-1 alpha-2 code",
-            "default": "AA"
-          },
-          "IABTCF_PurposeOneTreatment": {
-            "title": "Iabtcf Purposeonetreatment",
-            "enum": [
-              0,
-              1
-            ],
-            "type": "integer",
-            "description": "Vendors can use this value to determine whether consent for purpose one is required. 0: no special treatment. 1: purpose one not disclosed"
-          },
-          "IABTCF_UseNonStandardTexts": {
-            "title": "Iabtcf Usenonstandardtexts",
-            "enum": [
-              0,
-              1
-            ],
-            "type": "integer",
-            "description": "1 - CMP uses customized stack descriptions and/or modified or supplemented standard illustrations.0 - CMP did not use a non-standard stack desc. and/or modified or supplemented Illustrations"
-          },
-          "IABTCF_TCString": {
-            "title": "Iabtcf Tcstring",
-            "type": "string",
-            "description": "Fully encoded TC string"
-          },
-          "IABTCF_VendorConsents": {
-            "title": "Iabtcf Vendorconsents",
-            "type": "string",
-            "description": "Binary string: The '0' or '1' at position n \u2013 where n's indexing begins at 0 \u2013 indicates the consent status for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is consent true for vendor ID 1"
-          },
-          "IABTCF_VendorLegitimateInterests": {
-            "title": "Iabtcf Vendorlegitimateinterests",
-            "type": "string",
-            "description": "Binary String: The '0' or '1' at position n \u2013 where n's indexing begins at 0 \u2013 indicates the legitimate interest status for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is legitimate interest established true for vendor ID 1"
-          },
-          "IABTCF_PurposeConsents": {
-            "title": "Iabtcf Purposeconsents",
-            "type": "string",
-            "description": "Binary String: The '0' or '1' at position n \u2013 where n's indexing begins at 0 \u2013 indicates the consent status for purpose ID n+1; false and true respectively. eg. '1' at index 0 is consent true for purpose ID 1"
-          },
-          "IABTCF_PurposeLegitimateInterests": {
-            "title": "Iabtcf Purposelegitimateinterests",
-            "type": "string",
-            "description": "Binary String: The '0' or '1' at position n \u2013 where n's indexing begins at 0 \u2013 indicates the legitimate interest status for purpose ID n+1; false and true respectively. eg. '1' at index 0 is legitimate interest established true for purpose ID 1"
-          },
-          "IABTCF_SpecialFeaturesOptIns": {
-            "title": "Iabtcf Specialfeaturesoptins",
-            "type": "string",
-            "description": "Binary String: The '0' or '1' at position n \u2013 where n's indexing begins at 0 \u2013 indicates the opt-in status for special feature ID n+1; false and true respectively. eg. '1' at index 0 is opt-in true for special feature ID 1"
-          },
-          "IABTCF_PublisherConsent": {
-            "title": "Iabtcf Publisherconsent",
-            "type": "string"
-          },
-          "IABTCF_PublisherLegitimateInterests": {
-            "title": "Iabtcf Publisherlegitimateinterests",
-            "type": "string"
-          },
-          "IABTCF_PublisherCustomPurposesConsents": {
-            "title": "Iabtcf Publishercustompurposesconsents",
-            "type": "string"
-          },
-          "IABTCF_PublisherCustomPurposesLegitimateInterests": {
-            "title": "Iabtcf Publishercustompurposeslegitimateinterests",
-            "type": "string"
-          },
-          "IABTCF_AddtlConsent": {
-            "title": "Iabtcf Addtlconsent",
-            "type": "string"
-          }
-        },
-        "description": "Pre-parsed TC data and TC string for a CMP SDK:\n\nhttps://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#in-app-details"
       },
       "TestMessagingStatusMessage": {
         "title": "TestMessagingStatusMessage",
@@ -24135,7 +22223,7 @@
             "description": "The default schema to be used for the database connection (defaults to public)."
           },
           "ssh_required": {
-            "title": "SSH Required",
+            "title": "SSH required",
             "type": "boolean",
             "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
             "default": false
