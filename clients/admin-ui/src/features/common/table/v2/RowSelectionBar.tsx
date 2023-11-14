@@ -36,11 +36,12 @@ export const RowSelectionBar = <T,>({
         colSpan={tableInstance.getAllColumns().length}
       >
         <HStack>
-          <Text fontSize="xs">
+          <Text data-testid="selected-row-count" fontSize="xs">
             {selectedRows.toLocaleString("en")} row(s) selected.
           </Text>
           {!tableInstance.getIsAllRowsSelected() ? (
             <Button
+              data-testid="select-all-rows-btn"
               onClick={() => {
                 tableInstance.toggleAllRowsSelected();
               }}

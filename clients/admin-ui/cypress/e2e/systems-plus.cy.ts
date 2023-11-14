@@ -237,6 +237,25 @@ describe("System management with Plus features", () => {
       cy.url().should("include", DATAMAP_ROUTE);
     });
 
+    it("select page checkbox only selects rows on the displayed page", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.wait("@getSystemVendors");
+      cy.getByTestId("select-page-checkbox")
+        .get("[type='checkbox']")
+        .check({ force: true });
+      cy.getByTestId("selected-row-count").contains("6 row(s) selected.");
+    });
+
+    it("select all button selects all rows across every page", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.wait("@getSystemVendors");
+      cy.getByTestId("select-page-checkbox")
+        .get("[type='checkbox']")
+        .check({ force: true });
+      cy.getByTestId("select-all-rows-btn").click();
+      cy.getByTestId("selected-row-count").contains("8 row(s) selected.");
+    });
+
     it("filter button and sources column are hidden when TCF is disabled", () => {
       stubPlus(true, {
         core_fides_version: "2.2.0",

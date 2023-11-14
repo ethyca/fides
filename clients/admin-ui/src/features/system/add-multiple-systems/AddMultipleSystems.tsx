@@ -107,6 +107,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         header: ({ table }) => (
           <IndeterminateCheckboxCell
             {...{
+              dataTestId: "select-page-checkbox",
               checked: table.getIsAllPageRowsSelected(),
               indeterminate: table
                 .getPaginationRowModel()
