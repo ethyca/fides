@@ -311,15 +311,18 @@ export const buildTcfEntitiesFromCookie = (
       const cookieConsent = cookie.tcf_consent[cookieKey] ?? {};
       // @ts-ignore the array map should ensure we will get the right record type
       tcfEntities[experienceKey] = experience[experienceKey]?.map((item) => {
+        const defaultPreference = cookie.fides_string
+          ? ConsentMechanism.OPT_OUT
+          : item.default_preference;
         const preference = Object.hasOwn(cookieConsent, item.id)
           ? transformConsentToFidesUserPreference(
               Boolean(cookieConsent[item.id]),
               ConsentMechanism.OPT_IN
             )
-          : // If experience contains a tcf entity not defined by tcfEntities, this means either:
-            // A) Most commonly, user has opted out, and opt-outs are not tracked by TC string. It's safe to assume this case.
-            // B) There is a new tcf entity that requires consent. In this case we would just resurface the banner
-            ConsentMechanism.OPT_OUT;
+          : // If experience contains a tcf entity not defined by tcfEntities, this means:
+            // A) If fides_string exists, user has probably opted out. Since opt-outs are not tracked by TC string, in this case we assume opt-out.
+            // B) There is a new tcf entity that requires consent. In this case we would use the default on the experience.
+            defaultPreference;
         return { ...item, current_preference: preference };
       });
     });
