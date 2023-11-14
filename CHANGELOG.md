@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.24.0...main)
 
+### Added
+- Stub for initial GPP support [#4431](https://github.com/ethyca/fides/pull/4431)
+
 
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
 
