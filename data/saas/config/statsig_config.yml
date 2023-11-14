@@ -43,3 +43,5 @@ saas_config:
           body: >
             {"unit_type": "user_id", "ids": "<user_id>", "request_id":
             "test_request_a"}
+
+## Ask about using the user_id value
