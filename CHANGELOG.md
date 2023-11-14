@@ -51,6 +51,9 @@ The types of changes are:
 - User preferences from cookie should always override experience preferences [#4405](https://github.com/ethyca/fides/pull/4405)
 - Allow fides_consent cookie to be set from a subdirectory [#4426](https://github.com/ethyca/fides/pull/4426)
 
+### Security
+-- Use a more cryptographically secure random function for security code generation
+
 ## [2.23.3](https://github.com/ethyca/fides/compare/2.23.2...2.23.3)
 
 ### Fixed

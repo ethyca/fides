@@ -1,4 +1,4 @@
-import random
+import secrets
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -627,7 +627,7 @@ def generate_id_verification_code() -> str:
     """
     Generate one-time identity verification code
     """
-    return str(random.choice(range(100000, 999999)))
+    return str(secrets.choice(range(100000, 999999)))
 
 
 def _retrieve_child_results(  # pylint: disable=R0911
