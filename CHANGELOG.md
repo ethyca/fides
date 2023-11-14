@@ -17,10 +17,6 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.24.0...main)
 
-### Fixed
-- Allows fides_consent cookie to persist across entire domain [#4426](https://github.com/ethyca/fides/pull/4426)
-
-
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
 
 ### Added
@@ -52,6 +48,8 @@ The types of changes are:
 - Persist bulk system add filter modal state [#4412](https://github.com/ethyca/fides/pull/4412)
 - Fixing labels for request type field [#4414](https://github.com/ethyca/fides/pull/4414)
 - User preferences from cookie should always override experience preferences [#4405](https://github.com/ethyca/fides/pull/4405)
+- Allow fides_consent cookie to be set from a subdirectory [#4426](https://github.com/ethyca/fides/pull/4426)
+
 
 ## [2.23.3](https://github.com/ethyca/fides/compare/2.23.2...2.23.3)
 
