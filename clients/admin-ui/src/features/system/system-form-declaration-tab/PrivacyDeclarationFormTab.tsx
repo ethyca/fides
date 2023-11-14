@@ -33,7 +33,6 @@ import {
 import { DataUseDeclaration } from "~/types/dictionary-api";
 import { isErrorResult } from "~/types/errors";
 
-import { useFeatures } from "../../common/features";
 import PrivacyDeclarationDictModalComponents from "../dictionary-data-uses/PrivacyDeclarationDictModalComponents";
 
 interface Props {
@@ -60,13 +59,8 @@ const PrivacyDeclarationFormTab = ({
     PrivacyDeclarationResponse | undefined
   >(undefined);
 
-  const features = useFeatures();
-
-  const {
-    isOpen: showDictionaryModal,
-    onOpen: handleOpenDictModal,
-    onClose: handleCloseDictModal,
-  } = useDisclosure();
+  const { isOpen: showDictionaryModal, onClose: handleCloseDictModal } =
+    useDisclosure();
 
   const assignedCookies = [
     ...system.privacy_declarations
@@ -241,8 +235,6 @@ const PrivacyDeclarationFormTab = ({
           handleAdd={handleOpenNewForm}
           handleEdit={handleOpenEditForm}
           handleDelete={handleDelete}
-          dictionaryEnabled={features.dictionaryService}
-          handleOpenDictModal={handleOpenDictModal}
           allDataUses={dataProps.allDataUses}
         />
       )}
