@@ -29,7 +29,8 @@ describe("makeStub", () => {
     expect(events).toEqual([]);
 
     // Check 'ping'
-    gppCall("ping", (data) => {
+    gppCall("ping", (data, success) => {
+      expect(success).toBe(true);
       const pingData = data as PingData;
       expect(pingData).toEqual(EXPECTED_PING_DATA);
     });
