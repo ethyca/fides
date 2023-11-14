@@ -1,19 +1,47 @@
 import { Flex, FormControl, HStack, Text, VStack } from "@fidesui/react";
-import { Select, SingleValue } from "chakra-react-select";
+import {
+  ActionMeta,
+  chakraComponents,
+  GroupBase,
+  OptionProps,
+  Select,
+  SingleValue,
+} from "chakra-react-select";
 import { useField, useFormikContext } from "formik";
 import { useState } from "react";
 
 import { ErrorMessage, Label, Option } from "~/features/common/form/inputs";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { DictOption } from "~/features/plus/plus.slice";
-import { DictSuggestionToggle } from "~/features/system/dictionary-form/ToggleDictSuggestions";
 
 interface Props {
   disabled?: boolean;
   options: DictOption[];
-  onVendorSelected: (vendorId: string) => void;
+  onVendorSelected: (vendorId: string | undefined) => void;
 }
 
+const CustomDictOption: React.FC<
+  OptionProps<Option, false, GroupBase<Option>>
+> = ({ children, ...props }) => (
+  <chakraComponents.Option {...props} type="option">
+    <Flex flexDirection="column" padding={2}>
+      <Text color="gray.700" fontSize="14px" lineHeight={5} fontWeight="medium">
+        {props.data.label}
+      </Text>
+
+      {props.data.description ? (
+        <Text
+          color="gray.500"
+          fontSize="12px"
+          lineHeight={4}
+          fontWeight="normal"
+        >
+          {props.data.description}
+        </Text>
+      ) : null}
+    </Flex>
+  </chakraComponents.Option>
+);
 const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
   const [initialField, meta, { setValue }] = useField({ name: "vendor_id" });
   const isInvalid = !!(meta.touched && meta.error);
@@ -26,6 +54,8 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
     opt.label.toLowerCase().startsWith(searchParam.toLowerCase())
   );
 
+  const selected = options.find((o) => o.value === field.value);
+
   const handleTabPressed = () => {
     if (suggestions.length > 0 && searchParam !== suggestions[0].label) {
       setSearchParam(suggestions[0].label);
@@ -33,10 +63,16 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
     }
   };
 
-  const handleChange = (newValue: SingleValue<Option>) => {
+  const handleChange = (
+    newValue: SingleValue<Option>,
+    actionMeta: ActionMeta<Option>
+  ) => {
     if (newValue) {
       setValue(newValue.value);
       onVendorSelected(newValue.value);
+    } else if (actionMeta.action === "clear") {
+      setValue("");
+      onVendorSelected(undefined);
     }
   };
 
@@ -45,7 +81,7 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
       <FormControl isInvalid={isInvalid}>
         <VStack alignItems="start" position="relative">
           <Flex alignItems="center">
-            <Label htmlFor="vendor" fontSize="xs" my={0} mr={1}>
+            <Label htmlFor="vendor_id" fontSize="xs" my={0} mr={1}>
               Vendor
             </Label>
             <QuestionTooltip label="Enter the vendor to associate with the system" />
@@ -57,8 +93,9 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
           >
             <Select
               options={suggestions}
+              value={selected}
               onBlur={(e) => {
-                setTouched({ ...touched, test_vendor: true });
+                setTouched({ ...touched, vendor_id: true });
                 field.onBlur(e);
               }}
               onChange={handleChange}
@@ -102,6 +139,7 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
                   display: "none",
                 }),
               }}
+              components={{ Option: CustomDictOption }}
             />
             <Text
               aria-hidden
@@ -131,7 +169,6 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
           />
         </VStack>
       </FormControl>
-      <DictSuggestionToggle />
     </HStack>
   );
 };
