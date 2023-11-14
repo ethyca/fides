@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.24.0...main)
 
+### Changed
+- Updates default consent preference to opt-out for TCF when fides_string override is provided [#4430](https://github.com/ethyca/fides/pull/4430)
+
 
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
 
