@@ -1634,14 +1634,14 @@ describe("Fides-js TCF", () => {
       });
       cy.getByTestId(`toggle-${PURPOSE_9.name}`).within(() => {
         // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-        // it should use the default preference set in the experience which is false
+        // it should use false as the default
         cy.get("input").should("not.be.checked");
       });
       cy.get("button").contains("Legitimate interest").click();
       cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
         // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-        // it should use the default preference set in the experience which is true
-        cy.get("input").should("be.checked");
+        // it should use false as the default
+        cy.get("input").should("not.be.checked");
       });
       // Features
       cy.get("#fides-tab-Features").click();
@@ -1650,7 +1650,7 @@ describe("Fides-js TCF", () => {
       });
       // Vendors
       // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-      // it should use the default preference set in the experience which is true
+      // it should use false as the default
       cy.get("#fides-tab-Vendors").click();
       cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
         cy.get("input").should("not.be.checked");
@@ -1658,7 +1658,7 @@ describe("Fides-js TCF", () => {
       cy.get("#fides-panel-Vendors").within(() => {
         cy.get("button").contains("Legitimate interest").click();
         cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
-          cy.get("input").should("be.checked");
+          cy.get("input").should("not.be.checked");
         });
       });
 
@@ -1729,14 +1729,14 @@ describe("Fides-js TCF", () => {
       });
       cy.getByTestId(`toggle-${PURPOSE_9.name}`).within(() => {
         // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-        // it should use the default preference set in the experience which is false
+        // it should use false as the default
         cy.get("input").should("not.be.checked");
       });
       cy.get("button").contains("Legitimate interest").click();
       cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
         // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-        // it should use the default preference set in the experience which is true
-        cy.get("input").should("be.checked");
+        // it should use false as the default
+        cy.get("input").should("not.be.checked");
       });
       // Features
       cy.get("#fides-tab-Features").click();
@@ -1745,7 +1745,7 @@ describe("Fides-js TCF", () => {
       });
       // Vendors
       // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-      // it should use the default preference set in the experience which is true
+      // it should use false as the default
       cy.get("#fides-tab-Vendors").click();
       cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
         cy.get("input").should("not.be.checked");
@@ -1753,7 +1753,7 @@ describe("Fides-js TCF", () => {
       cy.get("#fides-panel-Vendors").within(() => {
         cy.get("button").contains("Legitimate interest").click();
         cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
-          cy.get("input").should("be.checked");
+          cy.get("input").should("not.be.checked");
         });
       });
 
@@ -1865,14 +1865,14 @@ describe("Fides-js TCF", () => {
       });
       cy.getByTestId(`toggle-${PURPOSE_9.name}`).within(() => {
         // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-        // it should use the default preference set in the experience which is false
+        // it should use false as the default
         cy.get("input").should("not.be.checked");
       });
       cy.get("button").contains("Legitimate interest").click();
       cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
         // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-        // it should use the default preference set in the experience which is true
-        cy.get("input").should("be.checked");
+        // it should use false as the default
+        cy.get("input").should("not.be.checked");
       });
       // Features
       cy.get("#fides-tab-Features").click();
@@ -1881,7 +1881,7 @@ describe("Fides-js TCF", () => {
       });
       // Vendors
       // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-      // it should use the default preference set in the experience which is true
+      // it should use false as the default
       cy.get("#fides-tab-Vendors").click();
       cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
         cy.get("input").should("not.be.checked");
@@ -1889,7 +1889,7 @@ describe("Fides-js TCF", () => {
       cy.get("#fides-panel-Vendors").within(() => {
         cy.get("button").contains("Legitimate interest").click();
         cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
-          cy.get("input").should("be.checked");
+          cy.get("input").should("not.be.checked");
         });
       });
 
@@ -2047,14 +2047,14 @@ describe("Fides-js TCF", () => {
       });
       cy.getByTestId(`toggle-${PURPOSE_9.name}`).within(() => {
         // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-        // it should use the default preference set in the experience which is false
+        // it should use false as the default
         cy.get("input").should("not.be.checked");
       });
       cy.get("button").contains("Legitimate interest").click();
       cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
         // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-        // it should use the default preference set in the experience which is true
-        cy.get("input").should("be.checked");
+        // it should use false as the default
+        cy.get("input").should("not.be.checked");
       });
       // Features
       cy.get("#fides-tab-Features").click();
@@ -2070,9 +2070,9 @@ describe("Fides-js TCF", () => {
         cy.get("button").contains("Legitimate interest").click();
       });
       // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-      // it should use the default preference set in the experience which is true
+      // it should use false as the default
       cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
-        cy.get("input").should("be.checked");
+        cy.get("input").should("not.be.checked");
       });
 
       // verify CMP API
@@ -2166,14 +2166,14 @@ describe("Fides-js TCF", () => {
       });
       cy.getByTestId(`toggle-${PURPOSE_9.name}`).within(() => {
         // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-        // it should use the default preference set in the experience which is false
+        // it should use false as the default
         cy.get("input").should("not.be.checked");
       });
       cy.get("button").contains("Legitimate interest").click();
       cy.getByTestId(`toggle-${PURPOSE_2.name}`).within(() => {
         // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-        // it should use the default preference set in the experience which is true
-        cy.get("input").should("be.checked");
+        // it should use false as the default
+        cy.get("input").should("not.be.checked");
       });
       // Features
       cy.get("#fides-tab-Features").click();
@@ -2182,7 +2182,7 @@ describe("Fides-js TCF", () => {
       });
       // Vendors
       // this purpose is set to true in the experience, but since it was not defined in the fides_string,
-      // it should use the default preference set in the experience which is true
+      // it should use false as the default
       cy.get("#fides-tab-Vendors").click();
       cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
         cy.get("input").should("not.be.checked");
@@ -2191,7 +2191,7 @@ describe("Fides-js TCF", () => {
         cy.get("button").contains("Legitimate interest").click();
       });
       cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
-        cy.get("input").should("be.checked");
+        cy.get("input").should("not.be.checked");
       });
 
       // verify CMP API
