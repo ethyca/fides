@@ -23,13 +23,14 @@ saas_config:
     host: statsigapi.net
     authentication:
       strategy: api_key
+      configuration:
+        headers:
+          - name: STATSIG-API-KEY
+            value: <STATSIG-CONSOLE-API-KEY>
 
   test_request:
     method: GET
     path: /console/v1/users
-    headers:
-      - name: STATSIG-CONSOLE-API-KEY
-        value: <STATSIG-CONSOLE-API-KEY>
 
   endpoints:
     - name: user
@@ -38,10 +39,8 @@ saas_config:
           method: POST
           path: /v1/delete_user_data
           headers:
-            - name: STATSIG-SERVER-API-KEY
+            - name: STATSIG-API-KEY
               value: <STATSIG-SERVER-API-KEY>
           body: >
             {"unit_type": "user_id", "ids": "<user_id>", "request_id":
             "test_request_a"}
-
-## Ask about using the user_id value
