@@ -250,6 +250,8 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
     CONSENT_COOKIE_NAME,
     JSON.stringify(cookie),
     {
+      // Allows the cookie to be available for whole domain, not just the path at which it was set.
+      path: "/",
       // An explicit domain allows subdomains to access the cookie.
       domain: rootDomain,
       expires: CONSENT_COOKIE_MAX_AGE_DAYS,
