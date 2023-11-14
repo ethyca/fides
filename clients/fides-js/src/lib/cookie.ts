@@ -316,8 +316,10 @@ export const buildTcfEntitiesFromCookie = (
               Boolean(cookieConsent[item.id]),
               ConsentMechanism.OPT_IN
             )
-          : // if experience contains a tcf entity not defined by tcfEntities, we override experience current pref with the default pref
-            item.default_preference;
+          : // If experience contains a tcf entity not defined by tcfEntities, this means either:
+            // A) Most commonly, user has opted out, and opt-outs are not tracked by TC string. It's safe to assume this case.
+            // B) There is a new tcf entity that requires consent. In this case we would just resurface the banner
+            ConsentMechanism.OPT_OUT;
         return { ...item, current_preference: preference };
       });
     });
