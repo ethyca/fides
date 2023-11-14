@@ -17,8 +17,6 @@ import { useAppSelector } from "~/app/hooks";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { DataUse, PrivacyDeclarationResponse } from "~/types/api";
 
-import { SparkleIcon } from "../../common/Icon/SparkleIcon";
-
 const PrivacyDeclarationRow = ({
   declaration,
   title,
@@ -99,23 +97,19 @@ export const PrivacyDeclarationTabTable = ({
 
 type Props = {
   heading: string;
-  dictionaryEnabled?: boolean;
   declarations: PrivacyDeclarationResponse[];
   handleDelete: (dec: PrivacyDeclarationResponse) => void;
   handleAdd?: () => void;
   handleEdit: (dec: PrivacyDeclarationResponse) => void;
-  handleOpenDictModal: () => void;
   allDataUses: DataUse[];
 };
 
 export const PrivacyDeclarationDisplayGroup = ({
   heading,
-  dictionaryEnabled = false,
   declarations,
   handleAdd,
   handleDelete,
   handleEdit,
-  handleOpenDictModal,
   allDataUses,
 }: Props) => {
   const declarationTitle = (declaration: PrivacyDeclarationResponse) => {
@@ -135,17 +129,6 @@ export const PrivacyDeclarationDisplayGroup = ({
   return (
     <PrivacyDeclarationTabTable
       heading={heading}
-      headerButton={
-        dictionaryEnabled ? (
-          <IconButton
-            onClick={handleOpenDictModal}
-            aria-label="Show dictionary suggestions"
-            variant="outline"
-          >
-            <SparkleIcon />
-          </IconButton>
-        ) : null
-      }
       footerButton={
         !lockedForGVL ? (
           <Button
