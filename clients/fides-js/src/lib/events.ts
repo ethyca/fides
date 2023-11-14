@@ -71,7 +71,11 @@ export const dispatchFidesEvent = (
         extraDetails?.servingComponent
           ? `from ${extraDetails.servingComponent} `
           : ""
-      }with cookie ${JSON.stringify(cookie)}`
+      }with cookie ${JSON.stringify(cookie)} ${
+        extraDetails?.consentMethod
+          ? `using consent method ${extraDetails.consentMethod} `
+          : ""
+      }`
     );
     window.dispatchEvent(event);
   }
