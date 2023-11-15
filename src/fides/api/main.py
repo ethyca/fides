@@ -242,7 +242,7 @@ def read_other_paths(request: Request) -> Response:
     return get_admin_index_as_response()
 
 
-def warn_root_user_enabled():
+def warn_root_user_enabled() -> None:
     """
     Log a startup warning if root user is enabled.
     Extracted as a function because this may need to be done in multiple places,
