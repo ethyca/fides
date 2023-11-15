@@ -3,17 +3,20 @@ Contains all of the generic CRUD endpoints that can be
 generated programmatically for each resource.
 """
 from collections import defaultdict
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
+from fastapi_pagination import Params, create_page
+from fastapi_pagination.ext.sqlalchemy import count_query, paginate_query
 from loguru import logger as log
 from sqlalchemy import and_, column
 from sqlalchemy import delete as _delete
-from sqlalchemy import or_
+from sqlalchemy import func, inspect, or_
 from sqlalchemy import update as _update
 from sqlalchemy.dialects.postgresql import Insert as _insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.sql.expression import BinaryExpression
 
 from fides.api.db.base import Base  # type: ignore[attr-defined]
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
@@ -213,6 +216,68 @@ async def list_resource(sql_model: Base, async_session: AsyncSession) -> List[Ba
                 raise error
 
             return sql_resources
+
+
+async def list_resource_paginated(
+    sql_model: Base,
+    async_session: AsyncSession,
+    params: Params,
+    filters: Optional[List] = None,
+    order_by: Any = None,
+) -> List[Base]:
+    """
+    Retrieve a paginated list of resources of the specified type from the database.
+
+    Returns a page of results including the items, total count, and the
+    parameters used to limit and/or offset.
+    """
+    with log.contextualize(sql_model=sql_model.__name__):
+        async with async_session.begin():
+            try:
+                log.debug("Fetching resources")
+
+                # get the distinct primary keys
+                primary_key_column = inspect(sql_model).primary_key[0]
+                primary_keys_query = select(primary_key_column).distinct()
+
+                for condition in filters:
+                    if isinstance(condition, tuple):
+                        primary_keys_query = primary_keys_query.join(*condition)
+                    else:
+                        primary_keys_query = primary_keys_query.filter(condition)
+
+                paginated_primary_keys_query = paginate_query(
+                    primary_keys_query, params
+                )
+                primary_keys_result = await async_session.execute(
+                    paginated_primary_keys_query
+                )
+                primary_keys = [row[0] for row in primary_keys_result]
+
+                # retrieve full rows
+                if primary_keys:
+                    record_page_query = select(sql_model).where(
+                        primary_key_column.in_(primary_keys)
+                    )
+                    result = await async_session.execute(record_page_query)
+                    items = result.scalars().all()
+
+                    # determine the total number of records (without limit/offset)
+                    total_results = await async_session.execute(
+                        count_query(primary_keys_query)
+                    )
+                    total = total_results.scalar()
+                else:
+                    items = []
+                    total = 0
+            except SQLAlchemyError:
+                error = errors.QueryError()
+                log.bind(error=error.detail["error"]).info(  # type: ignore[index]
+                    "Failed to fetch resources"
+                )
+                raise error
+
+    return create_page(items, total, params)
 
 
 async def update_resource(

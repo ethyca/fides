@@ -1,9 +1,10 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
-from fastapi import Depends, HTTPException, Response, Security
+from fastapi import Depends, HTTPException, Query, Response, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslang.gvl import purpose_to_data_use
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -19,6 +20,7 @@ from fides.api.db.crud import (
     get_resource,
     get_resource_with_custom_fields,
     list_resource,
+    list_resource_paginated,
 )
 from fides.api.db.ctl_session import get_async_db
 from fides.api.db.system import (
@@ -30,7 +32,10 @@ from fides.api.db.system import (
 )
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.fides_user import FidesUser
-from fides.api.models.sql_models import System  # type:ignore[attr-defined]
+from fides.api.models.sql_models import (  # type:ignore[attr-defined]
+    PrivacyDeclaration,
+    System,
+)
 from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key,
     verify_oauth_client_for_system_from_fides_key_cli,
@@ -372,6 +377,86 @@ async def ls(  # pylint: disable=invalid-name
 ) -> List:
     """Get a list of all of the resources of this type."""
     return await list_resource(System, db)
+
+
+@SYSTEM_ROUTER.get(
+    "/paginated",
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[SYSTEM_READ],
+        )
+    ],
+    response_model=Page[Any],
+    name="List",
+)
+async def ls_paginated(
+    db: AsyncSession = Depends(get_async_db),
+    params: Params = Depends(),
+    purposes: Optional[List[int]] = Query(None),
+    data_uses: Optional[List[FidesKey]] = Query(None),
+    legal_bases: Optional[List[str]] = Query(None),
+) -> AbstractPage[Any]:
+    """Get a list of all of the resources of this type."""
+    paginated_results = await list_resource_paginated(
+        System,
+        db,
+        params,
+        filters=generate_system_filters(purposes, data_uses, legal_bases),
+    )
+
+    paginated_results.items = [
+        {
+            "fides_key": system.fides_key,
+            "name": system.name,
+            "data_uses": len(
+                {
+                    privacy_declaration.data_use
+                    for privacy_declaration in system.privacy_declarations
+                }
+            ),
+            "legal_bases": len(
+                {
+                    privacy_declaration.legal_basis_for_processing
+                    for privacy_declaration in system.privacy_declarations
+                }
+            ),
+        }
+        for system in paginated_results.items
+    ]
+    return paginated_results
+
+
+def generate_system_filters(
+    purposes: Optional[List[int]] = None,
+    data_uses: Optional[List[str]] = None,
+    legal_bases: Optional[List[str]] = None,
+) -> List:
+    """
+    Generate a list of SQLAlchemy filter conditions for systems based on specified criteria.
+    """
+    filters = []
+
+    if purposes or data_uses or legal_bases:
+        filters.append((PrivacyDeclaration, System.id == PrivacyDeclaration.system_id))
+
+    if purposes:
+        purpose_data_uses = set()
+
+        for purpose in purposes:
+            data_uses_for_purpose = purpose_to_data_use(purpose)
+            purpose_data_uses.update(data_uses_for_purpose)
+
+        if purpose_data_uses:
+            filters.append(PrivacyDeclaration.data_use.in_(purpose_data_uses))
+
+    if data_uses:
+        filters.append(PrivacyDeclaration.data_use.in_(data_uses))
+
+    if legal_bases:
+        filters.append(PrivacyDeclaration.legal_basis_for_processing.in_(legal_bases))
+
+    return filters
 
 
 @SYSTEM_ROUTER.get(
