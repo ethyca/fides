@@ -83,6 +83,10 @@ async def acquire_access_token(
     else:
         raise AuthenticationFailure(detail="Authentication Failure")
 
+    root_user = client_id == CONFIG.security.oauth_root_client_id
+    if root_user:
+        logger.info("Root user access token requested")
+
     # scopes/roles params are only used if client is root client, otherwise we use the client's associated scopes and/or roles
     client_detail = ClientDetail.get(
         db,
@@ -103,6 +107,10 @@ async def acquire_access_token(
     access_code = client_detail.create_access_code_jwe(
         CONFIG.security.app_encryption_key
     )
+
+    if root_user:
+        logger.warning("Root user access token acquired!")
+
     return AccessToken(access_token=access_code)
 
 

@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 from typing import Any
 
+from loguru import logger
 from sqlalchemy import ARRAY, Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
@@ -144,7 +145,7 @@ def _get_root_client_detail(
     """
     Return a root ClientDetail
     """
-
+    logger.info("Retrieving root user client details")
     if not config.security.oauth_root_client_secret_hash:
         raise ValueError("A root client hash is required")
 

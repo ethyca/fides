@@ -528,6 +528,7 @@ def user_login(
         and config.security.root_username == user_data.username
         and config.security.root_password == user_data.password
     ):
+        logger.warning("Performing root user login!")
         client_check = ClientDetail.get(
             db,
             object_id=config.security.oauth_root_client_id,
