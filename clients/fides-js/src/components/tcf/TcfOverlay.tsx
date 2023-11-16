@@ -319,16 +319,16 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   const dispatchOpenBannerEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+    dispatchFidesEvent("FidesUIShown", cookie, {
       servingComponent: ServingComponent.TCF_BANNER,
     });
-  }, [cookie, options.debug]);
+  }, [cookie]);
 
   const dispatchOpenOverlayEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+    dispatchFidesEvent("FidesUIShown", cookie, {
       servingComponent: ServingComponent.TCF_OVERLAY,
     });
-  }, [cookie, options.debug]);
+  }, [cookie]);
 
   if (!experience.experience_config) {
     debugLog("No experience config found");
@@ -387,7 +387,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           enabledIds={draftIds}
           onChange={(updatedIds) => {
             setDraftIds(updatedIds);
-            dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+            dispatchFidesEvent("FidesUIChanged", cookie);
           }}
           activeTabIndex={activeTabIndex}
           onTabChange={setActiveTabIndex}

@@ -50,8 +50,8 @@ const Overlay: FunctionComponent<Props> = ({
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
 
   const dispatchCloseEvent = useCallback(() => {
-    dispatchFidesEvent("FidesModalClosed", cookie, options.debug);
-  }, [cookie, options.debug]);
+    dispatchFidesEvent("FidesModalClosed", cookie);
+  }, [cookie]);
 
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",

@@ -123,16 +123,16 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   );
 
   const dispatchOpenBannerEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+    dispatchFidesEvent("FidesUIShown", cookie, {
       servingComponent: ServingComponent.BANNER,
     });
-  }, [cookie, options.debug]);
+  }, [cookie]);
 
   const dispatchOpenOverlayEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+    dispatchFidesEvent("FidesUIShown", cookie, {
       servingComponent: ServingComponent.OVERLAY,
     });
-  }, [cookie, options.debug]);
+  }, [cookie]);
 
   if (!experience.experience_config) {
     debugLog("No experience config found");
@@ -178,7 +178,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               enabledNoticeKeys={draftEnabledNoticeKeys}
               onChange={(updatedKeys) => {
                 setDraftEnabledNoticeKeys(updatedKeys);
-                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+                dispatchFidesEvent("FidesUIChanged", cookie);
               }}
             />
           </div>

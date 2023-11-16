@@ -125,7 +125,7 @@ const init = async (config: FidesConfig) => {
   const initialFides = getInitialFides({ ...config, cookie });
   if (initialFides) {
     Object.assign(_Fides, initialFides);
-    dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
+    dispatchFidesEvent("FidesInitialized", cookie);
   }
   const experience = initialFides?.experience ?? config.experience;
   const updatedFides = await initialize({
@@ -147,7 +147,7 @@ const init = async (config: FidesConfig) => {
   Object.assign(_Fides, updatedFides);
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
-  dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
+  dispatchFidesEvent("FidesInitialized", cookie);
 };
 
 // The global Fides object; this is bound to window.Fides if available
