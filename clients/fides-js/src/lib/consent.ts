@@ -22,14 +22,11 @@ export const initOverlay = async ({
 }: OverlayProps & {
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
 }): Promise<void> => {
-  debugLog(options.debug, "Initializing Fides consent overlays...");
+  debugLog("Initializing Fides consent overlays...");
 
   async function renderFidesOverlay(): Promise<void> {
     try {
-      debugLog(
-        options.debug,
-        "Rendering Fides overlay CSS & HTML into the DOM..."
-      );
+      debugLog("Rendering Fides overlay CSS & HTML into the DOM...");
 
       let parentElem;
       if (options.fidesEmbed) {
@@ -47,7 +44,6 @@ export const initOverlay = async ({
         parentElem = document.getElementById(overlayParentId);
         if (!parentElem) {
           debugLog(
-            options.debug,
             `Parent element not found (#${overlayParentId}), creating and appending to body...`
           );
           // Create our own parent element and append to body
@@ -66,21 +62,21 @@ export const initOverlay = async ({
           { experience, fidesRegionString, cookie, options },
           parentElem
         );
-        debugLog(options.debug, "Fides overlay is now showing!");
+        debugLog("Fides overlay is now showing!");
       }
       return await Promise.resolve();
     } catch (e) {
-      debugLog(options.debug, e);
+      debugLog(e);
       return Promise.reject(e);
     }
   }
 
   // Ensure we only render the overlay to the DOM once it's loaded
   if (document?.readyState !== "complete") {
-    debugLog(options.debug, "DOM not loaded, adding event listener");
+    debugLog("DOM not loaded, adding event listener");
     document.addEventListener("readystatechange", async () => {
       if (document.readyState === "complete") {
-        debugLog(options.debug, "DOM fully loaded and parsed");
+        debugLog("DOM fully loaded and parsed");
         await renderFidesOverlay();
       }
     });

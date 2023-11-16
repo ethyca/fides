@@ -20,11 +20,11 @@ import type { FidesCookie } from "./cookie";
  * option is truthy
  */
 type ConsoleLogParameters = Parameters<typeof console.log>;
-export const debugLog = (
-  enabled: boolean,
-  ...args: ConsoleLogParameters
-): void => {
-  if (enabled) {
+export const debugLog = (...args: ConsoleLogParameters): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+  if (window.Fides.options.debug) {
     // eslint-disable-next-line no-console
     console.log(...args);
   }
@@ -62,13 +62,11 @@ export const isPrivacyExperience = (
  * Returns null if geolocation cannot be constructed by provided params, e.g. us_ca
  */
 export const constructFidesRegionString = (
-  geoLocation?: UserGeolocation | null,
-  debug: boolean = false
+  geoLocation?: UserGeolocation | null
 ): string | null => {
-  debugLog(debug, "constructing geolocation...");
+  debugLog("constructing geolocation...");
   if (!geoLocation) {
     debugLog(
-      debug,
       "cannot construct user location since geoLocation is undefined or null"
     );
     return null;
@@ -86,7 +84,6 @@ export const constructFidesRegionString = (
   // DEFER: return geoLocation.country when BE supports filtering by just country
   // see https://github.com/ethyca/fides/issues/3300
   debugLog(
-    debug,
     "cannot construct user location from provided geoLocation params..."
   );
   return null;
@@ -131,22 +128,18 @@ export const transformConsentToFidesUserPreference = (
  */
 export const validateOptions = (options: FidesOptions): boolean => {
   // Check if options is an invalid type
-  debugLog(
-    options.debug,
-    "Validating Fides consent overlay options...",
-    options
-  );
+  debugLog("Validating Fides consent overlay options...", options);
   if (typeof options !== "object") {
     return false;
   }
 
   if (!options.fidesApiUrl) {
-    debugLog(options.debug, "Invalid options: fidesApiUrl is required!");
+    debugLog("Invalid options: fidesApiUrl is required!");
     return false;
   }
 
   if (!options.privacyCenterUrl) {
-    debugLog(options.debug, "Invalid options: privacyCenterUrl is required!");
+    debugLog("Invalid options: privacyCenterUrl is required!");
     return false;
   }
 
@@ -157,7 +150,6 @@ export const validateOptions = (options: FidesOptions): boolean => {
     new URL(options.fidesApiUrl);
   } catch (e) {
     debugLog(
-      options.debug,
       "Invalid options: privacyCenterUrl or fidesApiUrl is an invalid URL!",
       options.privacyCenterUrl
     );
@@ -171,14 +163,10 @@ export const validateOptions = (options: FidesOptions): boolean => {
  * Determines whether experience is valid and relevant notices exist within the experience
  */
 export const experienceIsValid = (
-  effectiveExperience: PrivacyExperience | undefined | EmptyExperience,
-  options: FidesOptions
+  effectiveExperience: PrivacyExperience | undefined | EmptyExperience
 ): boolean => {
   if (!isPrivacyExperience(effectiveExperience)) {
-    debugLog(
-      options.debug,
-      "No relevant experience found. Skipping overlay initialization."
-    );
+    debugLog("No relevant experience found. Skipping overlay initialization.");
     return false;
   }
   if (
@@ -186,7 +174,6 @@ export const experienceIsValid = (
     effectiveExperience.component !== ComponentType.TCF_OVERLAY
   ) {
     debugLog(
-      options.debug,
       "No experience found with overlay component. Skipping overlay initialization."
     );
     return false;
@@ -199,7 +186,6 @@ export const experienceIsValid = (
     )
   ) {
     debugLog(
-      options.debug,
       `Privacy experience has no notices. Skipping overlay initialization.`
     );
     return false;
@@ -207,7 +193,6 @@ export const experienceIsValid = (
   // TODO: add condition for not rendering TCF
   if (!effectiveExperience.experience_config) {
     debugLog(
-      options.debug,
       "No experience config found with for experience. Skipping overlay initialization."
     );
     return false;

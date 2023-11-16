@@ -124,12 +124,10 @@ const getInitialPreference = (
 const updateCookieAndExperience = async ({
   cookie,
   experience,
-  debug = false,
   isExperienceClientSideFetched,
 }: {
   cookie: FidesCookie;
   experience: PrivacyExperience;
-  debug?: boolean;
   isExperienceClientSideFetched: boolean;
 }): Promise<{
   cookie: FidesCookie;
@@ -144,7 +142,6 @@ const updateCookieAndExperience = async ({
   // If cookie.fides_string exists, update the fetched experience based on the cookie here.
   if (cookie.fides_string) {
     debugLog(
-      debug,
       "Overriding preferences from client-side fetched experience with cookie fides_string consent",
       cookie.fides_string
     );
@@ -207,15 +204,13 @@ const updateCookieAndExperience = async ({
 const updateFidesCookieFromString = (
   cookie: FidesCookie,
   fidesString: string,
-  debug: boolean,
   fidesStringVersionHash: string | undefined
 ): { cookie: FidesCookie; success: boolean } => {
   debugLog(
-    debug,
     "Explicit fidesString detected. Proceeding to override all TCF preferences with given fidesString"
   );
   try {
-    const cookieKeys = transformFidesStringToCookieKeys(fidesString, debug);
+    const cookieKeys = transformFidesStringToCookieKeys(fidesString);
     return {
       cookie: {
         ...cookie,
@@ -227,7 +222,6 @@ const updateFidesCookieFromString = (
     };
   } catch (error) {
     debugLog(
-      debug,
       `Could not decode tcString from ${fidesString}, it may be invalid. ${error}`
     );
     return { cookie, success: false };
@@ -238,6 +232,8 @@ const updateFidesCookieFromString = (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
+  // Initialize global debug asap so that debugLog calls will be able to use it
+  _Fides.options.debug = config.options.debug;
   const overrides: Partial<FidesOverrides> = await getOverrides(config);
   // eslint-disable-next-line no-param-reassign
   config.options = { ...config.options, ...overrides.overrideOptions };
@@ -249,7 +245,6 @@ const init = async (config: FidesConfig) => {
     const { cookie: updatedCookie, success } = updateFidesCookieFromString(
       cookie,
       config.options.fidesString,
-      config.options.debug,
       overrides.overrideConsentPrefs?.version_hash
     );
     if (success) {
@@ -259,7 +254,7 @@ const init = async (config: FidesConfig) => {
     tcfConsentCookieObjHasSomeConsentSet(cookie.tcf_consent) &&
     !cookie.fides_string &&
     isPrivacyExperience(config.experience) &&
-    experienceIsValid(config.experience, config.options)
+    experienceIsValid(config.experience)
   ) {
     // This state should not be hit, but just in case: if fidesString is missing on cookie but we have tcf consent,
     // we should generate fidesString so that our CMP API accurately reflects user preference
@@ -268,7 +263,6 @@ const init = async (config: FidesConfig) => {
       cookie.tcf_consent
     );
     debugLog(
-      config.options.debug,
       "fides_string was missing from cookie, so it has been generated based on tcf_consent",
       cookie.fides_string
     );
@@ -300,7 +294,7 @@ _Fides = {
   experience: undefined,
   geolocation: {},
   options: {
-    debug: true,
+    debug: false,
     isOverlayEnabled: false,
     isPrefetchEnabled: false,
     isGeolocationEnabled: false,

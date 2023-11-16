@@ -91,7 +91,6 @@ let _Fides: Fides;
 const updateCookie = async (
   oldCookie: FidesCookie,
   experience: PrivacyExperience,
-  debug?: boolean,
   isExperienceClientSideFetched?: boolean
 ): Promise<{ cookie: FidesCookie; experience: PrivacyExperience }> => {
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
@@ -102,16 +101,11 @@ const updateCookie = async (
     const updatedExperience = updateExperienceFromCookieConsent({
       experience,
       cookie: oldCookie,
-      debug,
     });
     return { cookie: oldCookie, experience: updatedExperience };
   }
   const context = getConsentContext();
-  const consent = buildCookieConsentForExperiences(
-    experience,
-    context,
-    !!debug
-  );
+  const consent = buildCookieConsentForExperiences(experience, context);
   return { cookie: { ...oldCookie, consent }, experience };
 };
 
@@ -119,6 +113,8 @@ const updateCookie = async (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
+  // Initialize global debug asap so that debugLog calls will be able to use it
+  _Fides.options.debug = config.options.debug;
   const overrides: Partial<FidesOverrides> = await getOverrides(config);
   // eslint-disable-next-line no-param-reassign
   config.options = { ...config.options, ...overrides.overrideOptions };
@@ -140,13 +136,11 @@ const init = async (config: FidesConfig) => {
     updateCookieAndExperience: ({
       cookie: oldCookie,
       experience: effectiveExperience,
-      debug,
       isExperienceClientSideFetched,
     }) =>
       updateCookie(
         oldCookie,
         effectiveExperience,
-        debug,
         isExperienceClientSideFetched
       ),
   });
@@ -162,7 +156,7 @@ _Fides = {
   experience: undefined,
   geolocation: {},
   options: {
-    debug: true,
+    debug: false,
     isOverlayEnabled: false,
     isPrefetchEnabled: false,
     isGeolocationEnabled: false,

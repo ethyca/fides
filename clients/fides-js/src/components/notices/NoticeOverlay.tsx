@@ -135,7 +135,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   }, [cookie, options.debug]);
 
   if (!experience.experience_config) {
-    debugLog(options.debug, "No experience config found");
+    debugLog("No experience config found");
     return null;
   }
   const experienceConfig = experience.experience_config;

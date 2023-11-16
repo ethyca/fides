@@ -7,8 +7,7 @@ import { debugLog } from "../consent-utils";
 import { decodeFidesString, idsFromAcString } from "./fidesString";
 
 export const transformFidesStringToCookieKeys = (
-  fidesString: string,
-  debug: boolean
+  fidesString: string
 ): TcfCookieConsent => {
   const { tc: tcString, ac: acString } = decodeFidesString(fidesString);
   const tcModel: TCModel = TCString.decode(tcString);
@@ -31,7 +30,7 @@ export const transformFidesStringToCookieKeys = (
   });
 
   // Set AC consents, which will only be on vendor_consents
-  const acIds = idsFromAcString(acString, debug);
+  const acIds = idsFromAcString(acString);
   acIds.forEach((acId) => {
     if (!cookieKeys.vendor_consent_preferences) {
       cookieKeys.vendor_consent_preferences = { [acId]: true };
@@ -40,7 +39,6 @@ export const transformFidesStringToCookieKeys = (
     }
   });
   debugLog(
-    debug,
     `Generated cookie.tcf_consent from explicit fidesString.`,
     cookieKeys
   );

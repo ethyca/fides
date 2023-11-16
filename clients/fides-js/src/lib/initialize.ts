@@ -75,8 +75,7 @@ const retrieveEffectiveRegionString = async (
       // Call the geolocation API
       await getGeolocation(
         options.isGeolocationEnabled,
-        options.geolocationApiUrl,
-        options.debug
+        options.geolocationApiUrl
       )
     );
   }
@@ -199,17 +198,13 @@ export const getOverrides = async (
  * Get the initial Fides cookie based on legacy consent values
  * as well as any preferences stored in existing cookies
  */
-export const getInitialCookie = ({ consent, options }: FidesConfig) => {
+export const getInitialCookie = ({ consent }: FidesConfig) => {
   // Configure the default legacy consent values
   const context = getConsentContext();
-  const consentDefaults = makeConsentDefaultsLegacy(
-    consent,
-    context,
-    options.debug
-  );
+  const consentDefaults = makeConsentDefaultsLegacy(consent, context);
 
   // Load any existing user preferences from the browser cookie
-  return getOrMakeFidesCookie(consentDefaults, options.debug);
+  return getOrMakeFidesCookie(consentDefaults);
 };
 
 /**
@@ -234,7 +229,6 @@ export const getInitialFides = ({
     updatedExperience = updateExperienceFromCookieConsent({
       experience,
       cookie,
-      debug: options.debug,
     });
   }
 
@@ -277,12 +271,10 @@ export const initialize = async ({
   updateCookieAndExperience: ({
     cookie,
     experience,
-    debug,
     isExperienceClientSideFetched,
   }: {
     cookie: FidesCookie;
     experience: PrivacyExperience;
-    debug?: boolean;
     isExperienceClientSideFetched: boolean;
   }) => Promise<{
     cookie: FidesCookie;
@@ -296,7 +288,6 @@ export const initialize = async ({
   if (shouldInitOverlay) {
     if (!validateOptions(options)) {
       debugLog(
-        options.debug,
         "Invalid overlay options. Skipping overlay initialization.",
         options
       );
@@ -312,7 +303,6 @@ export const initialize = async ({
 
     if (!fidesRegionString) {
       debugLog(
-        options.debug,
         `User location could not be obtained. Skipping overlay initialization.`
       );
       shouldInitOverlay = false;
@@ -322,7 +312,6 @@ export const initialize = async ({
       effectiveExperience = await fetchExperience(
         fidesRegionString,
         options.fidesApiUrl,
-        options.debug,
         options.apiOptions,
         cookie.identity.fides_user_device_id
       );
@@ -330,15 +319,14 @@ export const initialize = async ({
 
     if (
       isPrivacyExperience(effectiveExperience) &&
-      experienceIsValid(effectiveExperience, options)
+      experienceIsValid(effectiveExperience)
     ) {
       const updated = await updateCookieAndExperience({
         cookie,
         experience: effectiveExperience,
-        debug: options.debug,
         isExperienceClientSideFetched: fetchedClientSideExperience,
       });
-      debugLog(options.debug, "Updated cookie and experience", updated);
+      debugLog("Updated cookie and experience", updated);
       Object.assign(cookie, updated.cookie);
       Object.assign(effectiveExperience, updated.experience);
       if (shouldInitOverlay) {

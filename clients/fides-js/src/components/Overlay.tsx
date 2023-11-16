@@ -94,7 +94,6 @@ const Overlay: FunctionComponent<Props> = ({
       const modalLinkEl = document.getElementById(modalLinkId);
       if (modalLinkEl) {
         debugLog(
-          options.debug,
           "Modal link element found, updating it to show and trigger modal on click."
         );
         // Update modal link to trigger modal on click
@@ -106,11 +105,11 @@ const Overlay: FunctionComponent<Props> = ({
         // Update to show the pre-existing modal link in the DOM
         modalLink.classList.add("fides-modal-link-shown");
       } else {
-        debugLog(options.debug, "Modal link element not found.");
+        debugLog("Modal link element not found.");
       }
     }, delayModalLinkMilliseconds);
     return () => clearTimeout(delayModalLinkBinding);
-  }, [options.modalLinkId, options.debug, handleOpenModal]);
+  }, [options.modalLinkId, handleOpenModal]);
 
   const showBanner = useMemo(
     () =>
@@ -131,7 +130,7 @@ const Overlay: FunctionComponent<Props> = ({
   }
 
   if (!experience.experience_config) {
-    debugLog(options.debug, "No experience config found");
+    debugLog("No experience config found");
     return null;
   }
 

@@ -158,8 +158,7 @@ export const getCookieByName = (cookieName: string): string | undefined =>
  * `saveFidesCookie` with a valid cookie after editing the values.
  */
 export const getOrMakeFidesCookie = (
-  defaults?: CookieKeyConsent,
-  debug: boolean = false
+  defaults?: CookieKeyConsent
 ): FidesCookie => {
   // Create a default cookie and set the configured consent defaults
   const defaultCookie = makeFidesCookie(defaults);
@@ -172,7 +171,6 @@ export const getOrMakeFidesCookie = (
   const cookieString = getCookieByName(CONSENT_COOKIE_NAME);
   if (!cookieString) {
     debugLog(
-      debug,
       `No existing Fides consent cookie found, returning defaults.`,
       cookieString
     );
@@ -207,14 +205,12 @@ export const getOrMakeFidesCookie = (
     parsedCookie.consent = updatedConsent;
     // since console.log is synchronous, we stringify to accurately read the parsedCookie obj
     debugLog(
-      debug,
       `Applied existing consent to data from existing Fides consent cookie.`,
       JSON.stringify(parsedCookie)
     );
     return parsedCookie;
   } catch (err) {
-    // eslint-disable-next-line no-console
-    debugLog(debug, `Unable to read consent cookie: invalid JSON.`, err);
+    debugLog(`Unable to read consent cookie: invalid JSON.`, err);
     return defaultCookie;
   }
 };
@@ -271,8 +267,7 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
  */
 export const buildCookieConsentForExperiences = (
   experience: PrivacyExperience,
-  context: ConsentContext,
-  debug: boolean
+  context: ConsentContext
 ): CookieKeyConsent => {
   const cookieConsent: CookieKeyConsent = {};
   if (!experience.privacy_notices) {
@@ -281,7 +276,7 @@ export const buildCookieConsentForExperiences = (
   experience.privacy_notices.forEach((notice) => {
     cookieConsent[notice.notice_key] = resolveConsentValue(notice, context);
   });
-  debugLog(debug, `Returning cookie consent for experiences.`, cookieConsent);
+  debugLog(`Returning cookie consent for experiences.`, cookieConsent);
   return cookieConsent;
 };
 
@@ -340,11 +335,9 @@ export const buildTcfEntitiesFromCookie = (
 export const updateExperienceFromCookieConsent = ({
   experience,
   cookie,
-  debug,
 }: {
   experience: PrivacyExperience;
   cookie: FidesCookie;
-  debug?: boolean;
 }): PrivacyExperience => {
   const noticesWithConsent = experience.privacy_notices?.map((notice) => {
     const preference = Object.hasOwn(cookie.consent, notice.notice_key)
@@ -359,13 +352,10 @@ export const updateExperienceFromCookieConsent = ({
   // Handle the TCF case, which has many keys to query
   const tcfEntities = buildTcfEntitiesFromCookie(experience, cookie);
 
-  if (debug) {
-    debugLog(
-      debug,
-      `Returning updated pre-fetched experience with user consent.`,
-      experience
-    );
-  }
+  debugLog(
+    `Returning updated pre-fetched experience with user consent.`,
+    experience
+  );
   return { ...experience, ...tcfEntities, privacy_notices: noticesWithConsent };
 };
 
@@ -397,8 +387,7 @@ export const transformTcfPreferencesToCookieKeys = (
  */
 export const makeConsentDefaultsLegacy = (
   config: LegacyConsentConfig | undefined,
-  context: ConsentContext,
-  debug: boolean
+  context: ConsentContext
 ): CookieKeyConsent => {
   const defaults: CookieKeyConsent = {};
   config?.options.forEach(({ cookieKeys, default: current }) => {
@@ -418,7 +407,7 @@ export const makeConsentDefaultsLegacy = (
       defaults[cookieKey] = previous && value;
     });
   });
-  debugLog(debug, `Returning defaults for legacy config.`, defaults);
+  debugLog(`Returning defaults for legacy config.`, defaults);
   return defaults;
 };
 

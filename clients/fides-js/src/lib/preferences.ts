@@ -29,7 +29,7 @@ async function savePreferencesApi(
   tcf?: TcfSavePreferences,
   userLocationString?: string
 ) {
-  debugLog(options.debug, "Saving preferences to Fides API");
+  debugLog("Saving preferences to Fides API");
   // Derive the Fides user preferences array from consent preferences
   const fidesUserPreferences = consentPreferencesToSave?.map((preference) => ({
     privacy_notice_history_id: preference.notice.privacy_notice_history_id,
@@ -88,7 +88,7 @@ export const updateConsentPreferences = async ({
   Object.assign(cookie, updatedCookie);
 
   // 2. Update the window.Fides object
-  debugLog(options.debug, "Updating window.Fides");
+  debugLog("Updating window.Fides");
   window.Fides.consent = cookie.consent;
   window.Fides.fides_string = cookie.fides_string;
   window.Fides.tcf_consent = cookie.tcf_consent;
@@ -107,7 +107,6 @@ export const updateConsentPreferences = async ({
       );
     } catch (e) {
       debugLog(
-        options.debug,
         "Error saving updated preferences to API, continuing. Error: ",
         e
       );
@@ -115,7 +114,7 @@ export const updateConsentPreferences = async ({
   }
 
   // 4. Save preferences to the cookie in the browser
-  debugLog(options.debug, "Saving preferences to cookie");
+  debugLog("Saving preferences to cookie");
   saveFidesCookie(cookie);
 
   // 5. Remove cookies associated with notices that were opted-out from the browser

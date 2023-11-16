@@ -66,7 +66,6 @@ export const dispatchFidesEvent = (
       detail: { ...cookie, debug, extraDetails },
     });
     debugLog(
-      debug,
       `Dispatching event type ${type} ${
         extraDetails?.servingComponent
           ? `from ${extraDetails.servingComponent} `

@@ -42,7 +42,7 @@ export const useA11yDialog = ({ role, id, onClose }: Props) => {
     if (onClose) {
       onClose();
     }
-  }, [instance]);
+  }, [instance, onClose]);
 
   // Destroy the `a11y-dialog` instance when unmounting the component
   useEffect(
