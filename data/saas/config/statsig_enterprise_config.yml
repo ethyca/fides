@@ -1,9 +1,9 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Statsig
-  type: statsig
+  name: Statsig Enterprise
+  type: statsig_enterprise
   description: A sample schema representing the Statsig connector for Fides
-  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/statsig
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/statsig-enterprise
   version: 0.1.0
 
   connector_params:
