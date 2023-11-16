@@ -10,22 +10,81 @@ import {
   MenuList,
   Text,
 } from "@fidesui/react";
-import { Table as TableInstance } from "@tanstack/react-table";
+import { Table as TableInstance, Updater } from "@tanstack/react-table";
 
 export const PAGE_SIZES = [25, 50, 100];
+
+export const useClientSidePagination = <T,>(
+  tableInstance: TableInstance<T>
+) => {
+  const totalRows = tableInstance.getFilteredRowModel().rows.length;
+  const { pageIndex } = tableInstance.getState().pagination;
+  const { pageSize } = tableInstance.getState().pagination;
+  const onPreviousPageClick = tableInstance.previousPage;
+  const isPreviousPageDisabled = !tableInstance.getCanPreviousPage();
+  const onNextPageClick = tableInstance.nextPage;
+  const isNextPageDisabled = !tableInstance.getCanNextPage();
+  const setPageSize = tableInstance.setPageSize;
+
+  return {
+    pageIndex,
+    pageSize,
+    totalRows,
+    onPreviousPageClick,
+    isPreviousPageDisabled,
+    onNextPageClick,
+    isNextPageDisabled,
+    setPageSize,
+  };
+};
+
+export const useServerSidePagination = () => {
+  const totalRows = tableInstance.getFilteredRowModel().rows.length;
+  const { pageIndex } = tableInstance.getState().pagination;
+  const { pageSize } = tableInstance.getState().pagination;
+  const onPreviousPageClick = tableInstance.previousPage;
+  const isPreviousPageDisabled = !tableInstance.getCanPreviousPage();
+  const onNextPageClick = tableInstance.nextPage;
+  const isNextPageDisabled = !tableInstance.getCanNextPage();
+  const setPageSize = tableInstance.setPageSize;
+
+  return {
+    pageIndex,
+    pageSize,
+    totalRows,
+    onPreviousPageClick,
+    isPreviousPageDisabled,
+    onNextPageClick,
+    isNextPageDisabled,
+    setPageSize,
+  };
+};
 
 type PaginationBarProps<T> = {
   pageSizes: number[];
   tableInstance: TableInstance<T>;
+  pageIndex: number;
+  pageSize: number;
+  totalRows: number;
+  onPreviousPageClick: () => void;
+  isPreviousPageDisabled: boolean;
+  onNextPageClick: () => void;
+  isNextPageDisabled: boolean;
+  setPageSize: (update: Updater<number>) => void;
 };
 
 export const PaginationBar = <T,>({
   tableInstance,
   pageSizes,
+  pageIndex,
+  pageSize,
+  totalRows,
+  onPreviousPageClick,
+  isPreviousPageDisabled,
+  onNextPageClick,
+  isNextPageDisabled,
+  setPageSize,
 }: PaginationBarProps<T>) => {
-  const totalRows = tableInstance.getFilteredRowModel().rows.length;
-  const { pageIndex } = tableInstance.getState().pagination;
-  const { pageSize } = tableInstance.getState().pagination;
   const startRange = pageIndex * pageSize;
   const endRange = pageIndex * pageSize + pageSize;
 
@@ -55,7 +114,7 @@ export const PaginationBar = <T,>({
           {pageSizes.map((size) => (
             <MenuItem
               onClick={() => {
-                tableInstance.setPageSize(size);
+                setPageSize(size);
               }}
               key={size}
               data-testid={`pageSize-${size}`}
@@ -72,9 +131,9 @@ export const PaginationBar = <T,>({
         variant="outline"
         aria-label="previous page"
         onClick={() => {
-          tableInstance.previousPage();
+          onPreviousPageClick();
         }}
-        isDisabled={!tableInstance.getCanPreviousPage()}
+        isDisabled={isPreviousPageDisabled}
       >
         previous
       </IconButton>
@@ -84,9 +143,9 @@ export const PaginationBar = <T,>({
         variant="outline"
         aria-label="next page"
         onClick={() => {
-          tableInstance.nextPage();
+          onNextPageClick();
         }}
-        isDisabled={!tableInstance.getCanNextPage()}
+        isDisabled={isNextPageDisabled}
       >
         next
       </IconButton>

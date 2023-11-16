@@ -32,6 +32,7 @@ import {
   IndeterminateCheckboxCell,
   PAGE_SIZES,
   PaginationBar,
+  useClientSidePagination,
   RowSelectionBar,
   TableActionBar,
   TableSkeletonLoader,
@@ -181,6 +182,17 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     },
   });
 
+  const {
+    pageIndex,
+    pageSize,
+    totalRows,
+    onPreviousPageClick,
+    isPreviousPageDisabled,
+    onNextPageClick,
+    isNextPageDisabled,
+    setPageSize,
+  } = useClientSidePagination(tableInstance);
+
   const addVendors = async () => {
     const vendorIds = tableInstance
       .getSelectedRowModel()
@@ -320,6 +332,14 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       <PaginationBar<MultipleSystemTable>
         tableInstance={tableInstance}
         pageSizes={PAGE_SIZES}
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        totalRows={totalRows}
+        onPreviousPageClick={onPreviousPageClick}
+        isPreviousPageDisabled={isPreviousPageDisabled}
+        onNextPageClick={onNextPageClick}
+        isNextPageDisabled={isNextPageDisabled}
+        setPageSize={setPageSize}
       />
     </Flex>
   );
