@@ -223,7 +223,6 @@ async def list_resource_paginated(
     async_session: AsyncSession,
     params: Params,
     filters: Optional[List] = None,
-    order_by: Any = None,
 ) -> List[Base]:
     """
     Retrieve a paginated list of resources of the specified type from the database.

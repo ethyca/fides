@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Any, Dict, List, Optional
 
 from fastapi import Depends, HTTPException, Query, Response, Security
@@ -9,6 +10,7 @@ from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic.types import conlist
+from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette import status
@@ -32,6 +34,7 @@ from fides.api.db.system import (
 )
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.fides_user import FidesUser
+from fides.api.models.privacy_notice import PrivacyNotice
 from fides.api.models.sql_models import (  # type:ignore[attr-defined]
     PrivacyDeclaration,
     System,
@@ -396,19 +399,33 @@ async def ls_paginated(
     purposes: Optional[List[int]] = Query(None),
     data_uses: Optional[List[FidesKey]] = Query(None),
     legal_bases: Optional[List[str]] = Query(None),
+    privacy_notices: Optional[List[str]] = Query(None),
 ) -> AbstractPage[Any]:
     """Get a list of all of the resources of this type."""
+
+    # retrieve the current privacy notices and create a map between data uses to privacy notices
+    stored_notices = await list_resource(PrivacyNotice, db)
+    data_use_to_notice = defaultdict(list)
+    for stored_notice in stored_notices:
+        for data_use in stored_notice.data_uses:
+            data_use_to_notice[data_use].append(stored_notice.notice_key)
+
+    system_filters = await generate_system_filters(
+        db, purposes, privacy_notices, data_uses, legal_bases
+    )
     paginated_results = await list_resource_paginated(
         System,
         db,
         params,
-        filters=generate_system_filters(purposes, data_uses, legal_bases),
+        filters=system_filters,
     )
 
     paginated_results.items = [
         {
             "fides_key": system.fides_key,
             "name": system.name,
+            "vendor_id": system.vendor_id,
+            "cookies": system.cookies,
             "data_uses": len(
                 {
                     privacy_declaration.data_use
@@ -421,14 +438,25 @@ async def ls_paginated(
                     for privacy_declaration in system.privacy_declarations
                 }
             ),
+            "privacy_notices": count_unique_privacy_notices(system, data_use_to_notice),
         }
         for system in paginated_results.items
     ]
     return paginated_results
 
 
-def generate_system_filters(
+def count_unique_privacy_notices(system, data_use_to_notice):
+    unique_notices = set()
+    for privacy_declaration in system.privacy_declarations:
+        notice_keys = data_use_to_notice.get(privacy_declaration.data_use, [])
+        unique_notices.update(notice_keys)
+    return len(unique_notices)
+
+
+async def generate_system_filters(
+    db: Session,
     purposes: Optional[List[int]] = None,
+    privacy_notices: Optional[List[str]] = None,
     data_uses: Optional[List[str]] = None,
     legal_bases: Optional[List[str]] = None,
 ) -> List:
@@ -437,8 +465,8 @@ def generate_system_filters(
     """
     filters = []
 
-    if purposes or data_uses or legal_bases:
-        filters.append((PrivacyDeclaration, System.id == PrivacyDeclaration.system_id))
+    if purposes or privacy_notices or data_uses or legal_bases:
+        filters.append(System.id == PrivacyDeclaration.system_id)
 
     if purposes:
         purpose_data_uses = set()
@@ -448,10 +476,41 @@ def generate_system_filters(
             purpose_data_uses.update(data_uses_for_purpose)
 
         if purpose_data_uses:
-            filters.append(PrivacyDeclaration.data_use.in_(purpose_data_uses))
+            like_conditions = [
+                PrivacyDeclaration.data_use.like(data_use + "%")
+                for data_use in purpose_data_uses
+            ]
+            if like_conditions:
+                filters.append(or_(*like_conditions))
+
+    if privacy_notices:
+        privacy_notice_data_uses = set()
+
+        stored_notices = await list_resource(PrivacyNotice, db)
+        data_uses_for_notice = {
+            stored_notice.notice_key: stored_notice.data_uses
+            for stored_notice in stored_notices
+        }
+
+        for privacy_notice in privacy_notices:
+            privacy_notice_data_uses.update(
+                data_uses_for_notice.get(privacy_notice, [])
+            )
+
+        if privacy_notice_data_uses:
+            like_conditions = [
+                PrivacyDeclaration.data_use.like(data_use + "%")
+                for data_use in privacy_notice_data_uses
+            ]
+            if like_conditions:
+                filters.append(or_(*like_conditions))
 
     if data_uses:
-        filters.append(PrivacyDeclaration.data_use.in_(data_uses))
+        like_conditions = [
+            PrivacyDeclaration.data_use.like(data_use + "%") for data_use in data_uses
+        ]
+        if like_conditions:
+            filters.append(or_(*like_conditions))
 
     if legal_bases:
         filters.append(PrivacyDeclaration.legal_basis_for_processing.in_(legal_bases))
