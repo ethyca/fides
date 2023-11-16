@@ -112,7 +112,6 @@ export default async function handler(
         fidesRegionString,
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
           environment.settings.FIDES_API_URL,
-        environment.settings.DEBUG,
         null,
         null
       );
