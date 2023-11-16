@@ -2,11 +2,12 @@
 import alias from "@rollup/plugin-alias";
 import copy from "rollup-plugin-copy";
 import dts from "rollup-plugin-dts";
-import esbuild from "rollup-plugin-esbuild";
+import esbuild, { minify } from "rollup-plugin-esbuild";
 import filesize from "rollup-plugin-filesize";
 import json from "@rollup/plugin-json";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import postcss from "rollup-plugin-postcss";
+import strip from "@rollup/plugin-strip";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
@@ -33,9 +34,15 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   postcss({
     minimize: !IS_DEV,
   }),
-  esbuild({
-    minify: !IS_DEV,
+  // Build TS
+  esbuild(),
+  // Strip instances of debugLog. Needs to come before minify since debugLog will change names
+  // but after building TS since `strip` can't handle TS
+  strip({
+    include: [`**/*.ts`, `**/*.tsx`],
+    functions: IS_DEV ? [] : ["debugLog"],
   }),
+  minify({ minify: !IS_DEV }),
   copy({
     // Automatically add the built script to the privacy center's static files for bundling:
     targets: [
