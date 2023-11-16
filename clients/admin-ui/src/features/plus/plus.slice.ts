@@ -296,6 +296,13 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Fides Cloud Config"],
     }),
+    getVendorReport: build.query<any[], void>({
+      query: () => ({
+        url: `plus/system/paginated`,
+        method: "GET",
+      }),
+      providesTags: ["System"],
+    }),
     getDictionaryDataUses: build.query<
       Page_DataUseDeclaration_,
       { vendor_id: string }
@@ -378,6 +385,7 @@ export const {
   useGetAllAllowListQuery,
   useGetAllClassifyInstancesQuery,
   useGetClassifyDatasetQuery,
+  useGetVendorReportQuery,
   useGetClassifySystemQuery,
   useGetCustomFieldDefinitionsByResourceTypeQuery,
   useGetCustomFieldsForResourceQuery,

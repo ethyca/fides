@@ -5,6 +5,7 @@ import React from "react";
 import Layout from "~/features/common/Layout";
 import { CONFIGURE_CONSENT_ROUTE } from "~/features/common/nav/v2/routes";
 import ConfigureConsent from "~/features/configure-consent/ConfigureConsent";
+import { ConsentManagementTable } from "~/features/configure-consent/ConsentMangagementTable";
 
 const ConfigureConsentPage = () => (
   <Layout title="Configure consent">
@@ -32,7 +33,7 @@ const ConfigureConsentPage = () => (
       Your current cookies and tracking information.
     </Text>
     <Box data-testid="configure-consent-page">
-      <ConfigureConsent />
+      <ConsentManagementTable />
     </Box>
   </Layout>
 );

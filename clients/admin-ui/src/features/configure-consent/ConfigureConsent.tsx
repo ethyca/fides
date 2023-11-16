@@ -5,6 +5,7 @@ import EmptyTableState from "~/features/common/table/EmptyTableState";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 import { useGetAllSystemsQuery } from "~/features/system";
+import { useGetVendorReportQuery } from "~/features/plus/plus.slice";
 
 import VendorCookieTable from "./VendorCookieTable";
 
@@ -21,6 +22,8 @@ const EmptyStateContent: FC = ({ children }) => (
 const ConfigureConsent = () => {
   const { data: allSystems, isLoading } = useGetAllSystemsQuery();
   useGetAllDataUsesQuery();
+  const { data: report } = useGetVendorReportQuery();
+  console.log(report);
 
   if (isLoading) {
     return (
