@@ -1,0 +1,46 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Statsig Enterprise
+  type: statsig_enterprise
+  description: A sample schema representing the Statsig connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/statsig-enterprise
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      label: Domain
+      default_value: statsigapi.net
+      description: The default value in this case should be taken as the domain here refers to the domain related to the request endpoints we will be using.
+    - name: STATSIG-CONSOLE-API-KEY
+      label: Console API Key
+      description: The Console API Keys are available from the Gear --> Keys & Environments section of the Statsig Admin UI. <URL for this>
+    - name: STATSIG-SERVER-API-KEY
+      label: Server Secret
+      description: The Server Secret available from the Gear --> Keys & Environments section of the Statsig Admin UI. <URL for this>
+
+  client_config:
+    protocol: https
+    host: statsigapi.net
+    authentication:
+      strategy: api_key
+      configuration:
+        headers:
+          - name: STATSIG-API-KEY
+            value: <STATSIG-CONSOLE-API-KEY>
+
+  test_request:
+    method: GET
+    path: /console/v1/users
+
+  endpoints:
+    - name: user
+      requests:
+        delete:
+          method: POST
+          path: /v1/delete_user_data
+          headers:
+            - name: STATSIG-API-KEY
+              value: <STATSIG-SERVER-API-KEY>
+          body: >
+            {"unit_type": "user_id", "ids": "<user_id>", "request_id":
+            "test_request_a"}
