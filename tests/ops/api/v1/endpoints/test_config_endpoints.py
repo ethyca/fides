@@ -940,7 +940,7 @@ class TestDeleteApplicationConfig:
         assert ApplicationConfig.get_api_set(db) == {}
 
 
-class TestGetConnections:
+class TestGetConfig:
     @pytest.fixture(scope="function")
     def url(self) -> str:
         return urls.V1_URL_PREFIX + urls.CONFIG
@@ -956,6 +956,21 @@ class TestGetConnections:
         assert resp.status_code == 200
 
         config = resp.json()
+
+        # effectively hardcode our allow list here in our tests to flag any additions to the allowlist!
+        # allowlist additions should be made with care, and _need_ to be reviewed by the
+        # Ethyca security team
+        allowed_top_level_config_keys = {
+            "user",
+            "logging",
+            "notifications",
+            "security",
+            "execution",
+            "storage",
+        }
+
+        for key in config.keys():
+            assert (key in allowed_top_level_config_keys), "Unexpected config API change, please review with Ethyca security team"
 
         assert "security" in config
         assert "user" in config
@@ -977,7 +992,7 @@ class TestGetConnections:
                 )
             )
             == 0
-        )
+        ), "Unexpected config API change, please review with Ethyca security team"
 
         user_keys = set(config["user"].keys())
         assert (
@@ -991,7 +1006,7 @@ class TestGetConnections:
                 )
             )
             == 0
-        )
+        ), "Unexpected config API change, please review with Ethyca security team"
 
         logging_keys = set(config["logging"].keys())
         assert (
@@ -1005,7 +1020,7 @@ class TestGetConnections:
                 )
             )
             == 0
-        )
+        ), "Unexpected config API change, please review with Ethyca security team"
 
         notifications_keys = set(config["notifications"].keys())
         assert (
@@ -1022,7 +1037,7 @@ class TestGetConnections:
                 )
             )
             == 0
-        )
+        ), "Unexpected config API change, please review with Ethyca security team"
 
         execution_keys = set(config["execution"].keys())
         assert (
@@ -1040,7 +1055,7 @@ class TestGetConnections:
                 )
             )
             == 0
-        )
+        ), "Unexpected config API change, please review with Ethyca security team"
 
         if "storage" in config:  # storage not necessarily in config in test runtime
             storage_keys = set(config["storage"].keys())
@@ -1055,4 +1070,4 @@ class TestGetConnections:
                     )
                 )
                 == 0
-            )
+            ), "Unexpected config API change, please review with Ethyca security team"
