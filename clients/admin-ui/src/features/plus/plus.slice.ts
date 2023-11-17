@@ -54,6 +54,21 @@ interface ClassifyInstancesParams {
   resource_type: GenerateTypes;
 }
 
+export type VendorReport = {
+  fides_key: string;
+  name: string;
+  data_uses: string;
+  legal_bases: string;
+};
+
+export type VendorReportResponse = {
+  items: VendorReport[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+};
+
 const plusApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<HealthCheck, void>({
@@ -296,9 +311,13 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Fides Cloud Config"],
     }),
-    getVendorReport: build.query<any[], void>({
-      query: () => ({
+    getVendorReport: build.query<
+      VendorReportResponse,
+      { pageIndex: number; pageSize: number }
+    >({
+      query: ({ pageIndex, pageSize }) => ({
         url: `plus/system/paginated`,
+        params: { page: pageIndex, size: pageSize },
         method: "GET",
       }),
       providesTags: ["System"],

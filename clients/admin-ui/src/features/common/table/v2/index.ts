@@ -10,6 +10,7 @@ export {
   PAGE_SIZES,
   PaginationBar,
   useClientSidePagination,
+  useServerSidePagination,
 } from "./PaginationBar";
 export { RowSelectionBar } from "./RowSelectionBar";
 export { TableActionBar } from "./TableActionBar";

@@ -32,10 +32,10 @@ import {
   IndeterminateCheckboxCell,
   PAGE_SIZES,
   PaginationBar,
-  useClientSidePagination,
   RowSelectionBar,
   TableActionBar,
   TableSkeletonLoader,
+  useClientSidePagination,
 } from "common/table/v2";
 import { errorToastParams, successToastParams } from "common/toast";
 import { useRouter } from "next/router";
@@ -183,14 +183,14 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   });
 
   const {
-    pageIndex,
-    pageSize,
     totalRows,
     onPreviousPageClick,
     isPreviousPageDisabled,
     onNextPageClick,
     isNextPageDisabled,
     setPageSize,
+    startRange,
+    endRange,
   } = useClientSidePagination(tableInstance);
 
   const addVendors = async () => {
@@ -329,17 +329,16 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           />
         }
       />
-      <PaginationBar<MultipleSystemTable>
-        tableInstance={tableInstance}
+      <PaginationBar
         pageSizes={PAGE_SIZES}
-        pageIndex={pageIndex}
-        pageSize={pageSize}
         totalRows={totalRows}
         onPreviousPageClick={onPreviousPageClick}
         isPreviousPageDisabled={isPreviousPageDisabled}
         onNextPageClick={onNextPageClick}
         isNextPageDisabled={isNextPageDisabled}
         setPageSize={setPageSize}
+        startRange={startRange}
+        endRange={endRange}
       />
     </Flex>
   );

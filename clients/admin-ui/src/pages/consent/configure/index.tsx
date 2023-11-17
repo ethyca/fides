@@ -2,13 +2,18 @@ import { Box, Breadcrumb, BreadcrumbItem, Heading, Text } from "@fidesui/react";
 import NextLink from "next/link";
 import React from "react";
 
-import Layout from "~/features/common/Layout";
+import FixedLayout from "~/features/common/FixedLayout";
 import { CONFIGURE_CONSENT_ROUTE } from "~/features/common/nav/v2/routes";
-import ConfigureConsent from "~/features/configure-consent/ConfigureConsent";
 import { ConsentManagementTable } from "~/features/configure-consent/ConsentMangagementTable";
 
 const ConfigureConsentPage = () => (
-  <Layout title="Configure consent">
+  <FixedLayout
+    title="Configure consent"
+    mainProps={{
+      padding: "40px",
+      paddingRight: "48px",
+    }}
+  >
     <Box mb={4}>
       <Heading fontSize="2xl" fontWeight="semibold" mb={2} data-testid="header">
         Configure consent
@@ -32,10 +37,8 @@ const ConfigureConsentPage = () => (
     <Text fontSize="sm" mb={8} width={{ base: "100%", lg: "50%" }}>
       Your current cookies and tracking information.
     </Text>
-    <Box data-testid="configure-consent-page">
-      <ConsentManagementTable />
-    </Box>
-  </Layout>
+    <ConsentManagementTable />
+  </FixedLayout>
 );
 
 export default ConfigureConsentPage;

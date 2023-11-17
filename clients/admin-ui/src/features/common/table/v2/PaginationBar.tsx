@@ -11,6 +11,7 @@ import {
   Text,
 } from "@fidesui/react";
 import { Table as TableInstance, Updater } from "@tanstack/react-table";
+import { useCallback, useMemo, useState } from "react";
 
 export const PAGE_SIZES = [25, 50, 100];
 
@@ -24,131 +25,139 @@ export const useClientSidePagination = <T,>(
   const isPreviousPageDisabled = !tableInstance.getCanPreviousPage();
   const onNextPageClick = tableInstance.nextPage;
   const isNextPageDisabled = !tableInstance.getCanNextPage();
-  const setPageSize = tableInstance.setPageSize;
+  const { setPageSize } = tableInstance;
+  const startRange = pageIndex * pageSize === 0 ? 1 : pageIndex * pageSize;
+  const endRange = pageIndex * pageSize + pageSize;
 
   return {
-    pageIndex,
-    pageSize,
     totalRows,
     onPreviousPageClick,
     isPreviousPageDisabled,
     onNextPageClick,
     isNextPageDisabled,
     setPageSize,
+    startRange,
+    endRange,
   };
 };
 
 export const useServerSidePagination = () => {
-  const totalRows = tableInstance.getFilteredRowModel().rows.length;
-  const { pageIndex } = tableInstance.getState().pagination;
-  const { pageSize } = tableInstance.getState().pagination;
-  const onPreviousPageClick = tableInstance.previousPage;
-  const isPreviousPageDisabled = !tableInstance.getCanPreviousPage();
-  const onNextPageClick = tableInstance.nextPage;
-  const isNextPageDisabled = !tableInstance.getCanNextPage();
-  const setPageSize = tableInstance.setPageSize;
+  const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
+  const [pageIndex, setPageIndex] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>();
+  const onPreviousPageClick = useCallback(() => {
+    setPageIndex((prev) => prev - 1);
+  }, [setPageIndex]);
+  const isPreviousPageDisabled = useMemo(() => pageIndex === 1, [pageIndex]);
+  const onNextPageClick = useCallback(() => {
+    setPageIndex((prev) => prev + 1);
+  }, [setPageIndex]);
+  const isNextPageDisabled = useMemo(
+    () => pageIndex === totalPages,
+    [pageIndex, totalPages]
+  );
+
+  const startRange =
+    (pageIndex - 1) * pageSize === 0 ? 1 : (pageIndex - 1) * pageSize;
+  const endRange = (pageIndex - 1) * pageSize + pageSize;
 
   return {
-    pageIndex,
-    pageSize,
-    totalRows,
     onPreviousPageClick,
     isPreviousPageDisabled,
     onNextPageClick,
     isNextPageDisabled,
+    pageSize,
     setPageSize,
+    PAGE_SIZES,
+    startRange,
+    endRange,
+    pageIndex,
+    setTotalPages,
   };
 };
 
-type PaginationBarProps<T> = {
+type PaginationBarProps = {
   pageSizes: number[];
-  tableInstance: TableInstance<T>;
-  pageIndex: number;
-  pageSize: number;
   totalRows: number;
   onPreviousPageClick: () => void;
   isPreviousPageDisabled: boolean;
   onNextPageClick: () => void;
   isNextPageDisabled: boolean;
   setPageSize: (update: Updater<number>) => void;
+  startRange: number;
+  endRange: number;
 };
 
-export const PaginationBar = <T,>({
-  tableInstance,
+export const PaginationBar = ({
   pageSizes,
-  pageIndex,
-  pageSize,
   totalRows,
   onPreviousPageClick,
   isPreviousPageDisabled,
   onNextPageClick,
   isNextPageDisabled,
   setPageSize,
-}: PaginationBarProps<T>) => {
-  const startRange = pageIndex * pageSize;
-  const endRange = pageIndex * pageSize + pageSize;
-
-  return (
-    <HStack ml={1} mt={3} mb={1}>
-      <Menu>
-        <MenuButton
-          as={Button}
-          size="xs"
-          variant="ghost"
-          data-testid="pagination-btn"
+  startRange,
+  endRange,
+}: PaginationBarProps) => (
+  <HStack ml={1} mt={3} mb={1}>
+    <Menu>
+      <MenuButton
+        as={Button}
+        size="xs"
+        variant="ghost"
+        data-testid="pagination-btn"
+      >
+        <Text
+          fontSize="xs"
+          lineHeight={4}
+          fontWeight="semibold"
+          userSelect="none"
+          style={{
+            fontVariantNumeric: "tabular-nums",
+          }}
         >
-          <Text
-            fontSize="xs"
-            lineHeight={4}
-            fontWeight="semibold"
-            userSelect="none"
-            style={{
-              fontVariantNumeric: "tabular-nums",
+          {startRange}-{endRange <= totalRows ? endRange : totalRows} of{" "}
+          {totalRows}
+        </Text>
+      </MenuButton>
+      <MenuList minWidth="0">
+        {pageSizes.map((size) => (
+          <MenuItem
+            onClick={() => {
+              setPageSize(size);
             }}
+            key={size}
+            data-testid={`pageSize-${size}`}
+            fontSize="xs"
           >
-            {startRange}-{endRange <= totalRows ? endRange : totalRows} of{" "}
-            {totalRows}
-          </Text>
-        </MenuButton>
-        <MenuList minWidth="0">
-          {pageSizes.map((size) => (
-            <MenuItem
-              onClick={() => {
-                setPageSize(size);
-              }}
-              key={size}
-              data-testid={`pageSize-${size}`}
-              fontSize="xs"
-            >
-              {size} per view
-            </MenuItem>
-          ))}
-        </MenuList>
-      </Menu>
-      <IconButton
-        icon={<ChevronLeftIcon />}
-        size="xs"
-        variant="outline"
-        aria-label="previous page"
-        onClick={() => {
-          onPreviousPageClick();
-        }}
-        isDisabled={isPreviousPageDisabled}
-      >
-        previous
-      </IconButton>
-      <IconButton
-        icon={<ChevronRightIcon />}
-        size="xs"
-        variant="outline"
-        aria-label="next page"
-        onClick={() => {
-          onNextPageClick();
-        }}
-        isDisabled={isNextPageDisabled}
-      >
-        next
-      </IconButton>
-    </HStack>
-  );
-};
+            {size} per view
+          </MenuItem>
+        ))}
+      </MenuList>
+    </Menu>
+    <IconButton
+      icon={<ChevronLeftIcon />}
+      size="xs"
+      variant="outline"
+      aria-label="previous page"
+      onClick={() => {
+        onPreviousPageClick();
+      }}
+      isDisabled={isPreviousPageDisabled}
+    >
+      previous
+    </IconButton>
+    <IconButton
+      icon={<ChevronRightIcon />}
+      size="xs"
+      variant="outline"
+      aria-label="next page"
+      onClick={() => {
+        onNextPageClick();
+      }}
+      isDisabled={isNextPageDisabled}
+    >
+      next
+    </IconButton>
+  </HStack>
+);
