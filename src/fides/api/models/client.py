@@ -4,7 +4,6 @@ import json
 from datetime import datetime
 from typing import Any
 
-from loguru import logger
 from sqlalchemy import ARRAY, Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
