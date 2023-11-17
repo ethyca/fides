@@ -85,7 +85,7 @@ class TestPatchApplicationConfig:
     ):
         auth_header = generate_role_header(roles=[CONTRIBUTOR])
         response = api_client.patch(url, headers=auth_header, json=payload)
-        assert 403 == response.status_code
+        assert 200 == response.status_code
 
     def test_patch_application_config_admin_role(
         self, api_client: TestClient, payload, url, generate_role_header
@@ -321,6 +321,26 @@ class TestPatchApplicationConfig:
             payload["security"]["cors_origins"]
         )
 
+    def test_patch_application_config_updates_cors_domains_rejects_non_url(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db: Session,
+    ):
+        """
+        Ensure non-URL values for cors domains -- specifically `*` --
+        are rejected by API
+        """
+        payload = {"security": {"cors_origins": ["*"]}}
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 422
+
     def test_patch_application_config_invalid_notification_type(
         self,
         api_client: TestClient,
@@ -394,7 +414,7 @@ class TestPutApplicationConfig:
     ):
         auth_header = generate_role_header(roles=[CONTRIBUTOR])
         response = api_client.put(url, headers=auth_header, json=payload)
-        assert 403 == response.status_code
+        assert 200 == response.status_code
 
     def test_put_application_config_admin_role(
         self, api_client: TestClient, payload, url, generate_role_header
