@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.24.0...main)
 
+### Added
+- Added confirmation modal on deleting a data use declaration [#4439](https://github.com/ethyca/fides/pull/4439)
+
 ### Changed
 - Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
 
