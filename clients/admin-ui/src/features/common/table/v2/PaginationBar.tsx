@@ -47,8 +47,11 @@ export const PaginationBar = <T,>({
               fontVariantNumeric: "tabular-nums",
             }}
           >
-            {startRange}-{endRange <= totalRows ? endRange : totalRows} of{" "}
-            {totalRows}
+            {startRange.toLocaleString("en")}-
+            {endRange <= totalRows
+              ? endRange.toLocaleString("en")
+              : totalRows.toLocaleString("en")}{" "}
+            of {totalRows.toLocaleString("en")}
           </Text>
         </MenuButton>
         <MenuList minWidth="0">
