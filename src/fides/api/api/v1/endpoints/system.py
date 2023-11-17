@@ -92,6 +92,24 @@ SYSTEM_CONNECTION_INSTANTIATE_ROUTER = APIRouter(
     prefix=f"{V1_URL_PREFIX}{INSTANTIATE_SYSTEM_CONNECTION}",
 )
 
+DATA_USES_FOR_CONSENT_CATEGORY = {
+    "advertising": [
+        "marketing.advertising.first_party.targeted",
+        "marketing.advertising.third_party.targeted",
+    ],
+    "analytics": "analytics",
+    "functional": "personalize",
+    "essential": "essential",
+}
+
+CONSENT_CATEGORY_FOR_DATA_USES = {
+    "marketing.advertising.first_party.targeted": "advertising",
+    "marketing.advertising.third_party.targeted": "advertising",
+    "analytics": "analytics",
+    "personalize": "functional",
+    "essential": "essential",
+}
+
 
 @SYSTEM_CONNECTIONS_ROUTER.get(
     "",
@@ -396,10 +414,11 @@ async def ls(  # pylint: disable=invalid-name
 async def ls_paginated(
     db: AsyncSession = Depends(get_async_db),
     params: Params = Depends(),
+    search: Optional[str] = Query(None),
     purposes: Optional[List[int]] = Query(None),
     data_uses: Optional[List[FidesKey]] = Query(None),
     legal_bases: Optional[List[str]] = Query(None),
-    privacy_notices: Optional[List[str]] = Query(None),
+    consent_category: Optional[str] = Query(None),
 ) -> AbstractPage[Any]:
     """Get a list of all of the resources of this type."""
 
@@ -411,7 +430,7 @@ async def ls_paginated(
             data_use_to_notice[data_use].append(stored_notice.notice_key)
 
     system_filters = await generate_system_filters(
-        db, purposes, privacy_notices, data_uses, legal_bases
+        search, purposes, data_uses, legal_bases, consent_category
     )
     paginated_results = await list_resource_paginated(
         System,
@@ -422,6 +441,7 @@ async def ls_paginated(
 
     paginated_results.items = [
         {
+            "id": system.id,
             "fides_key": system.fides_key,
             "name": system.name,
             "vendor_id": system.vendor_id,
@@ -438,35 +458,61 @@ async def ls_paginated(
                     for privacy_declaration in system.privacy_declarations
                 }
             ),
-            "privacy_notices": count_unique_privacy_notices(system, data_use_to_notice),
+            "consent_categories": _count_unique_consent_categories(system),
         }
         for system in paginated_results.items
     ]
     return paginated_results
 
 
-def count_unique_privacy_notices(system, data_use_to_notice):
+def _count_unique_consent_categories(system):
+    """
+    Counts the unique number of consent categories a system.
+    """
+
+    def _find_values_by_partial_key_match(data_use):
+        """
+        Finds values in the CONSENT_CATEGORY_FOR_DATA_USES dictionary
+        by matching the start of the keys with a given data use string.
+        """
+        return [
+            value
+            for key, value in CONSENT_CATEGORY_FOR_DATA_USES.items()
+            if key.startswith(data_use)
+        ]
+
     unique_notices = set()
     for privacy_declaration in system.privacy_declarations:
-        notice_keys = data_use_to_notice.get(privacy_declaration.data_use, [])
+        notice_keys = _find_values_by_partial_key_match(privacy_declaration.data_use)
         unique_notices.update(notice_keys)
     return len(unique_notices)
 
 
 async def generate_system_filters(
-    db: Session,
+    search: Optional[str] = None,
     purposes: Optional[List[int]] = None,
-    privacy_notices: Optional[List[str]] = None,
     data_uses: Optional[List[str]] = None,
     legal_bases: Optional[List[str]] = None,
+    consent_category: Optional[str] = None,
 ) -> List:
     """
     Generate a list of SQLAlchemy filter conditions for systems based on specified criteria.
     """
     filters = []
 
-    if purposes or privacy_notices or data_uses or legal_bases:
+    if purposes or data_uses or legal_bases or consent_category:
         filters.append(System.id == PrivacyDeclaration.system_id)
+
+    if search:
+        filters.append(
+            or_(
+                *(
+                    System.name.like(f"%{search}%"),
+                    System.fides_key.like(f"%{search}%"),
+                    System.id.like(f"%{search}%"),
+                )
+            )
+        )
 
     if purposes:
         purpose_data_uses = set()
@@ -483,24 +529,15 @@ async def generate_system_filters(
             if like_conditions:
                 filters.append(or_(*like_conditions))
 
-    if privacy_notices:
-        privacy_notice_data_uses = set()
+    if consent_category:
+        consent_category_data_uses = DATA_USES_FOR_CONSENT_CATEGORY.get(
+            consent_category, []
+        )
 
-        stored_notices = await list_resource(PrivacyNotice, db)
-        data_uses_for_notice = {
-            stored_notice.notice_key: stored_notice.data_uses
-            for stored_notice in stored_notices
-        }
-
-        for privacy_notice in privacy_notices:
-            privacy_notice_data_uses.update(
-                data_uses_for_notice.get(privacy_notice, [])
-            )
-
-        if privacy_notice_data_uses:
+        if consent_category_data_uses:
             like_conditions = [
                 PrivacyDeclaration.data_use.like(data_use + "%")
-                for data_use in privacy_notice_data_uses
+                for data_use in consent_category_data_uses
             ]
             if like_conditions:
                 filters.append(or_(*like_conditions))
