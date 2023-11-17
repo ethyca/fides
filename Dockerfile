@@ -55,8 +55,6 @@ RUN pip install --no-cache-dir install -r dev-requirements.txt
 ##################
 FROM python:${PYTHON_VERSION}-slim-bullseye as backend
 
-# Add the fidesuser user but don't switch to it yet
-RUN addgroup --system --gid 1000 fidesgroup
 RUN adduser --system --uid 1000 fidesuser
 
 
@@ -75,8 +73,7 @@ COPY --from=compile_image /opt/fides /opt/fides
 ENV PATH=/opt/fides/bin:$PATH
 
 # General Application Setup ##
-USER fidesuser
-COPY --chown=fidesuser:fidesgroup . /fides
+COPY . /fides
 WORKDIR /fides
 
 # Immediately flush to stdout, globally
@@ -91,6 +88,7 @@ RUN git config --global --add safe.directory /fides
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=true
 
+USER fidesuser
 EXPOSE 8080
 CMD [ "fides", "webserver" ]
 
