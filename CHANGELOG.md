@@ -19,6 +19,9 @@ The types of changes are:
 
 ### Changed
 - Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
+- Flexible legal basis for processing has a db default of True [#4434](https://github.com/ethyca/fides/pull/4434)
+- Give contributor role access to config API, including cors origin updates [#4438](https://github.com/ethyca/fides/pull/4438)
+- Disallow setting `*` and other non URL values for `security.cors_origins` config property via the API [#4438](https://github.com/ethyca/fides/pull/4438)
 
 
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
@@ -48,7 +51,6 @@ The types of changes are:
 - Button ordering in fides.js UI [#4407](https://github.com/ethyca/fides/pull/4407)
 - Add different classnames to consent buttons for easier selection [#4411](https://github.com/ethyca/fides/pull/4411)
 - Updates default consent preference to opt-out for TCF when fides_string exists [#4430](https://github.com/ethyca/fides/pull/4430)
-- Flexible legal basis for processing has a db default of True [#4434](https://github.com/ethyca/fides/pull/4434)
 
 ### Fixed
 - Persist bulk system add filter modal state [#4412](https://github.com/ethyca/fides/pull/4412)
