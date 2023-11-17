@@ -45,16 +45,6 @@ describe("System management with Plus features", () => {
       );
     });
 
-    it("can switch entries", () => {
-      cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
-      cy.getSelectValueContainer("input-vendor_id").contains("Aniview LTD");
-
-      cy.getSelectValueContainer("input-vendor_id").type("Anzu{enter}");
-      cy.getSelectValueContainer("input-vendor_id").contains(
-        "Anzu Virtual Reality LTD"
-      );
-    });
-
     it("locks editing for a GVL vendor when TCF is enabled", () => {
       cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
       cy.getByTestId("locked-for-GVL-notice");
@@ -66,8 +56,6 @@ describe("System management with Plus features", () => {
     it("can switch between tabs after populating from dictionary", () => {
       cy.wait("@getSystems");
       cy.getSelectValueContainer("input-vendor_id").type("Anzu{enter}");
-      cy.getByTestId("dict-suggestions-btn").click();
-      cy.getByTestId("toggle-dict-suggestions").click();
       // the form fetches the system again after saving, so update the intercept with dictionary values
       cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
         cy.fixture("systems/system.json").then((origSystem) => {
@@ -268,6 +256,15 @@ describe("System management with Plus features", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.getByTestId("filter-multiple-systems-btn").should("exist");
       cy.getByTestId("column-vendor_id").should("exist");
+    });
+
+    it("filter modal state is persisted after modal is closed", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.getByTestId("filter-multiple-systems-btn").click();
+      cy.get("#checkbox-gvl").check({ force: true });
+      cy.getByTestId("filter-done-btn").click();
+      cy.getByTestId("filter-multiple-systems-btn").click();
+      cy.get("#checkbox-gvl").should("be.checked");
     });
 
     it("pagination menu updates pagesize", () => {

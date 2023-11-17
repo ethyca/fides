@@ -13,6 +13,7 @@ import {
   CreatableSelect,
   GroupBase,
   OptionProps,
+  Select,
   SingleValue,
 } from "chakra-react-select";
 import { useField, useFormikContext } from "formik";
@@ -129,8 +130,8 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
       <FormControl isInvalid={isInvalid}>
         <VStack alignItems="start" position="relative">
           <Flex alignItems="center">
-            <Label htmlFor="name" fontSize="xs" my={0} mr={1}>
-              System name
+            <Label htmlFor="vendor_id" fontSize="xs" my={0} mr={1}>
+              Vendor
             </Label>
             <QuestionTooltip label="Enter the vendor to associate with the system" />
           </Flex>
@@ -143,7 +144,7 @@ const VendorSelector = ({ disabled, options, onVendorSelected }: Props) => {
               options={suggestions}
               value={selected}
               onBlur={(e) => {
-                setTouched({ ...touched, name: true });
+                setTouched({ ...touched, vendor_id: true });
                 field.onBlur(e);
               }}
               onChange={(newValue, actionMeta) =>

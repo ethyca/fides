@@ -2,11 +2,9 @@ from typing import Callable, Dict
 from unittest import mock
 from unittest.mock import Mock
 
-import yaml
 from fideslang.models import DatasetCollection
 
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     update_saas_configs,
@@ -19,7 +17,6 @@ from fides.api.util.saas_util import (
     replace_config_placeholders,
     replace_dataset_placeholders,
 )
-from fides.config.helpers import load_file
 
 NEW_CONFIG_DESCRIPTION = "new test config description"
 NEW_DATASET_DESCRIPTION = "new test dataset description"

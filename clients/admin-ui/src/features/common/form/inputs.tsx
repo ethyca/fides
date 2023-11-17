@@ -267,6 +267,13 @@ export const SelectInput = ({
     components.Option = CustomOption;
   }
 
+  if (isDisabled) {
+    // prevent the tags from being removed if the input is disabled
+    components.MultiValueRemove = function CustomMultiValueRemove() {
+      return null;
+    };
+  }
+
   return (
     <Select
       options={options}

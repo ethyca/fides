@@ -21,7 +21,6 @@ import {
 } from "~/features/common/custom-fields";
 import { useFeatures } from "~/features/common/features/features.slice";
 import {
-  CustomCreatableSelect,
   CustomSelect,
   CustomSwitch,
   CustomTextInput,
@@ -30,6 +29,7 @@ import {
   extractVendorSource,
   getErrorMessage,
   isErrorResult,
+  isFetchBaseQueryError,
   VendorSources,
 } from "~/features/common/helpers";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
@@ -44,6 +44,7 @@ import {
   setSuggestions,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
+  DictSuggestionCreatableSelect,
   DictSuggestionNumberInput,
   DictSuggestionSelect,
   DictSuggestionSwitch,
@@ -186,11 +187,16 @@ const SystemInformationForm = ({
         vendor_id: values.vendor_id!,
       });
       if (dataUseQueryResult.isError) {
-        const dataUseErrorMsg = getErrorMessage(
-          dataUseQueryResult.error,
-          `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`
-        );
-        toast({ status: "error", description: dataUseErrorMsg });
+        const isNotFoundError =
+          isFetchBaseQueryError(dataUseQueryResult.error) &&
+          dataUseQueryResult.error.status === 404;
+        if (!isNotFoundError) {
+          const dataUseErrorMsg = getErrorMessage(
+            dataUseQueryResult.error,
+            `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`
+          );
+          toast({ status: "error", description: dataUseErrorMsg });
+        }
       } else if (
         dataUseQueryResult.data &&
         dataUseQueryResult.data.items.length > 0
@@ -291,22 +297,12 @@ const SystemInformationForm = ({
 
             <SystemFormInputGroup heading="System details">
               {features.dictionaryService ? (
-                <>
-                  <VendorSelector
-                    options={dictionaryOptions}
-                    onVendorSelected={handleVendorSelected}
-                  />
-                  <Input id="vendor_id" name="vendor_id" display="none" />
-                </>
-              ) : (
-                <CustomTextInput
-                  id="name"
-                  name="name"
-                  isRequired
-                  label="System name"
-                  tooltip="Give the system a unique and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                <VendorSelector
+                  options={dictionaryOptions}
+                  onVendorSelected={handleVendorSelected}
+                  disabled={!!passedInSystem && lockedForGVL}
                 />
-              )}
+              ) : null}
               {passedInSystem?.fides_key && (
                 <CustomTextInput
                   id="fides_key"
@@ -324,11 +320,10 @@ const SystemInformationForm = ({
                 tooltip="What services does this system perform?"
                 disabled={lockedForGVL}
               />
-              <CustomCreatableSelect
+              <DictSuggestionCreatableSelect
                 id="tags"
                 name="tags"
                 label="System Tags"
-                variant="stacked"
                 options={
                   initialValues.tags
                     ? initialValues.tags.map((s) => ({
@@ -339,7 +334,7 @@ const SystemInformationForm = ({
                 }
                 tooltip="Are there any tags to associate with this system?"
                 isMulti
-                isDisabled={lockedForGVL}
+                disabled={lockedForGVL}
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Dataset reference">

@@ -259,13 +259,11 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           totalSelectSystemsLength > 1 ? "s" : ""
         }`}
       />
-      {isFilterOpen ? (
-        <MultipleSystemsFilterModal
-          isOpen={isFilterOpen}
-          onClose={onCloseFilter}
-          tableInstance={tableInstance}
-        />
-      ) : null}
+      <MultipleSystemsFilterModal
+        isOpen={isFilterOpen}
+        onClose={onCloseFilter}
+        tableInstance={tableInstance}
+      />
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={globalFilter}

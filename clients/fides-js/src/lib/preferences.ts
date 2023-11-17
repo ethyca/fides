@@ -1,8 +1,6 @@
 import {
   ConsentMethod,
-  FidesConfig,
   FidesOptions,
-  GetPreferencesFnResp,
   LastServedConsentSchema,
   PrivacyExperience,
   PrivacyPreferencesRequest,
@@ -16,33 +14,11 @@ import {
   saveFidesCookie,
 } from "./cookie";
 import { dispatchFidesEvent } from "./events";
-import { patchUserPreferenceToFidesServer } from "../services/fides/api";
+import { patchUserPreference } from "../services/api";
 import { TcfSavePreferences } from "./tcf/types";
 
 /**
- * Helper function to get preferences from an external API
- */
-export async function getConsentPreferences(
-  config: FidesConfig
-): Promise<GetPreferencesFnResp | null> {
-  if (!config.options.apiOptions?.getPreferencesFn) {
-    return null;
-  }
-  debugLog(config.options.debug, "Calling custom get preferences fn");
-  try {
-    return await config.options.apiOptions.getPreferencesFn(config);
-  } catch (e) {
-    debugLog(
-      config.options.debug,
-      "Error retrieving preferences from API, continuing. Error: ",
-      e
-    );
-    return null;
-  }
-}
-
-/**
- * Helper function to save preferences to an API, either custom or internal
+ * Helper function to transform save prefs and call API
  */
 async function savePreferencesApi(
   options: FidesOptions,
@@ -53,37 +29,28 @@ async function savePreferencesApi(
   tcf?: TcfSavePreferences,
   userLocationString?: string
 ) {
-  if (options.apiOptions?.savePreferencesFn) {
-    debugLog(options.debug, "Calling custom save preferences fn");
-    await options.apiOptions.savePreferencesFn(
-      cookie.consent,
-      cookie.fides_string,
-      experience
-    );
-  } else {
-    debugLog(options.debug, "Saving preferences to Fides API");
-    // Derive the Fides user preferences array from consent preferences
-    const fidesUserPreferences = consentPreferencesToSave?.map(
-      (preference) => ({
-        privacy_notice_history_id: preference.notice.privacy_notice_history_id,
-        preference: preference.consentPreference,
-        served_notice_history_id: preference.servedNoticeHistoryId,
-      })
-    );
-    const privacyPreferenceCreate: PrivacyPreferencesRequest = {
-      browser_identity: cookie.identity,
-      preferences: fidesUserPreferences,
-      privacy_experience_id: experience.id,
-      user_geography: userLocationString,
-      method: consentMethod,
-      ...(tcf ?? []),
-    };
-    await patchUserPreferenceToFidesServer(
-      privacyPreferenceCreate,
-      options.fidesApiUrl,
-      options.debug
-    );
-  }
+  debugLog(options.debug, "Saving preferences to Fides API");
+  // Derive the Fides user preferences array from consent preferences
+  const fidesUserPreferences = consentPreferencesToSave?.map((preference) => ({
+    privacy_notice_history_id: preference.notice.privacy_notice_history_id,
+    preference: preference.consentPreference,
+    served_notice_history_id: preference.servedNoticeHistoryId,
+  }));
+  const privacyPreferenceCreate: PrivacyPreferencesRequest = {
+    browser_identity: cookie.identity,
+    preferences: fidesUserPreferences,
+    privacy_experience_id: experience.id,
+    user_geography: userLocationString,
+    method: consentMethod,
+    ...(tcf ?? []),
+  };
+  await patchUserPreference(
+    consentMethod,
+    privacyPreferenceCreate,
+    options,
+    cookie,
+    experience
+  );
 }
 
 /**
@@ -164,5 +131,5 @@ export const updateConsentPreferences = async ({
   }
 
   // 6. Dispatch a "FidesUpdated" event
-  dispatchFidesEvent("FidesUpdated", cookie, options.debug);
+  dispatchFidesEvent("FidesUpdated", cookie, options.debug, { consentMethod });
 };

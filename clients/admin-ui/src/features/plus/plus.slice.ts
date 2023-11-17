@@ -1,17 +1,21 @@
 import { createSelector } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
+import { CONNECTION_ROUTE } from "~/constants";
 import { baseApi } from "~/features/common/api.slice";
 import {
   selectActiveCollection,
   selectActiveDatasetFidesKey,
   selectActiveField,
 } from "~/features/dataset/dataset.slice";
+import { CreateSaasConnectionConfig } from "~/features/datastore-connections";
+import { CreateSaasConnectionConfigResponse } from "~/features/datastore-connections/types";
 import { selectSystemsToClassify } from "~/features/system";
 import {
   AllowList,
   AllowListUpdate,
   BulkCustomFieldRequest,
+  BulkPutConnectionConfiguration,
   ClassificationResponse,
   ClassifyCollection,
   ClassifyDatasetResponse,
@@ -22,6 +26,7 @@ import {
   ClassifyStatusUpdatePayload,
   ClassifySystem,
   CloudConfig,
+  ConnectionConfigurationResponse,
   CustomAssetType,
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
@@ -327,6 +332,41 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Custom Assets"],
     }),
+    patchPlusSystemConnectionConfigs: build.mutation<
+      BulkPutConnectionConfiguration,
+      {
+        systemFidesKey: string;
+        connectionConfigs: (Omit<
+          ConnectionConfigurationResponse,
+          "created_at"
+        > & {
+          enabled_actions?: string[];
+        })[];
+      }
+    >({
+      query: ({ systemFidesKey, connectionConfigs }) => ({
+        url: `/plus/system/${systemFidesKey}/connection`,
+        method: "PATCH",
+        body: connectionConfigs,
+      }),
+      invalidatesTags: ["Datamap", "System", "Datastore Connection"],
+    }),
+    createPlusSaasConnectionConfig: build.mutation<
+      CreateSaasConnectionConfigResponse,
+      CreateSaasConnectionConfig
+    >({
+      query: (params) => {
+        const url = `/plus/system/${params.systemFidesKey}${CONNECTION_ROUTE}/instantiate/${params.connectionConfig.saas_connector_type}`;
+
+        return {
+          url,
+          method: "POST",
+          body: { ...params.connectionConfig },
+        };
+      },
+      // Creating a connection config also creates a dataset behind the scenes
+      invalidatesTags: () => ["Datastore Connection", "Datasets", "System"],
+    }),
   }),
 });
 
@@ -360,6 +400,8 @@ export const {
   usePostSystemVendorsMutation,
   useGetSystemHistoryQuery,
   useUpdateCustomAssetMutation,
+  usePatchPlusSystemConnectionConfigsMutation,
+  useCreatePlusSaasConnectionConfigMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
