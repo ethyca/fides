@@ -1,4 +1,5 @@
 import {
+  stubDatasetCrud,
   stubPlus,
   stubSystemCrud,
   stubSystemVendors,
@@ -19,6 +20,7 @@ describe("System management with Plus features", () => {
   beforeEach(() => {
     cy.login();
     stubSystemCrud();
+    stubDatasetCrud();
     stubTaxonomyEntities();
     stubPlus(true);
     cy.intercept("GET", "/api/v1/system", {
@@ -84,6 +86,105 @@ describe("System management with Plus features", () => {
       cy.getByTestId("tab-System information").click();
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("confirmation-modal").should("not.exist");
+    });
+  });
+
+  describe("data use", () => {
+    beforeEach(() => {
+      stubVendorList();
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+      cy.wait("@getDictionaryEntries");
+    });
+
+    it("should enable legal basis editing if flexible is true", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
+      cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
+        cy.fixture("systems/system.json").then((origSystem) => {
+          cy.intercept(
+            { method: "GET", url: "/api/v1/system/demo_analytics_system" },
+            {
+              body: {
+                ...origSystem,
+                ...dictSystem,
+                fides_key: origSystem.fides_key,
+                customFieldValues: undefined,
+                data_protection_impact_assessment: undefined,
+              },
+            }
+          ).as("getDictSystem");
+        });
+      });
+      cy.intercept({ method: "PUT", url: "/api/v1/system*" }).as(
+        "putDictSystem"
+      );
+      cy.getByTestId("save-btn").click();
+      cy.wait("@putDictSystem");
+      cy.wait("@getDictSystem");
+      cy.getByTestId("tab-Data uses").click();
+      cy.contains("a", "Analytics for Advertising Performance").click();
+
+      cy.contains("label", "This legal basis is flexible").should("exist");
+      cy.get('input[name="flexible_legal_basis_for_processing"]')
+        .should("exist")
+        .and("be.disabled");
+
+      cy.getByTestId("input-legal_basis_for_processing")
+        .get("input")
+        .should("be.enabled");
+    });
+
+    it("should disable legal basis editing if flexible is false", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
+      cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
+        cy.fixture("systems/system.json").then((origSystem) => {
+          cy.intercept(
+            { method: "GET", url: "/api/v1/system/demo_analytics_system" },
+            {
+              body: {
+                ...origSystem,
+                ...dictSystem,
+                fides_key: origSystem.fides_key,
+                customFieldValues: undefined,
+                data_protection_impact_assessment: undefined,
+              },
+            }
+          ).as("getDictSystem");
+        });
+      });
+      cy.intercept({ method: "PUT", url: "/api/v1/system*" }).as(
+        "putDictSystem"
+      );
+      cy.getByTestId("save-btn").click();
+      cy.wait("@putDictSystem");
+      cy.wait("@getDictSystem");
+      cy.getByTestId("tab-Data uses").click();
+      cy.contains("a", "personalize.content.profiling").click();
+
+      cy.contains("label", "This legal basis is flexible").should("exist");
+      cy.get('input[name="flexible_legal_basis_for_processing"]')
+        .should("exist")
+        .and("be.disabled");
+
+      cy.getByTestId("input-legal_basis_for_processing")
+        .get("input")
+        .should("be.disabled");
+    });
+
+    it("should enable legal basis editing for non-GVL systems", () => {
+      cy.getByTestId("tab-Data uses").click();
+      cy.contains(
+        "a",
+        "Improve Service - Analyze customer behaviour for improvements."
+      ).click();
+
+      cy.getByTestId("declaration-form").should(
+        "not.contain",
+        "This legal basis is flexible"
+      );
+
+      cy.getByTestId("input-legal_basis_for_processing")
+        .get("input")
+        .should("be.enabled");
     });
   });
 
