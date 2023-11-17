@@ -14,6 +14,10 @@ import {
 } from "@iabgpp/cmpapi";
 import { makeStub } from "../lib/gpp/stub";
 import { fidesEventToTcString } from "../lib/tcf/events";
+import {
+  isPrivacyExperience,
+  shouldResurfaceConsent,
+} from "../lib/consent-utils";
 
 const CMP_ID = 407; // TODO: is this supposed to be the same as TCF, or is this separate?
 const CMP_VERSION = 1;
@@ -27,11 +31,15 @@ export const initializeGppCmpApi = () => {
   cmpApi.setApplicableSections([TCF_SECTION_ID]);
   cmpApi.setCmpStatus(CmpStatus.LOADED);
 
-  window.addEventListener("FidesUIInitialized", () => {
-    // TODO: if we don't need to resurface consent, we can set
-    // cmpApi.setSignalStatus(SignalStatus.READY);
-    // But we don't have easy access to tell if we should resurface consent here yet
-    // (we need the experience too)
+  // If consent does not need to be resurfaced, then we can set the signal to Ready here
+  window.addEventListener("FidesInitialized", (event) => {
+    const { experience } = window.Fides;
+    if (
+      isPrivacyExperience(experience) &&
+      !shouldResurfaceConsent(experience, event.detail)
+    ) {
+      cmpApi.setSignalStatus(SignalStatus.READY);
+    }
   });
 
   window.addEventListener("FidesUIShown", () => {
