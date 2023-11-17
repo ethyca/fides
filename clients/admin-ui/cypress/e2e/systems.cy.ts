@@ -618,21 +618,33 @@ describe("System management page", () => {
 
     describe("delete privacy declaration", () => {
       beforeEach(() => {
-        cy.fixture("systems/systems_with_data_uses.json").then((systems) => {
-          cy.intercept("GET", "/api/v1/system/*", {
-            body: systems[0],
-          }).as("getFidesctlSystemWithDataUses");
-        });
-        cy.visit(`${SYSTEM_ROUTE}/configure/fidesctl_system`);
-        cy.wait("@getFidesctlSystemWithDataUses");
         cy.fixture("systems/system.json").then((system) => {
-          const newSystem = { ...system, fides_key: "fidesctl_system" };
+          cy.intercept("GET", "/api/v1/system/*", {
+            body: system,
+          }).as("getDemoAnalyticsSystem");
+        });
+        cy.visit(`/${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+        cy.wait("@getDemoAnalyticsSystem");
+        cy.fixture("systems/system.json").then((system) => {
+          const newSystem = { ...system, fides_key: "demo_analytics_system" };
           cy.intercept("PUT", "/api/v1/system*", { body: newSystem }).as(
-            "putFidesSystem"
+            "putDemoAnalyticsSystem"
           );
         });
 
         cy.getByTestId("tab-Data uses").click();
+      });
+
+      it("can visit the privacy declaration tab", () => {
+        cy.getByTestId("privacy-declarations-table");
+        cy.getByTestId("row-functional.service.improve");
+      });
+
+      it("can show a modal on deleting a privacy declaration", () => {
+        cy.getByTestId("delete-btn").click();
+        cy.getByTestId("continue-btn").click();
+        cy.wait("@putDemoAnalyticsSystem");
+        cy.getByTestId("toast-success-msg").contains("Data use deleted");
       });
 
       it.skip("deletes a new privacy declaration", () => {

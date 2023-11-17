@@ -33,7 +33,7 @@ const PrivacyDeclarationRow = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Box px={6} py={4}>
+      <Box px={6} py={4} data-testid={`row-${declaration.data_use}`}>
         <HStack>
           <LinkBox
             onClick={() => handleEdit(declaration)}
@@ -54,6 +54,7 @@ const PrivacyDeclarationRow = ({
                 zIndex={2}
                 size="sm"
                 onClick={onOpen}
+                data-testid="delete-btn"
               >
                 <DeleteIcon />
               </IconButton>
@@ -93,7 +94,7 @@ export const PrivacyDeclarationTabTable = ({
   headerButton?: React.ReactNode;
   footerButton?: React.ReactNode;
 }) => (
-  <Stack spacing={4}>
+  <Stack spacing={4} data-testid="privacy-declarations-table">
     <Box maxWidth="720px" border="1px" borderColor="gray.200" borderRadius={6}>
       <HStack
         backgroundColor="gray.50"
