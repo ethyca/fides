@@ -47,8 +47,15 @@ export const initializeGppCmpApi = () => {
     cmpApi.setCmpDisplayStatus(CmpDisplayStatus.VISIBLE);
   });
 
-  window.addEventListener("FidesModalClosed", () => {
+  window.addEventListener("FidesModalClosed", (event) => {
     cmpApi.setCmpDisplayStatus(CmpDisplayStatus.HIDDEN);
+    // If the modal was closed without the user saving, set signal status back to Ready
+    if (
+      event.detail.extraDetails &&
+      event.detail.extraDetails.saved === false
+    ) {
+      cmpApi.setSignalStatus(SignalStatus.READY);
+    }
   });
 
   window.addEventListener("FidesUpdated", (event) => {
