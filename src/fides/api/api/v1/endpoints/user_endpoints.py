@@ -528,7 +528,6 @@ def user_login(
         and config.security.root_username == user_data.username
         and config.security.root_password == user_data.password
     ):
-        logger.warning("Performing root user login!")
         client_check = ClientDetail.get(
             db,
             object_id=config.security.oauth_root_client_id,
@@ -550,6 +549,8 @@ def user_login(
             username=config.security.root_username,
             created_at=datetime.utcnow(),
         )
+
+        logger.warning("Successful root user login!")
     else:
         user_check: Optional[FidesUser] = FidesUser.get_by(
             db, field="username", value=user_data.username

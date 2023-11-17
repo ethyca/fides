@@ -145,7 +145,6 @@ def _get_root_client_detail(
     """
     Return a root ClientDetail
     """
-    logger.info("Retrieving root user client details")
     if not config.security.oauth_root_client_secret_hash:
         raise ValueError("A root client hash is required")
 
