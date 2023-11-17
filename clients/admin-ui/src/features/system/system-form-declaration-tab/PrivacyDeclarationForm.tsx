@@ -211,13 +211,24 @@ export const PrivacyDeclarationFormComponents = ({
           variant="stacked"
         /> */}
         <Stack spacing={0}>
+          {lockedForGVL && (
+            <Box mb={4}>
+              <CustomSwitch
+                name="flexible_legal_basis_for_processing"
+                label="This legal basis is flexible"
+                tooltip="Has the vendor declared that the legal basis may be overridden?"
+                variant="stacked"
+                isDisabled={lockedForGVL}
+              />
+            </Box>
+          )}
           <CustomSelect
             name="legal_basis_for_processing"
             label="Legal basis for processing"
             options={legalBasisForProcessingOptions}
             tooltip="What is the legal basis under which personal data is processed for this purpose?"
             variant="stacked"
-            isDisabled={lockedForGVL}
+            isDisabled={!values.flexible_legal_basis_for_processing}
           />
           <Collapse
             in={values.legal_basis_for_processing === "Legitimate interests"}
@@ -235,15 +246,6 @@ export const PrivacyDeclarationFormComponents = ({
             </Box>
           </Collapse>
         </Stack>
-        <Box mt={5} pl={4}>
-          <CustomSwitch
-            name="flexible_legal_basis_for_processing"
-            label="This legal basis is flexible"
-            tooltip="Has the vendor declared that the legal basis may be overridden?"
-            variant="stacked"
-            isDisabled={lockedForGVL}
-          />
-        </Box>
         <CustomTextInput
           name="retention_period"
           label="Retention period (days)"
