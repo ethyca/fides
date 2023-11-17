@@ -68,6 +68,10 @@ class ExecutionApplicationConfig(FidesSchema):
 
 
 class SecurityApplicationConfig(FidesSchema):
+    # only valid URLs should be set as cors_origins
+    # for advanced usage of non-URLs, e.g. wildcards (`*`), the related
+    # `cors_origin_regex` property should be used.
+    # this is explicitly _not_ accessible via API - it must be used with care.
     cors_origins: Optional[List[AnyUrl]] = Field(
         default=None,
         description="A list of client addresses allowed to communicate with the Fides webserver.",
