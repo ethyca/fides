@@ -17,9 +17,11 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.24.0...main)
 
+### Added
+- Added feature flag for separating system name and Compass vendor selector [#4437](https://github.com/ethyca/fides/pull/4437)
+
 ### Changed
 - Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
-
 
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
 
@@ -36,10 +38,6 @@ The types of changes are:
 - Added the ability to select the request types to enable per integration (for plus users) [#4374](https://github.com/ethyca/fides/pull/4374)
 - Adds support for custom get experiences fn and custom patch notices served fn [#4410](https://github.com/ethyca/fides/pull/4410)
 - Adds more granularity to tracking consent method, updates custom savePreferencesFn and FidesUpdated event to take consent method [#4419](https://github.com/ethyca/fides/pull/4419)
-
-## Added
-
-- Added notice that a system is GVL when adding/editing from system form [#4327](https://github.com/ethyca/fides/pull/4327)
 
 ### Changed
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
