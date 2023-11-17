@@ -11,9 +11,11 @@ import {
   Spacer,
   Stack,
   Text,
+  useDisclosure,
 } from "@fidesui/react";
 
 import { useAppSelector } from "~/app/hooks";
+import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { DataUse, PrivacyDeclarationResponse } from "~/types/api";
 
@@ -27,37 +29,58 @@ const PrivacyDeclarationRow = ({
   title?: string;
   handleDelete?: (dec: PrivacyDeclarationResponse) => void;
   handleEdit: (dec: PrivacyDeclarationResponse) => void;
-}) => (
-  <>
-    <Box px={6} py={4}>
-      <HStack>
-        <LinkBox
-          onClick={() => handleEdit(declaration)}
-          w="100%"
-          h="100%"
-          cursor="pointer"
-        >
-          <LinkOverlay>
-            <Text>{title || declaration.data_use}</Text>
-          </LinkOverlay>
-        </LinkBox>
-        <Spacer />
-        {handleDelete ? (
-          <IconButton
-            aria-label="delete-declaration"
-            variant="outline"
-            zIndex={2}
-            size="sm"
-            onClick={() => handleDelete(declaration)}
+}) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  return (
+    <>
+      <Box px={6} py={4}>
+        <HStack>
+          <LinkBox
+            onClick={() => handleEdit(declaration)}
+            w="100%"
+            h="100%"
+            cursor="pointer"
           >
-            <DeleteIcon />
-          </IconButton>
-        ) : null}
-      </HStack>
-    </Box>
-    <Divider />
-  </>
-);
+            <LinkOverlay>
+              <Text>{title || declaration.data_use}</Text>
+            </LinkOverlay>
+          </LinkBox>
+          <Spacer />
+          {handleDelete ? (
+            <>
+              <IconButton
+                aria-label="delete-declaration"
+                variant="outline"
+                zIndex={2}
+                size="sm"
+                onClick={onOpen}
+              >
+                <DeleteIcon />
+              </IconButton>
+              <ConfirmationModal
+                isOpen={isOpen}
+                onClose={onClose}
+                onConfirm={() => handleDelete(declaration)}
+                title={"Delete data use declaration"}
+                message={
+                  <Text>
+                    You are about to delete the data use declaration{" "}
+                    <Text color="complimentary.500" as="span" fontWeight="bold">
+                      {title || declaration.data_use}
+                    </Text>
+                    , including all its cookies. Are you sure you want to
+                    continue?
+                  </Text>
+                }
+              />
+            </>
+          ) : null}
+        </HStack>
+      </Box>
+      <Divider />
+    </>
+  );
+};
 
 export const PrivacyDeclarationTabTable = ({
   heading,
