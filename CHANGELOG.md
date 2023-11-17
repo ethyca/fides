@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Stub for initial GPP support [#4431](https://github.com/ethyca/fides/pull/4431)
+- Fire GPP events per spec [#4433](https://github.com/ethyca/fides/pull/4433)
 
 ### Changed
 - Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
