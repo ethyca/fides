@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import Extra, Field, root_validator, validator
+from pydantic import AnyUrl, Extra, Field, root_validator, validator
 
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.messaging.messaging import MessagingServiceType
@@ -68,7 +68,7 @@ class ExecutionApplicationConfig(FidesSchema):
 
 
 class SecurityApplicationConfig(FidesSchema):
-    cors_origins: Optional[List[str]] = Field(
+    cors_origins: Optional[List[AnyUrl]] = Field(
         default=None,
         description="A list of client addresses allowed to communicate with the Fides webserver.",
     )
