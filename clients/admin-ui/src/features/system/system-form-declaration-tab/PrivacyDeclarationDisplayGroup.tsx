@@ -62,7 +62,7 @@ const PrivacyDeclarationRow = ({
                 isOpen={isOpen}
                 onClose={onClose}
                 onConfirm={() => handleDelete(declaration)}
-                title={"Delete data use declaration"}
+                title="Delete data use declaration"
                 message={
                   <Text>
                     You are about to delete the data use declaration{" "}
