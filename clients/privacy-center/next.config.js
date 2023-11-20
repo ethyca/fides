@@ -39,6 +39,13 @@ const nextConfig = {
         source: "/:path(fides-consent.js|fides.js)",
         destination: "/api/fides-js",
       },
+      {
+        // Rewrite requests for "/fides.js" to the /api/fides-js route, to
+        // provide a "virtual" static file download link
+        // NOTE: also match "/fides-consent.js" for backwards compatibility
+        source: "/:path(gpp-ext.js)",
+        destination: "/api/gpp-js",
+      },
     ];
   },
 };
