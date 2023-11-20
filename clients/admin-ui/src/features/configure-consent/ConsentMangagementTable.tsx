@@ -12,6 +12,7 @@ import {
   GlobalFilterV2,
   PaginationBar,
   TableActionBar,
+  BadgeCell,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
@@ -103,12 +104,14 @@ export const ConsentManagementTable = () => {
       }),
       columnHelper.accessor((row) => row.data_uses, {
         id: "Data Uses",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => (
+          <BadgeCell suffix="Data uses" value={props.getValue()} />
+        ),
         header: (props) => <DefaultHeaderCell value="Data Uses" {...props} />,
       }),
       columnHelper.accessor((row) => row.legal_bases, {
         id: "legal_bases",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => <BadgeCell suffix="Bases" value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Legal Bases" {...props} />,
       }),
     ],
