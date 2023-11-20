@@ -1,3 +1,4 @@
+import type { CookieKeyConsent } from "./cookie";
 import type {
   TCFFeatureRecord,
   TCFPurposeSave,
@@ -14,7 +15,6 @@ import type {
   TCFVendorLegitimateInterestsRecord,
   TCFVendorRelationships,
 } from "./tcf/types";
-import { CookieKeyConsent } from "~/lib/cookie";
 
 export type EmptyExperience = Record<PropertyKey, never>;
 
