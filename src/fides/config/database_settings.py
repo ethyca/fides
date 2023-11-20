@@ -3,7 +3,7 @@
 # pylint: disable=C0115,C0116, E0213
 
 from copy import deepcopy
-from typing import Dict, Optional, Union, cast
+from typing import Dict, Optional, cast
 from urllib.parse import quote, urlencode
 
 from pydantic import ConfigDict, Field, PostgresDsn, ValidationInfo, field_validator

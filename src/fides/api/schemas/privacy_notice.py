@@ -22,13 +22,13 @@ class PrivacyNotice(FidesSchema):
     stricter but not less strict
     """
 
-    name: Optional[str]
-    notice_key: Optional[FidesKey]
-    description: Optional[str]
-    internal_description: Optional[str]
-    origin: Optional[str]
+    name: Optional[str] = Field(default=None)
+    notice_key: Optional[FidesKey] = Field(default=None)
+    description: Optional[str] = Field(default=None)
+    internal_description: Optional[str] = Field(default=None)
+    origin: Optional[str] = Field(default=None)
     regions: Optional[Annotated[List[PrivacyNoticeRegion], Field(min_items=1)]]  # type: ignore
-    consent_mechanism: Optional[ConsentMechanism]
+    consent_mechanism: Optional[ConsentMechanism] = Field(default=None)
     data_uses: Optional[Annotated[List[str], Field(min_items=1)]]  # type: ignore
     enforcement_level: Optional[EnforcementLevel]
     disabled: Optional[bool] = False

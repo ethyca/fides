@@ -4,7 +4,6 @@ from fastapi import Depends, HTTPException
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field, ValidationError
-from pydantic.types import conlist
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,

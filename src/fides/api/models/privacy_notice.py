@@ -6,7 +6,7 @@ from enum import Enum
 from html import unescape
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
-from fideslang.validation import FidesKey
+from fideslang.validation import FidesKey, validate_fides_key
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, or_
@@ -203,7 +203,7 @@ class PrivacyNoticeBase:
         if not isinstance(name, str):
             raise Exception("Privacy notice keys must be generated from a string.")
         notice_key: str = re.sub(r"\s+", "_", name.lower().strip())
-        return FidesKey(FidesKey.validate(notice_key))
+        return FidesKey(validate_fides_key(notice_key))
 
     def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
         """

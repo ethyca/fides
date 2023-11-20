@@ -1,5 +1,5 @@
 """This module defines the settings for everything related to the CLI."""
-from typing import Dict, Optional
+from typing import Optional
 
 from fideslog.sdk.python.utils import FIDESCTL_CLI, generate_client_id
 from pydantic import AnyHttpUrl, ConfigDict, Field, field_validator, model_validator

@@ -22,6 +22,6 @@ class FidesSchema(BaseModel):
     @classmethod
     def get_field_names(cls) -> List[str]:
         """Return a list of all field names specified on this schema."""
-        return list(cls.schema().get("properties", {}).keys())
+        return list(cls.model_json_schema().get("properties", {}).keys())
 
     model_config = ConfigDict(from_attributes=True)

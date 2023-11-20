@@ -1830,7 +1830,6 @@ def ctl_dataset(db: Session, example_datasets):
         organization_fides_key="default_organization",
         name="Postgres Example Subscribers Dataset",
         description="Example Postgres dataset created in test fixtures",
-        data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         retention="No retention or erasure policy",
         collections=[
             {
@@ -1865,7 +1864,6 @@ def unlinked_dataset(db: Session):
         organization_fides_key="default_organization",
         name="Unlinked Dataset",
         description="Example dataset created in test fixtures",
-        data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         retention="No retention or erasure policy",
         collections=[
             {
@@ -1900,7 +1898,6 @@ def linked_dataset(db: Session, connection_config: ConnectionConfig) -> Generato
         organization_fides_key="default_organization",
         name="Linked Dataset",
         description="Example dataset created in test fixtures",
-        data_qualifier="aggregated.anonymized.linked_pseudonymized.pseudonymized.identified",
         retention="No retention or erasure policy",
         collections=[
             {
@@ -2812,7 +2809,6 @@ def tcf_system(db: Session) -> System:
             "system_id": system.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "analytics.reporting.content_performance",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "legal_basis_for_processing": "Consent",
@@ -2829,7 +2825,6 @@ def tcf_system(db: Session) -> System:
             "system_id": system.id,
             "data_categories": ["user"],
             "data_use": "essential.fraud_detection",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "legal_basis_for_processing": "Legitimate interests",

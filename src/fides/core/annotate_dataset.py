@@ -8,7 +8,7 @@ from fideslang import manifests
 from fideslang.manifests import ingest_manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from fideslang.parse import parse_dict
-from fideslang.validation import FidesKey, FidesValidationError
+from fideslang.validation import FidesKey, FidesValidationError, validate_fides_key
 
 from fides.common.utils import echo_green
 from fides.config import FidesConfig
@@ -35,7 +35,7 @@ def validate_data_categories(
 
     """
     for category in categories:
-        FidesKey.validate(category)
+        validate_fides_key(category)
         if category not in valid_categories:
             raise ValueError
 
