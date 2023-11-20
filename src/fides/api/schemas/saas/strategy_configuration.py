@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import field_validator, ConfigDict, BaseModel, root_validator
+from pydantic import field_validator, ConfigDict, BaseModel, model_validator
 
 from fides.api.schemas.saas.saas_config import Header, QueryParam, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import ConnectorParamRef, IdentityParamRef
@@ -60,18 +60,19 @@ class LinkPaginationConfiguration(StrategyConfiguration):
     rel: Optional[str] = None
     path: Optional[str] = None
 
-    @root_validator
-    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        source = values.get("source")
-        if source == LinkSource.headers.value and values.get("rel") is None:
+    @model_validator(mode="after")
+    def validate_fields(self) -> "LinkPaginationConfiguration":
+        source = self.source
+        if source == LinkSource.headers.value and self.rel is None:
             raise ValueError(
                 "The 'rel' value must be specified when accessing the link from the headers"
             )
-        if source == LinkSource.body.value and values.get("path") is None:
+        if source == LinkSource.body.value and self.path is None:
             raise ValueError(
                 "The 'path' value must be specified when accessing the link from the body"
             )
-        return values
+        return self
+
     model_config = ConfigDict(use_enum_values=True)
 
 
@@ -93,18 +94,18 @@ class ApiKeyAuthenticationConfiguration(StrategyConfiguration):
     query_params: Optional[List[QueryParam]] = None
     body: Optional[str] = None
 
-    @root_validator
-    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        headers = values.get("headers")
-        query_params = values.get("query_params")
-        body = values.get("body")
+    @model_validator(mode="after")
+    def validate_fields(self) -> "ApiKeyAuthenticationConfiguration":
+        headers = self.headers
+        query_params = self.query_params
+        body = self.body
 
         if not headers and not query_params and not body:
             raise ValueError(
                 "At least one 'header', 'query_param', or 'body' object must be defined in an 'api_key' auth configuration"
             )
 
-        return values
+        return self
 
 
 class BasicAuthenticationConfiguration(StrategyConfiguration):

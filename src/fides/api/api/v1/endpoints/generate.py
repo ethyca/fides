@@ -67,15 +67,13 @@ class Generate(BaseModel):
     target: ValidTargets
     type: GenerateTypes
 
-    @model_validator()
-    @classmethod
-    @classmethod
-    def target_matches_type(cls, values: Dict) -> Dict:
+    @model_validator(mode="after")
+    def target_matches_type(self) -> "Generate":
         """
         Ensures that both of the target and type attributes are a valid
         pair (returning an error on an ('aws', 'dataset') as an example).
         """
-        target_type = (values.get("target"), values.get("type"))
+        target_type = (self.target, self.type)
         valid_target_types = [
             ("aws", "systems"),
             ("bigquery", "datasets"),
@@ -85,7 +83,7 @@ class Generate(BaseModel):
         ]
         if target_type not in valid_target_types:
             raise ValueError("Target and Type are not a valid match")
-        return values
+        return self
 
 
 class GenerateRequestPayload(BaseModel):

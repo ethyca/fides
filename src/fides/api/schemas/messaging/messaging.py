@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
-from pydantic import model_validator, ConfigDict, BaseModel, root_validator
+from pydantic import model_validator, ConfigDict, BaseModel, model_validator
 
 from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.schemas import Msg
@@ -118,10 +118,10 @@ class ConsentPreferencesByUser(BaseModel):
         MinimalPrivacyPreferenceHistorySchema
     ]  # Privacy preferences for new workflow
 
-    @root_validator
-    def transform_data_use_format(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def transform_data_use_format(self) -> "ConsentPreferencesByUser":
         """Transform a data use fides_key to a corresponding name if possible"""
-        consent_preferences = values.get("consent_preferences") or []
+        consent_preferences = self.consent_preferences or []
         for preference in consent_preferences:
             preference.data_use = next(
                 (
@@ -131,8 +131,8 @@ class ConsentPreferencesByUser(BaseModel):
                 ),
                 preference.data_use,
             )
-        values["consent_preferences"] = consent_preferences
-        return values
+        self.consent_preferences = consent_preferences
+        return self
 
 
 class ConsentEmailFulfillmentBodyParams(BaseModel):
@@ -154,7 +154,6 @@ class ErasureRequestBodyParams(BaseModel):
 
 class FidesopsMessage(
     BaseModel,
-    smart_union=True,
     arbitrary_types_allowed=True,
 ):
     """A mapping of action_type to body_params"""
@@ -264,14 +263,14 @@ class MessagingServiceSecretsTwilioSMS(BaseModel):
     twilio_sender_phone_number: Optional[PhoneNumber] = None
     model_config = ConfigDict(extra="forbid")
 
-    @root_validator
-    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        sender_phone = values.get("twilio_sender_phone_number")
-        if not values.get("twilio_messaging_service_sid") and not sender_phone:
+    @model_validator(mode="after")
+    def validate_fields(self) -> "MessagingServiceSecretsTwilioSMS":
+        sender_phone = self.twilio_sender_phone_number
+        if not self.twilio_messaging_service_sid and not sender_phone:
             raise ValueError(
                 "Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied."
             )
-        return values
+        return self
 
 
 class MessagingServiceSecretsTwilioEmail(BaseModel):
@@ -292,7 +291,9 @@ class MessagingConfigBase(BaseModel):
             MessagingServiceDetailsMailchimpTransactional,
         ]
     ] = None
-    model_config = ConfigDict(use_enum_values=False, from_attributes=True, extra="forbid")
+    model_config = ConfigDict(
+        use_enum_values=False, from_attributes=True, extra="forbid"
+    )
 
 
 class MessagingConfigRequestBase(MessagingConfigBase):

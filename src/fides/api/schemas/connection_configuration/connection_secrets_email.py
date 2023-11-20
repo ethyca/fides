@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from pydantic import ConfigDict, BaseModel, EmailStr, root_validator
+from pydantic import ConfigDict, BaseModel, EmailStr, model_validator
 
 from fides.api.schemas.base_class import NoValidationSchema
 
@@ -19,7 +19,9 @@ class EmailSchema(BaseModel):
 
     third_party_vendor_name: str
     recipient_email_address: EmailStr
-    test_email_address: Optional[EmailStr] = None  # Email to send a connection test email
+    test_email_address: Optional[
+        EmailStr
+    ] = None  # Email to send a connection test email
 
     # the default value is temporary until we allow users to customize the identity types from the front-end
     advanced_settings: AdvancedSettings = AdvancedSettings(
@@ -27,17 +29,17 @@ class EmailSchema(BaseModel):
     )
     model_config = ConfigDict(extra="forbid", from_attributes=True)
 
-    @root_validator
-    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_fields(self) -> "EmailSchema":
         """At least one identity or browser identity needs to be specified on setup"""
-        advanced_settings = values.get("advanced_settings")
+        advanced_settings = self.advanced_settings
         if not advanced_settings:
             raise ValueError("Must supply advanced settings.")
 
         identities = advanced_settings.identity_types
         if not identities.email and not identities.phone_number:
             raise ValueError("Must supply at least one identity_type.")
-        return values
+        return self
 
 
 class EmailDocsSchema(EmailSchema, NoValidationSchema):
@@ -68,10 +70,10 @@ class ExtendedEmailSchema(EmailSchema):
         )
     )
 
-    @root_validator
-    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_fields(self) -> "ExtendedEmailSchema":
         """At least one identity or browser identity needs to be specified on setup"""
-        advanced_settings = values.get("advanced_settings")
+        advanced_settings = self.advanced_settings
         if not advanced_settings:
             raise ValueError("Must supply advanced settings.")
 
@@ -82,4 +84,4 @@ class ExtendedEmailSchema(EmailSchema):
             and not identities.cookie_ids
         ):
             raise ValueError("Must supply at least one identity_type.")
-        return values
+        return self

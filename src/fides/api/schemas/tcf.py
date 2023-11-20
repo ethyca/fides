@@ -7,7 +7,7 @@ from fideslang.gvl import (
     MAPPED_SPECIAL_PURPOSES,
 )
 from fideslang.gvl.models import Feature, MappedPurpose
-from pydantic import field_validator, AnyUrl, root_validator
+from pydantic import field_validator, AnyUrl, model_validator
 
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
@@ -32,23 +32,23 @@ class NonVendorSection(UserSpecificConsentDetails):
 class TCFPurposeConsentRecord(NonVendorSection, MappedPurpose):
     """Schema for a TCF Purpose with Consent Legal Basis returned in the TCF Overlay Experience"""
 
-    @root_validator
-    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def add_default_preference(self) -> "TCFPurposeConsentRecord":
         """Default preference for purposes with legal basis of consent is opt-out"""
-        values["default_preference"] = UserConsentPreference.opt_out
+        self.default_preference = UserConsentPreference.opt_out
 
-        return values
+        return self
 
 
 class TCFPurposeLegitimateInterestsRecord(NonVendorSection, MappedPurpose):
     """Schema for a TCF Purpose with Legitimate Interests Legal Basis returned in the TCF Overlay Experience"""
 
-    @root_validator
-    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def add_default_preference(self) -> "TCFPurposeLegitimateInterestsRecord":
         """Default preference for purposes with legal basis of legitimate interests is opt-in"""
-        values["default_preference"] = UserConsentPreference.opt_in
+        self.default_preference = UserConsentPreference.opt_in
 
-        return values
+        return self
 
 
 class TCFSpecialPurposeRecord(NonVendorSection, MappedPurpose):
@@ -56,12 +56,12 @@ class TCFSpecialPurposeRecord(NonVendorSection, MappedPurpose):
 
     legal_bases: List[str] = []  # Legal basis for processing
 
-    @root_validator
-    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def add_default_preference(self) -> "TCFSpecialPurposeRecord":
         """Default preference for special purposes is acknowledge"""
-        values["default_preference"] = UserConsentPreference.acknowledge
+        self.default_preference = UserConsentPreference.acknowledge
 
-        return values
+        return self
 
 
 class EmbeddedLineItem(FidesSchema):
@@ -91,12 +91,12 @@ class TCFVendorConsentRecord(UserSpecificConsentDetails, CommonVendorFields):
 
     purpose_consents: List[EmbeddedPurpose] = []
 
-    @root_validator
-    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def add_default_preference(self) -> "TCFVendorConsentRecord":
         """Default preference for vendor with legal basis of consent is opt-out"""
-        values["default_preference"] = UserConsentPreference.opt_out
+        self.default_preference = UserConsentPreference.opt_out
 
-        return values
+        return self
 
 
 class TCFVendorLegitimateInterestsRecord(
@@ -106,12 +106,12 @@ class TCFVendorLegitimateInterestsRecord(
 
     purpose_legitimate_interests: List[EmbeddedPurpose] = []
 
-    @root_validator
-    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def add_default_preference(self) -> "TCFVendorLegitimateInterestsRecord":
         """Default preference for vendor with legal basis of leg interests is opt-in"""
-        values["default_preference"] = UserConsentPreference.opt_in
+        self.default_preference = UserConsentPreference.opt_in
 
-        return values
+        return self
 
 
 class TCFVendorRelationships(CommonVendorFields):
@@ -131,23 +131,23 @@ class TCFVendorRelationships(CommonVendorFields):
 class TCFFeatureRecord(NonVendorSection, Feature):
     """Schema for a TCF Feature: returned in the TCF Overlay Experience"""
 
-    @root_validator
-    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def add_default_preference(self) -> "TCFFeatureRecord":
         """Default preference for features is acknowledge"""
-        values["default_preference"] = UserConsentPreference.acknowledge
+        self.default_preference = UserConsentPreference.acknowledge
 
-        return values
+        return self
 
 
 class TCFSpecialFeatureRecord(NonVendorSection, Feature):
     """Schema for a TCF Special Feature: returned in the TCF Overlay Experience"""
 
-    @root_validator
-    def add_default_preference(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def add_default_preference(self) -> "TCFSpecialFeatureRecord":
         """Default preference for special features is acknowledge"""
-        values["default_preference"] = UserConsentPreference.opt_out
+        self.default_preference = UserConsentPreference.opt_out
 
-        return values
+        return self
 
 
 class TCFPreferenceSaveBase(FidesSchema):

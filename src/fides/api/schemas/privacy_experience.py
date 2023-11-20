@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import field_validator, ConfigDict, Field, HttpUrl, root_validator
+from pydantic import field_validator, ConfigDict, Field, HttpUrl, model_validator
 
 from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
@@ -85,10 +85,10 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
     save_button_label: str
     title: str
 
-    @root_validator
-    def validate_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_attributes(self) -> "ExperienceConfigCreate":
         """Validate minimum set of required fields exist given the type of component"""
-        component: Optional[ComponentType] = values.get("component")
+        component: Optional[ComponentType] = self.component
 
         if component == ComponentType.overlay:
             # Overlays have a few additional required fields beyond the privacy center
@@ -98,18 +98,19 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
                 "privacy_preferences_link_label",
             ]
             for field in required_overlay_fields:
-                if not values.get(field):
+                if not getattr(self, field):
                     raise ValueError(
                         f"The following additional fields are required when defining an overlay: {human_friendly_list(required_overlay_fields)}."
                     )
 
-        return values
+        return self
 
 
 class ExperienceConfigUpdate(ExperienceConfigSchema):
     """
     Updating ExperienceConfig. Note that component cannot be updated once its created
     """
+
     model_config = ConfigDict(extra="forbid")
 
 

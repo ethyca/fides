@@ -129,10 +129,8 @@ class PrivacyPreferencesRequest(FidesStringFidesPreferences):
     user_geography: Optional[SafeStr]
     method: Optional[ConsentMethod]
 
-    @model_validator()
-    @classmethod
-    @classmethod
-    def validate_tcf_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_tcf_attributes(self) -> "PrivacyPreferencesRequest":
         """
         Run a few validation checks related to saving privacy preferences against TCF attributes.
 
@@ -147,19 +145,21 @@ class PrivacyPreferencesRequest(FidesStringFidesPreferences):
             return len(identifiers) != len(set(identifiers))
 
         for field_name in TCF_PREFERENCES_FIELD_MAPPING:
-            if tcf_duplicates_detected(values.get(field_name, [])):
+            value = getattr(self, field_name) or []
+            if tcf_duplicates_detected(value):
                 raise ValueError(
                     f"Duplicate preferences saved against TCF component: '{field_name}'"
                 )
 
-        if values.get("fides_string"):
-            for field in FidesStringFidesPreferences.__fields__:
-                if values.get(field):
+        if self.fides_string:
+            for field in FidesStringFidesPreferences.model_fields:
+                value = getattr(self, field)
+                if value:
                     raise ValueError(
                         f"Cannot supply value for '{field}' and 'fides_string' simultaneously when saving privacy preferences."
                     )
 
-        return values
+        return self
 
 
 class PrivacyPreferencesCreate(PrivacyPreferencesRequest):
@@ -200,10 +200,8 @@ class RecordConsentServedRequest(FidesSchema):
     acknowledge_mode: Optional[bool]
     serving_component: ServingComponent
 
-    @model_validator()
-    @classmethod
-    @classmethod
-    def validate_tcf_served(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_tcf_served(self) -> "RecordConsentServedRequest":
         """
         Check that TCF values are valid and that there are no duplicates
         """
@@ -212,7 +210,8 @@ class RecordConsentServedRequest(FidesSchema):
             return len(preference_list) != len(set(preference_list))
 
         for field_name in TCF_SECTION_MAPPING:
-            if tcf_duplicates_detected(values.get(field_name, [])):
+            value = getattr(self, field_name) or []
+            if tcf_duplicates_detected(value):
                 raise ValueError(
                     f"Duplicate served records saved against TCF component: '{field_name}'"
                 )
@@ -226,12 +225,11 @@ class RecordConsentServedRequest(FidesSchema):
         }
 
         for field_name, expected_values in expected_field_mapping.items():
-            if not set(values.get(field_name, [])).issubset(
-                set(expected_values.keys())
-            ):
+            value = getattr(self, field_name) or []
+            if not set(value).issubset(set(expected_values.keys())):
                 raise ValueError(f"Invalid values for {field_name} served.")
 
-        return values
+        return self
 
 
 class RecordConsentServedCreate(RecordConsentServedRequest):
