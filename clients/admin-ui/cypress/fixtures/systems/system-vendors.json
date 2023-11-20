@@ -20,7 +20,7 @@
     "vendor_id": "gacp.3073"
   },
   {
-    "linked_system": true,
+    "linked_system": false,
     "name": "Taptica",
     "vendor_id": "gacp.1579"
   },
@@ -65,7 +65,7 @@
     "vendor_id": "gvl.936"
   },
   {
-    "linked_system": true,
+    "linked_system": false,
     "name": "DMA Institute",
     "vendor_id": "gacp.317"
   },
@@ -75,12 +75,12 @@
     "vendor_id": "gvl.242"
   },
   {
-    "linked_system": true,
+    "linked_system": false,
     "name": "Audience Network",
     "vendor_id": "gvl.717"
   },
   {
-    "linked_system": true,
+    "linked_system": false,
     "name": "Alphonso Inc. ",
     "vendor_id": "gvl.1154"
   },
@@ -100,7 +100,7 @@
     "vendor_id": "gvl.81"
   },
   {
-    "linked_system": true,
+    "linked_system": false,
     "name": "AdTile",
     "vendor_id": "gacp.2124"
   },
@@ -110,7 +110,7 @@
     "vendor_id": "gvl.1040"
   },
   {
-    "linked_system": true,
+    "linked_system": false,
     "name": "AdGibbon BV",
     "vendor_id": "gacp.1284"
   },
@@ -150,7 +150,7 @@
     "vendor_id": "gvl.519"
   },
   {
-    "linked_system": true,
+    "linked_system": false,
     "name": "Admo.tv (Clickon)",
     "vendor_id": "gvl.889"
   },
