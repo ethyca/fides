@@ -45,6 +45,7 @@ import { initOverlay } from "./consent";
 import { TcfCookieConsent } from "./tcf/types";
 import { FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP } from "./consent-constants";
 import { customGetConsentPreferences } from "../services/external/preferences";
+import { setupExtensions } from "../extensions/setup";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -360,6 +361,11 @@ export const initialize = async ({
       fidesOptions: options,
     });
   }
+
+  // Call extensions
+  // DEFER(PROD#1238): This is likely too late for the GPP stub.
+  // We should move stub code out to the base package and call it right away instead.
+  setupExtensions(options);
 
   // return an object with the updated Fides values
   return {

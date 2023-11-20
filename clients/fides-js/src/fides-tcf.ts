@@ -90,7 +90,6 @@ import {
   transformFidesStringToCookieKeys,
 } from "./lib/tcf/utils";
 import type { GppFunction } from "./lib/gpp/types";
-import { setupExtensions } from "./extensions/setup";
 
 declare global {
   interface Window {
@@ -296,9 +295,6 @@ const init = async (config: FidesConfig) => {
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
-
-  // Call extensions
-  setupExtensions();
 };
 
 // The global Fides object; this is bound to window.Fides if available
