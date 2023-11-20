@@ -21,12 +21,14 @@ type IndeterminateCheckboxCellProps = {
   indeterminate?: boolean;
   initialValue?: boolean;
   manualDisable?: boolean;
+  dataTestId?: string;
 } & HTMLProps<HTMLInputElement>;
 
 export const IndeterminateCheckboxCell = ({
   indeterminate,
   initialValue,
   manualDisable,
+  dataTestId,
   ...rest
 }: IndeterminateCheckboxCellProps) => {
   const [initialCheckBoxValue] = useState(initialValue);
@@ -35,6 +37,7 @@ export const IndeterminateCheckboxCell = ({
     <Flex alignItems="center" justifyContent="center">
       <Box backgroundColor="white">
         <Checkbox
+          data-testid={dataTestId || undefined}
           isChecked={initialCheckBoxValue || rest.checked}
           isDisabled={initialCheckBoxValue || manualDisable}
           onChange={rest.onChange}
