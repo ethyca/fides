@@ -90,6 +90,9 @@ export type FidesOptions = {
 
   // GPP extension path (ex: "/fides-ext-gpp.js")
   gppExtensionPath: string;
+
+  // A custom path to fetch OverrideOptions (e.g. "window.config.overrides")
+  customOptionsPath: string | null;
 };
 
 export type GetPreferencesFnResp = {

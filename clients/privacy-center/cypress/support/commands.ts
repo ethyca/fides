@@ -67,10 +67,7 @@ Cypress.Commands.add(
         if (windowParams) {
           // @ts-ignore
           // eslint-disable-next-line no-param-reassign
-          win.config = {
-            // DEFER (PROD-1243): support a configurable "custom options" path
-            tc_info: windowParams,
-          };
+          win.fides_overrides = windowParams;
         }
 
         // Add event listeners for Fides.js events
