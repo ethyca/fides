@@ -20,6 +20,9 @@ The types of changes are:
 ### Added
 - Logging when root user and client credentials are used [#4432](https://github.com/ethyca/fides/pull/4432)
 
+### Changed
+- Run fides with non-root user [#4421](https://github.com/ethyca/fides/pull/4421)
+
 
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
 
