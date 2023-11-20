@@ -330,7 +330,7 @@ def load_default_dsr_policies() -> None:
             "user.authorization",
         ]
         all_data_categories = [
-            str(category.fides_key) for category in DEFAULT_TAXONOMY.data_category
+            str(category.fides_key) for category in DEFAULT_TAXONOMY.data_category or []
         ]
         default_data_categories = filter_data_categories(
             all_data_categories, excluded_data_categories

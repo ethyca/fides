@@ -32,11 +32,7 @@ from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System
 from fides.api.models.system_history import SystemHistory
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.api.schemas.system import PrivacyDeclarationResponse, SystemResponse
-from fides.api.schemas.taxonomy_extensions import (
-    DataCategory,
-    DataSubject,
-    DataUse,
-)
+from fides.api.schemas.taxonomy_extensions import DataCategory, DataSubject, DataUse
 from fides.api.util.endpoint_utils import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
 from fides.common.api.scope_registry import (
     CREATE,
