@@ -9,12 +9,12 @@ const GPP_JS_MAX_AGE_SECONDS = 60 * 60;
 
 /**
  * @swagger
- * /gpp.js:
+ * /gpp-ext.js:
  *   get:
- *     description: TODO
+ *     description: Returns the "gpp-ext.js" bundle for dynamic loading
  *     responses:
  *       200:
- *         description: Customized "gpp.js" script extension
+ *         description: a "gpp-ext.js" script extension
  *         content:
  *           application/javascript:
  *             schema:
