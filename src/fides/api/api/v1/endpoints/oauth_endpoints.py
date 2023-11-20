@@ -105,7 +105,9 @@ async def acquire_access_token(
     )
 
     if client_id == CONFIG.security.oauth_root_client_id:
-        logger.warning("Root user access token acquired!")
+        logger.warning(
+            "OAuth Root Client ID was used to generate an API access token. If unexpected, review security settings (FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID)"
+        )
 
     return AccessToken(access_token=access_code)
 

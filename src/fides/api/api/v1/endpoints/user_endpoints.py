@@ -550,7 +550,10 @@ def user_login(
             created_at=datetime.utcnow(),
         )
 
-        logger.warning("Successful root user login!")
+        logger.warning(
+            "Root Username & Password were used to login! If unexpected, review security settings (FIDES__SECURITY__ROOT_USERNAME and FIDES__SECURITY__ROOT_PASSWORD)"
+        )
+
     else:
         user_check: Optional[FidesUser] = FidesUser.get_by(
             db, field="username", value=user_data.username

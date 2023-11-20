@@ -250,7 +250,7 @@ def warn_root_user_enabled() -> None:
     """
     if CONFIG.security.root_username or CONFIG.security.oauth_root_client_id:
         logger.warning(
-            "Security warning: you are running Fides with a root user configured! This is not recommended in production deployments"
+            "Root Username & Password are configured and can be used to login as a root user. If unexpected, review security settings (FIDES__SECURITY__ROOT_USERNAME and FIDES__SECURITY__ROOT_PASSWORD)"
         )
 
 
