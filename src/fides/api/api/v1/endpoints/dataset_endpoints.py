@@ -9,8 +9,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import Dataset
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import ValidationError as PydanticValidationError
-from pydantic import conlist
+from pydantic import Field, ValidationError as PydanticValidationError
 from sqlalchemy import and_, not_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -69,6 +68,7 @@ from fides.common.api.v1.urn_registry import (
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
 )
+from typing_extensions import Annotated
 
 X_YAML = "application/x-yaml"
 
@@ -176,7 +176,7 @@ def validate_dataset(
     response_model=BulkPutDataset,
 )
 def patch_dataset_configs(
-    dataset_pairs: conlist(DatasetConfigCtlDataset, max_items=50),  # type: ignore
+    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_items=50)],  # type: ignore
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
@@ -245,7 +245,7 @@ def patch_dataset_configs(
     response_model=BulkPutDataset,
 )
 def patch_datasets(
-    datasets: conlist(Dataset, max_items=50),  # type: ignore
+    datasets: Annotated[List[Dataset], Field(max_items=50)],  # type: ignore
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:

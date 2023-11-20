@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import EmailStr, validator
+from pydantic import field_validator, ConfigDict, EmailStr
 
 from fides.api.custom_types import PhoneNumber
 from fides.api.schemas.base_class import FidesSchema
@@ -31,13 +31,10 @@ class DrpPrivacyRequestCreate(FidesSchema):
     relationships: Optional[List[str]]
     identity: str
     status_callback: Optional[str]
+    model_config = ConfigDict(use_enum_values=True)
 
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        use_enum_values = True
-
-    @validator("exercise")
+    @field_validator("exercise")
+    @classmethod
     def check_exercise_length(cls, exercise: List[DrpAction]) -> List[DrpAction]:
         """Validate the only one exercise action is provided"""
         if len(exercise) > 1:

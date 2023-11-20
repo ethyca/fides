@@ -4,7 +4,7 @@
 from typing import Dict, List, Optional, Pattern, Tuple, Union
 
 import validators
-from pydantic import AnyUrl, Field, validator
+from pydantic import field_validator, ConfigDict, AnyUrl, Field, validator
 from slowapi.wrappers import parse_many  # type: ignore
 
 from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
@@ -143,6 +143,8 @@ class SecuritySettings(FidesSettings):
         description="The timeout in seconds for tunnel connection (open_channel timeout)",
     )
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator("app_encryption_key")
     @classmethod
     def validate_encryption_key_length(
@@ -160,7 +162,8 @@ class SecuritySettings(FidesSettings):
             )
         return v
 
-    @validator("cors_origins", pre=True)
+    @field_validator("cors_origins", mode="before")
+    @classmethod
     @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
         """Return a list of valid origins for CORS requests"""
@@ -182,6 +185,8 @@ class SecuritySettings(FidesSettings):
             return v
         raise ValueError(v)
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator("oauth_root_client_secret_hash")
     @classmethod
     def assemble_root_access_token(
@@ -204,7 +209,8 @@ class SecuritySettings(FidesSettings):
         oauth_root_client_secret_hash = (hashed_client_id, salt.encode(encoding))  # type: ignore
         return oauth_root_client_secret_hash
 
-    @validator("request_rate_limit")
+    @field_validator("request_rate_limit")
+    @classmethod
     @classmethod
     def validate_request_rate_limit(
         cls,
@@ -225,7 +231,8 @@ class SecuritySettings(FidesSettings):
             raise ValueError(message)
         return v
 
-    @validator("env")
+    @field_validator("env")
+    @classmethod
     @classmethod
     def validate_env(
         cls,
@@ -236,6 +243,4 @@ class SecuritySettings(FidesSettings):
             message = "Security environment must be either 'dev' or 'prod'."
             raise ValueError(message)
         return v
-
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = ConfigDict(env_prefix=ENV_PREFIX)

@@ -3,7 +3,7 @@ from typing import List, Optional
 from fastapi import Depends, HTTPException
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import ValidationError
+from pydantic import Field, ValidationError
 from pydantic.types import conlist
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -59,6 +59,7 @@ from fides.api.service.privacy_request.request_runner_service import (
 )
 from fides.api.util.logger import Pii
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
+from typing_extensions import Annotated
 
 # pylint: disable=too-many-nested-blocks,too-many-branches,too-many-statements
 
@@ -134,7 +135,7 @@ def validate_secrets(
 
 def patch_connection_configs(
     db: Session,
-    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
+    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_items=50)],  # type: ignore
     system: Optional[System] = None,
 ) -> BulkPutConnectionConfiguration:
     created_or_updated: List[ConnectionConfigurationResponse] = []

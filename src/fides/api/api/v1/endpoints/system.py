@@ -74,6 +74,8 @@ from fides.common.api.v1.urn_registry import (
     SYSTEM_CONNECTIONS,
     V1_URL_PREFIX,
 )
+from pydantic import Field
+from typing_extensions import Annotated
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
 SYSTEM_CONNECTIONS_ROUTER = APIRouter(
@@ -120,7 +122,7 @@ def get_system_connections(
 )
 def patch_connections(
     fides_key: str,
-    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
+    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_items=50)],  # type: ignore
     db: Session = Depends(deps.get_db),
 ) -> BulkPutConnectionConfiguration:
     """

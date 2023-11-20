@@ -6,7 +6,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import conlist
+from pydantic import Field
 from requests import RequestException
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
@@ -71,6 +71,7 @@ from fides.common.api.v1.urn_registry import (
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
+from typing_extensions import Annotated
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
 
@@ -122,7 +123,7 @@ def upload_data(
 def patch_config(
     *,
     db: Session = Depends(deps.get_db),
-    storage_configs: conlist(StorageDestination, max_items=50),  # type: ignore
+    storage_configs: Annotated[List[StorageDestination], Field(max_items=50)],  # type: ignore
 ) -> BulkPutStorageConfigResponse:
     """
     Given a list of storage destination elements, create or update corresponding StorageConfig objects

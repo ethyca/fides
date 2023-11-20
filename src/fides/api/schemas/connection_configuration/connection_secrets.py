@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Extra, root_validator
+from pydantic import ConfigDict, BaseModel, root_validator
 
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.schemas import Msg
@@ -34,12 +34,7 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
             )
 
         return values
-
-    class Config:
-        """Only permit selected secret fields to be stored."""
-
-        extra = Extra.ignore
-        orm_mode = True
+    model_config = ConfigDict(extra="ignore", from_attributes=True)
 
 
 class TestStatusMessage(Msg):

@@ -1,6 +1,6 @@
 from typing import Any, List
 
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 
 
 class NoValidationSchema(BaseModel):
@@ -23,8 +23,4 @@ class FidesSchema(BaseModel):
     def get_field_names(cls) -> List[str]:
         """Return a list of all field names specified on this schema."""
         return list(cls.schema().get("properties", {}).keys())
-
-    class Config:
-        """Allow ORM access on all schemas."""
-
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

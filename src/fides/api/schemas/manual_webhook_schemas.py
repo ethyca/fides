@@ -1,13 +1,14 @@
 from typing import TYPE_CHECKING, List, Optional, Set
 
 from fideslang.validation import FidesKey
-from pydantic import ConstrainedStr, conlist, validator
+from pydantic import field_validator, Field, ConfigDict, ConstrainedStr
 
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
 )
 from fides.api.util.text import to_snake_case
+from typing_extensions import Annotated
 
 
 class PIIFieldType(ConstrainedStr):
@@ -32,7 +33,8 @@ class ManualWebhookField(FidesSchema):
     dsr_package_label: Optional[DSRLabelFieldType] = None
     data_categories: Optional[List[FidesKey]] = None
 
-    @validator("dsr_package_label")
+    @field_validator("dsr_package_label")
+    @classmethod
     def convert_empty_string_dsr_package_label(
         cls, value: Optional[str]
     ) -> Optional[str]:
@@ -41,26 +43,23 @@ class ManualWebhookField(FidesSchema):
         so converting to None here.
         """
         return None if value == "" else value
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 if TYPE_CHECKING:
     ManualWebhookFieldsList = List[ManualWebhookField]
 else:
-    ManualWebhookFieldsList = conlist(ManualWebhookField, min_items=1)
+    ManualWebhookFieldsList = Annotated[List[ManualWebhookField], Field(min_items=1)]
 
 
 class AccessManualWebhooks(FidesSchema):
     """Expected request body for creating Access Manual Webhooks"""
 
     fields: ManualWebhookFieldsList
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        orm_mode = True
-
-    @validator("fields")
+    @field_validator("fields")
+    @classmethod
     def check_for_duplicates(
         cls, value: List[ManualWebhookField]
     ) -> List[ManualWebhookField]:
@@ -89,7 +88,8 @@ class AccessManualWebhooks(FidesSchema):
 
         return value
 
-    @validator("fields")
+    @field_validator("fields")
+    @classmethod
     def fields_must_exist(
         cls, value: List[ManualWebhookField]
     ) -> List[ManualWebhookField]:
@@ -122,6 +122,4 @@ class AccessManualWebhookResponse(AccessManualWebhooks):
 
     connection_config: ConnectionConfigurationResponse
     id: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

@@ -7,6 +7,7 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
 )
+from pydantic import ConfigDict
 
 
 class WebhookBase(FidesSchema):
@@ -21,11 +22,7 @@ class PolicyWebhookCreate(WebhookBase):
     """Request schema for creating/updating a Policy Webhook"""
 
     connection_config_key: FidesKey
-
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class PolicyWebhookResponse(WebhookBase):
@@ -33,11 +30,7 @@ class PolicyWebhookResponse(WebhookBase):
 
     connection_config: Optional[ConnectionConfigurationResponse]
     order: int
-
-    class Config:
-        """Set orm_mode to True"""
-
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PolicyWebhookUpdate(FidesSchema):
@@ -47,13 +40,7 @@ class PolicyWebhookUpdate(FidesSchema):
     name: Optional[str]
     connection_config_key: Optional[FidesKey]
     order: Optional[int]
-
-    class Config:
-        """Only the included attributes will be used"""
-
-        orm_mode = True
-        extra = "forbid"
-        use_enum_values = True
+    model_config = ConfigDict(from_attributes=True, extra="forbid", use_enum_values=True)
 
 
 class WebhookOrder(FidesSchema):
@@ -61,11 +48,7 @@ class WebhookOrder(FidesSchema):
 
     key: FidesKey
     order: int
-
-    class Config:
-        """Set orm_mode to True"""
-
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PolicyWebhookUpdateResponse(FidesSchema):
@@ -81,8 +64,4 @@ class PolicyWebhookDeleteResponse(FidesSchema):
     """Response schema after deleting a webhook; new_order includes remaining reordered webhooks if applicable"""
 
     new_order: List[WebhookOrder]
-
-    class Config:
-        """Set orm_mode to True"""
-
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

@@ -7,7 +7,7 @@ from fideslang.gvl import (
     MAPPED_SPECIAL_PURPOSES,
 )
 from fideslang.gvl.models import Feature, MappedPurpose
-from pydantic import AnyUrl, root_validator, validator
+from pydantic import field_validator, AnyUrl, root_validator
 
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
@@ -161,7 +161,8 @@ class TCFPreferenceSaveBase(FidesSchema):
 class TCFPurposeSave(TCFPreferenceSaveBase):
     """Schema for saving preferences with respect to a TCF Purpose"""
 
-    @validator("id")
+    @field_validator("id")
+    @classmethod
     @classmethod
     def validate_purpose_id(cls, value: int) -> int:
         """
@@ -177,7 +178,8 @@ class TCFPurposeSave(TCFPreferenceSaveBase):
 class TCFSpecialPurposeSave(TCFPreferenceSaveBase):
     """Schema for saving preferences with respect to a TCF Special Purpose"""
 
-    @validator("id")
+    @field_validator("id")
+    @classmethod
     @classmethod
     def validate_special_purpose_id(cls, value: int) -> int:
         """
@@ -203,7 +205,8 @@ class TCFVendorSave(FidesSchema):
 class TCFFeatureSave(TCFPreferenceSaveBase):
     """Schema for saving a user's preference with respect to a TCF feature"""
 
-    @validator("id")
+    @field_validator("id")
+    @classmethod
     @classmethod
     def validate_feature_id(cls, value: int) -> int:
         """
@@ -219,7 +222,8 @@ class TCFFeatureSave(TCFPreferenceSaveBase):
 class TCFSpecialFeatureSave(TCFPreferenceSaveBase):
     """Schema for saving a user's preference with respect to a TCF special feature"""
 
-    @validator("id")
+    @field_validator("id")
+    @classmethod
     @classmethod
     def validate_special_feature_id(cls, value: int) -> int:
         """

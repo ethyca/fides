@@ -518,18 +518,18 @@ class PrivacyDeclaration(Base):
 class SystemModel(BaseModel):
     fides_key: str
     registry_id: str
-    meta: Optional[Dict[str, Any]]
-    fidesctl_meta: Optional[Dict[str, Any]]
+    meta: Optional[Dict[str, Any]] = None
+    fidesctl_meta: Optional[Dict[str, Any]] = None
     system_type: str
-    data_responsibility_title: Optional[str]
-    joint_controller: Optional[str]
-    third_country_transfers: Optional[List[str]]
-    privacy_declarations: Optional[Dict[str, Any]]
-    administrating_department: Optional[str]
-    data_protection_impact_assessment: Optional[Dict[str, Any]]
-    egress: Optional[Dict[str, Any]]
-    ingress: Optional[Dict[str, Any]]
-    value: Optional[List[Any]]
+    data_responsibility_title: Optional[str] = None
+    joint_controller: Optional[str] = None
+    third_country_transfers: Optional[List[str]] = None
+    privacy_declarations: Optional[Dict[str, Any]] = None
+    administrating_department: Optional[str] = None
+    data_protection_impact_assessment: Optional[Dict[str, Any]] = None
+    egress: Optional[Dict[str, Any]] = None
+    ingress: Optional[Dict[str, Any]] = None
+    value: Optional[List[Any]] = None
 
 
 class SystemScans(Base):

@@ -6,7 +6,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import conlist
+from pydantic import Field
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
@@ -28,6 +28,7 @@ from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import get_connection_config_or_error
 from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
+from typing_extensions import Annotated
 
 router = APIRouter(tags=["DSR Policy Webhooks"], prefix=urls.V1_URL_PREFIX)
 
@@ -174,7 +175,7 @@ def create_or_update_pre_execution_webhooks(
     *,
     policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    webhooks: conlist(schemas.PolicyWebhookCreate, max_items=50) = Body(...),  # type: ignore
+    webhooks: Annotated[List[schemas.PolicyWebhookCreate], Field(max_items=50)] = Body(...),  # type: ignore
 ) -> List[PolicyPreWebhook]:
     """
     Create or update the list of Policy Pre-Execution Webhooks that run **before** query execution.
@@ -197,7 +198,7 @@ def create_or_update_post_execution_webhooks(
     *,
     policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    webhooks: conlist(schemas.PolicyWebhookCreate, max_items=50) = Body(...),  # type: ignore
+    webhooks: Annotated[List[schemas.PolicyWebhookCreate], Field(max_items=50)] = Body(...),  # type: ignore
 ) -> List[PolicyPostWebhook]:
     """
     Create or update the list of Policy Post-Execution Webhooks that run **after** query execution.

@@ -5,12 +5,18 @@ from typing import Any, Dict, List, Optional
 
 from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesKey
-from pydantic import Extra, conlist, root_validator, validator
+from pydantic import (
+    field_validator,
+    model_validator,
+    Field,
+    ConfigDict,
+)
 
 from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
 from fides.api.models.privacy_notice import PrivacyNotice as PrivacyNoticeModel
 from fides.api.models.privacy_notice import PrivacyNoticeRegion, UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
+from typing_extensions import Annotated
 
 
 class PrivacyNotice(FidesSchema):
@@ -26,24 +32,21 @@ class PrivacyNotice(FidesSchema):
     description: Optional[str]
     internal_description: Optional[str]
     origin: Optional[str]
-    regions: Optional[conlist(PrivacyNoticeRegion, min_items=1)]  # type: ignore
+    regions: Optional[Annotated[List[PrivacyNoticeRegion], Field(min_items=1)]]  # type: ignore
     consent_mechanism: Optional[ConsentMechanism]
-    data_uses: Optional[conlist(str, min_items=1)]  # type: ignore
+    data_uses: Optional[Annotated[List[str], Field(min_items=1)]]  # type: ignore
     enforcement_level: Optional[EnforcementLevel]
     disabled: Optional[bool] = False
     has_gpc_flag: Optional[bool] = False
     displayed_in_privacy_center: Optional[bool] = False
     displayed_in_overlay: Optional[bool] = False
     displayed_in_api: Optional[bool] = False
+    model_config = ConfigDict(
+        use_enum_values=True, from_attributes=True, extra="forbid"
+    )
 
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        use_enum_values = True
-        orm_mode = True
-        extra = Extra.forbid
-
-    @validator("regions")
+    @field_validator("regions")
+    @classmethod
     @classmethod
     def validate_regions(
         cls, regions: List[PrivacyNoticeRegion]
@@ -71,12 +74,13 @@ class PrivacyNoticeCreation(PrivacyNotice):
     """
 
     name: str
-    regions: conlist(PrivacyNoticeRegion, min_items=1)  # type: ignore
+    regions: Annotated[List[PrivacyNoticeRegion], Field(min_length=1)]  # type: ignore
     consent_mechanism: ConsentMechanism
-    data_uses: conlist(str, min_items=1)  # type: ignore
+    data_uses: Annotated[List[str], Field(min_length=1)]  # type: ignore
     enforcement_level: EnforcementLevel
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def validate_notice_key(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
         Generate the notice_key from the name if not supplied
@@ -88,18 +92,14 @@ class PrivacyNoticeCreation(PrivacyNotice):
 
         return values
 
-    @root_validator
-    def validate_consent_mechanisms_and_display(
-        cls, values: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_consent_mechanisms_and_display(self) -> "PrivacyNoticeCreation":
         """
         Add some validation regarding where certain consent mechanisms must be displayed
         """
-        consent_mechanism: Optional[str] = values.get("consent_mechanism")
-        displayed_in_overlay: Optional[bool] = values.get("displayed_in_overlay")
-        displayed_in_privacy_center: Optional[bool] = values.get(
-            "displayed_in_privacy_center"
-        )
+        consent_mechanism: Optional[str] = str(self.consent_mechanism)
+        displayed_in_overlay: Optional[bool] = self.displayed_in_overlay
+        displayed_in_privacy_center: Optional[bool] = self.displayed_in_privacy_center
 
         if (
             consent_mechanism == ConsentMechanism.opt_in.value
@@ -120,7 +120,7 @@ class PrivacyNoticeCreation(PrivacyNotice):
         ):
             raise ValueError("Notice-only notices must be served in an overlay.")
 
-        return values
+        return self
 
 
 class PrivacyNoticeWithId(PrivacyNotice):
@@ -183,7 +183,4 @@ class PrivacyNoticeHistorySchema(PrivacyNoticeCreation, PrivacyNoticeWithId):
 
     version: float
     privacy_notice_id: str
-
-    class Config:
-        use_enum_values = True
-        orm_mode = True
+    model_config = ConfigDict(use_enum_values=True, from_attributes=True)

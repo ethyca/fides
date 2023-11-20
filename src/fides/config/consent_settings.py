@@ -1,6 +1,4 @@
-from typing import Any, Dict
-
-from pydantic import Field, root_validator
+from pydantic import ConfigDict, Field, model_validator
 
 from .fides_settings import FidesSettings
 
@@ -14,17 +12,15 @@ class ConsentSettings(FidesSettings):
     ac_enabled: bool = Field(
         default=False, description="Toggle whether Google AC Mode is enabled."
     )
+    model_config = ConfigDict(env_prefix="FIDES__CONSENT__")
 
-    class Config:
-        env_prefix = "FIDES__CONSENT__"
-
-    @root_validator
-    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_fields(self) -> "ConsentSettings":
         """AC mode only works if TCF mode is also enabled"""
-        tcf_mode = values.get("tcf_enabled")
-        ac_mode = values.get("ac_enabled")
+        tcf_mode = self.tcf_enabled
+        ac_mode = self.ac_enabled
 
         if ac_mode and not tcf_mode:
             raise ValueError("AC cannot be enabled unless TCF mode is also enabled.")
 
-        return values
+        return self

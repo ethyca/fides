@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Union
 from fastapi import Depends, HTTPException, Security, status
 from fideslang.models import Dataset, Organization, System
 from loguru import logger as log
-from pydantic import BaseModel, root_validator
+from pydantic import model_validator, BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.api.v1.endpoints import API_PREFIX
@@ -67,7 +67,8 @@ class Generate(BaseModel):
     target: ValidTargets
     type: GenerateTypes
 
-    @root_validator()
+    @model_validator()
+    @classmethod
     @classmethod
     def target_matches_type(cls, values: Dict) -> Dict:
         """
@@ -101,7 +102,7 @@ class GenerateResponse(BaseModel):
     The model to house the response for generated infrastructure.
     """
 
-    generate_results: Optional[List[Union[Dataset, System]]]
+    generate_results: Optional[List[Union[Dataset, System]]] = None
 
 
 @GENERATE_ROUTER.post(

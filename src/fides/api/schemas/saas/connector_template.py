@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from fideslang.models import Dataset
-from pydantic import BaseModel, validator
+from pydantic import field_validator, BaseModel
 
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
@@ -16,13 +16,14 @@ class ConnectorTemplate(BaseModel):
 
     config: str
     dataset: str
-    icon: Optional[str]
+    icon: Optional[str] = None
     human_readable: str
     authorization_required: bool
-    user_guide: Optional[str]
+    user_guide: Optional[str] = None
     supported_actions: List[ActionType]
 
-    @validator("config")
+    @field_validator("config")
+    @classmethod
     def validate_config(cls, config: str) -> str:
         """Validates the config at the given path"""
         saas_config = SaaSConfig(**load_config_from_string(config))
@@ -32,7 +33,8 @@ class ConnectorTemplate(BaseModel):
             )
         return config
 
-    @validator("dataset")
+    @field_validator("dataset")
+    @classmethod
     def validate_dataset(cls, dataset: str) -> str:
         """Validates the dataset at the given path"""
         saas_dataset = Dataset(**load_dataset_from_string(dataset))

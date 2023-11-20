@@ -8,7 +8,7 @@ from fideslang.gvl import (
     MAPPED_SPECIAL_PURPOSES,
 )
 from fideslang.validation import FidesKey
-from pydantic import Field, conlist, root_validator
+from pydantic import model_validator, Field
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.privacy_notice import UserConsentPreference
@@ -33,6 +33,7 @@ from fides.api.util.tcf.tcf_experience_contents import (
     TCF_SECTION_MAPPING,
     TCFComponentType,
 )
+from typing_extensions import Annotated
 
 # Maps the sections in the request body for saving various TCF preferences
 # against the specific database column name on which these preferences are saved
@@ -96,11 +97,11 @@ class ConsentOptionCreate(FidesSchema):
 class FidesStringFidesPreferences(FidesSchema):
     """TCF Preferences that can be unpacked from TC and AC Strings"""
 
-    purpose_consent_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
-    purpose_legitimate_interests_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
-    vendor_consent_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
-    vendor_legitimate_interests_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
-    special_feature_preferences: conlist(TCFSpecialFeatureSave, max_items=200) = []  # type: ignore
+    purpose_consent_preferences: Annotated[List[TCFPurposeSave], Field(max_length=200)] = []  # type: ignore
+    purpose_legitimate_interests_preferences: Annotated[List[TCFPurposeSave], Field(max_length=200)] = []  # type: ignore
+    vendor_consent_preferences: Annotated[List[TCFVendorSave], Field(max_length=200)] = []  # type: ignore
+    vendor_legitimate_interests_preferences: Annotated[List[TCFVendorSave], Field(max_length=200)] = []  # type: ignore
+    special_feature_preferences: Annotated[List[TCFSpecialFeatureSave], Field(max_length=200)] = []  # type: ignore
 
 
 class PrivacyPreferencesRequest(FidesStringFidesPreferences):
@@ -118,17 +119,18 @@ class PrivacyPreferencesRequest(FidesStringFidesPreferences):
         description="If supplied, TC strings and AC strings are decoded and preferences saved for purpose_consent, "
         "purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features"
     )
-    preferences: conlist(ConsentOptionCreate, max_items=200) = []  # type: ignore
-    special_purpose_preferences: conlist(TCFSpecialPurposeSave, max_items=200) = []  # type: ignore
-    feature_preferences: conlist(TCFFeatureSave, max_items=200) = []  # type: ignore
-    system_consent_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
-    system_legitimate_interests_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
+    preferences: Annotated[List[ConsentOptionCreate], Field(max_length=200)] = []  # type: ignore
+    special_purpose_preferences: Annotated[List[TCFSpecialPurposeSave], Field(max_length=200)] = []  # type: ignore
+    feature_preferences: Annotated[List[TCFFeatureSave], Field(max_length=200)] = []  # type: ignore
+    system_consent_preferences: Annotated[List[TCFVendorSave], Field(max_length=200)] = []  # type: ignore
+    system_legitimate_interests_preferences: Annotated[List[TCFVendorSave], Field(max_length=200)] = []  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]
     method: Optional[ConsentMethod]
 
-    @root_validator()
+    @model_validator()
+    @classmethod
     @classmethod
     def validate_tcf_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -198,7 +200,8 @@ class RecordConsentServedRequest(FidesSchema):
     acknowledge_mode: Optional[bool]
     serving_component: ServingComponent
 
-    @root_validator()
+    @model_validator()
+    @classmethod
     @classmethod
     def validate_tcf_served(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """

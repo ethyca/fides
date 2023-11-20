@@ -1,4 +1,4 @@
-from pydantic import Field
+from pydantic import ConfigDict, Field
 
 from .fides_settings import FidesSettings
 
@@ -42,6 +42,4 @@ class ExecutionSettings(FidesSettings):
         default=False,
         description="Allows custom privacy request fields to be used in request execution.",
     )
-
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = ConfigDict(env_prefix=ENV_PREFIX)

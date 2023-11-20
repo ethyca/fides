@@ -1,7 +1,7 @@
 import json
 from typing import List, Optional, Union
 
-from pydantic import EmailStr, Field, parse_obj_as, validator
+from pydantic import field_validator, EmailStr, Field, parse_obj_as
 from pydantic.main import BaseModel
 
 from fides.api.schemas.base_class import NoValidationSchema
@@ -41,7 +41,8 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
 
     _required_components: List[str] = ["keyfile_creds", "dataset"]
 
-    @validator("keyfile_creds", pre=True)
+    @field_validator("keyfile_creds", mode="before")
+    @classmethod
     def parse_keyfile_creds(cls, v: Union[str, dict]) -> KeyfileCreds:
         if isinstance(v, str):
             v = json.loads(v)

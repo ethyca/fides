@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 
 
 class HTTPMethod(Enum):
@@ -25,18 +25,14 @@ class SaaSRequestParams(BaseModel):
     path: str
     headers: Dict[str, Any] = {}
     query_params: Dict[str, Any] = {}
-    body: Optional[str]
-
-    class Config:
-        """Using enum values"""
-
-        use_enum_values = True
+    body: Optional[str] = None
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class ConnectorParamRef(BaseModel):
     """A reference to a value in the connector params (by name)"""
 
-    connector_param: Any
+    connector_param: Any = None
 
 
 class IdentityParamRef(BaseModel):

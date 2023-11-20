@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, EmailStr, Extra, root_validator
+from pydantic import ConfigDict, BaseModel, EmailStr, root_validator
 
 from fides.api.schemas.base_class import NoValidationSchema
 
@@ -19,18 +19,13 @@ class EmailSchema(BaseModel):
 
     third_party_vendor_name: str
     recipient_email_address: EmailStr
-    test_email_address: Optional[EmailStr]  # Email to send a connection test email
+    test_email_address: Optional[EmailStr] = None  # Email to send a connection test email
 
     # the default value is temporary until we allow users to customize the identity types from the front-end
     advanced_settings: AdvancedSettings = AdvancedSettings(
         identity_types=IdentityTypes(email=True, phone_number=False)
     )
-
-    class Config:
-        """Only permit selected secret fields to be stored."""
-
-        extra = Extra.forbid
-        orm_mode = True
+    model_config = ConfigDict(extra="forbid", from_attributes=True)
 
     @root_validator
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:

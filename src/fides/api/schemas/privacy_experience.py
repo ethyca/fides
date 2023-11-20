@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import Extra, Field, HttpUrl, root_validator, validator
+from pydantic import field_validator, ConfigDict, Field, HttpUrl, root_validator
 
 from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
@@ -59,7 +59,8 @@ class ExperienceConfigSchema(FidesSchema):
         description="Overlay 'Banner title' or Privacy Center 'title'"
     )
 
-    @validator("regions")
+    @field_validator("regions")
+    @classmethod
     @classmethod
     def validate_regions(
         cls, regions: List[PrivacyNoticeRegion]
@@ -109,11 +110,7 @@ class ExperienceConfigUpdate(ExperienceConfigSchema):
     """
     Updating ExperienceConfig. Note that component cannot be updated once its created
     """
-
-    class Config:
-        """Forbid extra values - specifically we don't want component to be updated here."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class ExperienceConfigCreateWithId(ExperienceConfigCreate):

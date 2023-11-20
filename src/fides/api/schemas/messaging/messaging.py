@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, Extra, root_validator
+from pydantic import model_validator, ConfigDict, BaseModel, root_validator
 
 from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.schemas import Msg
@@ -100,7 +100,7 @@ class AccessRequestCompleteBodyParams(BaseModel):
 class RequestReviewDenyBodyParams(BaseModel):
     """Body params required for privacy request review deny template"""
 
-    rejection_reason: Optional[SafeStr]
+    rejection_reason: Optional[SafeStr] = None
 
 
 class ConsentPreferencesByUser(BaseModel):
@@ -169,7 +169,7 @@ class FidesopsMessage(
             AccessRequestCompleteBodyParams,
             ErasureRequestBodyParams,
         ]
-    ]
+    ] = None
 
 
 class EmailForActionType(BaseModel):
@@ -203,11 +203,7 @@ class MessagingServiceDetailsMailchimpTransactional(BaseModel):
     """The details required to represent a Mailchimp Transactional email configuration."""
 
     email_from: str
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class MessagingServiceDetailsMailgun(BaseModel):
@@ -216,22 +212,14 @@ class MessagingServiceDetailsMailgun(BaseModel):
     is_eu_domain: Optional[bool] = False
     api_version: Optional[str] = "v3"
     domain: str
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class MessagingServiceDetailsTwilioEmail(BaseModel):
     """The details required to represent a Twilio email configuration."""
 
     twilio_email_from: str
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class MessagingServiceSecrets(Enum):
@@ -257,22 +245,14 @@ class MessagingServiceSecretsMailchimpTransactional(BaseModel):
     """The secrets required to connect to Mailchimp Transactional."""
 
     mailchimp_transactional_api_key: str
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class MessagingServiceSecretsMailgun(BaseModel):
     """The secrets required to connect to Mailgun."""
 
     mailgun_api_key: str
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class MessagingServiceSecretsTwilioSMS(BaseModel):
@@ -280,13 +260,9 @@ class MessagingServiceSecretsTwilioSMS(BaseModel):
 
     twilio_account_sid: str
     twilio_auth_token: str
-    twilio_messaging_service_sid: Optional[str]
-    twilio_sender_phone_number: Optional[PhoneNumber]
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    twilio_messaging_service_sid: Optional[str] = None
+    twilio_sender_phone_number: Optional[PhoneNumber] = None
+    model_config = ConfigDict(extra="forbid")
 
     @root_validator
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -302,11 +278,7 @@ class MessagingServiceSecretsTwilioEmail(BaseModel):
     """The secrets required to connect to twilio email."""
 
     twilio_api_key: str
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class MessagingConfigBase(BaseModel):
@@ -319,18 +291,15 @@ class MessagingConfigBase(BaseModel):
             MessagingServiceDetailsTwilioEmail,
             MessagingServiceDetailsMailchimpTransactional,
         ]
-    ]
-
-    class Config:
-        use_enum_values = False
-        orm_mode = True
-        extra = Extra.forbid
+    ] = None
+    model_config = ConfigDict(use_enum_values=False, from_attributes=True, extra="forbid")
 
 
 class MessagingConfigRequestBase(MessagingConfigBase):
     """Base model shared by messaging config requests to provide validation on request inputs"""
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         service_type = values.get("service_type")
         if service_type:
@@ -364,7 +333,7 @@ class MessagingConfigRequest(MessagingConfigRequestBase):
     """Messaging Config Request Schema"""
 
     name: str
-    key: Optional[FidesKey]
+    key: Optional[FidesKey] = None
 
 
 class MessagingConfigResponse(MessagingConfigBase):
@@ -372,10 +341,7 @@ class MessagingConfigResponse(MessagingConfigBase):
 
     name: str
     key: FidesKey
-
-    class Config:
-        orm_mode = True
-        use_enum_values = True
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[

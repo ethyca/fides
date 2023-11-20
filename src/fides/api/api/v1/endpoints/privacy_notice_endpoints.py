@@ -5,7 +5,7 @@ from fastapi import Depends, Request, Security
 from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
 from loguru import logger
-from pydantic import conlist
+from pydantic import Field
 from sqlalchemy.orm import Query, Session
 from starlette.exceptions import HTTPException
 from starlette.status import (
@@ -35,6 +35,7 @@ from fides.api.util.consent_util import (
 from fides.api.util.endpoint_utils import transform_fields
 from fides.common.api import scope_registry
 from fides.common.api.v1 import urn_registry as urls
+from typing_extensions import Annotated
 
 router = APIRouter(tags=["Privacy Notice"], prefix=urls.V1_URL_PREFIX)
 
@@ -210,7 +211,7 @@ def get_privacy_notice(
 def create_privacy_notices(
     *,
     db: Session = Depends(deps.get_db),
-    privacy_notices: conlist(schemas.PrivacyNoticeCreation, max_items=50),  # type: ignore
+    privacy_notices: Annotated[List[schemas.PrivacyNoticeCreation], Field(max_items=50)],  # type: ignore
 ) -> List[PrivacyNotice]:
     """
     Create one or more privacy notices.
@@ -244,7 +245,7 @@ def create_privacy_notices(
 def update_privacy_notices(
     *,
     db: Session = Depends(deps.get_db),
-    privacy_notice_updates: conlist(schemas.PrivacyNoticeWithId, max_items=50),  # type: ignore
+    privacy_notice_updates: Annotated[List[schemas.PrivacyNoticeWithId], Field(max_items=50)],  # type: ignore
 ) -> List[PrivacyNotice]:
     """
     Update one or more privacy notices.

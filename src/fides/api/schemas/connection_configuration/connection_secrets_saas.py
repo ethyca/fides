@@ -2,7 +2,7 @@ import abc
 from typing import Any, Dict, List, Type
 
 from fideslang.models import FidesDatasetReference
-from pydantic import BaseModel, Extra, Field, PrivateAttr, create_model, root_validator
+from pydantic import ConfigDict, BaseModel, Field, PrivateAttr, create_model, root_validator
 from pydantic.fields import FieldInfo
 from sqlalchemy.orm import Session
 
@@ -78,15 +78,7 @@ class SaaSSchema(BaseModel, abc.ABC):
             for name, property in cls.schema()["properties"].items()
             if "external_reference" in property and property["external_reference"]
         ]
-
-    class Config:
-        """
-        Certain SaaS workflows need to save secrets that are not part of the schema,
-        such as access and refresh tokens for OAuth2. So we allow extra fields
-        """
-
-        extra = Extra.ignore
-        orm_mode = True
+    model_config = ConfigDict(extra="ignore", from_attributes=True)
 
 
 class SaaSSchemaFactory:

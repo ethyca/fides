@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from celery.result import AsyncResult
 from loguru import logger
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 from sqlalchemy import (
     Boolean,
     Column,
@@ -115,9 +115,7 @@ class CheckpointActionRequired(FidesSchema):
     step: CurrentStep
     collection: Optional[CollectionAddress]
     action_needed: Optional[List[ManualAction]] = None
-
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 EmailRequestFulfillmentBodyParams = Dict[
@@ -160,12 +158,8 @@ class SecondPartyRequestFormat(BaseModel):
     direction: WebhookDirection
     callback_type: CallbackType
     identity: Identity
-    policy_action: Optional[ActionType]
-
-    class Config:
-        """Using enum values"""
-
-        use_enum_values = True
+    policy_action: Optional[ActionType] = None
+    model_config = ConfigDict(use_enum_values=True)
 
 
 def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:

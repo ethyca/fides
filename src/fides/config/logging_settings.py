@@ -4,7 +4,7 @@
 import os
 from logging import CRITICAL, DEBUG, ERROR, INFO, WARNING, getLevelName
 
-from pydantic import Field, validator
+from pydantic import field_validator, ConfigDict, Field
 
 from .fides_settings import FidesSettings
 from .utils import get_dev_mode
@@ -37,7 +37,8 @@ class LoggingSettings(FidesSettings):
         description="If True, PII values will display unmasked in log output. This variable should always be set to 'False' in production systems.",
     )
 
-    @validator("destination", pre=True)
+    @field_validator("destination", mode="before")
+    @classmethod
     @classmethod
     def get_destination(cls, value: str) -> str:
         """
@@ -45,7 +46,8 @@ class LoggingSettings(FidesSettings):
         """
         return value if os.path.exists(value) else ""
 
-    @validator("level", pre=True)
+    @field_validator("level", mode="before")
+    @classmethod
     @classmethod
     def validate_log_level(cls, value: str) -> str:
         """Ensure the provided LEVEL is a valid value."""
@@ -69,7 +71,8 @@ class LoggingSettings(FidesSettings):
 
         return value
 
-    @validator("serialization", pre=True)
+    @field_validator("serialization", mode="before")
+    @classmethod
     @classmethod
     def get_serialization(cls, value: str) -> str:
         """
@@ -77,6 +80,4 @@ class LoggingSettings(FidesSettings):
         """
         value = value.lower()
         return value if value == "json" else ""
-
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = ConfigDict(env_prefix=ENV_PREFIX)

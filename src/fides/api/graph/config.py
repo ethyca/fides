@@ -83,7 +83,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple
 
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, validator
+from pydantic import field_validator, ConfigDict, BaseModel
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.data_type import (
@@ -239,24 +239,20 @@ class Field(BaseModel, ABC):
     """references to other fields in any other datasets"""
     identity: Optional[SeedAddress] = None
     """an optional pointer to an arbitrary key in an expected json package provided as a seed value"""
-    data_categories: Optional[List[FidesKey]]
+    data_categories: Optional[List[FidesKey]] = None
     data_type_converter: DataTypeConverter = DataType.no_op.value
     return_all_elements: Optional[bool] = None
     # Should field be returned by query if it is in an entrypoint array field, or just if it matches query?
 
     """Known type of held data"""
-    length: Optional[int]
+    length: Optional[int] = None
     """Known length of held data"""
 
     is_array: bool = False
 
     read_only: Optional[bool] = None
     """Optionally specify if a field is read-only, meaning it can't be updated or deleted. """
-
-    class Config:
-        """for pydantic incorporation of custom non-pydantic types"""
-
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @abstractmethod
     def cast(self, value: Any) -> Optional[Any]:
@@ -305,7 +301,8 @@ class ObjectField(Field):
 
     fields: Dict[str, Field]
 
-    @validator("data_categories")
+    @field_validator("data_categories")
+    @classmethod
     @classmethod
     def validate_data_categories(
         cls, value: Optional[List[FidesKey]]
@@ -486,11 +483,7 @@ class Collection(BaseModel):
             for category in field.data_categories or []:
                 categories[category].append(field_path)
         return categories
-
-    class Config:
-        """for pydantic incorporation of custom non-pydantic types"""
-
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class GraphDataset(BaseModel):
