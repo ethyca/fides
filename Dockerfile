@@ -161,9 +161,10 @@ FROM backend as prod
 # Copy frontend build over
 COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
 
-USER root
 # Install without a symlink
 RUN python setup.py sdist
+
+USER root
 RUN pip install dist/ethyca-fides-*.tar.gz
 
 # Remove this directory to prevent issues with catch all
