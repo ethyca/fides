@@ -1702,4 +1702,43 @@ describe("Consent banner", () => {
       });
     });
   });
+
+  describe("consent overlay buttons", () => {
+    it("only shows the save button when a single privacy notice is configured", () => {
+      stubConfig({
+        experience: {
+          privacy_notices: [
+            mockPrivacyNotice({
+              name: "Marketing",
+              has_gpc_flag: true,
+            }),
+          ],
+        },
+      });
+      cy.get("button").contains("Manage preferences").click();
+      cy.get(".fides-modal-button-group")
+        .find("button")
+        .should("have.length", 1);
+    });
+    it("shows all buttons when multiple privacy notices are configured", () => {
+      stubConfig({
+        experience: {
+          privacy_notices: [
+            mockPrivacyNotice({
+              name: "Marketing",
+              has_gpc_flag: true,
+            }),
+            mockPrivacyNotice({
+              name: "Functional",
+              has_gpc_flag: true,
+            }),
+          ],
+        },
+      });
+      cy.get("button").contains("Manage preferences").click();
+      cy.get(".fides-modal-button-group")
+        .find("button")
+        .should("have.length", 3);
+    });
+  });
 });
