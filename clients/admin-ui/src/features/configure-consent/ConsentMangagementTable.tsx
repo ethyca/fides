@@ -1,4 +1,4 @@
-import { Flex } from "@fidesui/react";
+import { Flex, Button, useDisclosure } from "@fidesui/react";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -15,7 +15,11 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ConsentManagementFilterModal,
+  useConsentManagementFilters,
+} from "~/features/configure-consent/ConsentManagementFilterModal";
 
 import {
   useGetHealthQuery,
@@ -34,7 +38,27 @@ const emptyVendorReportResponse: VendorReportResponse = {
   pages: 1,
 };
 export const ConsentManagementTable = () => {
+  const { tcf: isTcfEnabled } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
+  const [globalFilter, setGlobalFilter] = useState();
+
+  const {
+    isOpen: isFilterOpen,
+    onOpen: onOpenFilter,
+    onClose: onCloseFilter,
+    resetFilters,
+    dataUseOptions,
+    onCheckboxChange,
+  } = useConsentManagementFilters();
+
+  const selectedDataUseFilters = useMemo(() => {
+    const checkedOptions = dataUseOptions.filter((option) => option.isChecked);
+    return checkedOptions.length > 0
+      ? "data_uses=" +
+          checkedOptions.map((option) => option.value).join("&data_uses=")
+      : undefined;
+  }, [dataUseOptions]);
+
   const {
     PAGE_SIZES,
     pageSize,
@@ -53,7 +77,12 @@ export const ConsentManagementTable = () => {
     isFetching: isReportFetching,
     isLoading: isReportLoading,
     data: vendorReport,
-  } = useGetVendorReportQuery({ pageIndex, pageSize });
+  } = useGetVendorReportQuery({
+    pageIndex,
+    pageSize,
+    dataUses: selectedDataUseFilters,
+    search: globalFilter,
+  });
 
   const {
     items: data,
@@ -97,6 +126,36 @@ export const ConsentManagementTable = () => {
   }
   return (
     <Flex flex={1} direction="column" overflow="auto">
+      <TableActionBar>
+        <GlobalFilterV2
+          globalFilter={globalFilter}
+          setGlobalFilter={setGlobalFilter}
+          placeholder="Search"
+        />
+        <ConsentManagementFilterModal
+          isOpen={isFilterOpen}
+          onClose={onCloseFilter}
+          resetFilters={resetFilters}
+          dataUseOptions={dataUseOptions}
+          onCheckboxChange={onCheckboxChange}
+        />
+        <Flex alignItems="center">
+          {isTcfEnabled ? (
+            // Wrap in a span so it is consistent height with the add button, whose
+            // Tooltip wraps a span
+            <span>
+              <Button
+                onClick={onOpenFilter}
+                data-testid="filter-multiple-systems-btn"
+                size="xs"
+                variant="outline"
+              >
+                Filter
+              </Button>
+            </span>
+          ) : null}
+        </Flex>
+      </TableActionBar>
       <FidesTableV2 tableInstance={tableInstance} />
       <PaginationBar
         totalRows={totalRows}

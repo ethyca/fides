@@ -313,13 +313,28 @@ const plusApi = baseApi.injectEndpoints({
     }),
     getVendorReport: build.query<
       VendorReportResponse,
-      { pageIndex: number; pageSize: number }
+      {
+        pageIndex: number;
+        pageSize: number;
+        search?: string;
+        dataUses?: string;
+      }
     >({
-      query: ({ pageIndex, pageSize }) => ({
-        url: `plus/system/paginated`,
-        params: { page: pageIndex, size: pageSize },
-        method: "GET",
-      }),
+      query: ({ pageIndex, pageSize, dataUses, search }) => {
+        let queryString = `page=${pageIndex}&size=${pageSize}`;
+        if (dataUses) {
+          queryString = queryString + `&${dataUses}`;
+        }
+
+        if (search) {
+          queryString = queryString + `&search=${search}`;
+        }
+
+        return {
+          url: `plus/system/paginated?${queryString}`,
+          method: "GET",
+        };
+      },
       providesTags: ["System"],
     }),
     getDictionaryDataUses: build.query<
