@@ -172,7 +172,7 @@ const fidesEventToTcString = (event: FidesEvent) => {
  * Initializes the CMP API, including setting up listeners on FidesEvents to update
  * the CMP API accordingly.
  */
-export const initializeCmpApi = () => {
+export const initializeTcfCmpApi = () => {
   makeStub();
   const isServiceSpecific = true; // TODO: determine this from the backend?
   const cmpApi = new CmpApi(CMP_ID, CMP_VERSION, isServiceSpecific, {

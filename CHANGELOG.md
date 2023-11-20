@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.24.1...main)
 
+### Added
+- Stub for initial GPP support [#4431](https://github.com/ethyca/fides/pull/4431)
+
 ### Changed
 - Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
 
