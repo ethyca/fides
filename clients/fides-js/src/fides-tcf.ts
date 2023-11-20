@@ -318,6 +318,7 @@ _Fides = {
     fidesApiUrl: "",
     serverSideFidesApiUrl: "",
     tcfEnabled: true,
+    gppEnabled: false,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
     fidesDisableBanner: false,

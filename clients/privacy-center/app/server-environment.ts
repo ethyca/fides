@@ -52,6 +52,7 @@ export interface PrivacyCenterSettings {
   FIDES_DISABLE_BANNER: boolean | false; // (optional) Whether we should disable showing the banner
   FIDES_STRING: string | null; // (optional) An explicitly passed-in string that supersedes the cookie. Can contain both TC and AC strings
   IS_FORCED_TCF: boolean; // whether to force the privacy center to use the fides-tcf.js bundle
+  IS_GPP_ENABLED: boolean; // whether GPP is enabled
 }
 
 /**
@@ -76,6 +77,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_DISABLE_BANNER"
   | "FIDES_STRING"
   | "IS_FORCED_TCF"
+  | "IS_GPP_ENABLED"
 >;
 
 export type Styles = string;
@@ -334,6 +336,9 @@ export const loadPrivacyCenterEnvironment =
       IS_FORCED_TCF: process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF
         ? process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF === "true"
         : false,
+      IS_GPP_ENABLED: process.env.FIDES_PRIVACY_CENTER__IS_GPP_ENABLED
+        ? process.env.FIDES_PRIVACY_CENTER__IS_GPP_ENABLED === "true"
+        : false,
     };
 
     // Load configuration file (if it exists)
@@ -360,6 +365,7 @@ export const loadPrivacyCenterEnvironment =
       FIDES_DISABLE_BANNER: settings.FIDES_DISABLE_BANNER,
       FIDES_STRING: settings.FIDES_STRING,
       IS_FORCED_TCF: settings.IS_FORCED_TCF,
+      IS_GPP_ENABLED: settings.IS_GPP_ENABLED,
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present

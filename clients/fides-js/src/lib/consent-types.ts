@@ -81,6 +81,9 @@ export type FidesOptions = {
 
   // Allows for explicit overrides on various internal API calls made from Fides.
   apiOptions: FidesApiOptions | null;
+
+  // Whether or the GPP extension should be loaded
+  gppEnabled: boolean;
 };
 
 export type GetPreferencesFnResp = {

@@ -149,6 +149,8 @@ export default async function handler(
       fidesDisableSaveApi: environment.settings.FIDES_DISABLE_SAVE_API,
       fidesDisableBanner: environment.settings.FIDES_DISABLE_BANNER,
       fidesString,
+      // DEFER(PROD#1361): this should come from the backend
+      gppEnabled: environment.settings.IS_GPP_ENABLED,
       // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
       apiOptions: null,
     },
