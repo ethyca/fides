@@ -17,6 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.24.0...main)
 
+### Added
+- Logging when root user and client credentials are used [#4432](https://github.com/ethyca/fides/pull/4432)
 ### Changed
 - Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
 
