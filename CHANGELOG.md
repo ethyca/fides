@@ -15,14 +15,18 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.24.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.24.1...main)
+
+### Changed
+- Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
+
+
+## [2.24.1](https://github.com/ethyca/fides/compare/2.24.0...2.24.1)
 
 ### Added
 - Logging when root user and client credentials are used [#4432](https://github.com/ethyca/fides/pull/4432)
 
-
 ### Changed
-- Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
 - Run fides with non-root user [#4421](https://github.com/ethyca/fides/pull/4421)
 
 
