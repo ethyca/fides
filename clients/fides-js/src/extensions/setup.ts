@@ -2,7 +2,7 @@
  * The path where the GPP extension bundle is located,
  * likely served by the privacy center
  */
-const GPP_EXT_PATH = "/gpp-ext-test.js";
+const GPP_EXT_PATH = "/gpp-ext.js";
 
 // DEFER(PROD#1361): Get if GPP is enabled from the backend
 const GPP_ENABLED = false;
