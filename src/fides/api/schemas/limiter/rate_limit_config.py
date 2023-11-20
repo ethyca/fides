@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import field_validator, BaseModel, model_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 
 class RateLimitPeriod(str, Enum):

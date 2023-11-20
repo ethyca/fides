@@ -1,5 +1,6 @@
 from typing import Any, Dict
 
+from pydantic import ConfigDict
 from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
@@ -7,7 +8,6 @@ from sqlalchemy.ext.mutable import MutableDict
 
 from fides.api.db.base_class import Base
 from fides.api.schemas.messaging.messaging import MessagingActionType
-from pydantic import ConfigDict
 
 # Provides default values for initializing the database or replacing deleted values for messaging templates.
 # Note: There are additional MessagingActionTypes that are internally used but are not exposed for user customization.

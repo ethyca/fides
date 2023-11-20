@@ -1,6 +1,6 @@
-from typing import Any, Dict, List, Union
+from typing import Any, List, Union
 
-from pydantic import model_validator, BaseModel
+from pydantic import BaseModel, model_validator
 
 from fides.api.schemas.policy import PolicyMaskingSpec
 
@@ -12,9 +12,8 @@ class MaskingAPIRequest(BaseModel):
     masking_strategy: Union[PolicyMaskingSpec, List[PolicyMaskingSpec]]
     masking_strategies: List[PolicyMaskingSpec] = []
 
-    @model_validator()
-    @classmethod
-    def build_masking_strategies(cls, values: Dict) -> Dict:
+    @model_validator(mode="after")
+    def build_masking_strategies(self) -> "MaskingAPIRequest":
         """
         Update "masking_strategies" field by inspecting "masking_strategy".
         The ability to specify one or more masking strategies was added in a
@@ -23,12 +22,10 @@ class MaskingAPIRequest(BaseModel):
         set the "masking_strategies" value from there.
         Masking_strategies should not be supplied directly.
         """
-        strategy = values.get("masking_strategy")
-        values["masking_strategies"] = (
-            strategy if isinstance(strategy, list) else [strategy]
-        )
+        strategy = self.masking_strategy
+        self.masking_strategies = strategy if isinstance(strategy, list) else [strategy]
 
-        return values
+        return self
 
 
 class MaskingAPIResponse(BaseModel):

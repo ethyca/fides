@@ -2,11 +2,11 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional
 
 from fideslang.validation import FidesKey
+from pydantic import ConfigDict
 
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.storage.storage import StorageDestinationResponse
-from pydantic import ConfigDict
 
 
 class ActionType(str, EnumType):

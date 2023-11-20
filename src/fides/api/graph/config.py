@@ -83,7 +83,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple
 
 from fideslang.validation import FidesKey
-from pydantic import field_validator, ConfigDict, BaseModel
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.data_type import (
@@ -483,6 +483,7 @@ class Collection(BaseModel):
             for category in field.data_categories or []:
                 categories[category].append(field_path)
         return categories
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 

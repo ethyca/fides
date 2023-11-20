@@ -16,6 +16,7 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
+from typing_extensions import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import (
@@ -38,7 +39,6 @@ from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
 from fides.common.api import scope_registry
 from fides.common.api.v1 import urn_registry as urls
-from typing_extensions import Annotated
 
 router = APIRouter(tags=["DSR Policy"], prefix=urls.V1_URL_PREFIX)
 
@@ -104,7 +104,7 @@ def create_or_update_policies(
         scopes=[scope_registry.POLICY_CREATE_OR_UPDATE],
     ),
     db: Session = Depends(deps.get_db),
-    data: Annotated[List[schemas.Policy], Field(max_items=50)] = Body(...),  # type: ignore
+    data: Annotated[List[schemas.Policy], Body(max_items=50)],
 ) -> schemas.BulkPutPolicyResponse:
     """
     Given a list of policy data elements, create or update corresponding Policy objects
@@ -236,7 +236,7 @@ def create_or_update_rules(
     ),
     policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    input_data: Annotated[List[schemas.RuleCreate], Field(max_items=50)] = Body(...),  # type: ignore
+    input_data: Annotated[List[schemas.RuleCreate], Body(max_items=50)],
 ) -> schemas.BulkPutRuleResponse:
     """
     Given a list of Rule data elements, create or update corresponding Rule objects
@@ -487,7 +487,7 @@ def create_or_update_rule_targets(
     policy_key: FidesKey,
     rule_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    input_data: Annotated[List[schemas.RuleTarget], Field(max_items=50)] = Body(...),  # type: ignore
+    input_data: Annotated[List[schemas.RuleTarget], Body(max_items=50)],
 ) -> schemas.BulkPutRuleTargetResponse:
     """
     Given a list of Rule data elements, create corresponding Rule objects

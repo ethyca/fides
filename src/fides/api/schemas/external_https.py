@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import ConfigDict, BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from fides.api.schemas.redis_cache import Identity
 

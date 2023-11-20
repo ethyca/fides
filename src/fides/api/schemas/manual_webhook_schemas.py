@@ -1,29 +1,23 @@
 from typing import TYPE_CHECKING, List, Optional, Set
 
 from fideslang.validation import FidesKey
-from pydantic import field_validator, Field, ConfigDict, ConstrainedStr
+from pydantic import ConfigDict, Field, StringConstraints, field_validator
+from typing_extensions import Annotated
 
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
 )
 from fides.api.util.text import to_snake_case
-from typing_extensions import Annotated
+
+PIIFieldType = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)
+]
 
 
-class PIIFieldType(ConstrainedStr):
-    """Using ConstrainedStr instead of constr to keep mypy happy"""
-
-    min_length = 1
-    max_length = 200
-    strip_whitespace = True
-
-
-class DSRLabelFieldType(ConstrainedStr):
-    """Using ConstrainedStr instead of constr to keep mypy happy"""
-
-    max_length = 200
-    strip_whitespace = True
+DSRLabelFieldType = Annotated[
+    str, StringConstraints(max_length=200, strip_whitespace=True)
+]
 
 
 class ManualWebhookField(FidesSchema):
@@ -43,6 +37,7 @@ class ManualWebhookField(FidesSchema):
         so converting to None here.
         """
         return None if value == "" else value
+
     model_config = ConfigDict(from_attributes=True)
 
 

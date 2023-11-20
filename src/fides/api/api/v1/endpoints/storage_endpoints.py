@@ -19,6 +19,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
+from typing_extensions import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, StorageUploadError
@@ -71,7 +72,6 @@ from fides.common.api.v1.urn_registry import (
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
-from typing_extensions import Annotated
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
 
@@ -123,7 +123,7 @@ def upload_data(
 def patch_config(
     *,
     db: Session = Depends(deps.get_db),
-    storage_configs: Annotated[List[StorageDestination], Field(max_items=50)],  # type: ignore
+    storage_configs: Annotated[List[StorageDestination], Body(max_items=50)],
 ) -> BulkPutStorageConfigResponse:
     """
     Given a list of storage destination elements, create or update corresponding StorageConfig objects

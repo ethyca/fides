@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import field_validator, ConfigDict, BaseModel, model_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from fides.api.schemas.saas.saas_config import Header, QueryParam, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import ConnectorParamRef, IdentityParamRef

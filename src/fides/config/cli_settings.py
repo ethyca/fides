@@ -2,7 +2,7 @@
 from typing import Dict, Optional
 
 from fideslog.sdk.python.utils import FIDESCTL_CLI, generate_client_id
-from pydantic import ConfigDict, AnyHttpUrl, Field, field_validator, model_validator
+from pydantic import AnyHttpUrl, ConfigDict, Field, field_validator, model_validator
 
 from .fides_settings import FidesSettings
 

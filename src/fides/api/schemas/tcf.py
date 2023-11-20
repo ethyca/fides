@@ -7,7 +7,7 @@ from fideslang.gvl import (
     MAPPED_SPECIAL_PURPOSES,
 )
 from fideslang.gvl.models import Feature, MappedPurpose
-from pydantic import field_validator, AnyUrl, model_validator
+from pydantic import AnyUrl, field_validator, model_validator
 
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema

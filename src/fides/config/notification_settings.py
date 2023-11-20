@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import field_validator, ConfigDict, Field
+from pydantic import ConfigDict, Field, field_validator
 
 from .fides_settings import FidesSettings
 
@@ -47,4 +47,5 @@ class NotificationSettings(FidesSettings):
                 )
 
         return value
+
     model_config = ConfigDict(env_prefix=ENV_PREFIX)

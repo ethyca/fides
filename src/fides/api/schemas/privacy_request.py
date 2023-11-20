@@ -3,7 +3,7 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Type, Union
 
 from fideslang.validation import FidesKey
-from pydantic import field_validator, ConfigDict, Field
+from pydantic import ConfigDict, Field, field_validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.audit_log import AuditLogAction

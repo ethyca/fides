@@ -4,7 +4,7 @@
 from typing import Dict, List, Optional, Pattern, Tuple, Union
 
 import validators
-from pydantic import field_validator, ConfigDict, AnyUrl, Field, validator
+from pydantic import AnyUrl, ConfigDict, Field, field_validator, validator
 from slowapi.wrappers import parse_many  # type: ignore
 
 from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
@@ -243,4 +243,5 @@ class SecuritySettings(FidesSettings):
             message = "Security environment must be either 'dev' or 'prod'."
             raise ValueError(message)
         return v
+
     model_config = ConfigDict(env_prefix=ENV_PREFIX)

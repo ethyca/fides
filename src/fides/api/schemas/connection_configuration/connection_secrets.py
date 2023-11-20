@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 from typing import Any, Dict, List, Optional
 
-from pydantic import ConfigDict, BaseModel, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.schemas import Msg

@@ -13,7 +13,8 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
-from pydantic import Field, ValidationError as PydanticValidationError
+from pydantic import Field
+from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import cast, column, null
 from sqlalchemy.orm import Query, Session
 from sqlalchemy.sql.expression import nullslast
@@ -26,6 +27,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_424_FAILED_DEPENDENCY,
 )
+from typing_extensions import Annotated
 
 from fides.api import common_exceptions
 from fides.api.api import deps
@@ -144,7 +146,6 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from typing_extensions import Annotated
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 
@@ -177,7 +178,7 @@ def create_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
-    data: Annotated[List[PrivacyRequestCreate], Field(max_items=50)] = Body(...),  # type: ignore
+    data: Annotated[List[PrivacyRequestCreate], Body(max_items=50)],
 ) -> BulkPostPrivacyRequests:
     """
     Given a list of privacy request data elements, create corresponding PrivacyRequest objects
@@ -197,7 +198,7 @@ def create_privacy_request_authenticated(
     *,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
-    data: Annotated[List[PrivacyRequestCreate], Field(max_items=50)] = Body(...),  # type: ignore
+    data: Annotated[List[PrivacyRequestCreate], Body(max_items=50)],
 ) -> BulkPostPrivacyRequests:
     """
     Given a list of privacy request data elements, create corresponding PrivacyRequest objects

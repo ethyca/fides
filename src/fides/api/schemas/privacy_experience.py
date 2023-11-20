@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import field_validator, ConfigDict, Field, HttpUrl, model_validator
+from pydantic import ConfigDict, Field, HttpUrl, field_validator, model_validator
 
 from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion

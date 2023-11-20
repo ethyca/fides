@@ -3,8 +3,8 @@ from typing import Any, Dict, List, Type
 
 from fideslang.models import FidesDatasetReference
 from pydantic import (
-    ConfigDict,
     BaseModel,
+    ConfigDict,
     Field,
     PrivateAttr,
     create_model,

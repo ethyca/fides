@@ -8,7 +8,8 @@ from fideslang.gvl import (
     MAPPED_SPECIAL_PURPOSES,
 )
 from fideslang.validation import FidesKey
-from pydantic import model_validator, Field
+from pydantic import Field, model_validator
+from typing_extensions import Annotated
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.privacy_notice import UserConsentPreference
@@ -33,7 +34,6 @@ from fides.api.util.tcf.tcf_experience_contents import (
     TCF_SECTION_MAPPING,
     TCFComponentType,
 )
-from typing_extensions import Annotated
 
 # Maps the sections in the request body for saving various TCF preferences
 # against the specific database column name on which these preferences are saved

@@ -7,11 +7,11 @@ from typing import Dict, List, Set, Tuple
 
 import toml
 from click import echo
+from pydantic_settings import BaseSettings
 
 from fides.cli.utils import request_analytics_consent
 from fides.config import FidesConfig, build_config
 from fides.config.utils import replace_config_value
-from pydantic_settings import BaseSettings
 
 CONFIG_DOCS_URL = "https://ethyca.github.io/fides/stable/config/"
 HELP_LINK = f"# For more info, please visit: {CONFIG_DOCS_URL}"

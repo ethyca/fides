@@ -49,9 +49,6 @@ async def evaluation_view(db: AsyncSession = Depends(get_async_db)) -> HTMLRespo
                 f"<li>Data Subjects: {violating_attributes.get('data_subjects')}</li>"
             )
             html += f"<li>Data Uses: {violating_attributes.get('data_uses')}</li>"
-            html += (
-                f"<li>Data Qualifier: {violating_attributes.get('data_qualifier')}</li>"
-            )
             html += f"<li>Detail: {violation.get('detail')}</li>"
             html += "</ul>"
         html += "</td>"

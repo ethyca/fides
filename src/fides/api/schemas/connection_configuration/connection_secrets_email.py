@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from pydantic import ConfigDict, BaseModel, EmailStr, model_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, model_validator
 
 from fides.api.schemas.base_class import NoValidationSchema
 

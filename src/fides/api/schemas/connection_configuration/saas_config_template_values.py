@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional
 
 from fideslang.validation import FidesKey
-from pydantic import ConfigDict, BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from fides.api.models.connectionconfig import AccessLevel, ConnectionType
 from fides.api.schemas.connection_configuration import connection_secrets_schemas

@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Union
 from fastapi import Depends, HTTPException, Security, status
 from fideslang.models import Dataset, Organization, System
 from loguru import logger as log
-from pydantic import model_validator, BaseModel
+from pydantic import BaseModel, model_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.api.v1.endpoints import API_PREFIX

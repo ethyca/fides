@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import field_validator, model_validator, ConfigDict, Field
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.messaging.messaging import MessagingServiceType
@@ -91,4 +91,5 @@ class ApplicationConfig(FidesSchema):
                 "Config body cannot be empty. DELETE endpoint can be used to null out application config."
             )
         return values
+
     model_config = ConfigDict(extra="forbid")

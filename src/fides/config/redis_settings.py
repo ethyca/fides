@@ -111,4 +111,5 @@ class RedisSettings(FidesSettings):
 
         connection_url = f"{connection_protocol}://{auth_prefix}{values.get('host', '')}:{values.get('port', '')}/{db_index}{params_str}"
         return connection_url
+
     model_config = ConfigDict(env_prefix=ENV_PREFIX)

@@ -1,13 +1,13 @@
 from typing import List, Optional
 
 from fideslang.validation import FidesKey
+from pydantic import ConfigDict
 
 from fides.api.models.policy import WebhookDirection
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
 )
-from pydantic import ConfigDict
 
 
 class WebhookBase(FidesSchema):
@@ -40,7 +40,9 @@ class PolicyWebhookUpdate(FidesSchema):
     name: Optional[str]
     connection_config_key: Optional[FidesKey]
     order: Optional[int]
-    model_config = ConfigDict(from_attributes=True, extra="forbid", use_enum_values=True)
+    model_config = ConfigDict(
+        from_attributes=True, extra="forbid", use_enum_values=True
+    )
 
 
 class WebhookOrder(FidesSchema):

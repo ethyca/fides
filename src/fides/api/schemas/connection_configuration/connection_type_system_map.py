@@ -1,6 +1,6 @@
 from typing import List, Optional, Union
 
-from pydantic import ConfigDict, BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from fides.api.models.connectionconfig import ConnectionType
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from fastapi import Depends
+from fastapi import Body, Depends
 from fastapi.params import Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -14,6 +14,7 @@ from sqlalchemy import null, or_
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT
+from typing_extensions import Annotated
 
 from fides.api.api import deps
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -49,7 +50,6 @@ from fides.common.api.v1.urn_registry import (
     CONNECTIONS,
     V1_URL_PREFIX,
 )
-from typing_extensions import Annotated
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 
@@ -173,7 +173,9 @@ def get_connection_detail(
 def patch_connections(
     *,
     db: Session = Depends(deps.get_db),
-    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_items=50)],  # type: ignore
+    configs: Annotated[
+        List[CreateConnectionConfigurationWithSecrets], Body(max_items=50)
+    ],
 ) -> BulkPutConnectionConfiguration:
     """
     Given a list of connection config data elements, optionally containing the secrets,

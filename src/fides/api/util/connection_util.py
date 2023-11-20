@@ -11,6 +11,7 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
+from typing_extensions import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import (
@@ -59,7 +60,6 @@ from fides.api.service.privacy_request.request_runner_service import (
 )
 from fides.api.util.logger import Pii
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
-from typing_extensions import Annotated
 
 # pylint: disable=too-many-nested-blocks,too-many-branches,too-many-statements
 

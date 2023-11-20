@@ -11,7 +11,7 @@ deepdiff==6.3.0
 defusedxml==0.7.1
 expandvars==0.9.0
 fastapi[all]==0.104.1
-fastapi-pagination[sqlalchemy]==0.11.4
+fastapi-pagination[sqlalchemy]==0.12.12
 #fideslang==2.2.2
 fideslang@git+https://github.com/ethyca/fideslang.git@ThomasLaPiana-bump-pydantic-2
 fideslog==1.2.10

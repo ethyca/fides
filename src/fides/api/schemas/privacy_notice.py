@@ -5,18 +5,13 @@ from typing import Any, Dict, List, Optional
 
 from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesKey
-from pydantic import (
-    field_validator,
-    model_validator,
-    Field,
-    ConfigDict,
-)
+from pydantic import ConfigDict, Field, field_validator, model_validator
+from typing_extensions import Annotated
 
 from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
 from fides.api.models.privacy_notice import PrivacyNotice as PrivacyNoticeModel
 from fides.api.models.privacy_notice import PrivacyNoticeRegion, UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
-from typing_extensions import Annotated
 
 
 class PrivacyNotice(FidesSchema):

@@ -6,13 +6,7 @@ from copy import deepcopy
 from typing import Dict, Optional, Union, cast
 from urllib.parse import quote, urlencode
 
-from pydantic import (
-    ConfigDict,
-    Field,
-    PostgresDsn,
-    ValidationInfo,
-    field_validator,
-)
+from pydantic import ConfigDict, Field, PostgresDsn, ValidationInfo, field_validator
 
 from fides.config.utils import get_test_mode
 

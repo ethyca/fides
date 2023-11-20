@@ -1,4 +1,4 @@
-from pydantic import field_validator, BaseModel
+from pydantic import BaseModel, field_validator
 
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
 from fides.config import CONFIG

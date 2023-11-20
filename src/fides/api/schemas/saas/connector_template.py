@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from fideslang.models import Dataset
-from pydantic import field_validator, BaseModel
+from pydantic import BaseModel, field_validator
 
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig

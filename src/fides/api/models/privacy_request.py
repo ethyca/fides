@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from celery.result import AsyncResult
 from loguru import logger
-from pydantic import ConfigDict, BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy import (
     Boolean,
     Column,

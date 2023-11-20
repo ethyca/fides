@@ -1,13 +1,8 @@
 from typing import Any, Dict, List, Optional, Set, Union
 
 from fideslang.models import FidesDatasetReference
-from fideslang.validation import FidesKey, FidesCollectionKey
-from pydantic import (
-    field_validator,
-    model_validator,
-    ConfigDict,
-    BaseModel,
-)
+from fideslang.validation import FidesCollectionKey, FidesKey
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from fides.api.common_exceptions import ValidationError
 from fides.api.graph.config import (

@@ -5,9 +5,9 @@ from fideslang.validation import FidesKey
 from pydantic import (
     ConfigDict,
     ValidationError,
+    ValidationInfo,
     field_validator,
     model_validator,
-    ValidationInfo,
 )
 from pydantic.main import BaseModel
 

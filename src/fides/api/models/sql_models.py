@@ -177,23 +177,6 @@ class DataCategory(Base, FidesBase):
         )
 
 
-class DataQualifier(Base, FidesBase):
-    """
-    The SQL model for the DataQualifier resource.
-    """
-
-    __tablename__ = "ctl_data_qualifiers"
-
-    parent_key = Column(Text)
-    active = Column(BOOLEAN, default=True, nullable=False)
-
-    # Default Fields
-    is_default = Column(BOOLEAN, default=False)
-    version_added = Column(Text)
-    version_deprecated = Column(Text)
-    replaced_by = Column(Text)
-
-
 class DataSubject(Base, FidesBase):
     """
     The SQL model for the DataSubject resource.
@@ -552,7 +535,6 @@ class SystemScans(Base):
 sql_model_map: Dict = {
     "client_detail": ClientDetail,
     "data_category": DataCategory,
-    "data_qualifier": DataQualifier,
     "data_subject": DataSubject,
     "data_use": DataUse,
     "dataset": Dataset,
