@@ -331,7 +331,7 @@ async def delete_resource(
                 raw_error_text: str = err.orig.args[0]
 
                 if "violates foreign key constraint" in raw_error_text:
-                    error_message = "Failed to delete resource! Foreign key constraint found, try deleting related objects first."
+                    error_message = "Failed to delete resource! Foreign key constraint found, try deleting related resources first."
                 else:
                     error_message = "Failed to delete resource!"
 
