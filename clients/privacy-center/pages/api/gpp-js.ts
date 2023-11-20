@@ -4,7 +4,7 @@ import { CacheControl, stringify } from "cache-control-parser";
 
 import { LOCATION_HEADERS } from "~/common/geolocation";
 
-// one hour, how long the client should cache fides.js for
+// one hour, how long the client should cache gpp-ext.js for
 const GPP_JS_MAX_AGE_SECONDS = 60 * 60;
 
 /**
