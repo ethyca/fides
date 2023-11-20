@@ -191,7 +191,7 @@ def _supplement_request_data_from_request_headers(
 def get_ip_address(request: Request) -> Optional[str]:
     """Get client ip, preferring x-forwarded-for if it exists, otherwise, dropping back to
     request.client.host"""
-    x_forwarded_for = request.headers.get("x-forwarded-for")
+    x_forwarded_for = request.headers.get("x-forwarded-for") if request.headers else None
 
     client_ip: Optional[str] = None
     if x_forwarded_for:
@@ -201,7 +201,7 @@ def get_ip_address(request: Request) -> Optional[str]:
             pass
 
     if not client_ip:
-        client_ip: request.client.host if request.client else None
+        client_ip = request.client.host if request.client else None
 
     return client_ip
 
