@@ -14,15 +14,17 @@ import {
 import React, { ReactNode } from "react";
 
 type FilterSectionProps = {
-  heading: string;
+  heading?: string;
   children: ReactNode;
 };
 
 export const FilterSection = ({ heading, children }: FilterSectionProps) => (
   <Box padding="24px 8px 8px 24px">
-    <Heading size="md" lineHeight={6} fontWeight="bold" mb={2}>
-      {heading}
-    </Heading>
+    {heading ? (
+      <Heading size="md" lineHeight={6} fontWeight="bold" mb={2}>
+        {heading}
+      </Heading>
+    ) : null}
     {children}
   </Box>
 );

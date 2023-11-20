@@ -115,7 +115,7 @@ const AccordionMultifieldFilter = ({
         </Heading>
         <AccordionPanel>
           <SimpleGrid columns={3}>
-            {options.map((option) => (
+            {viewableOptions.map((option) => (
               <AccordionMultiFieldCheckBox
                 {...option}
                 onCheckboxChange={onCheckboxChange}
@@ -215,7 +215,7 @@ export const ConsentManagementFilterModal = ({
 }: Props) => {
   return (
     <FilterModal isOpen={isOpen} onClose={onClose} resetFilters={resetFilters}>
-      <FilterSection heading="Data Use">
+      <FilterSection>
         <AccordionMultifieldFilter
           options={dataUseOptions}
           onCheckboxChange={onCheckboxChange}
