@@ -242,6 +242,18 @@ def read_other_paths(request: Request) -> Response:
     return get_admin_index_as_response()
 
 
+def warn_root_user_enabled() -> None:
+    """
+    Log a startup warning if root user is enabled.
+    Extracted as a function because this may need to be done in multiple places,
+    depending on how the server is started.
+    """
+    if CONFIG.security.root_username or CONFIG.security.oauth_root_client_id:
+        logger.warning(
+            "Root Username & Password are configured and can be used to login as a root user. If unexpected, review security settings (FIDES__SECURITY__ROOT_USERNAME and FIDES__SECURITY__ROOT_PASSWORD)"
+        )
+
+
 @app.on_event("startup")
 async def setup_server() -> None:
     """Run all of the required setup steps for the webserver.
@@ -283,6 +295,8 @@ async def setup_server() -> None:
     if not CONFIG.logging.serialization:
         logger.info(FIDES_ASCII_ART)
 
+    warn_root_user_enabled()
+
     logger.info("Fides startup complete! v{}", VERSION)
     startup_time = round(perf_counter() - start_time, 3)
     logger.info("Server setup completed in {} seconds", startup_time)
@@ -299,6 +313,9 @@ def start_webserver(port: int = 8080) -> None:
         server.config.port,
         server.config.log_level,
     )
+
+    warn_root_user_enabled()
+
     server.run()
 
 
