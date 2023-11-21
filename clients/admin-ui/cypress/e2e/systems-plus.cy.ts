@@ -85,11 +85,6 @@ describe("System management with Plus features", () => {
       cy.getByTestId("refresh-suggestions-btn").should("not.be.disabled");
     });
 
-    it("locks editing for a GVL vendor when TCF is enabled", () => {
-      cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
-      cy.getByTestId("locked-for-GVL-notice");
-    });
-
     // some DictSuggestionTextInputs don't get populated right, causing
     // the form to be mistakenly marked as dirty and the "unsaved changes"
     // modal to pop up incorrectly when switching tabs
@@ -134,28 +129,7 @@ describe("System management with Plus features", () => {
 
     it("does not allow changes to data uses when locked", () => {
       cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
-      cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
-        cy.fixture("systems/system.json").then((origSystem) => {
-          cy.intercept(
-            { method: "GET", url: "/api/v1/system/demo_analytics_system" },
-            {
-              body: {
-                ...origSystem,
-                ...dictSystem,
-                fides_key: origSystem.fides_key,
-                customFieldValues: undefined,
-                data_protection_impact_assessment: undefined,
-              },
-            }
-          ).as("getDictSystem");
-        });
-      });
-      cy.intercept({ method: "PUT", url: "/api/v1/system*" }).as(
-        "putDictSystem"
-      );
       cy.getByTestId("save-btn").click();
-      cy.wait("@putDictSystem");
-      cy.wait("@getDictSystem");
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").should("not.exist");
       cy.getByTestId("delete-btn").should("not.exist");
@@ -167,6 +141,16 @@ describe("System management with Plus features", () => {
       cy.getSelectValueContainer("input-vendor_id").type("L{enter}");
       cy.getByTestId("locked-for-GVL-notice").should("not.exist");
       cy.getByTestId("input-description").should("not.be.disabled");
+    });
+
+    it("allows changes to data uses for non-GVL vendors", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("L{enter}");
+      cy.getByTestId("save-btn").click();
+      cy.getByTestId("tab-Data uses").click();
+      cy.getByTestId("add-btn");
+      cy.getByTestId("delete-btn");
+      cy.getByTestId("row-functional.service.improve").click();
+      cy.getByTestId("input-name").should("not.be.disabled");
     });
   });
 
