@@ -33,6 +33,8 @@ const getTableTHandTDStyles = (cellId: string) =>
 declare module "@tanstack/table-core" {
   interface ColumnMeta<TData extends RowData, TValue> {
     width?: string;
+    minWidth?: string;
+    maxWidth?: string;
   }
 }
 /* eslint-enable */
@@ -75,11 +77,6 @@ export const FidesTableV2 = <T,>({
             {headerGroup.headers.map((header) => (
               <Th
                 key={header.id}
-                width={
-                  header.column.columnDef.meta?.width
-                    ? header.column.columnDef.meta.width
-                    : "unset"
-                }
                 borderTopWidth="1px"
                 borderTopColor="gray.200"
                 borderBottomWidth="1px"
@@ -92,7 +89,12 @@ export const FidesTableV2 = <T,>({
                 }}
                 colSpan={header.colSpan}
                 data-testid={`column-${header.id}`}
-                style={getTableTHandTDStyles(header.column.id)}
+                style={{
+                  ...getTableTHandTDStyles(header.column.id),
+                  width: header.column.columnDef.meta?.width || "unset",
+                  minWidth: header.column.columnDef.meta?.minWidth || "unset",
+                  maxWidth: header.column.columnDef.meta?.maxWidth || "unset",
+                }}
                 textTransform="unset"
               >
                 {flexRender(

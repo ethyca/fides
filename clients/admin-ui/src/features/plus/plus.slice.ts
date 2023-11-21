@@ -59,6 +59,8 @@ export type VendorReport = {
   name: string;
   data_uses: string;
   legal_bases: string;
+  consent_categories: string;
+  cookies: string;
 };
 
 export type VendorReportResponse = {

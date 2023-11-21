@@ -28,6 +28,8 @@ import {
   VendorReport,
   VendorReportResponse,
 } from "~/features/plus/plus.slice";
+import { useLazyGetSystemByFidesKeyQuery } from "~/features/system/system.slice";
+import AddVendor from "~/features/configure-consent/AddVendor";
 
 const columnHelper = createColumnHelper<VendorReport>();
 
@@ -42,6 +44,8 @@ export const ConsentManagementTable = () => {
   const { tcf: isTcfEnabled } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const [globalFilter, setGlobalFilter] = useState();
+  const [systemToEdit, setSystemToEdit] = useState();
+  const [getSystemByFidesKey] = useLazyGetSystemByFidesKeyQuery();
 
   const {
     isOpen: isFilterOpen,
@@ -101,18 +105,57 @@ export const ConsentManagementTable = () => {
         id: "name",
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Vendor" {...props} />,
+        meta: {
+          maxWidth: "350px",
+        },
       }),
       columnHelper.accessor((row) => row.data_uses, {
-        id: "Data Uses",
+        id: "tcf_purpose",
+        cell: (props) => (
+          <BadgeCell suffix="Purposes" value={props.getValue()} />
+        ),
+        header: (props) => <DefaultHeaderCell value="TCF purpose" {...props} />,
+        meta: {
+          width: "175px",
+        },
+      }),
+      columnHelper.accessor((row) => row.data_uses, {
+        id: "data_uses",
         cell: (props) => (
           <BadgeCell suffix="Data uses" value={props.getValue()} />
         ),
         header: (props) => <DefaultHeaderCell value="Data Uses" {...props} />,
+        meta: {
+          width: "175px",
+        },
       }),
       columnHelper.accessor((row) => row.legal_bases, {
         id: "legal_bases",
         cell: (props) => <BadgeCell suffix="Bases" value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Legal Bases" {...props} />,
+        meta: {
+          width: "175px",
+        },
+      }),
+      columnHelper.accessor((row) => row.consent_categories, {
+        id: "consent_categories",
+        cell: (props) => (
+          <BadgeCell suffix="Categories" value={props.getValue()} />
+        ),
+        header: (props) => <DefaultHeaderCell value="Categories" {...props} />,
+        meta: {
+          width: "175px",
+        },
+      }),
+      columnHelper.accessor((row) => row.cookies, {
+        id: "cookies",
+        cell: (props) => (
+          <BadgeCell suffix="Cookies" value={props.getValue()} />
+        ),
+        header: (props) => <DefaultHeaderCell value="Cookies" {...props} />,
+        meta: {
+          width: "175px",
+        },
       }),
     ],
     []
@@ -121,14 +164,36 @@ export const ConsentManagementTable = () => {
   const tableInstance = useReactTable<VendorReport>({
     columns: tcfColumns,
     data,
+    state: {
+      columnVisibility: {
+        tcf_purpose: isTcfEnabled,
+        data_uses: isTcfEnabled,
+        legal_basis: isTcfEnabled,
+        consent_categories: !isTcfEnabled,
+        cookies: !isTcfEnabled,
+      },
+    },
     getCoreRowModel: getCoreRowModel(),
   });
+
+  const onRowClick = async (row: VendorReport) => {
+    console.log(row);
+    const result = await getSystemByFidesKey(row.fides_key);
+    console.log(result);
+    setSystemToEdit(result.data);
+  };
 
   if (isReportLoading || isLoadingHealthCheck) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
   return (
     <Flex flex={1} direction="column" overflow="auto">
+      <AddVendor
+        passedInSystem={systemToEdit}
+        onCloseModal={() => setSystemToEdit(undefined)}
+        showButtons={false}
+        disableFields
+      />
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={globalFilter}
@@ -159,7 +224,7 @@ export const ConsentManagementTable = () => {
           ) : null}
         </Flex>
       </TableActionBar>
-      <FidesTableV2 tableInstance={tableInstance} />
+      <FidesTableV2 tableInstance={tableInstance} onRowClick={onRowClick} />
       <PaginationBar
         totalRows={totalRows}
         pageSizes={PAGE_SIZES}
