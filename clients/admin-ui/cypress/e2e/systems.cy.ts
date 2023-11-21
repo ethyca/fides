@@ -461,13 +461,23 @@ describe("System management page", () => {
 
   describe("Data uses", () => {
     beforeEach(() => {
-      stubSystemCrud();
-      stubTaxonomyEntities();
-      cy.fixture("systems/systems.json").then((systems) => {
-        cy.intercept("GET", "/api/v1/system/*", {
-          body: systems[0],
-        }).as("getFidesctlSystem");
+      cy.intercept("/api/v1/system/*", {
+        fixture: "systems/system.json",
+      }).as("getDemoAnalyticsSystem");
+      cy.visit(`/${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+      cy.wait("@getDemoAnalyticsSystem");
+      cy.fixture("systems/system.json").then((system) => {
+        const newSystem = { ...system, fides_key: "demo_analytics_system" };
+        cy.intercept("PUT", "/api/v1/system*", { body: newSystem }).as(
+          "putDemoAnalyticsSystem"
+        );
       });
+
+      cy.getByTestId("tab-Data uses").click();
+    });
+
+    it("shows data uses in the data use tab", () => {
+      cy.getByTestId("row-functional.service.improve");
     });
 
     it.skip("warns when a data use and processing activity is being added that is already used", () => {
@@ -618,11 +628,9 @@ describe("System management page", () => {
 
     describe("delete privacy declaration", () => {
       beforeEach(() => {
-        cy.fixture("systems/system.json").then((system) => {
-          cy.intercept("GET", "/api/v1/system/*", {
-            body: system,
-          }).as("getDemoAnalyticsSystem");
-        });
+        cy.intercept("/api/v1/system/*", {
+          fixture: "systems/system.json",
+        }).as("getDemoAnalyticsSystem");
         cy.visit(`/${SYSTEM_ROUTE}/configure/demo_analytics_system`);
         cy.wait("@getDemoAnalyticsSystem");
         cy.fixture("systems/system.json").then((system) => {
@@ -643,7 +651,6 @@ describe("System management page", () => {
       it("can show a modal on deleting a privacy declaration", () => {
         cy.getByTestId("delete-btn").click();
         cy.getByTestId("continue-btn").click();
-        cy.wait("@putDemoAnalyticsSystem");
         cy.getByTestId("toast-success-msg").contains("Data use deleted");
       });
 

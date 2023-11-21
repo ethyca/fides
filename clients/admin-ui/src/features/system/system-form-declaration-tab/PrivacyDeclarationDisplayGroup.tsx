@@ -73,6 +73,7 @@ const PrivacyDeclarationRow = ({
                     continue?
                   </Text>
                 }
+                isCentered
               />
             </>
           ) : null}
