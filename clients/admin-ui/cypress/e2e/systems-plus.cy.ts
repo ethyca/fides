@@ -130,6 +130,7 @@ describe("System management with Plus features", () => {
     it("does not allow changes to data uses when locked", () => {
       cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
       cy.getByTestId("save-btn").click();
+      cy.wait("@putSystem");
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").should("not.exist");
       cy.getByTestId("delete-btn").should("not.exist");
@@ -146,6 +147,7 @@ describe("System management with Plus features", () => {
     it("allows changes to data uses for non-GVL vendors", () => {
       cy.getSelectValueContainer("input-vendor_id").type("L{enter}");
       cy.getByTestId("save-btn").click();
+      cy.wait("@putSystem");
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn");
       cy.getByTestId("delete-btn");
