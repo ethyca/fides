@@ -201,7 +201,7 @@ class PrivacyNoticeBase:
     def generate_notice_key(cls, name: Optional[str]) -> FidesKey:
         """Generate a notice key from a notice name"""
         if not isinstance(name, str):
-            raise Exception("Privacy notice keys must be generated from a string.")
+            raise ValueError("Privacy notice keys must be generated from a string.")
         notice_key: str = re.sub(r"\s+", "_", name.lower().strip())
         return FidesKey(validate_fides_key(notice_key))
 
@@ -274,7 +274,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         if self.consent_mechanism == ConsentMechanism.notice_only:
             return UserConsentPreference.acknowledge
 
-        raise Exception("Invalid notice consent mechanism.")
+        raise ValueError("Invalid notice consent mechanism.")
 
     @property
     def cookies(self) -> List[Cookies]:

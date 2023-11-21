@@ -592,7 +592,7 @@ def create_default_experience_config(
         fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
     )
     if not experience_config_schema.is_default:
-        raise Exception("This method is for created default experience configs.")
+        raise ValueError("This method is for created default experience configs.")
 
     existing_experience_config = PrivacyExperienceConfig.get(
         db=db, object_id=experience_config_schema.id

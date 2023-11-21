@@ -41,14 +41,14 @@ def get_all_server_datasets(
     exclude_dataset_keys = [dataset.fides_key for dataset in exclude_datasets]
     raw_dataset_list = (
         list_server_resources(
-            url=url,
+            url=str(url),
             resource_type="dataset",
             exclude_keys=[str(x) for x in exclude_dataset_keys],
             headers=headers,
         )
         or []
     )
-    dataset_list = [Dataset.parse_obj(dataset) for dataset in raw_dataset_list]
+    dataset_list = [Dataset.model_validate(dataset) for dataset in raw_dataset_list]
 
     return dataset_list
 

@@ -40,7 +40,7 @@ from .commands.user import user
 from .commands.view import view
 from .exceptions import LocalModeException
 
-CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
+CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 LOCAL_COMMANDS = [deploy, evaluate, generate, init, scan, parse, view, webserver]
 LOCAL_COMMAND_NAMES = {command.name for command in LOCAL_COMMANDS}
 API_COMMANDS = [

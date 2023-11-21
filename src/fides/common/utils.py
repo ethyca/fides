@@ -73,5 +73,4 @@ def check_response(response: requests.Response) -> requests.Response:
         logger.error(response.status_code)
         logger.error(response.text)
         raise json_error
-    else:
-        return response
+    return response

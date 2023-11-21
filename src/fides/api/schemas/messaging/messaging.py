@@ -123,10 +123,11 @@ class ConsentPreferencesByUser(BaseModel):
         """Transform a data use fides_key to a corresponding name if possible"""
         consent_preferences = self.consent_preferences or []
         for preference in consent_preferences:
+            assert preference.data_use
             preference.data_use = next(
                 (
                     data_use.name
-                    for data_use in DEFAULT_TAXONOMY.data_use or []
+                    for data_use in DEFAULT_TAXONOMY.data_use  # pylint: disable=not-an-iterable
                     if data_use.fides_key == preference.data_use
                 ),
                 preference.data_use,

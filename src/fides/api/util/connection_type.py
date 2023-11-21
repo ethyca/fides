@@ -57,7 +57,7 @@ def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]
         order.extend(
             [
                 external_reference.name
-                for external_reference in config.external_references
+                for external_reference in config.external_references  # pylint: disable=not-an-iterable
             ]
         )
 

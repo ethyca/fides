@@ -2,6 +2,7 @@ from enum import Enum as EnumType
 from typing import List, Type
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
+from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.validation import FidesKey
 from sqlalchemy.orm import Session
 
@@ -14,9 +15,13 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort:
 
 def generate_fides_data_categories() -> Type[EnumType]:
     """Programmatically generated the DataCategory enum based on the imported Fides data."""
-    FidesDataCategory = EnumType(  # type: ignore
+    data_categories: List[FideslangDataCategory] = DEFAULT_TAXONOMY.data_category
+    FidesDataCategory = EnumType(
         "FidesDataCategory",
-        {cat.fides_key: cat.fides_key for cat in DEFAULT_TAXONOMY.data_category},
+        {
+            cat.fides_key: cat.fides_key
+            for cat in data_categories  # pylint: disable=not-an-iterable
+        },
     )
     return FidesDataCategory
 

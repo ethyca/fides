@@ -282,7 +282,7 @@ class ConnectorParam(BaseModel):
         """Verify the default_value is one of the values specified in the options list"""
 
         name = self.name
-        options: Optional[List[str]] = self.options
+        options: List[str] = self.options or []
         default_value: Optional[Union[str, List[str]]] = self.default_value
         multiselect: Optional[bool] = self.multiselect
 
@@ -298,7 +298,9 @@ class ConnectorParam(BaseModel):
                     )
 
                 invalid_options = [
-                    value for value in default_value if value not in options
+                    value
+                    for value in default_value  # pylint: disable=not-an-iterable
+                    if value not in options
                 ]
                 if invalid_options:
                     raise ValueError(

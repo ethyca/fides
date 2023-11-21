@@ -109,7 +109,7 @@ class DatabaseSettings(FidesSettings):
 
         db_name = values["test_db"] if get_test_mode() else values["db"]
         return str(
-            PostgresDsn.build(
+            PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql+psycopg2",
                 username=values["user"],
                 password=values["password"],
@@ -146,7 +146,7 @@ class DatabaseSettings(FidesSettings):
         # End workaround
 
         return str(
-            PostgresDsn.build(
+            PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql+asyncpg",
                 username=values["user"],
                 password=values["password"],
@@ -167,7 +167,7 @@ class DatabaseSettings(FidesSettings):
         values = info.data
 
         return str(
-            PostgresDsn.build(
+            PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql",
                 username=values["user"],
                 password=values["password"],
@@ -188,7 +188,7 @@ class DatabaseSettings(FidesSettings):
             return v
         values = info.data
         return str(
-            PostgresDsn.build(
+            PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql",
                 username=values["user"],
                 password=values["password"],

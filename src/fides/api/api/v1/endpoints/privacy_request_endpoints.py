@@ -1468,7 +1468,7 @@ def privacy_request_data_transfer(
             detail=f"No privacy request with id {privacy_request_id} found",
         )
 
-    rule = Rule.filter(db=db, conditions=(Rule.key == rule_key)).first()
+    rule = Rule.filter(db=db, conditions=Rule.key == rule_key).first()
     if not rule:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

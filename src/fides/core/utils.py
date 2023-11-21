@@ -41,13 +41,15 @@ def get_db_engine(connection_string: str) -> Engine:
     try:
         engine = sqlalchemy.create_engine(connection_string, connect_args=connect_args)
     except Exception as err:
-        raise Exception("Failed to create engine!") from err
+        raise SQLAlchemyError("Failed to create engine!") from err
 
     try:
         with engine.begin() as connection:
             connection.execute("SELECT 1")
     except Exception as err:
-        raise Exception(f"Database connection failed with engine:\n{engine}!") from err
+        raise SQLAlchemyError(
+            f"Database connection failed with engine:\n{engine}!"
+        ) from err
     return engine
 
 

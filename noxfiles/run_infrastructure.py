@@ -165,7 +165,7 @@ def _run_cmd_or_err(cmd: str) -> None:
     """
     with subprocess.Popen(cmd, shell=True) as result:
         if result.wait() > 0:
-            raise Exception(f"Error executing command: {cmd}")
+            raise subprocess.SubprocessError(f"Error executing command: {cmd}")
 
 
 def _run_quickstart(
@@ -266,7 +266,7 @@ def _run_tests(
 
 if __name__ == "__main__":
     if sys.version_info.major < 3:
-        raise Exception("Python3 is required to configure Fidesops.")
+        raise ValueError("Python3 is required to configure Fidesops.")
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
