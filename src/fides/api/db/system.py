@@ -172,7 +172,7 @@ async def upsert_cookies(
         )
 
     parsed_cookies = (
-        [CookieSchema.parse_obj(cookie) for cookie in cookies] if cookies else []
+        [CookieSchema.model_validate(cookie) for cookie in cookies] if cookies else []
     )
 
     resource_filter: BinaryExpression = (

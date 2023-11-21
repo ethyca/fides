@@ -562,7 +562,7 @@ def evaluate(
         response = api.create(
             url=url,
             resource_type="evaluation",
-            json_resource=evaluation.json(exclude_none=True),
+            json_resource=evaluation.model_dump_json(exclude_none=True),
             headers=headers,
         )
         handle_cli_response(response, verbose=False)

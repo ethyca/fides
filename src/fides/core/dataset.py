@@ -41,7 +41,7 @@ def get_all_server_datasets(
     exclude_dataset_keys = [dataset.fides_key for dataset in exclude_datasets]
     raw_dataset_list = (
         list_server_resources(
-            url=str(url),
+            url=url,
             resource_type="dataset",
             exclude_keys=[str(x) for x in exclude_dataset_keys],
             headers=headers,

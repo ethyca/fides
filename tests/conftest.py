@@ -10,7 +10,8 @@ import pytest
 import requests
 import yaml
 from fastapi.testclient import TestClient
-from fideslang import DEFAULT_TAXONOMY, models
+from fideslang import models
+from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.engine.base import Engine

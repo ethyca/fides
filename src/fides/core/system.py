@@ -101,7 +101,7 @@ def get_organization(
         )
         raise SystemExit(1)
 
-    parsed_organization = Organization.parse_obj(server_organization)
+    parsed_organization = Organization.model_validate(server_organization)
     assert isinstance(parsed_organization, Organization)
     return parsed_organization
 

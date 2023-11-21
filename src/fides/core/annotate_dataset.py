@@ -108,7 +108,7 @@ def annotate_dataset(
     output_dataset = []
 
     datasets = [
-        Dataset.parse_obj(dataset)
+        Dataset.model_validate(dataset)
         for dataset in ingest_manifests(dataset_file)["dataset"]
     ]
     raw_resources = api_helpers.list_server_resources(
@@ -134,7 +134,7 @@ def annotate_dataset(
     existing_categories: List[str] = [resource.fides_key for resource in resources]
 
     for dataset in datasets:
-        current_dataset = Dataset.parse_obj(dataset)
+        current_dataset = Dataset.model_validate(dataset)
         try:
             click.secho(f"\n####\nAnnotating Dataset: [{current_dataset.name}]")
 

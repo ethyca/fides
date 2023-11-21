@@ -478,7 +478,7 @@ class SaaSConfig(SaaSConfigBase):
                 raise ValidationError(
                     f"External dataset reference with provided name {reference} not found in connector's secrets."
                 )
-            reference = FidesDatasetReference.parse_obj(secrets[reference])
+            reference = FidesDatasetReference.model_validate(secrets[reference])
         return reference
 
     @property

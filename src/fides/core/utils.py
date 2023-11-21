@@ -181,7 +181,7 @@ def read_credentials_file(
     if not isfile(credentials_path):
         raise FileNotFoundError
     with open(credentials_path, "r", encoding="utf-8") as credentials_file:
-        credentials = Credentials.parse_obj(toml.load(credentials_file))
+        credentials = Credentials.model_validate(toml.load(credentials_file))
     return credentials
 
 

@@ -113,7 +113,7 @@ def validate_secrets(
             "Validating secrets on connection config with key '{}'",
             connection_config.key,
         )
-        connection_secrets = schema.parse_obj(request_body)
+        connection_secrets = schema.model_validate(request_body)
     except ValidationError as e:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()

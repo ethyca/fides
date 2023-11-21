@@ -164,7 +164,7 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
     }
 
     for key, value in settings_map.items():
-        settings_map[key] = value.parse_obj(config_dict.get(key, {}))
+        settings_map[key] = value.model_validate(config_dict.get(key, {}))
 
     # Logic for populating the user-defined credentials sub-settings.
     # this is done to allow overrides without typed pydantic models

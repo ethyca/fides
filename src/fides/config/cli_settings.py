@@ -10,7 +10,7 @@ from .fides_settings import FidesSettings
 ENV_PREFIX = "FIDES__CLI__"
 
 
-def get_server_url(host: str, port: int, protocol: str) -> AnyHttpUrl:
+def get_server_url(host: str, port: int, protocol: str) -> str:
     "Create the server_url."
 
     server_url = "{}://{}{}".format(
@@ -19,7 +19,13 @@ def get_server_url(host: str, port: int, protocol: str) -> AnyHttpUrl:
         f":{port}" if port else "",
     )
 
-    return AnyHttpUrl(server_url)
+    # To maintain compatibility we leave this as a str
+    # But to verify, we still parse into a URL first
+    result = str(AnyHttpUrl(server_url))
+
+    # We string slice to remove the trailing '/' since
+    # the application doesn't expect it
+    return result[:-1]
 
 
 class CLISettings(FidesSettings):
@@ -42,7 +48,7 @@ class CLISettings(FidesSettings):
     server_port: int = Field(
         default=8080, description="The port of the Fides webserver"
     )
-    server_url: Optional[AnyHttpUrl] = Field(
+    server_url: Optional[str] = Field(
         default=None,
         description="The full server url generated from the other server configuration values.",
         exclude=True,

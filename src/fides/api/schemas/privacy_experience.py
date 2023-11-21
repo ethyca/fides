@@ -21,14 +21,19 @@ class ExperienceConfigSchema(FidesSchema):
     """
 
     accept_button_label: Optional[str] = Field(
-        description="Overlay 'Accept button displayed on the Banner and Privacy Preferences' or Privacy Center 'Confirmation button label'"
+        default=None,
+        description="Overlay 'Accept button displayed on the Banner and Privacy Preferences' or Privacy Center 'Confirmation button label'",
     )
     acknowledge_button_label: Optional[str] = Field(
-        description="Overlay 'Acknowledge button label for notice only banner'"
+        default=None,
+        description="Overlay 'Acknowledge button label for notice only banner'",
     )
-    banner_enabled: Optional[BannerEnabled] = Field(description="Overlay 'Banner'")
+    banner_enabled: Optional[BannerEnabled] = Field(
+        default=None, description="Overlay 'Banner'"
+    )
     description: Optional[str] = Field(
-        description="Overlay 'Banner Description' or Privacy Center 'Description'"
+        default=None,
+        description="Overlay 'Banner Description' or Privacy Center 'Description'",
     )
     disabled: Optional[bool] = Field(
         default=False, description="Whether the given ExperienceConfig is disabled"
@@ -38,25 +43,27 @@ class ExperienceConfigSchema(FidesSchema):
         description="Whether the given ExperienceConfig is a global default",
     )
     privacy_policy_link_label: Optional[str] = Field(
-        description="Overlay and Privacy Center 'Privacy policy link label'"
+        default=None,
+        description="Overlay and Privacy Center 'Privacy policy link label'",
     )
     privacy_policy_url: Optional[HttpUrl] = Field(
         default=None, description="Overlay and Privacy Center 'Privacy policy URL"
     )
     privacy_preferences_link_label: Optional[str] = Field(
-        description="Overlay 'Privacy preferences link label'"
+        default=None, description="Overlay 'Privacy preferences link label'"
     )
     regions: Optional[List[PrivacyNoticeRegion]] = Field(
-        description="Regions using this ExperienceConfig"
+        default=None, description="Regions using this ExperienceConfig"
     )
     reject_button_label: Optional[str] = Field(
-        description="Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'"
+        default=None,
+        description="Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'",
     )
     save_button_label: Optional[str] = Field(
-        description="Overlay 'Privacy preferences 'Save' button label"
+        default=None, description="Overlay 'Privacy preferences 'Save' button label"
     )
     title: Optional[str] = Field(
-        description="Overlay 'Banner title' or Privacy Center 'title'"
+        default=None, description="Overlay 'Banner title' or Privacy Center 'title'"
     )
 
     @field_validator("regions")

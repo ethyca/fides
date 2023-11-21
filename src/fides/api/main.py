@@ -3,13 +3,14 @@ Contains the code that sets up the API.
 """
 import os
 import sys
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from logging import WARNING
 from time import perf_counter
 from typing import Callable, Optional
 from urllib.parse import unquote
 
-from fastapi import HTTPException, Request, Response, status
+from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse, HTMLResponse
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
@@ -49,7 +50,55 @@ IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 
 VERSION = fides.__version__
 
-app = create_fides_app()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Run all of the required setup steps for the webserver.
+
+    **NOTE**: The order of operations here _is_ deliberate
+    and must be maintained.
+    """
+    start_time = perf_counter()
+    logger.info("Starting server setup...")
+    if not CONFIG.dev_mode:
+        sys.tracebacklimit = 0
+
+    log_startup()
+
+    await run_database_startup(app)
+
+    check_redis()
+
+    if not scheduler.running:
+        scheduler.start()
+    if not async_scheduler.running:
+        async_scheduler.start()
+
+    initiate_scheduled_batch_email_send()
+
+    logger.debug("Sending startup analytics events...")
+    # Avoid circular imports
+    from fides.api.analytics import in_docker_container, send_analytics_event
+
+    await send_analytics_event(
+        AnalyticsEvent(
+            docker=in_docker_container(),
+            event=Event.server_start.value,
+            event_created_at=datetime.now(tz=timezone.utc),
+        )
+    )
+
+    # It's just a random bunch of strings when serialized
+    if not CONFIG.logging.serialization:
+        logger.info(FIDES_ASCII_ART)
+
+    logger.info("Fides startup complete! v{}", VERSION)
+    startup_time = round(perf_counter() - start_time, 3)
+    logger.info("Server setup completed in {} seconds", startup_time)
+    yield  # Everything that happens _before_ the 'yield' is before the server startup.
+
+
+app = create_fides_app(lifespan=lifespan)
 
 if CONFIG.dev_mode:
 
@@ -240,52 +289,6 @@ def read_other_paths(request: Request) -> Response:
         path,
     )
     return get_admin_index_as_response()
-
-
-@app.on_event("startup")
-async def setup_server() -> None:
-    """Run all of the required setup steps for the webserver.
-
-    **NOTE**: The order of operations here _is_ deliberate
-    and must be maintained.
-    """
-    start_time = perf_counter()
-    logger.info("Starting server setup...")
-    if not CONFIG.dev_mode:
-        sys.tracebacklimit = 0
-
-    log_startup()
-
-    await run_database_startup(app)
-
-    check_redis()
-
-    if not scheduler.running:
-        scheduler.start()
-    if not async_scheduler.running:
-        async_scheduler.start()
-
-    initiate_scheduled_batch_email_send()
-
-    logger.debug("Sending startup analytics events...")
-    # Avoid circular imports
-    from fides.api.analytics import in_docker_container, send_analytics_event
-
-    await send_analytics_event(
-        AnalyticsEvent(
-            docker=in_docker_container(),
-            event=Event.server_start.value,
-            event_created_at=datetime.now(tz=timezone.utc),
-        )
-    )
-
-    # It's just a random bunch of strings when serialized
-    if not CONFIG.logging.serialization:
-        logger.info(FIDES_ASCII_ART)
-
-    logger.info("Fides startup complete! v{}", VERSION)
-    startup_time = round(perf_counter() - start_time, 3)
-    logger.info("Server setup completed in {} seconds", startup_time)
 
 
 def start_webserver(port: int = 8080) -> None:
