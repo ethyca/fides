@@ -37,6 +37,8 @@ def get_dev_mode() -> bool:
     return dev_mode
 
 
+# NOTE: allowlist additions should be made with care!
+# Any updates to this list _need_ to be reviewed by the Ethyca security team
 CONFIG_KEY_ALLOWLIST = {
     "user": ["analytics_opt_out"],
     "logging": ["level"],
