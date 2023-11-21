@@ -15,8 +15,31 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.24.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.24.1...main)
 
+### Added
+- Stub for initial GPP support [#4431](https://github.com/ethyca/fides/pull/4431)
+
+### Added
+- Added confirmation modal on deleting a data use declaration [#4439](https://github.com/ethyca/fides/pull/4439)
+
+### Added
+- Added feature flag for separating system name and Compass vendor selector [#4437](https://github.com/ethyca/fides/pull/4437)
+
+### Changed
+- Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
+- Flexible legal basis for processing has a db default of True [#4434](https://github.com/ethyca/fides/pull/4434)
+- Give contributor role access to config API, including cors origin updates [#4438](https://github.com/ethyca/fides/pull/4438)
+- Disallow setting `*` and other non URL values for `security.cors_origins` config property via the API [#4438](https://github.com/ethyca/fides/pull/4438)
+
+
+## [2.24.1](https://github.com/ethyca/fides/compare/2.24.0...2.24.1)
+
+### Added
+- Logging when root user and client credentials are used [#4432](https://github.com/ethyca/fides/pull/4432)
+
+### Changed
+- Run fides with non-root user [#4421](https://github.com/ethyca/fides/pull/4421)
 
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
 

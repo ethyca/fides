@@ -45,6 +45,46 @@ describe("System management with Plus features", () => {
       );
     });
 
+    it("can reset suggestions by clearing vendor input", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("L{enter}");
+      cy.getByTestId("input-legal_name").should("have.value", "LINE");
+      cy.getSelectValueContainer("input-vendor_id")
+        .siblings(".custom-select__indicators")
+        .find(".custom-select__clear-indicator");
+    });
+
+    it("can't refresh suggestions immediately after populating", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("A{enter}");
+      cy.getByTestId("refresh-suggestions-btn").should("be.disabled");
+    });
+
+    it("can refresh suggestions when editing a saved system", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("A{enter}");
+      cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
+        cy.fixture("systems/system.json").then((origSystem) => {
+          cy.intercept(
+            { method: "GET", url: "/api/v1/system/demo_analytics_system" },
+            {
+              body: {
+                ...origSystem,
+                ...dictSystem,
+                fides_key: origSystem.fides_key,
+                customFieldValues: undefined,
+                data_protection_impact_assessment: undefined,
+              },
+            }
+          ).as("getDictSystem");
+        });
+      });
+      cy.intercept({ method: "PUT", url: "/api/v1/system*" }).as(
+        "putDictSystem"
+      );
+      cy.getByTestId("save-btn").click();
+      cy.wait("@putDictSystem");
+      cy.wait("@getDictSystem");
+      cy.getByTestId("refresh-suggestions-btn").should("not.be.disabled");
+    });
+
     it("locks editing for a GVL vendor when TCF is enabled", () => {
       cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
       cy.getByTestId("locked-for-GVL-notice");
@@ -223,6 +263,25 @@ describe("System management with Plus features", () => {
       cy.getByTestId("confirmation-modal");
       cy.getByTestId("continue-btn").click();
       cy.url().should("include", DATAMAP_ROUTE);
+    });
+
+    it("select page checkbox only selects rows on the displayed page", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.wait("@getSystemVendors");
+      cy.getByTestId("select-page-checkbox")
+        .get("[type='checkbox']")
+        .check({ force: true });
+      cy.getByTestId("selected-row-count").contains("6 row(s) selected.");
+    });
+
+    it("select all button selects all rows across every page", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.wait("@getSystemVendors");
+      cy.getByTestId("select-page-checkbox")
+        .get("[type='checkbox']")
+        .check({ force: true });
+      cy.getByTestId("select-all-rows-btn").click();
+      cy.getByTestId("selected-row-count").contains("8 row(s) selected.");
     });
 
     it("filter button and sources column are hidden when TCF is disabled", () => {
