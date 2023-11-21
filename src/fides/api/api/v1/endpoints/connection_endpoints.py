@@ -173,7 +173,7 @@ def patch_connections(
     *,
     db: Session = Depends(deps.get_db),
     configs: Annotated[
-        List[CreateConnectionConfigurationWithSecrets], Body(max_items=50)
+        List[CreateConnectionConfigurationWithSecrets], Body(max_length=50)
     ],
 ) -> BulkPutConnectionConfiguration:
     """

@@ -122,7 +122,7 @@ def upload_data(
 def patch_config(
     *,
     db: Session = Depends(deps.get_db),
-    storage_configs: Annotated[List[StorageDestination], Body(max_items=50)],
+    storage_configs: Annotated[List[StorageDestination], Body(max_length=50)],
 ) -> BulkPutStorageConfigResponse:
     """
     Given a list of storage destination elements, create or update corresponding StorageConfig objects

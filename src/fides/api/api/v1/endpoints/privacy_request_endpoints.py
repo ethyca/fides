@@ -178,7 +178,7 @@ def create_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
-    data: Annotated[List[PrivacyRequestCreate], Body(max_items=50)],
+    data: Annotated[List[PrivacyRequestCreate], Body(max_length=50)],
 ) -> BulkPostPrivacyRequests:
     """
     Given a list of privacy request data elements, create corresponding PrivacyRequest objects
@@ -198,7 +198,7 @@ def create_privacy_request_authenticated(
     *,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
-    data: Annotated[List[PrivacyRequestCreate], Body(max_items=50)],
+    data: Annotated[List[PrivacyRequestCreate], Body(max_length=50)],
 ) -> BulkPostPrivacyRequests:
     """
     Given a list of privacy request data elements, create corresponding PrivacyRequest objects

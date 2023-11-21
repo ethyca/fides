@@ -210,7 +210,9 @@ def get_privacy_notice(
 def create_privacy_notices(
     *,
     db: Session = Depends(deps.get_db),
-    privacy_notices: Annotated[List[schemas.PrivacyNoticeCreation], Body(max_items=50)],
+    privacy_notices: Annotated[
+        List[schemas.PrivacyNoticeCreation], Body(max_length=50)
+    ],
 ) -> List[PrivacyNotice]:
     """
     Create one or more privacy notices.
@@ -245,7 +247,7 @@ def update_privacy_notices(
     *,
     db: Session = Depends(deps.get_db),
     privacy_notice_updates: Annotated[
-        List[schemas.PrivacyNoticeWithId], Body(max_items=50)
+        List[schemas.PrivacyNoticeWithId], Body(max_length=50)
     ],
 ) -> List[PrivacyNotice]:
     """

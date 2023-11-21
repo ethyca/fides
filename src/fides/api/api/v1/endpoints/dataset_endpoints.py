@@ -176,7 +176,7 @@ def validate_dataset(
     response_model=BulkPutDataset,
 )
 def patch_dataset_configs(
-    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Body(max_items=50)],
+    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Body(max_length=50)],
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
@@ -245,7 +245,7 @@ def patch_dataset_configs(
     response_model=BulkPutDataset,
 )
 def patch_datasets(
-    datasets: Annotated[List[Dataset], Body(max_items=50)],
+    datasets: Annotated[List[Dataset], Body(max_length=50)],
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
