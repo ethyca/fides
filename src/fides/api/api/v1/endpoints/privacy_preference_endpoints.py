@@ -7,6 +7,7 @@ from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from loguru import logger
 from sqlalchemy import literal
 from sqlalchemy.orm import Query, Session
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
@@ -195,6 +196,8 @@ def get_ip_address(request: Request) -> Optional[str]:
         request.headers.get("x-forwarded-for") if request.headers else None
     )
 
+    logger.info(f"Temporary log: X-Forwarded-For {x_forwarded_for}")
+
     client_ip: Optional[str] = None
     if x_forwarded_for:
         try:
@@ -204,6 +207,8 @@ def get_ip_address(request: Request) -> Optional[str]:
 
     if not client_ip:
         client_ip = request.client.host if request.client else None
+
+    logger.info(f"Temporary log: Client IP {client_ip}")
 
     return client_ip
 
