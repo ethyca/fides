@@ -29,7 +29,7 @@ const PrivacyDeclarationRow = ({
   handleEdit: (dec: PrivacyDeclarationResponse) => void;
 }) => (
   <>
-    <Box px={6} py={4}>
+    <Box px={6} py={4} data-testid={`row-${declaration.data_use}`}>
       <HStack>
         <LinkBox
           onClick={() => handleEdit(declaration)}
