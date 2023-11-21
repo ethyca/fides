@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.24.2b0.post0.dev1"
+    "version": "2.24.2b0.post0.dev2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -21097,7 +21097,10 @@
             "title": "Cors Origins",
             "type": "array",
             "items": {
-              "type": "string"
+              "maxLength": 65536,
+              "minLength": 1,
+              "type": "string",
+              "format": "uri"
             },
             "description": "A list of client addresses allowed to communicate with the Fides webserver."
           }
