@@ -23,6 +23,9 @@ The types of changes are:
 ### Added
 - Added confirmation modal on deleting a data use declaration [#4439](https://github.com/ethyca/fides/pull/4439)
 
+### Added
+- Added feature flag for separating system name and Compass vendor selector [#4437](https://github.com/ethyca/fides/pull/4437)
+
 ### Changed
 - Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
 - Flexible legal basis for processing has a db default of True [#4434](https://github.com/ethyca/fides/pull/4434)
@@ -37,7 +40,6 @@ The types of changes are:
 
 ### Changed
 - Run fides with non-root user [#4421](https://github.com/ethyca/fides/pull/4421)
-
 
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
 
