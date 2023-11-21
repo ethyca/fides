@@ -4,8 +4,6 @@ from typing import Dict, List, Optional
 from fides.common.api.scope_registry import (
     CLI_OBJECTS_READ,
     CLIENT_READ,
-    CONFIG_READ,
-    CONFIG_UPDATE,
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
     CONNECTOR_TEMPLATE_REGISTER,
