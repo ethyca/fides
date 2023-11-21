@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.24.1"
+    "version": "2.24.2b0.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -18984,7 +18984,8 @@
           "flexible_legal_basis_for_processing": {
             "title": "Flexible Legal Basis For Processing",
             "type": "boolean",
-            "description": "Whether the legal basis for processing is 'flexible' (i.e. can be overridden in a privacy notice) for this declaration."
+            "description": "Whether the legal basis for processing is 'flexible' (i.e. can be overridden in a privacy notice) for this declaration.",
+            "default": true
           },
           "legal_basis_for_processing": {
             "allOf": [
@@ -19130,7 +19131,8 @@
           "flexible_legal_basis_for_processing": {
             "title": "Flexible Legal Basis For Processing",
             "type": "boolean",
-            "description": "Whether the legal basis for processing is 'flexible' (i.e. can be overridden in a privacy notice) for this declaration."
+            "description": "Whether the legal basis for processing is 'flexible' (i.e. can be overridden in a privacy notice) for this declaration.",
+            "default": true
           },
           "legal_basis_for_processing": {
             "allOf": [
