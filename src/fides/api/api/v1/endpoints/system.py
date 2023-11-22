@@ -1,16 +1,13 @@
-from collections import defaultdict
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
-from fastapi import Depends, HTTPException, Query, Response, Security
+from fastapi import Depends, HTTPException, Response, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fideslang.gvl import purpose_to_data_use
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic.types import conlist
-from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette import status
@@ -22,7 +19,6 @@ from fides.api.db.crud import (
     get_resource,
     get_resource_with_custom_fields,
     list_resource,
-    list_resource_paginated,
 )
 from fides.api.db.ctl_session import get_async_db
 from fides.api.db.system import (
@@ -34,11 +30,7 @@ from fides.api.db.system import (
 )
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.fides_user import FidesUser
-from fides.api.models.privacy_notice import PrivacyNotice
-from fides.api.models.sql_models import (  # type:ignore[attr-defined]
-    PrivacyDeclaration,
-    System,
-)
+from fides.api.models.sql_models import System  # type:ignore[attr-defined]
 from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key,
     verify_oauth_client_for_system_from_fides_key_cli,
@@ -91,24 +83,6 @@ SYSTEM_CONNECTION_INSTANTIATE_ROUTER = APIRouter(
     tags=["System"],
     prefix=f"{V1_URL_PREFIX}{INSTANTIATE_SYSTEM_CONNECTION}",
 )
-
-DATA_USES_FOR_CONSENT_CATEGORY = {
-    "advertising": [
-        "marketing.advertising.first_party.targeted",
-        "marketing.advertising.third_party.targeted",
-    ],
-    "analytics": "analytics",
-    "functional": "personalize",
-    "essential": "essential",
-}
-
-CONSENT_CATEGORY_FOR_DATA_USES = {
-    "marketing.advertising.first_party.targeted": "advertising",
-    "marketing.advertising.third_party.targeted": "advertising",
-    "analytics": "analytics",
-    "personalize": "functional",
-    "essential": "essential",
-}
 
 
 @SYSTEM_CONNECTIONS_ROUTER.get(
@@ -398,161 +372,6 @@ async def ls(  # pylint: disable=invalid-name
 ) -> List:
     """Get a list of all of the resources of this type."""
     return await list_resource(System, db)
-
-
-@SYSTEM_ROUTER.get(
-    "/paginated",
-    dependencies=[
-        Security(
-            verify_oauth_client_prod,
-            scopes=[SYSTEM_READ],
-        )
-    ],
-    response_model=Page[Any],
-    name="List",
-)
-async def ls_paginated(
-    db: AsyncSession = Depends(get_async_db),
-    params: Params = Depends(),
-    search: Optional[str] = Query(None),
-    purposes: Optional[List[int]] = Query(None),
-    data_uses: Optional[List[FidesKey]] = Query(None),
-    legal_bases: Optional[List[str]] = Query(None),
-    consent_category: Optional[str] = Query(None),
-) -> AbstractPage[Any]:
-    """Get a list of all of the resources of this type."""
-
-    # retrieve the current privacy notices and create a map between data uses to privacy notices
-    stored_notices = await list_resource(PrivacyNotice, db)
-    data_use_to_notice = defaultdict(list)
-    for stored_notice in stored_notices:
-        for data_use in stored_notice.data_uses:
-            data_use_to_notice[data_use].append(stored_notice.notice_key)
-
-    system_filters = await generate_system_filters(
-        search, purposes, data_uses, legal_bases, consent_category
-    )
-    paginated_results = await list_resource_paginated(
-        System,
-        db,
-        params,
-        filters=system_filters,
-    )
-
-    paginated_results.items = [
-        {
-            "id": system.id,
-            "fides_key": system.fides_key,
-            "name": system.name,
-            "vendor_id": system.vendor_id,
-            "cookies": system.cookies,
-            "data_uses": len(
-                {
-                    privacy_declaration.data_use
-                    for privacy_declaration in system.privacy_declarations
-                }
-            ),
-            "legal_bases": len(
-                {
-                    privacy_declaration.legal_basis_for_processing
-                    for privacy_declaration in system.privacy_declarations
-                }
-            ),
-            "consent_categories": _count_unique_consent_categories(system),
-        }
-        for system in paginated_results.items
-    ]
-    return paginated_results
-
-
-def _count_unique_consent_categories(system):
-    """
-    Counts the unique number of consent categories a system.
-    """
-
-    def _find_values_by_partial_key_match(data_use):
-        """
-        Finds values in the CONSENT_CATEGORY_FOR_DATA_USES dictionary
-        by matching the start of the keys with a given data use string.
-        """
-        return [
-            value
-            for key, value in CONSENT_CATEGORY_FOR_DATA_USES.items()
-            if key.startswith(data_use)
-        ]
-
-    unique_notices = set()
-    for privacy_declaration in system.privacy_declarations:
-        notice_keys = _find_values_by_partial_key_match(privacy_declaration.data_use)
-        unique_notices.update(notice_keys)
-    return len(unique_notices)
-
-
-async def generate_system_filters(
-    search: Optional[str] = None,
-    purposes: Optional[List[int]] = None,
-    data_uses: Optional[List[str]] = None,
-    legal_bases: Optional[List[str]] = None,
-    consent_category: Optional[str] = None,
-) -> List:
-    """
-    Generate a list of SQLAlchemy filter conditions for systems based on specified criteria.
-    """
-    filters = []
-
-    if purposes or data_uses or legal_bases or consent_category:
-        filters.append(System.id == PrivacyDeclaration.system_id)
-
-    if search:
-        filters.append(
-            or_(
-                *(
-                    System.name.like(f"%{search}%"),
-                    System.fides_key.like(f"%{search}%"),
-                    System.id.like(f"%{search}%"),
-                )
-            )
-        )
-
-    if purposes:
-        purpose_data_uses = set()
-
-        for purpose in purposes:
-            data_uses_for_purpose = purpose_to_data_use(purpose)
-            purpose_data_uses.update(data_uses_for_purpose)
-
-        if purpose_data_uses:
-            like_conditions = [
-                PrivacyDeclaration.data_use.like(data_use + "%")
-                for data_use in purpose_data_uses
-            ]
-            if like_conditions:
-                filters.append(or_(*like_conditions))
-
-    if consent_category:
-        consent_category_data_uses = DATA_USES_FOR_CONSENT_CATEGORY.get(
-            consent_category, []
-        )
-
-        if consent_category_data_uses:
-            like_conditions = [
-                PrivacyDeclaration.data_use.like(data_use + "%")
-                for data_use in consent_category_data_uses
-            ]
-            if like_conditions:
-                filters.append(or_(*like_conditions))
-
-    if data_uses:
-        like_conditions = [
-            PrivacyDeclaration.data_use.like(data_use + "%") for data_use in data_uses
-        ]
-        if like_conditions:
-            filters.append(or_(*like_conditions))
-
-    if legal_bases:
-        filters.append(PrivacyDeclaration.legal_basis_for_processing.in_(legal_bases))
-
-    return filters
 
 
 @SYSTEM_ROUTER.get(
