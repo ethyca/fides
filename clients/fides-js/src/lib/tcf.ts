@@ -17,11 +17,10 @@ import {
   uniqueGvlVendorIds,
 } from "./tcf/vendors";
 import { PrivacyExperience } from "./consent-types";
-import { FIDES_SEPARATOR } from "./tcf/constants";
-import { FidesEvent } from "./events";
+import { ETHYCA_CMP_ID, FIDES_SEPARATOR } from "./tcf/constants";
+import { fidesEventToTcString } from "./tcf/events";
 
 // TCF
-const CMP_ID = 407;
 const CMP_VERSION = 1;
 const FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6];
 
@@ -70,7 +69,7 @@ export const generateFidesString = async ({
     // Some fields will not be populated until a GVL is loaded
     await tcModel.gvl.readyPromise;
 
-    tcModel.cmpId = CMP_ID;
+    tcModel.cmpId = ETHYCA_CMP_ID;
     tcModel.cmpVersion = CMP_VERSION;
     tcModel.consentScreen = 1; // todo- On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
     tcModel.isServiceSpecific = true;
@@ -150,32 +149,13 @@ export const generateFidesString = async ({
 };
 
 /**
- * Extract just the TC string from a FidesEvent. This will also remove parts of the
- * TC string that we do not want to surface with our CMP API events, such as
- * `vendors_disclosed` and our own AC string addition.
- */
-const fidesEventToTcString = (event: FidesEvent) => {
-  const { fides_string: cookieString } = event.detail;
-  if (cookieString) {
-    // Remove the AC portion which is separated by FIDES_SEPARATOR
-    const [tcString] = cookieString.split(FIDES_SEPARATOR);
-    // We only want to return the first part of the tcString, which is separated by '.'
-    // This means Publisher TC is not sent either, which is okay for now since we do not set it.
-    // However, if we do one day set it, we would have to decode the string and encode it again
-    // without vendorsDisclosed
-    return tcString.split(".")[0];
-  }
-  return cookieString;
-};
-
-/**
  * Initializes the CMP API, including setting up listeners on FidesEvents to update
  * the CMP API accordingly.
  */
 export const initializeTcfCmpApi = () => {
   makeStub();
   const isServiceSpecific = true; // TODO: determine this from the backend?
-  const cmpApi = new CmpApi(CMP_ID, CMP_VERSION, isServiceSpecific, {
+  const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION, isServiceSpecific, {
     // Add custom command to support adding `addtlConsent` per AC spec
     getTCData: (next, tcData: TCData, status) => {
       /*

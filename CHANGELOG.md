@@ -21,6 +21,7 @@ The types of changes are:
 - Stub for initial GPP support [#4431](https://github.com/ethyca/fides/pull/4431)
 - Added confirmation modal on deleting a data use declaration [#4439](https://github.com/ethyca/fides/pull/4439)
 - Added feature flag for separating system name and Compass vendor selector [#4437](https://github.com/ethyca/fides/pull/4437)
+- Fire GPP events per spec [#4433](https://github.com/ethyca/fides/pull/4433)
 
 ### Changed
 - Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
