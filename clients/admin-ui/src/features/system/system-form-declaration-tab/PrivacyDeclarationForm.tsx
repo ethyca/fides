@@ -490,7 +490,7 @@ export const PrivacyDeclarationForm = ({
               >
                 Cancel
               </Button>
-              {!lockedForGVL ? (
+              {!lockedForGVL || values.flexible_legal_basis_for_processing ? (
                 <>
                   <Spacer />
                   <Button

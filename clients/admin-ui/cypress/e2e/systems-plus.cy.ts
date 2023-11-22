@@ -1,5 +1,4 @@
 import {
-  stubDatasetCrud,
   stubPlus,
   stubSystemCrud,
   stubSystemVendors,
@@ -20,7 +19,6 @@ describe("System management with Plus features", () => {
   beforeEach(() => {
     cy.login();
     stubSystemCrud();
-    stubDatasetCrud();
     stubTaxonomyEntities();
     stubPlus(true);
     cy.intercept("GET", "/api/v1/system", {
@@ -159,36 +157,17 @@ describe("System management with Plus features", () => {
   });
 
   describe("data use", () => {
-    beforeEach(() => {
-      stubVendorList();
-      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
-      cy.wait("@getDictionaryEntries");
-    });
-
     it("should enable legal basis editing if flexible is true", () => {
-      cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
-      cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
-        cy.fixture("systems/system.json").then((origSystem) => {
-          cy.intercept(
-            { method: "GET", url: "/api/v1/system/demo_analytics_system" },
-            {
-              body: {
-                ...origSystem,
-                ...dictSystem,
-                fides_key: origSystem.fides_key,
-                customFieldValues: undefined,
-                data_protection_impact_assessment: undefined,
-              },
-            }
-          ).as("getDictSystem");
-        });
-      });
-      cy.intercept({ method: "PUT", url: "/api/v1/system*" }).as(
-        "putDictSystem"
+      cy.fixture("systems/system_with_flexible_legal_basis.json").then(
+        (system) => {
+          cy.intercept("GET", "/api/v1/system/*", {
+            body: system,
+          }).as("getSystemWithFlexibleDataUses");
+        }
       );
-      cy.getByTestId("save-btn").click();
-      cy.wait("@putDictSystem");
-      cy.wait("@getDictSystem");
+      cy.visit(`${SYSTEM_ROUTE}/configure/flexible_system`);
+      cy.wait("@getSystemWithFlexibleDataUses");
+
       cy.getByTestId("tab-Data uses").click();
       cy.contains("a", "Analytics for Advertising Performance").click();
 
@@ -200,32 +179,21 @@ describe("System management with Plus features", () => {
       cy.getByTestId("input-legal_basis_for_processing")
         .get("input")
         .should("be.enabled");
+
+      cy.getByTestId("save-btn").should("exist");
     });
 
     it("should disable legal basis editing if flexible is false", () => {
-      cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
-      cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
-        cy.fixture("systems/system.json").then((origSystem) => {
-          cy.intercept(
-            { method: "GET", url: "/api/v1/system/demo_analytics_system" },
-            {
-              body: {
-                ...origSystem,
-                ...dictSystem,
-                fides_key: origSystem.fides_key,
-                customFieldValues: undefined,
-                data_protection_impact_assessment: undefined,
-              },
-            }
-          ).as("getDictSystem");
-        });
-      });
-      cy.intercept({ method: "PUT", url: "/api/v1/system*" }).as(
-        "putDictSystem"
+      cy.fixture("systems/system_with_flexible_legal_basis.json").then(
+        (system) => {
+          cy.intercept("GET", "/api/v1/system/*", {
+            body: system,
+          }).as("getSystemWithFlexibleDataUses");
+        }
       );
-      cy.getByTestId("save-btn").click();
-      cy.wait("@putDictSystem");
-      cy.wait("@getDictSystem");
+      cy.visit(`${SYSTEM_ROUTE}/configure/flexible_system`);
+      cy.wait("@getSystemWithFlexibleDataUses");
+
       cy.getByTestId("tab-Data uses").click();
       cy.contains("a", "personalize.content.profiling").click();
 
@@ -237,9 +205,13 @@ describe("System management with Plus features", () => {
       cy.getByTestId("input-legal_basis_for_processing")
         .get("input")
         .should("be.disabled");
+
+      cy.getByTestId("save-btn").should("not.exist");
     });
 
     it("should enable legal basis editing for non-GVL systems", () => {
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+
       cy.getByTestId("tab-Data uses").click();
       cy.contains(
         "a",
@@ -254,6 +226,8 @@ describe("System management with Plus features", () => {
       cy.getByTestId("input-legal_basis_for_processing")
         .get("input")
         .should("be.enabled");
+
+      cy.getByTestId("save-btn").should("exist");
     });
   });
 
