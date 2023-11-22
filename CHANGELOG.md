@@ -19,11 +19,7 @@ The types of changes are:
 
 ### Added
 - Stub for initial GPP support [#4431](https://github.com/ethyca/fides/pull/4431)
-
-### Added
 - Added confirmation modal on deleting a data use declaration [#4439](https://github.com/ethyca/fides/pull/4439)
-
-### Added
 - Added feature flag for separating system name and Compass vendor selector [#4437](https://github.com/ethyca/fides/pull/4437)
 
 ### Changed
@@ -31,7 +27,7 @@ The types of changes are:
 - Flexible legal basis for processing has a db default of True [#4434](https://github.com/ethyca/fides/pull/4434)
 - Give contributor role access to config API, including cors origin updates [#4438](https://github.com/ethyca/fides/pull/4438)
 - Disallow setting `*` and other non URL values for `security.cors_origins` config property via the API [#4438](https://github.com/ethyca/fides/pull/4438)
-
+- Consent modal hides the opt-in/opt-out buttons if only one privacy notice is enabled [#4441](https://github.com/ethyca/fides/pull/4441)
 
 ## [2.24.1](https://github.com/ethyca/fides/compare/2.24.0...2.24.1)
 
