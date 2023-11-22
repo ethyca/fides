@@ -31,6 +31,8 @@ The types of changes are:
 
 ### Fixed
 - Fixed a bug where selected vendors in "configure consent" add vendor modal were unstyled [#4454](https://github.com/ethyca/fides/pull/4454)
+- Use correct defaults when there is no associated preference in the cookie [#4451](https://github.com/ethyca/fides/pull/4451)
+- IP Addresses behind load balancers for consent reporting [#4440](https://github.com/ethyca/fides/pull/4440)
 
 ## [2.24.1](https://github.com/ethyca/fides/compare/2.24.0...2.24.1)
 
