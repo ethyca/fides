@@ -31,4 +31,4 @@ def get_purposes(
         purposes[purpose.id] = purpose
     for special_purpose in MAPPED_SPECIAL_PURPOSES.values():
         special_purposes[special_purpose.id] = special_purpose
-    return {"purposes": purposes, "special_purposes": special_purposes}
+    return PurposesResponse(purposes=purposes, special_purposes=special_purposes)
