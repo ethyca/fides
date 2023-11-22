@@ -2,9 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AccessLevel } from "./AccessLevel";
+import type { ActionType } from "./ActionType";
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
-import type { ConnectionType } from "./ConnectionType";
 import type { DynamoDBDocsSchema } from "./DynamoDBDocsSchema";
 import type { EmailDocsSchema } from "./EmailDocsSchema";
 import type { FidesDocsSchema } from "./FidesDocsSchema";
@@ -21,16 +20,13 @@ import type { SovrnDocsSchema } from "./SovrnDocsSchema";
 import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
 
 /**
- * Schema for creating a connection configuration including secrets.
+ * Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template
  */
-export type CreateConnectionConfigurationWithSecrets = {
+export type SaasConnectionTemplateValuesExtended = {
   name?: string;
   key?: string;
-  connection_type: ConnectionType;
-  access: AccessLevel;
-  disabled?: boolean;
   description?: string;
-  secrets?:
+  secrets:
     | MongoDBDocsSchema
     | PostgreSQLDocsSchema
     | MySQLDocsSchema
@@ -46,5 +42,6 @@ export type CreateConnectionConfigurationWithSecrets = {
     | FidesDocsSchema
     | SovrnDocsSchema
     | DynamoDBDocsSchema;
-  saas_connector_type?: string;
+  instance_key: string;
+  enabled_actions: Array<ActionType>;
 };

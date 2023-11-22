@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { AccessLevel } from "./AccessLevel";
+import type { ActionType } from "./ActionType";
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
 import type { ConnectionType } from "./ConnectionType";
 import type { DynamoDBDocsSchema } from "./DynamoDBDocsSchema";
@@ -21,9 +22,9 @@ import type { SovrnDocsSchema } from "./SovrnDocsSchema";
 import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
 
 /**
- * Schema for creating a connection configuration including secrets.
+ * An extension of the base fides model with the addition of plus-only fields
  */
-export type CreateConnectionConfigurationWithSecrets = {
+export type CreateConnectionConfigurationWithSecretsExtended = {
   name?: string;
   key?: string;
   connection_type: ConnectionType;
@@ -47,4 +48,5 @@ export type CreateConnectionConfigurationWithSecrets = {
     | SovrnDocsSchema
     | DynamoDBDocsSchema;
   saas_connector_type?: string;
+  enabled_actions: Array<ActionType>;
 };
