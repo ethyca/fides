@@ -79,7 +79,6 @@ async def test_delete_fails_linked_resources(
     async_session: AsyncSession,
 ) -> None:
     """Deleting a resource should fail if a linked resource (without cascade delete relationship) still exists."""
-    breakpoint()
     with pytest.raises(HTTPException) as e:
         await delete_resource(
             sql_models.Dataset, linked_dataset.fides_key, async_session
