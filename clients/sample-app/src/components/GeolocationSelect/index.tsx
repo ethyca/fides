@@ -18,8 +18,8 @@ const geolocationOptions: GeolocationOption[] = [
   { value: "US-CA", label: "California", flag: "us-ca" },
   { value: "US-VA", label: "Virginia", flag: "us" },
   { value: "US-NY", label: "New York", flag: "us" },
-  { value: "FR-IDG", label: "Paris", flag: "fr" },
-  { value: "DE-HE", label: "Frankfurt", flag: "de" },
+  { value: "EU-FR", label: "Paris", flag: "fr" },
+  { value: "EU-DE", label: "Frankfurt", flag: "de" },
 ];
 
 // By default, each "option" in a <select> menu are plaintext labels, which is a
