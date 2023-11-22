@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.24.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.25.0...main)
+
+## [2.25.0](https://github.com/ethyca/fides/compare/2.24.1...2.25.0)
 
 ### Added
 - Stub for initial GPP support [#4431](https://github.com/ethyca/fides/pull/4431)
