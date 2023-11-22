@@ -340,10 +340,6 @@ export const loadPrivacyCenterEnvironment =
         ? process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF === "true"
         : false,
     };
-    console.log(
-      "process env",
-      process.env.FIDES_PRIVACY_CENTER__FIDES_TCF_GDPR_APPLIES
-    );
 
     // Load configuration file (if it exists)
     const config = await loadConfigFromFile(settings.CONFIG_JSON_URL);
