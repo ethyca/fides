@@ -165,6 +165,7 @@ export const PrivacyDeclarationDisplayGroup = ({
             color="white"
             fontWeight="600"
             rightIcon={<AddIcon />}
+            data-testid="add-btn"
           >
             Add data use
           </Button>
