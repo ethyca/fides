@@ -42,6 +42,7 @@ const emptyVendorReportResponse: VendorReportResponse = {
 };
 export const ConsentManagementTable = () => {
   const { tcf: isTcfEnabled } = useFeatures();
+  // const isTcfEnabled = false;
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const [globalFilter, setGlobalFilter] = useState();
   const [systemToEdit, setSystemToEdit] = useState();
@@ -53,7 +54,9 @@ export const ConsentManagementTable = () => {
     onClose: onCloseFilter,
     resetFilters,
     dataUseOptions,
-    onCheckboxChange,
+    onDataUseChange,
+    legalBasisOptions,
+    onLegalBasisChange,
   } = useConsentManagementFilters();
 
   const selectedDataUseFilters = useMemo(() => {
@@ -63,6 +66,16 @@ export const ConsentManagementTable = () => {
           checkedOptions.map((option) => option.value).join("&data_uses=")
       : undefined;
   }, [dataUseOptions]);
+
+  const selectedLegalBasisFilters = useMemo(() => {
+    const checkedOptions = legalBasisOptions.filter(
+      (option) => option.isChecked
+    );
+    return checkedOptions.length > 0
+      ? "legal_bases=" +
+          checkedOptions.map((option) => option.value).join("&legal_bases=")
+      : undefined;
+  }, [legalBasisOptions]);
 
   const {
     PAGE_SIZES,
@@ -87,6 +100,7 @@ export const ConsentManagementTable = () => {
     pageSize,
     dataUses: selectedDataUseFilters,
     search: globalFilter,
+    legalBasis: selectedLegalBasisFilters,
   });
 
   const {
@@ -106,6 +120,7 @@ export const ConsentManagementTable = () => {
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Vendor" {...props} />,
         meta: {
+          // width: "100%",
           maxWidth: "350px",
         },
       }),
@@ -205,7 +220,9 @@ export const ConsentManagementTable = () => {
           onClose={onCloseFilter}
           resetFilters={resetFilters}
           dataUseOptions={dataUseOptions}
-          onCheckboxChange={onCheckboxChange}
+          onDataUseChange={onDataUseChange}
+          legalBasisOptions={legalBasisOptions}
+          onLegalBasisChange={onLegalBasisChange}
         />
         <Flex alignItems="center">
           {isTcfEnabled ? (

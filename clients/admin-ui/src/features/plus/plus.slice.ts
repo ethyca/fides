@@ -320,12 +320,17 @@ const plusApi = baseApi.injectEndpoints({
         pageSize: number;
         search?: string;
         dataUses?: string;
+        legalBasis?: string;
       }
     >({
-      query: ({ pageIndex, pageSize, dataUses, search }) => {
+      query: ({ pageIndex, pageSize, dataUses, search, legalBasis }) => {
         let queryString = `page=${pageIndex}&size=${pageSize}`;
         if (dataUses) {
           queryString = queryString + `&${dataUses}`;
+        }
+
+        if (legalBasis) {
+          queryString = queryString + `&${legalBasis}`;
         }
 
         if (search) {
@@ -333,7 +338,7 @@ const plusApi = baseApi.injectEndpoints({
         }
 
         return {
-          url: `plus/system/paginated?${queryString}`,
+          url: `plus/system/consent-management/report?${queryString}`,
           method: "GET",
         };
       },
