@@ -29,6 +29,9 @@ The types of changes are:
 - Disallow setting `*` and other non URL values for `security.cors_origins` config property via the API [#4438](https://github.com/ethyca/fides/pull/4438)
 - Consent modal hides the opt-in/opt-out buttons if only one privacy notice is enabled [#4441](https://github.com/ethyca/fides/pull/4441)
 
+### Fixed
+- Use correct defaults when there is no associated preference in the cookie [#4451](https://github.com/ethyca/fides/pull/4451)
+
 ## [2.24.1](https://github.com/ethyca/fides/compare/2.24.0...2.24.1)
 
 ### Added
