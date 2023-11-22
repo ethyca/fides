@@ -18,8 +18,8 @@ import {
   isPrivacyExperience,
   shouldResurfaceConsent,
 } from "../lib/consent-utils";
+import { ETHYCA_CMP_ID } from "../lib/tcf/constants";
 
-const CMP_ID = 407; // TODO: is this supposed to be the same as TCF, or is this separate?
 const CMP_VERSION = 1;
 
 const TCF_SECTION_ID = 2;
@@ -27,7 +27,7 @@ const TCF_SECTION_ID = 2;
 export const initializeGppCmpApi = () => {
   makeStub();
 
-  const cmpApi = new CmpApi(CMP_ID, CMP_VERSION);
+  const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION);
   cmpApi.setApplicableSections([TCF_SECTION_ID]);
   cmpApi.setCmpStatus(CmpStatus.LOADED);
 
