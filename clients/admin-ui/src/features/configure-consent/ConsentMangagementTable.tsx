@@ -20,6 +20,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ConsentManagementFilterModal,
   useConsentManagementFilters,
+  Option,
 } from "~/features/configure-consent/ConsentManagementFilterModal";
 
 import {
@@ -53,29 +54,34 @@ export const ConsentManagementTable = () => {
     onOpen: onOpenFilter,
     onClose: onCloseFilter,
     resetFilters,
+    purposeOptions,
+    onPurposeChange,
     dataUseOptions,
     onDataUseChange,
     legalBasisOptions,
     onLegalBasisChange,
   } = useConsentManagementFilters();
 
-  const selectedDataUseFilters = useMemo(() => {
-    const checkedOptions = dataUseOptions.filter((option) => option.isChecked);
+  const getQueryParamsFromList = (optionList: Option[], queryParam: string) => {
+    const checkedOptions = optionList.filter((option) => option.isChecked);
     return checkedOptions.length > 0
-      ? "data_uses=" +
-          checkedOptions.map((option) => option.value).join("&data_uses=")
+      ? `${queryParam}=` +
+          checkedOptions.map((option) => option.value).join(`&${queryParam}=`)
       : undefined;
-  }, [dataUseOptions]);
+  };
+  const selectedDataUseFilters = useMemo(
+    () => getQueryParamsFromList(dataUseOptions, "data_uses"),
+    [dataUseOptions]
+  );
 
-  const selectedLegalBasisFilters = useMemo(() => {
-    const checkedOptions = legalBasisOptions.filter(
-      (option) => option.isChecked
-    );
-    return checkedOptions.length > 0
-      ? "legal_bases=" +
-          checkedOptions.map((option) => option.value).join("&legal_bases=")
-      : undefined;
-  }, [legalBasisOptions]);
+  const selectedLegalBasisFilters = useMemo(
+    () => getQueryParamsFromList(legalBasisOptions, "legal_bases"),
+    [legalBasisOptions]
+  );
+  const selectedPurposeFilters = useMemo(
+    () => getQueryParamsFromList(purposeOptions, "purposes"),
+    [purposeOptions]
+  );
 
   const {
     PAGE_SIZES,
@@ -101,6 +107,7 @@ export const ConsentManagementTable = () => {
     dataUses: selectedDataUseFilters,
     search: globalFilter,
     legalBasis: selectedLegalBasisFilters,
+    purposes: selectedPurposeFilters,
   });
 
   const {
@@ -219,6 +226,8 @@ export const ConsentManagementTable = () => {
           isOpen={isFilterOpen}
           onClose={onCloseFilter}
           resetFilters={resetFilters}
+          purposeOptions={purposeOptions}
+          onPurposeChange={onPurposeChange}
           dataUseOptions={dataUseOptions}
           onDataUseChange={onDataUseChange}
           legalBasisOptions={legalBasisOptions}

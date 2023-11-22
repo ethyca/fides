@@ -39,8 +39,8 @@ export type FieldValueToIsSelected = {
   [fieldValue: string]: boolean;
 };
 
-type Option = {
-  value: string | string[];
+export type Option = {
+  value: string;
   displayText: string;
   isChecked: boolean;
 };
@@ -91,7 +91,7 @@ const AccordionMultiFieldCheckBox = ({
 type AccordionMultiFieldProps = {
   options: Option[];
   header: string;
-  onCheckboxChange: (fidesKey: string, checked: boolean) => void;
+  onCheckboxChange: (newValue: string, checked: boolean) => void;
 };
 
 const AccordionMultifieldFilter = ({
@@ -163,11 +163,10 @@ export default AccordionMultifieldFilter;
 
 export const useConsentManagementFilters = () => {
   const { isOpen, onClose, onOpen } = useDisclosure();
-  const resetFilters = () => {};
   useGetAllDataUsesQuery();
   const dataUses = useAppSelector(selectDataUses);
   useGetPurposesQuery();
-  const purposeResponse= useAppSelector(selectPurposes);
+  const purposeResponse = useAppSelector(selectPurposes);
 
   const [purposeOptions, setPurposeOptions] = useState<Option[]>([]);
   const [dataUseOptions, setDataUseOptions] = useState<Option[]>([]);
@@ -197,24 +196,31 @@ export const useConsentManagementFilters = () => {
   }, [dataUses, dataUseOptions, setDataUseOptions]);
   useEffect(() => {
     if (purposeOptions.length === 0) {
-      const mappedPurposes = [
-        ...Object.entries(purposeResponse.purposes).flatMap((p) => p[1]),
-        ...Object.entries(purposeResponse.special_purposes).flatMap((p) => p[1]),
-      ];
-      console.log(mappedPurposes);
-
-      setPurposeOptions(
-        mappedPurposes.map((purpose) => ({
-          value: purpose.data_uses,
-          displayText: purpose.name,
+      setPurposeOptions([
+        ...Object.entries(purposeResponse.purposes).map((p) => ({
+          value: p[0],
+          displayText: p[1].name,
           isChecked: false,
-        }))
-      );
+        })),
+        ...Object.entries(purposeResponse.special_purposes).map((p) => ({
+          value: p[0],
+          displayText: p[1].name,
+          isChecked: false,
+        })),
+      ]);
     }
   }, [purposeResponse, purposeOptions, setDataUseOptions]);
 
+  const resetFilters = () => {
+    setDataUseOptions((prev) => prev.map((o) => ({ ...o, isChecked: false })));
+    setLegalBasisOptions((prev) =>
+      prev.map((o) => ({ ...o, isChecked: false }))
+    );
+    setPurposeOptions((prev) => prev.map((o) => ({ ...o, isChecked: false })));
+  };
+
   const onCheckBoxChange = (
-    newValue: string | string[],
+    newValue: string,
     checked: boolean,
     options: Option[],
     setOptions: (options: Option[]) => void
@@ -255,7 +261,7 @@ export const useConsentManagementFilters = () => {
     onOpen,
     resetFilters,
     purposeOptions,
-    setPurposeOptions,
+    onPurposeChange,
     dataUseOptions,
     onDataUseChange,
     legalBasisOptions,
@@ -267,6 +273,8 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   resetFilters: () => void;
+  purposeOptions: Option[];
+  onPurposeChange: (data_uses: string[], checked: boolean) => void;
   dataUseOptions: Option[];
   onDataUseChange: (fidesKey: string, checked: boolean) => void;
   legalBasisOptions: Option[];
@@ -277,6 +285,8 @@ export const ConsentManagementFilterModal = ({
   isOpen,
   onClose,
   resetFilters,
+  purposeOptions,
+  onPurposeChange,
   dataUseOptions,
   onDataUseChange,
   legalBasisOptions,
@@ -285,6 +295,11 @@ export const ConsentManagementFilterModal = ({
   return (
     <FilterModal isOpen={isOpen} onClose={onClose} resetFilters={resetFilters}>
       <FilterSection>
+        <AccordionMultifieldFilter
+          options={purposeOptions}
+          onCheckboxChange={onPurposeChange}
+          header="TCF purposes"
+        />
         <AccordionMultifieldFilter
           options={dataUseOptions}
           onCheckboxChange={onDataUseChange}

@@ -38,6 +38,7 @@ import {
   SystemScannerStatus,
   SystemScanResponse,
   SystemsDiff,
+  Page_SystemSummary_,
 } from "~/types/api";
 import {
   DataUseDeclaration,
@@ -53,23 +54,6 @@ interface ClassifyInstancesParams {
   fides_keys?: string[];
   resource_type: GenerateTypes;
 }
-
-export type VendorReport = {
-  fides_key: string;
-  name: string;
-  data_uses: string;
-  legal_bases: string;
-  consent_categories: string;
-  cookies: string;
-};
-
-export type VendorReportResponse = {
-  items: VendorReport[];
-  total: number;
-  page: number;
-  size: number;
-  pages: number;
-};
 
 const plusApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -314,16 +298,24 @@ const plusApi = baseApi.injectEndpoints({
       providesTags: ["Fides Cloud Config"],
     }),
     getVendorReport: build.query<
-      VendorReportResponse,
+      Page_SystemSummary_,
       {
         pageIndex: number;
         pageSize: number;
         search?: string;
+        purposes?: string;
         dataUses?: string;
         legalBasis?: string;
       }
     >({
-      query: ({ pageIndex, pageSize, dataUses, search, legalBasis }) => {
+      query: ({
+        pageIndex,
+        pageSize,
+        dataUses,
+        search,
+        legalBasis,
+        purposes,
+      }) => {
         let queryString = `page=${pageIndex}&size=${pageSize}`;
         if (dataUses) {
           queryString = queryString + `&${dataUses}`;
@@ -331,6 +323,9 @@ const plusApi = baseApi.injectEndpoints({
 
         if (legalBasis) {
           queryString = queryString + `&${legalBasis}`;
+        }
+        if (purposes) {
+          queryString = queryString + `&${purposes}`;
         }
 
         if (search) {
