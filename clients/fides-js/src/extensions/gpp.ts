@@ -61,7 +61,7 @@ export const initializeGppCmpApi = () => {
   window.addEventListener("FidesUpdated", (event) => {
     const tcString = fidesEventToTcString(event);
     // Workaround for bug in base library https://github.com/IABTechLab/iabgpp-es/issues/35
-    cmpApi.setFieldValueBySectionId(TCF_SECTION_ID, "CmpId", CMP_ID);
+    cmpApi.setFieldValueBySectionId(TCF_SECTION_ID, "CmpId", ETHYCA_CMP_ID);
     cmpApi.setSectionStringById(TCF_SECTION_ID, tcString ?? "");
     cmpApi.fireSectionChange("tcfeuv2");
     cmpApi.setSignalStatus(SignalStatus.READY);

@@ -7,7 +7,6 @@
 
 import { CmpApi, TCData } from "@iabtechlabtcf/cmpapi";
 import { TCModel, TCString, GVL, Segment } from "@iabtechlabtcf/core";
-import { makeStub } from "./tcf/stub";
 
 import { EnabledIds } from "./tcf/types";
 import {
@@ -18,7 +17,7 @@ import {
 } from "./tcf/vendors";
 import { PrivacyExperience } from "./consent-types";
 import { ETHYCA_CMP_ID, FIDES_SEPARATOR } from "./tcf/constants";
-import { fidesEventToTcString } from "./tcf/events";
+import { extractTCStringForCmpApi } from "./tcf/events";
 
 // TCF
 const CMP_VERSION = 1;
@@ -153,7 +152,6 @@ export const generateFidesString = async ({
  * the CMP API accordingly.
  */
 export const initializeTcfCmpApi = () => {
-  makeStub();
   const isServiceSpecific = true; // TODO: determine this from the backend?
   const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION, isServiceSpecific, {
     // Add custom command to support adding `addtlConsent` per AC spec
@@ -172,30 +170,29 @@ export const initializeTcfCmpApi = () => {
     },
   });
 
-  // `null` value indicates that GDPR does not apply
   // Initialize api with TC str, we don't yet show UI, so we use false
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
   window.addEventListener("FidesInitialized", (event) => {
-    const tcString = fidesEventToTcString(event);
-    cmpApi.update(tcString ?? null, false);
+    const tcString = extractTCStringForCmpApi(event);
+    cmpApi.update(tcString, false);
   });
   // UI is visible
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--tc-string-needs-update
   // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--new-user--no-tc-string
   window.addEventListener("FidesUIShown", (event) => {
-    const tcString = fidesEventToTcString(event);
-    cmpApi.update(tcString ?? null, true);
+    const tcString = extractTCStringForCmpApi(event);
+    cmpApi.update(tcString, true);
   });
   // UI is no longer visible
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
   window.addEventListener("FidesModalClosed", (event) => {
-    const tcString = fidesEventToTcString(event);
-    cmpApi.update(tcString ?? null, false);
+    const tcString = extractTCStringForCmpApi(event);
+    cmpApi.update(tcString, false);
   });
   // User preference collected
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--tc-string-needs-update
   window.addEventListener("FidesUpdated", (event) => {
-    const tcString = fidesEventToTcString(event);
-    cmpApi.update(tcString ?? null, false);
+    const tcString = extractTCStringForCmpApi(event);
+    cmpApi.update(tcString, false);
   });
 };

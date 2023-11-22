@@ -1286,6 +1286,43 @@ describe("Fides-js TCF", () => {
       cy.get("#fides-modal-link").click();
     });
 
+    it("makes API available as soon as possible", () => {
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+          },
+          experience: experience.items[0],
+        });
+      });
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, (tcData, success) => {
+          expect(success).to.eql(true);
+          expect(tcData.gdprApplies).to.eql(true);
+        });
+      });
+    });
+
+    it("gdpr applies can be overridden to false", () => {
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+            fidesTcfGdprApplies: false,
+          },
+          experience: experience.items[0],
+        });
+      });
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, (tcData, success) => {
+          expect(success).to.eql(true);
+          expect(tcData.gdprApplies).to.eql(false);
+        });
+      });
+    });
+
     it("can receive a cmpuishown event", () => {
       cy.get("@TCFEvent")
         .its("firstCall.args")
