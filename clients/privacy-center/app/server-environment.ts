@@ -50,6 +50,7 @@ export interface PrivacyCenterSettings {
   FIDES_EMBED: boolean | false; // (optional) Whether we should "embed" the fides.js overlay UI (ie. “Layer 2”) into a web page
   FIDES_DISABLE_SAVE_API: boolean | false; // (optional) Whether we should disable saving consent preferences to the Fides API
   FIDES_DISABLE_BANNER: boolean | false; // (optional) Whether we should disable showing the banner
+  FIDES_TCF_GDPR_APPLIES: boolean; // (optional) The default for the TCF GDPR applies value (default true)
   FIDES_STRING: string | null; // (optional) An explicitly passed-in string that supersedes the cookie. Can contain both TC and AC strings
   IS_FORCED_TCF: boolean; // whether to force the privacy center to use the fides-tcf.js bundle
 }
@@ -74,6 +75,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_EMBED"
   | "FIDES_DISABLE_SAVE_API"
   | "FIDES_DISABLE_BANNER"
+  | "FIDES_TCF_GDPR_APPLIES"
   | "FIDES_STRING"
   | "IS_FORCED_TCF"
 >;
@@ -330,11 +332,18 @@ export const loadPrivacyCenterEnvironment =
         .FIDES_PRIVACY_CENTER__FIDES_DISABLE_BANNER
         ? process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_BANNER === "true"
         : false,
+      FIDES_TCF_GDPR_APPLIES: !(
+        process.env.FIDES_PRIVACY_CENTER__FIDES_TCF_GDPR_APPLIES === "false"
+      ),
       FIDES_STRING: process.env.FIDES_PRIVACY_CENTER__FIDES_STRING || null,
       IS_FORCED_TCF: process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF
         ? process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF === "true"
         : false,
     };
+    console.log(
+      "process env",
+      process.env.FIDES_PRIVACY_CENTER__FIDES_TCF_GDPR_APPLIES
+    );
 
     // Load configuration file (if it exists)
     const config = await loadConfigFromFile(settings.CONFIG_JSON_URL);
@@ -358,6 +367,7 @@ export const loadPrivacyCenterEnvironment =
       FIDES_EMBED: settings.FIDES_EMBED,
       FIDES_DISABLE_SAVE_API: settings.FIDES_DISABLE_SAVE_API,
       FIDES_DISABLE_BANNER: settings.FIDES_DISABLE_BANNER,
+      FIDES_TCF_GDPR_APPLIES: settings.FIDES_TCF_GDPR_APPLIES,
       FIDES_STRING: settings.FIDES_STRING,
       IS_FORCED_TCF: settings.IS_FORCED_TCF,
     };

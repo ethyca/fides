@@ -154,6 +154,10 @@ export const generateFidesString = async ({
  * `vendors_disclosed` and our own AC string addition.
  */
 const fidesEventToTcString = (event: FidesEvent) => {
+  if (!window.Fides.options.fidesTcfGdprApplies) {
+    // A `null` TC string means gdpr does not apply
+    return null;
+  }
   const { fides_string: cookieString } = event.detail;
   if (cookieString) {
     // Remove the AC portion which is separated by FIDES_SEPARATOR
@@ -164,7 +168,7 @@ const fidesEventToTcString = (event: FidesEvent) => {
     // without vendorsDisclosed
     return tcString.split(".")[0];
   }
-  return cookieString;
+  return cookieString ?? "";
 };
 
 /**
@@ -190,30 +194,29 @@ export const initializeTcfCmpApi = () => {
     },
   });
 
-  // We use an empty string as a default value since `null` indicates that GDPR does not apply
   // Initialize api with TC str, we don't yet show UI, so we use false
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
   window.addEventListener("FidesInitialized", (event) => {
     const tcString = fidesEventToTcString(event);
-    cmpApi.update(tcString ?? "", false);
+    cmpApi.update(tcString, false);
   });
   // UI is visible
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--tc-string-needs-update
   // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--new-user--no-tc-string
   window.addEventListener("FidesUIShown", (event) => {
     const tcString = fidesEventToTcString(event);
-    cmpApi.update(tcString ?? "", true);
+    cmpApi.update(tcString, true);
   });
   // UI is no longer visible
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
   window.addEventListener("FidesModalClosed", (event) => {
     const tcString = fidesEventToTcString(event);
-    cmpApi.update(tcString ?? "", false);
+    cmpApi.update(tcString, false);
   });
   // User preference collected
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--tc-string-needs-update
   window.addEventListener("FidesUpdated", (event) => {
     const tcString = fidesEventToTcString(event);
-    cmpApi.update(tcString ?? "", false);
+    cmpApi.update(tcString, false);
   });
 };

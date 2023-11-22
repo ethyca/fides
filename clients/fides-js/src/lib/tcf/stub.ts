@@ -16,14 +16,18 @@ interface MessageData {
 const isMessageData = (data: unknown): data is MessageData =>
   typeof data === "object" && data != null && "__tcfapiCall" in data;
 
-export const makeStub = () => {
+export const makeStub = ({
+  gdprAppliesDefault = false,
+}: {
+  gdprAppliesDefault?: boolean;
+}) => {
+  console.log({ gdprAppliesDefault });
   const queue: any[] = [];
   const currentWindow = window;
   /**
-   * Fides modification (PROD#1433): gdprApplies defaults to true
-   * since we only return TCF when gdpr does apply!
+   * Fides modification (PROD#1433): gdprApplies can be overridden
    */
-  let gdprApplies: boolean = true;
+  let gdprApplies: boolean = gdprAppliesDefault;
 
   function tcfAPIHandler(...args: any[]) {
     if (!args.length) {

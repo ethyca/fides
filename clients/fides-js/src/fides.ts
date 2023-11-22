@@ -178,6 +178,7 @@ _Fides = {
     fidesDisableBanner: false,
     fidesString: null,
     apiOptions: null,
+    fidesTcfGdprApplies: false,
   },
   fides_meta: {},
   identity: {},
