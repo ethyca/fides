@@ -30,6 +30,7 @@ The types of changes are:
 - Consent modal hides the opt-in/opt-out buttons if only one privacy notice is enabled [#4441](https://github.com/ethyca/fides/pull/4441)
 
 ### Fixed
+- Use correct defaults when there is no associated preference in the cookie [#4451](https://github.com/ethyca/fides/pull/4451)
 - IP Addresses behind load balancers for consent reporting [#4440](https://github.com/ethyca/fides/pull/4440)
 
 ## [2.24.1](https://github.com/ethyca/fides/compare/2.24.0...2.24.1)
