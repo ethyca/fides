@@ -19,7 +19,11 @@ const isMessageData = (data: unknown): data is MessageData =>
 export const makeStub = () => {
   const queue: any[] = [];
   const currentWindow = window;
-  let gdprApplies: boolean;
+  /**
+   * Fides modification (PROD#1433): gdprApplies defaults to true
+   * since we only return TCF when gdpr does apply!
+   */
+  let gdprApplies: boolean = true;
 
   function tcfAPIHandler(...args: any[]) {
     if (!args.length) {

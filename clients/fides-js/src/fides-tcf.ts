@@ -90,6 +90,7 @@ import {
   transformFidesStringToCookieKeys,
 } from "./lib/tcf/utils";
 import type { GppFunction } from "./lib/gpp/types";
+import { makeStub } from "./lib/tcf/stub";
 
 declare global {
   interface Window {
@@ -241,6 +242,7 @@ const updateFidesCookieFromString = (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
+  makeStub();
   const overrides: Partial<FidesOverrides> = await getOverrides(config);
   // eslint-disable-next-line no-param-reassign
   config.options = { ...config.options, ...overrides.overrideOptions };
