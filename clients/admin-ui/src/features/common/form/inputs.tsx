@@ -485,6 +485,12 @@ const CreatableSelectInput = ({
               px: 2,
             })
           : (provided) => ({ ...provided, color: textColor }),
+        option: (provided, { isSelected }) => ({
+          ...provided,
+          ...(isSelected && {
+            background: "gray.200",
+          }),
+        }),
       }}
       components={components}
       isSearchable={isSearchable}
