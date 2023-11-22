@@ -89,7 +89,6 @@ describe("System management with Plus features", () => {
     // the form to be mistakenly marked as dirty and the "unsaved changes"
     // modal to pop up incorrectly when switching tabs
     it("can switch between tabs after populating from dictionary", () => {
-      cy.wait("@getSystems");
       cy.getSelectValueContainer("input-vendor_id").type("Anzu{enter}");
       // the form fetches the system again after saving, so update the intercept with dictionary values
       cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
