@@ -174,6 +174,7 @@ def get_matching_privacy_declarations(db: Session) -> Query:
             PrivacyDeclaration.legal_basis_for_processing,
             PrivacyDeclaration.features,
             PrivacyDeclaration.retention_period,
+            PrivacyDeclaration.flexible_legal_basis_for_processing,
         )
         .outerjoin(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
         .filter(

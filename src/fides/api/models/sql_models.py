@@ -9,6 +9,8 @@ from __future__ import annotations
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Set, Type, TypeVar
 
+from fideslang import MAPPED_PURPOSES_BY_DATA_USE
+from fideslang.gvl import MAPPED_PURPOSES, MappedPurpose
 from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.models import Dataset as FideslangDataset
 from pydantic import BaseModel
@@ -27,6 +29,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, BYTEA
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
@@ -513,6 +516,24 @@ class PrivacyDeclaration(Base):
     ) -> PrivacyDeclaration:
         """Overrides base create to avoid unique check on `name` column"""
         return super().create(db=db, data=data, check_name=check_name)
+
+    @hybrid_property
+    def purpose(self) -> Optional[int]:
+        """Return the Purpose ID (not Special Purpose ID) if the data use maps to a Purpose
+
+        If data use maps to a Special Purpose, None is returned here. This is for Purposes only.
+        """
+        mapped_purpose: Optional[MappedPurpose] = MAPPED_PURPOSES_BY_DATA_USE.get(
+            self.data_use
+        )
+        if not mapped_purpose:
+            return None
+
+        return (
+            mapped_purpose.id
+            if MAPPED_PURPOSES.get(mapped_purpose.id) == mapped_purpose
+            else None
+        )
 
 
 class SystemModel(BaseModel):
