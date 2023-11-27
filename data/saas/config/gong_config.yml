@@ -47,5 +47,11 @@ saas_config:
           path: /v2/data-privacy/erase-data-for-email-address
           body: |
             {
-              "emailAddress": <delemail>
+              "emailAddress": "<email>"
             }
+          query_params:
+            - name: emailAddress
+              value: <email>
+          param_values:
+            - name: email
+              identity: email

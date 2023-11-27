@@ -16,7 +16,6 @@ secrets = get_secrets("gong")
 def gong_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "gong.domain") or secrets["domain"],
-        # add the rest of your secrets here
         "access_key": pydash.get(saas_config, "gong.access_key")
         or secrets["access_key"],
         "access_key_secret": pydash.get(saas_config, "gong.access_key_secret")
@@ -32,11 +31,6 @@ def gong_identity_email(saas_config) -> str:
 @pytest.fixture
 def gong_erasure_identity_email() -> str:
     return generate_random_email()
-
-
-@pytest.fixture
-def gong_external_references() -> Dict[str, Any]:
-    return {}
 
 
 @pytest.fixture
