@@ -252,6 +252,9 @@ const SystemInformationForm = ({
   };
 
   const handleVendorSelected = (newVendorId: string | undefined) => {
+    if (!features.dictionaryService) {
+      return;
+    }
     if (!newVendorId) {
       dispatch(setSuggestions("hiding"));
       dispatch(setLockedForGVL(false));
@@ -297,20 +300,25 @@ const SystemInformationForm = ({
             <SystemFormInputGroup heading="System details">
               {features.dictionaryService ? (
                 <VendorSelector
+                  fieldsSeparated={
+                    features.dictionaryService &&
+                    features.flags.separateVendorSelector
+                  }
                   options={dictionaryOptions}
                   onVendorSelected={handleVendorSelected}
-                  disabled={!!passedInSystem && lockedForGVL}
+                  isCreate={!passedInSystem}
+                  lockedForGVL={lockedForGVL}
                 />
-              ) : null}
-              <DictSuggestionTextInput
-                id="name"
-                name="name"
-                dictField={(vendor) => vendor.name ?? (vendor.legal_name || "")}
-                isRequired
-                label="System name"
-                tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                disabled={lockedForGVL}
-              />
+              ) : (
+                <CustomTextInput
+                  id="name"
+                  name="name"
+                  label="System name"
+                  tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                  variant="stacked"
+                  isRequired
+                />
+              )}
               {passedInSystem?.fides_key && (
                 <CustomTextInput
                   id="fides_key"

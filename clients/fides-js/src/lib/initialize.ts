@@ -374,7 +374,7 @@ export const initialize = async ({
     identity: cookie.identity,
     fides_string: cookie.fides_string,
     tcf_consent: cookie.tcf_consent,
-    experience,
+    experience: effectiveExperience,
     geolocation,
     options,
     initialized: true,

@@ -334,6 +334,7 @@ export const buildTcfEntitiesFromCookie = (
  * Updates prefetched experience, based on:
  * 1) experience: pre-fetched or client-side experience-based consent configuration
  * 2) cookie: cookie containing user preference.
+
  *
  * Returns updated experience with user preferences.
  */
@@ -347,12 +348,15 @@ export const updateExperienceFromCookieConsent = ({
   debug?: boolean;
 }): PrivacyExperience => {
   const noticesWithConsent = experience.privacy_notices?.map((notice) => {
+    // Prefers preference in cookie if it exists, else uses current preference on the notice if it exists, else uses
+    // undefined. Undefined will occur for server-side-fetched experience when no corresponding pref exists in cookie.
+    const defaultPreference = notice.current_preference ?? undefined;
     const preference = Object.hasOwn(cookie.consent, notice.notice_key)
       ? transformConsentToFidesUserPreference(
           Boolean(cookie.consent[notice.notice_key]),
           notice.consent_mechanism
         )
-      : undefined;
+      : defaultPreference;
     return { ...notice, current_preference: preference };
   });
 

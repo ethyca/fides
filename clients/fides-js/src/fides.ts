@@ -94,25 +94,29 @@ const updateCookie = async (
   debug?: boolean,
   isExperienceClientSideFetched?: boolean
 ): Promise<{ cookie: FidesCookie; experience: PrivacyExperience }> => {
+  let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
     oldCookie.consent
   );
   if (isExperienceClientSideFetched && preferencesExistOnCookie) {
-    // if we already have preferences on the cookie, update client-side experience with those preferences
-    const updatedExperience = updateExperienceFromCookieConsent({
+    // If we have some preferences on the cookie, we update client-side experience with those preferences
+    // if the name matches
+    updatedExperience = updateExperienceFromCookieConsent({
       experience,
       cookie: oldCookie,
       debug,
     });
-    return { cookie: oldCookie, experience: updatedExperience };
   }
+  // Even if we update experience from cookie consent, we must still generate cookie consent based on experience.
+  // It's possible that some notices on the experience were not present on the cookie, e.g. if the cookie
+  // held legacy consent values.
   const context = getConsentContext();
   const consent = buildCookieConsentForExperiences(
-    experience,
+    updatedExperience,
     context,
     !!debug
   );
-  return { cookie: { ...oldCookie, consent }, experience };
+  return { cookie: { ...oldCookie, consent }, experience: updatedExperience };
 };
 
 /**
@@ -179,6 +183,7 @@ _Fides = {
     fidesDisableBanner: false,
     fidesString: null,
     apiOptions: null,
+    fidesTcfGdprApplies: false,
   },
   fides_meta: {},
   identity: {},

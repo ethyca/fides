@@ -1,4 +1,4 @@
-import { VNode, h } from "preact";
+import { Fragment, VNode, h } from "preact";
 import Button from "./Button";
 import {
   ButtonType,
@@ -18,6 +18,7 @@ export const ConsentButtons = ({
   onRejectAll,
   isMobile,
   includePrivacyPolicy,
+  saveOnly = false,
 }: {
   experienceConfig: ExperienceConfig;
   onManagePreferencesClick?: () => void;
@@ -26,6 +27,7 @@ export const ConsentButtons = ({
   onRejectAll: () => void;
   isMobile: boolean;
   includePrivacyPolicy?: boolean;
+  saveOnly?: boolean;
 }) => (
   <div id="fides-button-group">
     {onManagePreferencesClick ? (
@@ -47,18 +49,22 @@ export const ConsentButtons = ({
       }
     >
       {firstButton || null}
-      <Button
-        buttonType={ButtonType.PRIMARY}
-        label={experienceConfig.reject_button_label}
-        onClick={onRejectAll}
-        className="fides-reject-all-button"
-      />
-      <Button
-        buttonType={ButtonType.PRIMARY}
-        label={experienceConfig.accept_button_label}
-        onClick={onAcceptAll}
-        className="fides-accept-all-button"
-      />
+      {!saveOnly && (
+        <Fragment>
+          <Button
+            buttonType={ButtonType.PRIMARY}
+            label={experienceConfig.reject_button_label}
+            onClick={onRejectAll}
+            className="fides-reject-all-button"
+          />
+          <Button
+            buttonType={ButtonType.PRIMARY}
+            label={experienceConfig.accept_button_label}
+            onClick={onAcceptAll}
+            className="fides-accept-all-button"
+          />
+        </Fragment>
+      )}
     </div>
   </div>
 );
@@ -73,6 +79,7 @@ interface NoticeConsentButtonProps {
   isAcknowledge: boolean;
   isInModal?: boolean;
   isMobile: boolean;
+  saveOnly?: boolean;
 }
 
 export const NoticeConsentButtons = ({
@@ -83,6 +90,7 @@ export const NoticeConsentButtons = ({
   isInModal,
   isAcknowledge,
   isMobile,
+  saveOnly = false,
 }: NoticeConsentButtonProps) => {
   if (!experience.experience_config || !experience.privacy_notices) {
     return null;
@@ -135,7 +143,7 @@ export const NoticeConsentButtons = ({
       firstButton={
         isInModal ? (
           <Button
-            buttonType={ButtonType.SECONDARY}
+            buttonType={saveOnly ? ButtonType.PRIMARY : ButtonType.SECONDARY}
             label={config.save_button_label}
             onClick={handleSave}
             className="fides-save-button"
@@ -144,6 +152,7 @@ export const NoticeConsentButtons = ({
       }
       isMobile={isMobile}
       includePrivacyPolicy={!isInModal}
+      saveOnly={saveOnly}
     />
   );
 };

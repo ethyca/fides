@@ -148,6 +148,7 @@ export default async function handler(
       fidesEmbed: environment.settings.FIDES_EMBED,
       fidesDisableSaveApi: environment.settings.FIDES_DISABLE_SAVE_API,
       fidesDisableBanner: environment.settings.FIDES_DISABLE_BANNER,
+      fidesTcfGdprApplies: environment.settings.FIDES_TCF_GDPR_APPLIES,
       fidesString,
       // DEFER(PROD#1361): this should come from the backend
       gppEnabled: environment.settings.IS_GPP_ENABLED,

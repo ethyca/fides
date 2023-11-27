@@ -30,7 +30,7 @@ describe("System management with Plus features", () => {
     beforeEach(() => {
       stubVendorList();
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
-      cy.wait("@getDictionaryEntries");
+      cy.wait(["@getDictionaryEntries", "@getSystems", "@getSystem"]);
     });
 
     it("can display the vendor list dropdown", () => {
@@ -45,16 +45,50 @@ describe("System management with Plus features", () => {
       );
     });
 
-    it("locks editing for a GVL vendor when TCF is enabled", () => {
-      cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
-      cy.getByTestId("locked-for-GVL-notice");
+    it("can reset suggestions by clearing vendor input", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("L{enter}");
+      cy.getByTestId("input-legal_name").should("have.value", "LINE");
+      cy.getSelectValueContainer("input-vendor_id")
+        .siblings(".custom-select__indicators")
+        .find(".custom-select__clear-indicator");
+    });
+
+    it("can't refresh suggestions immediately after populating", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("A{enter}");
+      cy.getByTestId("refresh-suggestions-btn").should("be.disabled");
+    });
+
+    it("can refresh suggestions when editing a saved system", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("A{enter}");
+      cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
+        cy.fixture("systems/system.json").then((origSystem) => {
+          cy.intercept(
+            { method: "GET", url: "/api/v1/system/demo_analytics_system" },
+            {
+              body: {
+                ...origSystem,
+                ...dictSystem,
+                fides_key: origSystem.fides_key,
+                customFieldValues: undefined,
+                data_protection_impact_assessment: undefined,
+              },
+            }
+          ).as("getDictSystem");
+        });
+      });
+      cy.intercept({ method: "PUT", url: "/api/v1/system*" }).as(
+        "putDictSystem"
+      );
+      cy.getByTestId("save-btn").click();
+      cy.wait("@putDictSystem");
+      cy.wait("@getDictSystem");
+      cy.getByTestId("refresh-suggestions-btn").should("not.be.disabled");
     });
 
     // some DictSuggestionTextInputs don't get populated right, causing
     // the form to be mistakenly marked as dirty and the "unsaved changes"
     // modal to pop up incorrectly when switching tabs
     it("can switch between tabs after populating from dictionary", () => {
-      cy.wait("@getSystems");
       cy.getSelectValueContainer("input-vendor_id").type("Anzu{enter}");
       // the form fetches the system again after saving, so update the intercept with dictionary values
       cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
@@ -84,6 +118,40 @@ describe("System management with Plus features", () => {
       cy.getByTestId("tab-System information").click();
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("confirmation-modal").should("not.exist");
+    });
+
+    it("locks editing for a GVL vendor when TCF is enabled", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
+      cy.getByTestId("locked-for-GVL-notice");
+      cy.getByTestId("input-description").should("be.disabled");
+    });
+
+    it("does not allow changes to data uses when locked", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
+      cy.getByTestId("save-btn").click();
+      cy.wait(["@putSystem", "@getSystem", "@getSystems"]);
+      cy.getByTestId("tab-Data uses").click();
+      cy.getByTestId("add-btn").should("not.exist");
+      cy.getByTestId("delete-btn").should("not.exist");
+      cy.getByTestId("row-functional.service.improve").click();
+      cy.getByTestId("input-name").should("be.disabled");
+    });
+
+    it("does not lock editing for a non-GVL vendor", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("L{enter}");
+      cy.getByTestId("locked-for-GVL-notice").should("not.exist");
+      cy.getByTestId("input-description").should("not.be.disabled");
+    });
+
+    it("allows changes to data uses for non-GVL vendors", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("L{enter}");
+      cy.getByTestId("save-btn").click();
+      cy.wait(["@putSystem", "@getSystem", "@getSystems"]);
+      cy.getByTestId("tab-Data uses").click();
+      cy.getByTestId("add-btn");
+      cy.getByTestId("delete-btn");
+      cy.getByTestId("row-functional.service.improve").click();
+      cy.getByTestId("input-name").should("not.be.disabled");
     });
   });
 

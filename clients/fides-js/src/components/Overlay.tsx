@@ -49,15 +49,18 @@ const Overlay: FunctionComponent<Props> = ({
   const hasMounted = useHasMounted();
   const [bannerIsOpen, setBannerIsOpen] = useState(false);
 
-  const dispatchCloseEvent = useCallback(() => {
-    dispatchFidesEvent("FidesModalClosed", cookie, options.debug);
-  }, [cookie, options.debug]);
+  const dispatchCloseEvent = useCallback(
+    ({ saved = false }: { saved?: boolean }) => {
+      dispatchFidesEvent("FidesModalClosed", cookie, options.debug, { saved });
+    },
+    [cookie, options.debug]
+  );
 
   const { instance, attributes } = useA11yDialog({
     id: "fides-modal",
     role: "alertdialog",
     title: experience?.experience_config?.title || "",
-    onClose: dispatchCloseEvent,
+    onClose: () => dispatchCloseEvent({ saved: false }),
   });
 
   const handleOpenModal = useCallback(() => {
@@ -67,10 +70,10 @@ const Overlay: FunctionComponent<Props> = ({
     }
   }, [instance, onOpen]);
 
-  const handleCloseModal = useCallback(() => {
+  const handleCloseModalAfterSave = useCallback(() => {
     if (instance && !options.fidesEmbed) {
       instance.hide();
-      dispatchCloseEvent();
+      dispatchCloseEvent({ saved: true });
     }
   }, [instance, dispatchCloseEvent, options.fidesEmbed]);
 
@@ -156,7 +159,7 @@ const Overlay: FunctionComponent<Props> = ({
           experience={experience.experience_config}
           renderModalFooter={() =>
             renderModalFooter({
-              onClose: handleCloseModal,
+              onClose: handleCloseModalAfterSave,
               isMobile: false,
             })
           }
@@ -170,7 +173,7 @@ const Overlay: FunctionComponent<Props> = ({
           onVendorPageClick={onVendorPageClick}
           renderModalFooter={() =>
             renderModalFooter({
-              onClose: handleCloseModal,
+              onClose: handleCloseModalAfterSave,
               isMobile: false,
             })
           }

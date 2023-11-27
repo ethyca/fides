@@ -84,6 +84,8 @@ export type FidesOptions = {
 
   // Whether or the GPP extension should be loaded
   gppEnabled: boolean;
+  // What the "GDPR Applies" field of TCF should default to
+  fidesTcfGdprApplies: boolean;
 };
 
 export type GetPreferencesFnResp = {
@@ -384,11 +386,16 @@ export type OverrideOptions = {
   fides_disable_save_api: boolean;
   fides_disable_banner: boolean;
   fides_embed: boolean;
+  fides_tcf_gdpr_applies: boolean;
 };
 
 export type FidesOptionOverrides = Pick<
   FidesOptions,
-  "fidesString" | "fidesDisableSaveApi" | "fidesEmbed" | "fidesDisableBanner"
+  | "fidesString"
+  | "fidesDisableSaveApi"
+  | "fidesEmbed"
+  | "fidesDisableBanner"
+  | "fidesTcfGdprApplies"
 >;
 
 export type FidesOverrides = {

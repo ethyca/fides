@@ -15,19 +15,32 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.24.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.25.0...main)
+
+### Added
+- Dynamic importing for GPP bundle [#4447](https://github.com/ethyca/fides/pull/4447)
+
+## [2.25.0](https://github.com/ethyca/fides/compare/2.24.1...2.25.0)
 
 ### Added
 - Stub for initial GPP support [#4431](https://github.com/ethyca/fides/pull/4431)
-- Dynamic importing for GPP bundle [#4447](https://github.com/ethyca/fides/pull/4447)
 - Added confirmation modal on deleting a data use declaration [#4439](https://github.com/ethyca/fides/pull/4439)
+- Added feature flag for separating system name and Compass vendor selector [#4437](https://github.com/ethyca/fides/pull/4437)
+- Fire GPP events per spec [#4433](https://github.com/ethyca/fides/pull/4433)
+- New override option `fides_tcf_gdpr_applies` for setting `gdprApplies` on the CMP API [#4453](https://github.com/ethyca/fides/pull/4453)
 
 ### Changed
 - Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
 - Flexible legal basis for processing has a db default of True [#4434](https://github.com/ethyca/fides/pull/4434)
 - Give contributor role access to config API, including cors origin updates [#4438](https://github.com/ethyca/fides/pull/4438)
 - Disallow setting `*` and other non URL values for `security.cors_origins` config property via the API [#4438](https://github.com/ethyca/fides/pull/4438)
+- Consent modal hides the opt-in/opt-out buttons if only one privacy notice is enabled [#4441](https://github.com/ethyca/fides/pull/4441)
+- Initialize TCF stub earlier [#4453](https://github.com/ethyca/fides/pull/4453)
 
+### Fixed
+- Fixed a bug where selected vendors in "configure consent" add vendor modal were unstyled [#4454](https://github.com/ethyca/fides/pull/4454)
+- Use correct defaults when there is no associated preference in the cookie [#4451](https://github.com/ethyca/fides/pull/4451)
+- IP Addresses behind load balancers for consent reporting [#4440](https://github.com/ethyca/fides/pull/4440)
 
 ## [2.24.1](https://github.com/ethyca/fides/compare/2.24.0...2.24.1)
 
@@ -37,11 +50,12 @@ The types of changes are:
 ### Changed
 - Run fides with non-root user [#4421](https://github.com/ethyca/fides/pull/4421)
 
-
 ## [2.24.0](https://github.com/ethyca/fides/compare/2.23.3...2.24.0)
 
 ### Added
+
 - Adds fides_disable_banner config option to Fides.js [#4378](https://github.com/ethyca/fides/pull/4378)
+- Deletions that fail due to foreign key constraints will now be more clearly communicated [#4406](https://github.com/ethyca/fides/pull/4378)
 - Added support for a custom get preferences API call provided through Fides.init [#4375](https://github.com/ethyca/fides/pull/4375)
 - Hidden custom privacy request fields in the Privacy Center [#4370](https://github.com/ethyca/fides/pull/4370)
 - Backend System-level Cookie Support [#4383](https://github.com/ethyca/fides/pull/4383)
@@ -55,6 +69,7 @@ The types of changes are:
 - Adds more granularity to tracking consent method, updates custom savePreferencesFn and FidesUpdated event to take consent method [#4419](https://github.com/ethyca/fides/pull/4419)
 
 ### Changed
+
 - Add filtering and pagination to bulk vendor add table [#4351](https://github.com/ethyca/fides/pull/4351)
 - Determine if the TCF overlay needs to surface based on backend calculated version hash [#4356](https://github.com/ethyca/fides/pull/4356)
 - Moved Experiences and Preferences endpoints to Plus to take advantage of dynamic GVL  [#4367](https://github.com/ethyca/fides/pull/4367)
