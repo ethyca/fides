@@ -22,7 +22,7 @@ export const BadgeCell = ({
   value,
   suffix,
 }: {
-  value: string;
+  value: string | number;
   suffix?: string;
 }) => {
   return (
@@ -71,7 +71,7 @@ type DefaultHeaderCellProps<T, V> = {
 export const DefaultHeaderCell = <T,>({
   value,
   column,
-}: DefaultHeaderCellProps<T, string>) => {
+}: DefaultHeaderCellProps<T, string | number>) => {
   let sortIcon: ReactNode = null;
   if (column.getIsSorted()) {
     sortIcon =

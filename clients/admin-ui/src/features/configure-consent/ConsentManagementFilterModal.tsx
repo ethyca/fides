@@ -1,10 +1,4 @@
 import {
-  DATA_CATEGORY_COLUMN_ID,
-  SYSTEM_DATA_RESPONSIBILITY_TITLE,
-  SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
-  SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
-} from "~/features/datamap/constants";
-import {
   FilterModal,
   FilterSection,
 } from "~/features/common/modals/FilterModal";
@@ -105,6 +99,7 @@ const AccordionMultifieldFilter = ({
     ? options
     : options.slice(0, numDefaultOptions);
   const areExtraOptionsAvailable = options.length > numDefaultOptions;
+  console.log(header, onCheckboxChange);
 
   return (
     <Accordion width="100%" allowToggle>
@@ -182,6 +177,30 @@ export const useConsentManagementFilters = () => {
       isChecked: false,
     },
   ]);
+  const [consentCategoryOptions, setConsentCategoryOptions] = useState<
+    Option[]
+  >([
+    {
+      displayText: "Advertising",
+      value: "advertising",
+      isChecked: false,
+    },
+    {
+      displayText: "Analytics",
+      value: "analytics",
+      isChecked: false,
+    },
+    {
+      displayText: "Functional",
+      value: "functional",
+      isChecked: false,
+    },
+    {
+      displayText: "Essential",
+      value: "essential",
+      isChecked: false,
+    },
+  ]);
 
   useEffect(() => {
     if (dataUseOptions.length === 0) {
@@ -217,6 +236,9 @@ export const useConsentManagementFilters = () => {
       prev.map((o) => ({ ...o, isChecked: false }))
     );
     setPurposeOptions((prev) => prev.map((o) => ({ ...o, isChecked: false })));
+    setConsentCategoryOptions((prev) =>
+      prev.map((o) => ({ ...o, isChecked: false }))
+    );
   };
 
   const onCheckBoxChange = (
@@ -251,8 +273,19 @@ export const useConsentManagementFilters = () => {
       setLegalBasisOptions
     );
   };
-  const onPurposeChange = (data_uses: string[], checked: boolean) => {
-    onCheckBoxChange(data_uses, checked, purposeOptions, setPurposeOptions);
+  const onPurposeChange = (dataUses: string, checked: boolean) => {
+    onCheckBoxChange(dataUses, checked, purposeOptions, setPurposeOptions);
+  };
+  const onConsentCategoryChange = (
+    consentCategory: string,
+    checked: boolean
+  ) => {
+    onCheckBoxChange(
+      consentCategory,
+      checked,
+      consentCategoryOptions,
+      setConsentCategoryOptions
+    );
   };
 
   return {
@@ -266,23 +299,29 @@ export const useConsentManagementFilters = () => {
     onDataUseChange,
     legalBasisOptions,
     onLegalBasisChange,
+    consentCategoryOptions,
+    onConsentCategoryChange,
   };
 };
 
 type Props = {
   isOpen: boolean;
+  isTcfEnabled: boolean;
   onClose: () => void;
   resetFilters: () => void;
   purposeOptions: Option[];
-  onPurposeChange: (data_uses: string[], checked: boolean) => void;
+  onPurposeChange: (data_uses: string, checked: boolean) => void;
   dataUseOptions: Option[];
   onDataUseChange: (fidesKey: string, checked: boolean) => void;
   legalBasisOptions: Option[];
-  onLegalBasisChange: (legal_basis: string, checked: boolean) => void;
+  onLegalBasisChange: (legaBasis: string, checked: boolean) => void;
+  consentCategoryOptions: Option[];
+  onConsentCategoryChange: (consentCategory: string, checked: boolean) => void;
 };
 
 export const ConsentManagementFilterModal = ({
   isOpen,
+  isTcfEnabled,
   onClose,
   resetFilters,
   purposeOptions,
@@ -291,25 +330,39 @@ export const ConsentManagementFilterModal = ({
   onDataUseChange,
   legalBasisOptions,
   onLegalBasisChange,
+  consentCategoryOptions,
+  onConsentCategoryChange,
 }: Props) => {
   return (
     <FilterModal isOpen={isOpen} onClose={onClose} resetFilters={resetFilters}>
       <FilterSection>
-        <AccordionMultifieldFilter
-          options={purposeOptions}
-          onCheckboxChange={onPurposeChange}
-          header="TCF purposes"
-        />
+        {isTcfEnabled ? (
+          <AccordionMultifieldFilter
+            options={purposeOptions}
+            onCheckboxChange={onPurposeChange}
+            header="TCF purposes"
+          />
+        ) : null}
         <AccordionMultifieldFilter
           options={dataUseOptions}
           onCheckboxChange={onDataUseChange}
           header="Data Uses"
         />
-        <AccordionMultifieldFilter
-          options={legalBasisOptions}
-          onCheckboxChange={onLegalBasisChange}
-          header="Legal Basis"
-        />
+
+        {isTcfEnabled ? (
+          <AccordionMultifieldFilter
+            options={legalBasisOptions}
+            onCheckboxChange={onLegalBasisChange}
+            header="Legal Basis"
+          />
+        ) : null}
+        {!isTcfEnabled ? (
+          <AccordionMultifieldFilter
+            options={consentCategoryOptions}
+            onCheckboxChange={onConsentCategoryChange}
+            header="Consent Categories"
+          />
+        ) : null}
       </FilterSection>
     </FilterModal>
   );

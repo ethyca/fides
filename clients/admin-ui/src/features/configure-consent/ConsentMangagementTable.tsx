@@ -26,15 +26,14 @@ import {
 import {
   useGetHealthQuery,
   useGetVendorReportQuery,
-  VendorReport,
-  VendorReportResponse,
 } from "~/features/plus/plus.slice";
 import { useLazyGetSystemByFidesKeyQuery } from "~/features/system/system.slice";
 import AddVendor from "~/features/configure-consent/AddVendor";
+import { Page_SystemSummary_, SystemSummary } from "~/types/api";
 
-const columnHelper = createColumnHelper<VendorReport>();
+const columnHelper = createColumnHelper<SystemSummary>();
 
-const emptyVendorReportResponse: VendorReportResponse = {
+const emptyVendorReportResponse: Page_SystemSummary_ = {
   items: [],
   total: 0,
   page: 1,
@@ -42,8 +41,8 @@ const emptyVendorReportResponse: VendorReportResponse = {
   pages: 1,
 };
 export const ConsentManagementTable = () => {
-  const { tcf: isTcfEnabled } = useFeatures();
-  // const isTcfEnabled = false;
+  // const { tcf: isTcfEnabled } = useFeatures();
+  const isTcfEnabled = false;
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const [globalFilter, setGlobalFilter] = useState();
   const [systemToEdit, setSystemToEdit] = useState();
@@ -60,6 +59,8 @@ export const ConsentManagementTable = () => {
     onDataUseChange,
     legalBasisOptions,
     onLegalBasisChange,
+    consentCategoryOptions,
+    onConsentCategoryChange,
   } = useConsentManagementFilters();
 
   const getQueryParamsFromList = (optionList: Option[], queryParam: string) => {
@@ -81,6 +82,10 @@ export const ConsentManagementTable = () => {
   const selectedPurposeFilters = useMemo(
     () => getQueryParamsFromList(purposeOptions, "purposes"),
     [purposeOptions]
+  );
+  const selectedConsentCategoryFilters = useMemo(
+    () => getQueryParamsFromList(consentCategoryOptions, "consent_category"),
+    [consentCategoryOptions]
   );
 
   const {
@@ -108,6 +113,7 @@ export const ConsentManagementTable = () => {
     search: globalFilter,
     legalBasis: selectedLegalBasisFilters,
     purposes: selectedPurposeFilters,
+    consentCategories: selectedConsentCategoryFilters,
   });
 
   const {
@@ -127,7 +133,6 @@ export const ConsentManagementTable = () => {
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Vendor" {...props} />,
         meta: {
-          // width: "100%",
           maxWidth: "350px",
         },
       }),
@@ -183,14 +188,14 @@ export const ConsentManagementTable = () => {
     []
   );
 
-  const tableInstance = useReactTable<VendorReport>({
+  const tableInstance = useReactTable<SystemSummary>({
     columns: tcfColumns,
     data,
     state: {
       columnVisibility: {
         tcf_purpose: isTcfEnabled,
         data_uses: isTcfEnabled,
-        legal_basis: isTcfEnabled,
+        legal_bases: isTcfEnabled,
         consent_categories: !isTcfEnabled,
         cookies: !isTcfEnabled,
       },
@@ -198,7 +203,7 @@ export const ConsentManagementTable = () => {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const onRowClick = async (row: VendorReport) => {
+  const onRowClick = async (row: SystemSummary) => {
     console.log(row);
     const result = await getSystemByFidesKey(row.fides_key);
     console.log(result);
@@ -224,6 +229,7 @@ export const ConsentManagementTable = () => {
         />
         <ConsentManagementFilterModal
           isOpen={isFilterOpen}
+          isTcfEnabled={isTcfEnabled}
           onClose={onCloseFilter}
           resetFilters={resetFilters}
           purposeOptions={purposeOptions}
@@ -232,22 +238,18 @@ export const ConsentManagementTable = () => {
           onDataUseChange={onDataUseChange}
           legalBasisOptions={legalBasisOptions}
           onLegalBasisChange={onLegalBasisChange}
+          consentCategoryOptions={consentCategoryOptions}
+          onConsentCategoryChange={onConsentCategoryChange}
         />
         <Flex alignItems="center">
-          {isTcfEnabled ? (
-            // Wrap in a span so it is consistent height with the add button, whose
-            // Tooltip wraps a span
-            <span>
-              <Button
-                onClick={onOpenFilter}
-                data-testid="filter-multiple-systems-btn"
-                size="xs"
-                variant="outline"
-              >
-                Filter
-              </Button>
-            </span>
-          ) : null}
+          <Button
+            onClick={onOpenFilter}
+            data-testid="filter-multiple-systems-btn"
+            size="xs"
+            variant="outline"
+          >
+            Filter
+          </Button>
         </Flex>
       </TableActionBar>
       <FidesTableV2 tableInstance={tableInstance} onRowClick={onRowClick} />
