@@ -3,7 +3,7 @@
  * Extension for GPP
  *
  * Usage:
- * Dynamically imported by the
+ * Dynamically imported by fides.js as an extension
  */
 
 import {
@@ -19,18 +19,31 @@ import {
   shouldResurfaceConsent,
 } from "./lib/consent-utils";
 import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
+import type { Fides } from "./lib/initialize";
+import type { OverrideOptions } from "./lib/consent-types";
+import { GppFunction } from "./lib/gpp/types";
 
 const CMP_VERSION = 1;
 
 const TCF_SECTION_ID = 2;
 
+declare global {
+  interface Window {
+    Fides: Fides;
+    config: {
+      // DEFER (PROD-1243): support a configurable "custom options" path
+      tc_info: OverrideOptions;
+    };
+    __gpp?: GppFunction;
+    __gppLocator?: Window;
+  }
+}
+
 export const initializeGppCmpApi = () => {
   makeStub();
-
   const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION);
   cmpApi.setApplicableSections([TCF_SECTION_ID]);
   cmpApi.setCmpStatus(CmpStatus.LOADED);
-
   // If consent does not need to be resurfaced, then we can set the signal to Ready here
   window.addEventListener("FidesInitialized", (event) => {
     const { experience } = window.Fides;
@@ -67,3 +80,5 @@ export const initializeGppCmpApi = () => {
     cmpApi.setSignalStatus(SignalStatus.READY);
   });
 };
+
+initializeGppCmpApi();
