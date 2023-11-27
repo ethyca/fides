@@ -39,7 +39,8 @@ export const useClientSidePagination = <T,>(
     startRange,
     endRange,
   };
-};
+}
+
 
 export const useServerSidePagination = () => {
   const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
@@ -116,8 +117,11 @@ export const PaginationBar = ({
             fontVariantNumeric: "tabular-nums",
           }}
         >
-          {startRange}-{endRange <= totalRows ? endRange : totalRows} of{" "}
-          {totalRows}
+          {startRange.toLocaleString("en")}-
+          {endRange <= totalRows
+            ? endRange.toLocaleString("en")
+            : totalRows.toLocaleString("en")}{" "}
+          of {totalRows.toLocaleString("en")}
         </Text>
       </MenuButton>
       <MenuList minWidth="0">
@@ -140,9 +144,7 @@ export const PaginationBar = ({
       size="xs"
       variant="outline"
       aria-label="previous page"
-      onClick={() => {
-        onPreviousPageClick();
-      }}
+      onClick={onPreviousPageClick}
       isDisabled={isPreviousPageDisabled}
     >
       previous
@@ -152,12 +154,10 @@ export const PaginationBar = ({
       size="xs"
       variant="outline"
       aria-label="next page"
-      onClick={() => {
-        onNextPageClick();
-      }}
+      onClick={onNextPageClick}
       isDisabled={isNextPageDisabled}
     >
       next
     </IconButton>
   </HStack>
-);
+)

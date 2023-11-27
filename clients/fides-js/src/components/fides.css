@@ -208,6 +208,7 @@ div#fides-button-group {
 }
 
 div.fides-acknowledge-button-container {
+  margin-inline: var(--fides-overlay-padding);
   margin-bottom: var(--fides-overlay-padding);
   display: flex;
   justify-content: end;

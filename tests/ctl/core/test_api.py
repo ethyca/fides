@@ -691,7 +691,7 @@ class TestSystemCreate:
         assert privacy_decl.data_shared_with_third_parties is True
         assert privacy_decl.third_parties == "Third Party Marketing Dept."
         assert privacy_decl.shared_categories == ["user"]
-        assert privacy_decl.flexible_legal_basis_for_processing is None
+        assert privacy_decl.flexible_legal_basis_for_processing is True
 
     async def test_system_create_minimal_request_body(
         self, generate_auth_header, db, test_config, system_create_request_body

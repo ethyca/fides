@@ -6,6 +6,9 @@ import {
   TcfModelType,
 } from "./types";
 
+/** CMP ID assigned to us by the IAB */
+export const ETHYCA_CMP_ID = 407;
+
 /**
  * We store all of our preference strings (TC, AC, etc.) together as one string so that
  * we can have a single-source-of-truth for offline storage & syncing. The code responsible

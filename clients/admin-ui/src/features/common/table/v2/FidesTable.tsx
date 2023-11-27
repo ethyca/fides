@@ -25,8 +25,8 @@ const getTableTHandTDStyles = (cellId: string) =>
       };
 
 /*
-  This was throwing a false positive for unused paramaters.
-  It's also how the library author reccomends typing meta.
+  This was throwing a false positive for unused parameters.
+  It's also how the library author recommends typing meta.
   https://tanstack.com/table/v8/docs/api/core/column-def#meta
 */
 /* eslint-disable */
@@ -73,7 +73,7 @@ export const FidesTableV2 = <T,>({
         backgroundColor="gray.50"
       >
         {tableInstance.getHeaderGroups().map((headerGroup) => (
-          <Tr key={headerGroup.id}>
+          <Tr key={headerGroup.id} height="inherit">
             {headerGroup.headers.map((header) => (
               <Th
                 key={header.id}
