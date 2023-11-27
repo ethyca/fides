@@ -31,7 +31,6 @@ import { PaddedCell } from "~/features/common/table";
 import GroupedTableBody from "~/features/common/table/grouped/GroupedTableBody";
 import GroupedTableHeader from "~/features/common/table/grouped/GroupedTableHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import AddVendor from "~/features/configure-consent/AddVendor";
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
 import { selectAllSystems, useDeleteSystemMutation } from "~/features/system";
 import { System } from "~/types/api";
@@ -46,9 +45,9 @@ const VendorCookieTable = () => {
     [systems]
   );
 
-  const [systemToEdit, setSystemToEdit] = useState<System | undefined>(
-    undefined
-  );
+  // const [systemToEdit, setSystemToEdit] = useState<System | undefined>(
+  //   undefined
+  // );
   const [systemToDelete, setSystemToDelete] = useState<System | undefined>(
     undefined
   );
@@ -122,10 +121,10 @@ const VendorCookieTable = () => {
     onDeleteModalOpen();
   };
 
-  const handleEdit = (systemFidesKey: string) => {
-    const system = systems.find((s) => systemFidesKey === s.fides_key);
-    setSystemToEdit(system);
-  };
+  // const handleEdit = (systemFidesKey: string) => {
+  // const system = systems.find((s) => systemFidesKey === s.fides_key);
+  // setSystemToEdit(system);
+  // };
 
   const renderOverflowMenu = (row: Row<CookieBySystem>) => (
     <Menu>
@@ -138,10 +137,7 @@ const VendorCookieTable = () => {
         data-testid={`configure-${row.values.id}`}
       />
       <MenuList>
-        <MenuItem
-          data-testid={`edit-${row.values.id}`}
-          onClick={() => handleEdit(row.values.id)}
-        >
+        <MenuItem data-testid={`edit-${row.values.id}`}>
           Manage cookies
         </MenuItem>
         <MenuItem
@@ -164,10 +160,12 @@ const VendorCookieTable = () => {
         />
         <Flex>
           <Flex width="10px" />
-          <AddVendor
-            passedInSystem={systemToEdit}
-            onCloseModal={() => setSystemToEdit(undefined)}
-          />
+          {
+            // <AddVendor
+            //   passedInSystem={systemToEdit}
+            //   onCloseModal={() => setSystemToEdit(undefined)}
+            // />
+          }
         </Flex>
         <ConfirmationModal
           isOpen={isDeleteModalOpen}

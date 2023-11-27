@@ -30,7 +30,11 @@ import {
   useGetVendorReportQuery,
 } from "~/features/plus/plus.slice";
 import { useLazyGetSystemByFidesKeyQuery } from "~/features/system/system.slice";
-import { Page_SystemSummary_, SystemSummary } from "~/types/api";
+import {
+  Page_SystemSummary_,
+  SystemResponse,
+  SystemSummary,
+} from "~/types/api";
 
 const columnHelper = createColumnHelper<SystemSummary>();
 
@@ -45,7 +49,9 @@ export const ConsentManagementTable = () => {
   const { tcf: isTcfEnabled } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const [globalFilter, setGlobalFilter] = useState();
-  const [systemToEdit, setSystemToEdit] = useState();
+  const [systemToEdit, setSystemToEdit] = useState<
+    SystemResponse | undefined
+  >();
   const [getSystemByFidesKey] = useLazyGetSystemByFidesKeyQuery();
 
   const {
