@@ -1,0 +1,46 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Gong
+  type: gong
+  description: A sample schema representing the Gong connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+    default: api.gong.io
+    - name: basic token
+      description: Check Gong's documentation for how to create this value https://us-66708.app.gong.io/settings/api/documentation#overview
+      sensitive: true
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <access_key>
+        password: <access_key_secret>
+
+  test_request:
+    method: GET
+    path: /v2/users
+
+  endpoints:
+    - name: user
+      requests:
+        read:
+          method: GET
+          path: /v2/data-privacy/data-for-email-address
+          query_params:
+            - name: emailAddress
+              value: <email>
+          param_values:
+            - name: email
+              identity: email
+        update:
+          method: POST
+          path: /v2/data-privacy/erase-data-for-email-address
+          body: |
+            {
+              "emailAddress": <delemail>
+            }
