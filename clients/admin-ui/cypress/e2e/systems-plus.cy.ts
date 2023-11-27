@@ -30,7 +30,7 @@ describe("System management with Plus features", () => {
     beforeEach(() => {
       stubVendorList();
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
-      cy.wait("@getDictionaryEntries");
+      cy.wait(["@getDictionaryEntries", "@getSystems", "@getSystem"]);
     });
 
     it("can display the vendor list dropdown", () => {
@@ -89,7 +89,6 @@ describe("System management with Plus features", () => {
     // the form to be mistakenly marked as dirty and the "unsaved changes"
     // modal to pop up incorrectly when switching tabs
     it("can switch between tabs after populating from dictionary", () => {
-      cy.wait("@getSystems");
       cy.getSelectValueContainer("input-vendor_id").type("Anzu{enter}");
       // the form fetches the system again after saving, so update the intercept with dictionary values
       cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
@@ -130,7 +129,7 @@ describe("System management with Plus features", () => {
     it("does not allow changes to data uses when locked", () => {
       cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
       cy.getByTestId("save-btn").click();
-      cy.wait("@putSystem");
+      cy.wait(["@putSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").should("not.exist");
       cy.getByTestId("delete-btn").should("not.exist");
@@ -147,7 +146,7 @@ describe("System management with Plus features", () => {
     it("allows changes to data uses for non-GVL vendors", () => {
       cy.getSelectValueContainer("input-vendor_id").type("L{enter}");
       cy.getByTestId("save-btn").click();
-      cy.wait("@putSystem");
+      cy.wait(["@putSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn");
       cy.getByTestId("delete-btn");
