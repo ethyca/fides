@@ -4,6 +4,7 @@ import { validateConfig } from "~/app/server-environment";
 import minimalJson from "~/config/examples/minimal.json";
 import fullJson from "~/config/examples/full.json";
 import v2ConsentJson from "~/config/examples/v2Consent.json";
+import customFields from "~/config/examples/customFields.json";
 
 describe("validateConfig", () => {
   const testCases = [
@@ -50,6 +51,15 @@ describe("validateConfig", () => {
       expected: {
         isValid: false,
         message: "Cannot have more than one consent option be executable",
+      },
+    },
+    {
+      name: "hidden fields with missing default values",
+      config: customFields,
+      expected: {
+        isValid: false,
+        message:
+          "A default_value is required for hidden field(s) 'tenant_id' in the action with policy_key 'default_access_policy', 'tenant_id' in the action with policy_key 'default_erasure_policy'",
       },
     },
   ];

@@ -25,7 +25,7 @@ from sqlalchemy import (
     cast,
     type_coerce,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, BYTEA
+from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, BYTEA
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
@@ -375,6 +375,7 @@ class System(Base, FidesBase):
     ingress = Column(JSON)
 
     vendor_id = Column(String)
+    previous_vendor_id = Column(String)
     dataset_references = Column(ARRAY(String), server_default="{}", nullable=False)
     processes_personal_data = Column(BOOLEAN(), server_default="t", nullable=False)
     exempt_from_privacy_regulations = Column(
@@ -397,7 +398,7 @@ class System(Base, FidesBase):
     dpo = Column(String)
     joint_controller_info = Column(String)
     data_security_practices = Column(String)
-    cookie_max_age_seconds = Column(Integer)
+    cookie_max_age_seconds = Column(BIGINT)
     uses_cookies = Column(BOOLEAN(), default=False, server_default="f", nullable=False)
     cookie_refresh = Column(
         BOOLEAN(), default=False, server_default="f", nullable=False
@@ -474,7 +475,9 @@ class PrivacyDeclaration(Base):
 
     features = Column(ARRAY(String), server_default="{}", nullable=False)
     legal_basis_for_processing = Column(String)
-    flexible_legal_basis_for_processing = Column(BOOLEAN())
+    flexible_legal_basis_for_processing = Column(
+        BOOLEAN(), server_default="t", nullable=False
+    )
     impact_assessment_location = Column(String)
     retention_period = Column(String)
     processes_special_category_data = Column(
@@ -720,9 +723,9 @@ class Cookies(Base):
 
     privacy_declaration_id = Column(
         String,
-        ForeignKey(PrivacyDeclaration.id_field_path, ondelete="SET NULL"),
+        ForeignKey(PrivacyDeclaration.id_field_path, ondelete="CASCADE"),
         index=True,
-    )  # If privacy declaration is deleted, just set to null and still keep this connected to the system.
+    )  # If privacy declaration is deleted, remove the associated cookies.
 
     system = relationship(
         "System",
@@ -735,6 +738,7 @@ class Cookies(Base):
     privacy_declaration = relationship(
         "PrivacyDeclaration",
         back_populates="cookies",
+        cascade="all,delete",
         uselist=False,
         lazy="joined",  # Joined is intentional, instead of selectin
     )
@@ -743,4 +747,5 @@ class Cookies(Base):
         UniqueConstraint(
             "name", "privacy_declaration_id", name="_cookie_name_privacy_declaration_uc"
         ),
+        UniqueConstraint("name", "system_id", name="_cookie_name_system_uc"),
     )

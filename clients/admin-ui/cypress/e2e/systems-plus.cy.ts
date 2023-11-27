@@ -1,11 +1,19 @@
 import {
   stubPlus,
   stubSystemCrud,
+  stubSystemVendors,
   stubTaxonomyEntities,
   stubVendorList,
 } from "cypress/support/stubs";
 
-import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  ADD_SYSTEMS_MANUAL_ROUTE,
+  ADD_SYSTEMS_MULTIPLE_ROUTE,
+  ADD_SYSTEMS_ROUTE,
+  DATAMAP_ROUTE,
+  INDEX_ROUTE,
+  SYSTEM_ROUTE,
+} from "~/features/common/nav/v2/routes";
 
 describe("System management with Plus features", () => {
   beforeEach(() => {
@@ -20,36 +28,68 @@ describe("System management with Plus features", () => {
 
   describe("vendor list", () => {
     beforeEach(() => {
-      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
       stubVendorList();
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+      cy.wait(["@getDictionaryEntries", "@getSystems", "@getSystem"]);
     });
 
     it("can display the vendor list dropdown", () => {
       cy.getSelectValueContainer("input-vendor_id");
     });
 
-    it("contains dictionary entries", () => {
-      cy.selectOption("input-vendor_id", "Aniview LTD");
-    });
-
-    it("can switch entries", () => {
-      cy.selectOption("input-vendor_id", "Aniview LTD");
-      cy.getSelectValueContainer("input-vendor_id").contains("Aniview LTD");
-
-      cy.selectOption("input-vendor_id", "Anzu Virtual Reality LTD");
-      cy.getSelectValueContainer("input-vendor_id").contains(
+    it("contains type ahead dictionary entries", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("A");
+      cy.get("#react-select-select-vendor_id-option-0").contains("Aniview LTD");
+      cy.get("#react-select-select-vendor_id-option-1").contains(
         "Anzu Virtual Reality LTD"
       );
+    });
+
+    it("can reset suggestions by clearing vendor input", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("L{enter}");
+      cy.getByTestId("input-legal_name").should("have.value", "LINE");
+      cy.getSelectValueContainer("input-vendor_id")
+        .siblings(".custom-select__indicators")
+        .find(".custom-select__clear-indicator");
+    });
+
+    it("can't refresh suggestions immediately after populating", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("A{enter}");
+      cy.getByTestId("refresh-suggestions-btn").should("be.disabled");
+    });
+
+    it("can refresh suggestions when editing a saved system", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("A{enter}");
+      cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
+        cy.fixture("systems/system.json").then((origSystem) => {
+          cy.intercept(
+            { method: "GET", url: "/api/v1/system/demo_analytics_system" },
+            {
+              body: {
+                ...origSystem,
+                ...dictSystem,
+                fides_key: origSystem.fides_key,
+                customFieldValues: undefined,
+                data_protection_impact_assessment: undefined,
+              },
+            }
+          ).as("getDictSystem");
+        });
+      });
+      cy.intercept({ method: "PUT", url: "/api/v1/system*" }).as(
+        "putDictSystem"
+      );
+      cy.getByTestId("save-btn").click();
+      cy.wait("@putDictSystem");
+      cy.wait("@getDictSystem");
+      cy.getByTestId("refresh-suggestions-btn").should("not.be.disabled");
     });
 
     // some DictSuggestionTextInputs don't get populated right, causing
     // the form to be mistakenly marked as dirty and the "unsaved changes"
     // modal to pop up incorrectly when switching tabs
     it("can switch between tabs after populating from dictionary", () => {
-      cy.wait("@getSystems");
-      cy.selectOption("input-vendor_id", "Anzu Virtual Reality LTD");
-      cy.getByTestId("dict-suggestions-btn").click();
-      cy.getByTestId("toggle-dict-suggestions").click();
+      cy.getSelectValueContainer("input-vendor_id").type("Anzu{enter}");
       // the form fetches the system again after saving, so update the intercept with dictionary values
       cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
         cy.fixture("systems/system.json").then((origSystem) => {
@@ -59,6 +99,7 @@ describe("System management with Plus features", () => {
               body: {
                 ...origSystem,
                 ...dictSystem,
+                fides_key: origSystem.fides_key,
                 customFieldValues: undefined,
                 data_protection_impact_assessment: undefined,
               },
@@ -75,9 +116,42 @@ describe("System management with Plus features", () => {
       cy.getByTestId("input-dpo").should("have.value", "DPO@anzu.io");
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("tab-System information").click();
-      // cy.pause();
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("confirmation-modal").should("not.exist");
+    });
+
+    it("locks editing for a GVL vendor when TCF is enabled", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
+      cy.getByTestId("locked-for-GVL-notice");
+      cy.getByTestId("input-description").should("be.disabled");
+    });
+
+    it("does not allow changes to data uses when locked", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("Aniview{enter}");
+      cy.getByTestId("save-btn").click();
+      cy.wait(["@putSystem", "@getSystem", "@getSystems"]);
+      cy.getByTestId("tab-Data uses").click();
+      cy.getByTestId("add-btn").should("not.exist");
+      cy.getByTestId("delete-btn").should("not.exist");
+      cy.getByTestId("row-functional.service.improve").click();
+      cy.getByTestId("input-name").should("be.disabled");
+    });
+
+    it("does not lock editing for a non-GVL vendor", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("L{enter}");
+      cy.getByTestId("locked-for-GVL-notice").should("not.exist");
+      cy.getByTestId("input-description").should("not.be.disabled");
+    });
+
+    it("allows changes to data uses for non-GVL vendors", () => {
+      cy.getSelectValueContainer("input-vendor_id").type("L{enter}");
+      cy.getByTestId("save-btn").click();
+      cy.wait(["@putSystem", "@getSystem", "@getSystems"]);
+      cy.getByTestId("tab-Data uses").click();
+      cy.getByTestId("add-btn");
+      cy.getByTestId("delete-btn");
+      cy.getByTestId("row-functional.service.improve").click();
+      cy.getByTestId("input-name").should("not.be.disabled");
     });
   });
 
@@ -110,9 +184,9 @@ describe("System management with Plus features", () => {
           fixture: "taxonomy/custom-metadata/custom-field/list.json",
         }
       ).as("getCustomFields");
-      cy.intercept("PUT", `/api/v1/plus/custom-metadata/custom-field`, {
-        fixture: "taxonomy/custom-metadata/custom-field/update-party.json",
-      }).as("updateParty");
+      cy.intercept("POST", `/api/v1/plus/custom-metadata/custom-field/bulk`, {
+        body: {},
+      }).as("bulkUpdateCustomField");
     });
 
     it("can populate initial custom metadata", () => {
@@ -133,29 +207,189 @@ describe("System management with Plus features", () => {
 
       cy.wait("@putSystem");
 
-      // There are two custom field updates that will take place, but order is not stable
       const expectedValues = [
         {
+          custom_field_definition_id:
+            "id-custom-field-definition-pokemon-party",
           id: "id-custom-field-pokemon-party",
           resource_id: "demo_analytics_system",
           value: ["Charmander", "Eevee", "Snorlax", "Bulbasaur"],
         },
         {
+          custom_field_definition_id:
+            "id-custom-field-definition-starter-pokemon",
           id: "id-custom-field-starter-pokemon",
           resource_id: "demo_analytics_system",
           value: "Squirtle",
         },
       ];
-      cy.wait(["@updateParty", "@updateParty"]).then((interceptions) => {
-        expectedValues.forEach((expected) => {
-          const interception = interceptions.find(
-            (i) => i.request.body.id === expected.id
-          );
-          expect(interception.request.body.resource_id).to.eql(
-            expected.resource_id
-          );
-          expect(interception.request.body.value).to.eql(expected.value);
-        });
+      cy.wait("@bulkUpdateCustomField").then((interception) => {
+        expect(interception.request.body.upsert).to.eql(expectedValues);
+      });
+    });
+  });
+
+  describe("bulk system/vendor adding page", () => {
+    beforeEach(() => {
+      stubPlus(true);
+      stubSystemVendors();
+    });
+
+    it("page loads with table and rows", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+
+      cy.wait("@getSystemVendors");
+      cy.getByTestId("fidesTable");
+      cy.getByTestId("fidesTable-body")
+        .find("tr")
+        .should("have.length.greaterThan", 0);
+    });
+
+    it("upgrade modal doesn't pop up if compass is enabled", () => {
+      cy.visit(ADD_SYSTEMS_ROUTE);
+      cy.getByTestId("multiple-btn").click();
+      cy.wait("@getSystemVendors");
+      cy.getByTestId("fidesTable");
+    });
+
+    it("upgrade modal pops up if compass isn't enabled and redirects to manual add", () => {
+      stubPlus(true, {
+        core_fides_version: "2.2.0",
+        fidesplus_server: "healthy",
+        system_scanner: {
+          enabled: true,
+          cluster_health: null,
+          cluster_error: null,
+        },
+        dictionary: {
+          enabled: false,
+          service_health: null,
+          service_error: null,
+        },
+        tcf: {
+          enabled: true,
+        },
+        fidesplus_version: "",
+        fides_cloud: {
+          enabled: false,
+        },
+      });
+      cy.visit(ADD_SYSTEMS_ROUTE);
+      cy.getByTestId("multiple-btn").click();
+      cy.getByTestId("confirmation-modal");
+      cy.getByTestId("cancel-btn").click();
+      cy.url().should("include", ADD_SYSTEMS_MANUAL_ROUTE);
+    });
+
+    it("can add new systems and redirects to datamap", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.wait("@getSystemVendors");
+      cy.getByTestId("row-0").within(() => {
+        cy.get('[type="checkbox"]').check({ force: true });
+      });
+      cy.getByTestId("add-multiple-systems-btn").click();
+      cy.getByTestId("confirmation-modal");
+      cy.getByTestId("continue-btn").click();
+      cy.url().should("include", DATAMAP_ROUTE);
+    });
+
+    it("select page checkbox only selects rows on the displayed page", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.wait("@getSystemVendors");
+      cy.getByTestId("select-page-checkbox")
+        .get("[type='checkbox']")
+        .check({ force: true });
+      cy.getByTestId("selected-row-count").contains("6 row(s) selected.");
+    });
+
+    it("select all button selects all rows across every page", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.wait("@getSystemVendors");
+      cy.getByTestId("select-page-checkbox")
+        .get("[type='checkbox']")
+        .check({ force: true });
+      cy.getByTestId("select-all-rows-btn").click();
+      cy.getByTestId("selected-row-count").contains("8 row(s) selected.");
+    });
+
+    it("filter button and sources column are hidden when TCF is disabled", () => {
+      stubPlus(true, {
+        core_fides_version: "2.2.0",
+        fidesplus_server: "healthy",
+        system_scanner: {
+          enabled: true,
+          cluster_health: null,
+          cluster_error: null,
+        },
+        dictionary: {
+          enabled: true,
+          service_health: null,
+          service_error: null,
+        },
+        tcf: {
+          enabled: false,
+        },
+        fidesplus_version: "",
+        fides_cloud: {
+          enabled: false,
+        },
+      });
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.getByTestId("filter-multiple-systems-btn").should("not.exist");
+      cy.getByTestId("column-vendor_id").should("not.exist");
+    });
+
+    it("filter button and sources column are shown when TCF is enabled", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.getByTestId("filter-multiple-systems-btn").should("exist");
+      cy.getByTestId("column-vendor_id").should("exist");
+    });
+
+    it("filter modal state is persisted after modal is closed", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.getByTestId("filter-multiple-systems-btn").click();
+      cy.get("#checkbox-gvl").check({ force: true });
+      cy.getByTestId("filter-done-btn").click();
+      cy.getByTestId("filter-multiple-systems-btn").click();
+      cy.get("#checkbox-gvl").should("be.checked");
+    });
+
+    it("pagination menu updates pagesize", () => {
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+
+      cy.wait("@getSystemVendors");
+      cy.getByTestId("fidesTable");
+      cy.getByTestId("fidesTable-body").find("tr").should("have.length", 25);
+      cy.getByTestId("pagination-btn").click();
+      cy.getByTestId("pageSize-50").click();
+      cy.getByTestId("fidesTable-body").find("tr").should("have.length", 50);
+    });
+
+    it("redirects to index when compass is disabled", () => {
+      stubPlus(true, {
+        core_fides_version: "2.2.0",
+        fidesplus_server: "healthy",
+        system_scanner: {
+          enabled: true,
+          cluster_health: null,
+          cluster_error: null,
+        },
+        dictionary: {
+          enabled: false,
+          service_health: null,
+          service_error: null,
+        },
+        tcf: {
+          enabled: false,
+        },
+        fidesplus_version: "",
+        fides_cloud: {
+          enabled: false,
+        },
+      });
+      cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
+      cy.location().should((location) => {
+        expect(location.pathname).to.eq(INDEX_ROUTE);
       });
     });
   });

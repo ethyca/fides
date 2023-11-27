@@ -38,9 +38,10 @@ class TestSystemHistory:
     ):
         system_schema = SystemSchema.from_orm(system)
         system_schema.description = "Test system"
-        await update_system(
+        _, updated = await update_system(
             system_schema, async_session_temp, CONFIG.security.oauth_root_client_id
         )
+        assert updated
 
         system_histories = SystemHistory.filter(
             db=db, conditions=(SystemHistory.system_id == system.id)
@@ -62,9 +63,10 @@ class TestSystemHistory:
                 dataset_references=[],
             ),
         )
-        await update_system(
+        _, updated = await update_system(
             system_schema, async_session_temp, CONFIG.security.oauth_root_client_id
         )
+        assert updated
 
         system_histories = SystemHistory.filter(
             db=db, conditions=(SystemHistory.system_id == system.id)
@@ -76,9 +78,10 @@ class TestSystemHistory:
         system_schema = SystemSchema.from_orm(system)
         system_schema.ingress = [DataFlowSchema(fides_key="upstream", type="system")]
         system_schema.egress = [DataFlowSchema(fides_key="user", type="user")]
-        await update_system(
+        _, updated = await update_system(
             system_schema, async_session_temp, CONFIG.security.oauth_root_client_id
         )
+        assert updated
 
         system_histories = SystemHistory.filter(
             db=db, conditions=(SystemHistory.system_id == system.id)
@@ -100,13 +103,45 @@ class TestSystemHistory:
         )
         system_schema.ingress = [DataFlowSchema(fides_key="upstream", type="system")]
         system_schema.egress = [DataFlowSchema(fides_key="user", type="user")]
-        await update_system(
+        _, updated = await update_system(
             system_schema, async_session_temp, CONFIG.security.oauth_root_client_id
         )
+        assert updated
 
         system_histories = SystemHistory.filter(
             db=db, conditions=(SystemHistory.system_id == system.id)
         ).all()
         assert len(system_histories) == 3
         for system_history in system_histories:
-            system_history.edited_by == CONFIG.security.root_username
+            assert system_history.edited_by == CONFIG.security.root_username
+
+    async def test_no_changes(self, db, async_session_temp, system: System):
+        system_schema = SystemSchema.from_orm(system)
+        _, updated = await update_system(
+            system_schema, async_session_temp, CONFIG.security.oauth_root_client_id
+        )
+        assert not updated
+
+        assert (
+            SystemHistory.filter(
+                db=db, conditions=(SystemHistory.system_id == system.id)
+            ).count()
+            == 0
+        )
+
+    async def test_automatic_system_update(
+        self, db, async_session_temp, system: System
+    ):
+        """If user id doesn't map to a user in the db or the root user, we just return the original user string"""
+        system_schema = SystemSchema.from_orm(system)
+        system_schema.description = "Test system"
+        updated_system, updated = await update_system(
+            system_schema, async_session_temp, "automatic_system_update"
+        )
+        assert updated
+
+        system_histories = SystemHistory.filter(
+            db=db, conditions=(SystemHistory.system_id == system.id)
+        ).all()
+
+        assert system_histories[0].edited_by == "automatic_system_update"

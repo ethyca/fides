@@ -50,11 +50,11 @@ CYPRESS_IMAGE = "cypress/included:12.8.1"
 # Helpful paths
 CWD = getcwd()
 
-# Disable TTY to perserve output within Github Actions logs
+# Disable TTY to preserve output within Github Actions logs
 # CI env variable is always set to true in Github Actions
-# The else statement is required due to the way commmands are structured and is arbitrary.
-CI_ARGS = "-T" if getenv("CI") else "--user=root"
-CI_ARGS_EXEC = "-t" if not getenv("CI") else "--user=root"
+# The else statement is required due to the way commands are structured and is arbitrary.
+CI_ARGS = "-T" if getenv("CI") else "--user=fidesuser"
+CI_ARGS_EXEC = "-t" if not getenv("CI") else "--user=fidesuser"
 
 # If FIDES__CLI__ANALYTICS_ID is set in the local environment, use its value as the analytics_id
 ANALYTICS_ID_OVERRIDE = ("-e", "FIDES__CLI__ANALYTICS_ID")

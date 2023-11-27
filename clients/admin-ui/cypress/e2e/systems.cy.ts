@@ -261,6 +261,7 @@ describe("System management page", () => {
         }).as("getFidesctlSystem");
       });
       cy.visit(SYSTEM_ROUTE);
+      cy.wait("@getUserPermission");
     });
 
     it("Can go directly to a system's edit page", () => {
@@ -278,11 +279,27 @@ describe("System management page", () => {
     });
 
     it("Can go to a system's edit page by clicking its card", () => {
-      cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("system-box").click();
       });
       cy.url().should("contain", "/systems/configure/fidesctl_system");
+    });
+
+    it("Can persist fields not directly in the form", () => {
+      cy.visit("/systems/configure/fidesctl_system");
+      cy.wait("@getFidesctlSystem");
+      cy.getByTestId("input-name").type("edit");
+      cy.getByTestId("save-btn").click();
+      cy.wait("@putSystem").then((interception) => {
+        const { body } = interception.request;
+        expect(body.cookies).to.eql([
+          {
+            name: "test_cookie",
+            path: "/",
+            domain: "https://www.example.com",
+          },
+        ]);
+      });
     });
 
     it.skip("Can go through the edit flow", () => {
@@ -444,13 +461,23 @@ describe("System management page", () => {
 
   describe("Data uses", () => {
     beforeEach(() => {
-      stubSystemCrud();
-      stubTaxonomyEntities();
-      cy.fixture("systems/systems.json").then((systems) => {
-        cy.intercept("GET", "/api/v1/system/*", {
-          body: systems[0],
-        }).as("getFidesctlSystem");
+      cy.intercept("/api/v1/system/*", {
+        fixture: "systems/system.json",
+      }).as("getDemoAnalyticsSystem");
+      cy.visit(`/${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+      cy.wait("@getDemoAnalyticsSystem");
+      cy.fixture("systems/system.json").then((system) => {
+        const newSystem = { ...system, fides_key: "demo_analytics_system" };
+        cy.intercept("PUT", "/api/v1/system*", { body: newSystem }).as(
+          "putDemoAnalyticsSystem"
+        );
       });
+
+      cy.getByTestId("tab-Data uses").click();
+    });
+
+    it("shows data uses in the data use tab", () => {
+      cy.getByTestId("row-functional.service.improve");
     });
 
     it.skip("warns when a data use and processing activity is being added that is already used", () => {
@@ -601,21 +628,30 @@ describe("System management page", () => {
 
     describe("delete privacy declaration", () => {
       beforeEach(() => {
-        cy.fixture("systems/systems_with_data_uses.json").then((systems) => {
-          cy.intercept("GET", "/api/v1/system/*", {
-            body: systems[0],
-          }).as("getFidesctlSystemWithDataUses");
-        });
-        cy.visit(`${SYSTEM_ROUTE}/configure/fidesctl_system`);
-        cy.wait("@getFidesctlSystemWithDataUses");
+        cy.intercept("/api/v1/system/*", {
+          fixture: "systems/system.json",
+        }).as("getDemoAnalyticsSystem");
+        cy.visit(`/${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+        cy.wait("@getDemoAnalyticsSystem");
         cy.fixture("systems/system.json").then((system) => {
-          const newSystem = { ...system, fides_key: "fidesctl_system" };
+          const newSystem = { ...system, fides_key: "demo_analytics_system" };
           cy.intercept("PUT", "/api/v1/system*", { body: newSystem }).as(
-            "putFidesSystem"
+            "putDemoAnalyticsSystem"
           );
         });
 
         cy.getByTestId("tab-Data uses").click();
+      });
+
+      it("can visit the privacy declaration tab", () => {
+        cy.getByTestId("privacy-declarations-table");
+        cy.getByTestId("row-functional.service.improve");
+      });
+
+      it("can show a modal on deleting a privacy declaration", () => {
+        cy.getByTestId("delete-btn").click();
+        cy.getByTestId("continue-btn").click();
+        cy.getByTestId("toast-success-msg").contains("Data use deleted");
       });
 
       it.skip("deletes a new privacy declaration", () => {

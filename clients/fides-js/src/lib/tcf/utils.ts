@@ -4,24 +4,39 @@ import { EnabledIds, TcfCookieConsent, TcfCookieKeyConsent } from "./types";
 import { TCF_KEY_MAP } from "./constants";
 import { generateFidesString } from "../tcf";
 import { debugLog } from "../consent-utils";
+import { decodeFidesString, idsFromAcString } from "./fidesString";
 
 export const transformFidesStringToCookieKeys = (
   fidesString: string,
   debug: boolean
 ): TcfCookieConsent => {
-  // Defer: to fully support AC string, we need to split out TC from AC string https://github.com/ethyca/fides/issues/4263
-  const tcModel: TCModel = TCString.decode(fidesString || "");
+  const { tc: tcString, ac: acString } = decodeFidesString(fidesString);
+  const tcModel: TCModel = TCString.decode(tcString);
 
   const cookieKeys: TcfCookieConsent = {};
 
   // map tc model key to cookie key
   TCF_KEY_MAP.forEach(({ tcfModelKey, cookieKey }) => {
+    const isVendorKey =
+      tcfModelKey === "vendorConsents" ||
+      tcfModelKey === "vendorLegitimateInterests";
     if (tcfModelKey) {
       const items: TcfCookieKeyConsent = {};
       (tcModel[tcfModelKey] as Vector).forEach((consented, id) => {
-        items[id] = consented;
+        const key = isVendorKey ? `gvl.${id}` : id;
+        items[key] = consented;
       });
       cookieKeys[cookieKey] = items;
+    }
+  });
+
+  // Set AC consents, which will only be on vendor_consents
+  const acIds = idsFromAcString(acString, debug);
+  acIds.forEach((acId) => {
+    if (!cookieKeys.vendor_consent_preferences) {
+      cookieKeys.vendor_consent_preferences = { [acId]: true };
+    } else {
+      cookieKeys.vendor_consent_preferences[acId] = true;
     }
   });
   debugLog(

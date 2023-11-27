@@ -267,6 +267,13 @@ export const SelectInput = ({
     components.Option = CustomOption;
   }
 
+  if (isDisabled) {
+    // prevent the tags from being removed if the input is disabled
+    components.MultiValueRemove = function CustomMultiValueRemove() {
+      return null;
+    };
+  }
+
   return (
     <Select
       options={options}
@@ -289,6 +296,7 @@ export const SelectInput = ({
         option: (provided, state) => ({
           ...provided,
           background: state.isSelected || state.isFocused ? "gray.50" : "unset",
+          color: textColor ?? "gray.600",
         }),
         dropdownIndicator: (provided) => ({
           ...provided,
@@ -477,6 +485,12 @@ const CreatableSelectInput = ({
               px: 2,
             })
           : (provided) => ({ ...provided, color: textColor }),
+        option: (provided, { isSelected }) => ({
+          ...provided,
+          ...(isSelected && {
+            background: "gray.200",
+          }),
+        }),
       }}
       components={components}
       isSearchable={isSearchable}
@@ -647,6 +661,7 @@ export const CustomSelect = ({
             isDisabled={isDisabled}
             isCustomOption={isCustomOption}
             menuPosition={props.menuPosition}
+            onChange={!isFormikOnChange ? onChange : undefined}
             textColor={textColor}
           />
         </Box>
@@ -1019,7 +1034,7 @@ export const CustomSwitch = ({
       <FormControl isInvalid={isInvalid} width="full">
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <HStack spacing={1}>
-            <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={0}>
+            <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={0}>
               {label}
             </Label>
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}

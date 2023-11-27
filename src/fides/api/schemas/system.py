@@ -52,8 +52,6 @@ class SystemResponse(BasicSystemResponse):
         description="System managers of the current system",
     )
 
-    cookies: Optional[List[Cookies]] = []
-
 
 class SystemHistoryResponse(BaseModel):
     """Response schema for a single system history entry"""

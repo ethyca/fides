@@ -25,9 +25,21 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
     validationRegex: /^(true|false)$/,
   },
   {
+    fidesOption: "fidesDisableBanner",
+    fidesOptionType: "boolean",
+    fidesOverrideKey: "fides_disable_banner",
+    validationRegex: /^(true|false)$/,
+  },
+  {
     fidesOption: "fidesString",
     fidesOptionType: "string",
     fidesOverrideKey: "fides_string",
     validationRegex: /(.*)/,
+  },
+  {
+    fidesOption: "fidesTcfGdprApplies",
+    fidesOptionType: "boolean",
+    fidesOverrideKey: "fides_tcf_gdpr_applies",
+    validationRegex: /^(true|false)$/,
   },
 ];

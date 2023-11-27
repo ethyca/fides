@@ -11,11 +11,13 @@ import {
   Spacer,
   Stack,
   Text,
+  useDisclosure,
 } from "@fidesui/react";
 
+import { useAppSelector } from "~/app/hooks";
+import ConfirmationModal from "~/features/common/ConfirmationModal";
+import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { DataUse, PrivacyDeclarationResponse } from "~/types/api";
-
-import { SparkleIcon } from "../../common/Icon/SparkleIcon";
 
 const PrivacyDeclarationRow = ({
   declaration,
@@ -25,37 +27,62 @@ const PrivacyDeclarationRow = ({
 }: {
   declaration: PrivacyDeclarationResponse;
   title?: string;
-  handleDelete: (dec: PrivacyDeclarationResponse) => void;
+  handleDelete?: (dec: PrivacyDeclarationResponse) => void;
   handleEdit: (dec: PrivacyDeclarationResponse) => void;
-}) => (
-  <>
-    <Box px={6} py={4}>
-      <HStack>
-        <LinkBox
-          onClick={() => handleEdit(declaration)}
-          w="100%"
-          h="100%"
-          cursor="pointer"
-        >
-          <LinkOverlay>
-            <Text>{title || declaration.data_use}</Text>
-          </LinkOverlay>
-        </LinkBox>
-        <Spacer />
-        <IconButton
-          aria-label="delete-declaration"
-          variant="outline"
-          zIndex={2}
-          size="sm"
-          onClick={() => handleDelete(declaration)}
-        >
-          <DeleteIcon />
-        </IconButton>
-      </HStack>
-    </Box>
-    <Divider />
-  </>
-);
+}) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  return (
+    <>
+      <Box px={6} py={4} data-testid={`row-${declaration.data_use}`}>
+        <HStack>
+          <LinkBox
+            onClick={() => handleEdit(declaration)}
+            w="100%"
+            h="100%"
+            cursor="pointer"
+          >
+            <LinkOverlay>
+              <Text>{title || declaration.data_use}</Text>
+            </LinkOverlay>
+          </LinkBox>
+          <Spacer />
+          {handleDelete ? (
+            <>
+              <IconButton
+                aria-label="delete-declaration"
+                variant="outline"
+                zIndex={2}
+                size="sm"
+                onClick={onOpen}
+                data-testid="delete-btn"
+              >
+                <DeleteIcon />
+              </IconButton>
+              <ConfirmationModal
+                isOpen={isOpen}
+                onClose={onClose}
+                onConfirm={() => handleDelete(declaration)}
+                title="Delete data use declaration"
+                message={
+                  <Text>
+                    You are about to delete the data use declaration{" "}
+                    <Text color="complimentary.500" as="span" fontWeight="bold">
+                      {title || declaration.data_use}
+                    </Text>
+                    , including all its cookies. Are you sure you want to
+                    continue?
+                  </Text>
+                }
+                isCentered
+              />
+            </>
+          ) : null}
+        </HStack>
+      </Box>
+      <Divider />
+    </>
+  );
+};
 
 export const PrivacyDeclarationTabTable = ({
   heading,
@@ -68,7 +95,7 @@ export const PrivacyDeclarationTabTable = ({
   headerButton?: React.ReactNode;
   footerButton?: React.ReactNode;
 }) => (
-  <Stack spacing={4}>
+  <Stack spacing={4} data-testid="privacy-declarations-table">
     <Box maxWidth="720px" border="1px" borderColor="gray.200" borderRadius={6}>
       <HStack
         backgroundColor="gray.50"
@@ -95,23 +122,19 @@ export const PrivacyDeclarationTabTable = ({
 
 type Props = {
   heading: string;
-  dictionaryEnabled?: boolean;
   declarations: PrivacyDeclarationResponse[];
   handleDelete: (dec: PrivacyDeclarationResponse) => void;
   handleAdd?: () => void;
   handleEdit: (dec: PrivacyDeclarationResponse) => void;
-  handleOpenDictModal: () => void;
   allDataUses: DataUse[];
 };
 
 export const PrivacyDeclarationDisplayGroup = ({
   heading,
-  dictionaryEnabled = false,
   declarations,
   handleAdd,
   handleDelete,
   handleEdit,
-  handleOpenDictModal,
   allDataUses,
 }: Props) => {
   const declarationTitle = (declaration: PrivacyDeclarationResponse) => {
@@ -126,33 +149,27 @@ export const PrivacyDeclarationDisplayGroup = ({
     return "";
   };
 
+  const lockedForGVL = useAppSelector(selectLockedForGVL);
+
   return (
     <PrivacyDeclarationTabTable
       heading={heading}
-      headerButton={
-        dictionaryEnabled ? (
-          <IconButton
-            onClick={handleOpenDictModal}
-            aria-label="Show dictionary suggestions"
-            variant="outline"
-          >
-            <SparkleIcon />
-          </IconButton>
-        ) : null
-      }
       footerButton={
-        <Button
-          onClick={handleAdd}
-          size="xs"
-          px={2}
-          py={1}
-          backgroundColor="primary.800"
-          color="white"
-          fontWeight="600"
-          rightIcon={<AddIcon />}
-        >
-          Add data use
-        </Button>
+        !lockedForGVL ? (
+          <Button
+            onClick={handleAdd}
+            size="xs"
+            px={2}
+            py={1}
+            backgroundColor="primary.800"
+            color="white"
+            fontWeight="600"
+            rightIcon={<AddIcon />}
+            data-testid="add-btn"
+          >
+            Add data use
+          </Button>
+        ) : null
       }
     >
       {declarations.map((pd) => (
@@ -160,7 +177,7 @@ export const PrivacyDeclarationDisplayGroup = ({
           declaration={pd}
           key={pd.id}
           title={declarationTitle(pd)}
-          handleDelete={handleDelete}
+          handleDelete={!lockedForGVL ? handleDelete : undefined}
           handleEdit={handleEdit}
         />
       ))}

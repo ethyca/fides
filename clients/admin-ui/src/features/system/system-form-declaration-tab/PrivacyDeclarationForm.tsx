@@ -7,6 +7,7 @@ import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
 
+import { useAppSelector } from "~/app/hooks";
 import {
   CustomFieldsList,
   CustomFieldValues,
@@ -19,6 +20,7 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
+import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import {
   DataCategory,
@@ -108,9 +110,11 @@ export const PrivacyDeclarationFormComponents = ({
   values,
   includeCustomFields,
   privacyDeclarationId,
+  lockedForGVL,
 }: DataProps & {
   values: FormValues;
   privacyDeclarationId?: string;
+  lockedForGVL?: boolean;
 }) => {
   const legalBasisForProcessingOptions = useMemo(
     () =>
@@ -157,6 +161,7 @@ export const PrivacyDeclarationFormComponents = ({
           label="Declaration name (optional)"
           name="name"
           tooltip="Would you like to append anything to the system name?"
+          disabled={lockedForGVL}
           variant="stacked"
         />
         <CustomSelect
@@ -170,7 +175,7 @@ export const PrivacyDeclarationFormComponents = ({
           tooltip="For which business purposes is this data processed?"
           variant="stacked"
           isRequired
-          isDisabled={!!privacyDeclarationId}
+          isDisabled={!!privacyDeclarationId || lockedForGVL}
         />
         <CustomSelect
           name="data_categories"
@@ -182,6 +187,7 @@ export const PrivacyDeclarationFormComponents = ({
           tooltip="Which categories of personal data are collected for this purpose?"
           isMulti
           isRequired
+          isDisabled={lockedForGVL}
           variant="stacked"
         />
         <CustomSelect
@@ -193,6 +199,7 @@ export const PrivacyDeclarationFormComponents = ({
           }))}
           tooltip="Who are the subjects for this personal data?"
           isMulti
+          isDisabled={lockedForGVL}
           variant="stacked"
         />
         {/* <CustomSelect
@@ -210,6 +217,7 @@ export const PrivacyDeclarationFormComponents = ({
             options={legalBasisForProcessingOptions}
             tooltip="What is the legal basis under which personal data is processed for this purpose?"
             variant="stacked"
+            isDisabled={lockedForGVL}
           />
           <Collapse
             in={values.legal_basis_for_processing === "Legitimate interests"}
@@ -222,16 +230,18 @@ export const PrivacyDeclarationFormComponents = ({
                 label="Impact assessment location"
                 tooltip="Where is the legitimate interest impact assessment stored?"
                 variant="stacked"
+                disabled={lockedForGVL}
               />
             </Box>
           </Collapse>
         </Stack>
-        <Box mt={5}>
+        <Box mt={5} pl={4}>
           <CustomSwitch
             name="flexible_legal_basis_for_processing"
             label="This legal basis is flexible"
             tooltip="Has the vendor declared that the legal basis may be overridden?"
             variant="stacked"
+            isDisabled={lockedForGVL}
           />
         </Box>
         <CustomTextInput
@@ -239,6 +249,7 @@ export const PrivacyDeclarationFormComponents = ({
           label="Retention period (days)"
           tooltip="How long is personal data retained for this purpose?"
           variant="stacked"
+          disabled={lockedForGVL}
         />
       </SystemFormInputGroup>
       <SystemFormInputGroup heading="Features">
@@ -250,6 +261,7 @@ export const PrivacyDeclarationFormComponents = ({
           variant="stacked"
           options={[]}
           disableMenu
+          isDisabled={lockedForGVL}
           isMulti
         />
       </SystemFormInputGroup>
@@ -261,6 +273,7 @@ export const PrivacyDeclarationFormComponents = ({
           tooltip="Is there a dataset configured for this system?"
           isMulti
           variant="stacked"
+          isDisabled={lockedForGVL}
         />
       </SystemFormInputGroup>
       <SystemFormInputGroup heading="Special category data">
@@ -270,6 +283,7 @@ export const PrivacyDeclarationFormComponents = ({
             label="This system processes special category data"
             tooltip="Is this system processing special category data as defined by GDPR Article 9?"
             variant="stacked"
+            isDisabled={lockedForGVL}
           />
           <Collapse
             in={values.processes_special_category_data}
@@ -284,6 +298,7 @@ export const PrivacyDeclarationFormComponents = ({
                 isRequired={values.processes_special_category_data}
                 tooltip="What is the legal basis under which the special category data is processed?"
                 variant="stacked"
+                isDisabled={lockedForGVL}
               />
             </Box>
           </Collapse>
@@ -296,6 +311,7 @@ export const PrivacyDeclarationFormComponents = ({
             label="This system shares data with 3rd parties for this purpose"
             tooltip="Does this system disclose, sell, or share personal data collected for this business use with 3rd parties?"
             variant="stacked"
+            isDisabled={lockedForGVL}
           />
           <Collapse
             in={values.data_shared_with_third_parties}
@@ -308,6 +324,7 @@ export const PrivacyDeclarationFormComponents = ({
                 label="Third parties"
                 tooltip="Which type of third parties is the data shared with?"
                 variant="stacked"
+                disabled={lockedForGVL}
               />
               <CustomSelect
                 name="shared_categories"
@@ -319,6 +336,7 @@ export const PrivacyDeclarationFormComponents = ({
                 tooltip="Which categories of personal data does this system share with third parties?"
                 variant="stacked"
                 isMulti
+                disabled={lockedForGVL}
               />
             </Stack>
           </Collapse>
@@ -336,6 +354,7 @@ export const PrivacyDeclarationFormComponents = ({
           isMulti
           tooltip="Which cookies are placed on consumer domains for this purpose?"
           variant="stacked"
+          isDisabled={lockedForGVL}
         />
       </SystemFormInputGroup>
       {includeCustomFields ? (
@@ -442,6 +461,8 @@ export const PrivacyDeclarationForm = ({
     privacyDeclarationId: passedInInitialValues?.id,
   });
 
+  const lockedForGVL = useAppSelector(selectLockedForGVL);
+
   return (
     <Formik
       enableReinitialize
@@ -453,7 +474,11 @@ export const PrivacyDeclarationForm = ({
         <Form data-testid="declaration-form">
           <FormGuard id="PrivacyDeclaration" name="New Privacy Declaration" />
           <Stack spacing={4}>
-            <PrivacyDeclarationFormComponents values={values} {...dataProps} />
+            <PrivacyDeclarationFormComponents
+              values={values}
+              lockedForGVL={lockedForGVL}
+              {...dataProps}
+            />
             <Flex w="100%">
               <Button
                 variant="outline"
@@ -463,16 +488,20 @@ export const PrivacyDeclarationForm = ({
               >
                 Cancel
               </Button>
-              <Spacer />
-              <Button
-                colorScheme="primary"
-                size="sm"
-                type="submit"
-                disabled={!dirty}
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
+              {!lockedForGVL ? (
+                <>
+                  <Spacer />
+                  <Button
+                    colorScheme="primary"
+                    size="sm"
+                    type="submit"
+                    disabled={!dirty}
+                    data-testid="save-btn"
+                  >
+                    Save
+                  </Button>
+                </>
+              ) : null}
             </Flex>
           </Stack>
         </Form>

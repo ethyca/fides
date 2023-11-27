@@ -81,7 +81,7 @@ Use username `root_user` and password `Testpassword1!` to login, approve the req
 
 ### Next Steps
 
-Congratulations! You've just run an entire privacy request in under 5 minutes! Fides offers many more tools help take control of your data privacy. To find out more, you can run a privacy request on [your own infrastructure](https://docs.ethyca.com/fides/dsr_quickstart/overview), discover [data mapping](https://docs.ethyca.com/fides/data_mapping/overview), or learn about the [Fides Taxonomy](https://ethyca.github.io/fideslang/).
+Congratulations! You've just run an entire privacy request in under 5 minutes! Fides offers many more tools to help take control of your data privacy. To find out more, you can run a privacy request on [your own infrastructure](https://docs.ethyca.com/fides/dsr_quickstart/overview), discover [data mapping](https://docs.ethyca.com/fides/data_mapping/overview), or learn about the [Fides Taxonomy](https://ethyca.github.io/fideslang/).
 
 ## :book: Learn More
 

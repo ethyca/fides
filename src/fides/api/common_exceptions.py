@@ -55,10 +55,6 @@ class RedisConnectionError(Exception):
     """The Configured Redis instance is uncontactable."""
 
 
-class DecodeTCStringError(Exception):
-    """Issues decoding the supplied TC String"""
-
-
 class MisconfiguredPolicyException(Exception):
     """Thrown when a Privacy Request cannot be processed due to a misconfigured Policy."""
 
@@ -133,6 +129,10 @@ class PostProcessingException(BaseException):
 
 class CollectionDisabled(BaseException):
     """Collection is attached to disabled ConnectionConfig"""
+
+
+class ActionDisabled(BaseException):
+    """Collection is attached to a ConnectionConfig that has not enabled the given action"""
 
 
 class NotSupportedForCollection(BaseException):

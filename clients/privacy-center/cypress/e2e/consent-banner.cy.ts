@@ -9,12 +9,15 @@ import {
   UserConsentPreference,
 } from "fides-js";
 
+import { RecordConsentServedRequest } from "fides-js/src/lib/consent-types";
+
 import { mockPrivacyNotice } from "../support/mocks";
 
 import { OVERRIDE, stubConfig } from "../support/stubs";
 
 const PRIVACY_NOTICE_KEY_1 = "advertising";
 const PRIVACY_NOTICE_KEY_2 = "essential";
+const PRIVACY_NOTICE_KEY_3 = "analytics_opt_out";
 
 describe("Consent banner", () => {
   describe("when overlay is disabled", () => {
@@ -136,6 +139,9 @@ describe("Consent banner", () => {
             expect(cookieKeyConsent.consent)
               .property(PRIVACY_NOTICE_KEY_2)
               .is.eql(true);
+            expect(cookieKeyConsent.consent)
+              .property(PRIVACY_NOTICE_KEY_3)
+              .is.eql(true);
           });
           cy.contains("button", "Accept Test").should("not.be.visible");
         });
@@ -155,6 +161,9 @@ describe("Consent banner", () => {
             expect(cookieKeyConsent.consent)
               .property(PRIVACY_NOTICE_KEY_2)
               .is.eql(true);
+            expect(cookieKeyConsent.consent)
+              .property(PRIVACY_NOTICE_KEY_3)
+              .is.eql(false);
           });
         });
       });
@@ -170,6 +179,10 @@ describe("Consent banner", () => {
           // Notice should start off toggled off
           cy.getByTestId("toggle-Test privacy notice").within(() => {
             cy.get("input").should("not.be.checked");
+          });
+          // Opt-out notice should start toggled on
+          cy.getByTestId("toggle-Test privacy notice opt out").within(() => {
+            cy.get("input").should("be.checked");
           });
           cy.getByTestId("toggle-Test privacy notice").click();
           // Notice-only should start off toggled on
@@ -196,13 +209,18 @@ describe("Consent banner", () => {
                 },
                 {
                   privacy_notice_history_id:
+                    "pri_b09058a7-9f54-4360-8da5-4521e89123fd",
+                  preference: "opt_in",
+                },
+                {
+                  privacy_notice_history_id:
                     "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
                   preference: "acknowledge",
                 },
               ],
               privacy_experience_id: "132345243",
               user_geography: "us_ca",
-              method: ConsentMethod.button,
+              method: ConsentMethod.save,
             };
             // uuid is generated automatically if the user has no saved consent cookie
             generatedUserDeviceId = body.browser_identity.fides_user_device_id;
@@ -230,6 +248,9 @@ describe("Consent banner", () => {
               expect(cookieKeyConsent.consent)
                 .property(PRIVACY_NOTICE_KEY_2)
                 .is.eql(true);
+              expect(cookieKeyConsent.consent)
+                .property(PRIVACY_NOTICE_KEY_3)
+                .is.eql(true);
             });
           });
 
@@ -240,6 +261,7 @@ describe("Consent banner", () => {
             .should("eql", {
               [PRIVACY_NOTICE_KEY_1]: true,
               [PRIVACY_NOTICE_KEY_2]: true,
+              [PRIVACY_NOTICE_KEY_3]: true,
             });
         });
       });
@@ -271,7 +293,7 @@ describe("Consent banner", () => {
         });
       });
 
-      it("overwrites privacy notices that no longer exist", () => {
+      it("handles legacy notices when experience fetched server-side", () => {
         const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
         const CREATED_DATE = "2022-12-24T12:00:00.000Z";
         const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
@@ -301,18 +323,27 @@ describe("Consent banner", () => {
 
         cy.contains("button", "Manage preferences").click();
 
-        // Save new preferences
-        cy.getByTestId("toggle-Test privacy notice").click();
+        // UI should reflect client-side fetched experience (test_banner_options.json)
         cy.getByTestId("toggle-Essential").within(() => {
           cy.get("input").should("be.disabled");
           cy.get("input").should("be.checked");
         });
+        cy.getByTestId("toggle-Test privacy notice").within(() => {
+          cy.get("input").should("not.be.checked");
+        });
+        cy.getByTestId("toggle-Test privacy notice opt out").within(() => {
+          cy.get("input").should("be.checked");
+        });
+
+        // Save new preferences
+        cy.getByTestId("toggle-Test privacy notice").click();
         cy.getByTestId("Save test-btn").click();
 
         // New privacy notice values only, no legacy ones
         const expectedConsent = {
           [PRIVACY_NOTICE_KEY_1]: true,
           [PRIVACY_NOTICE_KEY_2]: true,
+          [PRIVACY_NOTICE_KEY_3]: true,
         };
 
         // check that consent was sent to Fides API
@@ -328,13 +359,107 @@ describe("Consent banner", () => {
               },
               {
                 privacy_notice_history_id:
+                  "pri_b09058a7-9f54-4360-8da5-4521e89123fd",
+                preference: "opt_in",
+              },
+              {
+                privacy_notice_history_id:
                   "pri_b09058a7-9f54-4360-8da5-4521e8975d4e",
                 preference: "acknowledge",
               },
             ],
             privacy_experience_id: "132345243",
             user_geography: "us_ca",
-            method: ConsentMethod.button,
+            method: ConsentMethod.save,
+          };
+          expect(body).to.eql(expected);
+        });
+
+        // check that the cookie updated
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const cookieKeyConsent: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value)
+            );
+            expect(cookieKeyConsent.consent).eql(expectedConsent);
+          });
+        });
+
+        // check that window.Fides.consent updated
+        cy.window().its("Fides").its("consent").should("eql", expectedConsent);
+      });
+
+      it("handles legacy notices when experience fetched client-side", () => {
+        const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+        const CREATED_DATE = "2022-12-24T12:00:00.000Z";
+        const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
+        const legacyNotices = {
+          data_sales: false,
+          tracking: false,
+          analytics: true,
+        };
+        const originalCookie = {
+          identity: { fides_user_device_id: uuid },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: CREATED_DATE,
+            updatedAt: UPDATED_DATE,
+          },
+          consent: legacyNotices,
+        };
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
+
+        // we need to visit the page after the cookie exists, so the Fides.consent obj is initialized with the original
+        // cookie values
+        stubConfig({
+          experience: OVERRIDE.UNDEFINED,
+          geolocation: {
+            country: "US",
+            location: "US-CA",
+            region: "CA",
+          },
+        });
+
+        cy.contains("button", "Manage preferences").click();
+
+        // UI should reflect client-side fetched experience (overlay_experience.json)
+        cy.getByTestId("toggle-Advertising").within(() => {
+          cy.get("input").should("not.be.checked");
+        });
+        cy.getByTestId("toggle-Analytics").within(() => {
+          cy.get("input").should("be.checked");
+        });
+
+        // Save new preferences
+        cy.getByTestId("toggle-Advertising").click();
+        cy.getByTestId("Confirm-btn").click();
+
+        // New privacy notice values only, no legacy ones
+        const expectedConsent = {
+          advertising: true,
+          analytics_opt_out: true,
+        };
+
+        // check that consent was sent to Fides API
+        cy.wait("@patchPrivacyPreference").then((interception) => {
+          const { body } = interception.request;
+          const expected = {
+            browser_identity: { fides_user_device_id: uuid },
+            preferences: [
+              {
+                privacy_notice_history_id:
+                  "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076707",
+                preference: "opt_in",
+              },
+              {
+                privacy_notice_history_id:
+                  "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076239",
+                preference: "opt_in",
+              },
+            ],
+            privacy_experience_id: "pri_b9d1af04-5852-4499-bdfb-2778a6117fb8",
+            user_geography: "us_ca",
+            method: ConsentMethod.save,
           };
           expect(body).to.eql(expected);
         });
@@ -407,6 +532,12 @@ describe("Consent banner", () => {
 
         it("can remove all cookies when rejecting all", () => {
           cy.contains("button", "Reject Test").click();
+          cy.get("@FidesUpdated")
+            .should("have.been.calledOnce")
+            .its("lastCall.args.0.detail.extraDetails.consentMethod")
+            .then((consentMethod) => {
+              expect(consentMethod).to.eql(ConsentMethod.reject);
+            });
           cy.getAllCookies().then((allCookies) => {
             expect(allCookies.map((c) => c.name)).to.eql([CONSENT_COOKIE_NAME]);
           });
@@ -417,6 +548,12 @@ describe("Consent banner", () => {
           // opt out of the first notice
           cy.getByTestId("toggle-one").click();
           cy.getByTestId("Save test-btn").click();
+          cy.get("@FidesUpdated")
+            .should("have.been.calledOnce")
+            .its("lastCall.args.0.detail.extraDetails.consentMethod")
+            .then((consentMethod) => {
+              expect(consentMethod).to.eql(ConsentMethod.save);
+            });
           cy.getAllCookies().then((allCookies) => {
             expect(allCookies.map((c) => c.name)).to.eql([
               CONSENT_COOKIE_NAME,
@@ -805,7 +942,7 @@ describe("Consent banner", () => {
 
     describe("when neither experience nor geolocation is provided, but geolocationApiUrl is defined", () => {
       describe("when geolocation is successful", () => {
-        beforeEach(() => {
+        it("fetches geolocation and experience renders the banner", () => {
           const geoLocationUrl = "https://some-geolocation-api.com";
           stubConfig({
             experience: OVERRIDE.UNDEFINED,
@@ -815,9 +952,6 @@ describe("Consent banner", () => {
               geolocationApiUrl: geoLocationUrl,
             },
           });
-        });
-
-        it("fetches geolocation and experience renders the banner", () => {
           cy.wait("@getGeolocation");
           cy.wait("@getPrivacyExperience").then((interception) => {
             expect(interception.request.query.region).to.eq("us_ca");
@@ -831,10 +965,54 @@ describe("Consent banner", () => {
               "Config from mocked Fides API is overriding this banner description."
             );
           });
+          cy.get("#fides-modal-link").should("be.visible");
         });
 
-        it("shows the modal link", () => {
-          cy.get("#fides-modal-link").should("be.visible");
+        describe("when custom experience fn is provided in Fides.init()", () => {
+          it("should skip calling Fides API cor experience and instead call the custom fn", () => {
+            cy.fixture("consent/experience.json").then((privacyExperience) => {
+              const apiOptions = {
+                /* eslint-disable @typescript-eslint/no-unused-vars */
+                getPrivacyExperienceFn: async (
+                  userLocationString: string,
+                  fidesUserDeviceId?: string | null
+                ) => privacyExperience.items[0],
+                /* eslint-enable @typescript-eslint/no-unused-vars */
+              };
+              const spyObject = cy.spy(apiOptions, "getPrivacyExperienceFn");
+              stubConfig({
+                options: {
+                  isOverlayEnabled: true,
+                  apiOptions,
+                },
+                geolocation: {
+                  country: "US",
+                  location: "US-CA",
+                  region: "CA",
+                },
+                experience: OVERRIDE.UNDEFINED,
+              });
+              cy.waitUntilFidesInitialized().then(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                expect(spyObject).to.be.called;
+                const spy = spyObject.getCalls();
+                const { args } = spy[0];
+                expect(args[0]).to.equal("us_ca");
+                // timeout means Fides API call not made, which is expected
+                cy.on("fail", (error) => {
+                  if (error.message.indexOf("Timed out retrying") !== 0) {
+                    throw error;
+                  }
+                });
+                // check that  Fides experience API is not called
+                cy.wait("@getPrivacyExperience", {
+                  requestTimeout: 100,
+                }).then((xhr) => {
+                  assert.isNull(xhr?.response?.body);
+                });
+              });
+            });
+          });
         });
       });
 
@@ -1088,13 +1266,14 @@ describe("Consent banner", () => {
 
     // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
     // register listeners for these window events
-    it("emits both a FidesInitialized and FidesUpdated event when initialized", () => {
+    it("emits a FidesInitialized but not a FidesUpdated event when initialized", () => {
       cy.window()
         .its("Fides")
         .its("consent")
         .should("eql", {
           [PRIVACY_NOTICE_KEY_1]: false,
           [PRIVACY_NOTICE_KEY_2]: true,
+          [PRIVACY_NOTICE_KEY_3]: true,
         });
       cy.get("@FidesInitialized")
         .should("have.been.calledOnce")
@@ -1102,79 +1281,99 @@ describe("Consent banner", () => {
         .should("deep.equal", {
           [PRIVACY_NOTICE_KEY_1]: false,
           [PRIVACY_NOTICE_KEY_2]: true,
+          [PRIVACY_NOTICE_KEY_3]: true,
         });
-      cy.get("@FidesUpdated")
-        .should("have.been.calledOnce")
-        .its("firstCall.args.0.detail.consent")
-        .should("deep.equal", {
-          [PRIVACY_NOTICE_KEY_1]: false,
-          [PRIVACY_NOTICE_KEY_2]: true,
-        });
-      cy.get("@FidesPreferenceToggled").should("not.have.been.called");
+      cy.get("@FidesUpdated").should("not.have.been.called");
+      cy.get("@FidesUIChanged").should("not.have.been.called");
     });
 
     describe("when preferences are changed / saved", () => {
-      it("emits another FidesUpdated event when reject all is clicked", () => {
+      it("emits a FidesUpdated event when reject all is clicked", () => {
         cy.contains("button", "Reject Test").should("be.visible").click();
-        cy.get("@FidesPreferenceToggled").should("not.have.been.called");
+        cy.get("@FidesUIChanged").should("not.have.been.called");
+        cy.get("@FidesInitialized")
+          // First event, before the user rejects all
+          .should("have.been.calledOnce")
+          .its("firstCall.args.0.detail.consent")
+          .should("deep.equal", {
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_3]: true,
+            [PRIVACY_NOTICE_KEY_2]: true,
+          });
         cy.get("@FidesUpdated")
-          .should("have.been.calledTwice")
-          // First call should be from initialization, before the user rejects all
+          // Update event, when the user rejects all
+          .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: false,
           });
         cy.get("@FidesUpdated")
-          // Second call is when the user rejects all
-          .its("secondCall.args.0.detail.consent")
-          .should("deep.equal", {
-            [PRIVACY_NOTICE_KEY_1]: false,
-            [PRIVACY_NOTICE_KEY_2]: true,
+          .its("lastCall.args.0.detail.extraDetails.consentMethod")
+          .then((consentMethod) => {
+            expect(consentMethod).to.eql(ConsentMethod.reject);
           });
       });
 
-      it("emits another FidesUpdated event when accept all is clicked", () => {
+      it("emits a FidesUpdated event when accept all is clicked", () => {
         cy.contains("button", "Accept Test").should("be.visible").click();
-        cy.get("@FidesPreferenceToggled").should("not.have.been.called");
-        cy.get("@FidesUpdated")
-          .should("have.been.calledTwice")
-          // First call should be from initialization, before the user accepts all
+        cy.get("@FidesUIChanged").should("not.have.been.called");
+        cy.get("@FidesInitialized")
+          // First event, before the user accepts all
+          .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
           });
         cy.get("@FidesUpdated")
-          // Second call is when the user accepts all
-          .its("secondCall.args.0.detail.consent")
+          // Update event, when the user accepts all
+          .should("have.been.calledOnce")
+          .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: true,
             [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
+          });
+        cy.get("@FidesUpdated")
+          .its("lastCall.args.0.detail.extraDetails.consentMethod")
+          .then((consentMethod) => {
+            expect(consentMethod).to.eql(ConsentMethod.accept);
           });
       });
 
-      it("emits a FidesPreferenceToggled event when preferences are changed and a FidesUpdated event when preferences are saved", () => {
+      it("emits a FidesUIChanged event when preferences are changed and a FidesUpdated event when preferences are saved", () => {
         cy.contains("button", "Manage preferences")
           .should("be.visible")
           .click();
         cy.getByTestId("toggle-Test privacy notice").click();
         cy.getByTestId("consent-modal").contains("Save").click();
-        cy.get("@FidesPreferenceToggled").should("have.been.calledOnce");
-        cy.get("@FidesUpdated")
-          .should("have.been.calledTwice")
-          // First call should be from initialization, before the user saved preferences
+        cy.get("@FidesUIChanged").should("have.been.calledOnce");
+        cy.get("@FidesInitialized")
+          // First event, before the user saved preferences
+          .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
           });
+
         cy.get("@FidesUpdated")
-          // Second call is when the user saved preferences and opted-in to the first notice
-          .its("secondCall.args.0.detail.consent")
+          // Update event, when the user saved preferences and opted-in to the first notice
+          .should("have.been.calledOnce")
+          .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: true,
             [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
+          });
+        cy.get("@FidesUpdated")
+          .its("lastCall.args.0.detail.extraDetails.consentMethod")
+          .then((consentMethod) => {
+            expect(consentMethod).to.eql(ConsentMethod.save);
           });
       });
     });
@@ -1191,6 +1390,7 @@ describe("Consent banner", () => {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: false,
               [PRIVACY_NOTICE_KEY_2]: true,
+              [PRIVACY_NOTICE_KEY_3]: true,
             },
           },
         });
@@ -1203,6 +1403,7 @@ describe("Consent banner", () => {
             consent: {
               [PRIVACY_NOTICE_KEY_1]: true,
               [PRIVACY_NOTICE_KEY_2]: true,
+              [PRIVACY_NOTICE_KEY_3]: true,
             },
           },
         });
@@ -1211,7 +1412,51 @@ describe("Consent banner", () => {
 
   describe("when listening for fides.js events with existing cookie", () => {
     describe("when overlay is enabled and legacy notices exist", () => {
-      beforeEach(() => {
+      it("reflects client-side experiences consent in the UI", () => {
+        const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+        const CREATED_DATE = "2022-12-24T12:00:00.000Z";
+        const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
+        const legacyNotices = {
+          data_sales: false,
+          tracking: false,
+          analytics: true,
+        };
+        const originalCookie = {
+          identity: { fides_user_device_id: uuid },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: CREATED_DATE,
+            updatedAt: UPDATED_DATE,
+          },
+          consent: legacyNotices,
+        };
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
+
+        // we need to visit the page after the cookie exists, so the Fides.consent obj is initialized with the original
+        // cookie values
+        stubConfig({
+          experience: OVERRIDE.UNDEFINED,
+          geolocation: {
+            country: "US",
+            location: "US-CA",
+            region: "CA",
+          },
+        });
+        cy.getCookie(CONSENT_COOKIE_NAME).should("exist");
+        cy.contains("button", "Manage preferences").click();
+        // Default preference opt-out
+        cy.getByTestId("toggle-Advertising").within(() => {
+          cy.get("input").should("not.be.checked");
+        });
+        // Default preference opt-in
+        cy.getByTestId("toggle-Analytics").within(() => {
+          cy.get("input").should("be.checked");
+        });
+      });
+
+      // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
+      // register listeners for these window events
+      it("first event reflects legacy consent from cookie, second event reflects new experiences consent", () => {
         const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
         const CREATED_DATE = "2022-12-24T12:00:00.000Z";
         const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
@@ -1238,11 +1483,6 @@ describe("Consent banner", () => {
             isOverlayEnabled: true,
           },
         });
-      });
-
-      // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
-      // register listeners for these window events
-      it("first event reflects legacy consent from cookie, second event reflects new experiences consent", () => {
         // There is a brief period of time when Fides.consent is set to the legacy values, but this
         // test asserts the new values have been set
         cy.window()
@@ -1251,27 +1491,22 @@ describe("Consent banner", () => {
           .should("eql", {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
           });
         cy.get("@FidesInitialized")
-          .should("have.been.calledOnce")
+          .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             data_sales: false,
             tracking: false,
             analytics: true,
           });
-        cy.get("@FidesUpdated")
-          .its("firstCall.args.0.detail.consent")
-          .should("deep.equal", {
-            data_sales: false,
-            tracking: false,
-            analytics: true,
-          });
-        cy.get("@FidesUpdated")
+        cy.get("@FidesInitialized")
           .its("secondCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
           });
       });
     });
@@ -1312,27 +1547,22 @@ describe("Consent banner", () => {
           .should("eql", {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
           });
         cy.get("@FidesInitialized")
-          .should("have.been.calledOnce")
+          .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             data_sales: false,
             tracking: false,
             analytics: true,
           });
-        cy.get("@FidesUpdated")
-          .its("firstCall.args.0.detail.consent")
-          .should("deep.equal", {
-            data_sales: false,
-            tracking: false,
-            analytics: true,
-          });
-        cy.get("@FidesUpdated")
+        cy.get("@FidesInitialized")
           .its("secondCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
           });
       });
     });
@@ -1375,22 +1605,8 @@ describe("Consent banner", () => {
           analytics: true,
         });
         cy.get("@FidesInitialized")
-          .should("have.been.calledOnce")
+          .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
-          .should("deep.equal", {
-            data_sales: false,
-            tracking: false,
-            analytics: true,
-          });
-        cy.get("@FidesUpdated")
-          .its("firstCall.args.0.detail.consent")
-          .should("deep.equal", {
-            data_sales: false,
-            tracking: false,
-            analytics: true,
-          });
-        cy.get("@FidesUpdated")
-          .its("secondCall.args.0.detail.consent")
           .should("deep.equal", {
             data_sales: false,
             tracking: false,
@@ -1436,22 +1652,8 @@ describe("Consent banner", () => {
           analytics: true,
         });
         cy.get("@FidesInitialized")
-          .should("have.been.calledOnce")
+          .should("have.been.calledTwice")
           .its("firstCall.args.0.detail.consent")
-          .should("deep.equal", {
-            data_sales: false,
-            tracking: false,
-            analytics: true,
-          });
-        cy.get("@FidesUpdated")
-          .its("firstCall.args.0.detail.consent")
-          .should("deep.equal", {
-            data_sales: false,
-            tracking: false,
-            analytics: true,
-          });
-        cy.get("@FidesUpdated")
-          .its("secondCall.args.0.detail.consent")
           .should("deep.equal", {
             data_sales: false,
             tracking: false,
@@ -1561,6 +1763,15 @@ describe("Consent banner", () => {
           acknowledge_mode: false,
           serving_component: "overlay",
           privacy_notice_history_ids: [historyId1, historyId2],
+          tcf_purpose_consents: [],
+          tcf_purpose_legitimate_interests: [],
+          tcf_special_purposes: [],
+          tcf_vendor_consents: [],
+          tcf_vendor_legitimate_interests: [],
+          tcf_features: [],
+          tcf_special_features: [],
+          tcf_system_consents: [],
+          tcf_system_legitimate_interests: [],
         });
         // Now opt out of the notices
         cy.getByTestId("consent-modal").within(() => {
@@ -1577,6 +1788,9 @@ describe("Consent banner", () => {
               (p: ConsentOptionCreate) => p.served_notice_history_id
             )
           ).to.eql(expected);
+          expect(preferenceInterception.request.body.method).to.eql(
+            ConsentMethod.reject
+          );
         });
       });
     });
@@ -1607,6 +1821,100 @@ describe("Consent banner", () => {
       cy.wait("@patchNoticesServed").then((interception) => {
         expect(interception.request.body.acknowledge_mode).to.eql(true);
       });
+    });
+    it("can call custom notices served fn instead of Fides API", () => {
+      /* eslint-disable @typescript-eslint/no-unused-vars */
+      const apiOptions = {
+        patchNoticesServedFn: async (request: RecordConsentServedRequest) =>
+          null,
+      };
+      /* eslint-enable @typescript-eslint/no-unused-vars */
+      const spyObject = cy.spy(apiOptions, "patchNoticesServedFn");
+      stubConfig({
+        experience: {
+          id: experienceId,
+          show_banner: false,
+          privacy_notices: [
+            mockPrivacyNotice({
+              name: "Data Sales and Sharing",
+              notice_key: "data_sales_and_sharing",
+              privacy_notice_history_id: historyId1,
+            }),
+            mockPrivacyNotice({
+              name: "Essential",
+              notice_key: "essential",
+              privacy_notice_history_id: historyId2,
+            }),
+          ],
+        },
+        options: {
+          apiOptions,
+        },
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.get("#fides-modal-link").click();
+        cy.get("@FidesUIShown").then(() => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+          expect(spyObject).to.be.called;
+          const spy = spyObject.getCalls();
+          const { args } = spy[0];
+          expect(args[0]).to.contains({
+            serving_component: "overlay",
+          });
+          // timeout means API call not made, which is expected
+          cy.on("fail", (error) => {
+            if (error.message.indexOf("Timed out retrying") !== 0) {
+              throw error;
+            }
+          });
+          // check that notices aren't patched to Fides API
+          cy.wait("@patchNoticesServed", {
+            requestTimeout: 100,
+          }).then((xhr) => {
+            assert.isNull(xhr?.response?.body);
+          });
+        });
+      });
+    });
+  });
+
+  describe("consent overlay buttons", () => {
+    it("only shows the save button when a single privacy notice is configured", () => {
+      stubConfig({
+        experience: {
+          privacy_notices: [
+            mockPrivacyNotice({
+              name: "Marketing",
+              has_gpc_flag: true,
+            }),
+          ],
+        },
+      });
+      cy.get("button").contains("Manage preferences").click();
+      cy.get(".fides-modal-button-group")
+        .find("button")
+        .should("have.length", 1);
+    });
+    it("shows all buttons when multiple privacy notices are configured", () => {
+      stubConfig({
+        experience: {
+          privacy_notices: [
+            mockPrivacyNotice({
+              name: "Marketing",
+              has_gpc_flag: true,
+            }),
+            mockPrivacyNotice({
+              name: "Functional",
+              has_gpc_flag: true,
+            }),
+          ],
+        },
+      });
+      cy.get("button").contains("Manage preferences").click();
+      cy.get(".fides-modal-button-group")
+        .find("button")
+        .should("have.length", 3);
     });
   });
 });

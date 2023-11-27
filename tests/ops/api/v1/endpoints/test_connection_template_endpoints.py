@@ -67,6 +67,7 @@ class TestGetConnections:
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
+            "supported_actions": [ActionType.access.value, ActionType.erasure.value],
         } in data
         first_saas_type = ConnectorRegistry.connector_types().pop()
         first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
@@ -77,6 +78,9 @@ class TestGetConnections:
             "encoded_icon": first_saas_template.icon,
             "authorization_required": first_saas_template.authorization_required,
             "user_guide": first_saas_template.user_guide,
+            "supported_actions": [
+                action.value for action in first_saas_template.supported_actions
+            ],
         } in data
 
         assert "saas" not in [item["identifier"] for item in data]
@@ -156,6 +160,9 @@ class TestGetConnections:
                 "encoded_icon": saas_template[1].icon,
                 "authorization_required": saas_template[1].authorization_required,
                 "user_guide": saas_template[1].user_guide,
+                "supported_actions": [
+                    action.value for action in saas_template[1].supported_actions
+                ],
             }
             for saas_template in expected_saas_templates
         ]
@@ -184,6 +191,9 @@ class TestGetConnections:
                 "encoded_icon": saas_template[1].icon,
                 "authorization_required": saas_template[1].authorization_required,
                 "user_guide": saas_template[1].user_guide,
+                "supported_actions": [
+                    action.value for action in saas_template[1].supported_actions
+                ],
             }
             for saas_template in expected_saas_templates
         ]
@@ -202,6 +212,7 @@ class TestGetConnections:
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
+            "supported_actions": [ActionType.access.value, ActionType.erasure.value],
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
@@ -210,6 +221,7 @@ class TestGetConnections:
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
+            "supported_actions": [ActionType.access.value, ActionType.erasure.value],
         } in data
         for expected_data in expected_saas_data:
             assert expected_data in data, f"{expected_data} not in"
@@ -236,6 +248,9 @@ class TestGetConnections:
                 "encoded_icon": saas_template[1].icon,
                 "authorization_required": saas_template[1].authorization_required,
                 "user_guide": saas_template[1].user_guide,
+                "supported_actions": [
+                    action.value for action in saas_template[1].supported_actions
+                ],
             }
             for saas_template in expected_saas_types
         ]
@@ -253,6 +268,7 @@ class TestGetConnections:
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
+            "supported_actions": [ActionType.access.value, ActionType.erasure.value],
         } in data
 
         for expected_data in expected_saas_data:
@@ -275,6 +291,9 @@ class TestGetConnections:
                 "encoded_icon": saas_template[1].icon,
                 "authorization_required": saas_template[1].authorization_required,
                 "user_guide": saas_template[1].user_guide,
+                "supported_actions": [
+                    action.value for action in saas_template[1].supported_actions
+                ],
             }
             for saas_template in expected_saas_types
         ]
@@ -291,6 +310,7 @@ class TestGetConnections:
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
+            "supported_actions": [ActionType.access, ActionType.erasure],
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
@@ -299,6 +319,7 @@ class TestGetConnections:
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
+            "supported_actions": [ActionType.access, ActionType.erasure],
         } in data
 
         for expected_data in expected_saas_data:
@@ -363,6 +384,10 @@ class TestGetConnections:
                 "encoded_icon": None,
                 "authorization_required": False,
                 "user_guide": None,
+                "supported_actions": [
+                    ActionType.access.value,
+                    ActionType.erasure.value,
+                ],
             }
         ]
 
@@ -381,6 +406,7 @@ class TestGetConnections:
                 "type": "email",
                 "authorization_required": False,
                 "user_guide": None,
+                "supported_actions": [ActionType.erasure.value],
             },
             {
                 "encoded_icon": None,
@@ -389,6 +415,7 @@ class TestGetConnections:
                 "type": "email",
                 "authorization_required": False,
                 "user_guide": None,
+                "supported_actions": [ActionType.consent.value],
             },
             {
                 "encoded_icon": None,
@@ -397,6 +424,7 @@ class TestGetConnections:
                 "type": "email",
                 "authorization_required": False,
                 "user_guide": None,
+                "supported_actions": [ActionType.erasure.value],
             },
             {
                 "encoded_icon": None,
@@ -405,6 +433,7 @@ class TestGetConnections:
                 "type": "email",
                 "authorization_required": False,
                 "user_guide": None,
+                "supported_actions": [ActionType.consent.value],
             },
         ]
 
@@ -462,6 +491,10 @@ class TestGetConnectionsActionTypeParams:
                 "encoded_icon": None,
                 "authorization_required": False,
                 "user_guide": None,
+                "supported_actions": [
+                    ActionType.access.value,
+                    ActionType.erasure.value,
+                ],
             },
             ConnectionType.manual_webhook.value: {
                 "identifier": ConnectionType.manual_webhook.value,
@@ -470,6 +503,10 @@ class TestGetConnectionsActionTypeParams:
                 "encoded_icon": None,
                 "authorization_required": False,
                 "user_guide": None,
+                "supported_actions": [
+                    ActionType.access.value,
+                    ActionType.erasure.value,
+                ],
             },
             GOOGLE_ANALYTICS: {
                 "identifier": GOOGLE_ANALYTICS,
@@ -478,6 +515,10 @@ class TestGetConnectionsActionTypeParams:
                 "encoded_icon": google_analytics_template.icon,
                 "authorization_required": True,
                 "user_guide": google_analytics_template.user_guide,
+                "supported_actions": [
+                    action.value
+                    for action in google_analytics_template.supported_actions
+                ],
             },
             MAILCHIMP_TRANSACTIONAL: {
                 "identifier": MAILCHIMP_TRANSACTIONAL,
@@ -486,6 +527,10 @@ class TestGetConnectionsActionTypeParams:
                 "encoded_icon": mailchimp_transactional_template.icon,
                 "authorization_required": False,
                 "user_guide": mailchimp_transactional_template.user_guide,
+                "supported_actions": [
+                    action.value
+                    for action in mailchimp_transactional_template.supported_actions
+                ],
             },
             SEGMENT: {
                 "identifier": SEGMENT,
@@ -494,6 +539,9 @@ class TestGetConnectionsActionTypeParams:
                 "encoded_icon": segment_template.icon,
                 "authorization_required": False,
                 "user_guide": segment_template.user_guide,
+                "supported_actions": [
+                    action.value for action in segment_template.supported_actions
+                ],
             },
             STRIPE: {
                 "identifier": STRIPE,
@@ -502,6 +550,9 @@ class TestGetConnectionsActionTypeParams:
                 "encoded_icon": stripe_template.icon,
                 "authorization_required": False,
                 "user_guide": stripe_template.user_guide,
+                "supported_actions": [
+                    action.value for action in stripe_template.supported_actions
+                ],
             },
             ZENDESK: {
                 "identifier": ZENDESK,
@@ -510,6 +561,9 @@ class TestGetConnectionsActionTypeParams:
                 "encoded_icon": zendesk_template.icon,
                 "authorization_required": False,
                 "user_guide": zendesk_template.user_guide,
+                "supported_actions": [
+                    action.value for action in zendesk_template.supported_actions
+                ],
             },
             DOORDASH: {
                 "identifier": DOORDASH,
@@ -518,6 +572,9 @@ class TestGetConnectionsActionTypeParams:
                 "encoded_icon": doordash_template.icon,
                 "authorization_required": False,
                 "user_guide": doordash_template.user_guide,
+                "supported_actions": [
+                    action.value for action in doordash_template.supported_actions
+                ],
             },
             ConnectionType.sovrn.value: {
                 "identifier": ConnectionType.sovrn.value,
@@ -526,6 +583,7 @@ class TestGetConnectionsActionTypeParams:
                 "encoded_icon": None,
                 "authorization_required": False,
                 "user_guide": None,
+                "supported_actions": [ActionType.consent.value],
             },
             ConnectionType.attentive.value: {
                 "identifier": ConnectionType.attentive.value,
@@ -534,6 +592,7 @@ class TestGetConnectionsActionTypeParams:
                 "encoded_icon": None,
                 "authorization_required": False,
                 "user_guide": None,
+                "supported_actions": [ActionType.erasure.value],
             },
         }
 
@@ -594,11 +653,11 @@ class TestGetConnectionsActionTypeParams:
                     STRIPE,
                     ZENDESK,
                     ConnectionType.attentive.value,
+                    ConnectionType.manual_webhook.value,
                 ],
                 [
                     GOOGLE_ANALYTICS,
                     MAILCHIMP_TRANSACTIONAL,
-                    ConnectionType.manual_webhook.value,  # manual webhook is not erasure
                     DOORDASH,  # doordash does not have erasures
                     ConnectionType.sovrn.value,
                 ],
@@ -631,9 +690,9 @@ class TestGetConnectionsActionTypeParams:
                     STRIPE,
                     ZENDESK,
                     ConnectionType.attentive.value,
+                    ConnectionType.manual_webhook.value,
                 ],
                 [
-                    ConnectionType.manual_webhook.value,  # manual webhook is not erasure
                     DOORDASH,  # doordash does not have erasures
                 ],
             ),
@@ -1004,6 +1063,12 @@ class TestGetConnectionSecretSchema:
                     "description": "The name of the specific database within the database server that you want to connect to.",
                     "type": "string",
                 },
+                "ssh_required": {
+                    "title": "SSH required",
+                    "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.",
+                    "default": False,
+                    "type": "boolean",
+                },
             },
             "required": ["host", "dbname"],
         }
@@ -1053,7 +1118,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "ssh_required": {
-                    "title": "SSH Required",
+                    "title": "SSH required",
                     "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
                     "default": False,
                     "type": "boolean",
@@ -1107,7 +1172,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "ssh_required": {
-                    "title": "SSH Required",
+                    "title": "SSH required",
                     "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your Redshift database is behind a firewall and requires SSH tunneling for remote connections.",
                     "default": False,
                     "type": "boolean",

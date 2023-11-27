@@ -1,16 +1,21 @@
 import { createSelector } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
+import { CONNECTION_ROUTE } from "~/constants";
 import { baseApi } from "~/features/common/api.slice";
 import {
   selectActiveCollection,
   selectActiveDatasetFidesKey,
   selectActiveField,
 } from "~/features/dataset/dataset.slice";
+import { CreateSaasConnectionConfig } from "~/features/datastore-connections";
+import { CreateSaasConnectionConfigResponse } from "~/features/datastore-connections/types";
 import { selectSystemsToClassify } from "~/features/system";
 import {
   AllowList,
   AllowListUpdate,
+  BulkCustomFieldRequest,
+  BulkPutConnectionConfiguration,
   ClassificationResponse,
   ClassifyCollection,
   ClassifyDatasetResponse,
@@ -21,6 +26,7 @@ import {
   ClassifyStatusUpdatePayload,
   ClassifySystem,
   CloudConfig,
+  ConnectionConfigurationResponse,
   CustomAssetType,
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
@@ -196,7 +202,14 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Custom Fields", "Datamap"],
     }),
-
+    bulkUpdateCustomFields: build.mutation<void, BulkCustomFieldRequest>({
+      query: (params) => ({
+        url: `plus/custom-metadata/custom-field/bulk`,
+        method: "POST",
+        body: params,
+      }),
+      invalidatesTags: ["Custom Fields", "Datamap"],
+    }),
     getAllCustomFieldDefinitions: build.query<
       CustomFieldDefinitionWithId[],
       void
@@ -256,6 +269,26 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Dictionary"],
     }),
+    getAllSystemVendors: build.query<DictSystems[], void>({
+      query: () => ({
+        url: `plus/dictionary/system-vendors`,
+      }),
+      providesTags: ["System Vendors"],
+    }),
+    postSystemVendors: build.mutation<any, string[]>({
+      query: (vendor_ids: string[]) => ({
+        method: "post",
+        url: `plus/dictionary/system-vendors`,
+        body: { vendor_ids },
+      }),
+      invalidatesTags: [
+        "Dictionary",
+        "System Vendors",
+        "System",
+        "Datamap",
+        "System History",
+      ],
+    }),
     getFidesCloudConfig: build.query<CloudConfig, void>({
       query: () => ({
         url: `plus/fides-cloud`,
@@ -299,6 +332,41 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Custom Assets"],
     }),
+    patchPlusSystemConnectionConfigs: build.mutation<
+      BulkPutConnectionConfiguration,
+      {
+        systemFidesKey: string;
+        connectionConfigs: (Omit<
+          ConnectionConfigurationResponse,
+          "created_at"
+        > & {
+          enabled_actions?: string[];
+        })[];
+      }
+    >({
+      query: ({ systemFidesKey, connectionConfigs }) => ({
+        url: `/plus/system/${systemFidesKey}/connection`,
+        method: "PATCH",
+        body: connectionConfigs,
+      }),
+      invalidatesTags: ["Datamap", "System", "Datastore Connection"],
+    }),
+    createPlusSaasConnectionConfig: build.mutation<
+      CreateSaasConnectionConfigResponse,
+      CreateSaasConnectionConfig
+    >({
+      query: (params) => {
+        const url = `/plus/system/${params.systemFidesKey}${CONNECTION_ROUTE}/instantiate/${params.connectionConfig.saas_connector_type}`;
+
+        return {
+          url,
+          method: "POST",
+          body: { ...params.connectionConfig },
+        };
+      },
+      // Creating a connection config also creates a dataset behind the scenes
+      invalidatesTags: () => ["Datastore Connection", "Datasets", "System"],
+    }),
   }),
 });
 
@@ -321,13 +389,19 @@ export const {
   useUpdateScanMutation,
   useUpsertAllowListMutation,
   useUpsertCustomFieldMutation,
+  useBulkUpdateCustomFieldsMutation,
   useGetAllCustomFieldDefinitionsQuery,
   useGetAllowListQuery,
   useGetAllDictionaryEntriesQuery,
   useGetFidesCloudConfigQuery,
   useGetDictionaryDataUsesQuery,
+  useLazyGetDictionaryDataUsesQuery,
+  useGetAllSystemVendorsQuery,
+  usePostSystemVendorsMutation,
   useGetSystemHistoryQuery,
   useUpdateCustomAssetMutation,
+  usePatchPlusSystemConnectionConfigsMutation,
+  useCreatePlusSaasConnectionConfigMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
@@ -480,3 +554,35 @@ export const selectDictDataUses = (vendorId: string) =>
     ],
     (state, { data }) => (data ? data.items : EMPTY_DATA_USES)
   );
+
+export type DictSystems = {
+  linked_system: boolean;
+  name: string;
+  vendor_id: string;
+};
+const EMPTY_DICT_SYSTEMS: DictSystems[] = [];
+export const selectAllDictSystems = createSelector(
+  [(RootState) => RootState, plusApi.endpoints.getAllSystemVendors.select()],
+  (RootState, { data }) =>
+    data
+      ? data
+          .slice()
+          .map((ds) => {
+            const name = ds.name
+              .split(" ")
+              .map((word) =>
+                word.charAt(0) === "("
+                  ? `(${word.charAt(1).toUpperCase()}${word
+                      .slice(2)
+                      .toLowerCase()}`
+                  : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+              )
+              .join(" ");
+            return {
+              ...ds,
+              name,
+            };
+          })
+          .sort((a, b) => a.name.localeCompare(b.name))
+      : EMPTY_DICT_SYSTEMS
+);
