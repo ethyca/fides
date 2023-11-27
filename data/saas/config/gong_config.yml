@@ -7,9 +7,14 @@ saas_config:
 
   connector_params:
     - name: domain
-    default: api.gong.io
+      default_value: api.gong.io
+    - access_key: <access_key>
+      description: The access key. Details on how to find this are availble here https://app.gong.io/settings/api/documentation#overview
+    - access_key_secret: <access_key_secret>
+      description: The access key secret. Details on how to find this are availble here https://app.gong.io/settings/api/documentation#overview
+      sensitive: True
     - name: basic token
-      description: Check Gong's documentation for how to create this value https://us-66708.app.gong.io/settings/api/documentation#overview
+      description: Check Gong's documentation for how to create this value https://app.gong.io/settings/api/documentation#overview
       sensitive: true
 
   client_config:
