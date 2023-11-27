@@ -1,4 +1,5 @@
-import { Flex, Button, useDisclosure } from "@fidesui/react";
+/* eslint-disable react/no-unstable-nested-components */
+import { Button, Flex } from "@fidesui/react";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -6,29 +7,29 @@ import {
 } from "@tanstack/react-table";
 import { useFeatures } from "common/features";
 import {
+  BadgeCell,
   DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
   GlobalFilterV2,
   PaginationBar,
   TableActionBar,
-  BadgeCell,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
 import { useEffect, useMemo, useState } from "react";
+
+import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   ConsentManagementFilterModal,
-  useConsentManagementFilters,
   Option,
+  useConsentManagementFilters,
 } from "~/features/configure-consent/ConsentManagementFilterModal";
-
 import {
   useGetHealthQuery,
   useGetVendorReportQuery,
 } from "~/features/plus/plus.slice";
 import { useLazyGetSystemByFidesKeyQuery } from "~/features/system/system.slice";
-import AddVendor from "~/features/configure-consent/AddVendor";
 import { Page_SystemSummary_, SystemSummary } from "~/types/api";
 
 const columnHelper = createColumnHelper<SystemSummary>();
@@ -65,8 +66,9 @@ export const ConsentManagementTable = () => {
   const getQueryParamsFromList = (optionList: Option[], queryParam: string) => {
     const checkedOptions = optionList.filter((option) => option.isChecked);
     return checkedOptions.length > 0
-      ? `${queryParam}=` +
-          checkedOptions.map((option) => option.value).join(`&${queryParam}=`)
+      ? `${queryParam}=${checkedOptions
+          .map((option) => option.value)
+          .join(`&${queryParam}=`)}`
       : undefined;
   };
   const selectedDataUseFilters = useMemo(
@@ -138,7 +140,7 @@ export const ConsentManagementTable = () => {
 
   useEffect(() => {
     setTotalPages(totalPages);
-  }, [totalPages]);
+  }, [totalPages, setTotalPages]);
 
   const tcfColumns = useMemo(
     () => [
@@ -218,9 +220,7 @@ export const ConsentManagementTable = () => {
   });
 
   const onRowClick = async (row: SystemSummary) => {
-    console.log(row);
     const result = await getSystemByFidesKey(row.fides_key);
-    console.log(result);
     setSystemToEdit(result.data);
   };
 

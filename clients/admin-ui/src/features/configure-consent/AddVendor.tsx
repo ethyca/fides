@@ -225,9 +225,6 @@ const AddVendor = ({
         enableReinitialize
         onSubmit={handleSubmit}
         validationSchema={validationSchema}
-        onClick={() => {
-          console.log("form");
-        }}
       >
         {({ dirty, values, isValid, resetForm }) => {
           let suggestionsState;

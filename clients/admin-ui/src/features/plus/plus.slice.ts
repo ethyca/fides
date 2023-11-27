@@ -34,11 +34,11 @@ import {
   GenerateTypes,
   HealthCheck,
   Page_SystemHistoryResponse_,
+  Page_SystemSummary_,
   ResourceTypes,
   SystemScannerStatus,
   SystemScanResponse,
   SystemsDiff,
-  Page_SystemSummary_,
 } from "~/types/api";
 import {
   DataUseDeclaration,
@@ -322,24 +322,24 @@ const plusApi = baseApi.injectEndpoints({
       }) => {
         let queryString = `page=${pageIndex}&size=${pageSize}`;
         if (dataUses) {
-          queryString = queryString + `&${dataUses}`;
+          queryString += `&${dataUses}`;
         }
 
         if (legalBasis) {
-          queryString = queryString + `&${legalBasis}`;
+          queryString += `&${legalBasis}`;
         }
         if (purposes) {
-          queryString = queryString + `&${purposes}`;
+          queryString += `&${purposes}`;
         }
         if (specialPurposes) {
-          queryString = queryString + `&${specialPurposes}`;
+          queryString += `&${specialPurposes}`;
         }
         if (consentCategories) {
-          queryString = queryString + `&${consentCategories}`;
+          queryString += `&${consentCategories}`;
         }
 
         if (search) {
-          queryString = queryString + `&search=${search}`;
+          queryString += `&search=${search}`;
         }
 
         return {

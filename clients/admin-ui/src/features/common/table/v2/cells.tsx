@@ -1,11 +1,11 @@
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  Badge,
   Box,
   Checkbox,
   Flex,
   Text,
-  Badge,
 } from "@fidesui/react";
 import { HeaderContext } from "@tanstack/react-table";
 import { HTMLProps, ReactNode, useState } from "react";
@@ -24,16 +24,14 @@ export const BadgeCell = ({
 }: {
   value: string | number;
   suffix?: string;
-}) => {
-  return (
-    <Flex alignItems="center" height="100%" mr="2">
-      <Badge textTransform="none">
-        {value}
-        {suffix ? ` ${suffix}` : null}
-      </Badge>
-    </Flex>
-  );
-};
+}) => (
+  <Flex alignItems="center" height="100%" mr="2">
+    <Badge textTransform="none">
+      {value}
+      {suffix ? ` ${suffix}` : null}
+    </Badge>
+  </Flex>
+);
 
 type IndeterminateCheckboxCellProps = {
   indeterminate?: boolean;

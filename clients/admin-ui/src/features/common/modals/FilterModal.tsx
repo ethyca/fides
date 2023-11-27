@@ -40,39 +40,37 @@ export const FilterModal: React.FC<FilterModalProps> = ({
   onClose,
   children,
   resetFilters,
-}) => {
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Filters</ModalHeader>
-        <ModalCloseButton />
-        <Divider />
-        <ModalBody maxH="85vh" padding="0px" overflowX="auto">
-          {children}
-        </ModalBody>
-        <ModalFooter>
-          <Box display="flex" justifyContent="space-between" width="100%">
-            <Button
-              variant="outline"
-              size="sm"
-              mr={3}
-              onClick={resetFilters}
-              flexGrow={1}
-            >
-              Reset Filters
-            </Button>
-            <Button
-              colorScheme="primary"
-              size="sm"
-              onClick={onClose}
-              flexGrow={1}
-            >
-              Done
-            </Button>
-          </Box>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  );
-};
+}) => (
+  <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl">
+    <ModalOverlay />
+    <ModalContent>
+      <ModalHeader>Filters</ModalHeader>
+      <ModalCloseButton />
+      <Divider />
+      <ModalBody maxH="85vh" padding="0px" overflowX="auto">
+        {children}
+      </ModalBody>
+      <ModalFooter>
+        <Box display="flex" justifyContent="space-between" width="100%">
+          <Button
+            variant="outline"
+            size="sm"
+            mr={3}
+            onClick={resetFilters}
+            flexGrow={1}
+          >
+            Reset Filters
+          </Button>
+          <Button
+            colorScheme="primary"
+            size="sm"
+            onClick={onClose}
+            flexGrow={1}
+          >
+            Done
+          </Button>
+        </Box>
+      </ModalFooter>
+    </ModalContent>
+  </Modal>
+);
