@@ -38,7 +38,12 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   }),
   copy({
     // Automatically add the built script to the privacy center's static files for bundling:
-    targets: [{ src: `${name}.js`, dest: "../privacy-center/public/lib/" }],
+    targets: [
+      {
+        src: `dist/${name}.js`,
+        dest: `../privacy-center/public/lib/`,
+      },
+    ],
     verbose: true,
     hook: "writeBundle",
   }),
@@ -84,7 +89,12 @@ const SCRIPTS = [
     gzipWarnSizeKb: GZIP_SIZE_TCF_WARN_KB,
     gzipErrorSizeKb: GZIP_SIZE_TCF_ERROR_KB,
   },
-  { name: "gpp", gzipWarnSizeKb: 10, gzipErrorSizeKb: 15, isExtension: true },
+  {
+    name: `${NAME}-ext-gpp`,
+    gzipWarnSizeKb: 10,
+    gzipErrorSizeKb: 15,
+    isExtension: true,
+  },
 ];
 
 /**
@@ -93,19 +103,17 @@ const SCRIPTS = [
 const rollupOptions = [];
 
 SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
-  const input = isExtension ? `src/extensions/${name}.ts` : `src/${name}.ts`;
-  const outputFileName = isExtension ? `dist/${name}-ext` : `dist/${name}`;
   const js = {
-    input,
+    input: `src/${name}.ts`,
     plugins: fidesScriptPlugins({
-      name: outputFileName,
+      name,
       gzipWarnSizeKb,
       gzipErrorSizeKb,
     }),
     output: [
       {
         // Intended for browser <script> tag - defines `Fides` global. Also supports UMD loaders.
-        file: `${outputFileName}.js`,
+        file: `dist/${name}.js`,
         name: isExtension ? undefined : "Fides",
         format: isExtension ? undefined : "umd",
         sourcemap: IS_DEV,
@@ -113,7 +121,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
     ],
   };
   const mjs = {
-    input,
+    input: `src/${name}.ts`,
     plugins: [
       alias(preactAliases),
       json(),
@@ -124,18 +132,18 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
     output: [
       {
         // Compatible with ES module imports. Apps in this repo may be able to share the code.
-        file: `${outputFileName}.mjs`,
+        file: `dist/${name}.mjs`,
         format: "es",
         sourcemap: true,
       },
     ],
   };
   const declaration = {
-    input,
+    input: `src/${name}.ts`,
     plugins: [dts(), postcss()],
     output: [
       {
-        file: `${outputFileName}.d.ts`,
+        file: `dist/${name}.d.ts`,
       },
     ],
   };

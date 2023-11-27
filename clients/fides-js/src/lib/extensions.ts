@@ -1,10 +1,10 @@
-import type { FidesOptions } from "../lib/consent-types";
+import type { FidesOptions } from "./consent-types";
 
 /**
  * The path where the GPP extension bundle is located,
  * likely served by the privacy center
  */
-const GPP_EXT_PATH = "/gpp-ext.js";
+const GPP_EXT_PATH = "/fides-ext-gpp.js";
 
 export const setupExtensions = (options: FidesOptions) => {
   if (options.gppEnabled) {

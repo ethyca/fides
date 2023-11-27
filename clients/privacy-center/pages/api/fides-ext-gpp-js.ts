@@ -1,3 +1,9 @@
+/**
+ * Hosted GPP extension. We use this instead of the `public/` directory
+ * because next.js doesn't allow specifying cache headers for statically hosted files
+ * https://nextjs.org/docs/pages/api-reference/next-config-js/headers#cache-control
+ */
+
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { CacheControl, stringify } from "cache-control-parser";
@@ -9,26 +15,26 @@ const GPP_JS_MAX_AGE_SECONDS = 60 * 60;
 
 /**
  * @swagger
- * /gpp-ext.js:
+ * /fides-ext-gpp.js:
  *   get:
- *     description: Returns the "gpp-ext.js" bundle for dynamic loading
+ *     description: Returns the "fides-ext-gpp.js" bundle for dynamic loading
  *     responses:
  *       200:
- *         description: a "gpp-ext.js" script extension
+ *         description: a "fides-ext-gpp.js" script extension
  *         content:
  *           application/javascript:
  *             schema:
  *               type: string
  *             example: |
  *               (function(){
- *                 // gpp.js extension bundle...
+ *                 // fides-ext-gpp.js extension bundle...
  *               )();
  */
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const gppJsFile = "public/lib/gpp-ext.js";
+  const gppJsFile = "public/lib/fides-ext-gpp.js";
 
   const gppJsBuffer = await fsPromises.readFile(gppJsFile);
   const gppJs: string = gppJsBuffer.toString();

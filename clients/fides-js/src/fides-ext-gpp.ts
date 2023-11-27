@@ -5,7 +5,7 @@
  * Include as a script tag as early as possible (even before fides.js)
  */
 
-import { makeStub } from "../lib/gpp/stub";
+import { makeStub } from "./lib/gpp/stub";
 
 export const initializeGppCmpApi = () => {
   makeStub();
