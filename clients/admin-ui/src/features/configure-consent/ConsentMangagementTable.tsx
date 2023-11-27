@@ -41,8 +41,7 @@ const emptyVendorReportResponse: Page_SystemSummary_ = {
   pages: 1,
 };
 export const ConsentManagementTable = () => {
-  // const { tcf: isTcfEnabled } = useFeatures();
-  const isTcfEnabled = false;
+  const { tcf: isTcfEnabled } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const [globalFilter, setGlobalFilter] = useState();
   const [systemToEdit, setSystemToEdit] = useState();
@@ -79,10 +78,24 @@ export const ConsentManagementTable = () => {
     () => getQueryParamsFromList(legalBasisOptions, "legal_bases"),
     [legalBasisOptions]
   );
-  const selectedPurposeFilters = useMemo(
-    () => getQueryParamsFromList(purposeOptions, "purposes"),
-    [purposeOptions]
-  );
+  const selectedPurposeFilters = useMemo(() => {
+    const normalOptions = purposeOptions
+      .filter((o) => o.value.includes("normal"))
+      .map((o) => ({
+        ...o,
+        value: o.value.split(".")[1],
+      }));
+    return getQueryParamsFromList(normalOptions, "purposes");
+  }, [purposeOptions]);
+  const selectedSpecialPurposeFilters = useMemo(() => {
+    const specialOptions = purposeOptions
+      .filter((o) => o.value.includes("special"))
+      .map((o) => ({
+        ...o,
+        value: o.value.split(".")[1],
+      }));
+    return getQueryParamsFromList(specialOptions, "special_purposes");
+  }, [purposeOptions]);
   const selectedConsentCategoryFilters = useMemo(
     () => getQueryParamsFromList(consentCategoryOptions, "consent_category"),
     [consentCategoryOptions]
@@ -113,6 +126,7 @@ export const ConsentManagementTable = () => {
     search: globalFilter,
     legalBasis: selectedLegalBasisFilters,
     purposes: selectedPurposeFilters,
+    specialPurposes: selectedSpecialPurposeFilters,
     consentCategories: selectedConsentCategoryFilters,
   });
 

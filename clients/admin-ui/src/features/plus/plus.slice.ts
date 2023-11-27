@@ -304,6 +304,7 @@ const plusApi = baseApi.injectEndpoints({
         pageSize: number;
         search?: string;
         purposes?: string;
+        specialPurposes?: string;
         dataUses?: string;
         legalBasis?: string;
         consentCategories?: string;
@@ -316,6 +317,7 @@ const plusApi = baseApi.injectEndpoints({
         search,
         legalBasis,
         purposes,
+        specialPurposes,
         consentCategories,
       }) => {
         let queryString = `page=${pageIndex}&size=${pageSize}`;
@@ -328,6 +330,9 @@ const plusApi = baseApi.injectEndpoints({
         }
         if (purposes) {
           queryString = queryString + `&${purposes}`;
+        }
+        if (specialPurposes) {
+          queryString = queryString + `&${specialPurposes}`;
         }
         if (consentCategories) {
           queryString = queryString + `&${consentCategories}`;

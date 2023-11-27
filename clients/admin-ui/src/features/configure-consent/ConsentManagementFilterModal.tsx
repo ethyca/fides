@@ -217,12 +217,12 @@ export const useConsentManagementFilters = () => {
     if (purposeOptions.length === 0) {
       setPurposeOptions([
         ...Object.entries(purposeResponse.purposes).map((p) => ({
-          value: p[0],
+          value: `normal.${p[0]}`,
           displayText: p[1].name,
           isChecked: false,
         })),
         ...Object.entries(purposeResponse.special_purposes).map((p) => ({
-          value: p[0],
+          value: `special.${p[0]}`,
           displayText: p[1].name,
           isChecked: false,
         })),
