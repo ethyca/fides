@@ -39,8 +39,7 @@ export const useClientSidePagination = <T,>(
     startRange,
     endRange,
   };
-}
-
+};
 
 export const useServerSidePagination = () => {
   const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
@@ -160,4 +159,4 @@ export const PaginationBar = ({
       next
     </IconButton>
   </HStack>
-)
+);
