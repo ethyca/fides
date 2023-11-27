@@ -158,13 +158,10 @@ describe("System management with Plus features", () => {
 
   describe("data use", () => {
     it("should enable legal basis editing if flexible is true", () => {
-      cy.fixture("systems/system_with_flexible_legal_basis.json").then(
-        (system) => {
-          cy.intercept("GET", "/api/v1/system/*", {
-            body: system,
-          }).as("getSystemWithFlexibleDataUses");
-        }
-      );
+      cy.intercept("GET", "/api/v1/system/*", {
+        fixture: "systems/system_with_flexible_legal_basis.json",
+      }).as("getSystemWithFlexibleDataUses");
+
       cy.visit(`${SYSTEM_ROUTE}/configure/flexible_system`);
       cy.wait("@getSystemWithFlexibleDataUses");
 
@@ -184,13 +181,10 @@ describe("System management with Plus features", () => {
     });
 
     it("should disable legal basis editing if flexible is false", () => {
-      cy.fixture("systems/system_with_flexible_legal_basis.json").then(
-        (system) => {
-          cy.intercept("GET", "/api/v1/system/*", {
-            body: system,
-          }).as("getSystemWithFlexibleDataUses");
-        }
-      );
+      cy.intercept("GET", "/api/v1/system/*", {
+        fixture: "systems/system_with_flexible_legal_basis.json",
+      }).as("getSystemWithFlexibleDataUses");
+
       cy.visit(`${SYSTEM_ROUTE}/configure/flexible_system`);
       cy.wait("@getSystemWithFlexibleDataUses");
 
