@@ -52,6 +52,28 @@ export const usePaging = <T,>(items: T[]): PagingData<T> => {
   };
 };
 
+const PreviousIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="12"
+    height="12"
+    fill="currentColor"
+  >
+    <path d="m5.914 6 2.475 2.475-.707.707L4.5 6l3.182-3.182.707.707L5.914 6Z" />
+  </svg>
+);
+
+const NextIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="12"
+    height="12"
+    fill="currentColor"
+  >
+    <path d="M7.086 6 4.61 3.525l.707-.707L8.5 6 5.318 9.182l-.707-.707L7.086 6Z" />
+  </svg>
+);
+
 const PagingButtons = <T,>({
   nextPage,
   previousPage,
@@ -71,16 +93,18 @@ const PagingButtons = <T,>({
         type="button"
         onClick={previousPage}
         disabled={disablePrevious}
+        aria-label="Previous page"
       >
-        {"<"}
+        <PreviousIcon />
       </button>
       <button
         className="fides-paging-next-button"
         type="button"
         onClick={nextPage}
         disabled={disableNext}
+        aria-label="Next page"
       >
-        {">"}
+        <NextIcon />
       </button>
     </div>
   </div>
