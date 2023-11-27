@@ -145,6 +145,17 @@ const automaticallyApplyGPCPreferences = ({
 };
 
 /**
+ * Get fides override options from a custom path
+ */
+const getWindowObjFromPath = (path: string[]): OverrideOptions | undefined => {
+  if (path[0] === "window") {
+    path.shift();
+  }
+  // @ts-ignore
+  return path.reduce((record, item) => record[item], window);
+};
+
+/**
  * Gets and validates override options provided through URL query params, cookie, or window obj
  *
  *
@@ -159,10 +170,13 @@ export const getOptionsOverrides = (config: FidesConfig): Partial<FidesOptionsOv
     // Grab query params if provided in the URL (e.g. "?fides_string=123...")
     const queryParams = new URLSearchParams(window.location.search);
     // Grab override options if exists (e.g. window.fides_overrides = { fides_string: "123..." })
-    const windowObj: OverrideOptions | undefined = config.options
-      .customOptionsPath
-      ? JSON.parse(config.options.customOptionsPath)
-      : window.fides_overrides;
+    const customPathArr: "" | null | string[] =
+      config.options.customOptionsPath &&
+      config.options.customOptionsPath.split(".");
+    const windowObj: OverrideOptions | undefined =
+      customPathArr && customPathArr.length >= 0
+        ? getWindowObjFromPath(customPathArr)
+        : window.fides_overrides;
 
     // Look for each of the override options in all three locations: query params, window object, cookie
     FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP.forEach(
