@@ -99,7 +99,6 @@ const AccordionMultifieldFilter = ({
     ? options
     : options.slice(0, numDefaultOptions);
   const areExtraOptionsAvailable = options.length > numDefaultOptions;
-  console.log(header, onCheckboxChange);
 
   return (
     <Accordion width="100%" allowToggle>
@@ -121,6 +120,7 @@ const AccordionMultifieldFilter = ({
           <SimpleGrid columns={3}>
             {viewableOptions.map((option) => (
               <AccordionMultiFieldCheckBox
+                key={option.value}
                 {...option}
                 onCheckboxChange={onCheckboxChange}
               />
