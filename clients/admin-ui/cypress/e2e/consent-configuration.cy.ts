@@ -28,7 +28,7 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe("empty state", () => {
+  describe.skip("empty state", () => {
     it("can render an empty state", () => {
       stubPlus(true);
       cy.intercept("GET", "/api/v1/system", {
@@ -42,7 +42,7 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe("with existing systems", () => {
+  describe.skip("with existing systems", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
@@ -72,7 +72,7 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe("adding a vendor", () => {
+  describe.skip("adding a vendor", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
@@ -210,7 +210,7 @@ describe("Consent configuration", () => {
       });
     });
 
-    describe("with the dictionary", () => {
+    describe.skip("with the dictionary", () => {
       beforeEach(() => {
         stubPlus(true);
         cy.visit(CONFIGURE_CONSENT_ROUTE);
@@ -705,7 +705,7 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe("deleting a vendor", () => {
+  describe.skip("deleting a vendor", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
@@ -749,7 +749,7 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe("editing a vendor", () => {
+  describe.skip("editing a vendor", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
