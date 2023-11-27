@@ -1005,3 +1005,34 @@ div#fides-banner-inner .fides-privacy-policy {
 .fides-tcf-banner-container #fides-privacy-policy-link {
   margin: auto;
 }
+
+/* Paging */
+
+.fides-paging-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.fides-paging-info {
+  color: var(--fides-overlay-font-color-dark);
+  font-size: var(--fides-overlay-font-size-body-small);
+  font-weight: 600;
+  padding: 8px;
+}
+
+.fides-paging-previous-button {
+  margin-right: 8px;
+}
+
+.fides-paging-previous-button,
+.fides-paging-next-button {
+  cursor: pointer;
+  padding: 6px;
+  border: none;
+  background-color: transparent;
+}
+
+.fides-paging-previous-button:disabled,
+.fides-paging-next-button:disabled {
+  cursor: default;
+}

@@ -61,16 +61,28 @@ const PagingButtons = <T,>({
   disablePrevious,
   totalItems,
 }: Omit<PagingData<T>, "activeChunk" | "totalPages">) => (
-  <div>
-    <span>
+  <div className="fides-paging-buttons">
+    <span className="fides-paging-info">
       {rangeStart}-{rangeEnd} of {totalItems}
     </span>
-    <button type="button" onClick={previousPage} disabled={disablePrevious}>
-      {"<"}
-    </button>
-    <button type="button" onClick={nextPage} disabled={disableNext}>
-      {">"}
-    </button>
+    <div className="fides-flex-center">
+      <button
+        className="fides-paging-previous-button"
+        type="button"
+        onClick={previousPage}
+        disabled={disablePrevious}
+      >
+        {"<"}
+      </button>
+      <button
+        className="fides-paging-next-button"
+        type="button"
+        onClick={nextPage}
+        disabled={disableNext}
+      >
+        {">"}
+      </button>
+    </div>
   </div>
 );
 export default PagingButtons;
