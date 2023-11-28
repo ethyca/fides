@@ -109,11 +109,11 @@ const DataCategories = ({
         </tr>
       </thead>
       <tbody>
-        {declarations.map((id) => {
+        {declarations && declarations.map((id) => {
           const category = dataCategories[id];
           return (
             <tr key={id}>
-              <td>{category.name}</td>
+              <td>{category ? category.name : ""}</td>
             </tr>
           );
         })}
