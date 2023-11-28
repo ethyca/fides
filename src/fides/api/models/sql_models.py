@@ -1,5 +1,5 @@
 # type: ignore
-
+# pylint: disable=comparison-with-callable,no-member
 """
 Contains all of the SqlAlchemy models for the Fides resources.
 """
@@ -7,7 +7,7 @@ Contains all of the SqlAlchemy models for the Fides resources.
 from __future__ import annotations
 
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Set, Type, TypeVar
+from typing import Any, Dict, List, Optional, Set, Type, TypeVar, Union
 
 from fideslang import MAPPED_PURPOSES_BY_DATA_USE
 from fideslang.gvl import MAPPED_PURPOSES, MappedPurpose
@@ -24,14 +24,20 @@ from sqlalchemy import (
     Text,
     TypeDecorator,
     UniqueConstraint,
+    case,
     cast,
+    select,
     type_coerce,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, BYTEA
+from sqlalchemy.engine import Row
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.sql import func
+from sqlalchemy.sql.elements import Case
+from sqlalchemy.sql.selectable import ScalarSelect
 from sqlalchemy.sql.sqltypes import DateTime
 from typing_extensions import Protocol, runtime_checkable
 
@@ -41,9 +47,17 @@ from fides.api.db.base_class import FidesBase as FideslibBase
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.tcf_publisher_overrides import TCFPublisherOverrides
 from fides.config import get_config
 
 CONFIG = get_config()
+
+# Mapping of data uses to *Purposes* not Special Purposes
+MAPPED_PURPOSES_ONLY_BY_DATA_USE: Dict[str, MappedPurpose] = {
+    data_use: purpose
+    for data_use, purpose in MAPPED_PURPOSES_BY_DATA_USE.items()
+    if purpose in MAPPED_PURPOSES.values()
+}
 
 
 class FidesBase(FideslibBase):
@@ -519,20 +533,114 @@ class PrivacyDeclaration(Base):
 
     @hybrid_property
     def purpose(self) -> Optional[int]:
-        """Return the Purpose ID (not Special Purpose ID) if the data use maps to a Purpose
-
-        If data use maps to a Special Purpose, None is returned here. This is for Purposes only.
-        """
-        mapped_purpose: Optional[MappedPurpose] = MAPPED_PURPOSES_BY_DATA_USE.get(
+        """Returns the instance-level TCF Purpose."""
+        mapped_purpose: Optional[MappedPurpose] = MAPPED_PURPOSES_ONLY_BY_DATA_USE.get(
             self.data_use
         )
-        if not mapped_purpose:
+        return mapped_purpose.id if mapped_purpose else None
+
+    @purpose.expression
+    def purpose(cls) -> Case:
+        """Returns the class-level TCF Purpose"""
+        return case(
+            [
+                (cls.data_use == data_use, purpose.id)
+                for data_use, purpose in MAPPED_PURPOSES_ONLY_BY_DATA_USE.items()
+            ],
+            else_=None,
+        )
+
+    @hybrid_property
+    def _publisher_override_legal_basis_join(self) -> Optional[str]:
+        """Returns the instance-level overridden required legal basis"""
+        db: Session = Session.object_session(self)
+        required_legal_basis: Optional[Row] = (
+            db.query(TCFPublisherOverrides.required_legal_basis)
+            .filter(TCFPublisherOverrides.purpose == self.purpose)
+            .first()
+        )
+        return required_legal_basis[0] if required_legal_basis else None
+
+    @_publisher_override_legal_basis_join.expression
+    def _publisher_override_legal_basis_join(cls) -> ScalarSelect:
+        """Returns the class-level overridden required legal basis"""
+        return (
+            select([TCFPublisherOverrides.required_legal_basis])
+            .where(TCFPublisherOverrides.purpose == cls.purpose)
+            .as_scalar()
+        )
+
+    @hybrid_property
+    def _publisher_override_is_included_join(self) -> Optional[bool]:
+        """Returns the instance-level indication of whether the purpose should be included"""
+        db: Session = Session.object_session(self)
+        is_included: Optional[Row] = (
+            db.query(TCFPublisherOverrides.is_included)
+            .filter(TCFPublisherOverrides.purpose == self.purpose)
+            .first()
+        )
+        return is_included[0] if is_included else None
+
+    @_publisher_override_is_included_join.expression
+    def _publisher_override_is_included_join(cls) -> ScalarSelect:
+        """Returns the class-level indication of whether the purpose should be included"""
+        return (
+            select([TCFPublisherOverrides.is_included])
+            .where(TCFPublisherOverrides.purpose == cls.purpose)
+            .as_scalar()
+        )
+
+    @hybrid_property
+    def overridden_legal_basis_for_processing(self) -> Optional[str]:
+        """
+        Instance-level override of the legal basis for processing based on
+        publisher preferences.
+        """
+        if not (
+            CONFIG.consent.override_vendor_purposes
+            and self.flexible_legal_basis_for_processing
+        ):
+            return self.legal_basis_for_processing
+
+        if self._publisher_override_is_included_join is False:
+            # Overriding to False to match behavior of class-level override.
+            # Class-level override of legal basis to None removes Privacy Declaration
+            # from Experience
             return None
 
         return (
-            mapped_purpose.id
-            if MAPPED_PURPOSES.get(mapped_purpose.id) == mapped_purpose
-            else None
+            self._publisher_override_legal_basis_join
+            if self._publisher_override_legal_basis_join  # pylint: disable=using-constant-test
+            else self.legal_basis_for_processing
+        )
+
+    @overridden_legal_basis_for_processing.expression
+    def overridden_legal_basis_for_processing(
+        cls,
+    ) -> Union[InstrumentedAttribute, Case]:
+        """
+        Class-level override of the legal basis for processing based on
+        publisher preferences.
+        """
+        if not CONFIG.consent.override_vendor_purposes:
+            return cls.legal_basis_for_processing
+
+        return case(
+            [
+                (
+                    cls.flexible_legal_basis_for_processing.is_(False),
+                    cls.legal_basis_for_processing,
+                ),
+                (
+                    cls._publisher_override_is_included_join.is_(False),
+                    None,
+                ),
+                (
+                    cls._publisher_override_legal_basis_join.is_(None),
+                    cls.legal_basis_for_processing,
+                ),
+            ],
+            else_=cls._publisher_override_legal_basis_join,
         )
 
 

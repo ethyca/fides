@@ -57,10 +57,11 @@ NOT_AC_SYSTEM_FILTER: BooleanClauseList = or_(
     not_(System.vendor_id.startswith(AC_PREFIX)), System.vendor_id.is_(None)
 )
 CONSENT_LEGAL_BASIS_FILTER: BinaryExpression = (
-    PrivacyDeclaration.legal_basis_for_processing == LegalBasisForProcessingEnum.CONSENT
+    PrivacyDeclaration.overridden_legal_basis_for_processing
+    == LegalBasisForProcessingEnum.CONSENT
 )
 LEGITIMATE_INTEREST_LEGAL_BASIS_FILTER: BinaryExpression = (
-    PrivacyDeclaration.legal_basis_for_processing
+    PrivacyDeclaration.overridden_legal_basis_for_processing
     == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST
 )
 
@@ -151,7 +152,10 @@ class TCFExperienceContents(
 
 def get_matching_privacy_declarations(db: Session) -> Query:
     """Returns flattened system/privacy declaration records where we have a matching gvl data use AND the
-    legal basis for processing is "Consent" or "Legitimate interests"
+    overridden legal basis for processing is "Consent" or "Legitimate interests".
+
+    IMPORTANT - We are filtering against the "overridden_legal_basis_for_processing", not the defined "legal_basis_for_processing",
+    which takes into account potential Fides-wide publisher overrides.
 
     Only systems that meet this criteria should show up in the TCF overlay.
     """
@@ -171,22 +175,28 @@ def get_matching_privacy_declarations(db: Session) -> Query:
             System.privacy_policy.label("system_privacy_policy"),
             System.vendor_id,
             PrivacyDeclaration.data_use,
-            PrivacyDeclaration.legal_basis_for_processing,
+            PrivacyDeclaration.overridden_legal_basis_for_processing.label(  # pylint: disable=no-member
+                "legal_basis_for_processing"
+            ),
             PrivacyDeclaration.features,
             PrivacyDeclaration.retention_period,
             PrivacyDeclaration.flexible_legal_basis_for_processing,
+            PrivacyDeclaration.purpose,
+            PrivacyDeclaration.legal_basis_for_processing.label(
+                "original_legal_basis_for_processing"
+            ),
         )
         .outerjoin(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
         .filter(
             or_(
                 and_(
                     GVL_DATA_USE_FILTER,
-                    PrivacyDeclaration.legal_basis_for_processing
+                    PrivacyDeclaration.overridden_legal_basis_for_processing
                     == LegalBasisForProcessingEnum.CONSENT,
                 ),
                 and_(
                     GVL_DATA_USE_FILTER,
-                    PrivacyDeclaration.legal_basis_for_processing
+                    PrivacyDeclaration.overridden_legal_basis_for_processing
                     == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST,
                     NOT_AC_SYSTEM_FILTER,
                 ),
