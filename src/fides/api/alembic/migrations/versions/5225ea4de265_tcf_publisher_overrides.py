@@ -43,6 +43,10 @@ def upgrade():
         unique=False,
     )
 
+    op.create_unique_constraint(
+        "purpose_constraint", "tcf_publisher_overrides", ["purpose"]
+    )
+
 
 def downgrade():
     op.drop_index(
