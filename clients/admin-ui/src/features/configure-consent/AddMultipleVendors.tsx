@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 
 import { useFeatures } from "~/features/common/features";
 import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/v2/routes";
-import { UpgradeModal } from "~/features/common/UpgradeModal";
+import { UpgradeModal } from "~/features/common/modals/UpgradeModal";
 
 type Props = {
   onCancel: () => void;
