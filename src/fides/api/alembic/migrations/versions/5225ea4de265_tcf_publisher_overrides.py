@@ -17,7 +17,7 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        "tcfpublisheroverrides",
+        "tcf_publisher_overrides",
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column(
             "created_at",
@@ -37,8 +37,8 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_tcfpublisheroverrides_id"),
-        "tcfpublisheroverrides",
+        op.f("ix_tcf_publisher_overrides_id"),
+        "tcf_publisher_overrides",
         ["id"],
         unique=False,
     )
@@ -46,6 +46,6 @@ def upgrade():
 
 def downgrade():
     op.drop_index(
-        op.f("ix_tcfpublisheroverrides_id"), table_name="tcfpublisheroverrides"
+        op.f("ix_tcf_publisher_overrides_id"), table_name="tcf_publisher_overrides"
     )
-    op.drop_table("tcfpublisheroverrides")
+    op.drop_table("tcf_publisher_overrides")

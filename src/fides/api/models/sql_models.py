@@ -47,7 +47,7 @@ from fides.api.db.base_class import FidesBase as FideslibBase
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
-from fides.api.models.tcf_publisher_overrides import TCFPublisherOverrides
+from fides.api.models.tcf_publisher_overrides import TCFPublisherOverride
 from fides.config import get_config
 
 CONFIG = get_config()
@@ -555,8 +555,8 @@ class PrivacyDeclaration(Base):
         """Returns the instance-level overridden required legal basis"""
         db: Session = Session.object_session(self)
         required_legal_basis: Optional[Row] = (
-            db.query(TCFPublisherOverrides.required_legal_basis)
-            .filter(TCFPublisherOverrides.purpose == self.purpose)
+            db.query(TCFPublisherOverride.required_legal_basis)
+            .filter(TCFPublisherOverride.purpose == self.purpose)
             .first()
         )
         return required_legal_basis[0] if required_legal_basis else None
@@ -565,8 +565,8 @@ class PrivacyDeclaration(Base):
     def _publisher_override_legal_basis_join(cls) -> ScalarSelect:
         """Returns the class-level overridden required legal basis"""
         return (
-            select([TCFPublisherOverrides.required_legal_basis])
-            .where(TCFPublisherOverrides.purpose == cls.purpose)
+            select([TCFPublisherOverride.required_legal_basis])
+            .where(TCFPublisherOverride.purpose == cls.purpose)
             .as_scalar()
         )
 
@@ -575,8 +575,8 @@ class PrivacyDeclaration(Base):
         """Returns the instance-level indication of whether the purpose should be included"""
         db: Session = Session.object_session(self)
         is_included: Optional[Row] = (
-            db.query(TCFPublisherOverrides.is_included)
-            .filter(TCFPublisherOverrides.purpose == self.purpose)
+            db.query(TCFPublisherOverride.is_included)
+            .filter(TCFPublisherOverride.purpose == self.purpose)
             .first()
         )
         return is_included[0] if is_included else None
@@ -585,8 +585,8 @@ class PrivacyDeclaration(Base):
     def _publisher_override_is_included_join(cls) -> ScalarSelect:
         """Returns the class-level indication of whether the purpose should be included"""
         return (
-            select([TCFPublisherOverrides.is_included])
-            .where(TCFPublisherOverrides.purpose == cls.purpose)
+            select([TCFPublisherOverride.is_included])
+            .where(TCFPublisherOverride.purpose == cls.purpose)
             .as_scalar()
         )
 
