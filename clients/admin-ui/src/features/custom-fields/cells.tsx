@@ -13,7 +13,7 @@ import {
 import React from "react";
 import { CellProps } from "react-table";
 
-import ConfirmationModal from "~/features/common/ConfirmationModal";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import Restrict from "~/features/common/Restrict";
 import { EnableCell, MapCell, WrappedCell } from "~/features/common/table/";
 import {

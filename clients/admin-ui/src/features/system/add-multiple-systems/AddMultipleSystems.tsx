@@ -19,7 +19,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import ConfirmationModal from "common/ConfirmationModal";
 import { useFeatures } from "common/features";
 import {
   extractVendorSource,
@@ -45,6 +44,7 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { INDEX_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   DictSystems,
