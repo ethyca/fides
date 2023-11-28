@@ -51,7 +51,6 @@ def gong_runner(
     db,
     cache,
     gong_secrets,
-    gong_external_references,
     gong_erasure_external_references,
 ) -> ConnectorRunner:
     return ConnectorRunner(
@@ -59,6 +58,5 @@ def gong_runner(
         cache,
         "gong",
         gong_secrets,
-        external_references=gong_external_references,
         erasure_external_references=gong_erasure_external_references,
     )
