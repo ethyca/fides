@@ -109,14 +109,15 @@ const DataCategories = ({
         </tr>
       </thead>
       <tbody>
-        {declarations && declarations.map((id) => {
-          const category = dataCategories[id];
-          return (
-            <tr key={id}>
-              <td>{category ? category.name : ""}</td>
-            </tr>
-          );
-        })}
+        {declarations &&
+          declarations.map((id) => {
+            const category = dataCategories[id];
+            return (
+              <tr key={id}>
+                <td>{category ? category.name : ""}</td>
+              </tr>
+            );
+          })}
       </tbody>
     </table>
   );

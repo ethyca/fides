@@ -274,7 +274,7 @@ describe("Fides-js TCF", () => {
         checkDefaultExperienceRender();
       });
 
-      it.only("can render IAB TCF badge on vendors and split into their own lists", () => {
+      it("can render IAB TCF badge on vendors and split into their own lists", () => {
         const newVendor = {
           // Use the new vendor id scheme
           id: "gvl.1",
