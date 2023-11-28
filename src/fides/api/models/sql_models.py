@@ -32,10 +32,11 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, BYTEA
 from sqlalchemy.engine import Row
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession, async_object_session
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import Session, object_session, relationship
 from sqlalchemy.orm.attributes import InstrumentedAttribute
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, Select
 from sqlalchemy.sql.elements import Case
 from sqlalchemy.sql.selectable import ScalarSelect
 from sqlalchemy.sql.sqltypes import DateTime
@@ -551,15 +552,15 @@ class PrivacyDeclaration(Base):
         )
 
     @hybrid_property
-    def _publisher_override_legal_basis_join(self) -> Optional[str]:
+    async def _publisher_override_legal_basis_join(self) -> Optional[str]:
         """Returns the instance-level overridden required legal basis"""
-        db: Session = Session.object_session(self)
-        required_legal_basis: Optional[Row] = (
-            db.query(TCFPublisherOverride.required_legal_basis)
-            .filter(TCFPublisherOverride.purpose == self.purpose)
-            .first()
+        query: Select = select([TCFPublisherOverride.required_legal_basis]).where(
+            TCFPublisherOverride.purpose == self.purpose
         )
-        return required_legal_basis[0] if required_legal_basis else None
+        async_session: AsyncSession = async_object_session(self)
+        async with async_session.begin():
+            result = await async_session.execute(query)
+            return result.scalars().first()
 
     @_publisher_override_legal_basis_join.expression
     def _publisher_override_legal_basis_join(cls) -> ScalarSelect:
@@ -571,15 +572,15 @@ class PrivacyDeclaration(Base):
         )
 
     @hybrid_property
-    def _publisher_override_is_included_join(self) -> Optional[bool]:
+    async def _publisher_override_is_included_join(self) -> Optional[bool]:
         """Returns the instance-level indication of whether the purpose should be included"""
-        db: Session = Session.object_session(self)
-        is_included: Optional[Row] = (
-            db.query(TCFPublisherOverride.is_included)
-            .filter(TCFPublisherOverride.purpose == self.purpose)
-            .first()
+        query: Select = select([TCFPublisherOverride.is_included]).where(
+            TCFPublisherOverride.purpose == self.purpose
         )
-        return is_included[0] if is_included else None
+        async_session: AsyncSession = async_object_session(self)
+        async with async_session.begin():
+            result = await async_session.execute(query)
+            return result.scalars().first()
 
     @_publisher_override_is_included_join.expression
     def _publisher_override_is_included_join(cls) -> ScalarSelect:
@@ -591,7 +592,7 @@ class PrivacyDeclaration(Base):
         )
 
     @hybrid_property
-    def overridden_legal_basis_for_processing(self) -> Optional[str]:
+    async def overridden_legal_basis_for_processing(self) -> Optional[str]:
         """
         Instance-level override of the legal basis for processing based on
         publisher preferences.
@@ -602,15 +603,21 @@ class PrivacyDeclaration(Base):
         ):
             return self.legal_basis_for_processing
 
-        if self._publisher_override_is_included_join is False:
+        is_included: Optional[bool] = await self._publisher_override_is_included_join
+
+        if is_included is False:
             # Overriding to False to match behavior of class-level override.
             # Class-level override of legal basis to None removes Privacy Declaration
             # from Experience
             return None
 
+        overridden_legal_basis: Optional[str] = (
+            await self._publisher_override_legal_basis_join
+        )
+
         return (
-            self._publisher_override_legal_basis_join
-            if self._publisher_override_legal_basis_join  # pylint: disable=using-constant-test
+            overridden_legal_basis
+            if overridden_legal_basis  # pylint: disable=using-constant-test
             else self.legal_basis_for_processing
         )
 

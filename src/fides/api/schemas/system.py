@@ -19,6 +19,10 @@ class PrivacyDeclarationResponse(PrivacyDeclaration):
     )
     cookies: Optional[List[Cookies]] = []
 
+    legal_basis_for_processing_override: Optional[str] = Field(
+        description="Global overrides for this purpose's legal basis for processing if applicable.  Defaults to the legal_basis_for_processing otherwise."
+    )
+
 
 class BasicSystemResponse(System):
     """

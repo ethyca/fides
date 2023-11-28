@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from fastapi import Depends, HTTPException, Response, Security
 from fastapi_pagination import Page, Params
@@ -258,6 +258,10 @@ async def update(
     updated_system, _ = await update_system(
         resource, db, current_user.id if current_user else None
     )
+    await supplement_privacy_declaration_response_with_legal_basis_override(
+        updated_system
+    )
+
     return updated_system
 
 
@@ -353,7 +357,11 @@ async def create(
     Override `System` create/POST to handle `.privacy_declarations` defined inline,
     for backward compatibility and ease of use for API users.
     """
-    return await create_system(resource, db, current_user.id if current_user else None)
+    created = await create_system(
+        resource, db, current_user.id if current_user else None
+    )
+    await supplement_privacy_declaration_response_with_legal_basis_override(created)
+    return created
 
 
 @SYSTEM_ROUTER.get(
@@ -371,7 +379,10 @@ async def ls(  # pylint: disable=invalid-name
     db: AsyncSession = Depends(get_async_db),
 ) -> List:
     """Get a list of all of the resources of this type."""
-    return await list_resource(System, db)
+    systems = await list_resource(System, db)
+    for system in systems:
+        await supplement_privacy_declaration_response_with_legal_basis_override(system)
+    return systems
 
 
 @SYSTEM_ROUTER.get(
@@ -389,7 +400,10 @@ async def get(
     db: AsyncSession = Depends(get_async_db),
 ) -> Dict:
     """Get a resource by its fides_key."""
-    return await get_resource_with_custom_fields(System, fides_key, db)
+
+    resp = await get_resource_with_custom_fields(System, fides_key, db)
+    await supplement_privacy_declaration_response_with_legal_basis_override(resp)
+    return resp
 
 
 @SYSTEM_CONNECTION_INSTANTIATE_ROUTER.post(
@@ -412,3 +426,16 @@ def instantiate_connection_from_template(
 
     system = get_system(db, fides_key)
     return instantiate_connection(db, saas_connector_type, template_values, system)
+
+
+async def supplement_privacy_declaration_response_with_legal_basis_override(resp: Union[Dict, System]) -> None:
+    """At runtime, adds a "legal_basis_for_processing_override" to each PrivacyDeclaration"""
+
+    for privacy_declaration in (
+        resp.get("privacy_declarations")
+        if isinstance(resp, Dict)
+        else resp.privacy_declarations
+    ):
+        privacy_declaration.legal_basis_for_processing_override = (
+            await privacy_declaration.overridden_legal_basis_for_processing
+        )
