@@ -9,9 +9,9 @@ saas_config:
     - name: domain
       default_value: api.gong.io
     - name: access_key
-      description: The access key. Details on how to find this are availble here https://app.gong.io/settings/api/documentation#overview
+      description: The access key. Details on how to find this are available here https://app.gong.io/settings/api/documentation#overview
     - name: access_key_secret
-      description: The access key secret. Details on how to find this are availble here https://app.gong.io/settings/api/documentation#overview
+      description: The access key secret. Details on how to find this are available here https://app.gong.io/settings/api/documentation#overview
       sensitive: True
 
   client_config:

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generator
+from typing import Any, Dict
 
 import pydash
 import pytest
@@ -26,6 +26,11 @@ def gong_secrets(saas_config) -> Dict[str, Any]:
 @pytest.fixture(scope="session")
 def gong_identity_email(saas_config) -> str:
     return pydash.get(saas_config, "gong.identity_email") or secrets["identity_email"]
+
+
+@pytest.fixture(scope="session")
+def gong_identity_name(saas_config) -> str:
+    return pydash.get(saas_config, "gong.identity_name") or secrets["identity_name"]
 
 
 @pytest.fixture
