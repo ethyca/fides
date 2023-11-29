@@ -29,10 +29,8 @@ from fides.api.schemas.tcf import (
     TCFVendorLegitimateInterestsRecord,
     TCFVendorRelationships,
 )
+from fides.api.util.tcf import AC_PREFIX
 from fides.config import CONFIG
-
-AC_PREFIX = "gacp."
-GVL_PREFIX = "gvl."
 
 PURPOSE_DATA_USES: List[str] = []
 for purpose in MAPPED_PURPOSES.values():
