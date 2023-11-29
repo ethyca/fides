@@ -99,7 +99,7 @@ const DataCategories = ({
   }
 
   // @ts-ignore this type doesn't exist in v2.2 but does in v3
-  const declarations: GvlDataDeclarations = gvlVendor.dataDeclaration;
+  const declarations: GvlDataDeclarations | undefined = gvlVendor.dataDeclaration;
 
   return (
     <table className="fides-vendor-details-table">
