@@ -393,7 +393,7 @@ export type OverrideOptions = {
   fides_tcf_gdpr_applies: boolean;
 };
 
-export type FidesOptionOverrides = Pick<
+export type FidesOptionsOverrides = Pick<
   FidesOptions,
   | "fidesString"
   | "fidesDisableSaveApi"
@@ -403,8 +403,8 @@ export type FidesOptionOverrides = Pick<
 >;
 
 export type FidesOverrides = {
-  overrideOptions: Partial<FidesOptionOverrides>;
-  overrideConsentPrefs: GetPreferencesFnResp | null;
+  optionsOverrides: Partial<FidesOptionsOverrides>;
+  consentPrefsOverrides: GetPreferencesFnResp | null;
 };
 
 export enum ButtonType {
