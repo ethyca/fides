@@ -30,8 +30,8 @@ class SecuritySettings(FidesSettings):
     app_encryption_key: str = Field(
         default="", description="The key used to sign Fides API access tokens."
     )
-    cors_origins: List[AnyUrl] = Field(
-        default_factory=list,
+    cors_origins: List[str] = Field(
+        default=[],
         description="A list of client addresses allowed to communicate with the Fides webserver.",
     )
     cors_origin_regex: Optional[Pattern] = Field(

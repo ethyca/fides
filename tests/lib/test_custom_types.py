@@ -1,6 +1,6 @@
 import pytest
 
-from fides.api.custom_types import PhoneNumber, SafeStr
+from fides.api.custom_types import validate_phone_number, validate_safe_str
 
 DANGEROUS_STRINGS = [
     "<svg onload=alert(1)>",
@@ -127,7 +127,7 @@ class TestSafeStr:
         Validate that whatever dangerous strings are being input,
         a sanitized/changed string is being passed back.
         """
-        result = SafeStr.validate(dangerous_string)
+        result = validate_safe_str(dangerous_string)
         assert result != dangerous_string
 
 
@@ -137,10 +137,10 @@ class TestPhoneNumber:
     def test_invalid_phone_numbers(self, phone_number: str) -> None:
         """Test that a list of invalid phone numbers is caught."""
         with pytest.raises(ValueError):
-            PhoneNumber.validate(phone_number)
+            validate_phone_number(phone_number)
 
     @pytest.mark.parametrize("phone_number", VALID_PHONE_NUMBER_LIST)
     def test_valid_phone_numbers(self, phone_number: str) -> None:
         """Test that a list of valid phone numbers doesn't throw any errors."""
-        validated_number = PhoneNumber.validate(phone_number)
+        validated_number = validate_phone_number(phone_number)
         assert validated_number == phone_number

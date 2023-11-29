@@ -181,7 +181,7 @@ def test_database_url_test_mode_disabled() -> None:
         user="postgres",
         password="fides",
         server="fides-db",
-        port="5432",
+        port=5432,
         db="database",
         test_db="test_database",
     )

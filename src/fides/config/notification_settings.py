@@ -29,7 +29,6 @@ class NotificationSettings(FidesSettings):
 
     @field_validator("notification_service_type", mode="before")
     @classmethod
-    @classmethod
     def validate_notification_service_type(cls, value: Optional[str]) -> Optional[str]:
         """Ensure the provided type is a valid value."""
         if value:
