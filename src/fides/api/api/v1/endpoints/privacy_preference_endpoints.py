@@ -172,7 +172,8 @@ def _supplement_request_data_from_request_headers(
         return origin, experience_config_history_identifier
 
     request_headers = request.headers
-    ip_address: Optional[str] = request.client.host if request.client else None
+
+    ip_address: Optional[str] = get_ip_address(request)
     user_agent: Optional[str] = request_headers.get("User-Agent")
     url_recorded: Optional[str] = request_headers.get("Referer")
     request_origin, experience_config_history_id = get_request_origin_and_config()
@@ -185,6 +186,26 @@ def _supplement_request_data_from_request_headers(
         url_recorded=url_recorded,
         user_agent=user_agent,
     )
+
+
+def get_ip_address(request: Request) -> Optional[str]:
+    """Get client ip, preferring x-forwarded-for if it exists, otherwise, dropping back to
+    request.client.host"""
+    x_forwarded_for = (
+        request.headers.get("x-forwarded-for") if request.headers else None
+    )
+
+    client_ip: Optional[str] = None
+    if x_forwarded_for:
+        try:
+            client_ip = x_forwarded_for.split(",")[0].strip()
+        except AttributeError:
+            pass
+
+    if not client_ip:
+        client_ip = request.client.host if request.client else None
+
+    return client_ip
 
 
 def update_request_body_for_consent_served_or_saved(

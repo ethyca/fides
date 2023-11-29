@@ -51,6 +51,18 @@ IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 VERSION = fides.__version__
 
 
+def warn_root_user_enabled() -> None:
+    """
+    Log a startup warning if root user is enabled.
+    Extracted as a function because this may need to be done in multiple places,
+    depending on how the server is started.
+    """
+    if CONFIG.security.root_username or CONFIG.security.oauth_root_client_id:
+        logger.warning(
+            "Root Username & Password are configured and can be used to login as a root user. If unexpected, review security settings (FIDES__SECURITY__ROOT_USERNAME and FIDES__SECURITY__ROOT_PASSWORD)"
+        )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Run all of the required setup steps for the webserver.
@@ -92,10 +104,12 @@ async def lifespan(app: FastAPI):
     if not CONFIG.logging.serialization:
         logger.info(FIDES_ASCII_ART)
 
+    warn_root_user_enabled()
+
     logger.info("Fides startup complete! v{}", VERSION)
     startup_time = round(perf_counter() - start_time, 3)
     logger.info("Server setup completed in {} seconds", startup_time)
-    yield  # Everything that happens _before_ the 'yield' is before the server startup.
+    yield  # Everything before the 'yield' is considered pre-start setup
 
 
 app = create_fides_app(lifespan=lifespan)
@@ -302,6 +316,9 @@ def start_webserver(port: int = 8080) -> None:
         server.config.port,
         server.config.log_level,
     )
+
+    warn_root_user_enabled()
+
     server.run()
 
 
