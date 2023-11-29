@@ -19,6 +19,7 @@ import ExternalLink from "../ExternalLink";
 import RecordsList from "./RecordsList";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import RadioGroup from "./RadioGroup";
+import PagingButtons, { usePaging } from "../PagingButtons";
 
 const VendorDetails = ({
   label,
@@ -225,31 +226,46 @@ const TcfVendors = ({
   const [activeLegalBasisOption, setActiveLegalBasisOption] = useState(
     LEGAL_BASIS_OPTIONS[0]
   );
+
+  const filteredVendors = useMemo(() => {
+    const legalBasisFiltered =
+      activeLegalBasisOption.value === LegalBasisEnum.CONSENT
+        ? vendors.filter((v) => v.isConsent)
+        : vendors.filter((v) => v.isLegint);
+    // Put "other vendors" last in the list
+    return [
+      ...legalBasisFiltered.filter((v) => v.isGvl),
+      ...legalBasisFiltered.filter((v) => !v.isGvl),
+    ];
+  }, [activeLegalBasisOption, vendors]);
+
+  const { activeChunk, totalPages, ...paging } = usePaging(filteredVendors);
+
   const activeData: {
     gvlVendors: VendorRecord[];
     otherVendors: VendorRecord[];
     enabledIds: string[];
     modelType: keyof EnabledIds;
   } = useMemo(() => {
-    const gvlVendors = vendors.filter((v) => v.isGvl);
-    const otherVendors = vendors.filter((v) => !v.isGvl);
+    const gvlVendors = activeChunk.filter((v) => v.isGvl);
+    const otherVendors = activeChunk.filter((v) => !v.isGvl);
     if (activeLegalBasisOption.value === LegalBasisEnum.CONSENT) {
       return {
-        gvlVendors: gvlVendors.filter((v) => v.isConsent),
-        otherVendors: otherVendors.filter((v) => v.isConsent),
+        gvlVendors,
+        otherVendors,
         enabledIds: enabledVendorConsentIds,
         modelType: "vendorsConsent",
       };
     }
     return {
-      gvlVendors: gvlVendors.filter((v) => v.isLegint),
-      otherVendors: otherVendors.filter((v) => v.isLegint),
+      gvlVendors,
+      otherVendors,
       enabledIds: enabledVendorLegintIds,
       modelType: "vendorsLegint",
     };
   }, [
     activeLegalBasisOption,
-    vendors,
+    activeChunk,
     enabledVendorConsentIds,
     enabledVendorLegintIds,
   ]);
@@ -286,6 +302,7 @@ const TcfVendors = ({
           <ToggleChild vendor={vendor} experience={experience} />
         )}
       />
+      <PagingButtons {...paging} />
     </div>
   );
 };
