@@ -15,9 +15,10 @@ secrets = get_secrets("appsflyer")
 @pytest.fixture(scope="session")
 def appsflyer_secrets(saas_config) -> Dict[str, Any]:
     return {
-        "domain": pydash.get(saas_config, "appsflyer.domain")
-        or secrets["domain"]
+        "domain": pydash.get(saas_config, "appsflyer.domain") or secrets["domain"],
         # add the rest of your secrets here
+        "email": pydash.get(saas_config, "appsflyer.email") or secrets["email"],
+        "token": pydash.get(saas_config, "appsflyer.token") or secrets["token"],
     }
 
 
