@@ -39,7 +39,6 @@ class LoggingSettings(FidesSettings):
 
     @field_validator("destination", mode="before")
     @classmethod
-    @classmethod
     def get_destination(cls, value: str) -> str:
         """
         Print logs to sys.stdout, unless a valid file path is specified.
@@ -47,7 +46,6 @@ class LoggingSettings(FidesSettings):
         return value if os.path.exists(value) else ""
 
     @field_validator("level", mode="before")
-    @classmethod
     @classmethod
     def validate_log_level(cls, value: str) -> str:
         """Ensure the provided LEVEL is a valid value."""
@@ -72,7 +70,6 @@ class LoggingSettings(FidesSettings):
         return value
 
     @field_validator("serialization", mode="before")
-    @classmethod
     @classmethod
     def get_serialization(cls, value: str) -> str:
         """

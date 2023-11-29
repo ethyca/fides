@@ -3,7 +3,7 @@ This module auto-generates a documented config from the config source.
 """
 import os
 from textwrap import wrap
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set, Tuple, Any
 
 import toml
 from click import echo
@@ -31,7 +31,9 @@ def get_nested_settings(config: FidesConfig) -> Dict[str, BaseSettings]:
     """
     nested_settings = {
         settings_name
-        for settings_name, settings_info in config.schema()["properties"].items()
+        for settings_name, settings_info in config.model_json_schema()[
+            "properties"
+        ].items()
         if not settings_info.get("type")
     }
 
@@ -44,7 +46,7 @@ def get_nested_settings(config: FidesConfig) -> Dict[str, BaseSettings]:
 
 def format_value_for_toml(value: str, value_type: str) -> str:
     """Format the value into valid TOML."""
-    if value_type == "string":
+    if value_type.__contains__("string"):
         return f'"{value}"'
     if value_type == "boolean":
         return str(value).lower()
@@ -53,26 +55,29 @@ def format_value_for_toml(value: str, value_type: str) -> str:
     return value
 
 
-def build_field_documentation(field_name: str, field_info: Dict[str, str]) -> str:
-    """Build a docstring for an individual docstring."""
-    try:
-        field_type = field_info["type"]
-        field_description = "\n".join(
-            wrap(
-                text=field_info["description"],
-                width=71,
-                subsequent_indent="# ",
-                initial_indent="# ",
-            )
+def build_field_documentation(field_name: str, field_info: Dict[str, Any]) -> str:
+    """
+    Build a docstring for an individual docstring.
+
+    This requires some deeper knowlege of Pydantic internals and is deeply affected when the Pydantic API changes.
+    """
+
+    get_multiple_types = lambda: " or ".join(
+        [str(x.get("type")) for x in field_info["anyOf"]]
+    )
+    field_type = field_info.get("type") or get_multiple_types()
+
+    field_description = "\n".join(
+        wrap(
+            text=field_info["description"],
+            width=71,
+            subsequent_indent="# ",
+            initial_indent="# ",
         )
-        field_default = format_value_for_toml(field_info.get("default", ""), field_type)
-        doc_string = (
-            f"{field_description}\n{field_name} = {field_default} # {field_type}\n"
-        )
-        return doc_string
-    except KeyError:
-        print(field_info)
-        raise SystemExit(f"!Failed to parse field: {field_name}!")
+    )
+    field_default = format_value_for_toml(field_info.get("default", ""), field_type)
+    doc_string = f"{field_description}\n{field_name} = {field_default} # {field_type}\n"
+    return doc_string
 
 
 def build_section_header(title: str) -> str:
@@ -110,8 +115,9 @@ def convert_settings_to_toml_docs(settings_name: str, settings: BaseSettings) ->
 
     The string is expected to be valid TOML.
     """
-    settings_schema = settings.schema()
-    included_keys = set(settings.dict().keys())
+    assert settings, f"Settings with name '{settings_name}' is invalid!"
+    settings_schema = settings.model_json_schema()
+    included_keys = set(settings.model_dump().keys())
     title_header = build_section_header(settings_name)
 
     # Build the Section docstring
@@ -148,7 +154,20 @@ def build_config_header() -> str:
 
 def validate_generated_config(config_docs: str) -> None:
     """Run a few checks on the generated configuration docs."""
-    toml_docs = toml.loads(config_docs)
+    for line in config_docs.split("\n"):
+        try:
+            toml.loads(line)
+        except toml.decoder.TomlDecodeError as exc:
+            raise SystemExit(f"{exc.msg} - {line}")
+
+    try:
+        toml_docs = toml.loads(config_docs)
+    except toml.decoder.TomlDecodeError as exc:
+        print("> Dumping the config docs string:")
+        print(config_docs)
+        print(exc.msg)
+        raise SystemExit("> Failed to parse TOML from the config docs string!")
+
     build_config(toml_docs)
     if "# TODO" in config_docs:
         raise ValueError(
@@ -167,7 +186,7 @@ def generate_config_docs(
     """
 
     # Create the docs for the special "object" fields
-    schema_properties: Dict[str, Dict] = config.schema()["properties"]
+    schema_properties: Dict[str, Dict] = config.model_json_schema()["properties"]
     object_fields = {
         settings_name: settings_info
         for settings_name, settings_info in schema_properties.items()

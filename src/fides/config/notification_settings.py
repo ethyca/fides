@@ -10,8 +10,8 @@ ENV_PREFIX = "FIDES__NOTIFICATIONS__"
 class NotificationSettings(FidesSettings):
     """Configuration settings for Data Subject and/or Data Processor notifications."""
 
-    notification_service_type: Optional[str] = Field(
-        default=None,
+    notification_service_type: str = Field(
+        default="",
         description="Sets the notification service type used to send notifications. Accepts mailchimp_transactional, mailgun, twilio_sms, or twilio_email.",
     )
     send_request_completion_notification: bool = Field(
