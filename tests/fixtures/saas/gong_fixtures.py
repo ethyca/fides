@@ -34,19 +34,6 @@ def gong_erasure_identity_email() -> str:
 
 
 @pytest.fixture
-def gong_erasure_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def gong_erasure_data(
-    gong_erasure_identity_email: str,
-) -> Generator:
-    # create the data needed for erasure tests here
-    yield {}
-
-
-@pytest.fixture
 def gong_runner(
     db,
     cache,
