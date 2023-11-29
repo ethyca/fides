@@ -33,7 +33,7 @@ export const usePaging = <T,>(items: T[]): PagingData<T> => {
     }
   };
 
-  const rangeStart = currentPage === 1 ? 1 : (currentPage - 1) * PAGE_SIZE;
+  const rangeStart = currentPage === 1 ? 1 : (currentPage - 1) * PAGE_SIZE + 1;
   const rangeEnd =
     currentPage === totalPages ? items.length : currentPage * PAGE_SIZE;
 

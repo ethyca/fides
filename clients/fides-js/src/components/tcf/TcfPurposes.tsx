@@ -118,6 +118,8 @@ const TcfPurposes = ({
           onChange({ newEnabledIds, modelType: activeData.purposeModelType })
         }
         renderToggleChild={(purpose) => <PurposeDetails purpose={purpose} />}
+        // This key forces a rerender when legal basis changes, which allows paging to reset properly
+        key={`purpose-record-${activeLegalBasisOption.value}`}
       />
       <RecordsList<TCFSpecialPurposeRecord>
         title="Special purposes"
@@ -128,6 +130,7 @@ const TcfPurposes = ({
         }
         renderToggleChild={(p) => <PurposeDetails purpose={p} />}
         hideToggles
+        key={`special-purpose-record-${activeLegalBasisOption.value}`}
       />
     </div>
   );
