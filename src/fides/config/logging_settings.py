@@ -45,7 +45,7 @@ class LoggingSettings(FidesSettings):
         """
         return value if os.path.exists(value) else ""
 
-    @field_validator("level", mode="before")
+    @field_validator("level", mode="after")
     @classmethod
     def validate_log_level(cls, value: str) -> str:
         """Ensure the provided LEVEL is a valid value."""

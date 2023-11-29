@@ -1,8 +1,8 @@
 policy:
-
 - fides_key: data_sharing_policy
-  name: Data Sharing
   organization_fides_key: default_organization
+  tags: null
+  name: Data Sharing
   description: The privacy policy that governs sharing of data with third parties.
   rules:
   - name: Disallow Third-Party Marketing
@@ -18,4 +18,3 @@ policy:
       matches: ANY
       values:
       - customer
-    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

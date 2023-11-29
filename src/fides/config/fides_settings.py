@@ -2,27 +2,28 @@
 
 # pylint: disable=C0115,C0116, E0213
 
-from typing import Tuple
+from typing import Tuple, Type
 
-from pydantic import Extra
-from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
 
 
 class FidesSettings(BaseSettings):
     """Class used as a base model for configuration subsections."""
 
-    # TODO[pydantic]: We couldn't refactor this class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config:
-        # Need to allow extras because the inheriting class will have more info
-        extra = Extra.allow
+    model_config = SettingsConfigDict(extra="allow")
 
-        @classmethod
-        def customise_sources(
-            cls,
-            init_settings: PydanticBaseSettingsSource,
-            env_settings: PydanticBaseSettingsSource,
-            file_secret_settings: PydanticBaseSettingsSource,
-        ) -> Tuple[PydanticBaseSettingsSource, ...]:
-            """Set environment variables to take precedence over init values."""
-            return env_settings, init_settings, file_secret_settings
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        setting_cls: Type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+        """Set environment variables to take precedence over init values."""
+        return env_settings, init_settings, file_secret_settings
