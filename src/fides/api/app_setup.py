@@ -107,7 +107,6 @@ def create_fides_app(
         )
 
     for router in routers:
-        logger.debug("Adding router: {}", router.__str__())
         fastapi_app.include_router(router)
 
     if security_env == "dev":

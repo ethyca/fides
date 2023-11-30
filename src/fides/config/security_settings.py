@@ -4,7 +4,7 @@
 from typing import Dict, List, Optional, Pattern, Tuple, Union
 
 import validators
-from pydantic import AnyUrl, ConfigDict, Field, field_validator, validator
+from pydantic import ConfigDict, Field, field_validator, validator
 from slowapi.wrappers import parse_many  # type: ignore
 
 from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt

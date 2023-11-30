@@ -42,7 +42,7 @@ async def create_resource(
             already_exists_error = errors.AlreadyExistsError(
                 sql_model.__name__, resource_dict["fides_key"]
             )
-            log.bind(error=already_exists_error.detail["error"]).info(  # type: ignore[index]
+            log.bind(error=already_exists_error.detail["error"]).error(  # type: ignore[index]
                 "Failed to insert resource"
             )
             raise already_exists_error
@@ -52,11 +52,10 @@ async def create_resource(
                 log.debug("Creating resource")
                 query = _insert(sql_model).values(resource_dict)
                 await async_session.execute(query)
-            except SQLAlchemyError:
+            except SQLAlchemyError as caught_err:
                 sa_error = errors.QueryError()
-                log.bind(error=sa_error.detail["error"]).info(  # type: ignore[index]
-                    "Failed to create resource"
-                )
+                err_message = caught_err.args[0]
+                log.bind(error=err_message).error("Failed to create resource")
                 raise sa_error
 
         return await get_resource(sql_model, resource_dict["fides_key"], async_session)
