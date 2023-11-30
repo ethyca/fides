@@ -115,7 +115,7 @@ class DatabaseSettings(FidesSettings):
                 password=values["password"],
                 host=values["server"],
                 port=values.get("port"),
-                path=f"/{db_name or ''}",
+                path=f"{db_name or ''}",
                 query=urlencode(
                     cast(Dict, values["params"]), quote_via=quote, safe="/"
                 ),
@@ -152,7 +152,7 @@ class DatabaseSettings(FidesSettings):
                 password=values["password"],
                 host=values["server"],
                 port=values.get("port"),
-                path=f"/{db_name or ''}",
+                path=f"{db_name or ''}",
                 query=urlencode(params, quote_via=quote, safe="/"),
             )
         )
@@ -173,7 +173,7 @@ class DatabaseSettings(FidesSettings):
                 password=values["password"],
                 host=values["server"],
                 port=values.get("port"),
-                path=f"/{values.get('db') or ''}",
+                path=f"{values.get('db') or ''}",
                 query=urlencode(
                     cast(Dict, values["params"]), quote_via=quote, safe="/"
                 ),
@@ -194,7 +194,7 @@ class DatabaseSettings(FidesSettings):
                 password=values["password"],
                 host=values["server"],
                 port=values["port"],
-                path=f"/{values.get('test_db') or ''}",
+                path=f"{values.get('test_db') or ''}",
                 query=urlencode(
                     cast(Dict, values["params"]), quote_via=quote, safe="/"
                 ),

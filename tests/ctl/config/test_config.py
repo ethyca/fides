@@ -369,7 +369,7 @@ class TestBuildingDatabaseValues:
             user="postgres",
             password="fides",
             server="fides-db",
-            port="5432",
+            port=5432,
             db="database",
             params={
                 "sslmode": "verify-full",
@@ -440,7 +440,7 @@ class TestBuildingRedisURLs:
 
     def test_configured(self) -> None:
         redis_settings = RedisSettings(
-            db_index=1, host="myredis", port="6380", password="supersecret"
+            db_index=1, host="myredis", port=6380, password="supersecret"
         )
         assert redis_settings.connection_url == "redis://:supersecret@myredis:6380/1"
 
@@ -491,5 +491,5 @@ def test_get_config_ac_mode_without_tc_mode() -> None:
 
     assert (
         exc.value.errors()[0]["msg"]
-        == "AC cannot be enabled unless TCF mode is also enabled."
+        == "Value error, AC cannot be enabled unless TCF mode is also enabled."
     )

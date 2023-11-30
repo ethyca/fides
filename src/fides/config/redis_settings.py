@@ -68,9 +68,10 @@ class RedisSettings(FidesSettings):
         default="",
         description="A full connection URL to the Redis cache. If not specified, this URL is automatically assembled from the host, port, password and db_index specified above.",
         exclude=True,
+        validate_default=True,
     )
 
-    @field_validator("connection_url", mode="before")
+    @field_validator("connection_url", mode="after")
     @classmethod
     def assemble_connection_url(
         cls,
@@ -78,7 +79,7 @@ class RedisSettings(FidesSettings):
         info: ValidationInfo,
     ) -> str:
         """Join Redis connection credentials into a connection string"""
-        if isinstance(v, str):
+        if isinstance(v, str) and v:
             # If the whole URL is provided via the config, preference that
             return v
 

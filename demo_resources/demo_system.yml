@@ -8,6 +8,7 @@ system:
     ingress:
       - fides_key: demo_marketing_system
         type: system
+        data_categories:
     third_country_transfers:
       - USA
       - CAN
