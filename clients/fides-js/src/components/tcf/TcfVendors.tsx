@@ -98,8 +98,8 @@ const DataCategories = ({
     return null;
   }
 
-  // @ts-ignore this type doesn't exist in v2.2 but does in v3
   const declarations: GvlDataDeclarations | undefined =
+    // @ts-ignore this type doesn't exist in v2.2 but does in v3
     gvlVendor.dataDeclaration;
 
   return (
