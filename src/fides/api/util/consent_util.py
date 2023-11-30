@@ -683,7 +683,7 @@ def create_default_tcf_purpose_overrides_on_startup(
     The defaults have no effect on what is returned in the TCF Privacy Experience, and this functionality needs
     to be enabled via a config variable to be used at all.
     """
-    publisher_overrides_created: List[TCFPurposeOverride] = []
+    purpose_override_resources_created: List[TCFPurposeOverride] = []
 
     for purpose_id in range(1, 12):
         if (
@@ -691,10 +691,10 @@ def create_default_tcf_purpose_overrides_on_startup(
             .filter(TCFPurposeOverride.purpose == purpose_id)
             .first()
         ):
-            publisher_overrides_created.append(
+            purpose_override_resources_created.append(
                 TCFPurposeOverride.create(
                     db, data={"purpose": purpose_id, "is_included": True}
                 )
             )
 
-    return publisher_overrides_created
+    return purpose_override_resources_created

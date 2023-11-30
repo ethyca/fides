@@ -1656,11 +1656,12 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
     @pytest.mark.usefixtures(
         "enable_override_vendor_purposes", "purpose_three_consent_publisher_override"
     )
-    def test_determine_relevant_systems_for_with_publisher_override(
+    def test_determine_relevant_systems_for_with_purpose_override(
         self,
         db,
         system_with_no_uses,
     ):
+        """Relevant system calculation takes into account legal basis overrides"""
         # Add data use to system that corresponds to purpose 3.  Also has LI legal basis, but override sets it
         # to Consent
         pd_1 = PrivacyDeclaration.create(

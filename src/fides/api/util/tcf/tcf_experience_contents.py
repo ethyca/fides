@@ -204,7 +204,7 @@ def get_tcf_base_query_and_filters(
 
     Rows show up corresponding to systems with GVL data uses and Legal bases of Consent or Legitimate interests.
     AC systems are also included here.
-    Publisher overrides are applied at this stage which may suppress purposes or toggle the legal basis.
+    Purpose overrides are applied at this stage which may suppress purposes or toggle the legal basis.
     """
     legal_basis_override_subquery = get_legal_basis_override_subquery(db)
 

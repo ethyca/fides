@@ -1,5 +1,5 @@
 # type: ignore
-# pylint: disable=comparison-with-callable,no-member
+# pylint: disable=comparison-with-callable
 """
 Contains all of the SqlAlchemy models for the Fides resources.
 """

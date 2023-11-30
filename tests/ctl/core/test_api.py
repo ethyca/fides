@@ -633,8 +633,8 @@ class TestSystemCreate:
 
         for i, decl in enumerate(system.privacy_declarations):
             for field in PrivacyDeclarationResponse.__fields__:
-                decl_val = getattr(decl, field, None)
-                if hasattr(decl, field) and isinstance(decl_val, typing.Hashable):
+                decl_val = getattr(decl, field)
+                if isinstance(decl_val, typing.Hashable):
                     assert decl_val == json_results["privacy_declarations"][i][field]
 
         assert len(system.privacy_declarations) == 2
@@ -2705,10 +2705,50 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
     @pytest.mark.usefixtures(
         "enable_override_vendor_purposes",
     )
+    async def test_legal_basis_is_inflexible(self, async_session_temp, db):
+        """Purpose is overridden but we can't apply because the legal basis is specified as inflexible"""
+        resource = SystemSchema(
+            fides_key=str(uuid4()),
+            organization_fides_key="default_organization",
+            name=f"test_system_1_{uuid4()}",
+            system_type="test",
+            privacy_declarations=[
+                PrivacyDeclarationSchema(
+                    name="Collect data for content performance",
+                    data_use="personalize.content.profiling",
+                    legal_basis_for_processing="Consent",
+                    flexible_legal_basis_for_processing=False,
+                    data_categories=["user"],
+                )
+            ],
+        )
+
+        system = await create_system(
+            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+        )
+        pd = system.privacy_declarations[0]
+
+        constraint = TCFPurposeOverride.create(
+            db,
+            data={
+                "purpose": 5,
+                "is_included": True,
+                "required_legal_basis": "Legitimate interests",
+            },
+        )
+
+        assert pd.purpose == 5
+        assert await pd.get_purpose_legal_basis_override() == "Consent"
+
+        constraint.delete(db)
+
+    @pytest.mark.usefixtures(
+        "enable_override_vendor_purposes",
+    )
     async def test_publisher_override_defined_but_no_required_legal_basis_specified(
         self, db, async_session_temp
     ):
-        """Purpose override is defined, but no legal basis override"""
+        """Purpose override *object* is defined, but no legal basis override"""
         resource = SystemSchema(
             fides_key=str(uuid4()),
             organization_fides_key="default_organization",
@@ -2748,8 +2788,7 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
     async def test_publisher_override_defined_with_required_legal_basis_specified(
         self, async_session_temp, db
     ):
-        """Purpose override is defined, but no legal basis override"""
-
+        """Purpose override specified along with the requirements to apply that override"""
         resource = SystemSchema(
             fides_key=str(uuid4()),
             organization_fides_key="default_organization",
