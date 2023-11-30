@@ -877,7 +877,7 @@ div#fides-banner-inner .fides-privacy-policy {
 }
 
 /* Vendor info (initial layer) */
-.fides-vendor-info {
+.fides-vendor-info-banner {
   display: flex;
   flex-direction: row;
   padding: 16px 12px;
@@ -887,6 +887,11 @@ div#fides-banner-inner .fides-privacy-policy {
   top: 0;
   gap: 30px;
   margin-bottom: 16px;
+}
+
+.fides-vendor-info {
+  display: flex;
+  align-items: center;
 }
 
 .fides-vendor-info-label {
@@ -935,14 +940,23 @@ div#fides-banner-inner .fides-privacy-policy {
   }
 }
 
+@media screen and (max-width: 992px) {
+  .fides-vendor-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    text-align: center;
+  }
+
+  .fides-vendor-info-banner {
+    gap: 8px;
+  }
+}
+
 @media screen and (max-width: 768px) {
   div#fides-banner {
     padding: 24px;
-  }
-
-  .fides-vendor-info {
-    flex-direction: column;
-    gap: 12px;
   }
 
   div#fides-banner-description {
