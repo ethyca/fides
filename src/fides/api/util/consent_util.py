@@ -34,7 +34,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.models.sql_models import DataUse, System  # type: ignore[attr-defined]
-from fides.api.models.tcf_publisher_overrides import TCFPublisherOverride
+from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.schemas.privacy_experience import ExperienceConfigCreateWithId
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.schemas.redis_cache import Identity
@@ -676,19 +676,19 @@ def create_tcf_experiences_on_startup(db: Session) -> List[PrivacyExperience]:
 
 def create_default_tcf_publisher_overrides_on_startup(
     db: Session,
-) -> List[TCFPublisherOverride]:
+) -> List[TCFPurposeOverride]:
     """On startup, load default Publisher Overrides, one for each purpose, with a default of is_included=True
     and no legal basis override"""
-    publisher_overrides_created: List[TCFPublisherOverride] = []
+    publisher_overrides_created: List[TCFPurposeOverride] = []
 
     for purpose_id in range(1, 12):
         if (
-            not db.query(TCFPublisherOverride)
-            .filter(TCFPublisherOverride.purpose == purpose_id)
+            not db.query(TCFPurposeOverride)
+            .filter(TCFPurposeOverride.purpose == purpose_id)
             .first()
         ):
             publisher_overrides_created.append(
-                TCFPublisherOverride.create(
+                TCFPurposeOverride.create(
                     db, data={"purpose": purpose_id, "is_included": True}
                 )
             )

@@ -1,6 +1,6 @@
 import pytest
 
-from fides.api.models.tcf_publisher_overrides import TCFPublisherOverride
+from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.util.tcf.tcf_experience_contents import get_tcf_base_query_and_filters
 
 
@@ -49,14 +49,14 @@ class TestMatchingPrivacyDeclarations:
 
         # Defined legal basis is also Consent for purpose 1 on Emerse.
         # Publisher override matches.
-        TCFPublisherOverride.create(
+        TCFPurposeOverride.create(
             db,
             data={"purpose": 1, "is_included": True, "required_legal_basis": "Consent"},
         )
 
         # Defined legal basis is Legitimate Interests for purpose 2 on Emerse.
         # Here, Purpose 2 is specified to be excluded.
-        TCFPublisherOverride.create(
+        TCFPurposeOverride.create(
             db,
             data={
                 "purpose": 2,
@@ -66,7 +66,7 @@ class TestMatchingPrivacyDeclarations:
 
         # Defined legal basis is Consent for purpose 3 on Emerse.
         # No legal basis override is defined.
-        TCFPublisherOverride.create(
+        TCFPurposeOverride.create(
             db,
             data={
                 "purpose": 3,
@@ -77,7 +77,7 @@ class TestMatchingPrivacyDeclarations:
 
         # Defined legal basis is Consent for purpose 4 on Emerse.
         # Override here has a different legal basis
-        TCFPublisherOverride.create(
+        TCFPurposeOverride.create(
             db,
             data={
                 "purpose": 4,

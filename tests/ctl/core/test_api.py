@@ -32,7 +32,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System
 from fides.api.models.system_history import SystemHistory
-from fides.api.models.tcf_publisher_overrides import TCFPublisherOverride
+from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.api.schemas.system import PrivacyDeclarationResponse, SystemResponse
 from fides.api.schemas.taxonomy_extensions import (
@@ -683,7 +683,7 @@ class TestSystemCreate:
         assert privacy_decl.features == ["Link different devices"]
         assert privacy_decl.legal_basis_for_processing == "Public interest"
         assert (
-            await privacy_decl.get_publisher_legal_basis_override() == "Public interest"
+            await privacy_decl.get_purpose_legal_basis_override() == "Public interest"
         )
         assert (
             privacy_decl.impact_assessment_location
@@ -842,10 +842,7 @@ class TestSystemCreate:
         assert result.status_code == HTTP_201_CREATED
         assert result.json()["name"] == "Test System"
         assert len(result.json()["privacy_declarations"]) == 2
-        assert {
-            decl["legal_basis_for_processing_override"]
-            for decl in result.json()["privacy_declarations"]
-        } == {"Public interest", None}
+
         assert result.json()["meta"] == {
             "saas_config": {
                 "type": "stripe",
@@ -1006,68 +1003,6 @@ class TestSystemGet:
         assert steward["username"] == system_manager.username
         assert "first_name" in steward
         assert "last_name" in steward
-
-    @pytest.mark.usefixtures("enable_override_vendor_purposes")
-    async def test_get_overridden_declaration_legal_basis(
-        self, db, test_config, async_session_temp
-    ):
-        resource = SystemSchema(
-            fides_key=str(uuid4()),
-            organization_fides_key="default_organization",
-            name=f"test_system_1_{uuid4()}",
-            system_type="test",
-            privacy_declarations=[
-                PrivacyDeclarationSchema(
-                    name="Collect data for content performance",
-                    data_use="analytics.reporting.content_performance",
-                    legal_basis_for_processing="Consent",
-                    data_categories=["user"],
-                )
-            ],
-        )
-
-        system = await create_system(
-            resource, async_session_temp, CONFIG.security.oauth_root_client_id
-        )
-
-        TCFPublisherOverride.create(
-            db,
-            data={
-                "purpose": 8,
-                "is_included": True,
-                "required_legal_basis": "Legitimate interests",
-            },
-        )
-
-        decl = next(
-            (
-                declaration
-                for declaration in system.privacy_declarations
-                if declaration.data_use == "analytics.reporting.content_performance"
-            ),
-            None,
-        )
-        assert decl.legal_basis_for_processing == "Consent"
-        assert await decl.get_publisher_legal_basis_override() == "Legitimate interests"
-
-        result = _api.get(
-            url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
-            resource_type="system",
-            resource_id=system.fides_key,
-        )
-        assert result.status_code == 200
-        assert result.json()["fides_key"] == system.fides_key
-        assert (
-            result.json()["privacy_declarations"][0]["legal_basis_for_processing"]
-            == "Consent"
-        )
-        assert (
-            result.json()["privacy_declarations"][0][
-                "legal_basis_for_processing_override"
-            ]
-            == "Legitimate interests"
-        )
 
 
 @pytest.mark.unit
@@ -2667,7 +2602,7 @@ def test_trailing_slash(test_config: FidesConfig, endpoint_name: str) -> None:
     assert response.status_code == 200
 
 
-class TestPrivacyDeclarationGetPublisherLegalBasisOverride:
+class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
     async def test_privacy_declaration_enable_override_is_false(
         self, async_session_temp
     ):
@@ -2694,7 +2629,7 @@ class TestPrivacyDeclarationGetPublisherLegalBasisOverride:
         pd = system.privacy_declarations[0]
 
         assert pd.purpose == 9
-        assert await pd.get_publisher_legal_basis_override() == "Consent"
+        assert await pd.get_purpose_legal_basis_override() == "Consent"
 
     @pytest.mark.usefixtures(
         "enable_override_vendor_purposes",
@@ -2724,7 +2659,7 @@ class TestPrivacyDeclarationGetPublisherLegalBasisOverride:
         pd = system.privacy_declarations[0]
 
         assert pd.purpose is None
-        assert await pd.get_publisher_legal_basis_override() == "Consent"
+        assert await pd.get_purpose_legal_basis_override() == "Consent"
 
     @pytest.mark.usefixtures(
         "enable_override_vendor_purposes",
@@ -2754,7 +2689,7 @@ class TestPrivacyDeclarationGetPublisherLegalBasisOverride:
         )
         pd = system.privacy_declarations[0]
 
-        constraint = TCFPublisherOverride.create(
+        constraint = TCFPurposeOverride.create(
             db,
             data={
                 "purpose": 5,
@@ -2763,7 +2698,7 @@ class TestPrivacyDeclarationGetPublisherLegalBasisOverride:
         )
 
         assert pd.purpose == 5
-        assert await pd.get_publisher_legal_basis_override() is None
+        assert await pd.get_purpose_legal_basis_override() is None
 
         constraint.delete(db)
 
@@ -2794,7 +2729,7 @@ class TestPrivacyDeclarationGetPublisherLegalBasisOverride:
         )
         pd = system.privacy_declarations[0]
 
-        constraint = TCFPublisherOverride.create(
+        constraint = TCFPurposeOverride.create(
             db,
             data={
                 "purpose": 9,
@@ -2803,7 +2738,7 @@ class TestPrivacyDeclarationGetPublisherLegalBasisOverride:
         )
 
         assert pd.purpose == 9
-        assert await pd.get_publisher_legal_basis_override() == "Consent"
+        assert await pd.get_purpose_legal_basis_override() == "Consent"
 
         constraint.delete(db)
 
@@ -2833,7 +2768,7 @@ class TestPrivacyDeclarationGetPublisherLegalBasisOverride:
         system = await create_system(
             resource, async_session_temp, CONFIG.security.oauth_root_client_id
         )
-        override = TCFPublisherOverride.create(
+        override = TCFPurposeOverride.create(
             db,
             data={
                 "purpose": 10,
@@ -2844,6 +2779,6 @@ class TestPrivacyDeclarationGetPublisherLegalBasisOverride:
         pd = system.privacy_declarations[0]
 
         assert pd.purpose == 10
-        assert await pd.get_publisher_legal_basis_override() == "Legitimate interests"
+        assert await pd.get_purpose_legal_basis_override() == "Legitimate interests"
 
         override.delete(db)

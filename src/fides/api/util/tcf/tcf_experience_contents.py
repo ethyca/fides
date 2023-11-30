@@ -19,7 +19,7 @@ from fides.api.models.sql_models import (  # type:ignore[attr-defined]
     PrivacyDeclaration,
     System,
 )
-from fides.api.models.tcf_publisher_overrides import TCFPublisherOverride
+from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.tcf import (
     TCFFeatureRecord,
@@ -166,20 +166,20 @@ def get_legal_basis_override_subquery(db: Session) -> Alias:
                         PrivacyDeclaration.legal_basis_for_processing,
                     ),
                     (
-                        TCFPublisherOverride.is_included.is_(False),
+                        TCFPurposeOverride.is_included.is_(False),
                         None,
                     ),
                     (
-                        TCFPublisherOverride.required_legal_basis.is_(None),
+                        TCFPurposeOverride.required_legal_basis.is_(None),
                         PrivacyDeclaration.legal_basis_for_processing,
                     ),
                 ],
-                else_=TCFPublisherOverride.required_legal_basis,
+                else_=TCFPurposeOverride.required_legal_basis,
             ).label("overridden_legal_basis_for_processing"),
         )
         .outerjoin(
-            TCFPublisherOverride,
-            TCFPublisherOverride.purpose == PrivacyDeclaration.purpose,
+            TCFPurposeOverride,
+            TCFPurposeOverride.purpose == PrivacyDeclaration.purpose,
         )
         .subquery()
     )
@@ -229,7 +229,9 @@ def get_tcf_base_query_and_filters(
             PrivacyDeclaration.features,
             PrivacyDeclaration.retention_period,
             PrivacyDeclaration.purpose,
-            PrivacyDeclaration.legal_basis_for_processing.label("original_legal_basis_for_processing"),
+            PrivacyDeclaration.legal_basis_for_processing.label(
+                "original_legal_basis_for_processing"
+            ),
         )
         .outerjoin(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
         .outerjoin(

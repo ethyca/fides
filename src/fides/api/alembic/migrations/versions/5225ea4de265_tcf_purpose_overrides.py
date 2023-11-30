@@ -1,4 +1,4 @@
-"""tcf_publisher_overrides
+"""tcf_purpose_overrides
 
 Revision ID: 5225ea4de265
 Revises: 1af6950f4625
@@ -17,7 +17,7 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        "tcf_publisher_overrides",
+        "tcf_purpose_overrides",
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column(
             "created_at",
@@ -37,19 +37,19 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_tcf_publisher_overrides_id"),
-        "tcf_publisher_overrides",
+        op.f("ix_tcf_purpose_overrides_id"),
+        "tcf_purpose_overrides",
         ["id"],
         unique=False,
     )
 
     op.create_unique_constraint(
-        "purpose_constraint", "tcf_publisher_overrides", ["purpose"]
+        "purpose_constraint", "tcf_purpose_overrides", ["purpose"]
     )
 
 
 def downgrade():
     op.drop_index(
-        op.f("ix_tcf_publisher_overrides_id"), table_name="tcf_publisher_overrides"
+        op.f("ix_tcf_purpose_overrides_id"), table_name="tcf_purpose_overrides"
     )
-    op.drop_table("tcf_publisher_overrides")
+    op.drop_table("tcf_purpose_overrides")

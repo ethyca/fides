@@ -45,7 +45,7 @@ from fides.api.db.base_class import FidesBase as FideslibBase
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
-from fides.api.models.tcf_publisher_overrides import TCFPublisherOverride
+from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.config import get_config
 
 CONFIG = get_config()
@@ -548,9 +548,9 @@ class PrivacyDeclaration(Base):
             else_=None,
         )
 
-    async def get_publisher_legal_basis_override(self) -> Optional[str]:
+    async def get_purpose_legal_basis_override(self) -> Optional[str]:
         """
-        Returns the overridden legal basis for processing based on TCF publisher overrides if applicable
+        Returns the overridden legal basis for processing based on TCF purpose overrides if applicable
 
         This is used for supplementing System responses with this override information.
         """
@@ -563,22 +563,23 @@ class PrivacyDeclaration(Base):
 
         query: Select = select(
             [
-                TCFPublisherOverride.is_included,
-                TCFPublisherOverride.required_legal_basis,
+                TCFPurposeOverride.is_included,
+                TCFPurposeOverride.required_legal_basis,
             ]
-        ).where(TCFPublisherOverride.purpose == self.purpose)
+        ).where(TCFPurposeOverride.purpose == self.purpose)
 
         async_session: AsyncSession = async_object_session(self)
+
         async with async_session.begin():
             result = await async_session.execute(query)
             result = result.first()
 
-        is_included: Optional[bool] = None
-        required_legal_basis: Optional[str] = None
+        if not result:
+            # No purpose override saved
+            return self.legal_basis_for_processing
 
-        if result:
-            is_included = result.is_included
-            required_legal_basis = result.required_legal_basis
+        is_included: Optional[bool] = result.is_included
+        required_legal_basis: Optional[str] = result.required_legal_basis
 
         if is_included is False:
             # If the Purpose is specified as excluded, just return None for the legal basis.
