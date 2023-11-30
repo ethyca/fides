@@ -1,6 +1,6 @@
 # mypy: disable-error-code="arg-type, attr-defined, assignment"
 from enum import Enum
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from fideslang.gvl import (
     MAPPED_PURPOSES,
@@ -57,13 +57,6 @@ AC_SYSTEM_NO_PRIVACY_DECL_FILTER: BooleanClauseList = and_(
 # Filter for any non-AC Systems
 NOT_AC_SYSTEM_FILTER: BooleanClauseList = or_(
     not_(System.vendor_id.startswith(AC_PREFIX)), System.vendor_id.is_(None)
-)
-CONSENT_LEGAL_BASIS_FILTER: BinaryExpression = (
-    PrivacyDeclaration.legal_basis_for_processing == LegalBasisForProcessingEnum.CONSENT
-)
-LEGITIMATE_INTEREST_LEGAL_BASIS_FILTER: BinaryExpression = (
-    PrivacyDeclaration.legal_basis_for_processing
-    == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST
 )
 
 GVL_DATA_USE_FILTER: BinaryExpression = PrivacyDeclaration.data_use.in_(
@@ -192,16 +185,27 @@ def get_legal_basis_override_subquery(db: Session) -> Alias:
     )
 
 
-def get_matching_privacy_declarations(db: Session) -> Query:
-    """Returns flattened system/privacy declaration records where we have a matching gvl data use AND the
-    overridden legal basis for processing is "Consent" or "Legitimate interests".
+def get_tcf_base_query_and_filters(
+    db: Session,
+) -> Tuple[Query, BinaryExpression, BinaryExpression]:
+    """
+    Returns the base query that contains the foundations of the TCF Experience as well as
+    two filters to further refine the query when building the Experience.
 
-    IMPORTANT - We are filtering against the "overridden_legal_basis_for_processing", not the defined "legal_basis_for_processing",
-    which takes into account potential Fides-wide publisher overrides.
-
-    Only systems that meet this criteria should show up in the TCF overlay.
+    Rows show up corresponding to systems with GVL data uses and Legal bases of Consent or Legitimate interests.
+    AC systems are also included here.
+    Publisher overrides are applied at this stage which may suppress purposes or toggle the legal basis.
     """
     legal_basis_override_subquery = get_legal_basis_override_subquery(db)
+
+    consent_legal_basis_filter: BinaryExpression = (
+        legal_basis_override_subquery.c.overridden_legal_basis_for_processing
+        == LegalBasisForProcessingEnum.CONSENT
+    )
+    legitimate_interest_legal_basis_filter: BinaryExpression = (
+        legal_basis_override_subquery.c.overridden_legal_basis_for_processing
+        == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST
+    )
 
     matching_privacy_declarations: Query = (
         db.query(
@@ -234,15 +238,10 @@ def get_matching_privacy_declarations(db: Session) -> Query:
         )
         .filter(
             or_(
+                and_(GVL_DATA_USE_FILTER, consent_legal_basis_filter),
                 and_(
                     GVL_DATA_USE_FILTER,
-                    legal_basis_override_subquery.c.overridden_legal_basis_for_processing
-                    == LegalBasisForProcessingEnum.CONSENT,
-                ),
-                and_(
-                    GVL_DATA_USE_FILTER,
-                    legal_basis_override_subquery.c.overridden_legal_basis_for_processing
-                    == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST,
+                    legitimate_interest_legal_basis_filter,
                     NOT_AC_SYSTEM_FILTER,
                 ),
                 AC_SYSTEM_NO_PRIVACY_DECL_FILTER,
@@ -258,7 +257,11 @@ def get_matching_privacy_declarations(db: Session) -> Query:
             NOT_AC_SYSTEM_FILTER
         )
 
-    return matching_privacy_declarations
+    return (
+        matching_privacy_declarations,
+        consent_legal_basis_filter,
+        legitimate_interest_legal_basis_filter,
+    )
 
 
 def systems_that_match_tcf_data_uses(
@@ -295,7 +298,11 @@ def get_relevant_systems_for_tcf_attribute(  # pylint: disable=too-many-return-s
 
     # For TCF attributes, we need to first filter to systems/privacy declarations that have a relevant GVL data use
     # as well as a legal basis of processing of consent or legitimate interests
-    starting_privacy_declarations: Query = get_matching_privacy_declarations(db)
+    (
+        starting_privacy_declarations,
+        CONSENT_LEGAL_BASIS_FILTER,
+        LEGITIMATE_INTEREST_LEGAL_BASIS_FILTER,
+    ) = get_tcf_base_query_and_filters(db)
 
     purpose_data_uses: List[str] = []
     if tcf_field in [

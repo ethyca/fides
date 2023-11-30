@@ -1,7 +1,7 @@
 import pytest
 
 from fides.api.models.tcf_publisher_overrides import TCFPublisherOverride
-from fides.api.util.tcf.tcf_experience_contents import get_matching_privacy_declarations
+from fides.api.util.tcf.tcf_experience_contents import get_tcf_base_query_and_filters
 
 
 class TestMatchingPrivacyDeclarations:
@@ -15,7 +15,7 @@ class TestMatchingPrivacyDeclarations:
     def test_get_matching_privacy_declarations_enable_purpose_override_is_false(
         self, db
     ):
-        declarations = get_matching_privacy_declarations(db)
+        declarations, _, _ = get_tcf_base_query_and_filters(db)
 
         assert declarations.count() == 13
 
@@ -86,7 +86,7 @@ class TestMatchingPrivacyDeclarations:
             },
         )
 
-        declarations = get_matching_privacy_declarations(db)
+        declarations, _, _ = get_tcf_base_query_and_filters(db)
 
         legal_basis_overrides = {
             declaration.purpose: declaration.overridden_legal_basis_for_processing

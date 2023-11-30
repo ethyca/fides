@@ -1653,6 +1653,47 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
             == []
         )
 
+    @pytest.mark.usefixtures(
+        "enable_override_vendor_purposes", "purpose_three_consent_publisher_override"
+    )
+    def test_determine_relevant_systems_for_with_publisher_override(
+        self,
+        db,
+        system_with_no_uses,
+    ):
+        # Add data use to system that corresponds to purpose 3.  Also has LI legal basis, but override sets it
+        # to Consent
+        pd_1 = PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Collect data for content performance",
+                "system_id": system_with_no_uses.id,
+                "data_categories": ["user.device.cookie_id"],
+                "data_use": "marketing.advertising.profiling",
+                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                "data_subjects": ["customer"],
+                "dataset_references": None,
+                "legal_basis_for_processing": "Legitimate interests",
+                "egress": None,
+                "ingress": None,
+            },
+        )
+
+        assert PrivacyPreferenceHistory.determine_relevant_systems(
+            db, tcf_field=TCFComponentType.purpose_consent.value, tcf_value=3
+        ) == [system_with_no_uses.fides_key]
+
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db,
+                tcf_field=TCFComponentType.purpose_legitimate_interests.value,
+                tcf_value=3,
+            )
+            == []
+        )
+
+        pd_1.delete(db)
+
 
 class TestCurrentPrivacyPreference:
     def test_get_preference_by_notice_and_fides_user_device(
