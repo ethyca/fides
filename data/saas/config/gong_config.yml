@@ -3,6 +3,7 @@ saas_config:
   name: Gong
   type: gong
   description: A sample schema representing the Gong connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/gong
   version: 0.1.0
 
   connector_params:
