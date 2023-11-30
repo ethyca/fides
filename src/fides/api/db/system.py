@@ -238,7 +238,7 @@ async def update_system(
     system: System = await get_resource(
         sql_model=System, fides_key=resource.fides_key, async_session=db
     )
-    existing_system_dict = copy.deepcopy(SystemSchema.from_orm(system).dict())
+    existing_system_dict = copy.deepcopy(SystemSchema.model_validate(system).dict())
 
     # handle the privacy declaration upsert logic
     try:
@@ -273,7 +273,7 @@ async def update_system(
             system.id,
             current_user_id,
             existing_system_dict,
-            SystemSchema.from_orm(updated_system).dict(),
+            SystemSchema.model_validate(updated_system).dict(),
         )
 
     return updated_system, system_updated

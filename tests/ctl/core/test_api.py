@@ -1810,7 +1810,7 @@ class TestSystemUpdate:
         system = System.all(db)[0]
         db.refresh(system)
         db_decs = [
-            models.PrivacyDeclaration.from_orm(db_dec)
+            models.PrivacyDeclaration.model_validate(db_dec)
             for db_dec in system.privacy_declarations
         ]
 
@@ -1988,7 +1988,7 @@ class TestSystemUpdate:
         Test to assert that existing privacy declaration records stay constant when necessary
         """
         old_db_decs = [
-            PrivacyDeclarationResponse.from_orm(dec)
+            PrivacyDeclarationResponse.model_validate(dec)
             for dec in system_multiple_decs.privacy_declarations
         ]
         old_decs_updated = [

@@ -353,18 +353,15 @@ def resources_dict():
                         models.DatasetField(
                             name="Food_Preference",
                             description="User's favorite food",
-                            path="some.path",
                         ),
                         models.DatasetField(
                             name="First_Name",
                             description="A First Name Field",
-                            path="another.path",
                             data_categories=["user.name"],
                         ),
                         models.DatasetField(
                             name="Email",
                             description="User's Email",
-                            path="another.another.path",
                             data_categories=["user.contact.email"],
                         ),
                     ],
@@ -384,7 +381,7 @@ def resources_dict():
             description="Custom Data Use",
         ),
         "evaluation": models.Evaluation(
-            fides_key="test_evaluation", status="PASS", details=["foo"], message="bar"
+            fides_key="test_evaluation", status="PASS", message="bar"
         ),
         "organization": models.Organization(
             fides_key="test_organization",
@@ -395,7 +392,6 @@ def resources_dict():
             organization_fides_key="1",
             fides_key="test_policy",
             name="Test Policy",
-            version="1.3",
             description="Test Policy",
             rules=[],
         ),
@@ -410,11 +406,9 @@ def resources_dict():
             fides_key="test_registry",
             name="Test Registry",
             description="Test Regsitry",
-            systems=[],
         ),
         "system": models.System(
             organization_fides_key="1",
-            registryId=1,
             fides_key="test_system",
             system_type="SYSTEM",
             name="Test System",

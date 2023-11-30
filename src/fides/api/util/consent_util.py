@@ -366,7 +366,7 @@ def validate_privacy_notice_dry_update(dry_update: PrivacyNotice) -> None:
     of the privacy notice in the database combined with the patch updates from the request
     """
     try:
-        PrivacyNoticeCreation.from_orm(dry_update)
+        PrivacyNoticeCreation.model_validate(dry_update)
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
@@ -543,7 +543,7 @@ def load_default_notices_on_startup(
         # Link Privacy Notice Schemas to the Privacy Notice Templates
         notice_schemas: List[PrivacyNoticeCreation] = []
         for template in new_templates:
-            privacy_notice_schema = PrivacyNoticeCreation.from_orm(template)
+            privacy_notice_schema = PrivacyNoticeCreation.model_validate(template)
             privacy_notice_schema.origin = SafeStr(template.id)
             notice_schemas.append(privacy_notice_schema)
 

@@ -239,7 +239,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             filtered_privacy_request_schemas: List[
                 MinimalPrivacyPreferenceHistorySchema
             ] = [
-                MinimalPrivacyPreferenceHistorySchema.from_orm(privacy_pref)
+                MinimalPrivacyPreferenceHistorySchema.model_validate(privacy_pref)
                 for privacy_pref in filtered_privacy_preference_records
             ]
 

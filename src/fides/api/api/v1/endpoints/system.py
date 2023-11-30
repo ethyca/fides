@@ -328,7 +328,7 @@ async def delete(
     async with db.begin():
         await db.delete(system_to_delete)
     # Convert the resource to a dict explicitly for the response
-    deleted_resource_dict = SystemSchema.from_orm(system_to_delete).dict()
+    deleted_resource_dict = SystemSchema.model_validate(system_to_delete).dict()
     return {
         "message": "resource deleted",
         "resource": deleted_resource_dict,

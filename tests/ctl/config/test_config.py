@@ -94,7 +94,7 @@ def test_get_deprecated_api_config_from_file(test_deprecated_config_path: str) -
         "FIDES__API__DATABASE_HOST": "test_host",
         "FIDES__API__DATABASE_NAME": "test_db_name",
         "FIDES__API__DATABASE_PASSWORD": "test_password",
-        "FIDES__API__DATABASE_PORT": 1234,
+        "FIDES__API__DATABASE_PORT": "1234",
         "FIDES__API__DATABASE_TEST_DATABASE_NAME": "test_test_db_name",
         "FIDES__API__DATABASE_USER": "phil_rules",
         **REQUIRED_ENV_VARS,
@@ -187,7 +187,7 @@ def test_database_url_test_mode_disabled() -> None:
     )
     assert (
         database_settings.async_database_uri
-        == "postgresql+asyncpg://postgres:fides@fides-db:5432/database"
+        == "postgresql+asyncpg://postgres:fides@fides-db:5432/database?"
     )
 
 
