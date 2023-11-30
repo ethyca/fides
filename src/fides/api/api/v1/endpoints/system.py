@@ -428,7 +428,9 @@ def instantiate_connection_from_template(
     return instantiate_connection(db, saas_connector_type, template_values, system)
 
 
-async def supplement_privacy_declaration_response_with_legal_basis_override(resp: Union[Dict, System]) -> None:
+async def supplement_privacy_declaration_response_with_legal_basis_override(
+    resp: Union[Dict, System]
+) -> None:
     """At runtime, adds a "legal_basis_for_processing_override" to each PrivacyDeclaration"""
 
     for privacy_declaration in (
@@ -437,5 +439,5 @@ async def supplement_privacy_declaration_response_with_legal_basis_override(resp
         else resp.privacy_declarations
     ):
         privacy_declaration.legal_basis_for_processing_override = (
-            await privacy_declaration.overridden_legal_basis_for_processing
+            await privacy_declaration.get_publisher_legal_basis_override()
         )

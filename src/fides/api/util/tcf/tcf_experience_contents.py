@@ -10,14 +10,16 @@ from fideslang.gvl import (
 )
 from fideslang.models import LegalBasisForProcessingEnum
 from fideslang.validation import FidesKey
-from sqlalchemy import and_, not_, or_
+from sqlalchemy import and_, case, not_, or_
 from sqlalchemy.orm import Query, Session
+from sqlalchemy.sql import Alias
 from sqlalchemy.sql.elements import BinaryExpression, BooleanClauseList
 
 from fides.api.models.sql_models import (  # type:ignore[attr-defined]
     PrivacyDeclaration,
     System,
 )
+from fides.api.models.tcf_publisher_overrides import TCFPublisherOverride
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.tcf import (
     TCFFeatureRecord,
@@ -57,11 +59,10 @@ NOT_AC_SYSTEM_FILTER: BooleanClauseList = or_(
     not_(System.vendor_id.startswith(AC_PREFIX)), System.vendor_id.is_(None)
 )
 CONSENT_LEGAL_BASIS_FILTER: BinaryExpression = (
-    PrivacyDeclaration.overridden_legal_basis_for_processing
-    == LegalBasisForProcessingEnum.CONSENT
+    PrivacyDeclaration.legal_basis_for_processing == LegalBasisForProcessingEnum.CONSENT
 )
 LEGITIMATE_INTEREST_LEGAL_BASIS_FILTER: BinaryExpression = (
-    PrivacyDeclaration.overridden_legal_basis_for_processing
+    PrivacyDeclaration.legal_basis_for_processing
     == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST
 )
 
@@ -150,6 +151,47 @@ class TCFExperienceContents(
     tcf_system_relationships: List[TCFVendorRelationships] = []
 
 
+def get_legal_basis_override_subquery(db: Session) -> Alias:
+    """Builds a subquery containing legal basis overrides for the Privacy Declaration if applicable"""
+    if not CONFIG.consent.override_vendor_purposes:
+        return db.query(
+            PrivacyDeclaration.id,
+            PrivacyDeclaration.legal_basis_for_processing.label(
+                "overridden_legal_basis_for_processing"
+            ),
+        ).subquery()
+
+    return (
+        db.query(
+            PrivacyDeclaration.id,
+            case(
+                [
+                    (
+                        PrivacyDeclaration.flexible_legal_basis_for_processing.is_(
+                            False
+                        ),
+                        PrivacyDeclaration.legal_basis_for_processing,
+                    ),
+                    (
+                        TCFPublisherOverride.is_included.is_(False),
+                        None,
+                    ),
+                    (
+                        TCFPublisherOverride.required_legal_basis.is_(None),
+                        PrivacyDeclaration.legal_basis_for_processing,
+                    ),
+                ],
+                else_=TCFPublisherOverride.required_legal_basis,
+            ).label("overridden_legal_basis_for_processing"),
+        )
+        .outerjoin(
+            TCFPublisherOverride,
+            TCFPublisherOverride.purpose == PrivacyDeclaration.purpose,
+        )
+        .subquery()
+    )
+
+
 def get_matching_privacy_declarations(db: Session) -> Query:
     """Returns flattened system/privacy declaration records where we have a matching gvl data use AND the
     overridden legal basis for processing is "Consent" or "Legitimate interests".
@@ -159,6 +201,8 @@ def get_matching_privacy_declarations(db: Session) -> Query:
 
     Only systems that meet this criteria should show up in the TCF overlay.
     """
+    legal_basis_override_subquery = get_legal_basis_override_subquery(db)
+
     matching_privacy_declarations: Query = (
         db.query(
             System.id.label("system_id"),
@@ -175,28 +219,29 @@ def get_matching_privacy_declarations(db: Session) -> Query:
             System.privacy_policy.label("system_privacy_policy"),
             System.vendor_id,
             PrivacyDeclaration.data_use,
-            PrivacyDeclaration.overridden_legal_basis_for_processing.label(  # pylint: disable=no-member
-                "legal_basis_for_processing"
+            legal_basis_override_subquery.c.overridden_legal_basis_for_processing.label(  # pylint: disable=no-member
+                "overridden_legal_basis_for_processing"
             ),
             PrivacyDeclaration.features,
             PrivacyDeclaration.retention_period,
-            PrivacyDeclaration.flexible_legal_basis_for_processing,
             PrivacyDeclaration.purpose,
-            PrivacyDeclaration.legal_basis_for_processing.label(
-                "original_legal_basis_for_processing"
-            ),
+            PrivacyDeclaration.legal_basis_for_processing,
         )
         .outerjoin(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
+        .outerjoin(
+            legal_basis_override_subquery,
+            legal_basis_override_subquery.c.id == PrivacyDeclaration.id,
+        )
         .filter(
             or_(
                 and_(
                     GVL_DATA_USE_FILTER,
-                    PrivacyDeclaration.overridden_legal_basis_for_processing
+                    legal_basis_override_subquery.c.overridden_legal_basis_for_processing
                     == LegalBasisForProcessingEnum.CONSENT,
                 ),
                 and_(
                     GVL_DATA_USE_FILTER,
-                    PrivacyDeclaration.overridden_legal_basis_for_processing
+                    legal_basis_override_subquery.c.overridden_legal_basis_for_processing
                     == LegalBasisForProcessingEnum.LEGITIMATE_INTEREST,
                     NOT_AC_SYSTEM_FILTER,
                 ),
@@ -212,6 +257,7 @@ def get_matching_privacy_declarations(db: Session) -> Query:
         matching_privacy_declarations = matching_privacy_declarations.filter(
             NOT_AC_SYSTEM_FILTER
         )
+
     return matching_privacy_declarations
 
 

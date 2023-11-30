@@ -7,7 +7,7 @@ Contains all of the SqlAlchemy models for the Fides resources.
 from __future__ import annotations
 
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Set, Type, TypeVar, Union
+from typing import Any, Dict, List, Optional, Set, Type, TypeVar
 
 from fideslang import MAPPED_PURPOSES_BY_DATA_USE
 from fideslang.gvl import MAPPED_PURPOSES, MappedPurpose
@@ -30,15 +30,12 @@ from sqlalchemy import (
     type_coerce,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, BYTEA
-from sqlalchemy.engine import Row
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_object_session
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Session, object_session, relationship
-from sqlalchemy.orm.attributes import InstrumentedAttribute
-from sqlalchemy.sql import func, Select
+from sqlalchemy.orm import Session, relationship
+from sqlalchemy.sql import Select, func
 from sqlalchemy.sql.elements import Case
-from sqlalchemy.sql.selectable import ScalarSelect
 from sqlalchemy.sql.sqltypes import DateTime
 from typing_extensions import Protocol, runtime_checkable
 
@@ -534,7 +531,7 @@ class PrivacyDeclaration(Base):
 
     @hybrid_property
     def purpose(self) -> Optional[int]:
-        """Returns the instance-level TCF Purpose."""
+        """Returns the instance-level TCF Purpose if applicable."""
         mapped_purpose: Optional[MappedPurpose] = MAPPED_PURPOSES_ONLY_BY_DATA_USE.get(
             self.data_use
         )
@@ -542,7 +539,7 @@ class PrivacyDeclaration(Base):
 
     @purpose.expression
     def purpose(cls) -> Case:
-        """Returns the class-level TCF Purpose"""
+        """Returns the class-level TCF Purpose for use in a SQLAlchemy query"""
         return case(
             [
                 (cls.data_use == data_use, purpose.id)
@@ -551,103 +548,50 @@ class PrivacyDeclaration(Base):
             else_=None,
         )
 
-    @hybrid_property
-    async def _publisher_override_legal_basis_join(self) -> Optional[str]:
-        """Returns the instance-level overridden required legal basis"""
-        query: Select = select([TCFPublisherOverride.required_legal_basis]).where(
-            TCFPublisherOverride.purpose == self.purpose
-        )
-        async_session: AsyncSession = async_object_session(self)
-        async with async_session.begin():
-            result = await async_session.execute(query)
-            return result.scalars().first()
-
-    @_publisher_override_legal_basis_join.expression
-    def _publisher_override_legal_basis_join(cls) -> ScalarSelect:
-        """Returns the class-level overridden required legal basis"""
-        return (
-            select([TCFPublisherOverride.required_legal_basis])
-            .where(TCFPublisherOverride.purpose == cls.purpose)
-            .as_scalar()
-        )
-
-    @hybrid_property
-    async def _publisher_override_is_included_join(self) -> Optional[bool]:
-        """Returns the instance-level indication of whether the purpose should be included"""
-        query: Select = select([TCFPublisherOverride.is_included]).where(
-            TCFPublisherOverride.purpose == self.purpose
-        )
-        async_session: AsyncSession = async_object_session(self)
-        async with async_session.begin():
-            result = await async_session.execute(query)
-            return result.scalars().first()
-
-    @_publisher_override_is_included_join.expression
-    def _publisher_override_is_included_join(cls) -> ScalarSelect:
-        """Returns the class-level indication of whether the purpose should be included"""
-        return (
-            select([TCFPublisherOverride.is_included])
-            .where(TCFPublisherOverride.purpose == cls.purpose)
-            .as_scalar()
-        )
-
-    @hybrid_property
-    async def overridden_legal_basis_for_processing(self) -> Optional[str]:
+    async def get_publisher_legal_basis_override(self) -> Optional[str]:
         """
-        Instance-level override of the legal basis for processing based on
-        publisher preferences.
+        Returns the overridden legal basis for processing based on TCF publisher overrides if applicable
+
+        This is used for supplementing System responses with this override information.
         """
         if not (
             CONFIG.consent.override_vendor_purposes
             and self.flexible_legal_basis_for_processing
         ):
+            # Just return the default legal basis on this declaration if the override feature is disabled
             return self.legal_basis_for_processing
 
-        is_included: Optional[bool] = await self._publisher_override_is_included_join
+        query: Select = select(
+            [
+                TCFPublisherOverride.is_included,
+                TCFPublisherOverride.required_legal_basis,
+            ]
+        ).where(TCFPublisherOverride.purpose == self.purpose)
+
+        async_session: AsyncSession = async_object_session(self)
+        async with async_session.begin():
+            result = await async_session.execute(query)
+            result = result.first()
+
+        is_included: Optional[bool] = None
+        required_legal_basis: Optional[str] = None
+
+        if result:
+            is_included = result.is_included
+            required_legal_basis = result.required_legal_basis
 
         if is_included is False:
-            # Overriding to False to match behavior of class-level override.
-            # Class-level override of legal basis to None removes Privacy Declaration
-            # from Experience
+            # If the Purpose is specified as excluded, just return None for the legal basis.
+            # This matches what we do when building the TCF Experience, as a null legal basis
+            # prevents the purpose from showing up in the TCF Experience altogether.
             return None
 
-        overridden_legal_basis: Optional[str] = (
-            await self._publisher_override_legal_basis_join
-        )
-
+        # Now return the Fides-wide legal basis override for this purpose if it exists,
+        # otherwise defaulting to the legal basis on the Declaration
         return (
-            overridden_legal_basis
-            if overridden_legal_basis  # pylint: disable=using-constant-test
+            required_legal_basis
+            if required_legal_basis
             else self.legal_basis_for_processing
-        )
-
-    @overridden_legal_basis_for_processing.expression
-    def overridden_legal_basis_for_processing(
-        cls,
-    ) -> Union[InstrumentedAttribute, Case]:
-        """
-        Class-level override of the legal basis for processing based on
-        publisher preferences.
-        """
-        if not CONFIG.consent.override_vendor_purposes:
-            return cls.legal_basis_for_processing
-
-        return case(
-            [
-                (
-                    cls.flexible_legal_basis_for_processing.is_(False),
-                    cls.legal_basis_for_processing,
-                ),
-                (
-                    cls._publisher_override_is_included_join.is_(False),
-                    None,
-                ),
-                (
-                    cls._publisher_override_legal_basis_join.is_(None),
-                    cls.legal_basis_for_processing,
-                ),
-            ],
-            else_=cls._publisher_override_legal_basis_join,
         )
 
 

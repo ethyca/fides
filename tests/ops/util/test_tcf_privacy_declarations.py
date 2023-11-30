@@ -89,7 +89,7 @@ class TestMatchingPrivacyDeclarations:
         declarations = get_matching_privacy_declarations(db)
 
         legal_basis_overrides = {
-            declaration.purpose: declaration.legal_basis_for_processing
+            declaration.purpose: declaration.overridden_legal_basis_for_processing
             for declaration in declarations
             if declaration.purpose
         }
@@ -106,7 +106,7 @@ class TestMatchingPrivacyDeclarations:
         }
 
         original_legal_basis = {
-            declaration.purpose: declaration.original_legal_basis_for_processing
+            declaration.purpose: declaration.legal_basis_for_processing
             for declaration in declarations
             if declaration.purpose
         }

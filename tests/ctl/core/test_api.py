@@ -683,8 +683,7 @@ class TestSystemCreate:
         assert privacy_decl.features == ["Link different devices"]
         assert privacy_decl.legal_basis_for_processing == "Public interest"
         assert (
-            await privacy_decl.overridden_legal_basis_for_processing
-            == "Public interest"
+            await privacy_decl.get_publisher_legal_basis_override() == "Public interest"
         )
         assert (
             privacy_decl.impact_assessment_location
@@ -1049,9 +1048,7 @@ class TestSystemGet:
             None,
         )
         assert decl.legal_basis_for_processing == "Consent"
-        assert (
-            await decl.overridden_legal_basis_for_processing == "Legitimate interests"
-        )
+        assert await decl.get_publisher_legal_basis_override() == "Legitimate interests"
 
         result = _api.get(
             url=test_config.cli.server_url,
@@ -2670,10 +2667,7 @@ def test_trailing_slash(test_config: FidesConfig, endpoint_name: str) -> None:
     assert response.status_code == 200
 
 
-class TestPrivacyDeclarationInstanceLevelHybridProperties:
-    """Test some instance-level hybrid properties defined on the Privacy Declaration
-    related to Publisher Overrides"""
-
+class TestPrivacyDeclarationGetPublisherLegalBasisOverride:
     async def test_privacy_declaration_enable_override_is_false(
         self, async_session_temp
     ):
@@ -2700,9 +2694,7 @@ class TestPrivacyDeclarationInstanceLevelHybridProperties:
         pd = system.privacy_declarations[0]
 
         assert pd.purpose == 9
-        assert await pd._publisher_override_legal_basis_join is None
-        assert await pd._publisher_override_is_included_join is None
-        assert await pd.overridden_legal_basis_for_processing == "Consent"
+        assert await pd.get_publisher_legal_basis_override() == "Consent"
 
     @pytest.mark.usefixtures(
         "enable_override_vendor_purposes",
@@ -2732,9 +2724,7 @@ class TestPrivacyDeclarationInstanceLevelHybridProperties:
         pd = system.privacy_declarations[0]
 
         assert pd.purpose is None
-        assert await pd._publisher_override_legal_basis_join is None
-        assert await pd._publisher_override_is_included_join is None
-        assert await pd.overridden_legal_basis_for_processing == "Consent"
+        assert await pd.get_publisher_legal_basis_override() == "Consent"
 
     @pytest.mark.usefixtures(
         "enable_override_vendor_purposes",
@@ -2773,9 +2763,7 @@ class TestPrivacyDeclarationInstanceLevelHybridProperties:
         )
 
         assert pd.purpose == 5
-        assert await pd._publisher_override_legal_basis_join is None
-        assert await pd._publisher_override_is_included_join is False
-        assert await pd.overridden_legal_basis_for_processing is None
+        assert await pd.get_publisher_legal_basis_override() is None
 
         constraint.delete(db)
 
@@ -2815,9 +2803,7 @@ class TestPrivacyDeclarationInstanceLevelHybridProperties:
         )
 
         assert pd.purpose == 9
-        assert await pd._publisher_override_legal_basis_join is None
-        assert await pd._publisher_override_is_included_join is True
-        assert await pd.overridden_legal_basis_for_processing == "Consent"
+        assert await pd.get_publisher_legal_basis_override() == "Consent"
 
         constraint.delete(db)
 
@@ -2858,8 +2844,6 @@ class TestPrivacyDeclarationInstanceLevelHybridProperties:
         pd = system.privacy_declarations[0]
 
         assert pd.purpose == 10
-        assert await pd._publisher_override_legal_basis_join == "Legitimate interests"
-        assert await pd._publisher_override_is_included_join is True
-        assert await pd.overridden_legal_basis_for_processing == "Legitimate interests"
+        assert await pd.get_publisher_legal_basis_override() == "Legitimate interests"
 
         override.delete(db)
