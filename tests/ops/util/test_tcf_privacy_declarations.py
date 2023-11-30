@@ -4,7 +4,7 @@ from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.util.tcf.tcf_experience_contents import get_tcf_base_query_and_filters
 
 
-class TestMatchingPrivacyDeclarations:
+class TestBaseTCFQuery:
     """Tests matching privacy declarations returned that are the basis of the TCF Experience and the "relevant_systems"
     that are saved for consent reporting
     """
@@ -15,6 +15,7 @@ class TestMatchingPrivacyDeclarations:
     def test_get_matching_privacy_declarations_enable_purpose_override_is_false(
         self, db
     ):
+        """No legal bases are overridden because this features is off"""
         declarations, _, _ = get_tcf_base_query_and_filters(db)
 
         assert declarations.count() == 13
@@ -40,22 +41,32 @@ class TestMatchingPrivacyDeclarations:
             "functional.storage": 1,
         }
 
-    @pytest.mark.usefixtures("emerse_system", "enable_override_vendor_purposes")
-    def test_privacy_declaration_publisher_overrides(
-        self,
-        db,
-    ):
-        """Define some purpose legal basis overrides and check their effects on what is returned in the Privacy Declaration query"""
+    @pytest.mark.usefixtures("enable_override_vendor_purposes")
+    def test_privacy_declaration_purpose_overrides(self, db, emerse_system):
+        """Comprehensive test of the various scenarios for privacy declaration purpose overrides when building the
+        base TCF query
 
-        # Defined legal basis is also Consent for purpose 1 on Emerse.
-        # Publisher override matches.
+        Some of the specifics aren't configurations that would be allowed for emerse, but ignore that here.
+        """
+
+        # As some test setup, override purpose 7 declaration to have an inflexible legal basis
+        purpose_7_decl = next(
+            decl
+            for decl in emerse_system.privacy_declarations
+            if decl.data_use == "analytics.reporting.ad_performance"
+        )
+        purpose_7_decl.flexible_legal_basis_for_processing = False
+        purpose_7_decl.save(db)
+
+        # For more test setup, create some purpose overrides
+
+        # Purpose override that matches the legal basis already on the system's declaration
         TCFPurposeOverride.create(
             db,
             data={"purpose": 1, "is_included": True, "required_legal_basis": "Consent"},
         )
 
-        # Defined legal basis is Legitimate Interests for purpose 2 on Emerse.
-        # Here, Purpose 2 is specified to be excluded.
+        # Purpose override that marks Purpose 2 as excluded
         TCFPurposeOverride.create(
             db,
             data={
@@ -64,8 +75,7 @@ class TestMatchingPrivacyDeclarations:
             },
         )
 
-        # Defined legal basis is Consent for purpose 3 on Emerse.
-        # No legal basis override is defined.
+        # Purpose override object defined, but no legal basis override specified
         TCFPurposeOverride.create(
             db,
             data={
@@ -75,14 +85,23 @@ class TestMatchingPrivacyDeclarations:
             },
         )
 
-        # Defined legal basis is Consent for purpose 4 on Emerse.
-        # Override here has a different legal basis
+        # Purpose override defined with different legal basis than the one on the System's declaration
         TCFPurposeOverride.create(
             db,
             data={
                 "purpose": 4,
                 "is_included": True,
                 "required_legal_basis": "Legitimate interests",
+            },
+        )
+
+        # Purpose override defined with differing legal basis, however, purpose 7 above was marked as inflexible
+        TCFPurposeOverride.create(
+            db,
+            data={
+                "purpose": 7,
+                "is_included": True,
+                "required_legal_basis": "Consent",
             },
         )
 
@@ -94,8 +113,10 @@ class TestMatchingPrivacyDeclarations:
             if declaration.purpose
         }
 
-        # Purpose 2 has been removed altogether and Purpose 4 Legal Basis
-        # has been overridden to Legitimate Interests legal basis
+        # Purpose 1 had no change, because the override matched
+        # Purpose 2 has been removed altogether
+        # Purpose 4 Legal Basis has been overridden to Legitimate Interests legal basis
+        # Purpose 7's override wasn't applied because that declaration was marked as inflexible.
         assert legal_basis_overrides == {
             9: "Legitimate interests",
             8: "Legitimate interests",

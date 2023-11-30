@@ -674,11 +674,15 @@ def create_tcf_experiences_on_startup(db: Session) -> List[PrivacyExperience]:
     return experiences_created
 
 
-def create_default_tcf_publisher_overrides_on_startup(
+def create_default_tcf_purpose_overrides_on_startup(
     db: Session,
 ) -> List[TCFPurposeOverride]:
-    """On startup, load default Publisher Overrides, one for each purpose, with a default of is_included=True
-    and no legal basis override"""
+    """On startup, load default Purpose Overrides, one for each purpose, with a default of is_included=True
+    and no legal basis override
+
+    The defaults have no effect on what is returned in the TCF Privacy Experience, and this functionality needs
+    to be enabled via a config variable to be used at all.
+    """
     publisher_overrides_created: List[TCFPurposeOverride] = []
 
     for purpose_id in range(1, 12):

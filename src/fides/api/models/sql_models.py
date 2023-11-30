@@ -531,7 +531,11 @@ class PrivacyDeclaration(Base):
 
     @hybrid_property
     def purpose(self) -> Optional[int]:
-        """Returns the instance-level TCF Purpose if applicable."""
+        """Returns the instance-level TCF Purpose if applicable.
+
+        For example, if the data use on this Privacy Declaration is "marketing.advertising.profiling",
+        that corresponds to GVL Purpose 3, which would be returned here.
+        """
         mapped_purpose: Optional[MappedPurpose] = MAPPED_PURPOSES_ONLY_BY_DATA_USE.get(
             self.data_use
         )
@@ -539,7 +543,11 @@ class PrivacyDeclaration(Base):
 
     @purpose.expression
     def purpose(cls) -> Case:
-        """Returns the class-level TCF Purpose for use in a SQLAlchemy query"""
+        """Returns the class-level TCF Purpose for use in a SQLAlchemy query
+
+        Since Purposes aren't stored directly on the Privacy Declaration, this comes in handy when
+        creating a query that joins on Purpose
+        """
         return case(
             [
                 (cls.data_use == data_use, purpose.id)
@@ -550,15 +558,22 @@ class PrivacyDeclaration(Base):
 
     async def get_purpose_legal_basis_override(self) -> Optional[str]:
         """
-        Returns the overridden legal basis for processing based on TCF purpose overrides if applicable
+        Returns the legal basis for processing that factors in global purpose overrides if applicable.
 
-        This is used for supplementing System responses with this override information.
+        Original legal basis for processing is returned where:
+        - feature is disabled
+        - declaration's legal basis is not flexible
+        - no legal basis override specified
+
+        Null is returned where:
+        - Purpose is excluded (this mimics what we do in the TCF Experience, which causes the purpose to be removed entirely)
+
+        Otherwise, we return the override!
         """
         if not (
             CONFIG.consent.override_vendor_purposes
             and self.flexible_legal_basis_for_processing
         ):
-            # Just return the default legal basis on this declaration if the override feature is disabled
             return self.legal_basis_for_processing
 
         query: Select = select(
@@ -575,20 +590,14 @@ class PrivacyDeclaration(Base):
             result = result.first()
 
         if not result:
-            # No purpose override saved
             return self.legal_basis_for_processing
 
         is_included: Optional[bool] = result.is_included
         required_legal_basis: Optional[str] = result.required_legal_basis
 
         if is_included is False:
-            # If the Purpose is specified as excluded, just return None for the legal basis.
-            # This matches what we do when building the TCF Experience, as a null legal basis
-            # prevents the purpose from showing up in the TCF Experience altogether.
             return None
 
-        # Now return the Fides-wide legal basis override for this purpose if it exists,
-        # otherwise defaulting to the legal basis on the Declaration
         return (
             required_legal_basis
             if required_legal_basis

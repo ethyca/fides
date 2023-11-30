@@ -46,7 +46,6 @@ for special_purpose in MAPPED_SPECIAL_PURPOSES.values():
 
 ALL_GVL_DATA_USES = list(set(PURPOSE_DATA_USES) | set(SPECIAL_PURPOSE_DATA_USES))
 
-
 # Common SQLAlchemy filters used below
 
 # Define a special-case filter for AC Systems with no Privacy Declarations
@@ -145,7 +144,18 @@ class TCFExperienceContents(
 
 
 def get_legal_basis_override_subquery(db: Session) -> Alias:
-    """Builds a subquery containing legal basis overrides for the Privacy Declaration if applicable"""
+    """Subquery that allows us to globally override a purpose's legal basis for processing.
+
+    Original legal basis for processing is returned where:
+    - feature is disabled
+    - declaration's legal basis is not flexible
+    - no legal basis override specified
+
+    Null is returned where:
+    - Purpose is excluded (this will effectively remove the purpose from the Experience)
+
+    Otherwise, we return the override!
+    """
     if not CONFIG.consent.override_vendor_purposes:
         return db.query(
             PrivacyDeclaration.id,
