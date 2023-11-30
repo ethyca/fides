@@ -224,12 +224,12 @@ def get_tcf_base_query_and_filters(
             System.vendor_id,
             PrivacyDeclaration.data_use,
             legal_basis_override_subquery.c.overridden_legal_basis_for_processing.label(  # pylint: disable=no-member
-                "overridden_legal_basis_for_processing"
+                "legal_basis_for_processing"
             ),
             PrivacyDeclaration.features,
             PrivacyDeclaration.retention_period,
             PrivacyDeclaration.purpose,
-            PrivacyDeclaration.legal_basis_for_processing,
+            PrivacyDeclaration.legal_basis_for_processing.label("original_legal_basis_for_processing"),
         )
         .outerjoin(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
         .outerjoin(
