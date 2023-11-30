@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.25.0...main)
 
+### Changed
+- Increased max number of preferences allowed in privacy preference API calls [#4469](https://github.com/ethyca/fides/pull/4469)
+
 ### Fixed
 - Fix type errors when TCF vendors have no dataDeclaration [#4465](https://github.com/ethyca/fides/pull/4465)
 
