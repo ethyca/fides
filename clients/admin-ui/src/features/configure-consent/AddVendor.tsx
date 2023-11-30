@@ -66,12 +66,8 @@ const DictionaryValidationSchema = Yup.object().shape(
 const AddVendor = ({
   passedInSystem,
   onCloseModal,
-  showButtons,
-  disableFields,
 }: {
   passedInSystem?: System;
-  showButtons: boolean;
-  disableFields: boolean;
   onCloseModal?: () => void;
 }) => {
   const defaultModal = useDisclosure();
@@ -205,21 +201,17 @@ const AddVendor = ({
 
   return (
     <>
-      {showButtons ? (
-        <>
-          <Box mr={2}>
-            <AddMultipleVendors onCancel={modal.onOpen} />
-          </Box>
-          <Button
-            onClick={modal.onOpen}
-            data-testid="add-vendor-btn"
-            size="sm"
-            colorScheme="primary"
-          >
-            Add vendor
-          </Button>
-        </>
-      ) : null}
+      <Box mr={2}>
+        <AddMultipleVendors onCancel={modal.onOpen} />
+      </Box>
+      <Button
+        onClick={modal.onOpen}
+        data-testid="add-vendor-btn"
+        size="sm"
+        colorScheme="primary"
+      >
+        Add vendor
+      </Button>
       <Formik
         initialValues={initialValues}
         enableReinitialize
@@ -259,7 +251,7 @@ const AddVendor = ({
                         tooltip="Select the vendor that matches the system"
                         isCustomOption
                         variant="stacked"
-                        isDisabled={!!passedInSystem || disableFields}
+                        isDisabled={!!passedInSystem}
                         isRequired
                       />
                     ) : null}
@@ -272,13 +264,10 @@ const AddVendor = ({
                         label="Vendor name"
                         tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
                         variant="stacked"
-                        disabled={!!passedInSystem || disableFields}
+                        disabled={!!passedInSystem}
                       />
                     ) : null}
-                    <DataUsesForm
-                      disableFields={disableFields}
-                      showSuggestions={isShowingSuggestions}
-                    />
+                    <DataUsesForm showSuggestions={isShowingSuggestions} />
                     <ButtonGroup
                       size="sm"
                       width="100%"
@@ -293,17 +282,15 @@ const AddVendor = ({
                       >
                         Cancel
                       </Button>
-                      {!disableFields ? (
-                        <Button
-                          type="submit"
-                          variant="primary"
-                          isDisabled={isLoading || !dirty || !isValid}
-                          isLoading={isLoading}
-                          data-testid="save-btn"
-                        >
-                          Save vendor
-                        </Button>
-                      ) : null}
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        isDisabled={isLoading || !dirty || !isValid}
+                        isLoading={isLoading}
+                        data-testid="save-btn"
+                      >
+                        Save vendor
+                      </Button>
                     </ButtonGroup>
                   </VStack>
                 </Form>

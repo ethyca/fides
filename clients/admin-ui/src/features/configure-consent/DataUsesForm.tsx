@@ -25,11 +25,9 @@ import {
 const DataUseBlock = ({
   index,
   isSuggestion,
-  disableFields,
 }: {
   index: number;
   isSuggestion: boolean;
-  disableFields: boolean;
 }) => {
   const allDataUseOptions = useAppSelector(selectDataUseOptions);
   const textColor = isSuggestion ? "complimentary.500" : "gray.800";
@@ -60,7 +58,6 @@ const DataUseBlock = ({
         isCustomOption
         singleValueBlock
         textColor={textColor}
-        isDisabled={disableFields}
       />
       <CustomSelect
         label="Detailed data use (optional)"
@@ -71,9 +68,7 @@ const DataUseBlock = ({
         isCustomOption
         singleValueBlock
         textColor={textColor}
-        isDisabled={
-          !values.privacy_declarations[index].consent_use || disableFields
-        }
+        isDisabled={!values.privacy_declarations[index].consent_use}
       />
       <CustomCreatableSelect
         label="Cookie names"
@@ -82,19 +77,12 @@ const DataUseBlock = ({
         variant="stacked"
         isMulti
         textColor={textColor}
-        isDisabled={disableFields}
       />
     </VStack>
   );
 };
 
-const DataUsesForm = ({
-  showSuggestions,
-  disableFields,
-}: {
-  showSuggestions: boolean;
-  disableFields: boolean;
-}) => {
+const DataUsesForm = ({ showSuggestions }: { showSuggestions: boolean }) => {
   const { values, setFieldValue } = useFormikContext<FormValues>();
   const { vendor_id: vendorId } = values;
   const { isLoading } = useGetDictionaryDataUsesQuery(
@@ -134,30 +122,27 @@ const DataUsesForm = ({
               key={declaration.data_use || idx}
               index={idx}
               isSuggestion={showSuggestions}
-              disableFields={disableFields}
             />
           ))}
-          {!disableFields ? (
-            <Button
-              size="xs"
-              variant="ghost"
-              colorScheme="complimentary"
-              onClick={() => {
-                arrayHelpers.push(EMPTY_DECLARATION);
-              }}
-              disabled={
-                values.privacy_declarations[
-                  values.privacy_declarations.length - 1
-                ]?.data_use === EMPTY_DECLARATION.data_use &&
-                values.privacy_declarations[
-                  values.privacy_declarations.length - 1
-                ]?.consent_use === EMPTY_DECLARATION.consent_use
-              }
-              data-testid="add-data-use-btn"
-            >
-              Add data use +
-            </Button>
-          ) : null}
+          <Button
+            size="xs"
+            variant="ghost"
+            colorScheme="complimentary"
+            onClick={() => {
+              arrayHelpers.push(EMPTY_DECLARATION);
+            }}
+            disabled={
+              values.privacy_declarations[
+                values.privacy_declarations.length - 1
+              ]?.data_use === EMPTY_DECLARATION.data_use &&
+              values.privacy_declarations[
+                values.privacy_declarations.length - 1
+              ]?.consent_use === EMPTY_DECLARATION.consent_use
+            }
+            data-testid="add-data-use-btn"
+          >
+            Add data use +
+          </Button>
         </>
       )}
     />
