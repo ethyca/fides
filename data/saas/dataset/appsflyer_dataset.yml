@@ -1,0 +1,7 @@
+### Marc you are not done yet. Remove this comment only when you're DONE with this dataset
+dataset:
+  - fides_key: <instance_fides_key>
+    name: appsflyer
+    description: A sample dataset representing the Appsflyer connector for Fides
+    collections:
+      - name: user

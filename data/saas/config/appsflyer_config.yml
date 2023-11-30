@@ -1,14 +1,21 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Appsflyer SaaS Config
+  name: Appsflyer
   type: appsflyer
   description: A sample schema representing the Appsflyer connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/appsflyer
   version: 0.1.0
 
   connector_params:
     - name: domain
       default_value: hq1.appsflyer.com
+      description: Your Appsflyer domain
+      label: Domain
     - name: test_req_id
+    - name: identity_value
+      description: The identity value that is returned for the end user email being submitted.
+      label: Identity Value
+    # identity value is one we need to get from the customer
 
   client_config:
     protocol: https
@@ -21,29 +28,18 @@ saas_config:
   endpoints:
     - name: erasure
       requests:
-        read:
-          method: GET
-          path: /api/gdpr/v1/opendsr_requests
-          body: >
-            {   "subject_request_id":"f4e5a271-f25e-4107-b681-123456789015", 
-            "subject_request_type":"access", 
-            "submitted_time":"2023-05-15T10:00:00Z",  "platform": "android", 
-            "subject_identities":[    {    
-            "identity_type":"android_advertising_id",   
-            "identity_value":"4412345-4963-9234-632156789015",   
-            "identity_format":"raw"   }  ],  "api_version":"0.1", 
-            "property_id":"com.madeup.app",  "status_callback_urls":[   
-            "https://examplecontroller.com/opengdpr_callbacks"  ] }
         delete:
           method: POST
           path: /api/gdpr/v1/opendsr_requests
           body: >
-            {   "subject_request_id":"f4e5a271-f25e-4107-b681-123456789012", 
+            {   "subject_request_id":"<UUID ver4>", 
             "subject_request_type":"erasure", 
             "submitted_time":"2023-05-15T10:00:00Z",  "platform": "android", 
             "subject_identities":[    {    
             "identity_type":"android_advertising_id",   
-            "identity_value":"4412345-4963-9234-632156789012",   
+            "identity_value":"<identity_value>",   
             "identity_format":"raw"   }  ],  "api_version":"0.1", 
             "property_id":"com.madeup.app",  "status_callback_urls":[   
             "https://examplecontroller.com/opengdpr_callbacks"  ] }
+
+### Marc you are not done yet. Remove this comment only when you're DONE with this config
