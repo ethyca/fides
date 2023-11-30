@@ -390,6 +390,13 @@
         "vendorListVersion": 19,
         "tcfPolicyVersion": 4,
         "lastUpdated": "2023-09-21T16:07:34Z",
+        "dataCategories": {
+          "1": {
+            "id": 1,
+            "name": "Device Data",
+            "description": "Data that pertains to a device, including OS information and cross-device identification capabilities."
+          }
+        },
         "purposes": {
           "1": {
             "id": 1,
@@ -457,7 +464,7 @@
                 "legIntClaim": "https://www.captifytechnologies.com/privacy-notice/"
               }
             ],
-            "dataDeclaration": [],
+            "dataDeclaration": null,
             "deviceStorageDisclosureUrl": "https://static.cpx.to/gvl/deviceStorageDisclosure.json"
           }
         },
