@@ -19,7 +19,6 @@ import {
 } from "common/table/v2";
 import { useEffect, useMemo, useState } from "react";
 
-import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   ConsentManagementFilterModal,
   Option,
@@ -29,12 +28,7 @@ import {
   useGetHealthQuery,
   useGetVendorReportQuery,
 } from "~/features/plus/plus.slice";
-import { useLazyGetSystemByFidesKeyQuery } from "~/features/system/system.slice";
-import {
-  Page_SystemSummary_,
-  SystemResponse,
-  SystemSummary,
-} from "~/types/api";
+import { Page_SystemSummary_, SystemSummary } from "~/types/api";
 
 const columnHelper = createColumnHelper<SystemSummary>();
 
@@ -49,10 +43,6 @@ export const ConsentManagementTable = () => {
   const { tcf: isTcfEnabled } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const [globalFilter, setGlobalFilter] = useState();
-  const [systemToEdit, setSystemToEdit] = useState<
-    SystemResponse | undefined
-  >();
-  const [getSystemByFidesKey] = useLazyGetSystemByFidesKeyQuery();
 
   const {
     isOpen: isFilterOpen,
@@ -225,22 +215,11 @@ export const ConsentManagementTable = () => {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const onRowClick = async (row: SystemSummary) => {
-    const result = await getSystemByFidesKey(row.fides_key);
-    setSystemToEdit(result.data);
-  };
-
   if (isReportLoading || isLoadingHealthCheck) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
   return (
     <Flex flex={1} direction="column" overflow="auto">
-      <AddVendor
-        passedInSystem={systemToEdit}
-        onCloseModal={() => setSystemToEdit(undefined)}
-        showButtons={false}
-        disableFields
-      />
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={globalFilter}
@@ -272,7 +251,7 @@ export const ConsentManagementTable = () => {
           </Button>
         </Flex>
       </TableActionBar>
-      <FidesTableV2 tableInstance={tableInstance} onRowClick={onRowClick} />
+      <FidesTableV2 tableInstance={tableInstance} />
       <PaginationBar
         totalRows={totalRows}
         pageSizes={PAGE_SIZES}
