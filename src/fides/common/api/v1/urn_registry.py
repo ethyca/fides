@@ -112,6 +112,9 @@ PRIVACY_REQUEST_TRANSFER_TO_PARENT = (
     "/privacy-request/transfer/{privacy_request_id}/{rule_key}"
 )
 
+# Purpose URLs
+PURPOSES = "/purposes"
+
 
 # Identity Verification URLs
 ID_VERIFICATION_CONFIG = "/id-verification/config"
