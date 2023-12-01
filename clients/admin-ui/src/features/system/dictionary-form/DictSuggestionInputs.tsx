@@ -184,6 +184,7 @@ export const DictSuggestionTextArea = ({
           {...field}
           size="sm"
           data-testid={`input-${field.name}`}
+          focusBorderColor="primary.600"
           color={
             isShowingSuggestions === "showing"
               ? "complimentary.500"
@@ -317,6 +318,7 @@ export const DictSuggestionSelect = ({
             data-testid={`input-${field.name}`}
             placeholder={placeholder}
             options={options}
+            focusBorderColor="primary.600"
             chakraStyles={{
               input: (provided) => ({
                 ...provided,
@@ -446,6 +448,7 @@ export const DictSuggestionCreatableSelect = ({
             data-testid={`input-${field.name}`}
             placeholder={placeholder}
             options={options}
+            focusBorderColor="primary.600"
             chakraStyles={{
               input: (provided) => ({
                 ...provided,
@@ -550,6 +553,7 @@ export const DictSuggestionNumberInput = ({
                 ? "complimentary.500"
                 : "gray.800"
             }
+            focusBorderColor="primary.600"
             isDisabled={disabled}
           >
             <NumberInputField />
