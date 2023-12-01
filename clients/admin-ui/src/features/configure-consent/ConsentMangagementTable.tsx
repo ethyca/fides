@@ -25,10 +25,16 @@ import {
   useConsentManagementFilters,
 } from "~/features/configure-consent/ConsentManagementFilterModal";
 import {
+  ConsentManagementModal,
+  useConsentManagementModal,
+} from "~/features/configure-consent/ConsentManagementModal";
+import {
   useGetHealthQuery,
   useGetVendorReportQuery,
 } from "~/features/plus/plus.slice";
 import { Page_SystemSummary_, SystemSummary } from "~/types/api";
+
+import { fidesKeyFilter } from "../datamap/datamap-table/filters/fides-key-filter";
 
 const columnHelper = createColumnHelper<SystemSummary>();
 
@@ -43,6 +49,12 @@ export const ConsentManagementTable = () => {
   const { tcf: isTcfEnabled } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const [globalFilter, setGlobalFilter] = useState();
+  const {
+    isOpen: isRowModalOpen,
+    onOpen: onRowModalOpen,
+    onClose: onRowModalClose,
+  } = useConsentManagementModal();
+  const [systemFidesKey, setSystemFidesKey] = useState<string>();
 
   const {
     isOpen: isFilterOpen,
@@ -215,11 +227,24 @@ export const ConsentManagementTable = () => {
     getCoreRowModel: getCoreRowModel(),
   });
 
+  const onRowClick = (system: SystemSummary) => {
+    console.log(system);
+    setSystemFidesKey(system.fides_key);
+    onRowModalOpen();
+  };
+
   if (isReportLoading || isLoadingHealthCheck) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
   return (
     <Flex flex={1} direction="column" overflow="auto">
+      {isRowModalOpen && systemFidesKey ? (
+        <ConsentManagementModal
+          isOpen={isRowModalOpen}
+          fidesKey={systemFidesKey}
+          onClose={onRowModalClose}
+        />
+      ) : null}
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={globalFilter}
@@ -251,7 +276,7 @@ export const ConsentManagementTable = () => {
           </Button>
         </Flex>
       </TableActionBar>
-      <FidesTableV2 tableInstance={tableInstance} />
+      <FidesTableV2 tableInstance={tableInstance} onRowClick={onRowClick} />
       <PaginationBar
         totalRows={totalRows}
         pageSizes={PAGE_SIZES}
