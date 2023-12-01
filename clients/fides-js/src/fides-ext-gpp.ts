@@ -22,6 +22,7 @@ import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
 import type { Fides } from "./lib/initialize";
 import type { OverrideOptions } from "./lib/consent-types";
 import { GppFunction } from "./lib/gpp/types";
+import { FidesEvent } from "./fides";
 
 const CMP_VERSION = 1;
 
@@ -39,6 +40,21 @@ declare global {
   }
 }
 
+/**
+ * Wrapper around setting a TC string on the CMP API object
+ * @param event: FidesEvent
+ * @param cmpApi: the CMP API model
+ */
+const setTcString = (event: FidesEvent, cmpApi: CmpApi) => {
+  const tcString = extractTCStringForCmpApi(event);
+  if (tcString) {
+    console.log({ tcString });
+    // Workaround for bug in base library https://github.com/IABTechLab/iabgpp-es/issues/35
+    cmpApi.setFieldValueBySectionId(TCF_SECTION_ID, "CmpId", ETHYCA_CMP_ID);
+    cmpApi.setSectionStringById(TCF_SECTION_ID, tcString);
+  }
+};
+
 export const initializeGppCmpApi = () => {
   makeStub();
   const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION);
@@ -51,6 +67,7 @@ export const initializeGppCmpApi = () => {
       isPrivacyExperience(experience) &&
       !shouldResurfaceConsent(experience, event.detail)
     ) {
+      setTcString(event, cmpApi);
       cmpApi.setSignalStatus(SignalStatus.READY);
     }
   });
@@ -61,21 +78,21 @@ export const initializeGppCmpApi = () => {
   });
 
   window.addEventListener("FidesModalClosed", (event) => {
-    cmpApi.setCmpDisplayStatus(CmpDisplayStatus.HIDDEN);
     // If the modal was closed without the user saving, set signal status back to Ready
+    // Let the FidesUpdated listener below handle setting the display status to hidden for other cases
     if (
       event.detail.extraDetails &&
       event.detail.extraDetails.saved === false
     ) {
+      cmpApi.setCmpDisplayStatus(CmpDisplayStatus.HIDDEN);
       cmpApi.setSignalStatus(SignalStatus.READY);
     }
   });
 
   window.addEventListener("FidesUpdated", (event) => {
-    const tcString = extractTCStringForCmpApi(event);
-    // Workaround for bug in base library https://github.com/IABTechLab/iabgpp-es/issues/35
-    cmpApi.setFieldValueBySectionId(TCF_SECTION_ID, "CmpId", ETHYCA_CMP_ID);
-    cmpApi.setSectionStringById(TCF_SECTION_ID, tcString ?? "");
+    // In our flows, whenever FidesUpdated fires, the UI has closed
+    cmpApi.setCmpDisplayStatus(CmpDisplayStatus.HIDDEN);
+    setTcString(event, cmpApi);
     cmpApi.fireSectionChange("tcfeuv2");
     cmpApi.setSignalStatus(SignalStatus.READY);
   });
