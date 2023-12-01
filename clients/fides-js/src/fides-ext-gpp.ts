@@ -48,7 +48,6 @@ declare global {
 const setTcString = (event: FidesEvent, cmpApi: CmpApi) => {
   const tcString = extractTCStringForCmpApi(event);
   if (tcString) {
-    console.log({ tcString });
     // Workaround for bug in base library https://github.com/IABTechLab/iabgpp-es/issues/35
     cmpApi.setFieldValueBySectionId(TCF_SECTION_ID, "CmpId", ETHYCA_CMP_ID);
     cmpApi.setSectionStringById(TCF_SECTION_ID, tcString);
