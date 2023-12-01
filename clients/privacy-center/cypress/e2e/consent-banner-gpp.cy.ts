@@ -102,6 +102,7 @@ describe("Fides-js GPP extension", () => {
           });
 
         cy.get("button").contains("Opt in to all").click();
+        cy.get("@FidesUpdated").should("have.been.calledOnce");
 
         const expected = [
           { eventName: "cmpDisplayStatus", data: "hidden" },
@@ -203,6 +204,7 @@ describe("Fides-js GPP extension", () => {
         // User makes a choice
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt out of all").click();
+          cy.get("@FidesUpdated").should("have.been.calledOnce");
         });
         cy.get("@gppListener")
           .its("args")
