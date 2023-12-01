@@ -1,3 +1,9 @@
+/**
+ * The GPP extension is often cached by the Cypress browser. You may need to manually
+ * clear your Cypress browser's cache in the Network tab if you are making changes to
+ * the source file while also running tests.
+ */
+
 /* eslint-disable no-underscore-dangle */
 import { CONSENT_COOKIE_NAME, FidesEndpointPaths } from "fides-js";
 import { API_URL, TCF_VERSION_HASH } from "../support/constants";
@@ -135,10 +141,12 @@ describe("Fides-js GPP extension", () => {
      * 10. sectionChange = tcfeuv2
      * 11. signalStatus = ready
      */
-    it.only("fires appropriate gpp events for returning user", () => {
+    it("fires appropriate gpp events for returning user", () => {
+      const tcString = "CPziCYAPziCYAGXABBENATEIAACAAAAAAAAAABEAAAAA";
       // Set a cookie to mimic a returning user
       const cookie = mockCookie({
         tcf_version_hash: TCF_VERSION_HASH,
+        fides_string: tcString,
       });
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -160,18 +168,114 @@ describe("Fides-js GPP extension", () => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));
         });
 
+        // Check initial data which should signal Ready and have the cookie's TC string
         cy.get("@gppListener")
           .should("have.been.calledOnce")
           .its("lastCall.args")
           .then(([data, success]) => {
             expect(success).to.eql(true);
             expect(data.eventName).to.eql("listenerRegistered");
-            const { cmpDisplayStatus, signalStatus, gppString } = data.pingData;
-            console.log({ data });
+            const { cmpDisplayStatus, signalStatus, gppString, cmpStatus } =
+              data.pingData;
+            expect(cmpStatus).to.eql("loaded");
             expect(cmpDisplayStatus).to.eql("hidden");
             expect(signalStatus).to.eql("ready");
-            expect(gppString).to.eql("DBAA"); // empty string, header only
+            expect(gppString).to.contain(tcString);
           });
+
+        // User opens the modal so signal should be "not ready" and display should be "visible"
+        cy.get("#fides-modal-link").click();
+        cy.get("@gppListener")
+          .its("args")
+          .then((args) => {
+            expect(args.length).to.eql(3);
+            const expected = [
+              { eventName: "signalStatus", data: "not ready" },
+              { eventName: "cmpDisplayStatus", data: "visible" },
+            ];
+            [args[1], args[2]].forEach(([data, success], idx) => {
+              expect(success).to.eql(true);
+              expect(data.eventName).to.eql(expected[idx].eventName);
+              expect(data.data).to.eql(expected[idx].data);
+            });
+          });
+
+        // User makes a choice
+        cy.getByTestId("consent-modal").within(() => {
+          cy.get("button").contains("Opt out of all").click();
+        });
+        cy.get("@gppListener")
+          .its("args")
+          .then((args) => {
+            expect(args.length).to.eql(6);
+            const expected = [
+              { eventName: "cmpDisplayStatus", data: "hidden" },
+              { eventName: "sectionChange", data: "tcfeuv2" },
+              { eventName: "signalStatus", data: "ready" },
+            ];
+            [args[3], args[4], args[5]].forEach(([data, success], idx) => {
+              expect(success).to.eql(true);
+              expect(data.eventName).to.eql(expected[idx].eventName);
+              expect(data.data).to.eql(expected[idx].data);
+            });
+            // Check that the TC string changed-still the same header, but different contents
+            const { gppString } = args[5][0].pingData;
+            expect(gppString).to.contain("DBABMA~");
+            expect(gppString).not.to.contain(tcString);
+          });
+      });
+    });
+
+    /**
+     * Expected flow for a returning user who opens but then closes the modal without making a change:
+     * 1. listenerRegistered
+     * 2. User opens the modal
+     * 3. signalStatus = not ready
+     * 4. cmpDisplayStatus = visible
+     * 5. User closes the modal without saving anything
+     * 6. cmpDisplayStatus = hidden
+     * 7. signalStatus = ready
+     */
+    it("can handle returning user closing the modal without a preference change", () => {
+      const cookie = mockCookie({
+        tcf_version_hash: TCF_VERSION_HASH,
+      });
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+            gppEnabled: true,
+          },
+          experience: experience.items[0],
+        });
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.window().then((win) => {
+          win.__gpp("addEventListener", cy.stub().as("gppListener"));
+        });
+        cy.get("#fides-modal-link").click();
+        const expected = [
+          { eventName: "listenerRegistered", data: true },
+          { eventName: "signalStatus", data: "not ready" },
+          { eventName: "cmpDisplayStatus", data: "visible" },
+          { eventName: "cmpDisplayStatus", data: "hidden" },
+          { eventName: "signalStatus", data: "ready" },
+        ];
+        cy.get("@gppListener")
+          .its("args")
+          .then(
+            (
+              args: [{ eventName: string; data: string | boolean }, boolean][]
+            ) => {
+              args.forEach(([data, success], idx) => {
+                expect(success).to.eql(true);
+                expect(data.eventName).to.eql(expected[idx].eventName);
+                expect(data.data).to.eql(expected[idx].data);
+              });
+            }
+          );
       });
     });
   });
