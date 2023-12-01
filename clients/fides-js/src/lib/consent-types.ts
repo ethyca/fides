@@ -84,6 +84,9 @@ export type FidesOptions = {
 
   // What the "GDPR Applies" field of TCF should default to
   fidesTcfGdprApplies: boolean;
+
+  // Prevents the banner and modal from being dismissed
+  preventDismissal: boolean;
 };
 
 export type GetPreferencesFnResp = {

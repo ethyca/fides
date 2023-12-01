@@ -53,6 +53,7 @@ export interface PrivacyCenterSettings {
   FIDES_TCF_GDPR_APPLIES: boolean; // (optional) The default for the TCF GDPR applies value (default true)
   FIDES_STRING: string | null; // (optional) An explicitly passed-in string that supersedes the cookie. Can contain both TC and AC strings
   IS_FORCED_TCF: boolean; // whether to force the privacy center to use the fides-tcf.js bundle
+  PREVENT_DISMISSAL: boolean; // whether or not the user is allowed to dismiss the banner/overlay
 }
 
 /**
@@ -78,6 +79,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_TCF_GDPR_APPLIES"
   | "FIDES_STRING"
   | "IS_FORCED_TCF"
+  | "PREVENT_DISMISSAL"
 >;
 
 export type Styles = string;
@@ -339,6 +341,9 @@ export const loadPrivacyCenterEnvironment =
       IS_FORCED_TCF: process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF
         ? process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF === "true"
         : false,
+      PREVENT_DISMISSAL: process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL
+        ? process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL === "true"
+        : false,
     };
 
     // Load configuration file (if it exists)
@@ -366,6 +371,7 @@ export const loadPrivacyCenterEnvironment =
       FIDES_TCF_GDPR_APPLIES: settings.FIDES_TCF_GDPR_APPLIES,
       FIDES_STRING: settings.FIDES_STRING,
       IS_FORCED_TCF: settings.IS_FORCED_TCF,
+      PREVENT_DISMISSAL: settings.PREVENT_DISMISSAL,
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present

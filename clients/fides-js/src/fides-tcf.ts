@@ -324,6 +324,7 @@ _Fides = {
     fidesString: null,
     apiOptions: null,
     fidesTcfGdprApplies: true,
+    preventDismissal: false,
   },
   fides_meta: {},
   identity: {},

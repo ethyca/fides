@@ -152,6 +152,7 @@ export default async function handler(
       fidesString,
       // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
       apiOptions: null,
+      preventDismissal: environment.settings.PREVENT_DISMISSAL,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
