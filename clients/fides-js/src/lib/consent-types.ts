@@ -84,8 +84,12 @@ export type FidesOptions = {
 
   // Whether or the GPP extension should be loaded
   gppEnabled: boolean;
+
   // What the "GDPR Applies" field of TCF should default to
   fidesTcfGdprApplies: boolean;
+
+  // GPP extension path (ex: "/fides-ext-gpp.js")
+  gppExtensionPath: string;
 };
 
 export type GetPreferencesFnResp = {
