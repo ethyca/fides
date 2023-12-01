@@ -53,6 +53,31 @@
           "current_preference": null,
           "outdated_preference": null,
           "cookies": []
+        },
+        {
+          "name": "Analytics",
+          "notice_key": "analytics_opt_out",
+          "description": "Ensures you are correctly notifying the user about your advertising practices and for appropriate locations, collecting the users consent preferences.",
+          "internal_description": null,
+          "origin": null,
+          "regions": ["eu_ie", "eu_fr", "us_ca"],
+          "consent_mechanism": "opt_out",
+          "data_uses": ["analytics.reporting.ad_performance"],
+          "enforcement_level": "system_wide",
+          "disabled": false,
+          "has_gpc_flag": false,
+          "displayed_in_privacy_center": true,
+          "displayed_in_overlay": true,
+          "displayed_in_api": false,
+          "id": "pri_b558ab1f-5367-4f0d-94b1-ec06a81ae822",
+          "created_at": "2023-06-02T15:22:02.587793+00:00",
+          "updated_at": "2023-06-02T15:46:47.946409+00:00",
+          "version": 2.0,
+          "privacy_notice_history_id": "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076239",
+          "default_preference": "opt_in",
+          "current_preference": null,
+          "outdated_preference": null,
+          "cookies": [{ "name": "_ga", "path": null, "domain": null }]
         }
       ]
     }

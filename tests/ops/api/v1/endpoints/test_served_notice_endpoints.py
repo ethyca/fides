@@ -216,6 +216,61 @@ class TestSaveNoticesServedForFidesDeviceId:
         last_served_notice.delete(db)
         served_notice_history.delete(db)
 
+    def test_record_notices_served_x_forwarded_for(
+        self,
+        db,
+        api_client,
+        url,
+        request_body,
+    ):
+        """Assert IP Address is pulled off of x-forwarded-for if it exists"""
+        response = api_client.patch(
+            url,
+            json=request_body,
+            headers={
+                "Origin": "http://localhost:8080",
+                "X-Forwarded-For": "22.104.237.248,0.142.88.40,90.247.24.85",
+            },
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        use_served_history = ServedNoticeHistory.get(
+            db, object_id=response.json()[0]["served_notice_history_id"]
+        )
+        assert use_served_history.anonymized_ip_address == "22.104.237.0"
+
+        last_served_record = LastServedNotice.get(
+            db, object_id=use_served_history.last_served_record.id
+        )
+        last_served_record.delete(db)
+        use_served_history.delete(db)
+
+    def test_record_notices_served_client_ip(
+        self,
+        db,
+        api_client,
+        url,
+        request_body,
+    ):
+        """Assert falls back to client ip if no x-forwarded-for
+        In this case, we're using the testclient, whose host is testclient, so IP address
+        falls back to None
+        """
+        response = api_client.patch(
+            url, json=request_body, headers={"Origin": "http://localhost:8080"}
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        use_served_history = ServedNoticeHistory.get(
+            db, object_id=response.json()[0]["served_notice_history_id"]
+        )
+        assert use_served_history.anonymized_ip_address is None
+        last_served_record = LastServedNotice.get(
+            db, object_id=use_served_history.last_served_record.id
+        )
+        last_served_record.delete(db)
+        use_served_history.delete(db)
+
     def test_duplicate_tcf_special_purpose_served(
         self,
         api_client,
