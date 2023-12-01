@@ -20,6 +20,7 @@ export const PRIVACY_EXPERIENCE_ROUTE = "/consent/privacy-experience";
 export const PRIVACY_NOTICES_ROUTE = "/consent/privacy-notices";
 export const CONFIGURE_CONSENT_ROUTE = "/consent/configure";
 export const ADD_MULTIPLE_VENDORS_ROUTE = "/consent/configure/add-vendors";
+export const CONSENT_REPORTING_ROUTE = "/consent/reporting";
 
 // Management group
 export const USER_MANAGEMENT_ROUTE = "/user-management";

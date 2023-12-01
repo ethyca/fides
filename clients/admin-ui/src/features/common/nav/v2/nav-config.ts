@@ -111,6 +111,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
       },
+      {
+        title: "Consent reporting",
+        path: routes.CONSENT_REPORTING_ROUTE,
+        requiresFlag: "consentReporting",
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+      },
     ],
   },
   {
