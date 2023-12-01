@@ -7,24 +7,24 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.sql import Select
 
-from fides.api.models.sql_models import System
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.util import errors
 
 AC_PREFIX = "gacp."
 GVL_PREFIX = "gvl."
 
 
-def exclude_gvl_systems(query: Select):
+def exclude_gvl_systems(query: Select) -> Select:
     """Utility function to add a query clause that excludes GVL systems"""
     return query.where(
-        or_(System.vendor_id == None, not_(System.vendor_id.startswith(GVL_PREFIX)))
+        or_(System.vendor_id is None, not_(System.vendor_id.startswith(GVL_PREFIX)))
     )
 
 
-def exclude_ac_systems(query: Select):
+def exclude_ac_systems(query: Select) -> Select:
     """Utility function to add a query clause that excludes AC systems"""
     return query.where(
-        or_(System.vendor_id == None, not_(System.vendor_id.startswith(AC_PREFIX)))
+        or_(System.vendor_id is None, not_(System.vendor_id.startswith(AC_PREFIX)))
     )
 
 
