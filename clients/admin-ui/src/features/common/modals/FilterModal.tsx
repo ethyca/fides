@@ -19,7 +19,7 @@ type FilterSectionProps = {
 };
 
 export const FilterSection = ({ heading, children }: FilterSectionProps) => (
-  <Box padding="24px 8px 8px 24px">
+  <Box padding="12px 8px 8px 12px" maxHeight={600}>
     {heading ? (
       <Heading size="md" lineHeight={6} fontWeight="bold" mb={2}>
         {heading}
@@ -47,7 +47,12 @@ export const FilterModal: React.FC<FilterModalProps> = ({
       <ModalHeader>Filters</ModalHeader>
       <ModalCloseButton />
       <Divider />
-      <ModalBody maxH="85vh" padding="0px" overflowX="auto">
+      <ModalBody
+        maxH="85vh"
+        padding="0px"
+        overflowX="auto"
+        style={{ scrollbarGutter: "stable" }}
+      >
         {children}
       </ModalBody>
       <ModalFooter>
@@ -59,7 +64,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
             onClick={resetFilters}
             flexGrow={1}
           >
-            Reset Filters
+            Reset filters
           </Button>
           <Button
             colorScheme="primary"
