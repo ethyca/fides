@@ -889,11 +889,6 @@ div#fides-banner-inner .fides-privacy-policy {
   margin-bottom: 16px;
 }
 
-.fides-vendor-info {
-  display: flex;
-  align-items: center;
-}
-
 .fides-vendor-info-label {
   font-weight: 600;
   font-size: var(--fides-overlay-font-size-body-small);
@@ -941,16 +936,9 @@ div#fides-banner-inner .fides-privacy-policy {
 }
 
 @media screen and (max-width: 992px) {
-  .fides-vendor-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 4px;
-    text-align: center;
-  }
-
   .fides-vendor-info-banner {
-    gap: 8px;
+    flex-direction: column;
+    gap: 16px;
   }
 }
 

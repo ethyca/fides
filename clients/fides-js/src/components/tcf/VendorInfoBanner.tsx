@@ -11,7 +11,7 @@ const VendorInfo = ({
   count: number;
   onClick?: () => void;
 }) => (
-  <div className="fides-vendor-info">
+  <div className="fides-flex-center">
     {onClick ? (
       <button
         type="button"
