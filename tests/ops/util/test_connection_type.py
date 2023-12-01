@@ -26,6 +26,7 @@ def test_get_connection_types():
     } in data
     first_saas_type = ConnectorRegistry.connector_types().pop()
     first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
+    assert first_saas_template
     assert {
         "identifier": first_saas_type,
         "type": SystemType.saas.value,

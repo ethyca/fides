@@ -1813,7 +1813,12 @@ class TestSystemUpdate:
         ]
 
         for update_dec in update_declarations:
-            db_decs.remove(update_dec.dict())
+            try:
+                db_decs.remove(update_dec.dict())
+            except ValueError as err:
+                print(f"Failed to remove value from dict: '{update_dec}'")
+                raise err
+
         # and assert we don't have any extra response declarations
         assert len(db_decs) == 0
 

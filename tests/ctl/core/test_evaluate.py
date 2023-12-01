@@ -577,12 +577,10 @@ def test_failed_evaluation_error_message(
             headers=test_config.user.auth_header,
             local=True,
         )
-    captured_out = string_cleaner(capsys.readouterr().out)[
-        : len(expected_error_message)
-    ]
+    captured_out = string_cleaner(capsys.readouterr().out)
     print(f"Expected output:\n{expected_error_message}")
     print(f"Captured output:\n{captured_out}")
-    assert captured_out == expected_error_message
+    assert captured_out.endswith(expected_error_message)
 
 
 @pytest.mark.unit
