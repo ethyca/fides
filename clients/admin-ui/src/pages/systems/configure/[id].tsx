@@ -58,7 +58,7 @@ const ConfigureSystem: NextPage = () => {
       const locked =
         isTCFEnabled &&
         !!system.vendor_id &&
-        extractVendorSource(system.fides_key) === VendorSources.GVL;
+        extractVendorSource(system.vendor_id) === VendorSources.GVL;
       dispatch(setLockedForGVL(locked));
     }
   }, [system, dispatch, isTCFEnabled]);
