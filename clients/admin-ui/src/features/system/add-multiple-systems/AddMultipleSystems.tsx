@@ -19,7 +19,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import ConfirmationModal from "common/ConfirmationModal";
 import { useFeatures } from "common/features";
 import {
   extractVendorSource,
@@ -38,12 +37,14 @@ import {
   RowSelectionBar,
   TableActionBar,
   TableSkeletonLoader,
+  useClientSidePagination,
 } from "common/table/v2";
 import { errorToastParams, successToastParams } from "common/toast";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { INDEX_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   DictSystems,
@@ -194,6 +195,17 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       },
     },
   });
+
+  const {
+    totalRows,
+    onPreviousPageClick,
+    isPreviousPageDisabled,
+    onNextPageClick,
+    isNextPageDisabled,
+    setPageSize,
+    startRange,
+    endRange,
+  } = useClientSidePagination(tableInstance);
 
   const addVendors = async () => {
     const vendorIds = tableInstance
@@ -354,9 +366,16 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           />
         }
       />
-      <PaginationBar<MultipleSystemTable>
-        tableInstance={tableInstance}
+      <PaginationBar
         pageSizes={PAGE_SIZES}
+        totalRows={totalRows}
+        onPreviousPageClick={onPreviousPageClick}
+        isPreviousPageDisabled={isPreviousPageDisabled}
+        onNextPageClick={onNextPageClick}
+        isNextPageDisabled={isNextPageDisabled}
+        setPageSize={setPageSize}
+        startRange={startRange}
+        endRange={endRange}
       />
     </Flex>
   );

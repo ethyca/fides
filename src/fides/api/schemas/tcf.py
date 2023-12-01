@@ -7,7 +7,7 @@ from fideslang.gvl import (
     MAPPED_SPECIAL_PURPOSES,
 )
 from fideslang.gvl.models import Feature, MappedPurpose
-from pydantic import AnyUrl, root_validator, validator
+from pydantic import AnyUrl, BaseModel, root_validator, validator
 
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
@@ -230,3 +230,8 @@ class TCFSpecialFeatureSave(TCFPreferenceSaveBase):
                 f"Cannot save preferences against invalid special feature id: '{value}'"
             )
         return value
+
+
+class PurposesResponse(BaseModel):
+    purposes: Dict[str, MappedPurpose]
+    special_purposes: Dict[str, MappedPurpose]
