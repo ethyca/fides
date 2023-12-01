@@ -60,6 +60,8 @@ const ConfigureSystem: NextPage = () => {
         !!system.vendor_id &&
         extractVendorSource(system.vendor_id) === VendorSources.GVL;
       dispatch(setLockedForGVL(locked));
+    } else {
+      setLockedForGVL(false);
     }
   }, [system, dispatch, isTCFEnabled]);
 
