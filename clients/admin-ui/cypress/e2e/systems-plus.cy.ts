@@ -143,6 +143,20 @@ describe("System management with Plus features", () => {
       cy.getByTestId("input-description").should("not.be.disabled");
     });
 
+    it("does not lock editing for a non-GVL vendor when visiting 'edit system' page directly", () => {
+      cy.fixture("systems/systems.json").then((systems) => {
+        cy.intercept("GET", "/api/v1/system/*", {
+          body: {
+            ...systems[0],
+            vendor_id: "gacp.3073",
+          },
+        }).as("getSystem");
+      });
+      cy.visit("/systems/configure/fidesctl_system");
+      cy.wait("@getSystem");
+      cy.getByTestId("locked-for-GVL-notice").should("not.exist");
+    });
+
     it("allows changes to data uses for non-GVL vendors", () => {
       cy.getSelectValueContainer("input-vendor_id").type("L{enter}");
       cy.getByTestId("save-btn").click();
