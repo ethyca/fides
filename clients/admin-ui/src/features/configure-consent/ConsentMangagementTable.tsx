@@ -151,7 +151,7 @@ export const ConsentManagementTable = () => {
       columnHelper.accessor((row) => row.data_uses, {
         id: "tcf_purpose",
         cell: (props) => (
-          <BadgeCell suffix="Purposes" value={props.getValue()} />
+          <BadgeCell suffix="purposes" value={props.getValue()} />
         ),
         header: (props) => <DefaultHeaderCell value="TCF purpose" {...props} />,
         meta: {
@@ -161,17 +161,17 @@ export const ConsentManagementTable = () => {
       columnHelper.accessor((row) => row.data_uses, {
         id: "data_uses",
         cell: (props) => (
-          <BadgeCell suffix="Data uses" value={props.getValue()} />
+          <BadgeCell suffix="data uses" value={props.getValue()} />
         ),
-        header: (props) => <DefaultHeaderCell value="Data Uses" {...props} />,
+        header: (props) => <DefaultHeaderCell value="Data uses" {...props} />,
         meta: {
           width: "175px",
         },
       }),
       columnHelper.accessor((row) => row.legal_bases, {
         id: "legal_bases",
-        cell: (props) => <BadgeCell suffix="Bases" value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Legal Bases" {...props} />,
+        cell: (props) => <BadgeCell suffix="bases" value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Legal bases" {...props} />,
         meta: {
           width: "175px",
         },
