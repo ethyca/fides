@@ -28,7 +28,7 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe.skip("empty state", () => {
+  describe("empty state", () => {
     it("can render an empty state", () => {
       stubPlus(true, {
         core_fides_version: "1.9.6",
@@ -62,7 +62,7 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe.skip("with existing systems", () => {
+  describe("with existing systems", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
@@ -116,7 +116,7 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe.skip("adding a vendor", () => {
+  describe("adding a vendor", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
@@ -254,7 +254,7 @@ describe("Consent configuration", () => {
       });
     });
 
-    describe.skip("with the dictionary", () => {
+    describe("with the dictionary", () => {
       beforeEach(() => {
         stubPlus(
           true,
@@ -773,7 +773,7 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe.skip("deleting a vendor", () => {
+  describe("deleting a vendor", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
@@ -817,7 +817,7 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe.skip("editing a vendor", () => {
+  describe("editing a vendor", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
