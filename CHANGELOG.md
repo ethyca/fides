@@ -18,6 +18,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.25.0...main)
 
 ### Added
+- Paging to vendors in the TCF overlay [#4463](https://github.com/ethyca/fides/pull/4463)
 - New purposes endpoint and indices to improve system lookups [#4452](https://github.com/ethyca/fides/pull/4452)
 
 ### Fixed

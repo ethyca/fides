@@ -7,7 +7,6 @@ import {
   VendorRecord,
   EmbeddedPurpose,
   LegalBasisEnum,
-  EnabledIds,
 } from "../../lib/tcf/types";
 import { PrivacyExperience } from "../../lib/consent-types";
 import { UpdateEnabledIds } from "./TcfOverlay";
@@ -19,6 +18,7 @@ import ExternalLink from "../ExternalLink";
 import RecordsList from "./RecordsList";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import RadioGroup from "./RadioGroup";
+import PagingButtons, { usePaging } from "../PagingButtons";
 
 const VendorDetails = ({
   label,
@@ -98,8 +98,8 @@ const DataCategories = ({
     return null;
   }
 
-  // @ts-ignore this type doesn't exist in v2.2 but does in v3
   const declarations: GvlDataDeclarations | undefined =
+    // @ts-ignore this type doesn't exist in v2.2 but does in v3
     gvlVendor.dataDeclaration;
 
   return (
@@ -206,6 +206,61 @@ const ToggleChild = ({
   );
 };
 
+const PagedVendorData = ({
+  experience,
+  vendors,
+  enabledIds,
+  onChange,
+}: {
+  experience: PrivacyExperience;
+  vendors: VendorRecord[];
+  enabledIds: string[];
+  onChange: (newIds: string[]) => void;
+}) => {
+  const { activeChunk, totalPages, ...paging } = usePaging(vendors);
+
+  const {
+    gvlVendors,
+    otherVendors,
+  }: {
+    gvlVendors: VendorRecord[];
+    otherVendors: VendorRecord[];
+  } = useMemo(
+    () => ({
+      gvlVendors: activeChunk.filter((v) => v.isGvl),
+      otherVendors: activeChunk.filter((v) => !v.isGvl),
+    }),
+    [activeChunk]
+  );
+
+  return (
+    <Fragment>
+      <RecordsList<VendorRecord>
+        title="IAB TCF vendors"
+        items={gvlVendors}
+        enabledIds={enabledIds}
+        onToggle={onChange}
+        renderBadgeLabel={(vendor) =>
+          vendorGvlEntry(vendor.id, experience.gvl) ? "IAB TCF" : undefined
+        }
+        renderToggleChild={(vendor) => (
+          <ToggleChild vendor={vendor} experience={experience} />
+        )}
+      />
+      <RecordsList<VendorRecord>
+        title="Other vendors"
+        items={otherVendors}
+        enabledIds={enabledIds}
+        onToggle={onChange}
+        renderToggleChild={(vendor) => (
+          <ToggleChild vendor={vendor} experience={experience} />
+        )}
+      />
+      <PagingButtons {...paging} />
+    </Fragment>
+  );
+};
+
 const TcfVendors = ({
   experience,
   enabledVendorConsentIds,
@@ -226,34 +281,18 @@ const TcfVendors = ({
   const [activeLegalBasisOption, setActiveLegalBasisOption] = useState(
     LEGAL_BASIS_OPTIONS[0]
   );
-  const activeData: {
-    gvlVendors: VendorRecord[];
-    otherVendors: VendorRecord[];
-    enabledIds: string[];
-    modelType: keyof EnabledIds;
-  } = useMemo(() => {
-    const gvlVendors = vendors.filter((v) => v.isGvl);
-    const otherVendors = vendors.filter((v) => !v.isGvl);
-    if (activeLegalBasisOption.value === LegalBasisEnum.CONSENT) {
-      return {
-        gvlVendors: gvlVendors.filter((v) => v.isConsent),
-        otherVendors: otherVendors.filter((v) => v.isConsent),
-        enabledIds: enabledVendorConsentIds,
-        modelType: "vendorsConsent",
-      };
-    }
-    return {
-      gvlVendors: gvlVendors.filter((v) => v.isLegint),
-      otherVendors: otherVendors.filter((v) => v.isLegint),
-      enabledIds: enabledVendorLegintIds,
-      modelType: "vendorsLegint",
-    };
-  }, [
-    activeLegalBasisOption,
-    vendors,
-    enabledVendorConsentIds,
-    enabledVendorLegintIds,
-  ]);
+
+  const filteredVendors = useMemo(() => {
+    const legalBasisFiltered =
+      activeLegalBasisOption.value === LegalBasisEnum.CONSENT
+        ? vendors.filter((v) => v.isConsent)
+        : vendors.filter((v) => v.isLegint);
+    // Put "other vendors" last in the list
+    return [
+      ...legalBasisFiltered.filter((v) => v.isGvl),
+      ...legalBasisFiltered.filter((v) => !v.isGvl),
+    ];
+  }, [activeLegalBasisOption, vendors]);
 
   return (
     <div>
@@ -262,30 +301,25 @@ const TcfVendors = ({
         active={activeLegalBasisOption}
         onChange={setActiveLegalBasisOption}
       />
-      <RecordsList<VendorRecord>
-        title="IAB TCF vendors"
-        items={activeData.gvlVendors}
-        enabledIds={activeData.enabledIds}
-        onToggle={(newEnabledIds) =>
-          onChange({ newEnabledIds, modelType: activeData.modelType })
+      <PagedVendorData
+        experience={experience}
+        vendors={filteredVendors}
+        enabledIds={
+          activeLegalBasisOption.value === LegalBasisEnum.CONSENT
+            ? enabledVendorConsentIds
+            : enabledVendorLegintIds
         }
-        renderBadgeLabel={(vendor) =>
-          vendorGvlEntry(vendor.id, experience.gvl) ? "IAB TCF" : undefined
+        onChange={(newEnabledIds) =>
+          onChange({
+            newEnabledIds,
+            modelType:
+              activeLegalBasisOption.value === LegalBasisEnum.CONSENT
+                ? "vendorsConsent"
+                : "vendorsLegint",
+          })
         }
-        renderToggleChild={(vendor) => (
-          <ToggleChild vendor={vendor} experience={experience} />
-        )}
-      />
-      <RecordsList<VendorRecord>
-        title="Other vendors"
-        items={activeData.otherVendors}
-        enabledIds={activeData.enabledIds}
-        onToggle={(newEnabledIds) =>
-          onChange({ newEnabledIds, modelType: activeData.modelType })
-        }
-        renderToggleChild={(vendor) => (
-          <ToggleChild vendor={vendor} experience={experience} />
-        )}
+        // This key forces a rerender when legal basis changes, which allows paging to reset properly
+        key={`vendor-data-${activeLegalBasisOption.value}`}
       />
     </div>
   );
