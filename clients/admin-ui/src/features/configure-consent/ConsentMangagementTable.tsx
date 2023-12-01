@@ -46,7 +46,6 @@ const emptyVendorReportResponse: Page_SystemSummary_ = {
 export const ConsentManagementTable = () => {
   const { tcf: isTcfEnabled } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
-  const [globalFilter, setGlobalFilter] = useState();
   const {
     isOpen: isRowModalOpen,
     onOpen: onRowModalOpen,
@@ -121,7 +120,15 @@ export const ConsentManagementTable = () => {
     endRange,
     pageIndex,
     setTotalPages,
+    resetPageIndexToDefault
   } = useServerSidePagination();
+
+  const [globalFilter, setGlobalFilter] = useState<string>();
+
+  const updateGlobalFilter = (searchTerm: string) => {
+    resetPageIndexToDefault();
+    setGlobalFilter(searchTerm);
+  };
 
   const {
     isFetching: isReportFetching,
@@ -161,7 +168,7 @@ export const ConsentManagementTable = () => {
       columnHelper.accessor((row) => row.data_uses, {
         id: "tcf_purpose",
         cell: (props) => (
-          <BadgeCell suffix="Purposes" value={props.getValue()} />
+          <BadgeCell suffix="purposes" value={props.getValue()} />
         ),
         header: (props) => <DefaultHeaderCell value="TCF purpose" {...props} />,
         meta: {
@@ -171,17 +178,17 @@ export const ConsentManagementTable = () => {
       columnHelper.accessor((row) => row.data_uses, {
         id: "data_uses",
         cell: (props) => (
-          <BadgeCell suffix="Data uses" value={props.getValue()} />
+          <BadgeCell suffix="data uses" value={props.getValue()} />
         ),
-        header: (props) => <DefaultHeaderCell value="Data Uses" {...props} />,
+        header: (props) => <DefaultHeaderCell value="Data uses" {...props} />,
         meta: {
           width: "175px",
         },
       }),
       columnHelper.accessor((row) => row.legal_bases, {
         id: "legal_bases",
-        cell: (props) => <BadgeCell suffix="Bases" value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Legal Bases" {...props} />,
+        cell: (props) => <BadgeCell suffix="bases" value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Legal bases" {...props} />,
         meta: {
           width: "175px",
         },
@@ -245,7 +252,7 @@ export const ConsentManagementTable = () => {
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={globalFilter}
-          setGlobalFilter={setGlobalFilter}
+          setGlobalFilter={updateGlobalFilter}
           placeholder="Search"
         />
         <ConsentManagementFilterModal

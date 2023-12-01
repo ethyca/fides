@@ -53,7 +53,6 @@ const AccordionMultiFieldCheckBox = ({
   <Checkbox
     value={value}
     key={value}
-    width="193px"
     height="20px"
     mb="25px"
     isChecked={isChecked}
@@ -68,11 +67,8 @@ const AccordionMultiFieldCheckBox = ({
     <Text
       fontSize="sm"
       lineHeight={5}
-      height="20px"
-      width="170px"
       textOverflow="ellipsis"
       overflow="hidden"
-      whiteSpace="nowrap"
     >
       {displayText}
     </Text>
@@ -83,15 +79,18 @@ type AccordionMultiFieldProps = {
   options: Option[];
   header: string;
   onCheckboxChange: (newValue: string, checked: boolean) => void;
+  columns?: number;
+  numDefaultOptions?: number;
 };
 
 const AccordionMultifieldFilter = ({
   options,
   header,
   onCheckboxChange,
+  columns = 3,
+  numDefaultOptions = 15,
 }: AccordionMultiFieldProps) => {
   const [isViewingMore, setIsViewingMore] = useState(false);
-  const numDefaultOptions = 15;
   const viewableOptions = isViewingMore
     ? options
     : options.slice(0, numDefaultOptions);
@@ -107,6 +106,7 @@ const AccordionMultifieldFilter = ({
               alignItems="center"
               justifyContent="center"
               textAlign="left"
+              fontWeight={600}
             >
               {header}
             </Box>
@@ -114,7 +114,7 @@ const AccordionMultifieldFilter = ({
           </AccordionButton>
         </Heading>
         <AccordionPanel>
-          <SimpleGrid columns={3}>
+          <SimpleGrid columns={columns}>
             {viewableOptions.map((option) => (
               <AccordionMultiFieldCheckBox
                 key={option.value}
@@ -336,26 +336,28 @@ export const ConsentManagementFilterModal = ({
           options={purposeOptions}
           onCheckboxChange={onPurposeChange}
           header="TCF purposes"
+          columns={1}
+          numDefaultOptions={5}
         />
       ) : null}
       <AccordionMultifieldFilter
         options={dataUseOptions}
         onCheckboxChange={onDataUseChange}
-        header="Data Uses"
+        header="Data uses"
       />
 
       {isTcfEnabled ? (
         <AccordionMultifieldFilter
           options={legalBasisOptions}
           onCheckboxChange={onLegalBasisChange}
-          header="Legal Basis"
+          header="Legal basis"
         />
       ) : null}
       {!isTcfEnabled ? (
         <AccordionMultifieldFilter
           options={consentCategoryOptions}
           onCheckboxChange={onConsentCategoryChange}
-          header="Consent Categories"
+          header="Consent categories"
         />
       ) : null}
     </FilterSection>
