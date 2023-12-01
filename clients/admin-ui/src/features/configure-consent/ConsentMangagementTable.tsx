@@ -42,7 +42,6 @@ const emptyVendorReportResponse: Page_SystemSummary_ = {
 export const ConsentManagementTable = () => {
   const { tcf: isTcfEnabled } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
-  const [globalFilter, setGlobalFilter] = useState();
 
   const {
     isOpen: isFilterOpen,
@@ -110,8 +109,16 @@ export const ConsentManagementTable = () => {
     startRange,
     endRange,
     pageIndex,
+    resetPageIndexToDefault,
     setTotalPages,
   } = useServerSidePagination();
+
+  const [globalFilter, setGlobalFilter] = useState<string>();
+
+  const updateGlobalFilter = (searchTerm: string) => {
+    resetPageIndexToDefault();
+    setGlobalFilter(searchTerm);
+  };
 
   const {
     isFetching: isReportFetching,
@@ -223,7 +230,7 @@ export const ConsentManagementTable = () => {
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={globalFilter}
-          setGlobalFilter={setGlobalFilter}
+          setGlobalFilter={updateGlobalFilter}
           placeholder="Search"
         />
         <ConsentManagementFilterModal
