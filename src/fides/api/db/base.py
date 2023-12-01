@@ -1,6 +1,7 @@
 # pylint: disable=W0611
 # Import all the models, so that Base has them before being
 # imported by Alembic
+from typing import Type
 from fides.api.db.base_class import Base
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.audit_log import AuditLog
@@ -39,3 +40,5 @@ from fides.api.models.storage import StorageConfig
 from fides.api.models.system_compass_sync import SystemCompassSync
 from fides.api.models.system_history import SystemHistory
 from fides.api.models.system_manager import SystemManager
+
+BaseDBType = Type[Base]

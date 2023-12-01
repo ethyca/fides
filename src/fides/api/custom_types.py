@@ -16,7 +16,7 @@ def validate_safe_str(value: str) -> str:
     return value
 
 
-"""
+""" # pylint: disable=pointless-string-statement
 This class is designed to be used in place of the `str` type
 any place where user input is expected.
 

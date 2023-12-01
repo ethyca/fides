@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import ConfigDict, Field, field_validator, model_validator, AnyUrl
+from pydantic import AnyUrl, ConfigDict, Field, field_validator, model_validator
 
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.messaging.messaging import MessagingServiceType

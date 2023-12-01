@@ -64,7 +64,7 @@ def warn_root_user_enabled() -> None:
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app_to_wrap: FastAPI):
     """Run all of the required setup steps for the webserver.
 
     **NOTE**: The order of operations here _is_ deliberate
@@ -77,7 +77,7 @@ async def lifespan(app: FastAPI):
 
     log_startup()
 
-    await run_database_startup(app)
+    await run_database_startup(app_to_wrap)
 
     check_redis()
 

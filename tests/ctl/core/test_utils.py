@@ -42,7 +42,8 @@ def test_nested_collection_fields() -> Generator:
 
 @pytest.mark.unit
 def test_get_db_engine(test_config_path) -> None:
-    conn_str = get_config(test_config_path).database.sync_database_uri
+    # The sync_database_uri has an extra "?" at the end, so we remove it
+    conn_str = get_config(test_config_path).database.sync_database_uri[:-1]
     engine = core_utils.get_db_engine(conn_str)
     assert str(engine.url) == conn_str
 
@@ -57,7 +58,7 @@ def test_nested_fields_unpacked(
     """
     collection = test_nested_collection_fields
     collected_field_names = []
-    for field in core_utils.get_all_level_fields(collection.dict()["fields"]):
+    for field in core_utils.get_all_level_fields(collection.model_dump()["fields"]):
         collected_field_names.append(field["name"])
     assert len(collected_field_names) == 5
 

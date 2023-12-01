@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
-from fides.api.db.base import Base  # type: ignore[attr-defined]
+from fides.api.db.base import BaseDBType
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     CustomField,
     CustomFieldDefinition,
@@ -28,8 +28,8 @@ from fides.api.util import errors
 
 # CRUD Functions
 async def create_resource(
-    sql_model: Base, resource_dict: Dict, async_session: AsyncSession
-) -> Base:
+    sql_model: BaseDBType, resource_dict: Dict, async_session: AsyncSession
+) -> BaseDBType:
     """Create a resource in the database."""
     with log.contextualize(
         sql_model=sql_model.__name__, fides_key=resource_dict["fides_key"]
@@ -64,7 +64,7 @@ async def create_resource(
 async def get_custom_fields_filtered(
     async_session: AsyncSession,
     resource_types_to_ids: Dict[ResourceTypes, List[str]] = defaultdict(list),
-) -> Base:
+) -> BaseDBType:
     """
     Utility function to construct a filtered query for custom field values based on provided mapping of
     resource types to resource IDs.
@@ -108,11 +108,11 @@ async def get_custom_fields_filtered(
 
 
 async def get_resource(
-    sql_model: Base,
+    sql_model: BaseDBType,
     fides_key: str,
     async_session: AsyncSession,
     raise_not_found: bool = True,
-) -> Base:
+) -> BaseDBType:
     """
     Get a resource from the database by its FidesKey.
 
@@ -141,7 +141,7 @@ async def get_resource(
 
 
 async def get_resource_with_custom_fields(
-    sql_model: Base, fides_key: str, async_session: AsyncSession
+    sql_model: BaseDBType, fides_key: str, async_session: AsyncSession
 ) -> Dict[str, Any]:
     """Get a resource from the databse by its FidesKey including it's custom fields.
 
@@ -193,7 +193,9 @@ async def get_resource_with_custom_fields(
     return resource_dict
 
 
-async def list_resource(sql_model: Base, async_session: AsyncSession) -> List[Base]:
+async def list_resource(
+    sql_model: BaseDBType, async_session: AsyncSession
+) -> List[BaseDBType]:
     """
     Get a list of all of the resources of this type from the database.
 
@@ -217,7 +219,7 @@ async def list_resource(sql_model: Base, async_session: AsyncSession) -> List[Ba
 
 
 async def update_resource(
-    sql_model: Base, resource_dict: Dict, async_session: AsyncSession
+    sql_model: BaseDBType, resource_dict: Dict, async_session: AsyncSession
 ) -> Dict:
     """Update a resource in the database by its fides_key."""
 
@@ -245,7 +247,7 @@ async def update_resource(
 
 
 async def upsert_resources(
-    sql_model: Base, resource_dicts: List[Dict], async_session: AsyncSession
+    sql_model: BaseDBType, resource_dicts: List[Dict], async_session: AsyncSession
 ) -> Tuple[int, int]:
     """
     Insert new resources into the database. If a resource already exists,
@@ -296,8 +298,8 @@ async def upsert_resources(
 
 
 async def delete_resource(
-    sql_model: Base, fides_key: str, async_session: AsyncSession
-) -> Base:
+    sql_model: BaseDBType, fides_key: str, async_session: AsyncSession
+) -> BaseDBType:
     """
     Delete a resource by its fides_key.
 

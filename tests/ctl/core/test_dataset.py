@@ -65,12 +65,12 @@ def test_create_db_datasets() -> None:
                     data_categories=[],
                     fields=[
                         DatasetField(
-                            name=1,
+                            name="1",
                             description="Fides Generated Description for Column: 1",
                             data_categories=[],
                         ),
                         DatasetField(
-                            name=2,
+                            name="2",
                             description="Fides Generated Description for Column: 2",
                             data_categories=[],
                         ),
@@ -82,12 +82,12 @@ def test_create_db_datasets() -> None:
                     data_categories=[],
                     fields=[
                         DatasetField(
-                            name=4,
+                            name="4",
                             description="Fides Generated Description for Column: 4",
                             data_categories=[],
                         ),
                         DatasetField(
-                            name=5,
+                            name="5",
                             description="Fides Generated Description for Column: 5",
                             data_categories=[],
                         ),
@@ -112,11 +112,11 @@ def test_find_uncategorized_dataset_fields_all_categorized() -> None:
                 name="foo",
                 fields=[
                     DatasetField(
-                        name=1,
+                        name="1",
                         data_categories=["category_1"],
                     ),
                     DatasetField(
-                        name=2,
+                        name="2",
                         data_categories=["category_1"],
                     ),
                 ],
@@ -125,10 +125,10 @@ def test_find_uncategorized_dataset_fields_all_categorized() -> None:
                 name="bar",
                 fields=[
                     DatasetField(
-                        name=4,
+                        name="4",
                         data_categories=["category_1"],
                     ),
-                    DatasetField(name=5, data_categories=["category_1"]),
+                    DatasetField(name="5", data_categories=["category_1"]),
                 ],
             ),
         ],
@@ -184,12 +184,12 @@ async def test_upsert_db_datasets(
                 data_categories=[],
                 fields=[
                     DatasetField(
-                        name=1,
+                        name="1",
                         description="Fides Generated Description for Column: 1",
                         data_categories=[],
                     ),
                     DatasetField(
-                        name=2,
+                        name="2",
                         description="Fides Generated Description for Column: 2",
                         data_categories=[],
                     ),
@@ -201,12 +201,12 @@ async def test_upsert_db_datasets(
                 data_categories=[],
                 fields=[
                     DatasetField(
-                        name=4,
+                        name="4",
                         description="Fides Generated Description for Column: 4",
                         data_categories=[],
                     ),
                     DatasetField(
-                        name=5,
+                        name="5",
                         description="Fides Generated Description for Column: 5",
                         data_categories=[],
                     ),
@@ -270,10 +270,10 @@ def test_find_uncategorized_dataset_fields_uncategorized_fields() -> None:
                 data_categories=["category_1"],
                 fields=[
                     DatasetField(
-                        name=1,
+                        name="1",
                         data_categories=["category_1"],
                     ),
-                    DatasetField(name=2),
+                    DatasetField(name="2"),
                 ],
             )
         ],
@@ -300,7 +300,7 @@ def test_find_uncategorized_dataset_fields_missing_field() -> None:
                 name="bar",
                 fields=[
                     DatasetField(
-                        name=4,
+                        name="4",
                         data_categories=["category_1"],
                     )
                 ],
@@ -329,11 +329,11 @@ def test_find_uncategorized_dataset_fields_missing_collection() -> None:
                 name="bar",
                 fields=[
                     DatasetField(
-                        name=4,
+                        name="4",
                         data_categories=["category_1"],
                     ),
                     DatasetField(
-                        name=5,
+                        name="5",
                         data_categories=["category_1"],
                     ),
                 ],

@@ -3,7 +3,7 @@ This module auto-generates a documented config from the config source.
 """
 import os
 from textwrap import wrap
-from typing import Dict, List, Set, Tuple, Any
+from typing import Any, Dict, List, Set, Tuple
 
 import toml
 from click import echo
@@ -46,7 +46,10 @@ def get_nested_settings(config: FidesConfig) -> Dict[str, BaseSettings]:
 
 def format_value_for_toml(value: str, value_type: str) -> str:
     """Format the value into valid TOML."""
-    if value_type.__contains__("string"):
+
+    # For the string case, we want to format it as a string even if it also allows other types
+    # else we risk creating invalid TOML
+    if "string" in value_type:
         return f'"{value}"'
     if value_type == "boolean":
         return str(value).lower()
