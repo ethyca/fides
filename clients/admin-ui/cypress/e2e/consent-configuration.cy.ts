@@ -28,9 +28,29 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe.skip("empty state", () => {
+  describe("empty state", () => {
     it("can render an empty state", () => {
-      stubPlus(true);
+      stubPlus(true, {
+        core_fides_version: "1.9.6",
+        fidesplus_server: "healthy",
+        fidesplus_version: "1.9.6",
+        system_scanner: {
+          enabled: false,
+          cluster_health: null,
+          cluster_error: null,
+        },
+        dictionary: {
+          enabled: false,
+          service_health: null,
+          service_error: null,
+        },
+        tcf: {
+          enabled: false,
+        },
+        fides_cloud: {
+          enabled: false,
+        },
+      });
       cy.intercept("GET", "/api/v1/system", {
         body: [],
       }).as("getEmptySystems");
@@ -42,11 +62,35 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe.skip("with existing systems", () => {
+  describe("with existing systems", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
-      stubPlus(true);
+      stubPlus(
+        true,
+
+        {
+          core_fides_version: "1.9.6",
+          fidesplus_server: "healthy",
+          fidesplus_version: "1.9.6",
+          system_scanner: {
+            enabled: false,
+            cluster_health: null,
+            cluster_error: null,
+          },
+          dictionary: {
+            enabled: false,
+            service_health: null,
+            service_error: null,
+          },
+          tcf: {
+            enabled: false,
+          },
+          fides_cloud: {
+            enabled: false,
+          },
+        }
+      );
       cy.intercept("GET", "/api/v1/system", {
         fixture: "systems/systems.json",
       }).as("getSystems");
@@ -72,7 +116,7 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe.skip("adding a vendor", () => {
+  describe("adding a vendor", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
@@ -210,9 +254,33 @@ describe("Consent configuration", () => {
       });
     });
 
-    describe.skip("with the dictionary", () => {
+    describe("with the dictionary", () => {
       beforeEach(() => {
-        stubPlus(true);
+        stubPlus(
+          true,
+
+          {
+            core_fides_version: "1.9.6",
+            fidesplus_server: "healthy",
+            fidesplus_version: "1.9.6",
+            system_scanner: {
+              enabled: false,
+              cluster_health: null,
+              cluster_error: null,
+            },
+            dictionary: {
+              enabled: true,
+              service_health: null,
+              service_error: null,
+            },
+            tcf: {
+              enabled: false,
+            },
+            fides_cloud: {
+              enabled: false,
+            },
+          }
+        );
         cy.visit(CONFIGURE_CONSENT_ROUTE);
       });
 
@@ -705,7 +773,7 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe.skip("deleting a vendor", () => {
+  describe("deleting a vendor", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
@@ -749,7 +817,7 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe.skip("editing a vendor", () => {
+  describe("editing a vendor", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
