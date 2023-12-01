@@ -234,3 +234,8 @@ class TCFSpecialFeatureSave(TCFPreferenceSaveBase):
                 f"Cannot save preferences against invalid special feature id: '{value}'"
             )
         return value
+
+
+class PurposesResponse(BaseModel):
+    purposes: Dict[str, MappedPurpose]
+    special_purposes: Dict[str, MappedPurpose]
