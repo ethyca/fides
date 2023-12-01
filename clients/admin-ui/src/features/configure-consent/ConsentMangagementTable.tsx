@@ -120,7 +120,7 @@ export const ConsentManagementTable = () => {
     endRange,
     pageIndex,
     setTotalPages,
-    resetPageIndexToDefault
+    resetPageIndexToDefault,
   } = useServerSidePagination();
 
   const [globalFilter, setGlobalFilter] = useState<string>();
