@@ -17,14 +17,14 @@ GVL_PREFIX = "gvl."
 def exclude_gvl_systems(query: Select) -> Select:
     """Utility function to add a query clause that excludes GVL systems"""
     return query.where(
-        or_(System.vendor_id is None, not_(System.vendor_id.startswith(GVL_PREFIX)))
+        or_(System.vendor_id.is_(None), not_(System.vendor_id.startswith(GVL_PREFIX)))
     )
 
 
 def exclude_ac_systems(query: Select) -> Select:
     """Utility function to add a query clause that excludes AC systems"""
     return query.where(
-        or_(System.vendor_id is None, not_(System.vendor_id.startswith(AC_PREFIX)))
+        or_(System.vendor_id.is_(None), not_(System.vendor_id.startswith(AC_PREFIX)))
     )
 
 
