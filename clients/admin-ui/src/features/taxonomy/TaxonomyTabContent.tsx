@@ -13,8 +13,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import AccordionTree from "~/features/common/AccordionTree";
-import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { getErrorMessage } from "~/features/common/helpers";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { isErrorResult } from "~/types/errors";
 
