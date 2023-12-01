@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.25.0...main)
 
+### Added
+- New purposes endpoint and indices to improve system lookups [#4452](https://github.com/ethyca/fides/pull/4452)
+
 ### Fixed
 - Fix type errors when TCF vendors have no dataDeclaration [#4465](https://github.com/ethyca/fides/pull/4465)
 
