@@ -1,3 +1,4 @@
+/* eslint-disable react/no-array-index-key */
 import {
   Accordion,
   AccordionButton,
@@ -6,6 +7,7 @@ import {
   AccordionPanel,
   Box,
   Button,
+  Flex,
   Modal,
   ModalBody,
   ModalContent,
@@ -14,24 +16,16 @@ import {
   ModalOverlay,
   Spacer,
   Spinner,
-  Flex,
   useDisclosure,
 } from "@fidesui/react";
 import { FieldArray, Form, Formik } from "formik";
-import { useMemo } from "react";
 
-import { useAppSelector } from "~/app/hooks";
 import {
   CustomCreatableSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
-import { selectPurposes } from "~/features/common/purpose.slice";
 import { useGetSystemPurposeSummaryQuery } from "~/features/plus/plus.slice";
-import {
-  MappedPurpose,
-  SystemPurposeSummary,
-  SystemResponse,
-} from "~/types/api";
+import { SystemPurposeSummary } from "~/types/api";
 
 export const useConsentManagementModal = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -54,8 +48,6 @@ export const ConsentManagementModal = ({
 }: Props) => {
   const { data: systemPurposeSummary, isLoading } =
     useGetSystemPurposeSummaryQuery(fidesKey);
-
-  console.log(systemPurposeSummary, fidesKey);
 
   return (
     <Modal
@@ -80,66 +72,86 @@ export const ConsentManagementModal = ({
             </Flex>
           ) : (
             <Formik<FormValues>
-              initialValues={systemPurposeSummary}
+              initialValues={
+                systemPurposeSummary as unknown as SystemPurposeSummary
+              }
               enableReinitialize
               onSubmit={() => {}}
             >
               {({ values }) => (
                 <Form>
-                  <CustomTextInput
-                    label="Vendor Name"
-                    variant="stacked"
-                    name="name"
-                    disabled
-                  />
+                  <Box mb={6}>
+                    <CustomTextInput
+                      label="Vendor Name"
+                      variant="stacked"
+                      name="name"
+                      disabled
+                    />
+                  </Box>
                   <FieldArray
                     name="purposes"
-                    render={(arrayHelpers) => (
-                      <Accordion>
+                    render={() => (
+                      <Accordion allowMultiple>
                         {Object.entries(values.purposes).map(
-                          ([purposeName, pdValues], index: number) => (
-                            <AccordionItem>
-                              <AccordionButton>
-                                <Box flex="1" textAlign="left">
-                                  {purposeName}
-                                </Box>
-                                <AccordionIcon />
-                              </AccordionButton>
-                              <AccordionPanel>
-                                <CustomCreatableSelect
-                                  label="Data Uses"
-                                  isMulti
-                                  disableMenu
-                                  isDisabled
-                                  variant="stacked"
-                                  name={`purposes['${purposeName}'].data_uses`}
-                                />
-                                <CustomCreatableSelect
-                                  label="Legal Basis"
-                                  isMulti
-                                  disableMenu
-                                  isDisabled
-                                  variant="stacked"
-                                  name={`purposes['${purposeName}'].legal_basis`}
-                                />
-                              </AccordionPanel>
+                          ([purposeName], index: number) => (
+                            <AccordionItem key={index}>
+                              {({ isExpanded }) => (
+                                <>
+                                  <AccordionButton
+                                    backgroundColor={
+                                      isExpanded ? "gray.50" : "unset"
+                                    }
+                                  >
+                                    <Box flex="1" textAlign="left">
+                                      {purposeName}
+                                    </Box>
+                                    <AccordionIcon />
+                                  </AccordionButton>
+                                  <AccordionPanel backgroundColor="gray.50">
+                                    <Box my={4}>
+                                      <CustomCreatableSelect
+                                        label="Data Uses"
+                                        isMulti
+                                        disableMenu
+                                        isDisabled
+                                        options={[]}
+                                        variant="stacked"
+                                        name={`purposes['${purposeName}'].data_uses`}
+                                      />
+                                    </Box>
+                                    <CustomCreatableSelect
+                                      label="Legal Basis"
+                                      isMulti
+                                      disableMenu
+                                      isDisabled
+                                      options={[]}
+                                      variant="stacked"
+                                      name={`purposes['${purposeName}'].legal_bases`}
+                                    />
+                                  </AccordionPanel>
+                                </>
+                              )}
                             </AccordionItem>
                           )
                         )}
                       </Accordion>
                     )}
                   />
-                  <CustomCreatableSelect
-                    label="Features"
-                    isMulti
-                    disableMenu
-                    isDisabled
-                    variant="stacked"
-                    name="features"
-                  />
+                  <Box my={4}>
+                    <CustomCreatableSelect
+                      label="Features"
+                      isMulti
+                      options={[]}
+                      disableMenu
+                      isDisabled
+                      variant="stacked"
+                      name="features"
+                    />
+                  </Box>
                   <CustomCreatableSelect
                     label="Data Categories"
                     isMulti
+                    options={[]}
                     disableMenu
                     isDisabled
                     variant="stacked"

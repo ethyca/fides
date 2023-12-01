@@ -34,8 +34,6 @@ import {
 } from "~/features/plus/plus.slice";
 import { Page_SystemSummary_, SystemSummary } from "~/types/api";
 
-import { fidesKeyFilter } from "../datamap/datamap-table/filters/fides-key-filter";
-
 const columnHelper = createColumnHelper<SystemSummary>();
 
 const emptyVendorReportResponse: Page_SystemSummary_ = {
@@ -228,7 +226,6 @@ export const ConsentManagementTable = () => {
   });
 
   const onRowClick = (system: SystemSummary) => {
-    console.log(system);
     setSystemFidesKey(system.fides_key);
     onRowModalOpen();
   };
