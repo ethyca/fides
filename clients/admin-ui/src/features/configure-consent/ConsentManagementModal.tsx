@@ -12,6 +12,9 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Spacer,
+  Spinner,
+  Flex,
   useDisclosure,
 } from "@fidesui/react";
 import { FieldArray, Form, Formik } from "formik";
@@ -42,7 +45,6 @@ type Props = {
   fidesKey: string;
 };
 
-
 type FormValues = SystemPurposeSummary;
 
 export const ConsentManagementModal = ({
@@ -54,9 +56,6 @@ export const ConsentManagementModal = ({
     useGetSystemPurposeSummaryQuery(fidesKey);
 
   console.log(systemPurposeSummary, fidesKey);
-  if (isLoading) {
-    return <div> temp loading </div>;
-  }
 
   return (
     <Modal
@@ -70,80 +69,91 @@ export const ConsentManagementModal = ({
       <ModalContent maxWidth="800px">
         <ModalHeader>Vendor</ModalHeader>
         <ModalBody>
-          <Formik<FormValues>
-            initialValues={systemPurposeSummary}
-            enableReinitialize
-            onSubmit={() => {}}
-          >
-            {({ values }) => (
-              <Form>
-                <CustomTextInput
-                  label="Vendor Name"
-                  variant="stacked"
-                  name="name"
-                  disabled
-                />
-                <FieldArray
-                  name="purposes"
-                  render={(arrayHelpers) => (
-                    <Accordion>
-                      {Object.entries(values.purposes).map(
-                        ([purposeName, pdValues], index: number) => (
-                          <AccordionItem>
-                            <AccordionButton>
-                              <Box flex="1" textAlign="left">
-                                {purposeName}
-                              </Box>
-                              <AccordionIcon />
-                            </AccordionButton>
-                            <AccordionPanel>
-                              <CustomCreatableSelect
-                                label="Data Uses"
-                                isMulti
-                                disableMenu
-                                isDisabled
-                                variant="stacked"
-                                name={`purposes['${purposeName}'].data_uses`}
-                              />
-                              <CustomCreatableSelect
-                                label="Legal Basis"
-                                isMulti
-                                disableMenu
-                                isDisabled
-                                variant="stacked"
-                                name={`purposes['${purposeName}'].legal_basis`}
-                              />
-                            </AccordionPanel>
-                          </AccordionItem>
-                        )
-                      )}
-                    </Accordion>
-                  )}
-                />
-                <CustomCreatableSelect
-                  label="Features"
-                  isMulti
-                  disableMenu
-                  isDisabled
-                  variant="stacked"
-                  name="features"
-                />
-                <CustomCreatableSelect
-                  label="Data Categories"
-                  isMulti
-                  disableMenu
-                  isDisabled
-                  variant="stacked"
-                  name="data_categories"
-                />
-              </Form>
-            )}
-          </Formik>
+          {isLoading ? (
+            <Flex
+              width="100%"
+              height="324px"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Spinner />
+            </Flex>
+          ) : (
+            <Formik<FormValues>
+              initialValues={systemPurposeSummary}
+              enableReinitialize
+              onSubmit={() => {}}
+            >
+              {({ values }) => (
+                <Form>
+                  <CustomTextInput
+                    label="Vendor Name"
+                    variant="stacked"
+                    name="name"
+                    disabled
+                  />
+                  <FieldArray
+                    name="purposes"
+                    render={(arrayHelpers) => (
+                      <Accordion>
+                        {Object.entries(values.purposes).map(
+                          ([purposeName, pdValues], index: number) => (
+                            <AccordionItem>
+                              <AccordionButton>
+                                <Box flex="1" textAlign="left">
+                                  {purposeName}
+                                </Box>
+                                <AccordionIcon />
+                              </AccordionButton>
+                              <AccordionPanel>
+                                <CustomCreatableSelect
+                                  label="Data Uses"
+                                  isMulti
+                                  disableMenu
+                                  isDisabled
+                                  variant="stacked"
+                                  name={`purposes['${purposeName}'].data_uses`}
+                                />
+                                <CustomCreatableSelect
+                                  label="Legal Basis"
+                                  isMulti
+                                  disableMenu
+                                  isDisabled
+                                  variant="stacked"
+                                  name={`purposes['${purposeName}'].legal_basis`}
+                                />
+                              </AccordionPanel>
+                            </AccordionItem>
+                          )
+                        )}
+                      </Accordion>
+                    )}
+                  />
+                  <CustomCreatableSelect
+                    label="Features"
+                    isMulti
+                    disableMenu
+                    isDisabled
+                    variant="stacked"
+                    name="features"
+                  />
+                  <CustomCreatableSelect
+                    label="Data Categories"
+                    isMulti
+                    disableMenu
+                    isDisabled
+                    variant="stacked"
+                    name="data_categories"
+                  />
+                </Form>
+              )}
+            </Formik>
+          )}
         </ModalBody>
 
         <ModalFooter>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button>Save</Button>
+          <Button onClick={onClose}>Close</Button>
+          <Spacer />
         </ModalFooter>
       </ModalContent>
     </Modal>
