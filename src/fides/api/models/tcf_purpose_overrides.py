@@ -16,7 +16,7 @@ class TCFPurposeOverride(Base):
     def __tablename__(self) -> str:
         return "tcf_purpose_overrides"
 
-    purpose = Column(Integer, nullable=False)
+    purpose = Column(Integer, nullable=False, index=True)
     is_included = Column(Boolean, server_default="t", default=True)
     required_legal_basis = Column(String)
 

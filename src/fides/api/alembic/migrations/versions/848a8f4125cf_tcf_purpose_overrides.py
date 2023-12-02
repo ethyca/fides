@@ -1,15 +1,15 @@
 """tcf_purpose_overrides
 
-Revision ID: 5225ea4de265
+Revision ID: 848a8f4125cf
 Revises: 1af6950f4625
-Create Date: 2023-11-27 15:35:07.679747
+Create Date: 2023-12-02 13:18:55.768697
 
 """
 import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "5225ea4de265"
+revision = "848a8f4125cf"
 down_revision = "1af6950f4625"
 branch_labels = None
 depends_on = None
@@ -42,13 +42,22 @@ def upgrade():
         ["id"],
         unique=False,
     )
-
     op.create_unique_constraint(
         "purpose_constraint", "tcf_purpose_overrides", ["purpose"]
     )
 
+    op.create_index(
+        op.f("ix_tcf_purpose_overrides_purpose"),
+        "tcf_purpose_overrides",
+        ["purpose"],
+        unique=False,
+    )
+
 
 def downgrade():
+    op.drop_index(
+        op.f("ix_tcf_purpose_overrides_purpose"), table_name="tcf_purpose_overrides"
+    )
     op.drop_index(
         op.f("ix_tcf_purpose_overrides_id"), table_name="tcf_purpose_overrides"
     )
