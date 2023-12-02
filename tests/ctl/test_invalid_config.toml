@@ -1,17 +1,17 @@
 [database]
-server="localhost"
-user="postgres"
-password="fides"
-port="5432"
-db="fides"
-test_db="fides_test"
+server = "localhost"
+user = "postgres"
+password = "fides"
+port = 5432
+db = "fides"
+test_db = "fides_test"
 
 [logging]
 level = "INFO"
 
 [cli]
 server_host = "http://invalid"
-server_port = "8080"
+server_port = 8080
 
 [user]
 analytics_opt_out = true

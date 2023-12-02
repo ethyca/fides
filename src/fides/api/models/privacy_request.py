@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from celery.result import AsyncResult
 from loguru import logger
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy import (
     Boolean,
     Column,
@@ -115,9 +115,7 @@ class CheckpointActionRequired(FidesSchema):
     step: CurrentStep
     collection: Optional[CollectionAddress]
     action_needed: Optional[List[ManualAction]] = None
-
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 EmailRequestFulfillmentBodyParams = Dict[
@@ -160,12 +158,8 @@ class SecondPartyRequestFormat(BaseModel):
     direction: WebhookDirection
     callback_type: CallbackType
     identity: Identity
-    policy_action: Optional[ActionType]
-
-    class Config:
-        """Using enum values"""
-
-        use_enum_values = True
+    policy_action: Optional[ActionType] = None
+    model_config = ConfigDict(use_enum_values=True)
 
 
 def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
@@ -634,7 +628,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
         """
         cache: FidesopsRedis = get_cache()
-        parsed_data = manual_webhook.fields_schema.parse_obj(input_data)
+        parsed_data = manual_webhook.fields_schema.model_validate(input_data)
 
         cache.set_encoded_object(
             f"WEBHOOK_MANUAL_ACCESS_INPUT__{self.id}__{manual_webhook.id}",
@@ -650,7 +644,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
         """
         cache: FidesopsRedis = get_cache()
-        parsed_data = manual_webhook.erasure_fields_schema.parse_obj(input_data)
+        parsed_data = manual_webhook.erasure_fields_schema.model_validate(input_data)
 
         cache.set_encoded_object(
             f"WEBHOOK_MANUAL_ERASURE_INPUT__{self.id}__{manual_webhook.id}",
@@ -672,7 +666,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         )
 
         if cached_results:
-            data: Dict[str, Any] = manual_webhook.fields_schema.parse_obj(
+            data: Dict[str, Any] = manual_webhook.fields_schema.model_validate(
                 cached_results
             ).dict(exclude_unset=True)
             if set(data.keys()) != set(manual_webhook.fields_schema.__fields__.keys()):
@@ -699,7 +693,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         )
 
         if cached_results:
-            data: Dict[str, Any] = manual_webhook.erasure_fields_schema.parse_obj(
+            data: Dict[str, Any] = manual_webhook.erasure_fields_schema.model_validate(
                 cached_results
             ).dict(exclude_unset=True)
             if set(data.keys()) != set(
@@ -725,7 +719,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             privacy_request=self, manual_webhook=manual_webhook
         )
         if cached_results:
-            return manual_webhook.fields_non_strict_schema.parse_obj(
+            return manual_webhook.fields_non_strict_schema.model_validate(
                 cached_results
             ).dict()
         return manual_webhook.empty_fields_dict
@@ -742,7 +736,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             privacy_request=self, manual_webhook=manual_webhook
         )
         if cached_results:
-            return manual_webhook.erasure_fields_non_strict_schema.parse_obj(
+            return manual_webhook.erasure_fields_non_strict_schema.model_validate(
                 cached_results
             ).dict()
         return manual_webhook.empty_fields_dict

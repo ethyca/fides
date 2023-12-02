@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
-from pydantic import Extra, Field, HttpUrl, root_validator, validator
+from pydantic import ConfigDict, Field, HttpUrl, field_validator, model_validator
 
 from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
@@ -21,14 +21,19 @@ class ExperienceConfigSchema(FidesSchema):
     """
 
     accept_button_label: Optional[str] = Field(
-        description="Overlay 'Accept button displayed on the Banner and Privacy Preferences' or Privacy Center 'Confirmation button label'"
+        default=None,
+        description="Overlay 'Accept button displayed on the Banner and Privacy Preferences' or Privacy Center 'Confirmation button label'",
     )
     acknowledge_button_label: Optional[str] = Field(
-        description="Overlay 'Acknowledge button label for notice only banner'"
+        default=None,
+        description="Overlay 'Acknowledge button label for notice only banner'",
     )
-    banner_enabled: Optional[BannerEnabled] = Field(description="Overlay 'Banner'")
+    banner_enabled: Optional[BannerEnabled] = Field(
+        default=None, description="Overlay 'Banner'"
+    )
     description: Optional[str] = Field(
-        description="Overlay 'Banner Description' or Privacy Center 'Description'"
+        default=None,
+        description="Overlay 'Banner Description' or Privacy Center 'Description'",
     )
     disabled: Optional[bool] = Field(
         default=False, description="Whether the given ExperienceConfig is disabled"
@@ -38,28 +43,31 @@ class ExperienceConfigSchema(FidesSchema):
         description="Whether the given ExperienceConfig is a global default",
     )
     privacy_policy_link_label: Optional[str] = Field(
-        description="Overlay and Privacy Center 'Privacy policy link label'"
+        default=None,
+        description="Overlay and Privacy Center 'Privacy policy link label'",
     )
     privacy_policy_url: Optional[HttpUrl] = Field(
         default=None, description="Overlay and Privacy Center 'Privacy policy URL"
     )
     privacy_preferences_link_label: Optional[str] = Field(
-        description="Overlay 'Privacy preferences link label'"
+        default=None, description="Overlay 'Privacy preferences link label'"
     )
     regions: Optional[List[PrivacyNoticeRegion]] = Field(
-        description="Regions using this ExperienceConfig"
+        default=None, description="Regions using this ExperienceConfig"
     )
     reject_button_label: Optional[str] = Field(
-        description="Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'"
+        default=None,
+        description="Overlay 'Reject button displayed on the Banner and 'Privacy Preferences' of Privacy Center 'Reject button label'",
     )
     save_button_label: Optional[str] = Field(
-        description="Overlay 'Privacy preferences 'Save' button label"
+        default=None, description="Overlay 'Privacy preferences 'Save' button label"
     )
     title: Optional[str] = Field(
-        description="Overlay 'Banner title' or Privacy Center 'title'"
+        default=None, description="Overlay 'Banner title' or Privacy Center 'title'"
     )
 
-    @validator("regions")
+    @field_validator("regions")
+    @classmethod
     @classmethod
     def validate_regions(
         cls, regions: List[PrivacyNoticeRegion]
@@ -84,10 +92,10 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
     save_button_label: str
     title: str
 
-    @root_validator
-    def validate_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_attributes(self) -> "ExperienceConfigCreate":
         """Validate minimum set of required fields exist given the type of component"""
-        component: Optional[ComponentType] = values.get("component")
+        component: Optional[ComponentType] = self.component
 
         if component == ComponentType.overlay:
             # Overlays have a few additional required fields beyond the privacy center
@@ -97,12 +105,12 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
                 "privacy_preferences_link_label",
             ]
             for field in required_overlay_fields:
-                if not values.get(field):
+                if not getattr(self, field):
                     raise ValueError(
                         f"The following additional fields are required when defining an overlay: {human_friendly_list(required_overlay_fields)}."
                     )
 
-        return values
+        return self
 
 
 class ExperienceConfigUpdate(ExperienceConfigSchema):
@@ -110,10 +118,7 @@ class ExperienceConfigUpdate(ExperienceConfigSchema):
     Updating ExperienceConfig. Note that component cannot be updated once its created
     """
 
-    class Config:
-        """Forbid extra values - specifically we don't want component to be updated here."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class ExperienceConfigCreateWithId(ExperienceConfigCreate):

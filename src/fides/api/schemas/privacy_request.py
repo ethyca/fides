@@ -3,7 +3,7 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Type, Union
 
 from fideslang.validation import FidesKey
-from pydantic import Field, validator
+from pydantic import ConfigDict, Field, field_validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.audit_log import AuditLogAction
@@ -38,17 +38,12 @@ class PrivacyRequestDRPStatusResponse(FidesSchema):
 
     request_id: str
     received_at: datetime
-    expected_by: Optional[datetime]
-    processing_details: Optional[str]
+    expected_by: Optional[datetime] = None
+    processing_details: Optional[str] = None
     status: PrivacyRequestDRPStatus
-    reason: Optional[str]
-    user_verification_url: Optional[str]
-
-    class Config:
-        """Set orm_mode and use_enum_values"""
-
-        orm_mode = True
-        use_enum_values = True
+    reason: Optional[str] = None
+    user_verification_url: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class Consent(FidesSchema):
@@ -77,17 +72,18 @@ class ConsentReport(Consent):
 class PrivacyRequestCreate(FidesSchema):
     """Data required to create a PrivacyRequest"""
 
-    external_id: Optional[str]
-    started_processing_at: Optional[datetime]
-    finished_processing_at: Optional[datetime]
-    requested_at: Optional[datetime]
+    external_id: Optional[str] = None
+    started_processing_at: Optional[datetime] = None
+    finished_processing_at: Optional[datetime] = None
+    requested_at: Optional[datetime] = None
     identity: Identity
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
     policy_key: FidesKey
     encryption_key: Optional[str] = None
     consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
 
-    @validator("encryption_key")
+    @field_validator("encryption_key")
+    @classmethod
     def validate_encryption_key(
         cls: Type["PrivacyRequestCreate"], value: Optional[str] = None
     ) -> Optional[str]:
@@ -100,59 +96,44 @@ class PrivacyRequestCreate(FidesSchema):
 class FieldsAffectedResponse(FidesSchema):
     """Schema detailing the individual fields affected by a particular query detailed in the ExecutionLog"""
 
-    path: Optional[str]
-    field_name: Optional[str]
-    data_categories: Optional[List[str]]
-
-    class Config:
-        """Set orm_mode and use_enum_values"""
-
-        orm_mode = True
-        use_enum_values = True
+    path: Optional[str] = None
+    field_name: Optional[str] = None
+    data_categories: Optional[List[str]] = None
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class ExecutionLogResponse(FidesSchema):
     """Schema for the embedded ExecutionLogs associated with a PrivacyRequest"""
 
-    collection_name: Optional[str]
-    fields_affected: Optional[List[FieldsAffectedResponse]]
-    message: Optional[str]
+    collection_name: Optional[str] = None
+    fields_affected: Optional[List[FieldsAffectedResponse]] = None
+    message: Optional[str] = None
     action_type: ActionType
     status: ExecutionLogStatus
-    updated_at: Optional[datetime]
-
-    class Config:
-        """Set orm_mode and use_enum_values"""
-
-        orm_mode = True
-        use_enum_values = True
+    updated_at: Optional[datetime] = None
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class ExecutionLogDetailResponse(ExecutionLogResponse):
     """Schema for the detailed ExecutionLogs when accessed directly"""
 
-    connection_key: Optional[str]
-    dataset_name: Optional[str]
+    connection_key: Optional[str] = None
+    dataset_name: Optional[str] = None
 
 
 class ExecutionAndAuditLogResponse(FidesSchema):
     """Schema for the combined ExecutionLogs and Audit Logs
     associated with a PrivacyRequest"""
 
-    connection_key: Optional[str]
-    collection_name: Optional[str]
-    fields_affected: Optional[List[FieldsAffectedResponse]]
-    message: Optional[str]
-    action_type: Optional[ActionType]
-    status: Optional[Union[ExecutionLogStatus, AuditLogAction]]
-    updated_at: Optional[datetime]
-    user_id: Optional[str]
-
-    class Config:
-        """Set orm_mode and allow population by field name"""
-
-        use_enum_values = True
-        allow_population_by_field_name = True
+    connection_key: Optional[str] = None
+    collection_name: Optional[str] = None
+    fields_affected: Optional[List[FieldsAffectedResponse]] = None
+    message: Optional[str] = None
+    action_type: Optional[ActionType] = None
+    status: Optional[Union[ExecutionLogStatus, AuditLogAction]] = None
+    updated_at: Optional[datetime] = None
+    user_id: Optional[str] = None
+    model_config = ConfigDict(use_enum_values=True, populate_by_name=True)
 
 
 class RowCountRequest(FidesSchema):
@@ -185,34 +166,29 @@ class PrivacyRequestResponse(FidesSchema):
     """Schema to check the status of a PrivacyRequest"""
 
     id: str
-    created_at: Optional[datetime]
-    started_processing_at: Optional[datetime]
-    reviewed_at: Optional[datetime]
-    reviewed_by: Optional[str]
-    reviewer: Optional[PrivacyRequestReviewer]
-    finished_processing_at: Optional[datetime]
-    identity_verified_at: Optional[datetime]
-    paused_at: Optional[datetime]
+    created_at: Optional[datetime] = None
+    started_processing_at: Optional[datetime] = None
+    reviewed_at: Optional[datetime] = None
+    reviewed_by: Optional[str] = None
+    reviewer: Optional[PrivacyRequestReviewer] = None
+    finished_processing_at: Optional[datetime] = None
+    identity_verified_at: Optional[datetime] = None
+    paused_at: Optional[datetime] = None
     status: PrivacyRequestStatus
-    external_id: Optional[str]
+    external_id: Optional[str] = None
     # This field intentionally doesn't use the Identity schema
     # as it is an API response field, and we don't want to reveal any more
     # about our PII structure than is explicitly stored in the cache on request
     # creation.
-    identity: Optional[Dict[str, Optional[str]]]
-    custom_privacy_request_fields: Optional[Dict[str, Any]]
+    identity: Optional[Dict[str, Optional[str]]] = None
+    custom_privacy_request_fields: Optional[Dict[str, Any]] = None
     policy: PolicySchema
     action_required_details: Optional[CheckpointActionRequiredDetails] = None
-    resume_endpoint: Optional[str]
-    days_left: Optional[int]
-    custom_privacy_request_fields_approved_by: Optional[str]
-    custom_privacy_request_fields_approved_at: Optional[datetime]
-
-    class Config:
-        """Set orm_mode and use_enum_values"""
-
-        orm_mode = True
-        use_enum_values = True
+    resume_endpoint: Optional[str] = None
+    days_left: Optional[int] = None
+    custom_privacy_request_fields_approved_by: Optional[str] = None
+    custom_privacy_request_fields_approved_at: Optional[datetime] = None
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
@@ -222,23 +198,19 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
     execution_and_audit_logs_by_dataset: Dict[
         str, List[ExecutionAndAuditLogResponse]
     ] = Field(alias="results")
-
-    class Config:
-        """Allow the results field to be populated by the 'PrivacyRequest.execution_logs_by_dataset' property"""
-
-        allow_population_by_field_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class ReviewPrivacyRequestIds(FidesSchema):
     """Pass in a list of privacy request ids"""
 
-    request_ids: List[str] = Field(..., max_items=50)
+    request_ids: List[str] = Field(..., max_length=50)
 
 
 class DenyPrivacyRequests(ReviewPrivacyRequestIds):
     """Pass in a list of privacy request ids and rejection reason"""
 
-    reason: Optional[SafeStr]
+    reason: Optional[SafeStr] = None
 
 
 class BulkPostPrivacyRequests(BulkResponse):
@@ -268,11 +240,11 @@ class ConsentWithExecutableStatus(FidesSchema):
 class ConsentPreferencesWithVerificationCode(FidesSchema):
     """Schema for consent preferences including the verification code."""
 
-    code: Optional[str]
+    code: Optional[str] = None
     consent: List[Consent]
     policy_key: Optional[FidesKey] = None
-    executable_options: Optional[List[ConsentWithExecutableStatus]]
-    browser_identity: Optional[Identity]
+    executable_options: Optional[List[ConsentWithExecutableStatus]] = None
+    browser_identity: Optional[Identity] = None
 
 
 class ConsentRequestResponse(FidesSchema):

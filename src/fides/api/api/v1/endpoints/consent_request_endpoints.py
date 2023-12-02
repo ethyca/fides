@@ -639,7 +639,7 @@ def _prepare_consent_report(
         value=consent.provided_identity_id,
     )
     consent.identity = provided_identity.as_identity_schema()  # type: ignore[union-attr]
-    report = ConsentReport.from_orm(consent)
+    report = ConsentReport.model_validate(consent)
     return report
 
 

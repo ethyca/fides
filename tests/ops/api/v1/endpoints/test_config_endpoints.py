@@ -970,7 +970,9 @@ class TestGetConfig:
         }
 
         for key in config.keys():
-            assert (key in allowed_top_level_config_keys), "Unexpected config API change, please review with Ethyca security team"
+            assert (
+                key in allowed_top_level_config_keys
+            ), "Unexpected config API change, please review with Ethyca security team"
 
         assert "security" in config
         assert "user" in config

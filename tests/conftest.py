@@ -10,7 +10,8 @@ import pytest
 import requests
 import yaml
 from fastapi.testclient import TestClient
-from fideslang import DEFAULT_TAXONOMY, models
+from fideslang import models
+from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.engine.base import Engine
@@ -334,20 +335,14 @@ def resources_dict():
     """
     resources_dict = {
         "data_category": models.DataCategory(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="user.custom",
             parent_key="user",
             name="Custom Data Category",
             description="Custom Data Category",
         ),
-        "data_qualifier": models.DataQualifier(
-            organization_fides_key=1,
-            fides_key="custom_data_qualifier",
-            name="Custom Data Qualifier",
-            description="Custom Data Qualifier",
-        ),
         "dataset": models.Dataset(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="test_sample_db_dataset",
             name="Sample DB Dataset",
             description="This is a Sample Database Dataset",
@@ -358,40 +353,35 @@ def resources_dict():
                         models.DatasetField(
                             name="Food_Preference",
                             description="User's favorite food",
-                            path="some.path",
                         ),
                         models.DatasetField(
                             name="First_Name",
                             description="A First Name Field",
-                            path="another.path",
                             data_categories=["user.name"],
-                            data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                         ),
                         models.DatasetField(
                             name="Email",
                             description="User's Email",
-                            path="another.another.path",
                             data_categories=["user.contact.email"],
-                            data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                         ),
                     ],
                 )
             ],
         ),
         "data_subject": models.DataSubject(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="custom_subject",
             name="Custom Data Subject",
             description="Custom Data Subject",
         ),
         "data_use": models.DataUse(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="custom_data_use",
             name="Custom Data Use",
             description="Custom Data Use",
         ),
         "evaluation": models.Evaluation(
-            fides_key="test_evaluation", status="PASS", details=["foo"], message="bar"
+            fides_key="test_evaluation", status="PASS", message="bar"
         ),
         "organization": models.Organization(
             fides_key="test_organization",
@@ -399,10 +389,9 @@ def resources_dict():
             description="Test Organization",
         ),
         "policy": models.Policy(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="test_policy",
             name="Test Policy",
-            version="1.3",
             description="Test Policy",
             rules=[],
         ),
@@ -411,18 +400,15 @@ def resources_dict():
             data_categories=models.PrivacyRule(matches="NONE", values=[]),
             data_uses=models.PrivacyRule(matches="NONE", values=["essential.service"]),
             data_subjects=models.PrivacyRule(matches="ANY", values=[]),
-            data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
         ),
         "registry": models.Registry(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="test_registry",
             name="Test Registry",
             description="Test Regsitry",
-            systems=[],
         ),
         "system": models.System(
-            organization_fides_key=1,
-            registryId=1,
+            organization_fides_key="1",
             fides_key="test_system",
             system_type="SYSTEM",
             name="Test System",
@@ -434,7 +420,6 @@ def resources_dict():
                     data_categories=[],
                     data_use="essential",
                     data_subjects=[],
-                    data_qualifier="aggregated_data",
                     dataset_references=[],
                     cookies=[],
                 )
@@ -1043,7 +1028,6 @@ def system(db: Session) -> System:
             "system_id": system.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "marketing.advertising",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "egress": None,
@@ -1079,7 +1063,6 @@ def system_multiple_decs(db: Session, system: System) -> System:
             "system_id": system.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "third_party_sharing",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "egress": None,
@@ -1117,7 +1100,6 @@ def system_third_party_sharing(db: Session) -> System:
             "system_id": system_third_party_sharing.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "third_party_sharing",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "egress": None,
@@ -1154,7 +1136,6 @@ def system_provide_service(db: Session) -> System:
             "system_id": system_provide_service.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "essential.service",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "egress": None,
@@ -1191,7 +1172,6 @@ def system_provide_service_operations_support_optimization(db: Session) -> Syste
             "system_id": system_provide_service_operations_support_optimization.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "essential.service.operations.improve",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "egress": None,

@@ -1,11 +1,10 @@
 from html import unescape
 from typing import Dict, List, Optional, Set, Tuple
 
-from fastapi import Depends, Request, Security
+from fastapi import Body, Depends, Request, Security
 from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
 from loguru import logger
-from pydantic import conlist
 from sqlalchemy.orm import Query, Session
 from starlette.exceptions import HTTPException
 from starlette.status import (
@@ -13,6 +12,7 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
+from typing_extensions import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import ValidationError
@@ -210,7 +210,9 @@ def get_privacy_notice(
 def create_privacy_notices(
     *,
     db: Session = Depends(deps.get_db),
-    privacy_notices: conlist(schemas.PrivacyNoticeCreation, max_items=50),  # type: ignore
+    privacy_notices: Annotated[
+        List[schemas.PrivacyNoticeCreation], Body(max_length=50)
+    ],
 ) -> List[PrivacyNotice]:
     """
     Create one or more privacy notices.
@@ -244,7 +246,9 @@ def create_privacy_notices(
 def update_privacy_notices(
     *,
     db: Session = Depends(deps.get_db),
-    privacy_notice_updates: conlist(schemas.PrivacyNoticeWithId, max_items=50),  # type: ignore
+    privacy_notice_updates: Annotated[
+        List[schemas.PrivacyNoticeWithId], Body(max_length=50)
+    ],
 ) -> List[PrivacyNotice]:
     """
     Update one or more privacy notices.

@@ -2,11 +2,12 @@
 Reusable utilities meant to make repetitive api-related tasks easier.
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from fideslang.models import FidesModel
 from fideslang.parse import parse_dict
 from fideslang.validation import FidesKey
+from pydantic import AnyHttpUrl
 from requests import Response
 
 from fides.common.utils import check_response_auth
@@ -14,7 +15,7 @@ from fides.core import api
 
 
 def get_server_resources(
-    url: str,
+    url: Union[AnyHttpUrl, str],
     resource_type: str,
     existing_keys: List[FidesKey],
     headers: Dict[str, str],
@@ -25,6 +26,7 @@ def get_server_resources(
     If the resource does not exist on the server, an error will _not_ be thrown.
     Instead, an empty object will be stored and then filtered out.
     """
+    url = str(url)
     raw_server_resources = list(
         filter(
             None,
@@ -48,7 +50,7 @@ def get_server_resources(
 
 
 def get_server_resource(
-    url: str,
+    url: Union[AnyHttpUrl, str],
     resource_type: str,
     resource_key: str,
     headers: Dict[str, str],
@@ -62,6 +64,7 @@ def get_server_resource(
     right resource, this function helps check what resource
     a fides_key belongs to by allowing us to check without errors.
     """
+    url = str(url)
     raw_server_response: Response = check_response_auth(
         api.get(
             url=url,
@@ -82,7 +85,7 @@ def get_server_resource(
 
 
 def list_server_resources(
-    url: str,
+    url: Union[AnyHttpUrl, str],
     headers: Dict[str, str],
     resource_type: str,
     exclude_keys: List[str],
@@ -92,6 +95,7 @@ def list_server_resources(
 
     Returns an empty list if no resources are found or if the API returns an error.
     """
+    url = str(url)
     response: Response = check_response_auth(
         api.ls(url=url, resource_type=resource_type, headers=headers)
     )

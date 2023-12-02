@@ -36,8 +36,9 @@ def get_alembic_config(database_url: str) -> Config:
 
 def upgrade_db(alembic_config: Config, revision: str = "head") -> None:
     "Upgrade the database to the specified migration revision."
-    log.info("Running database migrations")
+    log.info("Running database migrations...")
     command.upgrade(alembic_config, revision)
+    log.info("Completed database migrations!")
 
 
 async def migrate_db(database_url: str, samples: bool = False) -> None:
@@ -46,7 +47,7 @@ async def migrate_db(database_url: str, samples: bool = False) -> None:
 
     Safe to run on an existing database when upgrading Fides version.
     """
-    log.info("Initializing database")
+    log.info("Initializing database...")
     alembic_config = get_alembic_config(database_url)
     upgrade_db(alembic_config)
 

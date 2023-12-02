@@ -19,7 +19,7 @@ def redshift_describe_clusters() -> Generator:
                 "ClusterIdentifier": "redshift-cluster-1",
                 "Endpoint": {
                     "Address": "redshift-cluster-1.c2angfh5kpo4.us-east-1.redshift.amazonaws.com",
-                    "Port": 5439,
+                    "Port": "5439",
                 },
                 "ClusterNamespaceArn": "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176",
             },
@@ -27,7 +27,7 @@ def redshift_describe_clusters() -> Generator:
                 "ClusterIdentifier": "redshift-cluster-2",
                 "Endpoint": {
                     "Address": "redshift-cluster-2.c2angfh5kpo4.us-east-1.redshift.amazonaws.com",
-                    "Port": 5439,
+                    "Port": "5439",
                 },
                 "ClusterNamespaceArn": "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149177",
             },
@@ -117,7 +117,7 @@ def rds_describe_clusters() -> Generator:
             {
                 "DBClusterIdentifier": "database-2",
                 "Endpoint": "database-2.cluster-ckrdpkkb4ukm.us-east-1.rds.amazonaws.com",
-                "Port": 3306,
+                "Port": "3306",
                 "DBClusterArn": "arn:aws:rds:us-east-1:910934740016:cluster:database-2",
             },
         ]
@@ -133,7 +133,7 @@ def rds_describe_instances() -> Generator:
                 "DBInstanceIdentifier": "database-1",
                 "Endpoint": {
                     "Address": "database-1.ckrdpkkb4ukm.us-east-1.rds.amazonaws.com",
-                    "Port": 3306,
+                    "Port": "3306",
                 },
                 "DBInstanceArn": "arn:aws:rds:us-east-1:910934740016:db:database-1",
             },

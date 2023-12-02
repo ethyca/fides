@@ -83,7 +83,7 @@ def test_get_deprecated_api_config_from_file(test_deprecated_config_path: str) -
     config = get_config(test_deprecated_config_path)
     assert config.database.user == "postgres_deprecated"
     assert config.database.password == "fidesctl_deprecated"
-    assert config.database.port == "5431"
+    assert config.database.port == 5431
     assert config.database.db == "fidesctl_deprecated"
     assert config.database.test_db == "fidesctl_test_deprecated"
 
@@ -111,7 +111,7 @@ def test_get_deprecated_api_config_from_env(test_config_path: str) -> None:
     config = get_config(test_config_path)
     assert config.database.db == "test_db_name"
     assert config.database.password == "test_password"
-    assert config.database.port == "1234"
+    assert config.database.port == 1234
     assert config.database.server == "test_host"
     assert config.database.test_db == "test_test_db_name"
     assert config.database.user == "phil_rules"
@@ -181,13 +181,13 @@ def test_database_url_test_mode_disabled() -> None:
         user="postgres",
         password="fides",
         server="fides-db",
-        port="5432",
+        port=5432,
         db="database",
         test_db="test_database",
     )
     assert (
         database_settings.async_database_uri
-        == "postgresql+asyncpg://postgres:fides@fides-db:5432/database"
+        == "postgresql+asyncpg://postgres:fides@fides-db:5432/database?"
     )
 
 
@@ -369,7 +369,7 @@ class TestBuildingDatabaseValues:
             user="postgres",
             password="fides",
             server="fides-db",
-            port="5432",
+            port=5432,
             db="database",
             params={
                 "sslmode": "verify-full",
@@ -440,7 +440,7 @@ class TestBuildingRedisURLs:
 
     def test_configured(self) -> None:
         redis_settings = RedisSettings(
-            db_index=1, host="myredis", port="6380", password="supersecret"
+            db_index=1, host="myredis", port=6380, password="supersecret"
         )
         assert redis_settings.connection_url == "redis://:supersecret@myredis:6380/1"
 
@@ -491,5 +491,5 @@ def test_get_config_ac_mode_without_tc_mode() -> None:
 
     assert (
         exc.value.errors()[0]["msg"]
-        == "AC cannot be enabled unless TCF mode is also enabled."
+        == "Value error, AC cannot be enabled unless TCF mode is also enabled."
     )

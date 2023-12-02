@@ -1,5 +1,6 @@
 from typing import Any, Dict
 
+from pydantic import ConfigDict
 from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
@@ -63,6 +64,4 @@ class MessagingTemplate(Base):
 
     key = Column(String, index=True, unique=True, nullable=False)
     content = Column(MutableDict.as_mutable(JSONB), nullable=False)
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

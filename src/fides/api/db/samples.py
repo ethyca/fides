@@ -103,7 +103,7 @@ def load_sample_connections_from_project() -> List[SampleConnection]:
             yaml_dict = load_sample_yaml_file(file, expand_vars=True)
             connections = yaml_dict.get("connection", [])
             sample_connections.extend(
-                [SampleConnection.parse_obj(e) for e in connections]
+                [SampleConnection.model_validate(e) for e in connections]
             )
 
     # Disable any connections whose "secrets" dict has empty values

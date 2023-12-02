@@ -58,7 +58,7 @@ def fixture_created_resources(
 @pytest.mark.integration
 @pytest.mark.parametrize(
     "created_resources",
-    ["data_category", "data_use", "data_qualifier"],
+    ["data_category", "data_use"],
     indirect=["created_resources"],
 )
 async def test_cascade_delete_taxonomy_children(

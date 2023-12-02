@@ -1,7 +1,7 @@
-from typing import Dict, Optional
+from typing import Optional
 from urllib.parse import quote, quote_plus, urlencode
 
-from pydantic import Field, validator
+from pydantic import ConfigDict, Field, ValidationInfo, field_validator
 
 from .fides_settings import FidesSettings
 
@@ -65,23 +65,25 @@ class RedisSettings(FidesSettings):
 
     # This relies on other values to get built so must be last
     connection_url: Optional[str] = Field(
-        default=None,
+        default="",
         description="A full connection URL to the Redis cache. If not specified, this URL is automatically assembled from the host, port, password and db_index specified above.",
         exclude=True,
+        validate_default=True,
     )
 
-    @validator("connection_url", pre=True)
+    @field_validator("connection_url", mode="after")
     @classmethod
     def assemble_connection_url(
         cls,
         v: Optional[str],
-        values: Dict[str, str],
+        info: ValidationInfo,
     ) -> str:
         """Join Redis connection credentials into a connection string"""
-        if isinstance(v, str):
+        if isinstance(v, str) and v:
             # If the whole URL is provided via the config, preference that
             return v
 
+        values = info.data
         connection_protocol = "redis"
         params_str = ""
         use_tls = values.get("ssl", False)
@@ -110,5 +112,4 @@ class RedisSettings(FidesSettings):
         connection_url = f"{connection_protocol}://{auth_prefix}{values.get('host', '')}:{values.get('port', '')}/{db_index}{params_str}"
         return connection_url
 
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = ConfigDict(env_prefix=ENV_PREFIX)

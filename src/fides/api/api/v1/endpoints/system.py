@@ -1,17 +1,17 @@
 from typing import Dict, List, Optional
 
-from fastapi import Depends, HTTPException, Response, Security
+from fastapi import Body, Depends, HTTPException, Response, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic.types import conlist
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette import status
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from typing_extensions import Annotated
 
 from fides.api.api import deps
 from fides.api.api.v1.endpoints.saas_config_endpoints import instantiate_connection
@@ -120,7 +120,9 @@ def get_system_connections(
 )
 def patch_connections(
     fides_key: str,
-    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
+    configs: Annotated[
+        List[CreateConnectionConfigurationWithSecrets], Body(max_length=50)
+    ],
     db: Session = Depends(deps.get_db),
 ) -> BulkPutConnectionConfiguration:
     """
@@ -326,7 +328,7 @@ async def delete(
     async with db.begin():
         await db.delete(system_to_delete)
     # Convert the resource to a dict explicitly for the response
-    deleted_resource_dict = SystemSchema.from_orm(system_to_delete).dict()
+    deleted_resource_dict = SystemSchema.model_validate(system_to_delete).dict()
     return {
         "message": "resource deleted",
         "resource": deleted_resource_dict,

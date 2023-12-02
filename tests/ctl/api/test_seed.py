@@ -476,48 +476,42 @@ class TestLoadSamples:
 
         # Load the sample resources & connections
         await seed.load_samples(async_session)
+        param_tuples = [
+            (
+                System,
+                4,
+                [
+                    "cookie_house",
+                    "cookie_house_customer_database",
+                    "cookie_house_marketing_system",
+                    "cookie_house_postgresql_database",
+                ],
+            ),
+            (Dataset, 3, ["mongo_test", "postgres_example_test_dataset"]),
+            (PolicyCtl, 1, ["sample_policy"]),
+            (
+                ConnectionConfig,
+                2,
+                ["cookie_house_postgresql_database", "stripe_connector"],
+            ),
+            (DatasetConfig, 2, ["postgres_example_test_dataset", "stripe_connector"]),
+        ]
 
         async with async_session.begin():
-            # Check the results are as expected!
-            systems = (await async_session.execute(select(System))).scalars().all()
-            datasets = (await async_session.execute(select(Dataset))).scalars().all()
-            policies = (await async_session.execute(select(PolicyCtl))).scalars().all()
-            connections = (
-                (await async_session.execute(select(ConnectionConfig))).scalars().all()
-            )
-            dataset_configs = (
-                (await async_session.execute(select(DatasetConfig))).scalars().all()
-            )
-            assert len(systems) == 4
-            assert len(datasets) == 3
-            assert len(policies) == 1
-            assert len(connections) == 2
-            assert len(dataset_configs) == 2
+            for params in param_tuples:
+                try:
+                    resource, expected_amount, expected_keys = params
+                    objects = (
+                        await async_session.execute(select(resource)).scalars().all()
+                    )
+                except Exception as exc:
+                    raise exc
 
-            assert sorted([e.fides_key for e in systems]) == [
-                "cookie_house",
-                "cookie_house_customer_database",
-                "cookie_house_marketing_system",
-                "cookie_house_postgresql_database",
-            ]
-            assert sorted([e.fides_key for e in datasets]) == [
-                "mongo_test",
-                "postgres_example_test_dataset",
-                "stripe_connector",
-            ]
-            assert sorted([e.fides_key for e in policies]) == ["sample_policy"]
+                assert (
+                    len(objects) == expected_amount
+                ), f"Resource '{resource}' count assertion failed!"
 
-            # NOTE: Only the connections configured by SAMPLE_ENV_VARS above are
-            # expected to exist; the others defined in the sample_connections.yml
-            # will be ignored since they are missing secrets!
-            assert sorted([e.key for e in connections]) == [
-                "cookie_house_postgresql_database",
-                "stripe_connector",
-            ]
-            assert sorted([e.fides_key for e in dataset_configs]) == [
-                "postgres_example_test_dataset",
-                "stripe_connector",
-            ]
+                assert sorted([e.fides_key for e in objects]) == expected_keys
 
     async def test_load_sample_resources(self):
         """
@@ -591,7 +585,9 @@ class TestLoadSamples:
         ]
 
         # Assert that variable expansion worked as expected
-        postgres = [e for e in connections if e.connection_type == "postgres"][0].dict()
+        postgres = [e for e in connections if e.connection_type == "postgres"][
+            0
+        ].model_dump()
         assert postgres["secrets"]["host"] == "test-var-expansion"
         assert postgres["secrets"]["port"] == 9090
 

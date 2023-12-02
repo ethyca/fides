@@ -6,7 +6,6 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import conlist
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
@@ -16,6 +15,7 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
+from typing_extensions import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import (
@@ -103,7 +103,7 @@ def create_or_update_policies(
         scopes=[scope_registry.POLICY_CREATE_OR_UPDATE],
     ),
     db: Session = Depends(deps.get_db),
-    data: conlist(schemas.Policy, max_items=50) = Body(...),  # type: ignore
+    data: Annotated[List[schemas.Policy], Body(max_length=50)],
 ) -> schemas.BulkPutPolicyResponse:
     """
     Given a list of policy data elements, create or update corresponding Policy objects
@@ -235,7 +235,7 @@ def create_or_update_rules(
     ),
     policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    input_data: conlist(schemas.RuleCreate, max_items=50) = Body(...),  # type: ignore
+    input_data: Annotated[List[schemas.RuleCreate], Body(max_length=50)],
 ) -> schemas.BulkPutRuleResponse:
     """
     Given a list of Rule data elements, create or update corresponding Rule objects
@@ -486,7 +486,7 @@ def create_or_update_rule_targets(
     policy_key: FidesKey,
     rule_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    input_data: conlist(schemas.RuleTarget, max_items=50) = Body(...),  # type: ignore
+    input_data: Annotated[List[schemas.RuleTarget], Body(max_length=50)],
 ) -> schemas.BulkPutRuleTargetResponse:
     """
     Given a list of Rule data elements, create corresponding Rule objects

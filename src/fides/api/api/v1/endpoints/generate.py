@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Union
 from fastapi import Depends, HTTPException, Security, status
 from fideslang.models import Dataset, Organization, System
 from loguru import logger as log
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, model_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.api.v1.endpoints import API_PREFIX
@@ -67,14 +67,13 @@ class Generate(BaseModel):
     target: ValidTargets
     type: GenerateTypes
 
-    @root_validator()
-    @classmethod
-    def target_matches_type(cls, values: Dict) -> Dict:
+    @model_validator(mode="after")
+    def target_matches_type(self) -> "Generate":
         """
         Ensures that both of the target and type attributes are a valid
         pair (returning an error on an ('aws', 'dataset') as an example).
         """
-        target_type = (values.get("target"), values.get("type"))
+        target_type = (self.target, self.type)
         valid_target_types = [
             ("aws", "systems"),
             ("bigquery", "datasets"),
@@ -84,7 +83,7 @@ class Generate(BaseModel):
         ]
         if target_type not in valid_target_types:
             raise ValueError("Target and Type are not a valid match")
-        return values
+        return self
 
 
 class GenerateRequestPayload(BaseModel):
@@ -101,7 +100,7 @@ class GenerateResponse(BaseModel):
     The model to house the response for generated infrastructure.
     """
 
-    generate_results: Optional[List[Union[Dataset, System]]]
+    generate_results: Optional[List[Union[Dataset, System]]] = None
 
 
 @GENERATE_ROUTER.post(

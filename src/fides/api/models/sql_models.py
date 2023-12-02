@@ -177,23 +177,6 @@ class DataCategory(Base, FidesBase):
         )
 
 
-class DataQualifier(Base, FidesBase):
-    """
-    The SQL model for the DataQualifier resource.
-    """
-
-    __tablename__ = "ctl_data_qualifiers"
-
-    parent_key = Column(Text)
-    active = Column(BOOLEAN, default=True, nullable=False)
-
-    # Default Fields
-    is_default = Column(BOOLEAN, default=False)
-    version_added = Column(Text)
-    version_deprecated = Column(Text)
-    replaced_by = Column(Text)
-
-
 class DataSubject(Base, FidesBase):
     """
     The SQL model for the DataSubject resource.
@@ -271,7 +254,6 @@ class Dataset(Base, FidesBase):
 
     meta = Column(JSON)
     data_categories = Column(ARRAY(String))
-    data_qualifier = Column(String)  # Deprecated
     collections = Column(JSON)
     fides_meta = Column(JSON)
     joint_controller = Column(
@@ -469,7 +451,6 @@ class PrivacyDeclaration(Base):
     ### references to other tables, but kept as 'soft reference' strings for now
     data_use = Column(String, index=True, nullable=False)
     data_categories = Column(ARRAY(String))
-    data_qualifier = Column(String)  # Deprecated
     data_subjects = Column(ARRAY(String))
     dataset_references = Column(ARRAY(String))
 
@@ -518,18 +499,18 @@ class PrivacyDeclaration(Base):
 class SystemModel(BaseModel):
     fides_key: str
     registry_id: str
-    meta: Optional[Dict[str, Any]]
-    fidesctl_meta: Optional[Dict[str, Any]]
+    meta: Optional[Dict[str, Any]] = None
+    fidesctl_meta: Optional[Dict[str, Any]] = None
     system_type: str
-    data_responsibility_title: Optional[str]
-    joint_controller: Optional[str]
-    third_country_transfers: Optional[List[str]]
-    privacy_declarations: Optional[Dict[str, Any]]
-    administrating_department: Optional[str]
-    data_protection_impact_assessment: Optional[Dict[str, Any]]
-    egress: Optional[Dict[str, Any]]
-    ingress: Optional[Dict[str, Any]]
-    value: Optional[List[Any]]
+    data_responsibility_title: Optional[str] = None
+    joint_controller: Optional[str] = None
+    third_country_transfers: Optional[List[str]] = None
+    privacy_declarations: Optional[Dict[str, Any]] = None
+    administrating_department: Optional[str] = None
+    data_protection_impact_assessment: Optional[Dict[str, Any]] = None
+    egress: Optional[Dict[str, Any]] = None
+    ingress: Optional[Dict[str, Any]] = None
+    value: Optional[List[Any]] = None
 
 
 class SystemScans(Base):
@@ -552,7 +533,6 @@ class SystemScans(Base):
 sql_model_map: Dict = {
     "client_detail": ClientDetail,
     "data_category": DataCategory,
-    "data_qualifier": DataQualifier,
     "data_subject": DataSubject,
     "data_use": DataUse,
     "dataset": Dataset,

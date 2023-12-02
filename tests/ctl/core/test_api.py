@@ -8,7 +8,8 @@ from typing import Dict, List
 
 import pytest
 import requests
-from fideslang import DEFAULT_TAXONOMY, model_list, models, parse
+from fideslang import model_list, models, parse
+from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import System as SystemSchema
 from pytest import MonkeyPatch
 from starlette.status import (
@@ -31,12 +32,7 @@ from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System
 from fides.api.models.system_history import SystemHistory
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.api.schemas.system import PrivacyDeclarationResponse, SystemResponse
-from fides.api.schemas.taxonomy_extensions import (
-    DataCategory,
-    DataQualifier,
-    DataSubject,
-    DataUse,
-)
+from fides.api.schemas.taxonomy_extensions import DataCategory, DataSubject, DataUse
 from fides.api.util.endpoint_utils import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
 from fides.common.api.scope_registry import (
     CREATE,
@@ -58,12 +54,11 @@ from fides.core import api as _api
 
 CONFIG = get_config()
 
-TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifier"]
+TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use"]
 TAXONOMY_EXTENSIONS = {
     "data_category": DataCategory,
     "data_subject": DataSubject,
     "data_use": DataUse,
-    "data_qualifier": DataQualifier,
 }
 
 
@@ -453,7 +448,7 @@ class TestSystemCreate:
     @pytest.fixture(scope="function")
     def system_create_request_body(self) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             registryId=1,
             fides_key="system_fides_key",
             system_type="SYSTEM",
@@ -776,7 +771,6 @@ class TestSystemCreate:
         privacy_declaration = system.privacy_declarations[0]
 
         expected_none_privacy_declaration_fields = [
-            "data_qualifier",
             "dataset_references",
             "egress",
             "impact_assessment_location",
@@ -1012,8 +1006,7 @@ class TestSystemUpdate:
     @pytest.fixture(scope="function")
     def system_update_request_body(self, system) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
-            registryId=1,
+            organization_fides_key="1",
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
@@ -1024,7 +1017,6 @@ class TestSystemUpdate:
                     data_categories=[],
                     data_use="essential",
                     data_subjects=[],
-                    data_qualifier="aggregated_data",
                     dataset_references=[],
                     ingress=None,
                     egress=None,
@@ -1035,8 +1027,7 @@ class TestSystemUpdate:
     @pytest.fixture(scope="function")
     def system_update_request_body_with_system_cookies(self, system) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
-            registryId=1,
+            organization_fides_key="1",
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
@@ -1051,7 +1042,6 @@ class TestSystemUpdate:
                     data_categories=[],
                     data_use="essential",
                     data_subjects=[],
-                    data_qualifier="aggregated_data",
                     dataset_references=[],
                     ingress=None,
                     egress=None,
@@ -1064,7 +1054,7 @@ class TestSystemUpdate:
         self, system
     ) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             registryId=1,
             fides_key=system.fides_key,
             system_type="SYSTEM",
@@ -1076,7 +1066,6 @@ class TestSystemUpdate:
                     data_categories=[],
                     data_use="essential",
                     data_subjects=[],
-                    data_qualifier="aggregated_data",
                     dataset_references=[],
                     cookies=[
                         {"name": "my_cookie", "domain": "example.com"},
@@ -1091,7 +1080,7 @@ class TestSystemUpdate:
         self, system
     ) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             registryId=1,
             fides_key=system.fides_key,
             system_type="SYSTEM",
@@ -1345,7 +1334,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],  # other fields can differ
                 data_use="essential",  # same as initial PrivacyDeclaration
                 data_subjects=["anonymous_user"],  # other fields can differ
-                data_qualifier="aggregated",  # other fields can differ
                 dataset_references=[],
             )
         )
@@ -1368,7 +1356,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="essential",  # identical data use
                 data_subjects=["anonymous_user"],  # other fields can differ
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1378,7 +1365,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="essential",  # identicial data use
                 data_subjects=["anonymous_user"],
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1401,7 +1387,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="essential",  # identical data use
                 data_subjects=["anonymous_user"],
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1411,7 +1396,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="essential",  # identicial data use
                 data_subjects=["anonymous_user"],
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1436,7 +1420,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="marketing.advertising",  # identical data use
                 data_subjects=["anonymous_user"],
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1446,7 +1429,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="marketing.advertising",  # identicial data use
                 data_subjects=["anonymous_user"],
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1471,7 +1453,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="marketing.advertising",  # differing data use
                 data_subjects=["anonymous_user"],
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1481,7 +1462,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="essential",  # differing data use
                 data_subjects=["anonymous_user"],
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1690,7 +1670,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="essential",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
                         egress=None,
@@ -1706,7 +1685,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="essential",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
                         egress=None,
@@ -1717,7 +1695,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="third_party_sharing",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
                         egress=None,
@@ -1733,7 +1710,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="third_party_sharing",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
                         ingress=None,
@@ -1744,7 +1720,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
                         ingress=None,
@@ -1760,7 +1735,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
                         egress=None,
@@ -1771,7 +1745,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
                         egress=None,
@@ -1835,12 +1808,17 @@ class TestSystemUpdate:
         system = System.all(db)[0]
         db.refresh(system)
         db_decs = [
-            models.PrivacyDeclaration.from_orm(db_dec)
+            models.PrivacyDeclaration.model_validate(db_dec)
             for db_dec in system.privacy_declarations
         ]
 
         for update_dec in update_declarations:
-            db_decs.remove(update_dec.dict())
+            try:
+                db_decs.remove(update_dec.dict())
+            except ValueError as err:
+                print(f"Failed to remove value from dict: '{update_dec}'")
+                raise err
+
         # and assert we don't have any extra response declarations
         assert len(db_decs) == 0
 
@@ -1854,7 +1832,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     )
                 ]
@@ -1866,7 +1843,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     )
                 ]
@@ -1878,7 +1854,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     )
                 ]
@@ -1891,7 +1866,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                     models.PrivacyDeclaration(
@@ -1899,7 +1873,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="third_party_sharing",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                 ]
@@ -1912,7 +1885,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                     models.PrivacyDeclaration(
@@ -1920,7 +1892,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="third_party_sharing",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                 ]
@@ -1933,7 +1904,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                     models.PrivacyDeclaration(
@@ -1941,7 +1911,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                 ]
@@ -1954,7 +1923,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                     models.PrivacyDeclaration(
@@ -1962,7 +1930,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="essential",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                 ]
@@ -1975,7 +1942,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="essential",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                     models.PrivacyDeclaration(
@@ -1983,7 +1949,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="functional",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                 ]
@@ -1996,7 +1961,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                     models.PrivacyDeclaration(
@@ -2004,7 +1968,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="third_party_sharing",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                 ]
@@ -2028,7 +1991,7 @@ class TestSystemUpdate:
         Test to assert that existing privacy declaration records stay constant when necessary
         """
         old_db_decs = [
-            PrivacyDeclarationResponse.from_orm(dec)
+            PrivacyDeclarationResponse.model_validate(dec)
             for dec in system_multiple_decs.privacy_declarations
         ]
         old_decs_updated = [

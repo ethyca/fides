@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from fideslang.gvl import (
     GVL_FEATURES,
@@ -8,7 +8,8 @@ from fideslang.gvl import (
     MAPPED_SPECIAL_PURPOSES,
 )
 from fideslang.validation import FidesKey
-from pydantic import Field, conlist, root_validator
+from pydantic import Field, model_validator
+from typing_extensions import Annotated
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.privacy_notice import UserConsentPreference
@@ -96,11 +97,11 @@ class ConsentOptionCreate(FidesSchema):
 class FidesStringFidesPreferences(FidesSchema):
     """TCF Preferences that can be unpacked from TC and AC Strings"""
 
-    purpose_consent_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
-    purpose_legitimate_interests_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
-    vendor_consent_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
-    vendor_legitimate_interests_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
-    special_feature_preferences: conlist(TCFSpecialFeatureSave, max_items=200) = []  # type: ignore
+    purpose_consent_preferences: Annotated[List[TCFPurposeSave], Field(max_length=200)] = []  # type: ignore
+    purpose_legitimate_interests_preferences: Annotated[List[TCFPurposeSave], Field(max_length=200)] = []  # type: ignore
+    vendor_consent_preferences: Annotated[List[TCFVendorSave], Field(max_length=200)] = []  # type: ignore
+    vendor_legitimate_interests_preferences: Annotated[List[TCFVendorSave], Field(max_length=200)] = []  # type: ignore
+    special_feature_preferences: Annotated[List[TCFSpecialFeatureSave], Field(max_length=200)] = []  # type: ignore
 
 
 class PrivacyPreferencesRequest(FidesStringFidesPreferences):
@@ -118,19 +119,18 @@ class PrivacyPreferencesRequest(FidesStringFidesPreferences):
         description="If supplied, TC strings and AC strings are decoded and preferences saved for purpose_consent, "
         "purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features"
     )
-    preferences: conlist(ConsentOptionCreate, max_items=200) = []  # type: ignore
-    special_purpose_preferences: conlist(TCFSpecialPurposeSave, max_items=200) = []  # type: ignore
-    feature_preferences: conlist(TCFFeatureSave, max_items=200) = []  # type: ignore
-    system_consent_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
-    system_legitimate_interests_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
+    preferences: Annotated[List[ConsentOptionCreate], Field(max_length=200)] = []  # type: ignore
+    special_purpose_preferences: Annotated[List[TCFSpecialPurposeSave], Field(max_length=200)] = []  # type: ignore
+    feature_preferences: Annotated[List[TCFFeatureSave], Field(max_length=200)] = []  # type: ignore
+    system_consent_preferences: Annotated[List[TCFVendorSave], Field(max_length=200)] = []  # type: ignore
+    system_legitimate_interests_preferences: Annotated[List[TCFVendorSave], Field(max_length=200)] = []  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]
     method: Optional[ConsentMethod]
 
-    @root_validator()
-    @classmethod
-    def validate_tcf_attributes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_tcf_attributes(self) -> "PrivacyPreferencesRequest":
         """
         Run a few validation checks related to saving privacy preferences against TCF attributes.
 
@@ -145,19 +145,21 @@ class PrivacyPreferencesRequest(FidesStringFidesPreferences):
             return len(identifiers) != len(set(identifiers))
 
         for field_name in TCF_PREFERENCES_FIELD_MAPPING:
-            if tcf_duplicates_detected(values.get(field_name, [])):
+            value = getattr(self, field_name) or []
+            if tcf_duplicates_detected(value):
                 raise ValueError(
                     f"Duplicate preferences saved against TCF component: '{field_name}'"
                 )
 
-        if values.get("fides_string"):
-            for field in FidesStringFidesPreferences.__fields__:
-                if values.get(field):
+        if self.fides_string:
+            for field in FidesStringFidesPreferences.model_fields:
+                value = getattr(self, field)
+                if value:
                     raise ValueError(
                         f"Cannot supply value for '{field}' and 'fides_string' simultaneously when saving privacy preferences."
                     )
 
-        return values
+        return self
 
 
 class PrivacyPreferencesCreate(PrivacyPreferencesRequest):
@@ -198,9 +200,8 @@ class RecordConsentServedRequest(FidesSchema):
     acknowledge_mode: Optional[bool]
     serving_component: ServingComponent
 
-    @root_validator()
-    @classmethod
-    def validate_tcf_served(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_tcf_served(self) -> "RecordConsentServedRequest":
         """
         Check that TCF values are valid and that there are no duplicates
         """
@@ -209,7 +210,8 @@ class RecordConsentServedRequest(FidesSchema):
             return len(preference_list) != len(set(preference_list))
 
         for field_name in TCF_SECTION_MAPPING:
-            if tcf_duplicates_detected(values.get(field_name, [])):
+            value = getattr(self, field_name) or []
+            if tcf_duplicates_detected(value):
                 raise ValueError(
                     f"Duplicate served records saved against TCF component: '{field_name}'"
                 )
@@ -223,12 +225,11 @@ class RecordConsentServedRequest(FidesSchema):
         }
 
         for field_name, expected_values in expected_field_mapping.items():
-            if not set(values.get(field_name, [])).issubset(
-                set(expected_values.keys())
-            ):
+            value = getattr(self, field_name) or []
+            if not set(value).issubset(set(expected_values.keys())):
                 raise ValueError(f"Invalid values for {field_name} served.")
 
-        return values
+        return self
 
 
 class RecordConsentServedCreate(RecordConsentServedRequest):

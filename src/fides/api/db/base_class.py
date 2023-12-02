@@ -7,7 +7,7 @@ import re
 from typing import Any, Optional, Type, TypeVar
 from uuid import uuid4
 
-from fideslang.models import FidesKey  # type: ignore
+from fideslang.validation import validate_fides_key
 from sqlalchemy import Column, DateTime, String
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.ext.mutable import MutableDict
@@ -56,12 +56,12 @@ def get_key_from_data(data: dict[str, Any], cls_name: str) -> str:
     If no key, uses a snake-cased name. Will be used as the URL onupdate
     applicable classes.
     """
-    key = FidesKey.validate(data.get("key")) if data.get("key") else None
+    key = validate_fides_key(data.get("key")) if data.get("key") else None
     if key is None:
         name = data.get("name")
         if name is None:
             raise KeyValidationError(f"{cls_name} requires a name.")
-        key = FidesKey.validate(to_snake_case(name))
+        key = validate_fides_key(to_snake_case(name))
     return key
 
 

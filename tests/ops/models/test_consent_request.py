@@ -128,7 +128,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
                 PrivacyRequestResponse(
                     id="fake_privacy_request_id",
                     status=PrivacyRequestStatus.pending,
-                    policy=PolicyResponse.from_orm(consent_policy),
+                    policy=PolicyResponse.model_validate(consent_policy),
                 )
             ],
             failed=[],
@@ -184,7 +184,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
                 PrivacyRequestResponse(
                     id="fake_privacy_request_id",
                     status=PrivacyRequestStatus.pending,
-                    policy=PolicyResponse.from_orm(consent_policy),
+                    policy=PolicyResponse.model_validate(consent_policy),
                 )
             ],
             failed=[],
@@ -225,7 +225,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
                 PrivacyRequestResponse(
                     id="fake_privacy_request_id",
                     status=PrivacyRequestStatus.pending,
-                    policy=PolicyResponse.from_orm(consent_policy),
+                    policy=PolicyResponse.model_validate(consent_policy),
                 )
             ],
             failed=[],

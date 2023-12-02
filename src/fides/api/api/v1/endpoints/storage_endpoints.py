@@ -6,7 +6,6 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import conlist
 from requests import RequestException
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
@@ -19,6 +18,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
+from typing_extensions import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, StorageUploadError
@@ -122,7 +122,7 @@ def upload_data(
 def patch_config(
     *,
     db: Session = Depends(deps.get_db),
-    storage_configs: conlist(StorageDestination, max_items=50),  # type: ignore
+    storage_configs: Annotated[List[StorageDestination], Body(max_length=50)],
 ) -> BulkPutStorageConfigResponse:
     """
     Given a list of storage destination elements, create or update corresponding StorageConfig objects

@@ -10,8 +10,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 import toml
 from loguru import logger as log
 from pydantic import Field
-from pydantic.class_validators import _FUNCS
-from pydantic.env_settings import SettingsSourceCallable
+from pydantic_settings import PydanticBaseSettingsSource
 
 from fides.common.utils import echo_red
 
@@ -58,8 +57,8 @@ class FidesConfig(FidesSettings):
         description="Similar to 'test_mode', enables certain features when true.",
         exclude=True,
     )
-    oauth_instance: Optional[str] = Field(
-        default=getenv("FIDES__OAUTH_INSTANCE", None),
+    oauth_instance: str = Field(
+        default_factory=lambda: getenv("FIDES__OAUTH_INSTANCE", ""),
         description="A value that is prepended to the generated 'state' param in outbound OAuth2 authorization requests. Used during OAuth2 testing to associate callback responses back to this specific Fides instance.",
         exclude=True,
     )
@@ -83,16 +82,18 @@ class FidesConfig(FidesSettings):
     security: SecuritySettings
     user: UserSettings
 
+    # TODO[pydantic]: We couldn't refactor this class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config:  # pylint: disable=C0115
         case_sensitive = True
 
         @classmethod
         def customise_sources(
             cls,
-            init_settings: SettingsSourceCallable,
-            env_settings: SettingsSourceCallable,
-            file_secret_settings: SettingsSourceCallable,
-        ) -> Tuple[SettingsSourceCallable, ...]:
+            init_settings: PydanticBaseSettingsSource,
+            env_settings: PydanticBaseSettingsSource,
+            file_secret_settings: PydanticBaseSettingsSource,
+        ) -> Tuple[PydanticBaseSettingsSource, ...]:
             """Set environment variables to take precedence over init values."""
             return env_settings, init_settings, file_secret_settings
 
@@ -163,7 +164,7 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
     }
 
     for key, value in settings_map.items():
-        settings_map[key] = value.parse_obj(config_dict.get(key, {}))
+        settings_map[key] = value.model_validate(config_dict.get(key, {}))
 
     # Logic for populating the user-defined credentials sub-settings.
     # this is done to allow overrides without typed pydantic models
@@ -192,10 +193,6 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
 
     This will fail if the first encountered configuration file is invalid.
     """
-
-    # This prevents a Pydantic validator reuse error. For context see
-    # https://github.com/streamlit/streamlit/issues/3218
-    _FUNCS.clear()
 
     env_config_path = getenv(DEFAULT_CONFIG_PATH_ENV_VAR)
     config_path = config_path_override or env_config_path or DEFAULT_CONFIG_PATH

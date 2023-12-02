@@ -862,7 +862,7 @@ class TestPrivacyNoticeModel:
             )
 
         assert [
-            CookieSchema.from_orm(cookie) for cookie in privacy_notice.cookies
+            CookieSchema.model_validate(cookie) for cookie in privacy_notice.cookies
         ] == expected_cookies, description
 
     def test_calculate_relevant_systems(

@@ -451,7 +451,7 @@ class BigQueryConnector(SQLConnector):
         """Build URI of format"""
         config = self.secrets_schema(**self.configuration.secrets or {})
         dataset = f"/{config.dataset}" if config.dataset else ""
-        return f"bigquery://{config.keyfile_creds.project_id}{dataset}"
+        return f"bigquery://{config.keyfile_creds.project_id}{dataset}"  # pylint: disable=no-member
 
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:

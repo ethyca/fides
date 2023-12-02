@@ -292,7 +292,7 @@ def experience_config_update(
         data=experience_config_data_dict
     )
     try:
-        ExperienceConfigCreate.from_orm(dry_update)
+        ExperienceConfigCreate.model_validate(dry_update)
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,

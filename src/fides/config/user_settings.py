@@ -3,7 +3,7 @@
 # pylint: disable=C0115,C0116, E0213
 from typing import Dict
 
-from pydantic import Field
+from pydantic import ConfigDict, Field
 
 from fides.core.utils import create_auth_header, get_auth_header
 
@@ -42,6 +42,4 @@ class UserSettings(FidesSettings):
     password: str = Field(
         default="", description="The password used to log into the Fides webserver."
     )
-
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = ConfigDict(env_prefix=ENV_PREFIX)

@@ -8,7 +8,7 @@ from fideslang import manifests
 from fideslang.manifests import ingest_manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from fideslang.parse import parse_dict
-from fideslang.validation import FidesKey, FidesValidationError
+from fideslang.validation import FidesKey, FidesValidationError, validate_fides_key
 
 from fides.common.utils import echo_green
 from fides.config import FidesConfig
@@ -35,7 +35,7 @@ def validate_data_categories(
 
     """
     for category in categories:
-        FidesKey.validate(category)
+        validate_fides_key(category)
         if category not in valid_categories:
             raise ValueError
 
@@ -108,7 +108,7 @@ def annotate_dataset(
     output_dataset = []
 
     datasets = [
-        Dataset.parse_obj(dataset)
+        Dataset.model_validate(dataset)
         for dataset in ingest_manifests(dataset_file)["dataset"]
     ]
     raw_resources = api_helpers.list_server_resources(
@@ -134,7 +134,7 @@ def annotate_dataset(
     existing_categories: List[str] = [resource.fides_key for resource in resources]
 
     for dataset in datasets:
-        current_dataset = Dataset.parse_obj(dataset)
+        current_dataset = Dataset.model_validate(dataset)
         try:
             click.secho(f"\n####\nAnnotating Dataset: [{current_dataset.name}]")
 

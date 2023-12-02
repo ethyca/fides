@@ -3,10 +3,10 @@
 # pylint: disable=C0115,C0116, E0213
 
 from copy import deepcopy
-from typing import Dict, Optional, Union, cast
+from typing import Dict, Optional, cast
 from urllib.parse import quote, urlencode
 
-from pydantic import Field, PostgresDsn, validator
+from pydantic import ConfigDict, Field, PostgresDsn, ValidationInfo, field_validator
 
 from fides.config.utils import get_test_mode
 
@@ -44,8 +44,8 @@ class DatabaseSettings(FidesSettings):
         default="defaultpassword",
         description="The password with which to login to the application database.",
     )
-    port: str = Field(
-        default="5432",
+    port: int = Field(
+        default=5432,
         description="The port at which the application database will be accessible.",
     )
     server: str = Field(
@@ -96,38 +96,42 @@ class DatabaseSettings(FidesSettings):
         exclude=True,
     )
 
-    @validator("sync_database_uri", pre=True)
+    @field_validator("sync_database_uri", mode="before")
     @classmethod
     def assemble_sync_database_uri(
-        cls, value: Optional[str], values: Dict[str, Union[str, Dict]]
+        cls, value: Optional[str], info: ValidationInfo
     ) -> str:
         """Join DB connection credentials into a connection string"""
         if isinstance(value, str) and value:
             return value
 
+        values = info.data
+
         db_name = values["test_db"] if get_test_mode() else values["db"]
         return str(
-            PostgresDsn.build(
+            PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql+psycopg2",
-                user=values["user"],
+                username=values["user"],
                 password=values["password"],
                 host=values["server"],
                 port=values.get("port"),
-                path=f"/{db_name or ''}",
+                path=f"{db_name or ''}",
                 query=urlencode(
                     cast(Dict, values["params"]), quote_via=quote, safe="/"
                 ),
             )
         )
 
-    @validator("async_database_uri", pre=True)
+    @field_validator("async_database_uri", mode="before")
     @classmethod
     def assemble_async_database_uri(
-        cls, value: Optional[str], values: Dict[str, Union[str, Dict]]
+        cls, value: Optional[str], info: ValidationInfo
     ) -> str:
         """Join DB connection credentials into an async connection string."""
         if isinstance(value, str) and value:
             return value
+
+        values = info.data
 
         db_name = values["test_db"] if get_test_mode() else values["db"]
 
@@ -142,60 +146,59 @@ class DatabaseSettings(FidesSettings):
         # End workaround
 
         return str(
-            PostgresDsn.build(
+            PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql+asyncpg",
-                user=values["user"],
+                username=values["user"],
                 password=values["password"],
                 host=values["server"],
                 port=values.get("port"),
-                path=f"/{db_name or ''}",
+                path=f"{db_name or ''}",
                 query=urlencode(params, quote_via=quote, safe="/"),
             )
         )
 
-    @validator("sqlalchemy_database_uri", pre=True)
+    @field_validator("sqlalchemy_database_uri", mode="before")
     @classmethod
-    def assemble_db_connection(
-        cls, v: Optional[str], values: Dict[str, Union[str, Dict]]
-    ) -> str:
+    def assemble_db_connection(cls, v: Optional[str], info: ValidationInfo) -> str:
         """Join DB connection credentials into a synchronous connection string."""
         if isinstance(v, str) and v:
             return v
+
+        values = info.data
+
         return str(
-            PostgresDsn.build(
+            PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql",
-                user=values["user"],
+                username=values["user"],
                 password=values["password"],
                 host=values["server"],
                 port=values.get("port"),
-                path=f"/{values.get('db') or ''}",
+                path=f"{values.get('db') or ''}",
                 query=urlencode(
                     cast(Dict, values["params"]), quote_via=quote, safe="/"
                 ),
             )
         )
 
-    @validator("sqlalchemy_test_database_uri", pre=True)
+    @field_validator("sqlalchemy_test_database_uri", mode="before")
     @classmethod
-    def assemble_test_db_connection(
-        cls, v: Optional[str], values: Dict[str, Union[str, Dict]]
-    ) -> str:
+    def assemble_test_db_connection(cls, v: Optional[str], info: ValidationInfo) -> str:
         """Join DB connection credentials into a connection string"""
         if isinstance(v, str) and v:
             return v
+        values = info.data
         return str(
-            PostgresDsn.build(
+            PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql",
-                user=values["user"],
+                username=values["user"],
                 password=values["password"],
                 host=values["server"],
                 port=values["port"],
-                path=f"/{values.get('test_db') or ''}",
+                path=f"{values.get('test_db') or ''}",
                 query=urlencode(
                     cast(Dict, values["params"]), quote_via=quote, safe="/"
                 ),
             )
         )
 
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = ConfigDict(env_prefix=ENV_PREFIX)

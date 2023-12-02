@@ -3,14 +3,14 @@ from typing import List, Optional
 from fastapi import Depends, HTTPException
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import ValidationError
-from pydantic.types import conlist
+from pydantic import Field, ValidationError
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
+from typing_extensions import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import (
@@ -113,7 +113,7 @@ def validate_secrets(
             "Validating secrets on connection config with key '{}'",
             connection_config.key,
         )
-        connection_secrets = schema.parse_obj(request_body)
+        connection_secrets = schema.model_validate(request_body)
     except ValidationError as e:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
@@ -134,7 +134,7 @@ def validate_secrets(
 
 def patch_connection_configs(
     db: Session,
-    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
+    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_items=50)],  # type: ignore
     system: Optional[System] = None,
 ) -> BulkPutConnectionConfiguration:
     created_or_updated: List[ConnectionConfigurationResponse] = []

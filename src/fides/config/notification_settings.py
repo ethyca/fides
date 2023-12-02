@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import Field, validator
+from pydantic import ConfigDict, Field, field_validator
 
 from .fides_settings import FidesSettings
 
@@ -10,8 +10,8 @@ ENV_PREFIX = "FIDES__NOTIFICATIONS__"
 class NotificationSettings(FidesSettings):
     """Configuration settings for Data Subject and/or Data Processor notifications."""
 
-    notification_service_type: Optional[str] = Field(
-        default=None,
+    notification_service_type: str = Field(
+        default="",
         description="Sets the notification service type used to send notifications. Accepts mailchimp_transactional, mailgun, twilio_sms, or twilio_email.",
     )
     send_request_completion_notification: bool = Field(
@@ -27,7 +27,7 @@ class NotificationSettings(FidesSettings):
         description="When set to True, enables subject notifications upon privacy request review.",
     )
 
-    @validator("notification_service_type", pre=True)
+    @field_validator("notification_service_type", mode="before")
     @classmethod
     def validate_notification_service_type(cls, value: Optional[str]) -> Optional[str]:
         """Ensure the provided type is a valid value."""
@@ -47,5 +47,4 @@ class NotificationSettings(FidesSettings):
 
         return value
 
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = ConfigDict(env_prefix=ENV_PREFIX)

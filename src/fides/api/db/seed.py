@@ -330,7 +330,8 @@ def load_default_dsr_policies() -> None:
             "user.authorization",
         ]
         all_data_categories = [
-            str(category.fides_key) for category in DEFAULT_TAXONOMY.data_category
+            str(category.fides_key)
+            for category in DEFAULT_TAXONOMY.data_category  # pylint: disable=not-an-iterable
         ]
         default_data_categories = filter_data_categories(
             all_data_categories, excluded_data_categories
@@ -475,7 +476,7 @@ async def load_samples(async_session: AsyncSession) -> None:
                     instantiate_connection_from_template(
                         db=db_session,
                         saas_connector_type=connection.saas_connector_type,
-                        template_values=SaasConnectionTemplateValues.parse_obj(
+                        template_values=SaasConnectionTemplateValues.model_validate(
                             saas_template_data
                         ),
                     )
@@ -504,7 +505,7 @@ async def load_samples(async_session: AsyncSession) -> None:
                 patch_connection_configs(
                     db=db_session,
                     configs=[
-                        CreateConnectionConfigurationWithSecrets.parse_obj(
+                        CreateConnectionConfigurationWithSecrets.model_validate(
                             connection_config_data
                         )
                     ],

@@ -76,19 +76,20 @@ PRIVACY_EXPERIENCE_CONFIGS_PATH = join(
 
 
 def create_fides_app(
+    lifespan,
     cors_origins: List[AnyUrl] = CONFIG.security.cors_origins,
     cors_origin_regex: Optional[Pattern] = CONFIG.security.cors_origin_regex,
-    routers: List = ROUTERS,
+    routers: List[APIRouter] = ROUTERS,
     app_version: str = VERSION,
     security_env: str = CONFIG.security.env,
 ) -> FastAPI:
     """Return a properly configured application."""
     setup_logging(CONFIG)
-    logger.bind(api_config=CONFIG.logging.json()).debug(
+    logger.bind(api_config=CONFIG.logging.model_dump_json()).debug(
         "Logger configuration options in use"
     )
 
-    fastapi_app = FastAPI(title="fides", version=app_version)
+    fastapi_app = FastAPI(title="fides", version=app_version, lifespan=lifespan)
     fastapi_app.state.limiter = fides_limiter
     fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     for handler in ExceptionHandlers.get_handlers():
@@ -217,8 +218,7 @@ def check_redis() -> None:
     except (RedisConnectionError, RedisError, ResponseError) as e:
         logger.error("Connection to cache failed: {}", str(e))
         return
-    else:
-        logger.debug("Connection to cache succeeded")
+    logger.debug("Connection to cache succeeded")
 
 
 def load_default_privacy_notices() -> None:

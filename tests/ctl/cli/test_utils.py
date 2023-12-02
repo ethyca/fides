@@ -173,7 +173,8 @@ class TestHandleOktaCredentialsOptions:
             org_url=input_org_url,
             credentials_id=input_credentials_id,
         )
-        assert okta_config == {
+        assert okta_config
+        assert okta_config.model_dump() == {
             "orgUrl": "https://dev-78908748.okta.com",
             "token": "redacted_override_in_tests",
         }
@@ -192,7 +193,11 @@ class TestHandleOktaCredentialsOptions:
             org_url=input_org_url,
             credentials_id=input_credentials_id,
         )
-        assert okta_config == {"orgUrl": input_org_url, "token": input_token}
+        assert okta_config
+        assert okta_config.model_dump() == {
+            "orgUrl": input_org_url,
+            "token": input_token,
+        }
 
 
 @pytest.mark.unit
@@ -250,7 +255,8 @@ class TestHandleAWSCredentialsOptions:
             credentials_id=input_credentials_id,
         )
 
-        assert aws_config == {
+        assert aws_config
+        assert aws_config.model_dump() == {
             "aws_access_key_id": "redacted_id_override_in_tests",
             "aws_secret_access_key": "redacted_override_in_tests",
             "region_name": "us-east-1",
@@ -272,7 +278,8 @@ class TestHandleAWSCredentialsOptions:
             region=input_region,
             credentials_id=input_credentials_id,
         )
-        assert aws_config == {
+        assert aws_config
+        assert aws_config.model_dump() == {
             "aws_access_key_id": input_access_key_id,
             "aws_secret_access_key": input_access_key,
             "region_name": input_region,

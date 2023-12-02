@@ -1,7 +1,7 @@
 from typing import Callable, List
 
 import yaml
-from fastapi import Depends, HTTPException, Request
+from fastapi import Body, Depends, HTTPException, Request
 from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -10,7 +10,6 @@ from fideslang.models import Dataset
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
-from pydantic import conlist
 from sqlalchemy import and_, not_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -22,6 +21,7 @@ from starlette.status import (
     HTTP_415_UNSUPPORTED_MEDIA_TYPE,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
+from typing_extensions import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import (
@@ -176,7 +176,7 @@ def validate_dataset(
     response_model=BulkPutDataset,
 )
 def patch_dataset_configs(
-    dataset_pairs: conlist(DatasetConfigCtlDataset, max_items=50),  # type: ignore
+    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Body(max_length=50)],
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
@@ -209,7 +209,7 @@ def patch_dataset_configs(
             )
 
         try:
-            fetched_dataset: Dataset = Dataset.from_orm(ctl_dataset)
+            fetched_dataset: Dataset = Dataset.model_validate(ctl_dataset)
         except PydanticValidationError as e:
             raise HTTPException(
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
@@ -245,7 +245,7 @@ def patch_dataset_configs(
     response_model=BulkPutDataset,
 )
 def patch_datasets(
-    datasets: conlist(Dataset, max_items=50),  # type: ignore
+    datasets: Annotated[List[Dataset], Body(max_length=50)],
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
