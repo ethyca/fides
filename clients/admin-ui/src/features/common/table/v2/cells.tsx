@@ -1,6 +1,7 @@
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  Badge,
   Box,
   Checkbox,
   Flex,
@@ -14,6 +15,21 @@ export const DefaultCell = ({ value }: { value: string }) => (
     <Text fontSize="xs" lineHeight={4} fontWeight="normal">
       {value}
     </Text>
+  </Flex>
+);
+
+export const BadgeCell = ({
+  value,
+  suffix,
+}: {
+  value: string | number;
+  suffix?: string;
+}) => (
+  <Flex alignItems="center" height="100%" mr="2">
+    <Badge textTransform="none">
+      {value}
+      {suffix ? ` ${suffix}` : null}
+    </Badge>
   </Flex>
 );
 
@@ -56,7 +72,7 @@ type DefaultHeaderCellProps<T, V> = {
 export const DefaultHeaderCell = <T,>({
   value,
   column,
-}: DefaultHeaderCellProps<T, string>) => {
+}: DefaultHeaderCellProps<T, string | number>) => {
   let sortIcon: ReactNode = null;
   if (column.getIsSorted()) {
     sortIcon =

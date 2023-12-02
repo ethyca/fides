@@ -211,6 +211,11 @@ declare global {
       callback: (tcData: any, success: boolean) => void,
       parameter?: number | string
     ) => void;
+    __gpp: (
+      command: string,
+      callback: (data: any, success: boolean) => void,
+      parameter?: number | string
+    ) => void;
   }
 }
 
