@@ -1,7 +1,7 @@
 """tcf_purpose_overrides
 
 Revision ID: 848a8f4125cf
-Revises: 1af6950f4625
+Revises: 7f7c2b098f5d
 Create Date: 2023-12-02 13:18:55.768697
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "848a8f4125cf"
-down_revision = "1af6950f4625"
+down_revision = "7f7c2b098f5d"
 branch_labels = None
 depends_on = None
 
