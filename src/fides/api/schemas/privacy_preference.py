@@ -90,7 +90,6 @@ class ConsentOptionCreate(FidesSchema):
 
     privacy_notice_history_id: str
     preference: UserConsentPreference
-    served_notice_history_id: Optional[str]
 
     class Config:
         use_enum_values = True
