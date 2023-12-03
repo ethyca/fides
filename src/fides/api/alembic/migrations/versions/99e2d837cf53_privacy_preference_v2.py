@@ -48,6 +48,7 @@ def upgrade():
         sa.Column(
             "preferences", postgresql.JSONB(astext_type=sa.Text()), nullable=True
         ),
+        sa.Column("fides_string", sa.String(), nullable=True),
         sa.Column(
             "updated_at",
             sa.DateTime(timezone=True),
@@ -368,6 +369,7 @@ def upgrade():
             server_default="{}",
             nullable=True,
         ),
+        sa.Column("fides_string", sa.String(), nullable=True),
         sa.Column(
             "method",
             sa.String(),

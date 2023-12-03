@@ -113,6 +113,8 @@ class CurrentPrivacyPreferenceV2(ConsentIdentitiesMixin, Base):
 
     preferences = Column(MutableDict.as_mutable(JSONB))
 
+    fides_string = Column(String)
+
     updated_at = Column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -251,6 +253,8 @@ class PrivacyPreferenceHistoryV2(ConsentReportingMixinV2, Base):
     affected_system_status = Column(
         MutableDict.as_mutable(JSONB), server_default="{}", default=dict
     )
+
+    fides_string = Column(String)
 
     method = Column(EnumColumn(ConsentMethod))
 
