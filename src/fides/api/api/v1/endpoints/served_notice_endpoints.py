@@ -165,58 +165,58 @@ def save_consent_served_for_identities(
 #         raise HTTPException(status_code=400, detail=exc.args[0])
 
 
-@router.patch(
-    CONSENT_REQUEST_NOTICES_SERVED,
-    status_code=HTTP_200_OK,
-    response_model=List[LastServedConsentSchema],
-)
-def save_consent_served_via_privacy_center(
-    *,
-    consent_request_id: str,
-    db: Session = Depends(get_db),
-    data: RecordConsentServedRequest,
-    request: Request,
-) -> List[LastServedNotice]:
-    """Saves that consent was served via a verified identity flow (privacy center)
-
-    Capable of saving that consent was served against a verified email/phone number and a fides user device id
-    simultaneously.
-
-    Creates a ServedNoticeHistory history record for every consent item in the request and upserts
-    a LastServedNotice record.
-    """
-    verify_privacy_notice_and_historical_records(
-        db=db,
-        notice_history_list=data.privacy_notice_history_ids,
-    )
-    _, provided_identity = _get_consent_request_and_provided_identity(
-        db=db,
-        consent_request_id=consent_request_id,
-        verification_code=data.code,
-    )
-
-    (
-        provided_identity_verified,
-        fides_user_provided_identity,
-    ) = classify_identity_type_for_privacy_center_consent_reporting(
-        db=db,
-        provided_identity=provided_identity,
-        browser_identity=data.browser_identity,
-    )
-
-    logger.info("Saving notices served for privacy center")
-
-    try:
-        return save_consent_served_for_identities(
-            db=db,
-            verified_provided_identity=provided_identity_verified,
-            fides_user_provided_identity=fides_user_provided_identity,
-            request=request,
-            original_request_data=data,
-        )
-    except (
-        IdentityNotFoundException,
-        PrivacyNoticeHistoryNotFound,
-        SystemNotFound,
-    ) as exc:
-        raise HTTPException(status_code=400, detail=exc.args[0])
+# @router.patch(
+#     CONSENT_REQUEST_NOTICES_SERVED,
+#     status_code=HTTP_200_OK,
+#     response_model=List[LastServedConsentSchema],
+# )
+# def save_consent_served_via_privacy_center(
+#     *,
+#     consent_request_id: str,
+#     db: Session = Depends(get_db),
+#     data: RecordConsentServedRequest,
+#     request: Request,
+# ) -> List[LastServedNotice]:
+#     """Saves that consent was served via a verified identity flow (privacy center)
+#
+#     Capable of saving that consent was served against a verified email/phone number and a fides user device id
+#     simultaneously.
+#
+#     Creates a ServedNoticeHistory history record for every consent item in the request and upserts
+#     a LastServedNotice record.
+#     """
+#     verify_privacy_notice_and_historical_records(
+#         db=db,
+#         notice_history_list=data.privacy_notice_history_ids,
+#     )
+#     _, provided_identity = _get_consent_request_and_provided_identity(
+#         db=db,
+#         consent_request_id=consent_request_id,
+#         verification_code=data.code,
+#     )
+#
+#     (
+#         provided_identity_verified,
+#         fides_user_provided_identity,
+#     ) = classify_identity_type_for_privacy_center_consent_reporting(
+#         db=db,
+#         provided_identity=provided_identity,
+#         browser_identity=data.browser_identity,
+#     )
+#
+#     logger.info("Saving notices served for privacy center")
+#
+#     try:
+#         return save_consent_served_for_identities(
+#             db=db,
+#             verified_provided_identity=provided_identity_verified,
+#             fides_user_provided_identity=fides_user_provided_identity,
+#             request=request,
+#             original_request_data=data,
+#         )
+#     except (
+#         IdentityNotFoundException,
+#         PrivacyNoticeHistoryNotFound,
+#         SystemNotFound,
+#     ) as exc:
+#         raise HTTPException(status_code=400, detail=exc.args[0])

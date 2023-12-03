@@ -6,8 +6,12 @@ from sqlalchemy.orm import Query, Session
 from starlette.status import HTTP_200_OK, HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.api.deps import get_db
+from fides.api.api.v1.endpoints.consent_request_endpoints import (
+    _get_consent_request_and_provided_identity,
+)
 from fides.api.api.v1.endpoints.privacy_preference_endpoints import (
     anonymize_ip_address,
+    classify_identity_type_for_privacy_center_consent_reporting,
     get_ip_address,
     verify_privacy_notice_and_historical_records,
 )
@@ -25,16 +29,103 @@ from fides.api.models.privacy_preference_v2 import (
     ServedNoticeHistoryV2,
     get_records_with_consent_identifiers,
 )
+from fides.api.models.privacy_request import ProvidedIdentityType
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_preference import RecordConsentServedRequest
 from fides.api.schemas.privacy_preference_v2 import RecordsServed, RecordsServedResponse
 from fides.api.schemas.redis_cache import Identity
 from fides.api.util.api_router import APIRouter
 from fides.api.util.endpoint_utils import fides_limiter
-from fides.common.api.v1.urn_registry import NOTICES_SERVED, V1_URL_PREFIX
+from fides.common.api.v1.urn_registry import (
+    CONSENT_REQUEST_NOTICES_SERVED,
+    NOTICES_SERVED,
+    V1_URL_PREFIX,
+)
 from fides.config import CONFIG
 
 router = APIRouter(tags=["Privacy Preference"], prefix=V1_URL_PREFIX)
+
+
+@router.patch(
+    CONSENT_REQUEST_NOTICES_SERVED,
+    status_code=HTTP_200_OK,
+    response_model=RecordsServedResponse,
+)
+def save_consent_served_via_privacy_center_v2(
+    *,
+    consent_request_id: str,
+    db: Session = Depends(get_db),
+    data: RecordConsentServedRequest,
+    request: Request,
+    background_tasks: BackgroundTasks,
+) -> RecordsServedResponse:
+    """Saves that consent was served via a verified identity flow (privacy center)
+
+    Capable of saving that consent was served against a verified email/phone number and a fides user device id
+    simultaneously.
+    """
+    verify_privacy_notice_and_historical_records(
+        db=db,
+        notice_history_list=data.privacy_notice_history_ids,
+    )
+
+    _, provided_identity = _get_consent_request_and_provided_identity(
+        db=db,
+        consent_request_id=consent_request_id,
+        verification_code=data.code,
+    )
+
+    email: Optional[str] = None
+    phone_number: Optional[str] = None
+    fides_user_device: Optional[str] = None
+
+    # Get identifier value off of ProvidedIdentity value created for identity verification.
+    # It is also possible Privacy Center didn't collect an email or phone number for customers
+    # just wanted to record against device id
+    if provided_identity.field_name == ProvidedIdentityType.email:
+        email = provided_identity.encrypted_value.get("value")
+    if provided_identity.field_name == ProvidedIdentityType.phone_number:
+        phone_number = provided_identity.encrypted_value.get("value")
+    if provided_identity.field_name == ProvidedIdentityType.fides_user_device_id:
+        fides_user_device = provided_identity.encrypted_value.get("value")
+
+    # If no fides user device id from provided identity, pull off of request
+    if not fides_user_device:
+        fides_user_device: str = get_fides_user_device_id_from_request(
+            data.browser_identity
+        )
+
+    if not (email or phone_number or fides_user_device):
+        raise HTTPException(
+            status_code=400, detail="Cannot save notices served without user identifier"
+        )
+
+    logger.info("Saving notices served for privacy center")
+
+    try:
+        last_served_record, task_data = save_last_served_and_prep_task_data(
+            db=db,
+            request=request,
+            request_data=data,
+            fides_user_device=fides_user_device,
+            email=email,
+            phone_number=phone_number,
+        )
+
+        served = last_served_record.served
+        # Overriding privacy notice history ids on response so previously saved
+        # data isn't returned
+        served["privacy_notice_history_ids"] = data.privacy_notice_history_ids
+        served["served_notice_history_id"] = task_data["served_notice_history_id"]
+
+        background_tasks.add_task(save_consent_served_task, task_data)
+        return served
+    except (
+        IdentityNotFoundException,
+        PrivacyNoticeHistoryNotFound,
+        SystemNotFound,
+    ) as exc:
+        raise HTTPException(status_code=400, detail=exc.args[0])
 
 
 @router.patch(
@@ -99,6 +190,11 @@ def save_last_served_and_prep_task_data(
     email: Optional[str] = None,
     phone_number: Optional[str] = None,
 ):
+    """Upsert the record of the last served consent data for the given user, and pull additional
+    data from request headers to later queue for more detailed served notice reporting
+
+    """
+
     hashed_device: Optional[str] = ConsentIdentitiesMixin.hash_value(fides_user_device)
     hashed_email: Optional[str] = ConsentIdentitiesMixin.hash_value(email)
     hashed_phone: Optional[str] = ConsentIdentitiesMixin.hash_value(phone_number)

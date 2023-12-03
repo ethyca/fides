@@ -348,3 +348,18 @@ def get_consent_records_by_device_id(
         .filter(record_type.hashed_fides_user_device == hashed_val)
         .first()
     )
+
+
+def get_consent_records_by_email(
+    db: Session,
+    record_type: Union[
+        Type[LastServedNoticeV2],
+        Type[CurrentPrivacyPreferenceV2],
+        Type[ServedNoticeHistoryV2],
+        Type[PrivacyPreferenceHistoryV2],
+    ],
+    value: str,
+) -> Query:
+    hashed_val = ConsentIdentitiesMixin.hash_value(value)
+
+    return db.query(record_type).filter(record_type.hashed_email == hashed_val).first()
