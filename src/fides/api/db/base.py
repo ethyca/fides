@@ -33,6 +33,12 @@ from fides.api.models.privacy_preference import (
     PrivacyPreferenceHistory,
     ServedNoticeHistory,
 )
+from fides.api.models.privacy_preference_v2 import (
+    CurrentPrivacyPreferenceV2,
+    LastServedNoticeV2,
+    PrivacyPreferenceHistoryV2,
+    ServedNoticeHistoryV2,
+)
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.registration import UserRegistration
 from fides.api.models.storage import StorageConfig

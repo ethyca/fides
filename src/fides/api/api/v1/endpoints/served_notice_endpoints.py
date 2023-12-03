@@ -121,48 +121,48 @@ def save_consent_served_for_identities(
     return upserted_last_served
 
 
-@router.patch(
-    NOTICES_SERVED,
-    status_code=HTTP_200_OK,
-    response_model=List[LastServedConsentSchema],
-)
-@fides_limiter.limit(CONFIG.security.public_request_rate_limit)
-def save_consent_served_to_user(
-    *,
-    db: Session = Depends(get_db),
-    data: RecordConsentServedRequest,
-    request: Request,
-    response: Response,  # required for rate limiting
-) -> List[LastServedNotice]:
-    """Records that consent was served to a user with a given fides user device id.
-    Generally called by the banner or an overlay.
-
-    All items that were served in the same experience should be included in this request body.
-    """
-    verify_privacy_notice_and_historical_records(
-        db=db, notice_history_list=data.privacy_notice_history_ids
-    )
-
-    fides_user_provided_identity = get_or_create_fides_user_device_id_provided_identity(
-        db=db, identity_data=data.browser_identity
-    )
-
-    logger.info("Recording consent served with respect to fides user device id")
-
-    try:
-        return save_consent_served_for_identities(
-            db=db,
-            verified_provided_identity=None,
-            fides_user_provided_identity=fides_user_provided_identity,
-            request=request,
-            original_request_data=data,
-        )
-    except (
-        IdentityNotFoundException,
-        PrivacyNoticeHistoryNotFound,
-        SystemNotFound,
-    ) as exc:
-        raise HTTPException(status_code=400, detail=exc.args[0])
+# @router.patch(
+#     NOTICES_SERVED,
+#     status_code=HTTP_200_OK,
+#     response_model=List[LastServedConsentSchema],
+# )
+# @fides_limiter.limit(CONFIG.security.public_request_rate_limit)
+# def save_consent_served_to_user(
+#     *,
+#     db: Session = Depends(get_db),
+#     data: RecordConsentServedRequest,
+#     request: Request,
+#     response: Response,  # required for rate limiting
+# ) -> List[LastServedNotice]:
+#     """Records that consent was served to a user with a given fides user device id.
+#     Generally called by the banner or an overlay.
+#
+#     All items that were served in the same experience should be included in this request body.
+#     """
+#     verify_privacy_notice_and_historical_records(
+#         db=db, notice_history_list=data.privacy_notice_history_ids
+#     )
+#
+#     fides_user_provided_identity = get_or_create_fides_user_device_id_provided_identity(
+#         db=db, identity_data=data.browser_identity
+#     )
+#
+#     logger.info("Recording consent served with respect to fides user device id")
+#
+#     try:
+#         return save_consent_served_for_identities(
+#             db=db,
+#             verified_provided_identity=None,
+#             fides_user_provided_identity=fides_user_provided_identity,
+#             request=request,
+#             original_request_data=data,
+#         )
+#     except (
+#         IdentityNotFoundException,
+#         PrivacyNoticeHistoryNotFound,
+#         SystemNotFound,
+#     ) as exc:
+#         raise HTTPException(status_code=400, detail=exc.args[0])
 
 
 @router.patch(
