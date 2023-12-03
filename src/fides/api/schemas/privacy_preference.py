@@ -92,6 +92,9 @@ class ConsentOptionCreate(FidesSchema):
     preference: UserConsentPreference
     served_notice_history_id: Optional[str]
 
+    class Config:
+        use_enum_values = True
+
 
 class FidesStringFidesPreferences(FidesSchema):
     """TCF Preferences that can be unpacked from TC and AC Strings"""

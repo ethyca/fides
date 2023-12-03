@@ -157,6 +157,9 @@ class TCFPreferenceSaveBase(FidesSchema):
     preference: UserConsentPreference
     served_notice_history_id: Optional[str] = None  # Deprecated
 
+    class Config:
+        use_enum_values = True
+
 
 class TCFPurposeSave(TCFPreferenceSaveBase):
     """Schema for saving preferences with respect to a TCF Purpose"""
@@ -198,6 +201,9 @@ class TCFVendorSave(FidesSchema):
     id: str
     preference: UserConsentPreference
     served_notice_history_id: Optional[str] = None  # Deprecated
+
+    class Config:
+        use_enum_values = True
 
 
 class TCFFeatureSave(TCFPreferenceSaveBase):
