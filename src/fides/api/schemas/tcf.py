@@ -155,7 +155,7 @@ class TCFPreferenceSaveBase(FidesSchema):
 
     id: int
     preference: UserConsentPreference
-    served_notice_history_id: Optional[str]
+    served_notice_history_id: Optional[str] = None  # Deprecated
 
 
 class TCFPurposeSave(TCFPreferenceSaveBase):
@@ -197,7 +197,7 @@ class TCFVendorSave(FidesSchema):
 
     id: str
     preference: UserConsentPreference
-    served_notice_history_id: Optional[str]
+    served_notice_history_id: Optional[str] = None  # Deprecated
 
 
 class TCFFeatureSave(TCFPreferenceSaveBase):

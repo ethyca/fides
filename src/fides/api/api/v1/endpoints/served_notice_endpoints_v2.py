@@ -265,7 +265,7 @@ def save_consent_served_for_identities_v2(
 
     if existing_user_records.count():
         retained_record = existing_user_records.first()
-        records_to_delete: List[int] = []
+        records_to_delete: List[str] = []
 
         combined_notices_served = set()
         for record in existing_user_records:

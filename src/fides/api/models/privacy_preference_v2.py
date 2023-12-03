@@ -34,7 +34,7 @@ def get_records_with_consent_identifiers(
     hashed_device: Optional[str] = None,
     hashed_email: Optional[str] = None,
     hashed_phone: Optional[str] = None,
-):
+) -> Query:
     user_identifiers = []
     if hashed_device:
         user_identifiers.append(record_type.hashed_fides_user_device == hashed_device)
@@ -168,7 +168,7 @@ class LastServedNoticeV2(ConsentIdentitiesMixin, Base):
     )
 
     @classmethod
-    def generate_served_notice_history_id(self):
+    def generate_served_notice_history_id(cls):
         """Generate a served notice history id"""
         return f"ser_{uuid.uuid4()}"
 
