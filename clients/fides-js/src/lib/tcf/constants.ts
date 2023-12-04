@@ -1,4 +1,3 @@
-import { TCModel } from "@iabtechlabtcf/core";
 import {
   EnabledIds,
   LegalBasisEnum,
@@ -18,10 +17,14 @@ export const ETHYCA_CMP_ID = 407;
 export const FIDES_SEPARATOR = ",";
 
 export const TCF_KEY_MAP: {
-  cookieKey?: TcfModelType;
   experienceKey: keyof TcfExperienceRecords;
-  tcfModelKey?: keyof TCModel;
-  enabledIdsKey?: keyof EnabledIds;
+  tcfModelKey:
+    | "purposeConsents"
+    | "purposeLegitimateInterests"
+    | "specialFeatureOptins"
+    | "vendorConsents"
+    | "vendorLegitimateInterests";
+  enabledIdsKey: keyof EnabledIds;
 }[] = [
   {
     experienceKey: "tcf_purpose_consents",
@@ -48,6 +51,12 @@ export const TCF_KEY_MAP: {
     tcfModelKey: "vendorLegitimateInterests",
     enabledIdsKey: "vendorsLegint",
   },
+];
+
+export const TCF_COOKIE_KEY_MAP: {
+  cookieKey: TcfModelType;
+  experienceKey: keyof TcfExperienceRecords;
+}[] = [
   {
     cookieKey: "system_consent_preferences",
     experienceKey: "tcf_system_consents",

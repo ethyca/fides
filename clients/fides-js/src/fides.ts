@@ -141,7 +141,11 @@ const init = async (config: FidesConfig) => {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
   };
-  const initialFides = getInitialFides({ ...config, cookie });
+  const initialFides = getInitialFides({
+    ...config,
+    cookie,
+    updateExperienceFromCookieConsent,
+  });
   if (initialFides) {
     Object.assign(_Fides, initialFides);
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);

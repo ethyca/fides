@@ -1,20 +1,17 @@
 import { v4 as uuidv4 } from "uuid";
 import { getCookie, removeCookie, setCookie, Types } from "typescript-cookie";
 
-import { TCModel, TCString } from "@iabtechlabtcf/core";
 import { ConsentContext } from "./consent-context";
 import {
   resolveConsentValue,
   resolveLegacyConsentValue,
 } from "./consent-value";
 import {
-  ConsentMechanism,
   Cookies,
   ExperienceMeta,
   LegacyConsentConfig,
   PrivacyExperience,
   SaveConsentPreference,
-  UserConsentPreference,
 } from "./consent-types";
 import {
   debugLog,
@@ -22,14 +19,7 @@ import {
   transformUserPreferenceToBoolean,
 } from "./consent-utils";
 import type { TcfCookieConsent, TcfSavePreferences } from "./tcf/types";
-import {
-  TcfCookieKeyConsent,
-  TcfExperienceRecords,
-  TcfModelsRecord,
-} from "./tcf/types";
-import { TCF_KEY_MAP } from "./tcf/constants";
-import { getConsentFromTcModel } from "~/lib/tcf/utils";
-import { decodeFidesString } from "~/lib/tcf/fidesString";
+import { TCF_COOKIE_KEY_MAP } from "./tcf/constants";
 
 /**
  * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
@@ -90,17 +80,6 @@ const CODEC: Types.CookieCodecConfig<string, string> = {
   decodeValue: decodeURIComponent,
   encodeName: encodeURIComponent,
   encodeValue: encodeURIComponent,
-};
-
-export const tcfConsentCookieObjHasSomeConsentSet = (
-  tcf_consent: TcfCookieConsent | undefined
-): boolean => {
-  if (!tcf_consent) {
-    return false;
-  }
-  return Object.values(tcf_consent).some(
-    (val: TcfCookieKeyConsent) => Object.keys(val).length >= 0
-  );
 };
 
 export const consentCookieObjHasSomeConsentSet = (
@@ -293,89 +272,6 @@ export const buildCookieConsentForExperiences = (
   return cookieConsent;
 };
 
-const getOrDefaultPreference = (
-  tcModel: TCModel | undefined,
-  acString: string,
-  item: TcfModelsRecord,
-  cookieConsent: TcfCookieKeyConsent,
-  experienceKey: keyof TcfExperienceRecords
-): UserConsentPreference | undefined => {
-  if (Object.hasOwn(cookieConsent, item.id)) {
-    return transformConsentToFidesUserPreference(
-      Boolean(cookieConsent[item.id]),
-      ConsentMechanism.OPT_IN
-    );
-  }
-  // If experience contains a tcf entity not defined by tcfEntities on the cookie, this means:
-  // A) If fides_string exists, we check field on tcModel. If it doesn't exist, since opt-outs are not tracked by TC string, we assume opt-out.
-  // B) There is a new tcf entity that requires consent. In this case we would use the default on the experience.
-  if (tcModel) {
-    const consentFromExperience: boolean = getConsentFromTcModel(
-      tcModel,
-      acString,
-      experienceKey,
-      item.id
-    );
-    if (consentFromExperience) {
-      return transformConsentToFidesUserPreference(
-        consentFromExperience,
-        ConsentMechanism.OPT_IN
-      );
-    }
-    return UserConsentPreference.OPT_OUT;
-  }
-  return item.default_preference;
-};
-
-/**
- * Populates TCF entities with items from cookie.tcf_consent and Fides string.
- * Returns TCF entities to be assigned to an experience.
- */
-export const buildTcfEntitiesFromCookieAndFidesString = (
-  experience: PrivacyExperience,
-  cookie: FidesCookie,
-  fidesString?: string | null
-) => {
-  const tcfEntities = {
-    tcf_purpose_consents: experience.tcf_purpose_consents,
-    tcf_purpose_legitimate_interests:
-      experience.tcf_purpose_legitimate_interests,
-    tcf_special_purposes: experience.tcf_special_purposes,
-    tcf_features: experience.tcf_features,
-    tcf_special_features: experience.tcf_special_features,
-    tcf_vendor_consents: experience.tcf_vendor_consents,
-    tcf_vendor_legitimate_interests: experience.tcf_vendor_legitimate_interests,
-    tcf_system_consents: experience.tcf_system_consents,
-    tcf_system_legitimate_interests: experience.tcf_system_legitimate_interests,
-  };
-
-  let tcModel: TCModel | undefined;
-  let acString: string;
-  if (fidesString) {
-    // fixme- use ac string to get vendor consent prefs
-    const { tc: tcString, ac } = decodeFidesString(fidesString);
-    acString = ac;
-    tcModel = TCString.decode(tcString);
-  }
-  TCF_KEY_MAP.forEach(({ cookieKey, experienceKey }) => {
-    const cookieConsent: TcfCookieKeyConsent =
-      (cookieKey && cookie.tcf_consent[cookieKey]) ?? {};
-    // @ts-ignore the array map should ensure we will get the right record type
-    tcfEntities[experienceKey] = experience[experienceKey]?.map((item) => {
-      const preference = getOrDefaultPreference(
-        tcModel,
-        acString,
-        item,
-        cookieConsent,
-        experienceKey
-      );
-      return { ...item, current_preference: preference };
-    });
-  });
-
-  return tcfEntities;
-};
-
 /**
  * Updates prefetched experience, based on:
  * 1) experience: pre-fetched or client-side experience-based consent configuration
@@ -388,12 +284,10 @@ export const updateExperienceFromCookieConsent = ({
   experience,
   cookie,
   debug,
-  fidesString,
 }: {
   experience: PrivacyExperience;
   cookie: FidesCookie;
   debug?: boolean;
-  fidesString?: string | null;
 }): PrivacyExperience => {
   const noticesWithConsent = experience.privacy_notices?.map((notice) => {
     // Prefers preference in cookie if it exists, else uses current preference on the notice if it exists, else uses
@@ -408,12 +302,12 @@ export const updateExperienceFromCookieConsent = ({
     return { ...notice, current_preference: preference };
   });
 
-  // Handle the TCF case, which has many keys to query
-  const tcfEntities = buildTcfEntitiesFromCookieAndFidesString(
-    experience,
-    cookie,
-    fidesString
-  );
+  // // Handle the TCF case, which has many keys to query
+  // const tcfEntities = buildTcfEntitiesFromCookieAndFidesString(
+  //   experience,
+  //   cookie,
+  //   fidesString
+  // );
 
   if (debug) {
     debugLog(
@@ -422,23 +316,21 @@ export const updateExperienceFromCookieConsent = ({
       experience
     );
   }
-  return { ...experience, ...tcfEntities, privacy_notices: noticesWithConsent };
+  return { ...experience, privacy_notices: noticesWithConsent };
 };
 
 export const transformTcfPreferencesToCookieKeys = (
   tcfPreferences: TcfSavePreferences
 ): TcfCookieConsent => {
   const cookieKeys: TcfCookieConsent = {};
-  TCF_KEY_MAP.forEach(({ cookieKey }) => {
-    if (cookieKey) {
-      const preferences = tcfPreferences[cookieKey] ?? [];
-      cookieKeys[cookieKey] = Object.fromEntries(
-        preferences.map((pref) => [
-          pref.id,
-          transformUserPreferenceToBoolean(pref.preference),
-        ])
-      );
-    }
+  TCF_COOKIE_KEY_MAP.forEach(({ cookieKey }) => {
+    const preferences = tcfPreferences[cookieKey] ?? [];
+    cookieKeys[cookieKey] = Object.fromEntries(
+      preferences.map((pref) => [
+        pref.id,
+        transformUserPreferenceToBoolean(pref.preference),
+      ])
+    );
   });
   return cookieKeys;
 };
