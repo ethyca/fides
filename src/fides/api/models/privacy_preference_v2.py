@@ -29,7 +29,7 @@ from fides.config import CONFIG
 
 
 def get_records_with_consent_identifiers(
-    db,
+    db: Session,
     record_type: Union[Type[CurrentPrivacyPreferenceV2], Type[LastServedNoticeV2]],
     hashed_device: Optional[str] = None,
     hashed_email: Optional[str] = None,
@@ -168,7 +168,7 @@ class LastServedNoticeV2(ConsentIdentitiesMixin, Base):
     )
 
     @classmethod
-    def generate_served_notice_history_id(cls):
+    def generate_served_notice_history_id(cls) -> str:
         """Generate a served notice history id"""
         return f"ser_{uuid.uuid4()}"
 
@@ -201,9 +201,6 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
     # Minimal information stored here, mostly just region and component type
     privacy_experience_id = Column(String, index=True)
 
-    # The historical notice id that the user consented to - non-TCF notice
-    privacy_notice_history_id = Column(String, index=True)
-
     # Location where we received the request
     request_origin = Column(EnumColumn(RequestOrigin))
 
@@ -235,6 +232,10 @@ class ServedNoticeHistoryV2(ConsentReportingMixinV2, Base):
         Boolean,
         default=False,
     )
+
+    # The historical notice id served to the user - non-TCF notice
+    privacy_notice_history_id = Column(String, index=True)
+
     serving_component = Column(EnumColumn(ServingComponent), nullable=False, index=True)
 
     # Identifier generated when a LastServedNoticeV2 is created and returned in the response.
@@ -272,6 +273,9 @@ class PrivacyPreferenceHistoryV2(ConsentReportingMixinV2, Base):
     # Only for non-TCF notices.
     preference = Column(EnumColumn(UserConsentPreference), index=True)
 
+    # The historical notice id that the user consented to - non-TCF notice
+    privacy_notice_history_id = Column(String, index=True)
+
     # The privacy request created to propagate the preferences
     privacy_request_id = Column(
         String, ForeignKey(PrivacyRequest.id, ondelete="SET NULL"), index=True
@@ -301,6 +305,12 @@ class PrivacyPreferenceHistoryV2(ConsentReportingMixinV2, Base):
     )  # Dict of TCF attributes saved, for a TCF notice
 
     # Relationships
+    privacy_notice_history = relationship(
+        "PrivacyNoticeHistory",
+        primaryjoin="PrivacyNoticeHistory.id == PrivacyPreferenceHistoryV2.privacy_notice_history_id",
+        foreign_keys=[privacy_notice_history_id],
+    )
+
     privacy_request = relationship(PrivacyRequest, backref="privacy_preferences_v2")
 
     def cache_system_status(

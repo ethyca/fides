@@ -10,14 +10,33 @@ from fides.api.api.v1.endpoints.served_notice_endpoints_v2 import (
     save_consent_served_task,
     save_last_served_and_prep_task_data,
 )
+from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_preference import RequestOrigin
 from fides.api.models.privacy_preference_v2 import (
     ConsentIdentitiesMixin,
     LastServedNoticeV2,
+    PrivacyPreferenceHistoryV2,
     get_records_with_consent_identifiers,
 )
 from fides.api.schemas.privacy_preference import RecordConsentServedRequest
 from fides.api.schemas.redis_cache import Identity
+
+
+class TestPrivacyNoticeHistoryRelationship:
+    def test_privacy_notice_history_relationship(self, db, privacy_notice):
+        privacy_preference_history = PrivacyPreferenceHistoryV2.create(
+            db,
+            data={
+                "privacy_notice_history_id": privacy_notice.histories[0].id,
+                "preference": UserConsentPreference.opt_in,
+            },
+        )
+
+        assert (
+            privacy_preference_history.privacy_notice_history
+            == privacy_notice.histories[0]
+        )
+
 
 mock_request = Request(
     {

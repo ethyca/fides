@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from loguru import logger
 from sqlalchemy.orm import Query, Session
@@ -256,7 +256,9 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                 self.configuration.system, privacy_request.privacy_preferences
             )
 
-            filtered_privacy_preference_records = (
+            filtered_privacy_preference_records: List[
+                Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]
+            ] = (
                 filtered_privacy_preference_v1_records
                 + filtered_privacy_preference_v2_records
             )

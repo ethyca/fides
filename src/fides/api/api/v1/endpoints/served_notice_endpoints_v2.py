@@ -21,7 +21,6 @@ from fides.api.api.v1.endpoints.privacy_preference_endpoints import (
 from fides.api.common_exceptions import (
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
-    SystemNotFound,
 )
 from fides.api.db.ctl_session import sync_session
 from fides.api.models.privacy_experience import PrivacyExperience
@@ -54,7 +53,7 @@ def get_privacy_experience_or_error(
 ) -> Optional[PrivacyExperience]:
     """Check if privacy_experience_id is valid if supplied"""
     if not privacy_experience_id:
-        return
+        return None
 
     privacy_experience = PrivacyExperience.get(db=db, object_id=privacy_experience_id)
     if not privacy_experience:
@@ -62,6 +61,8 @@ def get_privacy_experience_or_error(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"Privacy Experience '{privacy_experience_id}' not found.",
         )
+
+    return privacy_experience
 
 
 def get_identifiers_from_privacy_center_request(
@@ -86,13 +87,12 @@ def get_identifiers_from_privacy_center_request(
             fides_user_device = identifier
 
     if not (email or phone_number or fides_user_device):
-        """Currently a valid provided identity with an identifier is required if request comes through
-        privacy center"""
+        # Currently a valid provided identity with an identifier is required if request comes th
         raise IdentityNotFoundException("User identities not found")
 
     # If no fides user device id from provided identity, pull off of request
     if not fides_user_device:
-        fides_user_device: str = get_fides_user_device_id_from_request(browser_identity)
+        fides_user_device = get_fides_user_device_id_from_request(browser_identity)
 
     return email, phone_number, fides_user_device
 
@@ -109,7 +109,7 @@ def save_consent_served_via_privacy_center_v2(
     data: RecordConsentServedRequest,
     request: Request,
     background_tasks: BackgroundTasks,
-) -> RecordsServedResponse:
+) -> Dict:
     """Saves that consent was served via a verified identity flow (privacy center) v2
 
     Capable of saving that consent was served against a verified email/phone number and a fides user device id
@@ -148,7 +148,7 @@ def save_consent_served_via_privacy_center_v2(
             phone_number=phone_number,
         )
 
-        served = last_served_record.served
+        served: Dict = last_served_record.served or {}
         # Overriding privacy notice history ids on response so previously saved
         # data isn't returned
         served["privacy_notice_history_ids"] = data.privacy_notice_history_ids
@@ -159,7 +159,6 @@ def save_consent_served_via_privacy_center_v2(
     except (
         IdentityNotFoundException,
         PrivacyNoticeHistoryNotFound,
-        SystemNotFound,
     ) as exc:
         raise HTTPException(status_code=400, detail=exc.args[0])
 
@@ -177,7 +176,7 @@ def save_consent_served_to_user_v2(
     request: Request,
     response: Response,  # required for rate limiting
     background_tasks: BackgroundTasks,
-) -> RecordsServedResponse:
+) -> Dict:
     """Records that consent was served to a user with a given fides user device id.
     Generally called by the banner or an overlay.
 
@@ -203,7 +202,7 @@ def save_consent_served_to_user_v2(
             fides_user_device=fides_user_device,
         )
 
-        served = last_served_record.served
+        served: Dict = last_served_record.served
         # Overriding privacy notice history ids on response so previously saved
         # data isn't returned
         served["privacy_notice_history_ids"] = data.privacy_notice_history_ids
@@ -215,7 +214,6 @@ def save_consent_served_to_user_v2(
     except (
         IdentityNotFoundException,
         PrivacyNoticeHistoryNotFound,
-        SystemNotFound,
     ) as exc:
         raise HTTPException(status_code=400, detail=exc.args[0])
 
@@ -227,7 +225,7 @@ def save_last_served_and_prep_task_data(
     fides_user_device: Optional[str] = None,
     email: Optional[str] = None,
     phone_number: Optional[str] = None,
-):
+) -> Tuple[LastServedNoticeV2, dict]:
     """Upsert the record of the last served consent data for the given user, and pull additional
     data from request headers to later queue for more detailed served notice reporting
 
@@ -249,9 +247,7 @@ def save_last_served_and_prep_task_data(
     last_served_notice: LastServedNoticeV2 = save_consent_served_for_identities_v2(
         db=db,
         consent_identity_data=identities_data,
-        attributes_served=request_data.dict(
-            include=set(RecordsServed.__annotations__.keys())
-        ),
+        attributes_served=RecordsServed(**dict(request_data)).dict(),
     )
 
     served_notice_history_id: str = (
@@ -280,7 +276,28 @@ class LastServedSchema(ConsentIdentitiesSchema):
     """Prepares Last Served Data before save, collapsing
     into one record"""
 
-    served: RecordsServed = {}
+    served: Optional[RecordsServed] = None
+
+
+def consolidate_identities(
+    task_data: Dict,
+    combined_email: Optional[str],
+    combined_phone: Optional[str],
+    combined_device: Optional[str],
+) -> Dict:
+    """Consolidate identities if combining multiple records, rehashing where necessary for further lookup"""
+    task_data["email"] = task_data["email"] or combined_email
+    task_data["hashed_email"] = ConsentIdentitiesMixin.hash_value(task_data["email"])
+    task_data["phone_number"] = task_data["phone_number"] or combined_phone
+    task_data["hashed_phone_number"] = ConsentIdentitiesMixin.hash_value(
+        task_data["phone_number"]
+    )
+    task_data["fides_user_device"] = task_data["fides_user_device"] or combined_device
+    task_data["hashed_fides_user_device"] = ConsentIdentitiesMixin.hash_value(
+        task_data["fides_user_device"]
+    )
+
+    return task_data
 
 
 def save_consent_served_for_identities_v2(
@@ -289,11 +306,15 @@ def save_consent_served_for_identities_v2(
     attributes_served: Dict[str, List],
 ) -> LastServedNoticeV2:
     """Upsert a LastServedNoticeV2 record for the given user"""
-    data = LastServedSchema(
+
+    # Prepare the request data to be in LastServedNoticeV2 format
+    data: LastServedSchema = LastServedSchema(
         **consent_identity_data.dict(),
         served=attributes_served,
     )
 
+    # Fetch records that have any of that matching identifiers in the current request,
+    # making it possible to consolidate user records.
     existing_user_records: Query = get_records_with_consent_identifiers(
         db,
         LastServedNoticeV2,
@@ -302,8 +323,8 @@ def save_consent_served_for_identities_v2(
         hashed_phone=consent_identity_data.hashed_phone_number,
     ).order_by(LastServedNoticeV2.created_at.desc())
 
-    if existing_user_records.count():
-        retained_record = existing_user_records.first()
+    if existing_user_records.first():
+        retained_record: LastServedNoticeV2 = existing_user_records.first()
         records_to_delete: List[str] = []
 
         combined_email: Optional[str] = None
@@ -332,37 +353,28 @@ def save_consent_served_for_identities_v2(
             )
             combined_notices_served.update(existing_notices_served)
 
+        # Now override the combined previous served with the latest served from the request
         combined_notices_served.update(
-            attributes_served.get("privacy_notice_history_ids")
+            attributes_served.get("privacy_notice_history_ids") or []
         )
         attributes_served["privacy_notice_history_ids"] = list(combined_notices_served)
-
         data.served = attributes_served
 
-        last_served_data = data.dict()
-
-        last_served_data["email"] = last_served_data["email"] or combined_email
-        last_served_data["hashed_email"] = ConsentIdentitiesMixin.hash_value(
-            last_served_data["email"]
+        last_served_data: Dict = data.dict()
+        consolidate_identities(
+            last_served_data,
+            combined_email=combined_email,
+            combined_phone=combined_phone,
+            combined_device=combined_device,
         )
-        last_served_data["phone_number"] = (
-            last_served_data["phone_number"] or combined_phone
-        )
-        last_served_data["hashed_phone_number"] = ConsentIdentitiesMixin.hash_value(
-            last_served_data["phone_number"]
-        )
-        last_served_data["fides_user_device"] = (
-            last_served_data["fides_user_device"] or combined_device
-        )
-        last_served_data[
-            "hashed_fides_user_device"
-        ] = ConsentIdentitiesMixin.hash_value(last_served_data["fides_user_device"])
 
         retained_record.update(db=db, data=last_served_data)
 
+        # Delete all records except for the consolidated recod
         db.query(LastServedNoticeV2).filter(
             LastServedNoticeV2.id.in_(records_to_delete)
         ).delete()
+
         record = retained_record
 
     else:
@@ -377,6 +389,11 @@ def prep_served_consent_reporting_task_data(
     request_data: RecordConsentServedRequest,
     served_notice_history_id: str,
 ) -> Dict:
+    """Prepare data to pass to background task for more detailed served notice reporting
+
+    Combines data from the original request with user data from request headers. Data must
+    be serializable.
+    """
     request_headers = request.headers
     ip_address: Optional[str] = anonymize_ip_address(get_ip_address(request))
     user_agent: Optional[str] = request_headers.get("User-Agent")
@@ -404,7 +421,7 @@ def prep_served_consent_reporting_task_data(
     return resp
 
 
-def save_consent_served_task(task_data: Dict[str, Any]):
+def save_consent_served_task(task_data: Dict[str, Any]) -> List[ServedNoticeHistoryV2]:
     """
     Task that is queued as a follow-up to saving a quick NoticeServedV2
     resource that builds a more detailed record for served notice reporting.
@@ -447,7 +464,9 @@ def save_consent_served_task(task_data: Dict[str, Any]):
         return historical_records_created
 
 
-def experience_lookups_for_consent_reporting(db: Session, task_data: Dict[str, Any]):
+def experience_lookups_for_consent_reporting(
+    db: Session, task_data: Dict[str, Any]
+) -> Tuple[Optional[str], Optional[str]]:
     """Updates reporting data in place with experience config and request origin if applicable"""
     privacy_experience_id = task_data.get("privacy_experience_id")
 
@@ -465,7 +484,7 @@ def experience_lookups_for_consent_reporting(db: Session, task_data: Dict[str, A
             task_data[
                 "privacy_experience_config_history_id"
             ] = privacy_experience.experience_config.experience_config_history_id
-            task_data["request_origin"] = privacy_experience.component.value
+            task_data["request_origin"] = privacy_experience.component.value  # type: ignore[attr-defined]
 
     return privacy_experience_config_history_id, request_origin
 
