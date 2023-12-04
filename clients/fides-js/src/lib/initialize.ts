@@ -20,10 +20,8 @@ import {
   ConsentMethod,
   EmptyExperience,
   FidesConfig,
-  FidesOptionOverrides,
+  FidesOptionsOverrides,
   FidesOptions,
-  FidesOverrides,
-  GetPreferencesFnResp,
   PrivacyExperience,
   SaveConsentPreference,
   UserGeolocation,
@@ -44,7 +42,6 @@ import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
 import { TcfCookieConsent } from "./tcf/types";
 import { FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP } from "./consent-constants";
-import { customGetConsentPreferences } from "../services/external/preferences";
 import { setupExtensions } from "./extensions";
 
 export type Fides = {
@@ -147,8 +144,7 @@ const automaticallyApplyGPCPreferences = ({
 };
 
 /**
- * Gets and validates override options provided through URL query params, cookie, or window obj,
- * and optionally retrieves consent preference overrides if a custom fn was defined in the config.
+ * Gets and validates override options provided through URL query params, cookie, or window obj
  *
  *
  * If the same override option is provided in multiple ways, load the value in this order:
@@ -156,10 +152,8 @@ const automaticallyApplyGPCPreferences = ({
  * 2) window obj   (second priority)
  * 3) cookie value (last priority)
  */
-export const getOverrides = async (
-  config: FidesConfig
-): Promise<Partial<FidesOverrides>> => {
-  const overrideOptions: Partial<FidesOptionOverrides> = {};
+export const getOptionsOverrides = (): Partial<FidesOptionsOverrides> => {
+  const overrideOptions: Partial<FidesOptionsOverrides> = {};
   if (typeof window !== "undefined") {
     // Grab query params if provided in the URL (e.g. "?fides_string=123...")
     const queryParams = new URLSearchParams(window.location.search);
@@ -188,12 +182,7 @@ export const getOverrides = async (
       }
     );
   }
-  const overrideConsentPrefs: GetPreferencesFnResp | null =
-    await customGetConsentPreferences(config);
-  if (!overrideOptions.fidesString && overrideConsentPrefs?.fides_string) {
-    overrideOptions.fidesString = overrideConsentPrefs.fides_string;
-  }
-  return { overrideOptions, overrideConsentPrefs };
+  return overrideOptions;
 };
 
 /**
