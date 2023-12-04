@@ -23,7 +23,7 @@ const VendorInfo = ({
     ) : (
       <span className="fides-vendor-info-label">{label}</span>
     )}{" "}
-    <span className="fides-notice-badge">{count}</span>
+    <span className="fides-notice-badge">{count.toLocaleString()}</span>
   </div>
 );
 
@@ -54,7 +54,7 @@ const VendorInfoBanner = ({
   }, [experience]);
 
   return (
-    <div className="fides-background-dark fides-vendor-info">
+    <div className="fides-background-dark fides-vendor-info-banner">
       <VendorInfo
         label="Vendors"
         count={counts.total}

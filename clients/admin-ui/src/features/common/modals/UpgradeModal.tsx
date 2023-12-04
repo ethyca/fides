@@ -1,4 +1,4 @@
-import ConfirmationModal from "~/features/common/ConfirmationModal";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 
 type Props = {
   onConfirm: () => void;

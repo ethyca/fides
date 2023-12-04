@@ -877,7 +877,7 @@ div#fides-banner-inner .fides-privacy-policy {
 }
 
 /* Vendor info (initial layer) */
-.fides-vendor-info {
+.fides-vendor-info-banner {
   display: flex;
   flex-direction: row;
   padding: 16px 12px;
@@ -935,14 +935,16 @@ div#fides-banner-inner .fides-privacy-policy {
   }
 }
 
+@media screen and (max-width: 992px) {
+  .fides-vendor-info-banner {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
 @media screen and (max-width: 768px) {
   div#fides-banner {
     padding: 24px;
-  }
-
-  .fides-vendor-info {
-    flex-direction: column;
-    gap: 12px;
   }
 
   div#fides-banner-description {
@@ -1004,4 +1006,35 @@ div#fides-banner-inner .fides-privacy-policy {
 }
 .fides-tcf-banner-container #fides-privacy-policy-link {
   margin: auto;
+}
+
+/* Paging */
+
+.fides-paging-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.fides-paging-info {
+  color: var(--fides-overlay-font-color-dark);
+  font-size: var(--fides-overlay-font-size-body-small);
+  font-weight: 600;
+  padding: 8px;
+}
+
+.fides-paging-previous-button {
+  margin-right: 8px;
+}
+
+.fides-paging-previous-button,
+.fides-paging-next-button {
+  cursor: pointer;
+  padding: 6px;
+  border: none;
+  background-color: transparent;
+}
+
+.fides-paging-previous-button:disabled,
+.fides-paging-next-button:disabled {
+  cursor: default;
 }

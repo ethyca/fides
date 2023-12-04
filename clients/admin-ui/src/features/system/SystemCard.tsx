@@ -15,7 +15,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
-import ConfirmationModal from "~/features/common/ConfirmationModal";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 import { System } from "~/types/api";
 
