@@ -39,7 +39,7 @@ import {
   SystemScannerStatus,
   SystemScanResponse,
   SystemsDiff,
-  TCFPurposeOverrideSchema
+  TCFPurposeOverrideSchema,
 } from "~/types/api";
 import {
   DataUseDeclaration,
@@ -428,6 +428,16 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["TCF Purpose Override"],
     }),
+    patchTcfPurposeOverrides: build.mutation<
+      TCFPurposeOverrideSchema[],
+      TCFPurposeOverrideSchema[]
+    >({
+      query: () => ({
+        url: `plus/tcf/purpose_overrides`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["TCF Purpose Override"],
+    }),
   }),
 });
 
@@ -465,6 +475,7 @@ export const {
   usePatchPlusSystemConnectionConfigsMutation,
   useCreatePlusSaasConnectionConfigMutation,
   useGetTcfPurposeOverridesQuery,
+  usePatchTcfPurposeOverridesMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
