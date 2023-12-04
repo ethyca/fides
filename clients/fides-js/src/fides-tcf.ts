@@ -130,8 +130,7 @@ const getInitialPreference = (
  */
 export const buildTcfEntitiesFromCookieAndFidesString = (
   experience: PrivacyExperience,
-  cookie: FidesCookie,
-  fidesString?: string | null
+  cookie: FidesCookie
 ) => {
   const tcfEntities = {
     tcf_purpose_consents: experience.tcf_purpose_consents,
@@ -162,8 +161,10 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
   });
 
   // Now update tcfEntities based on the fides string
-  if (fidesString) {
-    const { tc: tcString, ac: acString } = decodeFidesString(fidesString);
+  if (cookie.fides_string) {
+    const { tc: tcString, ac: acString } = decodeFidesString(
+      cookie.fides_string
+    );
     const acStringIds = idsFromAcString(acString);
 
     // Populate every field from tcModel
@@ -228,8 +229,7 @@ const updateCookieAndExperience = async ({
     );
     const tcfEntities = buildTcfEntitiesFromCookieAndFidesString(
       experience,
-      cookie,
-      cookie.fides_string
+      cookie
     );
     return { cookie, experience: tcfEntities };
   }
@@ -308,8 +308,7 @@ const updateExperienceFromCookieConsent = ({
 }): PrivacyExperience => {
   const tcfEntities = buildTcfEntitiesFromCookieAndFidesString(
     experience,
-    cookie,
-    cookie.fides_string
+    cookie
   );
 
   if (debug) {
@@ -347,6 +346,27 @@ const init = async (config: FidesConfig) => {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
   };
+  // Update the fidesString if we have an override and the TC portion is valid
+  const { fidesString } = config.options;
+  if (fidesString) {
+    try {
+      // Make sure TC string is valid before we assign it
+      const { tc: tcString } = decodeFidesString(fidesString);
+      TCString.decode(tcString);
+      const updatedCookie: Partial<FidesCookie> = {
+        fides_string: fidesString,
+        tcf_version_hash:
+          overrides.consentPrefsOverrides?.version_hash ??
+          cookie.tcf_version_hash,
+      };
+      Object.assign(cookie, updatedCookie);
+    } catch (error) {
+      debugLog(
+        config.options.debug,
+        `Could not decode tcString from ${fidesString}, it may be invalid. ${error}`
+      );
+    }
+  }
   const initialFides = getInitialFides({
     ...config,
     cookie,

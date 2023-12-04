@@ -1540,7 +1540,6 @@ describe("Fides-js TCF", () => {
      * ❌ 5) experience API (via GET /privacy-experience)
      *
      * EXPECTED RESULT: use preferences from local cookie's saved string
-     * TODO: CURRENTLY FAILING!!
      */
     it("prefers preferences from a cookie's fides_string when both cookie and experience exist", () => {
       setFidesCookie();
@@ -1689,6 +1688,7 @@ describe("Fides-js TCF", () => {
      */
     it("prefers preferences from fides_string option when fides_string, experience, and cookie exist", () => {
       setFidesCookie();
+      // Purpose 7, Special Feature 1
       const fidesStringOverride =
         "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
@@ -1840,8 +1840,9 @@ describe("Fides-js TCF", () => {
       });
       cy.get("#fides-panel-Vendors").within(() => {
         cy.get("button").contains("Legitimate interest").click();
+        // Should be checked because legitimate interest defaults to true and Systems aren't in the fides string
         cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
-          cy.get("input").should("not.be.checked");
+          cy.get("input").should("be.checked");
         });
       });
 
