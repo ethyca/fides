@@ -51,6 +51,7 @@ export const baseApi = createApi({
     "Roles",
     "User",
     "Configuration Settings",
+    "TCF Purpose Override"
   ],
   endpoints: () => ({}),
 });
