@@ -35,7 +35,7 @@ def consolidate_query_matches(
                     value, FieldPath(*target_path.levels[1:]), flattened_matches
                 )
 
-    else:
+    elif row:
         flattened_matches.append(row)
 
     return flattened_matches
