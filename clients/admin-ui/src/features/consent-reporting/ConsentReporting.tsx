@@ -56,11 +56,11 @@ const ConsentReporting = () => {
         <InputLeftAddon borderRadius="md">To</InputLeftAddon>
         <Input
           type="date"
-          borderRadius="md"
           name="To"
           value={endDate}
           min={startDate || undefined}
           onChange={(e) => setEndDate(e.target.value)}
+          borderRadius="md"
         />
       </InputGroup>
       <Button onClick={handleDownloadClicked} colorScheme="primary" size="sm">

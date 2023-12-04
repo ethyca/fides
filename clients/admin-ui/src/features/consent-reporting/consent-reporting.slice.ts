@@ -37,8 +37,7 @@ export const requestCSVDownload = async ({
   }
 
   return fetch(
-    `${BASE_URL}/consent-reporting?${new URLSearchParams({
-      // TODO: figure out correct URL
+    `${BASE_URL}/plus/consent_reporting?${new URLSearchParams({
       ...convertDateRangeToSearchParams({ startDate, endDate }),
       download_csv: "true",
     })}`,
