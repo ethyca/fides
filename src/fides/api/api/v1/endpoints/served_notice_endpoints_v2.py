@@ -92,7 +92,9 @@ def get_identifiers_from_privacy_center_request(
 
     # If no fides user device id from provided identity, pull off of request
     if not fides_user_device:
-        fides_user_device = get_fides_user_device_id_from_request(browser_identity)
+        fides_user_device = get_fides_user_device_id_from_request(
+            browser_identity, throw_exception=False
+        )
 
     return email, phone_number, fides_user_device
 
@@ -189,7 +191,7 @@ def save_consent_served_to_user_v2(
     get_privacy_experience_or_error(db, data.privacy_experience_id)
 
     fides_user_device: str = get_fides_user_device_id_from_request(
-        data.browser_identity
+        data.browser_identity, throw_exception=True
     )
 
     logger.info("Recording consent served with respect to fides user device id")
@@ -490,15 +492,17 @@ def experience_lookups_for_consent_reporting(
 
 
 def get_fides_user_device_id_from_request(
-    identity_data: Optional[Identity],
-) -> str:
+    identity_data: Optional[Identity], throw_exception: bool = True
+) -> Optional[str]:
     """
     Extracts the fides user device id from the request or throws an exception
     """
     if not identity_data or not identity_data.fides_user_device_id:
-        raise HTTPException(
-            HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Fides user device id not found in identity data",
-        )
+        if throw_exception:
+            raise HTTPException(
+                HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Fides user device id not found in identity data",
+            )
+        return None
 
     return identity_data.fides_user_device_id
