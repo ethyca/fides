@@ -237,12 +237,22 @@ class ServedNoticeHistoryV2(ConsentReportingMixinV2, Base):
     )
     serving_component = Column(EnumColumn(ServingComponent), nullable=False, index=True)
 
-    # Identifier generated when LastServedNotice is created
+    # Identifier generated when a LastServedNoticeV2 is created and returned in the response.
+    # This is saved on all corresponding ServedNoticeHistory records and can be used to link PrivacyPreferenceHistory records.
     served_notice_history_id = Column(String, index=True)
 
     tcf_served = Column(
         MutableDict.as_mutable(JSONB)
     )  # Dict of all the TCF attributes served if applicable
+
+    @staticmethod
+    def get_by_served_id(db: Session, served_id: str) -> Query:
+        """Retrieves all ServedNoticeHistoryV2 records with a common served_notice_history_id - generated
+        before the task was queued to store these records
+        """
+        return db.query(ServedNoticeHistoryV2).filter(
+            ServedNoticeHistoryV2.served_notice_history_id == served_id
+        )
 
 
 class PrivacyPreferenceHistoryV2(ConsentReportingMixinV2, Base):
@@ -283,7 +293,7 @@ class PrivacyPreferenceHistoryV2(ConsentReportingMixinV2, Base):
         ),
     )  # Cache secondary user ids (cookies, etc) if known for reporting purposes.
 
-    # The record of where we served the notice in the frontend, for conversion purposes
+    # The record of where we served the notice in the frontend, for conversion purposes.
     served_notice_history_id = Column(String, index=True)
 
     tcf_preferences = Column(
@@ -347,10 +357,8 @@ def get_consent_records_by_device_id(
 ) -> Query:
     hashed_val = ConsentIdentitiesMixin.hash_value(value)
 
-    return (
-        db.query(record_type)
-        .filter(record_type.hashed_fides_user_device == hashed_val)
-        .first()
+    return db.query(record_type).filter(
+        record_type.hashed_fides_user_device == hashed_val
     )
 
 
@@ -366,4 +374,4 @@ def get_consent_records_by_email(
 ) -> Query:
     hashed_val = ConsentIdentitiesMixin.hash_value(value)
 
-    return db.query(record_type).filter(record_type.hashed_email == hashed_val).first()
+    return db.query(record_type).filter(record_type.hashed_email == hashed_val)

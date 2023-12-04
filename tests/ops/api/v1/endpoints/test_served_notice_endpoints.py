@@ -4,13 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.privacy_preference import (
-    CURRENT_TCF_VERSION,
-    LastServedNotice,
-    RequestOrigin,
-    ServedNoticeHistory,
-    ServingComponent,
-)
+from fides.api.models.privacy_preference import RequestOrigin, ServingComponent
 from fides.api.models.privacy_preference_v2 import (
     ConsentIdentitiesMixin,
     LastServedNoticeV2,
@@ -160,7 +154,7 @@ class TestSaveNoticesServedForFidesDeviceId:
 
         last_served_notice = get_consent_records_by_device_id(
             db, LastServedNoticeV2, test_device_id
-        )
+        ).first()
         assert last_served_notice.served == resp
         assert last_served_notice.created_at is not None
         assert last_served_notice.updated_at is not None
@@ -226,15 +220,17 @@ class TestSaveNoticesServedForFidesDeviceId:
             },
         )
         assert response.status_code == 200
-        assert len(response.json()) == 1
-        use_served_history = ServedNoticeHistory.get(
-            db, object_id=response.json()[0]["served_notice_history_id"]
-        )
+        use_served_history = ServedNoticeHistoryV2.get_by_served_id(
+            db, response.json()["served_notice_history_id"]
+        ).first()
+
         assert use_served_history.anonymized_ip_address == "22.104.237.0"
 
-        last_served_record = LastServedNotice.get(
-            db, object_id=use_served_history.last_served_record.id
-        )
+        last_served_record = get_consent_records_by_device_id(
+            db,
+            record_type=LastServedNoticeV2,
+            value=request_body["browser_identity"]["fides_user_device_id"],
+        ).first()
         last_served_record.delete(db)
         use_served_history.delete(db)
 
@@ -253,14 +249,15 @@ class TestSaveNoticesServedForFidesDeviceId:
             url, json=request_body, headers={"Origin": "http://localhost:8080"}
         )
         assert response.status_code == 200
-        assert len(response.json()) == 1
-        use_served_history = ServedNoticeHistory.get(
-            db, object_id=response.json()[0]["served_notice_history_id"]
-        )
+        use_served_history = ServedNoticeHistoryV2.get_by_served_id(
+            db, response.json()["served_notice_history_id"]
+        ).first()
         assert use_served_history.anonymized_ip_address is None
-        last_served_record = LastServedNotice.get(
-            db, object_id=use_served_history.last_served_record.id
-        )
+        last_served_record = get_consent_records_by_device_id(
+            db,
+            LastServedNoticeV2,
+            request_body["browser_identity"]["fides_user_device_id"],
+        ).first()
         last_served_record.delete(db)
         use_served_history.delete(db)
 
@@ -390,11 +387,10 @@ class TestSaveNoticesServedForFidesDeviceId:
             == "Invalid values for tcf_special_features served."
         )
 
-    def test_invalid_system_served(
-        self,
-        api_client,
-        url,
-    ):
+    def test_invalid_system_served(self, api_client, url, db):
+        """No longer verifying that system ids exist.  Max number of systems can be very high - just save as-is"""
+        device_id = "f7e54703-cd57-495e-866d-042e67c81734"
+
         request_body = {
             "browser_identity": {
                 "fides_user_device_id": "f7e54703-cd57-495e-866d-042e67c81734",
@@ -405,11 +401,16 @@ class TestSaveNoticesServedForFidesDeviceId:
             "serving_component": ServingComponent.tcf_overlay.value,
         }
         response = api_client.patch(url, json=request_body)
-        assert response.status_code == 400
-        assert (
-            response.json()["detail"]
-            == "Can't save consent against invalid system id 'bad_system'."
-        )
+        assert response.status_code == 200
+        history = ServedNoticeHistoryV2.get_by_served_id(
+            db, response.json()["served_notice_history_id"]
+        ).first()
+        assert history.tcf_served["tcf_system_consents"] == ["bad_system"]
+
+        last_served = get_consent_records_by_device_id(
+            db, LastServedNoticeV2, device_id
+        ).first()
+        assert last_served.served["tcf_system_consents"] == ["bad_system"]
 
     @mock.patch(
         "fides.api.api.v1.endpoints.served_notice_endpoints_v2.anonymize_ip_address"
@@ -454,16 +455,14 @@ class TestSaveNoticesServedForFidesDeviceId:
 
         last_served_record = get_consent_records_by_device_id(
             db, LastServedNoticeV2, fides_device
-        )
+        ).first()
 
         assert last_served_record.served == served_data
         assert last_served_record.fides_user_device == fides_device
 
-        served_notice_history = (
-            db.query(ServedNoticeHistoryV2)
-            .filter(ServedNoticeHistoryV2.served_notice_history_id == served_history_id)
-            .first()
-        )
+        served_notice_history = ServedNoticeHistoryV2.get_by_served_id(
+            db, served_history_id
+        ).first()
         assert served_notice_history.privacy_notice_history_id is None
         assert served_notice_history.created_at is not None
         assert served_notice_history.updated_at is not None
@@ -648,7 +647,7 @@ class TestSaveNoticesServedPrivacyCenter:
         # Fetch last served notice record that was upserted
         last_served_notice = get_consent_records_by_email(
             db, record_type=LastServedNoticeV2, value=provided_identity_value
-        )
+        ).first()
         assert last_served_notice.created_at is not None
         assert last_served_notice.updated_at is not None
         assert last_served_notice.email == "test@email.com"
@@ -663,9 +662,7 @@ class TestSaveNoticesServedPrivacyCenter:
         assert last_served_notice.served == resp
 
         # Get corresponding historical record that was created in Background task
-        served_notice_history = db.query(ServedNoticeHistoryV2).filter(
-            ServedNoticeHistoryV2.served_notice_history_id == served_id
-        )
+        served_notice_history = ServedNoticeHistoryV2.get_by_served_id(db, served_id)
         assert served_notice_history.count() == 1
         served_notice_history = served_notice_history.first()
 
@@ -736,9 +733,6 @@ class TestSaveNoticesServedPrivacyCenter:
         )
         assert response.status_code == 200
 
-        import pdb
-
-        pdb.set_trace()
         resp = response.json()
         served_id = resp.pop("served_notice_history_id")
 
@@ -755,9 +749,12 @@ class TestSaveNoticesServedPrivacyCenter:
             "tcf_system_legitimate_interests": [],
         }
 
-        last_served_notice = get_consent_records_by_email(
+        last_served_notices = get_consent_records_by_email(
             db, record_type=LastServedNoticeV2, value=provided_identity_value
         )
+        assert last_served_notices.count() == 1
+        last_served_notice = last_served_notices.first()
+
         assert last_served_notice.created_at is not None
         assert last_served_notice.updated_at is not None
         assert last_served_notice.email == "test@email.com"
@@ -782,7 +779,7 @@ class TestSaveNoticesServedPrivacyCenter:
 
     @pytest.mark.usefixtures("subject_identity_verification_required", "system")
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_preference_endpoints.anonymize_ip_address"
+        "fides.api.api.v1.endpoints.served_notice_endpoints_v2.anonymize_ip_address"
     )
     def test_save_notices_served_device_id_only(
         self,
@@ -818,35 +815,35 @@ class TestSaveNoticesServedPrivacyCenter:
             json=request_body,
         )
         assert response.status_code == 200
-        assert len(response.json()) == 1
-        response_json = response.json()[0]
+        response_json = response.json()
+
+        assert len(response_json["privacy_notice_history_ids"]) == 1
 
         assert (
-            response_json["privacy_notice_history"]["id"]
+            response_json["privacy_notice_history_ids"][0]
             == privacy_notice.histories[0].id
         )
 
         served_notice_history_id = response_json["served_notice_history_id"]
 
         # Fetch last served notice record that was updated
-        last_served_notice = LastServedNotice.get(db, object_id=response_json["id"])
+        last_served_notice = get_consent_records_by_device_id(
+            db, LastServedNoticeV2, test_device_id
+        ).first()
         assert last_served_notice.created_at is not None
         assert last_served_notice.updated_at is not None
-        assert last_served_notice.provided_identity_id is None
-        assert (
-            last_served_notice.fides_user_device_provided_identity_id
-            == fides_user_provided_identity.id
-        )
-        assert last_served_notice.privacy_notice_id == privacy_notice.id
-        assert (
-            last_served_notice.privacy_notice_history_id
-            == privacy_notice.histories[0].id
-        )
+        assert last_served_notice.served["privacy_notice_history_ids"] == [
+            privacy_notice.histories[0].id
+        ]
 
         # Get corresponding historical record that was just created
-        served_notice_history = last_served_notice.served_notice_history
+        served_notice_history = ServedNoticeHistoryV2.get_by_served_id(
+            db, response_json["served_notice_history_id"]
+        ).first()
 
-        assert served_notice_history.id == served_notice_history_id
+        assert (
+            served_notice_history.served_notice_history_id == served_notice_history_id
+        )
         assert served_notice_history.updated_at is not None
         assert served_notice_history.anonymized_ip_address == masked_ip
         assert served_notice_history.created_at is not None
@@ -857,7 +854,7 @@ class TestSaveNoticesServedPrivacyCenter:
         assert served_notice_history.hashed_email is None
         assert (
             served_notice_history.hashed_fides_user_device
-            == ProvidedIdentity.hash_value(test_device_id)
+            == ConsentIdentitiesMixin.hash_value(test_device_id)
         )  # Cached here for reporting
         assert served_notice_history.hashed_phone_number is None
         assert served_notice_history.phone_number is None
@@ -874,24 +871,6 @@ class TestSaveNoticesServedPrivacyCenter:
             served_notice_history.serving_component == ServingComponent.privacy_center
         )
 
-        fides_user_device_provided_identity = (
-            served_notice_history.fides_user_device_provided_identity
-        )
-        # Same fides user device identity added to both the historical and current record
-        assert (
-            last_served_notice.fides_user_device_provided_identity
-            == fides_user_provided_identity
-            == fides_user_device_provided_identity
-        )
-        assert (
-            fides_user_device_provided_identity.hashed_value
-            == ProvidedIdentity.hash_value(test_device_id)
-        )
-        assert (
-            fides_user_device_provided_identity.encrypted_value["value"]
-            == test_device_id
-        )
-
         assert (
             served_notice_history.privacy_experience_config_history_id
             == privacy_experience_privacy_center.experience_config.experience_config_history_id
@@ -904,7 +883,6 @@ class TestSaveNoticesServedPrivacyCenter:
             served_notice_history.privacy_notice_history_id
             == privacy_notice.histories[0].id
         )
-        assert served_notice_history.provided_identity_id is None
 
         last_served_notice.delete(db)
         served_notice_history.delete(db)
@@ -980,9 +958,8 @@ class TestSaveNoticesServedPrivacyCenter:
             json=request_body,
         )
 
-        assert response.status_code == 404
-        assert mock_verify_identity.called
-        assert "missing" in response.json()["detail"]
+        # Used to throw a 404 - throwing error in different location now
+        assert response.status_code == 400
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",

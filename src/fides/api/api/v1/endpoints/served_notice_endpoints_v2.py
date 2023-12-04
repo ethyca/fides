@@ -1,9 +1,13 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import BackgroundTasks, Depends, HTTPException, Request, Response
 from loguru import logger
 from sqlalchemy.orm import Query, Session
-from starlette.status import HTTP_200_OK, HTTP_422_UNPROCESSABLE_ENTITY
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 
 from fides.api.api.deps import get_db
 from fides.api.api.v1.endpoints.consent_request_endpoints import (
@@ -28,7 +32,7 @@ from fides.api.models.privacy_preference_v2 import (
     ServedNoticeHistoryV2,
     get_records_with_consent_identifiers,
 )
-from fides.api.models.privacy_request import ProvidedIdentityType
+from fides.api.models.privacy_request import ProvidedIdentity, ProvidedIdentityType
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.privacy_preference import RecordConsentServedRequest
 from fides.api.schemas.privacy_preference_v2 import RecordsServed, RecordsServedResponse
@@ -45,6 +49,54 @@ from fides.config import CONFIG
 router = APIRouter(tags=["Privacy Preference"], prefix=V1_URL_PREFIX)
 
 
+def get_privacy_experience_or_error(
+    db: Session, privacy_experience_id: Optional[str]
+) -> Optional[PrivacyExperience]:
+    """Check if privacy_experience_id is valid if supplied"""
+    if not privacy_experience_id:
+        return
+
+    privacy_experience = PrivacyExperience.get(db=db, object_id=privacy_experience_id)
+    if not privacy_experience:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"Privacy Experience '{privacy_experience_id}' not found.",
+        )
+
+
+def get_identifiers_from_privacy_center_request(
+    provided_identity: ProvidedIdentity, browser_identity: Identity
+) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    """Extract user identifiers from privacy center request - either through verified provided identities or the
+    fides user device id"""
+    email: Optional[str] = None
+    phone_number: Optional[str] = None
+    fides_user_device: Optional[str] = None
+
+    # Get identifier value off of ProvidedIdentity value created for identity verification.
+    # It is also possible Privacy Center didn't collect an email or phone number for customers
+    # just wanted to record against device id
+    if provided_identity.encrypted_value:
+        identifier = provided_identity.encrypted_value.get("value")
+        if provided_identity.field_name == ProvidedIdentityType.email:
+            email = identifier
+        if provided_identity.field_name == ProvidedIdentityType.phone_number:
+            phone_number = identifier
+        if provided_identity.field_name == ProvidedIdentityType.fides_user_device_id:
+            fides_user_device = identifier
+
+    if not (email or phone_number or fides_user_device):
+        """Currently a valid provided identity with an identifier is required if request comes through
+        privacy center"""
+        raise IdentityNotFoundException("User identities not found")
+
+    # If no fides user device id from provided identity, pull off of request
+    if not fides_user_device:
+        fides_user_device: str = get_fides_user_device_id_from_request(browser_identity)
+
+    return email, phone_number, fides_user_device
+
+
 @router.patch(
     CONSENT_REQUEST_NOTICES_SERVED,
     status_code=HTTP_200_OK,
@@ -58,7 +110,7 @@ def save_consent_served_via_privacy_center_v2(
     request: Request,
     background_tasks: BackgroundTasks,
 ) -> RecordsServedResponse:
-    """Saves that consent was served via a verified identity flow (privacy center)
+    """Saves that consent was served via a verified identity flow (privacy center) v2
 
     Capable of saving that consent was served against a verified email/phone number and a fides user device id
     simultaneously.
@@ -68,40 +120,25 @@ def save_consent_served_via_privacy_center_v2(
         notice_history_list=data.privacy_notice_history_ids,
     )
 
+    get_privacy_experience_or_error(db, data.privacy_experience_id)
+
     _, provided_identity = _get_consent_request_and_provided_identity(
         db=db,
         consent_request_id=consent_request_id,
         verification_code=data.code,
     )
 
-    email: Optional[str] = None
-    phone_number: Optional[str] = None
-    fides_user_device: Optional[str] = None
-
-    # Get identifier value off of ProvidedIdentity value created for identity verification.
-    # It is also possible Privacy Center didn't collect an email or phone number for customers
-    # just wanted to record against device id
-    if provided_identity.field_name == ProvidedIdentityType.email:
-        email = provided_identity.encrypted_value.get("value")
-    if provided_identity.field_name == ProvidedIdentityType.phone_number:
-        phone_number = provided_identity.encrypted_value.get("value")
-    if provided_identity.field_name == ProvidedIdentityType.fides_user_device_id:
-        fides_user_device = provided_identity.encrypted_value.get("value")
-
-    # If no fides user device id from provided identity, pull off of request
-    if not fides_user_device:
-        fides_user_device: str = get_fides_user_device_id_from_request(
-            data.browser_identity
-        )
-
-    if not (email or phone_number or fides_user_device):
-        raise HTTPException(
-            status_code=400, detail="Cannot save notices served without user identifier"
-        )
-
     logger.info("Saving notices served for privacy center")
 
     try:
+        (
+            email,
+            phone_number,
+            fides_user_device,
+        ) = get_identifiers_from_privacy_center_request(
+            provided_identity, data.browser_identity
+        )
+
         last_served_record, task_data = save_last_served_and_prep_task_data(
             db=db,
             request=request,
@@ -149,6 +186,8 @@ def save_consent_served_to_user_v2(
     verify_privacy_notice_and_historical_records(
         db=db, notice_history_list=data.privacy_notice_history_ids
     )
+
+    get_privacy_experience_or_error(db, data.privacy_experience_id)
 
     fides_user_device: str = get_fides_user_device_id_from_request(
         data.browser_identity
