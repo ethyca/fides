@@ -1,5 +1,5 @@
 import { TCModel, TCString, Vector } from "@iabtechlabtcf/core";
-import { PrivacyExperience, UserConsentPreference } from "../consent-types";
+import { PrivacyExperience } from "../consent-types";
 import {
   EnabledIds,
   TcfCookieConsent,
@@ -13,9 +13,15 @@ import { decodeFidesString, idsFromAcString } from "./fidesString";
 
 export const getConsentFromTcModel = (
   tcModel: TCModel,
+  acString: string,
   experienceKey: keyof TcfExperienceRecords,
   tcfRecordId: string | number
 ): boolean => {
+  const acStringIds = idsFromAcString(acString);
+  if (acStringIds.find((id) => id === tcfRecordId)) {
+    return true;
+  }
+  // fixme- append gvl for "vendorConsents" and "vendorLegitimateInterests" keys
   const associatedTCFKey = TCF_KEY_MAP.find(
     (i) => i.experienceKey === experienceKey
   )?.tcfModelKey;
@@ -24,10 +30,10 @@ export const getConsentFromTcModel = (
       if (id === tcfRecordId) {
         return consented;
       }
+      return false;
     });
-    return false;
   }
-  // fixme- tcf_vendor_consents comes from both AC string and tc string?
+  return false;
 };
 
 export const transformFidesStringToCookieKeys = (

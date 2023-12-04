@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { getCookie, removeCookie, setCookie, Types } from "typescript-cookie";
 
+import { TCModel, TCString } from "@iabtechlabtcf/core";
 import { ConsentContext } from "./consent-context";
 import {
   resolveConsentValue,
@@ -29,7 +30,6 @@ import {
 import { TCF_KEY_MAP } from "./tcf/constants";
 import { getConsentFromTcModel } from "~/lib/tcf/utils";
 import { decodeFidesString } from "~/lib/tcf/fidesString";
-import { TCModel, TCString } from "@iabtechlabtcf/core";
 
 /**
  * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
@@ -295,10 +295,10 @@ export const buildCookieConsentForExperiences = (
 
 const getOrDefaultPreference = (
   tcModel: TCModel | undefined,
+  acString: string,
   item: TcfModelsRecord,
   cookieConsent: TcfCookieKeyConsent,
-  experienceKey: keyof TcfExperienceRecords,
-  fidesString?: string | null
+  experienceKey: keyof TcfExperienceRecords
 ): UserConsentPreference | undefined => {
   if (Object.hasOwn(cookieConsent, item.id)) {
     return transformConsentToFidesUserPreference(
@@ -312,6 +312,7 @@ const getOrDefaultPreference = (
   if (tcModel) {
     const consentFromExperience: boolean = getConsentFromTcModel(
       tcModel,
+      acString,
       experienceKey,
       item.id
     );
@@ -348,29 +349,30 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
     tcf_system_legitimate_interests: experience.tcf_system_legitimate_interests,
   };
 
-  if (cookie.tcf_consent) {
-    let tcModel: TCModel | undefined;
-    if (fidesString) {
-      // fixme- do we need the ac string?
-      const { tc: tcString } = decodeFidesString(fidesString);
-      tcModel = TCString.decode(tcString);
-    }
-    TCF_KEY_MAP.forEach(({ cookieKey, experienceKey }) => {
-      const cookieConsent: TcfCookieKeyConsent =
-        (cookieKey && cookie.tcf_consent[cookieKey]) ?? {};
-      // @ts-ignore the array map should ensure we will get the right record type
-      tcfEntities[experienceKey] = experience[experienceKey]?.map((item) => {
-        const preference = getOrDefaultPreference(
-          tcModel,
-          item,
-          cookieConsent,
-          experienceKey,
-          fidesString
-        );
-        return { ...item, current_preference: preference };
-      });
-    });
+  let tcModel: TCModel | undefined;
+  let acString: string;
+  if (fidesString) {
+    // fixme- use ac string to get vendor consent prefs
+    const { tc: tcString, ac } = decodeFidesString(fidesString);
+    acString = ac;
+    tcModel = TCString.decode(tcString);
   }
+  TCF_KEY_MAP.forEach(({ cookieKey, experienceKey }) => {
+    const cookieConsent: TcfCookieKeyConsent =
+      (cookieKey && cookie.tcf_consent[cookieKey]) ?? {};
+    // @ts-ignore the array map should ensure we will get the right record type
+    tcfEntities[experienceKey] = experience[experienceKey]?.map((item) => {
+      const preference = getOrDefaultPreference(
+        tcModel,
+        acString,
+        item,
+        cookieConsent,
+        experienceKey
+      );
+      return { ...item, current_preference: preference };
+    });
+  });
+
   return tcfEntities;
 };
 

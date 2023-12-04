@@ -274,34 +274,6 @@ const init = async (config: FidesConfig) => {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
   };
-  if (config.options.fidesString) {
-    const { cookie: updatedCookie, success } = updateFidesCookieFromString(
-      cookie,
-      config.options.fidesString,
-      config.options.debug,
-      overrides.consentPrefsOverrides?.version_hash
-    );
-    if (success) {
-      Object.assign(cookie, updatedCookie);
-    }
-  } else if (
-    tcfConsentCookieObjHasSomeConsentSet(cookie.tcf_consent) &&
-    !cookie.fides_string &&
-    isPrivacyExperience(config.experience) &&
-    experienceIsValid(config.experience, config.options)
-  ) {
-    // This state should not be hit, but just in case: if fidesString is missing on cookie but we have tcf consent,
-    // we should generate fidesString so that our CMP API accurately reflects user preference
-    cookie.fides_string = await generateFidesStringFromCookieTcfConsent(
-      config.experience,
-      cookie.tcf_consent
-    );
-    debugLog(
-      config.options.debug,
-      "fides_string was missing from cookie, so it has been generated based on tcf_consent",
-      cookie.fides_string
-    );
-  }
   const initialFides = getInitialFides({ ...config, cookie });
   // Initialize the CMP API early so that listeners are established
   initializeTcfCmpApi();
