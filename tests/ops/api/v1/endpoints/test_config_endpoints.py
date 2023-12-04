@@ -85,7 +85,7 @@ class TestPatchApplicationConfig:
     ):
         auth_header = generate_role_header(roles=[CONTRIBUTOR])
         response = api_client.patch(url, headers=auth_header, json=payload)
-        assert 403 == response.status_code
+        assert 200 == response.status_code
 
     def test_patch_application_config_admin_role(
         self, api_client: TestClient, payload, url, generate_role_header
@@ -321,6 +321,26 @@ class TestPatchApplicationConfig:
             payload["security"]["cors_origins"]
         )
 
+    def test_patch_application_config_updates_cors_domains_rejects_non_url(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db: Session,
+    ):
+        """
+        Ensure non-URL values for cors domains -- specifically `*` --
+        are rejected by API
+        """
+        payload = {"security": {"cors_origins": ["*"]}}
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 422
+
     def test_patch_application_config_invalid_notification_type(
         self,
         api_client: TestClient,
@@ -394,7 +414,7 @@ class TestPutApplicationConfig:
     ):
         auth_header = generate_role_header(roles=[CONTRIBUTOR])
         response = api_client.put(url, headers=auth_header, json=payload)
-        assert 403 == response.status_code
+        assert 200 == response.status_code
 
     def test_put_application_config_admin_role(
         self, api_client: TestClient, payload, url, generate_role_header
@@ -920,7 +940,7 @@ class TestDeleteApplicationConfig:
         assert ApplicationConfig.get_api_set(db) == {}
 
 
-class TestGetConnections:
+class TestGetConfig:
     @pytest.fixture(scope="function")
     def url(self) -> str:
         return urls.V1_URL_PREFIX + urls.CONFIG
@@ -936,6 +956,23 @@ class TestGetConnections:
         assert resp.status_code == 200
 
         config = resp.json()
+
+        # effectively hardcode our allow list here in our tests to flag any additions to the allowlist!
+        # allowlist additions should be made with care, and _need_ to be reviewed by the
+        # Ethyca security team
+        allowed_top_level_config_keys = {
+            "user",
+            "logging",
+            "notifications",
+            "security",
+            "execution",
+            "storage",
+        }
+
+        for key in config.keys():
+            assert (
+                key in allowed_top_level_config_keys
+            ), "Unexpected config API change, please review with Ethyca security team"
 
         assert "security" in config
         assert "user" in config
@@ -957,7 +994,7 @@ class TestGetConnections:
                 )
             )
             == 0
-        )
+        ), "Unexpected config API change, please review with Ethyca security team"
 
         user_keys = set(config["user"].keys())
         assert (
@@ -971,7 +1008,7 @@ class TestGetConnections:
                 )
             )
             == 0
-        )
+        ), "Unexpected config API change, please review with Ethyca security team"
 
         logging_keys = set(config["logging"].keys())
         assert (
@@ -985,7 +1022,7 @@ class TestGetConnections:
                 )
             )
             == 0
-        )
+        ), "Unexpected config API change, please review with Ethyca security team"
 
         notifications_keys = set(config["notifications"].keys())
         assert (
@@ -1002,7 +1039,7 @@ class TestGetConnections:
                 )
             )
             == 0
-        )
+        ), "Unexpected config API change, please review with Ethyca security team"
 
         execution_keys = set(config["execution"].keys())
         assert (
@@ -1020,7 +1057,7 @@ class TestGetConnections:
                 )
             )
             == 0
-        )
+        ), "Unexpected config API change, please review with Ethyca security team"
 
         if "storage" in config:  # storage not necessarily in config in test runtime
             storage_keys = set(config["storage"].keys())
@@ -1035,4 +1072,4 @@ class TestGetConnections:
                     )
                 )
                 == 0
-            )
+            ), "Unexpected config API change, please review with Ethyca security team"

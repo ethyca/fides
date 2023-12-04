@@ -12,7 +12,12 @@ import {
   Textarea,
   VStack,
 } from "@fidesui/react";
-import { MultiValue, Select, SingleValue } from "chakra-react-select";
+import {
+  CreatableSelect,
+  MultiValue,
+  Select,
+  SingleValue,
+} from "chakra-react-select";
 import { useField, useFormikContext } from "formik";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -154,6 +159,7 @@ export const DictSuggestionTextInput = ({
 export const DictSuggestionTextArea = ({
   label,
   tooltip,
+  disabled,
   isRequired = false,
   dictField,
   name,
@@ -178,11 +184,13 @@ export const DictSuggestionTextArea = ({
           {...field}
           size="sm"
           data-testid={`input-${field.name}`}
+          focusBorderColor="primary.600"
           color={
             isShowingSuggestions === "showing"
               ? "complimentary.500"
               : "gray.800"
           }
+          isDisabled={disabled}
         />
         <ErrorMessage
           isInvalid={isInvalid}
@@ -200,6 +208,7 @@ export const DictSuggestionSwitch = ({
   dictField,
   name,
   id,
+  disabled,
 }: Props) => {
   const { field, isInvalid, error } = useDictSuggestion(
     name,
@@ -225,6 +234,7 @@ export const DictSuggestionSwitch = ({
             mr={2}
             data-testid={`input-${field.name}`}
             size="sm"
+            isDisabled={disabled}
           />
         </HStack>
       </Box>
@@ -308,6 +318,137 @@ export const DictSuggestionSelect = ({
             data-testid={`input-${field.name}`}
             placeholder={placeholder}
             options={options}
+            focusBorderColor="primary.600"
+            chakraStyles={{
+              input: (provided) => ({
+                ...provided,
+                color:
+                  isShowingSuggestions === "showing"
+                    ? "complimentary.500"
+                    : "gray.800",
+              }),
+              container: (provided) => ({
+                ...provided,
+                flexGrow: 1,
+                backgroundColor: "white",
+              }),
+              dropdownIndicator: (provided) => ({
+                ...provided,
+                bg: "transparent",
+                px: 2,
+                cursor: "inherit",
+              }),
+              indicatorSeparator: (provided) => ({
+                ...provided,
+                display: "none",
+              }),
+              multiValueLabel: (provided) => ({
+                ...provided,
+                display: "flex",
+                height: "16px",
+                alignItems: "center",
+              }),
+              multiValue: (provided) => ({
+                ...provided,
+                fontWeight: "400",
+                background: "gray.200",
+                color:
+                  isShowingSuggestions === "showing"
+                    ? "complimentary.500"
+                    : "gray.800",
+                borderRadius: "2px",
+                py: 1,
+                px: 2,
+              }),
+              multiValueRemove: (provided) => ({
+                ...provided,
+                ml: 1,
+                size: "lg",
+                width: 3,
+                height: 3,
+              }),
+            }}
+          />
+        </Flex>
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={error}
+          fieldName={field.name}
+        />
+      </VStack>
+    </FormControl>
+  );
+};
+
+export const DictSuggestionCreatableSelect = ({
+  label,
+  tooltip,
+  disabled,
+  isRequired = false,
+  dictField,
+  name,
+  placeholder,
+  id,
+  options,
+  isMulti = false,
+}: SelectProps) => {
+  const { field, isInvalid, isShowingSuggestions, error } = useDictSuggestion(
+    name,
+    dictField
+  );
+
+  const selected =
+    field.value.length > 0
+      ? field.value.map(
+          (fieldValue: string) =>
+            options.find((o) => o.value === fieldValue) ?? {
+              value: fieldValue,
+              label: fieldValue,
+            }
+        )
+      : [];
+
+  const { setFieldValue } = useFormikContext();
+
+  const handleChangeMulti = (newValue: MultiValue<SelectOption>) => {
+    setFieldValue(
+      field.name,
+      newValue.map((v) => v.value)
+    );
+  };
+
+  const handleChangeSingle = (newValue: SingleValue<SelectOption>) => {
+    setFieldValue(field.name, newValue);
+  };
+
+  const handleChange = (
+    newValue: MultiValue<SelectOption> | SingleValue<SelectOption>
+  ) =>
+    isMulti
+      ? handleChangeMulti(newValue as MultiValue<SelectOption>)
+      : handleChangeSingle(newValue as SingleValue<SelectOption>);
+
+  return (
+    <FormControl isInvalid={isInvalid} isRequired={isRequired}>
+      <VStack alignItems="start">
+        <Flex alignItems="center">
+          <Label htmlFor={id || name} fontSize="xs" my={0} mr={1}>
+            {label}
+          </Label>
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Flex>
+        <Flex width="100%">
+          <CreatableSelect
+            {...field}
+            size="sm"
+            value={selected}
+            isDisabled={disabled}
+            isMulti={isMulti}
+            onChange={handleChange}
+            data-testid={`input-${field.name}`}
+            placeholder={placeholder}
+            options={options}
+            focusBorderColor="primary.600"
             chakraStyles={{
               input: (provided) => ({
                 ...provided,
@@ -375,6 +516,7 @@ export const DictSuggestionNumberInput = ({
   dictField,
   name,
   id,
+  disabled,
 }: Props) => {
   const { field, isInvalid, error, isShowingSuggestions } = useDictSuggestion(
     name,
@@ -411,6 +553,8 @@ export const DictSuggestionNumberInput = ({
                 ? "complimentary.500"
                 : "gray.800"
             }
+            focusBorderColor="primary.600"
+            isDisabled={disabled}
           >
             <NumberInputField />
             <NumberInputStepper>

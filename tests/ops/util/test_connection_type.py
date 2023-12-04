@@ -22,6 +22,7 @@ def test_get_connection_types():
         "encoded_icon": None,
         "authorization_required": False,
         "user_guide": None,
+        "supported_actions": [ActionType.access.value, ActionType.erasure.value],
     } in data
     first_saas_type = ConnectorRegistry.connector_types().pop()
     first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
@@ -32,6 +33,9 @@ def test_get_connection_types():
         "encoded_icon": first_saas_template.icon,
         "authorization_required": first_saas_template.authorization_required,
         "user_guide": first_saas_template.user_guide,
+        "supported_actions": [
+            action.value for action in first_saas_template.supported_actions
+        ],
     } in data
 
     assert "saas" not in [item.identifier for item in data]
@@ -46,6 +50,7 @@ def test_get_connection_types():
         "encoded_icon": None,
         "authorization_required": False,
         "user_guide": None,
+        "supported_actions": [ActionType.consent.value],
     } in data
 
 
@@ -78,6 +83,7 @@ def connection_type_objects():
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
+            "supported_actions": [ActionType.access.value, ActionType.erasure.value],
         },
         ConnectionType.manual_webhook.value: {
             "identifier": ConnectionType.manual_webhook.value,
@@ -86,6 +92,7 @@ def connection_type_objects():
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
+            "supported_actions": [ActionType.access.value, ActionType.erasure.value],
         },
         GOOGLE_ANALYTICS: {
             "identifier": GOOGLE_ANALYTICS,
@@ -94,6 +101,9 @@ def connection_type_objects():
             "encoded_icon": google_analytics_template.icon,
             "authorization_required": google_analytics_template.authorization_required,
             "user_guide": google_analytics_template.user_guide,
+            "supported_actions": [
+                action.value for action in google_analytics_template.supported_actions
+            ],
         },
         MAILCHIMP_TRANSACTIONAL: {
             "identifier": MAILCHIMP_TRANSACTIONAL,
@@ -102,6 +112,10 @@ def connection_type_objects():
             "encoded_icon": mailchimp_transactional_template.icon,
             "authorization_required": mailchimp_transactional_template.authorization_required,
             "user_guide": mailchimp_transactional_template.user_guide,
+            "supported_actions": [
+                action.value
+                for action in mailchimp_transactional_template.supported_actions
+            ],
         },
         SEGMENT: {
             "identifier": SEGMENT,
@@ -110,6 +124,9 @@ def connection_type_objects():
             "encoded_icon": segment_template.icon,
             "authorization_required": segment_template.authorization_required,
             "user_guide": segment_template.user_guide,
+            "supported_actions": [
+                action.value for action in segment_template.supported_actions
+            ],
         },
         STRIPE: {
             "identifier": STRIPE,
@@ -118,6 +135,9 @@ def connection_type_objects():
             "encoded_icon": stripe_template.icon,
             "authorization_required": stripe_template.authorization_required,
             "user_guide": stripe_template.user_guide,
+            "supported_actions": [
+                action.value for action in stripe_template.supported_actions
+            ],
         },
         ZENDESK: {
             "identifier": ZENDESK,
@@ -126,6 +146,9 @@ def connection_type_objects():
             "encoded_icon": zendesk_template.icon,
             "authorization_required": zendesk_template.authorization_required,
             "user_guide": zendesk_template.user_guide,
+            "supported_actions": [
+                action.value for action in zendesk_template.supported_actions
+            ],
         },
         DOORDASH: {
             "identifier": DOORDASH,
@@ -134,6 +157,9 @@ def connection_type_objects():
             "encoded_icon": doordash_template.icon,
             "authorization_required": doordash_template.authorization_required,
             "user_guide": doordash_template.user_guide,
+            "supported_actions": [
+                action.value for action in doordash_template.supported_actions
+            ],
         },
         ConnectionType.sovrn.value: {
             "identifier": ConnectionType.sovrn.value,
@@ -142,6 +168,7 @@ def connection_type_objects():
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
+            "supported_actions": [ActionType.consent.value],
         },
         ConnectionType.attentive.value: {
             "identifier": ConnectionType.attentive.value,
@@ -150,6 +177,7 @@ def connection_type_objects():
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
+            "supported_actions": [ActionType.erasure.value],
         },
     }
 
@@ -195,11 +223,11 @@ def connection_type_objects():
                 STRIPE,
                 ZENDESK,
                 ConnectionType.attentive.value,
+                ConnectionType.manual_webhook.value,
             ],
             [
                 GOOGLE_ANALYTICS,
                 MAILCHIMP_TRANSACTIONAL,
-                ConnectionType.manual_webhook.value,  # manual webhook is not erasure
                 DOORDASH,  # doordash does not have erasures
                 ConnectionType.sovrn.value,
             ],
@@ -232,9 +260,9 @@ def connection_type_objects():
                 STRIPE,
                 ZENDESK,
                 ConnectionType.attentive.value,
+                ConnectionType.manual_webhook.value,
             ],
             [
-                ConnectionType.manual_webhook.value,  # manual webhook is not erasure
                 DOORDASH,  # doordash does not have erasures
             ],
         ),

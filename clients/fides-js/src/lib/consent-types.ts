@@ -1,3 +1,4 @@
+import type { CookieKeyConsent } from "./cookie";
 import type {
   TCFFeatureRecord,
   TCFPurposeSave,
@@ -14,7 +15,6 @@ import type {
   TCFVendorLegitimateInterestsRecord,
   TCFVendorRelationships,
 } from "./tcf/types";
-import { CookieKeyConsent } from "~/lib/cookie";
 
 export type EmptyExperience = Record<PropertyKey, never>;
 
@@ -81,6 +81,15 @@ export type FidesOptions = {
 
   // Allows for explicit overrides on various internal API calls made from Fides.
   apiOptions: FidesApiOptions | null;
+
+  // Whether or the GPP extension should be loaded
+  gppEnabled: boolean;
+
+  // What the "GDPR Applies" field of TCF should default to
+  fidesTcfGdprApplies: boolean;
+
+  // GPP extension path (ex: "/fides-ext-gpp.js")
+  gppExtensionPath: string;
 };
 
 export type GetPreferencesFnResp = {
@@ -96,11 +105,13 @@ export type FidesApiOptions = {
   /**
    * Intake a custom function that is called instead of the internal Fides API to save user preferences.
    *
+   * @param {object} consentMethod - method that was used to obtain consent
    * @param {object} consent - updated version of Fides.consent with the user's saved preferences for Fides notices
    * @param {string} fides_string - updated version of Fides.fides_string with the user's saved preferences for TC/AC/etc notices
    * @param {object} experience - current version of the privacy experience that was shown to the user
    */
   savePreferencesFn?: (
+    consentMethod: ConsentMethod,
     consent: CookieKeyConsent,
     fides_string: string | undefined,
     experience: PrivacyExperience
@@ -111,6 +122,24 @@ export type FidesApiOptions = {
    * @param {object} fides - global Fides obj containing global config options and other state at time of init
    */
   getPreferencesFn?: (fides: FidesConfig) => Promise<GetPreferencesFnResp>;
+  /**
+   * Intake a custom function that is used to fetch privacy experience.
+   *
+   * @param {string} userLocationString - user location
+   * @param {string} fidesUserDeviceId - (optional) Fides user device id, if known
+   */
+  getPrivacyExperienceFn?: (
+    userLocationString: string,
+    fidesUserDeviceId?: string | null
+  ) => Promise<PrivacyExperience | EmptyExperience>;
+  /**
+   * Intake a custom function that is used to save notices served for reporting purposes.
+   *
+   * @param {object} request - consent served records to save
+   */
+  patchNoticesServedFn?: (
+    request: RecordConsentServedRequest
+  ) => Promise<Array<LastServedConsentSchema> | null>;
 };
 
 export class SaveConsentPreference {
@@ -361,16 +390,21 @@ export type OverrideOptions = {
   fides_disable_save_api: boolean;
   fides_disable_banner: boolean;
   fides_embed: boolean;
+  fides_tcf_gdpr_applies: boolean;
 };
 
-export type FidesOptionOverrides = Pick<
+export type FidesOptionsOverrides = Pick<
   FidesOptions,
-  "fidesString" | "fidesDisableSaveApi" | "fidesEmbed" | "fidesDisableBanner"
+  | "fidesString"
+  | "fidesDisableSaveApi"
+  | "fidesEmbed"
+  | "fidesDisableBanner"
+  | "fidesTcfGdprApplies"
 >;
 
 export type FidesOverrides = {
-  overrideOptions: Partial<FidesOptionOverrides>;
-  overrideConsentPrefs: GetPreferencesFnResp | null;
+  optionsOverrides: Partial<FidesOptionsOverrides>;
+  consentPrefsOverrides: GetPreferencesFnResp | null;
 };
 
 export enum ButtonType {
@@ -380,7 +414,11 @@ export enum ButtonType {
 }
 
 export enum ConsentMethod {
-  button = "button",
+  button = "button", // deprecated- keeping for backwards-compatibility
+  reject = "reject",
+  accept = "accept",
+  save = "save",
+  dismiss = "dismiss",
   gpc = "gpc",
   individual_notice = "api",
 }

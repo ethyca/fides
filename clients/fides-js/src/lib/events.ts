@@ -34,7 +34,7 @@ declare global {
  */
 export type FidesEventDetail = FidesCookie & {
   debug?: boolean;
-  extraDetails?: Record<string, string>;
+  extraDetails?: Record<string, string | boolean>;
 };
 
 export type FidesEvent = CustomEvent<FidesEventDetail>;
@@ -59,7 +59,7 @@ export const dispatchFidesEvent = (
   type: FidesEventType,
   cookie: FidesCookie,
   debug: boolean,
-  extraDetails?: Record<string, string>
+  extraDetails?: Record<string, string | boolean>
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     const event = new CustomEvent(type, {
@@ -71,7 +71,11 @@ export const dispatchFidesEvent = (
         extraDetails?.servingComponent
           ? `from ${extraDetails.servingComponent} `
           : ""
-      }with cookie ${JSON.stringify(cookie)}`
+      }with cookie ${JSON.stringify(cookie)} ${
+        extraDetails?.consentMethod
+          ? `using consent method ${extraDetails.consentMethod} `
+          : ""
+      }`
     );
     window.dispatchEvent(event);
   }

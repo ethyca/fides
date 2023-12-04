@@ -86,7 +86,10 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   };
 
   const handleUpdatePreferences = useCallback(
-    (enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>) => {
+    (
+      consentMethod: ConsentMethod,
+      enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>
+    ) => {
       const consentPreferencesToSave = createConsentPreferencesToSave(
         privacyNotices,
         enabledPrivacyNoticeKeys,
@@ -96,7 +99,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       updateConsentPreferences({
         consentPreferencesToSave,
         experience,
-        consentMethod: ConsentMethod.button,
+        consentMethod,
         options,
         userLocationString: fidesRegionString,
         cookie,
@@ -154,12 +157,14 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               experience={experience}
               onManagePreferencesClick={onManagePreferencesClick}
               enabledKeys={draftEnabledNoticeKeys}
-              onSave={(keys) => {
-                handleUpdatePreferences(keys);
+              onSave={(
+                consentMethod: ConsentMethod,
+                keys: Array<PrivacyNotice["notice_key"]>
+              ) => {
+                handleUpdatePreferences(consentMethod, keys);
                 onSave();
               }}
               isAcknowledge={isAllNoticeOnly}
-              middleButton={<PrivacyPolicyLink experience={experienceConfig} />}
               isMobile={isMobile}
             />
           )}
@@ -184,13 +189,17 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           <NoticeConsentButtons
             experience={experience}
             enabledKeys={draftEnabledNoticeKeys}
-            onSave={(keys) => {
-              handleUpdatePreferences(keys);
+            onSave={(
+              consentMethod: ConsentMethod,
+              keys: Array<PrivacyNotice["notice_key"]>
+            ) => {
+              handleUpdatePreferences(consentMethod, keys);
               onClose();
             }}
             isInModal
             isAcknowledge={isAllNoticeOnly}
             isMobile={isMobile}
+            saveOnly={privacyNotices.length === 1}
           />
           <PrivacyPolicyLink experience={experience.experience_config} />
         </Fragment>

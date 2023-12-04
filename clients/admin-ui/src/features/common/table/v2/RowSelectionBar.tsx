@@ -4,14 +4,14 @@ import { Table as TableInstance } from "@tanstack/react-table";
 type RowSelectionBarProps<T> = {
   tableInstance: TableInstance<T>;
   selectedRows: number;
+  isOpen: boolean;
 };
 
 export const RowSelectionBar = <T,>({
   tableInstance,
   selectedRows,
+  isOpen,
 }: RowSelectionBarProps<T>) => {
-  const isOpen = selectedRows !== 0;
-
   if (!isOpen) {
     return null;
   }
@@ -36,9 +36,12 @@ export const RowSelectionBar = <T,>({
         colSpan={tableInstance.getAllColumns().length}
       >
         <HStack>
-          <Text fontSize="xs">{selectedRows} row(s) selected.</Text>
+          <Text data-testid="selected-row-count" fontSize="xs">
+            {selectedRows.toLocaleString("en")} row(s) selected.
+          </Text>
           {!tableInstance.getIsAllRowsSelected() ? (
             <Button
+              data-testid="select-all-rows-btn"
               onClick={() => {
                 tableInstance.toggleAllRowsSelected();
               }}

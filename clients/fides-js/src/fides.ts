@@ -48,10 +48,17 @@ import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 
-import { FidesCookie, buildCookieConsentForExperiences } from "./lib/cookie";
+import {
+  FidesCookie,
+  buildCookieConsentForExperiences,
+  updateExperienceFromCookieConsent,
+  consentCookieObjHasSomeConsentSet,
+} from "./lib/cookie";
 import {
   FidesConfig,
+  FidesOptionsOverrides,
   FidesOverrides,
+  GetPreferencesFnResp,
   OverrideOptions,
   PrivacyExperience,
 } from "./lib/consent-types";
@@ -62,12 +69,13 @@ import {
   initialize,
   getInitialCookie,
   getInitialFides,
-  getOverrides,
+  getOptionsOverrides,
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 
 import { renderOverlay } from "./lib/renderOverlay";
 import { getConsentContext } from "./lib/consent-context";
+import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
   interface Window {
@@ -86,27 +94,52 @@ let _Fides: Fides;
 const updateCookie = async (
   oldCookie: FidesCookie,
   experience: PrivacyExperience,
-  debug?: boolean
+  debug?: boolean,
+  isExperienceClientSideFetched?: boolean
 ): Promise<{ cookie: FidesCookie; experience: PrivacyExperience }> => {
+  let updatedExperience: PrivacyExperience = experience;
+  const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
+    oldCookie.consent
+  );
+  if (isExperienceClientSideFetched && preferencesExistOnCookie) {
+    // If we have some preferences on the cookie, we update client-side experience with those preferences
+    // if the name matches
+    updatedExperience = updateExperienceFromCookieConsent({
+      experience,
+      cookie: oldCookie,
+      debug,
+    });
+  }
+  // Even if we update experience from cookie consent, we must still generate cookie consent based on experience.
+  // It's possible that some notices on the experience were not present on the cookie, e.g. if the cookie
+  // held legacy consent values.
   const context = getConsentContext();
   const consent = buildCookieConsentForExperiences(
-    experience,
+    updatedExperience,
     context,
     !!debug
   );
-  return { cookie: { ...oldCookie, consent }, experience };
+  return { cookie: { ...oldCookie, consent }, experience: updatedExperience };
 };
 
 /**
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const overrides: Partial<FidesOverrides> = await getOverrides(config);
+  const optionsOverrides: Partial<FidesOptionsOverrides> =
+    getOptionsOverrides();
+  const consentPrefsOverrides: GetPreferencesFnResp | null =
+    await customGetConsentPreferences(config);
+  // DEFER: not implemented - ability to override notice-based consent with the consentPrefsOverrides.consent obj
+  const overrides: Partial<FidesOverrides> = {
+    optionsOverrides,
+    consentPrefsOverrides,
+  };
   // eslint-disable-next-line no-param-reassign
-  config.options = { ...config.options, ...overrides.overrideOptions };
+  config.options = { ...config.options, ...overrides.optionsOverrides };
   const cookie = {
     ...getInitialCookie(config),
-    ...overrides.overrideConsentPrefs?.consent,
+    ...overrides.consentPrefsOverrides?.consent,
   };
   const initialFides = getInitialFides({ ...config, cookie });
   if (initialFides) {
@@ -123,7 +156,14 @@ const init = async (config: FidesConfig) => {
       cookie: oldCookie,
       experience: effectiveExperience,
       debug,
-    }) => updateCookie(oldCookie, effectiveExperience, debug),
+      isExperienceClientSideFetched,
+    }) =>
+      updateCookie(
+        oldCookie,
+        effectiveExperience,
+        debug,
+        isExperienceClientSideFetched
+      ),
   });
   Object.assign(_Fides, updatedFides);
 
@@ -148,11 +188,14 @@ _Fides = {
     fidesApiUrl: "",
     serverSideFidesApiUrl: "",
     tcfEnabled: false,
+    gppEnabled: false,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
     fidesDisableBanner: false,
     fidesString: null,
     apiOptions: null,
+    fidesTcfGdprApplies: false,
+    gppExtensionPath: "",
   },
   fides_meta: {},
   identity: {},
@@ -170,7 +213,7 @@ if (typeof window !== "undefined") {
 
 // Export everything from ./lib/* to use when importing fides.mjs as a module
 export * from "./components";
-export * from "./services/fides/api";
+export * from "./services/api";
 export * from "./services/external/geolocation";
 export * from "./lib/consent";
 export * from "./lib/consent-context";

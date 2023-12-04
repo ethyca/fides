@@ -20,10 +20,8 @@ import {
   ConsentMethod,
   EmptyExperience,
   FidesConfig,
-  FidesOptionOverrides,
+  FidesOptionsOverrides,
   FidesOptions,
-  FidesOverrides,
-  GetPreferencesFnResp,
   PrivacyExperience,
   SaveConsentPreference,
   UserGeolocation,
@@ -36,14 +34,15 @@ import {
   transformConsentToFidesUserPreference,
   validateOptions,
 } from "./consent-utils";
-import { fetchExperience } from "../services/fides/api";
+import { fetchExperience } from "../services/api";
 import { getGeolocation } from "../services/external/geolocation";
 import { OverlayProps } from "../components/types";
-import { getConsentPreferences, updateConsentPreferences } from "./preferences";
+import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
 import { TcfCookieConsent } from "./tcf/types";
 import { FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP } from "./consent-constants";
+import { setupExtensions } from "./extensions";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -145,8 +144,7 @@ const automaticallyApplyGPCPreferences = ({
 };
 
 /**
- * Gets and validates override options provided through URL query params, cookie, or window obj,
- * and optionally retrieves consent preference overrides if a custom fn was defined in the config.
+ * Gets and validates override options provided through URL query params, cookie, or window obj
  *
  *
  * If the same override option is provided in multiple ways, load the value in this order:
@@ -154,10 +152,8 @@ const automaticallyApplyGPCPreferences = ({
  * 2) window obj   (second priority)
  * 3) cookie value (last priority)
  */
-export const getOverrides = async (
-  config: FidesConfig
-): Promise<Partial<FidesOverrides>> => {
-  const overrideOptions: Partial<FidesOptionOverrides> = {};
+export const getOptionsOverrides = (): Partial<FidesOptionsOverrides> => {
+  const overrideOptions: Partial<FidesOptionsOverrides> = {};
   if (typeof window !== "undefined") {
     // Grab query params if provided in the URL (e.g. "?fides_string=123...")
     const queryParams = new URLSearchParams(window.location.search);
@@ -186,12 +182,7 @@ export const getOverrides = async (
       }
     );
   }
-  const overrideConsentPrefs: GetPreferencesFnResp | null =
-    await getConsentPreferences(config);
-  if (!overrideOptions.fidesString && overrideConsentPrefs?.fides_string) {
-    overrideOptions.fidesString = overrideConsentPrefs.fides_string;
-  }
-  return { overrideOptions, overrideConsentPrefs };
+  return overrideOptions;
 };
 
 /**
@@ -317,12 +308,12 @@ export const initialize = async ({
       shouldInitOverlay = false;
     } else if (!isPrivacyExperience(effectiveExperience)) {
       fetchedClientSideExperience = true;
-      // If no effective PrivacyExperience was pre-fetched, fetch one now from
-      // the Fides API using the current region string
+      // If no effective PrivacyExperience was pre-fetched, fetch one using the current region string
       effectiveExperience = await fetchExperience(
         fidesRegionString,
         options.fidesApiUrl,
         options.debug,
+        options.apiOptions,
         cookie.identity.fides_user_device_id
       );
     }
@@ -360,6 +351,11 @@ export const initialize = async ({
     });
   }
 
+  // Call extensions
+  // DEFER(PROD#1439): This is likely too late for the GPP stub.
+  // We should move stub code out to the base package and call it right away instead.
+  await setupExtensions(options);
+
   // return an object with the updated Fides values
   return {
     consent: cookie.consent,
@@ -367,7 +363,7 @@ export const initialize = async ({
     identity: cookie.identity,
     fides_string: cookie.fides_string,
     tcf_consent: cookie.tcf_consent,
-    experience,
+    experience: effectiveExperience,
     geolocation,
     options,
     initialized: true,

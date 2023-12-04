@@ -95,6 +95,9 @@ def test_retry_decorator(privacy_request, policy, db):
         def skip_if_disabled(self) -> bool:
             return False
 
+        def skip_if_action_disabled(self, action_type: ActionType):
+            return False
+
         @retry(action_type=ActionType.access, default_return=[])
         def test_function(self):
             self.call_count += 1

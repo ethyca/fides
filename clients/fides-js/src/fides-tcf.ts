@@ -52,17 +52,19 @@ import { shopify } from "./integrations/shopify";
 
 import {
   FidesConfig,
+  FidesOptionsOverrides,
   FidesOverrides,
+  GetPreferencesFnResp,
   OverrideOptions,
   PrivacyExperience,
   UserConsentPreference,
 } from "./lib/consent-types";
 
-import { generateFidesString, initializeCmpApi } from "./lib/tcf";
+import { generateFidesString, initializeTcfCmpApi } from "./lib/tcf";
 import {
   getInitialCookie,
   getInitialFides,
-  getOverrides,
+  getOptionsOverrides,
   initialize,
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
@@ -89,6 +91,9 @@ import {
   generateFidesStringFromCookieTcfConsent,
   transformFidesStringToCookieKeys,
 } from "./lib/tcf/utils";
+import type { GppFunction } from "./lib/gpp/types";
+import { makeStub } from "./lib/tcf/stub";
+import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
   interface Window {
@@ -104,6 +109,8 @@ declare global {
       // DEFER (PROD-1243): support a configurable "custom options" path
       tc_info: OverrideOptions;
     };
+    __gpp?: GppFunction;
+    __gppLocator?: Window;
   }
 }
 
@@ -125,41 +132,40 @@ const updateCookieAndExperience = async ({
   cookie,
   experience,
   debug = false,
-  hasValidFidesStringOverride,
   isExperienceClientSideFetched,
 }: {
   cookie: FidesCookie;
   experience: PrivacyExperience;
   debug?: boolean;
-  hasValidFidesStringOverride: boolean;
   isExperienceClientSideFetched: boolean;
 }): Promise<{
   cookie: FidesCookie;
   experience: Partial<PrivacyExperience>;
 }> => {
-  // If string override exists and is valid, the cookie has already been overridden
-  if (hasValidFidesStringOverride) {
-    // However, if we didn't get the experience until the client side fetch, we need to update the fetched
-    // experience based on the cookie here.
-    if (isExperienceClientSideFetched) {
-      debugLog(
-        debug,
-        "Overriding preferences from client-side fetched experience with cookie fides_string consent",
-        cookie.fides_string
-      );
-      const tcfEntities = buildTcfEntitiesFromCookie(experience, cookie);
-      return { cookie, experience: tcfEntities };
-    }
+  if (!isExperienceClientSideFetched) {
     // If it's not client side fetched, we don't update anything since the cookie has already
     // been updated earlier.
     return { cookie, experience };
   }
 
-  // If user has no prefs saved, we don't need to override the prefs on the cookie
-  if (!hasSavedTcfPreferences(experience)) {
-    return { cookie: { ...cookie, fides_string: "" }, experience };
+  // If cookie.fides_string exists, update the fetched experience based on the cookie here.
+  if (cookie.fides_string) {
+    debugLog(
+      debug,
+      "Overriding preferences from client-side fetched experience with cookie fides_string consent",
+      cookie.fides_string
+    );
+    const tcfEntities = buildTcfEntitiesFromCookie(experience, cookie);
+    return { cookie, experience: tcfEntities };
   }
 
+  // If user has no prefs saved, we don't need to override the prefs on the cookie
+  if (!hasSavedTcfPreferences(experience)) {
+    return { cookie, experience };
+  }
+
+  // If the user has prefs on a client-side fetched experience, but there is no fides_string,
+  // we need to use the prefs on the experience to generate a fidesString and cookie.tcf_consent
   const tcSavePrefs: TcfSavePreferences = {};
   const enabledIds: EnabledIds = {
     purposesConsent: [],
@@ -239,25 +245,36 @@ const updateFidesCookieFromString = (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const overrides: Partial<FidesOverrides> = await getOverrides(config);
+  const optionsOverrides: Partial<FidesOptionsOverrides> =
+    getOptionsOverrides();
+  makeStub({
+    gdprAppliesDefault: optionsOverrides?.fidesTcfGdprApplies,
+  });
+  const consentPrefsOverrides: GetPreferencesFnResp | null =
+    await customGetConsentPreferences(config);
+  // if we don't already have a fidesString override, use fidesString from consent prefs if they exist
+  if (!optionsOverrides.fidesString && consentPrefsOverrides?.fides_string) {
+    optionsOverrides.fidesString = consentPrefsOverrides.fides_string;
+  }
+  const overrides: Partial<FidesOverrides> = {
+    optionsOverrides,
+    consentPrefsOverrides,
+  };
   // eslint-disable-next-line no-param-reassign
-  config.options = { ...config.options, ...overrides.overrideOptions };
+  config.options = { ...config.options, ...overrides.optionsOverrides };
   const cookie = {
     ...getInitialCookie(config),
-    ...overrides.overrideConsentPrefs?.consent,
+    ...overrides.consentPrefsOverrides?.consent,
   };
-  let hasValidFidesStringOverride = !!config.options.fidesString;
   if (config.options.fidesString) {
     const { cookie: updatedCookie, success } = updateFidesCookieFromString(
       cookie,
       config.options.fidesString,
       config.options.debug,
-      overrides.overrideConsentPrefs?.version_hash
+      overrides.consentPrefsOverrides?.version_hash
     );
     if (success) {
       Object.assign(cookie, updatedCookie);
-    } else {
-      hasValidFidesStringOverride = false;
     }
   } else if (
     tcfConsentCookieObjHasSomeConsentSet(cookie.tcf_consent) &&
@@ -279,7 +296,7 @@ const init = async (config: FidesConfig) => {
   }
   const initialFides = getInitialFides({ ...config, cookie });
   // Initialize the CMP API early so that listeners are established
-  initializeCmpApi();
+  initializeTcfCmpApi();
   if (initialFides) {
     Object.assign(_Fides, initialFides);
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
@@ -290,8 +307,7 @@ const init = async (config: FidesConfig) => {
     cookie,
     experience,
     renderOverlay,
-    updateCookieAndExperience: (props) =>
-      updateCookieAndExperience({ ...props, hasValidFidesStringOverride }),
+    updateCookieAndExperience,
   });
   Object.assign(_Fides, updatedFides);
 
@@ -316,11 +332,14 @@ _Fides = {
     fidesApiUrl: "",
     serverSideFidesApiUrl: "",
     tcfEnabled: true,
+    gppEnabled: false,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
     fidesDisableBanner: false,
     fidesString: null,
     apiOptions: null,
+    fidesTcfGdprApplies: true,
+    gppExtensionPath: "",
   },
   fides_meta: {},
   identity: {},

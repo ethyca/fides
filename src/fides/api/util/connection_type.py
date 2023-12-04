@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Any, Set
 
-import yaml
-
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import ConnectionType
 from fides.api.schemas.connection_configuration import (
@@ -94,38 +92,9 @@ def get_connection_types(
         if template is None:  # shouldn't happen, but we can be safe
             return False
 
-        saas_config = SaaSConfig(**yaml.safe_load(template.config).get("saas_config"))
-        has_access = bool(
-            next(
-                (
-                    request.read
-                    for request in [
-                        endpoint.requests for endpoint in saas_config.endpoints
-                    ]
-                ),
-                None,
-            )
-        )
-        has_erasure = (
-            bool(
-                next(
-                    (
-                        request.update or request.delete
-                        for request in [
-                            endpoint.requests for endpoint in saas_config.endpoints
-                        ]
-                    ),
-                    None,
-                )
-            )
-            or saas_config.data_protection_request
-        )
-        has_consent = saas_config.consent_requests
-
-        return bool(
-            (ActionType.consent in action_types and has_consent)
-            or (ActionType.access in action_types and has_access)
-            or (ActionType.erasure in action_types and has_erasure)
+        # Check if the necessary actions are supported
+        return any(
+            action_type in template.supported_actions for action_type in action_types
         )
 
     connection_system_types: list[ConnectionSystemTypeMap] = []
@@ -157,6 +126,7 @@ def get_connection_types(
                     identifier=item,
                     type=SystemType.database,
                     human_readable=ConnectionType(item).human_readable,
+                    supported_actions=[ActionType.access, ActionType.erasure],
                 )
                 for item in database_types
             ]
@@ -181,12 +151,13 @@ def get_connection_types(
                         encoded_icon=connector_template.icon,
                         authorization_required=connector_template.authorization_required,
                         user_guide=connector_template.user_guide,
+                        supported_actions=connector_template.supported_actions,
                     )
                 )
 
-    if (
-        system_type == SystemType.manual or system_type is None
-    ) and ActionType.access in action_types:
+    if (system_type == SystemType.manual or system_type is None) and (
+        ActionType.access in action_types or ActionType.erasure in action_types
+    ):
         manual_types: list[str] = sorted(
             [
                 manual_type.value
@@ -201,6 +172,7 @@ def get_connection_types(
                     identifier=item,
                     type=SystemType.manual,
                     human_readable=ConnectionType(item).human_readable,
+                    supported_actions=[ActionType.access, ActionType.erasure],
                 )
                 for item in manual_types
             ]
@@ -229,11 +201,16 @@ def get_connection_types(
         connection_system_types.extend(
             [
                 ConnectionSystemTypeMap(
-                    identifier=item,
+                    identifier=email_type,
                     type=SystemType.email,
-                    human_readable=ConnectionType(item).human_readable,
+                    human_readable=ConnectionType(email_type).human_readable,
+                    supported_actions=[
+                        ActionType.consent
+                        if ConnectionType(email_type) in CONSENT_EMAIL_CONNECTOR_TYPES
+                        else ActionType.erasure
+                    ],
                 )
-                for item in email_types
+                for email_type in email_types
             ]
         )
     return connection_system_types

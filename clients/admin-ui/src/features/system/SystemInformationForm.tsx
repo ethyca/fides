@@ -20,25 +20,37 @@ import {
 } from "~/features/common/custom-fields";
 import { useFeatures } from "~/features/common/features/features.slice";
 import {
-  CustomCreatableSelect,
   CustomSelect,
   CustomSwitch,
   CustomTextInput,
 } from "~/features/common/form/inputs";
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import {
+  extractVendorSource,
+  getErrorMessage,
+  isErrorResult,
+  isFetchBaseQueryError,
+  VendorSources,
+} from "~/features/common/helpers";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import {
   selectAllDictEntries,
   useGetAllDictionaryEntriesQuery,
+  useLazyGetDictionaryDataUsesQuery,
 } from "~/features/plus/plus.slice";
-import { setSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
+  selectLockedForGVL,
+  setLockedForGVL,
+  setSuggestions,
+} from "~/features/system/dictionary-form/dict-suggestion.slice";
+import {
+  DictSuggestionCreatableSelect,
   DictSuggestionNumberInput,
   DictSuggestionSelect,
   DictSuggestionSwitch,
   DictSuggestionTextArea,
   DictSuggestionTextInput,
 } from "~/features/system/dictionary-form/DictSuggestionInputs";
+import { transformDictDataUseToDeclaration } from "~/features/system/dictionary-form/helpers";
 import {
   defaultInitialValues,
   FormValues,
@@ -60,11 +72,6 @@ import {
   legalBasisForTransferOptions,
   responsibilityOptions,
 } from "./SystemInformationFormSelectOptions";
-
-const ValidationSchema = Yup.object().shape({
-  name: Yup.string().required().label("System name"),
-  privacy_policy: Yup.string().min(1).url().nullable(),
-});
 
 const SystemHeading = ({ system }: { system?: SystemResponse }) => {
   const isManual = !system;
@@ -92,6 +99,8 @@ const SystemInformationForm = ({
   withHeader,
   children,
 }: Props) => {
+  const systems = useAppSelector(selectAllSystems);
+
   const dispatch = useAppDispatch();
   const customFields = useCustomFields({
     resourceType: ResourceTypes.SYSTEM,
@@ -114,6 +123,23 @@ const SystemInformationForm = ({
     [passedInSystem, customFields.customFieldValues]
   );
 
+  const ValidationSchema = useMemo(
+    () =>
+      Yup.object().shape({
+        name: Yup.string()
+          .required()
+          .label("System name")
+          .notOneOf(
+            systems
+              .filter((s) => s.name !== initialValues.name)
+              .map((s) => s.name),
+            "System must have a unique name"
+          ),
+        privacy_policy: Yup.string().min(1).url().nullable(),
+      }),
+    [systems, initialValues.name]
+  );
+
   const features = useFeatures();
 
   const [createSystemMutationTrigger, createSystemMutationResult] =
@@ -123,10 +149,11 @@ const SystemInformationForm = ({
   useGetAllDictionaryEntriesQuery(undefined, {
     skip: !features.dictionaryService,
   });
+  const [getDictionaryDataUseTrigger] = useLazyGetDictionaryDataUsesQuery();
 
   const dictionaryOptions = useAppSelector(selectAllDictEntries);
+  const lockedForGVL = useAppSelector(selectLockedForGVL);
 
-  const systems = useAppSelector(selectAllSystems);
   const isEditing = useMemo(
     () =>
       Boolean(
@@ -153,7 +180,40 @@ const SystemInformationForm = ({
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
-    const systemBody = transformFormValuesToSystem(values);
+    let dictionaryDeclarations;
+    if (values.vendor_id && values.privacy_declarations.length === 0) {
+      const dataUseQueryResult = await getDictionaryDataUseTrigger({
+        vendor_id: values.vendor_id!,
+      });
+      if (dataUseQueryResult.isError) {
+        const isNotFoundError =
+          isFetchBaseQueryError(dataUseQueryResult.error) &&
+          dataUseQueryResult.error.status === 404;
+        if (!isNotFoundError) {
+          const dataUseErrorMsg = getErrorMessage(
+            dataUseQueryResult.error,
+            `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`
+          );
+          toast({ status: "error", description: dataUseErrorMsg });
+        }
+      } else if (
+        dataUseQueryResult.data &&
+        dataUseQueryResult.data.items.length > 0
+      ) {
+        dictionaryDeclarations = dataUseQueryResult.data.items.map((dec) => ({
+          ...transformDictDataUseToDeclaration(dec),
+          name: dec.name ?? "",
+        }));
+      }
+    }
+
+    const valuesToSubmit = {
+      ...values,
+      privacy_declarations:
+        dictionaryDeclarations ?? values.privacy_declarations,
+    };
+
+    const systemBody = transformFormValuesToSystem(valuesToSubmit);
 
     const handleResult = (
       result:
@@ -191,6 +251,26 @@ const SystemInformationForm = ({
     handleResult(result);
   };
 
+  const handleVendorSelected = (newVendorId: string | undefined) => {
+    if (!features.dictionaryService) {
+      return;
+    }
+    if (!newVendorId) {
+      dispatch(setSuggestions("hiding"));
+      dispatch(setLockedForGVL(false));
+      return;
+    }
+    dispatch(setSuggestions("showing"));
+    if (
+      features.tcf &&
+      extractVendorSource(newVendorId) === VendorSources.GVL
+    ) {
+      dispatch(setLockedForGVL(true));
+    } else {
+      dispatch(setLockedForGVL(false));
+    }
+  };
+
   const isLoading =
     updateSystemMutationResult.isLoading ||
     createSystemMutationResult.isLoading ||
@@ -219,16 +299,26 @@ const SystemInformationForm = ({
 
             <SystemFormInputGroup heading="System details">
               {features.dictionaryService ? (
-                <VendorSelector options={dictionaryOptions} />
-              ) : null}
-              <DictSuggestionTextInput
-                id="name"
-                name="name"
-                dictField={(vendor) => vendor.name ?? (vendor.legal_name || "")}
-                isRequired
-                label="System name"
-                tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-              />
+                <VendorSelector
+                  fieldsSeparated={
+                    features.dictionaryService &&
+                    features.flags.separateVendorSelector
+                  }
+                  options={dictionaryOptions}
+                  onVendorSelected={handleVendorSelected}
+                  isCreate={!passedInSystem}
+                  lockedForGVL={lockedForGVL}
+                />
+              ) : (
+                <CustomTextInput
+                  id="name"
+                  name="name"
+                  label="System name"
+                  tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                  variant="stacked"
+                  isRequired
+                />
+              )}
               {passedInSystem?.fides_key && (
                 <CustomTextInput
                   id="fides_key"
@@ -244,12 +334,12 @@ const SystemInformationForm = ({
                 name="description"
                 label="Description"
                 tooltip="What services does this system perform?"
+                disabled={lockedForGVL}
               />
-              <CustomCreatableSelect
+              <DictSuggestionCreatableSelect
                 id="tags"
                 name="tags"
                 label="System Tags"
-                variant="stacked"
                 options={
                   initialValues.tags
                     ? initialValues.tags.map((s) => ({
@@ -260,6 +350,7 @@ const SystemInformationForm = ({
                 }
                 tooltip="Are there any tags to associate with this system?"
                 isMulti
+                disabled={lockedForGVL}
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Dataset reference">
@@ -270,26 +361,26 @@ const SystemInformationForm = ({
                 tooltip="Is there a dataset configured for this system?"
                 isMulti
                 variant="stacked"
+                isDisabled={lockedForGVL}
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Data processing properties">
               <Stack spacing={0}>
                 <Box mb={4}>
-                  <CustomSwitch
+                  <DictSuggestionSwitch
                     name="processes_personal_data"
                     label="This system processes personal data"
                     tooltip="Does this system process personal data?"
-                    variant="stacked"
+                    disabled={lockedForGVL}
                   />
                 </Box>
                 <Box padding={4} borderRadius={4} backgroundColor="gray.50">
                   <Stack spacing={0}>
-                    <CustomSwitch
+                    <DictSuggestionSwitch
                       name="exempt_from_privacy_regulations"
                       label="This system is exempt from privacy regulations"
                       tooltip="Is this system exempt from privacy regulations?"
-                      disabled={!values.processes_personal_data}
-                      variant="stacked"
+                      disabled={!values.processes_personal_data || lockedForGVL}
                     />
                     <Collapse
                       in={values.exempt_from_privacy_regulations}
@@ -302,6 +393,7 @@ const SystemInformationForm = ({
                           tooltip="Why is this system exempt from privacy regulation?"
                           variant="stacked"
                           isRequired={values.exempt_from_privacy_regulations}
+                          disabled={lockedForGVL}
                         />
                       </Box>
                     </Collapse>
@@ -323,6 +415,7 @@ const SystemInformationForm = ({
                         name="uses_profiling"
                         label="This system performs profiling"
                         tooltip="Does this system perform profiling that could have a legal effect?"
+                        disabled={lockedForGVL}
                       />
                       <Collapse
                         in={values.uses_profiling}
@@ -338,6 +431,7 @@ const SystemInformationForm = ({
                             options={legalBasisForProfilingOptions}
                             tooltip="What is the legal basis under which profiling is performed?"
                             isMulti
+                            disabled={lockedForGVL}
                             isRequired={values.uses_profiling}
                           />
                         </Box>
@@ -348,6 +442,7 @@ const SystemInformationForm = ({
                         name="does_international_transfers"
                         label="This system transfers data"
                         tooltip="Does this system transfer data to other countries or international organizations?"
+                        disabled={lockedForGVL}
                       />
                       <Collapse
                         in={values.does_international_transfers}
@@ -364,6 +459,7 @@ const SystemInformationForm = ({
                             tooltip="What is the legal basis under which the data is transferred?"
                             isMulti
                             isRequired={values.does_international_transfers}
+                            disabled={lockedForGVL}
                           />
                         </Box>
                       </Collapse>
@@ -374,6 +470,7 @@ const SystemInformationForm = ({
                         label="This system requires Data Privacy Assessments"
                         tooltip="Does this system require (DPA/DPIA) assessments?"
                         variant="stacked"
+                        isDisabled={lockedForGVL}
                       />
                       <Collapse
                         in={values.requires_data_protection_assessments}
@@ -385,6 +482,7 @@ const SystemInformationForm = ({
                             name="dpa_location"
                             tooltip="Where is the DPA/DPIA stored?"
                             variant="stacked"
+                            disabled={lockedForGVL}
                             isRequired={
                               values.requires_data_protection_assessments
                             }
@@ -408,21 +506,25 @@ const SystemInformationForm = ({
                   name="uses_cookies"
                   label="This system uses cookies"
                   tooltip="Does this system use cookies?"
+                  disabled={lockedForGVL}
                 />
                 <DictSuggestionSwitch
                   name="cookie_refresh"
                   label="This system refreshes cookies"
                   tooltip="Does this system automatically refresh cookies?"
+                  disabled={lockedForGVL}
                 />
                 <DictSuggestionSwitch
                   name="uses_non_cookie_access"
                   label="This system uses non-cookie trackers"
                   tooltip="Does this system use other types of trackers?"
+                  disabled={lockedForGVL}
                 />
                 <DictSuggestionNumberInput
                   name="cookie_max_age_seconds"
                   label="Maximum duration (seconds)"
                   tooltip="What is the maximum amount of time a cookie will live?"
+                  disabled={lockedForGVL}
                 />
               </SystemFormInputGroup>
               <SystemFormInputGroup heading="Administrative properties">
@@ -438,18 +540,21 @@ const SystemInformationForm = ({
                   name="privacy_policy"
                   label="Privacy policy URL"
                   tooltip="Where can the privacy policy be located?"
+                  disabled={lockedForGVL}
                 />
                 <DictSuggestionTextInput
                   id="legal_name"
                   name="legal_name"
                   label="Legal name"
                   tooltip="What is the legal name of the business?"
+                  disabled={lockedForGVL}
                 />
                 <DictSuggestionTextArea
                   id="legal_address"
                   name="legal_address"
                   label="Legal address"
                   tooltip="What is the legal address for the business?"
+                  disabled={lockedForGVL}
                 />
                 <CustomTextInput
                   label="Department"
@@ -458,7 +563,8 @@ const SystemInformationForm = ({
                   variant="stacked"
                   disabled={
                     !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations
+                    values.exempt_from_privacy_regulations ||
+                    lockedForGVL
                   }
                 />
                 <DictSuggestionSelect
@@ -469,7 +575,8 @@ const SystemInformationForm = ({
                   isMulti
                   disabled={
                     !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations
+                    values.exempt_from_privacy_regulations ||
+                    lockedForGVL
                   }
                 />
                 <DictSuggestionTextInput
@@ -477,6 +584,7 @@ const SystemInformationForm = ({
                   id="dpo"
                   label="Legal contact (DPO)"
                   tooltip="What is the official privacy contact information?"
+                  disabled={lockedForGVL}
                 />
                 <CustomTextInput
                   label="Joint controller"
@@ -485,7 +593,8 @@ const SystemInformationForm = ({
                   variant="stacked"
                   disabled={
                     !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations
+                    values.exempt_from_privacy_regulations ||
+                    lockedForGVL
                   }
                 />
                 <DictSuggestionTextInput
@@ -493,11 +602,13 @@ const SystemInformationForm = ({
                   name="data_security_practices"
                   id="data_security_practices"
                   tooltip="Which data security practices are employed to keep the data safe?"
+                  disabled={lockedForGVL}
                 />
                 <DictSuggestionTextInput
                   label="Legitimate interest disclosure URL"
                   name="legitimate_interest_disclosure_url"
                   id="legitimate_interest_disclosure_url"
+                  disabled={lockedForGVL}
                 />
               </SystemFormInputGroup>
               {values.fides_key ? (

@@ -23,6 +23,7 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.models.sql_models import Dataset, System
+from fides.api.schemas.policy import ActionType
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -65,7 +66,6 @@ def payload():
                 "username": "test",
                 "password": "test",
             },
-            "enabled_actions": ["access", "erasure"],
         }
     ]
 
@@ -295,6 +295,7 @@ class TestGetConnections:
             "disabled",
             "description",
             "authorized",
+            "enabled_actions",
         }
         connection_keys = [connection["key"] for connection in connections]
         assert response_body["items"][0]["key"] in connection_keys
@@ -959,6 +960,80 @@ class TestInstantiateSystemConnectionFromTemplate:
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
         assert connection_config.system_id is not None
+
+        assert dataset_config.connection_config_id == connection_config.id
+        assert dataset_config.ctl_dataset_id is not None
+
+        dataset_config.delete(db)
+        connection_config.delete(db)
+        dataset_config.ctl_dataset.delete(db=db)
+
+    def test_instantiate_connection_from_template_ignore_enabled_actions(
+        self, db, generate_auth_header, api_client, base_url
+    ):
+        connection_config = ConnectionConfig.filter(
+            db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")
+        ).first()
+        assert connection_config is None
+
+        dataset_config = DatasetConfig.filter(
+            db=db,
+            conditions=(DatasetConfig.fides_key == "secondary_mailchimp_instance"),
+        ).first()
+        assert dataset_config is None
+
+        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
+        request_body = {
+            "instance_key": "secondary_mailchimp_instance",
+            "secrets": {
+                "domain": "test_mailchimp_domain",
+                "username": "test_mailchimp_username",
+                "api_key": "test_mailchimp_api_key",
+            },
+            "name": "Mailchimp Connector",
+            "description": "Mailchimp ConnectionConfig description",
+            "key": "mailchimp_connection_config",
+            "enabled_actions": [ActionType.access.value],
+        }
+        resp = api_client.post(
+            base_url.format(saas_connector_type="mailchimp"),
+            headers=auth_header,
+            json=request_body,
+        )
+
+        assert resp.status_code == 200
+        assert set(resp.json().keys()) == {"connection", "dataset"}
+        connection_data = resp.json()["connection"]
+        assert connection_data["key"] == "mailchimp_connection_config"
+        assert connection_data["name"] == "Mailchimp Connector"
+        assert connection_data["secrets"]["api_key"] == "**********"
+        assert connection_data["enabled_actions"] is None
+
+        dataset_data = resp.json()["dataset"]
+        assert dataset_data["fides_key"] == "secondary_mailchimp_instance"
+
+        connection_config = ConnectionConfig.filter(
+            db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")
+        ).first()
+        dataset_config = DatasetConfig.filter(
+            db=db,
+            conditions=(DatasetConfig.fides_key == "secondary_mailchimp_instance"),
+        ).first()
+
+        assert connection_config is not None
+        assert dataset_config is not None
+        assert connection_config.name == "Mailchimp Connector"
+        assert connection_config.description == "Mailchimp ConnectionConfig description"
+
+        assert connection_config.access == AccessLevel.write
+        assert connection_config.connection_type == ConnectionType.saas
+        assert connection_config.saas_config is not None
+        assert connection_config.disabled is False
+        assert connection_config.disabled_at is None
+        assert connection_config.last_test_timestamp is None
+        assert connection_config.last_test_succeeded is None
+        assert connection_config.system_id is not None
+        assert connection_config.enabled_actions is None
 
         assert dataset_config.connection_config_id == connection_config.id
         assert dataset_config.ctl_dataset_id is not None

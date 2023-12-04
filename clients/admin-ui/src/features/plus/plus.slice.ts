@@ -1,17 +1,21 @@
 import { createSelector } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
+import { CONNECTION_ROUTE } from "~/constants";
 import { baseApi } from "~/features/common/api.slice";
 import {
   selectActiveCollection,
   selectActiveDatasetFidesKey,
   selectActiveField,
 } from "~/features/dataset/dataset.slice";
+import { CreateSaasConnectionConfig } from "~/features/datastore-connections";
+import { CreateSaasConnectionConfigResponse } from "~/features/datastore-connections/types";
 import { selectSystemsToClassify } from "~/features/system";
 import {
   AllowList,
   AllowListUpdate,
   BulkCustomFieldRequest,
+  BulkPutConnectionConfiguration,
   ClassificationResponse,
   ClassifyCollection,
   ClassifyDatasetResponse,
@@ -22,6 +26,7 @@ import {
   ClassifyStatusUpdatePayload,
   ClassifySystem,
   CloudConfig,
+  ConnectionConfigurationResponse,
   CustomAssetType,
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
@@ -29,6 +34,7 @@ import {
   GenerateTypes,
   HealthCheck,
   Page_SystemHistoryResponse_,
+  Page_SystemSummary_,
   ResourceTypes,
   SystemScannerStatus,
   SystemScanResponse,
@@ -291,6 +297,58 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Fides Cloud Config"],
     }),
+    getVendorReport: build.query<
+      Page_SystemSummary_,
+      {
+        pageIndex: number;
+        pageSize: number;
+        search?: string;
+        purposes?: string;
+        specialPurposes?: string;
+        dataUses?: string;
+        legalBasis?: string;
+        consentCategories?: string;
+      }
+    >({
+      query: ({
+        pageIndex,
+        pageSize,
+        dataUses,
+        search,
+        legalBasis,
+        purposes,
+        specialPurposes,
+        consentCategories,
+      }) => {
+        let queryString = `page=${pageIndex}&size=${pageSize}`;
+        if (dataUses) {
+          queryString += `&${dataUses}`;
+        }
+
+        if (legalBasis) {
+          queryString += `&${legalBasis}`;
+        }
+        if (purposes) {
+          queryString += `&${purposes}`;
+        }
+        if (specialPurposes) {
+          queryString += `&${specialPurposes}`;
+        }
+        if (consentCategories) {
+          queryString += `&${consentCategories}`;
+        }
+
+        if (search) {
+          queryString += `&search=${search}`;
+        }
+
+        return {
+          url: `plus/system/consent-management/report?${queryString}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["System"],
+    }),
     getDictionaryDataUses: build.query<
       Page_DataUseDeclaration_,
       { vendor_id: string }
@@ -327,6 +385,41 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Custom Assets"],
     }),
+    patchPlusSystemConnectionConfigs: build.mutation<
+      BulkPutConnectionConfiguration,
+      {
+        systemFidesKey: string;
+        connectionConfigs: (Omit<
+          ConnectionConfigurationResponse,
+          "created_at"
+        > & {
+          enabled_actions?: string[];
+        })[];
+      }
+    >({
+      query: ({ systemFidesKey, connectionConfigs }) => ({
+        url: `/plus/system/${systemFidesKey}/connection`,
+        method: "PATCH",
+        body: connectionConfigs,
+      }),
+      invalidatesTags: ["Datamap", "System", "Datastore Connection"],
+    }),
+    createPlusSaasConnectionConfig: build.mutation<
+      CreateSaasConnectionConfigResponse,
+      CreateSaasConnectionConfig
+    >({
+      query: (params) => {
+        const url = `/plus/system/${params.systemFidesKey}${CONNECTION_ROUTE}/instantiate/${params.connectionConfig.saas_connector_type}`;
+
+        return {
+          url,
+          method: "POST",
+          body: { ...params.connectionConfig },
+        };
+      },
+      // Creating a connection config also creates a dataset behind the scenes
+      invalidatesTags: () => ["Datastore Connection", "Datasets", "System"],
+    }),
   }),
 });
 
@@ -338,6 +431,7 @@ export const {
   useGetAllAllowListQuery,
   useGetAllClassifyInstancesQuery,
   useGetClassifyDatasetQuery,
+  useGetVendorReportQuery,
   useGetClassifySystemQuery,
   useGetCustomFieldDefinitionsByResourceTypeQuery,
   useGetCustomFieldsForResourceQuery,
@@ -355,10 +449,13 @@ export const {
   useGetAllDictionaryEntriesQuery,
   useGetFidesCloudConfigQuery,
   useGetDictionaryDataUsesQuery,
+  useLazyGetDictionaryDataUsesQuery,
   useGetAllSystemVendorsQuery,
   usePostSystemVendorsMutation,
   useGetSystemHistoryQuery,
   useUpdateCustomAssetMutation,
+  usePatchPlusSystemConnectionConfigsMutation,
+  useCreatePlusSaasConnectionConfigMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
@@ -520,5 +617,26 @@ export type DictSystems = {
 const EMPTY_DICT_SYSTEMS: DictSystems[] = [];
 export const selectAllDictSystems = createSelector(
   [(RootState) => RootState, plusApi.endpoints.getAllSystemVendors.select()],
-  (RootState, { data }) => data || EMPTY_DICT_SYSTEMS
+  (RootState, { data }) =>
+    data
+      ? data
+          .slice()
+          .map((ds) => {
+            const name = ds.name
+              .split(" ")
+              .map((word) =>
+                word.charAt(0) === "("
+                  ? `(${word.charAt(1).toUpperCase()}${word
+                      .slice(2)
+                      .toLowerCase()}`
+                  : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+              )
+              .join(" ");
+            return {
+              ...ds,
+              name,
+            };
+          })
+          .sort((a, b) => a.name.localeCompare(b.name))
+      : EMPTY_DICT_SYSTEMS
 );

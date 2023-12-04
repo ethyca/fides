@@ -12,6 +12,7 @@ export type ConnectionConfigFormValues = {
   description: string;
   name: string;
   instance_key?: string;
+  enabled_actions?: string[];
   [key: string]: any;
 };
 
