@@ -92,7 +92,7 @@ const DeleteUserModal = ({
               <ModalHeader>Delete User</ModalHeader>
               <ModalCloseButton />
               <ModalBody>
-                <Text mb={2} fontStyle="italic">{user.username}</Text>
+                <Text mb={2} fontStyle="italic">User to delete: {user.username}</Text>
                 <Stack direction="column" spacing={4}>
                   <CustomTextInput
                     name="usernameConfirmation"
