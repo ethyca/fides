@@ -6,7 +6,9 @@ import {
   FidesEndpointPaths,
   PrivacyExperience,
 } from "fides-js";
+import { TCString } from "@iabtechlabtcf/core";
 import { CookieKeyConsent } from "fides-js/src/lib/cookie";
+import { FIDES_SEPARATOR } from "~/../fides-js/src/lib/tcf/constants";
 import { API_URL } from "../support/constants";
 import { mockCookie, mockTcfVendorObjects } from "../support/mocks";
 import { OVERRIDE, stubConfig } from "../support/stubs";
@@ -109,6 +111,31 @@ const checkDefaultExperienceRender = () => {
     });
   });
 };
+
+const assertTcOptIns = ({
+  cookie,
+  modelType,
+  ids,
+}: {
+  cookie: FidesCookie;
+  modelType:
+    | "purposeConsents"
+    | "purposeLegitimateInterests"
+    | "specialFeatureOptins"
+    | "vendorConsents"
+    | "vendorLegitimateInterests";
+
+  ids: number[];
+}) => {
+  const { fides_string: fidesString } = cookie;
+  const tcString = fidesString?.split(FIDES_SEPARATOR)[0];
+  expect(tcString).to.be.a("string");
+  const model = TCString.decode(tcString!);
+  const values = Array.from(model[modelType].values()).sort();
+  expect(values).to.eql(ids.sort());
+};
+
+const fidesVendorIdToId = (fidesId: string) => +fidesId.split(".")[1];
 
 describe("Fides-js TCF", () => {
   describe("banner appears when it should", () => {
@@ -583,28 +610,31 @@ describe("Fides-js TCF", () => {
           const cookieKeyConsent: FidesCookie = JSON.parse(
             decodeURIComponent(cookie!.value)
           );
-          [PURPOSE_9.id, PURPOSE_6.id, PURPOSE_7.id, PURPOSE_4.id].forEach(
-            (pid) => {
-              expect(cookieKeyConsent.tcf_consent.purpose_consent_preferences)
-                .property(`${pid}`)
-                .is.eql(true);
-            }
-          );
-          expect(
-            cookieKeyConsent.tcf_consent
-              .purpose_legitimate_interests_preferences
-          )
-            .property(`${PURPOSE_2.id}`)
-            .is.eql(true);
-          expect(cookieKeyConsent.tcf_consent.special_feature_preferences)
-            .property(`${SPECIAL_FEATURE_1.id}`)
-            .is.eql(true);
-          expect(cookieKeyConsent.tcf_consent.vendor_consent_preferences)
-            .property(`${VENDOR_1.id}`)
-            .is.eql(true);
-          expect(
-            cookieKeyConsent.tcf_consent.vendor_legitimate_interests_preferences
-          ).to.eql({});
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "purposeConsents",
+            ids: [PURPOSE_9.id, PURPOSE_6.id, PURPOSE_7.id, PURPOSE_4.id],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "purposeLegitimateInterests",
+            ids: [PURPOSE_2.id],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "specialFeatureOptins",
+            ids: [SPECIAL_FEATURE_1.id],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "vendorConsents",
+            ids: [fidesVendorIdToId(VENDOR_1.id)],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "vendorLegitimateInterests",
+            ids: [],
+          });
           expect(
             cookieKeyConsent.tcf_consent.system_consent_preferences
           ).to.eql({});
