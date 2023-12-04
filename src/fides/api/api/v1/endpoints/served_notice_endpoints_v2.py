@@ -11,7 +11,6 @@ from fides.api.api.v1.endpoints.consent_request_endpoints import (
 )
 from fides.api.api.v1.endpoints.privacy_preference_endpoints import (
     anonymize_ip_address,
-    classify_identity_type_for_privacy_center_consent_reporting,
     get_ip_address,
     verify_privacy_notice_and_historical_records,
 )
@@ -332,6 +331,10 @@ def prep_served_consent_reporting_task_data(
 
 
 def save_consent_served_task(task_data: Dict[str, Any]):
+    """
+    Task that is queued as a follow-up to saving a quick NoticeServedV2
+    resource that builds a more detailed record for served notice reporting.
+    """
     with sync_session() as db:
         experience_lookups_for_consent_reporting(db, task_data)
         served = task_data.pop("served", {})

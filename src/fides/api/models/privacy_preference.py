@@ -415,6 +415,8 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
 class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
     """The DB ORM model for storing PrivacyPreferenceHistory, used for saving
     every time consent preferences are saved for reporting purposes.
+
+    Soon to be deprecated in favor of PrivacyPreferenceHistoryv2
     """
 
     # Systems capable of propagating their consent, and their status.  If the preference is

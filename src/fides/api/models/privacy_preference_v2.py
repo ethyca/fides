@@ -291,7 +291,7 @@ class PrivacyPreferenceHistoryV2(ConsentReportingMixinV2, Base):
     )  # Dict of TCF attributes saved, for a TCF notice
 
     # Relationships
-    privacy_request = relationship(PrivacyRequest, backref="preferences")
+    privacy_request = relationship(PrivacyRequest, backref="privacy_preferences_v2")
 
     def cache_system_status(
         self, db: Session, system: str, status: ExecutionLogStatus

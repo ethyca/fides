@@ -27,6 +27,7 @@ from fides.api.models.privacy_notice import (
     check_conflicting_notice_keys,
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistoryV2
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
@@ -57,27 +58,34 @@ UNESCAPE_SAFESTR_HEADER = "unescape-safestr"
 
 
 def filter_privacy_preferences_for_propagation(
-    system: Optional[System], privacy_preferences: List[PrivacyPreferenceHistory]
-) -> List[PrivacyPreferenceHistory]:
+    system: Optional[System],
+    privacy_preferences: List[
+        Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]
+    ],
+) -> List[Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]]:
     """Filter privacy preferences on a privacy request to just the ones that should be considered for third party
     consent propagation.
 
     Only applies to preferences saved for privacy notices here, not against individual TCF components.
     """
 
-    propagatable_preferences: List[PrivacyPreferenceHistory] = [
+    propagatable_preferences: List[
+        Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]
+    ] = [
         pref
         for pref in privacy_preferences
         if pref.privacy_notice_history
         and pref.privacy_notice_history.enforcement_level
         == EnforcementLevel.system_wide
-        and pref.preference != UserConsentPreference.acknowledge
+        and (pref.preference and pref.preference != UserConsentPreference.acknowledge)
     ]
 
     if not system:
         return propagatable_preferences
 
-    filtered_on_use: List[PrivacyPreferenceHistory] = []
+    filtered_on_use: List[
+        Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]
+    ] = []
     for pref in propagatable_preferences:
         if (
             pref.privacy_notice_history
@@ -89,7 +97,9 @@ def filter_privacy_preferences_for_propagation(
 
 def should_opt_in_to_service(
     system: Optional[System], privacy_request: PrivacyRequest
-) -> Tuple[Optional[bool], List[PrivacyPreferenceHistory]]:
+) -> Tuple[
+    Optional[bool], List[Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]]
+]:
     """
     For SaaS Connectors, examine the Privacy Preferences and collapse this information into a single should we opt in? (True),
     should we opt out? (False) or should we do nothing? (None).
@@ -103,7 +113,7 @@ def should_opt_in_to_service(
     - If using the old workflow (privacyrequest.consent_preferences), return True if all attached consent preferences
     are opt in, otherwise False.  System check is ignored.
 
-    - If using the new workflow (privacyrequest.privacy_preferences), there is more filtering here.  Privacy Preferences
+    - If using the new workflow (privacyrequest.privacy_preferences, privacyrequest.privacy_preferencesv2), there is more filtering here.  Privacy Preferences
     must have an enforcement level of system-wide and a data use must match a system data use.  If the connector is
     orphaned (no system), skip the data use check. If conflicts, prefer the opt-out preference.
     """
@@ -119,10 +129,16 @@ def should_opt_in_to_service(
         )
 
     # NEW WORKFLOW
-    relevant_preferences = filter_privacy_preferences_for_propagation(
+    # Privacy Preferences v1 to soon be deprecated
+    privacy_preferences_v1 = filter_privacy_preferences_for_propagation(
         system,
         privacy_request.privacy_preferences,  # type: ignore[attr-defined]
     )
+    privacy_preferences_v2 = filter_privacy_preferences_for_propagation(
+        system,
+        privacy_request.privacy_preferences_v2,  # type: ignore[attr-defined]
+    )
+    relevant_preferences = privacy_preferences_v1 + privacy_preferences_v2
     if not relevant_preferences:
         return None, []  # We should do nothing here
 
@@ -137,7 +153,9 @@ def should_opt_in_to_service(
     )
 
     # Hopefully rare final filtering in case there are conflicting preferences
-    filtered_preferences: List[PrivacyPreferenceHistory] = [
+    filtered_preferences: List[
+        Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]
+    ] = [
         pref
         for pref in relevant_preferences
         if pref.preference == preference_to_propagate
@@ -151,18 +169,34 @@ def cache_initial_status_and_identities_for_consent_reporting(
     db: Session,
     privacy_request: PrivacyRequest,
     connection_config: ConnectionConfig,
-    relevant_preferences: List[PrivacyPreferenceHistory],
+    relevant_preferences: List[
+        Union[PrivacyPreferenceHistory, PrivacyPreferenceHistory]
+    ],
     relevant_user_identities: Dict[str, Any],
 ) -> None:
-    """Add a pending system status and cache relevant identities on the applicable PrivacyPreferenceHistory
-    records for consent reporting.
+    """Add a pending system status and cache relevant identities on the applicable PrivacyPreferenceHistory (soon
+    to be deprecated) and PrivacyPreferenceHistoryV2 records for consent reporting.
 
     Preferences that aren't relevant for the given system/connector are given a skipped status.
 
     Typically used when *some* but not all privacy preferences are relevant.  Otherwise,
     other methods just mark all the preferences as skipped.
     """
+
+    # TODO remove workflow for privacy_request.privacy_preferences in favor of
+    # privacy_preferences_v2
     for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
+        if pref in relevant_preferences:
+            pref.update_secondary_user_ids(db, relevant_user_identities)
+            pref.cache_system_status(
+                db, connection_config.system_key, ExecutionLogStatus.pending
+            )
+        else:
+            pref.cache_system_status(
+                db, connection_config.system_key, ExecutionLogStatus.skipped
+            )
+
+    for pref in privacy_request.privacy_preferences_v2:  # type: ignore[attr-defined]
         if pref in relevant_preferences:
             pref.update_secondary_user_ids(db, relevant_user_identities)
             pref.cache_system_status(

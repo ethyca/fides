@@ -22,7 +22,7 @@ from fides.api.schemas.redis_cache import Identity
 mock_request = Request(
     {
         "type": "http",
-        "method": "GET",
+        "method": "PATCH",
         "url": "/api/v1/notices-served",
         "headers": Headers(
             headers={

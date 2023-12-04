@@ -15,6 +15,7 @@ from fides.api.models.privacy_notice import (
     UserConsentPreference,
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistoryV2
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -159,13 +160,26 @@ class GenericConsentEmailConnector(BaseEmailConnector):
         old_workflow_consent_preferences: Optional[
             Any
         ] = privacy_request.consent_preferences
-        new_workflow_consent_preferences: List[
+
+        # PrivacyPreferenceHistory soon to be deprecated
+        new_workflow_consent_preferences_v1: List[
             PrivacyPreferenceHistory
         ] = filter_privacy_preferences_for_propagation(
             self.configuration.system,
             privacy_request.privacy_preferences,  # type: ignore[attr-defined]
         )
-        if not (old_workflow_consent_preferences or new_workflow_consent_preferences):
+
+        new_workflow_consent_preferences_v2: List[
+            PrivacyPreferenceHistoryV2
+        ] = filter_privacy_preferences_for_propagation(
+            self.configuration.system,
+            privacy_request.privacy_preferences_v2,  # type: ignore[attr-defined]
+        )
+        if not (
+            old_workflow_consent_preferences
+            or new_workflow_consent_preferences_v1
+            or new_workflow_consent_preferences_v2
+        ):
             return False
 
         if not filter_user_identities_for_connector(self.config, user_identities):
@@ -231,11 +245,22 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             ]
 
             # Privacy preferences for new workflow
-            filtered_privacy_preference_records: List[
+            filtered_privacy_preference_v1_records: List[
                 PrivacyPreferenceHistory
             ] = filter_privacy_preferences_for_propagation(
                 self.configuration.system, privacy_request.privacy_preferences
+            )  # Remove v1 records
+            filtered_privacy_preference_v2_records: List[
+                PrivacyPreferenceHistoryV2
+            ] = filter_privacy_preferences_for_propagation(
+                self.configuration.system, privacy_request.privacy_preferences
             )
+
+            filtered_privacy_preference_records = (
+                filtered_privacy_preference_v1_records
+                + filtered_privacy_preference_v2_records
+            )
+
             filtered_privacy_request_schemas: List[
                 MinimalPrivacyPreferenceHistorySchema
             ] = [

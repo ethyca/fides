@@ -457,7 +457,8 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
     )
 
     def calculate_relevant_systems(self, db: Session) -> List[FidesKey]:
-        """Method to cache the relevant systems at the time to store on PrivacyPreferenceHistory for record keeping
+        """Method to cache the relevant systems at the time to store on PrivacyPreferenceHistory (soon to be deprecated)
+        or PrivacyPreferenceHistoryV2 for record keeping
 
         A system is relevant if their data use is an exact match or a child of the notice's data use.
         """
