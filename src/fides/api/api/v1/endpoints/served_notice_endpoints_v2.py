@@ -220,7 +220,7 @@ def save_last_served_and_prep_task_data(
     )
 
     task_data = prep_served_consent_reporting_task_data(
-        request, served_notice_history_id, identities_data, request_data
+        request, identities_data, request_data, served_notice_history_id
     )
 
     return last_served_notice, task_data
@@ -249,6 +249,7 @@ def save_consent_served_for_identities_v2(
     consent_identity_data: ConsentIdentitiesSchema,
     attributes_served: Dict[str, List],
 ) -> LastServedNoticeV2:
+    """Upsert a LastServedNoticeV2 record for the given user"""
     data = LastServedSchema(
         **consent_identity_data.dict(),
         served=attributes_served,
@@ -260,14 +261,29 @@ def save_consent_served_for_identities_v2(
         hashed_device=consent_identity_data.hashed_fides_user_device,
         hashed_email=consent_identity_data.hashed_email,
         hashed_phone=consent_identity_data.hashed_phone_number,
-    )
+    ).order_by(LastServedNoticeV2.created_at.desc())
 
     if existing_user_records.count():
         retained_record = existing_user_records.first()
         records_to_delete: List[str] = []
 
+        combined_email: Optional[str] = None
+        combined_phone: Optional[str] = None
+        combined_device: Optional[str] = None
+
+        # Retain records of Privacy Notices served that are not in the current request.
         combined_notices_served = set()
         for record in existing_user_records:
+            # Combine non-null identifiers, prioritizing more recently used first
+            if not combined_email and record.email:
+                combined_email = record.email
+
+            if not combined_phone and record.phone_number:
+                combined_phone = record.phone_number
+
+            if not combined_device and record.fides_user_device:
+                combined_device = record.fides_user_device
+
             if record.id != retained_record.id:
                 records_to_delete.append(record.id)
 
@@ -284,7 +300,26 @@ def save_consent_served_for_identities_v2(
 
         data.served = attributes_served
 
-        retained_record.update(db=db, data=data.dict())
+        last_served_data = data.dict()
+
+        last_served_data["email"] = last_served_data["email"] or combined_email
+        last_served_data["hashed_email"] = ConsentIdentitiesMixin.hash_value(
+            last_served_data["email"]
+        )
+        last_served_data["phone_number"] = (
+            last_served_data["phone_number"] or combined_phone
+        )
+        last_served_data["hashed_phone_number"] = ConsentIdentitiesMixin.hash_value(
+            last_served_data["phone_number"]
+        )
+        last_served_data["fides_user_device"] = (
+            last_served_data["fides_user_device"] or combined_device
+        )
+        last_served_data[
+            "hashed_fides_user_device"
+        ] = ConsentIdentitiesMixin.hash_value(last_served_data["fides_user_device"])
+
+        retained_record.update(db=db, data=last_served_data)
 
         db.query(LastServedNoticeV2).filter(
             LastServedNoticeV2.id.in_(records_to_delete)
@@ -299,9 +334,9 @@ def save_consent_served_for_identities_v2(
 
 def prep_served_consent_reporting_task_data(
     request: Request,
-    served_notice_history_id: str,
     identities: ConsentIdentitiesSchema,
     request_data: RecordConsentServedRequest,
+    served_notice_history_id: str,
 ) -> Dict:
     request_headers = request.headers
     ip_address: Optional[str] = anonymize_ip_address(get_ip_address(request))

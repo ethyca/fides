@@ -379,6 +379,85 @@ class TestSaveLastServedAndPrepConsentData:
             "url_recorded": "http://www.example.com",
         }
 
+    def test_merge_consent_across_multiple_identities(self, db, privacy_notice):
+        """
+        Test that when we realize identities are linked, we merge all records,
+        including their identities.
+
+        We prioritize the non-null identifers most recently-saved first.
+        """
+        email = f"customer-1{uuid.uuid4()}@example.com"
+        hashed_email = ConsentIdentitiesMixin.hash_value(email)
+        phone = "1+5558675309"
+        hashed_phone = ConsentIdentitiesMixin.hash_value(phone)
+        fides_user_device = str(uuid.uuid4())
+        hashed_device = ConsentIdentitiesMixin.hash_value(fides_user_device)
+
+        combined_record, _ = save_last_served_and_prep_task_data(
+            db=db,
+            request=mock_request,
+            request_data=RecordConsentServedRequest(
+                acknowledge_mode=True,
+                browser_identity=Identity(),
+                privacy_notice_history_ids=[privacy_notice.histories[0].id],
+                serving_component="overlay",
+                user_geography="us_ca",
+            ),
+            phone_number=phone,
+            email=email,
+            fides_user_device=fides_user_device,
+        )
+
+        email_record, task_data = save_last_served_and_prep_task_data(
+            db=db,
+            request=mock_request,
+            request_data=RecordConsentServedRequest(
+                acknowledge_mode=True,
+                browser_identity=Identity(),
+                privacy_notice_history_ids=[privacy_notice.histories[0].id],
+                serving_component="overlay",
+                user_geography="us_ca",
+            ),
+            email=email,
+        )
+
+        assert email_record.email == email
+        assert email_record.phone_number == phone
+        assert email_record.fides_user_device == fides_user_device
+
+        records = get_records_with_consent_identifiers(
+            db,
+            LastServedNoticeV2,
+            hashed_device=hashed_device,
+        )
+
+        assert records.count() == 1
+        assert records[0].id == combined_record.id
+
+        records = get_records_with_consent_identifiers(
+            db,
+            LastServedNoticeV2,
+            hashed_email=hashed_email,
+        )
+
+        assert records.count() == 1
+        assert records[0].id == combined_record.id
+
+        records = get_records_with_consent_identifiers(
+            db,
+            LastServedNoticeV2,
+            hashed_phone=hashed_phone,
+        )
+
+        assert records.count() == 1
+        assert records[0].id == combined_record.id
+
+        # While our "last served" data was consolidated on identifiers,
+        # our consent reporting only includes the original request data
+        assert task_data["email"] == email
+        assert not task_data["phone_number"]
+        assert not task_data["fides_user_device"]
+
     def test_save_consent_served_task_for_privacy_notices(
         self,
         mock_task_data_privacy_notices,
