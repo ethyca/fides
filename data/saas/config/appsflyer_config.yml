@@ -10,8 +10,6 @@ saas_config:
     - name: domain
       default_value: hq1.appsflyer.com
       description: Your Appsflyer domain
-      label: Domain
-    - name: test_req_id
     - name: identity_value
       description: The identity value that is returned for the end user email being submitted.
       label: Identity Value
