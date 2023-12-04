@@ -53,6 +53,8 @@ export interface PrivacyCenterSettings {
   FIDES_TCF_GDPR_APPLIES: boolean; // (optional) The default for the TCF GDPR applies value (default true)
   FIDES_STRING: string | null; // (optional) An explicitly passed-in string that supersedes the cookie. Can contain both TC and AC strings
   IS_FORCED_TCF: boolean; // whether to force the privacy center to use the fides-tcf.js bundle
+  IS_GPP_ENABLED: boolean; // whether GPP is enabled
+  GPP_EXTENSION_PATH: string; // The path of the GPP extension file `fides-ext-gpp.js`. Defaults to `/fides-ext-gpp.js`
   PREVENT_DISMISSAL: boolean; // whether or not the user is allowed to dismiss the banner/overlay
 }
 
@@ -79,6 +81,8 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_TCF_GDPR_APPLIES"
   | "FIDES_STRING"
   | "IS_FORCED_TCF"
+  | "IS_GPP_ENABLED"
+  | "GPP_EXTENSION_PATH"
   | "PREVENT_DISMISSAL"
 >;
 
@@ -341,6 +345,12 @@ export const loadPrivacyCenterEnvironment =
       IS_FORCED_TCF: process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF
         ? process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF === "true"
         : false,
+      IS_GPP_ENABLED: process.env.FIDES_PRIVACY_CENTER__IS_GPP_ENABLED
+        ? process.env.FIDES_PRIVACY_CENTER__IS_GPP_ENABLED === "true"
+        : false,
+      GPP_EXTENSION_PATH:
+        process.env.FIDES_PRIVACY_CENTER__GPP_EXTENSION_PATH ||
+        "/fides-ext-gpp.js",
       PREVENT_DISMISSAL: process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL
         ? process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL === "true"
         : false,
@@ -371,6 +381,8 @@ export const loadPrivacyCenterEnvironment =
       FIDES_TCF_GDPR_APPLIES: settings.FIDES_TCF_GDPR_APPLIES,
       FIDES_STRING: settings.FIDES_STRING,
       IS_FORCED_TCF: settings.IS_FORCED_TCF,
+      IS_GPP_ENABLED: settings.IS_GPP_ENABLED,
+      GPP_EXTENSION_PATH: settings.GPP_EXTENSION_PATH,
       PREVENT_DISMISSAL: settings.PREVENT_DISMISSAL,
     };
 

@@ -192,6 +192,7 @@ const VendorSelector = ({
                 menuPosition="absolute"
                 isSearchable
                 isClearable
+                focusBorderColor="primary.600"
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 formatCreateLabel={(_value) => null}
                 chakraStyles={{

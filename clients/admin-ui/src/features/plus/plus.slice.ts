@@ -34,6 +34,7 @@ import {
   GenerateTypes,
   HealthCheck,
   Page_SystemHistoryResponse_,
+  Page_SystemSummary_,
   ResourceTypes,
   SystemScannerStatus,
   SystemScanResponse,
@@ -296,6 +297,58 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Fides Cloud Config"],
     }),
+    getVendorReport: build.query<
+      Page_SystemSummary_,
+      {
+        pageIndex: number;
+        pageSize: number;
+        search?: string;
+        purposes?: string;
+        specialPurposes?: string;
+        dataUses?: string;
+        legalBasis?: string;
+        consentCategories?: string;
+      }
+    >({
+      query: ({
+        pageIndex,
+        pageSize,
+        dataUses,
+        search,
+        legalBasis,
+        purposes,
+        specialPurposes,
+        consentCategories,
+      }) => {
+        let queryString = `page=${pageIndex}&size=${pageSize}`;
+        if (dataUses) {
+          queryString += `&${dataUses}`;
+        }
+
+        if (legalBasis) {
+          queryString += `&${legalBasis}`;
+        }
+        if (purposes) {
+          queryString += `&${purposes}`;
+        }
+        if (specialPurposes) {
+          queryString += `&${specialPurposes}`;
+        }
+        if (consentCategories) {
+          queryString += `&${consentCategories}`;
+        }
+
+        if (search) {
+          queryString += `&search=${search}`;
+        }
+
+        return {
+          url: `plus/system/consent-management/report?${queryString}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["System"],
+    }),
     getDictionaryDataUses: build.query<
       Page_DataUseDeclaration_,
       { vendor_id: string }
@@ -378,6 +431,7 @@ export const {
   useGetAllAllowListQuery,
   useGetAllClassifyInstancesQuery,
   useGetClassifyDatasetQuery,
+  useGetVendorReportQuery,
   useGetClassifySystemQuery,
   useGetCustomFieldDefinitionsByResourceTypeQuery,
   useGetCustomFieldsForResourceQuery,
