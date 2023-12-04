@@ -70,7 +70,7 @@ import {
 import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
 import {
-  buildTcfEntitiesFromCookie,
+  buildTcfEntitiesFromCookieAndFidesString,
   debugLog,
   experienceIsValid,
   FidesCookie,
@@ -155,7 +155,11 @@ const updateCookieAndExperience = async ({
       "Overriding preferences from client-side fetched experience with cookie fides_string consent",
       cookie.fides_string
     );
-    const tcfEntities = buildTcfEntitiesFromCookie(experience, cookie);
+    const tcfEntities = buildTcfEntitiesFromCookieAndFidesString(
+      experience,
+      cookie,
+      cookie.fides_string
+    );
     return { cookie, experience: tcfEntities };
   }
 
@@ -178,15 +182,19 @@ const updateCookieAndExperience = async ({
   };
 
   TCF_KEY_MAP.forEach(({ experienceKey, cookieKey, enabledIdsKey }) => {
-    tcSavePrefs[cookieKey] = [];
+    if (cookieKey) {
+      tcSavePrefs[cookieKey] = [];
+    }
     experience[experienceKey]?.forEach((record) => {
       const pref: UserConsentPreference = getInitialPreference(record);
       // map experience to tcSavePrefs (same as cookie keys)
-      tcSavePrefs[cookieKey]?.push({
-        // @ts-ignore
-        id: record.id,
-        preference: pref,
-      });
+      if (cookieKey) {
+        tcSavePrefs[cookieKey]?.push({
+          // @ts-ignore
+          id: record.id,
+          preference: pref,
+        });
+      }
       // add to enabledIds only if user consent is True
       if (transformUserPreferenceToBoolean(pref)) {
         if (enabledIdsKey) {

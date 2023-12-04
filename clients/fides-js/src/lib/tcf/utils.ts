@@ -1,16 +1,40 @@
 import { TCModel, TCString, Vector } from "@iabtechlabtcf/core";
-import { PrivacyExperience } from "../consent-types";
-import { EnabledIds, TcfCookieConsent, TcfCookieKeyConsent } from "./types";
+import { PrivacyExperience, UserConsentPreference } from "../consent-types";
+import {
+  EnabledIds,
+  TcfCookieConsent,
+  TcfCookieKeyConsent,
+  TcfExperienceRecords,
+} from "./types";
 import { TCF_KEY_MAP } from "./constants";
 import { generateFidesString } from "../tcf";
 import { debugLog } from "../consent-utils";
 import { decodeFidesString, idsFromAcString } from "./fidesString";
 
+export const getConsentFromTcModel = (
+  tcModel: TCModel,
+  experienceKey: keyof TcfExperienceRecords,
+  tcfRecordId: string | number
+): boolean => {
+  const associatedTCFKey = TCF_KEY_MAP.find(
+    (i) => i.experienceKey === experienceKey
+  )?.tcfModelKey;
+  if (associatedTCFKey) {
+    (tcModel[associatedTCFKey] as Vector).forEach((consented, id) => {
+      if (id === tcfRecordId) {
+        return consented;
+      }
+    });
+    return false;
+  }
+  // fixme- tcf_vendor_consents comes from both AC string and tc string?
+};
+
 export const transformFidesStringToCookieKeys = (
   fidesString: string,
   debug: boolean
 ): TcfCookieConsent => {
-  const { tc: tcString, ac: acString } = decodeFidesString(fidesString);
+  const { tc: tcString } = decodeFidesString(fidesString);
   const tcModel: TCModel = TCString.decode(tcString);
 
   const cookieKeys: TcfCookieConsent = {};
@@ -26,19 +50,23 @@ export const transformFidesStringToCookieKeys = (
         const key = isVendorKey ? `gvl.${id}` : id;
         items[key] = consented;
       });
-      cookieKeys[cookieKey] = items;
+      if (cookieKey) {
+        cookieKeys[cookieKey] = items;
+      }
     }
   });
 
+  // fixme- Keep for reference but remove before merging
+  // from the fides_string
   // Set AC consents, which will only be on vendor_consents
-  const acIds = idsFromAcString(acString, debug);
-  acIds.forEach((acId) => {
-    if (!cookieKeys.vendor_consent_preferences) {
-      cookieKeys.vendor_consent_preferences = { [acId]: true };
-    } else {
-      cookieKeys.vendor_consent_preferences[acId] = true;
-    }
-  });
+  // const acIds = idsFromAcString(acString, debug);
+  // acIds.forEach((acId) => {
+  //   if (!cookieKeys.vendor_consent_preferences) {
+  //     cookieKeys.vendor_consent_preferences = { [acId]: true };
+  //   } else {
+  //     cookieKeys.vendor_consent_preferences[acId] = true;
+  //   }
+  // });
   debugLog(
     debug,
     `Generated cookie.tcf_consent from explicit fidesString.`,
@@ -63,7 +91,7 @@ export const generateFidesStringFromCookieTcfConsent = async (
 
   TCF_KEY_MAP.forEach(({ cookieKey, enabledIdsKey }) => {
     const cookieKeyConsent: TcfCookieKeyConsent | undefined =
-      tcfConsent[cookieKey];
+      cookieKey && tcfConsent[cookieKey];
     if (cookieKeyConsent) {
       Object.keys(cookieKeyConsent).forEach((key: string | number) => {
         if (cookieKeyConsent[key] && enabledIdsKey) {

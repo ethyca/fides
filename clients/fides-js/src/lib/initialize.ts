@@ -225,6 +225,7 @@ export const getInitialFides = ({
       experience,
       cookie,
       debug: options.debug,
+      fidesString: options.fidesString,
     });
   }
 
