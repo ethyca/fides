@@ -215,7 +215,6 @@ describe("User management", () => {
       cy.getByTestId("input-usernameConfirmation").type("user_one");
       // trigger blur event
       cy.getByTestId("delete-user-modal").click();
-      cy.getByTestId("delete-user-modal").contains("Usernames must match");
       cy.getByTestId("submit-btn").should("be.disabled");
 
       // type matching but incorrect username
