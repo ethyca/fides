@@ -23,6 +23,10 @@ saas_config:
       configuration:
         token: <token>
 
+  test_request:
+    method: GET
+    path: /api/gdpr/v1/stub/discovery
+
   endpoints:
     - name: erasure
       requests:

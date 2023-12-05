@@ -5,3 +5,4 @@ dataset:
     description: A sample dataset representing the Appsflyer connector for Fides
     collections:
       - name: user
+        fields: []
