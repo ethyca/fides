@@ -75,7 +75,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
         document.removeEventListener("keydown", handleEsc);
       };
     }
-  }, []);
+  }, [onClose]);
 
   const showGpcBadge = getConsentContext().globalPrivacyControl;
 

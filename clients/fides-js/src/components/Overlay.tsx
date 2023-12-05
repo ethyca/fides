@@ -141,7 +141,7 @@ const Overlay: FunctionComponent<Props> = ({
   return (
     <div>
       {bannerIsOpen && window.Fides.options.preventDismissal && (
-        <div class="fides-modal-overlay" />
+        <div className="fides-modal-overlay" />
       )}
       {showBanner
         ? renderBanner({
