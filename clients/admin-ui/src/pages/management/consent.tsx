@@ -1,5 +1,6 @@
 /* eslint-disable react/no-array-index-key */
 import {
+  Badge,
   Box,
   Button,
   Flex,
@@ -39,7 +40,8 @@ import { TCFLegalBasisEnum, TCFPurposeOverrideSchema } from "~/types/api";
 
 const LegalBasisContainer: FC<{
   purpose: number;
-}> = ({ children, purpose }) => {
+  endCol?: boolean;
+}> = ({ children, purpose, endCol }) => {
   const hiddenPurposes = [1, 3, 4, 5, 6];
 
   return (
@@ -47,8 +49,11 @@ const LegalBasisContainer: FC<{
       flex="1"
       justifyContent="center"
       alignItems="center"
-      borderRight="solid 1px black"
+      borderLeft="solid 1px"
+      borderRight={endCol ? "solid 1px" : "unset"}
+      borderColor="gray.200"
       height="100%"
+      minWidth="36px"
     >
       {hiddenPurposes.includes(purpose) ? null : <Box>{children}</Box>}
     </Flex>
@@ -208,50 +213,111 @@ const ConsentConfigPage: NextPage = () => {
       ) : (
         <Box data-testid="consent-configuration">
           <Heading marginBottom={4} fontSize="2xl">
-            Global Consent Settings
+            Consent settings
           </Heading>
-          <Box maxWidth="600px">
-            <Text marginBottom={2} fontSize="md">
-              TCF status: {isTcfEnabled ? "Enabled ✅" : "Disabled ❌"}
-            </Text>
-            <Text mb={10} fontSize="sm">
-              To {isTcfEnabled ? "disable" : "enable"} TCF, please contact your
-              Fides Administrator or Ethyca support
-            </Text>
-            {isTcfEnabled ? (
-              <>
-                <Text marginBottom={2} fontSize="sm">
-                  Override vendor purposes:{" "}
-                  <Switch
-                    size="sm"
-                    colorScheme="purple"
-                    isChecked={isOverrideEnabled}
-                    onChange={handleOverrideOnChange}
-                    isDisabled={isPatchConfigSettingsLoading}
-                  />
-                </Text>
-                <Text mb={2} fontSize="sm" fontStyle="italic">
-                  {isOverrideEnabled
-                    ? "The table below allows you to adjust which TCF purposes you allow as part of your user facing notices and business activites."
-                    : "Toggle on if you want to globally change any flexiable legal bases or remove TCF purposes from your CMP."}
-                </Text>
-              </>
-            ) : null}
-            {isOverrideEnabled && isTcfEnabled ? (
-              <Text marginBottom={10} fontSize="sm">
-                To configure this section, select the purposes you allow and
-                where available, the appropriate legal basis (either Consent or
-                Legitmate Intererest). Read the guide on{" "}
-                <DocsLink href="https://ethyca.com">
-                  {" "}
-                  TCF Override here.{" "}
-                </DocsLink>
+          <Box>
+            <Box backgroundColor="gray.50" borderRadius="4px" padding="14px">
+              <Text
+                fontSize="md"
+                fontWeight="bold"
+                lineHeight={5}
+                color="gray.700"
+              >
+                Transparency & Consent Framework settings
               </Text>
-            ) : null}
+              <Text
+                mb={2}
+                mt={3}
+                fontSize="sm"
+                lineHeight="5"
+                fontWeight="medium"
+                color="gray.700"
+              >
+                TCF status:{" "}
+                {isTcfEnabled ? (
+                  <Badge backgroundColor="green.100">Enabled </Badge>
+                ) : (
+                  <Badge backgroundColor="red.100">Disabled</Badge>
+                )}
+              </Text>
+              <Text
+                fontSize="sm"
+                lineHeight="5"
+                fontWeight="medium"
+                color="gray.700"
+              >
+                To {isTcfEnabled ? "disable" : "enable"} TCF, please contact
+                your Fides Administrator or{" "}
+                <DocsLink href="https://ethyca.com">Ethyca support</DocsLink>
+              </Text>
+            </Box>
+
+            <Box
+              mt="24px"
+              backgroundColor="gray.50"
+              borderRadius="4px"
+              padding="14px"
+            >
+              <Text
+                fontSize="md"
+                fontWeight="bold"
+                lineHeight={5}
+                color="gray.700"
+                mb={3}
+              >
+                Vendor overrides
+              </Text>
+              {isTcfEnabled ? (
+                <>
+                  <Text
+                    marginBottom={2}
+                    fontSize="sm"
+                    lineHeight="5"
+                    fontWeight="medium"
+                    color="gray.700"
+                  >
+                    Override vendor purposes:{" "}
+                    <Switch
+                      size="sm"
+                      colorScheme="purple"
+                      isChecked={isOverrideEnabled}
+                      onChange={handleOverrideOnChange}
+                      isDisabled={isPatchConfigSettingsLoading}
+                    />
+                  </Text>
+                  <Text
+                    mb={2}
+                    fontSize="sm"
+                    lineHeight="5"
+                    fontWeight="medium"
+                    color="gray.700"
+                  >
+                    {isOverrideEnabled
+                      ? "The table below allows you to adjust which TCF purposes you allow as part of your user facing notices and business activites."
+                      : "Toggle on if you want to globally change any flexiable legal bases or remove TCF purposes from your CMP."}
+                  </Text>
+                </>
+              ) : null}
+              {isOverrideEnabled && isTcfEnabled ? (
+                <Text
+                  fontSize="sm"
+                  lineHeight="5"
+                  fontWeight="medium"
+                  color="gray.700"
+                >
+                  To configure this section, select the purposes you allow and
+                  where available, the appropriate legal basis (either Consent
+                  or Legitmate Intererest). Read the guide on{" "}
+                  <DocsLink href="https://ethyca.com">
+                    TCF Override here.{" "}
+                  </DocsLink>
+                </Text>
+              ) : null}
+            </Box>
           </Box>
 
           {isOverrideEnabled ? (
-            <Box>
+            <Box mt={4}>
               <Formik<FormValues>
                 initialValues={initialValues}
                 enableReinitialize
@@ -262,44 +328,88 @@ const ConsentConfigPage: NextPage = () => {
                     <FieldArray
                       name="purposeOverrides"
                       render={() => (
-                        <Flex flexDirection="column">
-                          <Flex width="100%" borderBottom="solid 1px black">
-                            <Box width="600px" />
+                        <Flex flexDirection="column" minWidth="944px">
+                          <Flex
+                            width="100%"
+                            border="solid 1px"
+                            borderColor="gray.200"
+                            backgroundColor="gray.50"
+                            height="36px"
+                          >
                             <Flex
-                              flex="1"
-                              justifyContent="center"
+                              width="600px"
+                              pl="4"
+                              fontSize="xs"
+                              fontWeight="medium"
+                              lineHeight="4"
                               alignItems="center"
+                              borderRight="solid 1px"
+                              borderColor="gray.200"
                             >
-                              <Text>Include in CMP</Text>
+                              TCF purpose
                             </Flex>
                             <Flex
                               flex="1"
-                              justifyContent="center"
                               alignItems="center"
+                              borderRight="solid 1px"
+                              borderColor="gray.200"
+                              minWidth="36px"
                             >
-                              <Text>Require Consent</Text>
+                              <Text
+                                pl="4"
+                                fontSize="xs"
+                                fontWeight="medium"
+                                lineHeight="4"
+                              >
+                                Include in CMP
+                              </Text>
                             </Flex>
                             <Flex
                               flex="1"
-                              justifyContent="center"
                               alignItems="center"
+                              borderRight="solid 1px"
+                              borderColor="gray.200"
                             >
-                              <Text>Use Legitmate Interest</Text>
+                              <Text
+                                pl="4"
+                                fontSize="xs"
+                                fontWeight="medium"
+                                lineHeight="4"
+                              >
+                                Require Consent
+                              </Text>
+                            </Flex>
+                            <Flex flex="1" alignItems="center">
+                              <Text
+                                pl="4"
+                                fontSize="xs"
+                                fontWeight="medium"
+                                lineHeight="4"
+                              >
+                                Use Legitmate Interest
+                              </Text>
                             </Flex>
                           </Flex>
                           {values.purposeOverrides.map((po, index) => (
                             <Flex
                               key={po.purpose}
                               width="100%"
-                              height="40px"
+                              height="36px"
                               alignItems="center"
+                              borderBottom="solid 1px"
+                              borderColor="gray.200"
                             >
                               <Flex
                                 width="600px"
-                                borderRight="solid 1px black"
+                                borderLeft="solid 1px"
+                                borderColor="gray.200"
                                 p={0}
                                 alignItems="center"
                                 height="100%"
+                                pl="4"
+                                fontSize="xs"
+                                fontWeight="normal"
+                                lineHeight="4"
                               >
                                 Purpose {po.purpose}:{" "}
                                 {purposeMapping[po.purpose].name}
@@ -309,7 +419,8 @@ const ConsentConfigPage: NextPage = () => {
                                 flex="1"
                                 justifyContent="center"
                                 alignItems="center"
-                                borderRight="solid 1px black"
+                                borderLeft="solid 1px"
+                                borderColor="gray.200"
                                 height="100%"
                               >
                                 <Box>
@@ -343,7 +454,7 @@ const ConsentConfigPage: NextPage = () => {
                                   name={`purposeOverrides[${index}].is_consent`}
                                 />
                               </LegalBasisContainer>
-                              <LegalBasisContainer purpose={po.purpose}>
+                              <LegalBasisContainer purpose={po.purpose} endCol>
                                 <CustomSwitch
                                   isDisabled={
                                     !values.purposeOverrides[index]
