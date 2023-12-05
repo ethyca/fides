@@ -50,6 +50,23 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     };
   }, []);
 
+  // listen for the ESC keypress and treat it as a close event
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    if (!window.Fides.options.preventDismissal) {
+      document.addEventListener("keydown", handleKeyDown);
+
+      return () => {
+        document.removeEventListener("keydown", handleKeyDown);
+      };
+    }
+  }, []);
+
   const showGpcBadge = getConsentContext().globalPrivacyControl;
 
   useEffect(() => {
