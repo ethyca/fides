@@ -1,4 +1,7 @@
-import { isPrivacyExperience } from "../../src/lib/consent-utils";
+import {
+  getWindowObjFromPath,
+  isPrivacyExperience,
+} from "../../src/lib/consent-utils";
 
 const MOCK_EXPERIENCE = {
   id: "132345243",
@@ -101,4 +104,54 @@ describe("isPrivacyExperience", () => {
   ])("returns $expected when input is $label", ({ obj, expected }) => {
     expect(isPrivacyExperience(obj as any)).toBe(expected);
   });
+});
+
+describe("getWindowObjFromPath", () => {
+  let windowSpy: any;
+
+  beforeEach(() => {
+    windowSpy = jest.spyOn(window, "window", "get");
+  });
+
+  afterEach(() => {
+    windowSpy.mockRestore();
+  });
+  const windowMock1 = {
+    fides_overrides: {
+      hello: "something",
+    },
+  };
+  const windowMock2 = {
+    overrides: {
+      fides: {
+        hello: "something-else",
+      },
+    },
+  };
+  it.each([
+    {
+      label: "path does not exist",
+      path: ["window", "nonexistent-path"],
+      window: windowMock1,
+      expected: undefined,
+    },
+    {
+      label: "path is one level deep",
+      path: ["window", "fides_overrides"],
+      window: windowMock1,
+      expected: { hello: "something" },
+    },
+    {
+      label: "path is two levels deep",
+      path: ["window", "overrides", "fides"],
+      window: windowMock2,
+      expected: { hello: "something-else" },
+    },
+  ])(
+    "returns $expected when path is $path and window is $window",
+    ({ path, window, expected }) => {
+      windowSpy.mockImplementation(() => window);
+      expect(getWindowObjFromPath(path as any)).toStrictEqual(expected);
+    }
+  );
 });

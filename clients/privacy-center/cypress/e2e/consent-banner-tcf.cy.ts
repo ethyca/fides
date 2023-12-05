@@ -7,7 +7,11 @@ import {
   PrivacyExperience,
 } from "fides-js";
 import { CookieKeyConsent } from "fides-js/src/lib/cookie";
-import { API_URL } from "../support/constants";
+import {
+  API_URL,
+  TCF_VERSION_HASH,
+  TEST_OVERRIDE_WINDOW_PATH,
+} from "../support/constants";
 import { mockCookie, mockTcfVendorObjects } from "../support/mocks";
 import { OVERRIDE, stubConfig } from "../support/stubs";
 
@@ -67,7 +71,6 @@ const SPECIAL_FEATURE_1 = {
   name: "Use precise geolocation data",
   served_notice_history_id: "ser_9f3641ce-9863-4a32-b4db-ef1aac9046db",
 };
-const VERSION_HASH = "q34r3qr4";
 
 const checkDefaultExperienceRender = () => {
   // Purposes
@@ -157,7 +160,7 @@ describe("Fides-js TCF", () => {
 
     it("should not render the banner if the saved hashes match", () => {
       const cookie = mockCookie({
-        tcf_version_hash: VERSION_HASH,
+        tcf_version_hash: TCF_VERSION_HASH,
       });
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -2492,6 +2495,57 @@ describe("Fides-js TCF", () => {
             options: {
               isOverlayEnabled: true,
               tcfEnabled: true,
+            },
+            experience: experience.items[0],
+          },
+          null,
+          null,
+          null,
+          { fides_string: fidesStringOverride }
+        );
+      });
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+      });
+      // Open the modal
+      cy.get("#fides-modal-link").click();
+
+      // verify CMP API
+      cy.get("@TCFEvent")
+        .its("lastCall.args")
+        .then(([tcData, success]) => {
+          expect(success).to.eql(true);
+          expect(tcData.tcString).to.eql(expectedTCString);
+          expect(tcData.eventStatus).to.eql("cmpuishown");
+          expect(tcData.purpose.consents).to.eql({
+            [PURPOSE_2.id]: false,
+            [PURPOSE_4.id]: false,
+            [PURPOSE_6.id]: false,
+            [PURPOSE_7.id]: true,
+            1: false,
+            2: false,
+            3: false,
+            5: false,
+          });
+          expect(tcData.purpose.legitimateInterests).to.eql({});
+          expect(tcData.vendor.consents).to.eql({});
+          expect(tcData.vendor.legitimateInterests).to.eql({});
+        });
+    });
+
+    it("uses fides_string when set via window obj at custom config path", () => {
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
+      const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
+      cy.getCookie("fides_string").should("not.exist");
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig(
+          {
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+              // this path is hard-coded in commands.ts for ease of testing
+              customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
             },
             experience: experience.items[0],
           },
