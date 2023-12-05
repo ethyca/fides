@@ -177,6 +177,18 @@ const ConsentConfigPage: NextPage = () => {
         override_vendor_purposes: e.target.checked,
       },
     });
+
+    if (e.target.checked) {
+      console.log("toggling off");
+      await patchTcfPurposeOverridesTrigger(
+        tcfPurposeOverrides!.map((po) => ({
+          ...po,
+          is_included: true,
+          required_legal_basis: undefined,
+        }))
+      );
+    }
+
     handleResult(result);
   };
 
