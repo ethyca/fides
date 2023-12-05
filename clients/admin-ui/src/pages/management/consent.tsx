@@ -215,25 +215,29 @@ const ConsentConfigPage: NextPage = () => {
               TCF status: {isTcfEnabled ? "Enabled ✅" : "Disabled ❌"}
             </Text>
             <Text mb={10} fontSize="sm">
-              To disable TCF, please contact your Fides Administrator or Ethyca
-              support
+              To {isTcfEnabled ? "disable" : "enable"} TCF, please contact your
+              Fides Administrator or Ethyca support
             </Text>
-            <Text marginBottom={2} fontSize="sm">
-              Override vendor purposes:{" "}
-              <Switch
-                size="sm"
-                colorScheme="purple"
-                isChecked={isOverrideEnabled}
-                onChange={handleOverrideOnChange}
-                isDisabled={isPatchConfigSettingsLoading}
-              />
-            </Text>
-            <Text mb={2} fontSize="sm" fontStyle="italic">
-              {isOverrideEnabled
-                ? "The table below allows you to adjust which TCF purposes you allow as part of your user facing notices and business activites."
-                : "Toggle on if you want to globally change any flexiable legal bases or remove TCF purposes from your CMP."}
-            </Text>
-            {isOverrideEnabled ? (
+            {isTcfEnabled ? (
+              <>
+                <Text marginBottom={2} fontSize="sm">
+                  Override vendor purposes:{" "}
+                  <Switch
+                    size="sm"
+                    colorScheme="purple"
+                    isChecked={isOverrideEnabled}
+                    onChange={handleOverrideOnChange}
+                    isDisabled={isPatchConfigSettingsLoading}
+                  />
+                </Text>
+                <Text mb={2} fontSize="sm" fontStyle="italic">
+                  {isOverrideEnabled
+                    ? "The table below allows you to adjust which TCF purposes you allow as part of your user facing notices and business activites."
+                    : "Toggle on if you want to globally change any flexiable legal bases or remove TCF purposes from your CMP."}
+                </Text>
+              </>
+            ) : null}
+            {isOverrideEnabled && isTcfEnabled ? (
               <Text marginBottom={10} fontSize="sm">
                 To configure this section, select the purposes you allow and
                 where available, the appropriate legal basis (either Consent or
