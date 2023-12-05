@@ -23,6 +23,9 @@ The types of changes are:
 - New purposes endpoint and indices to improve system lookups [#4452](https://github.com/ethyca/fides/pull/4452)
 - Add support for global TCF Purpose Overrides [#4464](https://github.com/ethyca/fides/pull/4464)
 
+### Changed
+- Change log level for FidesUserPermission retrieval to `debug` [#4482](https://github.com/ethyca/fides/pull/4482)
+
 ### Fixed
 - Fix type errors when TCF vendors have no dataDeclaration [#4465](https://github.com/ethyca/fides/pull/4465)
 - Fixed an error where editing an AC system would mistakenly lock it for GVL [#4471](https://github.com/ethyca/fides/pull/4471)
