@@ -19,7 +19,7 @@ import {
   transformUserPreferenceToBoolean,
 } from "./consent-utils";
 import type { TcfCookieConsent, TcfSavePreferences } from "./tcf/types";
-import { TCF_COOKIE_KEY_MAP } from "./tcf/constants";
+import { FIDES_SYSTEM_COOKIE_KEY_MAP } from "./tcf/constants";
 
 /**
  * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
@@ -316,7 +316,7 @@ export const transformTcfPreferencesToCookieKeys = (
   tcfPreferences: TcfSavePreferences
 ): TcfCookieConsent => {
   const cookieKeys: TcfCookieConsent = {};
-  TCF_COOKIE_KEY_MAP.forEach(({ cookieKey }) => {
+  FIDES_SYSTEM_COOKIE_KEY_MAP.forEach(({ cookieKey }) => {
     const preferences = tcfPreferences[cookieKey] ?? [];
     cookieKeys[cookieKey] = Object.fromEntries(
       preferences.map((pref) => [

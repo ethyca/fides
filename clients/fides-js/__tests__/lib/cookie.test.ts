@@ -23,10 +23,7 @@ import {
   SaveConsentPreference,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
-import {
-  TcfCookieConsent,
-  TcfSavePreferences,
-} from "../../src/lib/tcf/types";
+import { TcfCookieConsent, TcfSavePreferences } from "../../src/lib/tcf/types";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";

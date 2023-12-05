@@ -85,7 +85,7 @@ import {
   TcfModelsRecord,
   TcfSavePreferences,
 } from "./lib/tcf/types";
-import { TCF_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./lib/tcf/constants";
+import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./lib/tcf/constants";
 import type { GppFunction } from "./lib/gpp/types";
 import { makeStub } from "./lib/tcf/stub";
 import { customGetConsentPreferences } from "./services/external/preferences";
@@ -125,7 +125,8 @@ const getInitialPreference = (
 };
 
 /**
- * Populates TCF entities with items from cookie.tcf_consent and Fides string.
+ * Populates TCF entities with items from both cookie.tcf_consent and cookie.fides_string.
+ * We must look at both because they contain non-overlapping info that is required for a complete TCFEntities object.
  * Returns TCF entities to be assigned to an experience.
  */
 export const buildTcfEntitiesFromCookieAndFidesString = (
@@ -145,8 +146,8 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
     tcf_system_legitimate_interests: experience.tcf_system_legitimate_interests,
   };
 
-  // First update tcfEntities based on the cookie (system objects)
-  TCF_COOKIE_KEY_MAP.forEach(({ cookieKey, experienceKey }) => {
+  // First update tcfEntities based on the `cookie.tcf_consent` obj
+  FIDES_SYSTEM_COOKIE_KEY_MAP.forEach(({ cookieKey, experienceKey }) => {
     const cookieConsent = cookie.tcf_consent[cookieKey] ?? {};
     // @ts-ignore the array map should ensure we will get the right record type
     tcfEntities[experienceKey] = experience[experienceKey]?.map((item) => {
@@ -272,7 +273,7 @@ const updateCookieAndExperience = async ({
 
   // 2. Generate a cookie object from the experience
   const tcSavePrefs: TcfSavePreferences = {};
-  TCF_COOKIE_KEY_MAP.forEach(({ cookieKey, experienceKey }) => {
+  FIDES_SYSTEM_COOKIE_KEY_MAP.forEach(({ cookieKey, experienceKey }) => {
     tcSavePrefs[cookieKey] = [];
     experience[experienceKey]?.forEach((record) => {
       const preference = getInitialPreference(record);
