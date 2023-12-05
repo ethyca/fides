@@ -24,13 +24,9 @@ import {
   UserConsentPreference,
 } from "../../src/lib/consent-types";
 import {
-  TCFPurposeConsentRecord,
-  TCFVendorConsentRecord,
   TcfCookieConsent,
-  TcfExperienceRecords,
   TcfSavePreferences,
 } from "../../src/lib/tcf/types";
-// import {updateExperienceFromCookieConsentTcf} from "../../src/fides-tcf";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
@@ -398,33 +394,6 @@ describe("updateExperienceFromCookieConsent", () => {
   const experienceWithNotices = {
     privacy_notices: notices,
   } as PrivacyExperience;
-
-  // TCF test data
-  const purposeRecords = [
-    { id: 1 },
-    { id: 2 },
-    { id: 3 },
-  ] as TCFPurposeConsentRecord[];
-  const featureRecords = [
-    { id: 4 },
-    { id: 5 },
-    { id: 6 },
-  ] as TCFPurposeConsentRecord[];
-  const vendorRecords = [
-    { id: "1111" },
-    { id: "ctl_test_system" },
-  ] as TCFVendorConsentRecord[];
-  const experienceWithTcf = {
-    tcf_purpose_consents: purposeRecords,
-    tcf_legitimate_interests_consent: purposeRecords,
-    tcf_special_purposes: purposeRecords,
-    tcf_features: featureRecords,
-    tcf_special_features: featureRecords,
-    tcf_vendor_consents: vendorRecords,
-    tcf_vendor_legitimate_interests: vendorRecords,
-    tcf_system_consents: vendorRecords,
-    tcf_system_legitimate_interests: vendorRecords,
-  } as unknown as PrivacyExperience;
 
   describe("notices", () => {
     it("can handle an empty cookie", () => {
