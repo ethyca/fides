@@ -68,6 +68,7 @@ from fides.api.models.storage import (
     _create_local_default_storage,
     default_storage_config_name,
 )
+from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.oauth.roles import APPROVER, VIEWER
 from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetails,
@@ -3133,3 +3134,17 @@ def skimbit_system(db):
             },
         )
     return system
+
+
+@pytest.fixture(scope="function")
+def purpose_three_consent_publisher_override(db):
+    override = TCFPurposeOverride.create(
+        db,
+        data={
+            "purpose": 3,
+            "is_included": True,
+            "required_legal_basis": "Consent",
+        },
+    )
+    yield override
+    override.delete(db)
