@@ -297,7 +297,7 @@ const updateCookieAndExperience = async ({
  * Returns updated experience with user preferences. We have a separate function for notices
  * and for TCF so that the bundle trees do not overlap.
  */
-const updateExperienceFromCookieConsent = ({
+const updateExperienceFromCookieConsentTcf = ({
   experience,
   cookie,
   debug,
@@ -370,7 +370,7 @@ const init = async (config: FidesConfig) => {
   const initialFides = getInitialFides({
     ...config,
     cookie,
-    updateExperienceFromCookieConsent,
+    updateExperienceFromCookieConsent: updateExperienceFromCookieConsentTcf,
   });
   // Initialize the CMP API early so that listeners are established
   initializeTcfCmpApi();

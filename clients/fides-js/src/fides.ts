@@ -51,7 +51,7 @@ import { shopify } from "./integrations/shopify";
 import {
   FidesCookie,
   buildCookieConsentForExperiences,
-  updateExperienceFromCookieConsent,
+  updateExperienceFromCookieConsentNotices,
   consentCookieObjHasSomeConsentSet,
 } from "./lib/cookie";
 import {
@@ -104,7 +104,7 @@ const updateCookie = async (
   if (isExperienceClientSideFetched && preferencesExistOnCookie) {
     // If we have some preferences on the cookie, we update client-side experience with those preferences
     // if the name matches
-    updatedExperience = updateExperienceFromCookieConsent({
+    updatedExperience = updateExperienceFromCookieConsentNotices({
       experience,
       cookie: oldCookie,
       debug,
@@ -144,7 +144,7 @@ const init = async (config: FidesConfig) => {
   const initialFides = getInitialFides({
     ...config,
     cookie,
-    updateExperienceFromCookieConsent,
+    updateExperienceFromCookieConsent: updateExperienceFromCookieConsentNotices,
   });
   if (initialFides) {
     Object.assign(_Fides, initialFides);

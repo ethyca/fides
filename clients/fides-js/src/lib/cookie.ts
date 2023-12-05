@@ -280,7 +280,7 @@ export const buildCookieConsentForExperiences = (
  *
  * Returns updated experience with user preferences.
  */
-export const updateExperienceFromCookieConsent = ({
+export const updateExperienceFromCookieConsentNotices = ({
   experience,
   cookie,
   debug,
@@ -301,13 +301,6 @@ export const updateExperienceFromCookieConsent = ({
       : defaultPreference;
     return { ...notice, current_preference: preference };
   });
-
-  // // Handle the TCF case, which has many keys to query
-  // const tcfEntities = buildTcfEntitiesFromCookieAndFidesString(
-  //   experience,
-  //   cookie,
-  //   fidesString
-  // );
 
   if (debug) {
     debugLog(
