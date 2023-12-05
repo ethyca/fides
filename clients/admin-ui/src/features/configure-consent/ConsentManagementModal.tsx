@@ -164,7 +164,7 @@ export const ConsentManagementModal = ({
         </ModalBody>
 
         <ModalFooter>
-          <Button onClick={onClose}>Close</Button>
+          <Button variant="outline" size="sm" onClick={onClose}>
           <Spacer />
         </ModalFooter>
       </ModalContent>
