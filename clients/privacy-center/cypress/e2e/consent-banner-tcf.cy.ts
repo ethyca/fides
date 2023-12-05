@@ -8,12 +8,12 @@ import {
 } from "fides-js";
 import { TCString } from "@iabtechlabtcf/core";
 import { CookieKeyConsent } from "fides-js/src/lib/cookie";
+import { FIDES_SEPARATOR } from "fides-js/src/lib/tcf/constants";
 import {
   API_URL,
   TCF_VERSION_HASH,
   TEST_OVERRIDE_WINDOW_PATH,
 } from "../support/constants";
-import { FIDES_SEPARATOR } from "fides-js/src/lib/tcf/constants";
 import { mockCookie, mockTcfVendorObjects } from "../support/mocks";
 import { OVERRIDE, stubConfig } from "../support/stubs";
 
