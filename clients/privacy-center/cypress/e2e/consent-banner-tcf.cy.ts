@@ -7,7 +7,7 @@ import {
   PrivacyExperience,
 } from "fides-js";
 import { CookieKeyConsent } from "fides-js/src/lib/cookie";
-import { API_URL } from "../support/constants";
+import { API_URL, TCF_VERSION_HASH } from "../support/constants";
 import { mockCookie, mockTcfVendorObjects } from "../support/mocks";
 import { OVERRIDE, stubConfig } from "../support/stubs";
 
@@ -67,7 +67,6 @@ const SPECIAL_FEATURE_1 = {
   name: "Use precise geolocation data",
   served_notice_history_id: "ser_9f3641ce-9863-4a32-b4db-ef1aac9046db",
 };
-const VERSION_HASH = "q34r3qr4";
 
 const checkDefaultExperienceRender = () => {
   // Purposes
@@ -157,7 +156,7 @@ describe("Fides-js TCF", () => {
 
     it("should not render the banner if the saved hashes match", () => {
       const cookie = mockCookie({
-        tcf_version_hash: VERSION_HASH,
+        tcf_version_hash: TCF_VERSION_HASH,
       });
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       cy.fixture("consent/experience_tcf.json").then((experience) => {
