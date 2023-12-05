@@ -490,7 +490,6 @@ class TestPrivacyExperience:
         """Currently, this returns true if the experience is a TCF Overlay type"""
         assert privacy_experience_france_tcf_overlay.get_should_show_banner(db) is True
 
-    @pytest.mark.usefixtures("privacy_preference_history_us_ca_provide")
     def test_get_related_notices(
         self,
         db,
@@ -506,11 +505,7 @@ class TestPrivacyExperience:
 
         notices = privacy_experience.get_related_privacy_notices(db)
         assert notices == [privacy_notice_us_ca_provide]
-        # No preference here, because no user passed in.
         assert notices[0].default_preference == UserConsentPreference.opt_out
-
-        notices = privacy_experience.get_related_privacy_notices(db)
-        assert notices == [privacy_notice_us_ca_provide]
 
     def test_create_multiple_experiences_of_same_component_type(self, db):
         """We can only have one experience per component type per region"""
