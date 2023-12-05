@@ -203,7 +203,13 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                 "message": f"Consent email skipped for '{self.configuration.name}'",
             },
         )
+        # TODO remove in favor of request.privacy_preferences_v2
         for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
+            pref.cache_system_status(
+                db, self.configuration.system_key, ExecutionLogStatus.skipped
+            )
+
+        for pref in privacy_request.privacy_preferences_v2:  # type: ignore[attr-defined]
             pref.cache_system_status(
                 db, self.configuration.system_key, ExecutionLogStatus.skipped
             )
@@ -250,10 +256,11 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             ] = filter_privacy_preferences_for_propagation(
                 self.configuration.system, privacy_request.privacy_preferences
             )  # Remove v1 records
+
             filtered_privacy_preference_v2_records: List[
                 PrivacyPreferenceHistoryV2
             ] = filter_privacy_preferences_for_propagation(
-                self.configuration.system, privacy_request.privacy_preferences
+                self.configuration.system, privacy_request.privacy_preferences_v2
             )
 
             filtered_privacy_preference_records: List[

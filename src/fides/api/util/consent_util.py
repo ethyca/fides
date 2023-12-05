@@ -218,7 +218,20 @@ def add_complete_system_status_for_consent_reporting(
 
     Deeming them relevant if they already had a "pending" log added to them.
     """
+    # TODO deprecate privacy_request.privacy_preferences in favor of privacy_request.privacy_preferences_v2
     for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
+        if (
+            pref.affected_system_status
+            and pref.affected_system_status.get(connection_config.system_key)
+            == ExecutionLogStatus.pending.value
+        ):
+            pref.cache_system_status(
+                db,
+                connection_config.system_key,
+                ExecutionLogStatus.complete,
+            )
+
+    for pref in privacy_request.privacy_preferences_v2:  # type: ignore[attr-defined]
         if (
             pref.affected_system_status
             and pref.affected_system_status.get(connection_config.system_key)
@@ -241,7 +254,20 @@ def add_errored_system_status_for_consent_reporting(
 
     Deeming them relevant if they already had a "pending" log added to them.
     """
+    # TODO deprecate privacy_request.privacy_preferences in favor of privacy_preferences_v2
     for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
+        if (
+            pref.affected_system_status
+            and pref.affected_system_status.get(connection_config.system_key)
+            == ExecutionLogStatus.pending.value
+        ):
+            pref.cache_system_status(
+                db,
+                connection_config.system_key,
+                ExecutionLogStatus.error,
+            )
+
+    for pref in privacy_request.privacy_preferences_v2:  # type: ignore[attr-defined]
         if (
             pref.affected_system_status
             and pref.affected_system_status.get(connection_config.system_key)

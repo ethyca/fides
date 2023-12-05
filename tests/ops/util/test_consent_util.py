@@ -21,7 +21,8 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeRegion,
     PrivacyNoticeTemplate,
 )
-from fides.api.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistoryV2
+from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import DataUse as sql_DataUse
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.util.consent_util import (
@@ -54,19 +55,21 @@ class TestShouldOptIntoService:
         system,
         privacy_request_with_consent_policy,
         privacy_notice,
-        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
         Privacy Notice Data Use = "marketing.advertising"
         System Data Use = "marketing.advertising"
         """
-        pref = PrivacyPreferenceHistory.create(
+        pref = PrivacyPreferenceHistoryV2.create(
             db=db,
             data={
                 "preference": preference,
                 "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
-                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
+                "hashed_fides_user_device": ProvidedIdentity.hash_value(
+                    "165ad0ed-10fb-4a60-9810-e0749346ec16"
+                ),
             },
             check_name=False,
         )
@@ -91,7 +94,6 @@ class TestShouldOptIntoService:
         system,
         privacy_notice_us_ca_provide,
         privacy_request_with_consent_policy,
-        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
@@ -107,12 +109,15 @@ class TestShouldOptIntoService:
         flag_modified(system, "privacy_declarations")
         system.save(db)
 
-        pref = PrivacyPreferenceHistory.create(
+        pref = PrivacyPreferenceHistoryV2.create(
             db=db,
             data={
                 "preference": preference,
                 "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
-                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
+                "hashed_fides_user_device": ProvidedIdentity.hash_value(
+                    "165ad0ed-10fb-4a60-9810-e0749346ec16"
+                ),
             },
             check_name=False,
         )
@@ -136,7 +141,6 @@ class TestShouldOptIntoService:
         system,
         privacy_notice_us_co_provide_service_operations,
         privacy_request_with_consent_policy,
-        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
@@ -149,12 +153,15 @@ class TestShouldOptIntoService:
         flag_modified(system, "privacy_declarations")
         system.save(db)
 
-        pref = PrivacyPreferenceHistory.create(
+        pref = PrivacyPreferenceHistoryV2.create(
             db=db,
             data={
                 "preference": preference,
                 "privacy_notice_history_id": privacy_notice_us_co_provide_service_operations.privacy_notice_history_id,
-                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
+                "hashed_fides_user_device": ProvidedIdentity.hash_value(
+                    "165ad0ed-10fb-4a60-9810-e0749346ec16"
+                ),
             },
             check_name=False,
         )
@@ -178,19 +185,21 @@ class TestShouldOptIntoService:
         system,
         privacy_request_with_consent_policy,
         privacy_notice_fr_provide_service_frontend_only,
-        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "frontend"
         Privacy Notice Data Use = "essential.service" but not checked
         System Data Use = "marketing.advertising"
         """
-        pref = PrivacyPreferenceHistory.create(
+        pref = PrivacyPreferenceHistoryV2.create(
             db=db,
             data={
                 "preference": preference,
                 "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.privacy_notice_history_id,
-                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
+                "hashed_fides_user_device": ProvidedIdentity.hash_value(
+                    "165ad0ed-10fb-4a60-9810-e0749346ec16"
+                ),
             },
             check_name=False,
         )
@@ -213,19 +222,21 @@ class TestShouldOptIntoService:
         db,
         privacy_notice_us_co_provide_service_operations,
         privacy_request_with_consent_policy,
-        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
         Privacy Notice Data Use = "essential.service.operations"
         """
 
-        pref = PrivacyPreferenceHistory.create(
+        pref = PrivacyPreferenceHistoryV2.create(
             db=db,
             data={
                 "preference": preference,
                 "privacy_notice_history_id": privacy_notice_us_co_provide_service_operations.privacy_notice_history_id,
-                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
+                "hashed_fides_user_device": ProvidedIdentity.hash_value(
+                    "165ad0ed-10fb-4a60-9810-e0749346ec16"
+                ),
             },
             check_name=False,
         )
@@ -243,28 +254,33 @@ class TestShouldOptIntoService:
         privacy_request_with_consent_policy,
         privacy_notice,
         privacy_notice_us_ca_provide,
-        fides_user_provided_identity,
     ):
         """
         Privacy Notice Enforcement Level = "system_wide"
         Privacy Notice Data Use = "marketing.advertising" but not checked w/ no system
         other Privacy Notice Data Use = "essential" but not checked w/ no system
         """
-        pref_1 = PrivacyPreferenceHistory.create(
+        pref_1 = PrivacyPreferenceHistoryV2.create(
             db=db,
             data={
                 "preference": "opt_in",
                 "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
-                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
+                "hashed_fides_user_device": ProvidedIdentity.hash_value(
+                    "165ad0ed-10fb-4a60-9810-e0749346ec16"
+                ),
             },
             check_name=False,
         )
-        pref_2 = PrivacyPreferenceHistory.create(
+        pref_2 = PrivacyPreferenceHistoryV2.create(
             db=db,
             data={
                 "preference": "opt_out",
                 "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
-                "fides_user_device_provided_identity_id": fides_user_provided_identity.id,
+                "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
+                "hashed_fides_user_device": ProvidedIdentity.hash_value(
+                    "165ad0ed-10fb-4a60-9810-e0749346ec16"
+                ),
             },
             check_name=False,
         )

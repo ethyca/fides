@@ -1648,7 +1648,7 @@ def privacy_preference_history_us_ca_provide(
             "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.experience_config_history_id,
             "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_in",
-            "privacy_notice_history_id": privacy_notice_us_ca_provide.id,
+            "privacy_notice_history_id": privacy_notice_us_ca_provide.histories[0].id,
             "request_origin": "privacy_center",
             "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
             "user_geography": "us_ca",
