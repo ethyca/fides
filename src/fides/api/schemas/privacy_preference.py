@@ -96,11 +96,11 @@ class ConsentOptionCreate(FidesSchema):
 class FidesStringFidesPreferences(FidesSchema):
     """TCF Preferences that can be unpacked from TC and AC Strings"""
 
-    purpose_consent_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
-    purpose_legitimate_interests_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
-    vendor_consent_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
-    vendor_legitimate_interests_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
-    special_feature_preferences: conlist(TCFSpecialFeatureSave, max_items=200) = []  # type: ignore
+    purpose_consent_preferences: conlist(TCFPurposeSave, max_items=10000) = []  # type: ignore
+    purpose_legitimate_interests_preferences: conlist(TCFPurposeSave, max_items=10000) = []  # type: ignore
+    vendor_consent_preferences: conlist(TCFVendorSave, max_items=10000) = []  # type: ignore
+    vendor_legitimate_interests_preferences: conlist(TCFVendorSave, max_items=10000) = []  # type: ignore
+    special_feature_preferences: conlist(TCFSpecialFeatureSave, max_items=10000) = []  # type: ignore
 
 
 class PrivacyPreferencesRequest(FidesStringFidesPreferences):
@@ -118,11 +118,11 @@ class PrivacyPreferencesRequest(FidesStringFidesPreferences):
         description="If supplied, TC strings and AC strings are decoded and preferences saved for purpose_consent, "
         "purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features"
     )
-    preferences: conlist(ConsentOptionCreate, max_items=200) = []  # type: ignore
-    special_purpose_preferences: conlist(TCFSpecialPurposeSave, max_items=200) = []  # type: ignore
-    feature_preferences: conlist(TCFFeatureSave, max_items=200) = []  # type: ignore
-    system_consent_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
-    system_legitimate_interests_preferences: conlist(TCFVendorSave, max_items=200) = []  # type: ignore
+    preferences: conlist(ConsentOptionCreate, max_items=10000) = []  # type: ignore
+    special_purpose_preferences: conlist(TCFSpecialPurposeSave, max_items=10000) = []  # type: ignore
+    feature_preferences: conlist(TCFFeatureSave, max_items=10000) = []  # type: ignore
+    system_consent_preferences: conlist(TCFVendorSave, max_items=10000) = []  # type: ignore
+    system_legitimate_interests_preferences: conlist(TCFVendorSave, max_items=10000) = []  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
     privacy_experience_id: Optional[SafeStr]
     user_geography: Optional[SafeStr]
