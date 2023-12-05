@@ -27,6 +27,7 @@ interface Props {
   options: FidesOptions;
   experience: PrivacyExperience;
   cookie: FidesCookie;
+  onDismiss: () => void;
   onOpen: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
   renderModalContent: () => VNode;
@@ -38,6 +39,7 @@ const Overlay: FunctionComponent<Props> = ({
   experience,
   options,
   cookie,
+  onDismiss,
   onOpen,
   renderBanner,
   renderModalContent,
@@ -60,7 +62,10 @@ const Overlay: FunctionComponent<Props> = ({
     id: "fides-modal",
     role: "alertdialog",
     title: experience?.experience_config?.title || "",
-    onClose: () => dispatchCloseEvent({ saved: false }),
+    onClose: () => {
+      dispatchCloseEvent({ saved: false });
+      onDismiss();
+    },
   });
 
   const handleOpenModal = useCallback(() => {
