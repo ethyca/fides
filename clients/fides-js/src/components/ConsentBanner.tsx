@@ -1,5 +1,5 @@
 import { h, FunctionComponent, ComponentChildren, VNode } from "preact";
-import { useState, useEffect } from "preact/hooks";
+import { useState, useEffect, useRef } from "preact/hooks";
 import { getConsentContext } from "../lib/consent-context";
 import { ExperienceConfig } from "../lib/consent-types";
 import CloseButton from "./CloseButton";
@@ -35,6 +35,8 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   renderButtonGroup,
   className,
 }) => {
+  const ref = useRef<HTMLDivElement>(null);
+
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -50,19 +52,27 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     };
   }, []);
 
-  // listen for the ESC keypress and treat it as a close event
+  // add listeners for ESC and clicking outside of component
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    const handleEsc = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         onClose();
       }
     };
 
     if (!window.Fides.options.preventDismissal) {
-      document.addEventListener("keydown", handleKeyDown);
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEsc);
 
       return () => {
-        document.removeEventListener("keydown", handleKeyDown);
+        document.removeEventListener("mousedown", handleClickOutside);
+        document.removeEventListener("keydown", handleEsc);
       };
     }
   }, []);
@@ -81,6 +91,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
       className={`fides-banner fides-banner-bottom 
         ${bannerIsOpen ? "" : "fides-banner-hidden"} 
         ${className || ""}`}
+      ref={ref}
     >
       <div id="fides-banner">
         <div id="fides-banner-inner">
