@@ -56,7 +56,9 @@ import {
 } from "./lib/cookie";
 import {
   FidesConfig,
+  FidesOptionsOverrides,
   FidesOverrides,
+  GetPreferencesFnResp,
   OverrideOptions,
   PrivacyExperience,
 } from "./lib/consent-types";
@@ -67,12 +69,13 @@ import {
   initialize,
   getInitialCookie,
   getInitialFides,
-  getOverrides,
+  getOptionsOverrides,
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 
 import { renderOverlay } from "./lib/renderOverlay";
 import { getConsentContext } from "./lib/consent-context";
+import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
   interface Window {
@@ -123,12 +126,20 @@ const updateCookie = async (
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const overrides: Partial<FidesOverrides> = await getOverrides(config);
+  const optionsOverrides: Partial<FidesOptionsOverrides> =
+    getOptionsOverrides();
+  const consentPrefsOverrides: GetPreferencesFnResp | null =
+    await customGetConsentPreferences(config);
+  // DEFER: not implemented - ability to override notice-based consent with the consentPrefsOverrides.consent obj
+  const overrides: Partial<FidesOverrides> = {
+    optionsOverrides,
+    consentPrefsOverrides,
+  };
   // eslint-disable-next-line no-param-reassign
-  config.options = { ...config.options, ...overrides.overrideOptions };
+  config.options = { ...config.options, ...overrides.optionsOverrides };
   const cookie = {
     ...getInitialCookie(config),
-    ...overrides.overrideConsentPrefs?.consent,
+    ...overrides.consentPrefsOverrides?.consent,
   };
   const initialFides = getInitialFides({ ...config, cookie });
   if (initialFides) {
@@ -177,12 +188,14 @@ _Fides = {
     fidesApiUrl: "",
     serverSideFidesApiUrl: "",
     tcfEnabled: false,
+    gppEnabled: false,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
     fidesDisableBanner: false,
     fidesString: null,
     apiOptions: null,
     fidesTcfGdprApplies: false,
+    gppExtensionPath: "",
   },
   fides_meta: {},
   identity: {},

@@ -30,6 +30,7 @@ from fides.api.util.consent_util import (
     add_errored_system_status_for_consent_reporting,
     cache_initial_status_and_identities_for_consent_reporting,
     create_default_experience_config,
+    create_default_tcf_purpose_overrides_on_startup,
     create_privacy_notices_util,
     create_tcf_experiences_on_startup,
     get_fides_user_device_id_provided_identity,
@@ -1289,3 +1290,15 @@ class TestLoadTCFExperiences:
         experience_config = be_exp.experience_config
         assert experience_config.is_default
         assert experience_config.component == ComponentType.tcf_overlay
+
+
+class TestLoadTCFPurposeOverrides:
+    def test_load_tcf_purpose_overrides_on_startup(self, db):
+        """Sanity check on creating TCF purpose overrides"""
+        default_override_objects_added = (
+            create_default_tcf_purpose_overrides_on_startup(db)
+        )
+        assert len(default_override_objects_added) == 11
+        for override in default_override_objects_added:
+            assert override.is_included is True
+            assert override.required_legal_basis is None
