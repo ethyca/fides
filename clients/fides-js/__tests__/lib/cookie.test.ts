@@ -346,11 +346,6 @@ describe("transformTcfPreferencesToCookieKeys", () => {
   it("can handle empty preferences", () => {
     const preferences: TcfSavePreferences = { purpose_consent_preferences: [] };
     const expected: TcfCookieConsent = {
-      purpose_consent_preferences: {},
-      purpose_legitimate_interests_preferences: {},
-      special_feature_preferences: {},
-      vendor_consent_preferences: {},
-      vendor_legitimate_interests_preferences: {},
       system_consent_preferences: {},
       system_legitimate_interests_preferences: {},
     };
@@ -383,11 +378,6 @@ describe("transformTcfPreferencesToCookieKeys", () => {
       ],
     };
     const expected: TcfCookieConsent = {
-      purpose_consent_preferences: { 1: true },
-      purpose_legitimate_interests_preferences: { 1: false },
-      special_feature_preferences: { 1: true, 2: false },
-      vendor_consent_preferences: { 1111: false },
-      vendor_legitimate_interests_preferences: { 1111: true },
       system_consent_preferences: { ctl_test_system: true },
       system_legitimate_interests_preferences: { ctl_test_system: true },
     };
@@ -555,7 +545,7 @@ describe("updateExperienceFromCookieConsent", () => {
       const cookie = {
         ...baseCookie,
         tcf_consent: {
-          purpose_consent_preferences: {
+          system_consent_preferences: {
             1: true,
             2: false,
             555: false,
@@ -566,7 +556,7 @@ describe("updateExperienceFromCookieConsent", () => {
         experience: experienceWithTcf,
         cookie,
       });
-      expect(updatedExperience.tcf_purpose_consents).toEqual([
+      expect(updatedExperience.tcf_system_consents).toEqual([
         { id: 1, current_preference: UserConsentPreference.OPT_IN },
         {
           id: 2,
@@ -599,7 +589,7 @@ describe("updateExperienceFromCookieConsent", () => {
       ...baseCookie,
       consent: { one: true, two: false },
       tcf_consent: {
-        purpose_consent_preferences: {
+        system_consent_preferences: {
           1: true,
           2: false,
         },
@@ -617,7 +607,7 @@ describe("updateExperienceFromCookieConsent", () => {
       },
       { notice_key: "three", current_preference: undefined },
     ]);
-    expect(updatedExperience.tcf_purpose_consents).toEqual([
+    expect(updatedExperience.tcf_system_consents).toEqual([
       { id: 1, current_preference: UserConsentPreference.OPT_IN },
       {
         id: 2,
