@@ -24,6 +24,7 @@ The types of changes are:
 - New purposes endpoint and indices to improve system lookups [#4452](https://github.com/ethyca/fides/pull/4452)
 - Cypress tests for fides.js GPP extension [#4476](https://github.com/ethyca/fides/pull/4476)
 - Add support for global TCF Purpose Overrides [#4464](https://github.com/ethyca/fides/pull/4464)
+- Readonly consent management table and modal [#4456](https://github.com/ethyca/fides/pull/4456), [#4477](https://github.com/ethyca/fides/pull/4477
 
 ### Changed
 - Increased max number of preferences allowed in privacy preference API calls [#4469](https://github.com/ethyca/fides/pull/4469)
@@ -42,7 +43,6 @@ The types of changes are:
 - Added feature flag for separating system name and Compass vendor selector [#4437](https://github.com/ethyca/fides/pull/4437)
 - Fire GPP events per spec [#4433](https://github.com/ethyca/fides/pull/4433)
 - New override option `fides_tcf_gdpr_applies` for setting `gdprApplies` on the CMP API [#4453](https://github.com/ethyca/fides/pull/4453)
-- Readonly consent management table [#4456](https://github.com/ethyca/fides/pull/4456)
 
 ### Changed
 - Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
