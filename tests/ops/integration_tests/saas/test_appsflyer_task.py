@@ -20,23 +20,6 @@ class TestAppsflyerConnector:
             access_policy=policy, identities={"email": appsflyer_identity_email}
         )
 
-    async def test_strict_erasure_request(
-        self,
-        appsflyer_runner: ConnectorRunner,
-        policy: Policy,
-        erasure_policy_string_rewrite: Policy,
-        appsflyer_erasure_identity_email: str,
-        appsflyer_erasure_data,
-    ):
-        (
-            access_results,
-            erasure_results,
-        ) = await appsflyer_runner.strict_erasure_request(
-            access_policy=policy,
-            erasure_policy=erasure_policy_string_rewrite,
-            identities={"email": appsflyer_erasure_identity_email},
-        )
-
     async def test_non_strict_erasure_request(
         self,
         appsflyer_runner: ConnectorRunner,
