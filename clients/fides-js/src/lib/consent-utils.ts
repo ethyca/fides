@@ -4,7 +4,8 @@ import {
   ConsentMechanism,
   EmptyExperience,
   FidesOptions,
-  GpcStatus, OverrideOptions,
+  GpcStatus,
+  OverrideOptions,
   PrivacyExperience,
   PrivacyNotice,
   UserConsentPreference,
@@ -258,7 +259,9 @@ export const shouldResurfaceConsent = (
 /**
  * Get fides override options from a custom path
  */
-export const getWindowObjFromPath = (path: string[]): OverrideOptions | undefined => {
+export const getWindowObjFromPath = (
+  path: string[]
+): OverrideOptions | undefined => {
   if (path[0] === "window") {
     path.shift();
   }
