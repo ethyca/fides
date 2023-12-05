@@ -7,40 +7,31 @@ import {
   useToast,
 } from "@fidesui/react";
 import { useState } from "react";
-import { useSelector } from "react-redux";
 
-import { selectToken } from "~/features/auth";
-import { requestCSVDownload } from "~/features/consent-reporting/consent-reporting.slice";
+import { getErrorMessage } from "~/features/common/helpers";
+import { useLazyDownloadReportQuery } from "~/features/consent-reporting/consent-reporting.slice";
 
 const ConsentReporting = () => {
   const [startDate, setStartDate] = useState<string>();
   const [endDate, setEndDate] = useState<string>();
 
-  const token = useSelector(selectToken);
   const toast = useToast();
 
+  const [downloadReportTrigger, { isLoading }] = useLazyDownloadReportQuery();
+
   const handleDownloadClicked = async () => {
-    let message;
-    try {
-      await requestCSVDownload({ startDate, endDate, token });
-    } catch (error) {
-      if (error instanceof Error) {
-        message = error.message;
-      } else {
-        message = "An unknown error occurred";
-      }
-    }
-    if (message) {
-      toast({
-        description: `${message}`,
-        duration: 5000,
-        status: "error",
-      });
+    const result = await downloadReportTrigger({ startDate, endDate });
+    if (result.isError) {
+      const message = getErrorMessage(
+        result.error,
+        "A problem occurred while generating your consent report.  Please try again."
+      );
+      toast({ status: "error", description: message });
     }
   };
 
   return (
-    <HStack gap={4} maxWidth="720px">
+    <HStack gap={4} maxWidth="720px" data-testid="consent-reporting">
       <InputGroup size="sm" flex={1}>
         <InputLeftAddon borderRadius="md">From</InputLeftAddon>
         <Input
@@ -50,6 +41,7 @@ const ConsentReporting = () => {
           max={endDate || undefined}
           onChange={(e) => setStartDate(e.target.value)}
           borderRadius="md"
+          data-testid="input-from-date"
         />
       </InputGroup>
       <InputGroup size="sm" flex={1}>
@@ -61,9 +53,16 @@ const ConsentReporting = () => {
           min={startDate || undefined}
           onChange={(e) => setEndDate(e.target.value)}
           borderRadius="md"
+          data-testid="input-to-date"
         />
       </InputGroup>
-      <Button onClick={handleDownloadClicked} colorScheme="primary" size="sm">
+      <Button
+        onClick={handleDownloadClicked}
+        isLoading={isLoading}
+        colorScheme="primary"
+        size="sm"
+        data-testid="download-btn"
+      >
         Download report
       </Button>
     </HStack>

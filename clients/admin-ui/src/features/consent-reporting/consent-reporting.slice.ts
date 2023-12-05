@@ -1,4 +1,4 @@
-import { BASE_URL } from "~/constants";
+import { baseApi } from "~/features/common/api.slice";
 
 type DateRange = {
   startDate?: string;
@@ -27,39 +27,29 @@ export function convertDateRangeToSearchParams({
   };
 }
 
-export const requestCSVDownload = async ({
-  startDate,
-  endDate,
-  token,
-}: DateRange & { token: string | null }) => {
-  if (!token) {
-    return null;
-  }
-
-  return fetch(
-    `${BASE_URL}/plus/consent_reporting?${new URLSearchParams({
-      ...convertDateRangeToSearchParams({ startDate, endDate }),
-      download_csv: "true",
-    })}`,
-    {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        Authorization: `Bearer ${token}`,
-        "X-Fides-Source": "fidesops-admin-ui",
+export const consentReportingApi = baseApi.injectEndpoints({
+  endpoints: (build) => ({
+    downloadReport: build.query<any, DateRange>({
+      query: ({ startDate, endDate }) => {
+        const params = {
+          ...convertDateRangeToSearchParams({ startDate, endDate }),
+          download_csv: "true",
+        };
+        return {
+          url: "plus/consent_reporting",
+          params,
+          responseHandler: (response) => response.blob(),
+        };
       },
-    }
-  )
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Got a bad response from the server");
-      }
-      return response.blob();
-    })
-    .then((data) => {
-      const a = document.createElement("a");
-      a.href = window.URL.createObjectURL(data);
-      a.download = "consent-reports.csv";
-      a.click();
-    })
-    .catch((error) => Promise.reject(error));
-};
+      providesTags: ["Consent Reporting"],
+      transformResponse: (data: Blob) => {
+        const a = document.createElement("a");
+        a.href = window.URL.createObjectURL(data);
+        a.download = "consent-reports.csv";
+        a.click();
+      },
+    }),
+  }),
+});
+
+export const { useLazyDownloadReportQuery } = consentReportingApi;

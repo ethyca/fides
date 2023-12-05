@@ -51,6 +51,7 @@ export const baseApi = createApi({
     "Roles",
     "User",
     "Configuration Settings",
+    "Consent Reporting",
   ],
   endpoints: () => ({}),
 });
