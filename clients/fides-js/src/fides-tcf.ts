@@ -96,6 +96,7 @@ import {
 declare global {
   interface Window {
     Fides: Fides;
+    fides_overrides: OverrideOptions;
     __tcfapiLocator?: Window;
     __tcfapi?: (
       command: string,
@@ -103,10 +104,6 @@ declare global {
       callback: (tcData: TCData, success: boolean) => void,
       parameter?: number | string
     ) => void;
-    config: {
-      // DEFER (PROD-1243): support a configurable "custom options" path
-      tc_info: OverrideOptions;
-    };
     __gpp?: GppFunction;
     __gppLocator?: Window;
   }
@@ -219,7 +216,7 @@ const updateCookieAndExperience = async ({
  */
 const init = async (config: FidesConfig) => {
   const optionsOverrides: Partial<FidesOptionsOverrides> =
-    getOptionsOverrides();
+    getOptionsOverrides(config);
   makeStub({
     gdprAppliesDefault: optionsOverrides?.fidesTcfGdprApplies,
   });
@@ -310,6 +307,7 @@ _Fides = {
     apiOptions: null,
     fidesTcfGdprApplies: true,
     gppExtensionPath: "",
+    customOptionsPath: null,
   },
   fides_meta: {},
   identity: {},

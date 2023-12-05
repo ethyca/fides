@@ -8,8 +8,12 @@ import {
 } from "fides-js";
 import { TCString } from "@iabtechlabtcf/core";
 import { CookieKeyConsent } from "fides-js/src/lib/cookie";
+import {
+  API_URL,
+  TCF_VERSION_HASH,
+  TEST_OVERRIDE_WINDOW_PATH,
+} from "../support/constants";
 import { FIDES_SEPARATOR } from "fides-js/src/lib/tcf/constants";
-import { API_URL, TCF_VERSION_HASH } from "../support/constants";
 import { mockCookie, mockTcfVendorObjects } from "../support/mocks";
 import { OVERRIDE, stubConfig } from "../support/stubs";
 
@@ -2543,6 +2547,57 @@ describe("Fides-js TCF", () => {
             options: {
               isOverlayEnabled: true,
               tcfEnabled: true,
+            },
+            experience: experience.items[0],
+          },
+          null,
+          null,
+          null,
+          { fides_string: fidesStringOverride }
+        );
+      });
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+      });
+      // Open the modal
+      cy.get("#fides-modal-link").click();
+
+      // verify CMP API
+      cy.get("@TCFEvent")
+        .its("lastCall.args")
+        .then(([tcData, success]) => {
+          expect(success).to.eql(true);
+          expect(tcData.tcString).to.eql(expectedTCString);
+          expect(tcData.eventStatus).to.eql("cmpuishown");
+          expect(tcData.purpose.consents).to.eql({
+            [PURPOSE_2.id]: false,
+            [PURPOSE_4.id]: false,
+            [PURPOSE_6.id]: false,
+            [PURPOSE_7.id]: true,
+            1: false,
+            2: false,
+            3: false,
+            5: false,
+          });
+          expect(tcData.purpose.legitimateInterests).to.eql({});
+          expect(tcData.vendor.consents).to.eql({});
+          expect(tcData.vendor.legitimateInterests).to.eql({});
+        });
+    });
+
+    it("uses fides_string when set via window obj at custom config path", () => {
+      const fidesStringOverride =
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
+      const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
+      cy.getCookie("fides_string").should("not.exist");
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig(
+          {
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+              // this path is hard-coded in commands.ts for ease of testing
+              customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
             },
             experience: experience.items[0],
           },

@@ -80,10 +80,7 @@ import { customGetConsentPreferences } from "./services/external/preferences";
 declare global {
   interface Window {
     Fides: Fides;
-    config: {
-      // DEFER (PROD-1243): support a configurable "custom options" path
-      tc_info: OverrideOptions;
-    };
+    fides_overrides: OverrideOptions;
   }
 }
 
@@ -127,7 +124,7 @@ const updateCookie = async (
  */
 const init = async (config: FidesConfig) => {
   const optionsOverrides: Partial<FidesOptionsOverrides> =
-    getOptionsOverrides();
+    getOptionsOverrides(config);
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
   // DEFER: not implemented - ability to override notice-based consent with the consentPrefsOverrides.consent obj
@@ -200,6 +197,7 @@ _Fides = {
     apiOptions: null,
     fidesTcfGdprApplies: false,
     gppExtensionPath: "",
+    customOptionsPath: null,
   },
   fides_meta: {},
   identity: {},
