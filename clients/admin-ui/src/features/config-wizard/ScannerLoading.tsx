@@ -7,7 +7,7 @@ import {
   useDisclosure,
 } from "@fidesui/react";
 
-import WarningModal from "~/features/common/WarningModal";
+import WarningModal from "~/features/common/modals/WarningModal";
 
 const warningModalMessage = (
   <>

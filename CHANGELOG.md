@@ -17,11 +17,20 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.25.0...main)
 
+
+### Added
+- Dynamic importing for GPP bundle [#4447](https://github.com/ethyca/fides/pull/4447)
+- Paging to vendors in the TCF overlay [#4463](https://github.com/ethyca/fides/pull/4463)
+- New purposes endpoint and indices to improve system lookups [#4452](https://github.com/ethyca/fides/pull/4452)
+- Add support for global TCF Purpose Overrides [#4464](https://github.com/ethyca/fides/pull/4464)
+
 ### Changed
 - Increased max number of preferences allowed in privacy preference API calls [#4469](https://github.com/ethyca/fides/pull/4469)
 
 ### Fixed
 - Fix type errors when TCF vendors have no dataDeclaration [#4465](https://github.com/ethyca/fides/pull/4465)
+- Fixed an error where editing an AC system would mistakenly lock it for GVL [#4471](https://github.com/ethyca/fides/pull/4471)
+- Refactor custom Get Preferences function to occur after our CMP API initialization [#4466](https://github.com/ethyca/fides/pull/4466)
 
 ## [2.25.0](https://github.com/ethyca/fides/compare/2.24.1...2.25.0)
 
@@ -31,6 +40,7 @@ The types of changes are:
 - Added feature flag for separating system name and Compass vendor selector [#4437](https://github.com/ethyca/fides/pull/4437)
 - Fire GPP events per spec [#4433](https://github.com/ethyca/fides/pull/4433)
 - New override option `fides_tcf_gdpr_applies` for setting `gdprApplies` on the CMP API [#4453](https://github.com/ethyca/fides/pull/4453)
+- Readonly consent management table [#4456](https://github.com/ethyca/fides/pull/4456)
 
 ### Changed
 - Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
