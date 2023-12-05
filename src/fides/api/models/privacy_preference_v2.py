@@ -338,22 +338,6 @@ class PrivacyPreferenceHistoryV2(ConsentReportingMixinV2, Base):
         self.secondary_user_ids = secondary_user_ids
         self.save(db)
 
-    @classmethod
-    def determine_relevant_systems(
-        cls,
-        db: Session,
-        privacy_notice_history: Optional[PrivacyNoticeHistory] = None,
-        tcf_field: Optional[str] = None,
-        tcf_value: Union[Optional[int], Optional[str]] = None,
-    ) -> List[FidesKey]:
-        """Used to take a snapshot of relevant system fides keys before saving privacy preferences
-        for consent reporting
-        """
-        if privacy_notice_history:
-            return privacy_notice_history.calculate_relevant_systems(db)
-
-        return get_relevant_systems_for_tcf_attribute(db, tcf_field, tcf_value)
-
 
 def get_consent_records_by_device_id(
     db: Session,

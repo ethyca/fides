@@ -802,27 +802,6 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
         PrivacyPreferenceHistory, cascade="delete, delete-orphan", single_parent=True
     )
 
-    @classmethod
-    def get_preference_by_type_and_fides_user_device(
-        cls,
-        db: Session,
-        fides_user_provided_identity: ProvidedIdentity,
-        preference_type: ConsentRecordType,
-        preference_value: Union[int, str],
-    ) -> Optional[CurrentPrivacyPreference]:
-        """Retrieves the CurrentPrivacyPreference saved against a notice or TCF component for a given fides user device id"""
-
-        return (
-            db.query(CurrentPrivacyPreference)
-            .filter(
-                CurrentPrivacyPreference.fides_user_device_provided_identity_id
-                == fides_user_provided_identity.id,
-                CurrentPrivacyPreference.__table__.c[preference_type.value]
-                == preference_value,
-            )
-            .first()
-        )
-
 
 class LastServedNotice(LastSavedMixin, Base):
     """Stores the last time a consent attribute was served for a given user.

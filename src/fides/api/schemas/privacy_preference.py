@@ -250,10 +250,10 @@ class LastServedConsentSchema(TCFAttributes):
     privacy_notice_history: Optional[PrivacyNoticeHistorySchema]
 
 
-class ConsentReportingSchema(TCFAttributes):
+class ConsentReportingSchema(FidesSchema):
     """Schema for consent reporting - largely a join of PrivacyPreferenceHistory and PrivacyRequest"""
 
-    id: str = Field(title="The PrivacyPreferenceHistory id")
+    id: str = Field(title="The PrivacyPreferenceHistoryV2 id")
     privacy_request_id: Optional[str] = Field(
         title="The Privacy Request id created to propagate preferences"
     )
@@ -279,7 +279,7 @@ class ConsentReportingSchema(TCFAttributes):
     privacy_notice_history_id: Optional[str] = Field(
         title="The id of the specific Privacy Notice History that the user consented to"
     )
-    preference: UserConsentPreference = Field(
+    preference: Optional[UserConsentPreference] = Field(
         title="The user's preference for the given notice: opt_in, opt_out, or acknowledge"
     )
     user_geography: Optional[SafeStr] = Field(title="Detected geography of the user")
@@ -304,7 +304,8 @@ class ConsentReportingSchema(TCFAttributes):
     served_notice_history_id: Optional[str] = Field(
         title="The id of the record where the notice was served to the end user"
     )
-    tcf_version: Optional[str] = Field(title="The TCF version where applicable")
+    notice_name: Optional[str] = Field(title="The name of the notice")
+    tcf_preferences: Optional[Dict] = Field(title="TCF Preferences saved")
 
 
 class CurrentPrivacyPreferenceSchema(TCFAttributes):

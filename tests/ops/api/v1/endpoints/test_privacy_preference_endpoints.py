@@ -116,7 +116,6 @@ class TestHistoricalPreferences:
         )
         assert response_body["privacy_notice_history_id"] is not None
         assert response_body["preference"] == "opt_out"
-        assert response_body["tcf_version"] is None
         assert response_body["user_geography"] == "us_ca"
         assert response_body["relevant_systems"] == [system.fides_key]
         assert response_body["affected_system_status"] == {system.fides_key: "complete"}
@@ -135,15 +134,18 @@ class TestHistoricalPreferences:
             response_body["privacy_experience_id"]
             == privacy_experience_privacy_center.id
         )
-        assert response_body["served_notice_history_id"] == served_notice_history.id
+        assert (
+            response_body["served_notice_history_id"]
+            == served_notice_history.served_notice_history_id
+        )
+        assert response_body["tcf_preferences"] is None
 
     def test_get_historical_preferences_tcf(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
-        privacy_preference_history_for_tcf_purpose_consent,
-        served_notice_history_for_tcf_purpose,
+        privacy_preference_history_for_tcf,
         privacy_experience_france_overlay,
     ) -> None:
         auth_header = generate_auth_header(scopes=[PRIVACY_PREFERENCE_HISTORY_READ])
@@ -156,9 +158,7 @@ class TestHistoricalPreferences:
 
         response_body = response.json()["items"][0]
 
-        assert (
-            response_body["id"] == privacy_preference_history_for_tcf_purpose_consent.id
-        )
+        assert response_body["id"] == privacy_preference_history_for_tcf.id
         assert response_body["privacy_request_id"] is None
         assert response_body["email"] == "test@email.com"
         assert response_body["phone_number"] is None
@@ -166,24 +166,13 @@ class TestHistoricalPreferences:
             response_body["fides_user_device_id"]
             == "051b219f-20e4-45df-82f7-5eb68a00889f"
         )
-        assert response_body["purpose_consent"] == 8
-        assert response_body["purpose_legitimate_interests"] is None
-        assert response_body["special_purpose"] is None
-        assert response_body["vendor_consent"] is None
-        assert response_body["vendor_legitimate_interests"] is None
-        assert response_body["system_consent"] is None
-        assert response_body["system_legitimate_interests"] is None
-        assert response_body["feature"] is None
-        assert response_body["special_feature"] is None
-        assert response_body["tcf_version"] == "2.0"
-
         assert response_body["request_timestamp"] is not None
         assert response_body["request_origin"] == "tcf_overlay"
         assert response_body["request_status"] is None
         assert response_body["request_type"] == "consent"
         assert response_body["approver_id"] is None
         assert response_body["privacy_notice_history_id"] is None
-        assert response_body["preference"] == "opt_out"
+        assert response_body["preference"] is None
         assert response_body["user_geography"] == "fr_idg"
         assert response_body["relevant_systems"] == []
         assert response_body["affected_system_status"] == {}
@@ -192,7 +181,7 @@ class TestHistoricalPreferences:
             response_body["user_agent"]
             == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24"
         )
-        assert response_body["method"] == "button"
+        assert response_body["method"] == "accept"
         assert response_body["truncated_ip_address"] == "92.158.1.0"
         assert response_body["experience_config_history_id"] is None
         assert (
@@ -201,27 +190,12 @@ class TestHistoricalPreferences:
         )
         assert (
             response_body["served_notice_history_id"]
-            == served_notice_history_for_tcf_purpose.id
+            == privacy_preference_history_for_tcf.served_notice_history_id
         )
 
-    def test_get_historical_preferences_saved_for_system(
-        self,
-        generate_auth_header,
-        api_client,
-        url,
-        privacy_preference_history_for_system,
-    ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_PREFERENCE_HISTORY_READ])
-        response = api_client.get(url, headers=auth_header)
-        assert response.status_code == 200
-        assert len(response.json()["items"]) == 1
         assert (
-            response.json()["items"][0]["system_consent"]
-            == privacy_preference_history_for_system.system_consent
-        )
-        assert (
-            response.json()["items"][0]["preference"]
-            == privacy_preference_history_for_system.preference.value
+            response_body["tcf_preferences"]
+            == privacy_preference_history_for_tcf.tcf_preferences
         )
 
     def test_get_historical_preferences_user_geography_unsupported(
