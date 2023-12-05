@@ -266,7 +266,6 @@ const VendorSelector = ({
           isRequired
           label="System name"
           tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-          disabled={lockedForGVL}
         />
       ) : null}
     </>
