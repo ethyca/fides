@@ -23,6 +23,7 @@ import { FieldArray, Form, Formik } from "formik";
 import {
   CustomCreatableSelect,
   CustomTextInput,
+  Label,
 } from "~/features/common/form/inputs";
 import { useGetSystemPurposeSummaryQuery } from "~/features/plus/plus.slice";
 import { SystemPurposeSummary } from "~/types/api";
@@ -88,6 +89,9 @@ export const ConsentManagementModal = ({
                       disabled
                     />
                   </Box>
+                  {Object.entries(values?.purposes || {}).length > 0 ? (
+                    <Label> Purposes </Label>
+                  ) : null}
                   <FieldArray
                     name="purposes"
                     render={() => (
@@ -164,7 +168,9 @@ export const ConsentManagementModal = ({
         </ModalBody>
 
         <ModalFooter>
-          <Button variant="outline" size="sm" onClick={onClose} />
+          <Button variant="outline" size="sm" onClick={onClose}>
+            Close{" "}
+          </Button>
           <Spacer />
         </ModalFooter>
       </ModalContent>
