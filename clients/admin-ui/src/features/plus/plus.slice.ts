@@ -36,6 +36,7 @@ import {
   Page_SystemHistoryResponse_,
   Page_SystemSummary_,
   ResourceTypes,
+  SystemPurposeSummary,
   SystemScannerStatus,
   SystemScanResponse,
   SystemsDiff,
@@ -298,6 +299,13 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Fides Cloud Config"],
     }),
+    getSystemPurposeSummary: build.query<SystemPurposeSummary, string>({
+      query: (fidesKey: string) => ({
+        url: `plus/system/${fidesKey}/purpose-summary`,
+        method: "GET",
+      }),
+      providesTags: ["System"],
+    }),
     getVendorReport: build.query<
       Page_SystemSummary_,
       {
@@ -472,6 +480,7 @@ export const {
   useGetAllSystemVendorsQuery,
   usePostSystemVendorsMutation,
   useGetSystemHistoryQuery,
+  useGetSystemPurposeSummaryQuery,
   useUpdateCustomAssetMutation,
   usePatchPlusSystemConnectionConfigsMutation,
   useCreatePlusSaasConnectionConfigMutation,

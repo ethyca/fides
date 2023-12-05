@@ -22,6 +22,7 @@ import {
   FidesConfig,
   FidesOptionsOverrides,
   FidesOptions,
+  OverrideOptions,
   PrivacyExperience,
   SaveConsentPreference,
   UserGeolocation,
@@ -30,6 +31,7 @@ import {
   constructFidesRegionString,
   debugLog,
   experienceIsValid,
+  getWindowObjFromPath,
   isPrivacyExperience,
   transformConsentToFidesUserPreference,
   validateOptions,
@@ -152,14 +154,21 @@ const automaticallyApplyGPCPreferences = ({
  * 2) window obj   (second priority)
  * 3) cookie value (last priority)
  */
-export const getOptionsOverrides = (): Partial<FidesOptionsOverrides> => {
+export const getOptionsOverrides = (
+  config: FidesConfig
+): Partial<FidesOptionsOverrides> => {
   const overrideOptions: Partial<FidesOptionsOverrides> = {};
   if (typeof window !== "undefined") {
     // Grab query params if provided in the URL (e.g. "?fides_string=123...")
     const queryParams = new URLSearchParams(window.location.search);
-    // Grab global window object if provided (e.g. window.config.tc_info = { fides_string: "123..." })
-    // DEFER (PROD-1243): support a configurable "custom options" path
-    const windowObj = window.config?.tc_info;
+    // Grab override options if exists (e.g. window.fides_overrides = { fides_string: "123..." })
+    const customPathArr: "" | null | string[] =
+      config.options.customOptionsPath &&
+      config.options.customOptionsPath.split(".");
+    const windowObj: OverrideOptions | undefined =
+      customPathArr && customPathArr.length >= 0
+        ? getWindowObjFromPath(customPathArr)
+        : window.fides_overrides;
 
     // Look for each of the override options in all three locations: query params, window object, cookie
     FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP.forEach(

@@ -311,6 +311,7 @@ export type { Strategy } from "./models/Strategy";
 export type { System } from "./models/System";
 export type { SystemHistoryResponse } from "./models/SystemHistoryResponse";
 export type { SystemMetadata } from "./models/SystemMetadata";
+export type { SystemPurposeSummary } from "./models/SystemPurposeSummary";
 export type { SystemResponse } from "./models/SystemResponse";
 export type { SystemScanHistory } from "./models/SystemScanHistory";
 export type { SystemScannerStatus } from "./models/SystemScannerStatus";
