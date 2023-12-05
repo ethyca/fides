@@ -165,6 +165,7 @@ export const {
   useDeleteSystemConnectionConfigMutation,
   useGetSystemConnectionConfigsQuery,
   usePatchSystemConnectionSecretsMutation,
+  useLazyGetSystemByFidesKeyQuery,
 } = systemApi;
 
 export interface State {

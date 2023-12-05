@@ -7,7 +7,6 @@ import React, {
 } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import ConfirmationModal from "~/features/common/ConfirmationModal";
 import {
   closeModal,
   openModal,
@@ -17,6 +16,7 @@ import {
   unregisterForm,
   updateDirtyFormState,
 } from "~/features/common/hooks/dirty-forms.slice";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 
 /*
  * There needs to be a global promise reference so ensure that

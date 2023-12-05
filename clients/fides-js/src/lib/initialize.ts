@@ -20,10 +20,9 @@ import {
   ConsentMethod,
   EmptyExperience,
   FidesConfig,
-  FidesOptionOverrides,
+  FidesOptionsOverrides,
   FidesOptions,
-  FidesOverrides,
-  GetPreferencesFnResp,
+  OverrideOptions,
   PrivacyExperience,
   SaveConsentPreference,
   UserGeolocation,
@@ -32,6 +31,7 @@ import {
   constructFidesRegionString,
   debugLog,
   experienceIsValid,
+  getWindowObjFromPath,
   isPrivacyExperience,
   transformConsentToFidesUserPreference,
   validateOptions,
@@ -44,7 +44,7 @@ import { resolveConsentValue } from "./consent-value";
 import { initOverlay } from "./consent";
 import { TcfCookieConsent } from "./tcf/types";
 import { FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP } from "./consent-constants";
-import { customGetConsentPreferences } from "../services/external/preferences";
+import { setupExtensions } from "./extensions";
 
 export type Fides = {
   consent: CookieKeyConsent;
@@ -146,8 +146,7 @@ const automaticallyApplyGPCPreferences = ({
 };
 
 /**
- * Gets and validates override options provided through URL query params, cookie, or window obj,
- * and optionally retrieves consent preference overrides if a custom fn was defined in the config.
+ * Gets and validates override options provided through URL query params, cookie, or window obj
  *
  *
  * If the same override option is provided in multiple ways, load the value in this order:
@@ -155,16 +154,21 @@ const automaticallyApplyGPCPreferences = ({
  * 2) window obj   (second priority)
  * 3) cookie value (last priority)
  */
-export const getOverrides = async (
+export const getOptionsOverrides = (
   config: FidesConfig
-): Promise<Partial<FidesOverrides>> => {
-  const overrideOptions: Partial<FidesOptionOverrides> = {};
+): Partial<FidesOptionsOverrides> => {
+  const overrideOptions: Partial<FidesOptionsOverrides> = {};
   if (typeof window !== "undefined") {
     // Grab query params if provided in the URL (e.g. "?fides_string=123...")
     const queryParams = new URLSearchParams(window.location.search);
-    // Grab global window object if provided (e.g. window.config.tc_info = { fides_string: "123..." })
-    // DEFER (PROD-1243): support a configurable "custom options" path
-    const windowObj = window.config?.tc_info;
+    // Grab override options if exists (e.g. window.fides_overrides = { fides_string: "123..." })
+    const customPathArr: "" | null | string[] =
+      config.options.customOptionsPath &&
+      config.options.customOptionsPath.split(".");
+    const windowObj: OverrideOptions | undefined =
+      customPathArr && customPathArr.length >= 0
+        ? getWindowObjFromPath(customPathArr)
+        : window.fides_overrides;
 
     // Look for each of the override options in all three locations: query params, window object, cookie
     FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP.forEach(
@@ -187,12 +191,7 @@ export const getOverrides = async (
       }
     );
   }
-  const overrideConsentPrefs: GetPreferencesFnResp | null =
-    await customGetConsentPreferences(config);
-  if (!overrideOptions.fidesString && overrideConsentPrefs?.fides_string) {
-    overrideOptions.fidesString = overrideConsentPrefs.fides_string;
-  }
-  return { overrideOptions, overrideConsentPrefs };
+  return overrideOptions;
 };
 
 /**
@@ -360,6 +359,11 @@ export const initialize = async ({
       fidesOptions: options,
     });
   }
+
+  // Call extensions
+  // DEFER(PROD#1439): This is likely too late for the GPP stub.
+  // We should move stub code out to the base package and call it right away instead.
+  await setupExtensions(options);
 
   // return an object with the updated Fides values
   return {

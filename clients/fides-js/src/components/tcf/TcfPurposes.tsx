@@ -15,6 +15,7 @@ import { getUniquePurposeRecords, hasLegalBasis } from "../../lib/tcf/purposes";
 import RecordsList from "./RecordsList";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import RadioGroup from "./RadioGroup";
+import EmbeddedVendorList from "./EmbeddedVendorList";
 
 type TCFPurposeRecord =
   | TCFPurposeConsentRecord
@@ -31,19 +32,7 @@ const PurposeDetails = ({ purpose }: { purpose: TCFPurposeRecord }) => {
         </p>
       ))}
 
-      {vendors.length ? (
-        <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
-          <span className="fides-tcf-purpose-vendor-title">
-            Vendors we use for this purpose
-            <span>{vendors.length} vendor(s)</span>
-          </span>
-          <ul className="fides-tcf-purpose-vendor-list">
-            {vendors.map((v) => (
-              <li>{v.name}</li>
-            ))}
-          </ul>
-        </p>
-      ) : null}
+      <EmbeddedVendorList vendors={vendors} />
     </div>
   );
 };
@@ -129,6 +118,8 @@ const TcfPurposes = ({
           onChange({ newEnabledIds, modelType: activeData.purposeModelType })
         }
         renderToggleChild={(purpose) => <PurposeDetails purpose={purpose} />}
+        // This key forces a rerender when legal basis changes, which allows paging to reset properly
+        key={`purpose-record-${activeLegalBasisOption.value}`}
       />
       <RecordsList<TCFSpecialPurposeRecord>
         title="Special purposes"
@@ -139,6 +130,7 @@ const TcfPurposes = ({
         }
         renderToggleChild={(p) => <PurposeDetails purpose={p} />}
         hideToggles
+        key={`special-purpose-record-${activeLegalBasisOption.value}`}
       />
     </div>
   );

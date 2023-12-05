@@ -185,6 +185,14 @@ def enable_ac(config):
     config.consent.ac_enabled = False
 
 
+@pytest.fixture(scope="function")
+def enable_override_vendor_purposes(config):
+    assert config.test_mode
+    config.consent.override_vendor_purposes = True
+    yield config
+    config.consent.override_vendor_purposes = False
+
+
 @pytest.fixture
 def loguru_caplog(caplog):
     handler_id = logger.add(caplog.handler, format="{message}")

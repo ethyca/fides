@@ -15,7 +15,7 @@ import {
 } from "@fidesui/react";
 
 import { useAppSelector } from "~/app/hooks";
-import ConfirmationModal from "~/features/common/ConfirmationModal";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { DataUse, PrivacyDeclarationResponse } from "~/types/api";
 
