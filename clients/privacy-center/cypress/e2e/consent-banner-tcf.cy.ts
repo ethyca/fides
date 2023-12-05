@@ -2313,7 +2313,6 @@ describe("Fides-js TCF", () => {
      * ✅ 5) experience API (via GET /privacy-experience)
      *
      * EXPECTED RESULT: prefers preferences from local cookie instead of from client-side experience
-     * TODO: CURRENTLY FAILING!!
      */
     it("prefers preferences from cookie's fides_string when cookie exists and experience is fetched from API", () => {
       setFidesCookie();
