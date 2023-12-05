@@ -9,13 +9,18 @@ import {
   Spinner,
   Text,
   useToast,
+  Switch,
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { FieldArray, Form, Formik, FormikHelpers } from "formik";
 import type { NextPage } from "next";
+import { useMemo, FC, ChangeEvent } from "react";
 
-import { selectPurposes } from "~/features/common/purpose.slice";
+import {
+  selectPurposes,
+  useGetPurposesQuery,
+} from "~/features/common/purpose.slice";
 import { useAppSelector } from "~/app/hooks";
 import DocsLink from "~/features/common/DocsLink";
 import { CustomSwitch } from "~/features/common/form/inputs";
@@ -28,24 +33,51 @@ import {
   usePatchTcfPurposeOverridesMutation,
   useGetHealthQuery,
 } from "~/features/plus/plus.slice";
-import { TCFPurposeOverrideSchema } from "~/types/api";
+import { TCFPurposeOverrideSchema, TCFLegalBasisEnum } from "~/types/api";
 
-type FormValues = { purposeOverrides: TCFPurposeOverrideSchema[] };
+const LegalBasisContainer: FC<{
+  purpose: number;
+}> = ({ children, purpose }) => {
+  const hiddenPurposes = [1, 3, 4, 5, 6];
+
+  return (
+    <Flex
+      flex="1"
+      justifyContent="center"
+      alignItems="center"
+      borderRight="solid 1px black"
+      height="100%"
+    >
+      {hiddenPurposes.includes(purpose) ? null : <Box>{children}</Box>}
+    </Flex>
+  );
+};
+
+type FormPurposeOverride = {
+  purpose: number;
+  is_included: boolean;
+  is_consent: boolean;
+  is_legitimate_interest: boolean;
+};
+
+type FormValues = { purposeOverrides: FormPurposeOverride[] };
 
 const ConsentConfigPage: NextPage = () => {
   const { isLoading: isHealthCheckLoading } = useGetHealthQuery();
   const { tcf: isTcfEnabled } = useFeatures();
-  const { data: tcfPurposeOverrides } = useGetTcfPurposeOverridesQuery(
-    undefined,
-    {
+  const { data: tcfPurposeOverrides, isLoading: isTcfPurposeOverridesLoading } =
+    useGetTcfPurposeOverridesQuery(undefined, {
       skip: isHealthCheckLoading || !isTcfEnabled,
-    }
-  );
-  const [patchTcfPurposeOverridesTrigger] =
-    usePatchTcfPurposeOverridesMutation();
-  const purposes = useAppSelector(selectPurposes);
+    });
+  const [
+    patchTcfPurposeOverridesTrigger,
+    { isLoading: isLoadingPatchMutation },
+  ] = usePatchTcfPurposeOverridesMutation();
+  const { isLoading: isPurposesLoading } = useGetPurposesQuery();
+  const { purposes: purposeMapping } = useAppSelector(selectPurposes);
 
   const toast = useToast();
+  const isOverrideEnabled = true;
 
   const handleSubmit = async (
     values: FormValues,
@@ -68,40 +100,220 @@ const ConsentConfigPage: NextPage = () => {
       }
     };
 
-    const payload: TCFPurposeOverrideSchema[] = [...values.purposeOverrides];
+    const payload: TCFPurposeOverrideSchema[] = [
+      ...values.purposeOverrides.map((po) => {
+        let required_legal_basis = undefined;
+        if (po.is_consent) {
+          required_legal_basis = TCFLegalBasisEnum.CONSENT;
+        }
+
+        if (po.is_legitimate_interest) {
+          required_legal_basis = TCFLegalBasisEnum.LEGITIMATE_INTERESTS;
+        }
+
+        return {
+          purpose: po.purpose,
+          is_included: po.is_included,
+          required_legal_basis,
+        };
+      }),
+    ];
 
     const result = await patchTcfPurposeOverridesTrigger(payload);
 
     handleResult(result);
   };
 
+  const initialValues = useMemo(() => {
+    return {
+      purposeOverrides: tcfPurposeOverrides
+        ? tcfPurposeOverrides.map((po) => {
+            return {
+              purpose: po.purpose,
+              is_included: po.is_included,
+              is_consent: po.required_legal_basis === TCFLegalBasisEnum.CONSENT,
+              is_legitimate_interest:
+                po.required_legal_basis ===
+                TCFLegalBasisEnum.LEGITIMATE_INTERESTS,
+            } as FormPurposeOverride;
+          })
+        : [],
+    };
+  }, [tcfPurposeOverrides]);
+
   return (
     <Layout title="Consent Configuration">
-      <Box data-testid="consent-configuration">
-        <Heading marginBottom={4} fontSize="2xl">
-          Global Consent Settings
-        </Heading>
-        <Box maxWidth="600px">
-          <Text marginBottom={2} fontSize="md">
-            Manage domains for your organization
-          </Text>
-          <Text mb={10} fontSize="sm">
-            You must add domains associated with your organization to Fides to
-            ensure features such as consent function correctly. For more
-            information on managing domains on Fides, click here{" "}
-            <DocsLink href="https://fid.es/cors-configuration">
-              docs.ethyca.com
-            </DocsLink>
-            .
-          </Text>
-        </Box>
+      {isHealthCheckLoading ||
+      isPurposesLoading ||
+      isTcfPurposeOverridesLoading ? (
+        <Flex justifyContent="center" alignItems="center" height="100%">
+          <Spinner />
+        </Flex>
+      ) : (
+        <Box data-testid="consent-configuration">
+          <Heading marginBottom={4} fontSize="2xl">
+            Global Consent Settings
+          </Heading>
+          <Box maxWidth="600px">
+            <Text marginBottom={2} fontSize="md">
+              TCF status: {isTcfEnabled ? "Enabled ✅" : "Disabled ❌"}
+            </Text>
+            <Text mb={10} fontSize="sm">
+              To disable TCF, please contact your Fides Administrator or Ethyca
+              support
+            </Text>
+            <Text marginBottom={2} fontSize="sm">
+              Override vendor purposes:{" "}
+              <Switch size="sm" colorScheme="purple" isChecked={isOverrideEnabled} isDisabled />
+            </Text>
+            <Text mb={2} fontSize="sm" fontStyle="italic">
+              {isOverrideEnabled
+                ? "The table below allows you to adjust which TCF purposes you allow as part of your user facing notices and business activites."
+                : "Toggle on if you want to globally change any flexiable legal bases or remove TCF purposes from your CMP."}
+            </Text>
+            {isOverrideEnabled ? (
+              <Text marginBottom={10} fontSize="sm">
+                To configure this section, select the purposes you allow and
+                where available, the appropriate legal basis (either Consent or
+                Legitmate Intererest). Read the guide on{" "}
+                <DocsLink href="https://ethyca.com">
+                  {" "}
+                  TCF Override here.{" "}
+                </DocsLink>
+              </Text>
+            ) : null}
+          </Box>
 
-        <Box maxW="600px">
-          {tcfPurposeOverrides
-            ? tcfPurposeOverrides.map((tp) => <div>{tp.purpose} </div>)
-            : null}
+          <Box>
+            <Formik<FormValues>
+              initialValues={initialValues}
+              enableReinitialize
+              onSubmit={handleSubmit}
+              handleChange={(e) => {
+                e;
+              }}
+            >
+              {({ values, dirty, isValid, setFieldValue }) => (
+                <Form>
+                  <FieldArray
+                    name="purposeOverrides"
+                    render={() => (
+                      <Flex flexDirection="column">
+                        <Flex width="100%" borderBottom="solid 1px black">
+                          <Box width="600px" />
+                          <Flex
+                            flex="1"
+                            justifyContent="center"
+                            alignItems="center"
+                          >
+                            <Text>Include in CMP</Text>
+                          </Flex>
+                          <Flex
+                            flex="1"
+                            justifyContent="center"
+                            alignItems="center"
+                          >
+                            <Text>Require Consent</Text>
+                          </Flex>
+                          <Flex
+                            flex="1"
+                            justifyContent="center"
+                            alignItems="center"
+                          >
+                            <Text>Use Legitmate Interest</Text>
+                          </Flex>
+                        </Flex>
+                        {values.purposeOverrides.map((po, index) => {
+                          return (
+                            <Flex
+                              key={po.purpose}
+                              width="100%"
+                              height="40px"
+                              alignItems="center"
+                            >
+                              <Flex
+                                width="600px"
+                                borderRight="solid 1px black"
+                                p={0}
+                                alignItems="center"
+                                height="100%"
+                              >
+                                Purpose {po.purpose}:{" "}
+                                {purposeMapping[po.purpose].name}
+                              </Flex>
+
+                              <Flex
+                                flex="1"
+                                justifyContent="center"
+                                alignItems="center"
+                                borderRight="solid 1px black"
+                                height="100%"
+                              >
+                                <Box>
+                                  <CustomSwitch
+                                    name={`purposeOverrides[${index}].is_included`}
+                                    onChange={(
+                                      e: ChangeEvent<HTMLInputElement>
+                                    ) => {
+                                      if (!e.target.checked) {
+                                        setFieldValue(
+                                          `purposeOverrides[${index}].is_consent`,
+                                          false
+                                        );
+                                        setFieldValue(
+                                          `purposeOverrides[${index}].is_legitimate_interest`,
+                                          false
+                                        );
+                                      }
+                                    }}
+                                  />
+                                </Box>
+                              </Flex>
+                              <LegalBasisContainer purpose={po.purpose}>
+                                <CustomSwitch
+                                  isDisabled={
+                                    !values.purposeOverrides[index]
+                                      .is_included ||
+                                    values.purposeOverrides[index]
+                                      .is_legitimate_interest
+                                  }
+                                  name={`purposeOverrides[${index}].is_consent`}
+                                />
+                              </LegalBasisContainer>
+                              <LegalBasisContainer purpose={po.purpose}>
+                                <CustomSwitch
+                                  isDisabled={
+                                    !values.purposeOverrides[index]
+                                      .is_included ||
+                                    values.purposeOverrides[index].is_consent
+                                  }
+                                  name={`purposeOverrides[${index}].is_legitimate_interest`}
+                                />
+                              </LegalBasisContainer>
+                            </Flex>
+                          );
+                        })}
+                      </Flex>
+                    )}
+                  />
+                  <Box mt={6}>
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="sm"
+                      isDisabled={isLoadingPatchMutation || !dirty || !isValid}
+                      isLoading={isLoadingPatchMutation}
+                      data-testid="save-btn"
+                    >
+                      Save
+                    </Button>
+                  </Box>
+                </Form>
+              )}
+            </Formik>
+          </Box>
         </Box>
-      </Box>
+      )}
     </Layout>
   );
 };

@@ -998,6 +998,7 @@ export const CustomSwitch = ({
   label,
   tooltip,
   variant = "inline",
+  onChange,
   isDisabled,
   ...props
 }: CustomSwitchProps & FieldHookConfig<boolean>) => {
@@ -1008,7 +1009,12 @@ export const CustomSwitch = ({
     <Switch
       name={field.name}
       isChecked={field.checked}
-      onChange={field.onChange}
+      onChange={(e) => {
+        field.onChange(e);
+        if (onChange) {
+          onChange(e);
+        }
+      }}
       onBlur={field.onBlur}
       colorScheme="purple"
       mr={2}

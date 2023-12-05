@@ -432,10 +432,13 @@ const plusApi = baseApi.injectEndpoints({
       TCFPurposeOverrideSchema[],
       TCFPurposeOverrideSchema[]
     >({
-      query: () => ({
-        url: `plus/tcf/purpose_overrides`,
-        method: "PATCH",
-      }),
+      query: (overrides) => {
+        return {
+          url: `plus/tcf/purpose_overrides`,
+          method: "PATCH",
+          body: overrides,
+        };
+      },
       invalidatesTags: ["TCF Purpose Override"],
     }),
   }),
