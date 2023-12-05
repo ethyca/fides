@@ -31,6 +31,7 @@ import {
   constructFidesRegionString,
   debugLog,
   experienceIsValid,
+  getWindowObjFromPath,
   isPrivacyExperience,
   transformConsentToFidesUserPreference,
   validateOptions,
@@ -142,17 +143,6 @@ const automaticallyApplyGPCPreferences = ({
         updateCookieFromNoticePreferences(oldCookie, consentPreferencesToSave),
     });
   }
-};
-
-/**
- * Get fides override options from a custom path
- */
-const getWindowObjFromPath = (path: string[]): OverrideOptions | undefined => {
-  if (path[0] === "window") {
-    path.shift();
-  }
-  // @ts-ignore
-  return path.reduce((record, item) => record[item], window);
 };
 
 /**

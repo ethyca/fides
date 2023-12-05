@@ -91,7 +91,7 @@ export type FidesOptions = {
   // GPP extension path (ex: "/fides-ext-gpp.js")
   gppExtensionPath: string;
 
-  // A custom path to fetch OverrideOptions (e.g. "window.config.overrides")
+  // A custom path to fetch OverrideOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
   customOptionsPath: string | null;
 };
 
