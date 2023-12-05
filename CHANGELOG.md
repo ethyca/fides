@@ -62,6 +62,7 @@ The types of changes are:
 
 ### Added
 - Logging when root user and client credentials are used [#4432](https://github.com/ethyca/fides/pull/4432)
+- Allow for custom path at which to retrieve Fides override options [#4462](https://github.com/ethyca/fides/pull/4462)
 
 ### Changed
 - Run fides with non-root user [#4421](https://github.com/ethyca/fides/pull/4421)

@@ -155,6 +155,7 @@ export default async function handler(
       // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
       apiOptions: null,
       gppExtensionPath: environment.settings.GPP_EXTENSION_PATH,
+      customOptionsPath: null,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
