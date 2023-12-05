@@ -164,7 +164,9 @@ const getWindowObjFromPath = (path: string[]): OverrideOptions | undefined => {
  * 2) window obj   (second priority)
  * 3) cookie value (last priority)
  */
-export const getOptionsOverrides = (config: FidesConfig): Partial<FidesOptionsOverrides> => {
+export const getOptionsOverrides = (
+  config: FidesConfig
+): Partial<FidesOptionsOverrides> => {
   const overrideOptions: Partial<FidesOptionsOverrides> = {};
   if (typeof window !== "undefined") {
     // Grab query params if provided in the URL (e.g. "?fides_string=123...")
