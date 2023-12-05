@@ -28,6 +28,7 @@ The types of changes are:
 
 ### Changed
 - Increased max number of preferences allowed in privacy preference API calls [#4469](https://github.com/ethyca/fides/pull/4469)
+- Reduce size of tcf_consent payload in fides_consent cookie [#4480](https://github.com/ethyca/fides/pull/4480)
 
 ### Fixed
 - Fix type errors when TCF vendors have no dataDeclaration [#4465](https://github.com/ethyca/fides/pull/4465)
