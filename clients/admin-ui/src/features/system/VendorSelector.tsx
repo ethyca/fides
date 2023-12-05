@@ -192,6 +192,7 @@ const VendorSelector = ({
                 menuPosition="absolute"
                 isSearchable
                 isClearable
+                focusBorderColor="primary.600"
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 formatCreateLabel={(_value) => null}
                 chakraStyles={{
@@ -265,7 +266,6 @@ const VendorSelector = ({
           isRequired
           label="System name"
           tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-          disabled={lockedForGVL}
         />
       ) : null}
     </>

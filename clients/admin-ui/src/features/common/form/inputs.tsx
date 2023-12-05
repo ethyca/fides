@@ -103,6 +103,7 @@ export const TextInput = forwardRef(
           type={type}
           pr={isPassword ? "10" : "3"}
           background="white"
+          focusBorderColor="primary.600"
         />
         {isPassword ? (
           <InputRightElement pr="2">
@@ -287,6 +288,7 @@ export const SelectInput = ({
       size={size}
       classNamePrefix="custom-select"
       placeholder={placeholder}
+      focusBorderColor="primary.600"
       chakraStyles={{
         container: (provided) => ({
           ...provided,
@@ -433,6 +435,7 @@ const CreatableSelectInput = ({
       value={selected}
       size={size}
       classNamePrefix="custom-creatable-select"
+      focusBorderColor="primary.600"
       isDisabled={isDisabled}
       chakraStyles={{
         container: (provided) => ({
@@ -784,6 +787,7 @@ export const CustomTextArea = ({
       {...textAreaProps}
       ref={textareaRef}
       style={{ overflowY: resize ? "hidden" : "visible" }}
+      focusBorderColor="primary.600"
       onChange={(event) => {
         resizeTextarea();
         field.onChange(event);
@@ -933,7 +937,7 @@ export const CustomNumberInput = ({
           <Label htmlFor={props.id || props.name}>{label}</Label>
           <Flex alignItems="center">
             <Flex flexDir="column" flexGrow={1} mr="2">
-              <NumberInput>
+              <NumberInput focusBorderColor="primary.600">
                 <NumberInputField />
                 <NumberInputStepper>
                   <NumberIncrementStepper />
@@ -971,6 +975,7 @@ export const CustomNumberInput = ({
           isDisabled={isDisabled}
           data-testid={`input-${field.name}`}
           min={minValue || undefined}
+          focusBorderColor="primary.600"
         >
           <NumberInputField />
           <NumberInputStepper>

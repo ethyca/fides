@@ -17,6 +17,24 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.25.0...main)
 
+
+### Added
+- Dynamic importing for GPP bundle [#4447](https://github.com/ethyca/fides/pull/4447)
+- Paging to vendors in the TCF overlay [#4463](https://github.com/ethyca/fides/pull/4463)
+- New purposes endpoint and indices to improve system lookups [#4452](https://github.com/ethyca/fides/pull/4452)
+- Cypress tests for fides.js GPP extension [#4476](https://github.com/ethyca/fides/pull/4476)
+- Add support for global TCF Purpose Overrides [#4464](https://github.com/ethyca/fides/pull/4464)
+- Readonly consent management table and modal [#4456](https://github.com/ethyca/fides/pull/4456), [#4477](https://github.com/ethyca/fides/pull/4477
+
+### Changed
+- Increased max number of preferences allowed in privacy preference API calls [#4469](https://github.com/ethyca/fides/pull/4469)
+
+### Fixed
+- Fix type errors when TCF vendors have no dataDeclaration [#4465](https://github.com/ethyca/fides/pull/4465)
+- Fixed an error where editing an AC system would mistakenly lock it for GVL [#4471](https://github.com/ethyca/fides/pull/4471)
+- Refactor custom Get Preferences function to occur after our CMP API initialization [#4466](https://github.com/ethyca/fides/pull/4466)
+- Fixed system name being non-editable when locked for GVL [#4475](https://github.com/ethyca/fides/pull/4475)
+
 ## [2.25.0](https://github.com/ethyca/fides/compare/2.24.1...2.25.0)
 
 ### Added
@@ -34,6 +52,7 @@ The types of changes are:
 - Disallow setting `*` and other non URL values for `security.cors_origins` config property via the API [#4438](https://github.com/ethyca/fides/pull/4438)
 - Consent modal hides the opt-in/opt-out buttons if only one privacy notice is enabled [#4441](https://github.com/ethyca/fides/pull/4441)
 - Initialize TCF stub earlier [#4453](https://github.com/ethyca/fides/pull/4453)
+- Change focus outline color of form inputs [#4467](https://github.com/ethyca/fides/pull/4467)
 
 ### Fixed
 - Fixed a bug where selected vendors in "configure consent" add vendor modal were unstyled [#4454](https://github.com/ethyca/fides/pull/4454)

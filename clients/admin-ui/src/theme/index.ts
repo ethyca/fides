@@ -37,6 +37,16 @@ const theme = extendTheme({
         size: "xl",
       },
     },
+    Switch: {
+      baseStyle: {
+        track: {
+          _focus: {
+            boxShadow: "none",
+            outline: "2px solid #272B53",
+          },
+        },
+      },
+    },
   },
 });
 

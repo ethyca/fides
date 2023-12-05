@@ -7,8 +7,8 @@ import {
   PrivacyExperience,
 } from "fides-js";
 import { CookieKeyConsent } from "fides-js/src/lib/cookie";
-import { API_URL } from "../support/constants";
-import { mockCookie } from "../support/mocks";
+import { API_URL, TCF_VERSION_HASH } from "../support/constants";
+import { mockCookie, mockTcfVendorObjects } from "../support/mocks";
 import { OVERRIDE, stubConfig } from "../support/stubs";
 
 const PURPOSE_2 = {
@@ -67,7 +67,6 @@ const SPECIAL_FEATURE_1 = {
   name: "Use precise geolocation data",
   served_notice_history_id: "ser_9f3641ce-9863-4a32-b4db-ef1aac9046db",
 };
-const VERSION_HASH = "q34r3qr4";
 
 const checkDefaultExperienceRender = () => {
   // Purposes
@@ -157,7 +156,7 @@ describe("Fides-js TCF", () => {
 
     it("should not render the banner if the saved hashes match", () => {
       const cookie = mockCookie({
-        tcf_version_hash: VERSION_HASH,
+        tcf_version_hash: TCF_VERSION_HASH,
       });
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -2752,6 +2751,176 @@ describe("Fides-js TCF", () => {
             "gacp.44": true,
           });
         });
+    });
+  });
+
+  describe("paging", () => {
+    const NUM_GVL_VENDORS = 88;
+    const NUM_OTHER_VENDORS = 13;
+    const GVL_IDS = Array(NUM_GVL_VENDORS)
+      .fill(null)
+      .map((_, i) => `gvl.${i}`);
+    const SYSTEM_IDS = Array(NUM_OTHER_VENDORS)
+      .fill(null)
+      .map((_, i) => `ctl_${i}`);
+    const VENDOR_IDS = [...GVL_IDS, ...SYSTEM_IDS];
+
+    beforeEach(() => {
+      cy.fixture("consent/experience_tcf.json").then((payload) => {
+        const experience = payload.items[0];
+        // Clear out existing data
+        experience.tcf_purpose_consents[0].vendors = [];
+        experience.tcf_purpose_legitimate_interests[0].vendors = [];
+        experience.tcf_purpose_consents[0].systems = [];
+        experience.tcf_purpose_legitimate_interests[0].systems = [];
+        experience.tcf_features[0].vendors = [];
+        experience.tcf_features[0].systems = [];
+        experience.tcf_vendor_consents = [];
+        experience.tcf_vendor_legitimate_interests = [];
+        experience.tcf_vendor_relationships = [];
+
+        // Add lots of vendors so that we can page
+        VENDOR_IDS.forEach((id, idx) => {
+          const { record, relationship, embedded } = mockTcfVendorObjects({
+            id,
+            name: `${id} (${idx})`,
+          });
+          const isGvl = id.indexOf("gvl") > -1;
+          if (idx % 2 === 0) {
+            // Fill in consents
+            experience.tcf_vendor_consents.push(record);
+            if (isGvl) {
+              experience.tcf_purpose_consents[0].vendors.push(embedded);
+            } else {
+              experience.tcf_purpose_consents[0].systems.push(embedded);
+            }
+          } else {
+            // Fill in legints
+            experience.tcf_vendor_legitimate_interests.push(record);
+            if (isGvl) {
+              experience.tcf_purpose_legitimate_interests[0].vendors.push(
+                embedded
+              );
+            } else {
+              experience.tcf_purpose_legitimate_interests[0].systems.push(
+                embedded
+              );
+            }
+          }
+          // Fill in relationships and purposes
+          experience.tcf_vendor_relationships.push(relationship);
+          // Fill in features
+          if (id.indexOf("gvl") > -1) {
+            experience.tcf_features[0].vendors.push(embedded);
+          } else {
+            experience.tcf_features[0].systems.push(embedded);
+          }
+          // Also have to add to the gvl obj or else it won't say its an IAB vendor
+          if (isGvl) {
+            const gvlId = id.split("gvl.")[1];
+            experience.gvl.vendors[gvlId] = embedded;
+          }
+        });
+
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+          },
+          experience,
+        });
+      });
+      cy.get("#fides-modal-link").click();
+    });
+
+    it("can page through embedded purposes", () => {
+      cy.get("#fides-panel-Purposes").within(() => {
+        cy.get("span").contains(PURPOSE_4.name).click();
+        const consentIds = VENDOR_IDS.filter((id, idx) => idx % 2 === 0);
+        consentIds.slice(0, 10).forEach((id) => {
+          cy.get(".fides-tcf-purpose-vendor-list").contains(id);
+        });
+        cy.get(".fides-paging-info").contains("1-10 of 51");
+        cy.get(".fides-paging-previous-button").should("be.disabled");
+        // Go to the next page
+        cy.get(".fides-paging-next-button").click();
+        cy.get(".fides-paging-info").contains("11-20 of 51");
+        consentIds.slice(10, 20).forEach((id) => {
+          cy.get(".fides-tcf-purpose-vendor-list").contains(id);
+        });
+        // Can go back to the previous page
+        cy.get(".fides-paging-previous-button").click();
+        cy.get(".fides-paging-info").contains("1-10 of 51");
+        // Check the last page
+        Array(5)
+          .fill(null)
+          .forEach(() => {
+            cy.get(".fides-paging-next-button").click();
+          });
+        cy.get(".fides-paging-info").contains("51-51 of 51");
+        cy.get(".fides-paging-next-button").should("be.disabled");
+
+        // Check legitimate interest
+        const legintIds = GVL_IDS.filter((id, idx) => idx % 2 !== 0);
+        cy.get("button").contains("Legitimate interest").click();
+        cy.get("span").contains(PURPOSE_2.name).click();
+        legintIds.slice(0, 10).forEach((id) => {
+          cy.get(".fides-tcf-purpose-vendor-list").contains(id);
+        });
+        // And that paging reset back to 1
+        cy.get(".fides-paging-info").contains("1-10 of 50");
+      });
+    });
+
+    it("can page through features", () => {
+      cy.get("#fides-tab-Features").click();
+      cy.get("#fides-panel-Features").within(() => {
+        cy.get("span").contains(FEATURE_1.name).click();
+        cy.get(".fides-paging-info").contains("1-10 of 101");
+        VENDOR_IDS.slice(0, 10).forEach((id) => {
+          cy.get(".fides-tcf-purpose-vendor-list").contains(id);
+        });
+      });
+    });
+
+    it("can page through vendors", () => {
+      cy.get("#fides-tab-Vendors").click();
+      cy.get("#fides-panel-Vendors").within(() => {
+        const consentIds = VENDOR_IDS.filter((id, idx) => idx % 2 === 0);
+        consentIds.slice(0, 10).forEach((id) => {
+          cy.get(".fides-notice-toggle-title").contains(id);
+        });
+        cy.get(".fides-record-header").contains("IAB TCF vendors");
+        cy.get(".fides-record-header")
+          .contains("Other vendors")
+          .should("not.exist");
+        cy.get(".fides-paging-info").contains("1-10 of 51");
+        cy.get(".fides-paging-next-button").click();
+        cy.get(".fides-paging-info").contains("11-20 of 51");
+        cy.get(".fides-paging-next-button").click();
+        cy.get(".fides-paging-info").contains("21-30 of 51");
+        cy.get(".fides-paging-next-button").click();
+        cy.get(".fides-paging-info").contains("31-40 of 51");
+        // Now go to a page that will show both IAB and other vendors
+        cy.get(".fides-paging-next-button").click();
+        cy.get(".fides-paging-info").contains("41-50 of 51");
+        cy.get(".fides-record-header").contains("IAB TCF vendors");
+        cy.get(".fides-record-header").contains("Other vendors");
+        // Last page should only have other vendors
+        cy.get(".fides-paging-next-button").click();
+        cy.get(".fides-record-header").contains("Other vendors");
+        cy.get(".fides-record-header")
+          .contains("IAB TCF vendors")
+          .should("not.exist");
+
+        // And spot check legitimate interest
+        const legintIds = VENDOR_IDS.filter((id, idx) => idx % 2 !== 0);
+        cy.get("button").contains("Legitimate interest").click();
+        legintIds.slice(0, 10).forEach((id) => {
+          cy.get(".fides-notice-toggle-title").contains(id);
+        });
+        cy.get(".fides-paging-info").contains("1-10 of 51");
+      });
     });
   });
 });
