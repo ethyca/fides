@@ -31,6 +31,10 @@ import {
   useGetTcfPurposeOverridesQuery,
   usePatchTcfPurposeOverridesMutation,
 } from "~/features/plus/plus.slice";
+import {
+  useGetConfigurationSettingsQuery,
+  usePatchConfigurationSettingsMutation,
+} from "~/features/privacy-requests/privacy-requests.slice";
 import { TCFLegalBasisEnum, TCFPurposeOverrideSchema } from "~/types/api";
 
 const LegalBasisContainer: FC<{
@@ -71,11 +75,38 @@ const ConsentConfigPage: NextPage = () => {
     patchTcfPurposeOverridesTrigger,
     { isLoading: isLoadingPatchMutation },
   ] = usePatchTcfPurposeOverridesMutation();
+  const { data: apiConfigSet, isLoading: isApiConfigSetLoading } =
+    useGetConfigurationSettingsQuery({ api_set: true });
+  const { data: configSet, isLoading: isConfigSetLoading } =
+    useGetConfigurationSettingsQuery({ api_set: false });
+  const [
+    patchConfigSettingsTrigger,
+    { isLoading: isPatchConfigSettingsLoading },
+  ] = usePatchConfigurationSettingsMutation();
+
+  const isOverrideEnabled = useMemo(() => {
+    if (
+      apiConfigSet &&
+      apiConfigSet?.consent &&
+      "override_vendor_purposes" in apiConfigSet.consent
+    ) {
+      return apiConfigSet.consent.override_vendor_purposes;
+    }
+    if (
+      configSet &&
+      configSet?.consent &&
+      "override_vendor_purposes" in configSet.consent
+    ) {
+      return configSet.consent.override_vendor_purposes;
+    }
+
+    return false;
+  }, [apiConfigSet, configSet]);
+
   const { isLoading: isPurposesLoading } = useGetPurposesQuery();
   const { purposes: purposeMapping } = useAppSelector(selectPurposes);
 
   const toast = useToast();
-  const isOverrideEnabled = true;
 
   const handleSubmit = async (
     values: FormValues,
@@ -122,6 +153,28 @@ const ConsentConfigPage: NextPage = () => {
     handleResult(result);
   };
 
+  const handleOverrideOnChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const handleResult = (
+      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+    ) => {
+      toast.closeAll();
+      if (isErrorResult(result)) {
+        const errorMsg = getErrorMessage(
+          result.error,
+          `An unexpected error occurred while saving TCF Purpose Override setting. Please try again.`
+        );
+        toast(errorToastParams(errorMsg));
+      }
+    };
+
+    const result = await patchConfigSettingsTrigger({
+      consent: {
+        override_vendor_purposes: e.target.checked,
+      },
+    });
+    handleResult(result);
+  };
+
   const initialValues = useMemo(
     () => ({
       purposeOverrides: tcfPurposeOverrides
@@ -146,7 +199,9 @@ const ConsentConfigPage: NextPage = () => {
     <Layout title="Consent Configuration">
       {isHealthCheckLoading ||
       isPurposesLoading ||
-      isTcfPurposeOverridesLoading ? (
+      isTcfPurposeOverridesLoading ||
+      isApiConfigSetLoading ||
+      isConfigSetLoading ? (
         <Flex justifyContent="center" alignItems="center" height="100%">
           <Spinner />
         </Flex>
@@ -169,7 +224,8 @@ const ConsentConfigPage: NextPage = () => {
                 size="sm"
                 colorScheme="purple"
                 isChecked={isOverrideEnabled}
-                isDisabled
+                onChange={handleOverrideOnChange}
+                isDisabled={isPatchConfigSettingsLoading}
               />
             </Text>
             <Text mb={2} fontSize="sm" fontStyle="italic">
@@ -190,127 +246,133 @@ const ConsentConfigPage: NextPage = () => {
             ) : null}
           </Box>
 
-          <Box>
-            <Formik<FormValues>
-              initialValues={initialValues}
-              enableReinitialize
-              onSubmit={handleSubmit}
-            >
-              {({ values, dirty, isValid, setFieldValue }) => (
-                <Form>
-                  <FieldArray
-                    name="purposeOverrides"
-                    render={() => (
-                      <Flex flexDirection="column">
-                        <Flex width="100%" borderBottom="solid 1px black">
-                          <Box width="600px" />
-                          <Flex
-                            flex="1"
-                            justifyContent="center"
-                            alignItems="center"
-                          >
-                            <Text>Include in CMP</Text>
-                          </Flex>
-                          <Flex
-                            flex="1"
-                            justifyContent="center"
-                            alignItems="center"
-                          >
-                            <Text>Require Consent</Text>
-                          </Flex>
-                          <Flex
-                            flex="1"
-                            justifyContent="center"
-                            alignItems="center"
-                          >
-                            <Text>Use Legitmate Interest</Text>
-                          </Flex>
-                        </Flex>
-                        {values.purposeOverrides.map((po, index) => (
-                          <Flex
-                            key={po.purpose}
-                            width="100%"
-                            height="40px"
-                            alignItems="center"
-                          >
-                            <Flex
-                              width="600px"
-                              borderRight="solid 1px black"
-                              p={0}
-                              alignItems="center"
-                              height="100%"
-                            >
-                              Purpose {po.purpose}:{" "}
-                              {purposeMapping[po.purpose].name}
-                            </Flex>
-
+          {isOverrideEnabled ? (
+            <Box>
+              <Formik<FormValues>
+                initialValues={initialValues}
+                enableReinitialize
+                onSubmit={handleSubmit}
+              >
+                {({ values, dirty, isValid, setFieldValue }) => (
+                  <Form>
+                    <FieldArray
+                      name="purposeOverrides"
+                      render={() => (
+                        <Flex flexDirection="column">
+                          <Flex width="100%" borderBottom="solid 1px black">
+                            <Box width="600px" />
                             <Flex
                               flex="1"
                               justifyContent="center"
                               alignItems="center"
-                              borderRight="solid 1px black"
-                              height="100%"
                             >
-                              <Box>
-                                <CustomSwitch
-                                  name={`purposeOverrides[${index}].is_included`}
-                                  onChange={(
-                                    e: ChangeEvent<HTMLInputElement>
-                                  ) => {
-                                    if (!e.target.checked) {
-                                      setFieldValue(
-                                        `purposeOverrides[${index}].is_consent`,
-                                        false
-                                      );
-                                      setFieldValue(
-                                        `purposeOverrides[${index}].is_legitimate_interest`,
-                                        false
-                                      );
-                                    }
-                                  }}
-                                />
-                              </Box>
+                              <Text>Include in CMP</Text>
                             </Flex>
-                            <LegalBasisContainer purpose={po.purpose}>
-                              <CustomSwitch
-                                isDisabled={
-                                  !values.purposeOverrides[index].is_included ||
-                                  values.purposeOverrides[index]
-                                    .is_legitimate_interest
-                                }
-                                name={`purposeOverrides[${index}].is_consent`}
-                              />
-                            </LegalBasisContainer>
-                            <LegalBasisContainer purpose={po.purpose}>
-                              <CustomSwitch
-                                isDisabled={
-                                  !values.purposeOverrides[index].is_included ||
-                                  values.purposeOverrides[index].is_consent
-                                }
-                                name={`purposeOverrides[${index}].is_legitimate_interest`}
-                              />
-                            </LegalBasisContainer>
+                            <Flex
+                              flex="1"
+                              justifyContent="center"
+                              alignItems="center"
+                            >
+                              <Text>Require Consent</Text>
+                            </Flex>
+                            <Flex
+                              flex="1"
+                              justifyContent="center"
+                              alignItems="center"
+                            >
+                              <Text>Use Legitmate Interest</Text>
+                            </Flex>
                           </Flex>
-                        ))}
-                      </Flex>
-                    )}
-                  />
-                  <Box mt={6}>
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      size="sm"
-                      isDisabled={isLoadingPatchMutation || !dirty || !isValid}
-                      isLoading={isLoadingPatchMutation}
-                      data-testid="save-btn"
-                    >
-                      Save
-                    </Button>
-                  </Box>
-                </Form>
-              )}
-            </Formik>
-          </Box>
+                          {values.purposeOverrides.map((po, index) => (
+                            <Flex
+                              key={po.purpose}
+                              width="100%"
+                              height="40px"
+                              alignItems="center"
+                            >
+                              <Flex
+                                width="600px"
+                                borderRight="solid 1px black"
+                                p={0}
+                                alignItems="center"
+                                height="100%"
+                              >
+                                Purpose {po.purpose}:{" "}
+                                {purposeMapping[po.purpose].name}
+                              </Flex>
+
+                              <Flex
+                                flex="1"
+                                justifyContent="center"
+                                alignItems="center"
+                                borderRight="solid 1px black"
+                                height="100%"
+                              >
+                                <Box>
+                                  <CustomSwitch
+                                    name={`purposeOverrides[${index}].is_included`}
+                                    onChange={(
+                                      e: ChangeEvent<HTMLInputElement>
+                                    ) => {
+                                      if (!e.target.checked) {
+                                        setFieldValue(
+                                          `purposeOverrides[${index}].is_consent`,
+                                          false
+                                        );
+                                        setFieldValue(
+                                          `purposeOverrides[${index}].is_legitimate_interest`,
+                                          false
+                                        );
+                                      }
+                                    }}
+                                  />
+                                </Box>
+                              </Flex>
+                              <LegalBasisContainer purpose={po.purpose}>
+                                <CustomSwitch
+                                  isDisabled={
+                                    !values.purposeOverrides[index]
+                                      .is_included ||
+                                    values.purposeOverrides[index]
+                                      .is_legitimate_interest
+                                  }
+                                  name={`purposeOverrides[${index}].is_consent`}
+                                />
+                              </LegalBasisContainer>
+                              <LegalBasisContainer purpose={po.purpose}>
+                                <CustomSwitch
+                                  isDisabled={
+                                    !values.purposeOverrides[index]
+                                      .is_included ||
+                                    values.purposeOverrides[index].is_consent
+                                  }
+                                  name={`purposeOverrides[${index}].is_legitimate_interest`}
+                                />
+                              </LegalBasisContainer>
+                            </Flex>
+                          ))}
+                        </Flex>
+                      )}
+                    />
+                    <Box mt={6}>
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        size="sm"
+                        isDisabled={
+                          isLoadingPatchMutation || !dirty || !isValid
+                        }
+                        isLoading={isLoadingPatchMutation}
+                        data-testid="save-btn"
+                      >
+                        Save
+                      </Button>
+                    </Box>
+                  </Form>
+                )}
+              </Formik>
+            </Box>
+          ) : null}
         </Box>
       )}
     </Layout>

@@ -65,6 +65,7 @@ export { ConnectionTestStatus } from "./models/ConnectionTestStatus";
 export { ConnectionType } from "./models/ConnectionType";
 export type { ConnectorParam } from "./models/ConnectorParam";
 export type { Consent } from "./models/Consent";
+export type { ConsentConfig } from "./models/ConsentConfig";
 export { ConsentMechanism } from "./models/ConsentMechanism";
 export { ConsentMethod } from "./models/ConsentMethod";
 export type { ConsentOptionCreate } from "./models/ConsentOptionCreate";

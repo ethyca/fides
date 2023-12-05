@@ -36,7 +36,9 @@ import { ApplicationConfig } from "~/types/api";
 type FormValues = CORSOrigins;
 
 const CORSConfigurationPage: NextPage = () => {
-  const { isLoading: isLoadingGetQuery } = useGetConfigurationSettingsQuery();
+  const { isLoading: isLoadingGetQuery } = useGetConfigurationSettingsQuery({
+    api_set: true,
+  });
   const corsOrigins = useAppSelector(selectCORSOrigins());
   const applicationConfig = useAppSelector(selectApplicationConfig());
   const [putConfigSettingsTrigger, { isLoading: isLoadingPutMutation }] =
