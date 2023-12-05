@@ -2,38 +2,36 @@
 import {
   Box,
   Button,
-  DeleteIcon,
   Flex,
   Heading,
-  IconButton,
   Spinner,
+  Switch,
   Text,
   useToast,
-  Switch,
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { FieldArray, Form, Formik, FormikHelpers } from "formik";
 import type { NextPage } from "next";
-import { useMemo, FC, ChangeEvent } from "react";
+import { ChangeEvent, FC, useMemo } from "react";
 
+import { useAppSelector } from "~/app/hooks";
+import DocsLink from "~/features/common/DocsLink";
+import { useFeatures } from "~/features/common/features";
+import { CustomSwitch } from "~/features/common/form/inputs";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import Layout from "~/features/common/Layout";
 import {
   selectPurposes,
   useGetPurposesQuery,
 } from "~/features/common/purpose.slice";
-import { useAppSelector } from "~/app/hooks";
-import DocsLink from "~/features/common/DocsLink";
-import { CustomSwitch } from "~/features/common/form/inputs";
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import Layout from "~/features/common/Layout";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { useFeatures } from "~/features/common/features";
 import {
+  useGetHealthQuery,
   useGetTcfPurposeOverridesQuery,
   usePatchTcfPurposeOverridesMutation,
-  useGetHealthQuery,
 } from "~/features/plus/plus.slice";
-import { TCFPurposeOverrideSchema, TCFLegalBasisEnum } from "~/types/api";
+import { TCFLegalBasisEnum, TCFPurposeOverrideSchema } from "~/types/api";
 
 const LegalBasisContainer: FC<{
   purpose: number;
@@ -102,19 +100,19 @@ const ConsentConfigPage: NextPage = () => {
 
     const payload: TCFPurposeOverrideSchema[] = [
       ...values.purposeOverrides.map((po) => {
-        let required_legal_basis = undefined;
+        let requiredLegalBasis;
         if (po.is_consent) {
-          required_legal_basis = TCFLegalBasisEnum.CONSENT;
+          requiredLegalBasis = TCFLegalBasisEnum.CONSENT;
         }
 
         if (po.is_legitimate_interest) {
-          required_legal_basis = TCFLegalBasisEnum.LEGITIMATE_INTERESTS;
+          requiredLegalBasis = TCFLegalBasisEnum.LEGITIMATE_INTERESTS;
         }
 
         return {
           purpose: po.purpose,
           is_included: po.is_included,
-          required_legal_basis,
+          required_legal_basis: requiredLegalBasis,
         };
       }),
     ];
@@ -124,22 +122,25 @@ const ConsentConfigPage: NextPage = () => {
     handleResult(result);
   };
 
-  const initialValues = useMemo(() => {
-    return {
+  const initialValues = useMemo(
+    () => ({
       purposeOverrides: tcfPurposeOverrides
-        ? tcfPurposeOverrides.map((po) => {
-            return {
-              purpose: po.purpose,
-              is_included: po.is_included,
-              is_consent: po.required_legal_basis === TCFLegalBasisEnum.CONSENT,
-              is_legitimate_interest:
-                po.required_legal_basis ===
-                TCFLegalBasisEnum.LEGITIMATE_INTERESTS,
-            } as FormPurposeOverride;
-          })
+        ? tcfPurposeOverrides.map(
+            (po) =>
+              ({
+                purpose: po.purpose,
+                is_included: po.is_included,
+                is_consent:
+                  po.required_legal_basis === TCFLegalBasisEnum.CONSENT,
+                is_legitimate_interest:
+                  po.required_legal_basis ===
+                  TCFLegalBasisEnum.LEGITIMATE_INTERESTS,
+              } as FormPurposeOverride)
+          )
         : [],
-    };
-  }, [tcfPurposeOverrides]);
+    }),
+    [tcfPurposeOverrides]
+  );
 
   return (
     <Layout title="Consent Configuration">
@@ -164,7 +165,12 @@ const ConsentConfigPage: NextPage = () => {
             </Text>
             <Text marginBottom={2} fontSize="sm">
               Override vendor purposes:{" "}
-              <Switch size="sm" colorScheme="purple" isChecked={isOverrideEnabled} isDisabled />
+              <Switch
+                size="sm"
+                colorScheme="purple"
+                isChecked={isOverrideEnabled}
+                isDisabled
+              />
             </Text>
             <Text mb={2} fontSize="sm" fontStyle="italic">
               {isOverrideEnabled
@@ -189,9 +195,6 @@ const ConsentConfigPage: NextPage = () => {
               initialValues={initialValues}
               enableReinitialize
               onSubmit={handleSubmit}
-              handleChange={(e) => {
-                e;
-              }}
             >
               {({ values, dirty, isValid, setFieldValue }) => (
                 <Form>
@@ -223,76 +226,72 @@ const ConsentConfigPage: NextPage = () => {
                             <Text>Use Legitmate Interest</Text>
                           </Flex>
                         </Flex>
-                        {values.purposeOverrides.map((po, index) => {
-                          return (
+                        {values.purposeOverrides.map((po, index) => (
+                          <Flex
+                            key={po.purpose}
+                            width="100%"
+                            height="40px"
+                            alignItems="center"
+                          >
                             <Flex
-                              key={po.purpose}
-                              width="100%"
-                              height="40px"
+                              width="600px"
+                              borderRight="solid 1px black"
+                              p={0}
                               alignItems="center"
+                              height="100%"
                             >
-                              <Flex
-                                width="600px"
-                                borderRight="solid 1px black"
-                                p={0}
-                                alignItems="center"
-                                height="100%"
-                              >
-                                Purpose {po.purpose}:{" "}
-                                {purposeMapping[po.purpose].name}
-                              </Flex>
-
-                              <Flex
-                                flex="1"
-                                justifyContent="center"
-                                alignItems="center"
-                                borderRight="solid 1px black"
-                                height="100%"
-                              >
-                                <Box>
-                                  <CustomSwitch
-                                    name={`purposeOverrides[${index}].is_included`}
-                                    onChange={(
-                                      e: ChangeEvent<HTMLInputElement>
-                                    ) => {
-                                      if (!e.target.checked) {
-                                        setFieldValue(
-                                          `purposeOverrides[${index}].is_consent`,
-                                          false
-                                        );
-                                        setFieldValue(
-                                          `purposeOverrides[${index}].is_legitimate_interest`,
-                                          false
-                                        );
-                                      }
-                                    }}
-                                  />
-                                </Box>
-                              </Flex>
-                              <LegalBasisContainer purpose={po.purpose}>
-                                <CustomSwitch
-                                  isDisabled={
-                                    !values.purposeOverrides[index]
-                                      .is_included ||
-                                    values.purposeOverrides[index]
-                                      .is_legitimate_interest
-                                  }
-                                  name={`purposeOverrides[${index}].is_consent`}
-                                />
-                              </LegalBasisContainer>
-                              <LegalBasisContainer purpose={po.purpose}>
-                                <CustomSwitch
-                                  isDisabled={
-                                    !values.purposeOverrides[index]
-                                      .is_included ||
-                                    values.purposeOverrides[index].is_consent
-                                  }
-                                  name={`purposeOverrides[${index}].is_legitimate_interest`}
-                                />
-                              </LegalBasisContainer>
+                              Purpose {po.purpose}:{" "}
+                              {purposeMapping[po.purpose].name}
                             </Flex>
-                          );
-                        })}
+
+                            <Flex
+                              flex="1"
+                              justifyContent="center"
+                              alignItems="center"
+                              borderRight="solid 1px black"
+                              height="100%"
+                            >
+                              <Box>
+                                <CustomSwitch
+                                  name={`purposeOverrides[${index}].is_included`}
+                                  onChange={(
+                                    e: ChangeEvent<HTMLInputElement>
+                                  ) => {
+                                    if (!e.target.checked) {
+                                      setFieldValue(
+                                        `purposeOverrides[${index}].is_consent`,
+                                        false
+                                      );
+                                      setFieldValue(
+                                        `purposeOverrides[${index}].is_legitimate_interest`,
+                                        false
+                                      );
+                                    }
+                                  }}
+                                />
+                              </Box>
+                            </Flex>
+                            <LegalBasisContainer purpose={po.purpose}>
+                              <CustomSwitch
+                                isDisabled={
+                                  !values.purposeOverrides[index].is_included ||
+                                  values.purposeOverrides[index]
+                                    .is_legitimate_interest
+                                }
+                                name={`purposeOverrides[${index}].is_consent`}
+                              />
+                            </LegalBasisContainer>
+                            <LegalBasisContainer purpose={po.purpose}>
+                              <CustomSwitch
+                                isDisabled={
+                                  !values.purposeOverrides[index].is_included ||
+                                  values.purposeOverrides[index].is_consent
+                                }
+                                name={`purposeOverrides[${index}].is_legitimate_interest`}
+                              />
+                            </LegalBasisContainer>
+                          </Flex>
+                        ))}
                       </Flex>
                     )}
                   />

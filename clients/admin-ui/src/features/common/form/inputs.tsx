@@ -989,7 +989,7 @@ export const CustomNumberInput = ({
 };
 
 interface CustomSwitchProps {
-  label: string;
+  label?: string;
   tooltip?: string;
   variant?: "inline" | "condensed" | "stacked";
   isDisabled?: boolean;
@@ -1012,6 +1012,7 @@ export const CustomSwitch = ({
       onChange={(e) => {
         field.onChange(e);
         if (onChange) {
+          // @ts-ignore - it got confused between select/input element events
           onChange(e);
         }
       }}
