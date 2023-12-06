@@ -125,7 +125,7 @@ const ConsentConfigPage: NextPage = () => {
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          `An unexpected error occurred while saving TCF Purpose Overrides. Please try again.`
+          `An unexpected error occurred while saving vendor overrides. Please try again.`
         );
         toast(errorToastParams(errorMsg));
       } else {
