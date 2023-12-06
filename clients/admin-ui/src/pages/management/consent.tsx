@@ -26,6 +26,7 @@ import {
   selectPurposes,
   useGetPurposesQuery,
 } from "~/features/common/purpose.slice";
+import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useGetHealthQuery,
@@ -166,7 +167,7 @@ const ConsentConfigPage: NextPage = () => {
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          `An unexpected error occurred while saving TCF Purpose Override setting. Please try again.`
+          `An unexpected error occurred while saving vendor override settings. Please try again.`
         );
         toast(errorToastParams(errorMsg));
       }
@@ -179,7 +180,6 @@ const ConsentConfigPage: NextPage = () => {
     });
 
     if (e.target.checked) {
-      console.log("toggling off");
       await patchTcfPurposeOverridesTrigger(
         tcfPurposeOverrides!.map((po) => ({
           ...po,
@@ -245,7 +245,7 @@ const ConsentConfigPage: NextPage = () => {
                 fontWeight="medium"
                 color="gray.700"
               >
-                TCF status:{" "}
+                TCF status{" "}
                 {isTcfEnabled ? (
                   <Badge backgroundColor="green.100">Enabled </Badge>
                 ) : (
@@ -259,8 +259,11 @@ const ConsentConfigPage: NextPage = () => {
                 color="gray.700"
               >
                 To {isTcfEnabled ? "disable" : "enable"} TCF, please contact
-                your Fides Administrator or{" "}
-                <DocsLink href="https://ethyca.com">Ethyca support</DocsLink>.
+                your Fides administrator or{" "}
+                <DocsLink href="mailto:support@ethyca.com">
+                  Ethyca support
+                </DocsLink>
+                .
               </Text>
             </Box>
 
@@ -282,13 +285,15 @@ const ConsentConfigPage: NextPage = () => {
               {isTcfEnabled ? (
                 <>
                   <Text
-                    marginBottom={2}
+                    mb={2}
                     fontSize="sm"
                     lineHeight="5"
                     fontWeight="medium"
                     color="gray.700"
                   >
-                    Override vendor purposes:{" "}
+                    Configure overrides for TCF related purposes.
+                  </Text>
+                  <Flex alignItems="center" marginBottom={2}>
                     <Switch
                       size="sm"
                       colorScheme="purple"
@@ -296,7 +301,17 @@ const ConsentConfigPage: NextPage = () => {
                       onChange={handleOverrideOnChange}
                       isDisabled={isPatchConfigSettingsLoading}
                     />
-                  </Text>
+                    <Text
+                      px={2}
+                      fontSize="sm"
+                      lineHeight="5"
+                      fontWeight="medium"
+                      color="gray.700"
+                    >
+                      Override vendor purposes
+                    </Text>
+                    <QuestionTooltip label="Toggle on if you want to globally change any flexible legal bases or remove TCF purposes from your CMP" />
+                  </Flex>
                   <Text
                     mb={2}
                     fontSize="sm"
@@ -306,7 +321,7 @@ const ConsentConfigPage: NextPage = () => {
                   >
                     {isOverrideEnabled
                       ? "The table below allows you to adjust which TCF purposes you allow as part of your user facing notices and business activites."
-                      : "Toggle on if you want to globally change any flexible legal bases or remove TCF purposes from your CMP."}
+                      : null}
                   </Text>
                 </>
               ) : null}
@@ -318,10 +333,10 @@ const ConsentConfigPage: NextPage = () => {
                   color="gray.700"
                 >
                   To configure this section, select the purposes you allow and
-                  where available, the appropriate legal basis (either Consent
-                  or Legitimate Interest). Read the guide on{" "}
-                  <DocsLink href="https://ethyca.com">
-                    TCF Override here.{" "}
+                  where available, the appropriate legal bases (either Consent
+                  or Legitimate Interest).{" "}
+                  <DocsLink href="https://fid.es/tcf-overrides">
+                    Read the guide on vendor overrides here.{" "}
                   </DocsLink>
                 </Text>
               ) : null}
@@ -373,7 +388,7 @@ const ConsentConfigPage: NextPage = () => {
                                 fontWeight="medium"
                                 lineHeight="4"
                               >
-                                Include in CMP
+                                Allowed
                               </Text>
                             </Flex>
                             <Flex
@@ -388,7 +403,7 @@ const ConsentConfigPage: NextPage = () => {
                                 fontWeight="medium"
                                 lineHeight="4"
                               >
-                                Require Consent
+                                Consent
                               </Text>
                             </Flex>
                             <Flex flex="1" alignItems="center">
@@ -398,7 +413,7 @@ const ConsentConfigPage: NextPage = () => {
                                 fontWeight="medium"
                                 lineHeight="4"
                               >
-                                Use Legitmate Interest
+                                Legitimate interest
                               </Text>
                             </Flex>
                           </Flex>
