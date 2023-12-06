@@ -1,6 +1,17 @@
 import { ConsentMethod } from "fides-js";
 import { stubConfig } from "../support/stubs";
 
+function assertDismissCalled() {
+  cy.get("@FidesUpdated")
+    .should("have.been.calledOnce")
+    .its("lastCall.args.0.detail.extraDetails.consentMethod")
+    .then((consentMethod) => {
+      expect(consentMethod).to.eql(ConsentMethod.dismiss);
+    });
+
+  cy.wait("@patchPrivacyPreference");
+}
+
 describe("Banner and overlay dismissal", () => {
   describe("Consent with dismissal allowed", () => {
     beforeEach(() => {
@@ -20,12 +31,7 @@ describe("Banner and overlay dismissal", () => {
         });
         cy.get("#fides-banner").should("not.be.visible");
 
-        cy.get("@FidesUpdated")
-          .should("have.been.calledOnce")
-          .its("lastCall.args.0.detail.extraDetails.consentMethod")
-          .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.dismiss);
-          });
+        assertDismissCalled();
       });
 
       it("Should dismiss the banner by clicking outside", () => {
@@ -33,12 +39,7 @@ describe("Banner and overlay dismissal", () => {
         cy.get("h1").click(); // click outside
         cy.get("#fides-banner").should("not.be.visible");
 
-        cy.get("@FidesUpdated")
-          .should("have.been.calledOnce")
-          .its("lastCall.args.0.detail.extraDetails.consentMethod")
-          .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.dismiss);
-          });
+        assertDismissCalled();
       });
 
       it("Should dismiss the banner by hitting ESC", () => {
@@ -46,12 +47,7 @@ describe("Banner and overlay dismissal", () => {
         cy.get("body").type("{esc}");
         cy.get("#fides-banner").should("not.be.visible");
 
-        cy.get("@FidesUpdated")
-          .should("have.been.calledOnce")
-          .its("lastCall.args.0.detail.extraDetails.consentMethod")
-          .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.dismiss);
-          });
+        assertDismissCalled();
       });
     });
 
@@ -65,12 +61,7 @@ describe("Banner and overlay dismissal", () => {
         });
         cy.get(".fides-modal-content").should("not.be.visible");
 
-        cy.get("@FidesUpdated")
-          .should("have.been.calledOnce")
-          .its("lastCall.args.0.detail.extraDetails.consentMethod")
-          .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.dismiss);
-          });
+        assertDismissCalled();
       });
 
       it("Should dismiss the banner by clicking outside", () => {
@@ -80,12 +71,7 @@ describe("Banner and overlay dismissal", () => {
         cy.get(".fides-modal-overlay").click({ force: true });
         cy.get(".fides-modal-content").should("not.be.visible");
 
-        cy.get("@FidesUpdated")
-          .should("have.been.calledOnce")
-          .its("lastCall.args.0.detail.extraDetails.consentMethod")
-          .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.dismiss);
-          });
+        assertDismissCalled();
       });
 
       it("Should dismiss the banner by hitting ESC", () => {
@@ -95,12 +81,7 @@ describe("Banner and overlay dismissal", () => {
         cy.get("body").type("{esc}");
         cy.get(".fides-modal-content").should("not.be.visible");
 
-        cy.get("@FidesUpdated")
-          .should("have.been.calledOnce")
-          .its("lastCall.args.0.detail.extraDetails.consentMethod")
-          .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.dismiss);
-          });
+        assertDismissCalled();
       });
     });
   });
@@ -197,12 +178,7 @@ describe("Banner and overlay dismissal", () => {
         });
         cy.get("#fides-banner").should("not.be.visible");
 
-        cy.get("@FidesUpdated")
-          .should("have.been.calledOnce")
-          .its("lastCall.args.0.detail.extraDetails.consentMethod")
-          .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.dismiss);
-          });
+        assertDismissCalled();
       });
 
       it("Should dismiss the banner by clicking outside", () => {
@@ -210,12 +186,7 @@ describe("Banner and overlay dismissal", () => {
         cy.get("h1").click(); // click outside
         cy.get("#fides-banner").should("not.be.visible");
 
-        cy.get("@FidesUpdated")
-          .should("have.been.calledOnce")
-          .its("lastCall.args.0.detail.extraDetails.consentMethod")
-          .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.dismiss);
-          });
+        assertDismissCalled();
       });
 
       it("Should dismiss the banner by hitting ESC", () => {
@@ -223,12 +194,7 @@ describe("Banner and overlay dismissal", () => {
         cy.get("body").type("{esc}");
         cy.get("#fides-banner").should("not.be.visible");
 
-        cy.get("@FidesUpdated")
-          .should("have.been.calledOnce")
-          .its("lastCall.args.0.detail.extraDetails.consentMethod")
-          .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.dismiss);
-          });
+        assertDismissCalled();
       });
     });
 
@@ -242,12 +208,7 @@ describe("Banner and overlay dismissal", () => {
         });
         cy.get(".fides-modal-content").should("not.be.visible");
 
-        cy.get("@FidesUpdated")
-          .should("have.been.calledOnce")
-          .its("lastCall.args.0.detail.extraDetails.consentMethod")
-          .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.dismiss);
-          });
+        assertDismissCalled();
       });
 
       it("Should dismiss the overlay by clicking outside", () => {
@@ -257,12 +218,7 @@ describe("Banner and overlay dismissal", () => {
         cy.get(".fides-modal-overlay").click({ force: true });
         cy.get(".fides-modal-content").should("not.be.visible");
 
-        cy.get("@FidesUpdated")
-          .should("have.been.calledOnce")
-          .its("lastCall.args.0.detail.extraDetails.consentMethod")
-          .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.dismiss);
-          });
+        assertDismissCalled();
       });
 
       it("Should dismiss the overlay by hitting ESC", () => {
@@ -272,12 +228,7 @@ describe("Banner and overlay dismissal", () => {
         cy.get("body").type("{esc}");
         cy.get(".fides-modal-content").should("not.be.visible");
 
-        cy.get("@FidesUpdated")
-          .should("have.been.calledOnce")
-          .its("lastCall.args.0.detail.extraDetails.consentMethod")
-          .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.dismiss);
-          });
+        assertDismissCalled();
       });
     });
   });
