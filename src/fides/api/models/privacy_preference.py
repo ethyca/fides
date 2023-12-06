@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, Optional
 
 from sqlalchemy import ARRAY, Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
@@ -15,12 +15,6 @@ from sqlalchemy.orm import Session, relationship
 from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
-from fides.api.common_exceptions import (
-    ConsentHistorySaveError,
-    IdentityNotFoundException,
-    PrivacyNoticeHistoryNotFound,
-    SystemNotFound,
-)
 from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.api.models.privacy_notice import (
     PrivacyNotice,
@@ -33,13 +27,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.util.tcf.tcf_experience_contents import (
-    ConsentRecordType,
-    TCFComponentType,
-)
 from fides.config import CONFIG
-
-CURRENT_TCF_VERSION = "2.2"
 
 
 class RequestOrigin(Enum):
@@ -211,28 +199,6 @@ class ConsentReportingMixin:
             ProvidedIdentity, foreign_keys=[cls.fides_user_device_provided_identity_id]
         )
 
-    @property
-    def consent_record_type(self) -> ConsentRecordType:
-        """Determine the type of record for which a preference was saved
-        or served against based on which field exists"""
-        consent_record_type_mapping = {
-            "privacy_notice_history_id": ConsentRecordType.privacy_notice_id,
-            "purpose_consent": ConsentRecordType.purpose_consent,
-            "purpose_legitimate_interests": ConsentRecordType.purpose_legitimate_interests,
-            "special_purpose": ConsentRecordType.special_purpose,
-            "vendor_consent": ConsentRecordType.vendor_consent,
-            "vendor_legitimate_interests": ConsentRecordType.vendor_legitimate_interests,
-            "system_consent": ConsentRecordType.system_consent,
-            "system_legitimate_interests": ConsentRecordType.system_legitimate_interests,
-            "special_feature": ConsentRecordType.special_feature,
-            "feature": ConsentRecordType.feature,
-        }
-        for field_name, consent_record_type in consent_record_type_mapping.items():
-            if getattr(self, field_name):
-                return consent_record_type
-
-        return ConsentRecordType.privacy_notice_id
-
 
 class ServingComponent(Enum):
     overlay = "overlay"
@@ -240,73 +206,6 @@ class ServingComponent(Enum):
     privacy_center = "privacy_center"
     tcf_overlay = "tcf_overlay"
     tcf_banner = "tcf_banner"
-
-
-def _validate_before_saving_consent_history(
-    db: Session, data: dict[str, Any]
-) -> Tuple[
-    Optional[PrivacyNoticeHistory], Optional[str], Union[Optional[str], Optional[int]]
-]:
-    """
-    Runs some final validation checks before saving that a user was *served*
-    consent components or they *saved* consent preferences
-
-    - Validates that a notice history exists if supplied
-    - Validates that at least one provided identity type is supplied
-    - Validates that a system exists if supplied
-    - Validates that only one of a data use, special purpose, vendor, system_id, feature or special
-    feature exists in request body.  Each record can only store preferences for one attribute at a time.
-    """
-    privacy_notice_history = None
-    if data.get("privacy_notice_history_id"):
-        privacy_notice_history = PrivacyNoticeHistory.get(
-            db=db, object_id=data.get("privacy_notice_history_id")
-        )
-        if not privacy_notice_history:
-            raise PrivacyNoticeHistoryNotFound(
-                f"Can't save consent against invalid privacy notice history '{data.get('privacy_notice_history_id')}'."
-            )
-
-    if not data.get("provided_identity_id") and not data.get(
-        "fides_user_device_provided_identity_id"
-    ):
-        raise IdentityNotFoundException(
-            "Must supply a verified provided identity id or a fides_user_device_provided_identity_id"
-        )
-
-    system_id: Optional[str] = data.get("system_consent") or data.get(
-        "system_legitimate_interests"
-    )
-    if system_id:
-        system = db.query(System).filter(System.id == system_id).first()
-        if not system:
-            raise SystemNotFound(
-                f"Can't save consent against invalid system id '{system_id}'."
-            )
-
-    tcf_attributes: Dict[str, Union[Optional[str], Optional[int]]] = {
-        tcf_key: data[tcf_key]
-        for tcf_key in data.keys() & TCFComponentType.__members__.keys()
-        if data[tcf_key]
-    }
-
-    def only_one_value_supplied(values: List) -> bool:
-        """Readability helper to ensure only one type of consent preference is being saved here"""
-        return sum(item is not None for item in values) == 1
-
-    if not only_one_value_supplied(
-        [privacy_notice_history] + list(tcf_attributes.values())
-    ):
-        raise ConsentHistorySaveError(
-            "Can only save record against a single privacy notice or TCF attribute"
-        )
-
-    tcf_key: Optional[str] = list(tcf_attributes.keys())[0] if tcf_attributes else None
-    tcf_val: Optional[Union[str, int]] = (
-        list(tcf_attributes.values())[0] if tcf_attributes else None
-    )
-
-    return privacy_notice_history, tcf_key, tcf_val
 
 
 class ServedNoticeHistory(ConsentReportingMixin, Base):
@@ -332,82 +231,6 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
             uselist=False,
         )
     )
-
-    @classmethod
-    def create(
-        cls: Type[ServedNoticeHistory],
-        db: Session,
-        *,
-        data: dict[str, Any],
-        check_name: bool = False,
-    ) -> ServedNoticeHistory:
-        """Method that creates a ServedNoticeHistory record and upserts a LastServedNotice record.
-
-        The only difference between this and ServedNoticeHistory.save_notice_served_and_last_notice_served
-        is the response.
-        """
-        history, _ = cls.save_served_notice_history_and_last_notice_served(
-            db, data=data, check_name=check_name
-        )
-        return history
-
-    @classmethod
-    def save_served_notice_history_and_last_notice_served(
-        cls: Type[ServedNoticeHistory],
-        db: Session,
-        *,
-        data: dict[str, Any],
-        check_name: bool = False,
-    ) -> Tuple[ServedNoticeHistory, LastServedNotice]:
-        """Create a ServedNoticeHistory record and then upsert the LastServedNotice record.
-
-        If separate LastServedNotice records exist for both a verified provided identity and a fides user device
-        id provided identity, consolidate when the notice was last served into a single record.
-
-        There is only one LastServedNotice for each PrivacyNotice/ProvidedIdentity.
-        """
-        (
-            privacy_notice_history,
-            tcf_field,
-            tcf_val,
-        ) = _validate_before_saving_consent_history(db, data)
-
-        if tcf_field:
-            data["tcf_version"] = CURRENT_TCF_VERSION
-
-        created_served_notice_history = super().create(
-            db=db, data=data, check_name=check_name
-        )
-
-        last_served_data = {
-            "provided_identity_id": created_served_notice_history.provided_identity_id,
-            "served_notice_history_id": created_served_notice_history.id,
-            "fides_user_device_provided_identity_id": created_served_notice_history.fides_user_device_provided_identity_id,
-        }
-
-        # Add additional data to store the "historical" version of the consent component that was served.
-        # Either the privacy notice history record or the TCF version
-        if privacy_notice_history:
-            last_served_data["privacy_notice_history_id"] = privacy_notice_history.id
-            last_served_data[
-                "privacy_notice_id"
-            ] = privacy_notice_history.privacy_notice_id
-
-        elif tcf_field:
-            last_served_data[tcf_field] = tcf_val
-            last_served_data["tcf_version"] = CURRENT_TCF_VERSION
-
-        upserted_last_served_notice_record = upsert_last_saved_record(
-            db,
-            created_historical_record=created_served_notice_history,
-            current_record_class=LastServedNotice,
-            current_record_data=last_served_data,
-        )
-        assert isinstance(
-            upserted_last_served_notice_record, LastServedNotice
-        )  # For mypy
-
-        return created_served_notice_history, upserted_last_served_notice_record
 
 
 class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
@@ -578,23 +401,6 @@ class LastSavedMixin:
     @declared_attr
     def privacy_notice_history(cls) -> relationship:
         return relationship(PrivacyNoticeHistory)
-
-    @property
-    def record_is_current(self) -> bool:
-        """Returns True if the latest saved preference corresponds to the
-        latest version for this notice
-
-        For TCF - just return True, and don't use the tcf_version to say a preference is outdated. We'll
-        use other criteria to determine if consent needs to be resurfaced.
-        """
-
-        if self.privacy_notice and self.privacy_notice_history_id:
-            return (
-                self.privacy_notice.privacy_notice_history_id
-                == self.privacy_notice_history_id
-            )
-
-        return True
 
 
 class CurrentPrivacyPreference(LastSavedMixin, Base):
@@ -823,102 +629,3 @@ class LastServedNotice(LastSavedMixin, Base):
     served_notice_history = relationship(
         ServedNoticeHistory, cascade="delete, delete-orphan", single_parent=True
     )
-
-    @classmethod
-    def get_last_served_for_record_type_and_fides_user_device(
-        cls,
-        db: Session,
-        fides_user_provided_identity: ProvidedIdentity,
-        record_type: ConsentRecordType,
-        preference_value: Union[str, int],
-    ) -> Optional[LastServedNotice]:
-        """Retrieves the CurrentPrivacyPreference for the user with the given identity
-        and the served preference type/value"""
-        return (
-            db.query(LastServedNotice)
-            .filter(
-                LastServedNotice.fides_user_device_provided_identity_id
-                == fides_user_provided_identity.id,
-                LastServedNotice.__table__.c[record_type.value] == preference_value,
-            )
-            .first()
-        )
-
-
-def upsert_last_saved_record(
-    db: Session,
-    created_historical_record: Union[PrivacyPreferenceHistory, ServedNoticeHistory],
-    current_record_class: Union[Type[CurrentPrivacyPreference], Type[LastServedNotice]],
-    current_record_data: Dict[str, str],
-) -> Union[CurrentPrivacyPreference, LastServedNotice]:
-    """
-    Upserts our record of when a user was served consent or when the last saved their preferences for a given notice.
-
-    After we save historical records, this method is called to update a separate table that stores just our most
-    recently saved record.
-
-    If we have historical records for multiple identities, and we determine they are the same identity,
-    their preferences are consolidated into the same record.
-    """
-    existing_record_for_provided_identity: Optional[
-        Union[CurrentPrivacyPreference, LastServedNotice]
-    ] = None
-
-    field_val = getattr(
-        created_historical_record, created_historical_record.consent_record_type.value
-    )
-
-    # Check if we have "current" records for the ProvidedIdentity (usu an email or phone)/Privacy Notice
-    if created_historical_record.provided_identity_id:
-        existing_record_for_provided_identity = (
-            db.query(current_record_class)  # type: ignore[assignment]
-            .filter(
-                current_record_class.provided_identity_id
-                == created_historical_record.provided_identity_id,
-                current_record_class.__table__.c[
-                    created_historical_record.consent_record_type.value
-                ]
-                == field_val,
-            )
-            .first()
-        )
-
-    # Check if we have "current" records for the Fides User Device ID and the Privacy Notice
-    existing_record_for_fides_user_device: Optional[
-        Union[CurrentPrivacyPreference, LastServedNotice]
-    ] = None
-    if created_historical_record.fides_user_device_provided_identity_id:
-        existing_record_for_fides_user_device = (
-            db.query(current_record_class)  # type: ignore[assignment]
-            .filter(
-                current_record_class.fides_user_device_provided_identity_id
-                == created_historical_record.fides_user_device_provided_identity_id,
-                current_record_class.__table__.c[
-                    created_historical_record.consent_record_type.value
-                ]
-                == field_val,
-            )
-            .first()
-        )
-
-    if (
-        existing_record_for_provided_identity
-        and existing_record_for_fides_user_device
-        and existing_record_for_provided_identity
-        != existing_record_for_fides_user_device
-    ):
-        # If both exist and were saved separately, let's delete one so we can consolidate.
-        # Let's consider these identities as belonging to the same user.
-        existing_record_for_fides_user_device.delete(db)
-
-    current_record: Optional[Union[CurrentPrivacyPreference, LastServedNotice]] = (
-        existing_record_for_provided_identity or existing_record_for_fides_user_device
-    )
-    if current_record:
-        current_record.update(db=db, data=current_record_data)
-    else:
-        current_record = current_record_class.create(
-            db=db, data=current_record_data, check_name=False
-        )
-
-    return current_record

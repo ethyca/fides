@@ -1681,7 +1681,7 @@ def privacy_notice_eu_cy_provide_service_frontend_only(db: Session) -> Generator
 @pytest.fixture(scope="function")
 def privacy_preference_history_fr_provide_service_frontend_only(
     db: Session,
-    privacy_notice_us_ca_provide,
+    privacy_notice_fr_provide_service_frontend_only,
     privacy_experience_privacy_center,
     served_notice_history,
 ) -> Generator:
@@ -1694,7 +1694,9 @@ def privacy_preference_history_fr_provide_service_frontend_only(
             "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.experience_config_history_id,
             "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_out",
-            "privacy_notice_history_id": privacy_notice_us_ca_provide.histories[0].id,
+            "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.histories[
+                0
+            ].id,
             "request_origin": "privacy_center",
             "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
             "user_geography": "fr_idg",
