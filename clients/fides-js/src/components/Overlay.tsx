@@ -27,7 +27,6 @@ interface Props {
   options: FidesOptions;
   experience: PrivacyExperience;
   cookie: FidesCookie;
-  onDismiss: () => void;
   onOpen: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
   renderModalContent: () => VNode;
@@ -39,7 +38,6 @@ const Overlay: FunctionComponent<Props> = ({
   experience,
   options,
   cookie,
-  onDismiss,
   onOpen,
   renderBanner,
   renderModalContent,
@@ -64,7 +62,6 @@ const Overlay: FunctionComponent<Props> = ({
     title: experience?.experience_config?.title || "",
     onClose: () => {
       dispatchCloseEvent({ saved: false });
-      onDismiss();
     },
   });
 
