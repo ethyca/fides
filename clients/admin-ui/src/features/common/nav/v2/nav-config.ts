@@ -176,6 +176,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
+        title: "Consent",
+        path: routes.GLOABL_CONSENT_CONFIG_ROUTE,
+        requiresPlus: true,
+        requiresFidesCloud: false,
+        scopes: [
+          ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_READ,
+          ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_UPDATE,
+        ],
+      },
+      {
         title: "About Fides",
         path: routes.ABOUT_ROUTE,
         scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features
