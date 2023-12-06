@@ -51,7 +51,7 @@ import { shopify } from "./integrations/shopify";
 import {
   FidesCookie,
   buildCookieConsentForExperiences,
-  updateExperienceFromCookieConsent,
+  updateExperienceFromCookieConsentNotices,
   consentCookieObjHasSomeConsentSet,
 } from "./lib/cookie";
 import {
@@ -80,10 +80,7 @@ import { customGetConsentPreferences } from "./services/external/preferences";
 declare global {
   interface Window {
     Fides: Fides;
-    config: {
-      // DEFER (PROD-1243): support a configurable "custom options" path
-      tc_info: OverrideOptions;
-    };
+    fides_overrides: OverrideOptions;
   }
 }
 
@@ -104,7 +101,7 @@ const updateCookie = async (
   if (isExperienceClientSideFetched && preferencesExistOnCookie) {
     // If we have some preferences on the cookie, we update client-side experience with those preferences
     // if the name matches
-    updatedExperience = updateExperienceFromCookieConsent({
+    updatedExperience = updateExperienceFromCookieConsentNotices({
       experience,
       cookie: oldCookie,
       debug,
@@ -127,7 +124,7 @@ const updateCookie = async (
  */
 const init = async (config: FidesConfig) => {
   const optionsOverrides: Partial<FidesOptionsOverrides> =
-    getOptionsOverrides();
+    getOptionsOverrides(config);
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
   // DEFER: not implemented - ability to override notice-based consent with the consentPrefsOverrides.consent obj
@@ -141,7 +138,11 @@ const init = async (config: FidesConfig) => {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
   };
-  const initialFides = getInitialFides({ ...config, cookie });
+  const initialFides = getInitialFides({
+    ...config,
+    cookie,
+    updateExperienceFromCookieConsent: updateExperienceFromCookieConsentNotices,
+  });
   if (initialFides) {
     Object.assign(_Fides, initialFides);
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
@@ -196,7 +197,8 @@ _Fides = {
     apiOptions: null,
     fidesTcfGdprApplies: false,
     gppExtensionPath: "",
-    preventDismissal: false,
+    customOptionsPath: null,
+    preventDismissal: false
   },
   fides_meta: {},
   identity: {},
