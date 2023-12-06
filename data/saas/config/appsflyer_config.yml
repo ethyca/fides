@@ -12,7 +12,8 @@ saas_config:
       description: Your Appsflyer domain
     - name: identity_value
       description: The identity value that is returned for the end user email being submitted.
-      label: Identity Value
+    - name: property_id
+      description: String representing the mobile app to which this request is scoped.
     # identity value is one we need to get from the customer
 
   client_config:
@@ -34,14 +35,18 @@ saas_config:
           method: POST
           path: /api/gdpr/v1/opendsr_requests
           body: >
-            {   "subject_request_id":"<UUID ver4>", 
+            {   "subject_request_id":"<privacy_req_id>", 
             "subject_request_type":"erasure", 
             "submitted_time":"2023-05-15T10:00:00Z",  "platform": "android", 
             "subject_identities":[    {    
-            "identity_type":"android_advertising_id",   
+            "identity_type":"appsflyer_id",   
             "identity_value":"<identity_value>",   
             "identity_format":"raw"   }  ],  "api_version":"0.1", 
             "property_id":"com.madeup.app",  "status_callback_urls":[   
             "https://examplecontroller.com/opengdpr_callbacks"  ] }
 
+# appsflyer_id is hardcoded in this case as my understanding is that the identity_value that will be provided to us is of this type.
+# should probably also set submitted time to something like 'now'
+
 ### Marc you are not done yet. Remove this comment only when you're DONE with this config
+### Remember to ensure that the descriptions are included and the user guide!

@@ -19,8 +19,9 @@ secrets = get_secrets("appsflyer")
 def appsflyer_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "appsflyer.domain") or secrets["domain"],
-        # add the rest of your secrets here
         "email": pydash.get(saas_config, "appsflyer.email") or secrets["email"],
+        "identity_value": pydash.get(saas_config, "appsflyer.email")
+        or secrets["identity_value"],
         "token": pydash.get(saas_config, "appsflyer.token") or secrets["token"],
     }
 

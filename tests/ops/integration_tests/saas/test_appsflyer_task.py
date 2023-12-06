@@ -36,3 +36,4 @@ class TestAppsflyerConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": appsflyer_erasure_identity_email},
         )
+        assert erasure_results == {"appsflyer_instance:user": 1}
