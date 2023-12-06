@@ -164,14 +164,14 @@ class GenericConsentEmailConnector(BaseEmailConnector):
         # PrivacyPreferenceHistory soon to be deprecated
         new_workflow_consent_preferences_v1: List[
             PrivacyPreferenceHistory
-        ] = filter_privacy_preferences_for_propagation(
+        ] = filter_privacy_preferences_for_propagation(  # type: ignore[assignment]
             self.configuration.system,
             privacy_request.privacy_preferences,  # type: ignore[attr-defined]
         )
 
         new_workflow_consent_preferences_v2: List[
             PrivacyPreferenceHistoryV2
-        ] = filter_privacy_preferences_for_propagation(
+        ] = filter_privacy_preferences_for_propagation(  # type: ignore[assignment]
             self.configuration.system,
             privacy_request.privacy_preferences_v2,  # type: ignore[attr-defined]
         )
@@ -253,13 +253,13 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             # Privacy preferences for new workflow
             filtered_privacy_preference_v1_records: List[
                 PrivacyPreferenceHistory
-            ] = filter_privacy_preferences_for_propagation(
+            ] = filter_privacy_preferences_for_propagation(  # type: ignore[assignment]
                 self.configuration.system, privacy_request.privacy_preferences
             )  # Remove v1 records
 
             filtered_privacy_preference_v2_records: List[
                 PrivacyPreferenceHistoryV2
-            ] = filter_privacy_preferences_for_propagation(
+            ] = filter_privacy_preferences_for_propagation(  # type: ignore[assignment]
                 self.configuration.system, privacy_request.privacy_preferences_v2
             )
 

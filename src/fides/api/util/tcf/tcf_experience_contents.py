@@ -1,15 +1,9 @@
 # mypy: disable-error-code="arg-type, attr-defined, assignment"
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
-from fideslang.gvl import (
-    MAPPED_PURPOSES,
-    MAPPED_SPECIAL_PURPOSES,
-    feature_id_to_feature_name,
-    purpose_to_data_use,
-)
+from fideslang.gvl import MAPPED_PURPOSES, MAPPED_SPECIAL_PURPOSES
 from fideslang.models import LegalBasisForProcessingEnum
-from fideslang.validation import FidesKey
 from sqlalchemy import and_, case, not_, or_
 from sqlalchemy.orm import Query, Session
 from sqlalchemy.sql import Alias

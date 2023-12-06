@@ -306,7 +306,7 @@ class PrivacyExperience(Base):
             has_tcf_contents = False
             for (
                 tcf_section_name,
-                corresponding_db_field_name,
+                _,
             ) in TCF_SECTION_MAPPING.items():
                 # Now supplement the TCF Experience with this new section
                 tcf_section: List = getattr(base_tcf_contents, tcf_section_name)

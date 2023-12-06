@@ -170,7 +170,7 @@ def cache_initial_status_and_identities_for_consent_reporting(
     privacy_request: PrivacyRequest,
     connection_config: ConnectionConfig,
     relevant_preferences: List[
-        Union[PrivacyPreferenceHistory, PrivacyPreferenceHistory]
+        Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]
     ],
     relevant_user_identities: Dict[str, Any],
 ) -> None:

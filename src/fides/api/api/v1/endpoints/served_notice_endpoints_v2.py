@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from fastapi import BackgroundTasks, Depends, HTTPException, Request, Response
 from loguru import logger
@@ -22,6 +22,7 @@ from fides.api.common_exceptions import (
     IdentityNotFoundException,
     PrivacyNoticeHistoryNotFound,
 )
+from fides.api.custom_types import SafeStr
 from fides.api.db.ctl_session import sync_session
 from fides.api.models.privacy_experience import PrivacyExperience
 from fides.api.models.privacy_notice import PrivacyNoticeHistory
@@ -190,7 +191,7 @@ def save_consent_served_to_user_v2(
 
     get_privacy_experience_or_error(db, data.privacy_experience_id)
 
-    fides_user_device: str = get_fides_user_device_id_from_request(
+    fides_user_device: Optional[str] = get_fides_user_device_id_from_request(
         data.browser_identity, throw_exception=True
     )
 
@@ -204,7 +205,7 @@ def save_consent_served_to_user_v2(
             fides_user_device=fides_user_device,
         )
 
-        served: Dict = last_served_record.served
+        served: Dict = last_served_record.served or {}
         # Overriding privacy notice history ids on response so previously saved
         # data isn't returned
         served["privacy_notice_history_ids"] = data.privacy_notice_history_ids
@@ -248,7 +249,7 @@ def save_last_served_and_prep_task_data(
     last_served_notice: LastServedNoticeV2 = save_consent_served_for_identities_v2(
         db=db,
         consent_identity_data=identities_data,
-        attributes_served=RecordsServed(**dict(request_data)).dict(),
+        attributes_served=RecordsServed(**dict(request_data)),
     )
 
     served_notice_history_id: str = (
@@ -277,7 +278,7 @@ class LastServedSchema(ConsentIdentitiesSchema):
     """Prepares Last Served Data before save, collapsing
     into one record"""
 
-    served: Optional[RecordsServed] = None
+    served: RecordsServed
 
 
 def consolidate_identities(
@@ -304,14 +305,14 @@ def consolidate_identities(
 def save_consent_served_for_identities_v2(
     db: Session,
     consent_identity_data: ConsentIdentitiesSchema,
-    attributes_served: Dict[str, List],
+    attributes_served: RecordsServed,
 ) -> LastServedNoticeV2:
     """Upsert a LastServedNoticeV2 record for the given user"""
 
     # Prepare the request data to be in LastServedNoticeV2 format
     data: LastServedSchema = LastServedSchema(
         **consent_identity_data.dict(),
-        served=attributes_served,
+        served=attributes_served.dict(),
     )
 
     # Fetch records that have any of that matching identifiers in the current request,
@@ -325,7 +326,7 @@ def save_consent_served_for_identities_v2(
     ).order_by(LastServedNoticeV2.created_at.desc())
 
     if existing_user_records.first():
-        retained_record: LastServedNoticeV2 = existing_user_records.first()
+        retained_record: LastServedNoticeV2 = existing_user_records.first()  # type: ignore[assignment]
         records_to_delete: List[str] = []
 
         combined_email: Optional[str] = None
@@ -333,7 +334,7 @@ def save_consent_served_for_identities_v2(
         combined_device: Optional[str] = None
 
         # Retain records of Privacy Notices served that are not in the current request.
-        combined_notices_served = set()
+        combined_notices_served: Set[SafeStr] = set()
         for record in existing_user_records:
             # Combine non-null identifiers, prioritizing more recently used first
             if not combined_email and record.email:
@@ -349,16 +350,16 @@ def save_consent_served_for_identities_v2(
                 records_to_delete.append(record.id)
 
             # Combine existing privacy notices served
-            existing_notices_served: List[int] = (record.served or {}).get(
+            existing_notices_served: List[SafeStr] = (record.served or {}).get(
                 "privacy_notice_history_ids", []
             )
             combined_notices_served.update(existing_notices_served)
 
         # Now override the combined previous served with the latest served from the request
         combined_notices_served.update(
-            attributes_served.get("privacy_notice_history_ids") or []
+            attributes_served.privacy_notice_history_ids or []
         )
-        attributes_served["privacy_notice_history_ids"] = list(combined_notices_served)
+        attributes_served.privacy_notice_history_ids = list(combined_notices_served)
         data.served = attributes_served
 
         last_served_data: Dict = data.dict()
