@@ -15,8 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.25.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.26.0...main)
 
+## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
 ### Added
 - Dynamic importing for GPP bundle [#4447](https://github.com/ethyca/fides/pull/4447)
