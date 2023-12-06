@@ -24,14 +24,13 @@ The types of changes are:
 - New purposes endpoint and indices to improve system lookups [#4452](https://github.com/ethyca/fides/pull/4452)
 - Cypress tests for fides.js GPP extension [#4476](https://github.com/ethyca/fides/pull/4476)
 - Add support for global TCF Purpose Overrides [#4464](https://github.com/ethyca/fides/pull/4464)
+- TCF override management [#4484](https://github.com/ethyca/fides/pull/4484)
 - Readonly consent management table and modal [#4456](https://github.com/ethyca/fides/pull/4456), [#4477](https://github.com/ethyca/fides/pull/4477)
 - Access and erasure support for Gong [#4461](https://github.com/ethyca/fides/pull/4461)
 
 ### Changed
 - Increased max number of preferences allowed in privacy preference API calls [#4469](https://github.com/ethyca/fides/pull/4469)
 - Reduce size of tcf_consent payload in fides_consent cookie [#4480](https://github.com/ethyca/fides/pull/4480)
-
-### Changed
 - Change log level for FidesUserPermission retrieval to `debug` [#4482](https://github.com/ethyca/fides/pull/4482)
 
 ### Fixed
