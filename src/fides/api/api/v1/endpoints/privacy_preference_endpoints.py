@@ -15,22 +15,14 @@ from fides.api.api.deps import get_db
 from fides.api.custom_types import SafeStr
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeHistory
-from fides.api.models.privacy_preference import CurrentPrivacyPreference
 from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistoryV2
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.oauth.utils import verify_oauth_client
-from fides.api.schemas.privacy_preference import (
-    ConsentReportingSchema,
-    CurrentPrivacyPreferenceReportingSchema,
-)
+from fides.api.schemas.privacy_preference import ConsentReportingSchema
 from fides.api.util.api_router import APIRouter
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
-from fides.common.api.scope_registry import (
-    CURRENT_PRIVACY_PREFERENCE_READ,
-    PRIVACY_PREFERENCE_HISTORY_READ,
-)
+from fides.common.api.scope_registry import PRIVACY_PREFERENCE_HISTORY_READ
 from fides.common.api.v1.urn_registry import (
-    CURRENT_PRIVACY_PREFERENCES_REPORT,
     HISTORICAL_PRIVACY_PREFERENCES_REPORT,
     V1_URL_PREFIX,
 )

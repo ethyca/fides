@@ -26,7 +26,6 @@ from fides.api.models.privacy_notice import (
     check_conflicting_data_uses,
     check_conflicting_notice_keys,
 )
-from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistoryV2
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
@@ -59,19 +58,15 @@ UNESCAPE_SAFESTR_HEADER = "unescape-safestr"
 
 def filter_privacy_preferences_for_propagation(
     system: Optional[System],
-    privacy_preferences: List[
-        Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]
-    ],
-) -> List[Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]]:
+    privacy_preferences: List[PrivacyPreferenceHistoryV2],
+) -> List[PrivacyPreferenceHistoryV2]:
     """Filter privacy preferences on a privacy request to just the ones that should be considered for third party
     consent propagation.
 
     Only applies to preferences saved for privacy notices here, not against individual TCF components.
     """
 
-    propagatable_preferences: List[
-        Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]
-    ] = [
+    propagatable_preferences: List[PrivacyPreferenceHistoryV2] = [
         pref
         for pref in privacy_preferences
         if pref.privacy_notice_history
@@ -83,9 +78,7 @@ def filter_privacy_preferences_for_propagation(
     if not system:
         return propagatable_preferences
 
-    filtered_on_use: List[
-        Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]
-    ] = []
+    filtered_on_use: List[PrivacyPreferenceHistoryV2] = []
     for pref in propagatable_preferences:
         if (
             pref.privacy_notice_history
@@ -97,9 +90,7 @@ def filter_privacy_preferences_for_propagation(
 
 def should_opt_in_to_service(
     system: Optional[System], privacy_request: PrivacyRequest
-) -> Tuple[
-    Optional[bool], List[Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]]
-]:
+) -> Tuple[Optional[bool], List[PrivacyPreferenceHistoryV2]]:
     """
     For SaaS Connectors, examine the Privacy Preferences and collapse this information into a single should we opt in? (True),
     should we opt out? (False) or should we do nothing? (None).
@@ -128,17 +119,10 @@ def should_opt_in_to_service(
             [],  # Don't need to return the filtered preferences, this is just relevant for the new workflow
         )
 
-    # NEW WORKFLOW
-    # Privacy Preferences v1 to soon be deprecated
-    privacy_preferences_v1 = filter_privacy_preferences_for_propagation(
-        system,
-        privacy_request.privacy_preferences,  # type: ignore[attr-defined]
-    )
-    privacy_preferences_v2 = filter_privacy_preferences_for_propagation(
+    relevant_preferences = filter_privacy_preferences_for_propagation(
         system,
         privacy_request.privacy_preferences_v2,  # type: ignore[attr-defined]
     )
-    relevant_preferences = privacy_preferences_v1 + privacy_preferences_v2
     if not relevant_preferences:
         return None, []  # We should do nothing here
 
@@ -153,9 +137,7 @@ def should_opt_in_to_service(
     )
 
     # Hopefully rare final filtering in case there are conflicting preferences
-    filtered_preferences: List[
-        Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]
-    ] = [
+    filtered_preferences: List[PrivacyPreferenceHistoryV2] = [
         pref
         for pref in relevant_preferences
         if pref.preference == preference_to_propagate
@@ -169,9 +151,7 @@ def cache_initial_status_and_identities_for_consent_reporting(
     db: Session,
     privacy_request: PrivacyRequest,
     connection_config: ConnectionConfig,
-    relevant_preferences: List[
-        Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]
-    ],
+    relevant_preferences: List[PrivacyPreferenceHistoryV2],
     relevant_user_identities: Dict[str, Any],
 ) -> None:
     """Add a pending system status and cache relevant identities on the applicable PrivacyPreferenceHistory (soon
@@ -182,20 +162,6 @@ def cache_initial_status_and_identities_for_consent_reporting(
     Typically used when *some* but not all privacy preferences are relevant.  Otherwise,
     other methods just mark all the preferences as skipped.
     """
-
-    # TODO remove workflow for privacy_request.privacy_preferences in favor of
-    # privacy_preferences_v2
-    for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
-        if pref in relevant_preferences:
-            pref.update_secondary_user_ids(db, relevant_user_identities)
-            pref.cache_system_status(
-                db, connection_config.system_key, ExecutionLogStatus.pending
-            )
-        else:
-            pref.cache_system_status(
-                db, connection_config.system_key, ExecutionLogStatus.skipped
-            )
-
     for pref in privacy_request.privacy_preferences_v2:  # type: ignore[attr-defined]
         if pref in relevant_preferences:
             pref.update_secondary_user_ids(db, relevant_user_identities)
@@ -218,19 +184,6 @@ def add_complete_system_status_for_consent_reporting(
 
     Deeming them relevant if they already had a "pending" log added to them.
     """
-    # TODO deprecate privacy_request.privacy_preferences in favor of privacy_request.privacy_preferences_v2
-    for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
-        if (
-            pref.affected_system_status
-            and pref.affected_system_status.get(connection_config.system_key)
-            == ExecutionLogStatus.pending.value
-        ):
-            pref.cache_system_status(
-                db,
-                connection_config.system_key,
-                ExecutionLogStatus.complete,
-            )
-
     for pref in privacy_request.privacy_preferences_v2:  # type: ignore[attr-defined]
         if (
             pref.affected_system_status
@@ -254,19 +207,6 @@ def add_errored_system_status_for_consent_reporting(
 
     Deeming them relevant if they already had a "pending" log added to them.
     """
-    # TODO deprecate privacy_request.privacy_preferences in favor of privacy_preferences_v2
-    for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
-        if (
-            pref.affected_system_status
-            and pref.affected_system_status.get(connection_config.system_key)
-            == ExecutionLogStatus.pending.value
-        ):
-            pref.cache_system_status(
-                db,
-                connection_config.system_key,
-                ExecutionLogStatus.error,
-            )
-
     for pref in privacy_request.privacy_preferences_v2:  # type: ignore[attr-defined]
         if (
             pref.affected_system_status

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from sqlalchemy import ARRAY, Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
@@ -11,7 +11,7 @@ from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
@@ -21,12 +21,7 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeHistory,
     UserConsentPreference,
 )
-from fides.api.models.privacy_request import (
-    ExecutionLogStatus,
-    PrivacyRequest,
-    ProvidedIdentity,
-)
-from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+from fides.api.models.privacy_request import PrivacyRequest, ProvidedIdentity
 from fides.config import CONFIG
 
 
@@ -208,14 +203,21 @@ class ServingComponent(Enum):
     tcf_banner = "tcf_banner"
 
 
-class ServedNoticeHistory(ConsentReportingMixin, Base):
-    """A historical record of every time a resource was served in the UI to which an end user could consent
+class DeprecatedServedNoticeHistory(ConsentReportingMixin, Base):
+    """
+    ***DEPRECATED*** in favor of ServedNoticeHistoryV2
+
+    A historical record of every time a resource was served in the UI to which an end user could consent
 
     This might be a privacy notice, a purpose, special purpose, feature, special feature, vendor, or system.
 
     The name "ServedNoticeHistory" comes from where we originally just stored the history of every time a notice was
     served, but this table was later expanded to store when TCF attributes like purposes, special purposes, etc. were stored
     """
+
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "servednoticehistory"
 
     acknowledge_mode = Column(
         Boolean,
@@ -225,7 +227,7 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
 
     last_served_record = (
         relationship(  # Only exists if this is the same as the Last Served Notice
-            "LastServedNotice",
+            "DeprecatedLastServedNotice",
             back_populates="served_notice_history",
             cascade="all, delete",
             uselist=False,
@@ -233,12 +235,19 @@ class ServedNoticeHistory(ConsentReportingMixin, Base):
     )
 
 
-class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
-    """The DB ORM model for storing PrivacyPreferenceHistory, used for saving
+class DeprecatedPrivacyPreferenceHistory(ConsentReportingMixin, Base):
+    """
+    ***DEPRECATED*** in favor of PrivacyPreferenceHistoryV2
+
+    The DB ORM model for storing PrivacyPreferenceHistory, used for saving
     every time consent preferences are saved for reporting purposes.
 
     Soon to be deprecated in favor of PrivacyPreferenceHistoryv2
     """
+
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "privacypreferencehistory"
 
     # Systems capable of propagating their consent, and their status.  If the preference is
     # not relevant for the system, or we couldn't propagate a preference, the status is skipped
@@ -274,15 +283,16 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
 
     # The record of where we served the notice in the frontend, for conversion purposes
     served_notice_history_id = Column(
-        String, ForeignKey(ServedNoticeHistory.id), index=True
+        String, ForeignKey(DeprecatedServedNoticeHistory.id), index=True
     )
 
     # Relationships
-    privacy_request = relationship(PrivacyRequest, backref="privacy_preferences")
-    served_notice_history = relationship(ServedNoticeHistory, backref="served_notices")
+    served_notice_history = relationship(
+        DeprecatedServedNoticeHistory, backref="served_notices"
+    )
 
     current_privacy_preference = relationship(  # Only exists if this is the same as the Current Privacy Preference
-        "CurrentPrivacyPreference",
+        "DeprecatedCurrentPrivacyPreference",
         back_populates="privacy_preference_history",
         cascade="all, delete",
         uselist=False,
@@ -293,31 +303,6 @@ class PrivacyPreferenceHistory(ConsentReportingMixin, Base):
         if self.privacy_notice_history:
             return self.privacy_notice_history.privacy_notice_id
         return None
-
-    def cache_system_status(
-        self, db: Session, system: str, status: ExecutionLogStatus
-    ) -> None:
-        """Update the cached affected system status for consent reporting
-
-        Typically this should just be called for consent connectors only.
-        If no request is made or email is sent, this should be called with a status of skipped.
-        """
-        if not self.affected_system_status:
-            self.affected_system_status = {}
-        self.affected_system_status[system] = status.value
-        self.save(db)
-
-    def update_secondary_user_ids(
-        self, db: Session, new_identities: Dict[str, Any]
-    ) -> None:
-        """Update secondary user identities for consent reporting
-
-        The intent is to only put identities here that we intend to send to third party systems.
-        """
-        secondary_user_ids = self.secondary_user_ids or {}
-        secondary_user_ids.update(new_identities)
-        self.secondary_user_ids = secondary_user_ids
-        self.save(db)
 
 
 class LastSavedMixin:
@@ -403,16 +388,26 @@ class LastSavedMixin:
         return relationship(PrivacyNoticeHistory)
 
 
-class CurrentPrivacyPreference(LastSavedMixin, Base):
-    """Stores only the user's most recently saved preference for a given privacy notice
+class DeprecatedCurrentPrivacyPreference(LastSavedMixin, Base):
+    """
+    ***DEPRECATED*** in favor of CurrentPrivacyPreference
+
+    Stores only the user's most recently saved preference for a given privacy notice
 
     The specific privacy notice history and privacy preference history record are linked as well.
     """
 
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "currentprivacypreference"
+
     preference = Column(EnumColumn(UserConsentPreference), nullable=False, index=True)
 
     privacy_preference_history_id = Column(
-        String, ForeignKey(PrivacyPreferenceHistory.id), nullable=False, index=True
+        String,
+        ForeignKey(DeprecatedPrivacyPreferenceHistory.id),
+        nullable=False,
+        index=True,
     )
 
     __table_args__ = (
@@ -504,12 +499,17 @@ class CurrentPrivacyPreference(LastSavedMixin, Base):
 
     # Relationships
     privacy_preference_history = relationship(
-        PrivacyPreferenceHistory, cascade="delete, delete-orphan", single_parent=True
+        DeprecatedPrivacyPreferenceHistory,
+        cascade="delete, delete-orphan",
+        single_parent=True,
     )
 
 
-class LastServedNotice(LastSavedMixin, Base):
-    """Stores the last time a consent attribute was served for a given user.
+class DeprecatedLastServedNotice(LastSavedMixin, Base):
+    """
+    ***DEPRECATED*** in favor of LastServedNoticeV2
+
+    Stores the last time a consent attribute was served for a given user.
 
     Also consolidates serving consent among various user identities.
 
@@ -518,8 +518,12 @@ class LastServedNotice(LastSavedMixin, Base):
     to end users.
     """
 
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "lastservednotice"
+
     served_notice_history_id = Column(
-        String, ForeignKey(ServedNoticeHistory.id), nullable=False, index=True
+        String, ForeignKey(DeprecatedServedNoticeHistory.id), nullable=False, index=True
     )
 
     __table_args__ = (
@@ -627,5 +631,7 @@ class LastServedNotice(LastSavedMixin, Base):
 
     # Relationships
     served_notice_history = relationship(
-        ServedNoticeHistory, cascade="delete, delete-orphan", single_parent=True
+        DeprecatedServedNoticeHistory,
+        cascade="delete, delete-orphan",
+        single_parent=True,
     )

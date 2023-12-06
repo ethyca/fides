@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from loguru import logger
 from sqlalchemy.orm import Query, Session
@@ -14,7 +14,6 @@ from fides.api.models.privacy_notice import (
     EnforcementLevel,
     UserConsentPreference,
 )
-from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistoryV2
 from fides.api.models.privacy_request import (
     ExecutionLog,
@@ -161,25 +160,13 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             Any
         ] = privacy_request.consent_preferences
 
-        # PrivacyPreferenceHistory soon to be deprecated
-        new_workflow_consent_preferences_v1: List[
-            PrivacyPreferenceHistory
-        ] = filter_privacy_preferences_for_propagation(  # type: ignore[assignment]
-            self.configuration.system,
-            privacy_request.privacy_preferences,  # type: ignore[attr-defined]
-        )
-
-        new_workflow_consent_preferences_v2: List[
+        new_workflow_consent_preferences: List[
             PrivacyPreferenceHistoryV2
         ] = filter_privacy_preferences_for_propagation(  # type: ignore[assignment]
             self.configuration.system,
             privacy_request.privacy_preferences_v2,  # type: ignore[attr-defined]
         )
-        if not (
-            old_workflow_consent_preferences
-            or new_workflow_consent_preferences_v1
-            or new_workflow_consent_preferences_v2
-        ):
+        if not (old_workflow_consent_preferences or new_workflow_consent_preferences):
             return False
 
         if not filter_user_identities_for_connector(self.config, user_identities):
@@ -203,11 +190,6 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                 "message": f"Consent email skipped for '{self.configuration.name}'",
             },
         )
-        # TODO remove in favor of request.privacy_preferences_v2
-        for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
-            pref.cache_system_status(
-                db, self.configuration.system_key, ExecutionLogStatus.skipped
-            )
 
         for pref in privacy_request.privacy_preferences_v2:  # type: ignore[attr-defined]
             pref.cache_system_status(
@@ -250,24 +232,10 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                 Consent(**pref) for pref in privacy_request.consent_preferences or []
             ]
 
-            # Privacy preferences for new workflow
-            filtered_privacy_preference_v1_records: List[
-                PrivacyPreferenceHistory
-            ] = filter_privacy_preferences_for_propagation(  # type: ignore[assignment]
-                self.configuration.system, privacy_request.privacy_preferences
-            )  # Remove v1 records
-
-            filtered_privacy_preference_v2_records: List[
+            filtered_privacy_preference_records: List[
                 PrivacyPreferenceHistoryV2
             ] = filter_privacy_preferences_for_propagation(  # type: ignore[assignment]
                 self.configuration.system, privacy_request.privacy_preferences_v2
-            )
-
-            filtered_privacy_preference_records: List[
-                Union[PrivacyPreferenceHistory, PrivacyPreferenceHistoryV2]
-            ] = (
-                filtered_privacy_preference_v1_records
-                + filtered_privacy_preference_v2_records
             )
 
             filtered_privacy_request_schemas: List[

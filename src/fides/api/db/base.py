@@ -28,10 +28,10 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeTemplate,
 )
 from fides.api.models.privacy_preference import (
-    CurrentPrivacyPreference,
-    LastServedNotice,
-    PrivacyPreferenceHistory,
-    ServedNoticeHistory,
+    DeprecatedCurrentPrivacyPreference,
+    DeprecatedLastServedNotice,
+    DeprecatedPrivacyPreferenceHistory,
+    DeprecatedServedNoticeHistory,
 )
 from fides.api.models.privacy_preference_v2 import (
     CurrentPrivacyPreferenceV2,
