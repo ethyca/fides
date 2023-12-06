@@ -283,9 +283,7 @@ class ConsentReportingSchema(FidesSchema):
         title="The user's preference for the given notice: opt_in, opt_out, or acknowledge"
     )
     user_geography: Optional[SafeStr] = Field(title="Detected geography of the user")
-    relevant_systems: Optional[List[str]] = Field(
-        title="Systems relevant to the given notice by data use.  Note that just because a system is relevant does not mean that a request is necessarily propagated."
-    )
+
     affected_system_status: Dict[str, ExecutionLogStatus] = Field(
         title="Affected system status"
     )

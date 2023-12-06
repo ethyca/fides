@@ -447,19 +447,6 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
         String, ForeignKey(PrivacyNotice.id_field_path), nullable=False
     )
 
-    def calculate_relevant_systems(self, db: Session) -> List[FidesKey]:
-        """Method to cache the relevant systems at the time to store on PrivacyPreferenceHistory (soon to be deprecated)
-        or PrivacyPreferenceHistoryV2 for record keeping
-
-        A system is relevant if their data use is an exact match or a child of the notice's data use.
-        """
-        relevant_systems: List[FidesKey] = []
-        for system in db.query(System):
-            if self.applies_to_system(system):
-                relevant_systems.append(system.fides_key)
-                continue
-        return relevant_systems
-
 
 def update_if_modified(
     resource: Base, db: Session, *, data: dict[str, Any]

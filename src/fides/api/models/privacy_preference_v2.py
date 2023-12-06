@@ -22,9 +22,7 @@ from fides.api.models.privacy_preference import (
     ServingComponent,
 )
 from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequest
-from fides.api.util.tcf.tcf_experience_contents import (
-    get_relevant_systems_for_tcf_attribute,
-)
+
 from fides.config import CONFIG
 
 
@@ -280,10 +278,6 @@ class PrivacyPreferenceHistoryV2(ConsentReportingMixinV2, Base):
     privacy_request_id = Column(
         String, ForeignKey(PrivacyRequest.id, ondelete="SET NULL"), index=True
     )
-
-    # Systems whose data use match.  This doesn't necessarily mean we propagate.
-    # Some may be intentionally skipped later.
-    relevant_systems = Column(MutableList.as_mutable(ARRAY(String)))
 
     # Relevant identities are added to the report during request propagation
     secondary_user_ids = Column(

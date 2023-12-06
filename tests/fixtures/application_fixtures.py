@@ -2860,7 +2860,6 @@ def privacy_preference_history_for_tcf(db, privacy_experience_france_overlay, sy
             "user_geography": "fr_idg",
             "url_recorded": "example.com/",
             "served_notice_history_id": "served_notice_history_test_id",
-            "relevant_systems": [],
             "tcf_preferences": {
                 "purpose_consent_preferences": [{"id": 1, "preference": "opt_out"}],
                 "purpose_legitimate_interests_preferences": [

@@ -188,7 +188,6 @@ def get_historical_consent_report(
             ),
             PrivacyPreferenceHistoryV2.preference.label("preference"),
             PrivacyPreferenceHistoryV2.user_geography.label("user_geography"),
-            PrivacyPreferenceHistoryV2.relevant_systems.label("relevant_systems"),
             PrivacyPreferenceHistoryV2.affected_system_status.label(
                 "affected_system_status"
             ),

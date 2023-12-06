@@ -381,7 +381,6 @@ def upgrade():
             nullable=True,
         ),
         sa.Column("privacy_request_id", sa.String(), nullable=True),
-        sa.Column("relevant_systems", sa.ARRAY(sa.String()), nullable=True),
         sa.Column(
             "secondary_user_ids",
             sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),

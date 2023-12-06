@@ -230,7 +230,6 @@ def save_last_served_and_prep_task_data(
 ) -> Tuple[LastServedNoticeV2, dict]:
     """Upsert the record of the last served consent data for the given user, and pull additional
     data from request headers to later queue for more detailed served notice reporting
-
     """
 
     hashed_device: Optional[str] = ConsentIdentitiesMixin.hash_value(fides_user_device)

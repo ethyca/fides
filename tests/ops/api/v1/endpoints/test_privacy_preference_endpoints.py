@@ -68,9 +68,7 @@ class TestHistoricalPreferences:
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
-        privacy_preference_history.relevant_systems = privacy_preference_history.privacy_notice_history.calculate_relevant_systems(
-            db
-        )
+
         privacy_preference_history.save(db)
 
         privacy_preference_history.update_secondary_user_ids(
@@ -117,7 +115,6 @@ class TestHistoricalPreferences:
         assert response_body["privacy_notice_history_id"] is not None
         assert response_body["preference"] == "opt_out"
         assert response_body["user_geography"] == "us_ca"
-        assert response_body["relevant_systems"] == [system.fides_key]
         assert response_body["affected_system_status"] == {system.fides_key: "complete"}
         assert response_body["url_recorded"] == "https://example.com/privacy_center"
         assert (
@@ -174,7 +171,6 @@ class TestHistoricalPreferences:
         assert response_body["privacy_notice_history_id"] is None
         assert response_body["preference"] is None
         assert response_body["user_geography"] == "fr_idg"
-        assert response_body["relevant_systems"] == []
         assert response_body["affected_system_status"] == {}
         assert response_body["url_recorded"] == "example.com/"
         assert (

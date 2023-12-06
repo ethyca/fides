@@ -5,7 +5,6 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
-from fideslang.validation import FidesKey
 from sqlalchemy import ARRAY, Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint, func
@@ -37,7 +36,6 @@ from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.util.tcf.tcf_experience_contents import (
     ConsentRecordType,
     TCFComponentType,
-    get_relevant_systems_for_tcf_attribute,
 )
 from fides.config import CONFIG
 
