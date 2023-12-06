@@ -306,7 +306,7 @@ const ConsentConfigPage: NextPage = () => {
                   >
                     {isOverrideEnabled
                       ? "The table below allows you to adjust which TCF purposes you allow as part of your user facing notices and business activites."
-                      : "Toggle on if you want to globally change any flexiable legal bases or remove TCF purposes from your CMP."}
+                      : "Toggle on if you want to globally change any flexible legal bases or remove TCF purposes from your CMP."}
                   </Text>
                 </>
               ) : null}
