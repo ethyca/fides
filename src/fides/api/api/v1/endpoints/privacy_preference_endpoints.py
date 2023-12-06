@@ -117,37 +117,6 @@ def get_ip_address(request: Request) -> Optional[str]:
 
 
 @router.get(
-    CURRENT_PRIVACY_PREFERENCES_REPORT,
-    status_code=HTTP_200_OK,
-    dependencies=[
-        Security(verify_oauth_client, scopes=[CURRENT_PRIVACY_PREFERENCE_READ])
-    ],
-    response_model=Page[CurrentPrivacyPreferenceReportingSchema],
-)
-def get_current_privacy_preferences_report(
-    *,
-    params: Params = Depends(),
-    db: Session = Depends(get_db),
-    updated_lt: Optional[datetime] = None,
-    updated_gt: Optional[datetime] = None,
-) -> AbstractPage[CurrentPrivacyPreference]:
-    """Returns the most recently saved privacy preferences for a particular consent item"""
-
-    validate_start_and_end_filters([(updated_lt, updated_gt, "updated")])
-
-    query: Query[CurrentPrivacyPreference] = db.query(CurrentPrivacyPreference)
-
-    if updated_lt:
-        query = query.filter(CurrentPrivacyPreference.updated_at < updated_lt)
-    if updated_gt:
-        query = query.filter(CurrentPrivacyPreference.updated_at > updated_gt)
-
-    query = query.order_by(CurrentPrivacyPreference.updated_at.desc())
-
-    return paginate(query, params)
-
-
-@router.get(
     HISTORICAL_PRIVACY_PREFERENCES_REPORT,
     status_code=HTTP_200_OK,
     dependencies=[

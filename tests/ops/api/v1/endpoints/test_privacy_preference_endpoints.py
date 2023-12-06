@@ -7,7 +7,6 @@ from starlette.testclient import TestClient
 from fides.api.models.privacy_request import ExecutionLogStatus
 from fides.common.api.scope_registry import (
     CONSENT_READ,
-    CURRENT_PRIVACY_PREFERENCE_READ,
     PRIVACY_PREFERENCE_HISTORY_READ,
 )
 from fides.common.api.v1.urn_registry import (
@@ -313,42 +312,3 @@ class TestHistoricalPreferences:
         assert response.status_code == 400
         assert "Value specified for request_timestamp_lt" in response.json()["detail"]
         assert "must be after request_timestamp_gt" in response.json()["detail"]
-
-
-class TestCurrentPrivacyPreferences:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return V1_URL_PREFIX + CURRENT_PRIVACY_PREFERENCES_REPORT
-
-    def test_get_current_preferences_not_authenticated(
-        self, api_client: TestClient, url
-    ) -> None:
-        response = api_client.get(url, headers={})
-        assert 401 == response.status_code
-
-    def test_get_current_preferences_incorrect_scope(
-        self, api_client: TestClient, url, generate_auth_header
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONSENT_READ])
-        response = api_client.get(url, headers=auth_header)
-        assert 403 == response.status_code
-
-    @pytest.mark.parametrize(
-        "role,expected_status",
-        [
-            ("owner", HTTP_200_OK),
-            ("contributor", HTTP_200_OK),
-            ("viewer_and_approver", HTTP_403_FORBIDDEN),
-            ("viewer", HTTP_403_FORBIDDEN),
-            ("approver", HTTP_403_FORBIDDEN),
-        ],
-    )
-    def test_get_current_preferences_roles(
-        self, role, expected_status, api_client: TestClient, url, generate_role_header
-    ) -> None:
-        auth_header = generate_role_header(roles=[role])
-        response = api_client.get(url, headers=auth_header)
-        assert response.status_code == expected_status
-
-    # TODO either update these tests to match rewritten endpoint (v2) or
-    # delete if removing endpoint
