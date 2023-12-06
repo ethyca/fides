@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.api.v1.endpoints.privacy_preference_endpoints import anonymize_ip_address
 from fides.api.models.privacy_preference import RequestOrigin, ServingComponent
 from fides.api.models.privacy_preference_v2 import (
     ConsentIdentitiesMixin,
@@ -1010,3 +1011,26 @@ class TestSaveNoticesServedPrivacyCenter:
         assert (
             response.status_code == 400
         ), "Gets picked up by the duplicate privacy notice check"
+
+
+class TestAnonymizeIpAddress:
+    def test_anonymize_ip_address_empty_string(self):
+        assert anonymize_ip_address("") is None
+
+    def test_anonymize_ip_address_none(self):
+        assert anonymize_ip_address(None) is None
+
+    def test_anonymize_bad_ip_address(self):
+        assert anonymize_ip_address("bad_address") is None
+
+    def test_anonymize_ip_address_list(self):
+        assert anonymize_ip_address("[]") is None
+
+    def test_anonymize_ipv4(self):
+        assert anonymize_ip_address("12.214.31.144") == "12.214.31.0"
+
+    def test_anonymize_ipv6(self):
+        assert (
+            anonymize_ip_address("2001:0db8:85a3:0000:0000:8a2e:0370:7334")
+            == "2001:0db8:85a3:0000:0000:0000:0000:0000"
+        )
