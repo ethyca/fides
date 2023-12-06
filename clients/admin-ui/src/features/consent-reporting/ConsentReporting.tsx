@@ -12,8 +12,8 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { useLazyDownloadReportQuery } from "~/features/consent-reporting/consent-reporting.slice";
 
 const ConsentReporting = () => {
-  const [startDate, setStartDate] = useState<string>();
-  const [endDate, setEndDate] = useState<string>();
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
 
   const toast = useToast();
 
