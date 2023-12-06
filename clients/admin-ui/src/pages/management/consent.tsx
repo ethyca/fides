@@ -319,7 +319,7 @@ const ConsentConfigPage: NextPage = () => {
                 >
                   To configure this section, select the purposes you allow and
                   where available, the appropriate legal basis (either Consent
-                  or Legitmate Intererest). Read the guide on{" "}
+                  or Legitimate Interest). Read the guide on{" "}
                   <DocsLink href="https://ethyca.com">
                     TCF Override here.{" "}
                   </DocsLink>
