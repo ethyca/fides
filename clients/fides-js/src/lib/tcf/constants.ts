@@ -1,4 +1,3 @@
-import { TCModel } from "@iabtechlabtcf/core";
 import {
   EnabledIds,
   LegalBasisEnum,
@@ -18,41 +17,48 @@ export const ETHYCA_CMP_ID = 407;
 export const FIDES_SEPARATOR = ",";
 
 export const TCF_KEY_MAP: {
-  cookieKey: TcfModelType;
   experienceKey: keyof TcfExperienceRecords;
-  tcfModelKey?: keyof TCModel;
-  enabledIdsKey?: keyof EnabledIds;
+  tcfModelKey:
+    | "purposeConsents"
+    | "purposeLegitimateInterests"
+    | "specialFeatureOptins"
+    | "vendorConsents"
+    | "vendorLegitimateInterests";
+  enabledIdsKey: keyof EnabledIds;
 }[] = [
   {
-    cookieKey: "purpose_consent_preferences",
     experienceKey: "tcf_purpose_consents",
     tcfModelKey: "purposeConsents",
     enabledIdsKey: "purposesConsent",
   },
   {
-    cookieKey: "purpose_legitimate_interests_preferences",
     experienceKey: "tcf_purpose_legitimate_interests",
     tcfModelKey: "purposeLegitimateInterests",
     enabledIdsKey: "purposesLegint",
   },
   {
-    cookieKey: "special_feature_preferences",
     experienceKey: "tcf_special_features",
     tcfModelKey: "specialFeatureOptins",
     enabledIdsKey: "specialFeatures",
   },
   {
-    cookieKey: "vendor_consent_preferences",
     experienceKey: "tcf_vendor_consents",
     tcfModelKey: "vendorConsents",
     enabledIdsKey: "vendorsConsent",
   },
   {
-    cookieKey: "vendor_legitimate_interests_preferences",
     experienceKey: "tcf_vendor_legitimate_interests",
     tcfModelKey: "vendorLegitimateInterests",
     enabledIdsKey: "vendorsLegint",
   },
+];
+
+// These preferences are stored in the cooke on `tcf_consent` instead of `fides_string` because they
+// pertain to Fides Systems instead of vendors on the FidesString.
+export const FIDES_SYSTEM_COOKIE_KEY_MAP: {
+  cookieKey: TcfModelType;
+  experienceKey: keyof TcfExperienceRecords;
+}[] = [
   {
     cookieKey: "system_consent_preferences",
     experienceKey: "tcf_system_consents",
