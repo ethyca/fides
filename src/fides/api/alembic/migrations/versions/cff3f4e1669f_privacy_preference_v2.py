@@ -1,8 +1,8 @@
-"""privacy preference v2
+"""privacy_preference_v2
 
-Revision ID: 99e2d837cf53
+Revision ID: cff3f4e1669f
 Revises: 848a8f4125cf
-Create Date: 2023-12-02 17:49:53.693072
+Create Date: 2023-12-06 02:42:38.041129
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "99e2d837cf53"
+revision = "cff3f4e1669f"
 down_revision = "848a8f4125cf"
 branch_labels = None
 depends_on = None
@@ -98,7 +98,6 @@ def upgrade():
         ["updated_at"],
         unique=False,
     )
-
     op.create_table(
         "lastservednoticev2",
         sa.Column("id", sa.String(length=255), nullable=False),
@@ -206,21 +205,14 @@ def upgrade():
             nullable=True,
         ),
         sa.Column("notice_name", sa.String(), nullable=True),
-        sa.Column("privacy_experience_config_history_id", sa.String(), nullable=True),
-        sa.Column("privacy_experience_id", sa.String(), nullable=True),
-        sa.Column("privacy_notice_history_id", sa.String(), nullable=True),
-        sa.Column(
-            "request_origin",
-            sa.String(),
-            nullable=True,
-        ),
+        sa.Column("request_origin", sa.String(), nullable=True),
+        sa.Column("url_recorded", sa.String(), nullable=True),
         sa.Column(
             "updated_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("url_recorded", sa.String(), nullable=True),
         sa.Column(
             "user_agent",
             sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
@@ -228,13 +220,24 @@ def upgrade():
         ),
         sa.Column("user_geography", sa.String(), nullable=True),
         sa.Column("acknowledge_mode", sa.Boolean(), nullable=True),
-        sa.Column(
-            "serving_component",
-            sa.String(),
-            nullable=False,
-        ),
+        sa.Column("serving_component", sa.String(), nullable=True),
         sa.Column("served_notice_history_id", sa.String(), nullable=True),
         sa.Column("tcf_served", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
+        sa.Column("privacy_experience_config_history_id", sa.String(), nullable=True),
+        sa.Column("privacy_experience_id", sa.String(), nullable=True),
+        sa.Column("privacy_notice_history_id", sa.String(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["privacy_experience_config_history_id"],
+            ["privacyexperienceconfighistory.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["privacy_experience_id"],
+            ["privacyexperience.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["privacy_notice_history_id"],
+            ["privacynoticehistory.id"],
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
@@ -292,6 +295,12 @@ def upgrade():
         unique=False,
     )
     op.create_index(
+        op.f("ix_servednoticehistoryv2_served_notice_history_id"),
+        "servednoticehistoryv2",
+        ["served_notice_history_id"],
+        unique=False,
+    )
+    op.create_index(
         op.f("ix_servednoticehistoryv2_serving_component"),
         "servednoticehistoryv2",
         ["serving_component"],
@@ -342,21 +351,14 @@ def upgrade():
             nullable=True,
         ),
         sa.Column("notice_name", sa.String(), nullable=True),
-        sa.Column("privacy_experience_config_history_id", sa.String(), nullable=True),
-        sa.Column("privacy_experience_id", sa.String(), nullable=True),
-        sa.Column("privacy_notice_history_id", sa.String(), nullable=True),
-        sa.Column(
-            "request_origin",
-            sa.String(),
-            nullable=True,
-        ),
+        sa.Column("request_origin", sa.String(), nullable=True),
+        sa.Column("url_recorded", sa.String(), nullable=True),
         sa.Column(
             "updated_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("url_recorded", sa.String(), nullable=True),
         sa.Column(
             "user_agent",
             sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
@@ -370,16 +372,8 @@ def upgrade():
             nullable=True,
         ),
         sa.Column("fides_string", sa.String(), nullable=True),
-        sa.Column(
-            "method",
-            sa.String(),
-            nullable=True,
-        ),
-        sa.Column(
-            "preference",
-            sa.String(),
-            nullable=True,
-        ),
+        sa.Column("method", sa.String(), nullable=True),
+        sa.Column("preference", sa.String(), nullable=True),
         sa.Column("privacy_request_id", sa.String(), nullable=True),
         sa.Column(
             "secondary_user_ids",
@@ -389,6 +383,21 @@ def upgrade():
         sa.Column("served_notice_history_id", sa.String(), nullable=True),
         sa.Column(
             "tcf_preferences", postgresql.JSONB(astext_type=sa.Text()), nullable=True
+        ),
+        sa.Column("privacy_experience_config_history_id", sa.String(), nullable=True),
+        sa.Column("privacy_experience_id", sa.String(), nullable=True),
+        sa.Column("privacy_notice_history_id", sa.String(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["privacy_experience_config_history_id"],
+            ["privacyexperienceconfighistory.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["privacy_experience_id"],
+            ["privacyexperience.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["privacy_notice_history_id"],
+            ["privacynoticehistory.id"],
         ),
         sa.ForeignKeyConstraint(
             ["privacy_request_id"], ["privacyrequest.id"], ondelete="SET NULL"
@@ -479,17 +488,9 @@ def upgrade():
         ["user_geography"],
         unique=False,
     )
-    op.drop_index("ix_ctl_systems_name", table_name="ctl_systems")
-    op.drop_constraint("purpose_constraint", "tcf_purpose_overrides", type_="unique")
-    # ### end Alembic commands ###
 
 
 def downgrade():
-    # ### commands auto generated by Alembic - please adjust! ###
-    op.create_unique_constraint(
-        "purpose_constraint", "tcf_purpose_overrides", ["purpose"]
-    )
-    op.create_index("ix_ctl_systems_name", "ctl_systems", ["name"], unique=False)
     op.drop_index(
         op.f("ix_privacypreferencehistoryv2_user_geography"),
         table_name="privacypreferencehistoryv2",
@@ -556,6 +557,10 @@ def downgrade():
     )
     op.drop_index(
         op.f("ix_servednoticehistoryv2_serving_component"),
+        table_name="servednoticehistoryv2",
+    )
+    op.drop_index(
+        op.f("ix_servednoticehistoryv2_served_notice_history_id"),
         table_name="servednoticehistoryv2",
     )
     op.drop_index(
@@ -636,4 +641,3 @@ def downgrade():
         table_name="currentprivacypreferencev2",
     )
     op.drop_table("currentprivacypreferencev2")
-    # ### end Alembic commands ###

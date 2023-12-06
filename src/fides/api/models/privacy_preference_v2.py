@@ -3,13 +3,12 @@ from __future__ import annotations
 import uuid
 from typing import Any, Dict, List, Optional, Type, Union
 
-from fideslang.validation import FidesKey
 from sqlalchemy import ARRAY, Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, String, UniqueConstraint, func, or_
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Query, Session, relationship
+from sqlalchemy.orm import Query, Session, declared_attr, relationship
 from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
@@ -22,7 +21,6 @@ from fides.api.models.privacy_preference import (
     ServingComponent,
 )
 from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequest
-
 from fides.config import CONFIG
 
 
@@ -92,7 +90,9 @@ class ConsentIdentitiesMixin:
         value: Optional[str],
         encoding: str = "UTF-8",
     ) -> Optional[str]:
-        """Utility function to hash the value with a generated salt"""
+        """Utility function to hash the value with a generated salt
+        This returns None if there's no value, unlike ProvidedIdentity.hash_value
+        """
         if not value:
             return None
 
@@ -109,7 +109,9 @@ class CurrentPrivacyPreferenceV2(ConsentIdentitiesMixin, Base):
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
-    preferences = Column(MutableDict.as_mutable(JSONB))
+    preferences = Column(
+        MutableDict.as_mutable(JSONB)
+    )  # All saved preferences against Privacy Notices and TCF Notices
 
     fides_string = Column(String)
 
@@ -137,11 +139,13 @@ class CurrentPrivacyPreferenceV2(ConsentIdentitiesMixin, Base):
 
 
 class LastServedNoticeV2(ConsentIdentitiesMixin, Base):
-    """Stores the latest saved privacy preferences for a given user"""
+    """Stores the latest served notices for a given user"""
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
-    served = Column(MutableDict.as_mutable(JSONB))
+    served = Column(
+        MutableDict.as_mutable(JSONB)
+    )  # All Privacy Notices and TCF Notices Served
 
     updated_at = Column(
         DateTime(timezone=True),
@@ -167,7 +171,11 @@ class LastServedNoticeV2(ConsentIdentitiesMixin, Base):
 
     @classmethod
     def generate_served_notice_history_id(cls) -> str:
-        """Generate a served notice history id"""
+        """Generate a served notice history id
+
+        We save privacy preferences and return immediately alongside this generated
+        id that we build up front.
+        """
         return f"ser_{uuid.uuid4()}"
 
 
@@ -190,17 +198,32 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
 
     # The specific version of the experience config the user was shown to present the relevant notice
     # Contains the version, language, button labels, description, etc.
-    privacy_experience_config_history_id = Column(
-        String,
-        index=True,
-    )
+    @declared_attr
+    def privacy_experience_config_history_id(cls) -> Column:
+        return Column(
+            String,
+            ForeignKey("privacyexperienceconfighistory.id"),
+            index=True,
+        )
 
     # The specific experience under which the user was presented the relevant notice
     # Minimal information stored here, mostly just region and component type
-    privacy_experience_id = Column(String, index=True)
+    @declared_attr
+    def privacy_experience_id(cls) -> Column:
+        return Column(String, ForeignKey("privacyexperience.id"), index=True)
+
+    @declared_attr
+    def privacy_notice_history_id(cls) -> Column:
+        """
+        The specific historical record the user consented to - applicable when
+        saving preferences with respect to a privacy notice directly
+        """
+        return Column(String, ForeignKey(PrivacyNoticeHistory.id), index=True)
 
     # Location where we received the request
     request_origin = Column(EnumColumn(RequestOrigin))
+
+    url_recorded = Column(String)
 
     updated_at = Column(
         DateTime(timezone=True),
@@ -208,8 +231,6 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
         onupdate=func.now(),
         index=True,
     )
-
-    url_recorded = Column(String)
 
     user_agent = Column(
         StringEncryptedType(
@@ -222,6 +243,11 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
 
     user_geography = Column(String, index=True)
 
+    # Relationships
+    @declared_attr
+    def privacy_notice_history(cls) -> relationship:
+        return relationship(PrivacyNoticeHistory)
+
 
 class ServedNoticeHistoryV2(ConsentReportingMixinV2, Base):
     """A Historical Record of every time a Notice was served to a user"""
@@ -231,10 +257,7 @@ class ServedNoticeHistoryV2(ConsentReportingMixinV2, Base):
         default=False,
     )
 
-    # The historical notice id served to the user - non-TCF notice
-    privacy_notice_history_id = Column(String, index=True)
-
-    serving_component = Column(EnumColumn(ServingComponent), nullable=False, index=True)
+    serving_component = Column(EnumColumn(ServingComponent), nullable=True, index=True)
 
     # Identifier generated when a LastServedNoticeV2 is created and returned in the response.
     # This is saved on all corresponding ServedNoticeHistory records and can be used to link PrivacyPreferenceHistory records.
@@ -263,16 +286,15 @@ class PrivacyPreferenceHistoryV2(ConsentReportingMixinV2, Base):
         MutableDict.as_mutable(JSONB), server_default="{}", default=dict
     )
 
+    # Optional, if fides_string was supplied directly
     fides_string = Column(String)
 
+    # Accept, reject, etc. especially useful for TCF because there is no overall "preference"
     method = Column(EnumColumn(ConsentMethod))
 
     # Whether the user wants to opt in, opt out, or has acknowledged the notice.
     # Only for non-TCF notices.
     preference = Column(EnumColumn(UserConsentPreference), index=True)
-
-    # The historical notice id that the user consented to - non-TCF notice
-    privacy_notice_history_id = Column(String, index=True)
 
     # The privacy request created to propagate the preferences
     privacy_request_id = Column(
@@ -297,13 +319,6 @@ class PrivacyPreferenceHistoryV2(ConsentReportingMixinV2, Base):
     tcf_preferences = Column(
         MutableDict.as_mutable(JSONB)
     )  # Dict of TCF attributes saved, for a TCF notice
-
-    # Relationships
-    privacy_notice_history = relationship(
-        "PrivacyNoticeHistory",
-        primaryjoin="PrivacyNoticeHistory.id == PrivacyPreferenceHistoryV2.privacy_notice_history_id",
-        foreign_keys=[privacy_notice_history_id],
-    )
 
     privacy_request = relationship(PrivacyRequest, backref="privacy_preferences_v2")
 
@@ -343,6 +358,9 @@ def get_consent_records_by_device_id(
     ],
     value: str,
 ) -> Query:
+    """Search the specified consent record table by hashing the fides device id and
+    searching for its match."""
+
     hashed_val = ConsentIdentitiesMixin.hash_value(value)
 
     return db.query(record_type).filter(
@@ -360,6 +378,9 @@ def get_consent_records_by_email(
     ],
     value: str,
 ) -> Query:
+    """Search the specified consent record table by hashing the email and
+    searching for its match."""
+
     hashed_val = ConsentIdentitiesMixin.hash_value(value)
 
     return db.query(record_type).filter(record_type.hashed_email == hashed_val)
