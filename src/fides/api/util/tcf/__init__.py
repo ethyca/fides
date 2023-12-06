@@ -28,9 +28,7 @@ def exclude_ac_systems(query: Select) -> Select:
     )
 
 
-async def list_non_tcf_systems(
-    exclude_gvl: bool = True, exclude_ac: bool = True
-) -> Select:
+def list_non_tcf_systems(exclude_gvl: bool = True, exclude_ac: bool = True) -> Select:
     """
     Utility to retrieve all Systems that are not GVL systems using
     the provided (async) DB session.
