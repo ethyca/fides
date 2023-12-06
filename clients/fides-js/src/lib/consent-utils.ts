@@ -5,6 +5,7 @@ import {
   EmptyExperience,
   FidesOptions,
   GpcStatus,
+  OverrideOptions,
   PrivacyExperience,
   PrivacyNotice,
   UserConsentPreference,
@@ -253,6 +254,19 @@ export const shouldResurfaceConsent = (
       (notice) => notice.current_preference == null
     )
   );
+};
+
+/**
+ * Get fides override options from a custom path
+ */
+export const getWindowObjFromPath = (
+  path: string[]
+): OverrideOptions | undefined => {
+  if (path[0] === "window") {
+    path.shift();
+  }
+  // @ts-ignore
+  return path.reduce((record, item) => record[item], window);
 };
 
 export const getGpcStatusFromNotice = ({
