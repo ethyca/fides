@@ -22,6 +22,7 @@ The types of changes are:
 - Paging to vendors in the TCF overlay [#4463](https://github.com/ethyca/fides/pull/4463)
 - New purposes endpoint and indices to improve system lookups [#4452](https://github.com/ethyca/fides/pull/4452)
 - Add support for global TCF Purpose Overrides [#4464](https://github.com/ethyca/fides/pull/4464)
+- Add new UI for CSV consent reporting [#4488](https://github.com/ethyca/fides/pull/4488)
 
 ### Fixed
 - Fix type errors when TCF vendors have no dataDeclaration [#4465](https://github.com/ethyca/fides/pull/4465)
