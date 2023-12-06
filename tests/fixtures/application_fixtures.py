@@ -11,7 +11,7 @@ import pytest
 import yaml
 from faker import Faker
 from fideslang.models import Dataset
-from sqlalchemy.orm import Session, make_transient
+from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
@@ -46,10 +46,6 @@ from fides.api.models.privacy_notice import (
     EnforcementLevel,
     PrivacyNotice,
     PrivacyNoticeRegion,
-)
-from fides.api.models.privacy_preference import (
-    PrivacyPreferenceHistory,
-    ServedNoticeHistory,
 )
 from fides.api.models.privacy_preference_v2 import (
     ConsentIdentitiesMixin,
@@ -1619,6 +1615,7 @@ def privacy_experience_france_tcf_overlay(
     )
 
     yield privacy_experience
+
     privacy_experience.delete(db)
 
 
@@ -1697,7 +1694,7 @@ def privacy_preference_history_fr_provide_service_frontend_only(
             "privacy_experience_config_history_id": privacy_experience_privacy_center.experience_config.experience_config_history_id,
             "privacy_experience_id": privacy_experience_privacy_center.id,
             "preference": "opt_out",
-            "privacy_notice_history_id": privacy_notice_us_ca_provide.id,
+            "privacy_notice_history_id": privacy_notice_us_ca_provide.histories[0].id,
             "request_origin": "privacy_center",
             "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
             "user_geography": "fr_idg",

@@ -113,7 +113,9 @@ class TestShouldOptIntoService:
             db=db,
             data={
                 "preference": preference,
-                "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
+                "privacy_notice_history_id": privacy_notice_us_ca_provide.histories[
+                    0
+                ].id,
                 "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
                 "hashed_fides_user_device": ProvidedIdentity.hash_value(
                     "165ad0ed-10fb-4a60-9810-e0749346ec16"
@@ -157,7 +159,9 @@ class TestShouldOptIntoService:
             db=db,
             data={
                 "preference": preference,
-                "privacy_notice_history_id": privacy_notice_us_co_provide_service_operations.privacy_notice_history_id,
+                "privacy_notice_history_id": privacy_notice_us_co_provide_service_operations.histories[
+                    0
+                ].id,
                 "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
                 "hashed_fides_user_device": ProvidedIdentity.hash_value(
                     "165ad0ed-10fb-4a60-9810-e0749346ec16"
@@ -195,7 +199,9 @@ class TestShouldOptIntoService:
             db=db,
             data={
                 "preference": preference,
-                "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.privacy_notice_history_id,
+                "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.histories[
+                    0
+                ].id,
                 "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
                 "hashed_fides_user_device": ProvidedIdentity.hash_value(
                     "165ad0ed-10fb-4a60-9810-e0749346ec16"

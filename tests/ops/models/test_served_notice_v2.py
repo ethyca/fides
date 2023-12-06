@@ -16,6 +16,7 @@ from fides.api.models.privacy_preference_v2 import (
     ConsentIdentitiesMixin,
     LastServedNoticeV2,
     PrivacyPreferenceHistoryV2,
+    ServedNoticeHistoryV2,
     get_records_with_consent_identifiers,
 )
 from fides.api.schemas.privacy_preference import RecordConsentServedRequest
@@ -479,6 +480,7 @@ class TestSaveLastServedAndPrepConsentData:
 
     def test_save_consent_served_task_for_privacy_notices(
         self,
+        db,
         mock_task_data_privacy_notices,
         privacy_notice,
         experience_config_overlay,
@@ -505,8 +507,11 @@ class TestSaveLastServedAndPrepConsentData:
         assert served_notice_history.request_origin == RequestOrigin.overlay
         assert served_notice_history.tcf_served is None
 
+        db.delete(served_notice_history)
+
     def test_save_consent_served_task_for_tcf_notices(
         self,
+        db,
         mock_task_data_tcf_notices,
         privacy_experience_france_tcf_overlay,
         system,
@@ -550,3 +555,5 @@ class TestSaveLastServedAndPrepConsentData:
             == mock_task_data_tcf_notices["served_notice_history_id"]
         )
         assert served_notice_history.anonymized_ip_address == "24.199.143.0"
+
+        db.query(ServedNoticeHistoryV2).delete()
