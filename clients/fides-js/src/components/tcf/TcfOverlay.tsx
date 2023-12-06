@@ -348,7 +348,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       onVendorPageClick={() => {
         setActiveTabIndex(2);
       }}
-      onDismiss={handleDismiss}
       onOpen={dispatchOpenOverlayEvent}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => {
         const goToVendorTab = () => {
