@@ -260,7 +260,7 @@ const ConsentConfigPage: NextPage = () => {
               >
                 To {isTcfEnabled ? "disable" : "enable"} TCF, please contact
                 your Fides Administrator or{" "}
-                <DocsLink href="https://ethyca.com">Ethyca support</DocsLink>
+                <DocsLink href="https://ethyca.com">Ethyca support</DocsLink>.
               </Text>
             </Box>
 
