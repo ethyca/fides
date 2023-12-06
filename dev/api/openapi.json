@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.25.1b3.post0.dev9"
+    "version": "2.25.1b4.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13385,6 +13385,9 @@
           },
           "security": {
             "$ref": "#/components/schemas/SecurityApplicationConfig"
+          },
+          "consent": {
+            "$ref": "#/components/schemas/ConsentConfig"
           }
         },
         "additionalProperties": false,
@@ -14394,6 +14397,18 @@
           }
         },
         "description": "Deprecated: This used to be populated and sent to the server by a `config.json` in the UI"
+      },
+      "ConsentConfig": {
+        "title": "ConsentConfig",
+        "type": "object",
+        "properties": {
+          "override_vendor_purposes": {
+            "title": "Override Vendor Purposes",
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A base template for all other Fides Schemas to inherit from."
       },
       "ConsentMechanism": {
         "title": "ConsentMechanism",
