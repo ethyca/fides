@@ -13,7 +13,6 @@ import {
   isNewFidesCookie,
   makeConsentDefaultsLegacy,
   updateCookieFromNoticePreferences,
-  updateExperienceFromCookieConsent,
 } from "./cookie";
 import {
   ConsentMechanism,
@@ -219,9 +218,16 @@ export const getInitialFides = ({
   experience,
   geolocation,
   options,
+  updateExperienceFromCookieConsent,
 }: {
   cookie: FidesCookie;
-} & FidesConfig): Partial<Fides> | null => {
+} & FidesConfig & {
+    updateExperienceFromCookieConsent: (props: {
+      experience: PrivacyExperience;
+      cookie: FidesCookie;
+      debug: boolean;
+    }) => PrivacyExperience;
+  }): Partial<Fides> | null => {
   const hasExistingCookie = !isNewFidesCookie(cookie);
   if (!hasExistingCookie && !options.fidesString) {
     // A TC str can be injected and take effect even if the user has no previous Fides Cookie
