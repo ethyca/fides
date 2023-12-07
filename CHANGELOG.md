@@ -15,8 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.25.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.26.0...main)
 
+## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
 ### Added
 - Dynamic importing for GPP bundle [#4447](https://github.com/ethyca/fides/pull/4447)
@@ -24,6 +25,7 @@ The types of changes are:
 - New purposes endpoint and indices to improve system lookups [#4452](https://github.com/ethyca/fides/pull/4452)
 - Cypress tests for fides.js GPP extension [#4476](https://github.com/ethyca/fides/pull/4476)
 - Add support for global TCF Purpose Overrides [#4464](https://github.com/ethyca/fides/pull/4464)
+- TCF override management [#4484](https://github.com/ethyca/fides/pull/4484)
 - Readonly consent management table and modal [#4456](https://github.com/ethyca/fides/pull/4456), [#4477](https://github.com/ethyca/fides/pull/4477)
 - Access and erasure support for Gong [#4461](https://github.com/ethyca/fides/pull/4461)
 - Add new UI for CSV consent reporting [#4488](https://github.com/ethyca/fides/pull/4488)

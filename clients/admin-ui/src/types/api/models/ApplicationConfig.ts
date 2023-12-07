@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { ConsentConfig } from "./ConsentConfig";
 import type { ExecutionApplicationConfig } from "./ExecutionApplicationConfig";
 import type { NotificationApplicationConfig } from "./NotificationApplicationConfig";
 import type { SecurityApplicationConfig } from "./SecurityApplicationConfig";
@@ -19,4 +20,5 @@ export type ApplicationConfig = {
   notifications?: NotificationApplicationConfig;
   execution?: ExecutionApplicationConfig;
   security?: SecurityApplicationConfig;
+  consent?: ConsentConfig;
 };
