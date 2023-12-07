@@ -68,6 +68,9 @@ export const VendorSourceCell = ({ value }: { value: string }) => {
   );
 };
 
+const ADDED_VENDOR_TOOLTIP_LABEL =
+  "This vendor has already beed added. You can view the properties of this vendor by going to View Systems.";
+
 type MultipleSystemTable = DictSystems;
 
 const columnHelper = createColumnHelper<MultipleSystemTable>();
@@ -368,6 +371,12 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
             isOpen={isRowSelectionBarOpen}
           />
         }
+        renderRowTooltipLabel={(row) => {
+          if (!row.getCanSelect()) {
+            return ADDED_VENDOR_TOOLTIP_LABEL;
+          }
+          return undefined;
+        }}
       />
       <PaginationBar
         pageSizes={PAGE_SIZES}
