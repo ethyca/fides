@@ -51,16 +51,14 @@ export const IndeterminateCheckboxCell = ({
 
   return (
     <Flex alignItems="center" justifyContent="center">
-      <Box backgroundColor="white">
-        <Checkbox
-          data-testid={dataTestId || undefined}
-          isChecked={initialCheckBoxValue || rest.checked}
-          isDisabled={initialCheckBoxValue || manualDisable}
-          onChange={rest.onChange}
-          isIndeterminate={!rest.checked && indeterminate}
-          colorScheme="purple"
-        />
-      </Box>
+      <Checkbox
+        data-testid={dataTestId || undefined}
+        isChecked={initialCheckBoxValue || rest.checked}
+        isDisabled={initialCheckBoxValue || manualDisable}
+        onChange={rest.onChange}
+        isIndeterminate={!rest.checked && indeterminate}
+        colorScheme="purple"
+      />
     </Flex>
   );
 };
