@@ -297,7 +297,7 @@ describe("Fides-js TCF", () => {
     });
   });
 
-  describe("second layer", () => {
+  describe.only("second layer", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -312,7 +312,12 @@ describe("Fides-js TCF", () => {
       cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
         fixture: "consent/notices_served_tcf.json",
       }).as("patchNoticesServed");
-      cy.get("#fides-modal-link").click();
+
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
     });
 
     describe("rendering the TCF modal", () => {
@@ -338,7 +343,13 @@ describe("Fides-js TCF", () => {
             experience,
           });
         });
-        cy.get("#fides-modal-link").click();
+
+        cy.get("div#fides-banner").within(() => {
+          cy.get("#fides-button-group").within(() => {
+            cy.get("button").contains("Manage preferences").click();
+          });
+        });
+
         cy.get("#fides-tab-Vendors").click();
         cy.get("#fides-panel-Vendors").within(() => {
           cy.getByTestId("records-list-IAB TCF vendors").within(() => {
@@ -926,7 +937,11 @@ describe("Fides-js TCF", () => {
             experience: privacyExperience.items[0],
           });
           cy.waitUntilFidesInitialized().then(() => {
-            cy.get("#fides-modal-link").click();
+            cy.get("div#fides-banner").within(() => {
+              cy.get("#fides-button-group").within(() => {
+                cy.get("button").contains("Manage preferences").click();
+              });
+            });
             cy.getByTestId("consent-modal").within(() => {
               cy.get("button").contains("Opt out of all").click();
               cy.get("@FidesUpdated")

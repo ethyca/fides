@@ -6,17 +6,28 @@
 import A11yDialogLib from "a11y-dialog";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
-const useA11yDialogInstance = () => {
+const useA11yDialogInstance = (onEsc?: () => void) => {
   const [instance, setInstance] = useState<A11yDialogLib | null>(null);
   const container = useCallback((node: Element) => {
     if (node !== null) {
       const dialog = new A11yDialogLib(node);
       dialog
-        .on("show", () => {
+        .on("show", (event) => {
           document.documentElement.style.overflowY = "hidden";
         })
-        .on("hide", () => {
+        .on("hide", (node: any, event: any) => {
           document.documentElement.style.overflowY = "";
+
+          // a11y-dialog natively supports dismissing a dialog by pressing ESC
+          // but it doesn't allow any custom functions to be associated
+          // with an ESC press, so we have to do this manually
+          if (
+            onEsc &&
+            event instanceof KeyboardEvent &&
+            event.key === "Escape"
+          ) {
+            onEsc();
+          }
         });
       setInstance(dialog);
     }
@@ -29,9 +40,10 @@ interface Props {
   id: string;
   title: string;
   onClose?: () => void;
+  onEsc?: () => void;
 }
-export const useA11yDialog = ({ role, id, onClose }: Props) => {
-  const { instance, container: ref } = useA11yDialogInstance();
+export const useA11yDialog = ({ role, id, onClose, onEsc }: Props) => {
+  const { instance, container: ref } = useA11yDialogInstance(onEsc);
   const isAlertDialog = role === "alertdialog";
   const titleId = `${id}-title`;
 

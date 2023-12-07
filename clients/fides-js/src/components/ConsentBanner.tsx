@@ -55,7 +55,11 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   // add listeners for ESC and clicking outside of component
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      console.log("ref current ", ref.current);
+      console.log("ref target ", event.target);
       if (ref.current && !ref.current.contains(event.target as Node)) {
+        event.stopImmediatePropagation();
+        console.log("outside click detected, banner is open: ", bannerIsOpen);
         onClose();
       }
     };
@@ -66,18 +70,19 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
       }
     };
 
-    if (!window.Fides.options.preventDismissal) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("keydown", handleEsc);
-
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-        document.removeEventListener("keydown", handleEsc);
-      };
+    if (bannerIsOpen && !window.Fides.options.preventDismissal) {
+      window.addEventListener("mousedown", handleClickOutside);
+      window.addEventListener("keydown", handleEsc);
+    } else {
+      window.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("keydown", handleEsc);
     }
 
-    return () => {};
-  }, [onClose]);
+    return () => {
+      window.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("keydown", handleEsc);
+    };
+  }, [onClose, bannerIsOpen, ref]);
 
   const showGpcBadge = getConsentContext().globalPrivacyControl;
 

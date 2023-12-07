@@ -28,6 +28,7 @@ interface Props {
   experience: PrivacyExperience;
   cookie: FidesCookie;
   onOpen: () => void;
+  onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
   renderModalContent: () => VNode;
   renderModalFooter: (props: RenderModalFooter) => VNode;
@@ -39,6 +40,7 @@ const Overlay: FunctionComponent<Props> = ({
   options,
   cookie,
   onOpen,
+  onDismiss,
   renderBanner,
   renderModalContent,
   renderModalFooter,
@@ -52,6 +54,9 @@ const Overlay: FunctionComponent<Props> = ({
   const dispatchCloseEvent = useCallback(
     ({ saved = false }: { saved?: boolean }) => {
       dispatchFidesEvent("FidesModalClosed", cookie, options.debug, { saved });
+      if (!saved) {
+        onDismiss();
+      }
     },
     [cookie, options.debug]
   );
@@ -61,6 +66,9 @@ const Overlay: FunctionComponent<Props> = ({
     role: window.Fides.options.preventDismissal ? "alertdialog" : "dialog",
     title: experience?.experience_config?.title || "",
     onClose: () => {
+      dispatchCloseEvent({ saved: false });
+    },
+    onEsc: () => {
       dispatchCloseEvent({ saved: false });
     },
   });
@@ -105,8 +113,8 @@ const Overlay: FunctionComponent<Props> = ({
         // Update modal link to trigger modal on click
         const modalLink = modalLinkEl;
         modalLink.onclick = () => {
-          handleOpenModal();
           setBannerIsOpen(false);
+          handleOpenModal();
         };
         // Update to show the pre-existing modal link in the DOM
         modalLink.classList.add("fides-modal-link-shown");
