@@ -259,15 +259,15 @@ export const shouldResurfaceConsent = (
 /**
  * Descend down the provided path on the "window" object and return the nested
  * override options object located at the given path.
- * 
+ *
  * If any part of the path is invalid, return `undefined`.
- * 
- * 
+ *
+ *
  * For example, given a window object like this:
  * ```
  * window.custom_overrides = { nested_obj: { fides_string: "foo" } } };
  * ```
- * 
+ *
  * Then expect the following:
  * ```
  * const overrides = getWindowObjFromPath(["window", "custom_overrides", "nested_obj"])
@@ -286,7 +286,7 @@ export const getWindowObjFromPath = (
   while (path.length > 0) {
     const key = path.shift();
     // If we ever encounter an invalid key or a non-object value, return undefined
-    if (typeof(key) === "undefined" || typeof(record[key]) !== "object") {
+    if (typeof key === "undefined" || typeof record[key] !== "object") {
       return undefined;
     }
     // Keep descending!
