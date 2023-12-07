@@ -33,6 +33,7 @@ from fides.api.schemas.tcf import (
 )
 from fides.api.util.tcf import AC_PREFIX
 from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 PURPOSE_DATA_USES: List[str] = []
 for purpose in MAPPED_PURPOSES.values():
@@ -154,7 +155,8 @@ def get_legal_basis_override_subquery(db: Session) -> Alias:
 
     Otherwise, we return the override!
     """
-    if not CONFIG.consent.override_vendor_purposes:
+    config_proxy = ConfigProxy(db)
+    if not config_proxy.consent.override_vendor_purposes:
         return db.query(
             PrivacyDeclaration.id,
             PrivacyDeclaration.legal_basis_for_processing.label(
