@@ -13,6 +13,7 @@ import { selectIsGettingStarted, selectIsMapOpen } from "./datamap.slice";
 import DatamapTable from "./datamap-table/DatamapTable";
 import GetStarted from "./GetStarted";
 import GVLDatamapNotice from "./GVLDatamapNotice";
+import { useFeatures } from "../common/features";
 
 const SpatialDatamap = dynamic(
   () => import("~/features/datamap/SpatialDatamap"),
@@ -68,6 +69,7 @@ const Datamap = () => {
     selectedSystemId,
     resetSelectedSystemId,
   } = useHome();
+  const { tcf: isTcfEnabled } = useFeatures();
   const { isLoading } = useTableInstance();
   if (isLoading) {
     return (
@@ -82,7 +84,7 @@ const Datamap = () => {
   }
 
   return (
-    <><GVLDatamapNotice />
+    <>{isTcfEnabled ? <GVLDatamapNotice /> : null}
       <Flex direction="column" height="100%">
         <Box marginBottom={3} marginRight={10}>
           <SettingsBar />
