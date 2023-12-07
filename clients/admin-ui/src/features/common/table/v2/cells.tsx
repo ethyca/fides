@@ -2,7 +2,6 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   Badge,
-  Box,
   Checkbox,
   Flex,
   Text,
