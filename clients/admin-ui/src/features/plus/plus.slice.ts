@@ -40,6 +40,7 @@ import {
   SystemScannerStatus,
   SystemScanResponse,
   SystemsDiff,
+  TCFPurposeOverrideSchema,
 } from "~/types/api";
 import {
   DataUseDeclaration,
@@ -428,6 +429,24 @@ const plusApi = baseApi.injectEndpoints({
       // Creating a connection config also creates a dataset behind the scenes
       invalidatesTags: () => ["Datastore Connection", "Datasets", "System"],
     }),
+    getTcfPurposeOverrides: build.query<TCFPurposeOverrideSchema[], void>({
+      query: () => ({
+        url: `plus/tcf/purpose_overrides`,
+        method: "GET",
+      }),
+      providesTags: ["TCF Purpose Override"],
+    }),
+    patchTcfPurposeOverrides: build.mutation<
+      TCFPurposeOverrideSchema[],
+      TCFPurposeOverrideSchema[]
+    >({
+      query: (overrides) => ({
+        url: `plus/tcf/purpose_overrides`,
+        method: "PATCH",
+        body: overrides,
+      }),
+      invalidatesTags: ["TCF Purpose Override"],
+    }),
   }),
 });
 
@@ -465,6 +484,8 @@ export const {
   useUpdateCustomAssetMutation,
   usePatchPlusSystemConnectionConfigsMutation,
   useCreatePlusSaasConnectionConfigMutation,
+  useGetTcfPurposeOverridesQuery,
+  usePatchTcfPurposeOverridesMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =

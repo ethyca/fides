@@ -989,7 +989,7 @@ export const CustomNumberInput = ({
 };
 
 interface CustomSwitchProps {
-  label: string;
+  label?: string;
   tooltip?: string;
   variant?: "inline" | "condensed" | "stacked";
   isDisabled?: boolean;
@@ -998,6 +998,7 @@ export const CustomSwitch = ({
   label,
   tooltip,
   variant = "inline",
+  onChange,
   isDisabled,
   ...props
 }: CustomSwitchProps & FieldHookConfig<boolean>) => {
@@ -1008,7 +1009,13 @@ export const CustomSwitch = ({
     <Switch
       name={field.name}
       isChecked={field.checked}
-      onChange={field.onChange}
+      onChange={(e) => {
+        field.onChange(e);
+        if (onChange) {
+          // @ts-ignore - it got confused between select/input element events
+          onChange(e);
+        }
+      }}
       onBlur={field.onBlur}
       colorScheme="purple"
       mr={2}
