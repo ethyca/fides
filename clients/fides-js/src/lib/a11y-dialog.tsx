@@ -12,10 +12,10 @@ const useA11yDialogInstance = (onEsc?: () => void) => {
     if (node !== null) {
       const dialog = new A11yDialogLib(node);
       dialog
-        .on("show", (event) => {
+        .on("show", () => {
           document.documentElement.style.overflowY = "hidden";
         })
-        .on("hide", (node: any, event: any) => {
+        .on("hide", (_: Element, event?: Event) => {
           document.documentElement.style.overflowY = "";
 
           // a11y-dialog natively supports dismissing a dialog by pressing ESC
