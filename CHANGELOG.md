@@ -15,19 +15,32 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.25.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.26.0...main)
+
+## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
 ### Added
 - Dynamic importing for GPP bundle [#4447](https://github.com/ethyca/fides/pull/4447)
 - Paging to vendors in the TCF overlay [#4463](https://github.com/ethyca/fides/pull/4463)
 - New purposes endpoint and indices to improve system lookups [#4452](https://github.com/ethyca/fides/pull/4452)
+- Cypress tests for fides.js GPP extension [#4476](https://github.com/ethyca/fides/pull/4476)
 - Add support for global TCF Purpose Overrides [#4464](https://github.com/ethyca/fides/pull/4464)
+- TCF override management [#4484](https://github.com/ethyca/fides/pull/4484)
+- Readonly consent management table and modal [#4456](https://github.com/ethyca/fides/pull/4456), [#4477](https://github.com/ethyca/fides/pull/4477)
+- Access and erasure support for Gong [#4461](https://github.com/ethyca/fides/pull/4461)
+
+### Changed
+- Increased max number of preferences allowed in privacy preference API calls [#4469](https://github.com/ethyca/fides/pull/4469)
+- Reduce size of tcf_consent payload in fides_consent cookie [#4480](https://github.com/ethyca/fides/pull/4480)
+- Change log level for FidesUserPermission retrieval to `debug` [#4482](https://github.com/ethyca/fides/pull/4482)
 
 ### Fixed
 - Fix type errors when TCF vendors have no dataDeclaration [#4465](https://github.com/ethyca/fides/pull/4465)
 - Fixed an error where editing an AC system would mistakenly lock it for GVL [#4471](https://github.com/ethyca/fides/pull/4471)
 - Refactor custom Get Preferences function to occur after our CMP API initialization [#4466](https://github.com/ethyca/fides/pull/4466)
 - Fix an error where a connector response value of None causes a DSR failure due to a missing value [#4483](https://github.com/ethyca/fides/pull/4483)
+- Fixed system name being non-editable when locked for GVL [#4475](https://github.com/ethyca/fides/pull/4475)
+- Fixed a bug with "null" values for retention period field on data uses [#4487](https://github.com/ethyca/fides/pull/4487)
 
 ## [2.25.0](https://github.com/ethyca/fides/compare/2.24.1...2.25.0)
 
@@ -37,7 +50,6 @@ The types of changes are:
 - Added feature flag for separating system name and Compass vendor selector [#4437](https://github.com/ethyca/fides/pull/4437)
 - Fire GPP events per spec [#4433](https://github.com/ethyca/fides/pull/4433)
 - New override option `fides_tcf_gdpr_applies` for setting `gdprApplies` on the CMP API [#4453](https://github.com/ethyca/fides/pull/4453)
-- Readonly consent management table [#4456](https://github.com/ethyca/fides/pull/4456)
 
 ### Changed
 - Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
@@ -57,6 +69,7 @@ The types of changes are:
 
 ### Added
 - Logging when root user and client credentials are used [#4432](https://github.com/ethyca/fides/pull/4432)
+- Allow for custom path at which to retrieve Fides override options [#4462](https://github.com/ethyca/fides/pull/4462)
 
 ### Changed
 - Run fides with non-root user [#4421](https://github.com/ethyca/fides/pull/4421)

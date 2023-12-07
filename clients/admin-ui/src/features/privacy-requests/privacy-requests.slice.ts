@@ -374,11 +374,14 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Configuration Settings"],
     }),
-    getConfigurationSettings: build.query<Record<string, any>, void>({
-      query: () => ({
+    getConfigurationSettings: build.query<
+      Record<string, any>,
+      { api_set: boolean }
+    >({
+      query: ({ api_set }) => ({
         url: `/config`,
         method: "GET",
-        params: { api_set: true },
+        params: { api_set },
       }),
       providesTags: ["Configuration Settings"],
     }),
@@ -502,7 +505,9 @@ export const selectCORSOrigins = () =>
   createSelector(
     [
       (state) => state,
-      privacyRequestApi.endpoints.getConfigurationSettings.select(),
+      privacyRequestApi.endpoints.getConfigurationSettings.select({
+        api_set: true,
+      }),
     ],
     (_, { data }) => {
       const hasCorsOrigins = narrow(
@@ -525,7 +530,9 @@ export const selectApplicationConfig = () =>
   createSelector(
     [
       (state) => state,
-      privacyRequestApi.endpoints.getConfigurationSettings.select(),
+      privacyRequestApi.endpoints.getConfigurationSettings.select({
+        api_set: true,
+      }),
     ],
     (_, { data }) => data as ApplicationConfig
   );

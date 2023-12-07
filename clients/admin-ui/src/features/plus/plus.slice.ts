@@ -36,9 +36,11 @@ import {
   Page_SystemHistoryResponse_,
   Page_SystemSummary_,
   ResourceTypes,
+  SystemPurposeSummary,
   SystemScannerStatus,
   SystemScanResponse,
   SystemsDiff,
+  TCFPurposeOverrideSchema,
 } from "~/types/api";
 import {
   DataUseDeclaration,
@@ -297,6 +299,13 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Fides Cloud Config"],
     }),
+    getSystemPurposeSummary: build.query<SystemPurposeSummary, string>({
+      query: (fidesKey: string) => ({
+        url: `plus/system/${fidesKey}/purpose-summary`,
+        method: "GET",
+      }),
+      providesTags: ["System"],
+    }),
     getVendorReport: build.query<
       Page_SystemSummary_,
       {
@@ -420,6 +429,24 @@ const plusApi = baseApi.injectEndpoints({
       // Creating a connection config also creates a dataset behind the scenes
       invalidatesTags: () => ["Datastore Connection", "Datasets", "System"],
     }),
+    getTcfPurposeOverrides: build.query<TCFPurposeOverrideSchema[], void>({
+      query: () => ({
+        url: `plus/tcf/purpose_overrides`,
+        method: "GET",
+      }),
+      providesTags: ["TCF Purpose Override"],
+    }),
+    patchTcfPurposeOverrides: build.mutation<
+      TCFPurposeOverrideSchema[],
+      TCFPurposeOverrideSchema[]
+    >({
+      query: (overrides) => ({
+        url: `plus/tcf/purpose_overrides`,
+        method: "PATCH",
+        body: overrides,
+      }),
+      invalidatesTags: ["TCF Purpose Override"],
+    }),
   }),
 });
 
@@ -453,9 +480,12 @@ export const {
   useGetAllSystemVendorsQuery,
   usePostSystemVendorsMutation,
   useGetSystemHistoryQuery,
+  useGetSystemPurposeSummaryQuery,
   useUpdateCustomAssetMutation,
   usePatchPlusSystemConnectionConfigsMutation,
   useCreatePlusSaasConnectionConfigMutation,
+  useGetTcfPurposeOverridesQuery,
+  usePatchTcfPurposeOverridesMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =

@@ -967,6 +967,7 @@ class TestGetConfig:
             "security",
             "execution",
             "storage",
+            "consent",
         }
 
         for key in config.keys():
@@ -1073,3 +1074,8 @@ class TestGetConfig:
                 )
                 == 0
             ), "Unexpected config API change, please review with Ethyca security team"
+
+        consent_keys = set(config["consent"].keys())
+        assert (
+            len(consent_keys.difference(set(["override_vendor_purposes"]))) == 0
+        ), "Unexpected config API change, please review with Ethyca security team"
