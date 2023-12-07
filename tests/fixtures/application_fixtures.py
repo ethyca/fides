@@ -2870,7 +2870,6 @@ def privacy_preference_history_for_tcf(db, privacy_experience_france_overlay, sy
                 ],
                 "vendor_legitimate_interests_preferences": [],
                 "special_feature_preferences": [],
-                "preferences": [],
                 "special_purpose_preferences": [],
                 "feature_preferences": [],
                 "system_consent_preferences": [
