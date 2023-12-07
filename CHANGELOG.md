@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.26.0...main)
 
+### Added
+- Tooltip and styling for disabled rows in add multiple vendor view [#4498](https://github.com/ethyca/fides/pull/4498)
+
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
 ### Added
