@@ -2,10 +2,10 @@ import {
   Box,
   Breadcrumb,
   BreadcrumbItem,
-  Heading,
-  Text,
   Flex,
+  Heading,
   Spacer,
+  Text,
 } from "@fidesui/react";
 import { useFeatures } from "common/features";
 import NextLink from "next/link";
@@ -14,9 +14,9 @@ import React from "react";
 import FixedLayout from "~/features/common/FixedLayout";
 import Layout from "~/features/common/Layout";
 import { CONFIGURE_CONSENT_ROUTE } from "~/features/common/nav/v2/routes";
+import AddVendor from "~/features/configure-consent/AddVendor";
 import ConfigureConsent from "~/features/configure-consent/ConfigureConsent";
 import { ConsentManagementTable } from "~/features/configure-consent/ConsentMangagementTable";
-import AddVendor from "~/features/configure-consent/AddVendor";
 
 type Props = {
   includeAddVendors?: boolean;
