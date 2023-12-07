@@ -73,6 +73,7 @@ export enum ScopeRegistryEnum {
   DATASET_DELETE = "dataset:delete",
   DATASET_READ = "dataset:read",
   ENCRYPTION_EXEC = "encryption:exec",
+  ENDPOINT_CACHE_UPDATE = "endpoint_cache:update",
   EVALUATION_CREATE = "evaluation:create",
   EVALUATION_DELETE = "evaluation:delete",
   EVALUATION_READ = "evaluation:read",
