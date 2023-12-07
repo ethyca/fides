@@ -140,6 +140,8 @@ export enum ScopeRegistryEnum {
   TAXONOMY_CREATE = "taxonomy:create",
   TAXONOMY_DELETE = "taxonomy:delete",
   TAXONOMY_UPDATE = "taxonomy:update",
+  TCF_PUBLISHER_OVERRIDE_READ = "tcf_publisher_override:read",
+  TCF_PUBLISHER_OVERRIDE_UPDATE = "tcf_publisher_override:update",
   USER_PERMISSION_ASSIGN_OWNERS = "user-permission:assign_owners",
   USER_PERMISSION_CREATE = "user-permission:create",
   USER_PERMISSION_READ = "user-permission:read",
