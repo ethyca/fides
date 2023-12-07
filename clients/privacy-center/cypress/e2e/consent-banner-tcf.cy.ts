@@ -2720,6 +2720,80 @@ describe("Fides-js TCF", () => {
           expect(tcData.vendor.legitimateInterests).to.eql({});
         });
     });
+
+    it("does not error when window obj at custom config path doesn't exist", () => {
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig(
+          {
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+              customOptionsPath: "window.nonexistent_object",
+            },
+            experience: experience.items[0],
+          },
+          null,
+          null,
+          null,
+          { fides_string: "foo" }
+        );
+      });
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+        // stubConfig will set window.config.overrides = { fides_string: "foo" }
+        expect(win).to.have.nested.property("config.overrides"); // defined by TEST_OVERRIDE_WINDOW_PATH
+        // However, customOptionsPath will *try* to read window.nonexistent_object, which will be undefined
+        expect(win).not.to.have.property("nonexistent_object");
+      });
+      // Open the modal
+      cy.get("#fides-modal-link").click();
+
+      // verify CMP API
+      cy.get("@TCFEvent")
+        .its("lastCall.args")
+        .then(([tcData, success]) => {
+          expect(success).to.eql(true);
+          expect(tcData.tcString).to.eql("");
+          expect(tcData.eventStatus).to.eql("cmpuishown");
+        });
+    });
+
+    it("does not error when window obj at nested custom config path doesn't exist", () => {
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig(
+          {
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+              customOptionsPath: "window.nonexistent_object.nested.path",
+            },
+            experience: experience.items[0],
+          },
+          null,
+          null,
+          null,
+          { fides_string: "foo" }
+        );
+      });
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+        // stubConfig will set window.config.overrides = { fides_string: "foo" }
+        expect(win).to.have.nested.property("config.overrides"); // defined by TEST_OVERRIDE_WINDOW_PATH
+        // However, customOptionsPath will *try* to read window.nonexistent_object, which will be undefined
+        expect(win).not.to.have.property("nonexistent_object");
+      });
+      // Open the modal
+      cy.get("#fides-modal-link").click();
+
+      // verify CMP API
+      cy.get("@TCFEvent")
+        .its("lastCall.args")
+        .then(([tcData, success]) => {
+          expect(success).to.eql(true);
+          expect(tcData.tcString).to.eql("");
+          expect(tcData.eventStatus).to.eql("cmpuishown");
+        });
+    });
   });
 
   describe("ac string", () => {
