@@ -1,4 +1,12 @@
-import { Box, Breadcrumb, BreadcrumbItem, Heading, Text } from "@fidesui/react";
+import {
+  Box,
+  Breadcrumb,
+  BreadcrumbItem,
+  Heading,
+  Text,
+  Flex,
+  Spacer,
+} from "@fidesui/react";
 import { useFeatures } from "common/features";
 import NextLink from "next/link";
 import React from "react";
@@ -8,8 +16,11 @@ import Layout from "~/features/common/Layout";
 import { CONFIGURE_CONSENT_ROUTE } from "~/features/common/nav/v2/routes";
 import ConfigureConsent from "~/features/configure-consent/ConfigureConsent";
 import { ConsentManagementTable } from "~/features/configure-consent/ConsentMangagementTable";
+import AddVendor from "~/features/configure-consent/AddVendor";
 
-const ConsentMetadata = () => (
+const ConsentMetadata: React.FC<{ includeAddVendors?: boolean }> = ({
+  includeAddVendors,
+}) => (
   <>
     <Box mb={4}>
       <Heading fontSize="2xl" fontWeight="semibold" mb={2} data-testid="header">
@@ -31,9 +42,17 @@ const ConsentMetadata = () => (
         </Breadcrumb>
       </Box>
     </Box>
-    <Text fontSize="sm" mb={8} width={{ base: "100%", lg: "50%" }}>
-      Your current cookies and tracking information.
-    </Text>
+    <Flex>
+      <Text fontSize="sm" mb={8} width={{ base: "100%", lg: "50%" }}>
+        Your current cookies and tracking information.
+      </Text>
+      {includeAddVendors ? (
+        <>
+          <Spacer />
+          <AddVendor />
+        </>
+      ) : null}
+    </Flex>
   </>
 );
 
@@ -49,7 +68,7 @@ const ConfigureConsentPage = () => {
           paddingRight: "48px",
         }}
       >
-        <ConsentMetadata />
+        <ConsentMetadata includeAddVendors />
         <ConsentManagementTable />
       </FixedLayout>
     );
