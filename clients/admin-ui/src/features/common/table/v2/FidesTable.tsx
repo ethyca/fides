@@ -118,6 +118,7 @@ export const FidesTableV2 = <T,>({
                 : undefined
             }
             data-testid={`row-${row.id}`}
+            backgroundColor={row.getCanSelect() ? undefined : "gray.50"}
           >
             {row.getVisibleCells().map((cell) => (
               <Td

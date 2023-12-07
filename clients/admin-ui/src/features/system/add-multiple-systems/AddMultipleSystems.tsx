@@ -17,6 +17,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
 import { useFeatures } from "common/features";
@@ -41,7 +42,7 @@ import {
 } from "common/table/v2";
 import { errorToastParams, successToastParams } from "common/toast";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
@@ -161,16 +162,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     [allRowsLinkedToSystem, systemText, isTcfEnabled]
   );
 
-  const rowSelection = useMemo(() => {
-    const innerRowSelection: Record<string, boolean> = {};
-    dictionaryOptions.forEach((ds, index) => {
-      if (ds.linked_system) {
-        innerRowSelection[index] = true;
-      }
-    });
-    return innerRowSelection;
-  }, [dictionaryOptions]);
-
   const tableInstance = useReactTable<MultipleSystemTable>({
     columns,
     data: dictionaryOptions,
@@ -179,7 +170,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onGlobalFilterChange: setGlobalFilter,
-    enableRowSelection: true,
+    enableRowSelection: (row) => !row.original.linked_system,
     enableSorting: true,
     enableGlobalFilter: true,
     state: {
@@ -189,12 +180,24 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       },
     },
     initialState: {
-      rowSelection,
       pagination: {
         pageSize: PAGE_SIZES[0],
       },
     },
   });
+
+  useEffect(() => {
+    const innerRowSelection: RowSelectionState = {};
+    dictionaryOptions.forEach((ds, index) => {
+      if (ds.linked_system) {
+        innerRowSelection[index] = true;
+      }
+    });
+    // Set on the table instance once this is ready
+    if (Object.keys(innerRowSelection).length) {
+      tableInstance.setRowSelection(innerRowSelection);
+    }
+  }, [dictionaryOptions, tableInstance]);
 
   const {
     totalRows,
