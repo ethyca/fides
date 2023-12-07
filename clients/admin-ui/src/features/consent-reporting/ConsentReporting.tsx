@@ -27,6 +27,12 @@ const ConsentReporting = () => {
         "A problem occurred while generating your consent report.  Please try again."
       );
       toast({ status: "error", description: message });
+    } else {
+      const a = document.createElement("a");
+      const csvBlob = new Blob([result.data], { type: "text/csv" });
+      a.href = window.URL.createObjectURL(csvBlob);
+      a.download = `consent-reports.csv`;
+      a.click();
     }
   };
 

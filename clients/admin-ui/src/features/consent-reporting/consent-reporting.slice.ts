@@ -38,16 +38,10 @@ export const consentReportingApi = baseApi.injectEndpoints({
         return {
           url: "plus/consent_reporting",
           params,
-          responseHandler: (response) => response.blob(),
+          responseHandler: "content-type",
         };
       },
       providesTags: ["Consent Reporting"],
-      transformResponse: (data: Blob) => {
-        const a = document.createElement("a");
-        a.href = window.URL.createObjectURL(data);
-        a.download = "consent-reports.csv";
-        a.click();
-      },
     }),
   }),
 });
