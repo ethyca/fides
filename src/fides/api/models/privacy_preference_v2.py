@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any, Dict, Optional, Type, Union
+from typing import Any, Dict, Optional
 
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint, func, or_
+from sqlalchemy import ForeignKey, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
@@ -23,24 +23,6 @@ from fides.api.models.privacy_preference import (
 )
 from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequest
 from fides.config import CONFIG
-
-
-def get_records_with_consent_identifiers(
-    db: Session,
-    record_type: Union[Type[CurrentPrivacyPreferenceV2], Type[LastServedNoticeV2]],
-    hashed_device: Optional[str] = None,
-    hashed_email: Optional[str] = None,
-    hashed_phone: Optional[str] = None,
-) -> Query:
-    user_identifiers = []
-    if hashed_device:
-        user_identifiers.append(record_type.hashed_fides_user_device == hashed_device)
-    if hashed_email:
-        user_identifiers.append(record_type.hashed_email == hashed_email)
-    if hashed_phone:
-        user_identifiers.append(record_type.hashed_phone_number == hashed_phone)
-
-    return db.query(record_type).filter(or_(*user_identifiers))
 
 
 class ConsentIdentitiesMixin:
@@ -347,41 +329,3 @@ class PrivacyPreferenceHistoryV2(ConsentReportingMixinV2, Base):
         secondary_user_ids.update(new_identities)
         self.secondary_user_ids = secondary_user_ids
         self.save(db)
-
-
-def get_consent_records_by_device_id(
-    db: Session,
-    record_type: Union[
-        Type[LastServedNoticeV2],
-        Type[CurrentPrivacyPreferenceV2],
-        Type[ServedNoticeHistoryV2],
-        Type[PrivacyPreferenceHistoryV2],
-    ],
-    value: str,
-) -> Query:
-    """Search the specified consent record table by hashing the fides device id and
-    searching for its match."""
-
-    hashed_val = ConsentIdentitiesMixin.hash_value(value)
-
-    return db.query(record_type).filter(
-        record_type.hashed_fides_user_device == hashed_val
-    )
-
-
-def get_consent_records_by_email(
-    db: Session,
-    record_type: Union[
-        Type[LastServedNoticeV2],
-        Type[CurrentPrivacyPreferenceV2],
-        Type[ServedNoticeHistoryV2],
-        Type[PrivacyPreferenceHistoryV2],
-    ],
-    value: str,
-) -> Query:
-    """Search the specified consent record table by hashing the email and
-    searching for its match."""
-
-    hashed_val = ConsentIdentitiesMixin.hash_value(value)
-
-    return db.query(record_type).filter(record_type.hashed_email == hashed_val)

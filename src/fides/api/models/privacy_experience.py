@@ -18,10 +18,6 @@ from fides.api.models.privacy_notice import (
     update_if_modified,
 )
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.util.tcf.tcf_experience_contents import (
-    TCF_SECTION_MAPPING,
-    TCFExperienceContents,
-)
 
 BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
     ConsentMechanism.notice_only,
@@ -290,34 +286,6 @@ class PrivacyExperience(Base):
             privacy_notice_query = privacy_notice_query.filter(PrivacyNotice.data_uses.overlap(data_uses))  # type: ignore
 
         return privacy_notice_query.order_by(PrivacyNotice.created_at.desc()).all()
-
-    def update_with_tcf_contents(
-        self,
-        base_tcf_contents: TCFExperienceContents,
-    ) -> bool:
-        """
-        Supplements the given TCF experience in-place with TCF contents at runtime, and returns whether
-        TCF contents exist.
-
-        The TCF experience is determined by systems in the data map as well as any previous records
-        of a user being served TCF components and/or consenting to any individual TCF components.
-        """
-        if self.component == ComponentType.tcf_overlay:
-            has_tcf_contents = False
-            for (
-                tcf_section_name,
-                _,
-            ) in TCF_SECTION_MAPPING.items():
-                # Now supplement the TCF Experience with this new section
-                tcf_section: List = getattr(base_tcf_contents, tcf_section_name)
-                setattr(self, tcf_section_name, tcf_section)
-                if tcf_section:
-                    has_tcf_contents = True
-
-            if has_tcf_contents:
-                return True
-
-        return False
 
     @staticmethod
     def create_default_experience_for_region(
