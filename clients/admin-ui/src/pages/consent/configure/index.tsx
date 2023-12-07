@@ -18,13 +18,23 @@ import ConfigureConsent from "~/features/configure-consent/ConfigureConsent";
 import { ConsentManagementTable } from "~/features/configure-consent/ConsentMangagementTable";
 import AddVendor from "~/features/configure-consent/AddVendor";
 
-const ConsentMetadata: React.FC<{ includeAddVendors?: boolean }> = ({
+type Props = {
+  includeAddVendors?: boolean;
+  title: string;
+  breadCrumbText: string;
+  description: string;
+};
+
+const ConsentMetadata: React.FC<Props> = ({
   includeAddVendors,
+  title,
+  breadCrumbText,
+  description,
 }) => (
   <>
     <Box mb={4}>
       <Heading fontSize="2xl" fontWeight="semibold" mb={2} data-testid="header">
-        Configure consent
+        {title}
       </Heading>
       <Box>
         <Breadcrumb
@@ -37,14 +47,14 @@ const ConsentMetadata: React.FC<{ includeAddVendors?: boolean }> = ({
             <NextLink href={CONFIGURE_CONSENT_ROUTE}>Consent</NextLink>
           </BreadcrumbItem>
           <BreadcrumbItem color="complimentary.500">
-            <NextLink href="#">Configure consent</NextLink>
+            <NextLink href="#">{breadCrumbText}</NextLink>
           </BreadcrumbItem>
         </Breadcrumb>
       </Box>
     </Box>
     <Flex>
       <Text fontSize="sm" mb={8} width={{ base: "100%", lg: "50%" }}>
-        Your current cookies and tracking information.
+        {description}
       </Text>
       {includeAddVendors ? (
         <>
@@ -68,7 +78,12 @@ const ConfigureConsentPage = () => {
           paddingRight: "48px",
         }}
       >
-        <ConsentMetadata includeAddVendors />
+        <ConsentMetadata
+          includeAddVendors
+          title="Manage your vendors"
+          breadCrumbText="Vendors"
+          description="Use the table below to manage your vendors. Modify the legal basis for a vendor if permitted and view and group your views by applying different filters"
+        />
         <ConsentManagementTable />
       </FixedLayout>
     );
@@ -76,7 +91,11 @@ const ConfigureConsentPage = () => {
 
   return (
     <Layout title="Configure consent">
-      <ConsentMetadata />
+      <ConsentMetadata
+        title="Configure consent"
+        breadCrumbText="Configure consent"
+        description="Your current cookies and tracking information."
+      />
       <ConfigureConsent />
     </Layout>
   );
