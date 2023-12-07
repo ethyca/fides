@@ -55,11 +55,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   // add listeners for ESC and clicking outside of component
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      console.log("ref current ", ref.current);
-      console.log("ref target ", event.target);
       if (ref.current && !ref.current.contains(event.target as Node)) {
-        event.stopImmediatePropagation();
-        console.log("outside click detected, banner is open: ", bannerIsOpen);
         onClose();
       }
     };
