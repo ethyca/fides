@@ -9,11 +9,11 @@ import { DatamapGraphContext } from "~/features/datamap/datamap-graph/DatamapGra
 import { useTableInstance } from "~/features/datamap/datamap-table/hooks/";
 import SettingsBar from "~/features/datamap/SettingsBar";
 
+import { useFeatures } from "../common/features";
 import { selectIsGettingStarted, selectIsMapOpen } from "./datamap.slice";
 import DatamapTable from "./datamap-table/DatamapTable";
 import GetStarted from "./GetStarted";
 import GVLDatamapNotice from "./GVLDatamapNotice";
-import { useFeatures } from "../common/features";
 
 const SpatialDatamap = dynamic(
   () => import("~/features/datamap/SpatialDatamap"),
@@ -84,7 +84,8 @@ const Datamap = () => {
   }
 
   return (
-    <>{isTcfEnabled ? <GVLDatamapNotice /> : null}
+    <>
+      {isTcfEnabled ? <GVLDatamapNotice /> : null}
       <Flex direction="column" height="100%">
         <Box marginBottom={3} marginRight={10}>
           <SettingsBar />
@@ -110,9 +111,11 @@ const Datamap = () => {
           ) : null}
           <DatamapDrawer
             selectedSystemId={selectedSystemId}
-            resetSelectedSystemId={resetSelectedSystemId} />
+            resetSelectedSystemId={resetSelectedSystemId}
+          />
         </Flex>
-      </Flex></>
+      </Flex>
+    </>
   );
 };
 
