@@ -2585,7 +2585,7 @@ describe("Fides-js TCF", () => {
         });
     });
 
-    it.only("uses fides_string when set via window obj at custom config path", () => {
+    it("uses fides_string when set via window obj at custom config path", () => {
       const fidesStringOverride =
         "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA.IABE,1~";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
@@ -2636,7 +2636,7 @@ describe("Fides-js TCF", () => {
         });
     });
 
-    it.only("does not error when window obj at custom config path doesn't exist", () => {
+    it("does not error when window obj at custom config path doesn't exist", () => {
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig(
           {
@@ -2673,7 +2673,7 @@ describe("Fides-js TCF", () => {
         });
     });
 
-    it.only("does not error when window obj at nested custom config path doesn't exist", () => {
+    it("does not error when window obj at nested custom config path doesn't exist", () => {
       cy.fixture("consent/experience_tcf.json").then((experience) => {
         stubConfig(
           {
