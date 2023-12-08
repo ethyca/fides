@@ -93,6 +93,9 @@ export type FidesOptions = {
 
   // A custom path to fetch OverrideOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
   customOptionsPath: string | null;
+
+  // Prevents the banner and modal from being dismissed
+  preventDismissal: boolean;
 };
 
 export type GetPreferencesFnResp = {

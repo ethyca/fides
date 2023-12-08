@@ -156,6 +156,7 @@ export default async function handler(
       apiOptions: null,
       gppExtensionPath: environment.settings.GPP_EXTENSION_PATH,
       customOptionsPath: null,
+      preventDismissal: environment.settings.PREVENT_DISMISSAL,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,

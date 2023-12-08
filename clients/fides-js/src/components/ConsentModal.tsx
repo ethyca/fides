@@ -34,7 +34,11 @@ const ConsentModal = ({
       >
         <div className="fides-modal-header">
           <div />
-          <CloseButton ariaLabel="Close modal" onClick={closeButton.onClick} />
+          <CloseButton
+            ariaLabel="Close modal"
+            onClick={closeButton.onClick}
+            hidden={window.Fides.options.preventDismissal}
+          />
         </div>
         <ConsentContent
           title={title}

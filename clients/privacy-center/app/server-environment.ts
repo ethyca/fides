@@ -55,6 +55,7 @@ export interface PrivacyCenterSettings {
   IS_FORCED_TCF: boolean; // whether to force the privacy center to use the fides-tcf.js bundle
   IS_GPP_ENABLED: boolean; // whether GPP is enabled
   GPP_EXTENSION_PATH: string; // The path of the GPP extension file `fides-ext-gpp.js`. Defaults to `/fides-ext-gpp.js`
+  PREVENT_DISMISSAL: boolean; // whether or not the user is allowed to dismiss the banner/overlay
 }
 
 /**
@@ -82,6 +83,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "IS_FORCED_TCF"
   | "IS_GPP_ENABLED"
   | "GPP_EXTENSION_PATH"
+  | "PREVENT_DISMISSAL"
 >;
 
 export type Styles = string;
@@ -349,6 +351,9 @@ export const loadPrivacyCenterEnvironment =
       GPP_EXTENSION_PATH:
         process.env.FIDES_PRIVACY_CENTER__GPP_EXTENSION_PATH ||
         "/fides-ext-gpp.js",
+      PREVENT_DISMISSAL: process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL
+        ? process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL === "true"
+        : false,
     };
 
     // Load configuration file (if it exists)
@@ -378,6 +383,7 @@ export const loadPrivacyCenterEnvironment =
       IS_FORCED_TCF: settings.IS_FORCED_TCF,
       IS_GPP_ENABLED: settings.IS_GPP_ENABLED,
       GPP_EXTENSION_PATH: settings.GPP_EXTENSION_PATH,
+      PREVENT_DISMISSAL: settings.PREVENT_DISMISSAL,
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present

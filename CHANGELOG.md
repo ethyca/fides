@@ -29,6 +29,7 @@ The types of changes are:
 - Readonly consent management table and modal [#4456](https://github.com/ethyca/fides/pull/4456), [#4477](https://github.com/ethyca/fides/pull/4477)
 - Access and erasure support for Gong [#4461](https://github.com/ethyca/fides/pull/4461)
 - Add new UI for CSV consent reporting [#4488](https://github.com/ethyca/fides/pull/4488)
+- Option to prevent the dismissal of the consent banner and modal [#4470](https://github.com/ethyca/fides/pull/4470)
 
 ### Changed
 - Increased max number of preferences allowed in privacy preference API calls [#4469](https://github.com/ethyca/fides/pull/4469)
