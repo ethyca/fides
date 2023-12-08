@@ -373,7 +373,7 @@ def upgrade():
         ),
         sa.Column("fides_string", sa.String(), nullable=True),
         sa.Column("method", sa.String(), nullable=True),
-        sa.Column("preference", sa.String(), nullable=True),
+        sa.Column("preference", sa.String(), nullable=False),
         sa.Column("privacy_request_id", sa.String(), nullable=True),
         sa.Column(
             "secondary_user_ids",

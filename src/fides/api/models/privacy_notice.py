@@ -27,6 +27,7 @@ class UserConsentPreference(Enum):
     opt_in = "opt_in"  # The user wants to opt in to the notice
     opt_out = "opt_out"  # The user wants to opt out of the notice
     acknowledge = "acknowledge"  # The user has acknowledged this notice
+    tcf = "tcf"  # Overall preference set for TCF where there are numerous preferences under the single notice
 
 
 # Enum defined using functional API so we can use regions like "is"

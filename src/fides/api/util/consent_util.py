@@ -72,7 +72,11 @@ def filter_privacy_preferences_for_propagation(
         if pref.privacy_notice_history
         and pref.privacy_notice_history.enforcement_level
         == EnforcementLevel.system_wide
-        and (pref.preference and pref.preference != UserConsentPreference.acknowledge)
+        and (
+            pref.preference
+            and pref.preference
+            in [UserConsentPreference.opt_in, UserConsentPreference.opt_out]
+        )
     ]
 
     if not system:
