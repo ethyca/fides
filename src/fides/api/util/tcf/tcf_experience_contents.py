@@ -170,14 +170,14 @@ def get_legal_basis_override_subquery(db: Session) -> Alias:
             case(
                 [
                     (
+                        TCFPurposeOverride.is_included.is_(False),
+                        None,
+                    ),
+                    (
                         PrivacyDeclaration.flexible_legal_basis_for_processing.is_(
                             False
                         ),
                         PrivacyDeclaration.legal_basis_for_processing,
-                    ),
-                    (
-                        TCFPurposeOverride.is_included.is_(False),
-                        None,
                     ),
                     (
                         TCFPurposeOverride.required_legal_basis.is_(None),
