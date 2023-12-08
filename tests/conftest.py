@@ -186,11 +186,34 @@ def enable_ac(config):
 
 
 @pytest.fixture(scope="function")
-def enable_override_vendor_purposes(config):
+def enable_override_vendor_purposes(config, db):
     assert config.test_mode
     config.consent.override_vendor_purposes = True
+    ApplicationConfig.create_or_update(
+        db,
+        data={"config_set": {"consent": {"override_vendor_purposes": True}}},
+    )
     yield config
     config.consent.override_vendor_purposes = False
+    ApplicationConfig.create_or_update(
+        db,
+        data={"config_set": {"consent": {"override_vendor_purposes": False}}},
+    )
+
+
+@pytest.fixture(scope="function")
+def enable_override_vendor_purposes_api_set(db):
+    """Enable override vendor purposes via api_set setting, not via traditional app config"""
+    ApplicationConfig.create_or_update(
+        db,
+        data={"api_set": {"consent": {"override_vendor_purposes": True}}},
+    )
+    yield
+    # reset back to false on teardown
+    ApplicationConfig.create_or_update(
+        db,
+        data={"api_set": {"consent": {"override_vendor_purposes": False}}},
+    )
 
 
 @pytest.fixture

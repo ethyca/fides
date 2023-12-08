@@ -3,15 +3,18 @@ import { h } from "preact";
 const CloseButton = ({
   onClick,
   ariaLabel,
+  hidden = false,
 }: {
   onClick?: () => void;
   ariaLabel?: string;
+  hidden?: boolean;
 }) => (
   <button
     type="button"
     aria-label={ariaLabel}
     className="fides-close-button"
     onClick={onClick}
+    style={{ visibility: hidden ? "hidden" : "visible" }}
   >
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none">
       <path

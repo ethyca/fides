@@ -136,6 +136,12 @@ describe("getWindowObjFromPath", () => {
       expected: undefined,
     },
     {
+      label: "nested path does not exist",
+      path: ["window", "nonexistent-path", "nested"],
+      window: windowMock1,
+      expected: undefined,
+    },
+    {
       label: "path is one level deep",
       path: ["window", "fides_overrides"],
       window: windowMock1,

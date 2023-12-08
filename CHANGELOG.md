@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.26.0...main)
 
+### Added
+- Tooltip and styling for disabled rows in add multiple vendor view [#4498](https://github.com/ethyca/fides/pull/4498)
+
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
 ### Added
@@ -28,6 +31,8 @@ The types of changes are:
 - TCF override management [#4484](https://github.com/ethyca/fides/pull/4484)
 - Readonly consent management table and modal [#4456](https://github.com/ethyca/fides/pull/4456), [#4477](https://github.com/ethyca/fides/pull/4477)
 - Access and erasure support for Gong [#4461](https://github.com/ethyca/fides/pull/4461)
+- Add new UI for CSV consent reporting [#4488](https://github.com/ethyca/fides/pull/4488)
+- Option to prevent the dismissal of the consent banner and modal [#4470](https://github.com/ethyca/fides/pull/4470)
 
 ### Changed
 - Increased max number of preferences allowed in privacy preference API calls [#4469](https://github.com/ethyca/fides/pull/4469)

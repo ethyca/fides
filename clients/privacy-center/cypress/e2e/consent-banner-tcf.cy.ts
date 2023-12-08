@@ -312,7 +312,12 @@ describe("Fides-js TCF", () => {
       cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
         fixture: "consent/notices_served_tcf.json",
       }).as("patchNoticesServed");
-      cy.get("#fides-modal-link").click();
+
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
     });
 
     describe("rendering the TCF modal", () => {
@@ -338,7 +343,13 @@ describe("Fides-js TCF", () => {
             experience,
           });
         });
-        cy.get("#fides-modal-link").click();
+
+        cy.get("div#fides-banner").within(() => {
+          cy.get("#fides-button-group").within(() => {
+            cy.get("button").contains("Manage preferences").click();
+          });
+        });
+
         cy.get("#fides-tab-Vendors").click();
         cy.get("#fides-panel-Vendors").within(() => {
           cy.getByTestId("records-list-IAB TCF vendors").within(() => {
@@ -926,7 +937,11 @@ describe("Fides-js TCF", () => {
             experience: privacyExperience.items[0],
           });
           cy.waitUntilFidesInitialized().then(() => {
-            cy.get("#fides-modal-link").click();
+            cy.get("div#fides-banner").within(() => {
+              cy.get("#fides-button-group").within(() => {
+                cy.get("button").contains("Manage preferences").click();
+              });
+            });
             cy.getByTestId("consent-modal").within(() => {
               cy.get("button").contains("Opt out of all").click();
               cy.get("@FidesUpdated")
@@ -1341,7 +1356,11 @@ describe("Fides-js TCF", () => {
       cy.window().then((win) => {
         win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
       });
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
     });
 
     it("makes API available as soon as possible", () => {
@@ -1462,7 +1481,11 @@ describe("Fides-js TCF", () => {
         cy.window().then((win) => {
           win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent2"));
         });
-        cy.get("#fides-modal-link").click();
+        cy.get("div#fides-banner").within(() => {
+          cy.get("#fides-button-group").within(() => {
+            cy.get("button").contains("Manage preferences").click();
+          });
+        });
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
@@ -1559,8 +1582,13 @@ describe("Fides-js TCF", () => {
       cy.window().then((win) => {
         win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
       });
+
       // Open the modal
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
 
       // Verify the toggles
       // Purposes
@@ -1708,8 +1736,13 @@ describe("Fides-js TCF", () => {
       cy.window().then((win) => {
         win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
       });
+
       // Open the modal
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
 
       // Verify the toggles
       // Purposes
@@ -1803,8 +1836,13 @@ describe("Fides-js TCF", () => {
       cy.window().then((win) => {
         win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
       });
+
       // Open the modal
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
 
       // Verify the toggles
       // Purposes
@@ -1941,7 +1979,11 @@ describe("Fides-js TCF", () => {
       });
 
       // Open the modal
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
 
       // Verify the toggles
       // Purposes
@@ -2043,7 +2085,11 @@ describe("Fides-js TCF", () => {
         });
       });
 
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
       checkDefaultExperienceRender();
 
       // verify CMP API
@@ -2122,8 +2168,13 @@ describe("Fides-js TCF", () => {
           });
         });
       });
+
       // Open the modal
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
 
       // Verify the toggles
       // Purposes
@@ -2242,7 +2293,11 @@ describe("Fides-js TCF", () => {
       });
 
       // Open the modal
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
 
       // Verify the toggles
       // Purposes
@@ -2339,8 +2394,13 @@ describe("Fides-js TCF", () => {
       cy.window().then((win) => {
         win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
       });
+
       // Open the modal
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
 
       // Verify the toggles
       // Purposes
@@ -2418,8 +2478,13 @@ describe("Fides-js TCF", () => {
       cy.window().then((win) => {
         win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
       });
+
       // Open the modal
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
 
       // Verify the vendor toggle
       // this vendor is set to null in the experience but true in the string
@@ -2462,8 +2527,13 @@ describe("Fides-js TCF", () => {
       cy.window().then((win) => {
         win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
       });
+
       // Open the modal
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
 
       // verify CMP API
       cy.get("@TCFEvent")
@@ -2510,8 +2580,13 @@ describe("Fides-js TCF", () => {
       cy.window().then((win) => {
         win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
       });
+
       // Open the modal
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
 
       // verify CMP API
       cy.get("@TCFEvent")
@@ -2559,8 +2634,13 @@ describe("Fides-js TCF", () => {
       cy.window().then((win) => {
         win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
       });
+
       // Open the modal
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
 
       // verify CMP API
       cy.get("@TCFEvent")
@@ -2610,8 +2690,13 @@ describe("Fides-js TCF", () => {
       cy.window().then((win) => {
         win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
       });
+
       // Open the modal
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
 
       // verify CMP API
       cy.get("@TCFEvent")
@@ -2633,6 +2718,90 @@ describe("Fides-js TCF", () => {
           expect(tcData.purpose.legitimateInterests).to.eql({});
           expect(tcData.vendor.consents).to.eql({});
           expect(tcData.vendor.legitimateInterests).to.eql({});
+        });
+    });
+
+    it("does not error when window obj at custom config path doesn't exist", () => {
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig(
+          {
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+              customOptionsPath: "window.nonexistent_object",
+            },
+            experience: experience.items[0],
+          },
+          null,
+          null,
+          null,
+          { fides_string: "foo" }
+        );
+      });
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+        // stubConfig will set window.config.overrides = { fides_string: "foo" }
+        expect(win).to.have.nested.property("config.overrides"); // defined by TEST_OVERRIDE_WINDOW_PATH
+        // However, customOptionsPath will *try* to read window.nonexistent_object, which will be undefined
+        expect(win).not.to.have.property("nonexistent_object");
+      });
+
+      // Open the modal
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
+
+      // verify CMP API
+      cy.get("@TCFEvent")
+        .its("lastCall.args")
+        .then(([tcData, success]) => {
+          expect(success).to.eql(true);
+          expect(tcData.tcString).to.eql("");
+          expect(tcData.eventStatus).to.eql("cmpuishown");
+        });
+    });
+
+    it("does not error when window obj at nested custom config path doesn't exist", () => {
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig(
+          {
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+              customOptionsPath: "window.nonexistent_object.nested.path",
+            },
+            experience: experience.items[0],
+          },
+          null,
+          null,
+          null,
+          { fides_string: "foo" }
+        );
+      });
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+        // stubConfig will set window.config.overrides = { fides_string: "foo" }
+        expect(win).to.have.nested.property("config.overrides"); // defined by TEST_OVERRIDE_WINDOW_PATH
+        // However, customOptionsPath will *try* to read window.nonexistent_object, which will be undefined
+        expect(win).not.to.have.property("nonexistent_object");
+      });
+
+      // Open the modal
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
+
+      // verify CMP API
+      cy.get("@TCFEvent")
+        .its("lastCall.args")
+        .then(([tcData, success]) => {
+          expect(success).to.eql(true);
+          expect(tcData.tcString).to.eql("");
+          expect(tcData.eventStatus).to.eql("cmpuishown");
         });
     });
   });
@@ -2680,7 +2849,11 @@ describe("Fides-js TCF", () => {
           experience,
         });
       });
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
     });
 
     it("can opt in to AC vendors and generate string", () => {

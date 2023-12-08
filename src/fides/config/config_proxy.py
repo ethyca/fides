@@ -73,6 +73,12 @@ class SecuritySettingsProxy(ConfigProxyBase):
     cors_origins: List[AnyUrl]
 
 
+class ConsentSettingsProxy(ConfigProxyBase):
+    prefix = "consent"
+
+    override_vendor_purposes: bool
+
+
 class ConfigProxy:
     """
     ConfigProxy instances allow access to "resolved" config properties
@@ -99,6 +105,7 @@ class ConfigProxy:
         self.execution = ExecutionSettingsProxy(db)
         self.storage = StorageSettingsProxy(db)
         self.security = SecuritySettingsProxy(db)
+        self.consent = ConsentSettingsProxy(db)
 
     def load_current_cors_domains_into_middleware(self, app: FastAPI) -> None:
         """
