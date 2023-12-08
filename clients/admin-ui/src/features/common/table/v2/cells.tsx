@@ -26,7 +26,15 @@ export const BadgeCell = ({
   suffix?: string;
 }) => (
   <Flex alignItems="center" height="100%" mr="2">
-    <Badge textTransform="none">
+    <Badge
+      textTransform="none"
+      fontWeight="400"
+      fontSize="xs"
+      lineHeight={4}
+      color="gray.600"
+      px={2}
+      py={1}
+    >
       {value}
       {suffix ? ` ${suffix}` : null}
     </Badge>
