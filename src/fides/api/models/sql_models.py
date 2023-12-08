@@ -192,23 +192,6 @@ class DataCategory(Base, FidesBase):
         )
 
 
-class DataQualifier(Base, FidesBase):
-    """
-    The SQL model for the DataQualifier resource.
-    """
-
-    __tablename__ = "ctl_data_qualifiers"
-
-    parent_key = Column(Text)
-    active = Column(BOOLEAN, default=True, nullable=False)
-
-    # Default Fields
-    is_default = Column(BOOLEAN, default=False)
-    version_added = Column(Text)
-    version_deprecated = Column(Text)
-    replaced_by = Column(Text)
-
-
 class DataSubject(Base, FidesBase):
     """
     The SQL model for the DataSubject resource.
@@ -286,7 +269,6 @@ class Dataset(Base, FidesBase):
 
     meta = Column(JSON)
     data_categories = Column(ARRAY(String))
-    data_qualifier = Column(String)  # Deprecated
     collections = Column(JSON)
     fides_meta = Column(JSON)
     joint_controller = Column(
@@ -484,7 +466,6 @@ class PrivacyDeclaration(Base):
     ### references to other tables, but kept as 'soft reference' strings for now
     data_use = Column(String, index=True, nullable=False)
     data_categories = Column(ARRAY(String))
-    data_qualifier = Column(String)  # Deprecated
     data_subjects = Column(ARRAY(String))
     dataset_references = Column(ARRAY(String))
 
@@ -639,7 +620,6 @@ class SystemScans(Base):
 sql_model_map: Dict = {
     "client_detail": ClientDetail,
     "data_category": DataCategory,
-    "data_qualifier": DataQualifier,
     "data_subject": DataSubject,
     "data_use": DataUse,
     "dataset": Dataset,
