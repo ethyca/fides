@@ -570,10 +570,7 @@ class PrivacyDeclaration(Base):
 
         Otherwise, we return the override!
         """
-        if not (
-            CONFIG.consent.override_vendor_purposes
-            and self.flexible_legal_basis_for_processing
-        ):
+        if not CONFIG.consent.override_vendor_purposes:
             return self.legal_basis_for_processing
 
         query: Select = select(
@@ -600,7 +597,7 @@ class PrivacyDeclaration(Base):
 
         return (
             required_legal_basis
-            if required_legal_basis
+            if required_legal_basis and self.flexible_legal_basis_for_processing
             else self.legal_basis_for_processing
         )
 
