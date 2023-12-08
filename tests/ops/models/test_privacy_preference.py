@@ -1653,15 +1653,24 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
             == []
         )
 
-    @pytest.mark.usefixtures(
-        "enable_override_vendor_purposes", "purpose_three_consent_publisher_override"
+    @pytest.mark.usefixtures("purpose_three_consent_publisher_override")
+    @pytest.mark.parametrize(
+        "override_fixture",
+        [
+            "enable_override_vendor_purposes",
+            "enable_override_vendor_purposes_api_set",  # ensure override functionality works when config is set via API
+        ],
     )
     def test_determine_relevant_systems_for_with_purpose_override(
         self,
+        override_fixture,
+        request,
         db,
         system_with_no_uses,
     ):
         """Relevant system calculation takes into account legal basis overrides"""
+        request.getfixturevalue(override_fixture)
+
         # Add data use to system that corresponds to purpose 3.  Also has LI legal basis, but override sets it
         # to Consent
         pd_1 = PrivacyDeclaration.create(
