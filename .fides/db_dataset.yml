@@ -2820,3 +2820,299 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: privacypreferencehistoryv2
+    description: 'Fides Generated Description for Table: privacypreferencehistoryv2'
+    data_categories: [system.operations]
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: affected_system_status
+      description: 'Fides Generated Description for Column: affected_system_status'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: anonymized_ip_address
+      description: 'Fides Generated Description for Column: anonymized_ip_address'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: email
+      description: 'Fides Generated Description for Column: email'
+      data_categories: [user]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: fides_string
+      description: 'Fides Generated Description for Column: fides_string'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: fides_user_device
+      description: 'Fides Generated Description for Column: fides_user_device'
+      data_categories: [user]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: hashed_email
+      description: 'Fides Generated Description for Column: hashed_email'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: hashed_fides_user_device
+      description: 'Fides Generated Description for Column: hashed_fides_user_device'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: hashed_phone_number
+      description: 'Fides Generated Description for Column: hashed_phone_number'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: method
+      description: 'Fides Generated Description for Column: method'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: notice_name
+      description: 'Fides Generated Description for Column: notice_name'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: phone_number
+      description: 'Fides Generated Description for Column: phone_number'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: preference
+      description: 'Fides Generated Description for Column: preference'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: privacy_experience_config_history_id
+      description: 'Fides Generated Description for Column: privacy_experience_config_history_id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: privacy_experience_id
+      description: 'Fides Generated Description for Column: privacy_experience_id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: privacy_notice_history_id
+      description: 'Fides Generated Description for Column: privacy_notice_history_id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: privacy_request_id
+      description: 'Fides Generated Description for Column: privacy_request_id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: request_origin
+      description: 'Fides Generated Description for Column: request_origin'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: secondary_user_ids
+      description: 'Fides Generated Description for Column: secondary_user_ids'
+      data_categories: [user]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: served_notice_history_id
+      description: 'Fides Generated Description for Column: served_notice_history_id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: tcf_preferences
+      description: 'Fides Generated Description for Column: tcf_preferences'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: url_recorded
+      description: 'Fides Generated Description for Column: url_recorded'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: user_agent
+      description: 'Fides Generated Description for Column: user_agent'
+      data_categories: [user]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: user_geography
+      description: 'Fides Generated Description for Column: user_geography'
+      data_categories: [user]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: servednoticehistoryv2
+    description: 'Fides Generated Description for Table: servednoticehistoryv2'
+    data_categories: [system.operations]
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: acknowledge_mode
+      description: 'Fides Generated Description for Column: acknowledge_mode'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: anonymized_ip_address
+      description: 'Fides Generated Description for Column: anonymized_ip_address'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: email
+      description: 'Fides Generated Description for Column: email'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: fides_user_device
+      description: 'Fides Generated Description for Column: fides_user_device'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: hashed_email
+      description: 'Fides Generated Description for Column: hashed_email'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: hashed_fides_user_device
+      description: 'Fides Generated Description for Column: hashed_fides_user_device'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: hashed_phone_number
+      description: 'Fides Generated Description for Column: hashed_phone_number'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: notice_name
+      description: 'Fides Generated Description for Column: notice_name'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: phone_number
+      description: 'Fides Generated Description for Column: phone_number'
+      data_categories: [user]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: privacy_experience_config_history_id
+      description: 'Fides Generated Description for Column: privacy_experience_config_history_id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: privacy_experience_id
+      description: 'Fides Generated Description for Column: privacy_experience_id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: privacy_notice_history_id
+      description: 'Fides Generated Description for Column: privacy_notice_history_id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: request_origin
+      description: 'Fides Generated Description for Column: request_origin'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: served_notice_history_id
+      description: 'Fides Generated Description for Column: served_notice_history_id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: serving_component
+      description: 'Fides Generated Description for Column: serving_component'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: tcf_served
+      description: 'Fides Generated Description for Column: tcf_served'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: url_recorded
+      description: 'Fides Generated Description for Column: url_recorded'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: user_agent
+      description: 'Fides Generated Description for Column: user_agent'
+      data_categories: [user]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: user_geography
+      description: 'Fides Generated Description for Column: user_geography'
+      data_categories: [user]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: currentprivacypreferencev2
+    description: 'Fides Generated Description for Table: currentprivacypreferencev2'
+    data_categories: [system.operations]
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: email
+      description: 'Fides Generated Description for Column: email'
+      data_categories: [user]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: fides_string
+      description: 'Fides Generated Description for Column: fides_string'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: fides_user_device
+      description: 'Fides Generated Description for Column: fides_user_device'
+      data_categories: [user]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: hashed_email
+      description: 'Fides Generated Description for Column: hashed_email'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: hashed_fides_user_device
+      description: 'Fides Generated Description for Column: hashed_fides_user_device'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: hashed_phone_number
+      description: 'Fides Generated Description for Column: hashed_phone_number'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: phone_number
+      description: 'Fides Generated Description for Column: phone_number'
+      data_categories: [user]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: preferences
+      description: 'Fides Generated Description for Column: preferences'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: lastservednoticev2
+    description: 'Fides Generated Description for Table: lastservednoticev2'
+    data_categories: [system.operations]
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: email
+      description: 'Fides Generated Description for Column: email'
+      data_categories: [user]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: fides_user_device
+      description: 'Fides Generated Description for Column: fides_user_device'
+      data_categories: [user]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: hashed_email
+      description: 'Fides Generated Description for Column: hashed_email'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: hashed_fides_user_device
+      description: 'Fides Generated Description for Column: hashed_fides_user_device'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: hashed_phone_number
+      description: 'Fides Generated Description for Column: hashed_phone_number'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: phone_number
+      description: 'Fides Generated Description for Column: phone_number'
+      data_categories: [user]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: served
+      description: 'Fides Generated Description for Column: served'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
