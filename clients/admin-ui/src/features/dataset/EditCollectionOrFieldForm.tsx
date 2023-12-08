@@ -3,29 +3,21 @@ import { Form, Formik } from "formik";
 import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 
-import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { CustomTextInput } from "~/features/common/form/inputs";
 import { initialDataCategories } from "~/features/plus/helpers";
 import { selectClassifyInstanceField } from "~/features/plus/plus.slice";
 import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
 import { DatasetCollection, DatasetField } from "~/types/api";
 
-import { COLLECTION, DATA_QUALIFIERS, FIELD } from "./constants";
+import { COLLECTION, FIELD } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 import { DataCategoryWithConfidence } from "./types";
 
 export const FORM_ID = "edit-collection-or-field-form";
 
-const IDENTIFIER_OPTIONS = DATA_QUALIFIERS.map((dq) => ({
-  value: dq.key,
-  label: dq.label,
-}));
-
 type FormValues =
-  | Pick<DatasetField, "description" | "data_qualifier" | "data_categories">
-  | Pick<
-      DatasetCollection,
-      "description" | "data_qualifier" | "data_categories"
-    >;
+  | Pick<DatasetField, "description" | "data_categories">
+  | Pick<DatasetCollection, "description" | "data_categories">;
 
 interface Props {
   values: FormValues;
@@ -38,7 +30,6 @@ interface Props {
 const EditCollectionOrFieldForm = ({ values, onSubmit, dataType }: Props) => {
   const initialValues: FormValues = {
     description: values.description ?? "",
-    data_qualifier: values.data_qualifier,
     data_categories: values.data_categories,
   };
   const allEnabledDataCategories = useSelector(selectDataCategories).filter(
@@ -82,10 +73,6 @@ const EditCollectionOrFieldForm = ({ values, onSubmit, dataType }: Props) => {
     dataType === "collection"
       ? COLLECTION.description.tooltip
       : FIELD.description.tooltip;
-  const dataQualifierTooltip =
-    dataType === "collection"
-      ? COLLECTION.data_qualifiers.tooltip
-      : FIELD.data_qualifier.tooltip;
   const dataCategoryTooltip =
     dataType === "collection"
       ? COLLECTION.data_categories.tooltip
@@ -109,14 +96,6 @@ const EditCollectionOrFieldForm = ({ values, onSubmit, dataType }: Props) => {
             label="Description"
             tooltip={descriptionTooltip}
             data-testid="description-input"
-          />
-          <CustomSelect
-            name="data_qualifier"
-            label="Identifiability"
-            options={IDENTIFIER_OPTIONS}
-            tooltip={dataQualifierTooltip}
-            isSearchable={false}
-            data-testid="identifiability-input"
           />
           <DataCategoryInput
             dataCategories={allEnabledDataCategories}

@@ -8,7 +8,6 @@ from fastapi import APIRouter
 from .endpoints.generate import GENERATE_ROUTER
 from .endpoints.generic import (
     DATA_CATEGORY_ROUTER,
-    DATA_QUALIFIER_ROUTER,
     DATA_SUBJECT_ROUTER,
     DATA_USE_ROUTER,
     DATASET_ROUTER,
@@ -31,7 +30,6 @@ from .endpoints.validate import VALIDATE_ROUTER
 routers = [
     DATA_CATEGORY_ROUTER,
     DATA_SUBJECT_ROUTER,
-    DATA_QUALIFIER_ROUTER,
     DATA_USE_ROUTER,
     DATASET_ROUTER,
     EVALUATION_ROUTER,

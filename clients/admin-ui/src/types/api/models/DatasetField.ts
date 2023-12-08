@@ -23,10 +23,6 @@ export type DatasetField = {
    */
   data_categories?: Array<string>;
   /**
-   * A Data Qualifier that applies to this field. Note that this field holds a single value, therefore, the property name is singular.
-   */
-  data_qualifier?: string;
-  /**
    * An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset.
    */
   retention?: string;

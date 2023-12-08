@@ -571,8 +571,6 @@ describe("System management page", () => {
         name: "Second data use",
         data_categories: ["user.biometric"],
         data_use: "collect",
-        data_qualifier:
-          "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         data_subjects: ["anonymous"],
         dataset_references: [],
       };

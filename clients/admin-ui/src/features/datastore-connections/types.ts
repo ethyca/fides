@@ -71,7 +71,6 @@ export type Dataset = {
     [key: string]: string;
   };
   data_categories: string[];
-  data_qualifier: string;
   fidesctl_meta: {
     resource_id: string;
   };
@@ -93,7 +92,6 @@ export type DatasetCollection = {
   name: string;
   description: string;
   data_categories: string[];
-  data_qualifier: string;
   retention: string;
   fields: DatasetCollectionField[];
 };
@@ -102,7 +100,6 @@ export type DatasetCollectionField = {
   name: string;
   description: string;
   data_categories: string[];
-  data_qualifier: string;
   retention: string;
   fidesops_meta: {
     references: FidesOpsMetaReference[];

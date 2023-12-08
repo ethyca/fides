@@ -89,9 +89,6 @@ describe("Taxonomy management page", () => {
       cy.intercept("PUT", "/api/v1/data_subject*", taxonomyPayload).as(
         "putDataSubject"
       );
-      cy.intercept("PUT", "/api/v1/data_qualifier*", taxonomyPayload).as(
-        "putDataQualifier"
-      );
     });
 
     it("Can open an edit form for each taxonomy entity", () => {
@@ -346,9 +343,6 @@ describe("Taxonomy management page", () => {
       cy.intercept("POST", "/api/v1/data_subject*", taxonomyPayload).as(
         "postDataSubject"
       );
-      cy.intercept("POST", "/api/v1/data_qualifier*", taxonomyPayload).as(
-        "postDataQualifier"
-      );
     });
 
     it("Can open a create form for each taxonomy entity", () => {
@@ -472,9 +466,6 @@ describe("Taxonomy management page", () => {
       );
       cy.intercept("DELETE", "/api/v1/data_subject/*", taxonomyPayload).as(
         "deleteDataSubject"
-      );
-      cy.intercept("DELETE", "/api/v1/data_qualifier/*", taxonomyPayload).as(
-        "deleteDataQualifier"
       );
     });
 

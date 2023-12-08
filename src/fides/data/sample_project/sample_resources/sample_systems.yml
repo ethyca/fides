@@ -19,7 +19,6 @@ system:
         data_use: functional.service.improve
         data_subjects:
           - customer
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 
   - fides_key: cookie_house_postgresql_database
     name: Cookie House PostgreSQL Database
@@ -37,7 +36,6 @@ system:
         data_use: essential.service
         data_subjects:
           - customer
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         dataset_references:
           - postgres_example_test_dataset
 
@@ -56,7 +54,6 @@ system:
         data_use: marketing.advertising.first_party.targeted
         data_subjects:
           - customer
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         dataset_references:
           - mongo_test
 
@@ -75,4 +72,3 @@ system:
         data_use: marketing.advertising.first_party.targeted
         data_subjects:
           - customer
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

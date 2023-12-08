@@ -7,12 +7,10 @@ dataset:
         fields:
           - name: EN_ACCESS_GRAPH__<privacy_request_id>
             description: This graph is summarized and sent to Fideslog to create high level insight into how graphs change between retries to inform future features.
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
             fidesops_meta:
               data_type: object # Stores an encrypted representation of the fidesops graph that executes the privacy requests.
             fields:
               - name: <dataset_name>:<collection_name>  # The current collection
-                data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
                 fidesops_meta:
                   data_type: object
                 fields:
@@ -22,12 +20,10 @@ dataset:
                       data_type: string[]  # List of edges between the upstream collection and the current collection
           - name: EN_DATA_USE_MAP__<privacy_request_id>
             description: This map of traversed `Collection`s to associated `DataUse`s is stored and retrieved to be included in access request output packages.
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
             fidesops_meta:
               data_type: object # Dict mapping `Collection` addresses -> set of associated `DataUse`s
             fields:
               - name: <dataset_name>:<collection_name>  # `Collection` address
-                data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
                 data_categories: [system.operations]
                 fidesops_meta:
                   data_type: string[] # set of `DataUse`s associated with this `Collection`

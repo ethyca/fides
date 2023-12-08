@@ -36,10 +36,6 @@ export type Dataset = {
    */
   data_categories?: Array<string>;
   /**
-   * Deprecated. Array of Data Qualifier resources identified by `fides_key`, that apply to all collections in the Dataset.
-   */
-  data_qualifier?: string;
-  /**
    *
    * The DatasetMetadata resource model.
    *

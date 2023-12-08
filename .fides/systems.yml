@@ -21,7 +21,6 @@ system:
           - system.operations
           - user.contact
         data_use: functional.service.improve
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         data_subjects:
           - anonymous_user
         dataset_references:
@@ -49,7 +48,6 @@ system:
         data_use: essential.service
         data_subjects:
           - customer
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         dataset_references:
           - fides_db
           - fides_cache
@@ -76,7 +74,6 @@ system:
         data_use: essential.service
         data_subjects:
           - employee
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         dataset_references:
           - fides_db
           # Specific tables for reference

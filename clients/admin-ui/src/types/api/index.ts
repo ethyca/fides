@@ -96,7 +96,6 @@ export type { DatabaseHealthCheck } from "./models/DatabaseHealthCheck";
 export type { DataCategory } from "./models/DataCategory";
 export type { DataFlow } from "./models/DataFlow";
 export type { DataProtectionImpactAssessment } from "./models/DataProtectionImpactAssessment";
-export type { DataQualifier } from "./models/DataQualifier";
 export { DataResponsibilityTitle } from "./models/DataResponsibilityTitle";
 export type { Dataset } from "./models/Dataset";
 export type { DatasetCollection } from "./models/DatasetCollection";
