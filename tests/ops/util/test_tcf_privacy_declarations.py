@@ -41,14 +41,22 @@ class TestBaseTCFQuery:
             "functional.storage": 1,
         }
 
-    @pytest.mark.usefixtures("enable_override_vendor_purposes")
-    def test_privacy_declaration_purpose_overrides(self, db, emerse_system):
+    @pytest.mark.parametrize(
+        "override_fixture",
+        [
+            "enable_override_vendor_purposes",
+            "enable_override_vendor_purposes_api_set",  # ensure override functionality works when config is set via API
+        ],
+    )
+    def test_privacy_declaration_purpose_overrides(
+        self, override_fixture, request, db, emerse_system
+    ):
         """Comprehensive test of the various scenarios for privacy declaration purpose overrides when building the
         base TCF query
 
         Some of the specifics aren't configurations that would be allowed for emerse, but ignore that here.
         """
-
+        request.getfixturevalue(override_fixture)
         # As some test setup, override purpose 7 declaration to have an inflexible legal basis
         purpose_7_decl = next(
             decl
