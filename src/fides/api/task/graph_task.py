@@ -145,7 +145,6 @@ def retry(
                             self.connector.configuration.system_key,
                             ExecutionLogStatus.skipped,
                         )
-
                     return default_return
                 except BaseException as ex:  # pylint: disable=W0703
                     traceback.print_exc()
