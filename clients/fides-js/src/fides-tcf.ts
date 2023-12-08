@@ -308,6 +308,7 @@ _Fides = {
     fidesTcfGdprApplies: true,
     gppExtensionPath: "",
     customOptionsPath: null,
+    preventDismissal: false,
   },
   fides_meta: {},
   identity: {},
