@@ -71,7 +71,7 @@ from fides.api.models.storage import (
     default_storage_config_name,
 )
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
-from fides.api.oauth.roles import APPROVER, VIEWER
+from fides.api.oauth.roles import VIEWER
 from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
