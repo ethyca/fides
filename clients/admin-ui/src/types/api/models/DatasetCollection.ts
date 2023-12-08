@@ -24,10 +24,6 @@ export type DatasetCollection = {
    */
   data_categories?: Array<string>;
   /**
-   * Array of Data Qualifier resources identified by `fides_key`, that apply to all fields in the collection.
-   */
-  data_qualifier?: string;
-  /**
    * An optional string to describe the retention policy for a Dataset collection. This field can also be applied more granularly at the field level of a Dataset.
    */
   retention?: string;

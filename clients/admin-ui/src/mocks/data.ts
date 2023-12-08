@@ -196,7 +196,6 @@ export const mockDatasetField = (
 ): DatasetField => {
   const field: DatasetField = {
     name: "created_at",
-    data_qualifier: "aggregated",
     description: "User's creation timestamp",
     data_categories: ["system.operations"],
     retention: "Account termination",
@@ -209,7 +208,6 @@ export const mockDatasetCollection = (
 ): DatasetCollection => {
   const collection: DatasetCollection = {
     name: "created_at",
-    data_qualifier: "aggregated",
     description: "User's creation timestamp",
     data_categories: ["system.operations"],
     retention: "Account termination",
@@ -223,7 +221,6 @@ export const mockDataset = (partialDataset?: Partial<Dataset>): Dataset => {
     fides_key: "sample_dataset",
     organization_fides_key: "mock_organization",
     name: "created_at",
-    data_qualifier: "aggregated",
     description: "User's creation timestamp",
     data_categories: ["system.operations"],
     retention: "Account termination",

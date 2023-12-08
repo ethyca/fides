@@ -26,7 +26,6 @@ CTL_POLICY = "ctl_policy"
 CURRENT_PRIVACY_PREFERENCE = "current-privacy-preference"
 DATABASE = "database"
 DATA_CATEGORY = "data_category"
-DATA_QUALIFIER = "data_qualifier"
 DATA_SUBJECT = "data_subject"
 DATA_USE = "data_use"
 DATASET = "dataset"
@@ -116,10 +115,6 @@ DATA_CATEGORY_READ = f"{DATA_CATEGORY}:{READ}"
 DATA_CATEGORY_UPDATE = f"{DATA_CATEGORY}:{UPDATE}"
 DATA_CATEGORY_DELETE = f"{DATA_CATEGORY}:{DELETE}"
 
-DATA_QUALIFIER_CREATE = f"{DATA_QUALIFIER}:{CREATE}"
-DATA_QUALIFIER_READ = f"{DATA_QUALIFIER}:{READ}"
-DATA_QUALIFIER_UPDATE = f"{DATA_QUALIFIER}:{UPDATE}"
-DATA_QUALIFIER_DELETE = f"{DATA_QUALIFIER}:{DELETE}"
 
 DATA_SUBJECT_CREATE = f"{DATA_SUBJECT}:{CREATE}"
 DATA_SUBJECT_READ = f"{DATA_SUBJECT}:{READ}"
@@ -273,10 +268,6 @@ SCOPE_DOCS = {
     DATA_CATEGORY_DELETE: "Delete data categories",
     DATA_CATEGORY_READ: "Read data categories",
     DATA_CATEGORY_UPDATE: "Update data categories",
-    DATA_QUALIFIER_CREATE: "Create a data qualifier",
-    DATA_QUALIFIER_DELETE: "Delete data qualifiers",
-    DATA_QUALIFIER_READ: "Read data qualifiers",
-    DATA_QUALIFIER_UPDATE: "Update data qualifiers",
     DATA_SUBJECT_CREATE: "Create a data subject",
     DATA_SUBJECT_READ: "Read data subjects",
     DATA_SUBJECT_DELETE: "Delete data subjects",

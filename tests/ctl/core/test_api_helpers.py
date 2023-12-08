@@ -13,7 +13,7 @@ from tests.ctl.types import FixtureRequest
 
 RESOURCE_CREATION_COUNT = 5
 # These resources have tricky validation so the fides_key replacement doesn't work
-EXCLUDED_RESOURCE_TYPES = "data_category", "data_use", "data_qualifier"
+EXCLUDED_RESOURCE_TYPES = "data_category", "data_use"
 PARAM_MODEL_LIST = [
     model for model in model_list if model not in EXCLUDED_RESOURCE_TYPES
 ]

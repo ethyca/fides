@@ -35,12 +35,7 @@ from fides.api.models.system_history import SystemHistory
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.api.schemas.system import PrivacyDeclarationResponse, SystemResponse
-from fides.api.schemas.taxonomy_extensions import (
-    DataCategory,
-    DataQualifier,
-    DataSubject,
-    DataUse,
-)
+from fides.api.schemas.taxonomy_extensions import DataCategory, DataSubject, DataUse
 from fides.api.util.endpoint_utils import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
 from fides.common.api.scope_registry import (
     CREATE,
@@ -62,12 +57,11 @@ from fides.core import api as _api
 
 CONFIG = get_config()
 
-TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifier"]
+TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use"]
 TAXONOMY_EXTENSIONS = {
     "data_category": DataCategory,
     "data_subject": DataSubject,
     "data_use": DataUse,
-    "data_qualifier": DataQualifier,
 }
 
 
@@ -783,7 +777,6 @@ class TestSystemCreate:
         privacy_declaration = system.privacy_declarations[0]
 
         expected_none_privacy_declaration_fields = [
-            "data_qualifier",
             "dataset_references",
             "egress",
             "impact_assessment_location",
@@ -1032,7 +1025,6 @@ class TestSystemUpdate:
                     data_categories=[],
                     data_use="essential",
                     data_subjects=[],
-                    data_qualifier="aggregated_data",
                     dataset_references=[],
                     ingress=None,
                     egress=None,
@@ -1059,7 +1051,6 @@ class TestSystemUpdate:
                     data_categories=[],
                     data_use="essential",
                     data_subjects=[],
-                    data_qualifier="aggregated_data",
                     dataset_references=[],
                     ingress=None,
                     egress=None,
@@ -1084,7 +1075,6 @@ class TestSystemUpdate:
                     data_categories=[],
                     data_use="essential",
                     data_subjects=[],
-                    data_qualifier="aggregated_data",
                     dataset_references=[],
                     cookies=[
                         {"name": "my_cookie", "domain": "example.com"},
@@ -1353,7 +1343,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],  # other fields can differ
                 data_use="essential",  # same as initial PrivacyDeclaration
                 data_subjects=["anonymous_user"],  # other fields can differ
-                data_qualifier="aggregated",  # other fields can differ
                 dataset_references=[],
             )
         )
@@ -1376,7 +1365,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="essential",  # identical data use
                 data_subjects=["anonymous_user"],  # other fields can differ
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1386,7 +1374,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="essential",  # identicial data use
                 data_subjects=["anonymous_user"],
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1409,7 +1396,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="essential",  # identical data use
                 data_subjects=["anonymous_user"],
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1419,7 +1405,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="essential",  # identicial data use
                 data_subjects=["anonymous_user"],
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1444,7 +1429,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="marketing.advertising",  # identical data use
                 data_subjects=["anonymous_user"],
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1454,7 +1438,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="marketing.advertising",  # identicial data use
                 data_subjects=["anonymous_user"],
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1479,7 +1462,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="marketing.advertising",  # differing data use
                 data_subjects=["anonymous_user"],
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1489,7 +1471,6 @@ class TestSystemUpdate:
                 data_categories=["user.payment"],
                 data_use="essential",  # differing data use
                 data_subjects=["anonymous_user"],
-                data_qualifier="aggregated",
                 dataset_references=[],
             )
         )
@@ -1698,7 +1679,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="essential",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
                         egress=None,
@@ -1714,7 +1694,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="essential",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
                         egress=None,
@@ -1725,7 +1704,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="third_party_sharing",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
                         egress=None,
@@ -1741,7 +1719,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="third_party_sharing",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
                         ingress=None,
@@ -1752,7 +1729,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
                         ingress=None,
@@ -1768,7 +1744,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
                         egress=None,
@@ -1779,7 +1754,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                         cookies=[],
                         egress=None,
@@ -1862,7 +1836,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     )
                 ]
@@ -1874,7 +1847,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     )
                 ]
@@ -1886,7 +1858,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     )
                 ]
@@ -1899,7 +1870,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                     models.PrivacyDeclaration(
@@ -1907,7 +1877,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="third_party_sharing",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                 ]
@@ -1920,7 +1889,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                     models.PrivacyDeclaration(
@@ -1928,7 +1896,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="third_party_sharing",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                 ]
@@ -1941,7 +1908,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                     models.PrivacyDeclaration(
@@ -1949,7 +1915,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                 ]
@@ -1962,7 +1927,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                     models.PrivacyDeclaration(
@@ -1970,7 +1934,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="essential",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                 ]
@@ -1983,7 +1946,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="essential",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                     models.PrivacyDeclaration(
@@ -1991,7 +1953,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="functional",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                 ]
@@ -2004,7 +1965,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="marketing.advertising",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                     models.PrivacyDeclaration(
@@ -2012,7 +1972,6 @@ class TestSystemUpdate:
                         data_categories=[],
                         data_use="third_party_sharing",
                         data_subjects=[],
-                        data_qualifier="aggregated_data",
                         dataset_references=[],
                     ),
                 ]

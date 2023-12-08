@@ -7,7 +7,6 @@
     "description": "Data collected about users for our analytics system.",
     "meta": null,
     "data_categories": ["system"],
-    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     "fidesctl_meta": null,
     "joint_controller": null,
     "retention": "30 days after account deletion",
@@ -17,14 +16,12 @@
         "name": "users",
         "description": "User information",
         "data_categories": [],
-        "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         "retention": null,
         "fields": [
           {
             "name": "created_at",
             "description": "User's creation timestamp",
             "data_categories": ["system.operations"],
-            "data_qualifier": "anonymized",
             "retention": null,
             "fields": null
           },
@@ -32,7 +29,6 @@
             "name": "email",
             "description": "User's Email",
             "data_categories": ["user.contact.email"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": "Account termination",
             "fields": null
           },
@@ -40,7 +36,6 @@
             "name": "first_name",
             "description": "User's first name",
             "data_categories": ["user.name"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": "Account termination",
             "fields": null
           },
@@ -48,7 +43,6 @@
             "name": "food_preference",
             "description": "User's favorite food",
             "data_categories": [],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": null,
             "fields": null
           },
@@ -56,7 +50,6 @@
             "name": "state",
             "description": "User's State",
             "data_categories": ["user.contact.address.state"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": null,
             "fields": null
           },
@@ -64,7 +57,6 @@
             "name": "uuid",
             "description": "User's unique ID",
             "data_categories": ["user.unique_id"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": null,
             "fields": null
           }
@@ -80,7 +72,6 @@
     "description": "Data collected about users for our analytics system.",
     "meta": null,
     "data_categories": [],
-    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     "fidesctl_meta": null,
     "joint_controller": null,
     "retention": "30 days after account deletion",
@@ -90,14 +81,12 @@
         "name": "users",
         "description": "User information",
         "data_categories": [],
-        "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         "retention": null,
         "fields": [
           {
             "name": "created_at",
             "description": "User's creation timestamp",
             "data_categories": ["system.operations"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": null,
             "fields": null
           },
@@ -105,7 +94,6 @@
             "name": "email",
             "description": "User's Email",
             "data_categories": ["user.contact.email"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": "Account termination",
             "fields": null
           },
@@ -113,7 +101,6 @@
             "name": "first_name",
             "description": "User's first name",
             "data_categories": ["user.name"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": "Account termination",
             "fields": null
           },
@@ -121,7 +108,6 @@
             "name": "food_preference",
             "description": "User's favorite food",
             "data_categories": [],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": null,
             "fields": null
           },
@@ -129,7 +115,6 @@
             "name": "state",
             "description": "User's State",
             "data_categories": ["user.contact.address.state"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": null,
             "fields": null
           },
@@ -137,7 +122,6 @@
             "name": "uuid",
             "description": "User's unique ID",
             "data_categories": ["user.unique_id"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": null,
             "fields": null
           }
@@ -153,7 +137,6 @@
     "description": "Data collected about users for our analytics system.",
     "meta": null,
     "data_categories": [],
-    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     "fidesctl_meta": null,
     "joint_controller": null,
     "retention": "30 days after account deletion",
@@ -163,14 +146,12 @@
         "name": "users",
         "description": "User information",
         "data_categories": [],
-        "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         "retention": null,
         "fields": [
           {
             "name": "created_at",
             "description": "User's creation timestamp",
             "data_categories": ["system.operations"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": null,
             "fields": null
           },
@@ -178,7 +159,6 @@
             "name": "email",
             "description": "User's Email",
             "data_categories": ["user.contact.email"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": "Account termination",
             "fields": null
           },
@@ -186,7 +166,6 @@
             "name": "first_name",
             "description": "User's first name",
             "data_categories": ["user.name"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": "Account termination",
             "fields": null
           },
@@ -194,7 +173,6 @@
             "name": "food_preference",
             "description": "User's favorite food",
             "data_categories": [],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": null,
             "fields": null
           },
@@ -202,7 +180,6 @@
             "name": "state",
             "description": "User's State",
             "data_categories": ["user.contact.address.state"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": null,
             "fields": null
           },
@@ -210,7 +187,6 @@
             "name": "uuid",
             "description": "User's unique ID",
             "data_categories": ["user.unique_id"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": null,
             "fields": null
           }
@@ -226,7 +202,6 @@
     "description": "Data collected about users for our analytics system.",
     "meta": null,
     "data_categories": [],
-    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     "fidesctl_meta": null,
     "joint_controller": null,
     "retention": "30 days after account deletion",
@@ -236,14 +211,12 @@
         "name": "users",
         "description": "User information",
         "data_categories": [],
-        "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         "retention": null,
         "fields": [
           {
             "name": "created_at",
             "description": "User's creation timestamp",
             "data_categories": ["system.operations"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": null,
             "fields": null
           },
@@ -251,7 +224,6 @@
             "name": "email",
             "description": "User's Email",
             "data_categories": ["user.contact.email"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": "Account termination",
             "fields": null
           },
@@ -259,7 +231,6 @@
             "name": "first_name",
             "description": "User's first name",
             "data_categories": ["user.name"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": "Account termination",
             "fields": null
           },
@@ -267,7 +238,6 @@
             "name": "food_preference",
             "description": "User's favorite food",
             "data_categories": [],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": null,
             "fields": null
           },
@@ -275,7 +245,6 @@
             "name": "state",
             "description": "User's State",
             "data_categories": ["user.contact.address.state"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": null,
             "fields": null
           },
@@ -283,7 +252,6 @@
             "name": "uuid",
             "description": "User's unique ID",
             "data_categories": ["user.unique_id"],
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "retention": null,
             "fields": null
           }
@@ -299,7 +267,6 @@
     "description": "Example of a Postgres dataset containing a variety of related tables like customers, products, addresses, etc.",
     "meta": null,
     "data_categories": null,
-    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     "fides_meta": null,
     "joint_controller": null,
     "retention": "No retention or erasure policy",
