@@ -2705,6 +2705,48 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
     @pytest.mark.usefixtures(
         "enable_override_vendor_purposes",
     )
+    async def test_purpose_is_excluded_even_with_inflexible_legal_basis(
+        self, async_session_temp, db
+    ):
+        """Purpose is overridden as excluded, so even if legal basis is not flexible,
+        legal basis returns as None, to match class-wide override."""
+        resource = SystemSchema(
+            fides_key=str(uuid4()),
+            organization_fides_key="default_organization",
+            name=f"test_system_1_{uuid4()}",
+            system_type="test",
+            privacy_declarations=[
+                PrivacyDeclarationSchema(
+                    name="Collect data for content performance",
+                    data_use="personalize.content.profiling",
+                    legal_basis_for_processing="Consent",
+                    flexible_legal_basis_for_processing=False,
+                    data_categories=["user"],
+                )
+            ],
+        )
+
+        system = await create_system(
+            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+        )
+        pd = system.privacy_declarations[0]
+
+        constraint = TCFPurposeOverride.create(
+            db,
+            data={
+                "purpose": 5,
+                "is_included": False,
+            },
+        )
+
+        assert pd.purpose == 5
+        assert await pd.get_purpose_legal_basis_override() is None
+
+        constraint.delete(db)
+
+    @pytest.mark.usefixtures(
+        "enable_override_vendor_purposes",
+    )
     async def test_legal_basis_is_inflexible(self, async_session_temp, db):
         """Purpose is overridden but we can't apply because the legal basis is specified as inflexible"""
         resource = SystemSchema(
