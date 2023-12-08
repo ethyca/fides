@@ -23,6 +23,10 @@ import type { Fides } from "./lib/initialize";
 import type { OverrideOptions } from "./lib/consent-types";
 import { GppFunction } from "./lib/gpp/types";
 import { FidesEvent } from "./fides";
+import {
+  setGppNoticesProvided,
+  setGppOptOutsFromCookie,
+} from "./lib/gpp/us-notices";
 
 const CMP_VERSION = 1;
 
@@ -74,6 +78,9 @@ export const initializeGppCmpApi = () => {
   window.addEventListener("FidesUIShown", () => {
     cmpApi.setSignalStatus(SignalStatus.NOT_READY);
     cmpApi.setCmpDisplayStatus(CmpDisplayStatus.VISIBLE);
+
+    // Set US GPP notice fields
+    setGppNoticesProvided(cmpApi);
   });
 
   window.addEventListener("FidesModalClosed", (event) => {
@@ -94,6 +101,9 @@ export const initializeGppCmpApi = () => {
     setTcString(event, cmpApi);
     cmpApi.fireSectionChange("tcfeuv2");
     cmpApi.setSignalStatus(SignalStatus.READY);
+
+    // Set US GPP opt outs
+    setGppOptOutsFromCookie(cmpApi, event.detail);
   });
 };
 
