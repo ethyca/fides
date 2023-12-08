@@ -2745,8 +2745,13 @@ describe("Fides-js TCF", () => {
         // However, customOptionsPath will *try* to read window.nonexistent_object, which will be undefined
         expect(win).not.to.have.property("nonexistent_object");
       });
+
       // Open the modal
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
 
       // verify CMP API
       cy.get("@TCFEvent")
@@ -2782,8 +2787,13 @@ describe("Fides-js TCF", () => {
         // However, customOptionsPath will *try* to read window.nonexistent_object, which will be undefined
         expect(win).not.to.have.property("nonexistent_object");
       });
+
       // Open the modal
-      cy.get("#fides-modal-link").click();
+      cy.get("div#fides-banner").within(() => {
+        cy.get("#fides-button-group").within(() => {
+          cy.get("button").contains("Manage preferences").click();
+        });
+      });
 
       // verify CMP API
       cy.get("@TCFEvent")
