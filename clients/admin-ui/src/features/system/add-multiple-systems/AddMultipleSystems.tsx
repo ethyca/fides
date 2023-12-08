@@ -111,35 +111,40 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         id: "select",
         header: ({ table }) => (
           <IndeterminateCheckboxCell
-            {...{
-              dataTestId: "select-page-checkbox",
-              checked: table.getIsAllPageRowsSelected(),
-              indeterminate: table
+            dataTestId="select-page-checkbox"
+            isChecked={table.getIsAllPageRowsSelected()}
+            isDisabled={
+              allRowsLinkedToSystem ||
+              table
                 .getPaginationRowModel()
-                .rows.filter((r) => !r.original.linked_system)
-                .some((r) => r.getIsSelected()),
-              onChange: (e) => {
-                table.getToggleAllPageRowsSelectedHandler()(e);
-                setIsRowSelectionBarOpen((prev) => !prev);
-              },
-              manualDisable:
-                allRowsLinkedToSystem ||
-                table
-                  .getPaginationRowModel()
-                  .rows.filter((r) => r.original.linked_system).length ===
-                  table.getState().pagination.pageSize,
+                .rows.filter((r) => r.original.linked_system).length ===
+                table.getState().pagination.pageSize
+            }
+            isIndeterminate={table
+              .getPaginationRowModel()
+              .rows.filter((r) => r.getCanSelect())
+              .some((r) => !r.getIsSelected())}
+            onChange={() => {
+              table.setRowSelection((old) => {
+                const rowSelection: RowSelectionState = { ...old };
+                table.getRowModel().rows.forEach((row) => {
+                  if (row.getCanSelect()) {
+                    rowSelection[row.id] = !rowSelection[row.id];
+                  }
+                });
+
+                return rowSelection;
+              });
+              setIsRowSelectionBarOpen((prev) => !prev);
             }}
           />
         ),
         cell: ({ row }) => (
           <IndeterminateCheckboxCell
-            {...{
-              checked: row.getIsSelected(),
-              disabled: !row.getCanSelect(),
-              indeterminate: row.getIsSomeSelected(),
-              onChange: row.getToggleSelectedHandler(),
-              initialValue: row.original.linked_system,
-            }}
+            isChecked={row.getIsSelected()}
+            isDisabled={!row.getCanSelect()}
+            isIndeterminate={row.getIsSomeSelected()}
+            onChange={row.getToggleSelectedHandler()}
           />
         ),
         meta: {

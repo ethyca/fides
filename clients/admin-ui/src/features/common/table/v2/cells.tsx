@@ -3,11 +3,12 @@ import {
   ArrowUpIcon,
   Badge,
   Checkbox,
+  CheckboxProps,
   Flex,
   Text,
 } from "@fidesui/react";
 import { HeaderContext } from "@tanstack/react-table";
-import { HTMLProps, ReactNode, useState } from "react";
+import { ReactNode } from "react";
 
 export const DefaultCell = ({ value }: { value: string }) => (
   <Flex alignItems="center" height="100%">
@@ -32,35 +33,18 @@ export const BadgeCell = ({
   </Flex>
 );
 
-type IndeterminateCheckboxCellProps = {
-  indeterminate?: boolean;
-  initialValue?: boolean;
-  manualDisable?: boolean;
-  dataTestId?: string;
-} & HTMLProps<HTMLInputElement>;
-
 export const IndeterminateCheckboxCell = ({
-  indeterminate,
-  initialValue,
-  manualDisable,
   dataTestId,
   ...rest
-}: IndeterminateCheckboxCellProps) => {
-  const [initialCheckBoxValue] = useState(initialValue);
-
-  return (
-    <Flex alignItems="center" justifyContent="center">
-      <Checkbox
-        data-testid={dataTestId || undefined}
-        isChecked={initialCheckBoxValue || rest.checked}
-        isDisabled={initialCheckBoxValue || manualDisable}
-        onChange={rest.onChange}
-        isIndeterminate={!rest.checked && indeterminate}
-        colorScheme="purple"
-      />
-    </Flex>
-  );
-};
+}: CheckboxProps & { dataTestId?: string }) => (
+  <Flex alignItems="center" justifyContent="center">
+    <Checkbox
+      data-testid={dataTestId || undefined}
+      {...rest}
+      colorScheme="purple"
+    />
+  </Flex>
+);
 
 type DefaultHeaderCellProps<T, V> = {
   value: V;
