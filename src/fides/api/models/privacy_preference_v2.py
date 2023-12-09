@@ -274,8 +274,8 @@ class PrivacyPreferenceHistoryV2(ConsentReportingMixinV2, Base):
     method = Column(EnumColumn(ConsentMethod))
 
     # Whether the user wants to opt in, opt out, or has acknowledged the notice.
-    # Only for non-TCF notices.
-    preference = Column(EnumColumn(UserConsentPreference), index=True)
+    # For TCF notices, we just say "tcf", and more detailed preferences are under "tcf_preferences"
+    preference = Column(EnumColumn(UserConsentPreference), index=True, nullable=False)
 
     # The privacy request created to propagate the preferences
     privacy_request_id = Column(
