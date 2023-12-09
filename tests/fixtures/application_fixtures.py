@@ -2839,3 +2839,23 @@ def purpose_three_consent_publisher_override(db):
     )
     yield override
     override.delete(db)
+
+
+@pytest.fixture(scope="function")
+def served_notice_history(
+    db: Session, privacy_notice, fides_user_provided_identity
+) -> Generator:
+    pref_1 = ServedNoticeHistoryV2.create(
+        db=db,
+        data={
+            "acknowledge_mode": False,
+            "serving_component": "overlay",
+            "privacy_notice_history_id": privacy_notice.histories[0].id,
+            "email": "test@example.com",
+            "hashed_email": ConsentIdentitiesMixin.hash_value("test@example.com"),
+            "served_notice_history_id": "ser_12345",
+        },
+        check_name=False,
+    )
+    yield pref_1
+    pref_1.delete(db)

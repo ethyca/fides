@@ -13,7 +13,6 @@ from sqlalchemy.orm import Query, Session, relationship
 from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
-from fides.api.cryptography.cryptographic_util import hash_with_salt
 from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.api.models.privacy_notice import PrivacyNoticeHistory, UserConsentPreference
 from fides.api.models.privacy_preference import (
@@ -21,7 +20,11 @@ from fides.api.models.privacy_preference import (
     RequestOrigin,
     ServingComponent,
 )
-from fides.api.models.privacy_request import ExecutionLogStatus, PrivacyRequest
+from fides.api.models.privacy_request import (
+    ExecutionLogStatus,
+    PrivacyRequest,
+    ProvidedIdentity,
+)
 from fides.config import CONFIG
 
 
@@ -79,12 +82,7 @@ class ConsentIdentitiesMixin:
         if not value:
             return None
 
-        SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
-        hashed_value = hash_with_salt(
-            value.encode(encoding),
-            SALT.encode(encoding),
-        )
-        return hashed_value
+        return ProvidedIdentity.hash_value(value, encoding)
 
 
 class CurrentPrivacyPreferenceV2(ConsentIdentitiesMixin, Base):
