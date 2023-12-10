@@ -38,7 +38,7 @@ class ConsentIdentitiesMixin:
             engine=AesGcmEngine,
             padding="pkcs5",
         ),
-    )  # Encrypted email; bytea in the db
+    )  # Encrypted email
 
     fides_user_device = Column(
         StringEncryptedType(
@@ -47,7 +47,7 @@ class ConsentIdentitiesMixin:
             engine=AesGcmEngine,
             padding="pkcs5",
         ),
-    )  # Encrypted fides user device; type bytea in the db
+    )  # Encrypted fides user device
 
     phone_number = Column(
         StringEncryptedType(
@@ -56,7 +56,7 @@ class ConsentIdentitiesMixin:
             engine=AesGcmEngine,
             padding="pkcs5",
         ),
-    )  # Encrypted phone number; type bytea in the db
+    )  # Encrypted phone number
 
     hashed_email = Column(
         String,
@@ -86,7 +86,11 @@ class ConsentIdentitiesMixin:
 
 
 class CurrentPrivacyPreferenceV2(ConsentIdentitiesMixin, Base):
-    """Stores the latest saved privacy preferences for a given user"""
+    """Stores the latest saved privacy preferences for a given user
+
+    Email/phone/fides device must be unique.  If we later tie identities together, these records
+    are consolidated.
+    """
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
@@ -120,7 +124,10 @@ class CurrentPrivacyPreferenceV2(ConsentIdentitiesMixin, Base):
 
 
 class LastServedNoticeV2(ConsentIdentitiesMixin, Base):
-    """Stores the latest served notices for a given user"""
+    """Stores the latest served notices for a given user
+
+    Email/device id/phone must be unique in this table.
+    """
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
@@ -231,7 +238,13 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
 
 
 class ServedNoticeHistoryV2(ConsentReportingMixinV2, Base):
-    """A Historical Record of every time a Notice was served to a user"""
+    """A Historical Record of every time a Notice was served to a user
+
+    Each Privacy Notice served gets its own record, but served TCF attributes are collapsed into one record.
+
+    The "served_notice_history_id" column on this table can be mapped to the PrivacyPreferenceHistoryV2 records
+    to calculate conversion.
+    """
 
     acknowledge_mode = Column(
         Boolean,
@@ -270,14 +283,15 @@ class PrivacyPreferenceHistoryV2(ConsentReportingMixinV2, Base):
     # Optional, if fides_string was supplied directly
     fides_string = Column(String)
 
-    # Accept, reject, etc. especially useful for TCF because there is no overall "preference"
+    # Accept, reject, etc. especially useful for TCF
     method = Column(EnumColumn(ConsentMethod))
 
     # Whether the user wants to opt in, opt out, or has acknowledged the notice.
     # For TCF notices, we just say "tcf", and more detailed preferences are under "tcf_preferences"
     preference = Column(EnumColumn(UserConsentPreference), index=True, nullable=False)
 
-    # The privacy request created to propagate the preferences
+    # The privacy request created to propagate the preferences if applicable.  The notice
+    # must have had system wide enforcement. TCF notices don't have privacy requests created.
     privacy_request_id = Column(
         String, ForeignKey(PrivacyRequest.id, ondelete="SET NULL"), index=True
     )
