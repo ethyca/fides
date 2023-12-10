@@ -132,7 +132,15 @@ class PrivacyNoticeWithId(PrivacyNotice):
     id: str
 
 
-class PrivacyNoticeResponse(PrivacyNoticeWithId):
+class UserSpecificConsentDetails(FidesSchema):
+    """Default preference for notice"""
+
+    default_preference: Optional[
+        UserConsentPreference
+    ]  # The default preference for this notice or TCF component
+
+
+class PrivacyNoticeResponse(UserSpecificConsentDetails, PrivacyNoticeWithId):
     """
     An API representation of a PrivacyNotice used for response payloads
     """
@@ -143,25 +151,6 @@ class PrivacyNoticeResponse(PrivacyNoticeWithId):
     privacy_notice_history_id: str
     cookies: List[CookieSchema]
     systems_applicable: bool = False
-
-
-class UserSpecificConsentDetails(FidesSchema):
-    """Schema for surfacing previously-saved preferences or previously-served
-    consent components
-    """
-
-    default_preference: Optional[
-        UserConsentPreference
-    ]  # The default preference for this notice or TCF component
-
-
-class PrivacyNoticeResponseWithUserPreferences(
-    PrivacyNoticeResponse, UserSpecificConsentDetails
-):
-    """
-    If retrieving notices for a given user, also return the default preferences for that notice
-    and any saved preferences.
-    """
 
 
 class PrivacyNoticeHistorySchema(PrivacyNoticeCreation, PrivacyNoticeWithId):
