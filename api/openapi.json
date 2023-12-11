@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.25.0"
+    "version": "2.26.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -12930,6 +12930,33 @@
         }
       }
     },
+    "/api/v1/purposes": {
+      "get": {
+        "tags": [
+          "Purposes"
+        ],
+        "summary": "Get Purposes",
+        "description": "Return a map of purpose and special purpose IDs to mapped purposes which include data uses.",
+        "operationId": "get_purposes_api_v1_purposes_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurposesResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/admin/db/{action}": {
       "post": {
         "tags": [
@@ -13358,6 +13385,9 @@
           },
           "security": {
             "$ref": "#/components/schemas/SecurityApplicationConfig"
+          },
+          "consent": {
+            "$ref": "#/components/schemas/ConsentConfig"
           }
         },
         "additionalProperties": false,
@@ -14367,6 +14397,18 @@
           }
         },
         "description": "Deprecated: This used to be populated and sent to the server by a `config.json` in the UI"
+      },
+      "ConsentConfig": {
+        "title": "ConsentConfig",
+        "type": "object",
+        "properties": {
+          "override_vendor_purposes": {
+            "title": "Override Vendor Purposes",
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A base template for all other Fides Schemas to inherit from."
       },
       "ConsentMechanism": {
         "title": "ConsentMechanism",
@@ -17157,6 +17199,51 @@
         "type": "object",
         "properties": {},
         "description": "Manual Webhooks Secrets Schema for API Docs"
+      },
+      "MappedPurpose": {
+        "title": "MappedPurpose",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "illustrations",
+          "data_uses"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer",
+            "description": "Official GVL purpose ID. Used for linking with other records, e.g. vendors, cookies, etc."
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Name of the GVL purpose."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "Description of the GVL purpose."
+          },
+          "illustrations": {
+            "title": "Illustrations",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Illustrative examples of the purpose."
+          },
+          "data_uses": {
+            "title": "Data Uses",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The fideslang default taxonomy data uses that are associated with the purpose."
+          }
+        },
+        "description": "Extension of the base GVL purpose model to include properties related to fideslang mappings.\n\nThis is separated from the base GVL purpose model to keep that model a \"pristine\" representation\nof GVL source data."
       },
       "MariaDBDocsSchema": {
         "title": "MariaDBDocsSchema",
@@ -20095,6 +20182,30 @@
           }
         },
         "description": "The PrivacyRule resource model.\n\nA list of privacy data types and what match method to use."
+      },
+      "PurposesResponse": {
+        "title": "PurposesResponse",
+        "required": [
+          "purposes",
+          "special_purposes"
+        ],
+        "type": "object",
+        "properties": {
+          "purposes": {
+            "title": "Purposes",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/MappedPurpose"
+            }
+          },
+          "special_purposes": {
+            "title": "Special Purposes",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/MappedPurpose"
+            }
+          }
+        }
       },
       "QueryParam": {
         "title": "QueryParam",
