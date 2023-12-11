@@ -20,6 +20,9 @@ The types of changes are:
 ### Added
 - Tooltip and styling for disabled rows in add multiple vendor view [#4498](https://github.com/ethyca/fides/pull/4498)
 
+### Fixed
+- Fixed incorrect Compass button behavior in system form [#4508](https://github.com/ethyca/fides/pull/4508)
+
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
 ### Added
