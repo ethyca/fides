@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Tooltip and styling for disabled rows in add multiple vendor view [#4498](https://github.com/ethyca/fides/pull/4498)
+- Preliminary GPP support for US regions [#4498](https://github.com/ethyca/fides/pull/4504)
 
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
