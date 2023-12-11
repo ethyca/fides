@@ -718,34 +718,6 @@ dataset:
       description: The timestamp of when the row was last updated
       data_categories:
       - system.operations
-  - name: ctl_registries
-    fields:
-    - name: created_at
-      description: The timestamp of when the row was created
-      data_categories:
-      - system.operations
-    - name: description
-      data_categories:
-      - system.operations
-    - name: fides_key
-      data_categories:
-      - system.operations
-    - name: id
-      data_categories:
-      - system.operations
-    - name: name
-      data_categories:
-      - system.operations
-    - name: organization_fides_key
-      data_categories:
-      - system.operations
-    - name: tags
-      data_categories:
-      - system.operations
-    - name: updated_at
-      description: The timestamp of when the row was last updated
-      data_categories:
-      - system.operations
   - name: ctl_systems
     fields:
     - name: administrating_department
@@ -807,9 +779,6 @@ dataset:
       data_categories:
       - system.operations
     - name: privacy_declarations
-      data_categories:
-      - system.operations
-    - name: registry_id
       data_categories:
       - system.operations
     - name: system_type

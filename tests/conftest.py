@@ -435,16 +435,8 @@ def resources_dict():
             data_uses=models.PrivacyRule(matches="NONE", values=["essential.service"]),
             data_subjects=models.PrivacyRule(matches="ANY", values=[]),
         ),
-        "registry": models.Registry(
-            organization_fides_key=1,
-            fides_key="test_registry",
-            name="Test Registry",
-            description="Test Regsitry",
-            systems=[],
-        ),
         "system": models.System(
             organization_fides_key=1,
-            registryId=1,
             fides_key="test_system",
             system_type="SYSTEM",
             name="Test System",

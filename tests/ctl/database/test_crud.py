@@ -376,7 +376,6 @@ async def test_get_custom_fields_filtered(
 async def test_get_resource_with_custom_field(db, async_session_temp):
     system_data = {
         "name": "my system",
-        "registry_id": "1",
         "system_type": "test",
         "fides_key": str(uuid4()),
     }
@@ -427,7 +426,6 @@ async def test_get_resource_with_custom_field(db, async_session_temp):
 async def test_get_resource_with_custom_field_no_custom_field(async_session_temp):
     system_data = {
         "name": "my system",
-        "registry_id": "1",
         "system_type": "test",
         "fides_key": str(uuid4()),
     }

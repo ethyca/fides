@@ -49,7 +49,6 @@ PRIVACY_REQUEST = "privacy-request"
 PRIVACY_REQUEST_NOTIFICATIONS = "privacy-request-notifications"
 READ = "read"
 REGISTER = "register"
-REGISTRY = "registry"
 RESET = "reset"
 RESUME = "resume"
 REVIEW = "review"
@@ -181,11 +180,6 @@ PRIVACY_REQUEST_TRANSFER = f"{PRIVACY_REQUEST}:{TRANSFER}"
 PRIVACY_REQUEST_UPLOAD_DATA = f"{PRIVACY_REQUEST}:{UPLOAD_DATA}"
 PRIVACY_REQUEST_VIEW_DATA = f"{PRIVACY_REQUEST}:{VIEW_DATA}"
 
-REGISTRY_CREATE = f"{REGISTRY}:{CREATE}"
-REGISTRY_READ = f"{REGISTRY}:{READ}"
-REGISTRY_UPDATE = f"{REGISTRY}:{UPDATE}"
-REGISTRY_DELETE = f"{REGISTRY}:{DELETE}"
-
 RULE_CREATE_OR_UPDATE = f"{RULE}:{CREATE_OR_UPDATE}"
 RULE_DELETE = f"{RULE}:{DELETE}"
 RULE_READ = f"{RULE}:{READ}"
@@ -316,10 +310,6 @@ SCOPE_DOCS = {
     PRIVACY_REQUEST_TRANSFER: "Transfer privacy requests",
     PRIVACY_REQUEST_UPLOAD_DATA: "Manually upload data for the privacy request",
     PRIVACY_REQUEST_VIEW_DATA: "View subject data related to the privacy request",
-    REGISTRY_CREATE: "Create registry",
-    REGISTRY_READ: "Read registry details",
-    REGISTRY_DELETE: "Delete registry",
-    REGISTRY_UPDATE: "Update registry details",
     RULE_CREATE_OR_UPDATE: "Create or update rules",
     RULE_DELETE: "Remove rules",
     RULE_READ: "View rules",

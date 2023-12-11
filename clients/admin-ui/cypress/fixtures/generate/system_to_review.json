@@ -3,7 +3,6 @@
   "organization_fides_key": "default_organization",
   "name": "example-postgres-cluster",
   "description": "Fides Generated Description for RDS Cluster: example-postgres-cluster",
-  "registry_id": null,
   "meta": null,
   "fidesctl_meta": {
     "resource_id": "arn:aws:rds:us-east-2:123456789012:cluster:example-postgres-cluster",

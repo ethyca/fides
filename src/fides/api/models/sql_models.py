@@ -334,15 +334,6 @@ class PolicyCtl(Base, FidesBase):
     rules = Column(JSON)
 
 
-# Registry
-class Registry(Base, FidesBase):
-    """
-    The SQL model for the Registry resource.
-    """
-
-    __tablename__ = "ctl_registries"
-
-
 # System
 class System(Base, FidesBase):
     """
@@ -351,7 +342,6 @@ class System(Base, FidesBase):
 
     __tablename__ = "ctl_systems"
 
-    registry_id = Column(String)
     meta = Column(JSON)
     fidesctl_meta = Column(JSON)
     system_type = Column(String)
@@ -585,7 +575,6 @@ class PrivacyDeclaration(Base):
 
 class SystemModel(BaseModel):
     fides_key: str
-    registry_id: str
     meta: Optional[Dict[str, Any]]
     fidesctl_meta: Optional[Dict[str, Any]]
     system_type: str
@@ -627,7 +616,6 @@ sql_model_map: Dict = {
     "fides_user_permissions": FidesUserPermissions,
     "organization": Organization,
     "policy": PolicyCtl,
-    "registry": Registry,
     "system": System,
     "evaluation": Evaluation,
 }

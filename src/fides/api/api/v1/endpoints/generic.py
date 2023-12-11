@@ -2,7 +2,7 @@
 This module generates all of the routers for the boilerplate/generic
 objects that don't require any extra logic.
 """
-from fideslang.models import Dataset, Evaluation, Organization, Policy, Registry
+from fideslang.models import Dataset, Evaluation, Organization, Policy
 
 from fides.api.schemas.taxonomy_extensions import DataCategory, DataSubject, DataUse
 
@@ -20,7 +20,6 @@ ORGANIZATION_ROUTER = generic_router_factory(
     fides_model=Organization, model_type="organization"
 )
 POLICY_ROUTER = generic_router_factory(fides_model=Policy, model_type="policy")
-REGISTRY_ROUTER = generic_router_factory(fides_model=Registry, model_type="registry")
 EVALUATION_ROUTER = generic_router_factory(
     fides_model=Evaluation, model_type="evaluation"
 )
