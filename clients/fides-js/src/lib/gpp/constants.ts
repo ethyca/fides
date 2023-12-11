@@ -15,9 +15,15 @@ import {
 
 export const SUPPORTED_APIS = ["2:tcfeuv2"];
 
+interface GppMechanismField {
+  field: string;
+  not_available: number | number[];
+  opt_out: number | number[];
+  not_opt_out: number | number[];
+}
 interface GppFields {
   gpp_notice_fields: string[];
-  gpp_mechanism_fields: string[];
+  gpp_mechanism_fields: GppMechanismField[];
 }
 type FidesRegionToGppFields = Record<string, GppFields>;
 type NoticeKeyToFidesRegionGppFields = Record<string, FidesRegionToGppFields>;
@@ -39,8 +45,18 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
           UsNatV1Field.SHARING_NOTICE,
         ],
         gpp_mechanism_fields: [
-          UsNatV1Field.SALE_OPT_OUT,
-          UsNatV1Field.SHARING_OPT_OUT,
+          {
+            field: UsNatV1Field.SALE_OPT_OUT,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
+          {
+            field: UsNatV1Field.SHARING_OPT_OUT,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
         ],
       },
       us_ca: {
@@ -49,31 +65,76 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
           UsCaV1Field.SHARING_OPT_OUT_NOTICE,
         ],
         gpp_mechanism_fields: [
-          UsCaV1Field.SALE_OPT_OUT,
-          UsCaV1Field.SHARING_OPT_OUT,
+          {
+            field: UsCaV1Field.SALE_OPT_OUT,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
+          {
+            field: UsCaV1Field.SHARING_OPT_OUT,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
         ],
       },
     },
     targeted_advertising: {
       us: {
         gpp_notice_fields: [UsNatV1Field.TARGETED_ADVERTISING_OPT_OUT_NOTICE],
-        gpp_mechanism_fields: [UsNatV1Field.TARGETED_ADVERTISING_OPT_OUT],
+        gpp_mechanism_fields: [
+          {
+            field: UsNatV1Field.TARGETED_ADVERTISING_OPT_OUT,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
+        ],
       },
       us_co: {
         gpp_notice_fields: [UsCoV1Field.TARGETED_ADVERTISING_OPT_OUT_NOTICE],
-        gpp_mechanism_fields: [UsCoV1Field.TARGETED_ADVERTISING_OPT_OUT],
+        gpp_mechanism_fields: [
+          {
+            field: UsCoV1Field.TARGETED_ADVERTISING_OPT_OUT,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
+        ],
       },
       us_ct: {
         gpp_notice_fields: [UsCtV1Field.TARGETED_ADVERTISING_OPT_OUT_NOTICE],
-        gpp_mechanism_fields: [UsCtV1Field.TARGETED_ADVERTISING_OPT_OUT],
+        gpp_mechanism_fields: [
+          {
+            field: UsCtV1Field.TARGETED_ADVERTISING_OPT_OUT,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
+        ],
       },
       us_ut: {
         gpp_notice_fields: [UsUtV1Field.TARGETED_ADVERTISING_OPT_OUT_NOTICE],
-        gpp_mechanism_fields: [UsUtV1Field.TARGETED_ADVERTISING_OPT_OUT],
+        gpp_mechanism_fields: [
+          {
+            field: UsUtV1Field.TARGETED_ADVERTISING_OPT_OUT,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
+        ],
       },
       us_va: {
         gpp_notice_fields: [UsVaV1Field.TARGETED_ADVERTISING_OPT_OUT_NOTICE],
-        gpp_mechanism_fields: [UsVaV1Field.TARGETED_ADVERTISING_OPT_OUT],
+        gpp_mechanism_fields: [
+          {
+            field: UsVaV1Field.TARGETED_ADVERTISING_OPT_OUT,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
+        ],
       },
       us_ia: {
         // DEFER: Iowa isn't part of the GPP spec yet
@@ -112,19 +173,47 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
       //   },
       us_co: {
         gpp_notice_fields: [UsCoV1Field.SALE_OPT_OUT_NOTICE],
-        gpp_mechanism_fields: [UsCoV1Field.SALE_OPT_OUT],
+        gpp_mechanism_fields: [
+          {
+            field: UsCoV1Field.SALE_OPT_OUT,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
+        ],
       },
       us_ct: {
         gpp_notice_fields: [UsCtV1Field.SALE_OPT_OUT_NOTICE],
-        gpp_mechanism_fields: [UsCtV1Field.SALE_OPT_OUT],
+        gpp_mechanism_fields: [
+          {
+            field: UsCtV1Field.SALE_OPT_OUT,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
+        ],
       },
       us_ut: {
         gpp_notice_fields: [UsUtV1Field.SALE_OPT_OUT_NOTICE],
-        gpp_mechanism_fields: [UsUtV1Field.SALE_OPT_OUT],
+        gpp_mechanism_fields: [
+          {
+            field: UsUtV1Field.SALE_OPT_OUT,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
+        ],
       },
       us_va: {
         gpp_notice_fields: [UsVaV1Field.SALE_OPT_OUT_NOTICE],
-        gpp_mechanism_fields: [UsVaV1Field.SALE_OPT_OUT],
+        gpp_mechanism_fields: [
+          {
+            field: UsVaV1Field.SALE_OPT_OUT,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
+        ],
       },
       us_ia: {
         // DEFER: Iowa isn't part of the GPP spec yet
@@ -139,16 +228,47 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
           UsNatV1Field.SENSITIVE_DATA_PROCESSING_OPT_OUT_NOTICE,
         ],
         gpp_mechanism_fields: [
-          UsNatV1Field.SENSITIVE_DATA_PROCESSING,
-          UsNatV1Field.PERSONAL_DATA_CONSENTS,
-          UsNatV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
+          {
+            field: UsNatV1Field.SENSITIVE_DATA_PROCESSING,
+            not_available: Array(12).fill(0),
+            opt_out: Array(12).fill(1),
+            not_opt_out: Array(12).fill(2),
+          },
+          {
+            field: UsNatV1Field.PERSONAL_DATA_CONSENTS,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
+          {
+            field: UsNatV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
+            not_available: Array(2).fill(0),
+            opt_out: Array(2).fill(1),
+            not_opt_out: Array(2).fill(2),
+          },
         ],
       },
       us_ca: {
         gpp_notice_fields: [UsCaV1Field.SENSITIVE_DATA_LIMIT_USE_NOTICE],
         gpp_mechanism_fields: [
-          UsCaV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
-          UsCaV1Field.PERSONAL_DATA_CONSENTS,
+          {
+            field: UsCaV1Field.SENSITIVE_DATA_PROCESSING,
+            not_available: Array(9).fill(0),
+            opt_out: Array(9).fill(1),
+            not_opt_out: Array(9).fill(2),
+          },
+          {
+            field: UsCaV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
+            not_available: Array(2).fill(0),
+            opt_out: Array(2).fill(1),
+            not_opt_out: Array(2).fill(2),
+          },
+          {
+            field: UsCaV1Field.PERSONAL_DATA_CONSENTS,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
         ],
       },
       us_ut: {
@@ -156,29 +276,69 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
           UsUtV1Field.SENSITIVE_DATA_PROCESSING_OPT_OUT_NOTICE,
         ],
         gpp_mechanism_fields: [
-          UsUtV1Field.SENSITIVE_DATA_PROCESSING,
-          UsUtV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
+          {
+            field: UsUtV1Field.SENSITIVE_DATA_PROCESSING,
+            not_available: Array(8).fill(0),
+            opt_out: Array(8).fill(1),
+            not_opt_out: Array(8).fill(2),
+          },
+          {
+            field: UsUtV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
         ],
       },
       us_va: {
         gpp_notice_fields: [],
         gpp_mechanism_fields: [
-          UsVaV1Field.SENSITIVE_DATA_PROCESSING,
-          UsVaV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
+          {
+            field: UsVaV1Field.SENSITIVE_DATA_PROCESSING,
+            not_available: Array(8).fill(0),
+            opt_out: Array(8).fill(1),
+            not_opt_out: Array(8).fill(2),
+          },
+          {
+            field: UsVaV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
         ],
       },
       us_co: {
         gpp_notice_fields: [],
         gpp_mechanism_fields: [
-          UsCoV1Field.SENSITIVE_DATA_PROCESSING,
-          UsCoV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
+          {
+            field: UsCoV1Field.SENSITIVE_DATA_PROCESSING,
+            not_available: Array(7).fill(0),
+            opt_out: Array(7).fill(1),
+            not_opt_out: Array(7).fill(2),
+          },
+          {
+            field: UsCoV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
         ],
       },
       us_ct: {
         gpp_notice_fields: [],
         gpp_mechanism_fields: [
-          UsCtV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
-          UsCtV1Field.SENSITIVE_DATA_PROCESSING,
+          {
+            field: UsCtV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
+            not_available: Array(3).fill(0),
+            opt_out: Array(3).fill(1),
+            not_opt_out: Array(3).fill(2),
+          },
+          {
+            field: UsCtV1Field.SENSITIVE_DATA_PROCESSING,
+            not_available: Array(8).fill(0),
+            opt_out: Array(8).fill(1),
+            not_opt_out: Array(8).fill(2),
+          },
         ],
       },
     },

@@ -57,20 +57,17 @@ export const setGppOptOutsFromCookie = ({
       if (gppFields) {
         const { gpp_mechanism_fields: fields } = gppFields;
         const consentValue = consent[noticeKey];
-        // TODO: handle sensitive data processing and known child sensitive data which are bitfields...
-        // Sensitive data processing (N-Bitfield(2,9))
-        // Known child sensitive data (N-Bitfield(2,2)) - but VA and UT are Int(2) 🤔
 
-        // 0 = N/A, 1 = Opted out, 2 = Did not opt out
-        let value = 0; // if consentValue is undefined, we'll mark as N/A
-        if (consentValue === false) {
-          value = 1;
-        } else if (consentValue) {
-          value = 2;
-        }
         const gppSectionId = FIDES_REGION_TO_GPP_SECTION_ID[region];
-        fields.forEach((field) => {
-          cmpApi.setFieldValueBySectionId(gppSectionId, field, value);
+        fields.forEach((fieldObj) => {
+          // In general, 0 = N/A, 1 = Opted out, 2 = Did not opt out
+          let value = fieldObj.not_available; // if consentValue is undefined, we'll mark as N/A
+          if (consentValue === false) {
+            value = fieldObj.opt_out;
+          } else if (consentValue) {
+            value = fieldObj.not_opt_out;
+          }
+          cmpApi.setFieldValueBySectionId(gppSectionId, fieldObj.field, value);
         });
       }
     }

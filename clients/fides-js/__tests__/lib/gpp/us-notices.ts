@@ -149,12 +149,12 @@ describe("setGppOptOutsFromCookie", () => {
     const section = cmpApi.getSection("usnatv1");
     expect(section).toEqual({
       Version: 1,
-      SharingNotice: 1,
-      SaleOptOutNotice: 1,
-      SharingOptOutNotice: 1,
-      TargetedAdvertisingOptOutNotice: 1,
-      SensitiveDataProcessingOptOutNotice: 1,
-      SensitiveDataLimitUseNotice: 1,
+      SharingNotice: 0,
+      SaleOptOutNotice: 0,
+      SharingOptOutNotice: 0,
+      TargetedAdvertisingOptOutNotice: 0,
+      SensitiveDataProcessingOptOutNotice: 0,
+      SensitiveDataLimitUseNotice: 0,
       SaleOptOut: 0,
       SharingOptOut: 0,
       TargetedAdvertisingOptOut: 0,
@@ -167,5 +167,104 @@ describe("setGppOptOutsFromCookie", () => {
       GpcSegmentType: 1,
       Gpc: false,
     });
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BAAAAAAAAAA.QA");
+  });
+
+  it("can set fields when there is a partial consent object in cookie", () => {
+    const cmpApi = new CmpApi(1, 1);
+    const cookie = mockFidesCookie({
+      consent: { data_sales_and_sharing: true },
+    });
+    setGppOptOutsFromCookie({ cmpApi, cookie, region: "us" });
+    const section = cmpApi.getSection("usnatv1");
+    expect(section).toEqual({
+      Version: 1,
+      SharingNotice: 0,
+      SaleOptOutNotice: 0,
+      SharingOptOutNotice: 0,
+      TargetedAdvertisingOptOutNotice: 0,
+      SensitiveDataProcessingOptOutNotice: 0,
+      SensitiveDataLimitUseNotice: 0,
+      SaleOptOut: 2,
+      SharingOptOut: 2,
+      TargetedAdvertisingOptOut: 0,
+      SensitiveDataProcessing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      KnownChildSensitiveDataConsents: [0, 0],
+      PersonalDataConsents: 0,
+      MspaCoveredTransaction: 0,
+      MspaOptOutOptionMode: 0,
+      MspaServiceProviderMode: 0,
+      GpcSegmentType: 1,
+      Gpc: false,
+    });
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BAAoAAAAAAA.QA");
+  });
+
+  it("can set all fields to not opted out for consent object in cookie", () => {
+    const cmpApi = new CmpApi(1, 1);
+    const cookie = mockFidesCookie({
+      consent: {
+        data_sales_and_sharing: true,
+        targeted_advertising: true,
+        sensitive_personal_data_sharing: true,
+      },
+    });
+    setGppOptOutsFromCookie({ cmpApi, cookie, region: "us" });
+    const section = cmpApi.getSection("usnatv1");
+    expect(section).toEqual({
+      Version: 1,
+      SharingNotice: 0,
+      SaleOptOutNotice: 0,
+      SharingOptOutNotice: 0,
+      TargetedAdvertisingOptOutNotice: 0,
+      SensitiveDataProcessingOptOutNotice: 0,
+      SensitiveDataLimitUseNotice: 0,
+      SaleOptOut: 2,
+      SharingOptOut: 2,
+      TargetedAdvertisingOptOut: 2,
+      SensitiveDataProcessing: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+      KnownChildSensitiveDataConsents: [2, 2],
+      PersonalDataConsents: 2,
+      MspaCoveredTransaction: 0,
+      MspaOptOutOptionMode: 0,
+      MspaServiceProviderMode: 0,
+      GpcSegmentType: 1,
+      Gpc: false,
+    });
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BAAqqqqqqAA.QA");
+  });
+
+  it("can set all fields to opted out for consent object in cookie", () => {
+    const cmpApi = new CmpApi(1, 1);
+    const cookie = mockFidesCookie({
+      consent: {
+        data_sales_and_sharing: false,
+        targeted_advertising: false,
+        sensitive_personal_data_sharing: false,
+      },
+    });
+    setGppOptOutsFromCookie({ cmpApi, cookie, region: "us" });
+    const section = cmpApi.getSection("usnatv1");
+    expect(section).toEqual({
+      Version: 1,
+      SharingNotice: 0,
+      SaleOptOutNotice: 0,
+      SharingOptOutNotice: 0,
+      TargetedAdvertisingOptOutNotice: 0,
+      SensitiveDataProcessingOptOutNotice: 0,
+      SensitiveDataLimitUseNotice: 0,
+      SaleOptOut: 1,
+      SharingOptOut: 1,
+      TargetedAdvertisingOptOut: 1,
+      SensitiveDataProcessing: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      KnownChildSensitiveDataConsents: [1, 1],
+      PersonalDataConsents: 1,
+      MspaCoveredTransaction: 0,
+      MspaOptOutOptionMode: 0,
+      MspaServiceProviderMode: 0,
+      GpcSegmentType: 1,
+      Gpc: false,
+    });
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BAAVVVVVVAA.QA");
   });
 });
