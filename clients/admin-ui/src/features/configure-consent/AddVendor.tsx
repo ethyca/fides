@@ -99,18 +99,18 @@ const AddVendor = ({
 
   const initialValues = passedInSystem
     ? {
-      name: passedInSystem.name ?? "",
-      vendor_id: passedInSystem.vendor_id,
-      privacy_declarations: passedInSystem.privacy_declarations
-        .filter((dec) => dataUseIsConsentUse(dec.data_use))
-        .map((dec) => ({
-          ...dec,
-          name: dec.name ?? "",
-          cookies: dec.cookies ?? [],
-          cookieNames: dec.cookies ? dec.cookies.map((c) => c.name) : [],
-          consent_use: dec.data_use.split(".")[0],
-        })),
-    }
+        name: passedInSystem.name ?? "",
+        vendor_id: passedInSystem.vendor_id,
+        privacy_declarations: passedInSystem.privacy_declarations
+          .filter((dec) => dataUseIsConsentUse(dec.data_use))
+          .map((dec) => ({
+            ...dec,
+            name: dec.name ?? "",
+            cookies: dec.cookies ?? [],
+            cookieNames: dec.cookies ? dec.cookies.map((c) => c.name) : [],
+            consent_use: dec.data_use.split(".")[0],
+          })),
+      }
     : defaultInitialValues;
 
   const handleSubmit = async (
@@ -151,8 +151,8 @@ const AddVendor = ({
     // due to not being consent uses, include those in the payload
     const existingDeclarations = passedInSystem
       ? passedInSystem.privacy_declarations.filter(
-        (du) => !dataUseIsConsentUse(du.data_use)
-      )
+          (du) => !dataUseIsConsentUse(du.data_use)
+        )
       : [];
     const declarationsToSave = passedInSystem
       ? [...existingDeclarations, ...transformedDeclarations]
@@ -248,7 +248,7 @@ const AddVendor = ({
                       />
                     ) : null}
                     {(passedInSystem && !passedInSystem.vendor_id) ||
-                      !hasDictionary ? (
+                    !hasDictionary ? (
                       <CustomTextInput
                         id="name"
                         name="name"
