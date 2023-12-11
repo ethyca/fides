@@ -11,9 +11,6 @@
         "meta": null,
         "data_categories": null,
         "fides_meta": null,
-        "joint_controller": null,
-        "retention": "No retention or erasure policy",
-        "third_country_transfers": null,
         "collections": [
           {
             "name": "address",

@@ -724,8 +724,6 @@ class TestSystemCreate:
 
         expected_none = [
             "connection_configs",
-            "data_protection_impact_assessment",
-            "data_responsibility_title",
             "data_security_practices",
             "description",
             "dpa_location",
@@ -734,7 +732,6 @@ class TestSystemCreate:
             "egress",
             "fidesctl_meta",
             "ingress",
-            "joint_controller",
             "joint_controller_info",
             "legal_address",
             "legal_name",
@@ -743,7 +740,6 @@ class TestSystemCreate:
             "privacy_policy",
             "reason_for_exemption",
             "tags",
-            "third_country_transfers",
             "vendor_id",
         ]
         for field in expected_none:

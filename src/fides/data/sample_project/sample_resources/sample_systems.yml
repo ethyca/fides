@@ -4,14 +4,6 @@ system:
     description: Cookie House eCommerce Application
     system_type: Application
     administrating_department: Engineering
-    data_responsibility_title: Controller
-    third_country_transfers:
-      - USA
-      - CAN
-    data_protection_impact_assessment:
-      is_required: True
-      progress: Complete
-      link: https://example.org/cookie_house_dpia
     privacy_declarations:
       - data_categories:
           - user.contact
@@ -25,7 +17,6 @@ system:
     description: Primary database for Cookie House orders.
     system_type: Database
     administrating_department: Engineering
-    data_responsibility_title: Processor
     egress:
       - fides_key: cookie_house
         type: system
@@ -44,7 +35,6 @@ system:
     description: Additional database to store detailed data about users.
     system_type: Database
     administrating_department: Engineering
-    data_responsibility_title: Processor
     egress:
       - fides_key: cookie_house
         type: system
@@ -62,7 +52,6 @@ system:
     description: Marketing application for audience analysis, targeted ads, etc.
     system_type: Application
     administrating_department: Marketing
-    data_responsibility_title: Processor
     egress:
       - fides_key: cookie_house_customer_database
         type: system

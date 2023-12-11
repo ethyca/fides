@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Union
 
-from fideslang.models import DataSubject, DataUse, FidesModel, Organization, System
+from fideslang.models import DataSubject, FidesModel, Organization, System
 from fideslang.parse import parse_dict
 
 from fides.common.utils import echo_green, echo_red, pretty_echo

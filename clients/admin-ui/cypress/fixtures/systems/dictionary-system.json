@@ -7,7 +7,6 @@
   "meta": null,
   "fidesctl_meta": null,
   "system_type": null,
-  "data_responsibility_title": null,
   "egress": null,
   "ingress": null,
   "privacy_declarations": [
@@ -32,10 +31,7 @@
       "id": "pri_bc6e6efe-f122-3e33-ac9a-732ae8b437bb"
     }
   ],
-  "joint_controller": null,
-  "third_country_transfers": null,
   "administrating_department": "Not defined",
-  "data_protection_impact_assessment": null,
   "vendor_id": "gvl.733",
   "dataset_references": [],
   "processes_personal_data": true,
@@ -53,7 +49,6 @@
   "legal_address": "Marshalllaan 2, unit 2.02;GZ Delft;2625;Netherlands;Netherlands",
   "responsibility": [],
   "dpo": "DPO@anzu.io",
-  "joint_controller_info": null,
   "data_security_practices": null,
   "cookie_max_age_seconds": null,
   "uses_cookies": false,

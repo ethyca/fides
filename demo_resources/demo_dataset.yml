@@ -5,10 +5,6 @@ dataset:
   description: Data collected about users for our analytics system.
   meta: null
   data_categories: []
-  retention: "30 days after account deletion"
-  third_country_transfers:
-    - GBR
-    - CAN
   collections:
   - name: users
     description: User information
