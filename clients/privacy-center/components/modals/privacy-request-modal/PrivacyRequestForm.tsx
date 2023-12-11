@@ -66,7 +66,9 @@ const usePrivacyRequestForm = ({
       email: "",
       phone: "",
       ...Object.fromEntries(
-        Object.keys(customPrivacyRequestFields).map((key) => [key, ""])
+        Object.entries(customPrivacyRequestFields)
+          .filter(([, field]) => !field.hidden)
+          .map(([key, field]) => [key, field.default_value || ""])
       ),
     },
     onSubmit: async (values) => {
@@ -77,22 +79,20 @@ const usePrivacyRequestForm = ({
 
       const { email, phone, name, ...customPrivacyRequestFieldValues } = values;
 
-      // add the label to each custom privacy request field
-      const transformedCustomPrivacyRequestFields = Object.keys(
-        customPrivacyRequestFieldValues
-      ).length
-        ? Object.fromEntries(
-            Object.entries(customPrivacyRequestFieldValues).map(
-              ([key, value]) => [
-                key,
-                {
-                  label: action.custom_privacy_request_fields?.[key]?.label,
-                  value,
-                },
-              ]
-            )
-          )
-        : null;
+      // populate the values from the form or from the field's default value
+      const transformedCustomPrivacyRequestFields = Object.fromEntries(
+        Object.entries(action.custom_privacy_request_fields ?? {}).map(
+          ([key, field]) => [
+            key,
+            {
+              label: field.label,
+              value: field.hidden
+                ? field.default_value
+                : customPrivacyRequestFieldValues[key] || "",
+            },
+          ]
+        )
+      );
 
       const body = [
         {
@@ -203,14 +203,17 @@ const usePrivacyRequestForm = ({
         }
       ),
       ...Object.fromEntries(
-        Object.entries(customPrivacyRequestFields).map(
-          ([key, { label, required }]) => [
-            key,
-            required
-              ? Yup.string().required(`${label} is required`)
-              : Yup.string().notRequired(),
-          ]
-        )
+        Object.entries(customPrivacyRequestFields)
+          .filter(([, field]) => !field.hidden)
+          .map(([key, { label, required }]) => {
+            const isRequired = required !== false;
+            return [
+              key,
+              isRequired
+                ? Yup.string().required(`${label} is required`)
+                : Yup.string().notRequired(),
+            ];
+          })
       ),
     }),
   });
@@ -273,11 +276,11 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
       <ModalHeader pt={6} pb={0}>
         {action.title}
       </ModalHeader>
+      <Text fontSize="sm" color="gray.600" mb={4} ml={6}>
+        {action.description}
+      </Text>
       <chakra.form onSubmit={handleSubmit} data-testid="privacy-request-form">
-        <ModalBody>
-          <Text fontSize="sm" color="gray.600" mb={4}>
-            {action.description}
-          </Text>
+        <ModalBody maxHeight={400} overflowY="auto">
           {action.description_subtext?.map((paragraph, index) => (
             // eslint-disable-next-line react/no-array-index-key
             <Text fontSize="sm" color="gray.600" mb={4} key={index}>
@@ -349,25 +352,27 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 <FormErrorMessage>{errors.phone}</FormErrorMessage>
               </FormControl>
             ) : null}
-            {Object.entries(customPrivacyRequestFields).map(([key, item]) => (
-              <FormControl
-                key={key}
-                id={key}
-                isInvalid={touched[key] && Boolean(errors[key])}
-                isRequired={item.required}
-              >
-                <FormLabel fontSize="sm">{item.label}</FormLabel>
-                <Input
+            {Object.entries(customPrivacyRequestFields)
+              .filter(([, field]) => !field.hidden)
+              .map(([key, item]) => (
+                <FormControl
+                  key={key}
                   id={key}
-                  name={key}
-                  focusBorderColor="primary.500"
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values[key]}
-                />
-                <FormErrorMessage>{errors[key]}</FormErrorMessage>
-              </FormControl>
-            ))}
+                  isInvalid={touched[key] && Boolean(errors[key])}
+                  isRequired={item.required !== false}
+                >
+                  <FormLabel fontSize="sm">{item.label}</FormLabel>
+                  <Input
+                    id={key}
+                    name={key}
+                    focusBorderColor="primary.500"
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    value={values[key]}
+                  />
+                  <FormErrorMessage>{errors[key]}</FormErrorMessage>
+                </FormControl>
+              ))}
           </Stack>
         </ModalBody>
 

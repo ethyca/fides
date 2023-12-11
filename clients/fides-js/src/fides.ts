@@ -51,9 +51,17 @@ import { shopify } from "./integrations/shopify";
 import {
   FidesCookie,
   buildCookieConsentForExperiences,
-  isNewFidesCookie,
+  updateExperienceFromCookieConsentNotices,
+  consentCookieObjHasSomeConsentSet,
 } from "./lib/cookie";
-import { FidesConfig, PrivacyExperience } from "./lib/consent-types";
+import {
+  FidesConfig,
+  FidesOptionsOverrides,
+  FidesOverrides,
+  GetPreferencesFnResp,
+  OverrideOptions,
+  PrivacyExperience,
+} from "./lib/consent-types";
 
 import { dispatchFidesEvent } from "./lib/events";
 
@@ -61,15 +69,18 @@ import {
   initialize,
   getInitialCookie,
   getInitialFides,
+  getOptionsOverrides,
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 
 import { renderOverlay } from "./lib/renderOverlay";
 import { getConsentContext } from "./lib/consent-context";
+import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
   interface Window {
     Fides: Fides;
+    fides_overrides: OverrideOptions;
   }
 }
 
@@ -80,46 +91,85 @@ let _Fides: Fides;
 const updateCookie = async (
   oldCookie: FidesCookie,
   experience: PrivacyExperience,
-  debug?: boolean
-): Promise<FidesCookie> => {
+  debug?: boolean,
+  isExperienceClientSideFetched?: boolean
+): Promise<{ cookie: FidesCookie; experience: PrivacyExperience }> => {
+  let updatedExperience: PrivacyExperience = experience;
+  const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
+    oldCookie.consent
+  );
+  if (isExperienceClientSideFetched && preferencesExistOnCookie) {
+    // If we have some preferences on the cookie, we update client-side experience with those preferences
+    // if the name matches
+    updatedExperience = updateExperienceFromCookieConsentNotices({
+      experience,
+      cookie: oldCookie,
+      debug,
+    });
+  }
+  // Even if we update experience from cookie consent, we must still generate cookie consent based on experience.
+  // It's possible that some notices on the experience were not present on the cookie, e.g. if the cookie
+  // held legacy consent values.
   const context = getConsentContext();
   const consent = buildCookieConsentForExperiences(
-    experience,
+    updatedExperience,
     context,
     !!debug
   );
-  return { ...oldCookie, consent };
+  return { cookie: { ...oldCookie, consent }, experience: updatedExperience };
 };
 
 /**
  * Initialize the global Fides object with the given configuration values
  */
 const init = async (config: FidesConfig) => {
-  const cookie = getInitialCookie(config);
-  const initialFides = getInitialFides({ ...config, cookie });
+  const optionsOverrides: Partial<FidesOptionsOverrides> =
+    getOptionsOverrides(config);
+  const consentPrefsOverrides: GetPreferencesFnResp | null =
+    await customGetConsentPreferences(config);
+  // DEFER: not implemented - ability to override notice-based consent with the consentPrefsOverrides.consent obj
+  const overrides: Partial<FidesOverrides> = {
+    optionsOverrides,
+    consentPrefsOverrides,
+  };
+  // eslint-disable-next-line no-param-reassign
+  config.options = { ...config.options, ...overrides.optionsOverrides };
+  const cookie = {
+    ...getInitialCookie(config),
+    ...overrides.consentPrefsOverrides?.consent,
+  };
+  const initialFides = getInitialFides({
+    ...config,
+    cookie,
+    updateExperienceFromCookieConsent: updateExperienceFromCookieConsentNotices,
+  });
   if (initialFides) {
     Object.assign(_Fides, initialFides);
     dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
-    dispatchFidesEvent("FidesUpdated", cookie, config.options.debug);
   }
   const experience = initialFides?.experience ?? config.experience;
   const updatedFides = await initialize({
     ...config,
-    experience,
     cookie,
+    experience,
     renderOverlay,
-    updateCookie,
+    updateCookieAndExperience: ({
+      cookie: oldCookie,
+      experience: effectiveExperience,
+      debug,
+      isExperienceClientSideFetched,
+    }) =>
+      updateCookie(
+        oldCookie,
+        effectiveExperience,
+        debug,
+        isExperienceClientSideFetched
+      ),
   });
   Object.assign(_Fides, updatedFides);
 
-  // Dispatch the "FidesInitialized" event to update listeners with the initial
-  // state. Skip if we already initialized due to an existing cookie.
-  // For convenience, also dispatch the "FidesUpdated" event; this allows
-  // listeners to ignore the initialization event if they prefer
-  if (isNewFidesCookie(cookie)) {
-    dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
-  }
-  dispatchFidesEvent("FidesUpdated", cookie, config.options.debug);
+  // Dispatch the "FidesInitialized" event to update listeners with the initial state.
+  dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
 };
 
 // The global Fides object; this is bound to window.Fides if available
@@ -139,9 +189,16 @@ _Fides = {
     fidesApiUrl: "",
     serverSideFidesApiUrl: "",
     tcfEnabled: false,
+    gppEnabled: false,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
+    fidesDisableBanner: false,
     fidesString: null,
+    apiOptions: null,
+    fidesTcfGdprApplies: false,
+    gppExtensionPath: "",
+    customOptionsPath: null,
+    preventDismissal: false,
   },
   fides_meta: {},
   identity: {},
@@ -159,7 +216,7 @@ if (typeof window !== "undefined") {
 
 // Export everything from ./lib/* to use when importing fides.mjs as a module
 export * from "./components";
-export * from "./services/fides/api";
+export * from "./services/api";
 export * from "./services/external/geolocation";
 export * from "./lib/consent";
 export * from "./lib/consent-context";

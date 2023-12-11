@@ -49,7 +49,13 @@ export interface PrivacyCenterSettings {
   PRIVACY_CENTER_URL: string; // e.g. http://localhost:3000
   FIDES_EMBED: boolean | false; // (optional) Whether we should "embed" the fides.js overlay UI (ie. “Layer 2”) into a web page
   FIDES_DISABLE_SAVE_API: boolean | false; // (optional) Whether we should disable saving consent preferences to the Fides API
+  FIDES_DISABLE_BANNER: boolean | false; // (optional) Whether we should disable showing the banner
+  FIDES_TCF_GDPR_APPLIES: boolean; // (optional) The default for the TCF GDPR applies value (default true)
   FIDES_STRING: string | null; // (optional) An explicitly passed-in string that supersedes the cookie. Can contain both TC and AC strings
+  IS_FORCED_TCF: boolean; // whether to force the privacy center to use the fides-tcf.js bundle
+  IS_GPP_ENABLED: boolean; // whether GPP is enabled
+  GPP_EXTENSION_PATH: string; // The path of the GPP extension file `fides-ext-gpp.js`. Defaults to `/fides-ext-gpp.js`
+  PREVENT_DISMISSAL: boolean; // whether or not the user is allowed to dismiss the banner/overlay
 }
 
 /**
@@ -71,7 +77,13 @@ export type PrivacyCenterClientSettings = Pick<
   | "PRIVACY_CENTER_URL"
   | "FIDES_EMBED"
   | "FIDES_DISABLE_SAVE_API"
+  | "FIDES_DISABLE_BANNER"
+  | "FIDES_TCF_GDPR_APPLIES"
   | "FIDES_STRING"
+  | "IS_FORCED_TCF"
+  | "IS_GPP_ENABLED"
+  | "GPP_EXTENSION_PATH"
+  | "PREVENT_DISMISSAL"
 >;
 
 export type Styles = string;
@@ -176,6 +188,32 @@ export const validateConfig = (
       };
     }
   }
+
+  const invalidFieldMessages = config.actions.flatMap((action) => {
+    const invalidFields = Object.entries(
+      action.custom_privacy_request_fields || {}
+    )
+      .filter(([, field]) => field.hidden && field.default_value === undefined)
+      .map(([key]) => `'${key}'`);
+
+    return invalidFields.length > 0
+      ? [
+          `${invalidFields.join(", ")} in the action with policy_key '${
+            action.policy_key
+          }'`,
+        ]
+      : [];
+  });
+
+  if (invalidFieldMessages.length > 0) {
+    return {
+      isValid: false,
+      message: `A default_value is required for hidden field(s) ${invalidFieldMessages.join(
+        ", "
+      )}`,
+    };
+  }
+
   return { isValid: true, message: "Config is valid" };
 };
 
@@ -296,7 +334,26 @@ export const loadPrivacyCenterEnvironment =
         .FIDES_PRIVACY_CENTER__FIDES_DISABLE_SAVE_API
         ? process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_SAVE_API === "true"
         : false,
+      FIDES_DISABLE_BANNER: process.env
+        .FIDES_PRIVACY_CENTER__FIDES_DISABLE_BANNER
+        ? process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLE_BANNER === "true"
+        : false,
+      FIDES_TCF_GDPR_APPLIES: !(
+        process.env.FIDES_PRIVACY_CENTER__FIDES_TCF_GDPR_APPLIES === "false"
+      ),
       FIDES_STRING: process.env.FIDES_PRIVACY_CENTER__FIDES_STRING || null,
+      IS_FORCED_TCF: process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF
+        ? process.env.FIDES_PRIVACY_CENTER__IS_FORCED_TCF === "true"
+        : false,
+      IS_GPP_ENABLED: process.env.FIDES_PRIVACY_CENTER__IS_GPP_ENABLED
+        ? process.env.FIDES_PRIVACY_CENTER__IS_GPP_ENABLED === "true"
+        : false,
+      GPP_EXTENSION_PATH:
+        process.env.FIDES_PRIVACY_CENTER__GPP_EXTENSION_PATH ||
+        "/fides-ext-gpp.js",
+      PREVENT_DISMISSAL: process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL
+        ? process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL === "true"
+        : false,
     };
 
     // Load configuration file (if it exists)
@@ -320,7 +377,13 @@ export const loadPrivacyCenterEnvironment =
       PRIVACY_CENTER_URL: settings.PRIVACY_CENTER_URL,
       FIDES_EMBED: settings.FIDES_EMBED,
       FIDES_DISABLE_SAVE_API: settings.FIDES_DISABLE_SAVE_API,
+      FIDES_DISABLE_BANNER: settings.FIDES_DISABLE_BANNER,
+      FIDES_TCF_GDPR_APPLIES: settings.FIDES_TCF_GDPR_APPLIES,
       FIDES_STRING: settings.FIDES_STRING,
+      IS_FORCED_TCF: settings.IS_FORCED_TCF,
+      IS_GPP_ENABLED: settings.IS_GPP_ENABLED,
+      GPP_EXTENSION_PATH: settings.GPP_EXTENSION_PATH,
+      PREVENT_DISMISSAL: settings.PREVENT_DISMISSAL,
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present

@@ -1,50 +1,44 @@
-import { VNode, h } from "preact";
+import { Fragment, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { Vendor } from "@iabtechlabtcf/core";
 import {
-  GvlDataRetention,
-  EmbeddedLineItem,
   GvlDataCategories,
-  GvlVendorUrl,
   GvlDataDeclarations,
   VendorRecord,
+  EmbeddedPurpose,
+  LegalBasisEnum,
 } from "../../lib/tcf/types";
 import { PrivacyExperience } from "../../lib/consent-types";
 import { UpdateEnabledIds } from "./TcfOverlay";
-import FilterButtons from "./FilterButtons";
 import {
   transformExperienceToVendorRecords,
   vendorGvlEntry,
 } from "../../lib/tcf/vendors";
 import ExternalLink from "../ExternalLink";
-import DoubleToggleTable from "./DoubleToggleTable";
-
-const FILTERS = [{ name: "All vendors" }, { name: "IAB TCF vendors" }];
-
-interface Retention {
-  mapping: Record<number, number>;
-  default: number;
-}
+import RecordsList from "./RecordsList";
+import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
+import RadioGroup from "./RadioGroup";
+import PagingButtons, { usePaging } from "../PagingButtons";
 
 const VendorDetails = ({
   label,
   lineItems,
-  dataRetention,
 }: {
   label: string;
-  lineItems: EmbeddedLineItem[] | undefined;
-  dataRetention?: Retention;
+  lineItems: EmbeddedPurpose[] | undefined;
 }) => {
   if (!lineItems || lineItems.length === 0) {
     return null;
   }
+
+  const hasRetentionInfo = lineItems.some((li) => li.retention_period != null);
 
   return (
     <table className="fides-vendor-details-table">
       <thead>
         <tr>
           <th width="80%">{label}</th>
-          {dataRetention ? (
+          {hasRetentionInfo ? (
             <th width="20%" style={{ textAlign: "right" }}>
               Retention
             </th>
@@ -52,22 +46,18 @@ const VendorDetails = ({
         </tr>
       </thead>
       <tbody>
-        {lineItems.map((item) => {
-          let retention: string | number = "N/A";
-          if (dataRetention) {
-            retention = dataRetention.mapping[item.id] ?? dataRetention.default;
-          }
-          return (
-            <tr key={item.id}>
-              <td>{item.name}</td>
-              {dataRetention ? (
-                <td style={{ textAlign: "right" }}>
-                  {retention == null ? "N/A" : `${retention} day(s)`}
-                </td>
-              ) : null}
-            </tr>
-          );
-        })}
+        {lineItems.map((item) => (
+          <tr key={item.id}>
+            <td>{item.name}</td>
+            {hasRetentionInfo ? (
+              <td style={{ textAlign: "right" }}>
+                {item.retention_period
+                  ? `${item.retention_period} day(s)`
+                  : "N/A"}
+              </td>
+            ) : null}
+          </tr>
+        ))}
       </tbody>
     </table>
   );
@@ -76,11 +66,9 @@ const VendorDetails = ({
 const PurposeVendorDetails = ({
   purposes,
   specialPurposes,
-  gvlVendor,
 }: {
-  purposes: EmbeddedLineItem[] | undefined;
-  specialPurposes: EmbeddedLineItem[] | undefined;
-  gvlVendor: Vendor | undefined;
+  purposes: EmbeddedPurpose[] | undefined;
+  specialPurposes: EmbeddedPurpose[] | undefined;
 }) => {
   const emptyPurposes = purposes ? purposes.length === 0 : true;
   const emptySpecialPurposes = specialPurposes
@@ -90,36 +78,12 @@ const PurposeVendorDetails = ({
   if (emptyPurposes && emptySpecialPurposes) {
     return null;
   }
-  // @ts-ignore our TCF lib does not have GVL v3 types yet
-  const dataRetention: GvlDataRetention | undefined = gvlVendor?.dataRetention;
 
   return (
-    <div>
-      <VendorDetails
-        label="Purposes"
-        lineItems={purposes as EmbeddedLineItem[]}
-        dataRetention={
-          dataRetention
-            ? {
-                mapping: dataRetention.purposes,
-                default: dataRetention.stdRetention,
-              }
-            : undefined
-        }
-      />
-      <VendorDetails
-        label="Special purposes"
-        lineItems={specialPurposes as EmbeddedLineItem[]}
-        dataRetention={
-          dataRetention
-            ? {
-                mapping: dataRetention.specialPurposes,
-                default: dataRetention.stdRetention,
-              }
-            : undefined
-        }
-      />
-    </div>
+    <Fragment>
+      <VendorDetails label="Purposes" lineItems={purposes} />
+      <VendorDetails label="Special purposes" lineItems={specialPurposes} />
+    </Fragment>
   );
 };
 
@@ -134,8 +98,9 @@ const DataCategories = ({
     return null;
   }
 
-  // @ts-ignore this type doesn't exist in v2.2 but does in v3
-  const declarations: GvlDataDeclarations = gvlVendor.dataDeclaration;
+  const declarations: GvlDataDeclarations | undefined =
+    // @ts-ignore this type doesn't exist in v2.2 but does in v3
+    gvlVendor.dataDeclaration;
 
   return (
     <table className="fides-vendor-details-table">
@@ -145,11 +110,11 @@ const DataCategories = ({
         </tr>
       </thead>
       <tbody>
-        {declarations.map((id) => {
+        {declarations?.map((id) => {
           const category = dataCategories[id];
           return (
             <tr key={id}>
-              <td>{category.name}</td>
+              <td>{category?.name || ""}</td>
             </tr>
           );
         })}
@@ -158,13 +123,13 @@ const DataCategories = ({
   );
 };
 
-const StorageDisclosure = ({ vendor }: { vendor: Vendor }) => {
+const StorageDisclosure = ({ vendor }: { vendor: VendorRecord }) => {
   const {
     name,
-    usesCookies,
-    usesNonCookieAccess,
-    cookieMaxAgeSeconds,
-    cookieRefresh,
+    uses_cookies: usesCookies,
+    uses_non_cookie_access: usesNonCookieAccess,
+    cookie_max_age_seconds: cookieMaxAgeSeconds,
+    cookie_refresh: cookieRefresh,
   } = vendor;
   let disclosure = "";
   if (usesCookies) {
@@ -172,15 +137,128 @@ const StorageDisclosure = ({ vendor }: { vendor: Vendor }) => {
       ? Math.ceil(cookieMaxAgeSeconds / 60 / 60 / 24)
       : 0;
     disclosure = `${name} stores cookies with a maximum duration of about ${days} Day(s).`;
+    if (cookieRefresh) {
+      disclosure = `${disclosure} These cookies may be refreshed.`;
+    }
+    if (usesNonCookieAccess) {
+      disclosure = `${disclosure} This vendor also uses other methods like "local storage" to store and access information on your device.`;
+    }
+  } else if (usesNonCookieAccess) {
+    disclosure = `${name} uses methods like "local storage" to store and access information on your device.`;
   }
-  if (cookieRefresh) {
-    disclosure = `${disclosure} These cookies may be refreshed.`;
+
+  if (disclosure === "") {
+    return null;
   }
-  if (usesNonCookieAccess) {
-    disclosure = `${disclosure} This vendor also uses other methods like "local storage" to store and access information on your device.`;
+
+  // Return null if the disclosure string is empty
+  if (!disclosure) {
+    return null;
   }
 
   return <p>{disclosure}</p>;
+};
+
+const ToggleChild = ({
+  vendor,
+  experience,
+}: {
+  vendor: VendorRecord;
+  experience: PrivacyExperience;
+}) => {
+  const gvlVendor = vendorGvlEntry(vendor.id, experience.gvl);
+  const dataCategories: GvlDataCategories | undefined =
+    // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
+    experience.gvl?.dataCategories;
+  const hasUrls =
+    vendor.privacy_policy_url || vendor.legitimate_interest_disclosure_url;
+  return (
+    <Fragment>
+      <StorageDisclosure vendor={vendor} />
+      {hasUrls && (
+        <div>
+          {vendor.privacy_policy_url && (
+            <ExternalLink href={vendor.privacy_policy_url}>
+              Privacy policy
+            </ExternalLink>
+          )}
+          {vendor.legitimate_interest_disclosure_url && (
+            <ExternalLink href={vendor.legitimate_interest_disclosure_url}>
+              Legitimate interest disclosure
+            </ExternalLink>
+          )}
+        </div>
+      )}
+      <PurposeVendorDetails
+        purposes={[
+          ...(vendor.purpose_consents || []),
+          ...(vendor.purpose_legitimate_interests || []),
+        ]}
+        specialPurposes={vendor.special_purposes}
+      />
+      <VendorDetails label="Features" lineItems={vendor.features} />
+      <VendorDetails
+        label="Special features"
+        lineItems={vendor.special_features}
+      />
+      <DataCategories gvlVendor={gvlVendor} dataCategories={dataCategories} />
+    </Fragment>
+  );
+};
+
+const PagedVendorData = ({
+  experience,
+  vendors,
+  enabledIds,
+  onChange,
+}: {
+  experience: PrivacyExperience;
+  vendors: VendorRecord[];
+  enabledIds: string[];
+  onChange: (newIds: string[]) => void;
+}) => {
+  const { activeChunk, totalPages, ...paging } = usePaging(vendors);
+
+  const {
+    gvlVendors,
+    otherVendors,
+  }: {
+    gvlVendors: VendorRecord[];
+    otherVendors: VendorRecord[];
+  } = useMemo(
+    () => ({
+      gvlVendors: activeChunk.filter((v) => v.isGvl),
+      otherVendors: activeChunk.filter((v) => !v.isGvl),
+    }),
+    [activeChunk]
+  );
+
+  return (
+    <Fragment>
+      <RecordsList<VendorRecord>
+        title="IAB TCF vendors"
+        items={gvlVendors}
+        enabledIds={enabledIds}
+        onToggle={onChange}
+        renderBadgeLabel={(vendor) =>
+          vendorGvlEntry(vendor.id, experience.gvl) ? "IAB TCF" : undefined
+        }
+        renderToggleChild={(vendor) => (
+          <ToggleChild vendor={vendor} experience={experience} />
+        )}
+      />
+      <RecordsList<VendorRecord>
+        title="Other vendors"
+        items={otherVendors}
+        enabledIds={enabledIds}
+        onToggle={onChange}
+        renderToggleChild={(vendor) => (
+          <ToggleChild vendor={vendor} experience={experience} />
+        )}
+      />
+      <PagingButtons {...paging} />
+    </Fragment>
+  );
 };
 
 const TcfVendors = ({
@@ -188,96 +266,60 @@ const TcfVendors = ({
   enabledVendorConsentIds,
   enabledVendorLegintIds,
   onChange,
-  allOnOffButtons,
 }: {
   experience: PrivacyExperience;
   enabledVendorConsentIds: string[];
   enabledVendorLegintIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
-  allOnOffButtons: VNode;
 }) => {
-  const [isFiltered, setIsFiltered] = useState(false);
-
   // Combine the various vendor objects into one object for convenience
   const vendors = useMemo(
     () => transformExperienceToVendorRecords(experience),
     [experience]
   );
 
-  if (!vendors || vendors.length === 0) {
-    // TODO: empty state?
-    return null;
-  }
+  const [activeLegalBasisOption, setActiveLegalBasisOption] = useState(
+    LEGAL_BASIS_OPTIONS[0]
+  );
 
-  const handleFilter = (index: number) => {
-    if (index === 0) {
-      setIsFiltered(false);
-    } else {
-      setIsFiltered(true);
-    }
-  };
-
-  const vendorsToDisplay = isFiltered
-    ? vendors.filter((v) => vendorGvlEntry(v.id, experience.gvl))
-    : vendors;
+  const filteredVendors = useMemo(() => {
+    const legalBasisFiltered =
+      activeLegalBasisOption.value === LegalBasisEnum.CONSENT
+        ? vendors.filter((v) => v.isConsent)
+        : vendors.filter((v) => v.isLegint);
+    // Put "other vendors" last in the list
+    return [
+      ...legalBasisFiltered.filter((v) => v.isGvl),
+      ...legalBasisFiltered.filter((v) => !v.isGvl),
+    ];
+  }, [activeLegalBasisOption, vendors]);
 
   return (
     <div>
-      <FilterButtons filters={FILTERS} onChange={handleFilter} />
-      {allOnOffButtons}
-      <DoubleToggleTable<VendorRecord>
-        title="Vendors"
-        items={vendorsToDisplay}
-        enabledConsentIds={enabledVendorConsentIds}
-        enabledLegintIds={enabledVendorLegintIds}
-        onToggle={onChange}
-        consentModelType="vendorsConsent"
-        legintModelType="vendorsLegint"
-        renderBadgeLabel={(vendor) =>
-          vendorGvlEntry(vendor.id, experience.gvl) ? "IAB TCF" : undefined
+      <RadioGroup
+        options={LEGAL_BASIS_OPTIONS}
+        active={activeLegalBasisOption}
+        onChange={setActiveLegalBasisOption}
+      />
+      <PagedVendorData
+        experience={experience}
+        vendors={filteredVendors}
+        enabledIds={
+          activeLegalBasisOption.value === LegalBasisEnum.CONSENT
+            ? enabledVendorConsentIds
+            : enabledVendorLegintIds
         }
-        renderToggleChild={(vendor) => {
-          const gvlVendor = vendorGvlEntry(vendor.id, experience.gvl);
-          // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
-          const url: GvlVendorUrl | undefined = gvlVendor?.urls.find(
-            (u: GvlVendorUrl) => u.langId === "en"
-          );
-          const dataCategories: GvlDataCategories | undefined =
-            // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
-            experience.gvl?.dataCategories;
-          return (
-            <div>
-              {gvlVendor ? <StorageDisclosure vendor={gvlVendor} /> : null}
-              <div style={{ marginBottom: "1.1em" }}>
-                {url?.privacy ? (
-                  <ExternalLink href={url.privacy}>Privacy policy</ExternalLink>
-                ) : null}
-                {url?.legIntClaim ? (
-                  <ExternalLink href={url.legIntClaim}>
-                    Legitimate interest disclosure
-                  </ExternalLink>
-                ) : null}
-              </div>
-              <PurposeVendorDetails
-                purposes={[
-                  ...(vendor.purpose_consents || []),
-                  ...(vendor.purpose_legitimate_interests || []),
-                ]}
-                specialPurposes={vendor.special_purposes}
-                gvlVendor={gvlVendor}
-              />
-              <VendorDetails label="Features" lineItems={vendor.features} />
-              <VendorDetails
-                label="Special features"
-                lineItems={vendor.special_features}
-              />
-              <DataCategories
-                gvlVendor={gvlVendor}
-                dataCategories={dataCategories}
-              />
-            </div>
-          );
-        }}
+        onChange={(newEnabledIds) =>
+          onChange({
+            newEnabledIds,
+            modelType:
+              activeLegalBasisOption.value === LegalBasisEnum.CONSENT
+                ? "vendorsConsent"
+                : "vendorsLegint",
+          })
+        }
+        // This key forces a rerender when legal basis changes, which allows paging to reset properly
+        key={`vendor-data-${activeLegalBasisOption.value}`}
       />
     </div>
   );

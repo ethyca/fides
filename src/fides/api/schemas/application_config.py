@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import Extra, Field, root_validator, validator
+from pydantic import AnyUrl, Extra, Field, root_validator, validator
 
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.messaging.messaging import MessagingServiceType
@@ -67,8 +67,19 @@ class ExecutionApplicationConfig(FidesSchema):
         extra = Extra.forbid
 
 
+class ConsentConfig(FidesSchema):
+    override_vendor_purposes: Optional[bool]
+
+    class Config:
+        extra = Extra.forbid
+
+
 class SecurityApplicationConfig(FidesSchema):
-    cors_origins: Optional[List[str]] = Field(
+    # only valid URLs should be set as cors_origins
+    # for advanced usage of non-URLs, e.g. wildcards (`*`), the related
+    # `cors_origin_regex` property should be used.
+    # this is explicitly _not_ accessible via API - it must be used with care.
+    cors_origins: Optional[List[AnyUrl]] = Field(
         default=None,
         description="A list of client addresses allowed to communicate with the Fides webserver.",
     )
@@ -90,6 +101,7 @@ class ApplicationConfig(FidesSchema):
     notifications: Optional[NotificationApplicationConfig]
     execution: Optional[ExecutionApplicationConfig]
     security: Optional[SecurityApplicationConfig]
+    consent: Optional[ConsentConfig]
 
     @root_validator(pre=True)
     def validate_not_empty(cls, values: Dict) -> Dict:

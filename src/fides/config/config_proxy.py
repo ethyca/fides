@@ -66,7 +66,17 @@ class StorageSettingsProxy(ConfigProxyBase):
 class SecuritySettingsProxy(ConfigProxyBase):
     prefix = "security"
 
+    # only valid URLs should be set as cors_origins
+    # for advanced usage of non-URLs, e.g. wildcards (`*`), the related
+    # `cors_origin_regex` property should be used.
+    # this is explicitly _not_ accessible via API - it must be used with care.
     cors_origins: List[AnyUrl]
+
+
+class ConsentSettingsProxy(ConfigProxyBase):
+    prefix = "consent"
+
+    override_vendor_purposes: bool
 
 
 class ConfigProxy:
@@ -95,6 +105,7 @@ class ConfigProxy:
         self.execution = ExecutionSettingsProxy(db)
         self.storage = StorageSettingsProxy(db)
         self.security = SecuritySettingsProxy(db)
+        self.consent = ConsentSettingsProxy(db)
 
     def load_current_cors_domains_into_middleware(self, app: FastAPI) -> None:
         """

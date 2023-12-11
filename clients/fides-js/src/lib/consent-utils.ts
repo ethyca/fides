@@ -5,14 +5,16 @@ import {
   EmptyExperience,
   FidesOptions,
   GpcStatus,
+  OverrideOptions,
   PrivacyExperience,
   PrivacyNotice,
   UserConsentPreference,
   UserGeolocation,
-  VALID_ISO_3166_LOCATION_REGEX,
 } from "./consent-types";
 import { EXPERIENCE_KEYS_WITH_PREFERENCES } from "./tcf/constants";
 import { TCFPurposeConsentRecord } from "./tcf/types";
+import { VALID_ISO_3166_LOCATION_REGEX } from "./consent-constants";
+import type { FidesCookie } from "./cookie";
 
 /**
  * Wrapper around 'console.log' that only logs output when the 'debug' banner
@@ -225,15 +227,6 @@ const hasCurrentPreference = (
   return records.some((record) => record.current_preference);
 };
 
-const hasActionNeededTcfPreference = (
-  records: Pick<TCFPurposeConsentRecord, "current_preference">[] | undefined
-) => {
-  if (!records || records.length === 0) {
-    return false;
-  }
-  return records.some((record) => record.current_preference == null);
-};
-
 /**
  * Returns true if the user has any saved TCF preferences
  */
@@ -242,23 +235,64 @@ export const hasSavedTcfPreferences = (experience: PrivacyExperience) =>
     hasCurrentPreference(experience[key])
   );
 
-export const hasActionNeededTcfPreferences = (experience: PrivacyExperience) =>
-  EXPERIENCE_KEYS_WITH_PREFERENCES.some((key) =>
-    hasActionNeededTcfPreference(experience[key])
-  );
-
 /**
  * Returns true if there are notices in the experience that require a user preference
+ * or if an experience's version hash does not match up.
  */
-export const hasActionNeededNotices = (experience: PrivacyExperience) => {
-  if (experience.component === ComponentType.TCF_OVERLAY) {
-    return hasActionNeededTcfPreferences(experience);
+export const shouldResurfaceConsent = (
+  experience: PrivacyExperience,
+  cookie: FidesCookie
+) => {
+  if (
+    experience.component === ComponentType.TCF_OVERLAY &&
+    experience.meta?.version_hash
+  ) {
+    return experience.meta.version_hash !== cookie.tcf_version_hash;
   }
   return Boolean(
     experience?.privacy_notices?.some(
       (notice) => notice.current_preference == null
     )
   );
+};
+
+/**
+ * Descend down the provided path on the "window" object and return the nested
+ * override options object located at the given path.
+ *
+ * If any part of the path is invalid, return `undefined`.
+ *
+ *
+ * For example, given a window object like this:
+ * ```
+ * window.custom_overrides = { nested_obj: { fides_string: "foo" } } };
+ * ```
+ *
+ * Then expect the following:
+ * ```
+ * const overrides = getWindowObjFromPath(["window", "custom_overrides", "nested_obj"])
+ * console.assert(overrides.fides_string === "foo");
+ * ```
+ */
+export const getWindowObjFromPath = (
+  path: string[]
+): OverrideOptions | undefined => {
+  // Implicitly start from the global "window" object
+  if (path[0] === "window") {
+    path.shift();
+  }
+  // Descend down the provided path (starting from `window`)
+  let record: any = window;
+  while (path.length > 0) {
+    const key = path.shift();
+    // If we ever encounter an invalid key or a non-object value, return undefined
+    if (typeof key === "undefined" || typeof record[key] !== "object") {
+      return undefined;
+    }
+    // Keep descending!
+    record = record[key];
+  }
+  return record;
 };
 
 export const getGpcStatusFromNotice = ({

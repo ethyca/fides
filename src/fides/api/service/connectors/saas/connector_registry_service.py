@@ -13,11 +13,7 @@ from sqlalchemy.orm import Session
 from fides.api.api.deps import get_api_session
 from fides.api.common_exceptions import ValidationError
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
-from fides.api.models.connectionconfig import (
-    AccessLevel,
-    ConnectionConfig,
-    ConnectionType,
-)
+from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
@@ -70,15 +66,15 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
         logger.info("Loading connectors templates from the data/saas directory")
         for file in os.listdir("data/saas/config"):
             if file.endswith(".yml"):
-                config_file = os.path.join("data/saas/config", file)
-                config_dict = load_config(config_file)
-                connector_type = config_dict["type"]
-                human_readable = config_dict["name"]
-                user_guide = config_dict.get("user_guide")
-                authentication = config_dict["client_config"].get("authentication")
+                config_path = os.path.join("data/saas/config", file)
+                config = SaaSConfig(**load_config(config_path))
+
+                connector_type = config.type
+
+                authentication = config.client_config.authentication
                 authorization_required = (
                     authentication is not None
-                    and authentication.get("strategy")
+                    and authentication.strategy
                     == OAuth2AuthorizationCodeAuthenticationStrategy.name
                 )
 
@@ -95,14 +91,15 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
                     FileConnectorTemplateLoader.get_connector_templates()[
                         connector_type
                     ] = ConnectorTemplate(
-                        config=load_yaml_as_string(config_file),
+                        config=load_yaml_as_string(config_path),
                         dataset=load_yaml_as_string(
                             f"data/saas/dataset/{connector_type}_dataset.yml"
                         ),
                         icon=icon,
-                        human_readable=human_readable,
+                        human_readable=config.name,
                         authorization_required=authorization_required,
-                        user_guide=user_guide,
+                        user_guide=config.user_guide,
+                        supported_actions=config.supported_actions,
                     )
                 except Exception:
                     logger.exception("Unable to load {} connector", connector_type)
@@ -175,6 +172,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             human_readable=template.name,
             authorization_required=authorization_required,
             user_guide=config.user_guide,
+            supported_actions=config.supported_actions,
         )
 
         # register the template in the loader's template dictionary
@@ -327,17 +325,9 @@ def create_connection_config_from_template_no_save(
         template.config, "<instance_fides_key>", template_values.instance_key
     )
 
-    data = {
-        "key": template_values.key
-        if template_values.key
-        else template_values.instance_key,
-        "description": template_values.description,
-        "connection_type": ConnectionType.saas,
-        "access": AccessLevel.write,
-        "saas_config": config_from_template,
-    }
-    if template_values.name:
-        data["name"] = template_values.name
+    data = template_values.generate_config_data_from_template(
+        config_from_template=config_from_template
+    )
 
     if system_id:
         data["system_id"] = system_id

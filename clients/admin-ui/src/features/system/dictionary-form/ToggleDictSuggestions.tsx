@@ -38,6 +38,7 @@ export const DictSuggestionToggle = () => {
           isShowingSuggestions === "showing" ? "complimentary.500" : "gray.100"
         }
         as={IconButton}
+        size="sm"
         aria-label="Options"
         icon={
           <SparkleIcon

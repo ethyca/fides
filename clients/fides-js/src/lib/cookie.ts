@@ -7,8 +7,8 @@ import {
   resolveLegacyConsentValue,
 } from "./consent-value";
 import {
-  ConsentMechanism,
   Cookies,
+  ExperienceMeta,
   LegacyConsentConfig,
   PrivacyExperience,
   SaveConsentPreference,
@@ -19,7 +19,7 @@ import {
   transformUserPreferenceToBoolean,
 } from "./consent-utils";
 import type { TcfCookieConsent, TcfSavePreferences } from "./tcf/types";
-import { TCF_KEY_MAP } from "./tcf/constants";
+import { FIDES_SYSTEM_COOKIE_KEY_MAP } from "./tcf/constants";
 
 /**
  * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
@@ -59,6 +59,7 @@ export interface FidesCookie {
   fides_meta: CookieMeta;
   fides_string?: string;
   tcf_consent: TcfCookieConsent;
+  tcf_version_hash?: ExperienceMeta["version_hash"];
 }
 
 /**
@@ -79,6 +80,17 @@ const CODEC: Types.CookieCodecConfig<string, string> = {
   decodeValue: decodeURIComponent,
   encodeName: encodeURIComponent,
   encodeValue: encodeURIComponent,
+};
+
+export const consentCookieObjHasSomeConsentSet = (
+  consent: CookieKeyConsent | undefined
+): boolean => {
+  if (!consent) {
+    return false;
+  }
+  return Object.values(consent).some(
+    (val: boolean | undefined) => val !== undefined
+  );
 };
 
 /**
@@ -119,6 +131,12 @@ export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
 };
 
 /**
+ * Retrieve cookie by name
+ */
+export const getCookieByName = (cookieName: string): string | undefined =>
+  getCookie(cookieName, CODEC);
+
+/**
  * Attempt to read, parse, and return the current Fides cookie from the browser.
  * If one doesn't exist, make a new default cookie (including generating a new
  * pseudonymous ID) and return the default values.
@@ -138,7 +156,7 @@ export const getOrMakeFidesCookie = (
   }
 
   // Check for an existing cookie for this device
-  const cookieString = getCookie(CONSENT_COOKIE_NAME, CODEC);
+  const cookieString = getCookieByName(CONSENT_COOKIE_NAME);
   if (!cookieString) {
     debugLog(
       debug,
@@ -219,6 +237,8 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
     CONSENT_COOKIE_NAME,
     JSON.stringify(cookie),
     {
+      // An explicit path ensures this is always set to the entire domain.
+      path: "/",
       // An explicit domain allows subdomains to access the cookie.
       domain: rootDomain,
       expires: CONSENT_COOKIE_MAX_AGE_DAYS,
@@ -253,53 +273,14 @@ export const buildCookieConsentForExperiences = (
 };
 
 /**
- * Populates TCF entities with items from cookie.tcf_consent.
- * Returns TCF entities to be assigned to an experience.
- */
-export const buildTcfEntitiesFromCookie = (
-  experience: PrivacyExperience,
-  cookie: FidesCookie
-) => {
-  const tcfEntities = {
-    tcf_purpose_consents: experience.tcf_purpose_consents,
-    tcf_purpose_legitimate_interests:
-      experience.tcf_purpose_legitimate_interests,
-    tcf_special_purposes: experience.tcf_special_purposes,
-    tcf_features: experience.tcf_features,
-    tcf_special_features: experience.tcf_special_features,
-    tcf_vendor_consents: experience.tcf_vendor_consents,
-    tcf_vendor_legitimate_interests: experience.tcf_vendor_legitimate_interests,
-    tcf_system_consents: experience.tcf_system_consents,
-    tcf_system_legitimate_interests: experience.tcf_system_legitimate_interests,
-  };
-
-  if (cookie.tcf_consent) {
-    TCF_KEY_MAP.forEach(({ cookieKey, experienceKey }) => {
-      const cookieConsent = cookie.tcf_consent[cookieKey] ?? {};
-      // @ts-ignore the array map should ensure we will get the right record type
-      tcfEntities[experienceKey] = experience[experienceKey]?.map((item) => {
-        const preference = Object.hasOwn(cookieConsent, item.id)
-          ? transformConsentToFidesUserPreference(
-              Boolean(cookieConsent[item.id]),
-              ConsentMechanism.OPT_IN
-            )
-          : // if experience contains a tcf entity not defined by tcfEntities, we override experience current pref with the default pref
-            item.default_preference;
-        return { ...item, current_preference: preference };
-      });
-    });
-  }
-  return tcfEntities;
-};
-
-/**
  * Updates prefetched experience, based on:
- * 1) experience: pre-fetched experience-based consent configuration that does not contain user preference.
+ * 1) experience: pre-fetched or client-side experience-based consent configuration
  * 2) cookie: cookie containing user preference.
+
  *
  * Returns updated experience with user preferences.
  */
-export const updateExperienceFromCookieConsent = ({
+export const updateExperienceFromCookieConsentNotices = ({
   experience,
   cookie,
   debug,
@@ -309,17 +290,17 @@ export const updateExperienceFromCookieConsent = ({
   debug?: boolean;
 }): PrivacyExperience => {
   const noticesWithConsent = experience.privacy_notices?.map((notice) => {
+    // Prefers preference in cookie if it exists, else uses current preference on the notice if it exists, else uses
+    // undefined. Undefined will occur for server-side-fetched experience when no corresponding pref exists in cookie.
+    const defaultPreference = notice.current_preference ?? undefined;
     const preference = Object.hasOwn(cookie.consent, notice.notice_key)
       ? transformConsentToFidesUserPreference(
           Boolean(cookie.consent[notice.notice_key]),
           notice.consent_mechanism
         )
-      : undefined;
+      : defaultPreference;
     return { ...notice, current_preference: preference };
   });
-
-  // Handle the TCF case, which has many keys to query
-  const tcfEntities = buildTcfEntitiesFromCookie(experience, cookie);
 
   if (debug) {
     debugLog(
@@ -328,14 +309,14 @@ export const updateExperienceFromCookieConsent = ({
       experience
     );
   }
-  return { ...experience, ...tcfEntities, privacy_notices: noticesWithConsent };
+  return { ...experience, privacy_notices: noticesWithConsent };
 };
 
 export const transformTcfPreferencesToCookieKeys = (
   tcfPreferences: TcfSavePreferences
 ): TcfCookieConsent => {
   const cookieKeys: TcfCookieConsent = {};
-  TCF_KEY_MAP.forEach(({ cookieKey }) => {
+  FIDES_SYSTEM_COOKIE_KEY_MAP.forEach(({ cookieKey }) => {
     const preferences = tcfPreferences[cookieKey] ?? [];
     cookieKeys[cookieKey] = Object.fromEntries(
       preferences.map((pref) => [

@@ -1,3 +1,4 @@
+import type { CookieKeyConsent } from "./cookie";
 import type {
   TCFFeatureRecord,
   TCFPurposeSave,
@@ -71,9 +72,80 @@ export type FidesOptions = {
   // Whether we should disable saving consent preferences to the Fides API.
   fidesDisableSaveApi: boolean;
 
+  // Whether we should disable the banner
+  fidesDisableBanner: boolean;
+
   // An explicitly passed-in TC string that supersedes the cookie, and prevents any API calls to fetch
   // experiences / preferences. Only available when TCF is enabled. Optional.
   fidesString: string | null;
+
+  // Allows for explicit overrides on various internal API calls made from Fides.
+  apiOptions: FidesApiOptions | null;
+
+  // Whether or the GPP extension should be loaded
+  gppEnabled: boolean;
+
+  // What the "GDPR Applies" field of TCF should default to
+  fidesTcfGdprApplies: boolean;
+
+  // GPP extension path (ex: "/fides-ext-gpp.js")
+  gppExtensionPath: string;
+
+  // A custom path to fetch OverrideOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
+  customOptionsPath: string | null;
+
+  // Prevents the banner and modal from being dismissed
+  preventDismissal: boolean;
+};
+
+export type GetPreferencesFnResp = {
+  // Overrides the value for Fides.consent for the user’s notice-based preferences (e.g. { data_sales: false })
+  consent?: CookieKeyConsent;
+  // Overrides the value for Fides.fides_string for the user’s TCF+AC preferences (e.g. 1a2a3a.AAABA,1~123.121)
+  fides_string?: string;
+  // An explicit version hash for provided fides_string when calculating whether consent should be re-triggered
+  version_hash?: string;
+};
+
+export type FidesApiOptions = {
+  /**
+   * Intake a custom function that is called instead of the internal Fides API to save user preferences.
+   *
+   * @param {object} consentMethod - method that was used to obtain consent
+   * @param {object} consent - updated version of Fides.consent with the user's saved preferences for Fides notices
+   * @param {string} fides_string - updated version of Fides.fides_string with the user's saved preferences for TC/AC/etc notices
+   * @param {object} experience - current version of the privacy experience that was shown to the user
+   */
+  savePreferencesFn?: (
+    consentMethod: ConsentMethod,
+    consent: CookieKeyConsent,
+    fides_string: string | undefined,
+    experience: PrivacyExperience
+  ) => Promise<void>;
+  /**
+   * Intake a custom function that is used to override users' saved preferences.
+   *
+   * @param {object} fides - global Fides obj containing global config options and other state at time of init
+   */
+  getPreferencesFn?: (fides: FidesConfig) => Promise<GetPreferencesFnResp>;
+  /**
+   * Intake a custom function that is used to fetch privacy experience.
+   *
+   * @param {string} userLocationString - user location
+   * @param {string} fidesUserDeviceId - (optional) Fides user device id, if known
+   */
+  getPrivacyExperienceFn?: (
+    userLocationString: string,
+    fidesUserDeviceId?: string | null
+  ) => Promise<PrivacyExperience | EmptyExperience>;
+  /**
+   * Intake a custom function that is used to save notices served for reporting purposes.
+   *
+   * @param {object} request - consent served records to save
+   */
+  patchNoticesServedFn?: (
+    request: RecordConsentServedRequest
+  ) => Promise<Array<LastServedConsentSchema> | null>;
 };
 
 export class SaveConsentPreference {
@@ -81,11 +153,128 @@ export class SaveConsentPreference {
 
   notice: PrivacyNotice;
 
-  constructor(notice: PrivacyNotice, consentPreference: UserConsentPreference) {
+  servedNoticeHistoryId?: string;
+
+  constructor(
+    notice: PrivacyNotice,
+    consentPreference: UserConsentPreference,
+    servedNoticeHistoryId?: string
+  ) {
     this.notice = notice;
     this.consentPreference = consentPreference;
+    this.servedNoticeHistoryId = servedNoticeHistoryId;
   }
 }
+
+/**
+ * Pre-parsed TC data and TC string for a CMP SDK:
+ *
+ * https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#in-app-details
+ */
+export type TCMobileData = {
+  /**
+   * The unsigned integer ID of CMP SDK
+   */
+  IABTCF_CmpSdkID?: number;
+  /**
+   * The unsigned integer version number of CMP SDK
+   */
+  IABTCF_CmpSdkVersion?: number;
+  /**
+   * The unsigned integer representing the version of the TCF that these consents adhere to.
+   */
+  IABTCF_PolicyVersion?: number;
+  /**
+   * 1: GDPR applies in current context, 0 - GDPR does not apply in current context, None=undetermined
+   */
+  IABTCF_gdprApplies?: TCMobileDataVals.IABTCFgdprApplies;
+  /**
+   * Two-letter ISO 3166-1 alpha-2 code
+   */
+  IABTCF_PublisherCC?: string;
+  /**
+   * Vendors can use this value to determine whether consent for purpose one is required. 0: no special treatment. 1: purpose one not disclosed
+   */
+  IABTCF_PurposeOneTreatment?: TCMobileDataVals.IABTCFPurposeOneTreatment;
+  /**
+   * 1 - CMP uses customized stack descriptions and/or modified or supplemented standard illustrations.0 - CMP did not use a non-standard stack desc. and/or modified or supplemented Illustrations
+   */
+  IABTCF_UseNonStandardTexts?: TCMobileDataVals.IABTCFUseNonStandardTexts;
+  /**
+   * Fully encoded TC string
+   */
+  IABTCF_TCString?: string;
+  /**
+   * Binary string: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the consent status for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is consent true for vendor ID 1
+   */
+  IABTCF_VendorConsents?: string;
+  /**
+   * Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the legitimate interest status for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is legitimate interest established true for vendor ID 1
+   */
+  IABTCF_VendorLegitimateInterests?: string;
+  /**
+   * Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the consent status for purpose ID n+1; false and true respectively. eg. '1' at index 0 is consent true for purpose ID 1
+   */
+  IABTCF_PurposeConsents?: string;
+  /**
+   * Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the legitimate interest status for purpose ID n+1; false and true respectively. eg. '1' at index 0 is legitimate interest established true for purpose ID 1
+   */
+  IABTCF_PurposeLegitimateInterests?: string;
+  /**
+   * Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the opt-in status for special feature ID n+1; false and true respectively. eg. '1' at index 0 is opt-in true for special feature ID 1
+   */
+  IABTCF_SpecialFeaturesOptIns?: string;
+  IABTCF_PublisherConsent?: string;
+  IABTCF_PublisherLegitimateInterests?: string;
+  IABTCF_PublisherCustomPurposesConsents?: string;
+  IABTCF_PublisherCustomPurposesLegitimateInterests?: string;
+};
+
+export namespace TCMobileDataVals {
+  /**
+   * 1: GDPR applies in current context, 0 - GDPR does not apply in current context, None=undetermined
+   */
+  export enum IABTCFgdprApplies {
+    "_0" = 0,
+    "_1" = 1,
+  }
+
+  /**
+   * Vendors can use this value to determine whether consent for purpose one is required. 0: no special treatment. 1: purpose one not disclosed
+   */
+  export enum IABTCFPurposeOneTreatment {
+    "_0" = 0,
+    "_1" = 1,
+  }
+
+  /**
+   * 1 - CMP uses customized stack descriptions and/or modified or supplemented standard illustrations.0 - CMP did not use a non-standard stack desc. and/or modified or supplemented Illustrations
+   */
+  export enum IABTCFUseNonStandardTexts {
+    "_0" = 0,
+    "_1" = 1,
+  }
+}
+
+/**
+ * Supplements experience with developer-friendly meta information
+ */
+export type ExperienceMeta = {
+  /**
+   * A hashed value that can be compared to previously-fetched hash values to determine if the Experience has meaningfully changed
+   */
+  version_hash?: string;
+  /**
+   * The fides string (TC String + AC String) corresponding to a user opting in to all available options
+   */
+  accept_all_fides_string?: string;
+  accept_all_fides_mobile_data?: TCMobileData;
+  /**
+   * The fides string (TC String + AC String) corresponding to a user opting out of all available options
+   */
+  reject_all_fides_string?: string;
+  reject_all_fides_mobile_data?: TCMobileData;
+};
 
 export type PrivacyExperience = {
   region: string; // intentionally using plain string instead of Enum, since BE is susceptible to change
@@ -108,6 +297,7 @@ export type PrivacyExperience = {
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
   gvl?: GVLJson;
+  meta?: ExperienceMeta;
 };
 
 export type ExperienceConfig = {
@@ -201,11 +391,27 @@ export type UserGeolocation = {
   region?: string; // "NY"
 };
 
-// Regex to validate a location string, which must:
-// 1) Start with a 2-3 character country code (e.g. "US")
-// 2) Optionally end with a 2-3 character region code (e.g. "CA")
-// 3) Separated by a dash (e.g. "US-CA")
-export const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
+export type OverrideOptions = {
+  fides_string: string;
+  fides_disable_save_api: boolean;
+  fides_disable_banner: boolean;
+  fides_embed: boolean;
+  fides_tcf_gdpr_applies: boolean;
+};
+
+export type FidesOptionsOverrides = Pick<
+  FidesOptions,
+  | "fidesString"
+  | "fidesDisableSaveApi"
+  | "fidesEmbed"
+  | "fidesDisableBanner"
+  | "fidesTcfGdprApplies"
+>;
+
+export type FidesOverrides = {
+  optionsOverrides: Partial<FidesOptionsOverrides>;
+  consentPrefsOverrides: GetPreferencesFnResp | null;
+};
 
 export enum ButtonType {
   PRIMARY = "primary",
@@ -214,7 +420,11 @@ export enum ButtonType {
 }
 
 export enum ConsentMethod {
-  button = "button",
+  button = "button", // deprecated- keeping for backwards-compatibility
+  reject = "reject",
+  accept = "accept",
+  save = "save",
+  dismiss = "dismiss",
   gpc = "gpc",
   individual_notice = "api",
 }
@@ -222,7 +432,7 @@ export enum ConsentMethod {
 export type PrivacyPreferencesRequest = {
   browser_identity: Identity;
   code?: string;
-  tc_string?: string;
+  fides_string?: string;
   preferences?: Array<ConsentOptionCreate>;
   purpose_consent_preferences?: Array<TCFPurposeSave>;
   purpose_legitimate_interests_preferences?: Array<TCFPurposeSave>;
@@ -274,6 +484,7 @@ export enum ServingComponent {
   BANNER = "banner",
   PRIVACY_CENTER = "privacy_center",
   TCF_OVERLAY = "tcf_overlay",
+  TCF_BANNER = "tcf_banner",
 }
 /**
  * Request body when indicating that notices were served in the UI

@@ -5,10 +5,12 @@ import typing
 from datetime import datetime
 from json import loads
 from typing import Dict, List
+from uuid import uuid4
 
 import pytest
 import requests
 from fideslang import DEFAULT_TAXONOMY, model_list, models, parse
+from fideslang.models import PrivacyDeclaration as PrivacyDeclarationSchema
 from fideslang.models import System as SystemSchema
 from pytest import MonkeyPatch
 from starlette.status import (
@@ -25,9 +27,12 @@ from starlette.testclient import TestClient
 
 from fides.api.api.v1.endpoints import health
 from fides.api.db.crud import get_resource
+from fides.api.db.system import create_system
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System
+from fides.api.models.system_history import SystemHistory
+from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.api.schemas.system import PrivacyDeclarationResponse, SystemResponse
 from fides.api.schemas.taxonomy_extensions import (
@@ -606,9 +611,7 @@ class TestSystemCreate:
 
         assert result.status_code == HTTP_201_CREATED
         json_results = result.json()
-        assert json_results["cookies"] == [
-            {"name": "essential_cookie", "path": "/", "domain": "example.com"}
-        ]
+        assert json_results["cookies"] == []  # No cookies at System level
         assert json_results["privacy_declarations"][0]["cookies"] == [
             {"name": "essential_cookie", "path": "/", "domain": "example.com"}
         ]
@@ -668,7 +671,7 @@ class TestSystemCreate:
             == "http://www.example.com/legitimate_interest_disclosure"
         )
         assert system.data_stewards == []
-        assert [cookie.name for cookie in systems[0].cookies] == ["essential_cookie"]
+        assert [cookie.name for cookie in systems[0].cookies] == []
         assert [
             cookie.name for cookie in systems[0].privacy_declarations[0].cookies
         ] == ["essential_cookie"]
@@ -679,6 +682,9 @@ class TestSystemCreate:
         assert privacy_decl.dataset_references == ["another_system_reference"]
         assert privacy_decl.features == ["Link different devices"]
         assert privacy_decl.legal_basis_for_processing == "Public interest"
+        assert (
+            await privacy_decl.get_purpose_legal_basis_override() == "Public interest"
+        )
         assert (
             privacy_decl.impact_assessment_location
             == "https://www.example.com/impact_assessment_location"
@@ -692,7 +698,7 @@ class TestSystemCreate:
         assert privacy_decl.data_shared_with_third_parties is True
         assert privacy_decl.third_parties == "Third Party Marketing Dept."
         assert privacy_decl.shared_categories == ["user"]
-        assert privacy_decl.flexible_legal_basis_for_processing is None
+        assert privacy_decl.flexible_legal_basis_for_processing is True
 
     async def test_system_create_minimal_request_body(
         self, generate_auth_header, db, test_config, system_create_request_body
@@ -836,6 +842,7 @@ class TestSystemCreate:
         assert result.status_code == HTTP_201_CREATED
         assert result.json()["name"] == "Test System"
         assert len(result.json()["privacy_declarations"]) == 2
+
         assert result.json()["meta"] == {
             "saas_config": {
                 "type": "stripe",
@@ -1034,7 +1041,36 @@ class TestSystemUpdate:
         )
 
     @pytest.fixture(scope="function")
-    def system_update_request_body_with_cookies(self, system) -> SystemSchema:
+    def system_update_request_body_with_system_cookies(self, system) -> SystemSchema:
+        return SystemSchema(
+            organization_fides_key=1,
+            registryId=1,
+            fides_key=system.fides_key,
+            system_type="SYSTEM",
+            name=self.updated_system_name,
+            description="Test Policy",
+            cookies=[
+                {"name": "my_system_cookie", "domain": "example.com"},
+                {"name": "my_other_system_cookie"},
+            ],
+            privacy_declarations=[
+                models.PrivacyDeclaration(
+                    name="declaration-name",
+                    data_categories=[],
+                    data_use="essential",
+                    data_subjects=[],
+                    data_qualifier="aggregated_data",
+                    dataset_references=[],
+                    ingress=None,
+                    egress=None,
+                )
+            ],
+        )
+
+    @pytest.fixture(scope="function")
+    def system_update_request_body_with_privacy_declaration_cookies(
+        self, system
+    ) -> SystemSchema:
         return SystemSchema(
             organization_fides_key=1,
             registryId=1,
@@ -1565,42 +1601,91 @@ class TestSystemUpdate:
 
         for i, decl in enumerate(system.privacy_declarations):
             for field in PrivacyDeclarationResponse.__fields__:
-                decl_val = getattr(decl, field)
-                if isinstance(decl_val, typing.Hashable):
+                decl_val = getattr(decl, field, None)
+                if hasattr(decl, field) and isinstance(decl_val, typing.Hashable):
                     assert decl_val == json_results["privacy_declarations"][i][field]
 
-    def test_system_update_privacy_declaration_cookies(
+    def test_system_update_system_cookies(
         self,
         test_config,
-        system_update_request_body_with_cookies,
+        system_update_request_body_with_system_cookies,
         system,
         db,
         generate_system_manager_header,
     ):
         assert system.name != self.updated_system_name
+        assert len(system.cookies) == 1
 
         auth_header = generate_system_manager_header([system.id])
         result = _api.update(
             url=test_config.cli.server_url,
             headers=auth_header,
             resource_type="system",
-            json_resource=system_update_request_body_with_cookies.json(
+            json_resource=system_update_request_body_with_system_cookies.json(
                 exclude_none=True
             ),
         )
         assert result.status_code == HTTP_200_OK
         assert result.json()["name"] == self.updated_system_name
+        # System level cookies removed
         assert result.json()["cookies"] == [
+            {"name": "my_system_cookie", "domain": "example.com", "path": None},
+            {"name": "my_other_system_cookie", "domain": None, "path": None},
+        ]
+
+        # Privacy declaration cookies added
+        assert result.json()["privacy_declarations"][0]["cookies"] == []
+
+        db.refresh(system)
+        assert system.name == self.updated_system_name
+        assert len(system.cookies) == 2
+        assert len(system.privacy_declarations[0].cookies) == 0
+
+        system_history = (
+            db.query(SystemHistory).filter(SystemHistory.system_id == system.id).first()
+        )
+        cookie_history = system_history.after["cookies"]
+        assert {cookie["name"] for cookie in cookie_history} == {
+            "my_system_cookie",
+            "my_other_system_cookie",
+        }
+
+    def test_system_update_privacy_declaration_cookies(
+        self,
+        test_config,
+        system_update_request_body_with_privacy_declaration_cookies,
+        system,
+        db,
+        generate_system_manager_header,
+    ):
+        assert system.name != self.updated_system_name
+        assert len(system.cookies) == 1
+
+        auth_header = generate_system_manager_header([system.id])
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body_with_privacy_declaration_cookies.json(
+                exclude_none=True
+            ),
+        )
+        assert result.status_code == HTTP_200_OK
+        assert result.json()["name"] == self.updated_system_name
+        # System level cookies removed
+        assert result.json()["cookies"] == []
+        # Privacy declaration cookies added
+        assert result.json()["privacy_declarations"][0]["cookies"] == [
             {"name": "my_cookie", "path": None, "domain": "example.com"},
             {"name": "my_other_cookie", "path": None, "domain": None},
-            {"name": "test_cookie", "path": "/", "domain": None},
         ]
 
         db.refresh(system)
         assert system.name == self.updated_system_name
         assert (
-            len(system.cookies) == 3
-        )  # Two from the current privacy declaration, one from the previous privacy declaration that was deleted, but still linked to the system
+            len(system.cookies)
+            == 0  # System cookies were deleted because they weren't in the request
+        )  # Two from the current privacy declaration
         assert len(system.privacy_declarations[0].cookies) == 2
 
     @pytest.mark.parametrize(
@@ -2515,3 +2600,266 @@ def test_trailing_slash(test_config: FidesConfig, endpoint_name: str) -> None:
     assert response.status_code == 200
     response = requests.get(f"{url}/", headers=CONFIG.user.auth_header)
     assert response.status_code == 200
+
+
+class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
+    async def test_privacy_declaration_enable_override_is_false(
+        self, async_session_temp
+    ):
+        """Enable override is false so overridden legal basis is going to default
+        to the defined legal basis"""
+        resource = SystemSchema(
+            fides_key=str(uuid4()),
+            organization_fides_key="default_organization",
+            name=f"test_system_1_{uuid4()}",
+            system_type="test",
+            privacy_declarations=[
+                PrivacyDeclarationSchema(
+                    name="Collect data for content performance",
+                    data_use="analytics.reporting.campaign_insights",
+                    legal_basis_for_processing="Consent",
+                    data_categories=["user"],
+                )
+            ],
+        )
+
+        system = await create_system(
+            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+        )
+        pd = system.privacy_declarations[0]
+
+        assert pd.purpose == 9
+        assert await pd.get_purpose_legal_basis_override() == "Consent"
+
+    @pytest.mark.usefixtures(
+        "enable_override_vendor_purposes",
+    )
+    async def test_enable_override_is_true_but_no_matching_purpose(
+        self, async_session_temp, db
+    ):
+        """Privacy Declaration has Special Purpose not Purpose, so no overrides applicable"""
+        resource = SystemSchema(
+            fides_key=str(uuid4()),
+            organization_fides_key="default_organization",
+            name=f"test_system_1_{uuid4()}",
+            system_type="test",
+            privacy_declarations=[
+                PrivacyDeclarationSchema(
+                    name="Collect data for content performance",
+                    data_use="essential.fraud_detection",
+                    legal_basis_for_processing="Consent",
+                    data_categories=["user"],
+                )
+            ],
+        )
+
+        system = await create_system(
+            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+        )
+        pd = system.privacy_declarations[0]
+
+        assert pd.purpose is None
+        assert await pd.get_purpose_legal_basis_override() == "Consent"
+
+    @pytest.mark.usefixtures(
+        "enable_override_vendor_purposes",
+    )
+    async def test_enable_override_is_true_but_purpose_is_excluded(
+        self, async_session_temp, db
+    ):
+        """Purpose is overridden as excluded, so legal basis returns as None, to match
+        class-wide override"""
+        resource = SystemSchema(
+            fides_key=str(uuid4()),
+            organization_fides_key="default_organization",
+            name=f"test_system_1_{uuid4()}",
+            system_type="test",
+            privacy_declarations=[
+                PrivacyDeclarationSchema(
+                    name="Collect data for content performance",
+                    data_use="personalize.content.profiling",
+                    legal_basis_for_processing="Consent",
+                    data_categories=["user"],
+                )
+            ],
+        )
+
+        system = await create_system(
+            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+        )
+        pd = system.privacy_declarations[0]
+
+        constraint = TCFPurposeOverride.create(
+            db,
+            data={
+                "purpose": 5,
+                "is_included": False,
+            },
+        )
+
+        assert pd.purpose == 5
+        assert await pd.get_purpose_legal_basis_override() is None
+
+        constraint.delete(db)
+
+    @pytest.mark.usefixtures(
+        "enable_override_vendor_purposes",
+    )
+    async def test_purpose_is_excluded_even_with_inflexible_legal_basis(
+        self, async_session_temp, db
+    ):
+        """Purpose is overridden as excluded, so even if legal basis is not flexible,
+        legal basis returns as None, to match class-wide override."""
+        resource = SystemSchema(
+            fides_key=str(uuid4()),
+            organization_fides_key="default_organization",
+            name=f"test_system_1_{uuid4()}",
+            system_type="test",
+            privacy_declarations=[
+                PrivacyDeclarationSchema(
+                    name="Collect data for content performance",
+                    data_use="personalize.content.profiling",
+                    legal_basis_for_processing="Consent",
+                    flexible_legal_basis_for_processing=False,
+                    data_categories=["user"],
+                )
+            ],
+        )
+
+        system = await create_system(
+            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+        )
+        pd = system.privacy_declarations[0]
+
+        constraint = TCFPurposeOverride.create(
+            db,
+            data={
+                "purpose": 5,
+                "is_included": False,
+            },
+        )
+
+        assert pd.purpose == 5
+        assert await pd.get_purpose_legal_basis_override() is None
+
+        constraint.delete(db)
+
+    @pytest.mark.usefixtures(
+        "enable_override_vendor_purposes",
+    )
+    async def test_legal_basis_is_inflexible(self, async_session_temp, db):
+        """Purpose is overridden but we can't apply because the legal basis is specified as inflexible"""
+        resource = SystemSchema(
+            fides_key=str(uuid4()),
+            organization_fides_key="default_organization",
+            name=f"test_system_1_{uuid4()}",
+            system_type="test",
+            privacy_declarations=[
+                PrivacyDeclarationSchema(
+                    name="Collect data for content performance",
+                    data_use="personalize.content.profiling",
+                    legal_basis_for_processing="Consent",
+                    flexible_legal_basis_for_processing=False,
+                    data_categories=["user"],
+                )
+            ],
+        )
+
+        system = await create_system(
+            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+        )
+        pd = system.privacy_declarations[0]
+
+        constraint = TCFPurposeOverride.create(
+            db,
+            data={
+                "purpose": 5,
+                "is_included": True,
+                "required_legal_basis": "Legitimate interests",
+            },
+        )
+
+        assert pd.purpose == 5
+        assert await pd.get_purpose_legal_basis_override() == "Consent"
+
+        constraint.delete(db)
+
+    @pytest.mark.usefixtures(
+        "enable_override_vendor_purposes",
+    )
+    async def test_publisher_override_defined_but_no_required_legal_basis_specified(
+        self, db, async_session_temp
+    ):
+        """Purpose override *object* is defined, but no legal basis override"""
+        resource = SystemSchema(
+            fides_key=str(uuid4()),
+            organization_fides_key="default_organization",
+            name=f"test_system_1_{uuid4()}",
+            system_type="test",
+            privacy_declarations=[
+                PrivacyDeclarationSchema(
+                    name="Collect data for content performance",
+                    data_use="analytics.reporting.campaign_insights",
+                    legal_basis_for_processing="Consent",
+                    data_categories=["user"],
+                )
+            ],
+        )
+
+        system = await create_system(
+            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+        )
+        pd = system.privacy_declarations[0]
+
+        constraint = TCFPurposeOverride.create(
+            db,
+            data={
+                "purpose": 9,
+                "is_included": True,
+            },
+        )
+
+        assert pd.purpose == 9
+        assert await pd.get_purpose_legal_basis_override() == "Consent"
+
+        constraint.delete(db)
+
+    @pytest.mark.usefixtures(
+        "enable_override_vendor_purposes",
+    )
+    async def test_publisher_override_defined_with_required_legal_basis_specified(
+        self, async_session_temp, db
+    ):
+        """Purpose override specified along with the requirements to apply that override"""
+        resource = SystemSchema(
+            fides_key=str(uuid4()),
+            organization_fides_key="default_organization",
+            name=f"test_system_1_{uuid4()}",
+            system_type="test",
+            privacy_declarations=[
+                PrivacyDeclarationSchema(
+                    name="Collect data for content performance",
+                    data_use="functional.service.improve",
+                    legal_basis_for_processing="Consent",
+                    data_categories=["user"],
+                )
+            ],
+        )
+
+        system = await create_system(
+            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+        )
+        override = TCFPurposeOverride.create(
+            db,
+            data={
+                "purpose": 10,
+                "is_included": True,
+                "required_legal_basis": "Legitimate interests",
+            },
+        )
+        pd = system.privacy_declarations[0]
+
+        assert pd.purpose == 10
+        assert await pd.get_purpose_legal_basis_override() == "Legitimate interests"
+
+        override.delete(db)

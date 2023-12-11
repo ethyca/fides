@@ -29,5 +29,17 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "separateVendorSelector": {
+    "description": "When creating a system, allow vendor to be selected separately from system name",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "consentReporting": {
+    "description": "Page to download consent reports by date",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }

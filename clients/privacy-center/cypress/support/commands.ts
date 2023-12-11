@@ -5,6 +5,7 @@ import "cypress-wait-until";
 import type { AppDispatch } from "~/app/store";
 import type { FidesConfig } from "fides-js";
 import type { PrivacyCenterClientSettings } from "~/app/server-environment";
+import VisitOptions = Cypress.VisitOptions;
 
 Cypress.Commands.add("getByTestId", (selector, ...args) =>
   cy.get(`[data-testid='${selector}']`, ...args)
@@ -55,31 +56,52 @@ Cypress.Commands.add("overrideSettings", (settings) => {
   );
 });
 
-Cypress.Commands.add("visitConsentDemo", (options?: FidesConfig) => {
-  cy.visit("/fides-js-components-demo.html", {
-    onBeforeLoad: (win) => {
-      // eslint-disable-next-line no-param-reassign
-      win.fidesConfig = options;
+Cypress.Commands.add(
+  "visitConsentDemo",
+  (options?: FidesConfig, queryParams?: any, windowParams?: any) => {
+    const visitOptions: Partial<VisitOptions> = {
+      onBeforeLoad: (win) => {
+        // eslint-disable-next-line no-param-reassign
+        win.fidesConfig = options;
 
-      // Add event listeners for Fides.js events
-      win.addEventListener(
-        "FidesInitialized",
-        cy.stub().as("FidesInitialized")
-      );
-      win.addEventListener("FidesUpdated", cy.stub().as("FidesUpdated"));
-      win.addEventListener("FidesUIShown", cy.stub().as("FidesUIShown"));
-      win.addEventListener(
-        "FidesPreferenceToggled",
-        cy.stub().as("FidesPreferenceToggled")
-      );
+        if (windowParams) {
+          // @ts-ignore
+          // eslint-disable-next-line no-param-reassign
+          if (options?.options.customOptionsPath) {
+            // hard-code path for now, as dynamically assigning to win obj is challenging in Cypress
+            // @ts-ignore
+            // eslint-disable-next-line no-param-reassign
+            win.config = {
+              tc_info: undefined,
+              overrides: windowParams,
+            };
+          } else {
+            // eslint-disable-next-line no-param-reassign
+            win.fides_overrides = windowParams;
+          }
+        }
 
-      // Add GTM stub
-      // eslint-disable-next-line no-param-reassign
-      win.dataLayer = [];
-      cy.stub(win.dataLayer, "push").as("dataLayerPush");
-    },
-  });
-});
+        // Add event listeners for Fides.js events
+        win.addEventListener(
+          "FidesInitialized",
+          cy.stub().as("FidesInitialized")
+        );
+        win.addEventListener("FidesUpdated", cy.stub().as("FidesUpdated"));
+        win.addEventListener("FidesUIShown", cy.stub().as("FidesUIShown"));
+        win.addEventListener("FidesUIChanged", cy.stub().as("FidesUIChanged"));
+
+        // Add GTM stub
+        // eslint-disable-next-line no-param-reassign
+        win.dataLayer = [];
+        cy.stub(win.dataLayer, "push").as("dataLayerPush");
+      },
+    };
+    if (queryParams) {
+      visitOptions.qs = queryParams;
+    }
+    cy.visit("/fides-js-components-demo.html", visitOptions);
+  }
+);
 
 declare global {
   namespace Cypress {
@@ -161,9 +183,13 @@ declare global {
       ): Chainable<any>;
       /**
        * Visit the /fides-js-components-demo page and inject config options
-       * @example cy.visitConsentDemo(fidesConfig);
+       * @example cy.visitConsentDemo(fidesConfig, {fidesEmbed: true});
        */
-      visitConsentDemo(options?: FidesConfig): Chainable<any>;
+      visitConsentDemo(
+        options?: FidesConfig,
+        queryParams?: any,
+        windowParams?: any
+      ): Chainable<any>;
       /**
        * Custom command to load a Privacy Center settings object into the app
        *
@@ -191,6 +217,11 @@ declare global {
       // DEFER: tcData should be type TCData from the IAB's TCF library.
       // Once we are importing that library, replace this `any` type.
       callback: (tcData: any, success: boolean) => void,
+      parameter?: number | string
+    ) => void;
+    __gpp: (
+      command: string,
+      callback: (data: any, success: boolean) => void,
       parameter?: number | string
     ) => void;
   }

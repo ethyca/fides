@@ -26,7 +26,6 @@ export type PrivacyExperienceResponse = {
    * The Experience copy or language
    */
   experience_config?: ExperienceConfigResponse;
-  id: string;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
@@ -38,6 +37,7 @@ export type PrivacyExperienceResponse = {
   tcf_system_consents?: Array<TCFVendorConsentRecord>;
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
+  id: string;
   created_at: string;
   updated_at: string;
   /**

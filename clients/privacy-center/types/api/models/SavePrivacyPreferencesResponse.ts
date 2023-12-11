@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { CurrentPrivacyPreferenceSchema } from "./CurrentPrivacyPreferenceSchema";
+import { TCMobileData } from "fides-js";
 
 /**
  * Response schema when saving privacy preferences
@@ -18,4 +19,5 @@ export type SavePrivacyPreferencesResponse = {
   special_feature_preferences?: Array<CurrentPrivacyPreferenceSchema>;
   system_consent_preferences?: Array<CurrentPrivacyPreferenceSchema>;
   system_legitimate_interests_preferences?: Array<CurrentPrivacyPreferenceSchema>;
+  fides_mobile_data?: TCMobileData;
 };

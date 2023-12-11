@@ -10,11 +10,11 @@ import postcss from "rollup-plugin-postcss";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
-const GZIP_SIZE_ERROR_KB = 22; // fail build if bundle size exceeds this
+const GZIP_SIZE_ERROR_KB = 24; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 15; // log a warning if bundle size exceeds this
 
 // TCF
-const GZIP_SIZE_TCF_ERROR_KB = 41;
+const GZIP_SIZE_TCF_ERROR_KB = 43;
 const GZIP_SIZE_TCF_WARN_KB = 35;
 
 const preactAliases = {
@@ -39,7 +39,10 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   copy({
     // Automatically add the built script to the privacy center's static files for bundling:
     targets: [
-      { src: `dist/${name}.js`, dest: "../privacy-center/public/lib/" },
+      {
+        src: `dist/${name}.js`,
+        dest: `../privacy-center/public/lib/`,
+      },
     ],
     verbose: true,
     hook: "writeBundle",
@@ -86,6 +89,12 @@ const SCRIPTS = [
     gzipWarnSizeKb: GZIP_SIZE_TCF_WARN_KB,
     gzipErrorSizeKb: GZIP_SIZE_TCF_ERROR_KB,
   },
+  {
+    name: `${NAME}-ext-gpp`,
+    gzipWarnSizeKb: 10,
+    gzipErrorSizeKb: 15,
+    isExtension: true,
+  },
 ];
 
 /**
@@ -93,7 +102,7 @@ const SCRIPTS = [
  */
 const rollupOptions = [];
 
-SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb }) => {
+SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
   const js = {
     input: `src/${name}.ts`,
     plugins: fidesScriptPlugins({
@@ -105,8 +114,8 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb }) => {
       {
         // Intended for browser <script> tag - defines `Fides` global. Also supports UMD loaders.
         file: `dist/${name}.js`,
-        name: "Fides",
-        format: "umd",
+        name: isExtension ? undefined : "Fides",
+        format: isExtension ? undefined : "umd",
         sourcemap: IS_DEV,
       },
     ],

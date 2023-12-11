@@ -15,6 +15,7 @@ import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { FieldArray, Form, Formik, FormikHelpers } from "formik";
 import type { NextPage } from "next";
+import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import DocsLink from "~/features/common/DocsLink";
@@ -35,13 +36,21 @@ import { ApplicationConfig } from "~/types/api";
 type FormValues = CORSOrigins;
 
 const CORSConfigurationPage: NextPage = () => {
-  const { isLoading: isLoadingGetQuery } = useGetConfigurationSettingsQuery();
+  const { isLoading: isLoadingGetQuery } = useGetConfigurationSettingsQuery({
+    api_set: true,
+  });
   const corsOrigins = useAppSelector(selectCORSOrigins());
   const applicationConfig = useAppSelector(selectApplicationConfig());
   const [putConfigSettingsTrigger, { isLoading: isLoadingPutMutation }] =
     usePutConfigurationSettingsMutation();
 
   const toast = useToast();
+
+  const ValidationSchema = Yup.object().shape({
+    cors_origins: Yup.array()
+      .nullable()
+      .of(Yup.string().required().trim().url().label("URL")),
+  });
 
   const handleSubmit = async (
     values: FormValues,
@@ -82,21 +91,23 @@ const CORSConfigurationPage: NextPage = () => {
   };
 
   return (
-    <Layout title="CORS Configuration">
+    <Layout title="Manage domains">
       <Box data-testid="cors-configuration">
         <Heading marginBottom={4} fontSize="2xl">
-          CORS configuration
+          Manage domains
         </Heading>
         <Box maxWidth="600px">
           <Text marginBottom={2} fontSize="md">
-            Add your CORS domains below
+            Manage domains for your organization
           </Text>
           <Text mb={10} fontSize="sm">
-            Please visit{" "}
+            You must add domains associated with your organization to Fides to
+            ensure features such as consent function correctly. For more
+            information on managing domains on Fides, click here{" "}
             <DocsLink href="https://fid.es/cors-configuration">
               docs.ethyca.com
-            </DocsLink>{" "}
-            for more information on how to configure CORS domains.
+            </DocsLink>
+            .
           </Text>
         </Box>
 
@@ -111,6 +122,7 @@ const CORSConfigurationPage: NextPage = () => {
                 initialValues={corsOrigins}
                 enableReinitialize
                 onSubmit={handleSubmit}
+                validationSchema={ValidationSchema}
               >
                 {({ dirty, values, isValid }) => (
                   <Form>

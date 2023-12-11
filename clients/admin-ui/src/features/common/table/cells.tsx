@@ -9,12 +9,12 @@ import {
   useToast,
   WarningIcon,
 } from "@fidesui/react";
-import ConfirmationModal from "common/ConfirmationModal";
 import React, { ChangeEvent } from "react";
 import { CellProps } from "react-table";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { RTKResult } from "~/types/errors";
 
 import { errorToastParams } from "../toast";

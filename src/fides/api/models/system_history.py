@@ -45,4 +45,4 @@ class SystemHistory(Base):
         db = Session.object_session(self)
         user: Optional[FidesUser] = FidesUser.get_by(db, field="id", value=self.user_id)
 
-        return user.username if user else None
+        return user.username if user else self.user_id

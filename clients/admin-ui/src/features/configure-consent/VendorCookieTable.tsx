@@ -1,5 +1,6 @@
 import {
   Box,
+  Flex,
   HStack,
   IconButton,
   Menu,
@@ -24,8 +25,8 @@ import {
 } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
-import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { PaddedCell } from "~/features/common/table";
 import GroupedTableBody from "~/features/common/table/grouped/GroupedTableBody";
 import GroupedTableHeader from "~/features/common/table/grouped/GroupedTableHeader";
@@ -161,11 +162,13 @@ const VendorCookieTable = () => {
           setGlobalFilter={tableInstance.setGlobalFilter}
           placeholder="Search"
         />
-
-        <AddVendor
-          passedInSystem={systemToEdit}
-          onCloseModal={() => setSystemToEdit(undefined)}
-        />
+        <Flex>
+          <Flex width="10px" />
+          <AddVendor
+            passedInSystem={systemToEdit}
+            onCloseModal={() => setSystemToEdit(undefined)}
+          />
+        </Flex>
         <ConfirmationModal
           isOpen={isDeleteModalOpen}
           onClose={onDeleteModalClose}

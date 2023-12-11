@@ -1088,6 +1088,9 @@ dataset:
     - name: vendor_id
       data_categories:
       - system.operations
+    - name: previous_vendor_id
+      data_categories:
+        - system.operations
     - name: dataset_references
       data_categories:
       - system.operations
@@ -2664,26 +2667,6 @@ dataset:
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-  - name: consentsettings
-    data_categories: []
-    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    fields:
-    - name: created_at
-      data_categories:
-      - system.operations
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: id
-      data_categories:
-      - system.operations
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: tcf_enabled
-      data_categories:
-      - system.operations
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: updated_at
-      data_categories:
-      - system.operations
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: messaging_template
     description: 'Table used to store custom messaging templates'
     data_categories: []
@@ -2794,3 +2777,46 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: updated_at
       data_categories: [system.operations]
+  - name: system_compass_sync
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: sync_completed_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: sync_started_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_systems
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: tcf_purpose_overrides
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: created_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: is_included
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: purpose
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: required_legal_basis
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

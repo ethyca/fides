@@ -5,6 +5,7 @@ ARG PYTHON_VERSION="3.10.12"
 #########################
 FROM python:${PYTHON_VERSION}-slim-bullseye as compile_image
 
+
 # Install auxiliary software
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -54,6 +55,11 @@ RUN pip install --no-cache-dir install -r dev-requirements.txt
 ##################
 FROM python:${PYTHON_VERSION}-slim-bullseye as backend
 
+# Add the fidesuser user but don't switch to it yet
+RUN addgroup --system --gid 1001 fidesgroup
+RUN adduser --system --uid 1001 fidesuser
+
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
@@ -69,7 +75,8 @@ COPY --from=compile_image /opt/fides /opt/fides
 ENV PATH=/opt/fides/bin:$PATH
 
 # General Application Setup ##
-COPY . /fides
+USER fidesuser
+COPY --chown=fidesuser:fidesgroup . /fides
 WORKDIR /fides
 
 # Immediately flush to stdout, globally
@@ -92,7 +99,11 @@ CMD [ "fides", "webserver" ]
 #############################
 FROM backend as dev
 
+USER root
+
 RUN pip install -e . --no-deps
+
+USER fidesuser
 
 ###################
 ## Frontend Base ##
@@ -152,7 +163,10 @@ COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-buil
 
 # Install without a symlink
 RUN python setup.py sdist
+
+USER root
 RUN pip install dist/ethyca-fides-*.tar.gz
 
 # Remove this directory to prevent issues with catch all
 RUN rm -r /fides/src/fides/ui-build
+USER fidesuser

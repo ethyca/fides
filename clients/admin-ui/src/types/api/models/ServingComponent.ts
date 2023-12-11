@@ -10,4 +10,5 @@ export enum ServingComponent {
   BANNER = "banner",
   PRIVACY_CENTER = "privacy_center",
   TCF_OVERLAY = "tcf_overlay",
+  TCF_BANNER = "tcf_banner",
 }
