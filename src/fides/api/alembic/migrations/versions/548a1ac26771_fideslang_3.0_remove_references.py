@@ -32,6 +32,24 @@ def upgrade():
     op.drop_table("ctl_registries")
     op.drop_column("ctl_systems", "registry_id")
 
+    ## Remove data use fields
+    op.drop_column("ctl_data_uses", "legal_basis")
+    op.drop_column("ctl_data_uses", "special_category")
+    op.drop_column("ctl_data_uses", "legitimate_interest")
+    op.drop_column("ctl_data_uses", "legitimate_interest_impact_assessment")
+    op.drop_column("ctl_data_uses", "recipients")
+
+    ## Remove dataset fields
+    op.drop_column("ctl_datasets", "retention")
+    op.drop_column("ctl_datasets", "joint_controller")
+    op.drop_column("ctl_datasets", "third_country_transfers")
+
+    ## Remove system fields
+    op.drop_column("ctl_systems", "joint_controller")
+    op.drop_column("ctl_systems", "data_responsibility_title")
+    op.drop_column("ctl_systems", "third_country_transfers")
+    op.drop_column("ctl_systems", "data_protection_impact_assessment")
+
 
 def downgrade():
     ## Add back in data qualifier references
@@ -133,4 +151,94 @@ def downgrade():
     op.create_index("ix_ctl_registries_id", "ctl_registries", ["id"], unique=False)
     op.create_index(
         "ix_ctl_registries_fides_key", "ctl_registries", ["fides_key"], unique=False
+    )
+
+    ## Add back system fields
+    op.add_column(
+        "ctl_systems",
+        sa.Column(
+            "data_protection_impact_assessment",
+            postgresql.JSON(astext_type=sa.Text()),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
+    op.add_column(
+        "ctl_systems",
+        sa.Column(
+            "third_country_transfers",
+            postgresql.ARRAY(sa.VARCHAR()),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
+    op.add_column(
+        "ctl_systems",
+        sa.Column(
+            "data_responsibility_title",
+            sa.VARCHAR(),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
+    op.add_column(
+        "ctl_systems",
+        sa.Column(
+            "joint_controller", postgresql.BYTEA(), autoincrement=False, nullable=True
+        ),
+    )
+
+    ## Add back dataset fields
+    op.add_column(
+        "ctl_datasets",
+        sa.Column(
+            "third_country_transfers",
+            postgresql.ARRAY(sa.VARCHAR()),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
+    op.add_column(
+        "ctl_datasets",
+        sa.Column(
+            "joint_controller", postgresql.BYTEA(), autoincrement=False, nullable=True
+        ),
+    )
+    op.add_column(
+        "ctl_datasets",
+        sa.Column("retention", sa.VARCHAR(), autoincrement=False, nullable=True),
+    )
+
+    ## Add back data use fields
+    op.add_column(
+        "ctl_data_uses",
+        sa.Column(
+            "recipients",
+            postgresql.ARRAY(sa.VARCHAR()),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
+    op.add_column(
+        "ctl_data_uses",
+        sa.Column(
+            "legitimate_interest_impact_assessment",
+            sa.VARCHAR(),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
+    op.add_column(
+        "ctl_data_uses",
+        sa.Column(
+            "legitimate_interest", sa.BOOLEAN(), autoincrement=False, nullable=True
+        ),
+    )
+    op.add_column(
+        "ctl_data_uses",
+        sa.Column("special_category", sa.TEXT(), autoincrement=False, nullable=True),
+    )
+    op.add_column(
+        "ctl_data_uses",
+        sa.Column("legal_basis", sa.TEXT(), autoincrement=False, nullable=True),
     )
