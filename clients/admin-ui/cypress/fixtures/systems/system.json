@@ -4,7 +4,6 @@
   "tags": ["demo", "analytics"],
   "name": "Demo Analytics System",
   "description": "A system used for analyzing customer behaviour.",
-  "registry_id": null,
   "meta": null,
   "fidesctl_meta": null,
   "dataset_reference": null,

@@ -263,7 +263,6 @@ export { RateLimitPeriod } from "./models/RateLimitPeriod";
 export type { RecordConsentServedRequest } from "./models/RecordConsentServedRequest";
 export type { RedshiftDocsSchema } from "./models/RedshiftDocsSchema";
 export type { Registration } from "./models/Registration";
-export type { Registry } from "./models/Registry";
 export { RequestOrigin } from "./models/RequestOrigin";
 export type { ResourceFilter } from "./models/ResourceFilter";
 export { ResourceTypes } from "./models/ResourceTypes";

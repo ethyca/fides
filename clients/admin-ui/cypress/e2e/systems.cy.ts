@@ -437,7 +437,6 @@ describe("System management page", () => {
           tags,
           fidesctl_meta: fidesctlMeta,
           meta,
-          registry_id: registryid,
           ...edited
         } = body;
         expect(edited).to.eql({

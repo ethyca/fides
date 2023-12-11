@@ -5,7 +5,6 @@
       "organization_fides_key": "default_organization",
       "name": "example-postgres-cluster",
       "description": "Fides Generated Description for RDS Cluster: example-postgres-cluster",
-      "registry_id": null,
       "meta": null,
       "fidesctl_meta": {
         "resource_id": "arn:aws:rds:us-east-2:123456789012:cluster:example-postgres-cluster",
@@ -29,7 +28,6 @@
       "organization_fides_key": "default_organization",
       "name": "example-system-1",
       "description": "Fides Generated Description for example-system-1",
-      "registry_id": null,
       "meta": null,
       "fidesctl_meta": {
         "resource_id": "example-system-1:resource_id",
@@ -43,7 +41,6 @@
       "organization_fides_key": "default_organization",
       "name": "example-system-2",
       "description": "Fides Generated Description for example-system-2",
-      "registry_id": null,
       "meta": null,
       "fidesctl_meta": {
         "resource_id": "example-system-2:resource_id",
@@ -57,7 +54,6 @@
       "organization_fides_key": "default_organization",
       "name": "example-system-without-meta",
       "description": "Fides Generated Description for system lacking metadata",
-      "registry_id": null,
       "meta": null,
       "system_type": "example-system-1:system_type"
     }

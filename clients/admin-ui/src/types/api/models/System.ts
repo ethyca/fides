@@ -35,10 +35,6 @@ export type System = {
    */
   description?: string;
   /**
-   * The id of the system registry, if used.
-   */
-  registry_id?: number;
-  /**
    * An optional property to store any extra information for a resource. Data can be structured in any way: simple set of `key: value` pairs or deeply nested objects.
    */
   meta?: any;
