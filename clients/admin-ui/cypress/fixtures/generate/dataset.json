@@ -8,9 +8,6 @@
       "meta": null,
       "data_categories": [],
       "fidesctl_meta": null,
-      "joint_controller": null,
-      "retention": "No retention or erasure policy",
-      "third_country_transfers": null,
       "collections": [
         {
           "name": "alembic_version",
@@ -259,27 +256,6 @@
               "fields": null
             },
             {
-              "name": "legal_basis",
-              "description": "Fides Generated Description for Column: legal_basis",
-              "data_categories": [],
-              "retention": null,
-              "fields": null
-            },
-            {
-              "name": "legitimate_interest",
-              "description": "Fides Generated Description for Column: legitimate_interest",
-              "data_categories": [],
-              "retention": null,
-              "fields": null
-            },
-            {
-              "name": "legitimate_interest_impact_assessment",
-              "description": "Fides Generated Description for Column: legitimate_interest_impact_assessment",
-              "data_categories": [],
-              "retention": null,
-              "fields": null
-            },
-            {
               "name": "name",
               "description": "Fides Generated Description for Column: name",
               "data_categories": [],
@@ -296,20 +272,6 @@
             {
               "name": "parent_key",
               "description": "Fides Generated Description for Column: parent_key",
-              "data_categories": [],
-              "retention": null,
-              "fields": null
-            },
-            {
-              "name": "recipients",
-              "description": "Fides Generated Description for Column: recipients",
-              "data_categories": [],
-              "retention": null,
-              "fields": null
-            },
-            {
-              "name": "special_category",
-              "description": "Fides Generated Description for Column: special_category",
               "data_categories": [],
               "retention": null,
               "fields": null
@@ -384,13 +346,6 @@
               "fields": null
             },
             {
-              "name": "joint_controller",
-              "description": "Fides Generated Description for Column: joint_controller",
-              "data_categories": [],
-              "retention": null,
-              "fields": null
-            },
-            {
               "name": "meta",
               "description": "Fides Generated Description for Column: meta",
               "data_categories": [],
@@ -407,20 +362,6 @@
             {
               "name": "organization_fides_key",
               "description": "Fides Generated Description for Column: organization_fides_key",
-              "data_categories": [],
-              "retention": null,
-              "fields": null
-            },
-            {
-              "name": "retention",
-              "description": "Fides Generated Description for Column: retention",
-              "data_categories": [],
-              "retention": null,
-              "fields": null
-            },
-            {
-              "name": "third_country_transfers",
-              "description": "Fides Generated Description for Column: third_country_transfers",
               "data_categories": [],
               "retention": null,
               "fields": null
@@ -718,20 +659,6 @@
               "fields": null
             },
             {
-              "name": "data_protection_impact_assessment",
-              "description": "Fides Generated Description for Column: data_protection_impact_assessment",
-              "data_categories": [],
-              "retention": null,
-              "fields": null
-            },
-            {
-              "name": "data_responsibility_title",
-              "description": "Fides Generated Description for Column: data_responsibility_title",
-              "data_categories": [],
-              "retention": null,
-              "fields": null
-            },
-            {
               "name": "description",
               "description": "Fides Generated Description for Column: description",
               "data_categories": [],
@@ -755,13 +682,6 @@
             {
               "name": "id",
               "description": "Fides Generated Description for Column: id",
-              "data_categories": [],
-              "retention": null,
-              "fields": null
-            },
-            {
-              "name": "joint_controller",
-              "description": "Fides Generated Description for Column: joint_controller",
               "data_categories": [],
               "retention": null,
               "fields": null
@@ -795,22 +715,8 @@
               "fields": null
             },
             {
-              "name": "registry_id",
-              "description": "Fides Generated Description for Column: registry_id",
-              "data_categories": [],
-              "retention": null,
-              "fields": null
-            },
-            {
               "name": "system_type",
               "description": "Fides Generated Description for Column: system_type",
-              "data_categories": [],
-              "retention": null,
-              "fields": null
-            },
-            {
-              "name": "third_country_transfers",
-              "description": "Fides Generated Description for Column: third_country_transfers",
               "data_categories": [],
               "retention": null,
               "fields": null

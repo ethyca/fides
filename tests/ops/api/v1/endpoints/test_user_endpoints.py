@@ -1434,12 +1434,6 @@ class TestUpdateSystemsManagedByUser:
                 "description": "fixture-made-system",
                 "organization_fides_key": "default_organization",
                 "system_type": "Service",
-                "data_responsibility_title": "Processor",
-                "data_protection_impact_assessment": {
-                    "is_required": False,
-                    "progress": None,
-                    "link": None,
-                },
             },
         )
         PrivacyDeclaration.create(

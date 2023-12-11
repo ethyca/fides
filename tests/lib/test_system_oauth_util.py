@@ -277,7 +277,6 @@ class TestGetSystemFromRequestBody:
         system_schema = SystemSchema(
             fides_key=system.fides_key,
             system_type="Service",
-            data_responsibility_title="Processor",
             name="System Name",
             privacy_declarations=[],
         )
@@ -291,7 +290,6 @@ class TestGetSystemFromRequestBody:
         system_schema = SystemSchema(
             fides_key="unknown_fides_key",
             system_type="Service",
-            data_responsibility_title="Processor",
             name="System Name",
             privacy_declarations=[],
         )
@@ -324,7 +322,6 @@ class TestSystemOauthOverrides:
         system_schema = SystemSchema(
             fides_key="unknown_fides_key",
             system_type="Service",
-            data_responsibility_title="Processor",
             name="System Name",
             privacy_declarations=[],
         )

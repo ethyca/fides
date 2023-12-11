@@ -7,9 +7,7 @@
   "meta": null,
   "data_categories": [],
   "fidesctl_meta": null,
-  "joint_controller": null,
   "retention": "30 days after account deletion",
-  "third_country_transfers": ["GBR", "CAN"],
   "collections": [
     {
       "name": "users",

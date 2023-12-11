@@ -33,23 +33,6 @@ def test_rich_organization() -> Generator:
 
 
 @pytest.fixture
-def test_basic_data_use() -> Generator:
-    yield [DataUse(fides_key="test_data_use")]
-
-
-@pytest.fixture
-def test_rich_data_use() -> Generator:
-    yield [
-        DataUse(
-            fides_key="test_data_use",
-            recipients=["test"],
-            legal_basis="Consent",
-            special_category="Consent",
-        )
-    ]
-
-
-@pytest.fixture
 def test_basic_data_subject() -> Generator:
     yield [DataSubject(fides_key="test_data_subject")]
 

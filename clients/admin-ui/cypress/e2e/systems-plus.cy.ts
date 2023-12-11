@@ -70,7 +70,6 @@ describe("System management with Plus features", () => {
                 ...dictSystem,
                 fides_key: origSystem.fides_key,
                 customFieldValues: undefined,
-                data_protection_impact_assessment: undefined,
               },
             }
           ).as("getDictSystem");
@@ -101,7 +100,6 @@ describe("System management with Plus features", () => {
                 ...dictSystem,
                 fides_key: origSystem.fides_key,
                 customFieldValues: undefined,
-                data_protection_impact_assessment: undefined,
               },
             }
           ).as("getDictSystem");
