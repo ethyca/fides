@@ -21,7 +21,6 @@ from fides.common.api.scope_registry import (
     DATA_USE,
     EVALUATION,
     ORGANIZATION,
-    REGISTRY,
     SYSTEM,
 )
 from fides.config import CONFIG
@@ -42,7 +41,6 @@ CLI_SCOPE_PREFIX_MAPPING: Dict[str, str] = {
     "evaluation": EVALUATION,
     "organization": ORGANIZATION,
     "policy": CTL_POLICY,
-    "registry": REGISTRY,
     "system": SYSTEM,
 }
 

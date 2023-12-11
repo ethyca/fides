@@ -452,7 +452,6 @@ class TestSystemCreate:
     def system_create_request_body(self) -> SystemSchema:
         return SystemSchema(
             organization_fides_key=1,
-            registryId=1,
             fides_key="system_fides_key",
             system_type="SYSTEM",
             name="Test System",
@@ -743,7 +742,6 @@ class TestSystemCreate:
             "name",
             "privacy_policy",
             "reason_for_exemption",
-            "registry_id",
             "tags",
             "third_country_transfers",
             "vendor_id",
@@ -1014,7 +1012,6 @@ class TestSystemUpdate:
     def system_update_request_body(self, system) -> SystemSchema:
         return SystemSchema(
             organization_fides_key=1,
-            registryId=1,
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
@@ -1036,7 +1033,6 @@ class TestSystemUpdate:
     def system_update_request_body_with_system_cookies(self, system) -> SystemSchema:
         return SystemSchema(
             organization_fides_key=1,
-            registryId=1,
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
@@ -1064,7 +1060,6 @@ class TestSystemUpdate:
     ) -> SystemSchema:
         return SystemSchema(
             organization_fides_key=1,
-            registryId=1,
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
@@ -1090,7 +1085,6 @@ class TestSystemUpdate:
     ) -> SystemSchema:
         return SystemSchema(
             organization_fides_key=1,
-            registryId=1,
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
