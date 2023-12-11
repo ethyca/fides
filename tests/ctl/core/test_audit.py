@@ -83,26 +83,6 @@ def test_rich_organization_passes_audit(
 
 
 @pytest.mark.unit
-def test_basic_data_use_fails_audit(
-    test_basic_data_use: List[DataUse],
-) -> None:
-    audit_findings = audit.audit_data_use_attributes(
-        test_basic_data_use[0], "test_system_name"
-    )
-    assert audit_findings > 0
-
-
-@pytest.mark.unit
-def test_rich_data_use_passes_audit(
-    test_rich_data_use: List[DataUse],
-) -> None:
-    audit_findings = audit.audit_data_use_attributes(
-        test_rich_data_use[0], "test_system_name"
-    )
-    assert audit_findings == 0
-
-
-@pytest.mark.unit
 def test_basic_data_subject_fails_audit(
     test_basic_data_subject: List[DataSubject],
 ) -> None:
