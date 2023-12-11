@@ -48,3 +48,8 @@ def test_consolidate_query_matches():
     field_path = FieldPath()
     input_data = {"A": [{"B": 1, "C": 2}, {"B": 3, "C": 4}, {"B": 5, "C": 6}]}
     assert consolidate_query_matches(input_data, field_path) == []
+
+    # input data key exists, None value
+    input_data = {"A": None}
+    field_path = FieldPath("A")
+    assert consolidate_query_matches(input_data, field_path) == []
