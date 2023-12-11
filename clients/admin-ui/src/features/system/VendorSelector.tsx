@@ -3,6 +3,10 @@ import {
   FormControl,
   HStack,
   IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Spacer,
   Text,
   VStack,
@@ -35,20 +39,37 @@ const CompassButton = ({
   active: boolean;
   disabled: boolean;
   onRefreshSuggestions: () => void;
-}) => (
-  <VStack>
-    <Spacer minHeight="18px" />
-    <IconButton
-      size="sm"
-      isDisabled={disabled}
-      onClick={() => onRefreshSuggestions()}
-      aria-label="Update information from Compass"
-      bg={active ? "complimentary.500" : "gray.100"}
-      icon={<CompassIcon color={active ? "white" : "gray.700"} boxSize={4} />}
-      data-testid="refresh-suggestions-btn"
-    />
-  </VStack>
-);
+}) => {
+  const bgColor = { bg: active ? "complimentary.500" : "gray.100" };
+  return (
+    <VStack>
+      <Spacer minHeight="18px" />
+      <Menu>
+        <MenuButton
+          as={IconButton}
+          size="sm"
+          isDisabled={disabled}
+          icon={
+            <CompassIcon color={active ? "white" : "gray.700"} boxSize={4} />
+          }
+          aria-label="Update information from Compass"
+          data-testid="refresh-suggestions-btn"
+          _hover={{
+            _disabled: bgColor,
+          }}
+          {...bgColor}
+        />
+        <MenuList>
+          <MenuItem onClick={onRefreshSuggestions}>
+            <Text fontSize="xs" lineHeight={4}>
+              Reset to Compass defaults
+            </Text>
+          </MenuItem>
+        </MenuList>
+      </Menu>
+    </VStack>
+  );
+};
 
 interface Props {
   fieldsSeparated: boolean;
@@ -88,7 +109,7 @@ const VendorSelector = ({
   options,
   onVendorSelected,
 }: Props) => {
-  const isShowingSuggestions = useAppSelector(selectSuggestions);
+  const isShowingDictSuggestions = useAppSelector(selectSuggestions);
   const [initialField, meta, { setValue }] = useField({
     name: fieldsSeparated ? "vendor_id" : "name",
   });
@@ -108,6 +129,8 @@ const VendorSelector = ({
   const suggestions = options.filter((opt) =>
     opt.label.toLowerCase().startsWith(searchParam.toLowerCase())
   );
+
+  const hasVendorSuggestions = !!searchParam && suggestions.length > 0;
 
   const handleTabPressed = () => {
     if (suggestions.length > 0 && searchParam !== suggestions[0].label) {
@@ -208,10 +231,7 @@ const VendorSelector = ({
                   }),
                   menu: (provided) => ({
                     ...provided,
-                    visibility:
-                      searchParam && suggestions.length > 0
-                        ? "visible"
-                        : "hidden",
+                    visibility: hasVendorSuggestions ? "visible" : "hidden",
                   }),
                   dropdownIndicator: (provided) => ({
                     ...provided,
@@ -238,7 +258,7 @@ const VendorSelector = ({
                 }}
               >
                 <span style={{ color: "transparent" }}>{searchParam}</span>
-                {searchParam && suggestions.length > 0 ? (
+                {hasVendorSuggestions ? (
                   <span style={{ color: "#824EF2" }}>
                     {suggestions[0].label.substring(searchParam.length)}
                   </span>
@@ -253,8 +273,8 @@ const VendorSelector = ({
           </VStack>
         </FormControl>
         <CompassButton
-          active={!!values.vendor_id}
-          disabled={!values.vendor_id || isShowingSuggestions === "showing"}
+          active={!!values.vendor_id || hasVendorSuggestions}
+          disabled={!values.vendor_id || isShowingDictSuggestions === "showing"}
           onRefreshSuggestions={() => onVendorSelected(values.vendor_id)}
         />
       </HStack>
