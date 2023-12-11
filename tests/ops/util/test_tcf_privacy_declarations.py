@@ -66,6 +66,17 @@ class TestBaseTCFQuery:
         purpose_7_decl.flexible_legal_basis_for_processing = False
         purpose_7_decl.save(db)
 
+        # and override purpose 9 declaration to have an inflexible legal basis -
+        # we'll ensure this can be overriden for exclusion even with inflexible legal basis
+
+        purpose_9_decl = next(
+            decl
+            for decl in emerse_system.privacy_declarations
+            if decl.data_use == "analytics.reporting.campaign_insights"
+        )
+        purpose_9_decl.flexible_legal_basis_for_processing = False
+        purpose_9_decl.save(db)
+
         # For more test setup, create some purpose overrides
 
         # Purpose override that matches the legal basis already on the system's declaration
@@ -113,6 +124,16 @@ class TestBaseTCFQuery:
             },
         )
 
+        # Purpose override to mark purpose 9 as excluded. purpose 9 has been marked as inflexible legal basis.
+        # we ensure that it's still excluded even with an inflexible legal basis.
+        TCFPurposeOverride.create(
+            db,
+            data={
+                "purpose": 9,
+                "is_included": False,
+            },
+        )
+
         declarations, _, _ = get_tcf_base_query_and_filters(db)
 
         legal_basis_overrides = {
@@ -125,8 +146,8 @@ class TestBaseTCFQuery:
         # Purpose 2 has been removed altogether
         # Purpose 4 Legal Basis has been overridden to Legitimate Interests legal basis
         # Purpose 7's override wasn't applied because that declaration was marked as inflexible.
+        # Purpose 9 has been removed altogether - even with an inflexible legal basis
         assert legal_basis_overrides == {
-            9: "Legitimate interests",
             8: "Legitimate interests",
             7: "Legitimate interests",
             4: "Legitimate interests",
@@ -140,7 +161,6 @@ class TestBaseTCFQuery:
             if declaration.purpose
         }
         assert original_legal_basis == {
-            9: "Legitimate interests",
             8: "Legitimate interests",
             7: "Legitimate interests",
             4: "Consent",
@@ -148,5 +168,5 @@ class TestBaseTCFQuery:
             1: "Consent",
         }
 
-        # The three declarations on Emerse with data uses mapping to Purpose 2 have been excluded
-        assert declarations.count() == 10
+        # The 4 declarations on Emerse with data uses mapping to Purposes 2 and 9 have been excluded
+        assert declarations.count() == 9
