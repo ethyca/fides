@@ -60,7 +60,11 @@ describe("setGppNoticesProvidedFromExperience", () => {
   it("does nothing for region outside of US", () => {
     const cmpApi = new CmpApi(1, 1);
     const experience = mockPrivacyExperience({ region: "fr" });
-    setGppNoticesProvidedFromExperience({ cmpApi, experience });
+    const sectionsChanged = setGppNoticesProvidedFromExperience({
+      cmpApi,
+      experience,
+    });
+    expect(sectionsChanged).toEqual([]);
     expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
     expect(cmpApi.getSection("usnatv1")).toBe(null);
   });
@@ -68,7 +72,11 @@ describe("setGppNoticesProvidedFromExperience", () => {
   it("sets all as not provided when there are no notices", () => {
     const cmpApi = new CmpApi(1, 1);
     const experience = mockPrivacyExperience();
-    setGppNoticesProvidedFromExperience({ cmpApi, experience });
+    const sectionsChanged = setGppNoticesProvidedFromExperience({
+      cmpApi,
+      experience,
+    });
+    expect(sectionsChanged).toEqual(["usnatv1"]);
     const section = cmpApi.getSection("usnatv1");
     // 2 means notice was not provided. All other consent fields should be 0 (N/A)
     expect(section).toEqual({
@@ -102,7 +110,11 @@ describe("setGppNoticesProvidedFromExperience", () => {
       { notice_key: "sensitive_personal_data_sharing" },
     ] as PrivacyNotice[];
     const experience = mockPrivacyExperience({ privacy_notices: notices });
-    setGppNoticesProvidedFromExperience({ cmpApi, experience });
+    const sectionsChanged = setGppNoticesProvidedFromExperience({
+      cmpApi,
+      experience,
+    });
+    expect(sectionsChanged).toEqual(["usnatv1"]);
     const section = cmpApi.getSection("usnatv1");
     expect(section).toEqual({
       Version: 1,
@@ -137,15 +149,24 @@ describe("setGppOptOutsFromCookie", () => {
   it("does nothing for region outside of US", () => {
     const cmpApi = new CmpApi(1, 1);
     const cookie = mockFidesCookie();
-    setGppOptOutsFromCookie({ cmpApi, cookie, region: "fr" });
+    const sectionsChanged = setGppOptOutsFromCookie({
+      cmpApi,
+      cookie,
+      region: "fr",
+    });
+    expect(sectionsChanged).toEqual([]);
     expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
   });
 
   it("sets all as 0 when there is no consent object in cookie", () => {
     const cmpApi = new CmpApi(1, 1);
     const cookie = mockFidesCookie({ consent: {} });
-    setGppOptOutsFromCookie({ cmpApi, cookie, region: "us" });
-
+    const sectionsChanged = setGppOptOutsFromCookie({
+      cmpApi,
+      cookie,
+      region: "us",
+    });
+    expect(sectionsChanged).toEqual(["usnatv1"]);
     const section = cmpApi.getSection("usnatv1");
     expect(section).toEqual({
       Version: 1,

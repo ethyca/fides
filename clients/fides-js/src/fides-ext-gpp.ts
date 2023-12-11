@@ -45,17 +45,20 @@ declare global {
 }
 
 /**
- * Wrapper around setting a TC string on the CMP API object
+ * Wrapper around setting a TC string on the CMP API object.
+ * Returns whether or not the TC string was set.
  * @param event: FidesEvent
  * @param cmpApi: the CMP API model
  */
 const setTcString = (event: FidesEvent, cmpApi: CmpApi) => {
   const tcString = extractTCStringForCmpApi(event);
-  if (tcString) {
-    // Workaround for bug in base library https://github.com/IABTechLab/iabgpp-es/issues/35
-    cmpApi.setFieldValueBySectionId(TCF_SECTION_ID, "CmpId", ETHYCA_CMP_ID);
-    cmpApi.setSectionStringById(TCF_SECTION_ID, tcString);
+  if (!tcString) {
+    return false;
   }
+  // Workaround for bug in base library https://github.com/IABTechLab/iabgpp-es/issues/35
+  cmpApi.setFieldValueBySectionId(TCF_SECTION_ID, "CmpId", ETHYCA_CMP_ID);
+  cmpApi.setSectionStringById(TCF_SECTION_ID, tcString);
+  return true;
 };
 
 export const initializeGppCmpApi = () => {
@@ -101,16 +104,21 @@ export const initializeGppCmpApi = () => {
   window.addEventListener("FidesUpdated", (event) => {
     // In our flows, whenever FidesUpdated fires, the UI has closed
     cmpApi.setCmpDisplayStatus(CmpDisplayStatus.HIDDEN);
-    setTcString(event, cmpApi);
-    cmpApi.fireSectionChange("tcfeuv2");
-    cmpApi.setSignalStatus(SignalStatus.READY);
+    const tcSet = setTcString(event, cmpApi);
+    if (tcSet) {
+      cmpApi.fireSectionChange("tcfeuv2");
+    }
 
     // Set US GPP opt outs
-    setGppOptOutsFromCookie({
+    const sectionsChanged = setGppOptOutsFromCookie({
       cmpApi,
       cookie: event.detail,
       region: window.Fides.experience?.region ?? "",
     });
+    sectionsChanged.forEach((sectionName) => {
+      cmpApi.fireSectionChange(sectionName);
+    });
+    cmpApi.setSignalStatus(SignalStatus.READY);
   });
 };
 
