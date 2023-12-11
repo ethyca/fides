@@ -2,9 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { LegalBasisEnum } from "./LegalBasisEnum";
-import type { SpecialCategoriesEnum } from "./SpecialCategoriesEnum";
-
 /**
  * The DataUse resource model.
  */
@@ -43,26 +40,6 @@ export type DataUse = {
    */
   description?: string;
   parent_key?: string;
-  /**
-   * Deprecated. The legal basis category of which the data use falls under. This field is used as part of the creation of an exportable data map.
-   */
-  legal_basis?: LegalBasisEnum;
-  /**
-   * Deprecated. The special category for processing of which the data use falls under. This field is used as part of the creation of an exportable data map.
-   */
-  special_category?: SpecialCategoriesEnum;
-  /**
-   * Deprecated. An array of recipients when sharing personal data outside of your organization.
-   */
-  recipients?: Array<string>;
-  /**
-   * Deprecated. A boolean representation of if the legal basis used is `Legitimate Interest`. Validated at run time and looks for a `legitimate_interest_impact_assessment` to exist if true.
-   */
-  legitimate_interest?: boolean;
-  /**
-   * Deprecated. A url pointing to the legitimate interest impact assessment. Required if the legal bases used is legitimate interest.
-   */
-  legitimate_interest_impact_assessment?: string;
   /**
    * Indicates whether the resource is currently 'active'.
    */

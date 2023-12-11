@@ -74,14 +74,6 @@ export type Dataset = {
   fidesctl_meta: {
     resource_id: string;
   };
-  joint_controller: {
-    name: string;
-    address: string;
-    email: string;
-    phone: string;
-  };
-  retention: string;
-  third_country_transfers: string[];
   collections: DatasetCollection[];
   fidesops_meta: {
     after: string[];

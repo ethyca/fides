@@ -8,7 +8,6 @@
     "meta": null,
     "fidesctl_meta": null,
     "system_type": "Service",
-    "data_responsibility_title": "Controller",
     "privacy_declarations": [
       {
         "name": "Store system data.",
@@ -31,14 +30,7 @@
         "id": "pri_bc6e6efe-f122-3e33-ac9a-732ae8b437bb"
       }
     ],
-    "joint_controller": null,
-    "third_country_transfers": null,
     "administrating_department": "Not defined",
-    "data_protection_impact_assessment": {
-      "is_required": false,
-      "progress": null,
-      "link": null
-    },
     "ingress": [],
     "egress": [],
     "cookies": [
@@ -58,7 +50,6 @@
     "meta": null,
     "fidesctl_meta": null,
     "system_type": "Service",
-    "data_responsibility_title": "Controller",
     "egress": null,
     "ingress": [
       {
@@ -79,14 +70,7 @@
         "id": "pri_ac9d4dfb-d033-4b06-bc7f-968df8d125ff"
       }
     ],
-    "joint_controller": null,
-    "third_country_transfers": ["USA", "CAN"],
     "administrating_department": "Engineering",
-    "data_protection_impact_assessment": {
-      "is_required": true,
-      "progress": "Complete",
-      "link": "https://example.org/analytics_system_data_protection_impact_assessment"
-    },
     "cookies": []
   },
   {
@@ -98,7 +82,6 @@
     "meta": null,
     "fidesctl_meta": null,
     "system_type": "Service",
-    "data_responsibility_title": "Processor",
     "egress": [
       {
         "fides_key": "demo_analytics_system",
@@ -119,14 +102,7 @@
         "id": "pri_06430a1c-1365-422e-90a7-d444ddb32181"
       }
     ],
-    "joint_controller": null,
-    "third_country_transfers": null,
     "administrating_department": "Marketing",
-    "data_protection_impact_assessment": {
-      "is_required": false,
-      "progress": null,
-      "link": null
-    },
     "cookies": []
   }
 ]

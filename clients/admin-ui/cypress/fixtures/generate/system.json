@@ -12,16 +12,8 @@
         "endpoint_port": "5432"
       },
       "system_type": "rds_cluster",
-      "data_responsibility_title": "Controller",
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "example-system-1",

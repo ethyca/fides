@@ -217,19 +217,6 @@ class DataUse(Base, FidesBase):
     __tablename__ = "ctl_data_uses"
 
     parent_key = Column(Text)
-    legal_basis = Column(
-        Text
-    )  # Deprecated in favor of PrivacyDeclaration.legal_basis_for_processing
-    special_category = Column(
-        Text
-    )  # Deprecated in favor of PrivacyDeclaration.special_category_legal_basis
-    recipients = Column(
-        ARRAY(String)
-    )  # Deprecated in favor of PrivacyDeclaration.third_parties
-    legitimate_interest = Column(BOOLEAN, nullable=True)  # Deprecated
-    legitimate_interest_impact_assessment = Column(
-        String, nullable=True
-    )  # Deprecated in favor of PrivacyDeclaration.legal_basis_for_processing
     active = Column(BOOLEAN, default=True, nullable=False)
 
     # Default Fields
@@ -271,15 +258,6 @@ class Dataset(Base, FidesBase):
     data_categories = Column(ARRAY(String))
     collections = Column(JSON)
     fides_meta = Column(JSON)
-    joint_controller = Column(
-        PGEncryptedString, nullable=True
-    )  # Deprecated in favor of Systems.joint_controller_info
-    retention = Column(
-        String
-    )  # Deprecated in favor of PrivacyDeclaration.retention_period
-    third_country_transfers = Column(
-        ARRAY(String)
-    )  # Deprecated in favor of Systems.does_international_transfers
 
     @classmethod
     def create_from_dataset_dict(cls, db: Session, dataset: dict) -> "Dataset":
@@ -345,19 +323,7 @@ class System(Base, FidesBase):
     meta = Column(JSON)
     fidesctl_meta = Column(JSON)
     system_type = Column(String)
-    joint_controller = Column(
-        PGEncryptedString, nullable=True
-    )  # Deprecated in favor of System.joint_controller_info
-    data_responsibility_title = Column(
-        String
-    )  # Deprecated in favor of System.responsibility
-    third_country_transfers = Column(
-        ARRAY(String)
-    )  # Deprecated in favor of System.does_international_transfers
     administrating_department = Column(String)
-    data_protection_impact_assessment = Column(
-        JSON
-    )  # Deprecated in favor of System.requires_data_protection_assessments, System.dpa_location, and System.dpa_progress
     egress = Column(JSON)
     ingress = Column(JSON)
 
@@ -578,12 +544,8 @@ class SystemModel(BaseModel):
     meta: Optional[Dict[str, Any]]
     fidesctl_meta: Optional[Dict[str, Any]]
     system_type: str
-    data_responsibility_title: Optional[str]
-    joint_controller: Optional[str]
-    third_country_transfers: Optional[List[str]]
     privacy_declarations: Optional[Dict[str, Any]]
     administrating_department: Optional[str]
-    data_protection_impact_assessment: Optional[Dict[str, Any]]
     egress: Optional[Dict[str, Any]]
     ingress: Optional[Dict[str, Any]]
     value: Optional[List[Any]]

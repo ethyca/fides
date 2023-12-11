@@ -9,7 +9,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "external", "type": "system", "data_categories": null },
         {
@@ -36,14 +35,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "api-service",
@@ -54,7 +46,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "kube-dns", "type": "system", "data_categories": null },
         {
@@ -148,14 +139,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "datadog-agent",
@@ -166,7 +150,6 @@
       "meta": { "kubernetes_namespace": "datadog" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "fides-redis",
@@ -225,14 +208,7 @@
         { "fides_key": "kube-dns", "type": "system", "data_categories": null }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "fidesctl-demo",
@@ -243,7 +219,6 @@
       "meta": { "kubernetes_namespace": "default" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "external", "type": "system", "data_categories": null },
         { "fides_key": "kube-dns", "type": "system", "data_categories": null },
@@ -261,14 +236,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "pl-nats",
@@ -279,7 +247,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "external", "type": "system", "data_categories": null },
         {
@@ -343,14 +310,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "vzconn-service",
@@ -361,7 +321,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "pl-nats", "type": "system", "data_categories": null },
         {
@@ -380,14 +339,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "cloud-proxy-service",
@@ -398,7 +350,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "external", "type": "system", "data_categories": null },
         { "fides_key": "kube-dns", "type": "system", "data_categories": null },
@@ -416,14 +367,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "scriptmgr-service",
@@ -434,21 +378,13 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "kube-dns", "type": "system", "data_categories": null },
         { "fides_key": "external", "type": "system", "data_categories": null }
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "cron-script-service",
@@ -459,7 +395,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "vzmgr-service",
@@ -493,14 +428,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "postgres",
@@ -511,7 +439,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "artifact-tracker-service",
@@ -567,14 +494,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "fides-redis",
@@ -585,7 +505,6 @@
       "meta": { "kubernetes_namespace": "default" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "fidesops-demo",
@@ -611,14 +530,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "fidesops-000-fidesops",
@@ -629,20 +541,12 @@
       "meta": { "kubernetes_namespace": "default" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "external", "type": "system", "data_categories": null }
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "fides-external-dns-staging",
@@ -653,7 +557,6 @@
       "meta": { "kubernetes_namespace": "default" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "datadog-agent",
@@ -676,14 +579,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "pl-elastic-es-http",
@@ -694,7 +590,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "external", "type": "system", "data_categories": null },
         {
@@ -736,14 +631,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "profile-service",
@@ -754,7 +642,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "api-service",
@@ -797,14 +684,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "vizier-metadata-svc",
@@ -815,7 +695,6 @@
       "meta": { "kubernetes_namespace": "pl" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "vizier-query-broker-svc",
@@ -845,14 +724,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "elastic-webhook-server",
@@ -863,7 +735,6 @@
       "meta": { "kubernetes_namespace": "elastic-system" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "elastic-webhook-server",
@@ -900,14 +771,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "fidesops-demo-pc",
@@ -918,20 +782,12 @@
       "meta": { "kubernetes_namespace": "default" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "external", "type": "system", "data_categories": null }
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "aws-load-balancer-webhook-service",
@@ -942,7 +798,6 @@
       "meta": { "kubernetes_namespace": "kube-system" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "kube-dns", "type": "system", "data_categories": null },
         { "fides_key": "external", "type": "system", "data_categories": null },
@@ -950,14 +805,7 @@
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "fidesops-demo",
@@ -968,7 +816,6 @@
       "meta": { "kubernetes_namespace": "default" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "demo-db-demo-data",
@@ -1006,14 +853,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "datadog-cluster-agent",
@@ -1024,7 +864,6 @@
       "meta": { "kubernetes_namespace": "datadog" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "kubernetes",
@@ -1047,14 +886,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "vizier-cloud-connector-svc",
@@ -1065,7 +897,6 @@
       "meta": { "kubernetes_namespace": "pl" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "vizier-query-broker-svc",
@@ -1096,14 +927,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "fidesops-plus-000-fidesops-plus",
@@ -1114,21 +938,13 @@
       "meta": { "kubernetes_namespace": "default" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "kube-dns", "type": "system", "data_categories": null },
         { "fides_key": "external", "type": "system", "data_categories": null }
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "fidesctl-postgres",
@@ -1139,7 +955,6 @@
       "meta": { "kubernetes_namespace": "default" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "fidesctl-demo",
@@ -1155,14 +970,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "config-manager-service",
@@ -1173,7 +981,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "artifact-tracker-service",
@@ -1215,14 +1022,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "kelvin-service",
@@ -1233,7 +1033,6 @@
       "meta": { "kubernetes_namespace": "pl" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "external", "type": "system", "data_categories": null },
         {
@@ -1252,14 +1051,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "kratos",
@@ -1270,7 +1062,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "postgres", "type": "system", "data_categories": null },
         { "fides_key": "kube-dns", "type": "system", "data_categories": null },
@@ -1282,14 +1073,7 @@
         { "fides_key": "kratos", "type": "system", "data_categories": null }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "vzmgr-service",
@@ -1300,7 +1084,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "vzconn-service",
@@ -1365,14 +1148,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "artifact-tracker-service",
@@ -1383,7 +1159,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "config-manager-service",
@@ -1421,14 +1196,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "auth-service",
@@ -1439,7 +1207,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "profile-service",
@@ -1472,14 +1239,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "project-manager-service",
@@ -1490,7 +1250,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "profile-service",
@@ -1508,14 +1267,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "hydra",
@@ -1526,7 +1278,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "external", "type": "system", "data_categories": null },
         { "fides_key": "hydra", "type": "system", "data_categories": null },
@@ -1537,14 +1288,7 @@
         { "fides_key": "hydra", "type": "system", "data_categories": null }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "fidesctl-000-fidesctl",
@@ -1555,21 +1299,13 @@
       "meta": { "kubernetes_namespace": "default" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "external", "type": "system", "data_categories": null },
         { "fides_key": "kube-dns", "type": "system", "data_categories": null }
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "vizier-query-broker-svc",
@@ -1580,7 +1316,6 @@
       "meta": { "kubernetes_namespace": "pl" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "vizier-metadata-svc",
@@ -1629,14 +1364,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "kube-dns",
@@ -1647,7 +1375,6 @@
       "meta": { "kubernetes_namespace": "kube-system" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "fidesops-postgres",
@@ -1743,14 +1470,7 @@
         { "fides_key": "kube-dns", "type": "system", "data_categories": null }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "plugin-service",
@@ -1761,7 +1481,6 @@
       "meta": { "kubernetes_namespace": "plc" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "external", "type": "system", "data_categories": null },
         { "fides_key": "postgres", "type": "system", "data_categories": null },
@@ -1795,14 +1514,7 @@
         { "fides_key": "postgres", "type": "system", "data_categories": null }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "oauth-oauth",
@@ -1813,20 +1525,12 @@
       "meta": { "kubernetes_namespace": "default" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "external", "type": "system", "data_categories": null }
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "pixie-operator-index",
@@ -1837,7 +1541,6 @@
       "meta": { "kubernetes_namespace": "px-operator" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "external", "type": "system", "data_categories": null },
         {
@@ -1854,14 +1557,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "demo-db-demo-data",
@@ -1872,7 +1568,6 @@
       "meta": { "kubernetes_namespace": "default" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "fidesops-demo",
@@ -1888,14 +1583,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "fidesctl-demo-cls",
@@ -1906,20 +1594,12 @@
       "meta": { "kubernetes_namespace": "default" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "external", "type": "system", "data_categories": null }
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "fidesops-postgres",
@@ -1930,7 +1610,6 @@
       "meta": { "kubernetes_namespace": "default" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         {
           "fides_key": "fidesops-postgres",
@@ -1957,14 +1636,7 @@
         }
       ],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     },
     {
       "fides_key": "fides-dev-tools",
@@ -1975,20 +1647,12 @@
       "meta": { "kubernetes_namespace": "default" },
       "fidesctl_meta": null,
       "system_type": "Service",
-      "data_responsibility_title": "Controller",
       "egress": [
         { "fides_key": "external", "type": "system", "data_categories": null }
       ],
       "ingress": [],
       "privacy_declarations": [],
-      "joint_controller": null,
-      "third_country_transfers": null,
-      "administrating_department": "Not defined",
-      "data_protection_impact_assessment": {
-        "is_required": false,
-        "progress": null,
-        "link": null
-      }
+      "administrating_department": "Not defined"
     }
   ]
 }

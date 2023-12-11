@@ -42,9 +42,6 @@ def test_rich_data_use() -> Generator:
     yield [
         DataUse(
             fides_key="test_data_use",
-            recipients=["test"],
-            legal_basis="Consent",
-            special_category="Consent",
         )
     ]
 
