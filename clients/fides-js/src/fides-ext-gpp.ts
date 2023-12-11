@@ -24,7 +24,7 @@ import type { OverrideOptions } from "./lib/consent-types";
 import { GppFunction } from "./lib/gpp/types";
 import { FidesEvent } from "./fides";
 import {
-  setGppNoticesProvided,
+  setGppNoticesProvidedFromExperience,
   setGppOptOutsFromCookie,
 } from "./lib/gpp/us-notices";
 
@@ -80,7 +80,10 @@ export const initializeGppCmpApi = () => {
     cmpApi.setCmpDisplayStatus(CmpDisplayStatus.VISIBLE);
 
     // Set US GPP notice fields
-    setGppNoticesProvided(cmpApi);
+    const { experience } = window.Fides;
+    if (isPrivacyExperience(experience)) {
+      setGppNoticesProvidedFromExperience({ cmpApi, experience });
+    }
   });
 
   window.addEventListener("FidesModalClosed", (event) => {
@@ -103,7 +106,11 @@ export const initializeGppCmpApi = () => {
     cmpApi.setSignalStatus(SignalStatus.READY);
 
     // Set US GPP opt outs
-    setGppOptOutsFromCookie(cmpApi, event.detail);
+    setGppOptOutsFromCookie({
+      cmpApi,
+      cookie: event.detail,
+      region: window.Fides.experience?.region ?? "",
+    });
   });
 };
 

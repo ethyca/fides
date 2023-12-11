@@ -3,18 +3,21 @@
  */
 
 import { CmpApi } from "@iabgpp/cmpapi";
-import { isPrivacyExperience } from "../consent-utils";
+
 import { FidesCookie } from "../cookie";
 import {
   FIDES_REGION_TO_GPP_SECTION_ID,
   NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS,
 } from "./constants";
+import { PrivacyExperience } from "../consent-types";
 
-export const setGppNoticesProvided = (cmpApi: CmpApi) => {
-  const { experience } = window.Fides;
-  if (!isPrivacyExperience(experience)) {
-    return;
-  }
+export const setGppNoticesProvidedFromExperience = ({
+  cmpApi,
+  experience,
+}: {
+  cmpApi: CmpApi;
+  experience: PrivacyExperience;
+}) => {
   const { privacy_notices: notices, region } = experience;
 
   Object.entries(NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS).forEach(
@@ -37,15 +40,15 @@ export const setGppNoticesProvided = (cmpApi: CmpApi) => {
   );
 };
 
-export const setGppOptOutsFromCookie = (
-  cmpApi: CmpApi,
-  cookie: FidesCookie
-) => {
-  const { experience } = window.Fides;
-  if (!isPrivacyExperience(experience)) {
-    return;
-  }
-  const { region } = experience;
+export const setGppOptOutsFromCookie = ({
+  cmpApi,
+  cookie,
+  region,
+}: {
+  cmpApi: CmpApi;
+  cookie: FidesCookie;
+  region: string;
+}) => {
   const { consent } = cookie;
 
   Object.entries(NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS).forEach(

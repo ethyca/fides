@@ -30,22 +30,19 @@ type NoticeKeyToFidesRegionGppFields = Record<string, FidesRegionToGppFields>;
  */
 export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFields =
   {
-    sales_sharing_targeted_advertising: {
+    data_sales_and_sharing: {
+      // QUESTION: should national be here AND in "data_sales" + "data_sharing"
       us: {
         gpp_notice_fields: [
           UsNatV1Field.SALE_OPT_OUT_NOTICE,
           UsNatV1Field.SHARING_OPT_OUT_NOTICE,
-          UsNatV1Field.TARGETED_ADVERTISING_OPT_OUT_NOTICE,
           UsNatV1Field.SHARING_NOTICE,
         ],
         gpp_mechanism_fields: [
           UsNatV1Field.SALE_OPT_OUT,
           UsNatV1Field.SHARING_OPT_OUT,
-          UsNatV1Field.TARGETED_ADVERTISING_OPT_OUT,
         ],
       },
-    },
-    data_sales_and_sharing: {
       us_ca: {
         gpp_notice_fields: [
           UsCaV1Field.SALE_OPT_OUT_NOTICE,
@@ -58,15 +55,13 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
       },
     },
     targeted_advertising: {
+      us: {
+        gpp_notice_fields: [UsNatV1Field.TARGETED_ADVERTISING_OPT_OUT_NOTICE],
+        gpp_mechanism_fields: [UsNatV1Field.TARGETED_ADVERTISING_OPT_OUT],
+      },
       us_co: {
-        gpp_notice_fields: [
-          UsCoV1Field.SALE_OPT_OUT_NOTICE,
-          UsCoV1Field.TARGETED_ADVERTISING_OPT_OUT_NOTICE,
-        ],
-        gpp_mechanism_fields: [
-          UsCoV1Field.SALE_OPT_OUT,
-          UsCoV1Field.TARGETED_ADVERTISING_OPT_OUT,
-        ],
+        gpp_notice_fields: [UsCoV1Field.TARGETED_ADVERTISING_OPT_OUT_NOTICE],
+        gpp_mechanism_fields: [UsCoV1Field.TARGETED_ADVERTISING_OPT_OUT],
       },
       us_ct: {
         gpp_notice_fields: [UsCtV1Field.TARGETED_ADVERTISING_OPT_OUT_NOTICE],
@@ -77,8 +72,8 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
         gpp_mechanism_fields: [UsUtV1Field.TARGETED_ADVERTISING_OPT_OUT],
       },
       us_va: {
-        gpp_notice_fields: [],
-        gpp_mechanism_fields: [],
+        gpp_notice_fields: [UsVaV1Field.TARGETED_ADVERTISING_OPT_OUT_NOTICE],
+        gpp_mechanism_fields: [UsVaV1Field.TARGETED_ADVERTISING_OPT_OUT],
       },
       us_ia: {
         // DEFER: Iowa isn't part of the GPP spec yet
@@ -87,6 +82,11 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
       },
     },
     data_sharing: {
+      // See question above: L34
+      //   us: {
+      //     gpp_notice_fields: [UsNatV1Field.SHARING_NOTICE],
+      //     gpp_mechanism_fields: [],
+      //   },
       us_ut: {
         gpp_notice_fields: [UsUtV1Field.SHARING_NOTICE],
         gpp_mechanism_fields: [],
@@ -96,7 +96,7 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
         gpp_mechanism_fields: [],
       },
       us_co: {
-        gpp_notice_fields: [],
+        gpp_notice_fields: [UsCoV1Field.SHARING_NOTICE],
         gpp_mechanism_fields: [],
       },
       us_ct: {
@@ -105,9 +105,14 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
       },
     },
     data_sales: {
+      // See question above: L34
+      //   us: {
+      //     gpp_notice_fields: [UsNatV1Field.SALE_OPT_OUT_NOTICE],
+      //     gpp_mechanism_fields: [UsNatV1Field.SALE_OPT_OUT],
+      //   },
       us_co: {
-        gpp_notice_fields: [],
-        gpp_mechanism_fields: [],
+        gpp_notice_fields: [UsCoV1Field.SALE_OPT_OUT_NOTICE],
+        gpp_mechanism_fields: [UsCoV1Field.SALE_OPT_OUT],
       },
       us_ct: {
         gpp_notice_fields: [UsCtV1Field.SALE_OPT_OUT_NOTICE],
@@ -128,6 +133,17 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
       },
     },
     sensitive_personal_data_sharing: {
+      us: {
+        gpp_notice_fields: [
+          UsNatV1Field.SENSITIVE_DATA_LIMIT_USE_NOTICE,
+          UsNatV1Field.SENSITIVE_DATA_PROCESSING_OPT_OUT_NOTICE,
+        ],
+        gpp_mechanism_fields: [
+          UsNatV1Field.SENSITIVE_DATA_PROCESSING,
+          UsNatV1Field.PERSONAL_DATA_CONSENTS,
+          UsNatV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
+        ],
+      },
       us_ca: {
         gpp_notice_fields: [UsCaV1Field.SENSITIVE_DATA_LIMIT_USE_NOTICE],
         gpp_mechanism_fields: [
