@@ -18,6 +18,7 @@ import {
   PaginationBar,
   TableActionBar,
   TableSkeletonLoader,
+  GroupCountBadgeCell,
   useClientSidePagination,
 } from "common/table/v2";
 import { useEffect, useMemo, useState } from "react";
@@ -211,7 +212,7 @@ export const GroupedConsentManagementTable = () => {
       }),
       columnHelper.accessor((row) => row.dataUse, {
         id: "dataUse",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => <BadgeCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
         meta: {
           width: "175px",
@@ -219,7 +220,9 @@ export const GroupedConsentManagementTable = () => {
       }),
       columnHelper.accessor((row) => row.dataCategories, {
         id: "dataCategories",
-        cell: (props) => <DefaultCell value={"world"} />,
+        cell: (props) => (
+          <GroupCountBadgeCell suffix="data uses" value={props.getValue()} />
+        ),
         header: (props) => (
           <DefaultHeaderCell value="Data categories" {...props} />
         ),
@@ -229,8 +232,16 @@ export const GroupedConsentManagementTable = () => {
       }),
       columnHelper.accessor((row) => row.dataSubject, {
         id: "dataSubject",
-        cell: (props) => <DefaultCell value={"hello"} />,
-        header: (props) => <DefaultHeaderCell value="Legal basis" {...props} />,
+        cell: (props) => (
+          <GroupCountBadgeCell
+            suffix="data subjects"
+            expand={true}
+            value={props.getValue()}
+          />
+        ),
+        header: (props) => (
+          <DefaultHeaderCell value="Data subject" {...props} />
+        ),
         meta: {
           width: "175px",
         },
