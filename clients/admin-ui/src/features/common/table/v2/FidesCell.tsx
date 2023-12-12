@@ -1,5 +1,6 @@
 import { Td } from "@fidesui/react";
 import { flexRender, Cell } from "@tanstack/react-table";
+import { groupCollapsed } from "console";
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
 type FidesCellProps<T> = {
@@ -8,7 +9,11 @@ type FidesCellProps<T> = {
 };
 
 export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
-  // this should be a custom grouping cell. This logic shouldn't run for every cell
+  const isTableGrouped = cell.getContext().table.getState().grouping.length > 0;
+  const groupedColumnId = isTableGrouped
+    ? cell.getContext().table.getState().grouping[0]
+    : undefined;
+  const isGroupedColumn = cell.column.id === groupedColumnId;
   let isFirstRowOfGroupedRows = false;
   let isLastRowOfGroupedRows = false;
   const rows = cell
@@ -17,8 +22,7 @@ export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
     .rows.filter((r) => !r.id.includes(":"));
   let isFirstRowOfPage = rows[0].id === cell.row.id;
   let isLastRowOfPage = rows[rows.length - 1].id == cell.row.id;
-  if (cell.getValue() && cell.column.id == "systemName") {
-    console.log(cell.getIsGrouped());
+  if (cell.getValue() && isGroupedColumn) {
     const groupRow = cell
       .getContext()
       .table.getRow(`${cell.column.id}:${cell.getValue()}`);
@@ -34,9 +38,7 @@ export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
           ? cell.column.columnDef.meta.width
           : "unset"
       }
-      borderBottomWidth={
-        isLastRowOfPage || cell.column.id === "systemName" ? "0px" : "1px"
-      }
+      borderBottomWidth={isLastRowOfPage || isGroupedColumn ? "0px" : "1px"}
       borderBottomColor="gray.200"
       borderRightWidth="1px"
       borderRightColor="gray.200"
@@ -48,8 +50,7 @@ export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
       }}
       _first={{
         borderBottomWidth:
-          (cell.getContext().table.getState().grouping.length == 0 &&
-            !isLastRowOfPage) ||
+          (!isTableGrouped && !isLastRowOfPage) ||
           (isLastRowOfGroupedRows && !isFirstRowOfPage)
             ? "1px"
             : "0px",
@@ -59,13 +60,6 @@ export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
       height="inherit"
       style={{
         ...getTableTHandTDStyles(cell.column.id),
-        background: cell.getIsGrouped()
-          ? "#0aff0082"
-          : cell.getIsAggregated()
-          ? "#ffa50078"
-          : cell.getIsPlaceholder()
-          ? "unset"
-          : "white",
       }}
       onClick={
         cell.column.columnDef.header !== "Enable" && onRowClick
@@ -75,13 +69,9 @@ export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
           : undefined
       }
     >
-      {cell.getIsGrouped() || isFirstRowOfGroupedRows
+      {!cell.getIsPlaceholder() || isFirstRowOfGroupedRows
         ? flexRender(cell.column.columnDef.cell, cell.getContext())
-        : cell.getIsAggregated()
-        ? flexRender(cell.column.columnDef.cell, cell.getContext())
-        : cell.getIsPlaceholder()
-        ? null
-        : flexRender(cell.column.columnDef.cell, cell.getContext())}
+        : null}
     </Td>
   );
 };
