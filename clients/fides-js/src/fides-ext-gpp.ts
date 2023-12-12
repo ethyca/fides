@@ -103,6 +103,12 @@ export const initializeGppCmpApi = () => {
       if (tcSet) {
         cmpApi.setApplicableSections([TcfEuV2.ID]);
       }
+      setGppNoticesProvidedFromExperience({ cmpApi, experience });
+      setGppOptOutsFromCookie({
+        cmpApi,
+        cookie: event.detail,
+        region: experience.region,
+      });
       cmpApi.setSignalStatus(SignalStatus.READY);
     }
   });

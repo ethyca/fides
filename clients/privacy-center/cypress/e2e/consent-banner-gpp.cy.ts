@@ -379,7 +379,6 @@ describe("Fides-js GPP extension", () => {
         .its("lastCall.args")
         .then((args) => {
           const [data] = args;
-          console.log({ data });
           expect(data.pingData.applicableSections).to.eql([8]);
           expect(data.pingData.supportedAPIs).to.eql(["8:usca"]);
         });
@@ -439,6 +438,37 @@ describe("Fides-js GPP extension", () => {
             });
           }
         );
+    });
+
+    it("can handle a returning user", () => {
+      const cookie = mockCookie({
+        consent: { data_sales_and_sharing: true },
+      });
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+      cy.fixture("consent/experience_gpp.json").then((payload) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: false,
+          },
+          experience: payload.items[0],
+        });
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.window().then((win) => {
+          win.__gpp("addEventListener", cy.stub().as("gppListener"));
+        });
+        // Initializes string properly
+        cy.get("@gppListener")
+          .its("args")
+          .then((args) => {
+            const [data, success] = args[0];
+            expect(success).to.eql(true);
+            // Opt in string
+            expect(data.pingData.gppString).to.eql("DBABBg~BWoAAAAA.QA");
+          });
+      });
     });
   });
 });
