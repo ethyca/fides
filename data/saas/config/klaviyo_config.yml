@@ -34,6 +34,126 @@ saas_config:
     method: GET
     path: /api/profiles
 
+endpoints:
+    - name: profile_id
+      requests:
+        read:
+          method: GET
+          path: /api/profiles
+          query_params:
+            - name: filter
+              value: equals(email,"<email>")
+          param_values:
+            - name: email
+              identity: email
+    - name: opt_out
+      requests:
+        read:
+          method: POST
+          path: /api/profile-subscription-bulk-delete-jobs/
+          body: |
+            {
+            "data": {
+            "type": "profile-subscription-bulk-delete-job",
+            "attributes": {
+            "profiles": {
+            "data": [
+            {
+            "type": "profile",
+            "attributes": {
+            "email": <email>
+            }
+            }
+            ]
+            }
+            },
+            "relationships": {
+            "list": {
+            "data": {
+            "type": "list",
+            "id": <list_id_value>
+            }
+            }
+            }
+            }
+            }
+          param_values:
+            - name: email
+              identity: email
+            - name: list_id_value
+              references:
+                - list_id
+    - name: opt_in
+      requests:
+        read:
+          method: POST
+          path: /api/profile-subscription-bulk-create-jobs/
+          body: |
+            {
+            "data": {
+            "type": "profile-subscription-bulk-create-job",
+            "attributes": {
+            "custom_source": "API Event",
+            "profiles": {
+            "data": [
+            {
+            "type": "profile",
+            "id": "<profile_id_data_id>",
+            "attributes": {
+            "email": "<email>",
+            "subscriptions": {
+            "email": {
+            "marketing": {
+            "consent": "SUBSCRIBED"
+            }
+            },
+            "sms": {
+            "marketing": {
+            "consent": "SUBSCRIBED"
+            }
+            }
+            }
+            }
+            }
+            ]
+            }
+            },
+            "relationships": {
+            "list": {
+            "data": {
+            "type": "list",
+            "id": "<contact_list_data_id>"
+            }
+            }
+            }
+            }
+            }
+            '
+          param_values:
+            - name: email
+              identity: email
+            - name: profile_id_data_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: profile_id.data.id
+                  direction: from
+            - name: contact_list_data_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: contact_list.data.id
+                  direction: from
+    - name: contact_list
+      requests:
+        read:
+          method: GET
+          path: /api/lists
+          pagination:
+            strategy: cursor
+            configuration:
+              cursor_param: page
+              field: cursor
+
+
   endpoints:
     - name: profiles
       requests:
