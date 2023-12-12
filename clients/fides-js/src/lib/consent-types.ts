@@ -83,9 +83,6 @@ export type FidesOptions = {
   // Allows for explicit overrides on various internal API calls made from Fides.
   apiOptions: FidesApiOptions | null;
 
-  // Whether or the GPP extension should be loaded
-  gppEnabled: boolean;
-
   // What the "GDPR Applies" field of TCF should default to
   fidesTcfGdprApplies: boolean;
 

@@ -23,7 +23,7 @@ export const setGppNoticesProvidedFromExperience = ({
   cmpApi: CmpApi;
   experience: PrivacyExperience;
 }) => {
-  const sectionsChanged = new Set<string>();
+  const sectionsChanged = new Set<{ name: string; id: number }>();
   const { privacy_notices: notices, region } = experience;
 
   Object.entries(NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS).forEach(
@@ -35,10 +35,9 @@ export const setGppNoticesProvidedFromExperience = ({
           (n) => n.notice_key === noticeKey
         );
         // 1 = Yes notice was provided, 2 = No, notice was not provided.
-        // QUESTION: do we ever put 0 here?
         const value = experienceHasNotice ? 1 : 2;
         const gppSection = FIDES_REGION_TO_GPP_SECTION[region];
-        sectionsChanged.add(gppSection.name);
+        sectionsChanged.add(gppSection);
         fields.forEach((field) => {
           cmpApi.setFieldValue(gppSection.name, field, value);
         });
@@ -63,7 +62,7 @@ export const setGppOptOutsFromCookie = ({
   cookie: FidesCookie;
   region: string;
 }) => {
-  const sectionsChanged = new Set<string>();
+  const sectionsChanged = new Set<{ name: string; id: number }>();
   const { consent } = cookie;
 
   Object.entries(NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS).forEach(
@@ -74,7 +73,7 @@ export const setGppOptOutsFromCookie = ({
         const consentValue = consent[noticeKey];
 
         const gppSection = FIDES_REGION_TO_GPP_SECTION[region];
-        sectionsChanged.add(gppSection.name);
+        sectionsChanged.add(gppSection);
         fields.forEach((fieldObj) => {
           // In general, 0 = N/A, 1 = Opted out, 2 = Did not opt out
           let value = fieldObj.not_available; // if consentValue is undefined, we'll mark as N/A

@@ -11,7 +11,6 @@ import {
 } from "@iabgpp/cmpapi";
 import { GPP_FRAME_NAME, addFrame, locateFrame } from "../cmp-stubs";
 import { GppCallback, GppFunction } from "./types";
-import { SUPPORTED_APIS } from "./constants";
 
 /* eslint-disable no-underscore-dangle */
 
@@ -52,10 +51,10 @@ export const makeStub = () => {
       cmpStatus: CmpStatus.STUB, // possible values: stub, loading, loaded, error
       cmpDisplayStatus: CmpDisplayStatus.HIDDEN, // possible values: hidden, visible, disabled
       signalStatus: SignalStatus.NOT_READY, // possible values: not ready, ready
-      supportedAPIs: SUPPORTED_APIS,
+      supportedAPIs: [],
       cmpId: 0, // IAB assigned CMP ID, may be 0 during stub/loading
       sectionList: [],
-      applicableSections: [],
+      applicableSections: [-1],
       gppString: "",
       parsedSections: {},
     };

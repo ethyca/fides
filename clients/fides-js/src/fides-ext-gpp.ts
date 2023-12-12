@@ -64,11 +64,13 @@ const setTcString = (event: FidesEvent, cmpApi: CmpApi) => {
   return true;
 };
 
-/** From our options, derive what sections of GPP are applicable */
-const getApplicableSections = () => {
-  const sections: number[] = [];
+/** From our options, derive what APIs of GPP are applicable */
+const getSupportedApis = () => {
+  const supportedApis: string[] = [];
+  // QUESTION: or should this come from GPP config?
   if (window.Fides.options.tcfEnabled) {
-    sections.push(TcfEuV2.ID);
+    supportedApis.push(`${TcfEuV2.ID}:${TcfEuV2.NAME}`);
+    return supportedApis;
   }
   if (isPrivacyExperience(window.Fides.experience)) {
     const { gpp_settings: gppSettings } = window.Fides.experience;
@@ -77,27 +79,30 @@ const getApplicableSections = () => {
       gppSettings.regions.forEach((region) => {
         const section = gppSections.find((d) => d.prefix === region);
         if (section) {
-          sections.push(section.id);
+          supportedApis.push(`${section.id}:${section.prefix}`);
         }
       });
     }
   }
-  return sections;
+  return supportedApis;
 };
 
 export const initializeGppCmpApi = () => {
   makeStub();
   const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION);
-  cmpApi.setApplicableSections(getApplicableSections());
   cmpApi.setCmpStatus(CmpStatus.LOADED);
   // If consent does not need to be resurfaced, then we can set the signal to Ready here
   window.addEventListener("FidesInitialized", (event) => {
     const { experience } = window.Fides;
+    cmpApi.setSupportedAPIs(getSupportedApis());
     if (
       isPrivacyExperience(experience) &&
       !shouldResurfaceConsent(experience, event.detail)
     ) {
-      setTcString(event, cmpApi);
+      const tcSet = setTcString(event, cmpApi);
+      if (tcSet) {
+        cmpApi.setApplicableSections([TcfEuV2.ID]);
+      }
       cmpApi.setSignalStatus(SignalStatus.READY);
     }
   });
@@ -109,7 +114,11 @@ export const initializeGppCmpApi = () => {
     // Set US GPP notice fields
     const { experience } = window.Fides;
     if (isPrivacyExperience(experience)) {
-      setGppNoticesProvidedFromExperience({ cmpApi, experience });
+      const sectionsChanged = setGppNoticesProvidedFromExperience({
+        cmpApi,
+        experience,
+      });
+      cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
     }
   });
 
@@ -130,6 +139,7 @@ export const initializeGppCmpApi = () => {
     cmpApi.setCmpDisplayStatus(CmpDisplayStatus.HIDDEN);
     const tcSet = setTcString(event, cmpApi);
     if (tcSet) {
+      cmpApi.setApplicableSections([TcfEuV2.ID]);
       cmpApi.fireSectionChange("tcfeuv2");
     }
 
@@ -139,9 +149,12 @@ export const initializeGppCmpApi = () => {
       cookie: event.detail,
       region: window.Fides.experience?.region ?? "",
     });
-    sectionsChanged.forEach((sectionName) => {
-      cmpApi.fireSectionChange(sectionName);
-    });
+    if (sectionsChanged.length) {
+      cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
+      sectionsChanged.forEach((section) => {
+        cmpApi.fireSectionChange(section.name);
+      });
+    }
     cmpApi.setSignalStatus(SignalStatus.READY);
   });
 };

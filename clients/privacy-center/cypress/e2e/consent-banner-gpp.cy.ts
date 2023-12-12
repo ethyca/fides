@@ -18,14 +18,14 @@ describe("Fides-js GPP extension", () => {
   });
 
   it("does not load the GPP extension if it is not enabled", () => {
-    cy.fixture("consent/experience_tcf.json").then((experience) => {
+    cy.fixture("consent/experience_tcf.json").then((payload) => {
+      const experience = payload.items[0];
       stubConfig({
         options: {
           isOverlayEnabled: true,
           tcfEnabled: true,
-          gppEnabled: false,
         },
-        experience: experience.items[0],
+        experience: { ...experience, gpp_settings: { enabled: false } },
       });
     });
     cy.waitUntilFidesInitialized().then(() => {
@@ -38,15 +38,16 @@ describe("Fides-js GPP extension", () => {
   });
 
   describe("with TCF and GPP enabled", () => {
+    const tcfGppSettings = { enabled: true, regions: ["tcfeuv2"] };
     beforeEach(() => {
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
+      cy.fixture("consent/experience_tcf.json").then((payload) => {
+        const experience = payload.items[0];
         stubConfig({
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            gppEnabled: true,
           },
-          experience: experience.items[0],
+          experience: { ...experience, gpp_settings: tcfGppSettings },
         });
       });
     });
@@ -155,9 +156,8 @@ describe("Fides-js GPP extension", () => {
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            gppEnabled: true,
           },
-          experience: experience.items[0],
+          experience: { ...experience.items[0], gpp_settings: tcfGppSettings },
         });
       });
 
@@ -176,11 +176,19 @@ describe("Fides-js GPP extension", () => {
           .then(([data, success]) => {
             expect(success).to.eql(true);
             expect(data.eventName).to.eql("listenerRegistered");
-            const { cmpDisplayStatus, signalStatus, gppString, cmpStatus } =
-              data.pingData;
+            const {
+              cmpDisplayStatus,
+              signalStatus,
+              gppString,
+              cmpStatus,
+              applicableSections,
+              supportedAPIs,
+            } = data.pingData;
             expect(cmpStatus).to.eql("loaded");
             expect(cmpDisplayStatus).to.eql("hidden");
             expect(signalStatus).to.eql("ready");
+            expect(applicableSections).to.eql([2]);
+            expect(supportedAPIs).to.eql(["2:tcfeuv2"]);
             expect(gppString).to.contain(tcString);
           });
 
@@ -248,9 +256,8 @@ describe("Fides-js GPP extension", () => {
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            gppEnabled: true,
           },
-          experience: experience.items[0],
+          experience: { ...experience.items[0], gpp_settings: tcfGppSettings },
         });
       });
       cy.waitUntilFidesInitialized().then(() => {
@@ -289,7 +296,6 @@ describe("Fides-js GPP extension", () => {
           options: {
             isOverlayEnabled: true,
             tcfEnabled: false,
-            gppEnabled: true,
           },
           experience: payload.items[0],
         });
@@ -369,6 +375,14 @@ describe("Fides-js GPP extension", () => {
             });
           }
         );
+      cy.get("@gppListener")
+        .its("lastCall.args")
+        .then((args) => {
+          const [data] = args;
+          console.log({ data });
+          expect(data.pingData.applicableSections).to.eql([8]);
+          expect(data.pingData.supportedAPIs).to.eql(["8:usca"]);
+        });
     });
 
     it("can go through the flow of user opting out of data sales and sharing", () => {

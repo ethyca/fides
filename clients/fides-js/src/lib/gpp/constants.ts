@@ -13,8 +13,6 @@ import {
   UsVaV1Field,
 } from "@iabgpp/cmpapi";
 
-export const SUPPORTED_APIS = ["2:tcfeuv2"];
-
 interface GppMechanismField {
   field: string;
   not_available: number | number[];
