@@ -12,8 +12,6 @@ saas_config:
       description: Your Appsflyer domain
     - name: identity_value
       description: The identity value that is returned for the end user email being submitted.
-    - name: property_id
-      description: String representing the mobile app to which this request is scoped.
     # identity value is one we need to get from the customer
 
   client_config:
@@ -26,7 +24,7 @@ saas_config:
 
   test_request:
     method: GET
-    path: /api/gdpr/v1/stub/discovery
+    path: /api/mng/apps?capabilities=&limit=1
 
   endpoints:
     - name: erasure
