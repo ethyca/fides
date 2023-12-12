@@ -96,7 +96,11 @@ export const FidesTableV2 = <T,>({
       <Tbody data-testid="fidesTable-body">
         {rowActionBar}
         {tableInstance.getRowModel().rows.map((row) => (
-          <FidesRow<T> key={row.id} row={row} />
+          <FidesRow<T>
+            key={row.id}
+            row={row}
+            renderRowTooltipLabel={renderRowTooltipLabel}
+          />
         ))}
       </Tbody>
       {footer}
