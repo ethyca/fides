@@ -76,7 +76,9 @@ describe("setGppNoticesProvidedFromExperience", () => {
       cmpApi,
       experience,
     });
-    expect(sectionsChanged).toEqual(["usnatv1"]);
+    expect(sectionsChanged).toEqual([
+      { name: "usnatv1", id: 7, prefix: "usnat" },
+    ]);
     const section = cmpApi.getSection("usnatv1");
     // 2 means notice was not provided. All other consent fields should be 0 (N/A)
     expect(section).toEqual({
@@ -114,7 +116,9 @@ describe("setGppNoticesProvidedFromExperience", () => {
       cmpApi,
       experience,
     });
-    expect(sectionsChanged).toEqual(["usnatv1"]);
+    expect(sectionsChanged).toEqual([
+      { name: "usnatv1", id: 7, prefix: "usnat" },
+    ]);
     const section = cmpApi.getSection("usnatv1");
     expect(section).toEqual({
       Version: 1,
@@ -166,7 +170,9 @@ describe("setGppOptOutsFromCookie", () => {
       cookie,
       region: "us",
     });
-    expect(sectionsChanged).toEqual(["usnatv1"]);
+    expect(sectionsChanged).toEqual([
+      { name: "usnatv1", id: 7, prefix: "usnat" },
+    ]);
     const section = cmpApi.getSection("usnatv1");
     expect(section).toEqual({
       Version: 1,

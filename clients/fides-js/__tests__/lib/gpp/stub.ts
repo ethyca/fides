@@ -8,10 +8,10 @@ const EXPECTED_PING_DATA = {
   cmpStatus: "stub",
   cmpDisplayStatus: "hidden",
   signalStatus: "not ready",
-  supportedAPIs: ["2:tcfeuv2"],
+  supportedAPIs: [],
   cmpId: 0,
   sectionList: [],
-  applicableSections: [],
+  applicableSections: [-1],
   gppString: "",
   parsedSections: {},
 };
