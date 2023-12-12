@@ -9,7 +9,7 @@ saas_config:
   connector_params:
     - name: domain
       default_value: hq1.appsflyer.com
-      description: Your Appsflyer domain
+      description: The Appsflyer domain. Default hq1.appsflyer.com
     - name: identity_value
       description: The identity value that is returned for the end user email being submitted.
     # identity value is one we need to get from the customer
@@ -33,7 +33,7 @@ saas_config:
           method: POST
           path: /api/gdpr/v1/opendsr_requests
           body: >
-            {   "subject_request_id":"<privacy_req_id>", 
+            {   "subject_request_id":"<privacy_req_id_weneedtomakethisupUUIDv4>", 
             "subject_request_type":"erasure", 
             "submitted_time":"<timestamp>",  "platform": "android", 
             "subject_identities":[    {    
