@@ -11,6 +11,7 @@ import {
   CmpDisplayStatus,
   CmpStatus,
   SignalStatus,
+  TcfEuV2,
 } from "@iabgpp/cmpapi";
 import { makeStub } from "./lib/gpp/stub";
 import { extractTCStringForCmpApi } from "./lib/tcf/events";
@@ -27,10 +28,9 @@ import {
   setGppNoticesProvidedFromExperience,
   setGppOptOutsFromCookie,
 } from "./lib/gpp/us-notices";
+import { FIDES_REGION_TO_GPP_SECTION } from "./lib/gpp/constants";
 
 const CMP_VERSION = 1;
-
-const TCF_SECTION_ID = 2;
 
 declare global {
   interface Window {
@@ -51,20 +51,44 @@ declare global {
  * @param cmpApi: the CMP API model
  */
 const setTcString = (event: FidesEvent, cmpApi: CmpApi) => {
+  if (!window.Fides.options.tcfEnabled) {
+    return false;
+  }
   const tcString = extractTCStringForCmpApi(event);
   if (!tcString) {
     return false;
   }
   // Workaround for bug in base library https://github.com/IABTechLab/iabgpp-es/issues/35
-  cmpApi.setFieldValueBySectionId(TCF_SECTION_ID, "CmpId", ETHYCA_CMP_ID);
-  cmpApi.setSectionStringById(TCF_SECTION_ID, tcString);
+  cmpApi.setFieldValueBySectionId(TcfEuV2.ID, "CmpId", ETHYCA_CMP_ID);
+  cmpApi.setSectionStringById(TcfEuV2.ID, tcString);
   return true;
+};
+
+/** From our options, derive what sections of GPP are applicable */
+const getApplicableSections = () => {
+  const sections: number[] = [];
+  if (window.Fides.options.tcfEnabled) {
+    sections.push(TcfEuV2.ID);
+  }
+  if (isPrivacyExperience(window.Fides.experience)) {
+    const { gpp_settings: gppSettings } = window.Fides.experience;
+    if (gppSettings && gppSettings.enabled && gppSettings.regions) {
+      const gppSections = Object.values(FIDES_REGION_TO_GPP_SECTION);
+      gppSettings.regions.forEach((region) => {
+        const section = gppSections.find((d) => d.prefix === region);
+        if (section) {
+          sections.push(section.id);
+        }
+      });
+    }
+  }
+  return sections;
 };
 
 export const initializeGppCmpApi = () => {
   makeStub();
   const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION);
-  cmpApi.setApplicableSections([TCF_SECTION_ID]);
+  cmpApi.setApplicableSections(getApplicableSections());
   cmpApi.setCmpStatus(CmpStatus.LOADED);
   // If consent does not need to be resurfaced, then we can set the signal to Ready here
   window.addEventListener("FidesInitialized", (event) => {

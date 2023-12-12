@@ -3,7 +3,12 @@
     {
       "region": "us_ca",
       "component": "overlay",
-      "gpp_settings": null,
+      "gpp_settings": {
+        "enabled": true,
+        "regions": ["usca"],
+        "us_approach": "state",
+        "us_states": ["ca"]
+      },
       "experience_config": {
         "accept_button_label": "Opt in to all",
         "acknowledge_button_label": "OK",

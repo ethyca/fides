@@ -1,4 +1,5 @@
 import type { CookieKeyConsent } from "./cookie";
+import { GPPSettings } from "./gpp/types";
 import type {
   TCFFeatureRecord,
   TCFPurposeSave,
@@ -298,6 +299,7 @@ export type PrivacyExperience = {
   tcf_system_relationships?: Array<TCFVendorRelationships>;
   gvl?: GVLJson;
   meta?: ExperienceMeta;
+  gpp_settings?: GPPSettings;
 };
 
 export type ExperienceConfig = {

@@ -38,9 +38,9 @@ export const setGppNoticesProvidedFromExperience = ({
         // QUESTION: do we ever put 0 here?
         const value = experienceHasNotice ? 1 : 2;
         const gppSection = FIDES_REGION_TO_GPP_SECTION[region];
-        sectionsChanged.add(gppSection);
+        sectionsChanged.add(gppSection.name);
         fields.forEach((field) => {
-          cmpApi.setFieldValue(gppSection, field, value);
+          cmpApi.setFieldValue(gppSection.name, field, value);
         });
       }
     }
@@ -74,7 +74,7 @@ export const setGppOptOutsFromCookie = ({
         const consentValue = consent[noticeKey];
 
         const gppSection = FIDES_REGION_TO_GPP_SECTION[region];
-        sectionsChanged.add(gppSection);
+        sectionsChanged.add(gppSection.name);
         fields.forEach((fieldObj) => {
           // In general, 0 = N/A, 1 = Opted out, 2 = Did not opt out
           let value = fieldObj.not_available; // if consentValue is undefined, we'll mark as N/A
@@ -83,7 +83,7 @@ export const setGppOptOutsFromCookie = ({
           } else if (consentValue) {
             value = fieldObj.not_opt_out;
           }
-          cmpApi.setFieldValue(gppSection, fieldObj.field, value);
+          cmpApi.setFieldValue(gppSection.name, fieldObj.field, value);
         });
       }
     }

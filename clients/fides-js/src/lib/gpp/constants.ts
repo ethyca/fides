@@ -344,12 +344,15 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
     },
   };
 
-export const FIDES_REGION_TO_GPP_SECTION: Record<string, string> = {
-  us: UsNatV1.NAME,
-  us_ca: UsCaV1.NAME,
-  us_ct: UsCtV1.NAME,
-  us_co: UsCoV1.NAME,
-  us_ut: UsUtV1.NAME,
-  us_va: UsVaV1.NAME,
+export const FIDES_REGION_TO_GPP_SECTION: Record<
+  string,
+  { name: string; id: number; prefix: string }
+> = {
+  us: { name: UsNatV1.NAME, id: UsNatV1.ID, prefix: "usnat" },
+  us_ca: { name: UsCaV1.NAME, id: UsCaV1.ID, prefix: "usca" },
+  us_ct: { name: UsCtV1.NAME, id: UsCtV1.ID, prefix: "usct" },
+  us_co: { name: UsCoV1.NAME, id: UsCoV1.ID, prefix: "usco" },
+  us_ut: { name: UsUtV1.NAME, id: UsUtV1.ID, prefix: "usut" },
+  us_va: { name: UsVaV1.NAME, id: UsVaV1.ID, prefix: "usva" },
   // DEFER: Iowa isn't part of the GPP spec yet
 };
