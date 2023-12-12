@@ -1,15 +1,6 @@
 import { Td } from "@fidesui/react";
 import { flexRender, Cell } from "@tanstack/react-table";
-
-const getTableTHandTDStyles = (cellId: string) =>
-  cellId === "select"
-    ? { padding: "0px" }
-    : {
-        paddingLeft: "16px",
-        paddingRight: "8px",
-        paddingTop: "0px",
-        paddingBottom: "0px",
-      };
+import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
 type FidesCellProps<T> = {
   cell: Cell<T, unknown>;
@@ -19,12 +10,23 @@ type FidesCellProps<T> = {
 export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
   // this should be a custom grouping cell. This logic shouldn't run for every cell
   let isFirstRowOfGroupedRows = false;
+  let isLastRowOfGroupedRows = false;
+  const rows = cell
+    .getContext()
+    .table.getRowModel()
+    .rows.filter((r) => !r.id.includes(":"));
+  let isFirstRowOfPage = rows[0].id === cell.row.id;
+  let isLastRowOfPage = rows[rows.length - 1].id == cell.row.id;
   if (cell.getValue() && cell.column.id == "systemName") {
+    console.log(cell.getIsGrouped());
     const groupRow = cell
       .getContext()
       .table.getRow(`${cell.column.id}:${cell.getValue()}`);
     isFirstRowOfGroupedRows = groupRow.subRows[0].id === cell.row.id;
+    isLastRowOfGroupedRows =
+      groupRow.subRows[groupRow.subRows.length - 1].id === cell.row.id;
   }
+
   return (
     <Td
       width={
@@ -32,17 +34,25 @@ export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
           ? cell.column.columnDef.meta.width
           : "unset"
       }
-      borderBottomWidth={cell.column.id === "systemName" ? "0px" : "1px"}
-      borderTopWidth={
-        cell.column.id === "systemName" && isFirstRowOfGroupedRows
-          ? "1px"
-          : "0px"
+      borderBottomWidth={
+        isLastRowOfPage || cell.column.id === "systemName" ? "0px" : "1px"
       }
       borderBottomColor="gray.200"
       borderRightWidth="1px"
       borderRightColor="gray.200"
+      sx={{
+        article: {
+          borderTopWidth: "2x",
+          borderTopColor: "red",
+        },
+      }}
       _first={{
-        // borderTopWidth: "0px",
+        borderBottomWidth:
+          (cell.getContext().table.getState().grouping.length == 0 &&
+            !isLastRowOfPage) ||
+          (isLastRowOfGroupedRows && !isFirstRowOfPage)
+            ? "1px"
+            : "0px",
         borderLeftWidth: "1px",
         borderLeftColor: "gray.200",
       }}
