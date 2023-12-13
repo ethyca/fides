@@ -24,10 +24,6 @@ export type DatasetCollection = {
    */
   data_categories?: Array<string>;
   /**
-   * An optional string to describe the retention policy for a Dataset collection. This field can also be applied more granularly at the field level of a Dataset.
-   */
-  retention?: string;
-  /**
    * An array of objects that describe the collection's fields.
    */
   fields: Array<DatasetField>;

@@ -84,7 +84,6 @@ export type DatasetCollection = {
   name: string;
   description: string;
   data_categories: string[];
-  retention: string;
   fields: DatasetCollectionField[];
 };
 
@@ -92,7 +91,6 @@ export type DatasetCollectionField = {
   name: string;
   description: string;
   data_categories: string[];
-  retention: string;
   fidesops_meta: {
     references: FidesOpsMetaReference[];
     identity: string;

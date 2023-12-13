@@ -280,11 +280,6 @@ class TestUpsertWithCtlDataset:
         postgres_dataset_result = Dataset(**postgres_dataset)
         assert ctl_dataset.collections[0] == postgres_dataset_result.collections[0]
 
-        # ensure 'retention', i.e. one of the fields added via fideslang `Dataset` instantiation
-        # is present on the resulting dataset object
-        assert "retention" in ctl_dataset.collections[0]
-        assert "retention" in ctl_dataset.collections[0]["fields"][0]
-
         dataset_config.delete(db)
         ctl_dataset.delete(db)
 
@@ -360,11 +355,6 @@ class TestUpsertWithCtlDataset:
         dataset_result = Dataset(**dataset_data)
         assert ctl_dataset.collections[0] == dataset_result.collections[0]
 
-        # ensure 'retention', i.e. one of the fields added via fideslang `Dataset` instantiation
-        # is present on the resulting dataset object
-        assert "retention" in ctl_dataset.collections[0]
-        assert "retention" in ctl_dataset.collections[0]["fields"][0]
-
         dataset_config.delete(db)
         ctl_dataset.delete(db)
 
@@ -429,8 +419,3 @@ class TestUpsertWithCtlDataset:
         # to make our assertions more straightforward
         dataset_result = Dataset(**dataset_data)
         assert updated_ctl_dataset.collections[0] == dataset_result.collections[0]
-
-        # ensure 'retention', i.e. one of the fields added via fideslang `Dataset` instantiation
-        # is present on the resulting dataset object
-        assert "retention" in updated_ctl_dataset.collections[0]
-        assert "retention" in updated_ctl_dataset.collections[0]["fields"][0]

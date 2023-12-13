@@ -195,7 +195,6 @@ export const mockDatasetField = (
     name: "created_at",
     description: "User's creation timestamp",
     data_categories: ["system.operations"],
-    retention: "Account termination",
   };
   return Object.assign(field, partialField);
 };
@@ -207,7 +206,6 @@ export const mockDatasetCollection = (
     name: "created_at",
     description: "User's creation timestamp",
     data_categories: ["system.operations"],
-    retention: "Account termination",
     fields: [mockDatasetField()],
   };
   return Object.assign(collection, partialCollection);
