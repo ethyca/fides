@@ -182,6 +182,10 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
     )
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
+    notice_key = Column(String, index=True)  # Privacy Notice Key
+
+    notice_mechanism = Column(String, index=True)  # Privacy Notice Mechanism
+
     notice_name = Column(String, index=True)  # Privacy Notice name or "TCF"
 
     # The specific version of the experience config the user was shown to present the relevant notice
