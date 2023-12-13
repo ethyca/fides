@@ -39,7 +39,7 @@ saas_config:
       requests:
         delete:
           method: POST
-          path: /api/profile-subscription-bulk-delete-jobs/
+          path: /api/profile-suppression-bulk-create-jobs/
           body: |
             {
             "data": {
@@ -58,7 +58,29 @@ saas_config:
                 }
               }
             }
-
+  - name: opt_in
+      requests:
+        update:
+          method: POST
+          path: /api/profile-suppression-bulk-delete-jobs/
+          body: |
+            {
+            "data": {
+                "type": "profile-suppression-bulk-delete-job",
+                "attributes": {
+                  "profiles": {
+                    "data": [
+                      {
+                        "type": "profile",
+                        "attributes": {
+                          "email": "<email>"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
 
   endpoints:
     - name: profiles
