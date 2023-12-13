@@ -11,7 +11,7 @@ import {
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_LEGAL_BASIS,
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
 } from "~/features/datamap/constants";
-import { DATAMAP_GROUPING, Page_Any_ } from "~/types/api";
+import { DATAMAP_GROUPING, Page_MinimalDatamapReport_ } from "~/types/api";
 
 export interface DataCategoryNode {
   value: string;
@@ -66,36 +66,20 @@ const DEPRECATED_COLUMNS = [
   "system.privacy_declaration.data_use.legitimate_interest",
 ];
 
-export type MinimalDatamapGrouping = {
-  system_name: string;
-  data_use: string;
-  data_categories: string[];
-  data_subjects: string[];
-};
-
-export type Page_MinimalDatamapGrouping = {
-  items: Array<MinimalDatamapGrouping>;
-  total: number;
-  page: number;
-  size: number;
-  pages?: number;
-};
-
 // API endpoints
 const datamapApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getMininimalDatamapReport: build.query<
-      Page_MinimalDatamapGrouping,
+      Page_MinimalDatamapReport_,
       {
-        organizationName: string;
         groupBy: DATAMAP_GROUPING;
         pageIndex: number;
         pageSize: number;
       }
     >({
-      query: ({ organizationName, groupBy, pageIndex, pageSize }) => {
+      query: ({ groupBy, pageIndex, pageSize }) => {
         return {
-          url: `plus/datamap/minimal/${organizationName}`,
+          url: `plus/datamap/minimal`,
           params: { group_by: groupBy, page: pageIndex, size: pageSize },
         };
       },

@@ -198,6 +198,7 @@ export type { MessagingServiceSecretsMailchimpTransactionalDocs } from "./models
 export { MessagingServiceType } from "./models/MessagingServiceType";
 export type { MessagingTemplateRequest } from "./models/MessagingTemplateRequest";
 export type { MessagingTemplateResponse } from "./models/MessagingTemplateResponse";
+export type { MinimalDatamapReport } from "./models/MinimalDatamapReport";
 export type { MongoDBDocsSchema } from "./models/MongoDBDocsSchema";
 export type { MSSQLDocsSchema } from "./models/MSSQLDocsSchema";
 export type { MySQLDocsSchema } from "./models/MySQLDocsSchema";
@@ -205,7 +206,6 @@ export type { NotificationApplicationConfig } from "./models/NotificationApplica
 export type { OktaConfig } from "./models/OktaConfig";
 export type { Organization } from "./models/Organization";
 export type { OrganizationMetadata } from "./models/OrganizationMetadata";
-export type { Page_Any_ } from "./models/Page_Any_";
 export type { Page_ConnectionConfigurationResponse_ } from "./models/Page_ConnectionConfigurationResponse_";
 export type { Page_ConnectionSystemTypeMap_ } from "./models/Page_ConnectionSystemTypeMap_";
 export type { Page_ConsentReport_ } from "./models/Page_ConsentReport_";
@@ -217,6 +217,7 @@ export type { Page_DatasetConfigSchema_ } from "./models/Page_DatasetConfigSchem
 export type { Page_ExecutionLogDetailResponse_ } from "./models/Page_ExecutionLogDetailResponse_";
 export type { Page_ExperienceConfigResponse_ } from "./models/Page_ExperienceConfigResponse_";
 export type { Page_MessagingConfigResponse_ } from "./models/Page_MessagingConfigResponse_";
+export type { Page_MinimalDatamapReport_ } from "./models/Page_MinimalDatamapReport_";
 export type { Page_PolicyResponse_ } from "./models/Page_PolicyResponse_";
 export type { Page_PolicyWebhookResponse_ } from "./models/Page_PolicyWebhookResponse_";
 export type { Page_PrivacyExperienceMetaResponse_ } from "./models/Page_PrivacyExperienceMetaResponse_";

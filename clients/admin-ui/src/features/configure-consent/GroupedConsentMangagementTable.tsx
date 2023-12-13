@@ -42,22 +42,28 @@ import {
   useConsentManagementModal,
 } from "~/features/configure-consent/ConsentManagementModal";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
-import { DATAMAP_GROUPING } from "~/types/api";
 import {
-  useGetMininimalDatamapReportQuery,
-  Page_MinimalDatamapGrouping,
-  MinimalDatamapGrouping,
-} from "~/features/datamap/datamap.slice";
+  DATAMAP_GROUPING,
+  Page_MinimalDatamapReport_,
+  MinimalDatamapReport,
+} from "~/types/api";
+import { useGetMininimalDatamapReportQuery } from "~/features/datamap/datamap.slice";
 
-const columnHelper = createColumnHelper<MinimalDatamapGrouping>();
+const columnHelper = createColumnHelper<MinimalDatamapReport>();
 
-const emptyMinimalDatamapReportResponse: Page_MinimalDatamapGrouping = {
+const emptyMinimalDatamapReportResponse: Page_MinimalDatamapReport_ = {
   items: [],
   total: 0,
   page: 1,
   size: 25,
   pages: 1,
 };
+
+const SYSTEM_NAME_COLUMN_ID = "system_name";
+const DATA_USE_COLUMN_ID = "data_use";
+const DATA_CATEGORY_COLUMN_ID = "data_categories";
+const DATA_SUBJECT_COLUMN_ID = "data_subjects";
+
 export const GroupedConsentManagementTable = () => {
   const { tcf: isTcfEnabled } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
@@ -79,12 +85,16 @@ export const GroupedConsentManagementTable = () => {
     DATAMAP_GROUPING.SYSTEM_DATA_USE
   );
 
+  const onGroupChange = (group: DATAMAP_GROUPING) => {
+    setGroupBy(group);
+    resetPageIndexToDefault();
+  };
+
   const {
     data: datamapReport,
     isLoading: isReportLoading,
     isFetching: isReportFetching,
   } = useGetMininimalDatamapReportQuery({
-    organizationName: "default_organization",
     pageIndex,
     pageSize,
     groupBy,
@@ -107,7 +117,7 @@ export const GroupedConsentManagementTable = () => {
     () => [
       columnHelper.accessor((row) => row.system_name, {
         enableGrouping: true,
-        id: "system_name",
+        id: SYSTEM_NAME_COLUMN_ID,
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Vendor" {...props} />,
         meta: {
@@ -115,19 +125,25 @@ export const GroupedConsentManagementTable = () => {
         },
       }),
       columnHelper.accessor((row) => row.data_use, {
-        id: "data_use",
-        cell: (props) => <BadgeCell value={props.getValue()} />,
+        id: DATA_USE_COLUMN_ID,
+        cell: (props) => (
+          <GroupCountBadgeCell
+            suffix="data uses"
+            expand={true}
+            value={props.getValue()}
+          />
+        ),
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
         meta: {
           width: "175px",
         },
       }),
-      columnHelper.accessor((row) => row.data_categories, {
-        id: "data_categories",
+      columnHelper.accessor((row) => row.data_category, {
+        id: DATA_CATEGORY_COLUMN_ID,
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data categories"
-            expand={false}
+            expand={true}
             value={props.getValue()}
           />
         ),
@@ -138,12 +154,12 @@ export const GroupedConsentManagementTable = () => {
           width: "175px",
         },
       }),
-      columnHelper.accessor((row) => row.data_subjects, {
-        id: "data_subjects",
+      columnHelper.accessor((row) => row.data_subject, {
+        id: DATA_SUBJECT_COLUMN_ID,
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data subjects"
-            expand={true}
+            expand={false}
             value={props.getValue()}
           />
         ),
@@ -160,26 +176,57 @@ export const GroupedConsentManagementTable = () => {
   const grouping = useMemo(() => {
     switch (groupBy) {
       case DATAMAP_GROUPING.SYSTEM_DATA_USE: {
-        return ["system_name"];
+        return [SYSTEM_NAME_COLUMN_ID];
       }
       case DATAMAP_GROUPING.DATA_USE_SYSTEM: {
-        return ["data_use"];
+        return [DATA_USE_COLUMN_ID];
+      }
+      case DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM: {
+        return [DATA_CATEGORY_COLUMN_ID];
       }
     }
   }, [groupBy]);
 
-  const tableInstance = useReactTable<MinimalDatamapGrouping>({
-    columns: tcfColumns,
+  const columnOrder = useMemo(() => {
+    if (DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy) {
+      return [
+        SYSTEM_NAME_COLUMN_ID,
+        DATA_USE_COLUMN_ID,
+        DATA_CATEGORY_COLUMN_ID,
+        DATA_SUBJECT_COLUMN_ID,
+      ];
+    }
+    if (DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy) {
+      return [
+        DATA_USE_COLUMN_ID,
+        SYSTEM_NAME_COLUMN_ID,
+        DATA_CATEGORY_COLUMN_ID,
+        DATA_SUBJECT_COLUMN_ID,
+      ];
+    }
+    if (DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM === groupBy) {
+      return [
+        DATA_CATEGORY_COLUMN_ID,
+        SYSTEM_NAME_COLUMN_ID,
+        DATA_USE_COLUMN_ID,
+        DATA_SUBJECT_COLUMN_ID,
+      ];
+    }
+  }, [groupBy]);
+
+  const tableInstance = useReactTable<MinimalDatamapReport>({
+    getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
-    manualPagination: true,
     getExpandedRowModel: getExpandedRowModel(),
+    columns: tcfColumns,
+    manualPagination: true,
     data,
     debugTable: true,
     state: {
       expanded: true,
       grouping,
+      columnOrder,
     },
-    getCoreRowModel: getCoreRowModel(),
   });
 
   const getMenuDisplayValue = () => {
@@ -190,10 +237,13 @@ export const GroupedConsentManagementTable = () => {
       case DATAMAP_GROUPING.DATA_USE_SYSTEM: {
         return "data use";
       }
+      case DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM: {
+        return "data category";
+      }
     }
   };
 
-  if (isReportLoading || isLoadingHealthCheck) {
+  if (isReportLoading || isLoadingHealthCheck || isReportFetching) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
 
@@ -219,7 +269,7 @@ export const GroupedConsentManagementTable = () => {
             <MenuList zIndex={11}>
               <MenuItemOption
                 onClick={() => {
-                  setGroupBy(DATAMAP_GROUPING.SYSTEM_DATA_USE);
+                  onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE);
                 }}
                 isChecked={DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy}
                 value={DATAMAP_GROUPING.SYSTEM_DATA_USE}
@@ -228,14 +278,20 @@ export const GroupedConsentManagementTable = () => {
               </MenuItemOption>
               <MenuItemOption
                 onClick={() => {
-                  setGroupBy(DATAMAP_GROUPING.DATA_USE_SYSTEM);
+                  onGroupChange(DATAMAP_GROUPING.DATA_USE_SYSTEM);
                 }}
                 isChecked={DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy}
                 value={DATAMAP_GROUPING.DATA_USE_SYSTEM}
               >
                 Data use
               </MenuItemOption>
-              <MenuItemOption value={DATAMAP_GROUPING.SYSTEM_DATA_USE}>
+              <MenuItemOption
+                onClick={() => {
+                  onGroupChange(DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM);
+                }}
+                isChecked={DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM === groupBy}
+                value={DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM}
+              >
                 Data category
               </MenuItemOption>
             </MenuList>
@@ -250,7 +306,7 @@ export const GroupedConsentManagementTable = () => {
         </Flex>
       </TableActionBar>
 
-      <FidesTableV2<MinimalDatamapGrouping> tableInstance={tableInstance} />
+      <FidesTableV2<MinimalDatamapReport> tableInstance={tableInstance} />
       <PaginationBar
         totalRows={totalRows}
         pageSizes={PAGE_SIZES}

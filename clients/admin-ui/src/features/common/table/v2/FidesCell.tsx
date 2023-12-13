@@ -16,6 +16,7 @@ export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
   const isGroupedColumn = cell.column.id === groupedColumnId;
   let isFirstRowOfGroupedRows = false;
   let isLastRowOfGroupedRows = false;
+  let hasOneSubRow = false;
   const rows = cell
     .getContext()
     .table.getRowModel()
@@ -26,6 +27,7 @@ export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
     const groupRow = cell
       .getContext()
       .table.getRow(`${cell.column.id}:${cell.getValue()}`);
+    hasOneSubRow = groupRow.subRows.length === 1;
     isFirstRowOfGroupedRows = groupRow.subRows[0].id === cell.row.id;
     isLastRowOfGroupedRows =
       groupRow.subRows[groupRow.subRows.length - 1].id === cell.row.id;
@@ -51,7 +53,8 @@ export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
       _first={{
         borderBottomWidth:
           (!isTableGrouped && !isLastRowOfPage) ||
-          (isLastRowOfGroupedRows && !isFirstRowOfPage)
+          (isLastRowOfGroupedRows && !isFirstRowOfPage) ||
+          (isFirstRowOfGroupedRows && hasOneSubRow)
             ? "1px"
             : "0px",
         borderLeftWidth: "1px",

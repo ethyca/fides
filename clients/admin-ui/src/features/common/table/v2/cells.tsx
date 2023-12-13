@@ -53,12 +53,14 @@ export const GroupCountBadgeCell = ({
   suffix,
   expand,
 }: {
-  value: string[] | number[];
+  value: string[] | string;
   suffix?: string;
   expand: boolean;
-}) => (
-  <Flex alignItems="center" height="100%" mr="2">
-    {expand ? (
+}) => {
+  let badges = null;
+
+  if (Array.isArray(value)) {
+    badges = expand ? (
       value.map((d) => (
         <Box px={1}>
           <FidesBadge>{d}</FidesBadge>
@@ -69,9 +71,17 @@ export const GroupCountBadgeCell = ({
         {value.length}
         {suffix ? ` ${suffix}` : null}
       </FidesBadge>
-    )}
-  </Flex>
-);
+    );
+  } else {
+    badges = <FidesBadge>{value}</FidesBadge>;
+  }
+
+  return (
+    <Flex alignItems="center" height="100%" mr="2">
+      {badges}
+    </Flex>
+  );
+};
 
 export const IndeterminateCheckboxCell = ({
   dataTestId,
