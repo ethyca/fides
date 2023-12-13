@@ -14,7 +14,11 @@ from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
 from fides.api.db.base_class import Base, JSONTypeOverride
-from fides.api.models.privacy_notice import PrivacyNoticeHistory, UserConsentPreference, ConsentMechanism
+from fides.api.models.privacy_notice import (
+    ConsentMechanism,
+    PrivacyNoticeHistory,
+    UserConsentPreference,
+)
 from fides.api.models.privacy_preference import (
     ConsentMethod,
     RequestOrigin,
@@ -184,7 +188,9 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
 
     notice_key = Column(String, index=True)  # Privacy Notice Key
 
-    notice_mechanism = Column(EnumColumn(ConsentMechanism), index=True)  # Privacy Notice Mechanism
+    notice_mechanism = Column(
+        EnumColumn(ConsentMechanism), index=True
+    )  # Privacy Notice Mechanism
 
     notice_name = Column(String, index=True)  # Privacy Notice name or "TCF"
 
@@ -217,13 +223,6 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
 
     url_recorded = Column(String)
 
-    updated_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now(),
-        index=True,
-    )
-
     user_agent = Column(
         StringEncryptedType(
             type_in=String(),
@@ -241,21 +240,25 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
         return relationship(PrivacyNoticeHistory)
 
 
-class ServedNoticeHistoryV2(ConsentReportingMixinV2, Base):
+class ServedNoticeHistory(ConsentReportingMixinV2, Base):
     """A Historical Record of every time a Notice was served to a user
 
     Each Privacy Notice served gets its own record, but served TCF attributes are collapsed into one record.
 
-    The "served_notice_history_id" column on this table can be mapped to the PrivacyPreferenceHistoryV2 records
+    The "served_notice_history_id" column on this table can be mapped to the PrivacyPreferenceHistory records
     to calculate conversion.
     """
+
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "servednoticehistory"
 
     acknowledge_mode = Column(
         Boolean,
         default=False,
     )
 
-    serving_component = Column(EnumColumn(ServingComponent), nullable=True, index=True)
+    serving_component = Column(EnumColumn(ServingComponent), nullable=False, index=True)
 
     # Identifier generated when a LastServedNoticeV2 is created and returned in the response.
     # This is saved on all corresponding ServedNoticeHistory records and can be used to link PrivacyPreferenceHistory records.
@@ -267,16 +270,20 @@ class ServedNoticeHistoryV2(ConsentReportingMixinV2, Base):
 
     @staticmethod
     def get_by_served_id(db: Session, served_id: str) -> Query:
-        """Retrieves all ServedNoticeHistoryV2 records with a common served_notice_history_id - generated
+        """Retrieves all ServedNoticeHistory records with a common served_notice_history_id - generated
         before the task was queued to store these records
         """
-        return db.query(ServedNoticeHistoryV2).filter(
-            ServedNoticeHistoryV2.served_notice_history_id == served_id
+        return db.query(ServedNoticeHistory).filter(
+            ServedNoticeHistory.served_notice_history_id == served_id
         )
 
 
-class PrivacyPreferenceHistoryV2(ConsentReportingMixinV2, Base):
+class PrivacyPreferenceHistory(ConsentReportingMixinV2, Base):
     """A Historical Record of every time a Notice was saved for a user"""
+
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "privacypreferencehistory"
 
     # Systems capable of propagating their consent, and their status.  If the preference is
     # not relevant for the system, or we couldn't propagate a preference, the status is skipped
@@ -319,7 +326,7 @@ class PrivacyPreferenceHistoryV2(ConsentReportingMixinV2, Base):
         MutableDict.as_mutable(JSONB)
     )  # Dict of TCF attributes saved, for a TCF notice
 
-    privacy_request = relationship(PrivacyRequest, backref="privacy_preferences_v2")
+    privacy_request = relationship(PrivacyRequest, backref="privacy_preferences")
 
     def cache_system_status(
         self, db: Session, system: str, status: ExecutionLogStatus

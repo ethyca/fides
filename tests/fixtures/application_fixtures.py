@@ -50,8 +50,8 @@ from fides.api.models.privacy_notice import (
 from fides.api.models.privacy_preference_v2 import (
     ConsentIdentitiesMixin,
     CurrentPrivacyPreferenceV2,
-    PrivacyPreferenceHistoryV2,
-    ServedNoticeHistoryV2,
+    PrivacyPreferenceHistory,
+    ServedNoticeHistory,
 )
 from fides.api.models.privacy_request import (
     Consent,
@@ -1490,7 +1490,7 @@ def privacy_notice(db: Session) -> Generator:
 def served_notice_history(
     db: Session, privacy_notice, fides_user_provided_identity
 ) -> Generator:
-    pref_1 = ServedNoticeHistoryV2.create(
+    pref_1 = ServedNoticeHistory.create(
         db=db,
         data={
             "acknowledge_mode": False,
@@ -1536,7 +1536,7 @@ def privacy_preference_history_us_ca_provide(
     privacy_experience_privacy_center,
     served_notice_history,
 ) -> Generator:
-    preference_history_record = PrivacyPreferenceHistoryV2.create(
+    preference_history_record = PrivacyPreferenceHistory.create(
         db=db,
         data={
             "anonymized_ip_address": "92.158.1.0",
@@ -1685,7 +1685,7 @@ def privacy_preference_history_fr_provide_service_frontend_only(
     privacy_experience_privacy_center,
     served_notice_history,
 ) -> Generator:
-    preference_history_record = PrivacyPreferenceHistoryV2.create(
+    preference_history_record = PrivacyPreferenceHistory.create(
         db=db,
         data={
             "anonymized_ip_address": "92.158.1.0",
@@ -2215,7 +2215,7 @@ def privacy_preference_history(
 ):
     privacy_notice_history = privacy_notice.histories[0]
 
-    preference_history_record = PrivacyPreferenceHistoryV2.create(
+    preference_history_record = PrivacyPreferenceHistory.create(
         db=db,
         data={
             "anonymized_ip_address": "92.158.1.0",
@@ -2845,7 +2845,7 @@ def purpose_three_consent_publisher_override(db):
 def served_notice_history(
     db: Session, privacy_notice, fides_user_provided_identity
 ) -> Generator:
-    pref_1 = ServedNoticeHistoryV2.create(
+    pref_1 = ServedNoticeHistory.create(
         db=db,
         data={
             "acknowledge_mode": False,

@@ -3,26 +3,20 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Optional
 
-from sqlalchemy import ARRAY, Boolean, Column, DateTime
+from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint, func
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import StringEncryptedType
-from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
-from fides.api.db.base_class import Base, JSONTypeOverride
+from fides.api.db.base_class import Base
 from fides.api.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeHistory,
     UserConsentPreference,
 )
-from fides.api.models.privacy_request import PrivacyRequest, ProvidedIdentity
-from fides.config import CONFIG
+from fides.api.models.privacy_request import ProvidedIdentity
 
 
 class RequestOrigin(Enum):
@@ -42,267 +36,12 @@ class ConsentMethod(Enum):
     individual_notice = "individual_notice"
 
 
-class ConsentReportingMixin:
-    """Mixin to be shared between PrivacyPreferenceHistory and ServedNoticeHistory
-    Contains common user details, and information about the notice, experience, experience config, etc.
-    for use in consent reporting.
-    """
-
-    anonymized_ip_address = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
-    )
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
-
-    # Encrypted email, for reporting
-    email = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
-    )
-
-    # Encrypted fides user device id, for reporting
-    fides_user_device = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
-    )
-
-    # Optional FK to a fides user device id provided identity, if applicable
-    @declared_attr
-    def fides_user_device_provided_identity_id(cls) -> Column:
-        return Column(String, ForeignKey(ProvidedIdentity.id), index=True)
-
-    # Hashed email, for searching
-    hashed_email = Column(String, index=True)
-    # Hashed fides user device id, for searching
-    hashed_fides_user_device = Column(String, index=True)
-    # Hashed phone number, for searching
-    hashed_phone_number = Column(String, index=True)
-    # Encrypted phone number, for reporting
-    phone_number = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
-    )
-
-    # The specific version of the experience config the user was shown to present the relevant notice
-    # Contains the version, language, button labels, description, etc.
-    @declared_attr
-    def privacy_experience_config_history_id(cls) -> Column:
-        return Column(
-            String,
-            ForeignKey("privacyexperienceconfighistory.id"),
-            index=True,
-        )
-
-    # The specific experience under which the user was presented the relevant notice
-    # Minimal information stored here, mostly just region and component type
-    @declared_attr
-    def privacy_experience_id(cls) -> Column:
-        return Column(String, ForeignKey("privacyexperience.id"), index=True)
-
-    @declared_attr
-    def privacy_notice_history_id(cls) -> Column:
-        """
-        The specific historical record the user consented to - applicable when
-        saving preferences with respect to a privacy notice directly
-        """
-        return Column(String, ForeignKey(PrivacyNoticeHistory.id), index=True)
-
-    # Optional FK to a verified provided identity (like email or phone), if applicable
-    @declared_attr
-    def provided_identity_id(cls) -> Column:
-        return Column(String, ForeignKey(ProvidedIdentity.id), index=True)
-
-    # Location where we received the request
-    request_origin = Column(EnumColumn(RequestOrigin))  # privacy center, overlay, API
-
-    url_recorded = Column(String)
-    user_agent = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
-    )
-
-    user_geography = Column(String, index=True)
-
-    # ==== TCF Attributes against which preferences can be saved ==== #
-    feature = Column(
-        Integer, index=True
-    )  # When saving privacy preferences with respect to a TCF feature directly
-    purpose_consent = Column(
-        Integer, index=True
-    )  # When saving privacy preferences with respect to a TCF purpose with a consent legal basis
-    purpose_legitimate_interests = Column(
-        Integer, index=True
-    )  # When saving privacy preferences with respect to a TCF purpose with a legitimate interests legal basis
-    special_feature = Column(
-        Integer, index=True
-    )  # When saving privacy preferences with respect to a TCF special feature directly
-    special_purpose = Column(
-        Integer, index=True
-    )  # When saving privacy preferences with respect to a TCF special purpose directly
-    vendor_consent = Column(
-        String, index=True
-    )  # When saving privacy preferences with respect to a vendor with a legal basis of consent
-    vendor_legitimate_interests = Column(
-        String, index=True
-    )  # When saving privacy preferences with respect to a vendor with a legal basis of legitimate interests
-    system_consent = Column(
-        String, index=True
-    )  # When saving privacy preferences with respect to a system id with consent legal basis, in the case where the vendor is unknown
-    system_legitimate_interests = Column(
-        String, index=True
-    )  # When saving privacy preferences with respect to a system id with legitimate interests legal basis, in the case where the vendor is unknown
-    tcf_version = Column(String)
-
-    @property
-    def privacy_notice_id(self) -> Optional[str]:
-        if self.privacy_notice_history:
-            return self.privacy_notice_history.privacy_notice_id
-        return None
-
-    # Relationships
-    @declared_attr
-    def privacy_notice_history(cls) -> relationship:
-        return relationship(PrivacyNoticeHistory)
-
-    @declared_attr
-    def provided_identity(cls) -> relationship:
-        return relationship(ProvidedIdentity, foreign_keys=[cls.provided_identity_id])
-
-    @declared_attr
-    def fides_user_device_provided_identity(cls) -> relationship:
-        return relationship(
-            ProvidedIdentity, foreign_keys=[cls.fides_user_device_provided_identity_id]
-        )
-
-
 class ServingComponent(Enum):
     overlay = "overlay"
     banner = "banner"
     privacy_center = "privacy_center"
     tcf_overlay = "tcf_overlay"
     tcf_banner = "tcf_banner"
-
-
-class DeprecatedServedNoticeHistory(ConsentReportingMixin, Base):
-    """
-    ***DEPRECATED*** in favor of ServedNoticeHistoryV2
-
-    A historical record of every time a resource was served in the UI to which an end user could consent
-
-    This might be a privacy notice, a purpose, special purpose, feature, special feature, vendor, or system.
-
-    The name "ServedNoticeHistory" comes from where we originally just stored the history of every time a notice was
-    served, but this table was later expanded to store when TCF attributes like purposes, special purposes, etc. were stored
-    """
-
-    @declared_attr
-    def __tablename__(self) -> str:
-        return "servednoticehistory"
-
-    acknowledge_mode = Column(
-        Boolean,
-        default=False,
-    )
-    serving_component = Column(EnumColumn(ServingComponent), nullable=False, index=True)
-
-    last_served_record = (
-        relationship(  # Only exists if this is the same as the Last Served Notice
-            "DeprecatedLastServedNotice",
-            back_populates="served_notice_history",
-            cascade="all, delete",
-            uselist=False,
-        )
-    )
-
-
-class DeprecatedPrivacyPreferenceHistory(ConsentReportingMixin, Base):
-    """
-    ***DEPRECATED*** in favor of PrivacyPreferenceHistoryV2
-
-    The DB ORM model for storing PrivacyPreferenceHistory, used for saving
-    every time consent preferences are saved for reporting purposes.
-
-    Soon to be deprecated in favor of PrivacyPreferenceHistoryv2
-    """
-
-    @declared_attr
-    def __tablename__(self) -> str:
-        return "privacypreferencehistory"
-
-    # Systems capable of propagating their consent, and their status.  If the preference is
-    # not relevant for the system, or we couldn't propagate a preference, the status is skipped
-    affected_system_status = Column(
-        MutableDict.as_mutable(JSONB), server_default="{}", default=dict
-    )
-
-    # Button, individual notices
-    method = Column(EnumColumn(ConsentMethod))
-    # Whether the user wants to opt in, opt out, or has acknowledged the notice
-    preference = Column(EnumColumn(UserConsentPreference), nullable=False, index=True)
-
-    # The privacy request created to propagate the preferences
-    privacy_request_id = Column(
-        String, ForeignKey(PrivacyRequest.id, ondelete="SET NULL"), index=True
-    )
-
-    # Systems whose data use match.  This doesn't necessarily mean we propagate.
-    # Some may be intentionally skipped later.
-    relevant_systems = Column(MutableList.as_mutable(ARRAY(String)))
-
-    # Relevant identities are added to the report during request propagation
-    secondary_user_ids = Column(
-        MutableDict.as_mutable(
-            StringEncryptedType(
-                JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
-                AesGcmEngine,
-                "pkcs5",
-            )
-        ),
-    )  # Cache secondary user ids (cookies, etc) if known for reporting purposes.
-
-    # The record of where we served the notice in the frontend, for conversion purposes
-    served_notice_history_id = Column(
-        String, ForeignKey(DeprecatedServedNoticeHistory.id), index=True
-    )
-
-    # Relationships
-    served_notice_history = relationship(
-        DeprecatedServedNoticeHistory, backref="served_notices"
-    )
-
-    current_privacy_preference = relationship(  # Only exists if this is the same as the Current Privacy Preference
-        "DeprecatedCurrentPrivacyPreference",
-        back_populates="privacy_preference_history",
-        cascade="all, delete",
-        uselist=False,
-    )
-
-    @property
-    def privacy_notice_id(self) -> Optional[str]:
-        if self.privacy_notice_history:
-            return self.privacy_notice_history.privacy_notice_id
-        return None
 
 
 class LastSavedMixin:
@@ -403,13 +142,6 @@ class DeprecatedCurrentPrivacyPreference(LastSavedMixin, Base):
 
     preference = Column(EnumColumn(UserConsentPreference), nullable=False, index=True)
 
-    privacy_preference_history_id = Column(
-        String,
-        ForeignKey(DeprecatedPrivacyPreferenceHistory.id),
-        nullable=False,
-        index=True,
-    )
-
     __table_args__ = (
         UniqueConstraint(
             "provided_identity_id", "privacy_notice_id", name="identity_privacy_notice"
@@ -497,13 +229,6 @@ class DeprecatedCurrentPrivacyPreference(LastSavedMixin, Base):
         ),
     )
 
-    # Relationships
-    privacy_preference_history = relationship(
-        DeprecatedPrivacyPreferenceHistory,
-        cascade="delete, delete-orphan",
-        single_parent=True,
-    )
-
 
 class DeprecatedLastServedNotice(LastSavedMixin, Base):
     """
@@ -521,10 +246,6 @@ class DeprecatedLastServedNotice(LastSavedMixin, Base):
     @declared_attr
     def __tablename__(self) -> str:
         return "lastservednotice"
-
-    served_notice_history_id = Column(
-        String, ForeignKey(DeprecatedServedNoticeHistory.id), nullable=False, index=True
-    )
 
     __table_args__ = (
         UniqueConstraint(
@@ -627,11 +348,4 @@ class DeprecatedLastServedNotice(LastSavedMixin, Base):
             "special_feature",
             name="last_served_fides_user_device_identity_special_feature",
         ),
-    )
-
-    # Relationships
-    served_notice_history = relationship(
-        DeprecatedServedNoticeHistory,
-        cascade="delete, delete-orphan",
-        single_parent=True,
     )

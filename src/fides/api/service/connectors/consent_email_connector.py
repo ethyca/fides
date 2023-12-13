@@ -14,7 +14,7 @@ from fides.api.models.privacy_notice import (
     EnforcementLevel,
     UserConsentPreference,
 )
-from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistoryV2
+from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -161,10 +161,10 @@ class GenericConsentEmailConnector(BaseEmailConnector):
         ] = privacy_request.consent_preferences
 
         new_workflow_consent_preferences: List[
-            PrivacyPreferenceHistoryV2
+            PrivacyPreferenceHistory
         ] = filter_privacy_preferences_for_propagation(  # type: ignore[assignment]
             self.configuration.system,
-            privacy_request.privacy_preferences_v2,  # type: ignore[attr-defined]
+            privacy_request.privacy_preferences,  # type: ignore[attr-defined]
         )
         if not (old_workflow_consent_preferences or new_workflow_consent_preferences):
             return False
@@ -191,7 +191,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             },
         )
 
-        for pref in privacy_request.privacy_preferences_v2:  # type: ignore[attr-defined]
+        for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
             pref.cache_system_status(
                 db, self.configuration.system_key, ExecutionLogStatus.skipped
             )
@@ -233,9 +233,9 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             ]
 
             filtered_privacy_preference_records: List[
-                PrivacyPreferenceHistoryV2
+                PrivacyPreferenceHistory
             ] = filter_privacy_preferences_for_propagation(  # type: ignore[assignment]
-                self.configuration.system, privacy_request.privacy_preferences_v2
+                self.configuration.system, privacy_request.privacy_preferences
             )
 
             filtered_privacy_request_schemas: List[

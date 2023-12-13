@@ -204,14 +204,6 @@ const AddVendor = ({
       <Box mr={2}>
         <AddMultipleVendors onCancel={modal.onOpen} />
       </Box>
-      <Button
-        onClick={modal.onOpen}
-        data-testid="add-vendor-btn"
-        size="sm"
-        colorScheme="primary"
-      >
-        Add vendor
-      </Button>
       <Formik
         initialValues={initialValues}
         enableReinitialize

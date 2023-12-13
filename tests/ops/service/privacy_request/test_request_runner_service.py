@@ -2402,9 +2402,9 @@ class TestConsentEmailStep:
             privacy_request_with_consent_policy.status == PrivacyRequestStatus.complete
         )
         assert privacy_request_with_consent_policy.awaiting_email_send_at is None
-        db.refresh(privacy_request_with_consent_policy.privacy_preferences_v2[0])
+        db.refresh(privacy_request_with_consent_policy.privacy_preferences[0])
 
-        assert privacy_request_with_consent_policy.privacy_preferences_v2[
+        assert privacy_request_with_consent_policy.privacy_preferences[
             0
         ].affected_system_status == {system.fides_key: "skipped"}
 

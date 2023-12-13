@@ -30,14 +30,12 @@ from fides.api.models.privacy_notice import (
 from fides.api.models.privacy_preference import (
     DeprecatedCurrentPrivacyPreference,
     DeprecatedLastServedNotice,
-    DeprecatedPrivacyPreferenceHistory,
-    DeprecatedServedNoticeHistory,
 )
 from fides.api.models.privacy_preference_v2 import (
     CurrentPrivacyPreferenceV2,
     LastServedNoticeV2,
-    PrivacyPreferenceHistoryV2,
-    ServedNoticeHistoryV2,
+    PrivacyPreferenceHistory,
+    ServedNoticeHistory,
 )
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.registration import UserRegistration

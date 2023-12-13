@@ -16,6 +16,7 @@ from fides.api.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
+    UserConsentPreference,
 )
 from fides.api.schemas.privacy_notice import PrivacyNoticeResponse
 from fides.common.api import scope_registry as scopes
@@ -764,6 +765,7 @@ class TestGetPrivacyNoticesByDataUse:
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
+                            default_preference=UserConsentPreference.opt_out,
                         )
                     ],
                 },
@@ -837,6 +839,7 @@ class TestGetPrivacyNoticesByDataUse:
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
+                            default_preference=UserConsentPreference.opt_out,
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -861,6 +864,7 @@ class TestGetPrivacyNoticesByDataUse:
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
+                            default_preference=UserConsentPreference.opt_out,
                         ),
                     ],
                 },
@@ -932,6 +936,7 @@ class TestGetPrivacyNoticesByDataUse:
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
+                            default_preference=UserConsentPreference.opt_out,
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -954,6 +959,7 @@ class TestGetPrivacyNoticesByDataUse:
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
+                            default_preference=UserConsentPreference.opt_out,
                         ),
                     ],
                     "third_party_sharing": [
@@ -979,6 +985,7 @@ class TestGetPrivacyNoticesByDataUse:
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
+                            default_preference=UserConsentPreference.opt_out,
                         ),
                     ],
                 },
@@ -1052,6 +1059,7 @@ class TestGetPrivacyNoticesByDataUse:
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
+                            default_preference=UserConsentPreference.opt_out,
                         ),
                     ],
                     "third_party_sharing": [],
@@ -1190,6 +1198,7 @@ class TestGetPrivacyNoticesByDataUse:
                             cookies=[
                                 CookieSchema(name="test_cookie", path="/", domain=None)
                             ],
+                            default_preference=UserConsentPreference.opt_out,
                         )
                     ],
                     "essential.service.operations.improve": [
@@ -1214,6 +1223,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_api=False,
                             systems_applicable=True,
                             cookies=[],
+                            default_preference=UserConsentPreference.opt_out,
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-3",
@@ -1236,6 +1246,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_api=False,
                             systems_applicable=True,
                             cookies=[],
+                            default_preference=UserConsentPreference.opt_out,
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -1258,6 +1269,7 @@ class TestGetPrivacyNoticesByDataUse:
                             displayed_in_api=False,
                             systems_applicable=True,
                             cookies=[],
+                            default_preference=UserConsentPreference.opt_out,
                         ),
                     ],
                 },
