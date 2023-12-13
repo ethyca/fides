@@ -21,7 +21,7 @@ from fides.api.models.privacy_preference import (
 )
 from fides.api.models.privacy_preference_v2 import (
     PrivacyPreferenceHistoryV2,
-    ServedNoticeHistoryV2,
+    ServedNoticeHistoryV2, CurrentPrivacyPreferenceV2,
 )
 from fides.api.models.privacy_request import (
     PrivacyRequest,
@@ -44,6 +44,12 @@ user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42
 geography = "us_ca"
 
 
+def verify_current_preference(identifier: str):
+    current_preference_query = db.query(CurrentPrivacyPreferenceV2).filter(CurrentPrivacyPreferenceV2.id == identifier)
+
+    print_records_in_dataframe(CurrentPrivacyPreferenceV2, current_preference_query)
+
+
 def verify_migrated_historical_record(old_record_type: Union[Type[DeprecatedServedNoticeHistory], Type[DeprecatedPrivacyPreferenceHistory]], new_record_type: Union[Type[PrivacyPreferenceHistoryV2], Type[ServedNoticeHistoryV2]], identifier: str):
     logger.info(f"Verifying {str(old_record_type)} -> {str(new_record_type)} migration")
     original_record: Optional[Union[DeprecatedServedNoticeHistory, DeprecatedPrivacyPreferenceHistory]] = db.query(old_record_type).get(identifier)
@@ -60,9 +66,19 @@ def verify_migrated_historical_record(old_record_type: Union[Type[DeprecatedServ
     new_records: Query = db.query(new_record_type).filter(new_record_type.id == identifier)
     pd.set_option("max_colwidth", 400)
 
-    print(f"Migrated {str(new_record_type)} {privacy_preference_id}")
+    print(f"Migrated {str(new_record_type)}")
     df: DataFrame = pd.read_sql(
         new_records.statement, con=db.bind, columns=new_record_type.__table__.columns.keys()
+    )
+    df_transposed = df.T
+    print(df_transposed)
+
+def print_records_in_dataframe(record_type, query):
+    pd.set_option("max_colwidth", 600)
+
+    print(f"Migrated {str(record_type)}")
+    df: DataFrame = pd.read_sql(
+        query.statement, con=db.bind, columns=record_type.__table__.columns.keys()
     )
     df_transposed = df.T
     print(df_transposed)
@@ -248,13 +264,16 @@ if __name__ == "__main__":
 
     parser.add_argument("--historical_preference", type=str, default=None)
     parser.add_argument("--historical_served", type=str, default=None)
+    parser.add_argument("--current_preference", type=str, default=None)
+
 
     args = parser.parse_args()
 
     privacy_preference_id = args.historical_preference
     historical_served = args.historical_served
+    current_preference = args.current_preference
 
-    if privacy_preference_id or historical_served:
+    if privacy_preference_id or historical_served or current_preference:
         if privacy_preference_id:
             verify_migrated_historical_record(
                 old_record_type=DeprecatedPrivacyPreferenceHistory,
@@ -266,6 +285,10 @@ if __name__ == "__main__":
                 old_record_type=DeprecatedServedNoticeHistory,
                 new_record_type=ServedNoticeHistoryV2,
                 identifier=historical_served,
+            )
+        if current_preference:
+            verify_current_preference(
+                identifier=current_preference
             )
     else:
         served_history, preference_history = create_historical_records(db)
