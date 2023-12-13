@@ -24,7 +24,7 @@ from fides.api.db.base_class import JSONTypeOverride
 from fides.config import CONFIG
 
 revision = "5a8cee9c014c"
-down_revision = "cff3f4e1669f"
+down_revision = "f9b28f36b53e"
 branch_labels = None
 depends_on = None
 
@@ -85,7 +85,9 @@ PRIVACY_PREFERENCE_HISTORY_MIGRATION_QUERY = """
          privacy_experience_config_history_id, 
          privacy_experience_id, 
          served_notice_history_id,
-         notice_name
+         notice_name,
+         notice_mechanism,
+         notice_key
         ) 
     SELECT
          privacypreferencehistory.id,
@@ -111,7 +113,9 @@ PRIVACY_PREFERENCE_HISTORY_MIGRATION_QUERY = """
          privacy_experience_config_history_id, 
          privacy_experience_id, 
          served_notice_history_id, 
-         privacynoticehistory.name
+         privacynoticehistory.name,
+         privacynoticehistory.consent_mechanism,
+         privacynoticehistory.notice_key
     FROM privacypreferencehistory
     JOIN privacynoticehistory ON privacypreferencehistory.privacy_notice_history_id = privacynoticehistory.id 
     WHERE privacy_notice_history_id IS NOT NULL;
@@ -132,6 +136,8 @@ SERVED_NOTICE_HISTORY_MIGRATION_QUERY = """
          anonymized_ip_address,
          created_at,
          notice_name,
+         notice_mechanism,
+         notice_key,
          request_origin,
          url_recorded,
          updated_at,
@@ -155,6 +161,8 @@ SERVED_NOTICE_HISTORY_MIGRATION_QUERY = """
          anonymized_ip_address,
          servednoticehistory.created_at,
          privacynoticehistory.name,
+         privacynoticehistory.consent_mechanism,
+         privacynoticehistory.notice_key,
          request_origin,
          url_recorded,
          servednoticehistory.updated_at,
