@@ -1,8 +1,8 @@
-"""privacy_preference_v2
+"""privacy_preference_history_v2
 
-Revision ID: cff3f4e1669f
+Revision ID: f9b28f36b53e
 Revises: 848a8f4125cf
-Create Date: 2023-12-06 02:42:38.041129
+Create Date: 2023-12-13 01:45:00.491504
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "cff3f4e1669f"
+revision = "f9b28f36b53e"
 down_revision = "848a8f4125cf"
 branch_labels = None
 depends_on = None
@@ -204,6 +204,8 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
+        sa.Column("notice_key", sa.String(), nullable=True),
+        sa.Column("notice_mechanism", sa.String(), nullable=True),
         sa.Column("notice_name", sa.String(), nullable=True),
         sa.Column("request_origin", sa.String(), nullable=True),
         sa.Column("url_recorded", sa.String(), nullable=True),
@@ -268,6 +270,18 @@ def upgrade():
         op.f("ix_servednoticehistoryv2_id"),
         "servednoticehistoryv2",
         ["id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_servednoticehistoryv2_notice_key"),
+        "servednoticehistoryv2",
+        ["notice_key"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_servednoticehistoryv2_notice_mechanism"),
+        "servednoticehistoryv2",
+        ["notice_mechanism"],
         unique=False,
     )
     op.create_index(
@@ -350,6 +364,8 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
+        sa.Column("notice_key", sa.String(), nullable=True),
+        sa.Column("notice_mechanism", sa.String(), nullable=True),
         sa.Column("notice_name", sa.String(), nullable=True),
         sa.Column("request_origin", sa.String(), nullable=True),
         sa.Column("url_recorded", sa.String(), nullable=True),
@@ -435,6 +451,18 @@ def upgrade():
         unique=False,
     )
     op.create_index(
+        op.f("ix_privacypreferencehistoryv2_notice_key"),
+        "privacypreferencehistoryv2",
+        ["notice_key"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_privacypreferencehistoryv2_notice_mechanism"),
+        "privacypreferencehistoryv2",
+        ["notice_mechanism"],
+        unique=False,
+    )
+    op.create_index(
         op.f("ix_privacypreferencehistoryv2_notice_name"),
         "privacypreferencehistoryv2",
         ["notice_name"],
@@ -488,9 +516,11 @@ def upgrade():
         ["user_geography"],
         unique=False,
     )
+    op.drop_index("ix_ctl_systems_name", table_name="ctl_systems")
 
 
 def downgrade():
+    op.create_index("ix_ctl_systems_name", "ctl_systems", ["name"], unique=False)
     op.drop_index(
         op.f("ix_privacypreferencehistoryv2_user_geography"),
         table_name="privacypreferencehistoryv2",
@@ -525,6 +555,14 @@ def downgrade():
     )
     op.drop_index(
         op.f("ix_privacypreferencehistoryv2_notice_name"),
+        table_name="privacypreferencehistoryv2",
+    )
+    op.drop_index(
+        op.f("ix_privacypreferencehistoryv2_notice_mechanism"),
+        table_name="privacypreferencehistoryv2",
+    )
+    op.drop_index(
+        op.f("ix_privacypreferencehistoryv2_notice_key"),
         table_name="privacypreferencehistoryv2",
     )
     op.drop_index(
@@ -577,6 +615,13 @@ def downgrade():
     )
     op.drop_index(
         op.f("ix_servednoticehistoryv2_notice_name"), table_name="servednoticehistoryv2"
+    )
+    op.drop_index(
+        op.f("ix_servednoticehistoryv2_notice_mechanism"),
+        table_name="servednoticehistoryv2",
+    )
+    op.drop_index(
+        op.f("ix_servednoticehistoryv2_notice_key"), table_name="servednoticehistoryv2"
     )
     op.drop_index(
         op.f("ix_servednoticehistoryv2_id"), table_name="servednoticehistoryv2"
