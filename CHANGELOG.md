@@ -31,7 +31,7 @@ The types of changes are:
 - Added feature flag for separating system name and Compass vendor selector [#4437](https://github.com/ethyca/fides/pull/4437)
 - Fire GPP events per spec [#4433](https://github.com/ethyca/fides/pull/4433)
 - New override option `fides_tcf_gdpr_applies` for setting `gdprApplies` on the CMP API [#4453](https://github.com/ethyca/fides/pull/4453)
-- Erasure support for Qualtrics [#4429](https://github.com/ethyca/fides/pull/4429)
+- Access and Erasure support for Statsig [#4429](https://github.com/ethyca/fides/pull/4429)
 
 ### Changed
 - Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
