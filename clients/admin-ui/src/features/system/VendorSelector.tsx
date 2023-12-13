@@ -109,7 +109,7 @@ const VendorSelector = ({
   options,
   onVendorSelected,
 }: Props) => {
-  const isShowingDictSuggestions = useAppSelector(selectSuggestions);
+  const dictSuggestionsState = useAppSelector(selectSuggestions);
   const [initialField, meta, { setValue }] = useField({
     name: fieldsSeparated ? "vendor_id" : "name",
   });
@@ -274,7 +274,7 @@ const VendorSelector = ({
         </FormControl>
         <CompassButton
           active={!!values.vendor_id || hasVendorSuggestions}
-          disabled={!values.vendor_id || isShowingDictSuggestions === "showing"}
+          disabled={!values.vendor_id || dictSuggestionsState === "showing"}
           onRefreshSuggestions={() => onVendorSelected(values.vendor_id)}
         />
       </HStack>
