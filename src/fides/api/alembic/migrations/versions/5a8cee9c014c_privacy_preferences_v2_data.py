@@ -6,7 +6,7 @@ Create Date: 2023-12-10 20:41:16.804029
 
 """
 import json
-from typing import Dict, List, Set
+from typing import Dict, List, Optional, Set
 
 import networkx as nx
 import pandas as pd
@@ -132,13 +132,20 @@ ORDER BY created_at asc;
 
 
 def migrate_current_privacy_preferences(bind: Connection):
-    """Migrate CurrentPrivacyPreference -> CurrentPrivacyPreferenceV2"""
+    """Migrate CurrentPrivacyPreference -> CurrentPrivacyPreferenceV2
+
+    We are migrating to a table that is indexed on two provided identity fields (Email/phone OR device) and the new
+    table is indexed on . The new table requires that email, phone
+    number, and device id are unique
+    """
     df: DataFrame = pd.read_sql(current_privacy_preference_starting_query, bind)
 
-    pd.set_option("display.max_columns", None)
-    pd.set_option("display.max_colwidth", None)
+    if len(df.index) == 0:
+        logger.info("No CurrentPrivacyPreferences to migrate. Skipping.")
+        return
 
-    # Create a paths array in the dataframe that just has non-null identifiers so null identifiers are not considered a match
+    # Create a paths column in the dataframe that is a list of non-null identifiers, so
+    # we only consider values as a match.
     df["paths"] = df[
         ["hashed_email", "hashed_phone_number", "hashed_fides_user_device"]
     ].apply(lambda row: [val for val in row if pd.notna(val)], axis=1)
@@ -149,8 +156,8 @@ def migrate_current_privacy_preferences(bind: Connection):
     # This is the magic - linking any common records across hashed_email OR hashed_phone OR hashed_device
     connected_records: List[Set] = list(nx.connected_components(network_x_graph))
 
-    # Add a common group_id for records that belong to the same network
     def add_group_id_based_on_link(preference_path: List[str]) -> int:
+        """Add a common group id for records that belong to the same network"""
         for node in preference_path:
             for i, linked_nodes in enumerate(connected_records):
                 if node in linked_nodes:
@@ -158,13 +165,11 @@ def migrate_current_privacy_preferences(bind: Connection):
 
     df["group_id"] = df["paths"].apply(add_group_id_based_on_link)
 
-    # Add a preferences column, basically concatenating two columns so we can use both in our add function
-    # Expected a 1D array, got an array with shape (0, 13)
+    # Add a preferences column, combining privacy_notice_history_id and preference
     df["preferences"] = df.apply(
         lambda row: (row["privacy_notice_history_id"], row["preference"]), axis=1
     )
 
-    # Combines preferences in a way that retains preferences received later on conflict
     def combine_preferences(preferences: Series) -> str:
         """Combines the preferences across user records deemed to be linked, prioritizing most recently saved due to
         sort order"""
@@ -181,7 +186,7 @@ def migrate_current_privacy_preferences(bind: Connection):
             }
         )
 
-    # Groups by, prioritizing later non-null records for identifiers, and more recently saved privacy
+    # Groups by group_id, prioritizing latest non-null records for identifiers, and more recently saved privacy
     # preferences.
     result_df = (
         df.groupby("group_id")
@@ -200,6 +205,23 @@ def migrate_current_privacy_preferences(bind: Connection):
         .reset_index()
     )
 
+    def decrypt_extract_encrypt(
+        provided_identity_encrypted_value: Optional[str],
+    ) -> Optional[str]:
+        """Decrypt the Provided Identity encrypted value, then extract the value from {"value": xxxx} and re-encrypt"""
+        if not provided_identity_encrypted_value:
+            return None
+
+        return encryptor.process_bind_param(
+            (
+                encryptor.process_result_value(
+                    provided_identity_encrypted_value, dialect="str"
+                )
+                or {}
+            ).get("value"),
+            dialect="str",
+        )
+
     encryptor = sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(
         JSONTypeOverride,
         CONFIG.security.app_encryption_key,
@@ -209,50 +231,15 @@ def migrate_current_privacy_preferences(bind: Connection):
 
     # Encrypted value is stored differently on ProvidedIdentity than this table.  Decrypt, extract the value,
     # then re-encrypt.
-    result_df["email"] = df.apply(
-        lambda row: (
-            encryptor.process_bind_param(
-                (
-                    encryptor.process_result_value(
-                        row["encrypted_email"], dialect="str"
-                    )
-                    or {}
-                ).get("value"),
-                dialect="str",
-            )
-        ),
-        axis=1,
+    result_df["email"] = result_df["encrypted_email"].apply(decrypt_extract_encrypt)
+    result_df["phone_number"] = result_df["encrypted_phone"].apply(
+        decrypt_extract_encrypt
     )
-    result_df["phone_number"] = df.apply(
-        lambda row: (
-            encryptor.process_bind_param(
-                (
-                    encryptor.process_result_value(
-                        row["encrypted_phone"], dialect="str"
-                    )
-                    or {}
-                ).get("value"),
-                dialect="str",
-            )
-        ),
-        axis=1,
-    )
-    result_df["fides_user_device"] = df.apply(
-        lambda row: (
-            encryptor.process_bind_param(
-                (
-                    encryptor.process_result_value(
-                        row["encrypted_device"], dialect="str"
-                    )
-                    or {}
-                ).get("value"),
-                dialect="str",
-            )
-        ),
-        axis=1,
+    result_df["fides_user_device"] = result_df["encrypted_device"].apply(
+        decrypt_extract_encrypt
     )
 
-    # Remove columns from aggregated data frame taht are not needed in CurrentPrivacyPreferenceV2 table
+    # Remove columns from aggregated data frame that are not needed in CurrentPrivacyPreferenceV2 table
     # before writing new data
     result_df.drop(columns="group_id", inplace=True)
     result_df.drop(columns="encrypted_email", inplace=True)
