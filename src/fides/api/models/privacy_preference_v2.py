@@ -14,7 +14,7 @@ from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
 from fides.api.db.base_class import Base, JSONTypeOverride
-from fides.api.models.privacy_notice import PrivacyNoticeHistory, UserConsentPreference
+from fides.api.models.privacy_notice import PrivacyNoticeHistory, UserConsentPreference, ConsentMechanism
 from fides.api.models.privacy_preference import (
     ConsentMethod,
     RequestOrigin,
@@ -184,7 +184,7 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
 
     notice_key = Column(String, index=True)  # Privacy Notice Key
 
-    notice_mechanism = Column(String, index=True)  # Privacy Notice Mechanism
+    notice_mechanism = Column(EnumColumn(ConsentMechanism), index=True)  # Privacy Notice Mechanism
 
     notice_name = Column(String, index=True)  # Privacy Notice name or "TCF"
 
