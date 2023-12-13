@@ -2,12 +2,12 @@ from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_preference_v2 import (
     ConsentIdentitiesMixin,
     LastServedNoticeV2,
-    PrivacyPreferenceHistoryV2,
-    ServedNoticeHistoryV2,
+    PrivacyPreferenceHistory,
+    ServedNoticeHistory,
 )
 
 
-class TestPrivacyPreferenceV2:
+class TestPrivacyPreference:
     def test_privacy_notice_preference(
         self,
         db,
@@ -15,7 +15,7 @@ class TestPrivacyPreferenceV2:
         privacy_notice_us_ca_provide,
         served_notice_history,
     ):
-        preference_history_record = PrivacyPreferenceHistoryV2.create(
+        preference_history_record = PrivacyPreferenceHistory.create(
             db=db,
             data={
                 "anonymized_ip_address": "92.158.1.0",
@@ -53,7 +53,7 @@ class TestPrivacyPreferenceV2:
         db,
         privacy_experience_france_overlay,
     ):
-        preference_history_record = PrivacyPreferenceHistoryV2.create(
+        preference_history_record = PrivacyPreferenceHistory.create(
             db=db,
             data={
                 "anonymized_ip_address": "92.158.1.0",
@@ -111,17 +111,15 @@ class TestConsentIdentitiesHashMixin:
     def test_hash_value_not_null(self):
         assert ConsentIdentitiesMixin.hash_value("customer_one@example.com") is not None
 
-    class TestServedNoticeHistoryV2:
+    class TestServedNoticeHistory:
         def test_get_by_served_id(self, served_notice_history, db):
             """Assert looked up by served id field, not id"""
-            assert ServedNoticeHistoryV2.get_by_served_id(db, "ser_12345").all() == [
+            assert ServedNoticeHistory.get_by_served_id(db, "ser_12345").all() == [
                 served_notice_history
             ]
 
             assert (
-                ServedNoticeHistoryV2.get_by_served_id(
-                    db, served_notice_history.id
-                ).all()
+                ServedNoticeHistory.get_by_served_id(db, served_notice_history.id).all()
                 == []
             )
 

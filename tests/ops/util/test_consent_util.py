@@ -21,7 +21,7 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeRegion,
     PrivacyNoticeTemplate,
 )
-from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistoryV2
+from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.models.sql_models import DataUse as sql_DataUse
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
@@ -61,7 +61,7 @@ class TestShouldOptIntoService:
         Privacy Notice Data Use = "marketing.advertising"
         System Data Use = "marketing.advertising"
         """
-        pref = PrivacyPreferenceHistoryV2.create(
+        pref = PrivacyPreferenceHistory.create(
             db=db,
             data={
                 "preference": preference,
@@ -109,7 +109,7 @@ class TestShouldOptIntoService:
         flag_modified(system, "privacy_declarations")
         system.save(db)
 
-        pref = PrivacyPreferenceHistoryV2.create(
+        pref = PrivacyPreferenceHistory.create(
             db=db,
             data={
                 "preference": preference,
@@ -155,7 +155,7 @@ class TestShouldOptIntoService:
         flag_modified(system, "privacy_declarations")
         system.save(db)
 
-        pref = PrivacyPreferenceHistoryV2.create(
+        pref = PrivacyPreferenceHistory.create(
             db=db,
             data={
                 "preference": preference,
@@ -195,7 +195,7 @@ class TestShouldOptIntoService:
         Privacy Notice Data Use = "essential.service" but not checked
         System Data Use = "marketing.advertising"
         """
-        pref = PrivacyPreferenceHistoryV2.create(
+        pref = PrivacyPreferenceHistory.create(
             db=db,
             data={
                 "preference": preference,
@@ -234,7 +234,7 @@ class TestShouldOptIntoService:
         Privacy Notice Data Use = "essential.service.operations"
         """
 
-        pref = PrivacyPreferenceHistoryV2.create(
+        pref = PrivacyPreferenceHistory.create(
             db=db,
             data={
                 "preference": preference,
@@ -266,7 +266,7 @@ class TestShouldOptIntoService:
         Privacy Notice Data Use = "marketing.advertising" but not checked w/ no system
         other Privacy Notice Data Use = "essential" but not checked w/ no system
         """
-        pref_1 = PrivacyPreferenceHistoryV2.create(
+        pref_1 = PrivacyPreferenceHistory.create(
             db=db,
             data={
                 "preference": "opt_in",
@@ -278,7 +278,7 @@ class TestShouldOptIntoService:
             },
             check_name=False,
         )
-        pref_2 = PrivacyPreferenceHistoryV2.create(
+        pref_2 = PrivacyPreferenceHistory.create(
             db=db,
             data={
                 "preference": "opt_out",

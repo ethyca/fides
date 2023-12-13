@@ -54,7 +54,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import CurrentStep, Policy, PolicyPreWebhook, Rule
-from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistoryV2
+from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLog,
@@ -1701,7 +1701,7 @@ def create_privacy_request_func(
     data: conlist(PrivacyRequestCreate),  # type: ignore
     authenticated: bool = False,
     privacy_preferences: List[
-        PrivacyPreferenceHistoryV2
+        PrivacyPreferenceHistory
     ] = [],  # For consent requests only
 ) -> BulkPostPrivacyRequests:
     """Creates privacy requests.
