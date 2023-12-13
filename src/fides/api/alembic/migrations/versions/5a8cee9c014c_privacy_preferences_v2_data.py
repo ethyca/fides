@@ -1,7 +1,7 @@
 """privacy_preferences_v2_data
 
 Revision ID: 5a8cee9c014c
-Revises: cff3f4e1669f
+Revises: f9b28f36b53e
 Create Date: 2023-12-10 20:41:16.804029
 
 """
@@ -32,14 +32,16 @@ depends_on = None
 def upgrade():
     bind = op.get_bind()
 
-    logger.info("Migrating PrivacyPreferenceHistory to PrivacyPreferenceHistoryV2.")
+    logger.info("Migrating PrivacyPreferenceHistory.")
+    bind.execute(text(PRIVACY_PREFERENCE_HISTORY_DELETE_QUERY))
     bind.execute(
-        text(PRIVACY_PREFERENCE_HISTORY_MIGRATION_QUERY),
+        text(PRIVACY_PREFERENCE_HISTORY_UPDATE_QUERY),
     )
-    logger.info("Migrating ServedNoticeHistory to ServedNoticeHistoryV2.")
+    logger.info("Migrating ServedNoticeHistory.")
+    bind.execute(text(SERVED_NOTICE_HISTORY_DELETE_QUERY))
 
     bind.execute(
-        text(SERVED_NOTICE_HISTORY_MIGRATION_QUERY),
+        text(SERVED_NOTICE_HISTORY_UPDATE_QUERY),
     )
 
     logger.info("Migrating CurrentPrivacyPreference to CurrentPrivacyPreferenceV2")
@@ -48,137 +50,64 @@ def upgrade():
 
 
 def downgrade():
-    logger.info("Downgrade: Delete data from PrivacyPreferenceHistoryV2.")
+    logger.info("Downgrade: Reversing PrivacyPreferenceHistory Notice Updates.")
 
     bind = op.get_bind()
-    bind.execute(text("""DELETE FROM privacypreferencehistoryv2"""))
+    bind.execute(text(PRIVACY_PREFERENCE_HISTORY_UPDATE_DOWNREV_QUERY))
 
-    logger.info("Downgrade: Delete data from ServedNoticeHistoryV2.")
-    bind.execute(text("""DELETE FROM servednoticehistoryv2"""))
+    logger.info("Downgrade: Reversing ServedNoticeHistory Notice Updates.")
+    bind.execute(text(SERVED_NOTICE_HISTORY_UPDATE_DOWNREV_QUERY))
 
     logger.info("Downgrade: Delete data from CurrentPrivacyPreferenceV2.")
     bind.execute(text("""DELETE FROM currentprivacypreferencev2"""))
 
 
-PRIVACY_PREFERENCE_HISTORY_MIGRATION_QUERY = """
-    INSERT INTO privacypreferencehistoryv2 (
-         id,
-         created_at, 
-         updated_at, 
-         affected_system_status, 
-         email, 
-         hashed_email, 
-         hashed_phone_number, 
-         phone_number, 
-         preference, 
-         privacy_notice_history_id, 
-         privacy_request_id, 
-         request_origin, 
-         secondary_user_ids, 
-         url_recorded, 
-         user_agent, 
-         user_geography, 
-         fides_user_device, 
-         hashed_fides_user_device, 
-         anonymized_ip_address, 
-         method, 
-         privacy_experience_config_history_id, 
-         privacy_experience_id, 
-         served_notice_history_id,
-         notice_name,
-         notice_mechanism,
-         notice_key
-        ) 
-    SELECT
-         privacypreferencehistory.id,
-         privacypreferencehistory.created_at, 
-         privacypreferencehistory.updated_at, 
-         affected_system_status, 
-         email, 
-         hashed_email, 
-         hashed_phone_number, 
-         phone_number, 
-         preference, 
-         privacy_notice_history_id, 
-         privacy_request_id, 
-         request_origin, 
-         secondary_user_ids, 
-         url_recorded, 
-         user_agent, 
-         user_geography, 
-         fides_user_device, 
-         hashed_fides_user_device, 
-         anonymized_ip_address, 
-         method, 
-         privacy_experience_config_history_id, 
-         privacy_experience_id, 
-         served_notice_history_id, 
-         privacynoticehistory.name,
-         privacynoticehistory.consent_mechanism,
-         privacynoticehistory.notice_key
-    FROM privacypreferencehistory
-    JOIN privacynoticehistory ON privacypreferencehistory.privacy_notice_history_id = privacynoticehistory.id 
-    WHERE privacy_notice_history_id IS NOT NULL;
-    """
-
-
-# The id of original served becomes the "served_notice_history_id" in the migration
-
-SERVED_NOTICE_HISTORY_MIGRATION_QUERY = """
-    INSERT INTO servednoticehistoryv2 (
-         id,
-         email,
-         fides_user_device,
-         phone_number,
-         hashed_email,
-         hashed_fides_user_device,
-         hashed_phone_number, 
-         anonymized_ip_address,
-         created_at,
-         notice_name,
-         notice_mechanism,
-         notice_key,
-         request_origin,
-         url_recorded,
-         updated_at,
-         user_agent,
-         user_geography,
-         acknowledge_mode,
-         serving_component,
-         served_notice_history_id,
-         privacy_experience_config_history_id,
-         privacy_experience_id,
-         privacy_notice_history_id
-        ) 
-    SELECT
-         servednoticehistory.id,
-         email,
-         fides_user_device,
-         phone_number,
-         hashed_email,
-         hashed_fides_user_device,
-         hashed_phone_number, 
-         anonymized_ip_address,
-         servednoticehistory.created_at,
-         privacynoticehistory.name,
-         privacynoticehistory.consent_mechanism,
-         privacynoticehistory.notice_key,
-         request_origin,
-         url_recorded,
-         servednoticehistory.updated_at,
-         user_agent,
-         user_geography,
-         acknowledge_mode,
-         serving_component,
-         servednoticehistory.id,
-         privacy_experience_config_history_id,
-         privacy_experience_id,
-         privacy_notice_history_id
-    FROM servednoticehistory
-    JOIN privacynoticehistory ON servednoticehistory.privacy_notice_history_id = privacynoticehistory.id 
-    WHERE privacy_notice_history_id IS NOT NULL;
+PRIVACY_PREFERENCE_HISTORY_UPDATE_QUERY = """
+    UPDATE privacypreferencehistory
+    SET 
+        notice_name = privacynoticehistory.name,
+        notice_key = privacynoticehistory.notice_key,
+        notice_mechanism = privacynoticehistory.consent_mechanism
+    FROM privacynoticehistory
+    WHERE privacypreferencehistory.privacy_notice_history_id = privacynoticehistory.id         
 """
 
+PRIVACY_PREFERENCE_HISTORY_UPDATE_DOWNREV_QUERY = """
+    UPDATE privacypreferencehistory
+    SET 
+        notice_name = null,
+        notice_key = null,
+        notice_mechanism = null;    
+"""
+
+PRIVACY_PREFERENCE_HISTORY_DELETE_QUERY = """
+    DELETE FROM privacypreferencehistory WHERE privacy_notice_history_id IS NULL;        
+"""
+
+
+SERVED_NOTICE_HISTORY_UPDATE_QUERY = """
+    UPDATE servednoticehistory
+    SET 
+        notice_name = privacynoticehistory.name,
+        notice_key = privacynoticehistory.notice_key,
+        notice_mechanism = privacynoticehistory.consent_mechanism,
+        served_notice_history_id = servednoticehistory.id
+    FROM privacynoticehistory
+    WHERE servednoticehistory.privacy_notice_history_id = privacynoticehistory.id         
+"""
+
+SERVED_NOTICE_HISTORY_UPDATE_DOWNREV_QUERY = """
+    UPDATE servednoticehistory
+    SET 
+        notice_name = null,
+        notice_key = null,
+        served_notice_history_id = null,
+        notice_mechanism = null;    
+"""
+
+SERVED_NOTICE_HISTORY_DELETE_QUERY = """
+    DELETE FROM servednoticehistory WHERE privacy_notice_history_id IS NULL;        
+"""
 
 current_privacy_preference_starting_query = """
 SELECT
@@ -230,6 +159,7 @@ def migrate_current_privacy_preferences(bind: Connection):
     df["group_id"] = df["paths"].apply(add_group_id_based_on_link)
 
     # Add a preferences column, basically concatenating two columns so we can use both in our add function
+    # Expected a 1D array, got an array with shape (0, 13)
     df["preferences"] = df.apply(
         lambda row: (row["privacy_notice_history_id"], row["preference"]), axis=1
     )

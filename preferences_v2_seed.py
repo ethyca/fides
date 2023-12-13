@@ -16,12 +16,10 @@ from fides.api.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
 from fides.api.models.privacy_preference import (
     DeprecatedCurrentPrivacyPreference,
     DeprecatedLastServedNotice,
-    DeprecatedPrivacyPreferenceHistory,
-    DeprecatedServedNoticeHistory,
 )
 from fides.api.models.privacy_preference_v2 import (
-    PrivacyPreferenceHistoryV2,
-    ServedNoticeHistoryV2, CurrentPrivacyPreferenceV2,
+    PrivacyPreferenceHistory,
+    ServedNoticeHistory, CurrentPrivacyPreferenceV2,
 )
 from fides.api.models.privacy_request import (
     PrivacyRequest,
@@ -50,18 +48,8 @@ def verify_current_preference(identifier: str):
     print_records_in_dataframe(CurrentPrivacyPreferenceV2, current_preference_query)
 
 
-def verify_migrated_historical_record(old_record_type: Union[Type[DeprecatedServedNoticeHistory], Type[DeprecatedPrivacyPreferenceHistory]], new_record_type: Union[Type[PrivacyPreferenceHistoryV2], Type[ServedNoticeHistoryV2]], identifier: str):
-    logger.info(f"Verifying {str(old_record_type)} -> {str(new_record_type)} migration")
-    original_record: Optional[Union[DeprecatedServedNoticeHistory, DeprecatedPrivacyPreferenceHistory]] = db.query(old_record_type).get(identifier)
-    migrated_record: Optional[Union[ServedNoticeHistoryV2, PrivacyPreferenceHistoryV2]] = db.query(new_record_type).get(identifier)
-
-    assert migrated_record
-
-    for col in new_record_type.__table__.columns.keys():
-        new_val = getattr(migrated_record, col, None)
-        old_val = getattr(original_record, col, None)
-        if new_val != old_val:
-            print(f"Mismatch: Column {col}. Old val: {old_val}, New val: {new_val}")
+def verify_migrated_historical_record(new_record_type: Union[Type[PrivacyPreferenceHistory], Type[ServedNoticeHistory]], identifier: str):
+    logger.info(f"Verifying {str(new_record_type)} migration")
 
     new_records: Query = db.query(new_record_type).filter(new_record_type.id == identifier)
     pd.set_option("max_colwidth", 400)
@@ -155,7 +143,7 @@ def get_us_ca_notice_and_history_id(db: Session) -> Tuple[str, str]:
     return privacy_notice.id, privacy_notice.histories[0].id
 
 
-def create_current_records(db, served_history: DeprecatedServedNoticeHistory, preference_history: DeprecatedPrivacyPreferenceHistory):
+def create_current_records(db):
     provided_identity = create_email_provided_identity(db)
 
     fides_user_device_provided_identity = create_fides_user_device_provided_identity(db)
@@ -167,13 +155,11 @@ def create_current_records(db, served_history: DeprecatedServedNoticeHistory, pr
         "provided_identity_id": provided_identity.id,
         "privacy_notice_id": notice_id,
         "privacy_notice_history_id": notice_history_id,
-        "privacy_preference_history_id": preference_history.id,
         "fides_user_device_provided_identity_id": fides_user_device_provided_identity.id,
     })
     logger.info(f"Created DeprecatedCurrentPrivacyPreference with id={current_pref.id}")
 
     current_served = DeprecatedLastServedNotice.create(db, data={
-        "served_notice_history_id": served_history.id,
         "provided_identity_id": provided_identity.id,
         "fides_user_device_provided_identity_id": fides_user_device_provided_identity.id,
         "privacy_notice_id": notice_id,
@@ -185,7 +171,7 @@ def create_current_records(db, served_history: DeprecatedServedNoticeHistory, pr
 
 
 def create_historical_records(db):
-    """Created DeprecatedPrivacyPreferenceHistory and DeprecatedServedNoticeHistory records for migration testing"""
+    """Created PrivacyPreferenceHistory and ServedNoticeHistory records for migration testing"""
     notice_id, notice_history_id = get_us_ca_notice_and_history_id(db)
 
     fides_device_provided_identity: ProvidedIdentity = (
@@ -208,7 +194,6 @@ def create_historical_records(db):
         "phone_number": phone_number,
         "fides_user_device": device_id,
         "hashed_fides_user_device": hashed_device,
-        "fides_user_device_provided_identity_id": fides_device_provided_identity.id,
         "privacy_experience_config_history_id": ca_overlay_experience.experience_config.experience_config_history_id,
         "privacy_experience_id": ca_overlay_experience.id,
         "request_origin": "overlay",
@@ -218,7 +203,7 @@ def create_historical_records(db):
         "privacy_notice_history_id": notice_history_id,
     }
 
-    served_history = DeprecatedServedNoticeHistory.create(
+    served_history = ServedNoticeHistory.create(
         db=db,
         data={
             **{
@@ -229,9 +214,9 @@ def create_historical_records(db):
         },
         check_name=False,
     )
-    logger.info(f"Created DeprecatedServedNoticeHistory with id={served_history.id}")
+    logger.info(f"Created ServedNoticeHistory with id={served_history.id}")
 
-    preference_history_record = DeprecatedPrivacyPreferenceHistory.create(
+    preference_history_record = PrivacyPreferenceHistory.create(
         db=db,
         data={
             **{
@@ -239,7 +224,6 @@ def create_historical_records(db):
                 "method": "button",
                 "preference": "opt_out",
                 "privacy_request_id": privacy_request.id,
-                "relevant_systems": ["test_system_fides_key"],
                 "secondary_user_ids": secondary_user_ids,
                 "served_notice_history_id": served_history.id,
             },
@@ -248,7 +232,7 @@ def create_historical_records(db):
         check_name=False,
     )
     logger.info(
-        f"Created DeprecatedPrivacyPreferenceHistory with id={preference_history_record.id}"
+        f"Created PrivacyPreferenceHistory with id={preference_history_record.id}"
     )
 
     return served_history, preference_history_record
@@ -266,7 +250,6 @@ if __name__ == "__main__":
     parser.add_argument("--historical_served", type=str, default=None)
     parser.add_argument("--current_preference", type=str, default=None)
 
-
     args = parser.parse_args()
 
     privacy_preference_id = args.historical_preference
@@ -276,14 +259,12 @@ if __name__ == "__main__":
     if privacy_preference_id or historical_served or current_preference:
         if privacy_preference_id:
             verify_migrated_historical_record(
-                old_record_type=DeprecatedPrivacyPreferenceHistory,
-                new_record_type=PrivacyPreferenceHistoryV2,
+                new_record_type=PrivacyPreferenceHistory,
                 identifier=privacy_preference_id,
             )
         if historical_served:
             verify_migrated_historical_record(
-                old_record_type=DeprecatedServedNoticeHistory,
-                new_record_type=ServedNoticeHistoryV2,
+                new_record_type=ServedNoticeHistory,
                 identifier=historical_served,
             )
         if current_preference:
@@ -292,5 +273,5 @@ if __name__ == "__main__":
             )
     else:
         served_history, preference_history = create_historical_records(db)
-        create_current_records(db, served_history, preference_history)
+        create_current_records(db)
     db.close()
