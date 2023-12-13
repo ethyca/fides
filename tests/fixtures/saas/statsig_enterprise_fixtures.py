@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generator
+from typing import Any, Dict
 
 import pydash
 import pytest
@@ -17,28 +17,11 @@ def statsig_enterprise_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "statsig_enterprise.domain")
         or secrets["domain"],
-        # add the rest of your secrets here
-        "email": pydash.get(saas_config, "statsig_enterprise.email")
-        or secrets["email"],
-        "user_id": pydash.get(saas_config, "statsig_enterprise.user_id")
-        or secrets["user_id"],
-        "STATSIG-CONSOLE-API-KEY": pydash.get(
-            saas_config, "statsig_enterprise.STATSIG-CONSOLE-API-KEY"
+        "server_secret_key": pydash.get(
+            saas_config, "statsig_enterprise.server_secret_key"
         )
-        or secrets["STATSIG-CONSOLE-API-KEY"],
-        "STATSIG-SERVER-API-KEY": pydash.get(
-            saas_config, "statsig_enterprise.STATSIG-SERVER-API-KEY"
-        )
-        or secrets["STATSIG-SERVER-API-KEY"],
+        or secrets["server_secret_key"],
     }
-
-
-@pytest.fixture(scope="session")
-def statsig_enterprise_identity_email(saas_config) -> str:
-    return (
-        pydash.get(saas_config, "statsig_enterprise.identity_email")
-        or secrets["identity_email"]
-    )
 
 
 @pytest.fixture
@@ -47,21 +30,8 @@ def statsig_enterprise_erasure_identity_email() -> str:
 
 
 @pytest.fixture
-def statsig_enterprise_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
 def statsig_enterprise_erasure_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def statsig_enterprise_erasure_data(
-    statsig_enterprise_erasure_identity_email: str,
-) -> Generator:
-    # create the data needed for erasure tests here
-    yield {}
+    return {"statsig_user_id": "123"}
 
 
 @pytest.fixture
@@ -69,7 +39,6 @@ def statsig_enterprise_runner(
     db,
     cache,
     statsig_enterprise_secrets,
-    statsig_enterprise_external_references,
     statsig_enterprise_erasure_external_references,
 ) -> ConnectorRunner:
     return ConnectorRunner(
@@ -77,6 +46,5 @@ def statsig_enterprise_runner(
         cache,
         "statsig_enterprise",
         statsig_enterprise_secrets,
-        external_references=statsig_enterprise_external_references,
         erasure_external_references=statsig_enterprise_erasure_external_references,
     )
