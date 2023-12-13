@@ -19,7 +19,7 @@ from fides.api.models.privacy_preference import (
 )
 from fides.api.models.privacy_preference_v2 import (
     PrivacyPreferenceHistory,
-    ServedNoticeHistory, CurrentPrivacyPreferenceV2,
+    ServedNoticeHistory, CurrentPrivacyPreferenceV2, LastServedNoticeV2,
 )
 from fides.api.models.privacy_request import (
     PrivacyRequest,
@@ -49,6 +49,13 @@ def verify_current_preference():
     print_records_in_dataframe(CurrentPrivacyPreferenceV2, current_preference_query, transposed=False)
 
 
+def verify_last_served():
+
+    current_preference_query = db.query(LastServedNoticeV2)
+
+    print_records_in_dataframe(LastServedNoticeV2, current_preference_query, transposed=False)
+
+
 def verify_migrated_historical_record(new_record_type: Union[Type[PrivacyPreferenceHistory], Type[ServedNoticeHistory]], identifier: str):
     logger.info(f"Verifying {str(new_record_type)} migration")
 
@@ -68,7 +75,7 @@ def print_records_in_dataframe(record_type, query, transposed: bool = True):
     df['created_at'] = df['created_at'].dt.tz_localize(None)
     df['updated_at'] = df['updated_at'].dt.tz_localize(None)
 
-    file_name = f'{str(record_type)}_validation'
+    file_name = f'{str(record_type)}_validation.xlsx'
     # saving the excel
     df.to_excel(file_name)
 
@@ -177,7 +184,6 @@ def get_functional_notice_and_history_id(db: Session) -> Tuple[str, str]:
         .first()
     )
     return privacy_notice.id, privacy_notice.histories[0].id
-
 
 
 def create_current_records(db):
@@ -366,14 +372,17 @@ if __name__ == "__main__":
     parser.add_argument("--historical_preference", type=str, default=None)
     parser.add_argument("--historical_served", type=str, default=None)
     parser.add_argument("--current_preference", action='store_true')
+    parser.add_argument("--last_served", action='store_true')
 
     args = parser.parse_args()
 
     privacy_preference_id = args.historical_preference
     historical_served = args.historical_served
     current_preference = args.current_preference
+    last_served = args.last_served
 
-    if privacy_preference_id or historical_served or current_preference:
+
+    if privacy_preference_id or historical_served or current_preference or last_served:
         if privacy_preference_id:
             verify_migrated_historical_record(
                 new_record_type=PrivacyPreferenceHistory,
@@ -386,6 +395,9 @@ if __name__ == "__main__":
             )
         if current_preference:
             verify_current_preference()
+
+        if last_served:
+            verify_last_served()
     else:
         served_history, preference_history = create_historical_records(db)
         create_current_records(db)

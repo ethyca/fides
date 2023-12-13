@@ -6,6 +6,7 @@ Create Date: 2023-12-10 20:41:16.804029
 
 """
 import json
+from enum import Enum
 from typing import Dict, List, Optional, Set
 
 import networkx as nx
@@ -33,12 +34,12 @@ def upgrade():
     bind = op.get_bind()
 
     logger.info("Migrating PrivacyPreferenceHistory.")
-    bind.execute(text(PRIVACY_PREFERENCE_HISTORY_DELETE_QUERY))
+    bind.execute(text(TCF_PREFERENCES_DELETE_QUERY))
     bind.execute(
         text(PRIVACY_PREFERENCE_HISTORY_UPDATE_QUERY),
     )
     logger.info("Migrating ServedNoticeHistory.")
-    bind.execute(text(SERVED_NOTICE_HISTORY_DELETE_QUERY))
+    bind.execute(text(TCF_SERVED_DELETE_QUERY))
 
     bind.execute(
         text(SERVED_NOTICE_HISTORY_UPDATE_QUERY),
@@ -46,7 +47,17 @@ def upgrade():
 
     logger.info("Migrating CurrentPrivacyPreference to CurrentPrivacyPreferenceV2")
 
-    migrate_current_privacy_preferences(bind)
+    migrate_current_records(
+        bind,
+        CURRENT_PRIVACY_PREFERENCE_BASE_QUERY,
+        CurrentMigrationType.preferences,
+    )
+
+    logger.info("Migrating LastServedNotice to LastServedNoticeV2")
+
+    migrate_current_records(
+        bind, LAST_SERVED_NOTICE_BASE_QUERY, CurrentMigrationType.served
+    )
 
 
 def downgrade():
@@ -60,6 +71,9 @@ def downgrade():
 
     logger.info("Downgrade: Delete data from CurrentPrivacyPreferenceV2.")
     bind.execute(text("""DELETE FROM currentprivacypreferencev2"""))
+
+    logger.info("Downgrade: Delete data from LastServedNoticeV2.")
+    bind.execute(text("""DELETE FROM lastservednoticev2"""))
 
 
 PRIVACY_PREFERENCE_HISTORY_UPDATE_QUERY = """
@@ -80,7 +94,7 @@ PRIVACY_PREFERENCE_HISTORY_UPDATE_DOWNREV_QUERY = """
         notice_mechanism = null;    
 """
 
-PRIVACY_PREFERENCE_HISTORY_DELETE_QUERY = """
+TCF_PREFERENCES_DELETE_QUERY = """
     DELETE FROM privacypreferencehistory WHERE privacy_notice_history_id IS NULL;        
 """
 
@@ -105,11 +119,11 @@ SERVED_NOTICE_HISTORY_UPDATE_DOWNREV_QUERY = """
         notice_mechanism = null;    
 """
 
-SERVED_NOTICE_HISTORY_DELETE_QUERY = """
+TCF_SERVED_DELETE_QUERY = """
     DELETE FROM servednoticehistory WHERE privacy_notice_history_id IS NULL;        
 """
 
-current_privacy_preference_starting_query = """
+CURRENT_PRIVACY_PREFERENCE_BASE_QUERY = """
 SELECT
  currentprivacypreference.id,
  currentprivacypreference.preference,
@@ -131,21 +145,53 @@ ORDER BY created_at asc;
 """
 
 
-def migrate_current_privacy_preferences(bind: Connection):
-    """Migrate CurrentPrivacyPreference -> CurrentPrivacyPreferenceV2
+LAST_SERVED_NOTICE_BASE_QUERY = """
+SELECT
+ lastservednotice.id,
+ lastservednotice.privacy_notice_history_id,
+ email_details.hashed_value as hashed_email, 
+ device_details.hashed_value as hashed_fides_user_device,
+ phone_details.hashed_value as hashed_phone_number,
+ email_details.encrypted_value as encrypted_email, 
+ device_details.encrypted_value as encrypted_device,
+ phone_details.encrypted_value as encrypted_phone,
+ lastservednotice.created_at,
+ lastservednotice.updated_at
+FROM lastservednotice
+LEFT OUTER JOIN providedidentity AS email_details ON email_details.field_name = 'email' AND email_details.id = lastservednotice.provided_identity_id
+LEFT OUTER JOIN providedidentity AS phone_details ON phone_details.field_name = 'phone_number' AND phone_details.id = lastservednotice.provided_identity_id
+LEFT OUTER JOIN providedidentity AS device_details ON device_details.field_name = 'fides_user_device_id' AND device_details.id = lastservednotice.fides_user_device_provided_identity_id
+WHERE privacy_notice_history_id IS NOT NULL
+ORDER BY created_at asc;
+"""
 
-    We are migrating to a table that is indexed on two provided identity fields (Email/phone OR device) and the new
-    table is indexed on . The new table requires that email, phone
-    number, and device id are unique
+
+class CurrentMigrationType(Enum):
+    preferences = "preferences"
+    served = "served"
+
+
+def migrate_current_records(
+    bind: Connection, starting_query: str, migration_type: CurrentMigrationType
+):
+    """Common method to migrate CurrentPrivacyPreference -> CurrentPrivacyPreferenceV2 and
+    LastServedNotice -> LastServedNoticeV2.
+
+    We are migrating from tables with unique constraints on two provided identity types x preferences types to the new
+    tables with unique constraints on email, device id, and phone number.
+
+    Migration involves linking all records in the original table with some shared identifier across email, phone,
+    or device id, and collapsing these records into single rows, retaining the most recently used non-null identifiers
+    and recently saved preferences.
     """
-    df: DataFrame = pd.read_sql(current_privacy_preference_starting_query, bind)
+    df: DataFrame = pd.read_sql(starting_query, bind)
 
     if len(df.index) == 0:
-        logger.info("No CurrentPrivacyPreferences to migrate. Skipping.")
+        logger.info(f"No {migration_type.value} records to migrate. Skipping.")
         return
 
     # Create a paths column in the dataframe that is a list of non-null identifiers, so
-    # we only consider values as a match.
+    # we only consider actual values as a match.
     df["paths"] = df[
         ["hashed_email", "hashed_phone_number", "hashed_fides_user_device"]
     ].apply(lambda row: [val for val in row if pd.notna(val)], axis=1)
@@ -153,56 +199,23 @@ def migrate_current_privacy_preferences(bind: Connection):
     network_x_graph: nx.Graph = nx.Graph()
     # Adds every path to the Graph
     df["paths"].apply(lambda path: nx.add_path(network_x_graph, path))
+
     # This is the magic - linking any common records across hashed_email OR hashed_phone OR hashed_device
     connected_records: List[Set] = list(nx.connected_components(network_x_graph))
 
-    def add_group_id_based_on_link(preference_path: List[str]) -> int:
-        """Add a common group id for records that belong to the same network"""
-        for node in preference_path:
+    def add_group_id_based_on_link(identity_path: List[str]) -> int:
+        """Add a common group id for records that belong to the same connected component"""
+        for node in identity_path:
             for i, linked_nodes in enumerate(connected_records):
                 if node in linked_nodes:
                     return i + 1
 
     df["group_id"] = df["paths"].apply(add_group_id_based_on_link)
 
-    # Add a preferences column, combining privacy_notice_history_id and preference
-    df["preferences"] = df.apply(
-        lambda row: (row["privacy_notice_history_id"], row["preference"]), axis=1
-    )
-
-    def combine_preferences(preferences: Series) -> str:
-        """Combines the preferences across user records deemed to be linked, prioritizing most recently saved due to
-        sort order"""
-        prefs: Dict = {}
-        for preference in preferences:
-            prefs[preference[0]] = preference[1]
-
-        return json.dumps(
-            {
-                "preferences": [
-                    {"privacy_notice_history": notice_history, "preference": preference}
-                    for notice_history, preference in prefs.items()
-                ]
-            }
-        )
-
-    # Groups by group_id, prioritizing latest non-null records for identifiers, and more recently saved privacy
-    # preferences.
     result_df = (
-        df.groupby("group_id")
-        .agg(
-            id=("id", "last"),
-            hashed_email=("hashed_email", "last"),
-            hashed_phone_number=("hashed_phone_number", "last"),
-            hashed_fides_user_device=("hashed_fides_user_device", "last"),
-            created_at=("created_at", "last"),
-            updated_at=("updated_at", "last"),
-            encrypted_email=("encrypted_email", "last"),
-            encrypted_phone=("encrypted_phone", "last"),
-            encrypted_device=("encrypted_device", "last"),
-            preferences=("preferences", combine_preferences),
-        )
-        .reset_index()
+        _group_preferences_records(df)
+        if migration_type == CurrentMigrationType.preferences
+        else _group_served_records(df)
     )
 
     def decrypt_extract_encrypt(
@@ -246,6 +259,86 @@ def migrate_current_privacy_preferences(bind: Connection):
     result_df.drop(columns="encrypted_phone", inplace=True)
     result_df.drop(columns="encrypted_device", inplace=True)
 
-    result_df.to_sql(
-        "currentprivacypreferencev2", con=bind, if_exists="append", index=False
+    if migration_type == CurrentMigrationType.preferences:
+        result_df.to_sql(
+            "currentprivacypreferencev2", con=bind, if_exists="append", index=False
+        )
+    else:
+        result_df.to_sql(
+            "lastservednoticev2", con=bind, if_exists="append", index=False
+        )
+
+
+def _group_preferences_records(df):
+    """Collapse records into rows on group_id, combining identifiers and preferences against privacy notice history ids,
+    retaining the most recently saved"""
+
+    # Add a preferences column, combining privacy_notice_history_id and preference
+    df["preferences"] = df.apply(
+        lambda row: (row["privacy_notice_history_id"], row["preference"]), axis=1
     )
+
+    def combine_preferences(preferences: Series) -> str:
+        """Combines the preferences across user records deemed to be linked, prioritizing most recently saved due to
+        sort order"""
+        prefs: Dict = {}
+        for preference in preferences:
+            prefs[preference[0]] = preference[1]
+
+        return json.dumps(
+            {
+                "preferences": [
+                    {"privacy_notice_history": notice_history, "preference": preference}
+                    for notice_history, preference in prefs.items()
+                ]
+            }
+        )
+
+    # Groups by group_id, prioritizing latest non-null records for identifiers, and more recently saved privacy
+    # preferences.
+    result_df = (
+        df.groupby("group_id")
+        .agg(
+            id=("id", "last"),
+            hashed_email=("hashed_email", "last"),
+            hashed_phone_number=("hashed_phone_number", "last"),
+            hashed_fides_user_device=("hashed_fides_user_device", "last"),
+            created_at=("created_at", "last"),
+            updated_at=("updated_at", "last"),
+            encrypted_email=("encrypted_email", "last"),
+            encrypted_phone=("encrypted_phone", "last"),
+            encrypted_device=("encrypted_device", "last"),
+            preferences=("preferences", combine_preferences),
+        )
+        .reset_index()
+    )
+    return result_df
+
+
+def _group_served_records(df: DataFrame):
+    """Collapse records into rows on group_id, combining identifiers privacy notices served"""
+
+    def combine_served(served: Series) -> str:
+        """Combines the preferences across user records deemed to be linked, prioritizing most recently saved due to
+        sort order"""
+        return json.dumps({"privacy_notice_history_ids": served.unique().tolist()})
+
+    # Groups by group_id, prioritizing latest non-null records for identifiers, and more recently saved privacy
+    # preferences.
+    result_df = (
+        df.groupby("group_id")
+        .agg(
+            id=("id", "last"),
+            hashed_email=("hashed_email", "last"),
+            hashed_phone_number=("hashed_phone_number", "last"),
+            hashed_fides_user_device=("hashed_fides_user_device", "last"),
+            created_at=("created_at", "last"),
+            updated_at=("updated_at", "last"),
+            encrypted_email=("encrypted_email", "last"),
+            encrypted_phone=("encrypted_phone", "last"),
+            encrypted_device=("encrypted_device", "last"),
+            served=("privacy_notice_history_id", combine_served),
+        )
+        .reset_index()
+    )
+    return result_df
