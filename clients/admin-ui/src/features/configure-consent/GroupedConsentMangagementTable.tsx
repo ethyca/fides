@@ -1,5 +1,14 @@
 /* eslint-disable react/no-unstable-nested-components */
-import { Button, Flex } from "@fidesui/react";
+import {
+  Button,
+  Flex,
+  ChevronDownIcon,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItemOption,
+  Portal,
+} from "@fidesui/react";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -19,7 +28,7 @@ import {
   TableActionBar,
   TableSkeletonLoader,
   GroupCountBadgeCell,
-  useClientSidePagination,
+  useServerSidePagination,
 } from "common/table/v2";
 import { useEffect, useMemo, useState } from "react";
 
@@ -32,135 +41,17 @@ import {
   ConsentManagementModal,
   useConsentManagementModal,
 } from "~/features/configure-consent/ConsentManagementModal";
+import { useGetHealthQuery } from "~/features/plus/plus.slice";
+import { DATAMAP_GROUPING } from "~/types/api";
 import {
-  useGetHealthQuery,
-  useGetVendorReportQuery,
-} from "~/features/plus/plus.slice";
-import { Page_SystemSummary_, SystemSummary } from "~/types/api";
+  useGetMininimalDatamapReportQuery,
+  Page_MinimalDatamapGrouping,
+  MinimalDatamapGrouping,
+} from "~/features/datamap/datamap.slice";
 
-type PDGroupedBySystem = {
-  systemName: string;
-  dataUse: string;
-  dataCategories: string[];
-  dataSubject: string[];
-};
+const columnHelper = createColumnHelper<MinimalDatamapGrouping>();
 
-const tableData: PDGroupedBySystem[] = [
-  {
-    systemName: "ACME 1",
-    dataUse: "data use 1",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-  {
-    systemName: "ACME 1",
-    dataUse: "data use 2",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-  {
-    systemName: "ACME 1",
-    dataUse: "data use 3",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-  {
-    systemName: "ACME 1",
-    dataUse: "data use 4",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-  {
-    systemName: "ACME 1",
-    dataUse: "data use 5",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-  {
-    systemName: "ACME 1",
-    dataUse: "data use 6",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-
-  {
-    systemName: "ACME 2",
-    dataUse: "data use 1",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-  {
-    systemName: "ACME 2",
-    dataUse: "data use 2",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-  {
-    systemName: "ACME 2",
-    dataUse: "data use 3",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-  {
-    systemName: "ACME 2",
-    dataUse: "data use 4",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-  {
-    systemName: "ACME 2",
-    dataUse: "data use 5",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-  {
-    systemName: "ACME 2",
-    dataUse: "data use 6",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-
-  {
-    systemName: "ACME 3",
-    dataUse: "data use 1",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-  {
-    systemName: "ACME 3",
-    dataUse: "data use 2",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-  {
-    systemName: "ACME 3",
-    dataUse: "data use 3",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-  {
-    systemName: "ACME 3",
-    dataUse: "data use 4",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-  {
-    systemName: "ACME 3",
-    dataUse: "data use 5",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-  {
-    systemName: "ACME 3",
-    dataUse: "data use 6",
-    dataCategories: ["cat1", " cat 2", "cat 3"],
-    dataSubject: ["subject 1", "subject 2", "subject 3"],
-  },
-];
-
-const columnHelper = createColumnHelper<PDGroupedBySystem>();
-
-const emptyVendorReportResponse: Page_SystemSummary_ = {
+const emptyMinimalDatamapReportResponse: Page_MinimalDatamapGrouping = {
   items: [],
   total: 0,
   page: 1,
@@ -171,57 +62,74 @@ export const GroupedConsentManagementTable = () => {
   const { tcf: isTcfEnabled } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const {
-    isOpen: isRowModalOpen,
-    onOpen: onRowModalOpen,
-    onClose: onRowModalClose,
-  } = useConsentManagementModal();
-  const [systemFidesKey, setSystemFidesKey] = useState<string>();
+    PAGE_SIZES,
+    pageSize,
+    setPageSize,
+    onPreviousPageClick,
+    isPreviousPageDisabled,
+    onNextPageClick,
+    isNextPageDisabled,
+    startRange,
+    endRange,
+    pageIndex,
+    setTotalPages,
+    resetPageIndexToDefault,
+  } = useServerSidePagination();
+  const [groupBy, setGroupBy] = useState<DATAMAP_GROUPING>(
+    DATAMAP_GROUPING.SYSTEM_DATA_USE
+  );
 
   const {
-    isOpen: isFilterOpen,
-    onOpen: onOpenFilter,
-    onClose: onCloseFilter,
-    resetFilters,
-    purposeOptions,
-    onPurposeChange,
-    dataUseOptions,
-    onDataUseChange,
-    legalBasisOptions,
-    onLegalBasisChange,
-    consentCategoryOptions,
-    onConsentCategoryChange,
-  } = useConsentManagementFilters();
+    data: datamapReport,
+    isLoading: isReportLoading,
+    isFetching: isReportFetching,
+  } = useGetMininimalDatamapReportQuery({
+    organizationName: "default_organization",
+    pageIndex,
+    pageSize,
+    groupBy,
+  });
 
-  const [globalFilter, setGlobalFilter] = useState<string>();
+  const {
+    items: data,
+    total: totalRows,
+    pages: totalPages,
+  } = useMemo(
+    () => datamapReport || emptyMinimalDatamapReportResponse,
+    [datamapReport]
+  );
 
-  const updateGlobalFilter = (searchTerm: string) => {
-    resetPageIndexToDefault();
-    setGlobalFilter(searchTerm);
-  };
+  useEffect(() => {
+    setTotalPages(totalPages);
+  }, [totalPages, setTotalPages]);
 
   const tcfColumns = useMemo(
     () => [
-      columnHelper.accessor((row) => row.systemName, {
+      columnHelper.accessor((row) => row.system_name, {
         enableGrouping: true,
-        id: "systemName",
+        id: "system_name",
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Vendor" {...props} />,
         meta: {
           maxWidth: "350px",
         },
       }),
-      columnHelper.accessor((row) => row.dataUse, {
-        id: "dataUse",
+      columnHelper.accessor((row) => row.data_use, {
+        id: "data_use",
         cell: (props) => <BadgeCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
         meta: {
           width: "175px",
         },
       }),
-      columnHelper.accessor((row) => row.dataCategories, {
-        id: "dataCategories",
+      columnHelper.accessor((row) => row.data_categories, {
+        id: "data_categories",
         cell: (props) => (
-          <GroupCountBadgeCell suffix="data uses" value={props.getValue()} />
+          <GroupCountBadgeCell
+            suffix="data categories"
+            expand={false}
+            value={props.getValue()}
+          />
         ),
         header: (props) => (
           <DefaultHeaderCell value="Data categories" {...props} />
@@ -230,8 +138,8 @@ export const GroupedConsentManagementTable = () => {
           width: "175px",
         },
       }),
-      columnHelper.accessor((row) => row.dataSubject, {
-        id: "dataSubject",
+      columnHelper.accessor((row) => row.data_subjects, {
+        id: "data_subjects",
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data subjects"
@@ -249,81 +157,111 @@ export const GroupedConsentManagementTable = () => {
     ],
     []
   );
-  const [grouping, setGrouping] = useState(["systemName"]);
+  const grouping = useMemo(() => {
+    switch (groupBy) {
+      case DATAMAP_GROUPING.SYSTEM_DATA_USE: {
+        return ["system_name"];
+      }
+      case DATAMAP_GROUPING.DATA_USE_SYSTEM: {
+        return ["data_use"];
+      }
+    }
+  }, [groupBy]);
 
-  const tableInstance = useReactTable<PDGroupedBySystem>({
+  const tableInstance = useReactTable<MinimalDatamapGrouping>({
     columns: tcfColumns,
-    getPaginationRowModel: getPaginationRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
+    manualPagination: true,
     getExpandedRowModel: getExpandedRowModel(),
-    data: tableData,
+    data,
     debugTable: true,
     state: {
       expanded: true,
       grouping,
     },
-    onGroupingChange: setGrouping,
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const pageProps = useClientSidePagination(tableInstance);
-
-  const onRowClick = (system: SystemSummary) => {
-    setSystemFidesKey(system.fides_key);
-    onRowModalOpen();
+  const getMenuDisplayValue = () => {
+    switch (groupBy) {
+      case DATAMAP_GROUPING.SYSTEM_DATA_USE: {
+        return "system";
+      }
+      case DATAMAP_GROUPING.DATA_USE_SYSTEM: {
+        return "data use";
+      }
+    }
   };
+
+  if (isReportLoading || isLoadingHealthCheck) {
+    return <TableSkeletonLoader rowHeight={36} numRows={15} />;
+  }
 
   return (
     <Flex flex={1} direction="column" overflow="auto">
-      {grouping}
-      {isRowModalOpen && systemFidesKey ? (
-        <ConsentManagementModal
-          isOpen={isRowModalOpen}
-          fidesKey={systemFidesKey}
-          onClose={onRowModalClose}
-        />
-      ) : null}
       <TableActionBar>
         <GlobalFilterV2
-          globalFilter={globalFilter}
-          setGlobalFilter={updateGlobalFilter}
+          globalFilter={""}
+          setGlobalFilter={() => {}}
           placeholder="Search"
         />
-        <ConsentManagementFilterModal
-          isOpen={isFilterOpen}
-          isTcfEnabled={isTcfEnabled}
-          onClose={onCloseFilter}
-          resetFilters={resetFilters}
-          purposeOptions={purposeOptions}
-          onPurposeChange={onPurposeChange}
-          dataUseOptions={dataUseOptions}
-          onDataUseChange={onDataUseChange}
-          legalBasisOptions={legalBasisOptions}
-          onLegalBasisChange={onLegalBasisChange}
-          consentCategoryOptions={consentCategoryOptions}
-          onConsentCategoryChange={onConsentCategoryChange}
-        />
         <Flex alignItems="center">
+          <Menu>
+            <MenuButton
+              as={Button}
+              size="xs"
+              variant="outline"
+              mr={2}
+              rightIcon={<ChevronDownIcon />}
+            >
+              Group by {getMenuDisplayValue()}
+            </MenuButton>
+            <MenuList zIndex={11}>
+              <MenuItemOption
+                onClick={() => {
+                  setGroupBy(DATAMAP_GROUPING.SYSTEM_DATA_USE);
+                }}
+                isChecked={DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy}
+                value={DATAMAP_GROUPING.SYSTEM_DATA_USE}
+              >
+                System
+              </MenuItemOption>
+              <MenuItemOption
+                onClick={() => {
+                  setGroupBy(DATAMAP_GROUPING.DATA_USE_SYSTEM);
+                }}
+                isChecked={DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy}
+                value={DATAMAP_GROUPING.DATA_USE_SYSTEM}
+              >
+                Data use
+              </MenuItemOption>
+              <MenuItemOption value={DATAMAP_GROUPING.SYSTEM_DATA_USE}>
+                Data category
+              </MenuItemOption>
+            </MenuList>
+          </Menu>
           <Button
-            onClick={onOpenFilter}
             data-testid="filter-multiple-systems-btn"
             size="xs"
             variant="outline"
           >
             Filter
           </Button>
-          <Button
-            onClick={() => {
-              tableInstance.setGrouping(["dataUse"]);
-            }}
-          >
-            Group
-          </Button>
         </Flex>
       </TableActionBar>
 
-      <FidesTableV2 tableInstance={tableInstance} onRowClick={onRowClick} />
-      <PaginationBar {...pageProps} pageSizes={[5, 10, 15]} />
+      <FidesTableV2<MinimalDatamapGrouping> tableInstance={tableInstance} />
+      <PaginationBar
+        totalRows={totalRows}
+        pageSizes={PAGE_SIZES}
+        setPageSize={setPageSize}
+        onPreviousPageClick={onPreviousPageClick}
+        isPreviousPageDisabled={isPreviousPageDisabled || isReportFetching}
+        onNextPageClick={onNextPageClick}
+        isNextPageDisabled={isNextPageDisabled || isReportFetching}
+        startRange={startRange}
+        endRange={endRange}
+      />
     </Flex>
   );
 };

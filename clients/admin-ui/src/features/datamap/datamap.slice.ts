@@ -11,6 +11,7 @@ import {
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_LEGAL_BASIS,
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
 } from "~/features/datamap/constants";
+import { DATAMAP_GROUPING, Page_Any_ } from "~/types/api";
 
 export interface DataCategoryNode {
   value: string;
@@ -65,9 +66,40 @@ const DEPRECATED_COLUMNS = [
   "system.privacy_declaration.data_use.legitimate_interest",
 ];
 
+export type MinimalDatamapGrouping = {
+  system_name: string;
+  data_use: string;
+  data_categories: string[];
+  data_subjects: string[];
+};
+
+export type Page_MinimalDatamapGrouping = {
+  items: Array<MinimalDatamapGrouping>;
+  total: number;
+  page: number;
+  size: number;
+  pages?: number;
+};
+
 // API endpoints
 const datamapApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    getMininimalDatamapReport: build.query<
+      Page_MinimalDatamapGrouping,
+      {
+        organizationName: string;
+        groupBy: DATAMAP_GROUPING;
+        pageIndex: number;
+        pageSize: number;
+      }
+    >({
+      query: ({ organizationName, groupBy, pageIndex, pageSize }) => {
+        return {
+          url: `plus/datamap/minimal/${organizationName}`,
+          params: { group_by: groupBy, page: pageIndex, size: pageSize },
+        };
+      },
+    }),
     getDatamap: build.query<DatamapTableData, { organizationName: string }>({
       query: ({ organizationName }) => ({
         url: `plus/datamap/${organizationName}`,
@@ -116,7 +148,11 @@ const datamapApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetDatamapQuery, useLazyGetDatamapQuery } = datamapApi;
+export const {
+  useGetDatamapQuery,
+  useLazyGetDatamapQuery,
+  useGetMininimalDatamapReportQuery,
+} = datamapApi;
 
 export interface SettingsState {
   columns?: DatamapColumn[];
