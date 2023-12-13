@@ -24,7 +24,6 @@ def upgrade():
     op.drop_column("ctl_datasets", "data_qualifier")
     op.drop_index("ix_ctl_systems_name", table_name="ctl_systems")
     op.drop_column("privacydeclaration", "data_qualifier")
-    op.drop_constraint("purpose_constraint", "tcf_purpose_overrides", type_="unique")
 
     ## Remove registry references
     op.drop_index("ix_ctl_registries_fides_key", table_name="ctl_registries")
@@ -53,9 +52,6 @@ def upgrade():
 
 def downgrade():
     ## Add back in data qualifier references
-    op.create_unique_constraint(
-        "purpose_constraint", "tcf_purpose_overrides", ["purpose"]
-    )
     op.add_column(
         "privacydeclaration",
         sa.Column("data_qualifier", sa.VARCHAR(), autoincrement=False, nullable=True),
@@ -67,8 +63,8 @@ def downgrade():
     )
     op.create_table(
         "ctl_data_qualifiers",
-        sa.Column("id", sa.VARCHAR(length=255), autoincrement=False, nullable=False),
-        sa.Column("fides_key", sa.VARCHAR(), autoincrement=False, nullable=False),
+        sa.Column("id", sa.VARCHAR(length=255), autoincrement=False, nullable=True),
+        sa.Column("fides_key", sa.VARCHAR(), autoincrement=False, nullable=True),
         sa.Column(
             "organization_fides_key", sa.TEXT(), autoincrement=False, nullable=True
         ),
@@ -98,7 +94,7 @@ def downgrade():
             sa.BOOLEAN(),
             server_default=sa.text("true"),
             autoincrement=False,
-            nullable=False,
+            nullable=True,
         ),
         sa.Column("version_added", sa.TEXT(), autoincrement=False, nullable=True),
         sa.Column("version_deprecated", sa.TEXT(), autoincrement=False, nullable=True),
@@ -122,8 +118,8 @@ def downgrade():
     )
     op.create_table(
         "ctl_registries",
-        sa.Column("id", sa.VARCHAR(length=255), autoincrement=False, nullable=False),
-        sa.Column("fides_key", sa.VARCHAR(), autoincrement=False, nullable=False),
+        sa.Column("id", sa.VARCHAR(length=255), autoincrement=False, nullable=True),
+        sa.Column("fides_key", sa.VARCHAR(), autoincrement=False, nullable=True),
         sa.Column(
             "organization_fides_key", sa.TEXT(), autoincrement=False, nullable=True
         ),
