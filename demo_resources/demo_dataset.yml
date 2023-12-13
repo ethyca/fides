@@ -18,12 +18,10 @@ dataset:
       description: User's Email
       data_categories:
       - user.contact.email
-      retention: Account termination
     - name: first_name
       description: User's first name
       data_categories:
       - user.name
-      retention: Account termination
     - name: food_preference
       description: User's favorite food
       data_categories: []

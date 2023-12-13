@@ -13,13 +13,11 @@
           "name": "alembic_version",
           "description": "Fides Generated Description for Table: alembic_version",
           "data_categories": [],
-          "retention": null,
           "fields": [
             {
               "name": "version_num",
               "description": "Fides Generated Description for Column: version_num",
               "data_categories": [],
-              "retention": null,
               "fields": null
             }
           ]
@@ -28,124 +26,106 @@
           "name": "data_categories",
           "description": "Fides Generated Description for Table: data_categories",
           "data_categories": [],
-          "retention": null,
           "fields": [
             {
               "name": "created_at",
               "description": "Fides Generated Description for Column: created_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "description",
               "description": "Fides Generated Description for Column: description",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "fides_key",
               "description": "Fides Generated Description for Column: fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "id",
               "description": "Fides Generated Description for Column: id",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "name",
               "description": "Fides Generated Description for Column: name",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "organization_fides_key",
               "description": "Fides Generated Description for Column: organization_fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "parent_key",
               "description": "Fides Generated Description for Column: parent_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "updated_at",
               "description": "Fides Generated Description for Column: updated_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             }
           ]
         },
         {
           "data_categories": [],
-          "retention": null,
           "fields": [
             {
               "name": "created_at",
               "description": "Fides Generated Description for Column: created_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "description",
               "description": "Fides Generated Description for Column: description",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "fides_key",
               "description": "Fides Generated Description for Column: fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "id",
               "description": "Fides Generated Description for Column: id",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "name",
               "description": "Fides Generated Description for Column: name",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "organization_fides_key",
               "description": "Fides Generated Description for Column: organization_fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "parent_key",
               "description": "Fides Generated Description for Column: parent_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "updated_at",
               "description": "Fides Generated Description for Column: updated_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             }
           ]
@@ -154,69 +134,59 @@
           "name": "data_subjects",
           "description": "Fides Generated Description for Table: data_subjects",
           "data_categories": [],
-          "retention": null,
           "fields": [
             {
               "name": "automated_decisions_or_profiling",
               "description": "Fides Generated Description for Column: automated_decisions_or_profiling",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "created_at",
               "description": "Fides Generated Description for Column: created_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "description",
               "description": "Fides Generated Description for Column: description",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "fides_key",
               "description": "Fides Generated Description for Column: fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "id",
               "description": "Fides Generated Description for Column: id",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "name",
               "description": "Fides Generated Description for Column: name",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "organization_fides_key",
               "description": "Fides Generated Description for Column: organization_fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "rights",
               "description": "Fides Generated Description for Column: rights",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "updated_at",
               "description": "Fides Generated Description for Column: updated_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             }
           ]
@@ -225,62 +195,53 @@
           "name": "data_uses",
           "description": "Fides Generated Description for Table: data_uses",
           "data_categories": [],
-          "retention": null,
           "fields": [
             {
               "name": "created_at",
               "description": "Fides Generated Description for Column: created_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "description",
               "description": "Fides Generated Description for Column: description",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "fides_key",
               "description": "Fides Generated Description for Column: fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "id",
               "description": "Fides Generated Description for Column: id",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "name",
               "description": "Fides Generated Description for Column: name",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "organization_fides_key",
               "description": "Fides Generated Description for Column: organization_fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "parent_key",
               "description": "Fides Generated Description for Column: parent_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "updated_at",
               "description": "Fides Generated Description for Column: updated_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             }
           ]
@@ -289,88 +250,75 @@
           "name": "datasets",
           "description": "Fides Generated Description for Table: datasets",
           "data_categories": [],
-          "retention": null,
           "fields": [
             {
               "name": "collections",
               "description": "Fides Generated Description for Column: collections",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "created_at",
               "description": "Fides Generated Description for Column: created_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "data_categories",
               "description": "Fides Generated Description for Column: data_categories",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "description",
               "description": "Fides Generated Description for Column: description",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "fides_key",
               "description": "Fides Generated Description for Column: fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "fidesctl_meta",
               "description": "Fides Generated Description for Column: fidesctl_meta",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "id",
               "description": "Fides Generated Description for Column: id",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "meta",
               "description": "Fides Generated Description for Column: meta",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "name",
               "description": "Fides Generated Description for Column: name",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "organization_fides_key",
               "description": "Fides Generated Description for Column: organization_fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "updated_at",
               "description": "Fides Generated Description for Column: updated_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             }
           ]
@@ -379,41 +327,35 @@
           "name": "evaluations",
           "description": "Fides Generated Description for Table: evaluations",
           "data_categories": [],
-          "retention": null,
           "fields": [
             {
               "name": "fides_key",
               "description": "Fides Generated Description for Column: fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "id",
               "description": "Fides Generated Description for Column: id",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "message",
               "description": "Fides Generated Description for Column: message",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "status",
               "description": "Fides Generated Description for Column: status",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "violations",
               "description": "Fides Generated Description for Column: violations",
               "data_categories": [],
-              "retention": null,
               "fields": null
             }
           ]
@@ -422,97 +364,83 @@
           "name": "organizations",
           "description": "Fides Generated Description for Table: organizations",
           "data_categories": [],
-          "retention": null,
           "fields": [
             {
               "name": "controller",
               "description": "Fides Generated Description for Column: controller",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "created_at",
               "description": "Fides Generated Description for Column: created_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "data_protection_officer",
               "description": "Fides Generated Description for Column: data_protection_officer",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "description",
               "description": "Fides Generated Description for Column: description",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "fides_key",
               "description": "Fides Generated Description for Column: fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "fidesctl_meta",
               "description": "Fides Generated Description for Column: fidesctl_meta",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "id",
               "description": "Fides Generated Description for Column: id",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "name",
               "description": "Fides Generated Description for Column: name",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "organization_fides_key",
               "description": "Fides Generated Description for Column: organization_fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "organization_parent_key",
               "description": "Fides Generated Description for Column: organization_parent_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "representative",
               "description": "Fides Generated Description for Column: representative",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "security_policy",
               "description": "Fides Generated Description for Column: security_policy",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "updated_at",
               "description": "Fides Generated Description for Column: updated_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             }
           ]
@@ -521,62 +449,53 @@
           "name": "policies",
           "description": "Fides Generated Description for Table: policies",
           "data_categories": [],
-          "retention": null,
           "fields": [
             {
               "name": "created_at",
               "description": "Fides Generated Description for Column: created_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "description",
               "description": "Fides Generated Description for Column: description",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "fides_key",
               "description": "Fides Generated Description for Column: fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "id",
               "description": "Fides Generated Description for Column: id",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "name",
               "description": "Fides Generated Description for Column: name",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "organization_fides_key",
               "description": "Fides Generated Description for Column: organization_fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "rules",
               "description": "Fides Generated Description for Column: rules",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "updated_at",
               "description": "Fides Generated Description for Column: updated_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             }
           ]
@@ -585,55 +504,47 @@
           "name": "registries",
           "description": "Fides Generated Description for Table: registries",
           "data_categories": [],
-          "retention": null,
           "fields": [
             {
               "name": "created_at",
               "description": "Fides Generated Description for Column: created_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "description",
               "description": "Fides Generated Description for Column: description",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "fides_key",
               "description": "Fides Generated Description for Column: fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "id",
               "description": "Fides Generated Description for Column: id",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "name",
               "description": "Fides Generated Description for Column: name",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "organization_fides_key",
               "description": "Fides Generated Description for Column: organization_fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "updated_at",
               "description": "Fides Generated Description for Column: updated_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             }
           ]
@@ -642,90 +553,77 @@
           "name": "systems",
           "description": "Fides Generated Description for Table: systems",
           "data_categories": [],
-          "retention": null,
           "fields": [
             {
               "name": "administrating_department",
               "description": "Fides Generated Description for Column: administrating_department",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "created_at",
               "description": "Fides Generated Description for Column: created_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "description",
               "description": "Fides Generated Description for Column: description",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "fides_key",
               "description": "Fides Generated Description for Column: fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "fidesctl_meta",
               "description": "Fides Generated Description for Column: fidesctl_meta",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "id",
               "description": "Fides Generated Description for Column: id",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "meta",
               "description": "Fides Generated Description for Column: meta",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "name",
               "description": "Fides Generated Description for Column: name",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "organization_fides_key",
               "description": "Fides Generated Description for Column: organization_fides_key",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "privacy_declarations",
               "description": "Fides Generated Description for Column: privacy_declarations",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "system_type",
               "description": "Fides Generated Description for Column: system_type",
               "data_categories": [],
-              "retention": null,
               "fields": null
             },
             {
               "name": "updated_at",
               "description": "Fides Generated Description for Column: updated_at",
               "data_categories": [],
-              "retention": null,
               "fields": null
             }
           ]

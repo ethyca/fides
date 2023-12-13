@@ -592,7 +592,6 @@ dataset:
         email, phone)
       data_categories:
       - user.contact
-      retention: 1 Year post-employment
     - name: created_at
       description: The timestamp of when the row was created
       data_categories:
@@ -602,7 +601,6 @@ dataset:
         address, email, phone)
       data_categories:
       - user.contact
-      retention: 1 Year post-employment
     - name: description
       data_categories:
       - system.operations
@@ -629,7 +627,6 @@ dataset:
         email, phone)
       data_categories:
       - user.contact
-      retention: 1 Year post-employment
     - name: security_policy
       description: A link to the Ethyca security policy
       data_categories:
@@ -684,13 +681,11 @@ dataset:
     - name: description
       data_categories:
       - system.operations
-      retention: null
       fields: null
     - name: egress
       description: Data categories that leave this system
       data_categories:
       - system.operations
-      retention: null
       fields: null
     - name: fides_key
       data_categories:
@@ -701,13 +696,11 @@ dataset:
     - name: id
       data_categories:
       - system.operations
-      retention: null
       fields: null
     - name: ingress
       description: Data categories that enter this system
       data_categories:
       - system.operations
-      retention: null
       fields: null
     - name: meta
       data_categories:

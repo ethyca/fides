@@ -22,10 +22,6 @@ export type DatasetField = {
    * Arrays of Data Categories, identified by `fides_key`, that applies to this field.
    */
   data_categories?: Array<string>;
-  /**
-   * An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset.
-   */
-  retention?: string;
   fides_meta?: FidesMeta;
   /**
    * An optional array of objects that describe hierarchical/nested fields (typically found in NoSQL databases).

@@ -12,55 +12,47 @@
       "name": "users",
       "description": "User information",
       "data_categories": [],
-      "retention": null,
       "fields": [
         {
           "name": "email",
           "description": "User's Email",
           "data_categories": [],
-          "retention": "Account termination",
           "fields": null
         },
         {
           "name": "device",
           "description": "User's Device",
           "data_categories": [],
-          "retention": null,
           "fields": null
         },
         {
           "name": "state",
           "description": "Implementation detail",
           "data_categories": ["system.operations"],
-          "retention": "3.14 Days",
           "fields": null
         },
         {
           "name": "created_at",
           "description": "User's creation timestamp",
           "data_categories": [],
-          "retention": null,
           "fields": null
         },
         {
           "name": "first_name",
           "description": "User's first name",
           "data_categories": [],
-          "retention": "Account termination",
           "fields": null
         },
         {
           "name": "food_preference",
           "description": "User's favorite food",
           "data_categories": [],
-          "retention": null,
           "fields": null
         },
         {
           "name": "uuid",
           "description": "User's unique ID",
           "data_categories": [],
-          "retention": null,
           "fields": null
         }
       ]
@@ -69,27 +61,23 @@
       "name": "products",
       "description": "Product information",
       "data_categories": [],
-      "retention": null,
       "fields": [
         {
           "name": "created_at",
           "description": "Product creation timestamp",
           "data_categories": [],
-          "retention": null,
           "fields": null
         },
         {
           "name": "name",
           "description": "Name of the product",
           "data_categories": [],
-          "retention": "Account termination",
           "fields": null
         },
         {
           "name": "price",
           "description": "Price of the product",
           "data_categories": [],
-          "retention": null,
           "fields": null
         }
       ]
