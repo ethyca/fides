@@ -25,8 +25,8 @@ def appsflyer_get_app_names(
     platform information for use with erasure endpoint.
     """
 
-    appsflyer_app_ids = input_data.get("user_id", [])
+    appsflyer_app_ids = input_data.get("id", [])
     results = []
-    for statsig_user_id in statsig_user_ids:
-        results.append({"id": statsig_user_id})
+    for appsflyer_app_id in appsflyer_app_ids:
+        results.append({"id": appsflyer_app_id})
     return results
