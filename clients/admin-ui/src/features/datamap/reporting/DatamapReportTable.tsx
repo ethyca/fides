@@ -151,7 +151,7 @@ export const DatamapReportTable = () => {
   );
 
   const [groupChangeStarted, setGroupChangeStarted] = useState<boolean>(false);
-  const [globalFilter, setGlobalFilter] = useState<string>();
+  const [globalFilter, setGlobalFilter] = useState<string>("");
   const updateGlobalFilter = (searchTerm: string) => {
     resetPageIndexToDefault();
     setGlobalFilter(searchTerm);
