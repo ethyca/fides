@@ -17,7 +17,7 @@ from loguru import logger
 
 # revision identifiers, used by Alembic.
 from pandas import DataFrame, Series
-from sqlalchemy import text
+from sqlalchemy import String, text
 from sqlalchemy.engine import Connection
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
@@ -35,12 +35,10 @@ def upgrade():
 
     logger.info("Migrating PrivacyPreferenceHistory.")
     bind.execute(text(TCF_PREFERENCES_DELETE_QUERY))
-    bind.execute(
-        text(PRIVACY_PREFERENCE_HISTORY_UPDATE_QUERY),
-    )
+    bind.execute(text(PRIVACY_PREFERENCE_HISTORY_UPDATE_QUERY))
+
     logger.info("Migrating ServedNoticeHistory.")
     bind.execute(text(TCF_SERVED_DELETE_QUERY))
-
     bind.execute(
         text(SERVED_NOTICE_HISTORY_UPDATE_QUERY),
     )
@@ -171,6 +169,21 @@ class CurrentMigrationType(Enum):
     served = "served"
 
 
+encryptor = sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(
+    String,
+    CONFIG.security.app_encryption_key,
+    AesGcmEngine,
+    "pkcs5",
+)
+
+decryptor = sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(
+    JSONTypeOverride,
+    CONFIG.security.app_encryption_key,
+    AesGcmEngine,
+    "pkcs5",
+)
+
+
 def migrate_current_records(
     bind: Connection, starting_query: str, migration_type: CurrentMigrationType
 ):
@@ -221,26 +234,18 @@ def migrate_current_records(
     def decrypt_extract_encrypt(
         provided_identity_encrypted_value: Optional[str],
     ) -> Optional[str]:
-        """Decrypt the Provided Identity encrypted value, then extract the value from {"value": xxxx} and re-encrypt"""
+        """Decrypt the Provided Identity encrypted value, then extract the value from {"value": xxxx} and re-encrypt xxxx"""
         if not provided_identity_encrypted_value:
             return None
 
-        return encryptor.process_bind_param(
-            (
-                encryptor.process_result_value(
-                    provided_identity_encrypted_value, dialect="str"
-                )
-                or {}
-            ).get("value"),
-            dialect="str",
-        )
+        decrypted = (
+            decryptor.process_result_value(
+                provided_identity_encrypted_value, dialect=""
+            )
+            or {}
+        ).get("value")
 
-    encryptor = sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(
-        JSONTypeOverride,
-        CONFIG.security.app_encryption_key,
-        AesGcmEngine,
-        "pkcs5",
-    )
+        return encryptor.process_bind_param(decrypted, dialect="")
 
     # Encrypted value is stored differently on ProvidedIdentity than this table.  Decrypt, extract the value,
     # then re-encrypt.
