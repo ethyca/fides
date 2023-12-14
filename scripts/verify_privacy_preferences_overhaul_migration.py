@@ -256,7 +256,7 @@ def create_historical_records(db: Session):
     return served_history, preference_history_record
 
 
-def create_current_privacy_preferences(db: Session):
+def create_current_privacy_preferences_and_last_served_notices(db: Session):
     """Create current privacy preferences"""
 
     provided_identity = create_email_provided_identity(db, "dawn@example.com")
@@ -397,6 +397,56 @@ def create_current_privacy_preferences(db: Session):
     )
     logger.info(f"Created DeprecatedCurrentPrivacyPreference with id={current_pref.id}")
 
+    # CA notice was served to dawn under email and fides device id
+    last_served_notice = DeprecatedLastServedNotice.create(
+        db,
+        data={
+            "provided_identity_id": provided_identity.id,
+            "privacy_notice_id": notice_id,
+            "privacy_notice_history_id": notice_history_id,
+            "fides_user_device_provided_identity_id": fides_user_device_provided_identity.id,
+        },
+    )
+
+    logger.info(f"Created DeprecatedLastServedNotice with id={last_served_notice.id}")
+
+    # CA notice was served to dawn under phone
+    last_served_notice = DeprecatedLastServedNotice.create(
+        db,
+        data={
+            "provided_identity_id": phone_provided_identity.id,
+            "privacy_notice_id": notice_id,
+            "privacy_notice_history_id": notice_history_id,
+            "fides_user_device_provided_identity_id": None,
+        },
+    )
+    logger.info(f"Created DeprecatedLastServedNotice with id={last_served_notice.id}")
+
+
+    # Functional notice was served to dawn under fides device id and phone
+    last_served_notice = DeprecatedLastServedNotice.create(
+        db,
+        data={
+            "provided_identity_id": phone_provided_identity.id,
+            "privacy_notice_id": functional_notice_id,
+            "privacy_notice_history_id": functional_notice_history_id,
+            "fides_user_device_provided_identity_id": fides_user_device_provided_identity.id,
+        },
+    )
+    logger.info(f"Created DeprecatedLastServedNotice with id={last_served_notice.id}")
+
+    # Functional notice was served to jane under fides device id
+    last_served_notice = DeprecatedLastServedNotice.create(
+        db,
+        data={
+            "provided_identity_id": None,
+            "privacy_notice_id": functional_notice_id,
+            "privacy_notice_history_id": functional_notice_history_id,
+            "fides_user_device_provided_identity_id": jane_fides_user_device_provided_identity.id,
+        },
+    )
+    logger.info(f"Created DeprecatedLastServedNotice with id={last_served_notice.id}")
+
 
 def reload_objects(db: Session) -> None:
     """
@@ -429,7 +479,7 @@ def reload_objects(db: Session) -> None:
 
 def create_outdated_objects(db: Session) -> None:
     create_historical_records(db)
-    create_current_privacy_preferences(db)
+    create_current_privacy_preferences_and_last_served_notices(db)
 
 
 def delete_old_records(db: Session) -> None:
@@ -619,6 +669,38 @@ def verify_migration(db: Session) -> None:
     }
 
     print("> Verified Current Privacy Preference V2 migration.")
+
+    existing_served = db.query(DeprecatedLastServedNotice)
+    assert existing_served.count() == 4
+    migrated_current_served = db.query(LastServedNoticeV2).order_by(
+        LastServedNoticeV2.created_at.asc()
+    )
+    assert migrated_current_served.count() == 2
+
+    dawns_served = migrated_current_served.first()
+
+    # Identities combined
+    assert dawns_served.email == "dawn@example.com"
+    assert dawns_served.hashed_email == ProvidedIdentity.hash_value("dawn@example.com")
+    assert dawns_served.phone_number == '+15555555555'
+    assert dawns_served.hashed_phone_number == ProvidedIdentity.hash_value('+15555555555')
+    assert dawns_served.fides_user_device == "dawn119f-20e4-45df-82f7-5eb68a00889f"
+    assert dawns_served.hashed_fides_user_device == ProvidedIdentity.hash_value("dawn119f-20e4-45df-82f7-5eb68a00889f")
+
+    assert dawns_served.served == {'privacy_notice_history_ids': [notice_history_id, functional_notice_history_id]}
+
+    jane_served = migrated_current_served.offset(1).first()
+    assert jane_served.email is None
+    assert jane_served.hashed_email is None
+    assert jane_served.phone_number is None
+    assert jane_served.hashed_phone_number is None
+    assert jane_served.fides_user_device == "jane119f-20e4-45df-82f7-5eb68a00889f"
+    assert jane_served.hashed_fides_user_device == ProvidedIdentity.hash_value("jane119f-20e4-45df-82f7-5eb68a00889f")
+    assert jane_served.created_at
+    assert jane_served.updated_at
+    assert jane_served.served == {'privacy_notice_history_ids': [functional_notice_history_id]}
+
+    print("> Verified LastServedNotice V2 migration.")
 
 
 if __name__ == "__main__":
