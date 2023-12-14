@@ -64,7 +64,7 @@ const DATA_USE_COLUMN_ID = "data_use";
 const DATA_CATEGORY_COLUMN_ID = "data_categories";
 const DATA_SUBJECT_COLUMN_ID = "data_subjects";
 
-export const GroupedConsentManagementTable = () => {
+export const DatamapReportTable = () => {
   const { tcf: isTcfEnabled } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const {
