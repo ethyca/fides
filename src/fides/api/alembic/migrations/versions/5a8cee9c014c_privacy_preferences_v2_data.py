@@ -216,6 +216,19 @@ def migrate_current_records(
         logger.info(f"No {migration_type.value} records to migrate. Skipping.")
         return
 
+    # Drop invalid rows where we have an encrypted val but not a hashed val and vice versa.
+    # Also drop if there are no identifiers at all.
+    # This would be unexpected, but this would mean our ProvidedIdentity record was not populated correctly.
+    df["email_count"] = df[["encrypted_email", "hashed_email"]].count(axis=1)
+    df["phone_count"] = df[["encrypted_phone", "hashed_phone_number"]].count(axis=1)
+    df["device_count"] = df[["encrypted_device", "hashed_fides_user_device"]].count(
+        axis=1
+    )
+    df = df[df["email_count"] != 1]
+    df = df[df["phone_count"] != 1]
+    df = df[df["device_count"] != 1]
+    df = df[df["email_count"] + df["phone_count"] + df["device_count"] >= 2]
+
     # Create a "paths" column in the dataframe that is a list of non-null identifiers, so
     # we only consider actual values as a match.
     df["paths"] = df[

@@ -4,7 +4,8 @@ for migrating privacy preferences
 
 The steps to run the script are as follows:
 1. In a terminal, run `nox -s teardown -- volumes ; nox -s dev -- shell` to get the server running
-3. You can run `python scripts/verify_privacy_preferences_overhaul_migration.py -h` to understand how to invoke script
+3. You can run `python scripts/verify_privacy_preferences_overhaul_migration.py --rerun to populate db and then run migration
+or just scripts/verify_privacy_preferences_overhaul_migration.py to verify
 """
 import argparse
 from datetime import datetime, timedelta
@@ -384,6 +385,48 @@ def create_current_privacy_preferences_and_last_served_notices(db: Session):
     )
     logger.info(f"Created DeprecatedCurrentPrivacyPreference with id={current_pref.id}")
 
+    # Elizabeth has a preference saved under a Provided Identity that is missing data - contrived
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "fides_user_device_id",
+        "hashed_value": None,
+        "encrypted_value": {"value": "fe9a350b-3248-45a7-83ef-06223e157b46"},
+    }
+
+    # This record will get dropped because we have invalid identity data - a hashed value but no encrypted value
+    invalid_pi = ProvidedIdentity.create(db, data=provided_identity_data)
+    current_pref = DeprecatedCurrentPrivacyPreference.create(
+        db,
+        data={
+            "preference": "opt_in",
+            "provided_identity_id": elizabeth_phone_provided_identity.id,
+            "privacy_notice_id": essential_notice_id,
+            "privacy_notice_history_id": essential_notice_history_id,
+            "fides_user_device_provided_identity_id": invalid_pi.id,
+        },
+    )
+    logger.info(f"Created DeprecatedCurrentPrivacyPreference with id={current_pref.id}")
+
+    # This record will get dropped because we have invalid identity data - a hashed value but no encrypted value
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "email",
+        "hashed_value": None,
+        "encrypted_value": None,
+    }
+    invalid_email_pi = ProvidedIdentity.create(db, data=provided_identity_data)
+    current_pref = DeprecatedCurrentPrivacyPreference.create(
+        db,
+        data={
+            "preference": "opt_in",
+            "provided_identity_id": invalid_email_pi.id,
+            "privacy_notice_id": essential_notice_id,
+            "privacy_notice_history_id": essential_notice_history_id,
+            "fides_user_device_provided_identity_id": None,
+        },
+    )
+    logger.info(f"Created DeprecatedCurrentPrivacyPreference with id={current_pref.id}")
+
     # Dawn opted out of CA notice under phone and newer device id
     current_pref = DeprecatedCurrentPrivacyPreference.create(
         db,
@@ -421,7 +464,6 @@ def create_current_privacy_preferences_and_last_served_notices(db: Session):
         },
     )
     logger.info(f"Created DeprecatedLastServedNotice with id={last_served_notice.id}")
-
 
     # Functional notice was served to dawn under fides device id and phone
     last_served_notice = DeprecatedLastServedNotice.create(
@@ -564,7 +606,7 @@ def verify_migration(db: Session) -> None:
     migrated_current_preferences = db.query(CurrentPrivacyPreferenceV2).order_by(
         CurrentPrivacyPreferenceV2.created_at.asc()
     )
-    assert existing_preferences.count() == 8
+    assert existing_preferences.count() == 10
     assert migrated_current_preferences.count() == 4
 
     notice_id, notice_history_id = get_us_ca_notice_and_history_id(db)
@@ -682,12 +724,18 @@ def verify_migration(db: Session) -> None:
     # Identities combined
     assert dawns_served.email == "dawn@example.com"
     assert dawns_served.hashed_email == ProvidedIdentity.hash_value("dawn@example.com")
-    assert dawns_served.phone_number == '+15555555555'
-    assert dawns_served.hashed_phone_number == ProvidedIdentity.hash_value('+15555555555')
+    assert dawns_served.phone_number == "+15555555555"
+    assert dawns_served.hashed_phone_number == ProvidedIdentity.hash_value(
+        "+15555555555"
+    )
     assert dawns_served.fides_user_device == "dawn119f-20e4-45df-82f7-5eb68a00889f"
-    assert dawns_served.hashed_fides_user_device == ProvidedIdentity.hash_value("dawn119f-20e4-45df-82f7-5eb68a00889f")
+    assert dawns_served.hashed_fides_user_device == ProvidedIdentity.hash_value(
+        "dawn119f-20e4-45df-82f7-5eb68a00889f"
+    )
 
-    assert dawns_served.served == {'privacy_notice_history_ids': [notice_history_id, functional_notice_history_id]}
+    assert dawns_served.served == {
+        "privacy_notice_history_ids": [notice_history_id, functional_notice_history_id]
+    }
 
     jane_served = migrated_current_served.offset(1).first()
     assert jane_served.email is None
@@ -695,10 +743,14 @@ def verify_migration(db: Session) -> None:
     assert jane_served.phone_number is None
     assert jane_served.hashed_phone_number is None
     assert jane_served.fides_user_device == "jane119f-20e4-45df-82f7-5eb68a00889f"
-    assert jane_served.hashed_fides_user_device == ProvidedIdentity.hash_value("jane119f-20e4-45df-82f7-5eb68a00889f")
+    assert jane_served.hashed_fides_user_device == ProvidedIdentity.hash_value(
+        "jane119f-20e4-45df-82f7-5eb68a00889f"
+    )
     assert jane_served.created_at
     assert jane_served.updated_at
-    assert jane_served.served == {'privacy_notice_history_ids': [functional_notice_history_id]}
+    assert jane_served.served == {
+        "privacy_notice_history_ids": [functional_notice_history_id]
+    }
 
     print("> Verified LastServedNotice V2 migration.")
 
@@ -708,7 +760,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Verify Privacy Preferences Migration")
     parser.add_argument(
-        "--run_migration",
+        "--rerun",
         dest="reload",
         action="store_const",
         const=True,
