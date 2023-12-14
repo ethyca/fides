@@ -20,6 +20,10 @@ The types of changes are:
 ### Added
 - Tooltip and styling for disabled rows in add multiple vendor view [#4498](https://github.com/ethyca/fides/pull/4498)
 - Preliminary GPP support for US regions [#4498](https://github.com/ethyca/fides/pull/4504)
+- Access and erasure support for Statsig Enterprise [#4429](https://github.com/ethyca/fides/pull/4429)
+
+### Fixed
+- Fixed incorrect Compass button behavior in system form [#4508](https://github.com/ethyca/fides/pull/4508)
 
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
@@ -39,6 +43,7 @@ The types of changes are:
 - Increased max number of preferences allowed in privacy preference API calls [#4469](https://github.com/ethyca/fides/pull/4469)
 - Reduce size of tcf_consent payload in fides_consent cookie [#4480](https://github.com/ethyca/fides/pull/4480)
 - Change log level for FidesUserPermission retrieval to `debug` [#4482](https://github.com/ethyca/fides/pull/4482)
+- Remove Add Vendor button from the Manage your vendors page[#4509](https://github.com/ethyca/fides/pull/4509)
 
 ### Fixed
 - Fix type errors when TCF vendors have no dataDeclaration [#4465](https://github.com/ethyca/fides/pull/4465)
@@ -47,6 +52,7 @@ The types of changes are:
 - Fix an error where a connector response value of None causes a DSR failure due to a missing value [#4483](https://github.com/ethyca/fides/pull/4483)
 - Fixed system name being non-editable when locked for GVL [#4475](https://github.com/ethyca/fides/pull/4475)
 - Fixed a bug with "null" values for retention period field on data uses [#4487](https://github.com/ethyca/fides/pull/4487)
+- Fixed an issue with the Iterate connector returning At least one param_value references an invalid field for the 'update' request of user [#4514]
 
 ## [2.25.0](https://github.com/ethyca/fides/compare/2.24.1...2.25.0)
 
