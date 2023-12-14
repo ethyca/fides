@@ -25,6 +25,7 @@ loguru==0.6.0
 multidimensional_urlencode==0.0.4
 okta==2.7.0
 openpyxl==3.0.9
+networkx==3.1 # added to help with privacy preference data migration
 packaging==23.0
 pandas==1.4.3
 paramiko==3.1.0
