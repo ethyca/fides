@@ -6,6 +6,7 @@ import {
   Table as TableInstance,
 } from "@tanstack/react-table";
 import React, { ReactNode } from "react";
+
 import { FidesRow } from "~/features/common/table/v2/FidesRow";
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
@@ -99,6 +100,7 @@ export const FidesTableV2 = <T,>({
           <FidesRow<T>
             key={row.id}
             row={row}
+            onRowClick={onRowClick}
             renderRowTooltipLabel={renderRowTooltipLabel}
           />
         ))}

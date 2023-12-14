@@ -19,6 +19,7 @@ import {
 } from "common/table/v2";
 import { useEffect, useMemo, useState } from "react";
 
+import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
 import {
   ConsentManagementFilterModal,
   useConsentManagementFilters,
@@ -31,10 +32,6 @@ import {
   useGetHealthQuery,
   useGetVendorReportQuery,
 } from "~/features/plus/plus.slice";
-import {
-  getQueryParamsFromList,
-  Option,
-} from "~/features/common/modals/FilterModal";
 import { Page_SystemSummary_, SystemSummary } from "~/types/api";
 
 const columnHelper = createColumnHelper<SystemSummary>();

@@ -3,20 +3,19 @@ import { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
+  AccordionMultifieldFilter,
   FilterModal,
   FilterSection,
-  AccordionMultifieldFilter,
   Option,
 } from "~/features/common/modals/FilterModal";
-import {
-  selectDataUses,
-  useGetAllDataUsesQuery,
-} from "~/features/data-use/data-use.slice";
-
 import {
   selectDataSubjects,
   useGetAllDataSubjectsQuery,
 } from "~/features/data-subjects/data-subject.slice";
+import {
+  selectDataUses,
+  useGetAllDataUsesQuery,
+} from "~/features/data-use/data-use.slice";
 import {
   selectDataCategories,
   useGetAllDataCategoriesQuery,
@@ -52,9 +51,9 @@ export const useDatamapReportFilters = () => {
   useEffect(() => {
     if (dataCategoriesOptions.length === 0) {
       setDataCategoriesOptions(
-        dataCategories.map((dataCategories) => ({
-          value: dataCategories.fides_key,
-          displayText: dataCategories.name || dataCategories.fides_key,
+        dataCategories.map((dataCategory) => ({
+          value: dataCategory.fides_key,
+          displayText: dataCategory.name || dataCategory.fides_key,
           isChecked: false,
         }))
       );

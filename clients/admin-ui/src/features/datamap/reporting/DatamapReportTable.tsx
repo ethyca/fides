@@ -1,49 +1,45 @@
 /* eslint-disable react/no-unstable-nested-components */
 import {
   Button,
-  Flex,
   ChevronDownIcon,
+  Flex,
   Menu,
   MenuButton,
-  MenuList,
   MenuItemOption,
+  MenuList,
 } from "@fidesui/react";
 import {
   createColumnHelper,
   getCoreRowModel,
-  getGroupedRowModel,
   getExpandedRowModel,
+  getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useFeatures } from "common/features";
-import {
-  getQueryParamsFromList,
-  Option,
-} from "~/features/common/modals/FilterModal";
 import {
   DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
   GlobalFilterV2,
+  GroupCountBadgeCell,
   PaginationBar,
   TableActionBar,
   TableSkeletonLoader,
-  GroupCountBadgeCell,
   useServerSidePagination,
 } from "common/table/v2";
 import { useEffect, useMemo, useState } from "react";
 
+import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
+import { useGetMininimalDatamapReportQuery } from "~/features/datamap/datamap.slice";
 import {
-  useDatamapReportFilters,
   DatamapReportFilterModal,
+  useDatamapReportFilters,
 } from "~/features/datamap/reporting/DatamapReportFilterModal";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {
   DATAMAP_GROUPING,
-  Page_MinimalDatamapReport_,
   MinimalDatamapReport,
+  Page_MinimalDatamapReport_,
 } from "~/types/api";
-import { useGetMininimalDatamapReportQuery } from "~/features/datamap/datamap.slice";
 
 const columnHelper = createColumnHelper<MinimalDatamapReport>();
 
@@ -55,22 +51,35 @@ const emptyMinimalDatamapReportResponse: Page_MinimalDatamapReport_ = {
   pages: 1,
 };
 
+const SYSTEM_NAME_COLUMN_ID = "system_name";
+const DATA_USE_COLUMN_ID = "data_use";
+const DATA_CATEGORY_COLUMN_ID = "data_categories";
+const DATA_SUBJECT_COLUMN_ID = "data_subjects";
+
 const getGrouping = (groupBy: DATAMAP_GROUPING) => {
+  let grouping = [];
   switch (groupBy) {
     case DATAMAP_GROUPING.SYSTEM_DATA_USE: {
-      return [SYSTEM_NAME_COLUMN_ID];
+      grouping = [SYSTEM_NAME_COLUMN_ID];
+      break;
     }
     case DATAMAP_GROUPING.DATA_USE_SYSTEM: {
-      return [DATA_USE_COLUMN_ID];
+      grouping = [DATA_USE_COLUMN_ID];
+      break;
     }
     case DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM: {
-      return [DATA_CATEGORY_COLUMN_ID];
+      grouping = [DATA_CATEGORY_COLUMN_ID];
+      break;
     }
+    default:
+      grouping = [SYSTEM_NAME_COLUMN_ID];
   }
+  return grouping;
 };
 const getColumnOrder = (groupBy: DATAMAP_GROUPING) => {
+  let columnOrder = [];
   if (DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy) {
-    return [
+    columnOrder = [
       SYSTEM_NAME_COLUMN_ID,
       DATA_USE_COLUMN_ID,
       DATA_CATEGORY_COLUMN_ID,
@@ -78,7 +87,7 @@ const getColumnOrder = (groupBy: DATAMAP_GROUPING) => {
     ];
   }
   if (DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy) {
-    return [
+    columnOrder = [
       DATA_USE_COLUMN_ID,
       SYSTEM_NAME_COLUMN_ID,
       DATA_CATEGORY_COLUMN_ID,
@@ -86,19 +95,15 @@ const getColumnOrder = (groupBy: DATAMAP_GROUPING) => {
     ];
   }
   if (DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM === groupBy) {
-    return [
+    columnOrder = [
       DATA_CATEGORY_COLUMN_ID,
       SYSTEM_NAME_COLUMN_ID,
       DATA_USE_COLUMN_ID,
       DATA_SUBJECT_COLUMN_ID,
     ];
   }
+  return columnOrder;
 };
-
-const SYSTEM_NAME_COLUMN_ID = "system_name";
-const DATA_USE_COLUMN_ID = "data_use";
-const DATA_CATEGORY_COLUMN_ID = "data_categories";
-const DATA_SUBJECT_COLUMN_ID = "data_subjects";
 
 export const DatamapReportTable = () => {
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
@@ -177,7 +182,7 @@ export const DatamapReportTable = () => {
     grouping,
     columnOrder,
   } = useMemo(() => {
-    const data = datamapReport || emptyMinimalDatamapReportResponse;
+    const report = datamapReport || emptyMinimalDatamapReportResponse;
     if (groupChangeStarted) {
       setGroupChangeStarted(false);
     }
@@ -190,10 +195,12 @@ export const DatamapReportTable = () => {
       the correct data loads.
     */
     return {
-      ...data,
+      ...report,
       grouping: getGrouping(groupBy),
       columnOrder: getColumnOrder(groupBy),
     };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [datamapReport]);
 
   useEffect(() => {
@@ -288,6 +295,9 @@ export const DatamapReportTable = () => {
       case DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM: {
         return "data category";
       }
+      default: {
+        return "system";
+      }
     }
   };
 
@@ -310,7 +320,7 @@ export const DatamapReportTable = () => {
       />
       <TableActionBar>
         <GlobalFilterV2
-          globalFilter={""}
+          globalFilter=""
           setGlobalFilter={() => {}}
           placeholder="Search"
         />

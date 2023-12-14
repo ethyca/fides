@@ -4,9 +4,9 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  SimpleGrid,
   Box,
   Button,
+  Checkbox,
   Divider,
   Heading,
   Modal,
@@ -16,7 +16,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Checkbox,
+  SimpleGrid,
   Text,
 } from "@fidesui/react";
 import React, { ReactNode, useState } from "react";

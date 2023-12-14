@@ -9,7 +9,7 @@ import {
   Text,
 } from "@fidesui/react";
 import { HeaderContext } from "@tanstack/react-table";
-import { ReactNode, FC } from "react";
+import { FC, ReactNode } from "react";
 
 export const DefaultCell = ({ value }: { value: string }) => (
   <Flex alignItems="center" height="100%">
@@ -62,7 +62,7 @@ export const GroupCountBadgeCell = ({
   if (Array.isArray(value)) {
     badges = expand ? (
       value.map((d) => (
-        <Box px={1}>
+        <Box px={1} key={d}>
           <FidesBadge>{d}</FidesBadge>
         </Box>
       ))

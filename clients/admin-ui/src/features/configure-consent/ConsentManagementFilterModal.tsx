@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
+  AccordionMultifieldFilter,
   FilterModal,
   FilterSection,
-  AccordionMultifieldFilter,
   Option,
 } from "~/features/common/modals/FilterModal";
 import {

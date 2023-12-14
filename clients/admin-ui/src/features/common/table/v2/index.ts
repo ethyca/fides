@@ -2,8 +2,8 @@ export {
   BadgeCell,
   DefaultCell,
   DefaultHeaderCell,
-  IndeterminateCheckboxCell,
   GroupCountBadgeCell,
+  IndeterminateCheckboxCell,
 } from "./cells";
 export { FidesTableV2 } from "./FidesTable";
 export { FidesTableFooter } from "./FidesTableFooter";

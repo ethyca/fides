@@ -1,6 +1,6 @@
 import { Td } from "@fidesui/react";
-import { flexRender, Cell } from "@tanstack/react-table";
-import { groupCollapsed } from "console";
+import { Cell, flexRender } from "@tanstack/react-table";
+
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
 type FidesCellProps<T> = {
@@ -21,8 +21,8 @@ export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
     .getContext()
     .table.getRowModel()
     .rows.filter((r) => !r.id.includes(":"));
-  let isFirstRowOfPage = rows[0].id === cell.row.id;
-  let isLastRowOfPage = rows[rows.length - 1].id == cell.row.id;
+  const isFirstRowOfPage = rows[0].id === cell.row.id;
+  const isLastRowOfPage = rows[rows.length - 1].id === cell.row.id;
   if (cell.getValue() && isGroupedColumn) {
     const groupRow = cell
       .getContext()
