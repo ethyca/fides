@@ -1,6 +1,5 @@
 import {
   ConsentOptionCreate,
-  LastServedConsentSchema,
   PrivacyNoticeResponseWithUserPreferences,
 } from "~/types/api";
 import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
@@ -344,15 +343,11 @@ describe("Privacy notice driven consent", () => {
         ]);
         cy.getByTestId("save-btn").click();
         cy.wait("@patchPrivacyPreference").then((preferenceInterception) => {
-          const { preferences } = preferenceInterception.request.body;
-          const expected = interception.response?.body.map(
-            (s: LastServedConsentSchema) => s.served_notice_history_id
-          );
-          expect(
-            preferences.map(
-              (p: ConsentOptionCreate) => p.served_notice_history_id
-            )
-          ).to.eql(expected);
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          const { served_notice_history_id } =
+            preferenceInterception.request.body;
+          const expected = interception.response?.body.servedNoticeHistoryId;
+          expect(served_notice_history_id).to.eql(expected);
         });
       });
     });

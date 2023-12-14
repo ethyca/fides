@@ -25,4 +25,5 @@ export type RecordConsentServedRequest = {
   user_geography?: string;
   acknowledge_mode?: boolean;
   serving_component: ServingComponent;
+  served_notice_history_id?: string;
 };

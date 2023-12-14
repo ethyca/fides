@@ -60,7 +60,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   const createConsentPreferencesToSave = (
     privacyNoticeList: PrivacyNotice[],
     enabledPrivacyNoticeKeys: string[]
-  ): SaveConsentPreference[] => privacyNoticeList.map((notice) => {
+  ): SaveConsentPreference[] =>
+    privacyNoticeList.map((notice) => {
       const userPreference = transformConsentToFidesUserPreference(
         enabledPrivacyNoticeKeys.includes(notice.notice_key),
         notice.consent_mechanism
