@@ -103,7 +103,7 @@ type DefaultHeaderCellProps<T, V> = {
 export const DefaultHeaderCell = <T,>({
   value,
   column,
-}: DefaultHeaderCellProps<T, string | number>) => {
+}: DefaultHeaderCellProps<T, string | number | string[]>) => {
   let sortIcon: ReactNode = null;
   if (column.getIsSorted()) {
     sortIcon =

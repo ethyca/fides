@@ -67,7 +67,7 @@ export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
       onClick={
         cell.column.columnDef.header !== "Enable" && onRowClick
           ? () => {
-              onRowClick(row.original);
+              onRowClick(cell.row.original);
             }
           : undefined
       }

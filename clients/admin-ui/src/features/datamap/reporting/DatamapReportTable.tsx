@@ -57,7 +57,7 @@ const DATA_CATEGORY_COLUMN_ID = "data_categories";
 const DATA_SUBJECT_COLUMN_ID = "data_subjects";
 
 const getGrouping = (groupBy: DATAMAP_GROUPING) => {
-  let grouping = [];
+  let grouping: string[] = [];
   switch (groupBy) {
     case DATAMAP_GROUPING.SYSTEM_DATA_USE: {
       grouping = [SYSTEM_NAME_COLUMN_ID];
@@ -77,7 +77,7 @@ const getGrouping = (groupBy: DATAMAP_GROUPING) => {
   return grouping;
 };
 const getColumnOrder = (groupBy: DATAMAP_GROUPING) => {
-  let columnOrder = [];
+  let columnOrder: string[] = [];
   if (DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy) {
     columnOrder = [
       SYSTEM_NAME_COLUMN_ID,
@@ -310,7 +310,7 @@ export const DatamapReportTable = () => {
       <DatamapReportFilterModal
         isOpen={isOpen}
         onClose={onClose}
-        resetFilter={resetFilters}
+        resetFilters={resetFilters}
         dataUseOptions={dataUseOptions}
         onDataUseChange={onDataUseChange}
         dataCategoriesOptions={dataCategoriesOptions}
