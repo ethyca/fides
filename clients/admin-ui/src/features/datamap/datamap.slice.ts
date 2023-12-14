@@ -75,12 +75,31 @@ const datamapApi = baseApi.injectEndpoints({
         groupBy: DATAMAP_GROUPING;
         pageIndex: number;
         pageSize: number;
+        dataUses?: string;
+        dataCategories?: string;
+        dataSubjects?: string;
       }
     >({
-      query: ({ groupBy, pageIndex, pageSize }) => {
+      query: ({
+        groupBy,
+        pageIndex,
+        pageSize,
+        dataUses,
+        dataCategories,
+        dataSubjects,
+      }) => {
+        let queryString = `page=${pageIndex}&size=${pageSize}&group_by=${groupBy}`;
+        if (dataUses) {
+          queryString += `&${dataUses}`;
+        }
+        if (dataCategories) {
+          queryString += `&${dataCategories}`;
+        }
+        if (dataSubjects) {
+          queryString += `&${dataSubjects}`;
+        }
         return {
-          url: `plus/datamap/minimal`,
-          params: { group_by: groupBy, page: pageIndex, size: pageSize },
+          url: `plus/datamap/minimal?${queryString}`,
         };
       },
     }),

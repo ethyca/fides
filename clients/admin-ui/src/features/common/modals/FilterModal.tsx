@@ -1,4 +1,10 @@
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
+  SimpleGrid,
   Box,
   Button,
   Divider,
@@ -10,8 +16,143 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Checkbox,
+  Text,
 } from "@fidesui/react";
-import React, { ReactNode } from "react";
+import React, { ReactNode, useState } from "react";
+
+export const getQueryParamsFromList = (
+  optionList: Option[],
+  queryParam: string
+) => {
+  const checkedOptions = optionList.filter((option) => option.isChecked);
+  return checkedOptions.length > 0
+    ? `${queryParam}=${checkedOptions
+        .map((option) => option.value)
+        .join(`&${queryParam}=`)}`
+    : undefined;
+};
+
+export type Option = {
+  value: string;
+  displayText: string;
+  isChecked: boolean;
+};
+type AccordionMultiFieldCheckBoxProps = {
+  value: string;
+  displayText: string;
+  isChecked: boolean;
+  onCheckboxChange: (fidesKey: string, checked: boolean) => void;
+};
+
+const AccordionMultiFieldCheckBox = ({
+  value,
+  displayText,
+  isChecked,
+  onCheckboxChange,
+}: AccordionMultiFieldCheckBoxProps) => (
+  <Checkbox
+    value={value}
+    key={value}
+    height="20px"
+    mb="25px"
+    isChecked={isChecked}
+    onChange={({ target }) => {
+      onCheckboxChange(value, (target as HTMLInputElement).checked);
+    }}
+    _focusWithin={{
+      bg: "gray.100",
+    }}
+    colorScheme="complimentary"
+  >
+    <Text
+      fontSize="sm"
+      lineHeight={5}
+      textOverflow="ellipsis"
+      overflow="hidden"
+    >
+      {displayText}
+    </Text>
+  </Checkbox>
+);
+
+type AccordionMultiFieldProps = {
+  options: Option[];
+  header: string;
+  onCheckboxChange: (newValue: string, checked: boolean) => void;
+  columns?: number;
+  numDefaultOptions?: number;
+};
+
+export const AccordionMultifieldFilter = ({
+  options,
+  header,
+  onCheckboxChange,
+  columns = 3,
+  numDefaultOptions = 15,
+}: AccordionMultiFieldProps) => {
+  const [isViewingMore, setIsViewingMore] = useState(false);
+  const viewableOptions = isViewingMore
+    ? options
+    : options.slice(0, numDefaultOptions);
+  const areExtraOptionsAvailable = options.length > numDefaultOptions;
+
+  return (
+    <Accordion width="100%" allowToggle>
+      <AccordionItem border="0px">
+        <Heading height="56px">
+          <AccordionButton height="100%">
+            <Box
+              flex="1"
+              alignItems="center"
+              justifyContent="center"
+              textAlign="left"
+              fontWeight={600}
+            >
+              {header}
+            </Box>
+            <AccordionIcon />
+          </AccordionButton>
+        </Heading>
+        <AccordionPanel>
+          <SimpleGrid columns={columns}>
+            {viewableOptions.map((option) => (
+              <AccordionMultiFieldCheckBox
+                key={option.value}
+                {...option}
+                onCheckboxChange={onCheckboxChange}
+              />
+            ))}
+          </SimpleGrid>
+          {!isViewingMore && areExtraOptionsAvailable ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setIsViewingMore(true);
+              }}
+            >
+              View more
+            </Button>
+          ) : null}
+          {isViewingMore && areExtraOptionsAvailable ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setIsViewingMore(false);
+              }}
+            >
+              View less
+            </Button>
+          ) : null}
+        </AccordionPanel>
+      </AccordionItem>
+    </Accordion>
+  );
+};
+
+export default AccordionMultifieldFilter;
 
 type FilterSectionProps = {
   heading?: string;

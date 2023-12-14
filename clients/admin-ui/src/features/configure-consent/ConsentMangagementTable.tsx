@@ -21,7 +21,6 @@ import { useEffect, useMemo, useState } from "react";
 
 import {
   ConsentManagementFilterModal,
-  Option,
   useConsentManagementFilters,
 } from "~/features/configure-consent/ConsentManagementFilterModal";
 import {
@@ -32,6 +31,10 @@ import {
   useGetHealthQuery,
   useGetVendorReportQuery,
 } from "~/features/plus/plus.slice";
+import {
+  getQueryParamsFromList,
+  Option,
+} from "~/features/common/modals/FilterModal";
 import { Page_SystemSummary_, SystemSummary } from "~/types/api";
 
 const columnHelper = createColumnHelper<SystemSummary>();
@@ -68,14 +71,6 @@ export const ConsentManagementTable = () => {
     onConsentCategoryChange,
   } = useConsentManagementFilters();
 
-  const getQueryParamsFromList = (optionList: Option[], queryParam: string) => {
-    const checkedOptions = optionList.filter((option) => option.isChecked);
-    return checkedOptions.length > 0
-      ? `${queryParam}=${checkedOptions
-          .map((option) => option.value)
-          .join(`&${queryParam}=`)}`
-      : undefined;
-  };
   const selectedDataUseFilters = useMemo(
     () => getQueryParamsFromList(dataUseOptions, "data_uses"),
     [dataUseOptions]
