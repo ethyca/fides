@@ -139,14 +139,12 @@ export const generateFidesString = async ({
       // Attach the AC string
       const acString = generateAcString({ tcStringPreferences });
       encodedString = `${encodedString}${FIDES_SEPARATOR}${acString}`;
-      console.log({ tcModel });
     }
   } catch (e) {
     // eslint-disable-next-line no-console
     console.error("Unable to instantiate GVL: ", e);
     return Promise.resolve("");
   }
-
   return Promise.resolve(encodedString);
 };
 
