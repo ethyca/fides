@@ -53,7 +53,7 @@ saas_config:
             "https://examplecontroller.com/opengdpr_callbacks"  ] }
 
 # appsflyer_id is hardcoded in this case as my understanding is that the identity_value that will be provided to us is of this type.
-# should probably also set submitted time to something like 'now'
+# should probably also set submitted time to something like 'now' hardcoding for now
 
 ### Marc you are not done yet. Remove this comment only when you're DONE with this config
 ### Remember to ensure that the descriptions are included and the user guide!
