@@ -4,7 +4,7 @@ for migrating privacy preferences
 
 The steps to run the script are as follows:
 1. In a terminal, run `nox -s teardown -- volumes ; nox -s dev -- shell` to get the server running
-3. You can run `python scripts/verify_privacy_preferences_overhaul_migration.py --rerun to populate db and then run migration
+3. You can run `python scripts/verify_privacy_preferences_overhaul_migration.py --migrate to populate db and then run migration
 or just scripts/verify_privacy_preferences_overhaul_migration.py to verify
 """
 import argparse
@@ -760,7 +760,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Verify Privacy Preferences Migration")
     parser.add_argument(
-        "--rerun",
+        "--migrate",
         dest="reload",
         action="store_const",
         const=True,
