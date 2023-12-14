@@ -44,7 +44,7 @@ saas_config:
           body: >
             {   "subject_request_id":"<privacy_req_id>", 
             "subject_request_type":"erasure", 
-            "submitted_time":"<timestamp>",  "platform": "android", 
+            "submitted_time":"2023-11-20",  "platform": "android", 
             "subject_identities":[    {    
             "identity_type":"appsflyer_id",   
             "identity_value":"<identity_value>",   
