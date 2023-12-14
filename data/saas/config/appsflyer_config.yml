@@ -14,6 +14,10 @@ saas_config:
       description: The identity value that is returned for the end user email being submitted.
     # identity value is one we need to get from the customer
 
+  external_references:
+    - name: appsflyer_property_id
+      description: Retrieved from the app list endpoint, a list of application names to use with erasure request
+
   client_config:
     protocol: https
     host: hq1.appsflyer.com
