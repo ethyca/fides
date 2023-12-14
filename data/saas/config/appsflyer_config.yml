@@ -1,0 +1,59 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Appsflyer
+  type: appsflyer
+  description: A sample schema representing the Appsflyer connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/appsflyer
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: hq1.appsflyer.com
+      description: The Appsflyer domain. Default hq1.appsflyer.com
+    - name: identity_value
+      description: The identity value that is returned for the end user email being submitted.
+    # identity value is one we need to get from the customer
+
+  client_config:
+    protocol: https
+    host: hq1.appsflyer.com
+    authentication:
+      strategy: bearer
+      configuration:
+        token: <token>
+
+  test_request:
+    method: GET
+    path: /api/mng/apps?capabilities=&limit=1
+
+  endpoints:
+    - name: user
+      requests:
+      read:
+        request_override: appsflyer_get_app_names
+        param_values:
+          - name: property_id
+            references:
+              - appsflyer_property_id
+
+    - name: erasure
+      requests:
+        delete:
+          method: POST
+          path: /api/gdpr/v1/opendsr_requests
+          body: >
+            {   "subject_request_id":"<privacy_req_id>", 
+            "subject_request_type":"erasure", 
+            "submitted_time":"<timestamp>",  "platform": "android", 
+            "subject_identities":[    {    
+            "identity_type":"appsflyer_id",   
+            "identity_value":"<identity_value>",   
+            "identity_format":"raw"   }  ],  "api_version":"0.1", 
+            "property_id":"<appsflyer_property_id>",  "status_callback_urls":[   
+            "https://examplecontroller.com/opengdpr_callbacks"  ] }
+
+# appsflyer_id is hardcoded in this case as my understanding is that the identity_value that will be provided to us is of this type.
+# should probably also set submitted time to something like 'now'
+
+### Marc you are not done yet. Remove this comment only when you're DONE with this config
+### Remember to ensure that the descriptions are included and the user guide!
