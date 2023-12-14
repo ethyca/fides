@@ -49,7 +49,7 @@ saas_config:
             "identity_type":"appsflyer_id",   
             "identity_value":"<identity_value>",   
             "identity_format":"raw"   }  ],  "api_version":"0.1", 
-            "property_id":"<appsflyer_property_id>",  "status_callback_urls":[   
+            "property_id":"<property_id>",  "status_callback_urls":[   
             "https://examplecontroller.com/opengdpr_callbacks"  ] }
 
 # appsflyer_id is hardcoded in this case as my understanding is that the identity_value that will be provided to us is of this type.
