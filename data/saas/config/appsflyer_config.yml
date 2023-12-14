@@ -27,6 +27,15 @@ saas_config:
     path: /api/mng/apps?capabilities=&limit=1
 
   endpoints:
+    - name: user
+      requests:
+      read:
+        request_override: appsflyer_get_app_names
+        param_values:
+          - name: property_id
+            references:
+              - appsflyer_property_id
+
     - name: erasure
       requests:
         delete:
@@ -40,7 +49,7 @@ saas_config:
             "identity_type":"appsflyer_id",   
             "identity_value":"<identity_value>",   
             "identity_format":"raw"   }  ],  "api_version":"0.1", 
-            "property_id":"<required_get_from_override",  "status_callback_urls":[   
+            "property_id":"<property_id>",  "status_callback_urls":[   
             "https://examplecontroller.com/opengdpr_callbacks"  ] }
 
 # appsflyer_id is hardcoded in this case as my understanding is that the identity_value that will be provided to us is of this type.
