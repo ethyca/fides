@@ -75,6 +75,7 @@ const datamapApi = baseApi.injectEndpoints({
         groupBy: DATAMAP_GROUPING;
         pageIndex: number;
         pageSize: number;
+        search: string;
         dataUses?: string;
         dataCategories?: string;
         dataSubjects?: string;
@@ -84,6 +85,7 @@ const datamapApi = baseApi.injectEndpoints({
         groupBy,
         pageIndex,
         pageSize,
+        search,
         dataUses,
         dataCategories,
         dataSubjects,
@@ -97,6 +99,9 @@ const datamapApi = baseApi.injectEndpoints({
         }
         if (dataSubjects) {
           queryString += `&${dataSubjects}`;
+        }
+        if (search) {
+          queryString += `&search=${search}`;
         }
         return {
           url: `plus/datamap/minimal?${queryString}`,

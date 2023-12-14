@@ -151,6 +151,11 @@ export const DatamapReportTable = () => {
   );
 
   const [groupChangeStarted, setGroupChangeStarted] = useState<boolean>(false);
+  const [globalFilter, setGlobalFilter] = useState<string>();
+  const updateGlobalFilter = (searchTerm: string) => {
+    resetPageIndexToDefault();
+    setGlobalFilter(searchTerm);
+  };
 
   const [groupBy, setGroupBy] = useState<DATAMAP_GROUPING>(
     DATAMAP_GROUPING.SYSTEM_DATA_USE
@@ -170,6 +175,7 @@ export const DatamapReportTable = () => {
     pageIndex,
     pageSize,
     groupBy,
+    search: globalFilter,
     dataUses: selectedDataUseFilters,
     dataSubjects: selectedDataSubjectFilters,
     dataCategories: selectedDataCategoriesFilters,
@@ -320,8 +326,8 @@ export const DatamapReportTable = () => {
       />
       <TableActionBar>
         <GlobalFilterV2
-          globalFilter=""
-          setGlobalFilter={() => {}}
+          globalFilter={globalFilter}
+          setGlobalFilter={updateGlobalFilter}
           placeholder="Search"
         />
         <Flex alignItems="center">
