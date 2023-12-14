@@ -143,6 +143,11 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
+        title: "Locations",
+        path: routes.LOCATIONS_ROUTE,
+        scopes: [], // TODO locations:read, etc. once we have backend types
+      },
+      {
         title: "Taxonomy",
         path: routes.TAXONOMY_ROUTE,
         scopes: [
