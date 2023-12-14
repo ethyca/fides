@@ -11,7 +11,7 @@ const EXPECTED_PING_DATA = {
   supportedAPIs: [],
   cmpId: 0,
   sectionList: [],
-  applicableSections: [-1],
+  applicableSections: [0],
   gppString: "",
   parsedSections: {},
 };

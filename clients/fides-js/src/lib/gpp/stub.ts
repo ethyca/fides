@@ -54,7 +54,7 @@ export const makeStub = () => {
       supportedAPIs: [],
       cmpId: 0, // IAB assigned CMP ID, may be 0 during stub/loading
       sectionList: [],
-      applicableSections: [-1],
+      applicableSections: [0],
       gppString: "",
       parsedSections: {},
     };
