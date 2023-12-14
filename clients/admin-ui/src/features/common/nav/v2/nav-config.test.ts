@@ -261,6 +261,7 @@ describe("configureNavGroups", () => {
         title: "Management",
         children: [
           { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
+          { title: "Locations", path: routes.LOCATIONS_ROUTE },
           { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
           { title: "Email templates", path: routes.EMAIL_TEMPLATES_ROUTE },
           { title: "About Fides", path: routes.ABOUT_ROUTE },
@@ -282,6 +283,7 @@ describe("configureNavGroups", () => {
         children: [
           { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
           { title: "Organization", path: routes.ORGANIZATION_MANAGEMENT_ROUTE },
+          { title: "Locations", path: routes.LOCATIONS_ROUTE },
           { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
           {
             title: "Email templates",
