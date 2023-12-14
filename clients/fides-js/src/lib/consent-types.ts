@@ -145,7 +145,7 @@ export type FidesApiOptions = {
    */
   patchNoticesServedFn?: (
     request: RecordConsentServedRequest
-  ) => Promise<Array<LastServedConsentSchema> | null>;
+  ) => Promise<RecordsServedResponse | null>;
 };
 
 export class SaveConsentPreference {
@@ -153,16 +153,9 @@ export class SaveConsentPreference {
 
   notice: PrivacyNotice;
 
-  servedNoticeHistoryId?: string;
-
-  constructor(
-    notice: PrivacyNotice,
-    consentPreference: UserConsentPreference,
-    servedNoticeHistoryId?: string
-  ) {
+  constructor(notice: PrivacyNotice, consentPreference: UserConsentPreference) {
     this.notice = notice;
     this.consentPreference = consentPreference;
-    this.servedNoticeHistoryId = servedNoticeHistoryId;
   }
 }
 
@@ -447,12 +440,12 @@ export type PrivacyPreferencesRequest = {
   privacy_experience_id?: string;
   user_geography?: string;
   method?: ConsentMethod;
+  served_notice_history_id?: string;
 };
 
 export type ConsentOptionCreate = {
   privacy_notice_history_id: string;
   preference: UserConsentPreference;
-  served_notice_history_id?: string;
 };
 
 export type Identity = {
@@ -507,26 +500,22 @@ export type RecordConsentServedRequest = {
   acknowledge_mode?: boolean;
   serving_component: ServingComponent;
 };
+
 /**
- * Schema that surfaces the the last time a consent item that was shown to a user
+ * Response when saving that consent was served
  */
-export type LastServedConsentSchema = {
-  purpose?: number;
-  purpose_consent?: number;
-  purpose_legitimate_interests?: number;
-  special_purpose?: number;
-  vendor?: string;
-  vendor_consent?: string;
-  vendor_legitimate_interests?: string;
-  feature?: number;
-  special_feature?: number;
-  system?: string;
-  system_consent?: string;
-  system_legitimate_interests?: string;
-  id: string;
-  updated_at: string;
+export type RecordsServedResponse = {
   served_notice_history_id: string;
-  privacy_notice_history?: PrivacyNotice;
+  privacy_notice_history_ids: string[];
+  tcf_purpose_consents: number[];
+  tcf_purpose_legitimate_interests: number[];
+  tcf_special_purposes: number[];
+  tcf_vendor_consents: string[];
+  tcf_vendor_legitimate_interests: string[];
+  tcf_features: number[];
+  tcf_special_features: number[];
+  tcf_system_consents: string[];
+  tcf_system_legitimate_interests: string[];
 };
 
 // ------------------LEGACY TYPES BELOW -------------------

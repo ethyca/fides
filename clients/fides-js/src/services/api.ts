@@ -4,10 +4,10 @@ import {
   EmptyExperience,
   FidesApiOptions,
   FidesOptions,
-  LastServedConsentSchema,
   PrivacyExperience,
   PrivacyPreferencesRequest,
   RecordConsentServedRequest,
+  RecordsServedResponse,
 } from "../lib/consent-types";
 import { debugLog } from "../lib/consent-utils";
 import { FidesCookie } from "../lib/cookie";
@@ -166,7 +166,7 @@ export const patchNoticesServed = async ({
 }: {
   request: RecordConsentServedRequest;
   options: FidesOptions;
-}): Promise<Array<LastServedConsentSchema> | null> => {
+}): Promise<RecordsServedResponse | null> => {
   debugLog(options.debug, "Saving that notices were served...");
   if (options.apiOptions?.patchNoticesServedFn) {
     debugLog(options.debug, "Calling custom patch notices served fn");
