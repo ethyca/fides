@@ -31,20 +31,33 @@ depends_on = None
 
 
 def upgrade():
+    """Data migration for overhaul around how Privacy Preferences are saved.
+    Historical preferences saved and notices served are migrated in place while
+    current preferences and last notices served are migrated to other tables.
+    """
+
     bind = op.get_bind()
 
     logger.info("Migrating PrivacyPreferenceHistory.")
+
+    # Deleting preferences saved against TCF as this is not considered live
     bind.execute(text(TCF_PREFERENCES_DELETE_QUERY))
+    # Migrate over Notice Name, Key, and Mechanism from Privacy Notice
     bind.execute(text(PRIVACY_PREFERENCE_HISTORY_UPDATE_QUERY))
 
     logger.info("Migrating ServedNoticeHistory.")
+
+    # Deleting TCF attributes served as this is not yet considered live.
     bind.execute(text(TCF_SERVED_DELETE_QUERY))
+
+    # Migrating over notice name, key, mechanism and served notice history id
     bind.execute(
         text(SERVED_NOTICE_HISTORY_UPDATE_QUERY),
     )
 
     logger.info("Migrating CurrentPrivacyPreference to CurrentPrivacyPreferenceV2")
-
+    # Collapses preferences from to a single user into the same record, prioritizing more recent identifiers
+    # and preferences
     migrate_current_records(
         bind,
         CURRENT_PRIVACY_PREFERENCE_BASE_QUERY,
@@ -52,7 +65,7 @@ def upgrade():
     )
 
     logger.info("Migrating LastServedNotice to LastServedNoticeV2")
-
+    # Collapses preferences from to a single user into the same record, prioritizing more recent identifiers
     migrate_current_records(
         bind, LAST_SERVED_NOTICE_BASE_QUERY, CurrentMigrationType.served
     )
@@ -122,45 +135,45 @@ TCF_SERVED_DELETE_QUERY = """
 """
 
 CURRENT_PRIVACY_PREFERENCE_BASE_QUERY = """
-SELECT
- currentprivacypreference.id,
- currentprivacypreference.preference,
- currentprivacypreference.privacy_notice_history_id,
- email_details.hashed_value as hashed_email, 
- device_details.hashed_value as hashed_fides_user_device,
- phone_details.hashed_value as hashed_phone_number,
- email_details.encrypted_value as encrypted_email, 
- device_details.encrypted_value as encrypted_device,
- phone_details.encrypted_value as encrypted_phone,
- currentprivacypreference.created_at,
- currentprivacypreference.updated_at
-FROM currentprivacypreference
-LEFT OUTER JOIN providedidentity AS email_details ON email_details.field_name = 'email' AND email_details.id = currentprivacypreference.provided_identity_id
-LEFT OUTER JOIN providedidentity AS phone_details ON phone_details.field_name = 'phone_number' AND phone_details.id = currentprivacypreference.provided_identity_id
-LEFT OUTER JOIN providedidentity AS device_details ON device_details.field_name = 'fides_user_device_id' AND device_details.id = currentprivacypreference.fides_user_device_provided_identity_id
-WHERE privacy_notice_history_id IS NOT NULL
-ORDER BY created_at asc;
+    SELECT
+        currentprivacypreference.id,
+        currentprivacypreference.preference,
+        currentprivacypreference.privacy_notice_history_id,
+        email_details.hashed_value as hashed_email, 
+        device_details.hashed_value as hashed_fides_user_device,
+        phone_details.hashed_value as hashed_phone_number,
+        email_details.encrypted_value as encrypted_email, 
+        device_details.encrypted_value as encrypted_device,
+        phone_details.encrypted_value as encrypted_phone,
+        currentprivacypreference.created_at,
+        currentprivacypreference.updated_at
+    FROM currentprivacypreference
+    LEFT OUTER JOIN providedidentity AS email_details ON email_details.field_name = 'email' AND email_details.id = currentprivacypreference.provided_identity_id
+    LEFT OUTER JOIN providedidentity AS phone_details ON phone_details.field_name = 'phone_number' AND phone_details.id = currentprivacypreference.provided_identity_id
+    LEFT OUTER JOIN providedidentity AS device_details ON device_details.field_name = 'fides_user_device_id' AND device_details.id = currentprivacypreference.fides_user_device_provided_identity_id
+    WHERE privacy_notice_history_id IS NOT NULL
+    ORDER BY created_at asc;
 """
 
 
 LAST_SERVED_NOTICE_BASE_QUERY = """
-SELECT
- lastservednotice.id,
- lastservednotice.privacy_notice_history_id,
- email_details.hashed_value as hashed_email, 
- device_details.hashed_value as hashed_fides_user_device,
- phone_details.hashed_value as hashed_phone_number,
- email_details.encrypted_value as encrypted_email, 
- device_details.encrypted_value as encrypted_device,
- phone_details.encrypted_value as encrypted_phone,
- lastservednotice.created_at,
- lastservednotice.updated_at
-FROM lastservednotice
-LEFT OUTER JOIN providedidentity AS email_details ON email_details.field_name = 'email' AND email_details.id = lastservednotice.provided_identity_id
-LEFT OUTER JOIN providedidentity AS phone_details ON phone_details.field_name = 'phone_number' AND phone_details.id = lastservednotice.provided_identity_id
-LEFT OUTER JOIN providedidentity AS device_details ON device_details.field_name = 'fides_user_device_id' AND device_details.id = lastservednotice.fides_user_device_provided_identity_id
-WHERE privacy_notice_history_id IS NOT NULL
-ORDER BY created_at asc;
+    SELECT
+        lastservednotice.id,
+        lastservednotice.privacy_notice_history_id,
+        email_details.hashed_value as hashed_email, 
+        device_details.hashed_value as hashed_fides_user_device,
+        phone_details.hashed_value as hashed_phone_number,
+        email_details.encrypted_value as encrypted_email, 
+        device_details.encrypted_value as encrypted_device,
+        phone_details.encrypted_value as encrypted_phone,
+        lastservednotice.created_at,
+        lastservednotice.updated_at
+    FROM lastservednotice
+    LEFT OUTER JOIN providedidentity AS email_details ON email_details.field_name = 'email' AND email_details.id = lastservednotice.provided_identity_id
+    LEFT OUTER JOIN providedidentity AS phone_details ON phone_details.field_name = 'phone_number' AND phone_details.id = lastservednotice.provided_identity_id
+    LEFT OUTER JOIN providedidentity AS device_details ON device_details.field_name = 'fides_user_device_id' AND device_details.id = lastservednotice.fides_user_device_provided_identity_id
+    WHERE privacy_notice_history_id IS NOT NULL
+    ORDER BY created_at asc;
 """
 
 
@@ -193,7 +206,7 @@ def migrate_current_records(
     We are migrating from tables with unique constraints on two provided identity types x preferences types to the new
     tables with unique constraints on email, device id, and phone number.
 
-    Migration involves linking all records in the original table with some shared identifier across email, phone,
+    Migration involves linking all records in the original table with any shared identifiers across email, phone,
     or device id, and collapsing these records into single rows, retaining the most recently used non-null identifiers
     and recently saved preferences.
     """
@@ -203,7 +216,7 @@ def migrate_current_records(
         logger.info(f"No {migration_type.value} records to migrate. Skipping.")
         return
 
-    # Create a paths column in the dataframe that is a list of non-null identifiers, so
+    # Create a "paths" column in the dataframe that is a list of non-null identifiers, so
     # we only consider actual values as a match.
     df["paths"] = df[
         ["hashed_email", "hashed_phone_number", "hashed_fides_user_device"]
@@ -218,9 +231,9 @@ def migrate_current_records(
 
     def add_group_id_based_on_link(identity_path: List[str]) -> int:
         """Add a common group id for records that belong to the same connected component"""
-        for node in identity_path:
+        for user_identifier in identity_path:
             for i, linked_nodes in enumerate(connected_records):
-                if node in linked_nodes:
+                if user_identifier in linked_nodes:
                     return i + 1
 
     df["group_id"] = df["paths"].apply(add_group_id_based_on_link)
@@ -274,8 +287,10 @@ def migrate_current_records(
         )
 
 
-def _group_preferences_records(df):
-    """Collapse records into rows on group_id, combining identifiers and preferences against privacy notice history ids,
+def _group_preferences_records(df: DataFrame) -> DataFrame:
+    """Combine preferences belonging to the same user under our definition.
+
+    Collapse records into rows by group_id, combining identifiers and preferences against privacy notice history ids,
     retaining the most recently saved"""
 
     # Add a preferences column, combining privacy_notice_history_id and preference
