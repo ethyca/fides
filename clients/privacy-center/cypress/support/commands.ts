@@ -67,10 +67,18 @@ Cypress.Commands.add(
         if (windowParams) {
           // @ts-ignore
           // eslint-disable-next-line no-param-reassign
-          win.config = {
-            // DEFER (PROD-1243): support a configurable "custom options" path
-            tc_info: windowParams,
-          };
+          if (options?.options.customOptionsPath) {
+            // hard-code path for now, as dynamically assigning to win obj is challenging in Cypress
+            // @ts-ignore
+            // eslint-disable-next-line no-param-reassign
+            win.config = {
+              tc_info: undefined,
+              overrides: windowParams,
+            };
+          } else {
+            // eslint-disable-next-line no-param-reassign
+            win.fides_overrides = windowParams;
+          }
         }
 
         // Add event listeners for Fides.js events
@@ -209,6 +217,11 @@ declare global {
       // DEFER: tcData should be type TCData from the IAB's TCF library.
       // Once we are importing that library, replace this `any` type.
       callback: (tcData: any, success: boolean) => void,
+      parameter?: number | string
+    ) => void;
+    __gpp: (
+      command: string,
+      callback: (data: any, success: boolean) => void,
       parameter?: number | string
     ) => void;
   }

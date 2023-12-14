@@ -67,6 +67,13 @@ class ExecutionApplicationConfig(FidesSchema):
         extra = Extra.forbid
 
 
+class ConsentConfig(FidesSchema):
+    override_vendor_purposes: Optional[bool]
+
+    class Config:
+        extra = Extra.forbid
+
+
 class SecurityApplicationConfig(FidesSchema):
     # only valid URLs should be set as cors_origins
     # for advanced usage of non-URLs, e.g. wildcards (`*`), the related
@@ -94,6 +101,7 @@ class ApplicationConfig(FidesSchema):
     notifications: Optional[NotificationApplicationConfig]
     execution: Optional[ExecutionApplicationConfig]
     security: Optional[SecurityApplicationConfig]
+    consent: Optional[ConsentConfig]
 
     @root_validator(pre=True)
     def validate_not_empty(cls, values: Dict) -> Dict:

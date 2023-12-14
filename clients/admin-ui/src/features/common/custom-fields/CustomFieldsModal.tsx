@@ -17,8 +17,8 @@ import {
 import * as React from "react";
 import { useRef, useState } from "react";
 
-import ConfirmationModal from "~/features/common/ConfirmationModal";
 import DataTabs from "~/features/common/DataTabs";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { ResourceTypes } from "~/types/api";
 
 import { ChooseFromLibrary } from "./ChooseFromLibrary";

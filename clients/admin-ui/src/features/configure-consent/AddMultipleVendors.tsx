@@ -2,8 +2,8 @@ import { Button, useDisclosure } from "@fidesui/react";
 import { useRouter } from "next/router";
 
 import { useFeatures } from "~/features/common/features";
+import { UpgradeModal } from "~/features/common/modals/UpgradeModal";
 import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/v2/routes";
-import { UpgradeModal } from "~/features/common/UpgradeModal";
 
 type Props = {
   onCancel: () => void;

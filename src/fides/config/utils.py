@@ -63,4 +63,5 @@ CONFIG_KEY_ALLOWLIST = {
     "storage": [
         "active_default_storage_type",
     ],
+    "consent": ["override_vendor_purposes"],
 }

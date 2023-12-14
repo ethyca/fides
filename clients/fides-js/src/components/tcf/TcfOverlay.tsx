@@ -330,6 +330,10 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     });
   }, [cookie, options.debug]);
 
+  const handleDismiss = useCallback(() => {
+    handleUpdateAllPreferences(ConsentMethod.dismiss, initialEnabledIds);
+  }, [handleUpdateAllPreferences, initialEnabledIds]);
+
   if (!experience.experience_config) {
     debugLog(options.debug, "No experience config found");
     return null;
@@ -345,6 +349,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         setActiveTabIndex(2);
       }}
       onOpen={dispatchOpenOverlayEvent}
+      onDismiss={handleDismiss}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => {
         const goToVendorTab = () => {
           onManagePreferencesClick();
@@ -354,7 +359,10 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           <ConsentBanner
             bannerIsOpen={isOpen}
             onOpen={dispatchOpenBannerEvent}
-            onClose={onClose}
+            onClose={() => {
+              onClose();
+              handleDismiss();
+            }}
             experience={experienceConfig}
             onVendorPageClick={goToVendorTab}
             renderButtonGroup={({ isMobile }) => (

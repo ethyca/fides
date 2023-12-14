@@ -3,7 +3,6 @@
 /* eslint-disable */
 
 import type { AccessLevel } from "./AccessLevel";
-import type { ActionType } from "./ActionType";
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
 import type { ConnectionType } from "./ConnectionType";
 import type { DynamoDBDocsSchema } from "./DynamoDBDocsSchema";
@@ -31,7 +30,6 @@ export type CreateConnectionConfigurationWithSecrets = {
   access: AccessLevel;
   disabled?: boolean;
   description?: string;
-  enabled_actions?: Array<ActionType>;
   secrets?:
     | MongoDBDocsSchema
     | PostgreSQLDocsSchema

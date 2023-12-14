@@ -93,7 +93,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     title: "Consent",
     routes: [
       {
-        title: "Configure consent",
+        title: "Vendors",
         path: routes.CONFIGURE_CONSENT_ROUTE,
         requiresFlag: "configureConsent",
         requiresPlus: true,
@@ -110,6 +110,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.PRIVACY_EXPERIENCE_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
+      },
+      {
+        title: "Consent reporting",
+        path: routes.CONSENT_REPORTING_ROUTE,
+        requiresFlag: "consentReporting",
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
     ],
   },
@@ -173,6 +180,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [
           ScopeRegistryEnum.CONFIG_READ,
           ScopeRegistryEnum.CONFIG_UPDATE,
+        ],
+      },
+      {
+        title: "Consent",
+        path: routes.GLOABL_CONSENT_CONFIG_ROUTE,
+        requiresPlus: true,
+        requiresFidesCloud: false,
+        scopes: [
+          ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_READ,
+          ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_UPDATE,
         ],
       },
       {
