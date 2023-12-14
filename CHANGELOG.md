@@ -23,6 +23,7 @@ The types of changes are:
 
 ### Fixed
 - Fixed incorrect Compass button behavior in system form [#4508](https://github.com/ethyca/fides/pull/4508)
+- Fixed an issue where the background overlay remained visible after saving consent preferences [#4515](https://github.com/ethyca/fides/pull/4515)
 
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
