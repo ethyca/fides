@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 - Tooltip and styling for disabled rows in add multiple vendor view [#4498](https://github.com/ethyca/fides/pull/4498)
 - Access and erasure support for Statsig Enterprise [#4429](https://github.com/ethyca/fides/pull/4429)
+- Datamap Reporting page [#4519](https://github.com/ethyca/fides/pull/4519)
 
 ### Fixed
 - Fixed incorrect Compass button behavior in system form [#4508](https://github.com/ethyca/fides/pull/4508)
