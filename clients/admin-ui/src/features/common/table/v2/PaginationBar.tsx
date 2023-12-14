@@ -46,17 +46,23 @@ export const useServerSidePagination = () => {
   const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
   const [pageIndex, setPageIndex] = useState<number>(defaultPageIndex);
   const [totalPages, setTotalPages] = useState<number>();
+  const [isNewPageLoading, setIsNewPageLoading] = useState<boolean>();
   const onPreviousPageClick = useCallback(() => {
+    setIsNewPageLoading(true);
     setPageIndex((prev) => prev - 1);
   }, [setPageIndex]);
   const isPreviousPageDisabled = useMemo(() => pageIndex === 1, [pageIndex]);
   const onNextPageClick = useCallback(() => {
+    setIsNewPageLoading(true);
     setPageIndex((prev) => prev + 1);
   }, [setPageIndex]);
   const isNextPageDisabled = useMemo(
     () => pageIndex === totalPages,
     [pageIndex, totalPages]
   );
+  const resetIsNewPageLoading = useCallback(() => {
+    setIsNewPageLoading(false);
+  }, [setIsNewPageLoading]);
 
   const startRange =
     (pageIndex - 1) * pageSize === 0 ? 1 : (pageIndex - 1) * pageSize;
@@ -79,6 +85,8 @@ export const useServerSidePagination = () => {
     pageIndex,
     resetPageIndexToDefault,
     setTotalPages,
+    isNewPageLoading,
+    resetIsNewPageLoading,
   };
 };
 

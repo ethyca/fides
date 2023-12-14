@@ -80,6 +80,8 @@ export const GroupedConsentManagementTable = () => {
     pageIndex,
     setTotalPages,
     resetPageIndexToDefault,
+    isNewPageLoading,
+    resetIsNewPageLoading,
   } = useServerSidePagination();
   const [groupBy, setGroupBy] = useState<DATAMAP_GROUPING>(
     DATAMAP_GROUPING.SYSTEM_DATA_USE
@@ -113,6 +115,14 @@ export const GroupedConsentManagementTable = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
+  useEffect(() => {
+    if (!isReportFetching) {
+      resetIsNewPageLoading();
+    }
+  }, [isReportFetching]);
+
+  const cellWidth = "25%";
+
   const tcfColumns = useMemo(
     () => [
       columnHelper.accessor((row) => row.system_name, {
@@ -121,7 +131,7 @@ export const GroupedConsentManagementTable = () => {
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Vendor" {...props} />,
         meta: {
-          maxWidth: "350px",
+          width: cellWidth,
         },
       }),
       columnHelper.accessor((row) => row.data_use, {
@@ -129,13 +139,13 @@ export const GroupedConsentManagementTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data uses"
-            expand={true}
+            expand={false}
             value={props.getValue()}
           />
         ),
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
         meta: {
-          width: "175px",
+          width: cellWidth,
         },
       }),
       columnHelper.accessor((row) => row.data_category, {
@@ -143,7 +153,7 @@ export const GroupedConsentManagementTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data categories"
-            expand={true}
+            expand={false}
             value={props.getValue()}
           />
         ),
@@ -151,7 +161,7 @@ export const GroupedConsentManagementTable = () => {
           <DefaultHeaderCell value="Data categories" {...props} />
         ),
         meta: {
-          width: "175px",
+          width: cellWidth,
         },
       }),
       columnHelper.accessor((row) => row.data_subject, {
@@ -167,7 +177,7 @@ export const GroupedConsentManagementTable = () => {
           <DefaultHeaderCell value="Data subject" {...props} />
         ),
         meta: {
-          width: "175px",
+          width: cellWidth,
         },
       }),
     ],
@@ -221,7 +231,6 @@ export const GroupedConsentManagementTable = () => {
     columns: tcfColumns,
     manualPagination: true,
     data,
-    debugTable: true,
     state: {
       expanded: true,
       grouping,
@@ -243,7 +252,11 @@ export const GroupedConsentManagementTable = () => {
     }
   };
 
-  if (isReportLoading || isLoadingHealthCheck || isReportFetching) {
+  if (
+    isReportLoading ||
+    isLoadingHealthCheck ||
+    (isReportFetching && !isNewPageLoading)
+  ) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
 
