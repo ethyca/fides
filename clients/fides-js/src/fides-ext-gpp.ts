@@ -104,11 +104,14 @@ export const initializeGppCmpApi = () => {
         cmpApi.setApplicableSections([TcfEuV2.ID]);
       }
       setGppNoticesProvidedFromExperience({ cmpApi, experience });
-      setGppOptOutsFromCookie({
+      const sectionsChanged = setGppOptOutsFromCookie({
         cmpApi,
         cookie: event.detail,
         region: experience.region,
       });
+      if (sectionsChanged.length) {
+        cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
+      }
       cmpApi.setSignalStatus(SignalStatus.READY);
     }
   });

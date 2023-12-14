@@ -466,6 +466,7 @@ describe("Fides-js GPP extension", () => {
             const [data, success] = args[0];
             expect(success).to.eql(true);
             // Opt in string
+            expect(data.pingData.applicableSections).to.eql([8]);
             expect(data.pingData.gppString).to.eql("DBABBg~BWoAAAAA.QA");
           });
       });
