@@ -11,6 +11,7 @@ import Link from "next/link";
 
 import Layout from "~/features/common/Layout";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import LocationManagement from "~/features/locations/LocationManagement";
 
 const LocationsPage: NextPage = () => (
   <Layout title="Locations">
@@ -26,18 +27,19 @@ const LocationsPage: NextPage = () => (
             </BreadcrumbLink>
           </Link>
         </BreadcrumbItem>
-
         <BreadcrumbItem>
           <BreadcrumbLink href="#">Locations</BreadcrumbLink>
         </BreadcrumbItem>
       </Breadcrumb>
-      <Box maxWidth="600px">
-        <Text marginBottom={10} fontSize="sm">
+      <Box>
+        <Text marginBottom={4} fontSize="sm">
           Select the locations that you operate in and Fides will make sure that
           you are automatically presented with the relevant regulatory
           guidelines and global frameworks for your locations.
         </Text>
-        <Box>Locations</Box>
+        <Box>
+          <LocationManagement />
+        </Box>
       </Box>
     </Box>
   </Layout>
