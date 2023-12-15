@@ -2,11 +2,6 @@ data_use:
   - fides_key: marketing.advertising.third_party.targeted.direct_marketing
     name: Direct Marketing
     description: User information for direct marketing purposes
-    recipients:
-    - Processor - marketing co.
-    legal_basis: Legitimate Interests
-    special_category: Vital Interests
-    legitimate_interest_impact_assessment: https://example.org/legitimate_interest_assessment
     parent_key: marketing.advertising.third_party.targeted
 
 data_subject:

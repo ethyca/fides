@@ -1434,12 +1434,6 @@ class TestUpdateSystemsManagedByUser:
                 "description": "fixture-made-system",
                 "organization_fides_key": "default_organization",
                 "system_type": "Service",
-                "data_responsibility_title": "Processor",
-                "data_protection_impact_assessment": {
-                    "is_required": False,
-                    "progress": None,
-                    "link": None,
-                },
             },
         )
         PrivacyDeclaration.create(
@@ -1449,7 +1443,6 @@ class TestUpdateSystemsManagedByUser:
                 "system_id": second_system.id,
                 "data_categories": ["user.device.cookie_id"],
                 "data_use": "marketing.advertising",
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "dataset_references": None,
                 "egress": None,

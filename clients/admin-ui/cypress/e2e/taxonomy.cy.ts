@@ -89,9 +89,6 @@ describe("Taxonomy management page", () => {
       cy.intercept("PUT", "/api/v1/data_subject*", taxonomyPayload).as(
         "putDataSubject"
       );
-      cy.intercept("PUT", "/api/v1/data_qualifier*", taxonomyPayload).as(
-        "putDataQualifier"
-      );
     });
 
     it("Can open an edit form for each taxonomy entity", () => {
@@ -189,36 +186,6 @@ describe("Taxonomy management page", () => {
         "mouseover"
       );
       cy.getByTestId("edit-btn").click();
-      cy.getByTestId("input-legal_basis").should(
-        "contain",
-        "Legitimate Interests"
-      );
-      cy.getByTestId("input-special_category").should(
-        "contain",
-        "Vital Interests"
-      );
-      cy.getByTestId("input-recipients").should("contain", "marketing team");
-      cy.getByTestId("input-recipients").should("contain", "dog shelter");
-      cy.getByTestId("input-legitimate_interest").within(() => {
-        cy.getByTestId("option-false").should("have.attr", "data-checked");
-        cy.getByTestId("option-true").click();
-        cy.getByTestId("option-true").should("have.attr", "data-checked");
-        cy.getByTestId("option-false").should("not.have.attr", "data-checked");
-      });
-
-      cy.getByTestId("input-legitimate_interest_impact_assessment").should(
-        "have.value",
-        "https://example.org/legitimate_interest_assessment"
-      );
-
-      cy.getByTestId("input-legitimate_interest_impact_assessment")
-        .clear()
-        .type("foo");
-      // Test clearable single-select.
-      cy.getByTestId("input-legal_basis").within(() => {
-        cy.get('[aria-label="Clear selected options"]').click();
-      });
-      cy.getByTestId("input-special_category").click().type("{backspace}{esc}");
       // trigger a PUT
       cy.getByTestId("submit-btn").click();
       cy.wait("@putDataUse").then((interception) => {
@@ -229,9 +196,6 @@ describe("Taxonomy management page", () => {
           description:
             "Provide, give, or make available the product, service, application or system.",
           is_default: true,
-          recipients: ["marketing team", "dog shelter"],
-          legitimate_interest: true,
-          legitimate_interest_impact_assessment: "foo",
         };
         expect(body).to.eql(expected);
       });
@@ -241,12 +205,6 @@ describe("Taxonomy management page", () => {
         "mouseover"
       );
       cy.getByTestId("edit-btn").click();
-      cy.getByTestId("input-legal_basis").should("contain", "Select...");
-      cy.getByTestId("input-special_category").should("contain", "Select...");
-      cy.getByTestId("input-recipients").should("contain", "Select...");
-      cy.getByTestId("input-legitimate_interest_impact_assessment").should(
-        "not.exist"
-      );
     });
 
     it("Can render an extended form for Data Subjects", () => {
@@ -345,9 +303,6 @@ describe("Taxonomy management page", () => {
       );
       cy.intercept("POST", "/api/v1/data_subject*", taxonomyPayload).as(
         "postDataSubject"
-      );
-      cy.intercept("POST", "/api/v1/data_qualifier*", taxonomyPayload).as(
-        "postDataQualifier"
       );
     });
 
@@ -472,9 +427,6 @@ describe("Taxonomy management page", () => {
       );
       cy.intercept("DELETE", "/api/v1/data_subject/*", taxonomyPayload).as(
         "deleteDataSubject"
-      );
-      cy.intercept("DELETE", "/api/v1/data_qualifier/*", taxonomyPayload).as(
-        "deleteDataQualifier"
       );
     });
 

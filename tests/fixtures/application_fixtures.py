@@ -1717,8 +1717,6 @@ def ctl_dataset(db: Session, example_datasets):
         organization_fides_key="default_organization",
         name="Postgres Example Subscribers Dataset",
         description="Example Postgres dataset created in test fixtures",
-        data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-        retention="No retention or erasure policy",
         collections=[
             {
                 "name": "subscriptions",
@@ -1752,8 +1750,6 @@ def unlinked_dataset(db: Session):
         organization_fides_key="default_organization",
         name="Unlinked Dataset",
         description="Example dataset created in test fixtures",
-        data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-        retention="No retention or erasure policy",
         collections=[
             {
                 "name": "subscriptions",
@@ -1787,8 +1783,6 @@ def linked_dataset(db: Session, connection_config: ConnectionConfig) -> Generato
         organization_fides_key="default_organization",
         name="Linked Dataset",
         description="Example dataset created in test fixtures",
-        data_qualifier="aggregated.anonymized.linked_pseudonymized.pseudonymized.identified",
-        retention="No retention or erasure policy",
         collections=[
             {
                 "name": "subscriptions",
@@ -2466,12 +2460,6 @@ def system_with_no_uses(db: Session) -> System:
             "description": "tcf_relevant_system",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
-            "data_responsibility_title": "Processor",
-            "data_protection_impact_assessment": {
-                "is_required": False,
-                "progress": None,
-                "link": None,
-            },
         },
     )
     return system
@@ -2488,12 +2476,6 @@ def tcf_system(db: Session) -> System:
             "description": "My TCF System Description",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
-            "data_responsibility_title": "Processor",
-            "data_protection_impact_assessment": {
-                "is_required": False,
-                "progress": None,
-                "link": None,
-            },
         },
     )
 
@@ -2504,7 +2486,6 @@ def tcf_system(db: Session) -> System:
             "system_id": system.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "analytics.reporting.content_performance",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "legal_basis_for_processing": "Consent",
@@ -2521,7 +2502,6 @@ def tcf_system(db: Session) -> System:
             "system_id": system.id,
             "data_categories": ["user"],
             "data_use": "essential.fraud_detection",
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
             "data_subjects": ["customer"],
             "dataset_references": None,
             "legal_basis_for_processing": "Legitimate interests",
