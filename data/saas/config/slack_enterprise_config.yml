@@ -3,7 +3,7 @@ saas_config:
   name: Slack Enterprise
   type: slack_enterprise
   description: A sample schema representing the Slack Enterprise connector for Fides
-  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/square
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/slack-enterprise
   version: 0.0.2
 
   connector_params:
