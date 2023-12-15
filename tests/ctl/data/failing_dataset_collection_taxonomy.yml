@@ -7,13 +7,11 @@ dataset:
         description: User's information
             data_categories:
               - user.demographic.political_opinion
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
         fields:
           - name: First_Name
             description: A First Name Field
             data_categories:
               - user.name
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 
 system:
   - fides_key: customer_data_sharing_system
@@ -25,7 +23,6 @@ system:
         data_categories:
           - user
         data_use: marketing.advertising
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         data_subjects:
           - customer
         dataset_references:
@@ -50,4 +47,3 @@ policy:
           matches: ANY
           values:
             - customer
-        data_qualifier: aggregated

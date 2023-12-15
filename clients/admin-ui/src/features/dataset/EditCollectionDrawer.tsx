@@ -42,10 +42,7 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
   } = useDisclosure();
 
   const handleSubmit = async (
-    values: Pick<
-      DatasetCollection,
-      "description" | "data_qualifier" | "data_categories"
-    >
+    values: Pick<DatasetCollection, "description" | "data_categories">
   ) => {
     if (dataset && collectionIndex !== undefined) {
       const updatedCollection = { ...collection, ...values };

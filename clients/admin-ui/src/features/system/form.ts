@@ -3,15 +3,10 @@ import {
   CustomFieldValues,
 } from "~/features/common/custom-fields";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
-import { DataProtectionImpactAssessment, System } from "~/types/api";
+import { System } from "~/types/api";
 
-export type FormValues = Omit<System, "data_protection_impact_assessment"> &
+export type FormValues = System &
   CustomFieldsFormValues & {
-    data_protection_impact_assessment?: {
-      is_required: "true" | "false";
-      progress?: DataProtectionImpactAssessment["progress"];
-      link?: DataProtectionImpactAssessment["link"];
-    };
     customFieldValues?: CustomFieldValues;
     data_stewards: string;
   };
@@ -50,7 +45,6 @@ export const transformSystemToFormValues = (
   system: System,
   customFieldValues?: CustomFieldValues
 ): FormValues => {
-  const { data_protection_impact_assessment: dpia } = system;
   // @ts-ignore
   const dataStewards = system?.data_stewards
     ?.map((user: any) => user.username)
@@ -58,10 +52,6 @@ export const transformSystemToFormValues = (
 
   return {
     ...system,
-    data_protection_impact_assessment: {
-      ...dpia,
-      is_required: dpia?.is_required ? "true" : "false",
-    },
     customFieldValues,
     description: system.description ? system.description : "",
     legal_address: system.legal_address ? system.legal_address : "",

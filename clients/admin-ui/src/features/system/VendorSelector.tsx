@@ -8,6 +8,10 @@ import {
   Input,
   InputGroup,
   InputRightElement,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Spacer,
   Text,
   VStack,
@@ -39,20 +43,37 @@ const CompassButton = ({
   active: boolean;
   disabled: boolean;
   onRefreshSuggestions: () => void;
-}) => (
-  <VStack>
-    <Spacer minHeight="18px" />
-    <IconButton
-      size="sm"
-      isDisabled={disabled}
-      onClick={() => onRefreshSuggestions()}
-      aria-label="Update information from Compass"
-      bg={active ? "complimentary.500" : "gray.100"}
-      icon={<CompassIcon color={active ? "white" : "gray.700"} boxSize={4} />}
-      data-testid="refresh-suggestions-btn"
-    />
-  </VStack>
-);
+}) => {
+  const bgColor = { bg: active ? "complimentary.500" : "gray.100" };
+  return (
+    <VStack>
+      <Spacer minHeight="18px" />
+      <Menu>
+        <MenuButton
+          as={IconButton}
+          size="sm"
+          isDisabled={disabled}
+          icon={
+            <CompassIcon color={active ? "white" : "gray.700"} boxSize={4} />
+          }
+          aria-label="Update information from Compass"
+          data-testid="refresh-suggestions-btn"
+          _hover={{
+            _disabled: bgColor,
+          }}
+          {...bgColor}
+        />
+        <MenuList>
+          <MenuItem onClick={onRefreshSuggestions}>
+            <Text fontSize="xs" lineHeight={4}>
+              Reset to Compass defaults
+            </Text>
+          </MenuItem>
+        </MenuList>
+      </Menu>
+    </VStack>
+  );
+};
 
 interface Props {
   isCreate: boolean;
@@ -90,7 +111,7 @@ const VendorSelector = ({
   options,
   onVendorSelected,
 }: Props) => {
-  const isShowingSuggestions = useAppSelector(selectSuggestions);
+  const dictSuggestionsState = useAppSelector(selectSuggestions);
   const [initialField, meta, { setValue }] = useField({
     name: "name",
   });
@@ -113,6 +134,7 @@ const VendorSelector = ({
 
   const isTypeahead = !field.value && !values.vendor_id;
   const showSelectMenu = !!searchParam && suggestions.length > 0;
+  const hasVendorSuggestions = !!searchParam && suggestions.length > 0;
 
   const handleClear = () => {
     setValue("");
@@ -290,8 +312,8 @@ const VendorSelector = ({
     <HStack alignItems="flex-start">
       {isTypeahead ? typeaheadSelect : textInput}
       <CompassButton
-        active={!!values.vendor_id}
-        disabled={!values.vendor_id || isShowingSuggestions === "showing"}
+        active={!!values.vendor_id || hasVendorSuggestions}
+        disabled={!values.vendor_id || dictSuggestionsState === "showing"}
         onRefreshSuggestions={() => onVendorSelected(values.vendor_id)}
       />
     </HStack>

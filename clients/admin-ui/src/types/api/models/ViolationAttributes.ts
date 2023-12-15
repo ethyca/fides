@@ -18,8 +18,4 @@ export type ViolationAttributes = {
    * A list of data uses which led to an evaluation violation.
    */
   data_uses: Array<string>;
-  /**
-   * The data qualifier which led to an evaluation violation.
-   */
-  data_qualifier: string;
 };

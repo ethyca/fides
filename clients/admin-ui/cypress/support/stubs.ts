@@ -5,9 +5,6 @@ export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_category", {
     fixture: "taxonomy/data_categories.json",
   }).as("getDataCategories");
-  cy.intercept("GET", "/api/v1/data_qualifier", {
-    fixture: "taxonomy/data_qualifiers.json",
-  }).as("getDataQualifiers");
   cy.intercept("GET", "/api/v1/data_subject", {
     fixture: "taxonomy/data_subjects.json",
   }).as("getDataSubjects");

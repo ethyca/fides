@@ -17,12 +17,10 @@ from fides.common.api.scope_registry import (
     CTL_DATASET,
     CTL_POLICY,
     DATA_CATEGORY,
-    DATA_QUALIFIER,
     DATA_SUBJECT,
     DATA_USE,
     EVALUATION,
     ORGANIZATION,
-    REGISTRY,
     SYSTEM,
 )
 from fides.config import CONFIG
@@ -37,14 +35,12 @@ API_PREFIX = "/api/v1"
 # avoid overlapping with ops scopes of same name
 CLI_SCOPE_PREFIX_MAPPING: Dict[str, str] = {
     "data_category": DATA_CATEGORY,
-    "data_qualifier": DATA_QUALIFIER,
     "data_subject": DATA_SUBJECT,
     "data_use": DATA_USE,
     "dataset": CTL_DATASET,
     "evaluation": EVALUATION,
     "organization": ORGANIZATION,
     "policy": CTL_POLICY,
-    "registry": REGISTRY,
     "system": SYSTEM,
 }
 
