@@ -129,12 +129,17 @@ const SystemInformationForm = ({
         name: Yup.string()
           .required()
           .label("System name")
-          .notOneOf(
-            systems
+          .test("is-unique", "", (value, context) => {
+            const takenSystemNames = systems
               .filter((s) => s.name !== initialValues.name)
-              .map((s) => s.name),
-            "System must have a unique name"
-          ),
+              .map((s) => s.name);
+            if (takenSystemNames.some((name) => name === value)) {
+              return context.createError({
+                message: `You already have a system called "${value}". Please specify a unique name for this system.`,
+              });
+            }
+            return true;
+          }),
         privacy_policy: Yup.string().min(1).url().nullable(),
       }),
     [systems, initialValues.name]
@@ -300,10 +305,6 @@ const SystemInformationForm = ({
             <SystemFormInputGroup heading="System details">
               {features.dictionaryService ? (
                 <VendorSelector
-                  fieldsSeparated={
-                    features.dictionaryService &&
-                    features.flags.separateVendorSelector
-                  }
                   options={dictionaryOptions}
                   onVendorSelected={handleVendorSelected}
                   isCreate={!passedInSystem}
