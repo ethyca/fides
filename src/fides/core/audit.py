@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Union
 
-from fideslang.models import DataSubject, DataUse, FidesModel, Organization, System
+from fideslang.models import DataSubject, FidesModel, Organization, System
 from fideslang.parse import parse_dict
 
 from fides.common.utils import echo_green, echo_red, pretty_echo
@@ -72,15 +72,6 @@ def validate_system_attributes(
         new_findings += 1
 
     for privacy_declaration in system.privacy_declarations:
-        raw_data_use = get_server_resource(
-            url, "data_use", privacy_declaration.data_use, headers
-        )
-        data_use = parse_dict(
-            resource_type="data_use", resource=raw_data_use, from_server=True
-        )
-        assert isinstance(data_use, DataUse)
-        data_use_findings = audit_data_use_attributes(data_use, system.name or "")
-        new_findings = new_findings + data_use_findings
         for data_subject_fides_key in privacy_declaration.data_subjects:
             raw_data_subject = get_server_resource(
                 url, "data_subject", data_subject_fides_key, headers
@@ -96,22 +87,6 @@ def validate_system_attributes(
             )
             new_findings += data_subject_findings
     return new_findings
-
-
-def audit_data_use_attributes(data_use: DataUse, system_name: str) -> int:
-    """
-    Audits the extended attributes for a DataUse
-    """
-    data_use_list = ["recipients", "legal_basis", "special_category"]
-    findings = 0
-    for attribute in data_use_list:
-        attribute_is_set = getattr(data_use, attribute) is not None
-        compliance_messaging(
-            attribute_is_set, data_use.fides_key, attribute, system_name
-        )
-        if not attribute_is_set:
-            findings += 1
-    return findings
 
 
 def audit_data_subject_attributes(data_subject: DataSubject, system_name: str) -> int:

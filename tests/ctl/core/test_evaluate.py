@@ -5,7 +5,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fideslang.models import (
     DataCategory,
-    DataQualifier,
     Dataset,
     DatasetCollection,
     DataSubject,
@@ -34,10 +33,6 @@ def evaluation_key_validation_basic_taxonomy() -> Taxonomy:
             DataCategory(fides_key="data_category_1"),
             DataCategory(fides_key="data_category_2"),
         ],
-        data_qualifier=[
-            DataQualifier(fides_key="data_qualifier_1"),
-            DataQualifier(fides_key="data_qualifier_2"),
-        ],
         data_use=[DataUse(fides_key="data_use_1"), DataUse(fides_key="data_use_2")],
     )
 
@@ -65,7 +60,6 @@ def create_policy_rule_with_keys(
     data_categories: List[str],
     data_uses: List[str],
     data_subjects: List[str],
-    data_qualifier: str,
 ) -> PolicyRule:
     return PolicyRule(
         name="policy_rule_1",
@@ -81,7 +75,6 @@ def create_policy_rule_with_keys(
             "values": data_subjects,
             "matches": MatchesEnum.ANY,
         },
-        data_qualifier=data_qualifier,
     )
 
 
@@ -112,7 +105,6 @@ def test_populate_referenced_keys_recursively(test_config: FidesConfig) -> None:
                             name="privacy_declaration_1",
                             data_categories=["user.contact.email"],
                             data_use="essential.service",
-                            data_qualifier="aggregated.anonymized",
                             data_subjects=["customer"],
                         )
                     ],
@@ -133,13 +125,6 @@ def test_populate_referenced_keys_recursively(test_config: FidesConfig) -> None:
 
     populated_data_uses = [data_use.fides_key for data_use in result_taxonomy.data_use]
     assert sorted(populated_data_uses) == sorted(["essential.service", "essential"])
-
-    populated_qualifiers = [
-        data_qualifier.fides_key for data_qualifier in result_taxonomy.data_qualifier
-    ]
-    assert sorted(populated_qualifiers) == sorted(
-        ["aggregated.anonymized", "aggregated"]
-    )
 
     populated_subjects = [
         data_subject.fides_key for data_subject in result_taxonomy.data_subject
@@ -167,7 +152,6 @@ def test_populate_referenced_keys_fails_missing_keys(
                                 name="privacy_declaration_1",
                                 data_categories=["missing.category"],
                                 data_use="essential.service",
-                                data_qualifier="aggregated.anonymized",
                                 data_subjects=["customer"],
                             )
                         ],
@@ -577,14 +561,10 @@ def test_failed_evaluation_error_message(
                               'rule (reject_targeted_marketing) from policy '
                               '(primary_privacy_policy). Violated usage of '
                               'data categories '
-                              '(user.demographic.political_opinion) with '
-                              'qualifier '
-                              '(aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified) '
-                              'for data uses '
-                              '(marketing.advertising.third_party) and '
+                              '(user.demographic.political_opinion) for data'
+                              'uses (marketing.advertising.third_party) and'
                               'subjects (customer)',
                     'violating_attributes': { 'data_categories': [ 'user.demographic.political_opinion'],
-                                              'data_qualifier': 'aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified',
                                               'data_subjects': ['customer'],
                                               'data_uses': [ 'marketing.advertising.third_party']}}]}
                                               """

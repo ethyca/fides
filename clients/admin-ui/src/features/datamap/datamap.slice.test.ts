@@ -16,27 +16,21 @@ describe("Merge Columns", () => {
     },
     {
       isVisible: true,
-      text: "Legal Basis",
-      value: "system.privacy_declaration.data_use.legal_basis",
-      id: 2,
-    },
-    {
-      isVisible: true,
       text: "Data Category",
       value: "unioned_data_categories",
-      id: 3,
+      id: 2,
     },
     {
       isVisible: true,
       text: "Data Subject",
       value: "system.privacy_declaration.data_subjects.name",
-      id: 4,
+      id: 3,
     },
     {
       isVisible: true,
       text: "Description",
       value: "system.description",
-      id: 5,
+      id: 4,
     },
   ];
 
@@ -53,29 +47,24 @@ describe("Merge Columns", () => {
       value: "system.privacy_declaration.data_use.name",
       id: 1,
     },
-    {
-      isVisible: true,
-      text: "Legal Basis",
-      value: "system.privacy_declaration.data_use.legal_basis",
-      id: 2,
-    },
+
     {
       isVisible: true,
       text: "Data Category",
       value: "unioned_data_categories",
-      id: 3,
+      id: 2,
     },
     {
       isVisible: true,
       text: "Data Subject",
       value: "system.privacy_declaration.data_subjects.name",
-      id: 4,
+      id: 3,
     },
     {
       isVisible: true,
       text: "Description",
       value: "system.description",
-      id: 5,
+      id: 4,
     },
   ];
 
