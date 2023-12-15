@@ -440,6 +440,34 @@ def create_current_privacy_preferences_and_last_served_notices(db: Session):
     )
     logger.info(f"Created DeprecatedCurrentPrivacyPreference with id={current_pref.id}")
 
+    # Bad record with no provided identities - this will not be migrated
+    DeprecatedCurrentPrivacyPreference.create(
+        db,
+        data={
+            "preference": "opt_out",
+            "provided_identity_id": None,
+            "privacy_notice_id": notice_id,
+            "privacy_notice_history_id": notice_history_id,
+            "fides_user_device_provided_identity_id": None,
+        },
+    )
+    logger.info(f"Created DeprecatedCurrentPrivacyPreference with id={current_pref.id}")
+
+    # TCF preference - this will not be migrated
+    current_pref = DeprecatedCurrentPrivacyPreference.create(
+        db,
+        data={
+            "preference": "opt_out",
+            "provided_identity_id": None,
+            "privacy_notice_id": None,
+            "privacy_notice_history_id": None,
+            "feature": 1,
+            "fides_user_device_provided_identity_id": None,
+        },
+    )
+
+    logger.info(f"Created DeprecatedCurrentPrivacyPreference with id={current_pref.id}")
+
     # CA notice was served to dawn under email and fides device id
     last_served_notice = DeprecatedLastServedNotice.create(
         db,
@@ -606,7 +634,7 @@ def verify_migration(db: Session) -> None:
     migrated_current_preferences = db.query(CurrentPrivacyPreferenceV2).order_by(
         CurrentPrivacyPreferenceV2.created_at.asc()
     )
-    assert existing_preferences.count() == 10
+    assert existing_preferences.count() == 12
     assert migrated_current_preferences.count() == 4
 
     notice_id, notice_history_id = get_us_ca_notice_and_history_id(db)
@@ -632,12 +660,21 @@ def verify_migration(db: Session) -> None:
     assert janes_record.updated_at
     assert janes_record.preferences == {
         "preferences": [
-            {"preference": "opt_out", "privacy_notice_history": notice_history_id},
+            {"preference": "opt_out", "privacy_notice_history_id": notice_history_id},
             {
                 "preference": "opt_in",
-                "privacy_notice_history": essential_notice_history_id,
+                "privacy_notice_history_id": essential_notice_history_id,
             },
-        ]
+        ],
+        "purpose_consent_preferences": [],
+        "purpose_legitimate_interests_preferences": [],
+        "special_purpose_preferences": [],
+        "feature_preferences": [],
+        "special_feature_preferences": [],
+        "vendor_consent_preferences": [],
+        "vendor_legitimate_interests_preferences": [],
+        "system_consent_preferences": [],
+        "system_legitimate_interests_preferences": [],
     }
 
     joes_record = migrated_current_preferences.offset(1).first()
@@ -655,9 +692,18 @@ def verify_migration(db: Session) -> None:
         "preferences": [
             {
                 "preference": "opt_out",
-                "privacy_notice_history": essential_notice_history_id,
+                "privacy_notice_history_id": essential_notice_history_id,
             }
-        ]
+        ],
+        "purpose_consent_preferences": [],
+        "purpose_legitimate_interests_preferences": [],
+        "special_purpose_preferences": [],
+        "feature_preferences": [],
+        "special_feature_preferences": [],
+        "vendor_consent_preferences": [],
+        "vendor_legitimate_interests_preferences": [],
+        "system_consent_preferences": [],
+        "system_legitimate_interests_preferences": [],
     }
 
     elizabeths_record = migrated_current_preferences.offset(2).first()
@@ -675,9 +721,18 @@ def verify_migration(db: Session) -> None:
         "preferences": [
             {
                 "preference": "opt_out",
-                "privacy_notice_history": functional_notice_history_id,
+                "privacy_notice_history_id": functional_notice_history_id,
             }
-        ]
+        ],
+        "purpose_consent_preferences": [],
+        "purpose_legitimate_interests_preferences": [],
+        "special_purpose_preferences": [],
+        "feature_preferences": [],
+        "special_feature_preferences": [],
+        "vendor_consent_preferences": [],
+        "vendor_legitimate_interests_preferences": [],
+        "system_consent_preferences": [],
+        "system_legitimate_interests_preferences": [],
     }
 
     dawns_record = migrated_current_preferences.offset(3).first()
@@ -698,16 +753,25 @@ def verify_migration(db: Session) -> None:
     # Privacy preferences were consolidated. Multiple preferences against notice_history and the latest was retained
     assert dawns_record.preferences == {
         "preferences": [
-            {"preference": "opt_out", "privacy_notice_history": notice_history_id},
+            {"preference": "opt_out", "privacy_notice_history_id": notice_history_id},
             {
                 "preference": "opt_out",
-                "privacy_notice_history": functional_notice_history_id,
+                "privacy_notice_history_id": functional_notice_history_id,
             },
             {
                 "preference": "opt_in",
-                "privacy_notice_history": essential_notice_history_id,
+                "privacy_notice_history_id": essential_notice_history_id,
             },
-        ]
+        ],
+        "purpose_consent_preferences": [],
+        "purpose_legitimate_interests_preferences": [],
+        "special_purpose_preferences": [],
+        "feature_preferences": [],
+        "special_feature_preferences": [],
+        "vendor_consent_preferences": [],
+        "vendor_legitimate_interests_preferences": [],
+        "system_consent_preferences": [],
+        "system_legitimate_interests_preferences": [],
     }
 
     print("> Verified Current Privacy Preference V2 migration.")
@@ -734,7 +798,16 @@ def verify_migration(db: Session) -> None:
     )
 
     assert dawns_served.served == {
-        "privacy_notice_history_ids": [notice_history_id, functional_notice_history_id]
+        "privacy_notice_history_ids": [notice_history_id, functional_notice_history_id],
+        "tcf_purpose_consents": [],
+        "tcf_purpose_legitimate_interests": [],
+        "tcf_special_purposes": [],
+        "tcf_vendor_consents": [],
+        "tcf_vendor_legitimate_interests": [],
+        "tcf_features": [],
+        "tcf_special_features": [],
+        "tcf_system_consents": [],
+        "tcf_system_legitimate_interests": [],
     }
 
     jane_served = migrated_current_served.offset(1).first()
@@ -749,7 +822,16 @@ def verify_migration(db: Session) -> None:
     assert jane_served.created_at
     assert jane_served.updated_at
     assert jane_served.served == {
-        "privacy_notice_history_ids": [functional_notice_history_id]
+        "privacy_notice_history_ids": [functional_notice_history_id],
+        "tcf_purpose_consents": [],
+        "tcf_purpose_legitimate_interests": [],
+        "tcf_special_purposes": [],
+        "tcf_vendor_consents": [],
+        "tcf_vendor_legitimate_interests": [],
+        "tcf_features": [],
+        "tcf_special_features": [],
+        "tcf_system_consents": [],
+        "tcf_system_legitimate_interests": [],
     }
 
     print("> Verified LastServedNotice V2 migration.")

@@ -42,6 +42,7 @@ def upgrade():
 
     # Deleting preferences saved against TCF as this is not considered live
     bind.execute(text(TCF_PREFERENCES_DELETE_QUERY))
+
     # Migrate over Notice Name, Key, and Mechanism from Privacy Notice
     bind.execute(text(PRIVACY_PREFERENCE_HISTORY_UPDATE_QUERY))
 
@@ -50,7 +51,9 @@ def upgrade():
     # Deleting TCF attributes served as this is not yet considered live.
     bind.execute(text(TCF_SERVED_DELETE_QUERY))
 
-    # Migrating over notice name, key, mechanism and served notice history id
+    # Migrating over notice name, key, mechanism and served notice history id.
+    # Going forward a served notice history id will be generated for the entire request before
+    # it is returned to the frontend, but for this migration records, use the id itself
     bind.execute(
         text(SERVED_NOTICE_HISTORY_UPDATE_QUERY),
     )
@@ -203,7 +206,7 @@ def migrate_current_records(
     """Common method to migrate CurrentPrivacyPreference -> CurrentPrivacyPreferenceV2 and
     LastServedNotice -> LastServedNoticeV2.
 
-    We are migrating from tables with unique constraints on two provided identity types x preferences types to the new
+    We are migrating from tables with unique constraints on two provided identity types (x) preferences types to the new
     tables with unique constraints on email, device id, and phone number.
 
     Migration involves linking all records in the original table with any shared identifiers across email, phone,
@@ -217,7 +220,6 @@ def migrate_current_records(
         return
 
     # Drop invalid rows where we have an encrypted val but not a hashed val and vice versa.
-    # Also drop if there are no identifiers at all.
     # This would be unexpected, but this would mean our ProvidedIdentity record was not populated correctly.
     df["email_count"] = df[["encrypted_email", "hashed_email"]].count(axis=1)
     df["phone_count"] = df[["encrypted_phone", "hashed_phone_number"]].count(axis=1)
@@ -227,6 +229,8 @@ def migrate_current_records(
     df = df[df["email_count"] != 1]
     df = df[df["phone_count"] != 1]
     df = df[df["device_count"] != 1]
+
+    # Also drop if there are no identifiers at all - our new table needs at least one
     df = df[df["email_count"] + df["phone_count"] + df["device_count"] >= 2]
 
     # Create a "paths" column in the dataframe that is a list of non-null identifiers, so
@@ -283,8 +287,8 @@ def migrate_current_records(
         decrypt_extract_encrypt
     )
 
-    # Remove columns from aggregated data frame that are not needed in CurrentPrivacyPreferenceV2 table
-    # before writing new data
+    # Remove columns from aggregated data frame that are not needed in CurrentPrivacyPreferenceV2 or
+    # LastServedNoticeV2 table before writing new data
     result_df.drop(columns="group_id", inplace=True)
     result_df.drop(columns="encrypted_email", inplace=True)
     result_df.drop(columns="encrypted_phone", inplace=True)
@@ -316,14 +320,27 @@ def _group_preferences_records(df: DataFrame) -> DataFrame:
         sort order"""
         prefs: Dict = {}
         for preference in preferences:
+            # Records were sorted ascending by date, so last one in wins (most recently saved)
             prefs[preference[0]] = preference[1]
 
         return json.dumps(
             {
                 "preferences": [
-                    {"privacy_notice_history": notice_history, "preference": preference}
+                    {
+                        "privacy_notice_history_id": notice_history,
+                        "preference": preference,
+                    }
                     for notice_history, preference in prefs.items()
-                ]
+                ],
+                "purpose_consent_preferences": [],
+                "purpose_legitimate_interests_preferences": [],
+                "special_purpose_preferences": [],
+                "feature_preferences": [],
+                "special_feature_preferences": [],
+                "vendor_consent_preferences": [],
+                "vendor_legitimate_interests_preferences": [],
+                "system_consent_preferences": [],
+                "system_legitimate_interests_preferences": [],
             }
         )
 
@@ -354,7 +371,20 @@ def _group_served_records(df: DataFrame):
     def combine_served(served: Series) -> str:
         """Combines the preferences across user records deemed to be linked, prioritizing most recently saved due to
         sort order"""
-        return json.dumps({"privacy_notice_history_ids": served.unique().tolist()})
+        return json.dumps(
+            {
+                "privacy_notice_history_ids": served.unique().tolist(),
+                "tcf_purpose_consents": [],
+                "tcf_purpose_legitimate_interests": [],
+                "tcf_special_purposes": [],
+                "tcf_vendor_consents": [],
+                "tcf_vendor_legitimate_interests": [],
+                "tcf_features": [],
+                "tcf_special_features": [],
+                "tcf_system_consents": [],
+                "tcf_system_legitimate_interests": [],
+            }
+        )
 
     # Groups by group_id, prioritizing latest non-null records for identifiers, and more recently saved privacy
     # preferences.

@@ -173,7 +173,6 @@ def upgrade():
         ["updated_at"],
         unique=False,
     )
-    op.drop_index("ix_ctl_systems_name", table_name="ctl_systems")
     op.drop_index(
         "ix_currentprivacypreference_privacy_preference_history_id",
         table_name="currentprivacypreference",
@@ -183,6 +182,7 @@ def upgrade():
         "currentprivacypreference",
         type_="foreignkey",
     )
+    # Getting rid of this link - currentprivacypreference is deprecated and we need to drop this existing connection
     op.drop_column("currentprivacypreference", "privacy_preference_history_id")
     op.drop_index(
         "ix_lastservednotice_served_notice_history_id", table_name="lastservednotice"
@@ -192,6 +192,7 @@ def upgrade():
         "lastservednotice",
         type_="foreignkey",
     )
+    # Getting rid of this link - lastservednotice is deprecated and we need to drop this existing connection
     op.drop_column("lastservednotice", "served_notice_history_id")
     op.add_column(
         "privacypreferencehistory", sa.Column("notice_key", sa.String(), nullable=True)
