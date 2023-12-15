@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.25.1b4.post0.dev20"
+    "version": "2.25.1b4.post0.dev21"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -708,360 +708,6 @@
             "OAuth2ClientCredentialsBearer": [
               "data_subject:create",
               "data_subject:update"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/data_qualifier": {
-      "get": {
-        "tags": [
-          "DataQualifier"
-        ],
-        "summary": "List",
-        "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_data_qualifier_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response List Api V1 Data Qualifier Get",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataQualifier"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "data_qualifier:read"
-            ]
-          }
-        ]
-      },
-      "put": {
-        "tags": [
-          "DataQualifier"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "update_api_v1_data_qualifier_put",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DataQualifier"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataQualifier"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "data_qualifier",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "data_qualifier:update"
-            ]
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "DataQualifier"
-        ],
-        "summary": "Create",
-        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
-        "operationId": "Create_api_v1_data_qualifier_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DataQualifier"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataQualifier"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "data_qualifier",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "data_qualifier:create"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/data_qualifier/{fides_key}": {
-      "get": {
-        "tags": [
-          "DataQualifier"
-        ],
-        "summary": "Get",
-        "description": "Get a resource by its fides_key.",
-        "operationId": "get_api_v1_data_qualifier__fides_key__get",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataQualifier"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "data_qualifier:read"
-            ]
-          }
-        ]
-      },
-      "delete": {
-        "tags": [
-          "DataQualifier"
-        ],
-        "summary": "Delete",
-        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
-        "operationId": "delete_api_v1_data_qualifier__fides_key__delete",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Delete Api V1 Data Qualifier  Fides Key  Delete",
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "data_qualifier",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "data_qualifier:delete"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/data_qualifier/upsert": {
-      "post": {
-        "tags": [
-          "DataQualifier"
-        ],
-        "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "upsert_api_v1_data_qualifier_upsert_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "title": "Resources",
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/DataQualifier"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Upsert Api V1 Data Qualifier Upsert Post",
-                  "type": "object"
-                },
-                "example": {
-                  "message": "Upserted 3 data_qualifier(s)",
-                  "inserted": 0,
-                  "updated": 3
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "example": {
-                  "message": "Upserted 3 data_qualifier(s)",
-                  "inserted": 1,
-                  "updated": 2
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "DataCategory",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "data_qualifier:create",
-              "data_qualifier:update"
             ]
           }
         ]
@@ -2891,360 +2537,6 @@
             "OAuth2ClientCredentialsBearer": [
               "ctl_policy:create",
               "ctl_policy:update"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/registry": {
-      "get": {
-        "tags": [
-          "Registry"
-        ],
-        "summary": "List",
-        "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_registry_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response List Api V1 Registry Get",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Registry"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "registry:read"
-            ]
-          }
-        ]
-      },
-      "put": {
-        "tags": [
-          "Registry"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "update_api_v1_registry_put",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Registry"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Registry"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "registry",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "registry:update"
-            ]
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "Registry"
-        ],
-        "summary": "Create",
-        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
-        "operationId": "Create_api_v1_registry_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Registry"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Registry"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "registry",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "registry:create"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/registry/{fides_key}": {
-      "get": {
-        "tags": [
-          "Registry"
-        ],
-        "summary": "Get",
-        "description": "Get a resource by its fides_key.",
-        "operationId": "get_api_v1_registry__fides_key__get",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Registry"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "registry:read"
-            ]
-          }
-        ]
-      },
-      "delete": {
-        "tags": [
-          "Registry"
-        ],
-        "summary": "Delete",
-        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
-        "operationId": "delete_api_v1_registry__fides_key__delete",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Delete Api V1 Registry  Fides Key  Delete",
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "registry",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "registry:delete"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/registry/upsert": {
-      "post": {
-        "tags": [
-          "Registry"
-        ],
-        "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "upsert_api_v1_registry_upsert_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "title": "Resources",
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/Registry"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Upsert Api V1 Registry Upsert Post",
-                  "type": "object"
-                },
-                "example": {
-                  "message": "Upserted 3 registry(s)",
-                  "inserted": 0,
-                  "updated": 3
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "example": {
-                  "message": "Upserted 3 registry(s)",
-                  "inserted": 1,
-                  "updated": 2
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "DataCategory",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "registry:create",
-              "registry:update"
             ]
           }
         ]
@@ -13453,11 +12745,6 @@
             "type": "string",
             "description": "A detailed description of what this resource is."
           },
-          "registry_id": {
-            "title": "Registry Id",
-            "type": "integer",
-            "description": "The id of the system registry, if used."
-          },
           "meta": {
             "title": "Meta",
             "type": "object",
@@ -13476,14 +12763,6 @@
             "title": "System Type",
             "type": "string",
             "description": "A required value to describe the type of system being modeled, examples include: Service, Application, Third Party, etc."
-          },
-          "data_responsibility_title": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DataResponsibilityTitle"
-              }
-            ],
-            "description": "Deprecated. The responsibility or role over the system that processes personal data"
           },
           "egress": {
             "title": "Egress",
@@ -13509,37 +12788,11 @@
             },
             "description": "\n    The PrivacyDeclaration resource model.\n\n    States a function of a system, and describes how it relates\n    to the privacy data types.\n    "
           },
-          "joint_controller": {
-            "title": "Joint Controller",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ContactDetails"
-              }
-            ],
-            "description": "Deprecated. \n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
-          },
-          "third_country_transfers": {
-            "title": "Third Country Transfers",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Deprecated. An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1."
-          },
           "administrating_department": {
             "title": "Administrating Department",
             "type": "string",
             "description": "An optional value to identify the owning department or group of the system within your organization",
             "default": "Not defined"
-          },
-          "data_protection_impact_assessment": {
-            "title": "Data Protection Impact Assessment",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DataProtectionImpactAssessment"
-              }
-            ],
-            "description": "Deprecated. \n    The DataProtectionImpactAssessment (DPIA) resource model.\n\n    Contains information in regard to the data protection\n    impact assessment exported on a data map or Record of\n    Processing Activities (RoPA).\n\n    A legal requirement under GDPR for any project that\n    introduces a high risk to personal information.\n    "
           },
           "vendor_id": {
             "title": "Vendor Id",
@@ -15165,105 +14418,6 @@
         },
         "description": "The DataFlow resource model.\n\nDescribes a resource model with which a given System resource communicates."
       },
-      "DataProtectionImpactAssessment": {
-        "title": "DataProtectionImpactAssessment",
-        "type": "object",
-        "properties": {
-          "is_required": {
-            "title": "Is Required",
-            "type": "boolean",
-            "description": "A boolean value determining if a data protection impact assessment is required. Defaults to False.",
-            "default": false
-          },
-          "progress": {
-            "title": "Progress",
-            "type": "string",
-            "description": "The optional status of a Data Protection Impact Assessment. Returned on an exported data map or RoPA."
-          },
-          "link": {
-            "title": "Link",
-            "maxLength": 65536,
-            "minLength": 1,
-            "type": "string",
-            "description": "The optional link to the Data Protection Impact Assessment. Returned on an exported data map or RoPA.",
-            "format": "uri"
-          }
-        },
-        "description": "The DataProtectionImpactAssessment (DPIA) resource model.\n\nContains information in regard to the data protection\nimpact assessment exported on a data map or Record of\nProcessing Activities (RoPA).\n\nA legal requirement under GDPR for any project that\nintroduces a high risk to personal information."
-      },
-      "DataQualifier": {
-        "title": "DataQualifier",
-        "required": [
-          "fides_key"
-        ],
-        "type": "object",
-        "properties": {
-          "version_added": {
-            "title": "Version Added",
-            "type": "string",
-            "description": "The version of Fideslang in which this label was added."
-          },
-          "version_deprecated": {
-            "title": "Version Deprecated",
-            "type": "string",
-            "description": "The version of Fideslang in which this label was deprecated."
-          },
-          "replaced_by": {
-            "title": "Replaced By",
-            "pattern": "^[a-zA-Z0-9_.<>-]+$",
-            "type": "string",
-            "description": "The new name, if applicable, for this label after deprecation."
-          },
-          "is_default": {
-            "title": "Is Default",
-            "type": "boolean",
-            "description": "Denotes whether the resource is part of the default taxonomy or not.",
-            "default": false
-          },
-          "fides_key": {
-            "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.<>-]+$",
-            "type": "string",
-            "description": "A unique key used to identify this resource."
-          },
-          "organization_fides_key": {
-            "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.<>-]+$",
-            "type": "string",
-            "description": "Defines the Organization that this resource belongs to.",
-            "default": "default_organization"
-          },
-          "tags": {
-            "title": "Tags",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "name": {
-            "title": "Name",
-            "type": "string",
-            "description": "Human-Readable name for this resource."
-          },
-          "description": {
-            "title": "Description",
-            "type": "string",
-            "description": "A detailed description of what this resource is."
-          },
-          "parent_key": {
-            "title": "Parent Key",
-            "pattern": "^[a-zA-Z0-9_.<>-]+$",
-            "type": "string"
-          },
-          "active": {
-            "title": "Active",
-            "type": "boolean",
-            "description": "Indicates whether the resource is currently 'active'.",
-            "default": true
-          }
-        },
-        "description": "The DataQualifier resource model."
-      },
       "DataResponsibilityTitle": {
         "title": "DataResponsibilityTitle",
         "enum": [
@@ -15475,43 +14629,6 @@
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
-          "legal_basis": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LegalBasisEnum"
-              }
-            ],
-            "description": "Deprecated. The legal basis category of which the data use falls under. This field is used as part of the creation of an exportable data map."
-          },
-          "special_category": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SpecialCategoriesEnum"
-              }
-            ],
-            "description": "Deprecated. The special category for processing of which the data use falls under. This field is used as part of the creation of an exportable data map."
-          },
-          "recipients": {
-            "title": "Recipients",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Deprecated. An array of recipients when sharing personal data outside of your organization."
-          },
-          "legitimate_interest": {
-            "title": "Legitimate Interest",
-            "type": "boolean",
-            "description": "Deprecated. A boolean representation of if the legal basis used is `Legitimate Interest`. Validated at run time and looks for a `legitimate_interest_impact_assessment` to exist if true."
-          },
-          "legitimate_interest_impact_assessment": {
-            "title": "Legitimate Interest Impact Assessment",
-            "maxLength": 65536,
-            "minLength": 1,
-            "type": "string",
-            "description": "Deprecated. A url pointing to the legitimate interest impact assessment. Required if the legal bases used is legitimate interest.",
-            "format": "uri"
-          },
           "active": {
             "title": "Active",
             "type": "boolean",
@@ -15601,12 +14718,6 @@
             },
             "description": "Array of Data Category resources identified by `fides_key`, that apply to all collections in the Dataset."
           },
-          "data_qualifier": {
-            "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.<>-]+$",
-            "type": "string",
-            "description": "Deprecated. Array of Data Qualifier resources identified by `fides_key`, that apply to all collections in the Dataset."
-          },
           "fides_meta": {
             "title": "Fides Meta",
             "allOf": [
@@ -15615,28 +14726,6 @@
               }
             ],
             "description": "\n    The DatasetMetadata resource model.\n\n    Object used to hold application specific metadata for a dataset\n    "
-          },
-          "joint_controller": {
-            "title": "Joint Controller",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ContactDetails"
-              }
-            ],
-            "description": "Deprecated. \n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
-          },
-          "retention": {
-            "title": "Retention",
-            "type": "string",
-            "description": "Deprecated. An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset."
-          },
-          "third_country_transfers": {
-            "title": "Third Country Transfers",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Deprecated. An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)."
           },
           "collections": {
             "title": "Collections",
@@ -15675,18 +14764,6 @@
               "type": "string"
             },
             "description": "Array of Data Category resources identified by `fides_key`, that apply to all fields in the collection."
-          },
-          "data_qualifier": {
-            "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.<>-]+$",
-            "type": "string",
-            "description": "Array of Data Qualifier resources identified by `fides_key`, that apply to all fields in the collection.",
-            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-          },
-          "retention": {
-            "title": "Retention",
-            "type": "string",
-            "description": "An optional string to describe the retention policy for a Dataset collection. This field can also be applied more granularly at the field level of a Dataset."
           },
           "fields": {
             "title": "Fields",
@@ -15767,18 +14844,6 @@
               "type": "string"
             },
             "description": "Arrays of Data Categories, identified by `fides_key`, that applies to this field."
-          },
-          "data_qualifier": {
-            "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.<>-]+$",
-            "type": "string",
-            "description": "A Data Qualifier that applies to this field. Note that this field holds a single value, therefore, the property name is singular.",
-            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-          },
-          "retention": {
-            "title": "Retention",
-            "type": "string",
-            "description": "An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset."
           },
           "fides_meta": {
             "$ref": "#/components/schemas/FidesMeta"
@@ -17044,19 +16109,6 @@
           }
         },
         "description": "Schema that surfaces the the last time a consent item that was shown to a user"
-      },
-      "LegalBasisEnum": {
-        "title": "LegalBasisEnum",
-        "enum": [
-          "Consent",
-          "Contract",
-          "Legal Obligation",
-          "Vital Interest",
-          "Public Interest",
-          "Legitimate Interests"
-        ],
-        "type": "string",
-        "description": "Deprecated. The model for allowable legal basis categories on data uses."
       },
       "LegalBasisForProcessingEnum": {
         "title": "LegalBasisForProcessingEnum",
@@ -18810,13 +17862,6 @@
               }
             ],
             "description": "\n    The PrivacyRule resource model.\n\n    A list of privacy data types and what match method to use.\n    "
-          },
-          "data_qualifier": {
-            "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.<>-]+$",
-            "type": "string",
-            "description": "The fides key of the data qualifier to be used in a privacy rule.",
-            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
           }
         },
         "description": "The PolicyRule resource model.\n\nDescribes the allowed combination of the various privacy data types."
@@ -19018,12 +18063,6 @@
             "type": "string",
             "description": "The Data Use describing a system in a privacy declaration."
           },
-          "data_qualifier": {
-            "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.<>-]+$",
-            "type": "string",
-            "description": "Deprecated. The fides key of the data qualifier describing a system in a privacy declaration."
-          },
           "data_subjects": {
             "title": "Data Subjects",
             "type": "array",
@@ -19164,12 +18203,6 @@
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "The Data Use describing a system in a privacy declaration."
-          },
-          "data_qualifier": {
-            "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.<>-]+$",
-            "type": "string",
-            "description": "Deprecated. The fides key of the data qualifier describing a system in a privacy declaration."
           },
           "data_subjects": {
             "title": "Data Subjects",
@@ -20477,46 +19510,6 @@
         "additionalProperties": false,
         "description": "Describes a Fides registration."
       },
-      "Registry": {
-        "title": "Registry",
-        "required": [
-          "fides_key"
-        ],
-        "type": "object",
-        "properties": {
-          "fides_key": {
-            "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.<>-]+$",
-            "type": "string",
-            "description": "A unique key used to identify this resource."
-          },
-          "organization_fides_key": {
-            "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.<>-]+$",
-            "type": "string",
-            "description": "Defines the Organization that this resource belongs to.",
-            "default": "default_organization"
-          },
-          "tags": {
-            "title": "Tags",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "name": {
-            "title": "Name",
-            "type": "string",
-            "description": "Human-Readable name for this resource."
-          },
-          "description": {
-            "title": "Description",
-            "type": "string",
-            "description": "A detailed description of what this resource is."
-          }
-        },
-        "description": "The Registry resource model.\n\nSystems can be assigned to this resource, but it doesn't inherently\npoint to any other resources."
-      },
       "RequestOrigin": {
         "title": "RequestOrigin",
         "enum": [
@@ -21107,10 +20100,6 @@
           "data_category:delete",
           "data_category:read",
           "data_category:update",
-          "data_qualifier:create",
-          "data_qualifier:delete",
-          "data_qualifier:read",
-          "data_qualifier:update",
           "data_subject:create",
           "data_subject:read",
           "data_subject:delete",
@@ -21159,10 +20148,6 @@
           "privacy-request:transfer",
           "privacy-request:upload_data",
           "privacy-request:view_data",
-          "registry:create",
-          "registry:read",
-          "registry:delete",
-          "registry:update",
           "rule:create_or_update",
           "rule:delete",
           "rule:read",
@@ -21321,22 +20306,6 @@
         },
         "additionalProperties": false,
         "description": "SovrnDocsSchema Secrets Schema for API Docs"
-      },
-      "SpecialCategoriesEnum": {
-        "title": "SpecialCategoriesEnum",
-        "enum": [
-          "Consent",
-          "Employment",
-          "Vital Interests",
-          "Non-profit Bodies",
-          "Public by Data Subject",
-          "Legal Claims",
-          "Substantial Public Interest",
-          "Medical",
-          "Public Health Interest"
-        ],
-        "type": "string",
-        "description": "Deprecated. Special Categories Enum that was used on Data Uses."
       },
       "SpecialCategoryLegalBasisEnum": {
         "title": "SpecialCategoryLegalBasisEnum",
@@ -21655,11 +20624,6 @@
             "type": "string",
             "description": "A detailed description of what this resource is."
           },
-          "registry_id": {
-            "title": "Registry Id",
-            "type": "integer",
-            "description": "The id of the system registry, if used."
-          },
           "meta": {
             "title": "Meta",
             "type": "object",
@@ -21678,14 +20642,6 @@
             "title": "System Type",
             "type": "string",
             "description": "A required value to describe the type of system being modeled, examples include: Service, Application, Third Party, etc."
-          },
-          "data_responsibility_title": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DataResponsibilityTitle"
-              }
-            ],
-            "description": "Deprecated. The responsibility or role over the system that processes personal data"
           },
           "egress": {
             "title": "Egress",
@@ -21711,37 +20667,11 @@
             },
             "description": "\n    The PrivacyDeclaration resource model.\n\n    States a function of a system, and describes how it relates\n    to the privacy data types.\n    "
           },
-          "joint_controller": {
-            "title": "Joint Controller",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ContactDetails"
-              }
-            ],
-            "description": "Deprecated. \n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
-          },
-          "third_country_transfers": {
-            "title": "Third Country Transfers",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Deprecated. An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1."
-          },
           "administrating_department": {
             "title": "Administrating Department",
             "type": "string",
             "description": "An optional value to identify the owning department or group of the system within your organization",
             "default": "Not defined"
-          },
-          "data_protection_impact_assessment": {
-            "title": "Data Protection Impact Assessment",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DataProtectionImpactAssessment"
-              }
-            ],
-            "description": "Deprecated. \n    The DataProtectionImpactAssessment (DPIA) resource model.\n\n    Contains information in regard to the data protection\n    impact assessment exported on a data map or Record of\n    Processing Activities (RoPA).\n\n    A legal requirement under GDPR for any project that\n    introduces a high risk to personal information.\n    "
           },
           "vendor_id": {
             "title": "Vendor Id",
@@ -21966,11 +20896,6 @@
             "type": "string",
             "description": "A detailed description of what this resource is."
           },
-          "registry_id": {
-            "title": "Registry Id",
-            "type": "integer",
-            "description": "The id of the system registry, if used."
-          },
           "meta": {
             "title": "Meta",
             "type": "object",
@@ -21989,14 +20914,6 @@
             "title": "System Type",
             "type": "string",
             "description": "A required value to describe the type of system being modeled, examples include: Service, Application, Third Party, etc."
-          },
-          "data_responsibility_title": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DataResponsibilityTitle"
-              }
-            ],
-            "description": "Deprecated. The responsibility or role over the system that processes personal data"
           },
           "egress": {
             "title": "Egress",
@@ -22022,37 +20939,11 @@
             },
             "description": "Extension of base pydantic model to include DB `id` field in the response"
           },
-          "joint_controller": {
-            "title": "Joint Controller",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ContactDetails"
-              }
-            ],
-            "description": "Deprecated. \n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
-          },
-          "third_country_transfers": {
-            "title": "Third Country Transfers",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Deprecated. An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1."
-          },
           "administrating_department": {
             "title": "Administrating Department",
             "type": "string",
             "description": "An optional value to identify the owning department or group of the system within your organization",
             "default": "Not defined"
-          },
-          "data_protection_impact_assessment": {
-            "title": "Data Protection Impact Assessment",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DataProtectionImpactAssessment"
-              }
-            ],
-            "description": "Deprecated. \n    The DataProtectionImpactAssessment (DPIA) resource model.\n\n    Contains information in regard to the data protection\n    impact assessment exported on a data map or Record of\n    Processing Activities (RoPA).\n\n    A legal requirement under GDPR for any project that\n    introduces a high risk to personal information.\n    "
           },
           "vendor_id": {
             "title": "Vendor Id",
@@ -22771,8 +21662,7 @@
         "required": [
           "data_categories",
           "data_subjects",
-          "data_uses",
-          "data_qualifier"
+          "data_uses"
         ],
         "type": "object",
         "properties": {
@@ -22799,11 +21689,6 @@
               "type": "string"
             },
             "description": "A list of data uses which led to an evaluation violation."
-          },
-          "data_qualifier": {
-            "title": "Data Qualifier",
-            "type": "string",
-            "description": "The data qualifier which led to an evaluation violation."
           }
         },
         "description": "The model for attributes which led to an evaluation violation"
