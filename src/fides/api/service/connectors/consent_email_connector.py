@@ -159,10 +159,9 @@ class GenericConsentEmailConnector(BaseEmailConnector):
         old_workflow_consent_preferences: Optional[
             Any
         ] = privacy_request.consent_preferences
-
         new_workflow_consent_preferences: List[
             PrivacyPreferenceHistory
-        ] = filter_privacy_preferences_for_propagation(  # type: ignore[assignment]
+        ] = filter_privacy_preferences_for_propagation(
             self.configuration.system,
             privacy_request.privacy_preferences,  # type: ignore[attr-defined]
         )
@@ -190,7 +189,6 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                 "message": f"Consent email skipped for '{self.configuration.name}'",
             },
         )
-
         for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
             pref.cache_system_status(
                 db, self.configuration.system_key, ExecutionLogStatus.skipped
@@ -234,10 +232,9 @@ class GenericConsentEmailConnector(BaseEmailConnector):
 
             filtered_privacy_preference_records: List[
                 PrivacyPreferenceHistory
-            ] = filter_privacy_preferences_for_propagation(  # type: ignore[assignment]
+            ] = filter_privacy_preferences_for_propagation(
                 self.configuration.system, privacy_request.privacy_preferences
             )
-
             filtered_privacy_request_schemas: List[
                 MinimalPrivacyPreferenceHistorySchema
             ] = [

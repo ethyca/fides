@@ -166,14 +166,15 @@ class LastServedNoticeV2(ConsentIdentitiesMixin, Base):
         """Generate a served notice history id
 
         We save privacy preferences and return immediately alongside this generated
-        id that we build up front.
+        id that we build up front.  This value will be saved under related ServedNoticeHistory.served_notice_history_id
+        fields, and then passed in to save privacy preferences and saved under PrivacyPreferenceHistory.served_notice_history_id
         """
         return f"ser_{uuid.uuid4()}"
 
 
 class ConsentReportingMixinV2(ConsentIdentitiesMixin):
-    """Consent Reporting Mixin to share between historical records saved and
-    historical records served
+    """Consent Reporting Mixin to share between historical preferences saved and
+    historical notices served
     """
 
     anonymized_ip_address = Column(
@@ -243,7 +244,7 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
 class ServedNoticeHistory(ConsentReportingMixinV2, Base):
     """A Historical Record of every time a Notice was served to a user
 
-    Each Privacy Notice served gets its own record, but served TCF attributes are collapsed into one record.
+    Each Privacy Notice served gets its own record, while served TCF attributes are collapsed into one record.
 
     The "served_notice_history_id" column on this table can be mapped to the PrivacyPreferenceHistory records
     to calculate conversion.
@@ -261,7 +262,8 @@ class ServedNoticeHistory(ConsentReportingMixinV2, Base):
     serving_component = Column(EnumColumn(ServingComponent), nullable=False, index=True)
 
     # Identifier generated when a LastServedNoticeV2 is created and returned in the response.
-    # This is saved on all corresponding ServedNoticeHistory records and can be used to link PrivacyPreferenceHistory records.
+    # This is saved on all corresponding ServedNoticeHistory records and can be used to link
+    # PrivacyPreferenceHistory records.
     served_notice_history_id = Column(String, index=True)
 
     tcf_served = Column(
@@ -279,7 +281,10 @@ class ServedNoticeHistory(ConsentReportingMixinV2, Base):
 
 
 class PrivacyPreferenceHistory(ConsentReportingMixinV2, Base):
-    """A Historical Record of every time a Notice was saved for a user"""
+    """A Historical Record of every time a Notice was saved for a user
+
+    Each Privacy Notice served gets its own record, while served TCF attributes are collapsed into one record.
+    """
 
     @declared_attr
     def __tablename__(self) -> str:
@@ -317,7 +322,7 @@ class PrivacyPreferenceHistory(ConsentReportingMixinV2, Base):
                 "pkcs5",
             )
         ),
-    )  # Cache secondary user ids (cookies, etc) if known for reporting purposes.
+    )
 
     # The record of where we served the notice in the frontend, for conversion purposes.
     served_notice_history_id = Column(String, index=True)

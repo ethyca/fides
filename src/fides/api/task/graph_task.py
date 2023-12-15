@@ -137,7 +137,6 @@ def retry(
                         self.resources.request.id,
                     )
                     self.log_skipped(action_type, exc)
-
                     for pref in self.resources.request.privacy_preferences:
                         # For consent reporting, also caching the given system as skipped for all historical privacy preferences.
                         pref.cache_system_status(

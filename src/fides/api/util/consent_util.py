@@ -108,7 +108,7 @@ def should_opt_in_to_service(
     - If using the old workflow (privacyrequest.consent_preferences), return True if all attached consent preferences
     are opt in, otherwise False.  System check is ignored.
 
-    - If using the new workflow (privacyrequest.privacy_preferences, privacyrequest.privacy_preferencesv2), there is more filtering here.  Privacy Preferences
+    - If using the new workflow (privacyrequest.privacy_preferences), there is more filtering here.  Privacy Preferences
     must have an enforcement level of system-wide and a data use must match a system data use.  If the connector is
     orphaned (no system), skip the data use check. If conflicts, prefer the opt-out preference.
     """
@@ -122,7 +122,7 @@ def should_opt_in_to_service(
             ),
             [],  # Don't need to return the filtered preferences, this is just relevant for the new workflow
         )
-
+    # NEW WORKFLOW
     relevant_preferences = filter_privacy_preferences_for_propagation(
         system,
         privacy_request.privacy_preferences,  # type: ignore[attr-defined]

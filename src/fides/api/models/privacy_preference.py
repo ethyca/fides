@@ -20,6 +20,8 @@ from fides.api.models.privacy_request import ProvidedIdentity
 
 
 class RequestOrigin(Enum):
+    # Not at the db level due to being subject to change.
+    # Only add here, do not remove
     privacy_center = "privacy_center"
     overlay = "overlay"
     api = "api"
@@ -27,6 +29,8 @@ class RequestOrigin(Enum):
 
 
 class ConsentMethod(Enum):
+    # Not at the db level due to being subject to change.
+    # Only add here, do not remove
     button = "button"  # deprecated- keeping for backwards-compatibility
     reject = "reject"
     accept = "accept"
@@ -37,6 +41,8 @@ class ConsentMethod(Enum):
 
 
 class ServingComponent(Enum):
+    # Not at the db level due to being subject to change.
+    # Only add here, do not remove
     overlay = "overlay"
     banner = "banner"
     privacy_center = "privacy_center"
@@ -129,11 +135,7 @@ class LastSavedMixin:
 
 class DeprecatedCurrentPrivacyPreference(LastSavedMixin, Base):
     """
-    ***DEPRECATED*** in favor of CurrentPrivacyPreference
-
-    Stores only the user's most recently saved preference for a given privacy notice
-
-    The specific privacy notice history and privacy preference history record are linked as well.
+    ***DEPRECATED*** in favor of CurrentPrivacyPreference. Soon to be removed.
     """
 
     @declared_attr
@@ -232,15 +234,7 @@ class DeprecatedCurrentPrivacyPreference(LastSavedMixin, Base):
 
 class DeprecatedLastServedNotice(LastSavedMixin, Base):
     """
-    ***DEPRECATED*** in favor of LastServedNoticeV2
-
-    Stores the last time a consent attribute was served for a given user.
-
-    Also consolidates serving consent among various user identities.
-
-    The name "LastServedNotice" is because we originally stored serving notices to end users,
-    and we expanded this table to store serving tcf components like purposes, special purposes, etc.
-    to end users.
+    ***DEPRECATED*** in favor of LastServedNoticeV2. Soon to be removed.
     """
 
     @declared_attr
