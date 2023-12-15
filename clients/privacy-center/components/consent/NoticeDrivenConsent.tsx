@@ -196,7 +196,7 @@ const NoticeDrivenConsent = () => {
       privacy_experience_id: experience?.id,
       method: ConsentMethod.BUTTON,
       code: verificationCode,
-      servedNoticeHistoryId: servedNotice?.served_notice_history_id,
+      served_notice_history_id: servedNotice?.served_notice_history_id,
     };
 
     // 1. Send PATCH to Fides backend
