@@ -230,6 +230,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                 Consent(**pref) for pref in privacy_request.consent_preferences or []
             ]
 
+            # Privacy preferences for new workflow
             filtered_privacy_preference_records: List[
                 PrivacyPreferenceHistory
             ] = filter_privacy_preferences_for_propagation(

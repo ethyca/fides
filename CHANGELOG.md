@@ -26,7 +26,7 @@ The types of changes are:
 
 ### Changed
 - Model overhaul for saving privacy preferences and notices served [#4481](https://github.com/ethyca/fides/pull/4481)
-- Moves served notice endpoints, consent reporting, and TCF queries to plus [#4481](https://github.com/ethyca/fides/pull/4481)
+- Moves served notice endpoints, consent reporting, purpose endpoints and TCF queries to plus [#4481](https://github.com/ethyca/fides/pull/4481)
 
 
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)

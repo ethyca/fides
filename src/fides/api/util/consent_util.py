@@ -122,6 +122,7 @@ def should_opt_in_to_service(
             ),
             [],  # Don't need to return the filtered preferences, this is just relevant for the new workflow
         )
+
     # NEW WORKFLOW
     relevant_preferences = filter_privacy_preferences_for_propagation(
         system,
