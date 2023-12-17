@@ -328,8 +328,7 @@ export const initialize = async ({
         fidesRegionString,
         options.fidesApiUrl,
         options.debug,
-        options.apiOptions,
-        cookie.identity.fides_user_device_id
+        options.apiOptions
       );
     }
 
