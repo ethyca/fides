@@ -130,7 +130,7 @@ export type FidesApiOptions = {
    * Intake a custom function that is used to fetch privacy experience.
    *
    * @param {string} userLocationString - user location
-   * @param {string} fidesUserDeviceId - (optional) Fides user device id, if known
+   * @param {string} fidesUserDeviceId - (deprecated) We no longer support handling user preferences on the experience using fidesUserDeviceId
    */
   getPrivacyExperienceFn?: (
     userLocationString: string,
