@@ -1,10 +1,15 @@
-import { Box, SimpleGrid, VStack } from "@fidesui/react";
+import { Box, Button, SimpleGrid, useToast, VStack } from "@fidesui/react";
+import _ from "lodash";
 import { useMemo, useState } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
 import SearchBar from "~/features/common/SearchBar";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { Location, LocationRegulationResponse, Selection } from "~/types/api";
+import { isErrorResult } from "~/types/errors";
 
 import LocationPickerCard from "./LocationPickerCard";
+import { usePatchLocationsRegulationsMutation } from "./locations.slice";
 import { groupByContinent } from "./transformations";
 
 // const mockLocation = (override?: Partial<Location>) => {
@@ -27,16 +32,39 @@ const SEARCH_FILTER = (location: Location, search: string) =>
   location.continent?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
 
 const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
+  const toast = useToast();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
     data.locations ?? []
   );
   const [search, setSearch] = useState("");
+  const [patchLocationsRegulationsMutationTrigger, { isLoading: isSaving }] =
+    usePatchLocationsRegulationsMutation();
 
   const locationsByContinent = useMemo(() => {
     const filteredSearchLocations =
       data.locations?.filter((l) => SEARCH_FILTER(l, search)) ?? [];
     return groupByContinent(filteredSearchLocations);
   }, [data.locations, search]);
+
+  const showSave = !_.isEqual(draftSelections, data.locations);
+
+  const handleSave = async () => {
+    const result = await patchLocationsRegulationsMutationTrigger({
+      locations: draftSelections,
+      // no changes to regulations
+      regulations: [],
+    });
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    } else {
+      toast(
+        successToastParams(
+          // TODO: "View regulations here"
+          `Fides has automatically associated the relevant regulations with your location choices.`
+        )
+      );
+    }
+  };
 
   return (
     <VStack alignItems="start" spacing={4}>
@@ -59,6 +87,16 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
           />
         ))}
       </SimpleGrid>
+      {showSave ? (
+        <Button
+          colorScheme="primary"
+          size="sm"
+          onClick={handleSave}
+          isLoading={isSaving}
+        >
+          Save
+        </Button>
+      ) : null}
     </VStack>
   );
 };

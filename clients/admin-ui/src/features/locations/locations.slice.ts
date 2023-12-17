@@ -16,8 +16,8 @@ const locationsApi = baseApi.injectEndpoints({
       providesTags: () => ["Locations"],
     }),
     patchLocationsRegulations: build.mutation<
-      LocationRegulationSelections,
-      LocationRegulationResponse
+      LocationRegulationResponse,
+      LocationRegulationSelections
     >({
       query: (body) => ({
         method: "PATCH",
