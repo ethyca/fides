@@ -1,7 +1,7 @@
-import { Box, SimpleGrid } from "@fidesui/react";
-import { useMemo } from "react";
+import { SimpleGrid } from "@fidesui/react";
+import { useMemo, useState } from "react";
 
-import { LocationRegulationResponse } from "~/types/api";
+import { LocationRegulationResponse, Selection } from "~/types/api";
 
 import LocationPickerCard from "./LocationPickerCard";
 import { groupByContinent } from "./transformations";
@@ -22,6 +22,9 @@ import { groupByContinent } from "./transformations";
 // };
 
 const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
+  const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
+    data.locations ?? []
+  );
   const locationsByContinent = useMemo(
     () => groupByContinent(data.locations ?? []),
     [data]
@@ -34,6 +37,8 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
           key={continent}
           title={continent}
           locations={locations}
+          selections={draftSelections}
+          onChange={setDraftSelections}
         />
       ))}
     </SimpleGrid>

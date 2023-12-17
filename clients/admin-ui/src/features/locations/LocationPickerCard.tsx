@@ -5,22 +5,62 @@ import {
   Checkbox,
   CheckboxGroup,
   Flex,
+  FormLabel,
+  Spacer,
   Switch,
-  Text,
   VStack,
 } from "@fidesui/react";
+import { useState } from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
-import { Location } from "~/types/api";
+import { Location, Selection } from "~/types/api";
 
 const LocationPickerCard = ({
   title,
   locations,
+  /** An array of Selections for ALL locations */
+  selections,
+  /** An updater for ALL locations */
+  onChange,
 }: {
   title: string;
   locations: Location[];
+  selections: Array<Selection>;
+  onChange: (selections: Array<Selection>) => void;
 }) => {
-  const numSelected = locations.filter((location) => location.selected).length;
+  const [showRegulatedOnly, setShowRegulatedOnly] = useState(false);
+  const filteredLocations = showRegulatedOnly
+    ? locations.filter((l) => l.regulation?.length)
+    : locations;
+
+  // Filter to just the relevant "selections"
+  const locationSelections = selections.filter((s) =>
+    filteredLocations.find((l) => l.id === s.id)
+  );
+  const numSelected = locationSelections.filter((l) => l.selected).length;
+  const allSelected = locationSelections.every((l) => l.selected);
+
+  const handleToggleSelection = (id: string) => {
+    const updated = selections.map((s) => {
+      if (s.id === id) {
+        return { ...s, selected: !s.selected };
+      }
+      return s;
+    });
+    onChange(updated);
+  };
+
+  const handleToggleAll = () => {
+    const newSelected = !allSelected;
+    const updated = selections.map((s) => {
+      if (filteredLocations.find((l) => l.id === s.id)) {
+        return { ...s, selected: newSelected };
+      }
+      return s;
+    });
+    onChange(updated);
+  };
+
   return (
     <Box
       p={4}
@@ -34,33 +74,61 @@ const LocationPickerCard = ({
     >
       <VStack alignItems="flex-start" spacing={3} width="100%">
         <Flex justifyContent="space-between" width="100%">
-          <Flex fontSize="md" textTransform="capitalize" fontWeight="semibold">
-            <Checkbox isChecked={false} size="md" mr="2" />
+          <Checkbox
+            fontSize="md"
+            textTransform="capitalize"
+            fontWeight="semibold"
+            isChecked={allSelected}
+            size="md"
+            mr="2"
+            onChange={handleToggleAll}
+            colorScheme="complimentary"
+          >
             {title}
-          </Flex>
+          </Checkbox>
 
           <Flex alignItems="center" gap="8px">
-            <Switch isChecked={false} size="sm" />
-            <Text>Regulated</Text>
+            <Switch
+              isChecked={showRegulatedOnly}
+              size="sm"
+              onChange={() => setShowRegulatedOnly(!showRegulatedOnly)}
+              colorScheme="complimentary"
+              id={`${title}-regulated`}
+            />
+            <FormLabel fontSize="sm" m={0} htmlFor={`${title}-regulated`}>
+              Regulated
+            </FormLabel>
             <QuestionTooltip />
           </Flex>
         </Flex>
         {numSelected > 0 ? (
           <Badge colorScheme="purple" variant="solid" width="fit-content">
-            X selected
+            {numSelected} selected
           </Badge>
         ) : null}
-
         <VStack paddingLeft="6" fontSize="sm" alignItems="start" spacing="2">
           <CheckboxGroup colorScheme="complimentary">
-            {locations.map((location) => (
-              <Flex key={location.id} alignItems="center" gap="8px">
-                <Checkbox isChecked={location.selected} size="md" />
-                <Text fontWeight="500">{location.name}</Text>
-              </Flex>
-            ))}
+            {filteredLocations.map((location) => {
+              const selection = locationSelections.find(
+                (l) => l.id === location.id
+              );
+              return (
+                <Flex key={location.id} alignItems="center" gap="8px">
+                  <Checkbox
+                    key={location.id}
+                    isChecked={selection?.selected}
+                    size="md"
+                    fontWeight="500"
+                    onChange={() => handleToggleSelection(location.id)}
+                  >
+                    {location.name}
+                  </Checkbox>
+                </Flex>
+              );
+            })}
           </CheckboxGroup>
         </VStack>
+        <Spacer />
         <Button size="xs" variant="ghost">
           View more
         </Button>
