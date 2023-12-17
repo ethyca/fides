@@ -316,26 +316,13 @@ describe("Privacy notice driven consent", () => {
 
   describe("consent reporting", () => {
     beforeEach(() => {
-      // Make the fixture's privacy notice history Ids match
-      cy.fixture("consent/notices_served.json").then((fixture) => {
-        // the fixture only has 2 entries, so add a third to match the experience payload
-        const body = [...fixture, JSON.parse(JSON.stringify(fixture[0]))];
-        body[0].privacy_notice_history.id = PRIVACY_NOTICE_HISTORY_ID_1;
-        body[1].privacy_notice_history.id = PRIVACY_NOTICE_HISTORY_ID_2;
-        body[2].privacy_notice_history.id = PRIVACY_NOTICE_HISTORY_ID_3;
-        cy.intercept(
-          "PATCH",
-          `${API_URL}/consent-request/consent-request-id/notices-served`,
-          { body }
-        ).as("patchMatchingNoticesServed");
-      });
       cy.visit("/consent");
       cy.getByTestId("consent");
       cy.overrideSettings(SETTINGS);
     });
 
     it("can make calls to consent reporting endpoints", () => {
-      cy.wait("@patchMatchingNoticesServed").then((interception) => {
+      cy.wait("@patchNoticesServed").then((interception) => {
         expect(interception.request.body.privacy_notice_history_ids).to.eql([
           PRIVACY_NOTICE_HISTORY_ID_1,
           PRIVACY_NOTICE_HISTORY_ID_2,
@@ -346,7 +333,7 @@ describe("Privacy notice driven consent", () => {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           const { served_notice_history_id } =
             preferenceInterception.request.body;
-          const expected = interception.response?.body.servedNoticeHistoryId;
+          const expected = interception.response?.body.served_notice_history_id;
           expect(served_notice_history_id).to.eql(expected);
         });
       });

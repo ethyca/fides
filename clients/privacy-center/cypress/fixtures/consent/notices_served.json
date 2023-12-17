@@ -1,4 +1,7 @@
 {
-  "privacy_notice_history_ids": [],
+  "privacy_notice_history_ids": [
+    "pri_mock_history_id_1",
+    "pri_mock_history_id_2"
+  ],
   "served_notice_history_id": "ser_65920a24-128f-4990-a7a8-f1a05a09093d"
 }
