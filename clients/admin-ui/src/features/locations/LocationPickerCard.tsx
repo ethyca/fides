@@ -72,7 +72,7 @@ const LocationPickerCard = ({
       maxWidth="363px"
       fontSize="sm"
     >
-      <VStack alignItems="flex-start" spacing={3} width="100%">
+      <VStack alignItems="flex-start" spacing={3} width="100%" height="100%">
         <Flex justifyContent="space-between" width="100%">
           <Checkbox
             fontSize="md"
