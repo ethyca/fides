@@ -23,6 +23,7 @@ The types of changes are:
 
 ### Fixed
 - Fixed incorrect Compass button behavior in system form [#4508](https://github.com/ethyca/fides/pull/4508)
+- Omit certain fields from system payload when empty  [#4508](https://github.com/ethyca/fides/pull/4525)
 
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
