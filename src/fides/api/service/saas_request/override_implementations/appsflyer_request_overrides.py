@@ -11,8 +11,8 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 from fides.api.util.collection_util import Row
 
 
-@register("appsflyer_get_app_names", [SaaSRequestType.READ])
-def appsflyer_get_app_names(
+@register("appsflyer_user_read", [SaaSRequestType.READ])
+def appsflyer_user_read(
     client: AuthenticatedClient,
     node: TraversalNode,
     policy: Policy,
@@ -25,17 +25,12 @@ def appsflyer_get_app_names(
     platform information for use with erasure endpoint.
     """
 
-    response = client.send(
-        SaaSRequestParams(
-            method=HTTPMethod.GET,
-            path="/api/mng/apps",
-        )
-    )
-    ## Getting a single value doesn't look too hard, but how to get more than one?
-    app_names = pydash.get(response.json(), "data")
-    ## need to loop to process all the app names (ids) we're about to go through
-    ## we need to submit a erasure request once with each app name to ensure we get
-    ## all the correct names for use.
-    ## can we do a for each based on the number of app names we get back and issue an
-    ## erasure request for each app name with all other params the same?
-    return [id[0]] if app_names else []
+    app_ids = input_data.get("app_id")
+    user_id = input_data.get("user_id")
+
+    # join these together
+    users = []
+
+    # [{"id": "123", "app_id": "fides"}, ..., ..., ...]
+
+    return users
