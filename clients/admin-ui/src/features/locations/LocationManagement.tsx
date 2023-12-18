@@ -50,7 +50,10 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
 
   const handleSave = async () => {
     const result = await patchLocationsRegulationsMutationTrigger({
-      locations: draftSelections,
+      locations: draftSelections.map((s) => ({
+        id: s.id,
+        selected: s.selected,
+      })),
       // no changes to regulations
       regulations: [],
     });
@@ -74,6 +77,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
           placeholder="Search"
           search={search}
           onClear={() => setSearch("")}
+          data-testid="search-bar"
         />
       </Box>
       <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={6} width="100%">
@@ -93,6 +97,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
           size="sm"
           onClick={handleSave}
           isLoading={isSaving}
+          data-testid="save-btn"
         >
           Save
         </Button>

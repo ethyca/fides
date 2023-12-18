@@ -1,0 +1,72 @@
+{
+  "locations": [
+    {
+      "id": "us",
+      "selected": false,
+      "name": "United States",
+      "continent": "North America",
+      "belongs_to": [],
+      "regulation": []
+    },
+    {
+      "id": "eea",
+      "selected": false,
+      "name": "European Economic Area",
+      "continent": "Europe",
+      "belongs_to": [],
+      "regulation": []
+    },
+    {
+      "id": "us_ca",
+      "selected": true,
+      "name": "California",
+      "continent": "North America",
+      "belongs_to": ["us"],
+      "regulation": ["ccpa"]
+    },
+    {
+      "id": "us_co",
+      "selected": true,
+      "name": "Colorado",
+      "continent": "North America",
+      "belongs_to": ["us"],
+      "regulation": ["cpa"]
+    },
+    {
+      "id": "fr",
+      "selected": true,
+      "name": "France",
+      "continent": "Europe",
+      "belongs_to": ["eea"],
+      "regulation": ["gdpr"]
+    },
+    {
+      "id": "fr-idf",
+      "selected": false,
+      "name": "Ile-de-France",
+      "continent": "Europe",
+      "belongs_to": ["fr", "eea"],
+      "regulation": ["gdpr"]
+    }
+  ],
+  "regulations": [
+    {
+      "id": "ccpa",
+      "selected": false,
+      "name": "California Consumer Privacy Act (CCPA)",
+      "continent": "North America"
+    },
+    {
+      "id": "cpa",
+      "selected": false,
+      "name": "Colorado Privacy Act (CPA)",
+      "continent": "North America"
+    },
+    {
+      "id": "gdpr",
+      "selected": false,
+      "name": "General Data Protection Regulation (GDPR)",
+      "continent": "Europe"
+    }
+  ]
+}

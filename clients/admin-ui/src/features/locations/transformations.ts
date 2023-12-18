@@ -6,7 +6,9 @@ export const groupByContinent = (
   const byContinent: Record<string, Location[]> = {};
   const allContinents = new Set(locations.map((l) => l.continent).sort());
   allContinents.forEach((continent) => {
-    byContinent[continent] = locations.filter((l) => l.continent === continent);
+    byContinent[continent] = locations
+      .filter((l) => l.continent === continent)
+      .sort((a, b) => a.name.localeCompare(b.name));
   });
   return byContinent;
 };
@@ -23,7 +25,9 @@ export const groupByBelongsTo = (
   );
   allGroups.forEach((group) => {
     if (group) {
-      byGroup[group] = locations.filter((l) => l.belongs_to?.includes(group));
+      byGroup[group] = locations
+        .filter((l) => l.belongs_to?.includes(group))
+        .sort((a, b) => a.name.localeCompare(b.name));
     }
   });
   return byGroup;

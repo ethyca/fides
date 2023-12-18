@@ -15,6 +15,8 @@ import { useState } from "react";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { Location, Selection } from "~/types/api";
 
+const NUM_LOCATIONS_TO_SHOW = 5;
+
 const LocationPickerCard = ({
   title,
   locations,
@@ -29,9 +31,11 @@ const LocationPickerCard = ({
   onChange: (selections: Array<Selection>) => void;
 }) => {
   const [showRegulatedOnly, setShowRegulatedOnly] = useState(false);
+
   const filteredLocations = showRegulatedOnly
     ? locations.filter((l) => l.regulation?.length)
     : locations;
+  const locationsToShow = filteredLocations.slice(0, NUM_LOCATIONS_TO_SHOW);
 
   // Filter to just the relevant "selections"
   const locationSelections = selections.filter((s) =>
@@ -39,6 +43,8 @@ const LocationPickerCard = ({
   );
   const numSelected = locationSelections.filter((l) => l.selected).length;
   const allSelected = locationSelections.every((l) => l.selected);
+
+  const showViewMore = filteredLocations.length > NUM_LOCATIONS_TO_SHOW;
 
   const handleToggleSelection = (id: string) => {
     const updated = selections.map((s) => {
@@ -71,6 +77,7 @@ const LocationPickerCard = ({
       boxShadow="0px 1px 2px 0px rgba(0, 0, 0, 0.06), 0px 1px 3px 0px rgba(0, 0, 0, 0.1)"
       maxWidth="363px"
       fontSize="sm"
+      data-testid={`location-picker-card-${title}`}
     >
       <VStack alignItems="flex-start" spacing={3} width="100%" height="100%">
         <Flex justifyContent="space-between" width="100%">
@@ -83,6 +90,7 @@ const LocationPickerCard = ({
             mr="2"
             onChange={handleToggleAll}
             colorScheme="complimentary"
+            data-testid="select-all"
           >
             {title}
           </Checkbox>
@@ -108,7 +116,7 @@ const LocationPickerCard = ({
         ) : null}
         <VStack paddingLeft="6" fontSize="sm" alignItems="start" spacing="2">
           <CheckboxGroup colorScheme="complimentary">
-            {filteredLocations.map((location) => {
+            {locationsToShow.map((location) => {
               const selection = locationSelections.find(
                 (l) => l.id === location.id
               );
@@ -120,6 +128,7 @@ const LocationPickerCard = ({
                     size="md"
                     fontWeight="500"
                     onChange={() => handleToggleSelection(location.id)}
+                    data-testid={`${location.name}-checkbox`}
                   >
                     {location.name}
                   </Checkbox>
@@ -129,9 +138,11 @@ const LocationPickerCard = ({
           </CheckboxGroup>
         </VStack>
         <Spacer />
-        <Button size="xs" variant="ghost">
-          View more
-        </Button>
+        {showViewMore ? (
+          <Button size="xs" variant="ghost">
+            View more
+          </Button>
+        ) : null}
       </VStack>
     </Box>
   );
