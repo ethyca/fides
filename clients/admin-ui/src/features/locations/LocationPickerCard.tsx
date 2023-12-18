@@ -1,9 +1,11 @@
-import { Flex, FormLabel, Switch } from "@fidesui/react";
+import { Flex, FormLabel, Switch, useDisclosure } from "@fidesui/react";
 import { useState } from "react";
 
 import PickerCard from "~/features/common/PickerCard";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { Location, Selection } from "~/types/api";
+
+import SubgroupModal from "./SubgroupModal";
 
 const LocationPickerCard = ({
   title,
@@ -16,6 +18,7 @@ const LocationPickerCard = ({
   selected: Array<string>;
   onChange: (selections: Array<Selection>) => void;
 }) => {
+  const disclosure = useDisclosure();
   const [showRegulatedOnly, setShowRegulatedOnly] = useState(false);
 
   const filteredLocations = showRegulatedOnly
@@ -33,28 +36,38 @@ const LocationPickerCard = ({
   };
 
   return (
-    <PickerCard
-      title={title}
-      items={filteredLocations}
-      selected={selected}
-      onChange={handleChange}
-      toggle={
-        <Flex alignItems="center" gap="8px">
-          <Switch
-            isChecked={showRegulatedOnly}
-            size="sm"
-            onChange={() => setShowRegulatedOnly(!showRegulatedOnly)}
-            colorScheme="complimentary"
-            id={`${title}-regulated`}
-            data-testid="regulated-toggle"
-          />
-          <FormLabel fontSize="sm" m={0} htmlFor={`${title}-regulated`}>
-            Regulated
-          </FormLabel>
-          <QuestionTooltip label="Toggle on to see only locations in this region with privacy regulations supported by Fides" />
-        </Flex>
-      }
-    />
+    <>
+      <PickerCard
+        title={title}
+        items={filteredLocations}
+        selected={selected}
+        onChange={handleChange}
+        onViewMore={() => {
+          disclosure.onOpen();
+        }}
+        toggle={
+          <Flex alignItems="center" gap="8px">
+            <Switch
+              isChecked={showRegulatedOnly}
+              size="sm"
+              onChange={() => setShowRegulatedOnly(!showRegulatedOnly)}
+              colorScheme="complimentary"
+              id={`${title}-regulated`}
+              data-testid="regulated-toggle"
+            />
+            <FormLabel fontSize="sm" m={0} htmlFor={`${title}-regulated`}>
+              Regulated
+            </FormLabel>
+            <QuestionTooltip label="Toggle on to see only locations in this region with privacy regulations supported by Fides" />
+          </Flex>
+        }
+      />
+      <SubgroupModal
+        locations={locations}
+        isOpen={disclosure.isOpen}
+        onClose={disclosure.onClose}
+      />
+    </>
   );
 };
 

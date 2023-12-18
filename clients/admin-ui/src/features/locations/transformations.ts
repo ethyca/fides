@@ -32,3 +32,6 @@ export const groupByBelongsTo = (
   });
   return byGroup;
 };
+
+export const getLocationNameFromId = (id: string, locations: Location[]) =>
+  locations.find((l) => l.id === id)?.name ?? id;

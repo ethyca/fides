@@ -18,12 +18,14 @@ const PickerCard = <T extends { id: string; name: string }>({
   selected,
   onChange,
   toggle,
+  onViewMore,
 }: {
   title: string;
   items: T[];
   selected: Array<string>;
   onChange: (newSelected: Array<string>) => void;
   toggle?: ReactNode;
+  onViewMore: () => void;
 }) => {
   const itemsToShow = items.slice(0, NUM_TO_SHOW);
   const numSelected = selected.length;
@@ -107,7 +109,7 @@ const PickerCard = <T extends { id: string; name: string }>({
         </VStack>
         <Spacer />
         {showViewMore ? (
-          <Button size="xs" variant="ghost">
+          <Button size="xs" variant="ghost" onClick={onViewMore}>
             View more
           </Button>
         ) : null}
