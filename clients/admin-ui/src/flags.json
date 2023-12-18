@@ -41,5 +41,12 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "locationRegulationConfiguration": {
+    "description": "Page to configure locations and regulations",
+    "development": true,
+    "test": true,
+    "production": false,
+    "userCannotModify": true
   }
 }
