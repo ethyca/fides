@@ -59,7 +59,6 @@ class TestSystemHistory:
                 data_categories=[],
                 data_use="essential",
                 data_subjects=[],
-                data_qualifier="aggregated_data",
                 dataset_references=[],
             ),
         )
@@ -97,7 +96,6 @@ class TestSystemHistory:
                 data_categories=[],
                 data_use="essential",
                 data_subjects=[],
-                data_qualifier="aggregated_data",
                 dataset_references=[],
             ),
         )

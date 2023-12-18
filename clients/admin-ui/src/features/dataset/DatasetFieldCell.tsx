@@ -1,7 +1,6 @@
 import { Box, Tooltip } from "@fidesui/react";
 
 import { getTopClassification } from "~/features/dataset/helpers";
-import IdentifiabilityTag from "~/features/taxonomy/IdentifiabilityTag";
 import TaxonomyEntityTag from "~/features/taxonomy/TaxonomyEntityTag";
 import { ClassifyField, DatasetField } from "~/types/api";
 
@@ -17,18 +16,6 @@ const DatasetFieldCell = ({
   field: DatasetField;
   classifyField?: ClassifyField;
 }): JSX.Element => {
-  if (attribute === "data_qualifier") {
-    const dataQualifierName = field.data_qualifier;
-
-    return (
-      <>
-        {dataQualifierName ? (
-          <IdentifiabilityTag dataQualifierName={dataQualifierName} />
-        ) : null}
-      </>
-    );
-  }
-
   if (attribute === "data_categories") {
     const topClassification =
       classifyField !== undefined

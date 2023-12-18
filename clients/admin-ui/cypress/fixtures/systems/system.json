@@ -4,7 +4,6 @@
   "tags": ["demo", "analytics"],
   "name": "Demo Analytics System",
   "description": "A system used for analyzing customer behaviour.",
-  "registry_id": null,
   "meta": null,
   "fidesctl_meta": null,
   "dataset_reference": null,
@@ -43,7 +42,6 @@
   "administrating_department": "Engineering",
   "responsibility": "Controller",
   "dpo": "Derek P. Officer",
-  "joint_controller": "Julia Controller",
   "data_security_practices": [],
   "cookies": []
 }

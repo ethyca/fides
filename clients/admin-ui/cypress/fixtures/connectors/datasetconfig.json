@@ -10,25 +10,17 @@
         "description": "Example of a Postgres dataset containing a variety of related tables like customers, products, addresses, etc.",
         "meta": null,
         "data_categories": null,
-        "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         "fides_meta": null,
-        "joint_controller": null,
-        "retention": "No retention or erasure policy",
-        "third_country_transfers": null,
         "collections": [
           {
             "name": "address",
             "description": null,
             "data_categories": null,
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-            "retention": null,
             "fields": [
               {
                 "name": "city",
                 "description": null,
                 "data_categories": ["user.contact.address.city"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               },
@@ -36,8 +28,6 @@
                 "name": "house",
                 "description": null,
                 "data_categories": ["user.contact.address.street"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               },
@@ -45,8 +35,6 @@
                 "name": "id",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": null,
@@ -62,8 +50,6 @@
                 "name": "state",
                 "description": null,
                 "data_categories": ["user.contact.address.state"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               },
@@ -71,8 +57,6 @@
                 "name": "street",
                 "description": null,
                 "data_categories": ["user.contact.address.street"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               },
@@ -80,8 +64,6 @@
                 "name": "zip",
                 "description": null,
                 "data_categories": ["user.contact.address.postal_code"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               }
@@ -92,15 +74,11 @@
             "name": "customer",
             "description": null,
             "data_categories": null,
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-            "retention": null,
             "fields": [
               {
                 "name": "address_id",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": [
                     {
@@ -122,8 +100,6 @@
                 "name": "created",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               },
@@ -131,8 +107,6 @@
                 "name": "email",
                 "description": null,
                 "data_categories": ["user.contact.email"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": "email",
@@ -148,8 +122,6 @@
                 "name": "id",
                 "description": null,
                 "data_categories": ["user.unique_id"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": null,
@@ -165,8 +137,6 @@
                 "name": "name",
                 "description": null,
                 "data_categories": ["user.name"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": null,
@@ -185,15 +155,11 @@
             "name": "employee",
             "description": null,
             "data_categories": null,
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-            "retention": null,
             "fields": [
               {
                 "name": "address_id",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": [
                     {
@@ -215,8 +181,6 @@
                 "name": "email",
                 "description": null,
                 "data_categories": ["user.contact.email"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": "email",
@@ -232,8 +196,6 @@
                 "name": "id",
                 "description": null,
                 "data_categories": ["user.unique_id"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": null,
@@ -249,8 +211,6 @@
                 "name": "name",
                 "description": null,
                 "data_categories": ["user.name"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": null,
@@ -269,15 +229,11 @@
             "name": "login",
             "description": null,
             "data_categories": null,
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-            "retention": null,
             "fields": [
               {
                 "name": "customer_id",
                 "description": null,
                 "data_categories": ["user.unique_id"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": [
                     {
@@ -299,8 +255,6 @@
                 "name": "id",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": null,
@@ -316,8 +270,6 @@
                 "name": "time",
                 "description": null,
                 "data_categories": ["user.sensor"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               }
@@ -328,15 +280,11 @@
             "name": "order_item",
             "description": null,
             "data_categories": null,
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-            "retention": null,
             "fields": [
               {
                 "name": "order_id",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": [
                     {
@@ -358,8 +306,6 @@
                 "name": "product_id",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": [
                     {
@@ -381,8 +327,6 @@
                 "name": "quantity",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               }
@@ -393,15 +337,11 @@
             "name": "orders",
             "description": null,
             "data_categories": null,
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-            "retention": null,
             "fields": [
               {
                 "name": "customer_id",
                 "description": null,
                 "data_categories": ["user.unique_id"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": [
                     {
@@ -423,8 +363,6 @@
                 "name": "id",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": null,
@@ -440,8 +378,6 @@
                 "name": "shipping_address_id",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": [
                     {
@@ -466,15 +402,11 @@
             "name": "payment_card",
             "description": null,
             "data_categories": null,
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-            "retention": null,
             "fields": [
               {
                 "name": "billing_address_id",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": [
                     {
@@ -496,8 +428,6 @@
                 "name": "ccn",
                 "description": null,
                 "data_categories": ["user.financial.bank_account"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               },
@@ -505,8 +435,6 @@
                 "name": "code",
                 "description": null,
                 "data_categories": ["user.financial"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               },
@@ -514,8 +442,6 @@
                 "name": "customer_id",
                 "description": null,
                 "data_categories": ["user.unique_id"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": [
                     {
@@ -537,8 +463,6 @@
                 "name": "id",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": null,
@@ -554,8 +478,6 @@
                 "name": "name",
                 "description": null,
                 "data_categories": ["user.financial"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               },
@@ -563,8 +485,6 @@
                 "name": "preferred",
                 "description": null,
                 "data_categories": ["user"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               }
@@ -575,15 +495,11 @@
             "name": "product",
             "description": null,
             "data_categories": null,
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-            "retention": null,
             "fields": [
               {
                 "name": "id",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": null,
@@ -599,8 +515,6 @@
                 "name": "name",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               },
@@ -608,8 +522,6 @@
                 "name": "price",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               }
@@ -620,15 +532,11 @@
             "name": "report",
             "description": null,
             "data_categories": null,
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-            "retention": null,
             "fields": [
               {
                 "name": "email",
                 "description": null,
                 "data_categories": ["user.contact.email"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": "email",
@@ -644,8 +552,6 @@
                 "name": "id",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": null,
@@ -661,8 +567,6 @@
                 "name": "month",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               },
@@ -670,8 +574,6 @@
                 "name": "name",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               },
@@ -679,8 +581,6 @@
                 "name": "total_visits",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               },
@@ -688,8 +588,6 @@
                 "name": "year",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               }
@@ -700,15 +598,11 @@
             "name": "service_request",
             "description": null,
             "data_categories": null,
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-            "retention": null,
             "fields": [
               {
                 "name": "alt_email",
                 "description": null,
                 "data_categories": ["user.contact.email"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": "email",
@@ -724,8 +618,6 @@
                 "name": "closed",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               },
@@ -733,8 +625,6 @@
                 "name": "email",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": "email",
@@ -750,8 +640,6 @@
                 "name": "employee_id",
                 "description": null,
                 "data_categories": ["user.unique_id"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": [
                     {
@@ -773,8 +661,6 @@
                 "name": "id",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": null,
@@ -790,8 +676,6 @@
                 "name": "opened",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               }
@@ -802,15 +686,11 @@
             "name": "visit",
             "description": null,
             "data_categories": null,
-            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-            "retention": null,
             "fields": [
               {
                 "name": "email",
                 "description": null,
                 "data_categories": ["user.contact.email"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": {
                   "references": null,
                   "identity": "email",
@@ -826,8 +706,6 @@
                 "name": "last_visit",
                 "description": null,
                 "data_categories": ["system.operations"],
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                "retention": null,
                 "fides_meta": null,
                 "fields": null
               }

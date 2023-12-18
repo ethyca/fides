@@ -3,7 +3,6 @@ Fides-specific extensions to the pydantic models of taxonomy elements as defined
 """
 
 from fideslang.models import DataCategory as BaseDataCategory
-from fideslang.models import DataQualifier as BaseDataQualifier
 from fideslang.models import DataSubject as BaseDataSubject
 from fideslang.models import DataUse as BaseDataUse
 from pydantic import Field
@@ -18,10 +17,6 @@ class DataUse(BaseDataUse):
 
 
 class DataCategory(BaseDataCategory):
-    active: bool = active_field
-
-
-class DataQualifier(BaseDataQualifier):
     active: bool = active_field
 
 
