@@ -8,7 +8,6 @@ system:
         data_categories:
           - user.demographic.political_opinion
         data_use: marketing.advertising.third_party
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         data_subjects:
           - customer
 
@@ -31,4 +30,3 @@ policy:
           matches: ANY
           values:
             - customer
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

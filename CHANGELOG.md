@@ -24,6 +24,12 @@ The types of changes are:
 ### Fixed
 - Fixed incorrect Compass button behavior in system form [#4508](https://github.com/ethyca/fides/pull/4508)
 
+### Changed
+- Upgrade to use Fideslang `3.0.0` and remove associated concepts [#4502](https://github.com/ethyca/fides/pull/4502)
+
+### Changed
+- `fides.js` now sets `supportsOOB` to `false` [#4516](https://github.com/ethyca/fides/pull/4516)
+
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
 ### Added

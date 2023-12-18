@@ -28,7 +28,6 @@ export const baseApi = createApi({
     "Data Categories",
     "Datamap",
     "Data Subjects",
-    "Data Qualifiers",
     "Data Uses",
     "Datastore Connection",
     "Dataset",
