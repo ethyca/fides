@@ -133,7 +133,6 @@ const VendorSelector = ({
   );
 
   const isTypeahead = !field.value && !values.vendor_id;
-  const showSelectMenu = !!searchParam && suggestions.length > 0;
   const hasVendorSuggestions = !!searchParam && suggestions.length > 0;
 
   const handleClear = () => {
@@ -193,13 +192,14 @@ const VendorSelector = ({
     <FormControl isInvalid={isInvalid} isRequired width="100%">
       <VStack alignItems="start" position="relative" width="100%">
         <HStack spacing={1}>
-          <Label htmlFor="vendor_id" fontSize="xs" my={0} mr={1}>
+          <Label htmlFor="name" fontSize="xs" my={0} mr={1}>
             System name
           </Label>
           <QuestionTooltip label="Enter the system name" />
         </HStack>
         <Box width="100%" data-testid="input-name">
           <CreatableSelect
+            name="name"
             options={suggestions}
             isRequired
             value={selected}
@@ -209,14 +209,13 @@ const VendorSelector = ({
             }
             onInputChange={(e) => setSearchParam(e)}
             inputValue={searchParam}
-            name="name"
             size="sm"
             onKeyDown={(e) => {
               if (e.key === "Tab") {
                 handleTabPressed();
               }
             }}
-            tabSelectsValue={showSelectMenu}
+            tabSelectsValue={hasVendorSuggestions}
             classNamePrefix="custom-select"
             placeholder="Enter system name..."
             instanceId="select-name"
@@ -241,7 +240,7 @@ const VendorSelector = ({
               }),
               menu: (provided) => ({
                 ...provided,
-                visibility: showSelectMenu ? "visible" : "hidden",
+                visibility: hasVendorSuggestions ? "visible" : "hidden",
               }),
               dropdownIndicator: (provided) => ({
                 ...provided,
@@ -294,9 +293,13 @@ const VendorSelector = ({
           <QuestionTooltip label="Enter the system name" />
         </HStack>
         <InputGroup size="sm">
-          <Input {...field} data-testid={`input-${field.name}`} />
+          <Input {...field} data-testid={`input-name`} />
           <InputRightElement>
-            <CloseButton onClick={handleClear} size="sm" />
+            <CloseButton
+              onClick={handleClear}
+              size="sm"
+              data-testid="clear-btn"
+            />
           </InputRightElement>
         </InputGroup>
         <ErrorMessage
