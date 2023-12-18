@@ -98,7 +98,7 @@ const LocationPickerCard = ({
             <FormLabel fontSize="sm" m={0} htmlFor={`${title}-regulated`}>
               Regulated
             </FormLabel>
-            <QuestionTooltip />
+            <QuestionTooltip label="Toggle on to see only locations in this region with privacy regulations supported by Fides" />
           </Flex>
         </Flex>
         {numSelected > 0 ? (
