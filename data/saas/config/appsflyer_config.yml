@@ -11,7 +11,7 @@ saas_config:
       default_value: hq1.appsflyer.com
       description: The Appsflyer domain. Default hq1.appsflyer.com
     - name: identity_value
-      description: The identity value that is returned for the end user email being submitted.
+      description: The appsflyer_id for the user we are submitting the request for.
     # identity value is one we need to get from the customer
 
   external_references:
