@@ -46,6 +46,7 @@ const LocationPickerCard = ({
             onChange={() => setShowRegulatedOnly(!showRegulatedOnly)}
             colorScheme="complimentary"
             id={`${title}-regulated`}
+            data-testid="regulated-toggle"
           />
           <FormLabel fontSize="sm" m={0} htmlFor={`${title}-regulated`}>
             Regulated

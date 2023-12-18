@@ -25,42 +25,80 @@ describe("Locations", () => {
 
   describe("continent view", () => {
     it("renders locations by continent from initial data", () => {
-      cy.getByTestId("location-picker-card-Europe").within(() => {
+      cy.getByTestId("picker-card-Europe").within(() => {
         cy.getByTestId("select-all").should("not.be.checked");
         assertIsChecked("European Economic Area", false);
         assertIsChecked("France", true);
         assertIsChecked("Ile-de-France", false);
       });
-      cy.getByTestId("location-picker-card-North America").within(() => {
+      cy.getByTestId("picker-card-North America").within(() => {
         assertIsChecked("United States", false);
         assertIsChecked("California", true);
         assertIsChecked("Colorado", true);
       });
     });
 
-    it("can search", () => {
-      // Search for 'Fr'
-      cy.getByTestId("search-bar").type("Fr");
-      cy.getByTestId("location-picker-card-Europe").within(() => {
+    it("can toggle and check appropriately", () => {
+      cy.getByTestId("picker-card-Europe").within(() => {
+        cy.getByTestId("select-all").within(() => {
+          cy.get("input").should("not.be.checked");
+        });
+        // Select all
+        cy.getByTestId("select-all").click();
+        cy.getByTestId("select-all").within(() => {
+          cy.get("input").should("be.checked");
+        });
+        assertIsChecked("European Economic Area", true);
+        assertIsChecked("France", true);
+        assertIsChecked("Ile-de-France", true);
+        cy.getByTestId("num-selected-badge").contains("3 selected");
+
+        // Unselect all
+        cy.getByTestId("select-all").click();
+        assertIsChecked("European Economic Area", false);
+        assertIsChecked("France", false);
+        assertIsChecked("Ile-de-France", false);
+        cy.getByTestId("num-selected-badge").should("not.exist");
+
+        // Toggle "regulated"
+        cy.getByTestId("regulated-toggle").click();
         cy.getByTestId("European Economic Area-checkbox").should("not.exist");
         cy.getByTestId("France-checkbox");
         cy.getByTestId("Ile-de-France-checkbox");
       });
-      cy.getByTestId("location-picker-card-North America").should("not.exist");
+
+      // North America should have stayed the same through all this
+      cy.getByTestId("picker-card-North America").within(() => {
+        assertIsChecked("United States", false);
+        assertIsChecked("California", true);
+        assertIsChecked("Colorado", true);
+        cy.getByTestId("num-selected-badge").contains("2 selected");
+      });
+    });
+
+    it("can search", () => {
+      // Search for 'Fr'
+      cy.getByTestId("search-bar").type("Fr");
+      cy.getByTestId("picker-card-Europe").within(() => {
+        cy.getByTestId("European Economic Area-checkbox").should("not.exist");
+        cy.getByTestId("France-checkbox");
+        cy.getByTestId("Ile-de-France-checkbox");
+      });
+      cy.getByTestId("picker-card-North America").should("not.exist");
 
       // Clear search should reset to initial state
       cy.get("button").contains("Clear").click();
-      cy.getByTestId("location-picker-card-Europe");
-      cy.getByTestId("location-picker-card-North America");
+      cy.getByTestId("picker-card-Europe");
+      cy.getByTestId("picker-card-North America");
 
       // Search for 'co' (lowercase) should show across continents
       cy.getByTestId("search-bar").type("co");
-      cy.getByTestId("location-picker-card-Europe").within(() => {
+      cy.getByTestId("picker-card-Europe").within(() => {
         cy.getByTestId("European Economic Area-checkbox");
         cy.getByTestId("France-checkbox").should("not.exist");
         cy.getByTestId("Ile-de-France-checkbox").should("not.exist");
       });
-      cy.getByTestId("location-picker-card-North America").within(() => {
+      cy.getByTestId("picker-card-North America").within(() => {
         cy.getByTestId("United States-checkbox").should("not.exist");
         cy.getByTestId("California-checkbox").should("not.exist");
         cy.getByTestId("Colorado-checkbox");

@@ -78,7 +78,12 @@ const PickerCard = <T extends { id: string; name: string }>({
           {toggle ?? null}
         </Flex>
         {numSelected > 0 ? (
-          <Badge colorScheme="purple" variant="solid" width="fit-content">
+          <Badge
+            colorScheme="purple"
+            variant="solid"
+            width="fit-content"
+            data-testid="num-selected-badge"
+          >
             {numSelected} selected
           </Badge>
         ) : null}
