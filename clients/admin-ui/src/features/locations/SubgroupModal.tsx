@@ -16,7 +16,7 @@ import {
   ModalOverlay,
   SimpleGrid,
 } from "@fidesui/react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { Location } from "~/types/api";
 
@@ -26,15 +26,33 @@ const SubgroupModal = ({
   locations,
   isOpen,
   onClose,
+  selected,
+  onChange,
 }: {
   locations: Location[];
   isOpen: boolean;
   onClose: () => void;
+  selected: Array<string>;
+  onChange: (newSelected: Array<string>) => void;
 }) => {
+  const [draftSelected, setDraftSelected] = useState(selected);
   const locationsByGroup = useMemo(
     () => groupByBelongsTo(locations),
     [locations]
   );
+
+  const handleCheck = (id: string) => {
+    if (draftSelected.includes(id)) {
+      setDraftSelected(draftSelected.filter((s) => s !== id));
+    } else {
+      setDraftSelected([...draftSelected, id]);
+    }
+  };
+
+  const handleApply = () => {
+    onChange(draftSelected);
+    onClose();
+  };
 
   return (
     <Modal size="2xl" isOpen={isOpen} onClose={onClose} isCentered>
@@ -54,7 +72,7 @@ const SubgroupModal = ({
           Select locations
         </ModalHeader>
         <ModalBody p={6}>
-          <Accordion allowToggle allowMultiple>
+          <Accordion allowToggle allowMultiple index={[0]}>
             {Object.entries(locationsByGroup).map(([group, subLocations]) => (
               <AccordionItem key={group}>
                 <h2>
@@ -72,6 +90,8 @@ const SubgroupModal = ({
                         size="sm"
                         colorScheme="complimentary"
                         key={location.id}
+                        isChecked={draftSelected.includes(location.id)}
+                        onChange={() => handleCheck(location.id)}
                       >
                         {location.name}
                       </Checkbox>
@@ -92,7 +112,7 @@ const SubgroupModal = ({
             <Button flexGrow={1} variant="outline" mr={3} onClick={onClose}>
               Cancel
             </Button>
-            <Button flexGrow={1} colorScheme="primary">
+            <Button flexGrow={1} colorScheme="primary" onClick={handleApply}>
               Apply
             </Button>
           </ButtonGroup>

@@ -66,6 +66,11 @@ const LocationPickerCard = ({
         locations={locations}
         isOpen={disclosure.isOpen}
         onClose={disclosure.onClose}
+        selected={selected}
+        // Rerender if a selection changes in this component so that the checkboxes
+        // in the modal stay up to date
+        key={`subgroup-modal-selected-${selected.length}`}
+        onChange={handleChange}
       />
     </>
   );
