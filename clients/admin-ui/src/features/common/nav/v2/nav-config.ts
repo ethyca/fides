@@ -149,6 +149,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.LOCATION_READ,
           ScopeRegistryEnum.LOCATION_UPDATE,
         ],
+        requiresPlus: true,
       },
       {
         title: "Taxonomy",
