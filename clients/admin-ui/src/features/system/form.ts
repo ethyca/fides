@@ -102,7 +102,7 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
   const privacyPolicy =
     formValues.privacy_policy === "" ? undefined : formValues.privacy_policy;
 
-  const payload: System = {
+  let payload: System = {
     system_type: formValues.system_type,
     fides_key: key,
     name: formValues.name,
@@ -142,7 +142,7 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
     return payload;
   }
 
-  return {
+  payload = {
     ...payload,
     dataset_references: formValues.dataset_references,
     uses_profiling: formValues.uses_profiling,
@@ -161,10 +161,18 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
     privacy_policy: privacyPolicy,
     legal_name: formValues.legal_name,
     legal_address: formValues.legal_address,
-    administrating_department: formValues.administrating_department,
     responsibility: formValues.responsibility,
     dpo: formValues.dpo,
-    joint_controller_info: formValues.joint_controller_info,
     data_security_practices: formValues.data_security_practices,
   };
+
+  if (formValues.administrating_department) {
+    payload.administrating_department = formValues.administrating_department;
+  }
+
+  if (formValues.joint_controller_info) {
+    payload.joint_controller_info = formValues.joint_controller_info;
+  }
+
+  return payload;
 };
