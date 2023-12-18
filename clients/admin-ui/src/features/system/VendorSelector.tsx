@@ -293,7 +293,7 @@ const VendorSelector = ({
           <QuestionTooltip label="Enter the system name" />
         </HStack>
         <InputGroup size="sm">
-          <Input {...field} data-testid={`input-name`} />
+          <Input {...field} data-testid="input-name" />
           <InputRightElement>
             <CloseButton
               onClick={handleClear}

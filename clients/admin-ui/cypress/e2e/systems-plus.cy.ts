@@ -29,7 +29,7 @@ describe("System management with Plus features", () => {
     );
   });
 
-  describe.only("vendor list", () => {
+  describe("vendor list", () => {
     beforeEach(() => {
       stubVendorList();
       cy.visit(`${ADD_SYSTEMS_MANUAL_ROUTE}`);
