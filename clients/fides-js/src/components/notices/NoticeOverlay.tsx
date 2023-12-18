@@ -135,7 +135,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   }, [cookie, options.debug]);
 
   const handleDismiss = useCallback(() => {
-    handleUpdatePreferences(ConsentMethod.dismiss, initialEnabledNoticeKeys);
+    handleUpdatePreferences(ConsentMethod.DISMISS, initialEnabledNoticeKeys);
   }, [handleUpdatePreferences, initialEnabledNoticeKeys]);
 
   if (!experience.experience_config) {

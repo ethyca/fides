@@ -134,7 +134,7 @@ const automaticallyApplyGPCPreferences = ({
     updateConsentPreferences({
       consentPreferencesToSave,
       experience: effectiveExperience,
-      consentMethod: ConsentMethod.gpc,
+      consentMethod: ConsentMethod.GPC,
       options: fidesOptions,
       userLocationString: fidesRegionString || undefined,
       cookie,
