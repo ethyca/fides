@@ -1,33 +1,19 @@
-import {
-  Badge,
-  Box,
-  Button,
-  Checkbox,
-  CheckboxGroup,
-  Flex,
-  FormLabel,
-  Spacer,
-  Switch,
-  VStack,
-} from "@fidesui/react";
+import { Flex, FormLabel, Switch } from "@fidesui/react";
 import { useState } from "react";
 
+import PickerCard from "~/features/common/PickerCard";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { Location, Selection } from "~/types/api";
-
-const NUM_LOCATIONS_TO_SHOW = 5;
 
 const LocationPickerCard = ({
   title,
   locations,
-  /** An array of Selections for ALL locations */
-  selections,
-  /** An updater for ALL locations */
+  selected,
   onChange,
 }: {
   title: string;
   locations: Location[];
-  selections: Array<Selection>;
+  selected: Array<string>;
   onChange: (selections: Array<Selection>) => void;
 }) => {
   const [showRegulatedOnly, setShowRegulatedOnly] = useState(false);
@@ -35,116 +21,39 @@ const LocationPickerCard = ({
   const filteredLocations = showRegulatedOnly
     ? locations.filter((l) => l.regulation?.length)
     : locations;
-  const locationsToShow = filteredLocations.slice(0, NUM_LOCATIONS_TO_SHOW);
 
-  // Filter to just the relevant "selections"
-  const locationSelections = selections.filter((s) =>
-    filteredLocations.find((l) => l.id === s.id)
-  );
-  const numSelected = locationSelections.filter((l) => l.selected).length;
-  const allSelected = locationSelections.every((l) => l.selected);
-
-  const showViewMore = filteredLocations.length > NUM_LOCATIONS_TO_SHOW;
-
-  const handleToggleSelection = (id: string) => {
-    const updated = selections.map((s) => {
-      if (s.id === id) {
-        return { ...s, selected: !s.selected };
+  const handleChange = (newSelected: string[]) => {
+    const updated = locations.map((location) => {
+      if (newSelected.includes(location.id)) {
+        return { ...location, selected: true };
       }
-      return s;
-    });
-    onChange(updated);
-  };
-
-  const handleToggleAll = () => {
-    const newSelected = !allSelected;
-    const updated = selections.map((s) => {
-      if (filteredLocations.find((l) => l.id === s.id)) {
-        return { ...s, selected: newSelected };
-      }
-      return s;
+      return { ...location, selected: false };
     });
     onChange(updated);
   };
 
   return (
-    <Box
-      p={4}
-      display="flex"
-      alignItems="flex-start"
-      gap="4px"
-      borderRadius="4px"
-      boxShadow="0px 1px 2px 0px rgba(0, 0, 0, 0.06), 0px 1px 3px 0px rgba(0, 0, 0, 0.1)"
-      maxWidth="363px"
-      fontSize="sm"
-      data-testid={`location-picker-card-${title}`}
-    >
-      <VStack alignItems="flex-start" spacing={3} width="100%" height="100%">
-        <Flex justifyContent="space-between" width="100%">
-          <Checkbox
-            fontSize="md"
-            textTransform="capitalize"
-            fontWeight="semibold"
-            isChecked={allSelected}
-            size="md"
-            mr="2"
-            onChange={handleToggleAll}
+    <PickerCard
+      title={title}
+      items={filteredLocations}
+      selected={selected}
+      onChange={handleChange}
+      toggle={
+        <Flex alignItems="center" gap="8px">
+          <Switch
+            isChecked={showRegulatedOnly}
+            size="sm"
+            onChange={() => setShowRegulatedOnly(!showRegulatedOnly)}
             colorScheme="complimentary"
-            data-testid="select-all"
-          >
-            {title}
-          </Checkbox>
-
-          <Flex alignItems="center" gap="8px">
-            <Switch
-              isChecked={showRegulatedOnly}
-              size="sm"
-              onChange={() => setShowRegulatedOnly(!showRegulatedOnly)}
-              colorScheme="complimentary"
-              id={`${title}-regulated`}
-            />
-            <FormLabel fontSize="sm" m={0} htmlFor={`${title}-regulated`}>
-              Regulated
-            </FormLabel>
-            <QuestionTooltip label="Toggle on to see only locations in this region with privacy regulations supported by Fides" />
-          </Flex>
+            id={`${title}-regulated`}
+          />
+          <FormLabel fontSize="sm" m={0} htmlFor={`${title}-regulated`}>
+            Regulated
+          </FormLabel>
+          <QuestionTooltip label="Toggle on to see only locations in this region with privacy regulations supported by Fides" />
         </Flex>
-        {numSelected > 0 ? (
-          <Badge colorScheme="purple" variant="solid" width="fit-content">
-            {numSelected} selected
-          </Badge>
-        ) : null}
-        <VStack paddingLeft="6" fontSize="sm" alignItems="start" spacing="2">
-          <CheckboxGroup colorScheme="complimentary">
-            {locationsToShow.map((location) => {
-              const selection = locationSelections.find(
-                (l) => l.id === location.id
-              );
-              return (
-                <Flex key={location.id} alignItems="center" gap="8px">
-                  <Checkbox
-                    key={location.id}
-                    isChecked={selection?.selected}
-                    size="md"
-                    fontWeight="500"
-                    onChange={() => handleToggleSelection(location.id)}
-                    data-testid={`${location.name}-checkbox`}
-                  >
-                    {location.name}
-                  </Checkbox>
-                </Flex>
-              );
-            })}
-          </CheckboxGroup>
-        </VStack>
-        <Spacer />
-        {showViewMore ? (
-          <Button size="xs" variant="ghost">
-            View more
-          </Button>
-        ) : null}
-      </VStack>
-    </Box>
+      }
+    />
   );
 };
 

@@ -12,21 +12,6 @@ import LocationPickerCard from "./LocationPickerCard";
 import { usePatchLocationsRegulationsMutation } from "./locations.slice";
 import { groupByContinent } from "./transformations";
 
-// const mockLocation = (override?: Partial<Location>) => {
-//   const base: Location = {
-//     id: "US-VA",
-//     name: "Virginia",
-//     belongs_to: ["United States"],
-//     continent: Continent.NORTH_AMERICA,
-//     regulation: ["usva"],
-//     selected: false,
-//   };
-//   if (override) {
-//     return { ...base, ...override };
-//   }
-//   return base;
-// };
-
 const SEARCH_FILTER = (location: Location, search: string) =>
   location.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
   location.continent?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
@@ -69,6 +54,17 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
     }
   };
 
+  /** Allow changing a subset so it is easier to handle changes across continents */
+  const handleDraftChange = (updatedSelections: Array<Selection>) => {
+    const updated = draftSelections.map((draftSelection) => {
+      const updatedSelection = updatedSelections.find(
+        (s) => s.id === draftSelection.id
+      );
+      return updatedSelection ?? draftSelection;
+    });
+    setDraftSelections(updated);
+  };
+
   return (
     <VStack alignItems="start" spacing={4}>
       <Box maxWidth="510px" width="100%">
@@ -86,8 +82,10 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
             key={continent}
             title={continent}
             locations={locations}
-            selections={draftSelections}
-            onChange={setDraftSelections}
+            selected={draftSelections
+              .filter((s) => locations.find((l) => l.id === s.id) && s.selected)
+              .map((s) => s.id)}
+            onChange={handleDraftChange}
           />
         ))}
       </SimpleGrid>
