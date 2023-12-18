@@ -32,10 +32,10 @@ def appsflyer_get_app_names(
         )
     )
     ## Getting a single value doesn't look too hard, but how to get more than one?
-    surveys = pydash.get(response.json(), "data")
+    app_names = pydash.get(response.json(), "data")
     ## need to loop to process all the app names (ids) we're about to go through
     ## we need to submit a erasure request once with each app name to ensure we get
     ## all the correct names for use.
     ## can we do a for each based on the number of app names we get back and issue an
     ## erasure request for each app name with all other params the same?
-    return [id[0]] if surveys else []
+    return [id[0]] if app_names else []
