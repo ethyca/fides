@@ -1,4 +1,6 @@
 import {
+  Box,
+  CloseButton,
   Flex,
   FormControl,
   HStack,
@@ -23,12 +25,16 @@ import { useField, useFormikContext } from "formik";
 import React, { useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { ErrorMessage, Label, Option } from "~/features/common/form/inputs";
+import {
+  CustomTextInput,
+  ErrorMessage,
+  Label,
+  Option,
+} from "~/features/common/form/inputs";
 import { CompassIcon } from "~/features/common/Icon/CompassIcon";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { DictOption } from "~/features/plus/plus.slice";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
-import { DictSuggestionTextInput } from "~/features/system/dictionary-form/DictSuggestionInputs";
 import { FormValues } from "~/features/system/form";
 
 const CompassButton = ({
@@ -72,7 +78,6 @@ const CompassButton = ({
 };
 
 interface Props {
-  fieldsSeparated: boolean;
   isCreate: boolean;
   lockedForGVL: boolean;
   options: DictOption[];
@@ -103,7 +108,6 @@ const CustomDictOption: React.FC<
 );
 
 const VendorSelector = ({
-  fieldsSeparated,
   isCreate,
   lockedForGVL,
   options,
@@ -111,7 +115,7 @@ const VendorSelector = ({
 }: Props) => {
   const dictSuggestionsState = useAppSelector(selectSuggestions);
   const [initialField, meta, { setValue }] = useField({
-    name: fieldsSeparated ? "vendor_id" : "name",
+    name: "name",
   });
   const isInvalid = !!(meta.touched && meta.error);
   const field = { ...initialField, value: initialField.value ?? "" };
@@ -130,165 +134,185 @@ const VendorSelector = ({
     opt.label.toLowerCase().startsWith(searchParam.toLowerCase())
   );
 
+  const isTypeahead = !field.value && !values.vendor_id;
   const hasVendorSuggestions = !!searchParam && suggestions.length > 0;
 
+  const handleClear = () => {
+    setValue("");
+    setSearchParam("");
+    setFieldValue("vendor_id", undefined);
+    onVendorSelected(undefined);
+  };
+
   const handleTabPressed = () => {
+    if (!searchParam) {
+      return;
+    }
     if (suggestions.length > 0 && searchParam !== suggestions[0].label) {
       setSearchParam(suggestions[0].label);
       setValue(suggestions[0].value);
     }
   };
 
-  const handleChange = (
+  const handleSelectChange = (
     newValue: SingleValue<Option>,
     actionMeta: ActionMeta<Option>
   ) => {
+    if (actionMeta.action === "clear") {
+      handleClear();
+      return;
+    }
     setValue(newValue ? newValue.label : "");
-    setTouched({ ...touched, vendor_id: true, name: !fieldsSeparated });
+    setTouched(
+      { ...touched, vendor_id: true, name: true },
+      // do not validate if a new option was created; this prevents
+      // incorrectly showing a "required field" error while a value is in
+      // the field
+      actionMeta.action !== "create-option"
+    );
     if (newValue) {
       const newVendorId = options.some((opt) => opt.value === newValue.value)
         ? newValue.value
         : undefined;
       setFieldValue("vendor_id", newVendorId);
       onVendorSelected(newVendorId);
-    } else if (actionMeta.action === "clear") {
-      setFieldValue("vendor_id", undefined);
-      onVendorSelected(undefined);
     }
   };
 
-  return (
-    <>
-      <HStack alignItems="flex-start">
-        <FormControl isInvalid={isInvalid}>
-          <VStack alignItems="start" position="relative">
-            <Flex alignItems="center">
-              <Label htmlFor="vendor_id" fontSize="xs" my={0} mr={1}>
-                {fieldsSeparated ? "Vendor" : "System name"}
-              </Label>
-              <QuestionTooltip
-                label={
-                  fieldsSeparated
-                    ? "Enter the vendor to associate with the system"
-                    : "Enter the system name"
-                }
-              />
-            </Flex>
-            <Flex
-              position="relative"
-              width="100%"
-              data-testid={`input-${field.name}`}
-            >
-              <CreatableSelect
-                options={suggestions}
-                value={selected}
-                onBlur={(e) => {
-                  setTouched({
-                    ...touched,
-                    vendor_id: true,
-                    name: !fieldsSeparated,
-                  });
-                  field.onBlur(e);
-                }}
-                onChange={(newValue, actionMeta) =>
-                  handleChange(newValue, actionMeta)
-                }
-                onInputChange={(e) => setSearchParam(e)}
-                inputValue={searchParam}
-                name={fieldsSeparated ? "vendor_id" : "name"}
-                size="sm"
-                onKeyDown={(e) => {
-                  if (e.key === "Tab") {
-                    handleTabPressed();
-                  }
-                }}
-                classNamePrefix="custom-select"
-                placeholder={
-                  fieldsSeparated
-                    ? "Enter vendor name..."
-                    : "Enter system name..."
-                }
-                instanceId={
-                  fieldsSeparated ? "select-vendor_id" : "select-name"
-                }
-                isDisabled={!isCreate && lockedForGVL}
-                menuPosition="absolute"
-                isSearchable
-                isClearable
-                focusBorderColor="primary.600"
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                formatCreateLabel={(_value) => null}
-                chakraStyles={{
-                  container: (provided) => ({
-                    ...provided,
-                    flexGrow: 1,
-                    backgroundColor: "white",
-                  }),
-                  option: (provided, state) => ({
-                    ...provided,
-                    background:
-                      state.isSelected || state.isFocused ? "gray.50" : "unset",
-                  }),
-                  menu: (provided) => ({
-                    ...provided,
-                    visibility: hasVendorSuggestions ? "visible" : "hidden",
-                  }),
-                  dropdownIndicator: (provided) => ({
-                    ...provided,
-                    display: "none",
-                  }),
-                  indicatorSeparator: (provided) => ({
-                    ...provided,
-                    display: "none",
-                  }),
-                }}
-                components={{ Option: CustomDictOption }}
-              />
-              <Text
-                aria-hidden
-                style={{
-                  position: "absolute",
-                  backgroundColor: "transparent",
-                  borderColor: "transparent",
-                  marginTop: "5.52px",
-                  marginLeft: "13px",
-                  pointerEvents: "none",
-                  fontSize: "14px",
-                  zIndex: 1,
-                }}
-              >
-                <span style={{ color: "transparent" }}>{searchParam}</span>
-                {hasVendorSuggestions ? (
-                  <span style={{ color: "#824EF2" }}>
-                    {suggestions[0].label.substring(searchParam.length)}
-                  </span>
-                ) : null}
-              </Text>
-            </Flex>
-            <ErrorMessage
-              isInvalid={isInvalid}
-              message={meta.error}
-              fieldName={fieldsSeparated ? "vendor_id" : "name"}
-            />
-          </VStack>
-        </FormControl>
-        <CompassButton
-          active={!!values.vendor_id || hasVendorSuggestions}
-          disabled={!values.vendor_id || dictSuggestionsState === "showing"}
-          onRefreshSuggestions={() => onVendorSelected(values.vendor_id)}
+  const handleBlur = (event: React.FocusEvent) => {
+    field.onBlur(event);
+    if (searchParam) {
+      setValue(searchParam);
+    }
+    setTouched(
+      {
+        ...touched,
+        name: true,
+      },
+      // only validate if nothing is typed in the select's search input to
+      // prevent incorrect "required field" error like above
+      !searchParam
+    );
+  };
+
+  // we have to build the typeahead from scratch, too much context-specific
+  // is needed to use the existing CustomCreatableSelect component
+  const typeaheadSelect = (
+    <FormControl isInvalid={isInvalid} isRequired width="100%">
+      <VStack alignItems="start" position="relative" width="100%">
+        <HStack spacing={1}>
+          <Label htmlFor="name" fontSize="xs" my={0} mr={1}>
+            System name
+          </Label>
+          <QuestionTooltip label="Enter the system name" />
+        </HStack>
+        <Box width="100%" data-testid="input-name">
+          <CreatableSelect
+            name="name"
+            options={suggestions}
+            isRequired
+            value={selected}
+            onBlur={handleBlur}
+            onChange={(newValue, actionMeta) =>
+              handleSelectChange(newValue, actionMeta)
+            }
+            onInputChange={(e) => setSearchParam(e)}
+            inputValue={searchParam}
+            size="sm"
+            onKeyDown={(e) => {
+              if (e.key === "Tab") {
+                handleTabPressed();
+              }
+            }}
+            tabSelectsValue={hasVendorSuggestions}
+            classNamePrefix="custom-select"
+            placeholder="Enter system name..."
+            instanceId="select-name"
+            isDisabled={!isCreate && lockedForGVL}
+            menuPosition="absolute"
+            isSearchable
+            isClearable={!!searchParam}
+            focusBorderColor="primary.600"
+            formatCreateLabel={(inputValue) =>
+              `Create new system "${inputValue}"...`
+            }
+            chakraStyles={{
+              container: (provided) => ({
+                ...provided,
+                flexGrow: 1,
+                backgroundColor: "white",
+              }),
+              option: (provided, state) => ({
+                ...provided,
+                background:
+                  state.isSelected || state.isFocused ? "gray.50" : "unset",
+              }),
+              dropdownIndicator: (provided) => ({
+                ...provided,
+                display: "none",
+              }),
+              indicatorSeparator: (provided) => ({
+                ...provided,
+                display: "none",
+              }),
+            }}
+            components={{ Option: CustomDictOption }}
+          />
+        </Box>
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName="name"
         />
-      </HStack>
-      {fieldsSeparated ? (
-        <DictSuggestionTextInput
+        <Text
+          aria-hidden
+          position="absolute"
+          backgroundColor="transparent"
+          style={{ marginTop: "31.52px", marginLeft: "13px" }}
+          pointerEvents="none"
+          zIndex={1}
+          fontSize="sm"
+        >
+          <Text as="span" color="transparent">
+            {searchParam}
+          </Text>
+          {searchParam && suggestions.length > 0 ? (
+            <Text as="span" color="complimentary.500">
+              {suggestions[0].label.substring(searchParam.length)}
+            </Text>
+          ) : null}
+        </Text>
+      </VStack>
+    </FormControl>
+  );
+
+  return (
+    <HStack alignItems="flex-start">
+      {isTypeahead ? (
+        typeaheadSelect
+      ) : (
+        <CustomTextInput
           id="name"
           name="name"
-          dictField={(vendor) => vendor.name ?? (vendor.legal_name || "")}
-          isRequired
           label="System name"
-          tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+          tooltip="Enter the system name"
+          variant="stacked"
+          isRequired
+          inputRightElement={
+            <CloseButton
+              onClick={handleClear}
+              size="sm"
+              data-testid="clear-btn"
+            />
+          }
         />
-      ) : null}
-    </>
+      )}
+      <CompassButton
+        active={!!values.vendor_id || hasVendorSuggestions}
+        disabled={!values.vendor_id || dictSuggestionsState === "showing"}
+        onRefreshSuggestions={() => onVendorSelected(values.vendor_id)}
+      />
+    </HStack>
   );
 };
 
