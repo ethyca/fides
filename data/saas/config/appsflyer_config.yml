@@ -65,7 +65,7 @@ saas_config:
           path: /api/gdpr/v1/opendsr_requests
           body: |
             {
-              "subject_request_id": "69e58c53-88e2-4ca5-ba34-b6717723d1c6", 
+              "subject_request_id": "c31e8ef1-2eff-44fe-a02e-f80851958fb3", 
               "subject_request_type": "erasure", 
               "submitted_time": "2023-11-20T11:00:00Z", 
               "subject_identities": [
