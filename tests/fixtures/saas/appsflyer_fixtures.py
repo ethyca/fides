@@ -40,19 +40,19 @@ def appsflyer_erasure_identity_email() -> str:
 
 @pytest.fixture
 def appsflyer_external_references() -> Dict[str, Any]:
-    return {}
+    return {"appsflyer_user_id": "4412345-4963-9234-632156789012"}
 
 
 @pytest.fixture
 def appsflyer_erasure_external_references() -> Dict[str, Any]:
-    return {}
+    return {"appsflyer_user_id": "4412345-4963-9234-632156780152"}
 
 
 @pytest.fixture
 def appsflyer_erasure_data(
     appsflyer_erasure_identity_email: str,
 ) -> Generator:
-    # create the data needed for erasure tests here
+    # create the data needed for erasure tests here - create user steps go here if we have them
     yield {}
 
 

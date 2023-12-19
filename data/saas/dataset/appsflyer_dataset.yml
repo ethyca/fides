@@ -5,4 +5,15 @@ dataset:
     description: A sample dataset representing the Appsflyer connector for Fides
     collections:
       - name: user
-        fields: []
+        fields: 
+        - name: id
+          data_categories: [user.unique_id]
+          fidesops_meta:
+            primary_key: True
+        - name: app_id
+          data_categories: [app.unique_id]
+          fidesops_meta:
+            primary_key: True
+
+
+          [] # figure out how to do primary key announcement and document our new id and app_id
