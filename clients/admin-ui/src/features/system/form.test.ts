@@ -3,7 +3,7 @@ import { describe, expect, it } from "@jest/globals";
 import { transformFormValuesToSystem } from "~/features/system/form";
 
 describe("transformFormValuesToSystem", () => {
-  it("should omit joint controller into and adminitstrating department if empty", () => {
+  it("should omit joint controller into and administrating department if empty", () => {
     const formValues = {
       system_type: "",
       fides_key: "",
