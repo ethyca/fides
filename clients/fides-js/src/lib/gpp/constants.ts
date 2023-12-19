@@ -222,18 +222,6 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
             opt_out: Array(12).fill(1),
             not_opt_out: Array(12).fill(2),
           },
-          {
-            field: UsNatV1Field.PERSONAL_DATA_CONSENTS,
-            not_available: 0,
-            opt_out: 1,
-            not_opt_out: 2,
-          },
-          {
-            field: UsNatV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
-            not_available: Array(2).fill(0),
-            opt_out: Array(2).fill(1),
-            not_opt_out: Array(2).fill(2),
-          },
         ],
       },
       us_ca: {
@@ -244,18 +232,6 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
             not_available: Array(9).fill(0),
             opt_out: Array(9).fill(1),
             not_opt_out: Array(9).fill(2),
-          },
-          {
-            field: UsCaV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
-            not_available: Array(2).fill(0),
-            opt_out: Array(2).fill(1),
-            not_opt_out: Array(2).fill(2),
-          },
-          {
-            field: UsCaV1Field.PERSONAL_DATA_CONSENTS,
-            not_available: 0,
-            opt_out: 1,
-            not_opt_out: 2,
           },
         ],
       },
@@ -270,12 +246,6 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
             opt_out: Array(8).fill(1),
             not_opt_out: Array(8).fill(2),
           },
-          {
-            field: UsUtV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
-            not_available: 0,
-            opt_out: 1,
-            not_opt_out: 2,
-          },
         ],
       },
       us_va: {
@@ -286,12 +256,6 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
             not_available: Array(8).fill(0),
             opt_out: Array(8).fill(1),
             not_opt_out: Array(8).fill(2),
-          },
-          {
-            field: UsVaV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
-            not_available: 0,
-            opt_out: 1,
-            not_opt_out: 2,
           },
         ],
       },
@@ -304,6 +268,68 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
             opt_out: Array(7).fill(1),
             not_opt_out: Array(7).fill(2),
           },
+        ],
+      },
+      us_ct: {
+        gpp_notice_fields: [],
+        gpp_mechanism_fields: [
+          {
+            field: UsCtV1Field.SENSITIVE_DATA_PROCESSING,
+            not_available: Array(8).fill(0),
+            opt_out: Array(8).fill(1),
+            not_opt_out: Array(8).fill(2),
+          },
+        ],
+      },
+    },
+    known_child_sensitive_data_consents: {
+      us: {
+        gpp_notice_fields: [],
+        gpp_mechanism_fields: [
+          {
+            field: UsNatV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
+            not_available: Array(2).fill(0),
+            opt_out: Array(2).fill(1),
+            not_opt_out: Array(2).fill(2),
+          },
+        ],
+      },
+      us_ca: {
+        gpp_notice_fields: [],
+        gpp_mechanism_fields: [
+          {
+            field: UsCaV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
+            not_available: Array(2).fill(0),
+            opt_out: Array(2).fill(1),
+            not_opt_out: Array(2).fill(2),
+          },
+        ],
+      },
+      us_ut: {
+        gpp_notice_fields: [],
+        gpp_mechanism_fields: [
+          {
+            field: UsUtV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
+        ],
+      },
+      us_va: {
+        gpp_notice_fields: [],
+        gpp_mechanism_fields: [
+          {
+            field: UsVaV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
+        ],
+      },
+      us_co: {
+        gpp_notice_fields: [],
+        gpp_mechanism_fields: [
           {
             field: UsCoV1Field.KNOWN_CHILD_SENSITIVE_DATA_CONSENTS,
             not_available: 0,
@@ -321,11 +347,29 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
             opt_out: Array(3).fill(1),
             not_opt_out: Array(3).fill(2),
           },
+        ],
+      },
+    },
+    personal_data_consents: {
+      us: {
+        gpp_notice_fields: [],
+        gpp_mechanism_fields: [
           {
-            field: UsCtV1Field.SENSITIVE_DATA_PROCESSING,
-            not_available: Array(8).fill(0),
-            opt_out: Array(8).fill(1),
-            not_opt_out: Array(8).fill(2),
+            field: UsNatV1Field.PERSONAL_DATA_CONSENTS,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
+          },
+        ],
+      },
+      us_ca: {
+        gpp_notice_fields: [],
+        gpp_mechanism_fields: [
+          {
+            field: UsCaV1Field.PERSONAL_DATA_CONSENTS,
+            not_available: 0,
+            opt_out: 1,
+            not_opt_out: 2,
           },
         ],
       },

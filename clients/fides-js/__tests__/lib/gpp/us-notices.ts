@@ -234,6 +234,8 @@ describe("setGppOptOutsFromCookie", () => {
         data_sales_and_sharing: true,
         targeted_advertising: true,
         sensitive_personal_data_sharing: true,
+        known_child_sensitive_data_consents: true,
+        personal_data_consents: true,
       },
     });
     setGppOptOutsFromCookie({ cmpApi, cookie, region: "us" });
@@ -268,6 +270,8 @@ describe("setGppOptOutsFromCookie", () => {
         data_sales_and_sharing: false,
         targeted_advertising: false,
         sensitive_personal_data_sharing: false,
+        known_child_sensitive_data_consents: false,
+        personal_data_consents: false,
       },
     });
     setGppOptOutsFromCookie({ cmpApi, cookie, region: "us" });
