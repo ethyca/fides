@@ -170,7 +170,7 @@ const NoticeDrivenConsent = () => {
         const notice = notices.find(
           (n) => n.privacy_notice_history_id === historyKey
         );
-        return { historyKey, preference, notice, servedNotice };
+        return { historyKey, preference, notice };
       }
     );
 
