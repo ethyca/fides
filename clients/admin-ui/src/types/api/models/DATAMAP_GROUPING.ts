@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * An enumeration.
+ * Allowed column groupings for the minimal datamap report
  */
 export enum DATAMAP_GROUPING {
   SYSTEM_DATA_USE = "system, data_use",
