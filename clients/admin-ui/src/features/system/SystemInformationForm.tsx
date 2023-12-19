@@ -131,8 +131,8 @@ const SystemInformationForm = ({
           .label("System name")
           .test("is-unique", "", (value, context) => {
             const takenSystemNames = systems
-              .filter((s) => s.name !== initialValues.name)
-              .map((s) => s.name);
+              .map((s) => s.name)
+              .filter((name) => name !== initialValues.name);
             if (takenSystemNames.some((name) => name === value)) {
               return context.createError({
                 message: `You already have a system called "${value}". Please specify a unique name for this system.`,

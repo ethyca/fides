@@ -5,9 +5,6 @@ import {
   FormControl,
   HStack,
   IconButton,
-  Input,
-  InputGroup,
-  InputRightElement,
   Menu,
   MenuButton,
   MenuItem,
@@ -28,7 +25,12 @@ import { useField, useFormikContext } from "formik";
 import React, { useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { ErrorMessage, Label, Option } from "~/features/common/form/inputs";
+import {
+  CustomTextInput,
+  ErrorMessage,
+  Label,
+  Option,
+} from "~/features/common/form/inputs";
 import { CompassIcon } from "~/features/common/Icon/CompassIcon";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { DictOption } from "~/features/plus/plus.slice";
@@ -161,7 +163,13 @@ const VendorSelector = ({
       return;
     }
     setValue(newValue ? newValue.label : "");
-    setTouched({ ...touched, vendor_id: true, name: true });
+    setTouched(
+      { ...touched, vendor_id: true, name: true },
+      // do not validate if a new option was created; this prevents
+      // incorrectly showing a "required field" error while a value is in
+      // the field
+      actionMeta.action !== "create-option"
+    );
     if (newValue) {
       const newVendorId = options.some((opt) => opt.value === newValue.value)
         ? newValue.value
@@ -181,13 +189,14 @@ const VendorSelector = ({
         ...touched,
         name: true,
       },
-      // only validate if nothing is typed in the select's search input;
-      // this prevents incorrectly showing a "required field" error after
-      // the input turns into a text input while the name is valid
+      // only validate if nothing is typed in the select's search input to
+      // prevent incorrect "required field" error like above
       !searchParam
     );
   };
 
+  // we have to build the typeahead from scratch, too much context-specific
+  // is needed to use the existing CustomCreatableSelect component
   const typeaheadSelect = (
     <FormControl isInvalid={isInvalid} isRequired width="100%">
       <VStack alignItems="start" position="relative" width="100%">
@@ -238,10 +247,6 @@ const VendorSelector = ({
                 background:
                   state.isSelected || state.isFocused ? "gray.50" : "unset",
               }),
-              menu: (provided) => ({
-                ...provided,
-                visibility: hasVendorSuggestions ? "visible" : "hidden",
-              }),
               dropdownIndicator: (provided) => ({
                 ...provided,
                 display: "none",
@@ -261,59 +266,47 @@ const VendorSelector = ({
         />
         <Text
           aria-hidden
-          style={{
-            position: "absolute",
-            backgroundColor: "transparent",
-            borderColor: "transparent",
-            marginTop: "31.52px",
-            marginLeft: "13px",
-            pointerEvents: "none",
-            fontSize: "14px",
-            zIndex: 1,
-          }}
+          position="absolute"
+          backgroundColor="transparent"
+          style={{ marginTop: "31.52px", marginLeft: "13px" }}
+          pointerEvents="none"
+          zIndex={1}
+          fontSize="sm"
         >
-          <span style={{ color: "transparent" }}>{searchParam}</span>
+          <Text as="span" color="transparent">
+            {searchParam}
+          </Text>
           {searchParam && suggestions.length > 0 ? (
-            <span style={{ color: "#824EF2" }}>
+            <Text as="span" color="complimentary.500">
               {suggestions[0].label.substring(searchParam.length)}
-            </span>
+            </Text>
           ) : null}
         </Text>
       </VStack>
     </FormControl>
   );
 
-  const textInput = (
-    <FormControl isInvalid={isInvalid} isRequired>
-      <VStack alignItems="start">
-        <HStack spacing={1} alignItems="center">
-          <Label htmlFor="name" fontSize="xs" my={0} mr={1}>
-            System name
-          </Label>
-          <QuestionTooltip label="Enter the system name" />
-        </HStack>
-        <InputGroup size="sm">
-          <Input {...field} data-testid="input-name" />
-          <InputRightElement>
+  return (
+    <HStack alignItems="flex-start">
+      {isTypeahead ? (
+        typeaheadSelect
+      ) : (
+        <CustomTextInput
+          id="name"
+          name="name"
+          label="System name"
+          tooltip="Enter the system name"
+          variant="stacked"
+          isRequired
+          inputRightElement={
             <CloseButton
               onClick={handleClear}
               size="sm"
               data-testid="clear-btn"
             />
-          </InputRightElement>
-        </InputGroup>
-        <ErrorMessage
-          isInvalid={isInvalid}
-          message={meta.error}
-          fieldName={field.name}
+          }
         />
-      </VStack>
-    </FormControl>
-  );
-
-  return (
-    <HStack alignItems="flex-start">
-      {isTypeahead ? typeaheadSelect : textInput}
+      )}
       <CompassButton
         active={!!values.vendor_id || hasVendorSuggestions}
         disabled={!values.vendor_id || dictSuggestionsState === "showing"}

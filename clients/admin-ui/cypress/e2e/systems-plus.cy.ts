@@ -77,9 +77,6 @@ describe("System management with Plus features", () => {
           ).as("getDictSystem");
         });
       });
-      // cy.intercept({ method: "POST", url: "/api/v1/system*" }).as(
-      //   "postDictSystem"
-      // );
       cy.getByTestId("save-btn").click();
       cy.wait("@postDictSystem");
       cy.wait("@getDictSystem");
@@ -107,9 +104,6 @@ describe("System management with Plus features", () => {
           ).as("getDictSystem");
         });
       });
-      // cy.intercept({ method: "POST", url: "/api/v1/system*" }).as(
-      //   "postDictSystem"
-      // );
       cy.getByTestId("save-btn").click();
       cy.wait("@postDictSystem");
       cy.wait("@getDictSystem");
