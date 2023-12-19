@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from datetime import datetime
 from itertools import product
 from typing import Any, Dict, List, Literal, Optional, TypeVar
+from uuid import uuid4
 
 import pydash
 from fideslang.models import FidesDatasetReference
@@ -21,8 +23,10 @@ from fides.api.util.saas_util import (
     ALL_OBJECT_FIELDS,
     CUSTOM_PRIVACY_REQUEST_FIELDS,
     FIDESOPS_GROUPED_INPUTS,
+    ISO_8601_DATE,
     MASKED_OBJECT_FIELDS,
     PRIVACY_REQUEST_ID,
+    UUID,
     get_identity,
     unflatten_dict,
 )
@@ -307,6 +311,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 0
             ]
 
+        param_values[UUID] = str(uuid4())
+        param_values[ISO_8601_DATE] = datetime.now().date().isoformat()
+
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
             self.action, self.collection_name, self.current_request, param_values  # type: ignore
@@ -403,6 +410,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
 
         param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields
+        param_values[UUID] = str(uuid4())
+        param_values[ISO_8601_DATE] = datetime.now().date().isoformat()
 
         # remove any row values for fields marked as read-only, these will be omitted from all update maps
         for field_path, field in self.field_map().items():
