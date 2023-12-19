@@ -26,7 +26,6 @@ CTL_POLICY = "ctl_policy"
 CURRENT_PRIVACY_PREFERENCE = "current-privacy-preference"
 DATABASE = "database"
 DATA_CATEGORY = "data_category"
-DATA_QUALIFIER = "data_qualifier"
 DATA_SUBJECT = "data_subject"
 DATA_USE = "data_use"
 DATASET = "dataset"
@@ -50,7 +49,6 @@ PRIVACY_REQUEST = "privacy-request"
 PRIVACY_REQUEST_NOTIFICATIONS = "privacy-request-notifications"
 READ = "read"
 REGISTER = "register"
-REGISTRY = "registry"
 RESET = "reset"
 RESUME = "resume"
 REVIEW = "review"
@@ -116,10 +114,6 @@ DATA_CATEGORY_READ = f"{DATA_CATEGORY}:{READ}"
 DATA_CATEGORY_UPDATE = f"{DATA_CATEGORY}:{UPDATE}"
 DATA_CATEGORY_DELETE = f"{DATA_CATEGORY}:{DELETE}"
 
-DATA_QUALIFIER_CREATE = f"{DATA_QUALIFIER}:{CREATE}"
-DATA_QUALIFIER_READ = f"{DATA_QUALIFIER}:{READ}"
-DATA_QUALIFIER_UPDATE = f"{DATA_QUALIFIER}:{UPDATE}"
-DATA_QUALIFIER_DELETE = f"{DATA_QUALIFIER}:{DELETE}"
 
 DATA_SUBJECT_CREATE = f"{DATA_SUBJECT}:{CREATE}"
 DATA_SUBJECT_READ = f"{DATA_SUBJECT}:{READ}"
@@ -185,11 +179,6 @@ PRIVACY_REQUEST_REVIEW = f"{PRIVACY_REQUEST}:{REVIEW}"
 PRIVACY_REQUEST_TRANSFER = f"{PRIVACY_REQUEST}:{TRANSFER}"
 PRIVACY_REQUEST_UPLOAD_DATA = f"{PRIVACY_REQUEST}:{UPLOAD_DATA}"
 PRIVACY_REQUEST_VIEW_DATA = f"{PRIVACY_REQUEST}:{VIEW_DATA}"
-
-REGISTRY_CREATE = f"{REGISTRY}:{CREATE}"
-REGISTRY_READ = f"{REGISTRY}:{READ}"
-REGISTRY_UPDATE = f"{REGISTRY}:{UPDATE}"
-REGISTRY_DELETE = f"{REGISTRY}:{DELETE}"
 
 RULE_CREATE_OR_UPDATE = f"{RULE}:{CREATE_OR_UPDATE}"
 RULE_DELETE = f"{RULE}:{DELETE}"
@@ -273,10 +262,6 @@ SCOPE_DOCS = {
     DATA_CATEGORY_DELETE: "Delete data categories",
     DATA_CATEGORY_READ: "Read data categories",
     DATA_CATEGORY_UPDATE: "Update data categories",
-    DATA_QUALIFIER_CREATE: "Create a data qualifier",
-    DATA_QUALIFIER_DELETE: "Delete data qualifiers",
-    DATA_QUALIFIER_READ: "Read data qualifiers",
-    DATA_QUALIFIER_UPDATE: "Update data qualifiers",
     DATA_SUBJECT_CREATE: "Create a data subject",
     DATA_SUBJECT_READ: "Read data subjects",
     DATA_SUBJECT_DELETE: "Delete data subjects",
@@ -325,10 +310,6 @@ SCOPE_DOCS = {
     PRIVACY_REQUEST_TRANSFER: "Transfer privacy requests",
     PRIVACY_REQUEST_UPLOAD_DATA: "Manually upload data for the privacy request",
     PRIVACY_REQUEST_VIEW_DATA: "View subject data related to the privacy request",
-    REGISTRY_CREATE: "Create registry",
-    REGISTRY_READ: "Read registry details",
-    REGISTRY_DELETE: "Delete registry",
-    REGISTRY_UPDATE: "Update registry details",
     RULE_CREATE_OR_UPDATE: "Create or update rules",
     RULE_DELETE: "Remove rules",
     RULE_READ: "View rules",
