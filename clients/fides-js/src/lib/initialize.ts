@@ -111,6 +111,7 @@ const automaticallyApplyGPCPreferences = ({
     (notice) => {
       if (
         notice.has_gpc_flag &&
+        // @ts-ignore
         !notice.current_preference &&
         notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY
       ) {

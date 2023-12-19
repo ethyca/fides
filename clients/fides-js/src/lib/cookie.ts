@@ -10,7 +10,7 @@ import {
   Cookies,
   ExperienceMeta,
   LegacyConsentConfig,
-  PrivacyExperience,
+  PrivacyExperience, PrivacyNoticeWithPreference,
   SaveConsentPreference,
 } from "./consent-types";
 import {
@@ -289,16 +289,13 @@ export const updateExperienceFromCookieConsentNotices = ({
   cookie: FidesCookie;
   debug?: boolean;
 }): PrivacyExperience => {
-  const noticesWithConsent = experience.privacy_notices?.map((notice) => {
-    // Prefers preference in cookie if it exists, else uses current preference on the notice if it exists, else uses
-    // undefined. Undefined will occur for server-side-fetched experience when no corresponding pref exists in cookie.
-    const defaultPreference = notice.current_preference ?? undefined;
+  const noticesWithConsent: PrivacyNoticeWithPreference[] | undefined = experience.privacy_notices?.map((notice) => {
     const preference = Object.hasOwn(cookie.consent, notice.notice_key)
       ? transformConsentToFidesUserPreference(
           Boolean(cookie.consent[notice.notice_key]),
           notice.consent_mechanism
         )
-      : defaultPreference;
+      : undefined;
     return { ...notice, current_preference: preference };
   });
 
