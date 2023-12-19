@@ -95,7 +95,7 @@ const NoticeDrivenConsent = () => {
     setDraftPreferences(initialDraftPreferences);
   }, [initialDraftPreferences]);
 
-  const [updateNoticesServedMutationTrigger, { data: servedNotices }] =
+  const [updateNoticesServedMutationTrigger, { data: servedNotice }] =
     useUpdateNoticesServedMutation();
 
   useEffect(() => {
@@ -170,26 +170,21 @@ const NoticeDrivenConsent = () => {
         const notice = notices.find(
           (n) => n.privacy_notice_history_id === historyKey
         );
-        const servedNotice = servedNotices?.find(
-          (sn) => sn.privacy_notice_history?.id === historyKey
-        );
-        return { historyKey, preference, notice, servedNotice };
+        return { historyKey, preference, notice };
       }
     );
 
     const preferences: ConsentOptionCreate[] = noticePreferences.map(
-      ({ historyKey, preference, notice, servedNotice }) => {
+      ({ historyKey, preference, notice }) => {
         if (notice?.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
           return {
             privacy_notice_history_id: historyKey,
             preference: UserConsentPreference.ACKNOWLEDGE,
-            served_notice_history_id: servedNotice?.served_notice_history_id,
           };
         }
         return {
           privacy_notice_history_id: historyKey,
           preference: preference ?? UserConsentPreference.OPT_OUT,
-          served_notice_history_id: servedNotice?.served_notice_history_id,
         };
       }
     );
@@ -201,6 +196,7 @@ const NoticeDrivenConsent = () => {
       privacy_experience_id: experience?.id,
       method: ConsentMethod.BUTTON,
       code: verificationCode,
+      served_notice_history_id: servedNotice?.served_notice_history_id,
     };
 
     // 1. Send PATCH to Fides backend

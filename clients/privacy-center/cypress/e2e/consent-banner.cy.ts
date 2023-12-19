@@ -3,9 +3,7 @@ import {
   CONSENT_COOKIE_NAME,
   ConsentMechanism,
   ConsentMethod,
-  ConsentOptionCreate,
   FidesCookie,
-  LastServedConsentSchema,
   UserConsentPreference,
 } from "fides-js";
 
@@ -221,6 +219,8 @@ describe("Consent banner", () => {
               privacy_experience_id: "132345243",
               user_geography: "us_ca",
               method: ConsentMethod.save,
+              served_notice_history_id:
+                "ser_65920a24-128f-4990-a7a8-f1a05a09093d",
             };
             // uuid is generated automatically if the user has no saved consent cookie
             generatedUserDeviceId = body.browser_identity.fides_user_device_id;
@@ -371,6 +371,8 @@ describe("Consent banner", () => {
             privacy_experience_id: "132345243",
             user_geography: "us_ca",
             method: ConsentMethod.save,
+            served_notice_history_id:
+              "ser_65920a24-128f-4990-a7a8-f1a05a09093d",
           };
           expect(body).to.eql(expected);
         });
@@ -460,6 +462,8 @@ describe("Consent banner", () => {
             privacy_experience_id: "pri_b9d1af04-5852-4499-bdfb-2778a6117fb8",
             user_geography: "us_ca",
             method: ConsentMethod.save,
+            served_notice_history_id:
+              "ser_65920a24-128f-4990-a7a8-f1a05a09093d",
           };
           expect(body).to.eql(expected);
         });
@@ -661,6 +665,7 @@ describe("Consent banner", () => {
             privacy_experience_id: "132345243",
             user_geography: "us_ca",
             method: ConsentMethod.gpc,
+            served_notice_history_id: undefined,
           };
           // uuid is generated automatically if the user has no saved consent cookie
           generatedUserDeviceId = body.browser_identity.fides_user_device_id;
@@ -1753,9 +1758,9 @@ describe("Consent banner", () => {
       cy.get("@FidesUIShown").should("not.have.been.called");
       cy.get("#fides-modal-link").click();
       cy.get("@FidesUIShown").should("have.been.calledOnce");
-      cy.wait("@patchNoticesServed").then((interception) => {
+      cy.wait("@patchNoticesServed").then((noticesServedInterception) => {
         const { browser_identity: identity, ...body } =
-          interception.request.body;
+          noticesServedInterception.request.body;
         expect(identity.fides_user_device_id).to.be.a("string");
         expect(body).to.eql({
           privacy_experience_id: experienceId,
@@ -1777,17 +1782,14 @@ describe("Consent banner", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Reject Test").click();
         });
-        // The patch should include the served notice IDs (response from patchNoticesServed)
+        // The patch should include the served notice ID (response from patchNoticesServed)
         cy.wait("@patchPrivacyPreference").then((preferenceInterception) => {
-          const { preferences } = preferenceInterception.request.body;
-          const expected = interception.response?.body.map(
-            (s: LastServedConsentSchema) => s.served_notice_history_id
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          const { served_notice_history_id } =
+            preferenceInterception.request.body;
+          expect(served_notice_history_id).to.eql(
+            noticesServedInterception.response?.body.served_notice_history_id
           );
-          expect(
-            preferences.map(
-              (p: ConsentOptionCreate) => p.served_notice_history_id
-            )
-          ).to.eql(expected);
           expect(preferenceInterception.request.body.method).to.eql(
             ConsentMethod.reject
           );

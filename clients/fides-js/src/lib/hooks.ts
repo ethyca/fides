@@ -3,10 +3,10 @@ import { FidesEvent } from "./events";
 import {
   FidesOptions,
   PrivacyExperience,
-  LastServedConsentSchema,
   RecordConsentServedRequest,
   PrivacyNotice,
   ServingComponent,
+  RecordsServedResponse,
 } from "./consent-types";
 import { patchNoticesServed } from "../services/api";
 
@@ -91,9 +91,8 @@ export const useConsentServed = ({
   privacyExperience: PrivacyExperience;
   acknowledgeMode?: boolean;
 }) => {
-  const [servedNotices, setServedNotices] = useState<LastServedConsentSchema[]>(
-    []
-  );
+  const [servedNotice, setServedNotice] =
+    useState<RecordsServedResponse | null>(null);
 
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
@@ -142,7 +141,7 @@ export const useConsentServed = ({
         options,
       });
       if (result) {
-        setServedNotices(result);
+        setServedNotice(result);
       }
     },
     [notices, options, acknowledgeMode, privacyExperience, userGeography]
@@ -155,5 +154,5 @@ export const useConsentServed = ({
     };
   }, [handleUIEvent]);
 
-  return { servedNotices };
+  return { servedNotice };
 };

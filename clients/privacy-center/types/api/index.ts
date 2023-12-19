@@ -18,7 +18,7 @@ export { EnforcementLevel } from "./models/EnforcementLevel";
 export type { ExperienceConfigResponse } from "./models/ExperienceConfigResponse";
 export type { Identity } from "./models/Identity";
 export type { IdentityVerificationConfigResponse } from "./models/IdentityVerificationConfigResponse";
-export type { LastServedConsentSchema } from "./models/LastServedConsentSchema";
+export type { RecordsServedResponse } from "./models/RecordsServedResponse";
 export type { RecordConsentServedRequest } from "./models/RecordConsentServedRequest";
 export type { Page_PrivacyExperienceResponse_ } from "./models/Page_PrivacyExperienceResponse_";
 export type { PrivacyExperienceResponse } from "./models/PrivacyExperienceResponse";

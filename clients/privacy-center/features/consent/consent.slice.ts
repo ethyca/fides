@@ -8,12 +8,12 @@ import {
   ComponentType,
   ConsentPreferences,
   ConsentPreferencesWithVerificationCode,
-  LastServedConsentSchema,
   SavePrivacyPreferencesResponse,
   RecordConsentServedRequest,
   Page_PrivacyExperienceResponse_,
   PrivacyNoticeRegion,
   PrivacyPreferencesRequest,
+  RecordsServedResponse,
 } from "~/types/api";
 import { selectSettings } from "../common/settings.slice";
 
@@ -94,7 +94,7 @@ export const consentApi = baseApi.injectEndpoints({
       }),
     }),
     updateNoticesServed: build.mutation<
-      LastServedConsentSchema[],
+      RecordsServedResponse,
       { id: string; body: RecordConsentServedRequest }
     >({
       query: ({ id, body }) => ({
