@@ -61,7 +61,7 @@ const SubgroupModal = ({
 
   // If a parent is selected, "United States", do not count it towards "num selected" but do
   // count its children
-  const numSelected = selected.filter(
+  const numSelected = draftSelected.filter(
     (s) => !Object.keys(locationsByGroup).includes(s)
   ).length;
 
@@ -85,7 +85,7 @@ const SubgroupModal = ({
   return (
     <Modal size="2xl" isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent data-testid="subgroup-modal">
         <ModalHeader
           fontSize="md"
           fontWeight="semibold"
@@ -109,6 +109,7 @@ const SubgroupModal = ({
                 isChecked={allSelected}
                 onChange={handleToggleAll}
                 mr={3}
+                data-testid="select-all"
               >
                 {continentName}
               </Checkbox>
@@ -134,33 +135,45 @@ const SubgroupModal = ({
               // Opens all subgroups by default
               defaultIndex={[...Array(numSubgroups).keys()]}
             >
-              {Object.entries(locationsByGroup).map(([group, subLocations]) => (
-                <AccordionItem key={group}>
-                  <h2>
-                    <AccordionButton>
-                      <Box as="span" flex="1" textAlign="left" fontWeight={600}>
-                        {getLocationNameFromId(group, locations)}
-                      </Box>
-                      <AccordionIcon />
-                    </AccordionButton>
-                  </h2>
-                  <AccordionPanel pb={4}>
-                    <SimpleGrid columns={3} spacing={6}>
-                      {subLocations.map((location) => (
-                        <Checkbox
-                          size="sm"
-                          colorScheme="complimentary"
-                          key={location.id}
-                          isChecked={draftSelected.includes(location.id)}
-                          onChange={() => handleToggleSelection(location.id)}
+              {Object.entries(locationsByGroup).map(([group, subLocations]) => {
+                const groupName = getLocationNameFromId(group, locations);
+                return (
+                  <AccordionItem
+                    key={group}
+                    data-testid={`${groupName}-accordion`}
+                  >
+                    <h2>
+                      <AccordionButton>
+                        <Box
+                          as="span"
+                          flex="1"
+                          textAlign="left"
+                          fontWeight={600}
                         >
-                          {location.name}
-                        </Checkbox>
-                      ))}
-                    </SimpleGrid>
-                  </AccordionPanel>
-                </AccordionItem>
-              ))}
+                          {groupName}
+                        </Box>
+                        <AccordionIcon />
+                      </AccordionButton>
+                    </h2>
+                    <AccordionPanel pb={4}>
+                      <SimpleGrid columns={3} spacing={6}>
+                        {subLocations.map((location) => (
+                          <Checkbox
+                            size="sm"
+                            colorScheme="complimentary"
+                            key={location.id}
+                            isChecked={draftSelected.includes(location.id)}
+                            onChange={() => handleToggleSelection(location.id)}
+                            data-testid={`${location.name}-checkbox`}
+                          >
+                            {location.name}
+                          </Checkbox>
+                        ))}
+                      </SimpleGrid>
+                    </AccordionPanel>
+                  </AccordionItem>
+                );
+              })}
             </Accordion>
           ) : (
             <SimpleGrid columns={3} spacing={6} paddingInline={4}>
@@ -188,7 +201,12 @@ const SubgroupModal = ({
             <Button flexGrow={1} variant="outline" mr={3} onClick={onClose}>
               Cancel
             </Button>
-            <Button flexGrow={1} colorScheme="primary" onClick={handleApply}>
+            <Button
+              flexGrow={1}
+              colorScheme="primary"
+              onClick={handleApply}
+              data-testid="apply-btn"
+            >
               Apply
             </Button>
           </ButtonGroup>

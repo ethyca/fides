@@ -69,30 +69,27 @@ describe("Locations", () => {
       });
     });
 
-    it.skip("can search", () => {
-      // Search for 'Fr'
-      cy.getByTestId("search-bar").type("Fr");
-      cy.getByTestId("picker-card-Europe").within(() => {
-        cy.getByTestId("European Economic Area-checkbox").should("not.exist");
-        cy.getByTestId("France-checkbox");
-        cy.getByTestId("Ile-de-France-checkbox");
+    it("can search", () => {
+      // Search for 'Ca'
+      cy.getByTestId("search-bar").type("Ca");
+      cy.getByTestId("picker-card-Europe").should("not.exist");
+      cy.getByTestId("picker-card-South America").should("not.exist");
+      cy.getByTestId("picker-card-North America").within(() => {
+        cy.getByTestId("California-checkbox");
       });
-      cy.getByTestId("picker-card-North America").should("not.exist");
 
       // Clear search should reset to initial state
       cy.get("button").contains("Clear").click();
       cy.getByTestId("picker-card-Europe");
       cy.getByTestId("picker-card-North America");
+      cy.getByTestId("picker-card-South America");
 
       // Search for 'co' (lowercase) should show across continents
       cy.getByTestId("search-bar").type("co");
       cy.getByTestId("picker-card-Europe").within(() => {
         cy.getByTestId("European Economic Area-checkbox");
-        cy.getByTestId("France-checkbox").should("not.exist");
-        cy.getByTestId("Ile-de-France-checkbox").should("not.exist");
       });
       cy.getByTestId("picker-card-North America").within(() => {
-        cy.getByTestId("United States-checkbox").should("not.exist");
         cy.getByTestId("California-checkbox").should("not.exist");
         cy.getByTestId("Colorado-checkbox");
       });
@@ -200,6 +197,62 @@ describe("Locations", () => {
       });
       cy.wait("@getLocationsSecond");
       cy.getByTestId("save-btn").should("not.exist");
+    });
+  });
+
+  describe("modal view", () => {
+    it("can show the modal view with selections", () => {
+      cy.getByTestId("picker-card-Europe").within(() => {
+        cy.getByTestId("view-more-btn").click();
+      });
+      cy.getByTestId("subgroup-modal").should("be.visible");
+      cy.getByTestId("subgroup-modal").within(() => {
+        cy.getByTestId("num-selected-badge").should("contain", "1 selected");
+        cy.getByTestId("European Economic Area-accordion").within(() => {
+          assertIsChecked("France", true);
+          assertIsChecked("Italy", false);
+        });
+      });
+    });
+
+    it("can select all", () => {
+      cy.getByTestId("picker-card-Europe").within(() => {
+        cy.getByTestId("view-more-btn").click();
+      });
+      cy.getByTestId("subgroup-modal").within(() => {
+        cy.getByTestId("select-all").click();
+        cy.getByTestId("num-selected-badge").should("contain", "2 selected");
+        cy.getByTestId("European Economic Area-accordion").within(() => {
+          assertIsChecked("France", true);
+          assertIsChecked("Italy", true);
+        });
+      });
+    });
+
+    it("can apply selections back to continent view", () => {
+      cy.getByTestId("picker-card-North America").within(() => {
+        cy.getByTestId("view-more-btn").click();
+      });
+      // Selecting Quebec should also select Canada in the continent view since Quebec
+      // is the only child of Canada
+      cy.getByTestId("subgroup-modal").within(() => {
+        cy.getByTestId("United States-accordion");
+        cy.getByTestId("Canada-accordion").within(() => {
+          cy.getByTestId("Quebec-checkbox").click();
+        });
+      });
+      cy.getByTestId("apply-btn").click();
+      cy.getByTestId("picker-card-North America").within(() => {
+        assertIsChecked("Canada", true);
+        // Deselecting Canada here should also deselect Quebec in modal view
+        cy.getByTestId("Canada-checkbox").click();
+        cy.getByTestId("view-more-btn").click();
+      });
+      cy.getByTestId("subgroup-modal").within(() => {
+        cy.getByTestId("Canada-accordion").within(() => {
+          assertIsChecked("Quebec", false);
+        });
+      });
     });
   });
 });

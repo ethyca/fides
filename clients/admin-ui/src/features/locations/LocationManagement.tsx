@@ -13,8 +13,7 @@ import { usePatchLocationsRegulationsMutation } from "./locations.slice";
 import { groupByContinent } from "./transformations";
 
 const SEARCH_FILTER = (location: Location, search: string) =>
-  location.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
-  location.continent?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
+  location.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
 
 const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const toast = useToast();
@@ -86,6 +85,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
               .filter((s) => locations.find((l) => l.id === s.id) && s.selected)
               .map((s) => s.id)}
             onChange={handleDraftChange}
+            view={search === "" ? "parents" : "all"}
           />
         ))}
       </SimpleGrid>

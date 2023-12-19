@@ -12,11 +12,13 @@ const LocationPickerCard = ({
   locations,
   selected,
   onChange,
+  view,
 }: {
   title: string;
   locations: Location[];
   selected: Array<string>;
   onChange: (selections: Array<Selection>) => void;
+  view: "parents" | "all";
 }) => {
   const disclosure = useDisclosure();
   const [showRegulatedOnly, setShowRegulatedOnly] = useState(false);
@@ -24,9 +26,11 @@ const LocationPickerCard = ({
   // We only show group level names here, i.e. "United States", which doesn't belong to
   // a larger group. So we don't show "California" here since it belongs to "United States"
   const locationsWithoutGroups = locations.filter((l) => !l.belongs_to?.length);
+  const locationsForView =
+    view === "parents" ? locationsWithoutGroups : locations;
   const filteredLocations = showRegulatedOnly
-    ? locationsWithoutGroups.filter((l) => l.regulation?.length)
-    : locationsWithoutGroups;
+    ? locationsForView.filter((l) => l.regulation?.length)
+    : locationsForView;
 
   const handleChange = (newSelected: string[]) => {
     const updated = locations.map((location) => {
@@ -65,6 +69,8 @@ const LocationPickerCard = ({
         });
       }
     });
+
+    // TODO: in "all" view, clicking all of a children will not make the parent selected
 
     handleChange(Array.from(newSelections));
   };

@@ -128,7 +128,12 @@ const PickerCard = <T extends { id: string; name: string }>({
             ))}
           </CheckboxGroup>
         </VStack>
-        <Button size="xs" variant="ghost" onClick={onViewMore}>
+        <Button
+          size="xs"
+          variant="ghost"
+          onClick={onViewMore}
+          data-testid="view-more-btn"
+        >
           View more
         </Button>
       </VStack>
