@@ -37,13 +37,13 @@ import {
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {
   DATAMAP_GROUPING,
-  MinimalDatamapReport,
-  Page_MinimalDatamapReport_,
+  DatamapReport,
+  Page_DatamapReport_,
 } from "~/types/api";
 
-const columnHelper = createColumnHelper<MinimalDatamapReport>();
+const columnHelper = createColumnHelper<DatamapReport>();
 
-const emptyMinimalDatamapReportResponse: Page_MinimalDatamapReport_ = {
+const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
   items: [],
   total: 0,
   page: 1,
@@ -51,28 +51,33 @@ const emptyMinimalDatamapReportResponse: Page_MinimalDatamapReport_ = {
   pages: 1,
 };
 
-const SYSTEM_NAME_COLUMN_ID = "system_name";
-const DATA_USE_COLUMN_ID = "data_use";
-const DATA_CATEGORY_COLUMN_ID = "data_categories";
-const DATA_SUBJECT_COLUMN_ID = "data_subjects";
+enum COLUMN_IDS {
+  SYSTEM_NAME = "system_name",
+  DATA_USE = "data_use",
+  DATA_CATEGORY = "data_categories",
+  DATA_SUBJECT = "data_subjects",
+  LEGAL_NAME = "legal_name",
+  DPO = "dpo",
+  LEGAL_BASIS_FOR_PROCESSING = "legal_basis_for_processing",
+}
 
 const getGrouping = (groupBy: DATAMAP_GROUPING) => {
   let grouping: string[] = [];
   switch (groupBy) {
     case DATAMAP_GROUPING.SYSTEM_DATA_USE: {
-      grouping = [SYSTEM_NAME_COLUMN_ID];
+      grouping = [COLUMN_IDS.SYSTEM_NAME];
       break;
     }
     case DATAMAP_GROUPING.DATA_USE_SYSTEM: {
-      grouping = [DATA_USE_COLUMN_ID];
+      grouping = [COLUMN_IDS.DATA_USE];
       break;
     }
     case DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM: {
-      grouping = [DATA_CATEGORY_COLUMN_ID];
+      grouping = [COLUMN_IDS.DATA_CATEGORY];
       break;
     }
     default:
-      grouping = [SYSTEM_NAME_COLUMN_ID];
+      grouping = [COLUMN_IDS.SYSTEM_NAME];
   }
   return grouping;
 };
@@ -80,26 +85,26 @@ const getColumnOrder = (groupBy: DATAMAP_GROUPING) => {
   let columnOrder: string[] = [];
   if (DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy) {
     columnOrder = [
-      SYSTEM_NAME_COLUMN_ID,
-      DATA_USE_COLUMN_ID,
-      DATA_CATEGORY_COLUMN_ID,
-      DATA_SUBJECT_COLUMN_ID,
+      COLUMN_IDS.SYSTEM_NAME,
+      COLUMN_IDS.DATA_USE,
+      COLUMN_IDS.DATA_CATEGORY,
+      COLUMN_IDS.DATA_SUBJECT,
     ];
   }
   if (DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy) {
     columnOrder = [
-      DATA_USE_COLUMN_ID,
-      SYSTEM_NAME_COLUMN_ID,
-      DATA_CATEGORY_COLUMN_ID,
-      DATA_SUBJECT_COLUMN_ID,
+      COLUMN_IDS.DATA_USE,
+      COLUMN_IDS.SYSTEM_NAME,
+      COLUMN_IDS.DATA_CATEGORY,
+      COLUMN_IDS.DATA_SUBJECT,
     ];
   }
   if (DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM === groupBy) {
     columnOrder = [
-      DATA_CATEGORY_COLUMN_ID,
-      SYSTEM_NAME_COLUMN_ID,
-      DATA_USE_COLUMN_ID,
-      DATA_SUBJECT_COLUMN_ID,
+      COLUMN_IDS.DATA_CATEGORY,
+      COLUMN_IDS.SYSTEM_NAME,
+      COLUMN_IDS.DATA_USE,
+      COLUMN_IDS.DATA_SUBJECT,
     ];
   }
   return columnOrder;
@@ -213,21 +218,21 @@ export const DatamapReportTable = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const cellWidth = "25%";
+  const cellWidth = "270px";
 
   const tcfColumns = useMemo(
     () => [
       columnHelper.accessor((row) => row.system_name, {
         enableGrouping: true,
-        id: SYSTEM_NAME_COLUMN_ID,
+        id: COLUMN_IDS.SYSTEM_NAME,
         cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Vendor" {...props} />,
+        header: (props) => <DefaultHeaderCell value="System" {...props} />,
         meta: {
           width: cellWidth,
         },
       }),
-      columnHelper.accessor((row) => row.data_use, {
-        id: DATA_USE_COLUMN_ID,
+      columnHelper.accessor((row) => row.data_uses, {
+        id: COLUMN_IDS.DATA_USE,
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data uses"
@@ -240,8 +245,8 @@ export const DatamapReportTable = () => {
           width: cellWidth,
         },
       }),
-      columnHelper.accessor((row) => row.data_category, {
-        id: DATA_CATEGORY_COLUMN_ID,
+      columnHelper.accessor((row) => row.data_categories, {
+        id: COLUMN_IDS.DATA_CATEGORY,
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data categories"
@@ -256,8 +261,8 @@ export const DatamapReportTable = () => {
           width: cellWidth,
         },
       }),
-      columnHelper.accessor((row) => row.data_subject, {
-        id: DATA_SUBJECT_COLUMN_ID,
+      columnHelper.accessor((row) => row.data_subjects, {
+        id: COLUMN_IDS.DATA_SUBJECT,
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data subjects"
@@ -267,6 +272,36 @@ export const DatamapReportTable = () => {
         ),
         header: (props) => (
           <DefaultHeaderCell value="Data subject" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+        },
+      }),
+      columnHelper.accessor((row) => row.legal_name, {
+        id: COLUMN_IDS.LEGAL_NAME,
+        cell: (props) => (
+          <DefaultCell expand={false} value={props.getValue()} />
+        ),
+        header: (props) => <DefaultHeaderCell value="Legal Name" {...props} />,
+        meta: {
+          width: cellWidth,
+        },
+      }),
+      columnHelper.accessor((row) => row.dpo, {
+        id: COLUMN_IDS.DPO,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Data privacy officer" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+        },
+      }),
+      columnHelper.accessor((row) => row.legal_basis_for_processing, {
+        id: COLUMN_IDS.LEGAL_BASIS_FOR_PROCESSING,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Legal basis for processing" {...props} />
         ),
         meta: {
           width: cellWidth,

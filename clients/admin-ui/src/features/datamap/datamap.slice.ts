@@ -11,7 +11,7 @@ import {
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_LEGAL_BASIS,
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
 } from "~/features/datamap/constants";
-import { DATAMAP_GROUPING, Page_MinimalDatamapReport_ } from "~/types/api";
+import { DATAMAP_GROUPING, Page_DatamapReport_ } from "~/types/api";
 
 export interface DataCategoryNode {
   value: string;
@@ -70,7 +70,7 @@ const DEPRECATED_COLUMNS = [
 const datamapApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getMininimalDatamapReport: build.query<
-      Page_MinimalDatamapReport_,
+      Page_DatamapReport_,
       {
         groupBy: DATAMAP_GROUPING;
         pageIndex: number;
