@@ -220,7 +220,7 @@ describe("Consent banner", () => {
               ],
               privacy_experience_id: "132345243",
               user_geography: "us_ca",
-              method: ConsentMethod.save,
+              method: ConsentMethod.SAVE,
             };
             // uuid is generated automatically if the user has no saved consent cookie
             generatedUserDeviceId = body.browser_identity.fides_user_device_id;
@@ -370,7 +370,7 @@ describe("Consent banner", () => {
             ],
             privacy_experience_id: "132345243",
             user_geography: "us_ca",
-            method: ConsentMethod.save,
+            method: ConsentMethod.SAVE,
           };
           expect(body).to.eql(expected);
         });
@@ -459,7 +459,7 @@ describe("Consent banner", () => {
             ],
             privacy_experience_id: "pri_b9d1af04-5852-4499-bdfb-2778a6117fb8",
             user_geography: "us_ca",
-            method: ConsentMethod.save,
+            method: ConsentMethod.SAVE,
           };
           expect(body).to.eql(expected);
         });
@@ -536,7 +536,7 @@ describe("Consent banner", () => {
             .should("have.been.calledOnce")
             .its("lastCall.args.0.detail.extraDetails.consentMethod")
             .then((consentMethod) => {
-              expect(consentMethod).to.eql(ConsentMethod.reject);
+              expect(consentMethod).to.eql(ConsentMethod.REJECT);
             });
           cy.getAllCookies().then((allCookies) => {
             expect(allCookies.map((c) => c.name)).to.eql([CONSENT_COOKIE_NAME]);
@@ -552,7 +552,7 @@ describe("Consent banner", () => {
             .should("have.been.calledOnce")
             .its("lastCall.args.0.detail.extraDetails.consentMethod")
             .then((consentMethod) => {
-              expect(consentMethod).to.eql(ConsentMethod.save);
+              expect(consentMethod).to.eql(ConsentMethod.SAVE);
             });
           cy.getAllCookies().then((allCookies) => {
             expect(allCookies.map((c) => c.name)).to.eql([
@@ -660,7 +660,7 @@ describe("Consent banner", () => {
             ],
             privacy_experience_id: "132345243",
             user_geography: "us_ca",
-            method: ConsentMethod.gpc,
+            method: ConsentMethod.GPC,
           };
           // uuid is generated automatically if the user has no saved consent cookie
           generatedUserDeviceId = body.browser_identity.fides_user_device_id;
@@ -1312,7 +1312,7 @@ describe("Consent banner", () => {
         cy.get("@FidesUpdated")
           .its("lastCall.args.0.detail.extraDetails.consentMethod")
           .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.reject);
+            expect(consentMethod).to.eql(ConsentMethod.REJECT);
           });
       });
 
@@ -1340,7 +1340,7 @@ describe("Consent banner", () => {
         cy.get("@FidesUpdated")
           .its("lastCall.args.0.detail.extraDetails.consentMethod")
           .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.accept);
+            expect(consentMethod).to.eql(ConsentMethod.ACCEPT);
           });
       });
 
@@ -1373,7 +1373,7 @@ describe("Consent banner", () => {
         cy.get("@FidesUpdated")
           .its("lastCall.args.0.detail.extraDetails.consentMethod")
           .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.save);
+            expect(consentMethod).to.eql(ConsentMethod.SAVE);
           });
       });
     });
@@ -1789,7 +1789,7 @@ describe("Consent banner", () => {
             )
           ).to.eql(expected);
           expect(preferenceInterception.request.body.method).to.eql(
-            ConsentMethod.reject
+            ConsentMethod.REJECT
           );
         });
       });

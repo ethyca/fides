@@ -6,7 +6,7 @@ function assertDismissCalled() {
     .should("have.been.calledOnce")
     .its("lastCall.args.0.detail.extraDetails.consentMethod")
     .then((consentMethod) => {
-      expect(consentMethod).to.eql(ConsentMethod.dismiss);
+      expect(consentMethod).to.eql(ConsentMethod.DISMISS);
     });
 
   cy.wait("@patchPrivacyPreference");
@@ -32,6 +32,8 @@ describe("Banner and overlay dismissal", () => {
         cy.get("#fides-banner").should("not.be.visible");
 
         assertDismissCalled();
+        // TODO: assert cookie updated
+        // TODO: reload and ensure banner is displayed again
       });
 
       it("Should dismiss the banner by clicking outside", () => {
