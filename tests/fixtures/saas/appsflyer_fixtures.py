@@ -40,12 +40,12 @@ def appsflyer_erasure_identity_email() -> str:
 
 @pytest.fixture
 def appsflyer_external_references() -> Dict[str, Any]:
-    return {"appsflyer_user_id": "4412345-4963-9234-632156789012"}
+    return {"appsflyer_user_id": "518f723a-cfca-4916-ae1f-4a4cc0cf91a3"}
 
 
 @pytest.fixture
 def appsflyer_erasure_external_references() -> Dict[str, Any]:
-    return {"appsflyer_user_id": "4412345-4963-9234-632156780152"}
+    return {"appsflyer_user_id": "0ccce139-d5a5-49d7-b53d-0cb9df417f33"}
 
 
 @pytest.fixture

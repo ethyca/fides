@@ -29,7 +29,7 @@ def appsflyer_user_read(
     app_ids = input_data.get("app_id")  #  lists
     import pdb
 
-    pdb.set_trace()
+    # pdb.set_trace()
     # join these together - such that we have a user_id paired with each app id
     users = []
     for app_id in app_ids:
