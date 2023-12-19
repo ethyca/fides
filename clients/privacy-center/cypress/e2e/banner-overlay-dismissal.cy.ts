@@ -2,11 +2,6 @@ import { ConsentMethod, CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
 import { stubConfig } from "../support/stubs";
 
 describe("Banner and modal dismissal", () => {
-  interface TestCaseOptions {
-    tcfEnabled: boolean,
-    preventDismissal: boolean,
-  };
-
   // Helper function for some test case assertions
   function assertDismissCalled() {
     cy.get("@FidesUpdated")
@@ -31,28 +26,29 @@ describe("Banner and modal dismissal", () => {
   }
 
   // Test all combinations of TCF enabled/disabled and prevent dismissal enabled/disabled
-  [
+  interface TestCaseOptions {
+    tcfEnabled: boolean,
+    preventDismissal: boolean,
+  };
+
+  const testCases: TestCaseOptions[] = [
     { tcfEnabled: false, preventDismissal: false },
     { tcfEnabled: false, preventDismissal: true },
     { tcfEnabled: true, preventDismissal: false },
     { tcfEnabled: true, preventDismissal: true },
-  ].forEach(({ tcfEnabled, preventDismissal }) => {
+  ];
+
+  testCases.forEach(({ tcfEnabled, preventDismissal }) => {
     describe(`when tcfEnabled is ${tcfEnabled} and preventDismissal is ${preventDismissal}`, () => {
       beforeEach(() => {
         if (!tcfEnabled) {
           stubConfig({
-            options: {
-              tcfEnabled: false,
-              preventDismissal: preventDismissal,
-            },
+            options: { tcfEnabled, preventDismissal },
           });
         } else {
           cy.fixture("consent/experience_tcf.json").then((experience) => {
             stubConfig({
-              options: {
-                tcfEnabled: true,
-                preventDismissal: preventDismissal,
-              },
+              options: { tcfEnabled, preventDismissal },
               experience: experience.items[0],
             });
           });

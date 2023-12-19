@@ -640,7 +640,9 @@ describe("Fides-js TCF", () => {
           const cookieKeyConsent: FidesCookie = JSON.parse(
             decodeURIComponent(cookie!.value)
           );
-          expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(ConsentMethod.ACCEPT);
+          expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+            ConsentMethod.ACCEPT
+          );
           assertTcOptIns({
             cookie: cookieKeyConsent,
             modelType: "purposeConsents",
@@ -754,7 +756,9 @@ describe("Fides-js TCF", () => {
             const cookieKeyConsent: FidesCookie = JSON.parse(
               decodeURIComponent(cookie!.value)
             );
-            expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(ConsentMethod.REJECT);
+            expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+              ConsentMethod.REJECT
+            );
             assertTcOptIns({
               cookie: cookieKeyConsent,
               modelType: "purposeConsents",
@@ -875,7 +879,9 @@ describe("Fides-js TCF", () => {
           const cookieKeyConsent: FidesCookie = JSON.parse(
             decodeURIComponent(cookie!.value)
           );
-          expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(ConsentMethod.SAVE);
+          expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+            ConsentMethod.SAVE
+          );
           assertTcOptIns({
             cookie: cookieKeyConsent,
             modelType: "purposeConsents",
@@ -1015,7 +1021,9 @@ describe("Fides-js TCF", () => {
             const cookieKeyConsent: FidesCookie = JSON.parse(
               decodeURIComponent(cookie!.value)
             );
-            expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(ConsentMethod.REJECT);
+            expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+              ConsentMethod.REJECT
+            );
             assertTcOptIns({
               cookie: cookieKeyConsent,
               modelType: "purposeConsents",
@@ -1255,7 +1263,9 @@ describe("Fides-js TCF", () => {
         const cookieKeyConsent: FidesCookie = JSON.parse(
           decodeURIComponent(cookie!.value)
         );
-        expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(ConsentMethod.SAVE);
+        expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+          ConsentMethod.SAVE
+        );
         assertTcOptIns({
           cookie: cookieKeyConsent,
           modelType: "purposeConsents",

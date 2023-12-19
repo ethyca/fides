@@ -429,7 +429,6 @@ export enum ConsentMethod {
   INDIVIDUAL_NOTICE = "individual_notice",
 }
 
-
 export type PrivacyPreferencesRequest = {
   browser_identity: Identity;
   code?: string;

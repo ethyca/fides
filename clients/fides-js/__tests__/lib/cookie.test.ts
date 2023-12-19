@@ -137,7 +137,7 @@ describe("getOrMakeFidesCookie", () => {
         // extend the cookie object with some extra details on fides_meta
         const extendedFidesMeta: CookieMeta = {
           ...V090_COOKIE_OBJECT.fides_meta,
-          ...{ consentMethod: "accept", otherMetadata: "foo"}
+          ...{ consentMethod: "accept", otherMetadata: "foo" },
         };
         const cookieObject = {
           ...V090_COOKIE_OBJECT,

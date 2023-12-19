@@ -66,7 +66,7 @@ export const dispatchFidesEvent = (
   type: FidesEventType,
   cookie: FidesCookie,
   debug: boolean,
-  extraDetails?: FidesEventExtraDetails,
+  extraDetails?: FidesEventExtraDetails
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     const event = new CustomEvent(type, {

@@ -132,6 +132,7 @@ describe("Privacy notice driven consent", () => {
               cookie.identity.fides_user_device_id
             );
             const expectedConsent = { data_sales: true, advertising: true };
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             const { consent, fides_meta } = cookie;
             expect(consent).to.eql(expectedConsent);
             expect(fides_meta).to.have.property("createdAt");
