@@ -53,12 +53,17 @@ const SubgroupModal = ({
     };
   }, [locations, showRegulatedOnly]);
 
-  const { numSelected, allSelected, handleToggleAll, handleToggleSelection } =
-    usePicker({
-      items: filteredLocations,
-      selected: draftSelected,
-      onChange: setDraftSelected,
-    });
+  const { allSelected, handleToggleAll, handleToggleSelection } = usePicker({
+    items: filteredLocations,
+    selected: draftSelected,
+    onChange: setDraftSelected,
+  });
+
+  // If a parent is selected, "United States", do not count it towards "num selected" but do
+  // count its children
+  const numSelected = selected.filter(
+    (s) => !Object.keys(locationsByGroup).includes(s)
+  ).length;
 
   const handleApply = () => {
     const newSelected = new Set(draftSelected);

@@ -69,6 +69,10 @@ const LocationPickerCard = ({
     handleChange(Array.from(newSelections));
   };
 
+  const numSelected = selected.filter(
+    (s) => !locationsWithoutGroups.find((l) => l.id === s)
+  ).length;
+
   return (
     <>
       <PickerCard
@@ -79,6 +83,7 @@ const LocationPickerCard = ({
         onViewMore={() => {
           disclosure.onOpen();
         }}
+        numSelected={numSelected}
         toggle={
           <RegulatedToggle
             id={`${title}-regulated`}
