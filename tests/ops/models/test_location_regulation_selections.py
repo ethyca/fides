@@ -7,6 +7,15 @@ from sqlalchemy.orm import Session
 from fides.api.models.location_regulation_selections import LocationRegulationSelections
 
 
+@pytest.fixture(scope="function", autouse=True)
+def reset_location_regulation_selections(db):
+    LocationRegulationSelections.set_selected_locations(db, [])
+    LocationRegulationSelections.set_selected_regulations(db, [])
+    yield
+    LocationRegulationSelections.set_selected_locations(db, [])
+    LocationRegulationSelections.set_selected_regulations(db, [])
+
+
 class TestLocationRegulationSelections:
     @pytest.fixture
     def data_dict(self) -> Dict:

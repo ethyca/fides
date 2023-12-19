@@ -2,7 +2,18 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterable, Set
 
-from sqlalchemy import ARRAY, Boolean, CheckConstraint, Column, String
+from sqlalchemy import (
+    ARRAY,
+    Boolean,
+    CheckConstraint,
+    Column,
+    String,
+    UniqueConstraint,
+    insert,
+    select,
+    update,
+)
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from fides.api.db.base_class import Base
@@ -27,10 +38,38 @@ class LocationRegulationSelections(Base):
         default={},
     )
     single_row = Column(
-        Boolean, default=True, nullable=False
+        Boolean,
+        default=True,
+        nullable=False,
+        unique=True,
     )  # used to constrain table to one row
 
     CheckConstraint("single_row", name="single_row_check")
+    UniqueConstraint("single_row", name="single_row_unique")
+
+    @classmethod
+    async def create_or_update_async(  # type: ignore[override]
+        cls,
+        async_session: Session,
+        *,
+        data: Dict[str, Any],
+    ) -> LocationRegulationSelections:
+        """
+        Creates the selections record if none exists, or updates the existing record.
+
+        Here we effectively prevent more than a single record in the table.
+        """
+        async with async_session.begin():
+            result = await async_session.execute(select(cls))
+            existing_record = result.scalars().first()
+            if existing_record:
+                await async_session.execute(
+                    update(cls).where(cls.id == existing_record.id).values(data)
+                )
+            else:
+                await async_session.execute(insert(cls).values(data))
+            result = await async_session.execute(select(cls))
+            return result.scalars().first()
 
     @classmethod
     def create_or_update(  # type: ignore[override]
@@ -59,9 +98,20 @@ class LocationRegulationSelections(Base):
         cls,
         db: Session,
         selected_locations: Iterable[str],
-    ) -> LocationRegulationSelections:
+    ) -> None:
         """Utility method to set the selected locations"""
         cls.create_or_update(db, data={"selected_locations": set(selected_locations)})
+
+    @classmethod
+    async def set_selected_locations_async(
+        cls,
+        async_session: Session,
+        selected_locations: Iterable[str],
+    ) -> None:
+        """Utility method to set the selected locations"""
+        await cls.create_or_update_async(
+            async_session, data={"selected_locations": set(selected_locations)}
+        )
 
     @classmethod
     def get_selected_locations(
@@ -77,14 +127,40 @@ class LocationRegulationSelections(Base):
         return set()
 
     @classmethod
+    async def get_selected_locations_async(
+        cls,
+        async_session: AsyncSession,
+    ) -> Set[str]:
+        """
+        Utility method to get the selected_locations, returned as a Set.
+        """
+        async with async_session.begin():
+            results = await async_session.execute(select(cls))
+            record = results.scalars().first()
+            if record:
+                return set(record.selected_locations)
+            return set()
+
+    @classmethod
     def set_selected_regulations(
         cls,
         db: Session,
         selected_regulations: Iterable[str],
-    ) -> LocationRegulationSelections:
+    ) -> None:
         """Utility method to set the selected regulations"""
         cls.create_or_update(
             db, data={"selected_regulations": set(selected_regulations)}
+        )
+
+    @classmethod
+    async def set_selected_regulations_async(
+        cls,
+        async_session: AsyncSession,
+        selected_regulations: Iterable[str],
+    ) -> None:
+        """Utility method to set the selected regulations"""
+        await cls.create_or_update_async(
+            async_session, data={"selected_regulations": set(selected_regulations)}
         )
 
     @classmethod
@@ -99,3 +175,18 @@ class LocationRegulationSelections(Base):
         if record:
             return set(record.selected_regulations)
         return set()
+
+    @classmethod
+    async def get_selected_regulations_async(
+        cls,
+        async_session: AsyncSession,
+    ) -> Set[str]:
+        """
+        Utility method to get the selected_regulations, returned as a Set.
+        """
+        async with async_session.begin():
+            results = await async_session.execute(select(cls))
+            record = results.scalars().first()
+            if record:
+                return set(record.selected_regulations)
+            return set()
