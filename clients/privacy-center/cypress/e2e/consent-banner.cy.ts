@@ -142,6 +142,9 @@ describe("Consent banner", () => {
             expect(cookieKeyConsent.consent)
               .property(PRIVACY_NOTICE_KEY_3)
               .is.eql(true);
+            expect(cookieKeyConsent.fides_meta)
+              .property("consentMethod")
+              .is.eql(ConsentMethod.ACCEPT);
           });
           cy.contains("button", "Accept Test").should("not.be.visible");
         });
@@ -164,6 +167,9 @@ describe("Consent banner", () => {
             expect(cookieKeyConsent.consent)
               .property(PRIVACY_NOTICE_KEY_3)
               .is.eql(false);
+            expect(cookieKeyConsent.fides_meta)
+              .property("consentMethod")
+              .is.eql(ConsentMethod.REJECT);
           });
         });
       });
@@ -251,6 +257,9 @@ describe("Consent banner", () => {
               expect(cookieKeyConsent.consent)
                 .property(PRIVACY_NOTICE_KEY_3)
                 .is.eql(true);
+              expect(cookieKeyConsent.fides_meta)
+                .property("consentMethod")
+                .is.eql(ConsentMethod.SAVE);
             });
           });
 
@@ -683,6 +692,9 @@ describe("Consent banner", () => {
             expect(cookieKeyConsent.consent)
               .property(PRIVACY_NOTICE_KEY_1)
               .is.eql(false);
+            expect(cookieKeyConsent.fides_meta)
+              .property("consentMethod")
+              .is.eql(ConsentMethod.GPC);
           });
         });
       });
