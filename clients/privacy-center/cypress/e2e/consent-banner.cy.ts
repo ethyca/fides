@@ -1146,7 +1146,6 @@ describe("Consent banner", () => {
                 has_gpc_flag: true,
                 consent_mechanism: ConsentMechanism.OPT_IN,
                 default_preference: UserConsentPreference.OPT_IN,
-                current_preference: UserConsentPreference.OPT_IN,
               }),
             ],
           },
@@ -1686,7 +1685,6 @@ describe("Consent banner", () => {
               has_gpc_flag: true,
               consent_mechanism: ConsentMechanism.OPT_OUT,
               default_preference: UserConsentPreference.OPT_IN,
-              current_preference: undefined,
             }),
             mockPrivacyNotice({
               name: "Notice only",
@@ -1696,7 +1694,6 @@ describe("Consent banner", () => {
               has_gpc_flag: true,
               consent_mechanism: ConsentMechanism.NOTICE_ONLY,
               default_preference: UserConsentPreference.ACKNOWLEDGE,
-              current_preference: UserConsentPreference.ACKNOWLEDGE,
             }),
             mockPrivacyNotice({
               name: "Overridden",
@@ -1704,7 +1701,6 @@ describe("Consent banner", () => {
               has_gpc_flag: true,
               consent_mechanism: ConsentMechanism.OPT_OUT,
               default_preference: UserConsentPreference.OPT_IN,
-              current_preference: UserConsentPreference.OPT_IN,
             }),
           ],
         },

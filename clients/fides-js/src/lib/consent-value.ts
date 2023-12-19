@@ -25,9 +25,6 @@ export const resolveConsentValue = (
   notice: PrivacyNotice,
   context: ConsentContext
 ): boolean => {
-  if (notice.current_preference) {
-    return transformUserPreferenceToBoolean(notice.current_preference);
-  }
   if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
     return true;
   }

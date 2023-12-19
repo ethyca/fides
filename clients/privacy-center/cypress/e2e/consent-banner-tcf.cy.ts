@@ -70,10 +70,10 @@ const checkDefaultExperienceRender = () => {
   // Purposes
   // Check consents first
   cy.getByTestId(`toggle-${PURPOSE_4.name}`).within(() => {
-    cy.get("input").should("be.checked");
+    cy.get("input").should("not.be.checked");
   });
   cy.getByTestId(`toggle-${PURPOSE_9.name}`).within(() => {
-    cy.get("input").should("be.checked");
+    cy.get("input").should("not.be.checked");
   });
   cy.get(".fides-record-header").contains("Special purposes");
   cy.get(".fides-notice-toggle-title").contains(SPECIAL_PURPOSE_1.name);
@@ -771,14 +771,17 @@ describe("Fides-js TCF", () => {
 
       it("can opt in to some and opt out of others", () => {
         cy.getByTestId("consent-modal").within(() => {
+          // opt in to purpose 4
           cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
           cy.get("#fides-tab-Features").click();
+          // opt in to special feat 1
           cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).click();
 
           cy.get("#fides-tab-Vendors").click();
           cy.get("#fides-panel-Vendors").within(() => {
             cy.get("button").contains("Legitimate interest").click();
           });
+          // opt out of system 1 (default is opt-in)
           cy.getByTestId(`toggle-${SYSTEM_1.name}`).click();
           cy.get("button").contains("Save").click();
           cy.get("@FidesUIChanged").its("callCount").should("equal", 3);
@@ -788,19 +791,19 @@ describe("Fides-js TCF", () => {
             expect(body.purpose_consent_preferences).to.eql([
               {
                 id: PURPOSE_4.id,
-                preference: "opt_out",
+                preference: "opt_in",
               },
               {
                 id: PURPOSE_6.id,
-                preference: "opt_in",
+                preference: "opt_out",
               },
               {
                 id: PURPOSE_7.id,
-                preference: "opt_in",
+                preference: "opt_out",
               },
               {
                 id: PURPOSE_9.id,
-                preference: "opt_in",
+                preference: "opt_out",
               },
             ]);
             expect(body.purpose_legitimate_interests_preferences).to.eql([
@@ -841,7 +844,7 @@ describe("Fides-js TCF", () => {
           assertTcOptIns({
             cookie: cookieKeyConsent,
             modelType: "purposeConsents",
-            ids: [PURPOSE_9.id, PURPOSE_6.id, PURPOSE_7.id],
+            ids: [PURPOSE_4.id],
           });
           assertTcOptIns({
             cookie: cookieKeyConsent,
@@ -1187,10 +1190,10 @@ describe("Fides-js TCF", () => {
         const { body } = interception.request;
         expect(interception.request.body.method).to.eql(ConsentMethod.save);
         expect(body.purpose_consent_preferences).to.eql([
-          { id: PURPOSE_4.id, preference: "opt_out" },
-          { id: PURPOSE_6.id, preference: "opt_in" },
-          { id: PURPOSE_7.id, preference: "opt_in" },
-          { id: PURPOSE_9.id, preference: "opt_in" },
+          { id: PURPOSE_4.id, preference: "opt_in" },
+          { id: PURPOSE_6.id, preference: "opt_out" },
+          { id: PURPOSE_7.id, preference: "opt_out" },
+          { id: PURPOSE_9.id, preference: "opt_out" },
         ]);
         expect(body.purpose_legitimate_interests_preferences).to.eql([
           { id: PURPOSE_2.id, preference: "opt_in" },
@@ -1219,7 +1222,7 @@ describe("Fides-js TCF", () => {
         assertTcOptIns({
           cookie: cookieKeyConsent,
           modelType: "purposeConsents",
-          ids: [PURPOSE_9.id, PURPOSE_6.id, PURPOSE_7.id],
+          ids: [PURPOSE_4.id],
         });
         assertTcOptIns({
           cookie: cookieKeyConsent,
@@ -2067,18 +2070,7 @@ describe("Fides-js TCF", () => {
           expect(tcData.tcString).to.be.a("string");
           expect(tcData.tcString).to.not.contain("invalid");
           expect(tcData.eventStatus).to.eql("cmpuishown");
-          expect(tcData.purpose.consents).to.eql({
-            [PURPOSE_2.id]: true,
-            [PURPOSE_4.id]: true,
-            [PURPOSE_6.id]: true,
-            [PURPOSE_7.id]: true,
-            [PURPOSE_9.id]: true,
-            1: false,
-            2: false,
-            3: false,
-            5: false,
-            8: false,
-          });
+          expect(tcData.purpose.consents).to.eql({});
           expect(tcData.purpose.legitimateInterests).to.eql({
             [PURPOSE_2.id]: true,
             1: false,

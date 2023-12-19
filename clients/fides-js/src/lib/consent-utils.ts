@@ -12,7 +12,7 @@ import {
   UserGeolocation,
 } from "./consent-types";
 import { EXPERIENCE_KEYS_WITH_PREFERENCES } from "./tcf/constants";
-import { TCFPurposeConsentRecord } from "./tcf/types";
+import {TcfModelsRecord, TCFPurposeConsentRecord} from "./tcf/types";
 import { VALID_ISO_3166_LOCATION_REGEX } from "./consent-constants";
 import type { FidesCookie } from "./cookie";
 
@@ -217,23 +217,11 @@ export const experienceIsValid = (
   return true;
 };
 
-/** Returns true if a list of records has any current preference at all */
-const hasCurrentPreference = (
-  records: Pick<TCFPurposeConsentRecord, "current_preference">[] | undefined
-) => {
-  if (!records || records.length === 0) {
-    return false;
-  }
-  return records.some((record) => record.current_preference);
-};
-
 /**
- * Returns true if the user has any saved TCF preferences
+ * Returns default TCF preference
  */
-export const hasSavedTcfPreferences = (experience: PrivacyExperience) =>
-  EXPERIENCE_KEYS_WITH_PREFERENCES.some((key) =>
-    hasCurrentPreference(experience[key])
-  );
+export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
+    tcfObject.default_preference ?? UserConsentPreference.OPT_OUT
 
 /**
  * Returns true if there are notices in the experience that require a user preference
@@ -251,6 +239,8 @@ export const shouldResurfaceConsent = (
   }
   return Boolean(
     experience?.privacy_notices?.some(
+        // fixme- since we no longer have current_preference,
+        // we'll need to match up notice key with cookie vals to see if there are any missing consent on the cookie?
       (notice) => notice.current_preference == null
     )
   );
