@@ -27,9 +27,9 @@ describe("Banner and modal dismissal", () => {
 
   // Test all combinations of TCF enabled/disabled and prevent dismissal enabled/disabled
   interface TestCaseOptions {
-    tcfEnabled: boolean,
-    preventDismissal: boolean,
-  };
+    tcfEnabled: boolean;
+    preventDismissal: boolean;
+  }
 
   const testCases: TestCaseOptions[] = [
     { tcfEnabled: false, preventDismissal: false },
@@ -117,7 +117,9 @@ describe("Banner and modal dismissal", () => {
         describe("when using the banner", () => {
           it("should not show the x button", () => {
             cy.get("#fides-banner").should("be.visible");
-            cy.get("#fides-banner .fides-close-button").should("not.be.visible");
+            cy.get("#fides-banner .fides-close-button").should(
+              "not.be.visible"
+            );
             cy.get("@FidesUpdated").should("not.have.been.called");
           });
 
@@ -141,7 +143,9 @@ describe("Banner and modal dismissal", () => {
             cy.get("#fides-banner").should("be.visible");
             cy.getByTestId("Manage preferences-btn").click();
             cy.get(".fides-modal-content").should("be.visible");
-            cy.get(".fides-modal-content .fides-close-button").should("not.be.visible");
+            cy.get(".fides-modal-content .fides-close-button").should(
+              "not.be.visible"
+            );
             cy.get("@FidesUpdated").should("not.have.been.called");
           });
 
