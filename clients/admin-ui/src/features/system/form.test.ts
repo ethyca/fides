@@ -38,7 +38,7 @@ describe("transformFormValuesToSystem", () => {
     expect(payload).not.toHaveProperty("joint_controller_info");
   });
 
-  it("should keep joint controller into and adminitstrating department if not empty", () => {
+  it("should keep joint controller into and administrating department if not empty", () => {
     const formValues = {
       system_type: "",
       fides_key: "",
