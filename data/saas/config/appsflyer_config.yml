@@ -94,3 +94,5 @@ saas_config:
                   direction: from
 # Date is hardcoded in this case - dates need to be RFC3339 compliant - example 2018-05-01T11:00:00Z
 # <privacy_request_id> generates a string but it is not UUID v4 compatible so hardcoded at the moment
+# In order for the non strict erasure to complete successfully we must have a unique UUID v4 string for the
+# subject request id as well as a different unique UUID v4 for the appsflyer id
