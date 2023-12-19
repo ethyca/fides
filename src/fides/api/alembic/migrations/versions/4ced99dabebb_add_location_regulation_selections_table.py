@@ -33,9 +33,14 @@ def upgrade():
         ),
         sa.Column("selected_locations", sa.ARRAY(sa.String()), nullable=False),
         sa.Column("selected_regulations", sa.ARRAY(sa.String()), nullable=False),
-        sa.Column("single_row", sa.Boolean(), nullable=False),
+        sa.Column(
+            "single_row",
+            sa.Boolean(),
+            nullable=False,
+        ),
         sa.PrimaryKeyConstraint("id"),
         sa.CheckConstraint("single_row", name="single_row_check"),
+        sa.UniqueConstraint("single_row", name="single_row_unique"),
     )
     op.create_index(
         op.f("ix_locationregulationselections_id"),
