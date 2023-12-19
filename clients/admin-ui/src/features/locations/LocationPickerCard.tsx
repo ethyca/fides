@@ -1,10 +1,10 @@
-import { Flex, FormLabel, Switch, useDisclosure } from "@fidesui/react";
+import { useDisclosure } from "@fidesui/react";
 import { useState } from "react";
 
 import PickerCard from "~/features/common/PickerCard";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { Location, Selection } from "~/types/api";
 
+import RegulatedToggle from "./RegulatedToggle";
 import SubgroupModal from "./SubgroupModal";
 
 const LocationPickerCard = ({
@@ -46,20 +46,11 @@ const LocationPickerCard = ({
           disclosure.onOpen();
         }}
         toggle={
-          <Flex alignItems="center" gap="8px">
-            <Switch
-              isChecked={showRegulatedOnly}
-              size="sm"
-              onChange={() => setShowRegulatedOnly(!showRegulatedOnly)}
-              colorScheme="complimentary"
-              id={`${title}-regulated`}
-              data-testid="regulated-toggle"
-            />
-            <FormLabel fontSize="sm" m={0} htmlFor={`${title}-regulated`}>
-              Regulated
-            </FormLabel>
-            <QuestionTooltip label="Toggle on to see only locations in this region with privacy regulations supported by Fides" />
-          </Flex>
+          <RegulatedToggle
+            id={`${title}-regulated`}
+            isChecked={showRegulatedOnly}
+            onChange={() => setShowRegulatedOnly(!showRegulatedOnly)}
+          />
         }
       />
       <SubgroupModal
@@ -67,10 +58,10 @@ const LocationPickerCard = ({
         isOpen={disclosure.isOpen}
         onClose={disclosure.onClose}
         selected={selected}
+        onChange={handleChange}
         // Rerender if a selection changes in this component so that the checkboxes
         // in the modal stay up to date
         key={`subgroup-modal-selected-${selected.length}`}
-        onChange={handleChange}
       />
     </>
   );

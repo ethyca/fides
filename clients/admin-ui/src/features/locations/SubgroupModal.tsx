@@ -4,10 +4,12 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  Badge,
   Box,
   Button,
   ButtonGroup,
   Checkbox,
+  Flex,
   Modal,
   ModalBody,
   ModalContent,
@@ -20,6 +22,7 @@ import { useMemo, useState } from "react";
 
 import { Location } from "~/types/api";
 
+import RegulatedToggle from "./RegulatedToggle";
 import { getLocationNameFromId, groupByBelongsTo } from "./transformations";
 
 const SubgroupModal = ({
@@ -36,9 +39,21 @@ const SubgroupModal = ({
   onChange: (newSelected: Array<string>) => void;
 }) => {
   const [draftSelected, setDraftSelected] = useState(selected);
-  const locationsByGroup = useMemo(
-    () => groupByBelongsTo(locations),
-    [locations]
+  const [showRegulatedOnly, setShowRegulatedOnly] = useState(false);
+
+  const { filteredLocations, locationsByGroup } = useMemo(() => {
+    const filtered = showRegulatedOnly
+      ? locations.filter((l) => l.regulation?.length)
+      : locations;
+    return {
+      locationsByGroup: groupByBelongsTo(filtered),
+      filteredLocations: filtered,
+    };
+  }, [locations, showRegulatedOnly]);
+
+  const numSelected = draftSelected.length;
+  const allSelected = filteredLocations.every((location) =>
+    draftSelected.includes(location.id)
   );
 
   const handleCheck = (id: string) => {
@@ -49,10 +64,21 @@ const SubgroupModal = ({
     }
   };
 
+  const handleCheckAll = () => {
+    if (allSelected) {
+      setDraftSelected([]);
+    } else {
+      setDraftSelected(filteredLocations.map((l) => l.id));
+    }
+  };
+
   const handleApply = () => {
     onChange(draftSelected);
     onClose();
   };
+
+  const continentName = locations[0].continent;
+  const numSubgroups = Object.keys(locationsByGroup).length;
 
   return (
     <Modal size="2xl" isOpen={isOpen} onClose={onClose} isCentered>
@@ -61,9 +87,9 @@ const SubgroupModal = ({
         <ModalHeader
           fontSize="md"
           fontWeight="semibold"
-          pt={6}
+          pt={5}
           paddingInline={6}
-          pb={3}
+          pb={5}
           backgroundColor="gray.50"
           borderTopRadius="md"
           borderBottom="1px solid"
@@ -72,12 +98,45 @@ const SubgroupModal = ({
           Select locations
         </ModalHeader>
         <ModalBody p={6}>
-          <Accordion allowToggle allowMultiple index={[0]}>
+          <Flex justifyContent="space-between" mb={4}>
+            <Box>
+              <Checkbox
+                colorScheme="complimentary"
+                size="md"
+                fontWeight={600}
+                isChecked={allSelected}
+                onChange={handleCheckAll}
+                mr={3}
+              >
+                {continentName}
+              </Checkbox>
+              {numSelected > 0 ? (
+                <Badge
+                  colorScheme="purple"
+                  variant="solid"
+                  width="fit-content"
+                  data-testid="num-selected-badge"
+                >
+                  {numSelected} selected
+                </Badge>
+              ) : null}
+            </Box>
+            <RegulatedToggle
+              id={`${continentName}-modal-regulated`}
+              isChecked={showRegulatedOnly}
+              onChange={() => setShowRegulatedOnly(!showRegulatedOnly)}
+            />
+          </Flex>
+          <Accordion
+            allowToggle
+            allowMultiple
+            defaultIndex={[...Array(numSubgroups).keys()]}
+          >
             {Object.entries(locationsByGroup).map(([group, subLocations]) => (
               <AccordionItem key={group}>
                 <h2>
                   <AccordionButton>
-                    <Box as="span" flex="1" textAlign="left">
+                    <Box as="span" flex="1" textAlign="left" fontWeight={600}>
                       {getLocationNameFromId(group, locations)}
                     </Box>
                     <AccordionIcon />
