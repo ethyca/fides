@@ -141,11 +141,6 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
       },
     },
     data_sharing: {
-      // See question above: L34
-      //   us: {
-      //     gpp_notice_fields: [UsNatV1Field.SHARING_NOTICE],
-      //     gpp_mechanism_fields: [],
-      //   },
       us_ut: {
         gpp_notice_fields: [UsUtV1Field.SHARING_NOTICE],
         gpp_mechanism_fields: [],
@@ -164,11 +159,6 @@ export const NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS: NoticeKeyToFidesRegionGppFie
       },
     },
     data_sales: {
-      // See question above: L34
-      //   us: {
-      //     gpp_notice_fields: [UsNatV1Field.SALE_OPT_OUT_NOTICE],
-      //     gpp_mechanism_fields: [UsNatV1Field.SALE_OPT_OUT],
-      //   },
       us_co: {
         gpp_notice_fields: [UsCoV1Field.SALE_OPT_OUT_NOTICE],
         gpp_mechanism_fields: [

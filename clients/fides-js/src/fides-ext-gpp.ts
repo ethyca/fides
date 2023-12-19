@@ -67,7 +67,6 @@ const setTcString = (event: FidesEvent, cmpApi: CmpApi) => {
 /** From our options, derive what APIs of GPP are applicable */
 const getSupportedApis = () => {
   const supportedApis: string[] = [];
-  // QUESTION: or should this come from GPP config?
   if (window.Fides.options.tcfEnabled) {
     supportedApis.push(`${TcfEuV2.ID}:${TcfEuV2.NAME}`);
     return supportedApis;
