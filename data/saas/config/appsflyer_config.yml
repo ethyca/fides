@@ -11,11 +11,14 @@ saas_config:
       default_value: hq1.appsflyer.com
       description: The Appsflyer domain. Default hq1.appsflyer.com
     - name: identity_value
-      description: The appsflyer_id for the user we are submitting the request for.
-    # identity value is one we need to get from the customer
+      description: The location in your owned database where you store Appsflyer IDs
+    - name: API token
+      label: Appsflyer API Token
+      description: Appsflyer API Token (https://support.appsflyer.com/hc/en-us/articles/360004562377#retrieving-api-tokens)
 
   external_references:
     - name: appsflyer_property_id
+      label: Appsflyer App Name
       description: Retrieved from the app list endpoint, a list of application names to use with erasure request
 
   client_config:
@@ -98,4 +101,3 @@ saas_config:
 # should probably also set submitted time to something like 'now' hardcoding for now
 
 ### Marc you are not done yet. Remove this comment only when you're DONE with this config
-### Remember to ensure that the descriptions are included and the user guide!

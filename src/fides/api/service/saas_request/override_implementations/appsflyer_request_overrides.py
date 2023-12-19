@@ -25,11 +25,13 @@ def appsflyer_user_read(
     platform information for use with erasure endpoint.
     """
 
-    app_ids = input_data.get("app_id")
     user_id = input_data.get("user_id")
+    app_ids = input_data.get("app_id")
 
-    # join these together
-    users = []
+    # join these together - such that we have a user_id paired with each app id
+    for app_id in app_ids:
+        users = []
+        users.append({"user_id": user_id, "app_id": app_id})
 
     # [{"id": "123", "app_id": "fides"}, ..., ..., ...]
 
