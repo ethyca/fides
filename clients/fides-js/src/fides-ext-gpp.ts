@@ -11,6 +11,7 @@ import {
   CmpDisplayStatus,
   CmpStatus,
   SignalStatus,
+  TcfEuV2,
 } from "@iabgpp/cmpapi";
 import { makeStub } from "./lib/gpp/stub";
 import { extractTCStringForCmpApi } from "./lib/tcf/events";
@@ -23,10 +24,13 @@ import type { Fides } from "./lib/initialize";
 import type { OverrideOptions } from "./lib/consent-types";
 import { GppFunction } from "./lib/gpp/types";
 import { FidesEvent } from "./fides";
+import {
+  setGppNoticesProvidedFromExperience,
+  setGppOptOutsFromCookie,
+} from "./lib/gpp/us-notices";
+import { FIDES_REGION_TO_GPP_SECTION } from "./lib/gpp/constants";
 
 const CMP_VERSION = 1;
-
-const TCF_SECTION_ID = 2;
 
 declare global {
   interface Window {
@@ -41,32 +45,72 @@ declare global {
 }
 
 /**
- * Wrapper around setting a TC string on the CMP API object
+ * Wrapper around setting a TC string on the CMP API object.
+ * Returns whether or not the TC string was set.
  * @param event: FidesEvent
  * @param cmpApi: the CMP API model
  */
 const setTcString = (event: FidesEvent, cmpApi: CmpApi) => {
-  const tcString = extractTCStringForCmpApi(event);
-  if (tcString) {
-    // Workaround for bug in base library https://github.com/IABTechLab/iabgpp-es/issues/35
-    cmpApi.setFieldValueBySectionId(TCF_SECTION_ID, "CmpId", ETHYCA_CMP_ID);
-    cmpApi.setSectionStringById(TCF_SECTION_ID, tcString);
+  if (!window.Fides.options.tcfEnabled) {
+    return false;
   }
+  const tcString = extractTCStringForCmpApi(event);
+  if (!tcString) {
+    return false;
+  }
+  // Workaround for bug in base library https://github.com/IABTechLab/iabgpp-es/issues/35
+  cmpApi.setFieldValueBySectionId(TcfEuV2.ID, "CmpId", ETHYCA_CMP_ID);
+  cmpApi.setSectionStringById(TcfEuV2.ID, tcString);
+  return true;
+};
+
+/** From our options, derive what APIs of GPP are applicable */
+const getSupportedApis = () => {
+  const supportedApis: string[] = [];
+  if (window.Fides.options.tcfEnabled) {
+    supportedApis.push(`${TcfEuV2.ID}:${TcfEuV2.NAME}`);
+    return supportedApis;
+  }
+  if (isPrivacyExperience(window.Fides.experience)) {
+    const { gpp_settings: gppSettings } = window.Fides.experience;
+    if (gppSettings && gppSettings.enabled && gppSettings.regions) {
+      const gppSections = Object.values(FIDES_REGION_TO_GPP_SECTION);
+      gppSettings.regions.forEach((region) => {
+        const section = gppSections.find((d) => d.prefix === region);
+        if (section) {
+          supportedApis.push(`${section.id}:${section.prefix}`);
+        }
+      });
+    }
+  }
+  return supportedApis;
 };
 
 export const initializeGppCmpApi = () => {
   makeStub();
   const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION);
-  cmpApi.setApplicableSections([TCF_SECTION_ID]);
   cmpApi.setCmpStatus(CmpStatus.LOADED);
   // If consent does not need to be resurfaced, then we can set the signal to Ready here
   window.addEventListener("FidesInitialized", (event) => {
     const { experience } = window.Fides;
+    cmpApi.setSupportedAPIs(getSupportedApis());
     if (
       isPrivacyExperience(experience) &&
       !shouldResurfaceConsent(experience, event.detail)
     ) {
-      setTcString(event, cmpApi);
+      const tcSet = setTcString(event, cmpApi);
+      if (tcSet) {
+        cmpApi.setApplicableSections([TcfEuV2.ID]);
+      }
+      setGppNoticesProvidedFromExperience({ cmpApi, experience });
+      const sectionsChanged = setGppOptOutsFromCookie({
+        cmpApi,
+        cookie: event.detail,
+        region: experience.region,
+      });
+      if (sectionsChanged.length) {
+        cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
+      }
       cmpApi.setSignalStatus(SignalStatus.READY);
     }
   });
@@ -74,6 +118,16 @@ export const initializeGppCmpApi = () => {
   window.addEventListener("FidesUIShown", () => {
     cmpApi.setSignalStatus(SignalStatus.NOT_READY);
     cmpApi.setCmpDisplayStatus(CmpDisplayStatus.VISIBLE);
+
+    // Set US GPP notice fields
+    const { experience } = window.Fides;
+    if (isPrivacyExperience(experience)) {
+      const sectionsChanged = setGppNoticesProvidedFromExperience({
+        cmpApi,
+        experience,
+      });
+      cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
+    }
   });
 
   window.addEventListener("FidesModalClosed", (event) => {
@@ -91,8 +145,24 @@ export const initializeGppCmpApi = () => {
   window.addEventListener("FidesUpdated", (event) => {
     // In our flows, whenever FidesUpdated fires, the UI has closed
     cmpApi.setCmpDisplayStatus(CmpDisplayStatus.HIDDEN);
-    setTcString(event, cmpApi);
-    cmpApi.fireSectionChange("tcfeuv2");
+    const tcSet = setTcString(event, cmpApi);
+    if (tcSet) {
+      cmpApi.setApplicableSections([TcfEuV2.ID]);
+      cmpApi.fireSectionChange("tcfeuv2");
+    }
+
+    // Set US GPP opt outs
+    const sectionsChanged = setGppOptOutsFromCookie({
+      cmpApi,
+      cookie: event.detail,
+      region: window.Fides.experience?.region ?? "",
+    });
+    if (sectionsChanged.length) {
+      cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
+      sectionsChanged.forEach((section) => {
+        cmpApi.fireSectionChange(section.name);
+      });
+    }
     cmpApi.setSignalStatus(SignalStatus.READY);
   });
 };

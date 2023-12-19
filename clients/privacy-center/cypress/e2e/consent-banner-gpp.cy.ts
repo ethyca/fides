@@ -5,7 +5,7 @@
  */
 
 /* eslint-disable no-underscore-dangle */
-import { CONSENT_COOKIE_NAME, FidesEndpointPaths } from "fides-js";
+import { CONSENT_COOKIE_NAME, FidesCookie, FidesEndpointPaths } from "fides-js";
 import { API_URL, TCF_VERSION_HASH } from "../support/constants";
 import { mockCookie } from "../support/mocks";
 import { stubConfig } from "../support/stubs";
@@ -18,14 +18,14 @@ describe("Fides-js GPP extension", () => {
   });
 
   it("does not load the GPP extension if it is not enabled", () => {
-    cy.fixture("consent/experience_tcf.json").then((experience) => {
+    cy.fixture("consent/experience_tcf.json").then((payload) => {
+      const experience = payload.items[0];
       stubConfig({
         options: {
           isOverlayEnabled: true,
           tcfEnabled: true,
-          gppEnabled: false,
         },
-        experience: experience.items[0],
+        experience: { ...experience, gpp_settings: { enabled: false } },
       });
     });
     cy.waitUntilFidesInitialized().then(() => {
@@ -38,15 +38,16 @@ describe("Fides-js GPP extension", () => {
   });
 
   describe("with TCF and GPP enabled", () => {
+    const tcfGppSettings = { enabled: true, regions: ["tcfeuv2"] };
     beforeEach(() => {
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
+      cy.fixture("consent/experience_tcf.json").then((payload) => {
+        const experience = payload.items[0];
         stubConfig({
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            gppEnabled: true,
           },
-          experience: experience.items[0],
+          experience: { ...experience, gpp_settings: tcfGppSettings },
         });
       });
     });
@@ -155,9 +156,8 @@ describe("Fides-js GPP extension", () => {
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            gppEnabled: true,
           },
-          experience: experience.items[0],
+          experience: { ...experience.items[0], gpp_settings: tcfGppSettings },
         });
       });
 
@@ -176,11 +176,19 @@ describe("Fides-js GPP extension", () => {
           .then(([data, success]) => {
             expect(success).to.eql(true);
             expect(data.eventName).to.eql("listenerRegistered");
-            const { cmpDisplayStatus, signalStatus, gppString, cmpStatus } =
-              data.pingData;
+            const {
+              cmpDisplayStatus,
+              signalStatus,
+              gppString,
+              cmpStatus,
+              applicableSections,
+              supportedAPIs,
+            } = data.pingData;
             expect(cmpStatus).to.eql("loaded");
             expect(cmpDisplayStatus).to.eql("hidden");
             expect(signalStatus).to.eql("ready");
+            expect(applicableSections).to.eql([2]);
+            expect(supportedAPIs).to.eql(["2:tcfeuv2"]);
             expect(gppString).to.contain(tcString);
           });
 
@@ -248,9 +256,8 @@ describe("Fides-js GPP extension", () => {
           options: {
             isOverlayEnabled: true,
             tcfEnabled: true,
-            gppEnabled: true,
           },
-          experience: experience.items[0],
+          experience: { ...experience.items[0], gpp_settings: tcfGppSettings },
         });
       });
       cy.waitUntilFidesInitialized().then(() => {
@@ -284,29 +291,184 @@ describe("Fides-js GPP extension", () => {
 
   describe("with TCF disabled and GPP enabled", () => {
     beforeEach(() => {
-      stubConfig({
-        options: {
-          isOverlayEnabled: true,
-          tcfEnabled: false,
-          gppEnabled: true,
-        },
+      cy.fixture("consent/experience_gpp.json").then((payload) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: false,
+          },
+          experience: payload.items[0],
+        });
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").should("have.been.calledOnce");
+        cy.window().then((win) => {
+          win.__gpp("addEventListener", cy.stub().as("gppListener"));
+        });
       });
     });
 
     it("loads the gpp extension if it is enabled", () => {
-      cy.waitUntilFidesInitialized().then(() => {
-        cy.get("@FidesUIShown").should("have.been.calledOnce");
-        cy.get("div#fides-banner").should("be.visible");
-        cy.window().then((win) => {
-          win.__gpp("ping", cy.stub().as("gppPing"));
-          cy.get("@gppPing")
-            .should("have.been.calledOnce")
-            .its("lastCall.args")
-            .then(([data, success]) => {
-              expect(success).to.eql(true);
-              expect(data.signalStatus).to.eql("not ready");
-            });
+      cy.window().then((win) => {
+        win.__gpp("ping", cy.stub().as("gppPing"));
+        cy.get("@gppPing")
+          .should("have.been.calledOnce")
+          .its("lastCall.args")
+          .then(([data, success]) => {
+            expect(success).to.eql(true);
+            expect(data.signalStatus).to.eql("not ready");
+          });
+      });
+    });
+
+    it("can go through the flow of user opting in to data sales and sharing", () => {
+      cy.get("button").contains("Opt in to all").click();
+      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const fidesCookie: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          const { consent } = fidesCookie;
+          expect(consent).to.eql({ data_sales_and_sharing: true });
         });
+      });
+
+      const expected = [
+        // First two gppStrings indicate the data_sales_and_sharing notice was served
+        {
+          eventName: "listenerRegistered",
+          data: true,
+          gppString: "DBABBg~BWAAAAAA.QA",
+        },
+        {
+          eventName: "cmpDisplayStatus",
+          data: "hidden",
+          gppString: "DBABBg~BWAAAAAA.QA",
+        },
+        // Second two gppStrings indicate the data_sales_and_sharing notice was served and opted into
+        {
+          eventName: "sectionChange",
+          data: "uscav1",
+          gppString: "DBABBg~BWoAAAAA.QA",
+        },
+        {
+          eventName: "signalStatus",
+          data: "ready",
+          gppString: "DBABBg~BWoAAAAA.QA",
+        },
+      ];
+      // Check the GPP events
+      cy.get("@gppListener")
+        .its("args")
+        .then(
+          (
+            args: [
+              { eventName: string; data: string | boolean; pingData: any },
+              boolean
+            ][]
+          ) => {
+            args.forEach(([data, success], idx) => {
+              expect(success).to.eql(true);
+              expect(data.eventName).to.eql(expected[idx].eventName);
+              expect(data.data).to.eql(expected[idx].data);
+              expect(data.pingData.gppString).to.eql(expected[idx].gppString);
+            });
+          }
+        );
+      cy.get("@gppListener")
+        .its("lastCall.args")
+        .then((args) => {
+          const [data] = args;
+          expect(data.pingData.applicableSections).to.eql([8]);
+          expect(data.pingData.supportedAPIs).to.eql(["8:usca"]);
+        });
+    });
+
+    it("can go through the flow of user opting out of data sales and sharing", () => {
+      cy.get("button").contains("Opt out of all").click();
+      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const fidesCookie: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          const { consent } = fidesCookie;
+          expect(consent).to.eql({ data_sales_and_sharing: false });
+        });
+      });
+
+      const expected = [
+        // First two gppStrings indicate the data_sales_and_sharing notice was served
+        {
+          eventName: "listenerRegistered",
+          data: true,
+          gppString: "DBABBg~BWAAAAAA.QA",
+        },
+        {
+          eventName: "cmpDisplayStatus",
+          data: "hidden",
+          gppString: "DBABBg~BWAAAAAA.QA",
+        },
+        // Second two gppStrings indicate the data_sales_and_sharing notice was served and opted out of
+        {
+          eventName: "sectionChange",
+          data: "uscav1",
+          gppString: "DBABBg~BWUAAAAA.QA",
+        },
+        {
+          eventName: "signalStatus",
+          data: "ready",
+          gppString: "DBABBg~BWUAAAAA.QA",
+        },
+      ];
+      // Check the GPP events
+      cy.get("@gppListener")
+        .its("args")
+        .then(
+          (
+            args: [
+              { eventName: string; data: string | boolean; pingData: any },
+              boolean
+            ][]
+          ) => {
+            args.forEach(([data, success], idx) => {
+              expect(success).to.eql(true);
+              expect(data.eventName).to.eql(expected[idx].eventName);
+              expect(data.data).to.eql(expected[idx].data);
+              expect(data.pingData.gppString).to.eql(expected[idx].gppString);
+            });
+          }
+        );
+    });
+
+    it("can handle a returning user", () => {
+      const cookie = mockCookie({
+        consent: { data_sales_and_sharing: true },
+      });
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+      cy.fixture("consent/experience_gpp.json").then((payload) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: false,
+          },
+          experience: payload.items[0],
+        });
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.window().then((win) => {
+          win.__gpp("addEventListener", cy.stub().as("gppListener"));
+        });
+        // Initializes string properly
+        cy.get("@gppListener")
+          .its("args")
+          .then((args) => {
+            const [data, success] = args[0];
+            expect(success).to.eql(true);
+            // Opt in string
+            expect(data.pingData.applicableSections).to.eql([8]);
+            expect(data.pingData.gppString).to.eql("DBABBg~BWoAAAAA.QA");
+          });
       });
     });
   });
