@@ -93,7 +93,10 @@ export const TextInput = forwardRef(
       isPassword,
       inputRightElement,
       ...props
-    }: InputProps & { isPassword: boolean; inputRightElement: React.ReactNode },
+    }: InputProps & {
+      isPassword: boolean;
+      inputRightElement?: React.ReactNode;
+    },
     ref
   ) => {
     const [type, setType] = useState<"text" | "password">(
