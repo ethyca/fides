@@ -20,6 +20,7 @@ import {
 } from "@fidesui/react";
 import { useMemo, useState } from "react";
 
+import { usePicker } from "~/features/common/PickerCard";
 import { Location } from "~/types/api";
 
 import RegulatedToggle from "./RegulatedToggle";
@@ -51,26 +52,12 @@ const SubgroupModal = ({
     };
   }, [locations, showRegulatedOnly]);
 
-  const numSelected = draftSelected.length;
-  const allSelected = filteredLocations.every((location) =>
-    draftSelected.includes(location.id)
-  );
-
-  const handleCheck = (id: string) => {
-    if (draftSelected.includes(id)) {
-      setDraftSelected(draftSelected.filter((s) => s !== id));
-    } else {
-      setDraftSelected([...draftSelected, id]);
-    }
-  };
-
-  const handleCheckAll = () => {
-    if (allSelected) {
-      setDraftSelected([]);
-    } else {
-      setDraftSelected(filteredLocations.map((l) => l.id));
-    }
-  };
+  const { numSelected, allSelected, handleToggleAll, handleToggleSelection } =
+    usePicker({
+      items: filteredLocations,
+      selected: draftSelected,
+      onChange: setDraftSelected,
+    });
 
   const handleApply = () => {
     onChange(draftSelected);
@@ -105,7 +92,7 @@ const SubgroupModal = ({
                 size="md"
                 fontWeight={600}
                 isChecked={allSelected}
-                onChange={handleCheckAll}
+                onChange={handleToggleAll}
                 mr={3}
               >
                 {continentName}
@@ -130,6 +117,7 @@ const SubgroupModal = ({
           <Accordion
             allowToggle
             allowMultiple
+            // Opens all subgroups by default
             defaultIndex={[...Array(numSubgroups).keys()]}
           >
             {Object.entries(locationsByGroup).map(([group, subLocations]) => (
@@ -150,7 +138,7 @@ const SubgroupModal = ({
                         colorScheme="complimentary"
                         key={location.id}
                         isChecked={draftSelected.includes(location.id)}
-                        onChange={() => handleCheck(location.id)}
+                        onChange={() => handleToggleSelection(location.id)}
                       >
                         {location.name}
                       </Checkbox>

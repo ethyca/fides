@@ -12,26 +12,17 @@ import { ReactNode } from "react";
 
 const NUM_TO_SHOW = 5;
 
-const PickerCard = <T extends { id: string; name: string }>({
-  title,
+export const usePicker = <T extends { id: string; name: string }>({
   items,
   selected,
   onChange,
-  toggle,
-  onViewMore,
 }: {
-  title: string;
   items: T[];
   selected: Array<string>;
   onChange: (newSelected: Array<string>) => void;
-  toggle?: ReactNode;
-  onViewMore: () => void;
 }) => {
-  const itemsToShow = items.slice(0, NUM_TO_SHOW);
   const numSelected = selected.length;
   const allSelected = items.every((item) => selected.includes(item.id));
-
-  const showViewMore = items.length > NUM_TO_SHOW;
 
   const handleToggleSelection = (id: string) => {
     if (selected.includes(id)) {
@@ -48,6 +39,35 @@ const PickerCard = <T extends { id: string; name: string }>({
       onChange(items.map((i) => i.id));
     }
   };
+
+  return {
+    numSelected,
+    allSelected,
+    handleToggleAll,
+    handleToggleSelection,
+  };
+};
+
+const PickerCard = <T extends { id: string; name: string }>({
+  title,
+  items,
+  selected,
+  onChange,
+  toggle,
+  onViewMore,
+}: {
+  title: string;
+  items: T[];
+  selected: Array<string>;
+  onChange: (newSelected: Array<string>) => void;
+  toggle?: ReactNode;
+  onViewMore: () => void;
+}) => {
+  const itemsToShow = items.slice(0, NUM_TO_SHOW);
+  const { numSelected, allSelected, handleToggleAll, handleToggleSelection } =
+    usePicker({ items, selected, onChange });
+
+  const showViewMore = items.length > NUM_TO_SHOW;
 
   return (
     <Box
