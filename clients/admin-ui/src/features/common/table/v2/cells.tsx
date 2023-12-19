@@ -58,8 +58,7 @@ export const GroupCountBadgeCell = ({
   expand: boolean;
 }) => {
   let badges = null;
-
-  if (Array.isArray(value)) {
+  if (Array.isArray(value) || !value) {
     badges = expand ? (
       value.map((d) => (
         <Box px={1} key={d}>
@@ -68,7 +67,7 @@ export const GroupCountBadgeCell = ({
       ))
     ) : (
       <FidesBadge>
-        {value.length}
+        {value ? value.length : 0}
         {suffix ? ` ${suffix}` : null}
       </FidesBadge>
     );
