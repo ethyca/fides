@@ -5,7 +5,6 @@ import {
   Checkbox,
   CheckboxGroup,
   Flex,
-  Spacer,
   VStack,
 } from "@fidesui/react";
 import { ReactNode } from "react";
@@ -64,10 +63,9 @@ const PickerCard = <T extends { id: string; name: string }>({
   onViewMore: () => void;
 }) => {
   const itemsToShow = items.slice(0, NUM_TO_SHOW);
+
   const { numSelected, allSelected, handleToggleAll, handleToggleSelection } =
     usePicker({ items, selected, onChange });
-
-  const showViewMore = items.length > NUM_TO_SHOW;
 
   return (
     <Box
@@ -127,12 +125,9 @@ const PickerCard = <T extends { id: string; name: string }>({
             ))}
           </CheckboxGroup>
         </VStack>
-        <Spacer />
-        {showViewMore ? (
-          <Button size="xs" variant="ghost" onClick={onViewMore}>
-            View more
-          </Button>
-        ) : null}
+        <Button size="xs" variant="ghost" onClick={onViewMore}>
+          View more
+        </Button>
       </VStack>
     </Box>
   );

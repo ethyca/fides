@@ -43,9 +43,10 @@ const SubgroupModal = ({
   const [showRegulatedOnly, setShowRegulatedOnly] = useState(false);
 
   const { filteredLocations, locationsByGroup } = useMemo(() => {
+    const locationsWithGroups = locations.filter((l) => l.belongs_to?.length);
     const filtered = showRegulatedOnly
-      ? locations.filter((l) => l.regulation?.length)
-      : locations;
+      ? locationsWithGroups.filter((l) => l.regulation?.length)
+      : locationsWithGroups;
     return {
       locationsByGroup: groupByBelongsTo(filtered),
       filteredLocations: filtered,
@@ -60,7 +61,16 @@ const SubgroupModal = ({
     });
 
   const handleApply = () => {
-    onChange(draftSelected);
+    const newSelected = new Set(draftSelected);
+    // We also need to handle setting the group level location to true/false as needed
+    Object.entries(locationsByGroup).forEach(([groupId, subLocations]) => {
+      if (subLocations.every((l) => draftSelected.includes(l.id))) {
+        newSelected.add(groupId);
+      } else {
+        newSelected.delete(groupId);
+      }
+    });
+    onChange(Array.from(newSelected));
     onClose();
   };
 
@@ -97,16 +107,14 @@ const SubgroupModal = ({
               >
                 {continentName}
               </Checkbox>
-              {numSelected > 0 ? (
-                <Badge
-                  colorScheme="purple"
-                  variant="solid"
-                  width="fit-content"
-                  data-testid="num-selected-badge"
-                >
-                  {numSelected} selected
-                </Badge>
-              ) : null}
+              <Badge
+                colorScheme="purple"
+                variant="solid"
+                width="fit-content"
+                data-testid="num-selected-badge"
+              >
+                {numSelected} selected
+              </Badge>
             </Box>
             <RegulatedToggle
               id={`${continentName}-modal-regulated`}
@@ -114,40 +122,56 @@ const SubgroupModal = ({
               onChange={() => setShowRegulatedOnly(!showRegulatedOnly)}
             />
           </Flex>
-          <Accordion
-            allowToggle
-            allowMultiple
-            // Opens all subgroups by default
-            defaultIndex={[...Array(numSubgroups).keys()]}
-          >
-            {Object.entries(locationsByGroup).map(([group, subLocations]) => (
-              <AccordionItem key={group}>
-                <h2>
-                  <AccordionButton>
-                    <Box as="span" flex="1" textAlign="left" fontWeight={600}>
-                      {getLocationNameFromId(group, locations)}
-                    </Box>
-                    <AccordionIcon />
-                  </AccordionButton>
-                </h2>
-                <AccordionPanel pb={4}>
-                  <SimpleGrid columns={3} spacing={6}>
-                    {subLocations.map((location) => (
-                      <Checkbox
-                        size="sm"
-                        colorScheme="complimentary"
-                        key={location.id}
-                        isChecked={draftSelected.includes(location.id)}
-                        onChange={() => handleToggleSelection(location.id)}
-                      >
-                        {location.name}
-                      </Checkbox>
-                    ))}
-                  </SimpleGrid>
-                </AccordionPanel>
-              </AccordionItem>
-            ))}
-          </Accordion>
+          {numSubgroups > 0 ? (
+            <Accordion
+              allowToggle
+              allowMultiple
+              // Opens all subgroups by default
+              defaultIndex={[...Array(numSubgroups).keys()]}
+            >
+              {Object.entries(locationsByGroup).map(([group, subLocations]) => (
+                <AccordionItem key={group}>
+                  <h2>
+                    <AccordionButton>
+                      <Box as="span" flex="1" textAlign="left" fontWeight={600}>
+                        {getLocationNameFromId(group, locations)}
+                      </Box>
+                      <AccordionIcon />
+                    </AccordionButton>
+                  </h2>
+                  <AccordionPanel pb={4}>
+                    <SimpleGrid columns={3} spacing={6}>
+                      {subLocations.map((location) => (
+                        <Checkbox
+                          size="sm"
+                          colorScheme="complimentary"
+                          key={location.id}
+                          isChecked={draftSelected.includes(location.id)}
+                          onChange={() => handleToggleSelection(location.id)}
+                        >
+                          {location.name}
+                        </Checkbox>
+                      ))}
+                    </SimpleGrid>
+                  </AccordionPanel>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          ) : (
+            <SimpleGrid columns={3} spacing={6} paddingInline={4}>
+              {filteredLocations.map((location) => (
+                <Checkbox
+                  size="sm"
+                  colorScheme="complimentary"
+                  key={location.id}
+                  isChecked={draftSelected.includes(location.id)}
+                  onChange={() => handleToggleSelection(location.id)}
+                >
+                  {location.name}
+                </Checkbox>
+              ))}
+            </SimpleGrid>
+          )}
         </ModalBody>
         <ModalFooter justifyContent="center">
           <ButtonGroup

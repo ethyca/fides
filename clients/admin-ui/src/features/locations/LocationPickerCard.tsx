@@ -21,9 +21,12 @@ const LocationPickerCard = ({
   const disclosure = useDisclosure();
   const [showRegulatedOnly, setShowRegulatedOnly] = useState(false);
 
+  // We only show group level names here, i.e. "United States", which doesn't belong to
+  // a larger group. So we don't show "California" here since it belongs to "United States"
+  const locationsWithoutGroups = locations.filter((l) => !l.belongs_to?.length);
   const filteredLocations = showRegulatedOnly
-    ? locations.filter((l) => l.regulation?.length)
-    : locations;
+    ? locationsWithoutGroups.filter((l) => l.regulation?.length)
+    : locationsWithoutGroups;
 
   const handleChange = (newSelected: string[]) => {
     const updated = locations.map((location) => {
@@ -35,13 +38,44 @@ const LocationPickerCard = ({
     onChange(updated);
   };
 
+  const handlePropagateChildLocations = (parentSelections: Array<string>) => {
+    const oldSelections = selected.filter((s) =>
+      locationsWithoutGroups.find((l) => l.id === s)
+    );
+    const newSelections = new Set(parentSelections);
+
+    // Set all children to true if parent was selected
+    newSelections.forEach((newSelection) => {
+      if (!oldSelections.includes(newSelection)) {
+        locations.forEach((location) => {
+          if (location.belongs_to?.includes(newSelection)) {
+            newSelections.add(location.id);
+          }
+        });
+      }
+    });
+
+    // Set all children to false if parent was deselected
+    oldSelections.forEach((oldSelection) => {
+      if (!newSelections.has(oldSelection)) {
+        locations.forEach((location) => {
+          if (location.belongs_to?.includes(oldSelection)) {
+            newSelections.delete(location.id);
+          }
+        });
+      }
+    });
+
+    handleChange(Array.from(newSelections));
+  };
+
   return (
     <>
       <PickerCard
         title={title}
         items={filteredLocations}
         selected={selected}
-        onChange={handleChange}
+        onChange={handlePropagateChildLocations}
         onViewMore={() => {
           disclosure.onOpen();
         }}
