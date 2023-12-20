@@ -230,11 +230,12 @@ export const shouldResurfaceConsent = (
   experience: PrivacyExperience,
   cookie: FidesCookie
 ): boolean => {
-  if (
-    experience.component === ComponentType.TCF_OVERLAY &&
-    experience.meta?.version_hash
-  ) {
-    return experience.meta.version_hash !== cookie.tcf_version_hash;
+  if (experience.component === ComponentType.TCF_OVERLAY) {
+    if (experience.meta?.version_hash) {
+      return experience.meta.version_hash !== cookie.tcf_version_hash;
+    }
+    // Ensure we always resurface consent for TCF if for some reason experience does not have version_hash
+    return true;
   }
   // If not every notice has previous user consent, we need to resurface consent
   return Boolean(
