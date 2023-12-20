@@ -43,10 +43,9 @@ const SubgroupModal = ({
   const [showRegulatedOnly, setShowRegulatedOnly] = useState(false);
 
   const { filteredLocations, locationsByGroup } = useMemo(() => {
-    const locationsWithGroups = locations.filter((l) => l.belongs_to?.length);
     const filtered = showRegulatedOnly
-      ? locationsWithGroups.filter((l) => l.regulation?.length)
-      : locationsWithGroups;
+      ? locations.filter((l) => l.regulation?.length)
+      : locations;
     return {
       locationsByGroup: groupByBelongsTo(filtered),
       filteredLocations: filtered,
@@ -81,6 +80,7 @@ const SubgroupModal = ({
 
   const continentName = locations[0].continent;
   const numSubgroups = Object.keys(locationsByGroup).length;
+  const isGroupedView = numSubgroups > 0;
 
   return (
     <Modal size="2xl" isOpen={isOpen} onClose={onClose} isCentered>
@@ -128,7 +128,7 @@ const SubgroupModal = ({
               onChange={() => setShowRegulatedOnly(!showRegulatedOnly)}
             />
           </Flex>
-          {numSubgroups > 0 ? (
+          {isGroupedView ? (
             <Accordion
               allowToggle
               allowMultiple
@@ -184,6 +184,7 @@ const SubgroupModal = ({
                   key={location.id}
                   isChecked={draftSelected.includes(location.id)}
                   onChange={() => handleToggleSelection(location.id)}
+                  data-testid={`${location.name}-checkbox`}
                 >
                   {location.name}
                 </Checkbox>
