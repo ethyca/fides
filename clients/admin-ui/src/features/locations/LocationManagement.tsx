@@ -5,6 +5,7 @@ import {
   useDisclosure,
   useToast,
   VStack,
+  WarningIcon,
 } from "@fidesui/react";
 import _ from "lodash";
 import { useMemo, useState } from "react";
@@ -119,6 +120,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
         title="Regulation updates"
         message="These updates to your location settings will automatically update your regulation settings."
         isCentered
+        icon={<WarningIcon color="orange" />}
       />
       {showSave ? (
         <Button

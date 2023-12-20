@@ -1,8 +1,17 @@
-import { Box, Button, SimpleGrid, useToast, VStack } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  SimpleGrid,
+  useDisclosure,
+  useToast,
+  VStack,
+  WarningIcon,
+} from "@fidesui/react";
 import _ from "lodash";
 import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import PickerCard from "~/features/common/PickerCard";
 import SearchBar from "~/features/common/SearchBar";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
@@ -25,6 +34,7 @@ const RegulationManagement = ({
   data: LocationRegulationResponse;
 }) => {
   const toast = useToast();
+  const confirmationDisclosure = useDisclosure();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
     data.regulations ?? []
   );
@@ -38,7 +48,7 @@ const RegulationManagement = ({
     return groupRegulationsByContinent(filteredSearchLocations);
   }, [data.regulations, search]);
 
-  const showSave = !_.isEqual(draftSelections, data.locations);
+  const showSave = !_.isEqual(draftSelections, data.regulations);
 
   const handleSave = async () => {
     const result = await patchLocationsRegulationsMutationTrigger({
@@ -54,8 +64,7 @@ const RegulationManagement = ({
     } else {
       toast(
         successToastParams(
-          // TODO: "View regulations here"
-          `Fides has automatically associated the relevant regulations with your location choices.`
+          `Fides has automatically associated the relevant locations with your regulation choices.`
         )
       );
     }
@@ -108,17 +117,29 @@ const RegulationManagement = ({
                 selected={selected}
                 onChange={handleChange}
                 numSelected={selected.length}
-                onViewMore={() => {}}
+                indeterminate={[]}
               />
             );
           }
         )}
       </SimpleGrid>
+      <ConfirmationModal
+        isOpen={confirmationDisclosure.isOpen}
+        onClose={confirmationDisclosure.onClose}
+        onConfirm={() => {
+          handleSave();
+          confirmationDisclosure.onClose();
+        }}
+        title="Location updates"
+        message="These updates to your regulation settings will automatically update your location settings."
+        isCentered
+        icon={<WarningIcon color="orange" />}
+      />
       {showSave ? (
         <Button
           colorScheme="primary"
           size="sm"
-          onClick={handleSave}
+          onClick={confirmationDisclosure.onOpen}
           isLoading={isSaving}
           data-testid="save-btn"
         >
