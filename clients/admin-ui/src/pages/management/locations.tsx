@@ -44,7 +44,7 @@ const LocationsPage: NextPage = () => {
           </BreadcrumbItem>
         </Breadcrumb>
         <Box>
-          <Text marginBottom={4} fontSize="sm" maxWidth="600px">
+          <Text marginBottom={4} fontSize="sm" maxWidth="720px">
             Select the locations that you operate in and Fides will make sure
             that you are automatically presented with the relevant regulatory
             guidelines and global frameworks for your locations.

@@ -21,6 +21,7 @@ export const usePicker = <T extends { id: string; name: string }>({
   onChange: (newSelected: Array<string>) => void;
 }) => {
   const allSelected = items.every((item) => selected.includes(item.id));
+  const someSelected = items.some((item) => selected.includes(item.id));
 
   const handleToggleSelection = (id: string) => {
     if (selected.includes(id)) {
@@ -40,6 +41,7 @@ export const usePicker = <T extends { id: string; name: string }>({
 
   return {
     allSelected,
+    someSelected,
     handleToggleAll,
     handleToggleSelection,
   };
@@ -49,6 +51,7 @@ const PickerCard = <T extends { id: string; name: string }>({
   title,
   items,
   selected,
+  indeterminate,
   onChange,
   toggle,
   onViewMore,
@@ -57,18 +60,21 @@ const PickerCard = <T extends { id: string; name: string }>({
   title: string;
   items: T[];
   selected: Array<string>;
+  indeterminate: Array<string>;
   onChange: (newSelected: Array<string>) => void;
   toggle?: ReactNode;
   onViewMore: () => void;
   numSelected: number;
 }) => {
+  console.log({ selected });
   const itemsToShow = items.slice(0, NUM_TO_SHOW);
 
-  const { allSelected, handleToggleAll, handleToggleSelection } = usePicker({
-    items,
-    selected,
-    onChange,
-  });
+  const { allSelected, someSelected, handleToggleAll, handleToggleSelection } =
+    usePicker({
+      items,
+      selected,
+      onChange,
+    });
 
   return (
     <Box
@@ -78,7 +84,6 @@ const PickerCard = <T extends { id: string; name: string }>({
       gap="4px"
       borderRadius="4px"
       boxShadow="0px 1px 2px 0px rgba(0, 0, 0, 0.06), 0px 1px 3px 0px rgba(0, 0, 0, 0.1)"
-      maxWidth="363px"
       fontSize="sm"
       data-testid={`picker-card-${title}`}
     >
@@ -94,6 +99,7 @@ const PickerCard = <T extends { id: string; name: string }>({
             onChange={handleToggleAll}
             colorScheme="complimentary"
             data-testid="select-all"
+            isIndeterminate={!allSelected && someSelected}
           >
             {title}
           </Checkbox>
@@ -112,17 +118,18 @@ const PickerCard = <T extends { id: string; name: string }>({
         ) : null}
         <VStack paddingLeft="6" fontSize="sm" alignItems="start" spacing="2">
           <CheckboxGroup colorScheme="complimentary">
-            {itemsToShow.map((location) => (
-              <Flex key={location.id} alignItems="center" gap="8px">
+            {itemsToShow.map((item) => (
+              <Flex key={item.id} alignItems="center" gap="8px">
                 <Checkbox
-                  key={location.id}
-                  isChecked={selected.includes(location.id)}
+                  key={item.id}
+                  isChecked={selected.includes(item.id)}
+                  isIndeterminate={indeterminate.includes(item.id)}
                   size="md"
                   fontWeight="500"
-                  onChange={() => handleToggleSelection(location.id)}
-                  data-testid={`${location.name}-checkbox`}
+                  onChange={() => handleToggleSelection(item.id)}
+                  data-testid={`${item.name}-checkbox`}
                 >
-                  {location.name}
+                  {item.name}
                 </Checkbox>
               </Flex>
             ))}

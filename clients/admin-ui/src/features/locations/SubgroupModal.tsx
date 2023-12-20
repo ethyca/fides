@@ -21,18 +21,20 @@ import {
 import { useMemo, useState } from "react";
 
 import { usePicker } from "~/features/common/PickerCard";
-import { Location } from "~/types/api";
+import { Location, LocationGroup } from "~/types/api";
 
 import RegulatedToggle from "./RegulatedToggle";
-import { getLocationNameFromId, groupByBelongsTo } from "./transformations";
+import { groupByBelongsTo } from "./transformations";
 
 const SubgroupModal = ({
+  groups,
   locations,
   isOpen,
   onClose,
   selected,
   onChange,
 }: {
+  groups: LocationGroup[];
   locations: Location[];
   isOpen: boolean;
   onClose: () => void;
@@ -79,8 +81,9 @@ const SubgroupModal = ({
   };
 
   const continentName = locations[0].continent;
-  const numSubgroups = Object.keys(locationsByGroup).length;
-  const isGroupedView = numSubgroups > 0;
+  const subgroups = Object.keys(locationsByGroup);
+  // If there are only "Others" do not render the group view
+  const isGroupedView = !(subgroups.length === 1 && subgroups[0] === "Other");
 
   return (
     <Modal size="2xl" isOpen={isOpen} onClose={onClose} isCentered>
@@ -99,7 +102,7 @@ const SubgroupModal = ({
         >
           Select locations
         </ModalHeader>
-        <ModalBody p={6}>
+        <ModalBody p={6} maxHeight="70vh" overflowY="auto">
           <Flex justifyContent="space-between" mb={4}>
             <Box>
               <Checkbox
@@ -129,51 +132,51 @@ const SubgroupModal = ({
             />
           </Flex>
           {isGroupedView ? (
-            <Accordion
-              allowToggle
-              allowMultiple
-              // Opens all subgroups by default
-              defaultIndex={[...Array(numSubgroups).keys()]}
-            >
-              {Object.entries(locationsByGroup).map(([group, subLocations]) => {
-                const groupName = getLocationNameFromId(group, locations);
-                return (
-                  <AccordionItem
-                    key={group}
-                    data-testid={`${groupName}-accordion`}
-                  >
-                    <h2>
-                      <AccordionButton>
-                        <Box
-                          as="span"
-                          flex="1"
-                          textAlign="left"
-                          fontWeight={600}
-                        >
-                          {groupName}
-                        </Box>
-                        <AccordionIcon />
-                      </AccordionButton>
-                    </h2>
-                    <AccordionPanel pb={4}>
-                      <SimpleGrid columns={3} spacing={6}>
-                        {subLocations.map((location) => (
-                          <Checkbox
-                            size="sm"
-                            colorScheme="complimentary"
-                            key={location.id}
-                            isChecked={draftSelected.includes(location.id)}
-                            onChange={() => handleToggleSelection(location.id)}
-                            data-testid={`${location.name}-checkbox`}
+            <Accordion allowToggle allowMultiple>
+              {Object.entries(locationsByGroup).map(
+                ([groupId, subLocations]) => {
+                  const group = groups.find((g) => groupId === g.id);
+                  const groupName = group ? group.name : groupId;
+                  return (
+                    <AccordionItem
+                      key={groupId}
+                      data-testid={`${groupName}-accordion`}
+                    >
+                      <h2>
+                        <AccordionButton>
+                          <Box
+                            as="span"
+                            flex="1"
+                            textAlign="left"
+                            fontWeight={600}
                           >
-                            {location.name}
-                          </Checkbox>
-                        ))}
-                      </SimpleGrid>
-                    </AccordionPanel>
-                  </AccordionItem>
-                );
-              })}
+                            {groupName}
+                          </Box>
+                          <AccordionIcon />
+                        </AccordionButton>
+                      </h2>
+                      <AccordionPanel pb={4}>
+                        <SimpleGrid columns={3} spacing={6}>
+                          {subLocations.map((location) => (
+                            <Checkbox
+                              size="sm"
+                              colorScheme="complimentary"
+                              key={location.id}
+                              isChecked={draftSelected.includes(location.id)}
+                              onChange={() =>
+                                handleToggleSelection(location.id)
+                              }
+                              data-testid={`${location.name}-checkbox`}
+                            >
+                              {location.name}
+                            </Checkbox>
+                          ))}
+                        </SimpleGrid>
+                      </AccordionPanel>
+                    </AccordionItem>
+                  );
+                }
+              )}
             </Accordion>
           ) : (
             <SimpleGrid columns={3} spacing={6} paddingInline={4}>

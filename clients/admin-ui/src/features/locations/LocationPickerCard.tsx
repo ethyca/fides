@@ -2,39 +2,90 @@ import { useDisclosure } from "@fidesui/react";
 import { useState } from "react";
 
 import PickerCard from "~/features/common/PickerCard";
-import { Location, Selection } from "~/types/api";
+import { Location, LocationGroup, Selection } from "~/types/api";
 
 import RegulatedToggle from "./RegulatedToggle";
 import SubgroupModal from "./SubgroupModal";
+import { getCheckedStateLocationGroup, isRegulated } from "./transformations";
 
 const LocationPickerCard = ({
   title,
+  groups,
   locations,
-  selected,
+  selected: selectedLocations,
   onChange,
-  view,
 }: {
   title: string;
+  groups: LocationGroup[];
   locations: Location[];
   selected: Array<string>;
   onChange: (selections: Array<Selection>) => void;
-  view: "parents" | "all";
 }) => {
   const disclosure = useDisclosure();
   const [showRegulatedOnly, setShowRegulatedOnly] = useState(false);
+  const isGroupedView = groups.length > 0;
 
-  // We only show group level names here, i.e. "United States", which doesn't belong to
-  // a larger group. So we don't show "California" here since it belongs to "United States"
-  const locationsWithoutGroups = locations.filter((l) => !l.belongs_to?.length);
-  const locationsForView =
-    view === "parents" ? locationsWithoutGroups : locations;
+  const locationsForView = isGroupedView ? groups : locations;
   const filteredLocations = showRegulatedOnly
-    ? locationsForView.filter((l) => l.regulation?.length)
+    ? locationsForView.filter((l) => isRegulated(l, locations))
     : locationsForView;
 
-  const handleChange = (newSelected: string[]) => {
+  const selectedGroups = groups
+    .filter(
+      (group) =>
+        getCheckedStateLocationGroup({
+          group,
+          selected: selectedLocations,
+          locations,
+        }) === "checked"
+    )
+    .map((g) => g.id);
+  const indeterminateGroups = groups
+    .filter(
+      (group) =>
+        getCheckedStateLocationGroup({
+          group,
+          selected: selectedLocations,
+          locations,
+        }) === "indeterminate"
+    )
+    .map((g) => g.id);
+
+  const selected = isGroupedView
+    ? [...selectedGroups, ...selectedLocations]
+    : selectedLocations;
+  const numSelected = selectedLocations.length;
+
+  const handleChange = (selections: string[]) => {
+    const newSelected = new Set(selections);
+    const oldSelected = new Set(selected);
+    // Handle additions
+    selections.forEach((s) => {
+      if (!oldSelected.has(s)) {
+        // If it's a group, we have to propagate
+        if (groups.find((g) => g.id === s)) {
+          locations
+            .filter((l) => l.belongs_to?.includes(s))
+            .forEach((l) => {
+              newSelected.add(l.id);
+            });
+        }
+      }
+    });
+    // Handle removals
+    oldSelected.forEach((s) => {
+      if (!newSelected.has(s)) {
+        if (groups.find((g) => g.id === s)) {
+          locations
+            .filter((l) => l.belongs_to?.includes(s))
+            .forEach((l) => {
+              newSelected.delete(l.id);
+            });
+        }
+      }
+    });
     const updated = locations.map((location) => {
-      if (newSelected.includes(location.id)) {
+      if (newSelected.has(location.id)) {
         return { ...location, selected: true };
       }
       return { ...location, selected: false };
@@ -42,50 +93,14 @@ const LocationPickerCard = ({
     onChange(updated);
   };
 
-  const handlePropagateChildLocations = (parentSelections: Array<string>) => {
-    const oldSelections = selected.filter((s) =>
-      locationsWithoutGroups.find((l) => l.id === s)
-    );
-    const newSelections = new Set(parentSelections);
-
-    // Set all children to true if parent was selected
-    newSelections.forEach((newSelection) => {
-      if (!oldSelections.includes(newSelection)) {
-        locations.forEach((location) => {
-          if (location.belongs_to?.includes(newSelection)) {
-            newSelections.add(location.id);
-          }
-        });
-      }
-    });
-
-    // Set all children to false if parent was deselected
-    oldSelections.forEach((oldSelection) => {
-      if (!newSelections.has(oldSelection)) {
-        locations.forEach((location) => {
-          if (location.belongs_to?.includes(oldSelection)) {
-            newSelections.delete(location.id);
-          }
-        });
-      }
-    });
-
-    // TODO: in "all" view, clicking all of a children will not make the parent selected
-
-    handleChange(Array.from(newSelections));
-  };
-
-  const numSelected = selected.filter(
-    (s) => !locationsWithoutGroups.find((l) => l.id === s)
-  ).length;
-
   return (
     <>
       <PickerCard
         title={title}
         items={filteredLocations}
         selected={selected}
-        onChange={handlePropagateChildLocations}
+        indeterminate={isGroupedView ? indeterminateGroups : []}
+        onChange={handleChange}
         onViewMore={() => {
           disclosure.onOpen();
         }}
@@ -99,10 +114,11 @@ const LocationPickerCard = ({
         }
       />
       <SubgroupModal
+        groups={groups}
         locations={locations}
         isOpen={disclosure.isOpen}
         onClose={disclosure.onClose}
-        selected={selected}
+        selected={selectedLocations}
         onChange={handleChange}
         // Rerender if a selection changes in this component so that the checkboxes
         // in the modal stay up to date
