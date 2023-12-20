@@ -194,7 +194,7 @@ const NoticeDrivenConsent = () => {
       preferences,
       user_geography: region,
       privacy_experience_id: experience?.id,
-      method: ConsentMethod.BUTTON,
+      method: ConsentMethod.SAVE,
       code: verificationCode,
       served_notice_history_id: servedNotice?.served_notice_history_id,
     };
@@ -228,6 +228,7 @@ const NoticeDrivenConsent = () => {
     const consentCookieKey: CookieKeyConsent = Object.fromEntries(noticeKeyMap);
     window.Fides.consent = consentCookieKey;
     const updatedCookie = { ...cookie, consent: consentCookieKey };
+    updatedCookie.fides_meta.consentMethod = ConsentMethod.SAVE; // include the consentMethod as extra metadata
     saveFidesCookie(updatedCookie);
     toast({
       title: "Your consent preferences have been saved",

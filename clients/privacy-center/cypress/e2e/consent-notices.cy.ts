@@ -111,7 +111,7 @@ describe("Privacy notice driven consent", () => {
       cy.wait("@patchPrivacyPreference").then((interception) => {
         const { body } = interception.request;
         const { preferences, code, method, privacy_experience_id: id } = body;
-        expect(method).to.eql("button");
+        expect(method).to.eql("save");
         expect(code).to.eql(VERIFICATION_CODE);
         expect(id).to.eql(PRIVACY_EXPERIENCE_ID);
         expect(
@@ -131,8 +131,12 @@ describe("Privacy notice driven consent", () => {
               cookie.identity.fides_user_device_id
             );
             const expectedConsent = { data_sales: true, advertising: true };
-            const { consent } = cookie;
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            const { consent, fides_meta } = cookie;
             expect(consent).to.eql(expectedConsent);
+            expect(fides_meta).to.have.property("createdAt");
+            expect(fides_meta).to.have.property("updatedAt");
+            expect(fides_meta).to.have.property("consentMethod", "save");
             // Should update the window object
             cy.window().then((win) => {
               expect(win.Fides.consent).to.eql(expectedConsent);
