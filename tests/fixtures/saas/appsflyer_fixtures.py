@@ -2,6 +2,7 @@
 ### Do you have any extraneous fixtures?
 
 from typing import Any, Dict, Generator
+import uuid
 
 import pydash
 import pytest
@@ -40,12 +41,12 @@ def appsflyer_erasure_identity_email() -> str:
 
 @pytest.fixture
 def appsflyer_external_references() -> Dict[str, Any]:
-    return {"appsflyer_user_id": "<uuid>"}
+    return {"appsflyer_user_id": uuid.uuid4()}
 
 
 @pytest.fixture
 def appsflyer_erasure_external_references() -> Dict[str, Any]:
-    return {"appsflyer_user_id": "<uuid>"}
+    return {"appsflyer_user_id": uuid.uuid4()}
 
 
 @pytest.fixture

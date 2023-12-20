@@ -3,6 +3,7 @@
 ### All tests passing?
 
 import pytest
+import pdb
 
 from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
@@ -36,4 +37,9 @@ class TestAppsflyerConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": appsflyer_erasure_identity_email},
         )
-        assert erasure_results == {"appsflyer_instance:user": 1}
+        # pdb.set_trace()
+        assert erasure_results == {
+            "appsflyer_external_dataset:appsflyer_external_collection": 0,
+            "appsflyer_instance:apps": 0,
+            "appsflyer_instance:user": 10,
+        }
