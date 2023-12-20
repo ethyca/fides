@@ -166,6 +166,7 @@ export type { LastServedConsentSchema } from "./models/LastServedConsentSchema";
 export { LegalBasisForProcessingEnum } from "./models/LegalBasisForProcessingEnum";
 export { LegalBasisForProfilingEnum } from "./models/LegalBasisForProfilingEnum";
 export type { Location } from "./models/Location";
+export type { LocationGroup } from "./models/LocationGroup";
 export type { LocationRegulationBase } from "./models/LocationRegulationBase";
 export type { LocationRegulationResponse } from "./models/LocationRegulationResponse";
 export type { LocationRegulationSelections } from "./models/LocationRegulationSelections";
