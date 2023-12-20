@@ -4,7 +4,7 @@ saas_config:
   type: iterate
   description: A sample schema representing the Iterate connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/iterate
-  version: 0.1.1
+  version: 0.1.2
 
   connector_params:
     - name: domain
