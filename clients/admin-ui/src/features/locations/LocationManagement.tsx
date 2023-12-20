@@ -1,8 +1,16 @@
-import { Box, Button, SimpleGrid, useToast, VStack } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  SimpleGrid,
+  useDisclosure,
+  useToast,
+  VStack,
+} from "@fidesui/react";
 import _ from "lodash";
 import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import SearchBar from "~/features/common/SearchBar";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { Location, LocationRegulationResponse, Selection } from "~/types/api";
@@ -17,6 +25,7 @@ const SEARCH_FILTER = (location: Location, search: string) =>
 
 const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const toast = useToast();
+  const confirmationDisclosure = useDisclosure();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
     data.locations ?? []
   );
@@ -75,7 +84,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
           data-testid="search-bar"
         />
       </Box>
-      <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={6}>
+      <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={6} width="100%">
         {Object.entries(locationsByContinent).map(([continent, locations]) => (
           <LocationPickerCard
             key={continent}
@@ -89,11 +98,22 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
           />
         ))}
       </SimpleGrid>
+      <ConfirmationModal
+        isOpen={confirmationDisclosure.isOpen}
+        onClose={confirmationDisclosure.onClose}
+        onConfirm={() => {
+          handleSave();
+          confirmationDisclosure.onClose();
+        }}
+        title="Regulation updates"
+        message="These updates to your location settings will automatically update your regulation settings."
+        isCentered
+      />
       {showSave ? (
         <Button
           colorScheme="primary"
           size="sm"
-          onClick={handleSave}
+          onClick={confirmationDisclosure.onOpen}
           isLoading={isSaving}
           data-testid="save-btn"
         >
