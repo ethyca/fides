@@ -319,7 +319,7 @@ describe("isNewFidesCookie", () => {
     const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
     const SAVED_UUID = "8a46c3ee-d6c3-4518-9b6c-074528b7bfd0";
     const SAVED_CONSENT = { data_sales: false, performance: true };
-    const V090_COOKIE = JSON.stringify({
+    const V090_COOKIE_OBJECT: FidesCookie = {
       consent: SAVED_CONSENT,
       identity: { fides_user_device_id: SAVED_UUID },
       fides_meta: {
@@ -328,7 +328,9 @@ describe("isNewFidesCookie", () => {
         updatedAt: UPDATED_DATE,
         version: "0.9.0",
       },
-    });
+      tcf_consent: {},
+    };
+    const V090_COOKIE = JSON.stringify(V090_COOKIE_OBJECT);
     beforeEach(() => mockGetCookie.mockReturnValue(V090_COOKIE));
 
     it("returns false for saved cookies", () => {
