@@ -254,5 +254,14 @@ describe("Locations", () => {
         });
       });
     });
+
+    it("can view more for continents without subgroups", () => {
+      cy.getByTestId("picker-card-South America").within(() => {
+        cy.getByTestId("view-more-btn").click();
+      });
+      cy.getByTestId("subgroup-modal").within(() => {
+        assertIsChecked("Brazil", true);
+      });
+    });
   });
 });
