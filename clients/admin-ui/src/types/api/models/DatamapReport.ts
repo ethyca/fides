@@ -6,13 +6,14 @@ export type DatamapReport = {
   administrating_department?: string;
   cookie_max_age_seconds?: number;
   cookie_refresh: boolean;
-  data_categories?: Array<string>;
+  data_categories?: string | Array<string>;
   data_security_practices?: string;
   data_shared_with_third_parties?: boolean;
   data_stewards?: Array<string>;
   data_subjects?: Array<string>;
+  data_uses?: string | Array<string>;
   declaration_name?: string;
-  description: string;
+  description?: string;
   does_international_transfers: boolean;
   dpa_location?: string;
   dpo?: string;

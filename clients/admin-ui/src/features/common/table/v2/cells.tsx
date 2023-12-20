@@ -11,7 +11,11 @@ import {
 import { HeaderContext } from "@tanstack/react-table";
 import { FC, ReactNode } from "react";
 
-export const DefaultCell = ({ value }: { value: string }) => (
+export const DefaultCell = ({
+  value,
+}: {
+  value: string | undefined | number | boolean;
+}) => (
   <Flex alignItems="center" height="100%">
     <Text fontSize="xs" lineHeight={4} fontWeight="normal">
       {value}
@@ -53,13 +57,14 @@ export const GroupCountBadgeCell = ({
   suffix,
   expand,
 }: {
-  value: string[] | string;
+  value: string[] | string | undefined;
   suffix?: string;
   expand: boolean;
 }) => {
   let badges = null;
   if (Array.isArray(value) || !value) {
     badges = expand ? (
+      // @ts-ignore
       value.map((d) => (
         <Box px={1} key={d}>
           <FidesBadge>{d}</FidesBadge>
@@ -102,7 +107,10 @@ type DefaultHeaderCellProps<T, V> = {
 export const DefaultHeaderCell = <T,>({
   value,
   column,
-}: DefaultHeaderCellProps<T, string | number | string[]>) => {
+}: DefaultHeaderCellProps<
+  T,
+  string | number | string[] | undefined | boolean
+>) => {
   let sortIcon: ReactNode = null;
   if (column.getIsSorted()) {
     sortIcon =

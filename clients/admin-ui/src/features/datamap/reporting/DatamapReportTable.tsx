@@ -51,6 +51,7 @@ const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
   pages: 1,
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 enum COLUMN_IDS {
   SYSTEM_NAME = "system_name",
   DATA_USE = "data_use",
@@ -59,6 +60,16 @@ enum COLUMN_IDS {
   LEGAL_NAME = "legal_name",
   DPO = "dpo",
   LEGAL_BASIS_FOR_PROCESSING = "legal_basis_for_processing",
+  ADMINISTRATING_DEPARTMENT = "adminstrating_department",
+  COOKIE_MAX_AGE_SECONDS = "cookie_max_age_seconds",
+  PRIVACY_POLICY = "privacy_policy",
+  LEGAL_ADDRESS = "legal_address",
+  COOKIE_REFRESH = "cookie_refresh",
+  DATA_SECURITY_PRACTICES = "data_security_practices",
+  DATA_SHARED_WITH_THIRD_PARTIES = "DATA_SHARED_WITH_THIRD_PARTIES",
+  DATA_STEWARDS = "data_stewards",
+  DECLARATION_NAME = "declaration_name",
+  DESCRIPTION = "description",
 }
 
 const getGrouping = (groupBy: DATAMAP_GROUPING) => {
@@ -229,6 +240,7 @@ export const DatamapReportTable = () => {
         header: (props) => <DefaultHeaderCell value="System" {...props} />,
         meta: {
           width: cellWidth,
+          minWidth: cellWidth,
         },
       }),
       columnHelper.accessor((row) => row.data_uses, {
@@ -243,6 +255,7 @@ export const DatamapReportTable = () => {
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
         meta: {
           width: cellWidth,
+          minWidth: cellWidth,
         },
       }),
       columnHelper.accessor((row) => row.data_categories, {
@@ -279,9 +292,7 @@ export const DatamapReportTable = () => {
       }),
       columnHelper.accessor((row) => row.legal_name, {
         id: COLUMN_IDS.LEGAL_NAME,
-        cell: (props) => (
-          <DefaultCell expand={false} value={props.getValue()} />
-        ),
+        cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Legal Name" {...props} />,
         meta: {
           width: cellWidth,
@@ -307,11 +318,124 @@ export const DatamapReportTable = () => {
           width: cellWidth,
         },
       }),
+      columnHelper.accessor((row) => row.administrating_department, {
+        id: COLUMN_IDS.ADMINISTRATING_DEPARTMENT,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Administrating department" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+        },
+      }),
+      columnHelper.accessor((row) => row.cookie_max_age_seconds, {
+        id: COLUMN_IDS.COOKIE_MAX_AGE_SECONDS,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Cookie max age seconds" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+        },
+      }),
+      columnHelper.accessor((row) => row.privacy_policy, {
+        id: COLUMN_IDS.PRIVACY_POLICY,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Privacy policy" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+        },
+      }),
+      columnHelper.accessor((row) => row.legal_address, {
+        id: COLUMN_IDS.LEGAL_ADDRESS,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Legal address" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+        },
+      }),
+      columnHelper.accessor((row) => row.cookie_refresh, {
+        id: COLUMN_IDS.COOKIE_REFRESH,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell
+            value="Cookie refresh"
+            table={props.table}
+            header={props.header}
+            column={props.column}
+          />
+        ),
+        meta: {
+          width: cellWidth,
+        },
+      }),
+      columnHelper.accessor((row) => row.data_security_practices, {
+        id: COLUMN_IDS.DATA_SECURITY_PRACTICES,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Data security practices" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+        },
+      }),
+      columnHelper.accessor((row) => row.data_shared_with_third_parties, {
+        id: COLUMN_IDS.DATA_SHARED_WITH_THIRD_PARTIES,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell
+            value="Data shared with third parties"
+            {...props}
+          />
+        ),
+        meta: {
+          width: cellWidth,
+        },
+      }),
+      columnHelper.accessor((row) => row.data_shared_with_third_parties, {
+        id: COLUMN_IDS.DATA_SHARED_WITH_THIRD_PARTIES,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell
+            value="Data shared with third parties"
+            {...props}
+          />
+        ),
+        meta: {
+          width: cellWidth,
+        },
+      }),
+      columnHelper.accessor((row) => row.data_stewards, {
+        id: COLUMN_IDS.DATA_STEWARDS,
+        cell: (props) => (
+          <GroupCountBadgeCell expand={false} value={props.getValue()} />
+        ),
+        header: (props) => (
+          <DefaultHeaderCell value="Data stewards" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+        },
+      }),
+      columnHelper.accessor((row) => row.declaration_name, {
+        id: COLUMN_IDS.DECLARATION_NAME,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Declaration name" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+        },
+      }),
     ],
     []
   );
 
-  const tableInstance = useReactTable<MinimalDatamapReport>({
+  const tableInstance = useReactTable<DatamapReport>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
@@ -420,7 +544,7 @@ export const DatamapReportTable = () => {
         </Flex>
       </TableActionBar>
 
-      <FidesTableV2<MinimalDatamapReport> tableInstance={tableInstance} />
+      <FidesTableV2<DatamapReport> tableInstance={tableInstance} />
       <PaginationBar
         totalRows={totalRows}
         pageSizes={PAGE_SIZES}
