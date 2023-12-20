@@ -26,6 +26,7 @@ The types of changes are:
 - Fixed incorrect Compass button behavior in system form [#4508](https://github.com/ethyca/fides/pull/4508)
 - Omit certain fields from system payload when empty  [#4508](https://github.com/ethyca/fides/pull/4525)
 - Fixed issues with Compass vendor selector behavior [#4521](https://github.com/ethyca/fides/pull/4521)
+- Fixed system name being editable when editing GVL systems [#4533](https://github.com/ethyca/fides/pull/4533)
 
 ### Changed
 - Upgrade to use Fideslang `3.0.0` and remove associated concepts [#4502](https://github.com/ethyca/fides/pull/4502)
