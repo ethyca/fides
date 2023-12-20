@@ -75,7 +75,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
           data-testid="search-bar"
         />
       </Box>
-      <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={6} width="100%">
+      <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={6}>
         {Object.entries(locationsByContinent).map(([continent, locations]) => (
           <LocationPickerCard
             key={continent}

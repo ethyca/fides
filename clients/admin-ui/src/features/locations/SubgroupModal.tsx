@@ -99,7 +99,7 @@ const SubgroupModal = ({
         >
           Select locations
         </ModalHeader>
-        <ModalBody p={6}>
+        <ModalBody p={6} maxHeight="70vh" overflowY="auto">
           <Flex justifyContent="space-between" mb={4}>
             <Box>
               <Checkbox
@@ -129,12 +129,7 @@ const SubgroupModal = ({
             />
           </Flex>
           {isGroupedView ? (
-            <Accordion
-              allowToggle
-              allowMultiple
-              // Opens all subgroups by default
-              defaultIndex={[...Array(numSubgroups).keys()]}
-            >
+            <Accordion allowToggle allowMultiple>
               {Object.entries(locationsByGroup).map(([group, subLocations]) => {
                 const groupName = getLocationNameFromId(group, locations);
                 return (
