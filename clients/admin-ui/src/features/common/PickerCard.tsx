@@ -49,6 +49,7 @@ const PickerCard = <T extends { id: string; name: string }>({
   title,
   items,
   selected,
+  indeterminate,
   onChange,
   toggle,
   onViewMore,
@@ -57,6 +58,7 @@ const PickerCard = <T extends { id: string; name: string }>({
   title: string;
   items: T[];
   selected: Array<string>;
+  indeterminate: Array<string>;
   onChange: (newSelected: Array<string>) => void;
   toggle?: ReactNode;
   onViewMore: () => void;
@@ -111,17 +113,18 @@ const PickerCard = <T extends { id: string; name: string }>({
         ) : null}
         <VStack paddingLeft="6" fontSize="sm" alignItems="start" spacing="2">
           <CheckboxGroup colorScheme="complimentary">
-            {itemsToShow.map((location) => (
-              <Flex key={location.id} alignItems="center" gap="8px">
+            {itemsToShow.map((item) => (
+              <Flex key={item.id} alignItems="center" gap="8px">
                 <Checkbox
-                  key={location.id}
-                  isChecked={selected.includes(location.id)}
+                  key={item.id}
+                  isChecked={selected.includes(item.id)}
+                  isIndeterminate={indeterminate.includes(item.id)}
                   size="md"
                   fontWeight="500"
-                  onChange={() => handleToggleSelection(location.id)}
-                  data-testid={`${location.name}-checkbox`}
+                  onChange={() => handleToggleSelection(item.id)}
+                  data-testid={`${item.name}-checkbox`}
                 >
-                  {location.name}
+                  {item.name}
                 </Checkbox>
               </Flex>
             ))}

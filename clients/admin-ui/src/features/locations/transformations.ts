@@ -1,4 +1,32 @@
-import { Continent, Location } from "~/types/api";
+import { narrow } from "narrow-minded";
+
+import { Continent, Location, LocationGroup } from "~/types/api";
+
+export const groupLocationsByContinent = (
+  locations: Location[],
+  locationGroups: LocationGroup[]
+): Record<
+  Continent,
+  { locations: Location[]; locationGroups: LocationGroup[] }
+> => {
+  const byContinent: Record<
+    string,
+    { locations: Location[]; locationGroups: LocationGroup[] }
+  > = {};
+  const allContinents = new Set(locations.map((l) => l.continent).sort());
+  allContinents.forEach((continent) => {
+    byContinent[continent] = {
+      locationGroups: locationGroups
+        .filter((l) => l.continent === continent)
+        .sort((a, b) => a.name.localeCompare(b.name)),
+      locations: locations
+        .filter((l) => l.continent === continent)
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    };
+  });
+
+  return byContinent;
+};
 
 export const groupByContinent = (
   locations: Location[]
@@ -33,5 +61,39 @@ export const groupByBelongsTo = (
   return byGroup;
 };
 
-export const getLocationNameFromId = (id: string, locations: Location[]) =>
-  locations.find((l) => l.id === id)?.name ?? id;
+export const isLocation = (data: unknown): data is Location =>
+  narrow({ selected: "boolean", regulation: ["string"] }, data);
+
+export const isRegulated = (
+  location: Location | LocationGroup,
+  locations: Location[]
+) => {
+  if (isLocation(location)) {
+    return !!location.regulation?.length;
+  }
+  const locationsInGroup = locations.filter((l) =>
+    l.belongs_to?.includes(location.id)
+  );
+  return locationsInGroup.some((l) => l.regulation?.length);
+};
+
+export const getCheckedStateLocationGroup = ({
+  group,
+  selected,
+  locations,
+}: {
+  group: LocationGroup;
+  selected: string[];
+  locations: Location[];
+}): "checked" | "unchecked" | "indeterminate" => {
+  const locationsInGroup = locations.filter((l) =>
+    l.belongs_to?.includes(group.id)
+  );
+  if (locationsInGroup.every((l) => selected.includes(l.id))) {
+    return "checked";
+  }
+  if (locationsInGroup.every((l) => !selected.includes(l.id))) {
+    return "unchecked";
+  }
+  return "indeterminate";
+};

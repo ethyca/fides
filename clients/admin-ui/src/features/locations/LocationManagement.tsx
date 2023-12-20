@@ -13,15 +13,15 @@ import { getErrorMessage } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import SearchBar from "~/features/common/SearchBar";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { Location, LocationRegulationResponse, Selection } from "~/types/api";
+import { LocationRegulationResponse, Selection } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 import LocationPickerCard from "./LocationPickerCard";
 import { usePatchLocationsRegulationsMutation } from "./locations.slice";
-import { groupByContinent } from "./transformations";
+import { groupLocationsByContinent } from "./transformations";
 
-const SEARCH_FILTER = (location: Location, search: string) =>
-  location.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
+// const SEARCH_FILTER = (location: Location, search: string) =>
+//   location.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
 
 const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const toast = useToast();
@@ -33,11 +33,16 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const [patchLocationsRegulationsMutationTrigger, { isLoading: isSaving }] =
     usePatchLocationsRegulationsMutation();
 
-  const locationsByContinent = useMemo(() => {
-    const filteredSearchLocations =
-      data.locations?.filter((l) => SEARCH_FILTER(l, search)) ?? [];
-    return groupByContinent(filteredSearchLocations);
-  }, [data.locations, search]);
+  const locationGroupsByContinent = useMemo(
+    () =>
+      // const filteredSearchLocations =
+      //   data.locations?.filter((l) => SEARCH_FILTER(l, search)) ?? [];
+      groupLocationsByContinent(
+        data.locations || [],
+        data.location_groups || []
+      ),
+    [data]
+  );
 
   const showSave = !_.isEqual(draftSelections, data.locations);
 
@@ -85,18 +90,24 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
         />
       </Box>
       <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={6} width="100%">
-        {Object.entries(locationsByContinent).map(([continent, locations]) => (
-          <LocationPickerCard
-            key={continent}
-            title={continent}
-            locations={locations}
-            selected={draftSelections
-              .filter((s) => locations.find((l) => l.id === s.id) && s.selected)
-              .map((s) => s.id)}
-            onChange={handleDraftChange}
-            view={search === "" ? "parents" : "all"}
-          />
-        ))}
+        {Object.entries(locationGroupsByContinent).map(
+          ([continent, continentData]) => (
+            <LocationPickerCard
+              key={continent}
+              title={continent}
+              groups={continentData.locationGroups}
+              locations={continentData.locations}
+              selected={draftSelections
+                .filter(
+                  (d) =>
+                    continentData.locations.find((l) => l.id === d.id) &&
+                    d.selected
+                )
+                .map((d) => d.id)}
+              onChange={handleDraftChange}
+            />
+          )
+        )}
       </SimpleGrid>
       <ConfirmationModal
         isOpen={confirmationDisclosure.isOpen}
