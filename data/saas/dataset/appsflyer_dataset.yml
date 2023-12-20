@@ -13,3 +13,4 @@ dataset:
           - name: app_id
             data_categories: [system.operations]
             fidesops_meta:
+              # primary_key: True
