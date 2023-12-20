@@ -48,7 +48,7 @@ export const TcfConsentButtons = ({
         ...(experience.tcf_system_legitimate_interests || []),
       ]),
     };
-    onSave(ConsentMethod.accept, allIds);
+    onSave(ConsentMethod.ACCEPT, allIds);
   };
   const handleRejectAll = () => {
     const emptyIds: EnabledIds = {
@@ -60,7 +60,7 @@ export const TcfConsentButtons = ({
       vendorsConsent: [],
       vendorsLegint: [],
     };
-    onSave(ConsentMethod.reject, emptyIds);
+    onSave(ConsentMethod.REJECT, emptyIds);
   };
 
   return (
