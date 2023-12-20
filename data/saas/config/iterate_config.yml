@@ -67,7 +67,7 @@ saas_config:
             - name: company_id
               references:
                 - dataset: <instance_fides_key>
-                  field: users.company_id
+                  field: user.company_id
                   direction: from
             - name: email
               identity: email
