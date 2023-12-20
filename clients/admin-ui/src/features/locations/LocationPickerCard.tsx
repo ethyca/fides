@@ -51,20 +51,41 @@ const LocationPickerCard = ({
     )
     .map((g) => g.id);
 
-  const handleChange = (newSelected: string[]) => {
-    const selections = new Set(newSelected);
-    newSelected.forEach((s) => {
-      // If it's a group, we have to propagate
-      if (groups.find((g) => g.id === s)) {
-        locations
-          .filter((l) => l.belongs_to?.includes(s))
-          .forEach((l) => {
-            selections.add(l.id);
-          });
+  const selected = isGroupedView
+    ? [...selectedGroups, ...selectedLocations]
+    : selectedLocations;
+  const numSelected = selectedLocations.length;
+
+  const handleChange = (selections: string[]) => {
+    const newSelected = new Set(selections);
+    const oldSelected = new Set(selected);
+    // Handle additions
+    selections.forEach((s) => {
+      if (!oldSelected.has(s)) {
+        // If it's a group, we have to propagate
+        if (groups.find((g) => g.id === s)) {
+          locations
+            .filter((l) => l.belongs_to?.includes(s))
+            .forEach((l) => {
+              newSelected.add(l.id);
+            });
+        }
+      }
+    });
+    // Handle removals
+    oldSelected.forEach((s) => {
+      if (!newSelected.has(s)) {
+        if (groups.find((g) => g.id === s)) {
+          locations
+            .filter((l) => l.belongs_to?.includes(s))
+            .forEach((l) => {
+              newSelected.delete(l.id);
+            });
+        }
       }
     });
     const updated = locations.map((location) => {
-      if (selections.has(location.id)) {
+      if (newSelected.has(location.id)) {
         return { ...location, selected: true };
       }
       return { ...location, selected: false };
@@ -72,15 +93,12 @@ const LocationPickerCard = ({
     onChange(updated);
   };
 
-  const selected = isGroupedView ? selectedGroups : selectedLocations;
-  const numSelected = selectedLocations.length;
-
   return (
     <>
       <PickerCard
         title={title}
         items={filteredLocations}
-        selected={isGroupedView ? selectedGroups : selected}
+        selected={selected}
         indeterminate={isGroupedView ? indeterminateGroups : []}
         onChange={handleChange}
         onViewMore={() => {

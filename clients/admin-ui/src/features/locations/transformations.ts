@@ -59,9 +59,12 @@ export const groupByBelongsTo = (
     }
   });
   // Manually set all other locations that do not belong to a group to "Other"
-  byGroup.Other = locations.filter(
+  const other = locations.filter(
     (l) => !l.belongs_to || l.belongs_to.length === 0
   );
+  if (other.length) {
+    byGroup.Other = other;
+  }
   return byGroup;
 };
 
@@ -93,6 +96,9 @@ export const getCheckedStateLocationGroup = ({
   const locationsInGroup = locations.filter((l) =>
     l.belongs_to?.includes(group.id)
   );
+  if (locationsInGroup.length === 0) {
+    return "unchecked";
+  }
   if (locationsInGroup.every((l) => selected.includes(l.id))) {
     return "checked";
   }

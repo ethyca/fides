@@ -66,6 +66,7 @@ const PickerCard = <T extends { id: string; name: string }>({
   onViewMore: () => void;
   numSelected: number;
 }) => {
+  console.log({ selected });
   const itemsToShow = items.slice(0, NUM_TO_SHOW);
 
   const { allSelected, someSelected, handleToggleAll, handleToggleSelection } =
@@ -98,7 +99,7 @@ const PickerCard = <T extends { id: string; name: string }>({
             onChange={handleToggleAll}
             colorScheme="complimentary"
             data-testid="select-all"
-            isIndeterminate={someSelected}
+            isIndeterminate={!allSelected && someSelected}
           >
             {title}
           </Checkbox>

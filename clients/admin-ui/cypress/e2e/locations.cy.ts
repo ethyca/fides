@@ -2,10 +2,17 @@ import { stubPlus } from "cypress/support/stubs";
 
 import { LOCATIONS_ROUTE } from "~/features/common/nav/v2/routes";
 
-const assertIsChecked = (name: string, checked: boolean) => {
-  cy.getByTestId(`${name}-checkbox`).within(() => {
-    const assertion = checked ? "be.checked" : "not.be.checked";
-    cy.get("input").should(assertion);
+const assertIsChecked = (
+  name: string,
+  state: "checked" | "unchecked" | "indeterminate"
+) => {
+  cy.getByTestId(name).within(() => {
+    if (state === "indeterminate") {
+      cy.get("input").should("have.prop", "indeterminate");
+    } else {
+      const assertion = state === "checked" ? "be.checked" : "not.be.checked";
+      cy.get("input").should(assertion);
+    }
   });
 };
 
@@ -26,15 +33,18 @@ describe("Locations", () => {
   describe("continent view", () => {
     it("renders locations by continent from initial data", () => {
       cy.getByTestId("picker-card-Europe").within(() => {
-        cy.getByTestId("select-all").should("not.be.checked");
-        assertIsChecked("European Economic Area", false);
+        assertIsChecked("select-all", "indeterminate");
+        assertIsChecked(
+          "European Economic Area (EEA)-checkbox",
+          "indeterminate"
+        );
       });
       cy.getByTestId("picker-card-North America").within(() => {
-        assertIsChecked("Canada", false);
-        assertIsChecked("United States", false);
+        assertIsChecked("Canada-checkbox", "unchecked");
+        assertIsChecked("United States-checkbox", "indeterminate");
       });
       cy.getByTestId("picker-card-South America").within(() => {
-        assertIsChecked("Brazil", true);
+        assertIsChecked("Brazil-checkbox", "checked");
       });
     });
 
@@ -48,30 +58,40 @@ describe("Locations", () => {
         cy.getByTestId("select-all").within(() => {
           cy.get("input").should("be.checked");
         });
-        assertIsChecked("European Economic Area", true);
+        assertIsChecked("European Economic Area (EEA)-checkbox", "checked");
         cy.getByTestId("num-selected-badge").contains("2 selected");
 
         // Unselect all
         cy.getByTestId("select-all").click();
-        assertIsChecked("European Economic Area", false);
+        assertIsChecked("European Economic Area (EEA)-checkbox", "unchecked");
         cy.getByTestId("num-selected-badge").should("not.exist");
 
-        // Toggle "regulated"
+        // Toggle "regulated". EEA itself is not regulated, but its composing regions are
+        // so it should still be around
         cy.getByTestId("regulated-toggle").click();
-        cy.getByTestId("European Economic Area-checkbox").should("not.exist");
+        cy.getByTestId("European Economic Area (EEA)-checkbox");
+      });
+
+      // Toggle "regulated" in South America which has some regulations
+      cy.getByTestId("picker-card-South America").within(() => {
+        cy.getByTestId("Brazil-checkbox");
+        cy.getByTestId("Venezuela-checkbox");
+        cy.getByTestId("regulated-toggle").click();
+        cy.getByTestId("Brazil-checkbox");
+        cy.getByTestId("Venezuela-checkbox").should("not.exist");
       });
 
       // North America should have stayed the same through all this
       cy.getByTestId("picker-card-North America").within(() => {
-        assertIsChecked("Canada", false);
-        assertIsChecked("United States", false);
+        assertIsChecked("Canada-checkbox", "unchecked");
+        assertIsChecked("United States-checkbox", "indeterminate");
         cy.getByTestId("num-selected-badge").contains("1 selected");
       });
     });
 
     it("can search", () => {
-      // Search for 'Ca'
-      cy.getByTestId("search-bar").type("Ca");
+      // Search for 'Cal'
+      cy.getByTestId("search-bar").type("Cal");
       cy.getByTestId("picker-card-Europe").should("not.exist");
       cy.getByTestId("picker-card-South America").should("not.exist");
       cy.getByTestId("picker-card-North America").within(() => {
@@ -84,14 +104,12 @@ describe("Locations", () => {
       cy.getByTestId("picker-card-North America");
       cy.getByTestId("picker-card-South America");
 
-      // Search for 'co' (lowercase) should show across continents
+      // Search for 'co' (lowercase)
       cy.getByTestId("search-bar").type("co");
-      cy.getByTestId("picker-card-Europe").within(() => {
-        cy.getByTestId("European Economic Area-checkbox");
-      });
       cy.getByTestId("picker-card-North America").within(() => {
         cy.getByTestId("California-checkbox").should("not.exist");
         cy.getByTestId("Colorado-checkbox");
+        cy.getByTestId("Connecticut-checkbox");
       });
     });
 
@@ -99,32 +117,29 @@ describe("Locations", () => {
       // Save button should not exist when there are no changes
       cy.getByTestId("save-btn").should("not.exist");
 
-      // Uncheck Canada. Making a change should make save button appear
+      // Check Canada. Making a change should make save button appear
       cy.getByTestId("Canada-checkbox").click();
-      assertIsChecked("Canada", true);
+      assertIsChecked("Canada-checkbox", "checked");
       cy.getByTestId("save-btn").should("exist");
 
       // Undoing the change should make save buttond disappear again
       cy.getByTestId("Canada-checkbox").click();
-      assertIsChecked("Canada", false);
+      assertIsChecked("Canada-checkbox", "unchecked");
       cy.getByTestId("save-btn").should("not.exist");
     });
 
     it("can change selections and persist to the backend", () => {
-      // Check Canada. Making a change should make save button appear
+      // Check Canada
       cy.getByTestId("Canada-checkbox").click();
-      assertIsChecked("Canada", true);
+      assertIsChecked("Canada-checkbox", "checked");
 
-      // Check Brazil
+      // Uncheck Brazil
       cy.getByTestId("Brazil-checkbox").click();
-      assertIsChecked("Brazil", false);
+      assertIsChecked("Brazil-checkbox", "unchecked");
 
       // Set up the next GET to return our changed data
       cy.fixture("locations/list.json").then((data) => {
         const newLocations = data.locations.map((l) => {
-          if (l.name === "Canada") {
-            return { ...l, selected: true };
-          }
           if (l.name === "Quebec") {
             return { ...l, selected: true };
           }
@@ -139,24 +154,13 @@ describe("Locations", () => {
       });
 
       cy.getByTestId("save-btn").click();
+      cy.getByTestId("continue-btn").click();
       cy.wait("@patchLocations").then((interception) => {
         const { body } = interception.request;
         // No changes to regulations
         expect(body.regulations).to.eql([]);
         // Check locations
         expect(body.locations).to.eql([
-          {
-            id: "us",
-            selected: false,
-          },
-          {
-            id: "eea",
-            selected: false,
-          },
-          {
-            id: "ca",
-            selected: true,
-          },
           {
             id: "fr",
             selected: true,
@@ -193,6 +197,10 @@ describe("Locations", () => {
             id: "br",
             selected: false,
           },
+          {
+            id: "ve",
+            selected: false,
+          },
         ]);
       });
       cy.wait("@getLocationsSecond");
@@ -208,10 +216,12 @@ describe("Locations", () => {
       cy.getByTestId("subgroup-modal").should("be.visible");
       cy.getByTestId("subgroup-modal").within(() => {
         cy.getByTestId("num-selected-badge").should("contain", "1 selected");
-        cy.getByTestId("European Economic Area-accordion").within(() => {
-          assertIsChecked("France", true);
-          assertIsChecked("Italy", false);
-        });
+        cy.getByTestId("European Economic Area (EEA)-accordion")
+          .click()
+          .within(() => {
+            assertIsChecked("France-checkbox", "checked");
+            assertIsChecked("Italy-checkbox", "unchecked");
+          });
       });
     });
 
@@ -222,10 +232,12 @@ describe("Locations", () => {
       cy.getByTestId("subgroup-modal").within(() => {
         cy.getByTestId("select-all").click();
         cy.getByTestId("num-selected-badge").should("contain", "2 selected");
-        cy.getByTestId("European Economic Area-accordion").within(() => {
-          assertIsChecked("France", true);
-          assertIsChecked("Italy", true);
-        });
+        cy.getByTestId("European Economic Area (EEA)-accordion")
+          .click()
+          .within(() => {
+            assertIsChecked("France-checkbox", "checked");
+            assertIsChecked("Italy-checkbox", "checked");
+          });
       });
     });
 
@@ -236,22 +248,26 @@ describe("Locations", () => {
       // Selecting Quebec should also select Canada in the continent view since Quebec
       // is the only child of Canada
       cy.getByTestId("subgroup-modal").within(() => {
-        cy.getByTestId("United States-accordion");
-        cy.getByTestId("Canada-accordion").within(() => {
-          cy.getByTestId("Quebec-checkbox").click();
-        });
+        cy.getByTestId("United States-accordion").click();
+        cy.getByTestId("Canada-accordion")
+          .click()
+          .within(() => {
+            cy.getByTestId("Quebec-checkbox").click();
+          });
       });
       cy.getByTestId("apply-btn").click();
       cy.getByTestId("picker-card-North America").within(() => {
-        assertIsChecked("Canada", true);
+        assertIsChecked("Canada-checkbox", "checked");
         // Deselecting Canada here should also deselect Quebec in modal view
         cy.getByTestId("Canada-checkbox").click();
         cy.getByTestId("view-more-btn").click();
       });
       cy.getByTestId("subgroup-modal").within(() => {
-        cy.getByTestId("Canada-accordion").within(() => {
-          assertIsChecked("Quebec", false);
-        });
+        cy.getByTestId("Canada-accordion")
+          .click()
+          .within(() => {
+            assertIsChecked("Quebec-checkbox", "unchecked");
+          });
       });
     });
 
@@ -260,7 +276,10 @@ describe("Locations", () => {
         cy.getByTestId("view-more-btn").click();
       });
       cy.getByTestId("subgroup-modal").within(() => {
-        assertIsChecked("Brazil", true);
+        // Don't render "Other" if there are only Other's
+        cy.getByTestId("Other-accordion").should("not.exist");
+        assertIsChecked("Brazil-checkbox", "checked");
+        assertIsChecked("Venezuela-checkbox", "unchecked");
       });
     });
   });
