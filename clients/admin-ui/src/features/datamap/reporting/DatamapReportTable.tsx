@@ -412,7 +412,11 @@ export const DatamapReportTable = () => {
       columnHelper.accessor((row) => row.data_stewards, {
         id: COLUMN_IDS.DATA_STEWARDS,
         cell: (props) => (
-          <GroupCountBadgeCell expand={false} value={props.getValue()} />
+          <GroupCountBadgeCell
+            expand={false}
+            suffix="data stewards"
+            value={props.getValue()}
+          />
         ),
         header: (props) => (
           <DefaultHeaderCell value="Data stewards" {...props} />

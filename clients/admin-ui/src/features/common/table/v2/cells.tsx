@@ -18,7 +18,7 @@ export const DefaultCell = ({
 }) => (
   <Flex alignItems="center" height="100%">
     <Text fontSize="xs" lineHeight={4} fontWeight="normal">
-      {value}
+      {value !== null && value !== undefined ? value.toString() : value}
     </Text>
   </Flex>
 );
