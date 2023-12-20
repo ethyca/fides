@@ -11,8 +11,7 @@ import {
   UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
-import { EXPERIENCE_KEYS_WITH_PREFERENCES } from "./tcf/constants";
-import {TcfModelsRecord, TCFPurposeConsentRecord} from "./tcf/types";
+import { TcfModelsRecord } from "./tcf/types";
 import { VALID_ISO_3166_LOCATION_REGEX } from "./consent-constants";
 import type { FidesCookie } from "./cookie";
 
@@ -221,7 +220,7 @@ export const experienceIsValid = (
  * Returns default TCF preference
  */
 export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
-    tcfObject.default_preference ?? UserConsentPreference.OPT_OUT
+  tcfObject.default_preference ?? UserConsentPreference.OPT_OUT;
 
 /**
  * Returns true if there are notices in the experience that require a user preference
@@ -230,20 +229,42 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
 export const shouldResurfaceConsent = (
   experience: PrivacyExperience,
   cookie: FidesCookie
-) => {
+): boolean => {
   if (
     experience.component === ComponentType.TCF_OVERLAY &&
     experience.meta?.version_hash
   ) {
     return experience.meta.version_hash !== cookie.tcf_version_hash;
   }
+  // If not every notice has previous user consent, we need to resurface consent
   return Boolean(
-    experience?.privacy_notices?.some(
-        // fixme- since we no longer have current_preference,
-        // we'll need to match up notice key with cookie vals to see if there are any missing consent on the cookie?
-      (notice) => notice.current_preference == null
-    )
+    !experience.privacy_notices?.every((notice) => notice.previously_consented)
   );
+};
+
+/**
+ * Adds the previously_consented field to notices on the experience.
+ * This field tracks whether we have prior user consent for a notice.
+ */
+export const assignPreviousConsentToNotices = (
+  experience: PrivacyExperience,
+  cookie: FidesCookie
+): PrivacyExperience => {
+  if (experience.component === ComponentType.TCF_OVERLAY) {
+    return experience;
+  }
+
+  const noticesWithPreviousConsent = experience.privacy_notices?.map(
+    (notice) => {
+      const previouslyConsented = Object.hasOwn(
+        cookie.consent,
+        notice.notice_key
+      );
+      return { ...notice, previously_consented: previouslyConsented };
+    }
+  );
+
+  return { ...experience, privacy_notices: noticesWithPreviousConsent };
 };
 
 /**

@@ -2,7 +2,7 @@ import { h, FunctionComponent, VNode } from "preact";
 import { useEffect, useState, useCallback, useMemo } from "preact/hooks";
 import { FidesOptions, PrivacyExperience } from "../lib/consent-types";
 
-import { debugLog, shouldResurfaceConsent } from "../lib/consent-utils";
+import { debugLog } from "../lib/consent-utils";
 
 import "./fides.css";
 import { useA11yDialog } from "../lib/a11y-dialog";
@@ -27,6 +27,7 @@ interface Props {
   options: FidesOptions;
   experience: PrivacyExperience;
   cookie: FidesCookie;
+  shouldResurfaceConsent: boolean;
   onOpen: () => void;
   onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
@@ -39,6 +40,7 @@ const Overlay: FunctionComponent<Props> = ({
   experience,
   options,
   cookie,
+  shouldResurfaceConsent,
   onOpen,
   onDismiss,
   renderBanner,
@@ -129,9 +131,9 @@ const Overlay: FunctionComponent<Props> = ({
     () =>
       !options.fidesDisableBanner &&
       experience.show_banner &&
-      shouldResurfaceConsent(experience, cookie) &&
+      shouldResurfaceConsent &&
       !options.fidesEmbed,
-    [experience, options, cookie]
+    [shouldResurfaceConsent, experience, options]
   );
 
   const handleManagePreferencesClick = (): void => {

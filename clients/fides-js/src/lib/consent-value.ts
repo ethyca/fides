@@ -23,13 +23,16 @@ export const resolveLegacyConsentValue = (
 
 export const resolveConsentValue = (
   notice: PrivacyNotice,
-  context: ConsentContext
+  context: ConsentContext,
+  previouslyConsented?: boolean
 ): boolean => {
   if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
     return true;
   }
   const gpcEnabled =
-    !!notice.has_gpc_flag && context.globalPrivacyControl === true;
+    !!notice.has_gpc_flag &&
+    context.globalPrivacyControl === true &&
+    !previouslyConsented;
   if (gpcEnabled) {
     return false;
   }

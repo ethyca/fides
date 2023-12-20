@@ -30,6 +30,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   options,
   fidesRegionString,
   cookie,
+  shouldResurfaceConsent,
 }) => {
   const initialEnabledNoticeKeys = useMemo(
     () => Object.keys(cookie.consent).filter((key) => cookie.consent[key]),
@@ -133,6 +134,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       options={options}
       experience={experience}
       cookie={cookie}
+      shouldResurfaceConsent={shouldResurfaceConsent}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (
