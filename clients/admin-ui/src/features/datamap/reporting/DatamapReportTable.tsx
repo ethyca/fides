@@ -526,15 +526,6 @@ export const DatamapReportTable = () => {
               >
                 Data use
               </MenuItemOption>
-              <MenuItemOption
-                onClick={() => {
-                  onGroupChange(DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM);
-                }}
-                isChecked={DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM === groupBy}
-                value={DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM}
-              >
-                Data category
-              </MenuItemOption>
             </MenuList>
           </Menu>
           <Button
