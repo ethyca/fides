@@ -66,7 +66,6 @@ const PickerCard = <T extends { id: string; name: string }>({
   onViewMore: () => void;
   numSelected: number;
 }) => {
-  console.log({ selected });
   const itemsToShow = items.slice(0, NUM_TO_SHOW);
 
   const { allSelected, someSelected, handleToggleAll, handleToggleSelection } =
