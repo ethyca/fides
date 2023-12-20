@@ -58,6 +58,10 @@ export const groupByBelongsTo = (
         .sort((a, b) => a.name.localeCompare(b.name));
     }
   });
+  // Manually set all other locations that do not belong to a group to "Other"
+  byGroup.Other = locations.filter(
+    (l) => !l.belongs_to || l.belongs_to.length === 0
+  );
   return byGroup;
 };
 

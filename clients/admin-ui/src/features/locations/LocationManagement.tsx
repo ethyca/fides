@@ -20,8 +20,8 @@ import LocationPickerCard from "./LocationPickerCard";
 import { usePatchLocationsRegulationsMutation } from "./locations.slice";
 import { groupLocationsByContinent } from "./transformations";
 
-// const SEARCH_FILTER = (location: Location, search: string) =>
-//   location.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
+const SEARCH_FILTER = (data: { name?: string }, search: string) =>
+  data.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
 
 const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const toast = useToast();
@@ -33,16 +33,16 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const [patchLocationsRegulationsMutationTrigger, { isLoading: isSaving }] =
     usePatchLocationsRegulationsMutation();
 
-  const locationGroupsByContinent = useMemo(
-    () =>
-      // const filteredSearchLocations =
-      //   data.locations?.filter((l) => SEARCH_FILTER(l, search)) ?? [];
-      groupLocationsByContinent(
-        data.locations || [],
-        data.location_groups || []
-      ),
-    [data]
-  );
+  const locationGroupsByContinent = useMemo(() => {
+    const filteredSearchLocations =
+      data.locations?.filter((l) => SEARCH_FILTER(l, search)) ?? [];
+    const filteredSearchGroups =
+      data.location_groups?.filter((l) => SEARCH_FILTER(l, search)) ?? [];
+    return groupLocationsByContinent(
+      filteredSearchLocations,
+      filteredSearchGroups || []
+    );
+  }, [data, search]);
 
   const showSave = !_.isEqual(draftSelections, data.locations);
 

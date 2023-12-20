@@ -21,6 +21,7 @@ export const usePicker = <T extends { id: string; name: string }>({
   onChange: (newSelected: Array<string>) => void;
 }) => {
   const allSelected = items.every((item) => selected.includes(item.id));
+  const someSelected = items.some((item) => selected.includes(item.id));
 
   const handleToggleSelection = (id: string) => {
     if (selected.includes(id)) {
@@ -40,6 +41,7 @@ export const usePicker = <T extends { id: string; name: string }>({
 
   return {
     allSelected,
+    someSelected,
     handleToggleAll,
     handleToggleSelection,
   };
@@ -66,11 +68,12 @@ const PickerCard = <T extends { id: string; name: string }>({
 }) => {
   const itemsToShow = items.slice(0, NUM_TO_SHOW);
 
-  const { allSelected, handleToggleAll, handleToggleSelection } = usePicker({
-    items,
-    selected,
-    onChange,
-  });
+  const { allSelected, someSelected, handleToggleAll, handleToggleSelection } =
+    usePicker({
+      items,
+      selected,
+      onChange,
+    });
 
   return (
     <Box
@@ -95,6 +98,7 @@ const PickerCard = <T extends { id: string; name: string }>({
             onChange={handleToggleAll}
             colorScheme="complimentary"
             data-testid="select-all"
+            isIndeterminate={someSelected}
           >
             {title}
           </Checkbox>
