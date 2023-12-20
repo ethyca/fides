@@ -137,6 +137,22 @@ describe("System management with Plus features", () => {
       cy.getByTestId("input-description").should("not.be.disabled");
     });
 
+    it("locks editing fields and changing name for a GVL vendor when visiting 'edit system' page directly", () => {
+      cy.fixture("systems/systems.json").then((systems) => {
+        cy.intercept("GET", "/api/v1/system/*", {
+          body: {
+            ...systems[0],
+            vendor_id: "gvl.733",
+          },
+        }).as("getSystem");
+      });
+      cy.visit("/systems/configure/fidesctl_system");
+      cy.wait("@getSystem");
+      cy.getByTestId("locked-for-GVL-notice");
+      cy.getByTestId("input-name").should("be.disabled");
+      cy.getByTestId("input-description").should("be.disabled");
+    });
+
     it("does not lock editing for a non-GVL vendor when visiting 'edit system' page directly", () => {
       cy.fixture("systems/systems.json").then((systems) => {
         cy.intercept("GET", "/api/v1/system/*", {
@@ -149,6 +165,7 @@ describe("System management with Plus features", () => {
       cy.visit("/systems/configure/fidesctl_system");
       cy.wait("@getSystem");
       cy.getByTestId("locked-for-GVL-notice").should("not.exist");
+      cy.getByTestId("input-name").should("not.be.disabled");
     });
 
     it("allows changes to data uses for non-GVL vendors", () => {
