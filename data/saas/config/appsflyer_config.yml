@@ -67,7 +67,7 @@ saas_config:
             {
               "subject_request_id": "<uuid>", 
               "subject_request_type": "erasure", 
-              "submitted_time": "<iso_8601_date>", 
+              "submitted_time": "<iso_8601_datetime>", 
               "subject_identities": [
                 {    
                   "identity_type": "appsflyer_id",
