@@ -31,6 +31,8 @@ The types of changes are:
 - Upgrade to use Fideslang `3.0.0` and remove associated concepts [#4502](https://github.com/ethyca/fides/pull/4502)
 - `fides.js` now sets `supportsOOB` to `false` [#4516](https://github.com/ethyca/fides/pull/4516)
 - Save consent method ("accept", "reject", "save", etc.) to `fides_consent` cookie as extra metadata [#4529](https://github.com/ethyca/fides/pull/4529)
+- Allow CORS for privacy center `fides.js` and `fides-ext-gpp.js` endpoints
+- Replace `GPP_EXT_PATH` env var in favor of a more flexible `FIDES_JS_BASE_URL` environment variable
 
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
