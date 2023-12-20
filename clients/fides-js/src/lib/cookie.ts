@@ -11,7 +11,7 @@ import {
   ExperienceMeta,
   LegacyConsentConfig,
   PrivacyExperience,
-  PrivacyNoticeWithPreference,
+  PrivacyNoticeExtended,
   SaveConsentPreference,
 } from "./consent-types";
 import {
@@ -253,7 +253,6 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
  * 1) context: browser context, which can automatically override those defaults
  *    in some cases (e.g. global privacy control => false)
  * 2) experience: current experience-based consent configuration.
- * 3) gpcApplied: whether or not GPC has been applied
  *
  * Returns cookie consent that can then be changed according to the
  * user's preferences.
@@ -261,7 +260,6 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
 export const buildCookieConsentForExperiences = (
   experience: PrivacyExperience,
   context: ConsentContext,
-  gpcApplied: boolean,
   debug: boolean
 ): CookieKeyConsent => {
   const cookieConsent: CookieKeyConsent = {};
@@ -296,7 +294,7 @@ export const updateExperienceFromCookieConsentNotices = ({
   cookie: FidesCookie;
   debug?: boolean;
 }): PrivacyExperience => {
-  const noticesWithConsent: PrivacyNoticeWithPreference[] | undefined =
+  const noticesWithConsent: PrivacyNoticeExtended[] | undefined =
     experience.privacy_notices?.map((notice) => {
       const preference = Object.hasOwn(cookie.consent, notice.notice_key)
         ? transformConsentToFidesUserPreference(

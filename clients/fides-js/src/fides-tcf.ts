@@ -118,7 +118,6 @@ const updateCookieAndExperience = async ({
   cookie: FidesCookie;
   experience: PrivacyExperience;
   debug?: boolean;
-  gpcApplied: boolean;
   isExperienceClientSideFetched: boolean;
 }): Promise<{
   cookie: FidesCookie;
