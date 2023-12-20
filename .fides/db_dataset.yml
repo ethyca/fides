@@ -2011,3 +2011,17 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: location_regulation_selections
+    fields:
+    - name: created_at
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: selected_locations
+      data_categories: [system.operations]
+    - name: selected_regulations
+      data_categories: [system.operations]
+    - name: single_row
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
