@@ -84,6 +84,13 @@ describe("System management page", () => {
         }).as("getConnectionTypes");
       });
 
+      it("can't create a system with the same name as an existing system", () => {
+        cy.visit(ADD_SYSTEMS_MANUAL_ROUTE);
+        cy.getByTestId("input-name").type("Demo Analytics System");
+        cy.getByTestId("input-description").focus();
+        cy.getByTestId("error-name");
+      });
+
       it.skip("Can step through the flow", () => {
         cy.fixture("systems/system.json").then((system) => {
           cy.intercept("GET", "/api/v1/system/*", {

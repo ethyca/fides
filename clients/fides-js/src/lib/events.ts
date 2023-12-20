@@ -28,13 +28,20 @@ declare global {
 }
 
 /**
+ * Defines the type of "extra" details that can be optionally added to certain
+ * events. This is intentionally vague, but constrained to be basic (primitive)
+ * values for simplicity.
+ */
+export type FidesEventExtraDetails = Record<string, string | number | boolean>;
+
+/**
  * Defines the properties available on event.detail. Currently the FidesCookie
  * and an extra field `meta` for any other details that the event wants to pass
  * around.
  */
 export type FidesEventDetail = FidesCookie & {
   debug?: boolean;
-  extraDetails?: Record<string, string | boolean>;
+  extraDetails?: FidesEventExtraDetails;
 };
 
 export type FidesEvent = CustomEvent<FidesEventDetail>;
@@ -59,7 +66,7 @@ export const dispatchFidesEvent = (
   type: FidesEventType,
   cookie: FidesCookie,
   debug: boolean,
-  extraDetails?: Record<string, string | boolean>
+  extraDetails?: FidesEventExtraDetails
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     const event = new CustomEvent(type, {

@@ -1,7 +1,17 @@
-import type { FidesOptions } from "./consent-types";
+import type {
+  EmptyExperience,
+  FidesOptions,
+  PrivacyExperience,
+} from "./consent-types";
 
-export const setupExtensions = async (options: FidesOptions) => {
-  if (options.gppEnabled) {
+export const setupExtensions = async ({
+  options,
+  experience,
+}: {
+  options: FidesOptions;
+  experience: PrivacyExperience | EmptyExperience | undefined;
+}) => {
+  if (experience?.gpp_settings?.enabled) {
     try {
       await import(options.gppExtensionPath);
     } catch (e) {

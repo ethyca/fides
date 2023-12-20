@@ -6,7 +6,7 @@
  * An enumeration.
  */
 export enum ConsentMethod {
-  BUTTON = "button",
+  BUTTON = "button", // deprecated- keeping for backwards-compatibility
   REJECT = "reject",
   ACCEPT = "accept",
   SAVE = "save",
