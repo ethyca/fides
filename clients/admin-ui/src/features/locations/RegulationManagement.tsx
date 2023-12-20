@@ -3,43 +3,51 @@ import _ from "lodash";
 import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import PickerCard from "~/features/common/PickerCard";
 import SearchBar from "~/features/common/SearchBar";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { Location, LocationRegulationResponse, Selection } from "~/types/api";
+import {
+  LocationRegulationBase,
+  LocationRegulationResponse,
+  Selection,
+} from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-import LocationPickerCard from "./LocationPickerCard";
 import { usePatchLocationsRegulationsMutation } from "./locations.slice";
-import { groupLocationsByContinent } from "./transformations";
+import { groupRegulationsByContinent } from "./transformations";
 
-const SEARCH_FILTER = (location: Location, search: string) =>
-  location.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
+const SEARCH_FILTER = (regulation: LocationRegulationBase, search: string) =>
+  regulation.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
 
-const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
+const RegulationManagement = ({
+  data,
+}: {
+  data: LocationRegulationResponse;
+}) => {
   const toast = useToast();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
-    data.locations ?? []
+    data.regulations ?? []
   );
   const [search, setSearch] = useState("");
   const [patchLocationsRegulationsMutationTrigger, { isLoading: isSaving }] =
     usePatchLocationsRegulationsMutation();
 
-  const locationsByContinent = useMemo(() => {
+  const regulationsByContinent = useMemo(() => {
     const filteredSearchLocations =
-      data.locations?.filter((l) => SEARCH_FILTER(l, search)) ?? [];
-    return groupLocationsByContinent(filteredSearchLocations);
-  }, [data.locations, search]);
+      data.regulations?.filter((l) => SEARCH_FILTER(l, search)) ?? [];
+    return groupRegulationsByContinent(filteredSearchLocations);
+  }, [data.regulations, search]);
 
   const showSave = !_.isEqual(draftSelections, data.locations);
 
   const handleSave = async () => {
     const result = await patchLocationsRegulationsMutationTrigger({
-      locations: draftSelections.map((s) => ({
+      regulations: draftSelections.map((s) => ({
         id: s.id,
         selected: s.selected,
       })),
       // no changes to regulations
-      regulations: [],
+      locations: [],
     });
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
@@ -53,7 +61,6 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
     }
   };
 
-  /** Allow changing a subset so it is easier to handle changes across continents */
   const handleDraftChange = (updatedSelections: Array<Selection>) => {
     const updated = draftSelections.map((draftSelection) => {
       const updatedSelection = updatedSelections.find(
@@ -61,6 +68,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
       );
       return updatedSelection ?? draftSelection;
     });
+
     setDraftSelections(updated);
   };
 
@@ -76,18 +84,35 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
         />
       </Box>
       <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={6} width="100%">
-        {Object.entries(locationsByContinent).map(([continent, locations]) => (
-          <LocationPickerCard
-            key={continent}
-            title={continent}
-            locations={locations}
-            selected={draftSelections
-              .filter((s) => locations.find((l) => l.id === s.id) && s.selected)
-              .map((s) => s.id)}
-            onChange={handleDraftChange}
-            view={search === "" ? "parents" : "all"}
-          />
-        ))}
+        {Object.entries(regulationsByContinent).map(
+          ([continent, regulations]) => {
+            const selected = draftSelections
+              .filter(
+                (s) => regulations.find((r) => r.id === s.id) && s.selected
+              )
+              .map((s) => s.id);
+            const handleChange = (newSelected: string[]) => {
+              const updatedSelections = regulations.map((regulation) => {
+                if (newSelected.includes(regulation.id)) {
+                  return { ...regulation, selected: true };
+                }
+                return { ...regulation, selected: false };
+              });
+              handleDraftChange(updatedSelections);
+            };
+            return (
+              <PickerCard
+                key={continent}
+                title={continent}
+                items={regulations}
+                selected={selected}
+                onChange={handleChange}
+                numSelected={selected.length}
+                onViewMore={() => {}}
+              />
+            );
+          }
+        )}
       </SimpleGrid>
       {showSave ? (
         <Button
@@ -104,4 +129,4 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   );
 };
 
-export default LocationManagement;
+export default RegulationManagement;

@@ -1,13 +1,26 @@
-import { Continent, Location } from "~/types/api";
+import { Continent, Location, LocationRegulationBase } from "~/types/api";
 
-export const groupByContinent = (
-  locations: Location[]
+export const groupLocationsByContinent = (
+  locations: LocationRegulationBase[]
 ): Record<Continent, Location[]> => {
   const byContinent: Record<string, Location[]> = {};
   const allContinents = new Set(locations.map((l) => l.continent).sort());
   allContinents.forEach((continent) => {
     byContinent[continent] = locations
       .filter((l) => l.continent === continent)
+      .sort((a, b) => a.name.localeCompare(b.name));
+  });
+  return byContinent;
+};
+
+export const groupRegulationsByContinent = (
+  regulations: LocationRegulationBase[]
+): Record<Continent, LocationRegulationBase[]> => {
+  const byContinent: Record<string, LocationRegulationBase[]> = {};
+  const allContinents = new Set(regulations.map((r) => r.continent).sort());
+  allContinents.forEach((continent) => {
+    byContinent[continent] = regulations
+      .filter((r) => r.continent === continent)
       .sort((a, b) => a.name.localeCompare(b.name));
   });
   return byContinent;
