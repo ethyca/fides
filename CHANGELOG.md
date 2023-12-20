@@ -30,6 +30,7 @@ The types of changes are:
 ### Changed
 - Upgrade to use Fideslang `3.0.0` and remove associated concepts [#4502](https://github.com/ethyca/fides/pull/4502)
 - `fides.js` now sets `supportsOOB` to `false` [#4516](https://github.com/ethyca/fides/pull/4516)
+- Save consent method ("accept", "reject", "save", etc.) to `fides_consent` cookie as extra metadata [#4529](https://github.com/ethyca/fides/pull/4529)
 
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 

@@ -419,13 +419,13 @@ export enum ButtonType {
 }
 
 export enum ConsentMethod {
-  button = "button", // deprecated- keeping for backwards-compatibility
-  reject = "reject",
-  accept = "accept",
-  save = "save",
-  dismiss = "dismiss",
-  gpc = "gpc",
-  individual_notice = "api",
+  BUTTON = "button", // deprecated- keeping for backwards-compatibility
+  REJECT = "reject",
+  ACCEPT = "accept",
+  SAVE = "save",
+  DISMISS = "dismiss",
+  GPC = "gpc",
+  INDIVIDUAL_NOTICE = "individual_notice",
 }
 
 export type PrivacyPreferencesRequest = {
