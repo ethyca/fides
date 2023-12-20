@@ -91,7 +91,6 @@ let _Fides: Fides;
 const updateCookie = async (
   oldCookie: FidesCookie,
   experience: PrivacyExperience,
-  gpcApplied: boolean,
   debug?: boolean,
   isExperienceClientSideFetched?: boolean
 ): Promise<{ cookie: FidesCookie; experience: PrivacyExperience }> => {
@@ -115,7 +114,6 @@ const updateCookie = async (
   const consent = buildCookieConsentForExperiences(
     updatedExperience,
     context,
-    gpcApplied,
     !!debug
   );
   return { cookie: { ...oldCookie, consent }, experience: updatedExperience };
@@ -159,13 +157,11 @@ const init = async (config: FidesConfig) => {
       cookie: oldCookie,
       experience: effectiveExperience,
       debug,
-      gpcApplied,
       isExperienceClientSideFetched,
     }) =>
       updateCookie(
         oldCookie,
         effectiveExperience,
-        gpcApplied,
         debug,
         isExperienceClientSideFetched
       ),

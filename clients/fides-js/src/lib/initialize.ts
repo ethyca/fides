@@ -290,13 +290,11 @@ export const initialize = async ({
     cookie,
     experience,
     debug,
-    gpcApplied,
     isExperienceClientSideFetched,
   }: {
     cookie: FidesCookie;
     experience: PrivacyExperience;
     debug?: boolean;
-    gpcApplied: boolean;
     isExperienceClientSideFetched: boolean;
   }) => Promise<{
     cookie: FidesCookie;
@@ -353,9 +351,8 @@ export const initialize = async ({
       // determine if consent should be resurfaced before we overwrite cookie vals with the experience defaults
       resurfaceConsent = shouldResurfaceConsent(effectiveExperience, cookie);
       // apply GPC preferences
-      let gpcApplied = false;
       if (shouldInitOverlay && isPrivacyExperience(effectiveExperience)) {
-        gpcApplied = automaticallyApplyGPCPreferences({
+        automaticallyApplyGPCPreferences({
           cookie,
           fidesRegionString,
           effectiveExperience,
@@ -366,7 +363,6 @@ export const initialize = async ({
         cookie,
         experience: effectiveExperience,
         debug: options.debug,
-        gpcApplied,
         isExperienceClientSideFetched: fetchedClientSideExperience,
       });
       debugLog(options.debug, "Updated cookie and experience", updated);

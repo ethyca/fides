@@ -19,7 +19,7 @@ import {
   Cookies,
   LegacyConsentConfig,
   PrivacyExperience,
-  PrivacyNoticeWithPreference,
+  PrivacyNoticeExtended,
   SaveConsentPreference,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
@@ -449,7 +449,7 @@ describe("updateCookieFromNoticePreferences", () => {
     const notices = [
       { notice_key: "one", current_preference: UserConsentPreference.OPT_IN },
       { notice_key: "two", current_preference: UserConsentPreference.OPT_OUT },
-    ] as PrivacyNoticeWithPreference[];
+    ] as PrivacyNoticeExtended[];
     const preferences = notices.map(
       (n) =>
         new SaveConsentPreference(
