@@ -18,4 +18,5 @@ export type HealthCheck = {
   dictionary: DictionaryStatus;
   fides_cloud: FidesCloudStatus;
   tcf: TCFStatus;
+  email_messaging: boolean;
 };

@@ -8,8 +8,10 @@ from sqlalchemy.orm import Session
 
 import fides
 from fides.api.api.deps import get_db
-from fides.api.common_exceptions import RedisConnectionError
+from fides.api.common_exceptions import MessageDispatchException, RedisConnectionError
 from fides.api.db.database import get_db_health
+from fides.api.models.messaging import MessagingConfig
+from fides.api.schemas.messaging.messaging import EMAIL_MESSAGING_SERVICES
 from fides.api.tasks import celery_app, get_worker_ids
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache
@@ -20,12 +22,17 @@ CacheHealth = Literal["healthy", "unhealthy", "no cache configured"]
 HEALTH_ROUTER = APIRouter(tags=["Health"])
 
 
+class EmailMessagingStatus(BaseModel):
+    enabled: bool = False
+
+
 class CoreHealthCheck(BaseModel):
     """Server Healthcheck schema"""
 
     webserver: str
     version: str
     cache: CacheHealth
+    email_messaging: bool
 
 
 class DatabaseHealthCheck(BaseModel):
@@ -52,6 +59,20 @@ def get_cache_health() -> str:
     except (RedisConnectionError, ResponseError) as e:
         logger.error("Unable to reach cache: {}", Pii(str(e)))
         return "unhealthy"
+
+
+def is_email_messaging_enabled(db: Session) -> bool:
+    """
+    Returns a boolean indicating the presence of a configured email messaging service.
+    """
+
+    for service in EMAIL_MESSAGING_SERVICES:
+        try:
+            MessagingConfig.get_configuration(db, service_type=service)
+            return True
+        except MessageDispatchException:
+            continue
+    return False
 
 
 @HEALTH_ROUTER.get(
@@ -169,19 +190,22 @@ async def workers_health() -> Dict:
         },
     },
 )
-async def health() -> Dict:
+async def health(db: Session = Depends(get_db)) -> Dict:
     """Confirm that the API is running and healthy."""
-    cache_health = get_cache_health()
-    response = CoreHealthCheck(
-        webserver="healthy",
-        version=str(fides.__version__),
-        cache=cache_health,
-    ).dict()
+    try:
+        cache_health = get_cache_health()
+        response = CoreHealthCheck(
+            webserver="healthy",
+            version=str(fides.__version__),
+            cache=cache_health,
+            email_messaging=is_email_messaging_enabled(db),
+        ).dict()
 
-    for _, value in response.items():
-        if value == "unhealthy":
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
-            )
-
+        for _, value in response.items():
+            if value == "unhealthy":
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
+                )
+    except Exception:
+        logger.exception("something failed")
     return response

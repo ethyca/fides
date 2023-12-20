@@ -24,9 +24,14 @@ type FeaturesState = {
    * until acknowledged (see fides#2842)
    */
   showNotificationBanner: boolean;
+  emailMessagingEnabled: boolean;
 };
 
-const initialState: FeaturesState = { flags: {}, showNotificationBanner: true };
+const initialState: FeaturesState = {
+  flags: {},
+  showNotificationBanner: true,
+  emailMessagingEnabled: false,
+};
 
 export const featuresSlice = createSlice({
   name: "features",
@@ -60,6 +65,9 @@ export const featuresSlice = createSlice({
     setShowNotificationBanner(draftState, action: PayloadAction<boolean>) {
       draftState.showNotificationBanner = action.payload;
     },
+    setEmailMessagingEnabled(draftState, action: PayloadAction<boolean>) {
+      draftState.emailMessagingEnabled = action.payload;
+    },
   },
 });
 
@@ -85,7 +93,13 @@ export const selectShowNotificationBanner = createSelector(
   (state) => state.showNotificationBanner
 );
 
-export const { setShowNotificationBanner } = featuresSlice.actions;
+export const selectEmailMessagingEnabled = createSelector(
+  selectFeatures,
+  (state) => state.emailMessagingEnabled
+);
+
+export const { setShowNotificationBanner, setEmailMessagingEnabled } =
+  featuresSlice.actions;
 
 export const useFlags = () => {
   const dispatch = useAppDispatch();
@@ -137,6 +151,7 @@ export type Features = {
   dictionaryService: boolean;
   fidesCloud: boolean;
   tcf: boolean;
+  emailMessaging: boolean;
 
   flags: FlagsFor<FlagConfig>;
 };
@@ -148,6 +163,7 @@ export const useFeatures = (): Features => {
   const initialConnections = useAppSelector(selectInitialConnections);
 
   const version = health?.version;
+  const emailMessaging = health?.email_messaging || false;
 
   const plus = plusHealth !== undefined;
   const plusVersion = plusHealth?.fidesplus_version;
@@ -178,5 +194,6 @@ export const useFeatures = (): Features => {
     fidesCloud,
     tcf,
     flags,
+    emailMessaging,
   };
 };
