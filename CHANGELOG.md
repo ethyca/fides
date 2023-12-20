@@ -32,6 +32,7 @@ The types of changes are:
 - `fides.js` now sets `supportsOOB` to `false` [#4516](https://github.com/ethyca/fides/pull/4516)
 - Save consent method ("accept", "reject", "save", etc.) to `fides_consent` cookie as extra metadata [#4529](https://github.com/ethyca/fides/pull/4529)
 - Change vendor add modal on consent configuration screen to use new vendor selector [#4532](https://github.com/ethyca/fides/pull/4532)
+- Remove vendor add modal [#4535](https://github.com/ethyca/fides/pull/4535)
 
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
