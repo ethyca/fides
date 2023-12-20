@@ -379,13 +379,10 @@ describe("Consent banner", () => {
             ],
             privacy_experience_id: "132345243",
             user_geography: "us_ca",
-<<<<<<< HEAD
-            method: ConsentMethod.save,
+
+            method: ConsentMethod.SAVE,
             served_notice_history_id:
               "ser_65920a24-128f-4990-a7a8-f1a05a09093d",
-=======
-            method: ConsentMethod.SAVE,
->>>>>>> main
           };
           expect(body).to.eql(expected);
         });
@@ -474,13 +471,9 @@ describe("Consent banner", () => {
             ],
             privacy_experience_id: "pri_b9d1af04-5852-4499-bdfb-2778a6117fb8",
             user_geography: "us_ca",
-<<<<<<< HEAD
-            method: ConsentMethod.save,
+            method: ConsentMethod.SAVE,
             served_notice_history_id:
               "ser_65920a24-128f-4990-a7a8-f1a05a09093d",
-=======
-            method: ConsentMethod.SAVE,
->>>>>>> main
           };
           expect(body).to.eql(expected);
         });
@@ -681,12 +674,9 @@ describe("Consent banner", () => {
             ],
             privacy_experience_id: "132345243",
             user_geography: "us_ca",
-<<<<<<< HEAD
-            method: ConsentMethod.gpc,
-            served_notice_history_id: undefined,
-=======
+
             method: ConsentMethod.GPC,
->>>>>>> main
+            served_notice_history_id: undefined,
           };
           // uuid is generated automatically if the user has no saved consent cookie
           generatedUserDeviceId = body.browser_identity.fides_user_device_id;
