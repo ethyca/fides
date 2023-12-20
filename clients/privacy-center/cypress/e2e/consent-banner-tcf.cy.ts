@@ -384,7 +384,7 @@ describe("Fides-js TCF", () => {
           .should("have.been.calledOnce")
           .its("lastCall.args.0.detail.extraDetails.consentMethod")
           .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.accept);
+            expect(consentMethod).to.eql(ConsentMethod.ACCEPT);
           });
         cy.window().then((win) => {
           win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
@@ -577,7 +577,7 @@ describe("Fides-js TCF", () => {
           cy.wait("@patchPrivacyPreference").then((interception) => {
             cy.get("@FidesUIChanged").should("not.have.been.called");
             const { body } = interception.request;
-            expect(body.method).to.eql(ConsentMethod.accept);
+            expect(body.method).to.eql(ConsentMethod.ACCEPT);
             expect(body.purpose_consent_preferences).to.eql([
               {
                 id: PURPOSE_4.id,
@@ -640,6 +640,9 @@ describe("Fides-js TCF", () => {
           const cookieKeyConsent: FidesCookie = JSON.parse(
             decodeURIComponent(cookie!.value)
           );
+          expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+            ConsentMethod.ACCEPT
+          );
           assertTcOptIns({
             cookie: cookieKeyConsent,
             modelType: "purposeConsents",
@@ -688,7 +691,7 @@ describe("Fides-js TCF", () => {
             cy.get("@FidesUIChanged").should("not.have.been.called");
             const { body } = interception.request;
             expect(interception.request.body.method).to.eql(
-              ConsentMethod.reject
+              ConsentMethod.REJECT
             );
             expect(body.purpose_consent_preferences).to.eql([
               {
@@ -753,6 +756,9 @@ describe("Fides-js TCF", () => {
             const cookieKeyConsent: FidesCookie = JSON.parse(
               decodeURIComponent(cookie!.value)
             );
+            expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+              ConsentMethod.REJECT
+            );
             assertTcOptIns({
               cookie: cookieKeyConsent,
               modelType: "purposeConsents",
@@ -810,7 +816,7 @@ describe("Fides-js TCF", () => {
           cy.get("@FidesUIChanged").its("callCount").should("equal", 3);
           cy.wait("@patchPrivacyPreference").then((interception) => {
             const { body } = interception.request;
-            expect(interception.request.body.method).to.eql(ConsentMethod.save);
+            expect(interception.request.body.method).to.eql(ConsentMethod.SAVE);
             expect(body.purpose_consent_preferences).to.eql([
               {
                 id: PURPOSE_4.id,
@@ -872,6 +878,9 @@ describe("Fides-js TCF", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
           const cookieKeyConsent: FidesCookie = JSON.parse(
             decodeURIComponent(cookie!.value)
+          );
+          expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+            ConsentMethod.SAVE
           );
           assertTcOptIns({
             cookie: cookieKeyConsent,
@@ -948,12 +957,12 @@ describe("Fides-js TCF", () => {
                 .should("have.been.calledOnce")
                 .its("lastCall.args.0.detail.extraDetails.consentMethod")
                 .then((consentMethod) => {
-                  expect(consentMethod).to.eql(ConsentMethod.reject);
+                  expect(consentMethod).to.eql(ConsentMethod.REJECT);
                   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                   expect(spyObject).to.be.called;
                   const spy = spyObject.getCalls();
                   const { args } = spy[0];
-                  expect(args[0]).to.equal(ConsentMethod.reject);
+                  expect(args[0]).to.equal(ConsentMethod.REJECT);
                   expect(args[1]).to.deep.equal({
                     data_sales: true,
                     tracking: false,
@@ -1011,6 +1020,9 @@ describe("Fides-js TCF", () => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const cookieKeyConsent: FidesCookie = JSON.parse(
               decodeURIComponent(cookie!.value)
+            );
+            expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+              ConsentMethod.REJECT
             );
             assertTcOptIns({
               cookie: cookieKeyConsent,
@@ -1220,7 +1232,7 @@ describe("Fides-js TCF", () => {
       cy.get("button").contains("Save").click();
       cy.wait("@patchPrivacyPreference").then((interception) => {
         const { body } = interception.request;
-        expect(interception.request.body.method).to.eql(ConsentMethod.save);
+        expect(interception.request.body.method).to.eql(ConsentMethod.SAVE);
         expect(body.purpose_consent_preferences).to.eql([
           { id: PURPOSE_4.id, preference: "opt_out" },
           { id: PURPOSE_6.id, preference: "opt_in" },
@@ -1250,6 +1262,9 @@ describe("Fides-js TCF", () => {
       cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
         const cookieKeyConsent: FidesCookie = JSON.parse(
           decodeURIComponent(cookie!.value)
+        );
+        expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+          ConsentMethod.SAVE
         );
         assertTcOptIns({
           cookie: cookieKeyConsent,
@@ -1420,7 +1435,7 @@ describe("Fides-js TCF", () => {
           .should("have.been.calledOnce")
           .its("lastCall.args.0.detail.extraDetails.consentMethod")
           .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.accept);
+            expect(consentMethod).to.eql(ConsentMethod.ACCEPT);
           });
         cy.get("@TCFEvent")
           .its("lastCall.args")
@@ -1493,7 +1508,7 @@ describe("Fides-js TCF", () => {
           .should("have.been.calledOnce")
           .its("lastCall.args.0.detail.extraDetails.consentMethod")
           .then((consentMethod) => {
-            expect(consentMethod).to.eql(ConsentMethod.accept);
+            expect(consentMethod).to.eql(ConsentMethod.ACCEPT);
           });
         cy.get("@TCFEvent2")
           .its("lastCall.args")
@@ -2870,7 +2885,7 @@ describe("Fides-js TCF", () => {
           ...AC_IDS.map((id) => ({ id: `gacp.${id}`, preference: "opt_in" })),
         ];
         expect(body.vendor_consent_preferences).to.eql(expected);
-        expect(body.method).to.eql(ConsentMethod.save);
+        expect(body.method).to.eql(ConsentMethod.SAVE);
 
         // Check the cookie
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
@@ -2898,7 +2913,7 @@ describe("Fides-js TCF", () => {
           ...AC_IDS.map((id) => ({ id: `gacp.${id}`, preference: "opt_out" })),
         ];
         expect(body.vendor_consent_preferences).to.eql(expected);
-        expect(body.method).to.eql(ConsentMethod.reject);
+        expect(body.method).to.eql(ConsentMethod.REJECT);
 
         // Check the cookie
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
@@ -2923,7 +2938,7 @@ describe("Fides-js TCF", () => {
         cy.get("button").contains("Opt in to all").click();
       });
       cy.wait("@patchPrivacyPreference").then((interception) => {
-        expect(interception.request.body.method).to.eql(ConsentMethod.accept);
+        expect(interception.request.body.method).to.eql(ConsentMethod.ACCEPT);
       });
       cy.get("@FidesUpdated")
         .should("have.been.calledOnce")
@@ -2955,13 +2970,13 @@ describe("Fides-js TCF", () => {
         cy.get("button").contains("Opt in to all").click();
       });
       cy.wait("@patchPrivacyPreference").then((interception) => {
-        expect(interception.request.body.method).to.eql(ConsentMethod.accept);
+        expect(interception.request.body.method).to.eql(ConsentMethod.ACCEPT);
       });
       cy.get("@FidesUpdated")
         .should("have.been.calledOnce")
         .its("lastCall.args.0.detail.extraDetails.consentMethod")
         .then((consentMethod) => {
-          expect(consentMethod).to.eql(ConsentMethod.accept);
+          expect(consentMethod).to.eql(ConsentMethod.ACCEPT);
         });
       // Call getTCData
       cy.window().then((win) => {

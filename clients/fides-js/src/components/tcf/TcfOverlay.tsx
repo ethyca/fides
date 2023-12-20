@@ -331,7 +331,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   }, [cookie, options.debug]);
 
   const handleDismiss = useCallback(() => {
-    handleUpdateAllPreferences(ConsentMethod.dismiss, initialEnabledIds);
+    handleUpdateAllPreferences(ConsentMethod.DISMISS, initialEnabledIds);
   }, [handleUpdateAllPreferences, initialEnabledIds]);
 
   if (!experience.experience_config) {
@@ -415,7 +415,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                 <Button
                   buttonType={ButtonType.SECONDARY}
                   label={experience.experience_config?.save_button_label}
-                  onClick={() => onSave(ConsentMethod.save, draftIds)}
+                  onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
                   className="fides-save-button"
                 />
               }
