@@ -14,9 +14,10 @@ from sqlalchemy import (
     update,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
 
 
 class LocationRegulationSelections(Base):
@@ -26,6 +27,10 @@ class LocationRegulationSelections(Base):
     This is a single-row table. The single record describes global, application-wide selections
     about enabled locations and regulations.
     """
+
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "location_regulation_selections"
 
     selected_locations = Column(
         ARRAY(String),
@@ -48,36 +53,12 @@ class LocationRegulationSelections(Base):
     UniqueConstraint("single_row", name="single_row_unique")
 
     @classmethod
-    async def create_or_update_async(  # type: ignore[override]
-        cls,
-        async_session: Session,
-        *,
-        data: Dict[str, Any],
-    ) -> LocationRegulationSelections:
-        """
-        Creates the selections record if none exists, or updates the existing record.
-
-        Here we effectively prevent more than a single record in the table.
-        """
-        async with async_session.begin():
-            result = await async_session.execute(select(cls))
-            existing_record = result.scalars().first()
-            if existing_record:
-                await async_session.execute(
-                    update(cls).where(cls.id == existing_record.id).values(data)
-                )
-            else:
-                await async_session.execute(insert(cls).values(data))
-            result = await async_session.execute(select(cls))
-            return result.scalars().first()
-
-    @classmethod
     def create_or_update(  # type: ignore[override]
         cls,
         db: Session,
         *,
         data: Dict[str, Any],
-    ) -> LocationRegulationSelections:
+    ) -> FidesBase:
         """
         Creates the selections record if none exists, or updates the existing record.
 
@@ -88,10 +69,34 @@ class LocationRegulationSelections(Base):
             updated_record = existing_record.update(
                 db=db,
                 data=data,
-            )
+            )  # type: ignore[arg-type]
             return updated_record
 
         return cls.create(db=db, data=data)
+
+    @classmethod
+    async def create_or_update_async(
+        cls,
+        async_session: AsyncSession,
+        *,
+        data: Dict[str, Any],
+    ) -> LocationRegulationSelections:
+        """
+        Creates the selections record if none exists, or updates the existing record.
+
+        Here we effectively prevent more than a single record in the table.
+        """
+        async with async_session.begin():
+            result = await async_session.execute(select(cls))  # type: ignore[arg-type]
+            existing_record = result.scalars().first()
+            if existing_record:
+                await async_session.execute(
+                    update(cls).where(cls.id == existing_record.id).values(data)  # type: ignore[arg-type]
+                )
+            else:
+                await async_session.execute(insert(cls).values(data))  # type: ignore[arg-type]
+            result = await async_session.execute(select(cls))  # type: ignore[arg-type]
+            return result.scalars().first()
 
     @classmethod
     def set_selected_locations(
@@ -105,7 +110,7 @@ class LocationRegulationSelections(Base):
     @classmethod
     async def set_selected_locations_async(
         cls,
-        async_session: Session,
+        async_session: AsyncSession,
         selected_locations: Iterable[str],
     ) -> None:
         """Utility method to set the selected locations"""
@@ -135,7 +140,7 @@ class LocationRegulationSelections(Base):
         Utility method to get the selected_locations, returned as a Set.
         """
         async with async_session.begin():
-            results = await async_session.execute(select(cls))
+            results = await async_session.execute(select(cls))  # type: ignore[arg-type]
             record = results.scalars().first()
             if record:
                 return set(record.selected_locations)
@@ -185,7 +190,7 @@ class LocationRegulationSelections(Base):
         Utility method to get the selected_regulations, returned as a Set.
         """
         async with async_session.begin():
-            results = await async_session.execute(select(cls))
+            results = await async_session.execute(select(cls))  # type: ignore[arg-type]
             record = results.scalars().first()
             if record:
                 return set(record.selected_regulations)
