@@ -64,6 +64,7 @@ export interface CustomInputProps {
   variant?: Variant;
   isRequired?: boolean;
   textColor?: string;
+  inputRightElement?: React.ReactNode;
 }
 
 // We allow `undefined` here and leave it up to each component that uses this field
@@ -87,7 +88,17 @@ export const Label = ({
 );
 
 export const TextInput = forwardRef(
-  ({ isPassword, ...props }: InputProps & { isPassword: boolean }, ref) => {
+  (
+    {
+      isPassword,
+      inputRightElement,
+      ...props
+    }: InputProps & {
+      isPassword: boolean;
+      inputRightElement?: React.ReactNode;
+    },
+    ref
+  ) => {
     const [type, setType] = useState<"text" | "password">(
       isPassword ? "password" : "text"
     );
@@ -105,6 +116,9 @@ export const TextInput = forwardRef(
           background="white"
           focusBorderColor="primary.600"
         />
+        {inputRightElement ? (
+          <InputRightElement pr={2}>{inputRightElement}</InputRightElement>
+        ) : null}
         {isPassword ? (
           <InputRightElement pr="2">
             <IconButton
@@ -510,6 +524,7 @@ export const CustomTextInput = ({
   disabled,
   variant = "inline",
   isRequired = false,
+  inputRightElement,
   ...props
 }: CustomInputProps & StringField) => {
   const [initialField, meta] = useField(props);
@@ -518,6 +533,17 @@ export const CustomTextInput = ({
   const field = { ...initialField, value: initialField.value ?? "" };
 
   const isPassword = initialType === "password";
+
+  const innerInput = (
+    <TextInput
+      {...field}
+      isDisabled={disabled}
+      data-testid={`input-${field.name}`}
+      placeholder={placeholder}
+      isPassword={isPassword}
+      inputRightElement={inputRightElement}
+    />
+  );
 
   if (variant === "inline") {
     return (
@@ -528,13 +554,7 @@ export const CustomTextInput = ({
           ) : null}
           <Flex alignItems="center">
             <Flex flexDir="column" flexGrow={1} mr="2">
-              <TextInput
-                {...field}
-                isDisabled={disabled}
-                data-testid={`input-${field.name}`}
-                placeholder={placeholder}
-                isPassword={isPassword}
-              />
+              {innerInput}
               <ErrorMessage
                 isInvalid={isInvalid}
                 message={meta.error}
@@ -558,13 +578,7 @@ export const CustomTextInput = ({
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
           </Flex>
         ) : null}
-        <TextInput
-          {...field}
-          isDisabled={disabled}
-          data-testid={`input-${field.name}`}
-          placeholder={placeholder}
-          isPassword={isPassword}
-        />
+        {innerInput}
         <ErrorMessage
           isInvalid={isInvalid}
           message={meta.error}

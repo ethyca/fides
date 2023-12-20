@@ -1,4 +1,5 @@
 import type { CookieKeyConsent } from "./cookie";
+import { GPPSettings } from "./gpp/types";
 import type {
   TCFFeatureRecord,
   TCFPurposeSave,
@@ -81,9 +82,6 @@ export type FidesOptions = {
 
   // Allows for explicit overrides on various internal API calls made from Fides.
   apiOptions: FidesApiOptions | null;
-
-  // Whether or the GPP extension should be loaded
-  gppEnabled: boolean;
 
   // What the "GDPR Applies" field of TCF should default to
   fidesTcfGdprApplies: boolean;
@@ -298,6 +296,7 @@ export type PrivacyExperience = {
   tcf_system_relationships?: Array<TCFVendorRelationships>;
   gvl?: GVLJson;
   meta?: ExperienceMeta;
+  gpp_settings?: GPPSettings;
 };
 
 export type ExperienceConfig = {

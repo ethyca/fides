@@ -10,11 +10,6 @@
     "name": "Analytics",
     "description": "Provides analytics for activities such as system and advertising performance reporting, insights and fraud detection.",
     "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -28,11 +23,6 @@
     "name": "Analytics for Reporting",
     "description": "Provides analytics for general reporting such as system and advertising performance.",
     "parent_key": "analytics",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -46,11 +36,6 @@
     "name": "Analytics for Advertising Performance",
     "description": "Provides analytics for reporting of advertising performance.",
     "parent_key": "analytics.reporting",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -64,11 +49,6 @@
     "name": "Analytics for Content Performance",
     "description": "Analytics for reporting on content performance.",
     "parent_key": "analytics.reporting",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -82,11 +62,6 @@
     "name": "Analytics for Insights",
     "description": "Provides analytics for reporting of campaign insights related to advertising and promotion activities.",
     "parent_key": "analytics.reporting",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -100,11 +75,6 @@
     "name": "Analytics for System Activity",
     "description": "Provides analytics for reporting on system activity.",
     "parent_key": "analytics.reporting",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -118,11 +88,6 @@
     "name": "Analytics for System Performance",
     "description": "Provides analytics for reporting on system performance.",
     "parent_key": "analytics.reporting.system",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -136,11 +101,6 @@
     "name": "Collect",
     "description": "Collects or stores data in order to use it for another purpose which has not yet been expressly defined.",
     "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -154,11 +114,6 @@
     "name": "Employment",
     "description": "Processes data for the purpose of recruitment or employment and human resources (HR) related activities.",
     "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -172,11 +127,6 @@
     "name": "Employment Recruitment",
     "description": "Processes data of prospective employees for the purpose of recruitment.",
     "parent_key": "employment",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -190,11 +140,6 @@
     "name": "Essential",
     "description": "Operates the service or product, including legal obligations, support and basic system operations.",
     "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -208,11 +153,6 @@
     "name": "Essential Fraud Detection",
     "description": "Detects possible fraud or misuse of the product, service, application or system.",
     "parent_key": "essential",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -226,11 +166,6 @@
     "name": "Essential Legal Obligation",
     "description": "Provides service to meet a legal or compliance obligation such as consent management.",
     "parent_key": "essential",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -244,11 +179,6 @@
     "name": "Essential for Service",
     "description": "Provides the essential product, service, application or system, without which the product/service would not be possible.",
     "parent_key": "essential",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -262,11 +192,6 @@
     "name": "Essential Service Authentication",
     "description": "Authenticate users to the product, service, application or system.",
     "parent_key": "essential.service",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -280,11 +205,6 @@
     "name": "Essential Service Notifications",
     "description": "Sends notifications about the product, service, application or system.",
     "parent_key": "essential.service",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -298,11 +218,6 @@
     "name": "Essential for Operations",
     "description": "Essential to ensure the operation of the product, service, application or system.",
     "parent_key": "essential.service",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -316,11 +231,6 @@
     "name": "Essential for Payment Processing",
     "description": "Essential to processes payments for the product, service, application or system.",
     "parent_key": "essential.service",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -334,11 +244,6 @@
     "name": "Essential for Security",
     "description": "Essential to provide security for the product, service, application or system",
     "parent_key": "essential.service",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -352,11 +257,6 @@
     "name": "Essential for Service Upgrades",
     "description": "Provides timely system upgrade information options.",
     "parent_key": "essential.service",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -370,11 +270,6 @@
     "name": "Essential Email Service Notifications",
     "description": "Sends email notifications about the product, service, application or system.",
     "parent_key": "essential.service.notifications",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -388,11 +283,6 @@
     "name": "Essential SMS Service Notifications",
     "description": "Sends SMS notifications about the product, service, application or system.",
     "parent_key": "essential.service.notifications",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -406,11 +296,6 @@
     "name": "Essential for Operations Support",
     "description": "Provides support for the product, service, application or system.",
     "parent_key": "essential.service.operations",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -424,11 +309,6 @@
     "name": "Essential for Support Improvement",
     "description": "Essential to optimize and improve support for the product, service, application or system.",
     "parent_key": "essential.service.operations",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -442,11 +322,6 @@
     "name": "Finance",
     "description": "Enables finance and accounting activities such as audits and tax reporting.",
     "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -460,11 +335,6 @@
     "name": "Functional",
     "description": "Used for specific, necessary, and legitimate purposes",
     "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -478,11 +348,6 @@
     "name": "Local Data Storage",
     "description": "Stores or accesses information from the device as needed when using a product, service, application, or system",
     "parent_key": "functional",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -496,11 +361,6 @@
     "name": "Service",
     "description": "Functions relating to provided services, products, applications or systems.",
     "parent_key": "functional",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -514,11 +374,6 @@
     "name": "Improve Service",
     "description": "Improves the specific product, service, application or system.",
     "parent_key": "functional.service",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -532,11 +387,6 @@
     "name": "Marketing",
     "description": "Enables marketing, promotion, advertising and sales activities for the product, service, application or system.",
     "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -550,11 +400,6 @@
     "name": "Advertising, Marketing or Promotion",
     "description": "Advertises or promotes the product, service, application or system and associated services.",
     "parent_key": "marketing",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -568,11 +413,6 @@
     "name": "Marketing Communications",
     "description": "Uses combined channels to message and market to a customer, user or prospect.",
     "parent_key": "marketing",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -586,11 +426,6 @@
     "name": "First Party Advertising",
     "description": "Serves advertisements based on first party data collected or derived about the user.",
     "parent_key": "marketing.advertising",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -604,11 +439,6 @@
     "name": "Frequency Capping",
     "description": "Restricts the number of times a specific advertisement is shown to an individual.",
     "parent_key": "marketing.advertising",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -622,11 +452,6 @@
     "name": "Negative Targeting",
     "description": "Enforces rules used to ensure a certain audience or group is not targeted by advertising.",
     "parent_key": "marketing.advertising",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -640,11 +465,6 @@
     "name": "Profiling for Advertising",
     "description": "Creates audience profiles for the purpose of targeted advertising",
     "parent_key": "marketing.advertising",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -658,11 +478,6 @@
     "name": "Essential for Serving Ads",
     "description": "Essential to the delivery of advertising and content.",
     "parent_key": "marketing.advertising",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -676,11 +491,6 @@
     "name": "Third Party Advertising",
     "description": "Serves advertisements based on data within the system or joined with data provided by 3rd parties.",
     "parent_key": "marketing.advertising",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -694,11 +504,6 @@
     "name": "First Party Contextual Advertising",
     "description": "Serves advertisements based on current content being viewed by the user of the system or service.",
     "parent_key": "marketing.advertising.first_party",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -712,11 +517,6 @@
     "name": "First Party Personalized Advertising",
     "description": "Targets advertisements based on data collected or derived about the user from use of the system.",
     "parent_key": "marketing.advertising.first_party",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -730,11 +530,6 @@
     "name": "Third Party Targeted Advertising",
     "description": "Targets advertisements based on data within the system or joined with data provided by 3rd parties.",
     "parent_key": "marketing.advertising.third_party",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -748,11 +543,6 @@
     "name": "Marketing Email Communications",
     "description": "Sends email marketing communications.",
     "parent_key": "marketing.communications",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -766,11 +556,6 @@
     "name": "Marketing SMS Communications",
     "description": "Sends SMS marketing communications.",
     "parent_key": "marketing.communications",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -784,11 +569,6 @@
     "name": "Operations",
     "description": "Supports business processes necessary to the organization's operation.",
     "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -802,11 +582,6 @@
     "name": "Personalize",
     "description": "Personalizes the product, service, application or system.",
     "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -820,11 +595,6 @@
     "name": "Content Personalization",
     "description": "Personalizes the content of the product, service, application or system.",
     "parent_key": "personalize",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -838,11 +608,6 @@
     "name": "Personalized Profiling",
     "description": "Creates profiles for the purpose of serving content.",
     "parent_key": "personalize",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -856,11 +621,6 @@
     "name": "System Personalization",
     "description": "Personalizes the system.",
     "parent_key": "personalize",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -874,11 +634,6 @@
     "name": "Sales",
     "description": "Supports sales activities such as communications and outreach.",
     "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -892,11 +647,6 @@
     "name": "Third Party Sharing",
     "description": "Transfers data to third parties outside of the system or service's scope.",
     "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -910,11 +660,6 @@
     "name": "Sharing for Legal Obligation",
     "description": "Shares data for legal obligations, including contracts, applicable laws or regulations.",
     "parent_key": "third_party_sharing",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -928,11 +673,6 @@
     "name": "Train AI System",
     "description": "Trains an AI system or data model for machine learning.",
     "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": null,
-    "legitimate_interest_impact_assessment": null,
     "active": true
   },
   {
@@ -945,11 +685,6 @@
     "name": "Custom field",
     "description": "Custom field for tests",
     "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null,
     "is_default": false,
     "active": true
   },
@@ -963,11 +698,6 @@
     "name": "Custom foo",
     "description": "Custom foo for tests",
     "parent_key": "custom",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null,
     "is_default": false,
     "active": true
   }

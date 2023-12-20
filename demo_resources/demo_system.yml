@@ -4,17 +4,9 @@ system:
     description: A system used for analyzing customer behaviour.
     system_type: Service
     administrating_department: Engineering
-    data_responsibility_title: Controller
     ingress:
       - fides_key: demo_marketing_system
         type: system
-    third_country_transfers:
-      - USA
-      - CAN
-    data_protection_impact_assessment:
-      is_required: True
-      progress: Complete
-      link: https://example.org/analytics_system_data_protection_impact_assessment
     privacy_declarations:
       - name: Analyze customer behaviour for improvements.
         data_categories:
@@ -23,7 +15,6 @@ system:
         data_use: functional.service.improve
         data_subjects:
           - customer
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         dataset_references:
           - demo_users_dataset
 
@@ -32,7 +23,6 @@ system:
     description: Collect data about our users for marketing.
     system_type: Service
     administrating_department: Marketing
-    data_responsibility_title: Processor
     egress:
       - fides_key: demo_analytics_system
         type: system
@@ -44,4 +34,3 @@ system:
         data_use: marketing.advertising
         data_subjects:
           - customer
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

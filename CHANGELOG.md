@@ -19,11 +19,18 @@ The types of changes are:
 
 ### Added
 - Tooltip and styling for disabled rows in add multiple vendor view [#4498](https://github.com/ethyca/fides/pull/4498)
+- Preliminary GPP support for US regions [#4498](https://github.com/ethyca/fides/pull/4504)
 - Access and erasure support for Statsig Enterprise [#4429](https://github.com/ethyca/fides/pull/4429)
 - Datamap Reporting page [#4519](https://github.com/ethyca/fides/pull/4519)
 
 ### Fixed
 - Fixed incorrect Compass button behavior in system form [#4508](https://github.com/ethyca/fides/pull/4508)
+- Omit certain fields from system payload when empty  [#4508](https://github.com/ethyca/fides/pull/4525)
+- Fixed issues with Compass vendor selector behavior [#4521](https://github.com/ethyca/fides/pull/4521)
+
+### Changed
+- Upgrade to use Fideslang `3.0.0` and remove associated concepts [#4502](https://github.com/ethyca/fides/pull/4502)
+- `fides.js` now sets `supportsOOB` to `false` [#4516](https://github.com/ethyca/fides/pull/4516)
 
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
