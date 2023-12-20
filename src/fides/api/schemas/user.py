@@ -28,7 +28,7 @@ class UserCreate(FidesSchema):
     @validator("username")
     @classmethod
     def validate_username(cls, username: str) -> str:
-        """Ensure password does not have spaces."""
+        """Ensure username does not have spaces."""
         if " " in username:
             raise ValueError("Usernames cannot have spaces.")
         return username
