@@ -78,10 +78,7 @@ import {
   transformUserPreferenceToBoolean,
 } from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
-import {
-  EnabledIds,
-  TcfSavePreferences,
-} from "./lib/tcf/types";
+import { EnabledIds, TcfSavePreferences } from "./lib/tcf/types";
 import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./lib/tcf/constants";
 import type { GppFunction } from "./lib/gpp/types";
 import { makeStub } from "./lib/tcf/stub";
@@ -112,7 +109,6 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-
 const updateCookieAndExperience = async ({
   cookie,
   experience,
@@ -122,6 +118,7 @@ const updateCookieAndExperience = async ({
   cookie: FidesCookie;
   experience: PrivacyExperience;
   debug?: boolean;
+  gpcApplied: boolean;
   isExperienceClientSideFetched: boolean;
 }): Promise<{
   cookie: FidesCookie;
@@ -164,7 +161,7 @@ const updateCookieAndExperience = async ({
   };
   TCF_KEY_MAP.forEach(({ experienceKey, enabledIdsKey }) => {
     experience[experienceKey]?.forEach((record) => {
-      const pref: UserConsentPreference = getTcfDefaultPreference(record)
+      const pref: UserConsentPreference = getTcfDefaultPreference(record);
       // add to enabledIds only if user consent is True
       if (transformUserPreferenceToBoolean(pref)) {
         if (enabledIdsKey) {
@@ -183,7 +180,7 @@ const updateCookieAndExperience = async ({
   FIDES_SYSTEM_COOKIE_KEY_MAP.forEach(({ cookieKey, experienceKey }) => {
     tcSavePrefs[cookieKey] = [];
     experience[experienceKey]?.forEach((record) => {
-      const preference = getTcfDefaultPreference(record)
+      const preference = getTcfDefaultPreference(record);
       tcSavePrefs[cookieKey]?.push({ id: `${record.id}`, preference });
     });
   });
@@ -294,6 +291,7 @@ _Fides = {
     customOptionsPath: null,
     preventDismissal: false,
   },
+  shouldResurfaceConsent: false,
   fides_meta: {},
   identity: {},
   tcf_consent: {},

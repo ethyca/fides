@@ -275,7 +275,7 @@ export type PrivacyExperience = {
   created_at: string;
   updated_at: string;
   show_banner?: boolean;
-  privacy_notices?: Array<PrivacyNoticeWithPreference | PrivacyNotice>;
+  privacy_notices?: Array<PrivacyNoticeWithPreference>;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
@@ -344,11 +344,13 @@ export type PrivacyNotice = {
   default_preference: UserConsentPreference;
 };
 
-// This type is exclusively used on front-end. The FE assigns current_preference on top of
-// base PrivacyNotice depending on default_preference or saved user pref from cookie or fides_string
+// This type is exclusively used on front-end
 export type PrivacyNoticeWithPreference = PrivacyNotice & {
-  current_preference?: UserConsentPreference
-}
+  // tracks preference to be shown via the UI / served via CMP
+  current_preference?: UserConsentPreference;
+  // tracks whether consent already exists in fides string / fides cookie
+  previously_consented?: boolean;
+};
 
 export enum EnforcementLevel {
   FRONTEND = "frontend",

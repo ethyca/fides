@@ -15,10 +15,7 @@ import {
 } from "@iabgpp/cmpapi";
 import { makeStub } from "./lib/gpp/stub";
 import { extractTCStringForCmpApi } from "./lib/tcf/events";
-import {
-  isPrivacyExperience,
-  shouldResurfaceConsent,
-} from "./lib/consent-utils";
+import { isPrivacyExperience } from "./lib/consent-utils";
 import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
 import type { Fides } from "./lib/initialize";
 import type { OverrideOptions } from "./lib/consent-types";
@@ -92,11 +89,11 @@ export const initializeGppCmpApi = () => {
   cmpApi.setCmpStatus(CmpStatus.LOADED);
   // If consent does not need to be resurfaced, then we can set the signal to Ready here
   window.addEventListener("FidesInitialized", (event) => {
-    const { experience } = window.Fides;
+    const { experience, shouldResurfaceConsent } = window.Fides;
     cmpApi.setSupportedAPIs(getSupportedApis());
     if (
       isPrivacyExperience(experience) &&
-      !shouldResurfaceConsent(experience, event.detail)
+      !shouldResurfaceConsent
     ) {
       const tcSet = setTcString(event, cmpApi);
       if (tcSet) {

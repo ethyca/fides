@@ -1152,6 +1152,23 @@ describe("Consent banner", () => {
           // eslint-disable-next-line no-param-reassign
           win.navigator.globalPrivacyControl = true;
         });
+        // create cookie with matching notice key since we rely on it to determine whether to resurface consent
+        const uuid = "4fbb6edf-34f6-4717-a6f1-52o47rybwuafh5";
+        const CREATED_DATE = "2022-12-24T12:00:00.000Z";
+        const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
+        const notices = {
+          advertising: true,
+        };
+        const originalCookie = {
+          identity: { fides_user_device_id: uuid },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: CREATED_DATE,
+            updatedAt: UPDATED_DATE,
+          },
+          consent: notices,
+        };
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
         stubConfig({
           experience: {
             privacy_notices: [
@@ -1690,6 +1707,25 @@ describe("Consent banner", () => {
     });
 
     it("renders the proper gpc indicator", () => {
+      // create cookie with matching notice keys
+      const uuid = "4fbb6edf-34f6-4717-a6f1-52o47rybwuafh5";
+      const CREATED_DATE = "2022-12-24T12:00:00.000Z";
+      const UPDATED_DATE = "2022-12-25T12:00:00.000Z";
+      const notices = {
+        // we skip setting the "applied" notice key since we wish to replicate no user pref here
+        notice_only: true,
+        overridden: true, // this pref should override GPC setting
+      };
+      const originalCookie = {
+        identity: { fides_user_device_id: uuid },
+        fides_meta: {
+          version: "0.9.0",
+          createdAt: CREATED_DATE,
+          updatedAt: UPDATED_DATE,
+        },
+        consent: notices,
+      };
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
       stubConfig({
         experience: {
           privacy_notices: [

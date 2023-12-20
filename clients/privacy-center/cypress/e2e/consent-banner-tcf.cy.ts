@@ -2257,7 +2257,7 @@ describe("Fides-js TCF", () => {
             expect(spyObject).to.be.called;
             // confirm cookie reflects version_hash from custom preferences API
             cy.get("@FidesInitialized")
-              .should("have.been.calledOnce")
+              .should("have.been.calledTwice")
               .its("firstCall.args.0.detail.tcf_version_hash")
               .should("deep.equal", versionHash);
           });
@@ -2968,6 +2968,7 @@ describe("Fides-js TCF", () => {
       });
 
       cy.get("@FidesInitialized")
+        .should("have.been.calledTwice")
         .its("lastCall.args.0.detail")
         .then((updatedCookie: FidesCookie) => {
           // TC string setting worked
