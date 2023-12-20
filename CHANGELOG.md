@@ -23,6 +23,7 @@ The types of changes are:
 - Access and erasure support for Statsig Enterprise [#4429](https://github.com/ethyca/fides/pull/4429)
 - New page for setting locations [#4517](https://github.com/ethyca/fides/pull/4517)
 - New modal for setting granular locations [#4531](https://github.com/ethyca/fides/pull/4531)
+- New page for setting regulations [#4530](https://github.com/ethyca/fides/pull/4530)
 
 ### Fixed
 - Fixed incorrect Compass button behavior in system form [#4508](https://github.com/ethyca/fides/pull/4508)
