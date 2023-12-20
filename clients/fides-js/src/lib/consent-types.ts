@@ -86,8 +86,8 @@ export type FidesOptions = {
   // What the "GDPR Applies" field of TCF should default to
   fidesTcfGdprApplies: boolean;
 
-  // GPP extension path (ex: "/fides-ext-gpp.js")
-  gppExtensionPath: string;
+  // Base URL for directory of fides.js scripts
+  fidesJsBaseUrl: string;
 
   // A custom path to fetch OverrideOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
   customOptionsPath: string | null;

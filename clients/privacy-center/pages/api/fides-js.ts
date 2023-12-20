@@ -152,7 +152,7 @@ export default async function handler(
       fidesString,
       // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
       apiOptions: null,
-      gppExtensionPath: environment.settings.GPP_EXTENSION_PATH,
+      fidesJsBaseUrl: environment.settings.FIDES_JS_BASE_URL,
       customOptionsPath: null,
       preventDismissal: environment.settings.PREVENT_DISMISSAL,
     },
