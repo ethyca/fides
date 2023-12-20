@@ -4,7 +4,7 @@ import pytest
 
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.schemas.user import UserCreate, UserLogin
-
+from pydantic import ValidationError
 
 @pytest.mark.parametrize(
     "password, message",
@@ -35,6 +35,16 @@ def test_user_create_user_name_with_spaces():
             username="some user",
             password=str_to_b64_str("Testtest1!"),
             email_address="test.user@ethyca.com",
+            first_name="test",
+            last_name="test",
+        )
+
+def test_user_create_invalid_email():
+    with pytest.raises(ValidationError):
+        UserCreate(
+            username="user",
+            password=str_to_b64_str("Testtest1!"),
+            email_address="NotAnEmailAddress",
             first_name="test",
             last_name="test",
         )
