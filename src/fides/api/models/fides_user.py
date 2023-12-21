@@ -73,7 +73,7 @@ class FidesUser(Base):
         """Create a FidesUser by hashing the password with a generated salt
         and storing the hashed password and the salt"""
         hashed_password, salt = FidesUser.hash_password(
-            data.get("password", str(uuid.uuid4()))
+            data.get("password") or str(uuid.uuid4())
         )
 
         user = super().create(
