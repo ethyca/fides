@@ -65,6 +65,7 @@ export interface CustomInputProps {
   isRequired?: boolean;
   textColor?: string;
   inputRightElement?: React.ReactNode;
+  size?: string;
 }
 
 // We allow `undefined` here and leave it up to each component that uses this field
@@ -92,6 +93,7 @@ export const TextInput = forwardRef(
     {
       isPassword,
       inputRightElement,
+      size,
       ...props
     }: InputProps & {
       isPassword: boolean;
@@ -107,7 +109,7 @@ export const TextInput = forwardRef(
       setType(type === "password" ? "text" : "password");
 
     return (
-      <InputGroup size="sm">
+      <InputGroup size={size ?? "sm"}>
         <Input
           {...props}
           ref={ref as LegacyRef<HTMLInputElement> | undefined}
@@ -525,6 +527,7 @@ export const CustomTextInput = ({
   variant = "inline",
   isRequired = false,
   inputRightElement,
+  size,
   ...props
 }: CustomInputProps & StringField) => {
   const [initialField, meta] = useField(props);
@@ -542,6 +545,7 @@ export const CustomTextInput = ({
       placeholder={placeholder}
       isPassword={isPassword}
       inputRightElement={inputRightElement}
+      size={size}
     />
   );
 
@@ -572,7 +576,12 @@ export const CustomTextInput = ({
       <VStack alignItems="start">
         {label ? (
           <Flex alignItems="center">
-            <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
+            <Label
+              htmlFor={props.id || props.name}
+              fontSize={size ?? "xs"}
+              my={0}
+              mr={1}
+            >
               {label}
             </Label>
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}

@@ -27,8 +27,8 @@ describe("User Authentication", () => {
         }).as("getUserPermission");
       });
 
-      cy.get("#email").type("cypress-user@ethyca.com");
-      cy.get("#password").type("FakePassword123!{Enter}");
+      cy.getByTestId("input-username").type("cypress-user@ethyca.com");
+      cy.getByTestId("input-password").type("FakePassword123!{Enter}");
 
       cy.getByTestId("Home");
     });

@@ -3,11 +3,7 @@ import {
   Button,
   chakra,
   Flex,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
   Heading,
-  Input,
   Stack,
   useToast,
 } from "@fidesui/react";
@@ -16,9 +12,26 @@ import Image from "common/Image";
 import { Formik } from "formik";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
+import { ParsedUrlQuery } from "querystring";
 import { useDispatch, useSelector } from "react-redux";
+import * as Yup from "yup";
 
-import { login, selectToken, useLoginMutation } from "../features/auth";
+import { login, selectToken, useLoginMutation } from "~/features/auth";
+import { CustomTextInput } from "~/features/common/form/inputs";
+import { passwordValidation } from "~/features/common/form/validation";
+
+const parseQueryParam = (query: ParsedUrlQuery) => {
+  const { username: rawUsername, invite_code: rawInviteCode } = query;
+  let username: string | undefined;
+  let inviteCode: string | undefined;
+  if (typeof rawUsername === "string") {
+    username = rawUsername;
+  }
+  if (typeof rawInviteCode === "string") {
+    inviteCode = rawInviteCode;
+  }
+  return { username, inviteCode };
+};
 
 const useLogin = () => {
   const [loginRequest, { isLoading }] = useLoginMutation();
@@ -26,15 +39,19 @@ const useLogin = () => {
   const toast = useToast();
   const router = useRouter();
   const dispatch = useDispatch();
+  const { username, inviteCode } = parseQueryParam(router.query);
 
   const initialValues = {
-    email: "",
+    username: username ?? "",
     password: "",
   };
 
+  const isFromInvite = inviteCode !== undefined;
+
   const onSubmit = async (values: typeof initialValues) => {
+    // TODO: do something else if from invite
     const credentials = {
-      username: values.email,
+      username: values.username,
       password: values.password,
     };
     try {
@@ -51,47 +68,33 @@ const useLogin = () => {
     }
   };
 
-  const validate = (values: typeof initialValues) => {
-    const errors: {
-      email?: string;
-      password?: string;
-    } = {};
-
-    if (!values.email) {
-      errors.email = "Required";
-    }
-
-    if (!values.password) {
-      errors.password = "Required";
-    }
-
-    return errors;
-  };
+  const validationSchema = Yup.object().shape({
+    username: Yup.string().required().label("Username"),
+    password: isFromInvite
+      ? passwordValidation.label("Password")
+      : Yup.string().required().label("Password"),
+  });
 
   if (token) {
     router.push("/");
   }
 
   return {
+    isFromInvite,
+    inviteCode,
     initialValues,
     isLoading,
     onSubmit,
-    validate,
+    validationSchema,
   };
 };
 
 const Login: NextPage = () => {
-  const { isLoading, ...formikProps } = useLogin();
+  const { isLoading, isFromInvite, inviteCode, ...formikProps } = useLogin();
+
   return (
-    <Formik {...formikProps}>
-      {({
-        errors,
-        handleBlur,
-        handleChange,
-        handleSubmit,
-        touched,
-        values,
-      }) => (
+    <Formik {...formikProps} enableReinitialize>
+      {({ handleSubmit, isValid }) => (
         <div>
           <Head />
 
@@ -155,65 +158,31 @@ const Login: NextPage = () => {
                       width="100%"
                     >
                       <Stack spacing={6}>
-                        <FormControl
-                          isInvalid={touched.email && Boolean(errors.email)}
-                        >
-                          <FormLabel htmlFor="email" fontWeight="medium">
-                            Username
-                          </FormLabel>
-                          <Input
-                            autoFocus
-                            id="email"
-                            name="email"
-                            aria-label="email"
-                            focusBorderColor="primary.500"
-                            placeholder="username"
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            value={values.email}
-                            isInvalid={touched.email && Boolean(errors.email)}
-                            data-testid="input-username"
-                          />
-                          <FormErrorMessage>{errors.email}</FormErrorMessage>
-                        </FormControl>
-
-                        <FormControl
-                          isInvalid={
-                            touched.password && Boolean(errors.password)
-                          }
-                        >
-                          <FormLabel htmlFor="password" fontWeight="medium">
-                            Password
-                          </FormLabel>
-                          <Input
-                            autoComplete="off"
-                            id="password"
-                            name="password"
-                            focusBorderColor="primary.500"
-                            type="password"
-                            aria-label="password"
-                            value={values.password}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            isInvalid={
-                              touched.password && Boolean(errors.password)
-                            }
-                            data-testid="input-password"
-                          />
-                          <FormErrorMessage>{errors.password}</FormErrorMessage>
-                        </FormControl>
-
+                        <CustomTextInput
+                          name="username"
+                          label="Username"
+                          variant="stacked"
+                          size="md"
+                          disabled={isFromInvite}
+                        />
+                        <CustomTextInput
+                          name="password"
+                          label={isFromInvite ? "Set new password" : "Password"}
+                          type="password"
+                          variant="stacked"
+                          size="md"
+                        />
                         <Button
                           type="submit"
                           bg="primary.800"
                           _hover={{ bg: "primary.400" }}
                           _active={{ bg: "primary.500" }}
-                          disabled={!values.email || !values.password}
+                          disabled={!isValid}
                           isLoading={isLoading}
                           colorScheme="primary"
                           data-testid="sign-in-btn"
                         >
-                          Sign in
+                          {isFromInvite ? "Setup user" : "Sign in"}
                         </Button>
                       </Stack>
                     </chakra.form>
