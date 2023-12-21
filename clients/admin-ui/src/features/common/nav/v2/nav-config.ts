@@ -199,6 +199,17 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       },
     ],
   },
+  {
+    title: "Insights",
+    routes: [
+      {
+        title: "Dashboard",
+        path: routes.INSIGHTS_ROUTE,
+        exact: true,
+        scopes: [],
+      },
+    ],
+  },
 ];
 
 export type NavGroupChild = {

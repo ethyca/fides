@@ -52,6 +52,8 @@ export const baseApi = createApi({
     "Configuration Settings",
     "TCF Purpose Override",
     "Consent Reporting",
+    "Aggregate Insights",
+    "Time Series Insights",
   ],
   endpoints: () => ({}),
 });

@@ -32,3 +32,6 @@ export const EMAIL_TEMPLATES_ROUTE = "/management/email-templates";
 export const DOMAIN_RECORDS_ROUTE = "/management/domain-records";
 export const CORS_CONFIGURATION_ROUTE = "/management/cors-configuration";
 export const GLOABL_CONSENT_CONFIG_ROUTE = "/management/consent";
+
+// Insights group
+export const INSIGHTS_ROUTE = "/insights";

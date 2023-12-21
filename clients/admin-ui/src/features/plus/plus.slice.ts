@@ -47,6 +47,7 @@ import {
   Page_DataUseDeclaration_,
   Page_Vendor_,
 } from "~/types/dictionary-api";
+import {AnalyticsSchema} from "~/types/api/models/AnalyticsSchema";
 
 interface ScanParams {
   classify?: boolean;
@@ -447,6 +448,38 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["TCF Purpose Override"],
     }),
+    getAnalyticsAggregate: build.query<
+        AnalyticsSchema,
+        { record_type: string; time_interval: string; group_by: string; created_gt: string; created_lt: string; }
+        >({
+      query: (params) => ({
+        url: "api/v1/plus/analytics/aggregate",
+        params: {
+          record_type: params.record_type,
+          time_interval: params.time_interval,
+          group_by: params.group_by,
+          created_gt: params.created_gt,
+          created_lt: params.created_lt,
+        },
+      }),
+      providesTags: () => ["Aggregate Insights"],
+    }),
+    getAnalyticsTimeSeries: build.query<
+        AnalyticsSchema,
+        { record_type: string; time_interval: string; group_by: string; created_gt: string; created_lt: string; }
+        >({
+      query: (params) => ({
+        url: "api/v1/plus/analytics/time-series",
+        params: {
+          record_type: params.record_type,
+          time_interval: params.time_interval,
+          group_by: params.group_by,
+          created_gt: params.created_gt,
+          created_lt: params.created_lt,
+        },
+      }),
+      providesTags: () => ["Time Series Insights"],
+    }),
   }),
 });
 
@@ -486,6 +519,8 @@ export const {
   useCreatePlusSaasConnectionConfigMutation,
   useGetTcfPurposeOverridesQuery,
   usePatchTcfPurposeOverridesMutation,
+  useGetAnalyticsAggregateQuery,
+  useGetAnalyticsTimeSeriesQuery,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
