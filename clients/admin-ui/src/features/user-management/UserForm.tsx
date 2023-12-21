@@ -19,7 +19,7 @@ import DeleteUserModal from "user-management/DeleteUserModal";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { useFeatures } from "~/features/common/features";
+// import { useFeatures } from "~/features/common/features";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -66,7 +66,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const deleteModal = useDisclosure();
-  const features = useFeatures();
+  // const features = useFeatures();
 
   const activeUser = useAppSelector(selectActiveUser);
 
@@ -94,14 +94,15 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
     }
   };
 
+  // TODO: enable this once the backend does not need a password
+  // const showPasswordField = isNewUser && !features.emailMessaging;
+  const showPasswordField = isNewUser;
+
   // The password field is only available when creating a new user.
   // Otherwise, it is within the UpdatePasswordModal
-  const validationSchema = isNewUser
+  const validationSchema = showPasswordField
     ? ValidationSchema
     : ValidationSchema.omit(["password"]);
-
-  // Only show the password field if this is for a new user + email messaging is not enabled
-  const showPasswordField = !activeUser && !features.emailMessaging;
 
   return (
     <Formik
