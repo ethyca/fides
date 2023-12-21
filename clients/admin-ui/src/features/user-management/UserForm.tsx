@@ -19,7 +19,7 @@ import DeleteUserModal from "user-management/DeleteUserModal";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-// import { useFeatures } from "~/features/common/features";
+import { useFeatures } from "~/features/common/features";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -66,16 +66,19 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const deleteModal = useDisclosure();
-  // const features = useFeatures();
+  const features = useFeatures();
 
   const activeUser = useAppSelector(selectActiveUser);
 
   const isNewUser = !activeUser;
   const nameDisabled = isNewUser ? false : !canEditNames;
+  const showPasswordField = isNewUser && !features.emailMessaging;
 
   const handleSubmit = async (values: FormValues) => {
     // first either update or create the user
-    const result = await onSubmit(values);
+    const { password, ...payloadWithoutPassword } = values;
+    const payload = showPasswordField ? values : payloadWithoutPassword;
+    const result = await onSubmit(payload);
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
       return;
@@ -93,10 +96,6 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
       dispatch(setActiveUserId(result.data.id));
     }
   };
-
-  // TODO: enable this once the backend does not need a password
-  // const showPasswordField = isNewUser && !features.emailMessaging;
-  const showPasswordField = isNewUser;
 
   // The password field is only available when creating a new user.
   // Otherwise, it is within the UpdatePasswordModal

@@ -23,7 +23,9 @@ const NewUserForm = () => {
   }, [dispatch]);
 
   const handleSubmit = async (values: FormValues) => {
-    const b64Password = utf8ToB64(values.password);
+    const b64Password = values.password
+      ? utf8ToB64(values.password)
+      : undefined;
     const result = await createUser({
       ...values,
       password: b64Password,
