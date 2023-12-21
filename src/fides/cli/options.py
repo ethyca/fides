@@ -245,7 +245,6 @@ def prompt_username(ctx: click.Context, param: str, value: str) -> str:
     value = click.prompt(text="Username")  # pragma: no cover
     return value
 
-
 def prompt_password(ctx: click.Context, param: str, value: str) -> str:
     """Check the config for a compatible password. If unavailable, prompt the user to provide one."""
     config_value = ctx.obj["CONFIG"].user.password
@@ -316,4 +315,9 @@ def username_argument(command: Callable) -> Callable:
 
 def password_argument(command: Callable) -> Callable:
     command = click.argument("password", type=str)(command)  # type: ignore
+    return command
+
+
+def email_address_argument(command: Callable) -> Callable:
+    command = click.argument("email_address", type=str)(command)  # type: ignore
     return command
