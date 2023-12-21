@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, List
 
 from citext import CIText
-from sqlalchemy import Column, DateTime, String
+from sqlalchemy import Boolean, Column, DateTime, String
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.common_exceptions import SystemManagerException
@@ -29,6 +29,8 @@ class FidesUser(Base):
     last_name = Column(String, nullable=True)
     hashed_password = Column(String, nullable=False)
     salt = Column(String, nullable=False)
+    disabled = Column(Boolean, nullable=False)
+    disabled_reason = Column(String, nullable=True)
     last_login_at = Column(DateTime(timezone=True), nullable=True)
     password_reset_at = Column(DateTime(timezone=True), nullable=True)
 
@@ -80,6 +82,8 @@ class FidesUser(Base):
                 "email_address": data.get("email_address"),
                 "first_name": data.get("first_name"),
                 "last_name": data.get("last_name"),
+                "disabled": data.get("disabled"),
+                "disabled_reason": data.get("disabled_reason"),
             },
             check_name=check_name,
         )
