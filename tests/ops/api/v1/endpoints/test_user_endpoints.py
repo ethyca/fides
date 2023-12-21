@@ -99,6 +99,7 @@ class TestCreateUser:
             "username": "test_user",
             "password": str_to_b64_str("TestP@ssword9"),
             "email_address": "test.user@ethyca.com",
+            "disabled": False
         }
 
         FidesUser.create(db=db, data=body)

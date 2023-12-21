@@ -24,6 +24,7 @@ class UserCreate(FidesSchema):
     email_address: EmailStr
     first_name: Optional[str]
     last_name: Optional[str]
+    disabled: bool = False
 
     @validator("username")
     @classmethod
@@ -83,7 +84,7 @@ class UserResponse(FidesSchema):
     email_address: Optional[EmailStr]
     first_name: Optional[str]
     last_name: Optional[str]
-    disabled: bool
+    disabled: Optional[bool] = False
     disabled_reason: Optional[str]
 
 
