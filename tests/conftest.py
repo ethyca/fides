@@ -266,6 +266,7 @@ def application_user(db, oauth_client):
         data={
             "username": unique_username,
             "password": "test_password",
+            "email_address": "test.user@ethyca.com",
             "first_name": "Test",
             "last_name": "User",
         },

@@ -24,6 +24,7 @@ class FidesUser(Base):
     """The DB ORM model for FidesUser."""
 
     username = Column(CIText, unique=True, index=True)
+    email_address = Column(CIText, unique=True, nullable=True)
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
     hashed_password = Column(String, nullable=False)
@@ -76,6 +77,7 @@ class FidesUser(Base):
                 "salt": salt,
                 "hashed_password": hashed_password,
                 "username": data["username"],
+                "email_address": data.get("email_address"),
                 "first_name": data.get("first_name"),
                 "last_name": data.get("last_name"),
             },
