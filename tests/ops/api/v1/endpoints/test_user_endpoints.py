@@ -164,6 +164,37 @@ class TestCreateUser:
             == "Password must have at least one symbol."
         )
 
+    def test_create_user_no_email(
+        self,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header([USER_CREATE])
+
+        body = {
+            "username": "test_user", 
+            "password": str_to_b64_str("TestP@ssword9"),
+            }
+        response = api_client.post(url, headers=auth_header, json=body)
+        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+
+    def test_create_user_bad_email(
+        self,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header([USER_CREATE])
+
+        body = {
+            "username": "test_user", 
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "not.an.email",
+            }
+        response = api_client.post(url, headers=auth_header, json=body)
+        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+
     def test_create_user(
         self,
         db,
@@ -294,6 +325,36 @@ class TestCreateUser:
         assert HTTP_400_BAD_REQUEST == response.status_code
         assert response.json()["detail"] == "Username already exists."
 
+    def test_cannot_create_duplicate_user_email(
+        self,
+        db,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header([USER_CREATE])
+        body = {
+            "username": "test_user", 
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
+            }
+
+        response = api_client.post(url, headers=auth_header, json=body)
+
+        user = FidesUser.get_by(db, field="username", value=body["username"])
+        assert HTTP_201_CREATED == response.status_code
+        assert response.json() == {"id": user.id}
+        assert user.permissions is not None
+
+        duplicate_body = {
+            "username": "test_user2",
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
+        }
+
+        response = api_client.post(url, headers=auth_header, json=duplicate_body)
+        assert response.json()["detail"] == "User with this email address already exists."
+        assert HTTP_400_BAD_REQUEST == response.status_code
 
 class TestDeleteUser:
     @pytest.fixture(scope="function")

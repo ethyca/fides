@@ -434,6 +434,13 @@ def create_user(
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST, detail="Username already exists."
         )
+    
+    user = FidesUser.get_by(db, field="email_address", value=user_data.email_address)
+    
+    if user:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST, detail="User with this email address already exists."
+        )
 
     user = FidesUser.create(db=db, data=user_data.dict())
     logger.info("Created user with id: '{}'.", user.id)
