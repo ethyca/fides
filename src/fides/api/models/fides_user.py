@@ -1,6 +1,7 @@
 # pylint: disable=unused-import
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, List
 
@@ -71,7 +72,9 @@ class FidesUser(Base):
     ) -> FidesUser:
         """Create a FidesUser by hashing the password with a generated salt
         and storing the hashed password and the salt"""
-        hashed_password, salt = FidesUser.hash_password(data["password"])
+        hashed_password, salt = FidesUser.hash_password(
+            data.get("password", str(uuid.uuid4()))
+        )
 
         user = super().create(
             db,

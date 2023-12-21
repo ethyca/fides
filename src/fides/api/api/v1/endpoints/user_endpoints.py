@@ -51,7 +51,7 @@ from fides.api.schemas.user import (
     UserResponse,
     UserUpdate,
 )
-from fides.api.service.user.fides_user_service import invite_user
+from fides.api.service.user.fides_user_service import accept_invite, invite_user
 from fides.api.util.api_router import APIRouter
 from fides.common.api.scope_registry import (
     SCOPE_REGISTRY,
@@ -685,9 +685,32 @@ def accept_user_invite(
     *,
     db: Session = Depends(get_db),
     config: FidesConfig = Depends(get_config),
-    user_data: UserLogin,
+    user_data: UserForcePasswordReset,
     verified_invite: FidesUserInvite = Depends(verify_invite_code),
-):
+) -> UserLoginResponse:
     """Sets the password and enables the user if a valid username and invite code are provided."""
 
-    return {"message": "Invite code successfully validated."}
+    user: Optional[FidesUser] = FidesUser.get_by(
+        db=db, field="username", value=verified_invite.username
+    )
+    if not user:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"User with username {verified_invite.username} does not exist.",
+        )
+
+    user = accept_invite(db=db, user=user, new_password=user_data.new_password)
+
+    client = perform_login(
+        db,
+        config.security.oauth_client_id_length_bytes,
+        config.security.oauth_client_secret_length_bytes,
+        user,
+    )
+
+    logger.info("Creating login access token")
+    access_code = client.create_access_code_jwe(config.security.app_encryption_key)
+    return UserLoginResponse(
+        user_data=user,
+        token_data=AccessToken(access_token=access_code),
+    )

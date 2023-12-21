@@ -20,7 +20,7 @@ class UserCreate(FidesSchema):
     """Data required to create a FidesUser."""
 
     username: str
-    password: str
+    password: Optional[str]
     email_address: EmailStr
     first_name: Optional[str]
     last_name: Optional[str]
