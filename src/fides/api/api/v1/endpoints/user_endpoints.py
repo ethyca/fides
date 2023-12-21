@@ -437,7 +437,18 @@ def create_user(
             status_code=HTTP_400_BAD_REQUEST, detail="Username already exists."
         )
 
-    user = FidesUser.create(db=db, data=user_data.dict())
+    user = FidesUser.get_by(db, field="email_address", value=user_data.email_address)
+
+    if user:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="User with this email address already exists.",
+        )
+
+    user_to_create = user_data.dict()
+    user_to_create["disabled"] = False  # TODO: make dynamic
+
+    user = FidesUser.create(db=db, data=user_to_create)
 
     # invite user via email
     invite_user(db=db, config=config, user=user)

@@ -1,6 +1,7 @@
 """Module for interaction with User endpoints/commands."""
 import json
 from typing import Dict, List, Tuple
+from pydantic import EmailStr
 
 import requests
 from fideslang.validation import FidesKey
@@ -41,6 +42,7 @@ def get_access_token(username: str, password: str, server_url: str) -> Tuple[str
 def create_user(
     username: str,
     password: str,
+    email_address: EmailStr,
     first_name: str,
     last_name: str,
     auth_header: Dict[str, str],
@@ -50,6 +52,7 @@ def create_user(
     request_data = {
         "username": username,
         "password": str_to_b64_str(password),
+        "email_address": email_address,
         "first_name": first_name,
         "last_name": last_name,
     }
@@ -119,7 +122,12 @@ def update_user_permissions(
 
 
 def create_command(
-    username: str, password: str, first_name: str, last_name: str, server_url: str
+    username: str, 
+    password: str, 
+    email_address: EmailStr, 
+    first_name: str, 
+    last_name: str, 
+    server_url: str,
 ) -> None:
     """
     Given new user information, create a new user via the API using
@@ -130,6 +138,7 @@ def create_command(
     user_response = create_user(
         username=username,
         password=password,
+        email_address=email_address,
         first_name=first_name,
         last_name=last_name,
         auth_header=auth_header,

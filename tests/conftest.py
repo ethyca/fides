@@ -266,9 +266,10 @@ def application_user(db, oauth_client):
         data={
             "username": unique_username,
             "password": "test_password",
-            "email_address": "test.user@ethyca.com",
+            "email_address": f"{unique_username}@ethyca.com",
             "first_name": "Test",
             "last_name": "User",
+            "disabled": False,
         },
     )
     oauth_client.user_id = user.id
@@ -283,6 +284,8 @@ def user(db):
         data={
             "username": "test_fidesops_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "fides.user@ethyca.com",
+            "disabled": False,
         },
     )
     client = ClientDetail(
@@ -905,6 +908,8 @@ def owner_user(db):
         data={
             "username": "test_fides_owner_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "owner.user@ethyca.com",
+            "disabled": False,
         },
     )
     client = ClientDetail(
@@ -931,6 +936,8 @@ def approver_user(db):
         data={
             "username": "test_fides_viewer_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "approver.user@ethyca.com",
+            "disabled": False,
         },
     )
     client = ClientDetail(
@@ -957,6 +964,8 @@ def viewer_user(db):
         data={
             "username": "test_fides_viewer_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "viewer2.user@ethyca.com",
+            "disabled": False,
         },
     )
     client = ClientDetail(
@@ -982,6 +991,8 @@ def contributor_user(db):
         data={
             "username": "test_fides_contributor_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "contributor.user@ethyca.com",
+            "disabled": False,
         },
     )
     client = ClientDetail(
@@ -1010,6 +1021,8 @@ def viewer_and_approver_user(db):
         data={
             "username": "test_fides_viewer_and_approver_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "viewerapprover.user@ethyca.com",
+            "disabled": False,
         },
     )
     client = ClientDetail(
