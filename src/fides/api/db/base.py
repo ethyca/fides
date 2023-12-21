@@ -12,6 +12,7 @@ from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_cloud import FidesCloud
 from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_invite import FidesUserInvite
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.manual_webhook import AccessManualWebhook
