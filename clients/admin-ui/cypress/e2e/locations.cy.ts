@@ -271,6 +271,29 @@ describe("Locations", () => {
       });
     });
 
+    it("can apply indeterminate selections back to continent view", () => {
+      cy.getByTestId("picker-card-North America").within(() => {
+        // Turn all of U.S. on
+        cy.getByTestId("United States-checkbox").click();
+        cy.getByTestId("num-selected-badge").should("contain", "5 selected");
+        cy.getByTestId("view-more-btn").click();
+      });
+      // Deselect California
+      cy.getByTestId("subgroup-modal").within(() => {
+        cy.getByTestId("United States-accordion")
+          .click()
+          .within(() => {
+            cy.getByTestId("California-checkbox").click();
+          });
+      });
+      cy.getByTestId("apply-btn").click();
+      // US should now be indeterminate
+      cy.getByTestId("picker-card-North America").within(() => {
+        assertIsChecked("United States-checkbox", "indeterminate");
+        cy.getByTestId("num-selected-badge").should("contain", "4 selected");
+      });
+    });
+
     it("can view more for continents without subgroups", () => {
       cy.getByTestId("picker-card-South America").within(() => {
         cy.getByTestId("view-more-btn").click();

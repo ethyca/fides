@@ -56,7 +56,17 @@ const LocationPickerCard = ({
     : selectedLocations;
   const numSelected = selectedLocations.length;
 
-  const handleChange = (selections: string[]) => {
+  const handleChange = (newSelected: string[]) => {
+    const updated = locations.map((location) => {
+      if (newSelected.includes(location.id)) {
+        return { ...location, selected: true };
+      }
+      return { ...location, selected: false };
+    });
+    onChange(updated);
+  };
+
+  const handleGroupChange = (selections: string[]) => {
     const newSelected = new Set(selections);
     const oldSelected = new Set(selected);
     // Handle additions
@@ -84,13 +94,7 @@ const LocationPickerCard = ({
         }
       }
     });
-    const updated = locations.map((location) => {
-      if (newSelected.has(location.id)) {
-        return { ...location, selected: true };
-      }
-      return { ...location, selected: false };
-    });
-    onChange(updated);
+    handleChange(Array.from(newSelected));
   };
 
   return (
@@ -100,7 +104,7 @@ const LocationPickerCard = ({
         items={filteredLocations}
         selected={selected}
         indeterminate={isGroupedView ? indeterminateGroups : []}
-        onChange={handleChange}
+        onChange={handleGroupChange}
         onViewMore={() => {
           disclosure.onOpen();
         }}
