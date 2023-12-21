@@ -442,7 +442,10 @@ def create_user(
             status_code=HTTP_400_BAD_REQUEST, detail="User with this email address already exists."
         )
 
-    user = FidesUser.create(db=db, data=user_data.dict())
+    user_to_create = user_data.dict()
+    user_to_create["disabled"] = False # TODO: make dynamic
+
+    user = FidesUser.create(db=db, data=user_to_create)
     logger.info("Created user with id: '{}'.", user.id)
     FidesUserPermissions.create(
         db=db,

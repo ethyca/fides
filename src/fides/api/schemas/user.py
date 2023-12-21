@@ -84,7 +84,7 @@ class UserResponse(FidesSchema):
     first_name: Optional[str]
     last_name: Optional[str]
     disabled: bool
-    disabled_reason: str
+    disabled_reason: Optional[str]
 
 
 class UserLoginResponse(FidesSchema):

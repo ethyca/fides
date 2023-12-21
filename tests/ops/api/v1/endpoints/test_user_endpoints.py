@@ -100,6 +100,7 @@ class TestCreateUser:
             "password": str_to_b64_str("TestP@ssword9"),
             "email_address": "test.user@ethyca.com",
         }
+
         FidesUser.create(db=db, data=body)
 
         response = api_client.post(url, headers=auth_header, json=body)
@@ -382,6 +383,8 @@ class TestDeleteUser:
             data={
                 "username": "test_delete_user",
                 "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+                "email_address": "test2.user@ethyca.com",
+                "disabled": False,
             },
         )
         saved_user_id = user.id
@@ -435,6 +438,8 @@ class TestDeleteUser:
             data={
                 "username": "test_delete_user",
                 "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+                "email_address": "test.user@ethyca.com",
+                "disabled": False
             },
         )
 
@@ -447,6 +452,8 @@ class TestDeleteUser:
             data={
                 "username": "user_to_delete",
                 "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+                "email_address": "other.user@ethyca.com",
+                "disabled": False
             },
         )
 
@@ -510,6 +517,8 @@ class TestDeleteUser:
             data={
                 "username": "test_delete_user",
                 "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+                "email_address": "test.user@ethyca.com",
+                "disabled": False
             },
         )
 
@@ -589,6 +598,7 @@ class TestGetUsers:
                     "password": password,
                     "first_name": "Test",
                     "last_name": "User",
+                    "disabled": False,
                 },
             )
             for i in range(total_users)
@@ -609,6 +619,9 @@ class TestGetUsers:
         assert user_data["created_at"]
         assert user_data["first_name"]
         assert user_data["last_name"]
+        assert user_data["email_address"]
+        assert user_data["disabled"]
+        assert user_data["disabled_reason"]
 
     def test_get_filtered_users(
         self, api_client: TestClient, generate_auth_header, url, db
@@ -616,7 +629,13 @@ class TestGetUsers:
         total_users = 50
         password = str_to_b64_str("Password123!")
         [
-            FidesUser.create(db=db, data={"username": f"user{i}", "password": password})
+            FidesUser.create(db=db, data={
+                "username": f"user{i}", 
+                "password": password,
+                "email_address": f"test{i}.user@ethyca.com",
+                "disabled": False,
+                }
+            )
             for i in range(total_users)
         ]
 
@@ -1440,6 +1459,8 @@ class TestUpdateSystemsManagedByUser:
             data={
                 "username": "test_new_user",
                 "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                "email_address": "test.user@ethyca.com",
+                "disabled": False,
             },
         )
         url = V1_URL_PREFIX + f"/user/{new_user.id}/system-manager"
@@ -1461,6 +1482,8 @@ class TestUpdateSystemsManagedByUser:
             data={
                 "username": "test_new_user",
                 "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                "email_address": "test.user@ethyca.com",
+                "disabled": False,
             },
         )
 
@@ -1610,6 +1633,8 @@ class TestGetSystemsUserManages:
             data={
                 "username": "another_user",
                 "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                "email_address": "test.user@ethyca.com",
+                "disabled": False,
             },
         )
         client = ClientDetail(
@@ -1699,6 +1724,8 @@ class TestGetSpecificSystemUserManages:
             data={
                 "username": "another_user",
                 "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                "email_address": "test.user@ethyca.com",
+                "disabled": False
             },
         )
         client = ClientDetail(
