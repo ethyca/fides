@@ -9,6 +9,8 @@ import { useGetUserPermissionsQuery } from "~/features/user-management";
 
 import { logout, selectToken, selectUser } from "./auth.slice";
 
+const REDIRECT_IGNORES = ["/", "/login"];
+
 const useProtectedRoute = (redirectUrl: string) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -28,8 +30,9 @@ const useProtectedRoute = (redirectUrl: string) => {
       dispatch(logout());
     }
     if (typeof window !== "undefined") {
-      const query =
-        router.pathname === "/" ? undefined : { redirect: router.pathname };
+      const query = REDIRECT_IGNORES.includes(router.pathname)
+        ? undefined
+        : { redirect: router.pathname };
       router.push({
         pathname: redirectUrl,
         query,
