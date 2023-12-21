@@ -24,7 +24,7 @@ const InsightsPage: NextPage = () => {
             time_interval: "days",
             group_by: "notice",
             created_gt: "2023-12-20T14:20:34.000Z",
-            created_lt: "2023-12-22T14:20:34.000Z "
+            created_lt: "2023-12-22T14:20:34.000Z"
         });
 
     useEffect(() => {
