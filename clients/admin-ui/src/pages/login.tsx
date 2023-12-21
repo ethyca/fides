@@ -16,7 +16,12 @@ import { ParsedUrlQuery } from "querystring";
 import { useDispatch, useSelector } from "react-redux";
 import * as Yup from "yup";
 
-import { login, selectToken, useLoginMutation } from "~/features/auth";
+import {
+  login,
+  selectToken,
+  useAcceptInviteMutation,
+  useLoginMutation,
+} from "~/features/auth";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 
@@ -39,7 +44,8 @@ const parseQueryParam = (query: ParsedUrlQuery) => {
 };
 
 const useLogin = () => {
-  const [loginRequest, { isLoading }] = useLoginMutation();
+  const [loginRequest] = useLoginMutation();
+  const [acceptInviteRequest] = useAcceptInviteMutation();
   const token = useSelector(selectToken);
   const toast = useToast();
   const router = useRouter();
@@ -54,13 +60,21 @@ const useLogin = () => {
   const isFromInvite = inviteCode !== undefined;
 
   const onSubmit = async (values: typeof initialValues) => {
-    // TODO: do something else if from invite
     const credentials = {
       username: values.username,
       password: values.password,
     };
+
     try {
-      const user = await loginRequest(credentials).unwrap();
+      let user;
+      if (isFromInvite) {
+        user = await acceptInviteRequest({
+          ...credentials,
+          inviteCode,
+        }).unwrap();
+      } else {
+        user = await loginRequest(credentials).unwrap();
+      }
       dispatch(login(user));
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -89,18 +103,17 @@ const useLogin = () => {
     isFromInvite,
     inviteCode,
     initialValues,
-    isLoading,
     onSubmit,
     validationSchema,
   };
 };
 
 const Login: NextPage = () => {
-  const { isLoading, isFromInvite, inviteCode, ...formikProps } = useLogin();
+  const { isFromInvite, inviteCode, ...formikProps } = useLogin();
 
   return (
     <Formik {...formikProps} enableReinitialize>
-      {({ handleSubmit, isValid }) => (
+      {({ handleSubmit, isValid, isSubmitting }) => (
         <div>
           <Head />
 
@@ -184,9 +197,9 @@ const Login: NextPage = () => {
                           _hover={{ bg: "primary.400" }}
                           _active={{ bg: "primary.500" }}
                           disabled={!isValid}
-                          isLoading={isLoading}
                           colorScheme="primary"
                           data-testid="sign-in-btn"
+                          isLoading={isSubmitting}
                         >
                           {isFromInvite ? "Setup user" : "Sign in"}
                         </Button>
