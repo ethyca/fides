@@ -21,7 +21,7 @@ const InsightsPage: NextPage = () => {
     const { data: consentSeries, isLoading: isConsentSeriesLoading } =
         useGetAnalyticsTimeSeriesQuery({
             record_type: "consent",
-            time_interval: "days",
+            time_interval: "seconds",
             group_by: "notice",
             created_gt: "2023-12-20T14:20:34.000Z",
             created_lt: "2023-12-22T14:20:34.000Z"
