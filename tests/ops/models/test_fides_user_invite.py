@@ -7,33 +7,33 @@ from fides.api.models.fides_user_invite import INVITE_CODE_TTL_HOURS, FidesUserI
 
 class TestFidesUserInvite:
     def test_create(self, db: Session):
-        email = "test@example.com"
+        username = "test"
         invite_code = "test_invite"
         user_invite = FidesUserInvite.create(
-            db, {"email": email, "invite_code": invite_code}
+            db, {"username": "test", "invite_code": invite_code}
         )
 
-        assert user_invite.email == email
+        assert user_invite.username == username
         assert user_invite.hashed_invite_code is not None
         assert user_invite.salt is not None
         assert user_invite.created_at is not None
         assert user_invite.updated_at is not None
 
     def test_invite_code_valid(self, db: Session):
-        email = "test@example.com"
+        username = "test"
         invite_code = "test_invite"
         user_invite = FidesUserInvite.create(
-            db, {"email": email, "invite_code": invite_code}
+            db, {"username": username, "invite_code": invite_code}
         )
 
         assert user_invite.invite_code_valid(invite_code) is True
         assert user_invite.invite_code_valid("wrong_code") is False
 
     def test_is_expired(self, db: Session):
-        email = "test@example.com"
+        username = "test"
         invite_code = "test_invite"
         user_invite = FidesUserInvite.create(
-            db, {"email": email, "invite_code": invite_code}
+            db, {"username": username, "invite_code": invite_code}
         )
         assert user_invite.is_expired() is False
 
@@ -44,13 +44,13 @@ class TestFidesUserInvite:
         assert user_invite.is_expired() is True
 
     def test_renew_invite(self, db: Session):
-        email = "test@example.com"
+        username = "test"
         initial_invite_code = "initial_invite"
         new_invite_code = "new_invite"
 
         # Create initial invite
         user_invite = FidesUserInvite.create(
-            db, {"email": email, "invite_code": initial_invite_code}
+            db, {"username": username, "invite_code": initial_invite_code}
         )
         original_hashed_code = user_invite.hashed_invite_code
         original_salt = user_invite.salt

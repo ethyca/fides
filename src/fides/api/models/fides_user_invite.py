@@ -15,7 +15,7 @@ INVITE_CODE_TTL_HOURS = 24
 class FidesUserInvite(Base):
     __tablename__ = "fides_user_invite"
 
-    email = Column(String, primary_key=True, index=True)
+    username = Column(String, primary_key=True, index=True)
     hashed_invite_code = Column(String, nullable=False)
     salt = Column(String, nullable=False)
 
@@ -44,7 +44,7 @@ class FidesUserInvite(Base):
         user_invite = super().create(
             db,
             data={
-                "email": data["email"],
+                "username": data["username"],
                 "hashed_invite_code": hashed_invite_code,
                 "salt": salt,
             },

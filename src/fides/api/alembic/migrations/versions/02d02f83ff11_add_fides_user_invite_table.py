@@ -31,13 +31,16 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("email", sa.String(), nullable=False),
+        sa.Column("username", sa.String(), nullable=False),
         sa.Column("hashed_invite_code", sa.String(), nullable=False),
         sa.Column("salt", sa.String(), nullable=False),
-        sa.PrimaryKeyConstraint("id", "email"),
+        sa.PrimaryKeyConstraint("id", "username"),
     )
     op.create_index(
-        op.f("ix_fides_user_invite_email"), "fides_user_invite", ["email"], unique=False
+        op.f("ix_fides_user_invite_username"),
+        "fides_user_invite",
+        ["username"],
+        unique=False,
     )
     op.create_index(
         op.f("ix_fides_user_invite_id"), "fides_user_invite", ["id"], unique=False
@@ -46,5 +49,5 @@ def upgrade():
 
 def downgrade():
     op.drop_index(op.f("ix_fides_user_invite_id"), table_name="fides_user_invite")
-    op.drop_index(op.f("ix_fides_user_invite_email"), table_name="fides_user_invite")
+    op.drop_index(op.f("ix_fides_user_invite_username"), table_name="fides_user_invite")
     op.drop_table("fides_user_invite")

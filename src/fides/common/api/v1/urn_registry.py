@@ -178,6 +178,7 @@ INSTANTIATE_SYSTEM_CONNECTION = (
 
 # User URLs
 USERS = "/user"
+USER_ACCEPT_INVITE = "/user/accept-invite"
 USER_DETAIL = "/user/{user_id}"
 USER_PASSWORD_RESET = "/user/{user_id}/reset-password"
 USER_FORCE_PASSWORD_RESET = "/user/{user_id}/force-reset-password"

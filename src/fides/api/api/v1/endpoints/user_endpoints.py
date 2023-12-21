@@ -30,6 +30,7 @@ from fides.api.cryptography.cryptographic_util import b64_str_to_str
 from fides.api.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_invite import FidesUserInvite
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.oauth.roles import APPROVER, VIEWER
@@ -50,6 +51,7 @@ from fides.api.schemas.user import (
     UserResponse,
     UserUpdate,
 )
+from fides.api.service.user.fides_user_service import invite_user
 from fides.api.util.api_router import APIRouter
 from fides.common.api.scope_registry import (
     SCOPE_REGISTRY,
@@ -436,6 +438,10 @@ def create_user(
         )
 
     user = FidesUser.create(db=db, data=user_data.dict())
+
+    # invite user via email
+    invite_user(db=db, config=config, user=user)
+
     logger.info("Created user with id: '{}'.", user.id)
     FidesUserPermissions.create(
         db=db,
@@ -627,3 +633,50 @@ def perform_login(
     user.save(db)
 
     return client
+
+
+async def verify_invite_code(
+    username: str,
+    invite_code: str,
+    db: Session = Depends(get_db),
+) -> FidesUserInvite:
+    """
+    Security dependency to verify the invite code.
+    Returns the validated FidesUserInvite if all the checks pass.
+    """
+    user_invite = FidesUserInvite.get_by(db, field="username", value=username)
+
+    if not user_invite:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+
+    if not user_invite.invite_code_valid(invite_code):
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Invite code is invalid.",
+        )
+
+    if user_invite.is_expired():
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Invite code has expired.",
+        )
+
+    return user_invite
+
+
+@router.post(
+    urls.USER_ACCEPT_INVITE,
+)
+def accept_user_invite(
+    *,
+    db: Session = Depends(get_db),
+    config: FidesConfig = Depends(get_config),
+    user_data: UserLogin,
+    verified_invite: FidesUserInvite = Depends(verify_invite_code),
+):
+    """Sets the password and enables the user if a valid username and invite code are provided."""
+
+    return {"message": "Invite code successfully validated."}
