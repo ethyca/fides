@@ -28,7 +28,12 @@ const useProtectedRoute = (redirectUrl: string) => {
       dispatch(logout());
     }
     if (typeof window !== "undefined") {
-      router.push(redirectUrl);
+      const query =
+        router.pathname === "/" ? undefined : { redirect: router.pathname };
+      router.push({
+        pathname: redirectUrl,
+        query,
+      });
     }
     return { authenticated: false, hasAccess: false };
   }

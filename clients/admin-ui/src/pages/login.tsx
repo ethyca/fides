@@ -21,16 +21,19 @@ import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 
 const parseQueryParam = (query: ParsedUrlQuery) => {
-  const { username: rawUsername, invite_code: rawInviteCode } = query;
-  let username: string | undefined;
-  let inviteCode: string | undefined;
-  if (typeof rawUsername === "string") {
-    username = rawUsername;
-  }
-  if (typeof rawInviteCode === "string") {
-    inviteCode = rawInviteCode;
-  }
-  return { username, inviteCode };
+  const {
+    username: rawUsername,
+    invite_code: rawInviteCode,
+    redirect: rawRedirect,
+  } = query;
+  return {
+    username: typeof rawUsername === "string" ? rawUsername : undefined,
+    inviteCode: typeof rawInviteCode === "string" ? rawInviteCode : undefined,
+    redirect:
+      typeof rawRedirect === "string"
+        ? decodeURIComponent(rawRedirect)
+        : undefined,
+  };
 };
 
 const useLogin = () => {
@@ -39,7 +42,7 @@ const useLogin = () => {
   const toast = useToast();
   const router = useRouter();
   const dispatch = useDispatch();
-  const { username, inviteCode } = parseQueryParam(router.query);
+  const { username, inviteCode, redirect } = parseQueryParam(router.query);
 
   const initialValues = {
     username: username ?? "",
@@ -76,7 +79,8 @@ const useLogin = () => {
   });
 
   if (token) {
-    router.push("/");
+    const destination = redirect ?? "/";
+    router.push(destination);
   }
 
   return {
