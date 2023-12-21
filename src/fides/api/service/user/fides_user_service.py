@@ -42,7 +42,7 @@ def accept_invite(db: Session, user: FidesUser, new_password: str) -> FidesUser:
     """
 
     # update password and enable
-    user.update_password(db=db, new_password=b64_str_to_str(new_password))
+    user.update_password(db=db, new_password=new_password)
     user.update(
         db,
         data={"disabled": False, "disabled_reason": None},
