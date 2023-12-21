@@ -62,6 +62,7 @@ class MessagingActionType(str, Enum):
     PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion"
     PRIVACY_REQUEST_REVIEW_DENY = "privacy_request_review_deny"
     PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
+    USER_INVITE = "user_invite"
     TEST_MESSAGE = "test_message"
 
 
@@ -150,6 +151,13 @@ class ErasureRequestBodyParams(BaseModel):
     controller: str
     third_party_vendor_name: str
     identities: List[str]
+
+
+class UserInviteBodyParams(BaseModel):
+    """Body params required to send a user invite email"""
+
+    username: str
+    invite_code: str
 
 
 class FidesopsMessage(

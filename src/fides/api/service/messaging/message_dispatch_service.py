@@ -39,6 +39,7 @@ from fides.api.schemas.messaging.messaging import (
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
+    UserInviteBodyParams,
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.messaging_crud_service import (
@@ -128,6 +129,7 @@ def dispatch_message(
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,
             ErasureRequestBodyParams,
+            UserInviteBodyParams,
         ]
     ] = None,
     subject_override: Optional[str] = None,
@@ -360,6 +362,18 @@ def _build_email(  # pylint: disable=too-many-return-statements
         base_template = get_email_template(action_type)
         return EmailForActionType(
             subject="Test message from fides", body=base_template.render()
+        )
+    if action_type == MessagingActionType.USER_INVITE:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Welcome to Fides",
+            body=base_template.render(
+                {
+                    "admin_ui_url": CONFIG.admin_ui.url,
+                    "username": body_params.username,
+                    "invite_code": body_params.invite_code,
+                }
+            ),
         )
     logger.error("Message action type {} is not implemented", action_type)
     raise MessageDispatchException(
