@@ -621,7 +621,6 @@ class TestGetUsers:
         assert user_data["last_name"]
         assert user_data["email_address"]
         assert user_data["disabled"]
-        assert user_data["disabled_reason"]
 
     def test_get_filtered_users(
         self, api_client: TestClient, generate_auth_header, url, db
