@@ -80,6 +80,7 @@ class TestCreateUser:
         body = {
             "username": "spaces in name",
             "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
         }
 
         response = api_client.post(url, headers=auth_header, json=body)
@@ -94,7 +95,11 @@ class TestCreateUser:
     ) -> None:
         auth_header = generate_auth_header([USER_CREATE])
 
-        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
+        body = {
+            "username": "test_user",
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
+        }
         FidesUser.create(db=db, data=body)
 
         response = api_client.post(url, headers=auth_header, json=body)
@@ -110,7 +115,11 @@ class TestCreateUser:
     ) -> None:
         auth_header = generate_auth_header([USER_CREATE])
 
-        body = {"username": "test_user", "password": str_to_b64_str("short")}
+        body = {
+            "username": "test_user", 
+            "password": str_to_b64_str("short"),
+            "email_address": "test.user@ethyca.com",
+            }
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
@@ -118,7 +127,11 @@ class TestCreateUser:
             == "Password must have at least eight characters."
         )
 
-        body = {"username": "test_user", "password": str_to_b64_str("longerpassword")}
+        body = {
+            "username": "test_user", 
+            "password": str_to_b64_str("longerpassword"),
+            "email_address": "test.user@ethyca.com",
+            }
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
@@ -126,7 +139,11 @@ class TestCreateUser:
             == "Password must have at least one number."
         )
 
-        body = {"username": "test_user", "password": str_to_b64_str("longer55password")}
+        body = {
+            "username": "test_user", 
+            "password": str_to_b64_str("longer55password"),
+            "email_address": "test.user@ethyca.com",
+        }
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
@@ -134,7 +151,12 @@ class TestCreateUser:
             == "Password must have at least one capital letter."
         )
 
-        body = {"username": "test_user", "password": str_to_b64_str("LoNgEr55paSSworD")}
+        body = {
+            "username": "test_user", 
+            "password": str_to_b64_str("LoNgEr55paSSworD"),
+            "email_address": "test.user@ethyca.com",
+        }
+
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
@@ -150,7 +172,11 @@ class TestCreateUser:
         url,
     ) -> None:
         auth_header = generate_auth_header([USER_CREATE])
-        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
+        body = {
+            "username": "test_user", 
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
+        }
 
         response = api_client.post(url, headers=auth_header, json=body)
 
@@ -170,7 +196,11 @@ class TestCreateUser:
         url,
     ) -> None:
         auth_header = generate_auth_header([USER_CREATE])
-        body = {"username": "test_user", "password": str_to_b64_str("Test_passw0rd")}
+        body = {
+            "username": "test_user", 
+            "password": str_to_b64_str("Test_passw0rd"),
+            "email_address": "test.user@ethyca.com",
+        }
 
         response = api_client.post(url, headers=auth_header, json=body)
 
@@ -184,7 +214,11 @@ class TestCreateUser:
         url,
     ) -> None:
         auth_header = root_auth_header
-        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
+        body = {
+            "username": "test_user", 
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
+            }
 
         response = api_client.post(url, headers=auth_header, json=body)
 
@@ -205,6 +239,7 @@ class TestCreateUser:
         body = {
             "username": "test_user",
             "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
             "first_name": "Test",
             "last_name": "User",
         }
@@ -225,7 +260,11 @@ class TestCreateUser:
         url,
     ) -> None:
         auth_header = generate_auth_header([USER_CREATE])
-        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
+        body = {
+            "username": "test_user", 
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
+            }
 
         response = api_client.post(url, headers=auth_header, json=body)
 
@@ -238,6 +277,7 @@ class TestCreateUser:
         duplicate_body = {
             "username": "TEST_USER",
             "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user1@ethyca.com",
         }
 
         response = api_client.post(url, headers=auth_header, json=duplicate_body)
@@ -247,6 +287,7 @@ class TestCreateUser:
         duplicate_body_2 = {
             "username": "TEST_user",
             "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user2@ethyca.com",
         }
 
         response = api_client.post(url, headers=auth_header, json=duplicate_body_2)
