@@ -1,6 +1,7 @@
 {
   "id": "123",
   "username": "cypress-user@ethyca.com",
+  "email_address": "cypress-user@ethyca.com",
   "created_at": "2022-09-28T16:15:30.994Z",
   "first_name": "Cypress",
   "last_name": "User"
