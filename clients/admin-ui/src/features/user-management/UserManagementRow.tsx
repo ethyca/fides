@@ -72,6 +72,9 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
           {user.username}
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
+          {user.email_address}
+        </Td>
+        <Td pl={0} py={1} onClick={handleEditUser}>
           {user.first_name}
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
