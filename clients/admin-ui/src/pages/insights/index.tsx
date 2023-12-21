@@ -18,14 +18,14 @@ const InsightsPage: NextPage = () => {
     //         created_gt: "2023-12-20T14:20:34.000Z",
     //         created_lt: "2023-12-22T14:20:34.000Z "
     //     });
-    // const { data: consentSeries, isLoading: isConsentSeriesLoading } =
-    //     useGetAnalyticsTimeSeriesQuery({
-    //         record_type: "consent",
-    //         time_interval: "days",
-    //         group_by: "notice",
-    //         created_gt: "2023-12-20T14:20:34.000Z",
-    //         created_lt: "2023-12-22T14:20:34.000Z "
-    //     });
+    const { data: consentSeries, isLoading: isConsentSeriesLoading } =
+        useGetAnalyticsTimeSeriesQuery({
+            record_type: "consent",
+            time_interval: "days",
+            group_by: "notice",
+            created_gt: "2023-12-20T14:20:34.000Z",
+            created_lt: "2023-12-22T14:20:34.000Z "
+        });
 
     useEffect(() => {
 
@@ -94,41 +94,41 @@ const InsightsPage: NextPage = () => {
     // todo- get from endpoint
     // Time series endpoint: api/v1/plus/analytics/time-series?record_type=consent&time_interval=days&group_by=notice&created_gt=2023-12-20T14:20:34.000Z&created_lt=2023-12-22T14:20:34.000Z
     // response body example:
-    const consentSeries = [{
-        "Created": "2013-10-05 22:34:00",
-        "Notice_title": "Essential",
-        "count": 1
-    }, {
-        "Created": "2013-10-05 22:32:00",
-        "Notice_title": "Data Sales",
-        "count": 1
-    },{
-        "Created": "2013-10-06 10:32:00",
-        "Notice_title": "Essential",
-        "count": 2
-    }, {
-        "Created": "2013-10-06 22:32:00",
-        "Notice_title": "Data Sales",
-        "count": 2
-    },{
-        "Created": "2013-10-07 08:32:00",
-        "Notice_title": "Essential",
-        "count": 4
-    }, {
-        "Created": "2013-10-07 06:32:00",
-        "Notice_title": "Data Sales",
-        "count": 2
-    }];
+    // const consentSeries = [{
+    //     "Created": "2013-10-05 22:34:00",
+    //     "Notice_title": "Essential",
+    //     "count": 1
+    // }, {
+    //     "Created": "2013-10-05 22:32:00",
+    //     "Notice_title": "Data Sales",
+    //     "count": 1
+    // },{
+    //     "Created": "2013-10-06 10:32:00",
+    //     "Notice_title": "Essential",
+    //     "count": 2
+    // }, {
+    //     "Created": "2013-10-06 22:32:00",
+    //     "Notice_title": "Data Sales",
+    //     "count": 2
+    // },{
+    //     "Created": "2013-10-07 08:32:00",
+    //     "Notice_title": "Essential",
+    //     "count": 4
+    // }, {
+    //     "Created": "2013-10-07 06:32:00",
+    //     "Notice_title": "Data Sales",
+    //     "count": 2
+    // }];
 
 
     const consentByNoticeTypeTimeseries = useMemo(() => {
         // group by notice
-        const uniqueNotices = [...new Set(consentSeries.map(item => item.Notice_title))];
+        const uniqueNotices = [...new Set(consentSeries?.map(item => item.Notice_title))];
 
         // push a new trace by Notice title
         const traces: { type: string; mode: string; x: string[]; y: number[]; line: { color: string; }; }[] = []
         uniqueNotices.forEach(uniqueNoticeTitle => {
-            const dataForNotice = consentSeries.filter(item => item.Notice_title === uniqueNoticeTitle)
+            const dataForNotice = consentSeries?.filter(item => item.Notice_title === uniqueNoticeTitle)
             traces.push({
                 type: "scatter",
                 mode: "lines",
