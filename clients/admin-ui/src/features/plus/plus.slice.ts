@@ -453,7 +453,7 @@ const plusApi = baseApi.injectEndpoints({
         { record_type: string; time_interval: string; group_by: string; created_gt: string; created_lt: string; }
         >({
       query: (params) => ({
-        url: "api/v1/plus/analytics/aggregate",
+        url: "plus/analytics/aggregate",
         params: {
           record_type: params.record_type,
           time_interval: params.time_interval,
@@ -469,7 +469,7 @@ const plusApi = baseApi.injectEndpoints({
         { record_type: string; time_interval: string; group_by: string; created_gt: string; created_lt: string; }
         >({
       query: (params) => ({
-        url: "api/v1/plus/analytics/time-series",
+        url: "plus/analytics/time-series",
         params: {
           record_type: params.record_type,
           time_interval: params.time_interval,
