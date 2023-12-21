@@ -101,7 +101,7 @@ async def acquire_access_token(
 
     if basic_credentials:
         user = FidesUser.get_by(db, field="username", value=basic_credentials.username)
-        if user.disabled:
+        if user.disabled: #TODO: Revoke existing session if disabled. 
             raise AuthenticationFailure(detail="Authentication Failure")
 
     logger.info("Creating access token")
