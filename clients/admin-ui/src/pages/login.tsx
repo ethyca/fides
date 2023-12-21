@@ -26,13 +26,15 @@ const parseQueryParam = (query: ParsedUrlQuery) => {
     invite_code: rawInviteCode,
     redirect: rawRedirect,
   } = query;
+  const redirectDecoded =
+    typeof rawRedirect === "string"
+      ? decodeURIComponent(rawRedirect)
+      : undefined;
   return {
     username: typeof rawUsername === "string" ? rawUsername : undefined,
     inviteCode: typeof rawInviteCode === "string" ? rawInviteCode : undefined,
-    redirect:
-      typeof rawRedirect === "string"
-        ? decodeURIComponent(rawRedirect)
-        : undefined,
+    // Make sure we don't keep redirecting to the login page!
+    redirect: redirectDecoded === "/login" ? undefined : redirectDecoded,
   };
 };
 
