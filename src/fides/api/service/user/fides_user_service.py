@@ -3,7 +3,6 @@ import uuid
 from sqlalchemy.orm import Session
 
 from fides.api.api.v1.endpoints.health import is_email_messaging_enabled
-from fides.api.cryptography.cryptographic_util import b64_str_to_str
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_invite import FidesUserInvite
 from fides.api.schemas.messaging.messaging import (
@@ -25,6 +24,7 @@ def invite_user(db: Session, config: FidesConfig, user: FidesUser):
         FidesUserInvite.create(
             db=db, data={"username": user.username, "invite_code": invite_code}
         )
+        user.update(db, data={"disabled": True})
         dispatch_message(
             db,
             action_type=MessagingActionType.USER_INVITE,

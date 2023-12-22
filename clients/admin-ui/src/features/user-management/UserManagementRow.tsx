@@ -69,7 +69,24 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
         data-testid={`row-${user.id}`}
       >
         <Td pl={0} py={1} onClick={handleEditUser}>
-          {user.username}
+          {user.username}{" "}
+          {user.disabled && (
+            <Badge
+              bg="green.500"
+              color="white"
+              paddingLeft="2"
+              textTransform="none"
+              paddingRight="8px"
+              height="18px"
+              lineHeight="18px"
+              borderRadius="6px"
+              fontWeight="500"
+              textAlign="center"
+              data-testid="user-permissions-badge"
+            >
+              Invite sent
+            </Badge>
+          )}
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
           {user.email_address}

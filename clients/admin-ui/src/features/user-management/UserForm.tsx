@@ -1,4 +1,5 @@
 import {
+  Badge,
   Box,
   Button,
   ButtonGroup,
@@ -120,7 +121,25 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                   fontSize="sm"
                   fontWeight="semibold"
                 >
-                  Profile
+                  Profile{" "}
+                  {activeUser?.disabled && (
+                    <Badge
+                      bg="green.500"
+                      color="white"
+                      paddingLeft="2"
+                      marginLeft="2"
+                      textTransform="none"
+                      paddingRight="8px"
+                      height="18px"
+                      lineHeight="18px"
+                      borderRadius="6px"
+                      fontWeight="500"
+                      textAlign="center"
+                      data-testid="user-permissions-badge"
+                    >
+                      Invite sent
+                    </Badge>
+                  )}
                 </Text>
                 <Box marginLeft="auto">
                   <HStack>

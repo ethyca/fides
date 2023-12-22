@@ -72,6 +72,9 @@ class FidesUser(Base):
     ) -> FidesUser:
         """Create a FidesUser by hashing the password with a generated salt
         and storing the hashed password and the salt"""
+
+        # we set a dummy password if one isn't provided because this means it's part of the user
+        # invite flow and the password will be set by the user after they accept their invite
         hashed_password, salt = FidesUser.hash_password(
             data.get("password") or str(uuid.uuid4())
         )
@@ -85,7 +88,7 @@ class FidesUser(Base):
                 "email_address": data.get("email_address"),
                 "first_name": data.get("first_name"),
                 "last_name": data.get("last_name"),
-                "disabled": data.get("disabled"),
+                "disabled": data.get("disabled") or False,
                 "disabled_reason": data.get("disabled_reason"),
             },
             check_name=check_name,
