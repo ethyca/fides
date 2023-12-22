@@ -66,6 +66,14 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.SYSTEM_UPDATE], // temporary scope until we decide what to do here
       },
+      {
+        title: "Scan codebase",
+        path: routes.SCAN_CODEBASE_ROUTE,
+        requiresPlus: true,
+        scopes: [
+          ScopeRegistryEnum.SYSTEM_UPDATE // temporary scope for 2023 hackathon 
+        ],
+      }
     ],
   },
   {
