@@ -225,7 +225,10 @@ const InsightsPage: NextPage = () => {
     };
 
     // privacy request aggregate
-    const privacyRequestTotal = useMemo(() => privacyRequestByPolicy?.map(i => i.count)?.reduce((sum, el) => sum + el), [privacyRequestByPolicy]) || 0
+    const privacyRequestTotal = useMemo(() => {
+        const policyCountArr = privacyRequestByPolicy?.map(i => i.count) || []
+        return policyCountArr.reduce((sum, el) => sum + el, 0)
+    }, [privacyRequestByPolicy]) || 0
 
 
     // privacy request by policy bar chart
