@@ -71,12 +71,10 @@ const InsightsPage: NextPage = () => {
     const START_DATE = "2023-01-01T00:00:00.000Z";
     const END_DATE = "2024-01-01T00:00:00.000Z";
 
-    const [isLoading, setIsLoading] = useState(true);
     const { data: privacyRequestByPolicy, isLoading: isPrivacyRequestByPolicyLoading } =
         useGetInsightsAggregateQuery({
             record_type: RecordType.dsr,
-            // todo- group by policy once that's working
-            group_by: GroupByOptions.status,
+            group_by: GroupByOptions.dsr_policy,
             created_gt: START_DATE,
             created_lt: END_DATE,
         });
@@ -117,35 +115,6 @@ const InsightsPage: NextPage = () => {
             created_lt: END_DATE,
         });
 
-    useEffect(() => {
-        setIsLoading(false);
-    },[])
-
-
-
-
-    const privacyRequestPolicyAction = [{
-            "Notice title": "Access",
-            "count": 5
-        }, {
-            "Notice title": "Erasure",
-            "count": 2
-        }, {
-            "Notice title": "Consent",
-            "count": 10
-        },
-    ]
-
-    // privacy requests by notice type bar
-    const privacyRequestsPolicyActionBar = [
-        {
-            y: privacyRequestPolicyAction.map(i => i["Notice title"]),
-            x: privacyRequestPolicyAction.map(i => i.count),
-            type: 'bar',
-            orientation: 'h'
-        }
-    ];
-
 
     // privacy request aggregate
     const privacyRequestTotal = useMemo(() => privacyRequestByPolicy?.map(i => i.count).reduce((sum, el) => sum + el), [privacyRequestByPolicy]) || 0
@@ -155,8 +124,7 @@ const InsightsPage: NextPage = () => {
     const privacyRequestByPolicyBar = useMemo(() => {
         return [
             {
-                // todo- change to "policy"
-                y: privacyRequestByPolicy?.map(i => i.status),
+                y: privacyRequestByPolicy?.map(i => i.dsr_policy),
                 x: privacyRequestByPolicy?.map(i => i.count),
                 type: 'bar',
                 orientation: 'h'
@@ -322,82 +290,129 @@ const InsightsPage: NextPage = () => {
     return (
 
         <>
-            {isLoading && (
-                <Layout title="Insights">
-                    <Center>
-                        <Spinner />
-                    </Center>
-                </Layout>
-            )}
-            {!isLoading && (
-                <Layout title="Insights">
-                    <div style={SECTION_STYLES}>
-                        <Heading {...SECTION_HEADING_PROPS}>
-                            {LABEL_REQUESTS_SECTION}
-                        </Heading>
-                        <hr/>
-                        {/* privacy request charts */}
-                        <div style={{display: "flex", textAlign: "center"}}>
-                            <div style={KPI_STYLES}>
+            <Layout title="Insights">
+                <div style={SECTION_STYLES}>
+                    <Heading {...SECTION_HEADING_PROPS}>
+                        {LABEL_REQUESTS_SECTION}
+                    </Heading>
+                    <hr/>
+                    {/* privacy request charts */}
+                    <div style={{display: "flex", textAlign: "center"}}>
+                        <div style={KPI_STYLES}>
+                            {isPrivacyRequestByPolicyLoading && (
+                                <Center>
+                                    <Spinner />
+                                </Center>
+                            )}
+                            {!isPrivacyRequestByPolicyLoading && (
                                 <div style={KPI_VALUE_STYLES}>{privacyRequestTotal}</div>
-                                <div style={KPI_LABEL_STYLES}>{LABEL_REQUESTS_TOTAL}</div>
-                            </div>
-                            <div style={CHART_STYLES}>
+                            )}
+                            <div style={KPI_LABEL_STYLES}>{LABEL_REQUESTS_TOTAL}</div>
+                        </div>
+                        <div style={CHART_STYLES}>
+                            {isPrivacyRequestByPolicyLoading && (
+                                <Center>
+                                    <Spinner />
+                                </Center>
+                            )}
+                            {!isPrivacyRequestByPolicyLoading && (
                                 <Plot
                                     data={privacyRequestByPolicyBar} layout={getBarChartPlotlyLayout(LABEL_REQUESTS_BY_POLICY)}
                                 />
-                            </div>
-                            <div style={CHART_STYLES}>
+                            )}
+                        </div>
+                        <div style={CHART_STYLES}>
+                            {isPrivacyRequestByDayLoading && (
+                                <Center>
+                                    <Spinner />
+                                </Center>
+                            )}
+                            {!isPrivacyRequestByDayLoading && (
                                 <Plot
                                     data={privacyRequestsByDayBar} layout={getTimeSeriesPlotlyLayout(LABEL_REQUESTS_TIMESERIES)}
                                 />
-                            </div>
+                            )}
                         </div>
                     </div>
+                </div>
 
-                    <div style={SECTION_STYLES}>
-                        <Heading {...SECTION_HEADING_PROPS}>
-                            {LABEL_PREFS_SECTION}
-                        </Heading>
-                        <hr/>
+                <div style={SECTION_STYLES}>
+                    <Heading {...SECTION_HEADING_PROPS}>
+                        {LABEL_PREFS_SECTION}
+                    </Heading>
+                    <hr/>
 
-                        {/*row 1 consent*/}
-                        <div style={{display: "flex", textAlign: "center"}}>
-                            <div style={KPI_STYLES}>
+                    {/*row 1 consent*/}
+                    <div style={{display: "flex", textAlign: "center"}}>
+                        <div style={KPI_STYLES}>
+                            {isConsentByNoticeLoading && (
+                                <Center>
+                                    <Spinner />
+                                </Center>
+                            )}
+                            {!isConsentByNoticeLoading && (
                                 <div style={KPI_VALUE_STYLES}>{consentTotal}</div>
-                                <div style={KPI_LABEL_STYLES}>{LABEL_PREFS_TOTAL}</div>
-                            </div>
-                            <div style={CHART_STYLES}>
+                            )}
+                            <div style={KPI_LABEL_STYLES}>{LABEL_PREFS_TOTAL}</div>
+                        </div>
+                        <div style={CHART_STYLES}>
+                            {isConsentByNoticeLoading && (
+                                <Center>
+                                    <Spinner />
+                                </Center>
+                            )}
+                            {!isConsentByNoticeLoading && (
                                 <Plot
                                     data={consentByNoticeBar} layout={getBarChartPlotlyLayout(LABEL_PREFS_BY_NOTICE)}
                                 />
-                            </div>
-                            <div style={CHART_STYLES}>
+                            )}
+                        </div>
+                        <div style={CHART_STYLES}>
+                            {isConsentByDayLoading && (
+                                <Center>
+                                    <Spinner />
+                                </Center>
+                            )}
+                            {!isConsentByDayLoading && (
                                 <Plot
                                     data={consentByDayBar} layout={getTimeSeriesPlotlyLayout(LABEL_PREFS_TIMESERIES)}
                                 />
-                            </div>
-                        </div>
-
-                        {/*row 2 consent*/}
-                        <div style={{display: "flex", textAlign: "center"}}>
-                            <div style={KPI_STYLES}>
-                            </div>
-                            <div style={CHART_STYLES}>
-                                <Plot
-                                    data={consentByPreferenceBar} layout={getBarChartPlotlyLayout(LABEL_PREFS_BY_PREFERENCE)}
-                                />
-                            </div>
-                            <div style={CHART_STYLES}>
-                                <Plot
-                                    data={consentByNoticeTypeTimeseries} layout={getTimeSeriesPlotlyLayout(LABEL_PREFS_TIMESERIES_BY_PREFERENCE)}
-                                />
-                            </div>
+                            )}
                         </div>
                     </div>
 
-                </Layout>
-            )}
+                    {/*row 2 consent*/}
+                    <div style={{display: "flex", textAlign: "center"}}>
+                        <div style={KPI_STYLES}>
+                        </div>
+                        <div style={CHART_STYLES}>
+                            {isConsentByPreferenceLoading && (
+                                <Center>
+                                    <Spinner />
+                                </Center>
+                            )}
+                            {!isConsentByPreferenceLoading && (
+                                <Plot
+                                    data={consentByPreferenceBar} layout={getBarChartPlotlyLayout(LABEL_PREFS_BY_PREFERENCE)}
+                                />
+                            )}
+                        </div>
+                        <div style={CHART_STYLES}>
+                            {isConsentByDaysAndPreferenceLoading && (
+                                <Center>
+                                    <Spinner />
+                                </Center>
+                            )}
+                            {!isConsentByDaysAndPreferenceLoading && (
+                                <Plot
+                                    data={consentByNoticeTypeTimeseries} layout={getTimeSeriesPlotlyLayout(LABEL_PREFS_TIMESERIES_BY_PREFERENCE)}
+                                />
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+            </Layout>
         </>
     );
 };
