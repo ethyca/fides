@@ -73,14 +73,15 @@ const CHART_STYLES: React.CSSProperties = {
 /**
  * LABELS
  */
-const INTERVAL = TimeInterval.days;
-const LABEL_INTERVAL = "Daily";
+const INTERVAL = TimeInterval.weeks;
+const LABEL_INTERVAL = "Weekly";
 
 const LABEL_SETTINGS_SECTION = "Dashboard";
 
 const LABEL_REQUESTS_SECTION = "Privacy Requests";
 const LABEL_REQUESTS_TOTAL = "Total Privacy Requests";
 const LABEL_REQUESTS_BY_POLICY = "Privacy Requests by Policy";
+const LABEL_REQUESTS_BY_STATUS = "Privacy Requests by Status";
 const LABEL_REQUESTS_TIMESERIES = `${LABEL_INTERVAL} Privacy Requests`;
 const LABEL_REQUESTS_TIMESERIES_BY_POLICY = `${LABEL_INTERVAL} Privacy Requests by Policy`;
 
@@ -191,7 +192,7 @@ const InsightsPage: NextPage = () => {
     const privacyRequestTotal = useMemo(() => privacyRequestByPolicy?.map(i => i.count).reduce((sum, el) => sum + el), [privacyRequestByPolicy]) || 0
 
 
-    // policy by status bar chart
+    // privacy request by policy bar chart
     const privacyRequestByPolicyBar = useMemo(() => {
         return [
             {
@@ -214,6 +215,19 @@ const InsightsPage: NextPage = () => {
             }
         ];
     }, [privacyRequestByDay])
+
+    // privacy request by status bar chart
+    const privacyRequestByStatusBar = useMemo(() => {
+        return [
+            {
+                y: privacyRequestByStatus?.map(i => i.status),
+                x: privacyRequestByStatus?.map(i => i.count),
+                type: 'bar',
+                orientation: 'h'
+            }
+        ];
+    }, [privacyRequestByStatus])
+
 
     //privacy request by day and policy chart
     const privacyRequestByPolicyTimeseries = useMemo(() => {
@@ -355,6 +369,11 @@ const InsightsPage: NextPage = () => {
                 showgrid: false,
                 zeroline: false,
             },
+            legend: {
+                x: 1,
+                y: 1,
+                xanchor: "right",
+            },
             title: {
                 text: title,
                 font: {
@@ -434,17 +453,15 @@ const InsightsPage: NextPage = () => {
                         </div>
                     </div>
                     <div style={{display: "flex", textAlign: "center"}}>
-                        <div style={KPI_STYLES}>
-                        </div>
                         <div style={CHART_STYLES}>
-                            {isPrivacyRequestByPolicyLoading && (
+                            {isPrivacyRequestByStatusLoading && (
                                 <Center>
                                     <Spinner />
                                 </Center>
                             )}
-                            {!isPrivacyRequestByPolicyLoading && (
+                            {!isPrivacyRequestByStatusLoading && (
                                 <Plot
-                                    data={privacyRequestByPolicyBar} layout={getBarChartPlotlyLayout(LABEL_REQUESTS_BY_POLICY)}
+                                    data={privacyRequestByStatusBar} layout={getBarChartPlotlyLayout(LABEL_REQUESTS_BY_STATUS)}
                                 />
                             )}
                         </div>
@@ -510,8 +527,6 @@ const InsightsPage: NextPage = () => {
 
                     {/*row 2 consent*/}
                     <div style={{display: "flex", textAlign: "center"}}>
-                        <div style={KPI_STYLES}>
-                        </div>
                         <div style={CHART_STYLES}>
                             {isConsentByPreferenceLoading && (
                                 <Center>
