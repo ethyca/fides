@@ -129,8 +129,8 @@ const InsightsPage: NextPage = () => {
     const consentByDayBar = useMemo(() => {
         return [
             {
-                y: consentByDay?.map(i => i.Created),
-                x: consentByDay?.map(i => i.count),
+                y: consentByDay?.map(i => i.count),
+                x: consentByDay?.map(i => i.Created),
                 type: 'bar',
             }
         ];
@@ -179,7 +179,7 @@ const InsightsPage: NextPage = () => {
 
         yaxis: {
             "showgrid": false,
-            "zeroline": false
+            "zeroline": false,
         },
         xaxis: {
             "showgrid": false,
@@ -197,7 +197,7 @@ const InsightsPage: NextPage = () => {
         },
     }
 
-    const layoutTimeSeries = {
+    const layoutTimeSeriesBar = {
         ... layoutBase,
         margin: {
             t: 20,
@@ -205,8 +205,29 @@ const InsightsPage: NextPage = () => {
             r: 50,
             b: 20
         },
+        yaxis: {
+            type: 'linear',
+        },
         xaxis: {
             type: 'date',
+            tickformat: '%m/%d'
+        }
+    }
+
+    const layoutTimeSeriesLine = {
+        ... layoutBase,
+        margin: {
+            t: 20,
+            l: 50,
+            r: 50,
+            b: 20
+        },
+        yaxis: {
+            type: 'linear',
+        },
+        xaxis: {
+            type: 'date',
+            tickformat: '%m/%d'
         }
     }
 
@@ -250,7 +271,7 @@ const InsightsPage: NextPage = () => {
                             </div>
                             <div style={{flex: 2}}>
                                 <Plot
-                                    data={privacyRequestsByDayBar} layout={layoutTimeSeries}
+                                    data={privacyRequestsByDayBar} layout={layoutTimeSeriesLine}
                                 />
                             </div>
                         </div>
@@ -299,7 +320,7 @@ const InsightsPage: NextPage = () => {
                             </div>
                             <div style={{flex: 2}}>
                                 <Plot
-                                    data={consentByDayBar} layout={layoutTimeSeries}
+                                    data={consentByDayBar} layout={layoutTimeSeriesBar}
                                 />
                             </div>
                         </div>
@@ -329,7 +350,7 @@ const InsightsPage: NextPage = () => {
                             </div>
                             <div style={{flex: 2}}>
                                 <Plot
-                                    data={consentByNoticeTypeTimeseries} layout={layoutTimeSeries}
+                                    data={consentByNoticeTypeTimeseries} layout={layoutTimeSeriesLine}
                                 />
                             </div>
                         </div>
