@@ -26,7 +26,7 @@ import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 
 const parseQueryParam = (query: ParsedUrlQuery) => {
-  const validPathRegex = /^\/[\d\w/-_]*$/;
+  const validPathRegex = /^\/[\w/-]*$/;
   const {
     username: rawUsername,
     invite_code: rawInviteCode,
