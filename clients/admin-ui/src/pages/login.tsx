@@ -48,7 +48,6 @@ const parseQueryParam = (query: ParsedUrlQuery) => {
 
 const Animation = () => {
   const primary800 = "rgba(17, 20, 57, 1)";
-  // const primary800 = "rgba(255, 25, 25, 1)";
   const icon = {
     hidden: {
       opacity: 0,
@@ -122,6 +121,7 @@ const useLogin = () => {
       } else {
         user = await loginRequest(credentials).unwrap();
       }
+      setShowAnimation(true);
       dispatch(login(user));
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -143,16 +143,21 @@ const useLogin = () => {
 
   useEffect(() => {
     if (token) {
-      setShowAnimation(true);
-      const timer = setTimeout(() => {
-        router.push(redirect ?? "/");
-      }, 2000);
-      return () => {
-        clearTimeout(timer);
-      };
+      const destination = redirect ?? "/";
+      if (showAnimation) {
+        const timer = setTimeout(() => {
+          router.push(destination).then(() => {
+            setShowAnimation(false);
+          });
+        }, 2000);
+        return () => {
+          clearTimeout(timer);
+        };
+      }
+      router.push(destination);
     }
     return () => {};
-  }, [token, router, redirect]);
+  }, [token, router, redirect, showAnimation]);
 
   return {
     isFromInvite,

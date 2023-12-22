@@ -45,7 +45,7 @@
     "date-fns-tz": "^2.0.0",
     "file-saver": "^2.0.5",
     "formik": "^2.2.9",
-    "framer-motion": "^10.16.16",
+    "framer-motion": "^6",
     "i18n-iso-countries": "^7.5.0",
     "immer": "^9.0.21",
     "js-yaml": "^4.1.0",
