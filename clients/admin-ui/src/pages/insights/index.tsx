@@ -12,7 +12,47 @@ import {GroupByOptions, RecordType, TimeInterval} from "~/types/api/models/Insig
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false, })
 
+/**
+ * STYLES
+ */
+const SECTION_HEADING_PROPS = {
+    marginBottom: 1,
+    fontSize: "2xl",
+    fontWeight: "semibold",
+};
+
+const SECTION_STYLES: React.CSSProperties = {
+    marginBottom: 24,
+};
+
+const KPI_STYLES: React.CSSProperties = {
+    position: "relative",
+    background: "tomato",
+    minWidth: 240,
+    flex: 1,
+}
+const CHART_STYLES: React.CSSProperties = {
+    background: "steelblue",
+    flex: 2,
+    padding: 8,
+}
+
+/**
+ * LABELS
+ */
+const LABEL_REQUESTS_TOTAL = "Total Privacy Requests";
+const LABEL_REQUESTS_BY_POLICY = "Privacy Requests by Policy";
+const LABEL_REQUESTS_TIMESERIES = "Daily Privacy Requests";
+const LABEL_PREFS_TOTAL = "Total Preferences";
+const LABEL_PREFS_BY_NOTICE = "Preferences by Notice";
+const LABEL_PREFS_TIMESERIES = "Daily Preferences";
+const LABEL_PREFS_BY_PREFERENCE = "Preferences by Value";
+const LABEL_PREFS_TIMESERIES_BY_PREFERENCE = "Daily Preferences by Value";
+
 const InsightsPage: NextPage = () => {
+    const START_DATE = "2023-01-01T00:00:00.000Z";
+    const END_DATE = "2024-01-01T00:00:00.000Z";
+
     const [isLoading, setIsLoading] = useState(true);
     const { data: privacyRequestByPolicy, isLoading: isPrivacyRequestByPolicyLoading } =
         useGetInsightsAggregateQuery({
@@ -33,53 +73,51 @@ const InsightsPage: NextPage = () => {
         useGetInsightsAggregateQuery({
             record_type: RecordType.consent,
             group_by: GroupByOptions.notice,
-            created_gt: "2023-12-20T14:20:34.000Z",
-            created_lt: "2023-12-22T14:20:34.000Z"
+            created_gt: START_DATE,
+            created_lt: END_DATE,
         });
     const { data: consentByDay, isLoading: isConsentByDayLoading } =
         useGetInsightsTimeSeriesQuery({
             record_type: RecordType.consent,
             time_interval: TimeInterval.days,
-            created_gt: "2023-12-20T14:20:34.000Z",
-            created_lt: "2023-12-22T14:20:34.000Z"
+            created_gt: START_DATE,
+            created_lt: END_DATE,
         });
     const { data: consentByPreference, isLoading: isConsentByPreferenceLoading } =
         useGetInsightsAggregateQuery({
             record_type: RecordType.consent,
             group_by: GroupByOptions.preference,
-            created_gt: "2023-12-20T14:20:34.000Z",
-            created_lt: "2023-12-22T14:20:34.000Z"
+            created_gt: START_DATE,
+            created_lt: END_DATE,
         });
     const { data: consentByDayAndPreference, isLoading: isConsentByDaysAndPreferenceLoading } =
         useGetInsightsTimeSeriesQuery({
             record_type: RecordType.consent,
             time_interval: TimeInterval.days,
             group_by: GroupByOptions.preference,
-            created_gt: "2023-12-20T14:20:34.000Z",
-            created_lt: "2023-12-22T14:20:34.000Z"
+            created_gt: START_DATE,
+            created_lt: END_DATE,
         });
 
     useEffect(() => {
-
-
         setIsLoading(false);
-
     },[])
 
 
 
 
     const privacyRequestPolicyAction = [{
-        "Notice title": "Access",
-        "count": 5
-    }, {
-        "Notice title": "Erasure",
-        "count": 2
-    }, {
-        "Notice title": "Consent",
-        "count": 10
-    },
+            "Notice title": "Access",
+            "count": 5
+        }, {
+            "Notice title": "Erasure",
+            "count": 2
+        }, {
+            "Notice title": "Consent",
+            "count": 10
+        },
     ]
+    const privacyRequestsTotal: number = privacyRequestPolicyAction.reduce((sum, data) => sum + data.count, 0);
 
     // privacy requests by notice type bar
     const privacyRequestsPolicyActionBar = [
@@ -200,16 +238,22 @@ const InsightsPage: NextPage = () => {
         }
     }
 
-    const layoutHorizontalBar = {
-        ... layoutBase,
-        margin: {
-            t: 20,
-            l: 80,
-            r: 50,
-            b: 20
-        },
-    }
+    const getBarChartPlotlyLayout = (title?: string): Partial<Plotly.Layout> => {
+        return {
+            ...layoutBase,
+            margin: {
+                t: 48,
+                l: 48,
+                r: 48,
+                b: 24,
+            },
+            title: {
+                text: title,
+            },
+        }
+    };
 
+    // TODO: add title etc.
     const layoutTimeSeriesBar = {
         ... layoutBase,
         margin: {
@@ -231,26 +275,32 @@ const InsightsPage: NextPage = () => {
         }
     }
 
-    const layoutTimeSeriesLine = {
-        ... layoutBase,
-        margin: {
-            t: 20,
-            l: 50,
-            r: 50,
-            b: 20
-        },
-        yaxis: {
-            type: 'linear',
-            showgrid: false,
-            zeroline: false,
-        },
-        xaxis: {
-            type: 'date',
-            tickformat: '%m/%d',
-            showgrid: false,
-            zeroline: false,
+    const getTimeSeriesPlotlyLayout = (title?: string): Partial<Plotly.Layout> => {
+        return {
+            ...layoutBase,
+            margin: {
+                t: 48,
+                l: 48,
+                r: 48,
+                b: 24,
+            },
+            yaxis: {
+                type: 'linear',
+                showgrid: false,
+                zeroline: false,
+            },
+            xaxis: {
+                type: 'date',
+                tickformat: '%m/%d',
+                showgrid: false,
+                zeroline: false,
+            },
+            title: {
+                text: title,
+            },
         }
     }
+
 
     return (
 
@@ -264,14 +314,14 @@ const InsightsPage: NextPage = () => {
             )}
             {!isLoading && (
                 <Layout title="Insights">
-                    <div style={{paddingBottom: "50px"}}>
-                        <Heading style={{marginBottom: "10px"}} mb={8} fontSize="2xl" fontWeight="semibold">
+                    <div style={SECTION_STYLES}>
+                        <Heading {...SECTION_HEADING_PROPS}>
                             Privacy Requests
                         </Heading>
                         <hr/>
                         {/* privacy request charts */}
                         <div style={{display: "flex", textAlign: "center"}}>
-                            <div style={{flex: 1, position: "relative"}}>
+                            <div style={KPI_STYLES}>
                                 <Heading style={{paddingTop:"50px", marginBottom: 0}} mb={8} fontSize="7xl" fontWeight="semibold">
                                     {privacyRequestTotal}
                                 </Heading>
@@ -282,45 +332,31 @@ const InsightsPage: NextPage = () => {
                                     marginRight: "auto",
                                     left: 0,
                                     right: 0}} mb={8} fontSize="2xl" fontWeight="normal">
-                                    Total Requests
+                                    {LABEL_REQUESTS_TOTAL}
                                 </Heading>
                             </div>
-                            <div style={{flex: 2}}>
+                            <div style={CHART_STYLES}>
                                 <Plot
-                                    data={privacyRequestByPolicyBar} layout={layoutHorizontalBar}
+                                    data={privacyRequestByPolicyBar} layout={getBarChartPlotlyLayout(LABEL_REQUESTS_BY_POLICY)}
                                 />
                             </div>
-                            <div style={{flex: 2}}>
+                            <div style={CHART_STYLES}>
                                 <Plot
-                                    data={privacyRequestsByDayBar} layout={layoutTimeSeriesBar}
+                                    data={privacyRequestsByDayBar} layout={getTimeSeriesPlotlyLayout(LABEL_REQUESTS_TIMESERIES)}
                                 />
                             </div>
-                        </div>
-
-                        {/* privacy request chart labels */}
-                        <div style={{display: "flex"}}>
-                            <div style={{flex: 1}}>
-                                <div>Number of requests created in report period</div>
-                            </div>
-                            <div style={{flex: 2}}>
-                                <div>Number of requests created in report period by policy action</div>
-                            </div>
-                            <div style={{flex: 2}}>
-                                <div>Number of requests per day created in report period</div>
-                            </div>
-
                         </div>
                     </div>
 
-                    <div style={{paddingBottom: "50px"}}>
-                        <Heading style={{marginBottom: "10px"}} mb={8} fontSize="2xl" fontWeight="semibold">
+                    <div style={SECTION_STYLES}>
+                        <Heading {...SECTION_HEADING_PROPS}>
                             Consent
                         </Heading>
                         <hr/>
 
                         {/*row 1 consent*/}
                         <div style={{display: "flex", textAlign: "center"}}>
-                            <div style={{flex: 1, position: "relative"}}>
+                            <div style={KPI_STYLES}>
                                 <Heading style={{paddingTop:"50px", marginBottom: 0}} mb={8} fontSize="7xl" fontWeight="semibold">
                                     {consentTotal}
                                 </Heading>
@@ -331,62 +367,35 @@ const InsightsPage: NextPage = () => {
                                     marginRight: "auto",
                                     left: 0,
                                     right: 0}} mb={8} fontSize="2xl" fontWeight="normal">
-                                    Total Preferences
+                                    {LABEL_PREFS_TOTAL}
                                 </Heading>
                             </div>
-                            <div style={{flex: 2}}>
+                            <div style={CHART_STYLES}>
                                 <Plot
-                                    data={consentByNoticeBar} layout={layoutHorizontalBar}
+                                    data={consentByNoticeBar} layout={getBarChartPlotlyLayout(LABEL_PREFS_BY_NOTICE)}
                                 />
                             </div>
-                            <div style={{flex: 2}}>
+                            <div style={CHART_STYLES}>
                                 <Plot
-                                    data={consentByDayBar} layout={layoutTimeSeriesBar}
+                                    data={consentByDayBar} layout={getTimeSeriesPlotlyLayout(LABEL_PREFS_TIMESERIES)}
                                 />
                             </div>
-                        </div>
-
-                        {/* row 1 consent chart labels */}
-                        <div style={{display: "flex"}}>
-                            <div style={{flex: 1}}>
-                                <div>Number of preferences created in report period</div>
-                            </div>
-                            <div style={{flex: 2}}>
-                                <div>Number of preferences created in report period by notice</div>
-                            </div>
-                            <div style={{flex: 2}}>
-                                <div>Number of preferences per day created in report period</div>
-                            </div>
-
                         </div>
 
                         {/*row 2 consent*/}
                         <div style={{display: "flex", textAlign: "center"}}>
-                            <div style={{flex: 1, position: "relative"}}>
+                            <div style={KPI_STYLES}>
                             </div>
-                            <div style={{flex: 2}}>
+                            <div style={CHART_STYLES}>
                                 <Plot
-                                    data={consentByPreferenceBar} layout={layoutHorizontalBar}
+                                    data={consentByPreferenceBar} layout={getBarChartPlotlyLayout(LABEL_PREFS_BY_PREFERENCE)}
                                 />
                             </div>
-                            <div style={{flex: 2}}>
+                            <div style={CHART_STYLES}>
                                 <Plot
-                                    data={consentByNoticeTypeTimeseries} layout={layoutTimeSeriesLine}
+                                    data={consentByNoticeTypeTimeseries} layout={getTimeSeriesPlotlyLayout(LABEL_PREFS_TIMESERIES_BY_PREFERENCE)}
                                 />
                             </div>
-                        </div>
-
-                        {/* row 2 consent chart labels */}
-                        <div style={{display: "flex"}}>
-                            <div style={{flex: 1}}>
-                            </div>
-                            <div style={{flex: 2}}>
-                                <div>Number of preferences created in report period by preference value</div>
-                            </div>
-                            <div style={{flex: 2}}>
-                                <div>Number of preferences per day created in report period by preference value</div>
-                            </div>
-
                         </div>
                     </div>
 
