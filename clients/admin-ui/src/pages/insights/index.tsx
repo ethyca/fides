@@ -14,6 +14,21 @@ const Plot = dynamic(() => import("react-plotly.js"), { ssr: false, })
 
 const InsightsPage: NextPage = () => {
     const [isLoading, setIsLoading] = useState(true);
+    const { data: privacyRequestByPolicy, isLoading: isPrivacyRequestByPolicyLoading } =
+        useGetInsightsAggregateQuery({
+            record_type: RecordType.dsr,
+            // todo- group by policy once that's working
+            group_by: GroupByOptions.status,
+            created_gt: "2022-12-20T14:20:34.000Z",
+            created_lt: "2023-12-22T14:20:34.000Z"
+        });
+    const { data: privacyRequestByDay, isLoading: isPrivacyRequestByDayLoading } =
+        useGetInsightsTimeSeriesQuery({
+            record_type: RecordType.dsr,
+            time_interval: TimeInterval.days,
+            created_gt: "2022-12-20T14:20:34.000Z",
+            created_lt: "2023-12-22T14:20:34.000Z"
+        });
     const { data: consentByNotice, isLoading: isConsentByNoticeLoading } =
         useGetInsightsAggregateQuery({
             record_type: RecordType.consent,
@@ -53,8 +68,7 @@ const InsightsPage: NextPage = () => {
 
 
 
-    // Aggregate endpoint api/v1/plus/analytics/aggregate
-    // response body example:
+
     const privacyRequestPolicyAction = [{
         "Notice title": "Access",
         "count": 5
@@ -78,35 +92,34 @@ const InsightsPage: NextPage = () => {
     ];
 
 
-    const privacyRequestSeries = [{
-        "Created": "2013-10-05 22:34:00",
-        "count": 5
-    }, {
-        "Created": "2013-10-05 22:32:00",
-        "count": 7
-    },{
-        "Created": "2013-10-06 10:32:00",
-        "count": 1
-    }, {
-        "Created": "2013-10-06 22:32:00",
-        "count": 3
-    },{
-        "Created": "2013-10-07 08:32:00",
-        "count": 3
-    }, {
-        "Created": "2013-10-07 06:32:00",
-        "count": 5
-    }];
+    // privacy request aggregate
+    const privacyRequestTotal = useMemo(() => privacyRequestByPolicy?.map(i => i.count).reduce((sum, el) => sum + el), [privacyRequestByPolicy])
 
 
-    // requests per day bar chart
-    const privacyRequestsByDayBar = [
-        {
-            y: privacyRequestSeries.map(i => i.Created),
-            x: privacyRequestSeries.map(i => i.count),
-            type: 'bar',
-        }
-    ];
+    // policy by status bar chart
+    const privacyRequestByPolicyBar = useMemo(() => {
+        return [
+            {
+                // todo- change to "policy"
+                y: privacyRequestByPolicy?.map(i => i.status),
+                x: privacyRequestByPolicy?.map(i => i.count),
+                type: 'bar',
+                orientation: 'h'
+            }
+        ];
+    }, [privacyRequestByPolicy])
+
+
+    // privacy request by day bar chart
+    const privacyRequestsByDayBar = useMemo(() => {
+        return [
+            {
+                y: privacyRequestByDay?.map(i => i.count),
+                x: privacyRequestByDay?.map(i => i.Created),
+                type: 'bar',
+            }
+        ];
+    }, [privacyRequestByDay])
 
     // consent aggregate
     const consentTotal = useMemo(() => consentByNotice?.map(i => i.count).reduce((sum, el) => sum + el), [consentByNotice])
@@ -167,7 +180,6 @@ const InsightsPage: NextPage = () => {
                 y: dataForPreference.map(i => i.count),
             })
         })
-        console.log(traces)
         return traces;
     }, [consentByDayAndPreference]);
 
@@ -179,12 +191,12 @@ const InsightsPage: NextPage = () => {
         height: 200,
 
         yaxis: {
-            "showgrid": false,
-            "zeroline": false,
+            showgrid: false,
+            zeroline: false,
         },
         xaxis: {
-            "showgrid": false,
-            "zeroline": false
+            showgrid: false,
+            zeroline: false
         }
     }
 
@@ -208,10 +220,14 @@ const InsightsPage: NextPage = () => {
         },
         yaxis: {
             type: 'linear',
+            showgrid: false,
+            zeroline: false,
         },
         xaxis: {
             type: 'date',
-            tickformat: '%m/%d'
+            tickformat: '%m/%d',
+            showgrid: false,
+            zeroline: false,
         }
     }
 
@@ -225,10 +241,14 @@ const InsightsPage: NextPage = () => {
         },
         yaxis: {
             type: 'linear',
+            showgrid: false,
+            zeroline: false,
         },
         xaxis: {
             type: 'date',
-            tickformat: '%m/%d'
+            tickformat: '%m/%d',
+            showgrid: false,
+            zeroline: false,
         }
     }
 
@@ -253,7 +273,7 @@ const InsightsPage: NextPage = () => {
                         <div style={{display: "flex", textAlign: "center"}}>
                             <div style={{flex: 1, position: "relative"}}>
                                 <Heading style={{paddingTop:"50px", marginBottom: 0}} mb={8} fontSize="7xl" fontWeight="semibold">
-                                    130
+                                    {privacyRequestTotal}
                                 </Heading>
                                 <Heading style={{position: "absolute",
                                     bottom: 0,
@@ -267,12 +287,12 @@ const InsightsPage: NextPage = () => {
                             </div>
                             <div style={{flex: 2}}>
                                 <Plot
-                                    data={privacyRequestsPolicyActionBar} layout={layoutHorizontalBar}
+                                    data={privacyRequestByPolicyBar} layout={layoutHorizontalBar}
                                 />
                             </div>
                             <div style={{flex: 2}}>
                                 <Plot
-                                    data={privacyRequestsByDayBar} layout={layoutTimeSeriesLine}
+                                    data={privacyRequestsByDayBar} layout={layoutTimeSeriesBar}
                                 />
                             </div>
                         </div>

@@ -9,6 +9,8 @@ export type InsightsResponse = {
     Preference?: UserConsentPreference;
     Notice_title?: string;
     User_geography?: string;
+    status?: string;
+    policy?: string;
 };
 
 
