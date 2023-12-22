@@ -152,21 +152,22 @@ const InsightsPage: NextPage = () => {
 
     // consent by notice type timeseries
     const consentByNoticeTypeTimeseries = useMemo(() => {
-        // group by notice
-        const uniqueNotices = [...new Set(consentByDayAndPreference?.map(item => item["Notice title"]))];
+        // group by preference
+        const uniquePreferenceType = [...new Set(consentByDayAndPreference?.map(item => item.Preference))];
 
         // push a new trace by Notice title
         const traces: { type: string; mode: string; x: string[]; y: number[]; line: { color: string; }; }[] = []
-        uniqueNotices.forEach(uniqueNoticeTitle => {
-            const dataForNotice = consentByDayAndPreference?.filter(item => item["Notice title"] === uniqueNoticeTitle)
+        uniquePreferenceType.forEach(preferenceType => {
+            const dataForPreference = consentByDayAndPreference?.filter(item => item.Preference === preferenceType)
             traces.push({
                 type: "scatter",
                 mode: "lines",
-                name: uniqueNoticeTitle,
-                x: dataForNotice.map(i => i.Created),
-                y: dataForNotice.map(i => i.count),
+                name: preferenceType,
+                x: dataForPreference.map(i => i.Created),
+                y: dataForPreference.map(i => i.count),
             })
         })
+        console.log(traces)
         return traces;
     }, [consentByDayAndPreference]);
 
