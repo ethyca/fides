@@ -38,7 +38,7 @@ import { systemSlice } from "~/features/system";
 import { dictSuggestionsSlice } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { taxonomySlice } from "~/features/taxonomy";
 import { userManagementSlice } from "~/features/user-management";
-
+import  { scanCodebaseApi } from "~/pages/scan-codebase/scan-codebase.slice"
 /**
  * To prevent the "redux-perist failed to create sync storage. falling back to noop storage"
  * console message within Next.js, the following snippet is required.
@@ -65,6 +65,7 @@ const reducer = {
   // API reducers
   [baseApi.reducerPath]: baseApi.reducer,
   [healthApi.reducerPath]: healthApi.reducer,
+  [scanCodebaseApi.reducerPath]: scanCodebaseApi.reducer,
 
   // Slice reducers
   [datamapSlice.name]: datamapSlice.reducer,
@@ -113,6 +114,7 @@ const persistConfig = {
     baseApi.reducerPath,
     healthApi.reducerPath,
     dictSuggestionsSlice.name,
+    scanCodebaseApi.reducerPath
   ],
 };
 
@@ -126,7 +128,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(baseApi.middleware, healthApi.middleware),
+      }).concat(baseApi.middleware, healthApi.middleware, scanCodebaseApi.middleware),
     devTools: true,
     preloadedState,
   });
