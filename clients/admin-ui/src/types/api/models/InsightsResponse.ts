@@ -1,3 +1,4 @@
+import {PrivacyRequestStatus} from "./PrivacyRequestStatus";
 import { UserConsentPreference } from "./UserConsentPreference";
 
 /**
@@ -9,8 +10,8 @@ export type InsightsResponse = {
     Preference?: UserConsentPreference;
     Notice_title?: string;
     User_geography?: string;
-    status?: string;
-    policy?: string;
+    status?: PrivacyRequestStatus;
+    dsr_policy?: string;
 };
 
 
