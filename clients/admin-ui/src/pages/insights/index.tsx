@@ -73,14 +73,15 @@ const CHART_STYLES: React.CSSProperties = {
 /**
  * LABELS
  */
-const INTERVAL = TimeInterval.days;
-const LABEL_INTERVAL = "Daily";
+const INTERVAL = TimeInterval.weeks;
+const LABEL_INTERVAL = "Weekly";
 
 const LABEL_SETTINGS_SECTION = "Dashboard";
 
 const LABEL_REQUESTS_SECTION = "Privacy Requests";
 const LABEL_REQUESTS_TOTAL = "Total Privacy Requests";
 const LABEL_REQUESTS_BY_POLICY = "Privacy Requests by Policy";
+const LABEL_REQUESTS_BY_STATUS = "Privacy Requests by Status";
 const LABEL_REQUESTS_TIMESERIES = `${LABEL_INTERVAL} Privacy Requests`;
 const LABEL_REQUESTS_TIMESERIES_BY_POLICY = `${LABEL_INTERVAL} Privacy Requests by Policy`;
 
@@ -103,15 +104,18 @@ const InsightsPage: NextPage = () => {
     const dateRangeMap = new Map<string, DateRange>();
     const today = new Date()
     const todayFormatted = today.toISOString()
+    const prior30DaysDate = new Date(new Date().setDate(today.getDate() - 30)).toISOString()
     const prior90DaysDate = new Date(new Date().setDate(today.getDate() - 90)).toISOString()
     const prior180DaysDate = new Date(new Date().setDate(today.getDate() - 180)).toISOString()
     const prior365DaysDate = new Date(new Date().setDate(today.getDate() - 365)).toISOString()
+    dateRangeMap.set("30", {label: "Last 30 days", endDate: todayFormatted, startDate: prior30DaysDate})
     dateRangeMap.set("90", {label: "Last 90 days", endDate: todayFormatted, startDate: prior90DaysDate})
     dateRangeMap.set("180", {label: "Last 180 days", endDate: todayFormatted, startDate: prior180DaysDate})
     dateRangeMap.set("365", {label: "Last year", endDate: todayFormatted, startDate: prior365DaysDate})
 
     // options for the date selector
     const dateRangeOptions: Map<string, ItemOption> = new Map<string, ItemOption>();
+    dateRangeOptions.set("Last 30 days", {value: "30"})
     dateRangeOptions.set("Last 90 days", {value: "90"})
     dateRangeOptions.set("Last 180 days", {value: "180"})
     dateRangeOptions.set("Last year", {value: "365"})
@@ -198,7 +202,7 @@ const InsightsPage: NextPage = () => {
     const privacyRequestTotal = useMemo(() => privacyRequestByPolicy?.map(i => i.count).reduce((sum, el) => sum + el), [privacyRequestByPolicy]) || 0
 
 
-    // policy by status bar chart
+    // privacy request by policy bar chart
     const privacyRequestByPolicyBar = useMemo(() => {
         return [
             {
@@ -221,6 +225,19 @@ const InsightsPage: NextPage = () => {
             }
         ];
     }, [privacyRequestByDay])
+
+    // privacy request by status bar chart
+    const privacyRequestByStatusBar = useMemo(() => {
+        return [
+            {
+                y: privacyRequestByStatus?.map(i => i.status),
+                x: privacyRequestByStatus?.map(i => i.count),
+                type: 'bar',
+                orientation: 'h'
+            }
+        ];
+    }, [privacyRequestByStatus])
+
 
     //privacy request by day and policy chart
     const privacyRequestByPolicyTimeseries = useMemo(() => {
@@ -380,6 +397,11 @@ const InsightsPage: NextPage = () => {
                 showgrid: false,
                 zeroline: false,
             },
+            legend: {
+                x: 1,
+                y: 1,
+                xanchor: "right",
+            },
             title: {
                 text: title,
                 font: {
@@ -459,17 +481,15 @@ const InsightsPage: NextPage = () => {
                         </div>
                     </div>
                     <div style={{display: "flex", textAlign: "center"}}>
-                        <div style={KPI_STYLES}>
-                        </div>
                         <div style={CHART_STYLES}>
-                            {isPrivacyRequestByPolicyLoading && (
+                            {isPrivacyRequestByStatusLoading && (
                                 <Center>
                                     <Spinner />
                                 </Center>
                             )}
-                            {!isPrivacyRequestByPolicyLoading && (
+                            {!isPrivacyRequestByStatusLoading && (
                                 <Plot
-                                    data={privacyRequestByPolicyBar} layout={getBarChartPlotlyLayout(LABEL_REQUESTS_BY_POLICY)}
+                                    data={privacyRequestByStatusBar} layout={getBarChartPlotlyLayout(LABEL_REQUESTS_BY_STATUS)}
                                 />
                             )}
                         </div>
@@ -535,8 +555,6 @@ const InsightsPage: NextPage = () => {
 
                     {/*row 2 consent*/}
                     <div style={{display: "flex", textAlign: "center"}}>
-                        <div style={KPI_STYLES}>
-                        </div>
                         <div style={CHART_STYLES}>
                             {isConsentByPreferenceLoading && (
                                 <Center>
