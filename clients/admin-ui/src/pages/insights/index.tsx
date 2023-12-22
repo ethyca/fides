@@ -28,7 +28,9 @@ const SECTION_STYLES: React.CSSProperties = {
 const KPI_STYLES: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
+    justifyContent: "center",
     minWidth: 240,
+    minHeight: 220,
     flex: 1,
     padding: 8,
     margin: 8,
@@ -37,8 +39,6 @@ const KPI_STYLES: React.CSSProperties = {
 }
 
 const KPI_VALUE_STYLES: React.CSSProperties = {
-    paddingTop: 48,
-    marginBottom: 0,
     fontSize: "3rem",
     fontWeight: 200,
 }
@@ -52,6 +52,11 @@ const KPI_LABEL_STYLES: React.CSSProperties = {
 }
 
 const CHART_STYLES: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minWidth: 460,
+    minHeight: 220,
     flex: 2,
     padding: 8,
     margin: 8,
@@ -85,6 +90,13 @@ const InsightsPage: NextPage = () => {
         useGetInsightsAggregateQuery({
             record_type: RecordType.dsr,
             group_by: GroupByOptions.dsr_policy,
+            created_gt: START_DATE,
+            created_lt: END_DATE,
+        });
+    const { data: privacyRequestByStatus, isLoading: isPrivacyRequestByStatusLoading } =
+        useGetInsightsAggregateQuery({
+            record_type: RecordType.dsr,
+            group_by: GroupByOptions.status,
             created_gt: START_DATE,
             created_lt: END_DATE,
         });
