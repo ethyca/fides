@@ -104,15 +104,18 @@ const InsightsPage: NextPage = () => {
     const dateRangeMap = new Map<string, DateRange>();
     const today = new Date()
     const todayFormatted = today.toISOString()
+    const prior30DaysDate = new Date(new Date().setDate(today.getDate() - 30)).toISOString()
     const prior90DaysDate = new Date(new Date().setDate(today.getDate() - 90)).toISOString()
     const prior180DaysDate = new Date(new Date().setDate(today.getDate() - 180)).toISOString()
     const prior365DaysDate = new Date(new Date().setDate(today.getDate() - 365)).toISOString()
+    dateRangeMap.set("30", {label: "Last 30 days", endDate: todayFormatted, startDate: prior30DaysDate})
     dateRangeMap.set("90", {label: "Last 90 days", endDate: todayFormatted, startDate: prior90DaysDate})
     dateRangeMap.set("180", {label: "Last 180 days", endDate: todayFormatted, startDate: prior180DaysDate})
     dateRangeMap.set("365", {label: "Last year", endDate: todayFormatted, startDate: prior365DaysDate})
 
     // options for the date selector
     const dateRangeOptions: Map<string, ItemOption> = new Map<string, ItemOption>();
+    dateRangeOptions.set("Last 30 days", {value: "30"})
     dateRangeOptions.set("Last 90 days", {value: "90"})
     dateRangeOptions.set("Last 180 days", {value: "180"})
     dateRangeOptions.set("Last year", {value: "365"})
