@@ -337,18 +337,22 @@ const InsightsPage: NextPage = () => {
 
     // consent by country map
     const consentByCountryMap = useMemo(() => {
-        const arr = [134, 235, 123, 32]
+        const onlyUS = consentByCountry?.filter(consent => {
+            return consent && consent["User geography"]?.length < 3
+        })
+        const usLocations = onlyUS?.map(i => i["User geography"])
+        const usSize = onlyUS?.map(i => i.count)
         return [{
             type: 'scattergeo',
             mode: 'markers',
             locationmode: 'USA-states',
-            // locations: consentByCountry?.map(i => i["User geography"]),
-            locations: ["CA", "NC", "CO", "NY"],
+            locations: usLocations,
             marker: {
-                // size: consentByCountry?.map(i => i.count),
-                size: [134, 235, 123, 32],
+                size: usSize,
+                sizemode: 'diameter',
+                sizeref: 100,
                 cmin: 0,
-                cmax: Math.max(...arr),
+                cmax: 10000,
                 colorscale: 'Greens',
                 colorbar: {
                     title: 'Consent Preferences',
@@ -383,10 +387,9 @@ const InsightsPage: NextPage = () => {
     }
 
     const geoLayout = {
-        autosize: false,
         geo: {
             scope: 'usa',
-            resolution: 50
+            resolution: 100
         }
     };
 
