@@ -1,4 +1,4 @@
-import {Box, Center, Heading, Spinner} from "@fidesui/react";
+import {Box, Center, Flex, Heading, Spinner} from "@fidesui/react";
 import type { NextPage } from "next";
 import dynamic from "next/dynamic";
 import React, {useEffect, useMemo, useState} from "react";
@@ -76,10 +76,13 @@ const CHART_STYLES: React.CSSProperties = {
 const INTERVAL = TimeInterval.days;
 const LABEL_INTERVAL = "Daily";
 
+const LABEL_SETTINGS_SECTION = "Dashboard";
+
 const LABEL_REQUESTS_SECTION = "Privacy Requests";
 const LABEL_REQUESTS_TOTAL = "Total Privacy Requests";
 const LABEL_REQUESTS_BY_POLICY = "Privacy Requests by Policy";
-const LABEL_REQUESTS_TIMESERIES = "Daily Privacy Requests";
+const LABEL_REQUESTS_TIMESERIES = `${LABEL_INTERVAL} Privacy Requests`;
+const LABEL_REQUESTS_TIMESERIES_BY_POLICY = `${LABEL_INTERVAL} Privacy Requests by Policy`;
 
 const LABEL_PREFS_SECTION = "Consent Preferences";
 const LABEL_PREFS_TOTAL = "Total Preferences";
@@ -91,6 +94,7 @@ const LABEL_PREFS_TIMESERIES_BY_PREFERENCE = `${LABEL_INTERVAL} Preferences by V
 const InsightsPage: NextPage = () => {
 
     type DateRange = {
+        label: string;
         startDate: string;
         endDate: string;
     }
@@ -101,16 +105,19 @@ const InsightsPage: NextPage = () => {
     const todayFormatted = today.toISOString()
     const prior90DaysDate = new Date(new Date().setDate(today.getDate() - 90)).toISOString()
     const prior180DaysDate = new Date(new Date().setDate(today.getDate() - 180)).toISOString()
-    dateRangeMap.set("90", {endDate: todayFormatted, startDate: prior90DaysDate})
-    dateRangeMap.set("180", {endDate: todayFormatted, startDate: prior180DaysDate})
+    const prior365DaysDate = new Date(new Date().setDate(today.getDate() - 365)).toISOString()
+    dateRangeMap.set("90", {label: "Last 90 days", endDate: todayFormatted, startDate: prior90DaysDate})
+    dateRangeMap.set("180", {label: "Last 180 days", endDate: todayFormatted, startDate: prior180DaysDate})
+    dateRangeMap.set("365", {label: "Last year", endDate: todayFormatted, startDate: prior365DaysDate})
 
     // options for the date selector
     const dateRangeOptions: Map<string, ItemOption> = new Map<string, ItemOption>();
-    dateRangeOptions.set("last 90 days", {value: "90"})
-    dateRangeOptions.set("last 180 days", {value: "180"})
+    dateRangeOptions.set("Last 90 days", {value: "90"})
+    dateRangeOptions.set("Last 180 days", {value: "180"})
+    dateRangeOptions.set("Last year", {value: "365"})
 
     const [dateRange, setDateRange] = useState(
-        dateRangeMap.get("90")
+        dateRangeMap.get("180")
     );
 
 
@@ -131,6 +138,14 @@ const InsightsPage: NextPage = () => {
     const { data: privacyRequestByDay, isLoading: isPrivacyRequestByDayLoading } =
         useGetInsightsTimeSeriesQuery({
             record_type: RecordType.dsr,
+            time_interval: INTERVAL,
+            created_gt: dateRange.startDate,
+            created_lt: dateRange.endDate,
+        });
+    const { data: privacyRequestByDayAndPolicy, isLoading: isPrivacyRequestByDayAndPolicyLoading } =
+        useGetInsightsTimeSeriesQuery({
+            record_type: RecordType.dsr,
+            group_by: GroupByOptions.dsr_policy,
             time_interval: INTERVAL,
             created_gt: dateRange.startDate,
             created_lt: dateRange.endDate,
@@ -199,6 +214,27 @@ const InsightsPage: NextPage = () => {
             }
         ];
     }, [privacyRequestByDay])
+
+    //privacy request by day and policy chart
+    const privacyRequestByPolicyTimeseries = useMemo(() => {
+        // group by policy
+        const uniquePolicy = [...new Set(privacyRequestByDayAndPolicy?.map(item => item.dsr_policy))];
+
+        // push a new trace by policy
+        const traces: { type: string; mode: string; x: string[]; y: number[]; line: { color: string; }; }[] = []
+        uniquePolicy.forEach(policy => {
+            const data = privacyRequestByDayAndPolicy?.filter(item => item.dsr_policy === policy)
+            traces.push({
+                type: "scatter",
+                mode: "lines",
+                name: policy,
+                x: data.map(i => i.Created),
+                y: data.map(i => i.count),
+            })
+        })
+        return traces;
+    }, [privacyRequestByDayAndPolicy]);
+
 
     // consent aggregate
     const consentTotal = useMemo(() => consentByNotice?.map(i => i.count).reduce((sum, el) => sum + el), [consentByNotice]) || 0
@@ -332,16 +368,28 @@ const InsightsPage: NextPage = () => {
     return (
         <>
             <Layout title="Insights">
-                <Box>
-                    <SelectDropdown
-                        label="Date Range"
-                        list={dateRangeOptions}
-                        menuButtonProps={{  }}
-                        onChange={handleDateChange}
-                        hasClear={false}
-                        selectedValue="last 90 days"
-                    />
-                </Box>
+                <div style={SECTION_STYLES}>
+                    <Flex justifyContent="center" alignItems="center" mb={1}>
+                        <Box flex={1}>
+                            <Heading {...SECTION_HEADING_PROPS}>
+                                {LABEL_SETTINGS_SECTION}
+                            </Heading>
+                        </Box>
+                        <Box fontSize="sm" mr={1}>
+                            Date Range:
+                        </Box>
+                        <Box>
+                            <SelectDropdown
+                                label={dateRange.label}
+                                list={dateRangeOptions}
+                                hasClear={false}
+                                menuButtonProps={{  }}
+                                onChange={handleDateChange}
+                                selectedValue="Last 180 days"
+                            />
+                        </Box>
+                    </Flex>
+                </div>
                 <div style={SECTION_STYLES}>
                     <Heading {...SECTION_HEADING_PROPS}>
                         {LABEL_REQUESTS_SECTION}
@@ -381,6 +429,34 @@ const InsightsPage: NextPage = () => {
                             {!isPrivacyRequestByDayLoading && (
                                 <Plot
                                     data={privacyRequestsByDayBar} layout={getTimeSeriesPlotlyLayout(LABEL_REQUESTS_TIMESERIES)}
+                                />
+                            )}
+                        </div>
+                    </div>
+                    <div style={{display: "flex", textAlign: "center"}}>
+                        <div style={KPI_STYLES}>
+                        </div>
+                        <div style={CHART_STYLES}>
+                            {isPrivacyRequestByPolicyLoading && (
+                                <Center>
+                                    <Spinner />
+                                </Center>
+                            )}
+                            {!isPrivacyRequestByPolicyLoading && (
+                                <Plot
+                                    data={privacyRequestByPolicyBar} layout={getBarChartPlotlyLayout(LABEL_REQUESTS_BY_POLICY)}
+                                />
+                            )}
+                        </div>
+                        <div style={CHART_STYLES}>
+                            {isPrivacyRequestByDayAndPolicyLoading && (
+                                <Center>
+                                    <Spinner />
+                                </Center>
+                            )}
+                            {!isPrivacyRequestByDayAndPolicyLoading && (
+                                <Plot
+                                    data={privacyRequestByPolicyTimeseries} layout={getTimeSeriesPlotlyLayout(LABEL_REQUESTS_TIMESERIES_BY_POLICY)}
                                 />
                             )}
                         </div>
