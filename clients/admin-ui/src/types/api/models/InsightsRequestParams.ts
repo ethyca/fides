@@ -13,6 +13,7 @@ export enum GroupByOptions {
     status = "status",
     country = "country",
     preference = "preference",
+    notice = "notice",
 }
 
 export enum RecordType {

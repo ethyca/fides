@@ -47,7 +47,7 @@ import {
   Page_DataUseDeclaration_,
   Page_Vendor_,
 } from "~/types/dictionary-api";
-import {AnalyticsSchema} from "~/types/api/models/InsightsResponse";
+import {AnalyticsSchema, InsightsResponse} from "~/types/api/models/InsightsResponse";
 import {InsightsRequestParams} from "~/types/api/models/InsightsRequestParams";
 
 interface ScanParams {
@@ -450,7 +450,7 @@ const plusApi = baseApi.injectEndpoints({
       invalidatesTags: ["TCF Purpose Override"],
     }),
     getInsightsAggregate: build.query<
-        AnalyticsSchema,
+        InsightsResponse[],
         InsightsRequestParams
         >({
       query: (params) => ({
@@ -466,7 +466,7 @@ const plusApi = baseApi.injectEndpoints({
       providesTags: () => ["Aggregate Insights"],
     }),
     getInsightsTimeSeries: build.query<
-        AnalyticsSchema,
+        InsightsResponse[],
         InsightsRequestParams
         >({
       query: (params) => ({

@@ -14,19 +14,10 @@ const Plot = dynamic(() => import("react-plotly.js"), { ssr: false, })
 
 const InsightsPage: NextPage = () => {
     const [isLoading, setIsLoading] = useState(true);
-    // const { data: consentSeries, isLoading: isConsentSeriesLoading } =
-    //     useGetAnalyticsAggregateQuery({
-    //         record_type: "consent",
-    //         time_interval: "days",
-    //         group_by: "notice",
-    //         created_gt: "2023-12-20T14:20:34.000Z",
-    //         created_lt: "2023-12-22T14:20:34.000Z"
-    //     });
     const { data: consentByNotice, isLoading: isConsentByNoticeLoading } =
         useGetInsightsAggregateQuery({
             record_type: RecordType.consent,
-            // todo- group by notice title
-            group_by: GroupByOptions.preference,
+            group_by: GroupByOptions.notice,
             created_gt: "2023-12-20T14:20:34.000Z",
             created_lt: "2023-12-22T14:20:34.000Z"
         });
@@ -117,6 +108,9 @@ const InsightsPage: NextPage = () => {
         }
     ];
 
+    // consent aggregate
+    const consentTotal = useMemo(() => consentByNotice?.map(i => i.count).reduce((sum, el) => sum + el), [consentByNotice])
+
 
     // consent by notice bar chart
     const consentByNoticeBar = useMemo(() => {
@@ -128,7 +122,7 @@ const InsightsPage: NextPage = () => {
                 orientation: 'h'
             }
         ];
-    }, [consentByPreference])
+    }, [consentByNotice])
 
 
     // consent by day bar chart
@@ -286,7 +280,7 @@ const InsightsPage: NextPage = () => {
                         <div style={{display: "flex", textAlign: "center"}}>
                             <div style={{flex: 1, position: "relative"}}>
                                 <Heading style={{paddingTop:"50px", marginBottom: 0}} mb={8} fontSize="7xl" fontWeight="semibold">
-                                    14,098
+                                    {consentTotal}
                                 </Heading>
                                 <Heading style={{position: "absolute",
                                     bottom: 0,
@@ -300,7 +294,7 @@ const InsightsPage: NextPage = () => {
                             </div>
                             <div style={{flex: 2}}>
                                 <Plot
-                                    data={consentByPreferenceBar} layout={layoutHorizontalBar}
+                                    data={consentByNoticeBar} layout={layoutHorizontalBar}
                                 />
                             </div>
                             <div style={{flex: 2}}>
