@@ -1,4 +1,4 @@
-import {Box, Center, Heading, Spinner} from "@fidesui/react";
+import {Box, Center, Flex, Heading, Spinner} from "@fidesui/react";
 import type { NextPage } from "next";
 import dynamic from "next/dynamic";
 import React, {useEffect, useMemo, useState} from "react";
@@ -76,6 +76,8 @@ const CHART_STYLES: React.CSSProperties = {
 const INTERVAL = TimeInterval.days;
 const LABEL_INTERVAL = "Daily";
 
+const LABEL_SETTINGS_SECTION = "Dashboard";
+
 const LABEL_REQUESTS_SECTION = "Privacy Requests";
 const LABEL_REQUESTS_TOTAL = "Total Privacy Requests";
 const LABEL_REQUESTS_BY_POLICY = "Privacy Requests by Policy";
@@ -92,6 +94,7 @@ const LABEL_PREFS_TIMESERIES_BY_PREFERENCE = `${LABEL_INTERVAL} Preferences by V
 const InsightsPage: NextPage = () => {
 
     type DateRange = {
+        label: string;
         startDate: string;
         endDate: string;
     }
@@ -102,16 +105,19 @@ const InsightsPage: NextPage = () => {
     const todayFormatted = today.toISOString()
     const prior90DaysDate = new Date(new Date().setDate(today.getDate() - 90)).toISOString()
     const prior180DaysDate = new Date(new Date().setDate(today.getDate() - 180)).toISOString()
-    dateRangeMap.set("90", {endDate: todayFormatted, startDate: prior90DaysDate})
-    dateRangeMap.set("180", {endDate: todayFormatted, startDate: prior180DaysDate})
+    const prior365DaysDate = new Date(new Date().setDate(today.getDate() - 365)).toISOString()
+    dateRangeMap.set("90", {label: "Last 90 days", endDate: todayFormatted, startDate: prior90DaysDate})
+    dateRangeMap.set("180", {label: "Last 180 days", endDate: todayFormatted, startDate: prior180DaysDate})
+    dateRangeMap.set("365", {label: "Last year", endDate: todayFormatted, startDate: prior365DaysDate})
 
     // options for the date selector
     const dateRangeOptions: Map<string, ItemOption> = new Map<string, ItemOption>();
-    dateRangeOptions.set("last 90 days", {value: "90"})
-    dateRangeOptions.set("last 180 days", {value: "180"})
+    dateRangeOptions.set("Last 90 days", {value: "90"})
+    dateRangeOptions.set("Last 180 days", {value: "180"})
+    dateRangeOptions.set("Last year", {value: "365"})
 
     const [dateRange, setDateRange] = useState(
-        dateRangeMap.get("90")
+        dateRangeMap.get("180")
     );
 
 
@@ -362,15 +368,28 @@ const InsightsPage: NextPage = () => {
     return (
         <>
             <Layout title="Insights">
-                <Box>
-                    <SelectDropdown
-                        label="Date Range"
-                        list={dateRangeOptions}
-                        menuButtonProps={{  }}
-                        onChange={handleDateChange}
-                        selectedValue="last 90 days"
-                    />
-                </Box>
+                <div style={SECTION_STYLES}>
+                    <Flex justifyContent="center" alignItems="center" mb={1}>
+                        <Box flex={1}>
+                            <Heading {...SECTION_HEADING_PROPS}>
+                                {LABEL_SETTINGS_SECTION}
+                            </Heading>
+                        </Box>
+                        <Box fontSize="sm" mr={1}>
+                            Date Range:
+                        </Box>
+                        <Box>
+                            <SelectDropdown
+                                label={dateRange.label}
+                                list={dateRangeOptions}
+                                hasClear={false}
+                                menuButtonProps={{  }}
+                                onChange={handleDateChange}
+                                selectedValue="Last 180 days"
+                            />
+                        </Box>
+                    </Flex>
+                </div>
                 <div style={SECTION_STYLES}>
                     <Heading {...SECTION_HEADING_PROPS}>
                         {LABEL_REQUESTS_SECTION}
@@ -437,7 +456,7 @@ const InsightsPage: NextPage = () => {
                             )}
                             {!isPrivacyRequestByDayAndPolicyLoading && (
                                 <Plot
-                                    data={privacyRequestByDayAndPolicy} layout={getTimeSeriesPlotlyLayout(LABEL_REQUESTS_TIMESERIES_BY_POLICY)}
+                                    data={privacyRequestByPolicyTimeseries} layout={getTimeSeriesPlotlyLayout(LABEL_REQUESTS_TIMESERIES_BY_POLICY)}
                                 />
                             )}
                         </div>
