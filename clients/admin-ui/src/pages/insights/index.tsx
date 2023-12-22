@@ -73,7 +73,8 @@ const LABEL_INTERVAL = "Daily";
 const LABEL_REQUESTS_SECTION = "Privacy Requests";
 const LABEL_REQUESTS_TOTAL = "Total Privacy Requests";
 const LABEL_REQUESTS_BY_POLICY = "Privacy Requests by Policy";
-const LABEL_REQUESTS_TIMESERIES = "Daily Privacy Requests";
+const LABEL_REQUESTS_TIMESERIES = `${LABEL_INTERVAL} Privacy Requests`;
+const LABEL_REQUESTS_TIMESERIES_BY_POLICY = `${LABEL_INTERVAL} Privacy Requests by Policy`;
 
 const LABEL_PREFS_SECTION = "Consent Preferences";
 const LABEL_PREFS_TOTAL = "Total Preferences";
@@ -93,17 +94,25 @@ const InsightsPage: NextPage = () => {
             created_gt: START_DATE,
             created_lt: END_DATE,
         });
-    const { data: privacyRequestByStatus, isLoading: isPrivacyRequestByStatusLoading } =
-        useGetInsightsAggregateQuery({
-            record_type: RecordType.dsr,
-            group_by: GroupByOptions.status,
-            created_gt: START_DATE,
-            created_lt: END_DATE,
-        });
     const { data: privacyRequestByDay, isLoading: isPrivacyRequestByDayLoading } =
         useGetInsightsTimeSeriesQuery({
             record_type: RecordType.dsr,
             time_interval: INTERVAL,
+            created_gt: START_DATE,
+            created_lt: END_DATE,
+        });
+    const { data: privacyRequestByDayAndPolicy, isLoading: isPrivacyRequestByDayAndPolicyLoading } =
+        useGetInsightsTimeSeriesQuery({
+            record_type: RecordType.dsr,
+            group_by: GroupByOptions.dsr_policy,
+            time_interval: INTERVAL,
+            created_gt: START_DATE,
+            created_lt: END_DATE,
+        });
+    const { data: privacyRequestByStatus, isLoading: isPrivacyRequestByStatusLoading } =
+        useGetInsightsAggregateQuery({
+            record_type: RecordType.dsr,
+            group_by: GroupByOptions.status,
             created_gt: START_DATE,
             created_lt: END_DATE,
         });
@@ -165,6 +174,27 @@ const InsightsPage: NextPage = () => {
             }
         ];
     }, [privacyRequestByDay])
+
+    //privacy request by day and policy chart
+    const privacyRequestByPolicyTimeseries = useMemo(() => {
+        // group by policy
+        const uniquePolicy = [...new Set(privacyRequestByDayAndPolicy?.map(item => item.dsr_policy))];
+
+        // push a new trace by policy
+        const traces: { type: string; mode: string; x: string[]; y: number[]; line: { color: string; }; }[] = []
+        uniquePolicy.forEach(policy => {
+            const data = privacyRequestByDayAndPolicy?.filter(item => item.dsr_policy === policy)
+            traces.push({
+                type: "scatter",
+                mode: "lines",
+                name: policy,
+                x: data.map(i => i.Created),
+                y: data.map(i => i.count),
+            })
+        })
+        return traces;
+    }, [privacyRequestByDayAndPolicy]);
+
 
     // consent aggregate
     const consentTotal = useMemo(() => consentByNotice?.map(i => i.count).reduce((sum, el) => sum + el), [consentByNotice]) || 0
@@ -338,6 +368,34 @@ const InsightsPage: NextPage = () => {
                             {!isPrivacyRequestByDayLoading && (
                                 <Plot
                                     data={privacyRequestsByDayBar} layout={getTimeSeriesPlotlyLayout(LABEL_REQUESTS_TIMESERIES)}
+                                />
+                            )}
+                        </div>
+                    </div>
+                    <div style={{display: "flex", textAlign: "center"}}>
+                        <div style={KPI_STYLES}>
+                        </div>
+                        <div style={CHART_STYLES}>
+                            {isPrivacyRequestByPolicyLoading && (
+                                <Center>
+                                    <Spinner />
+                                </Center>
+                            )}
+                            {!isPrivacyRequestByPolicyLoading && (
+                                <Plot
+                                    data={privacyRequestByPolicyBar} layout={getBarChartPlotlyLayout(LABEL_REQUESTS_BY_POLICY)}
+                                />
+                            )}
+                        </div>
+                        <div style={CHART_STYLES}>
+                            {isPrivacyRequestByDayAndPolicyLoading && (
+                                <Center>
+                                    <Spinner />
+                                </Center>
+                            )}
+                            {!isPrivacyRequestByDayAndPolicyLoading && (
+                                <Plot
+                                    data={privacyRequestByDayAndPolicy} layout={getTimeSeriesPlotlyLayout(LABEL_REQUESTS_TIMESERIES_BY_POLICY)}
                                 />
                             )}
                         </div>
