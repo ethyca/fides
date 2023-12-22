@@ -62,6 +62,9 @@ const CHART_STYLES: React.CSSProperties = {
 /**
  * LABELS
  */
+const INTERVAL = TimeInterval.days;
+const LABEL_INTERVAL = "Daily";
+
 const LABEL_REQUESTS_SECTION = "Privacy Requests";
 const LABEL_REQUESTS_TOTAL = "Total Privacy Requests";
 const LABEL_REQUESTS_BY_POLICY = "Privacy Requests by Policy";
@@ -70,9 +73,9 @@ const LABEL_REQUESTS_TIMESERIES = "Daily Privacy Requests";
 const LABEL_PREFS_SECTION = "Consent Preferences";
 const LABEL_PREFS_TOTAL = "Total Preferences";
 const LABEL_PREFS_BY_NOTICE = "Preferences by Notice";
-const LABEL_PREFS_TIMESERIES = "Daily Preferences";
+const LABEL_PREFS_TIMESERIES = `${LABEL_INTERVAL} Preferences`;
 const LABEL_PREFS_BY_PREFERENCE = "Preferences by Value";
-const LABEL_PREFS_TIMESERIES_BY_PREFERENCE = "Daily Preferences by Value";
+const LABEL_PREFS_TIMESERIES_BY_PREFERENCE = `${LABEL_INTERVAL} Preferences by Value`;
 
 const InsightsPage: NextPage = () => {
     const START_DATE = "2023-01-01T00:00:00.000Z";
@@ -88,7 +91,7 @@ const InsightsPage: NextPage = () => {
     const { data: privacyRequestByDay, isLoading: isPrivacyRequestByDayLoading } =
         useGetInsightsTimeSeriesQuery({
             record_type: RecordType.dsr,
-            time_interval: TimeInterval.days,
+            time_interval: INTERVAL,
             created_gt: START_DATE,
             created_lt: END_DATE,
         });
@@ -102,7 +105,7 @@ const InsightsPage: NextPage = () => {
     const { data: consentByDay, isLoading: isConsentByDayLoading } =
         useGetInsightsTimeSeriesQuery({
             record_type: RecordType.consent,
-            time_interval: TimeInterval.days,
+            time_interval: INTERVAL,
             created_gt: START_DATE,
             created_lt: END_DATE,
         });
@@ -116,7 +119,7 @@ const InsightsPage: NextPage = () => {
     const { data: consentByDayAndPreference, isLoading: isConsentByDaysAndPreferenceLoading } =
         useGetInsightsTimeSeriesQuery({
             record_type: RecordType.consent,
-            time_interval: TimeInterval.days,
+            time_interval: INTERVAL,
             group_by: GroupByOptions.preference,
             created_gt: START_DATE,
             created_lt: END_DATE,
@@ -219,7 +222,7 @@ const InsightsPage: NextPage = () => {
      */
     const layoutBase = {
         autosize: false,
-        width: 450,
+        width: 400,
         height: 200,
         yaxis: {
             showgrid: false,
@@ -236,7 +239,7 @@ const InsightsPage: NextPage = () => {
             ...layoutBase,
             margin: {
                 t: 48,
-                l: 140,
+                l: 160,
                 r: 48,
                 b: 24,
             },
