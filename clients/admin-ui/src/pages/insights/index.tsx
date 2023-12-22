@@ -27,12 +27,11 @@ const SECTION_STYLES: React.CSSProperties = {
 
 const KPI_STYLES: React.CSSProperties = {
     position: "relative",
-    background: "tomato",
     minWidth: 240,
     flex: 1,
 }
+
 const CHART_STYLES: React.CSSProperties = {
-    background: "steelblue",
     flex: 2,
     padding: 8,
 }
@@ -40,9 +39,12 @@ const CHART_STYLES: React.CSSProperties = {
 /**
  * LABELS
  */
+const LABEL_REQUESTS_SECTION = "Privacy Requests";
 const LABEL_REQUESTS_TOTAL = "Total Privacy Requests";
 const LABEL_REQUESTS_BY_POLICY = "Privacy Requests by Policy";
 const LABEL_REQUESTS_TIMESERIES = "Daily Privacy Requests";
+
+const LABEL_PREFS_SECTION = "Consent Preferences";
 const LABEL_PREFS_TOTAL = "Total Preferences";
 const LABEL_PREFS_BY_NOTICE = "Preferences by Notice";
 const LABEL_PREFS_TIMESERIES = "Daily Preferences";
@@ -59,15 +61,15 @@ const InsightsPage: NextPage = () => {
             record_type: RecordType.dsr,
             // todo- group by policy once that's working
             group_by: GroupByOptions.status,
-            created_gt: "2022-12-20T14:20:34.000Z",
-            created_lt: "2023-12-22T14:20:34.000Z"
+            created_gt: START_DATE,
+            created_lt: END_DATE,
         });
     const { data: privacyRequestByDay, isLoading: isPrivacyRequestByDayLoading } =
         useGetInsightsTimeSeriesQuery({
             record_type: RecordType.dsr,
             time_interval: TimeInterval.days,
-            created_gt: "2022-12-20T14:20:34.000Z",
-            created_lt: "2023-12-22T14:20:34.000Z"
+            created_gt: START_DATE,
+            created_lt: END_DATE,
         });
     const { data: consentByNotice, isLoading: isConsentByNoticeLoading } =
         useGetInsightsAggregateQuery({
@@ -117,7 +119,6 @@ const InsightsPage: NextPage = () => {
             "count": 10
         },
     ]
-    const privacyRequestsTotal: number = privacyRequestPolicyAction.reduce((sum, data) => sum + data.count, 0);
 
     // privacy requests by notice type bar
     const privacyRequestsPolicyActionBar = [
@@ -301,7 +302,6 @@ const InsightsPage: NextPage = () => {
         }
     }
 
-
     return (
 
         <>
@@ -316,7 +316,7 @@ const InsightsPage: NextPage = () => {
                 <Layout title="Insights">
                     <div style={SECTION_STYLES}>
                         <Heading {...SECTION_HEADING_PROPS}>
-                            Privacy Requests
+                            {LABEL_REQUESTS_SECTION}
                         </Heading>
                         <hr/>
                         {/* privacy request charts */}
@@ -350,7 +350,7 @@ const InsightsPage: NextPage = () => {
 
                     <div style={SECTION_STYLES}>
                         <Heading {...SECTION_HEADING_PROPS}>
-                            Consent
+                            {LABEL_PREFS_SECTION}
                         </Heading>
                         <hr/>
 
