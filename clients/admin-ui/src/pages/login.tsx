@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Center,
   chakra,
   Flex,
   Heading,
@@ -10,9 +11,11 @@ import {
 import Head from "common/Head";
 import Image from "common/Image";
 import { Formik } from "formik";
+import { motion } from "framer-motion";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import * as Yup from "yup";
 
@@ -43,9 +46,53 @@ const parseQueryParam = (query: ParsedUrlQuery) => {
   };
 };
 
+const Animation = () => {
+  const primary800 = "rgba(17, 20, 57, 1)";
+  // const primary800 = "rgba(255, 25, 25, 1)";
+  const icon = {
+    hidden: {
+      opacity: 0,
+      pathLength: 0,
+      fill: "rgba(255, 255, 255, 0)",
+    },
+    visible: {
+      opacity: 1,
+      pathLength: 1,
+      fill: primary800,
+    },
+  };
+  return (
+    <Center position="absolute">
+      <motion.svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 64 64"
+        className="item"
+        width={46}
+        height={46}
+        style={{
+          stroke: primary800,
+          strokeWidth: 1,
+        }}
+      >
+        <motion.path
+          d="M0 0H0V64H64V0Z"
+          variants={icon}
+          initial="hidden"
+          animate="visible"
+          transition={{
+            default: { duration: 2, ease: "easeInOut" },
+            fill: { duration: 2, ease: [1, 0, 0.8, 1] },
+          }}
+        />
+      </motion.svg>
+    </Center>
+  );
+};
+
 const useLogin = () => {
   const [loginRequest] = useLoginMutation();
   const [acceptInviteRequest] = useAcceptInviteMutation();
+  const [showAnimation, setShowAnimation] = useState(false);
   const token = useSelector(selectToken);
   const toast = useToast();
   const router = useRouter();
@@ -94,13 +141,22 @@ const useLogin = () => {
       : Yup.string().required().label("Password"),
   });
 
-  if (token) {
-    const destination = redirect ?? "/";
-    router.push(destination);
-  }
+  useEffect(() => {
+    if (token) {
+      setShowAnimation(true);
+      const timer = setTimeout(() => {
+        router.push(redirect ?? "/");
+      }, 2000);
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+    return () => {};
+  }, [token, router, redirect]);
 
   return {
     isFromInvite,
+    showAnimation,
     inviteCode,
     initialValues,
     onSubmit,
@@ -109,11 +165,14 @@ const useLogin = () => {
 };
 
 const Login: NextPage = () => {
-  const { isFromInvite, inviteCode, ...formikProps } = useLogin();
+  const { isFromInvite, showAnimation, inviteCode, ...formikProps } =
+    useLogin();
+
+  const submitButtonText = isFromInvite ? "Setup user" : "Sign in";
 
   return (
     <Formik {...formikProps} enableReinitialize>
-      {({ handleSubmit, isValid, isSubmitting }) => (
+      {({ handleSubmit, isValid, isSubmitting, dirty }) => (
         <div>
           <Head />
 
@@ -191,18 +250,31 @@ const Login: NextPage = () => {
                           variant="stacked"
                           size="md"
                         />
-                        <Button
-                          type="submit"
-                          bg="primary.800"
-                          _hover={{ bg: "primary.400" }}
-                          _active={{ bg: "primary.500" }}
-                          disabled={!isValid}
-                          colorScheme="primary"
-                          data-testid="sign-in-btn"
-                          isLoading={isSubmitting}
-                        >
-                          {isFromInvite ? "Setup user" : "Sign in"}
-                        </Button>
+                        <Center>
+                          <Button
+                            type="submit"
+                            bg="primary.800"
+                            _hover={{ bg: "primary.400" }}
+                            _active={{ bg: "primary.500" }}
+                            disabled={!isValid || !dirty}
+                            colorScheme="primary"
+                            data-testid="sign-in-btn"
+                            isLoading={isSubmitting}
+                            width="100%"
+                            as={motion.button}
+                            animate={
+                              showAnimation
+                                ? {
+                                    width: ["100%", "10%"],
+                                    borderRadius: ["5%", "0%"],
+                                  }
+                                : undefined
+                            }
+                          >
+                            {showAnimation ? "" : submitButtonText}
+                          </Button>
+                          {showAnimation ? <Animation /> : null}
+                        </Center>
                       </Stack>
                     </chakra.form>
                   </Stack>
