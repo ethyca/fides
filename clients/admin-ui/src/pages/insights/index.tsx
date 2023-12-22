@@ -17,7 +17,7 @@ const Plot = dynamic(() => import("react-plotly.js"), { ssr: false, })
  */
 const SECTION_HEADING_PROPS = {
     marginBottom: 1,
-    fontSize: "2xl",
+    fontSize: "1.25rem",
     fontWeight: "semibold",
 };
 
@@ -26,9 +26,25 @@ const SECTION_STYLES: React.CSSProperties = {
 };
 
 const KPI_STYLES: React.CSSProperties = {
-    position: "relative",
+    display: "flex",
+    flexDirection: "column",
     minWidth: 240,
     flex: 1,
+}
+
+const KPI_VALUE_STYLES: React.CSSProperties = {
+    paddingTop: 48,
+    marginBottom: 0,
+    fontSize: "3rem",
+    fontWeight: 200,
+}
+
+const KPI_LABEL_STYLES: React.CSSProperties = {
+    textAlign: "center",
+    marginLeft: "auto",
+    marginRight: "auto",
+    fontSize: "1rem",
+    fontWeight: 100,
 }
 
 const CHART_STYLES: React.CSSProperties = {
@@ -132,7 +148,7 @@ const InsightsPage: NextPage = () => {
 
 
     // privacy request aggregate
-    const privacyRequestTotal = useMemo(() => privacyRequestByPolicy?.map(i => i.count).reduce((sum, el) => sum + el), [privacyRequestByPolicy])
+    const privacyRequestTotal = useMemo(() => privacyRequestByPolicy?.map(i => i.count).reduce((sum, el) => sum + el), [privacyRequestByPolicy]) || 0
 
 
     // policy by status bar chart
@@ -161,7 +177,7 @@ const InsightsPage: NextPage = () => {
     }, [privacyRequestByDay])
 
     // consent aggregate
-    const consentTotal = useMemo(() => consentByNotice?.map(i => i.count).reduce((sum, el) => sum + el), [consentByNotice])
+    const consentTotal = useMemo(() => consentByNotice?.map(i => i.count).reduce((sum, el) => sum + el), [consentByNotice]) || 0
 
 
     // consent by notice bar chart
@@ -223,12 +239,13 @@ const InsightsPage: NextPage = () => {
     }, [consentByDayAndPreference]);
 
 
-
+    /**
+     * PLOTLY LAYOUTS
+     */
     const layoutBase = {
         autosize: false,
         width: 450,
         height: 200,
-
         yaxis: {
             showgrid: false,
             zeroline: false,
@@ -322,18 +339,8 @@ const InsightsPage: NextPage = () => {
                         {/* privacy request charts */}
                         <div style={{display: "flex", textAlign: "center"}}>
                             <div style={KPI_STYLES}>
-                                <Heading style={{paddingTop:"50px", marginBottom: 0}} mb={8} fontSize="7xl" fontWeight="semibold">
-                                    {privacyRequestTotal}
-                                </Heading>
-                                <Heading style={{position: "absolute",
-                                    bottom: 0,
-                                    textAlign: "center",
-                                    marginLeft: "auto",
-                                    marginRight: "auto",
-                                    left: 0,
-                                    right: 0}} mb={8} fontSize="2xl" fontWeight="normal">
-                                    {LABEL_REQUESTS_TOTAL}
-                                </Heading>
+                                <div style={KPI_VALUE_STYLES}>{privacyRequestTotal}</div>
+                                <div style={KPI_LABEL_STYLES}>{LABEL_REQUESTS_TOTAL}</div>
                             </div>
                             <div style={CHART_STYLES}>
                                 <Plot
@@ -357,18 +364,8 @@ const InsightsPage: NextPage = () => {
                         {/*row 1 consent*/}
                         <div style={{display: "flex", textAlign: "center"}}>
                             <div style={KPI_STYLES}>
-                                <Heading style={{paddingTop:"50px", marginBottom: 0}} mb={8} fontSize="7xl" fontWeight="semibold">
-                                    {consentTotal}
-                                </Heading>
-                                <Heading style={{position: "absolute",
-                                    bottom: 0,
-                                    textAlign: "center",
-                                    marginLeft: "auto",
-                                    marginRight: "auto",
-                                    left: 0,
-                                    right: 0}} mb={8} fontSize="2xl" fontWeight="normal">
-                                    {LABEL_PREFS_TOTAL}
-                                </Heading>
+                                <div style={KPI_VALUE_STYLES}>{consentTotal}</div>
+                                <div style={KPI_LABEL_STYLES}>{LABEL_PREFS_TOTAL}</div>
                             </div>
                             <div style={CHART_STYLES}>
                                 <Plot
