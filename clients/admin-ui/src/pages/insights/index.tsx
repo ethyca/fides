@@ -338,6 +338,7 @@ const InsightsPage: NextPage = () => {
                         list={dateRangeOptions}
                         menuButtonProps={{  }}
                         onChange={handleDateChange}
+                        hasClear={false}
                         selectedValue="last 90 days"
                     />
                 </Box>
