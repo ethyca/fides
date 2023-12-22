@@ -28,6 +28,20 @@ const ScanCodebase: NextPage = () => {
         formValues.url = values.url;
         console.log(values);
     };
+    const piiTags = [
+        "Name",
+        "Email",
+        "Phone number",
+        "Driver's license number",
+        "Payment information",
+        "Shipping information",
+        "Date of birth",
+        "Healthcare or medical information",
+        "IP address",
+        "Usernames and passwords",
+        "Race or ethnicity",
+        "Religious beliefs"
+    ];
     const fileData = [
         { fileType: 'Python', percentage: 57 },
         { fileType: 'Typescript', percentage: 24 },
@@ -87,7 +101,7 @@ const ScanCodebase: NextPage = () => {
                 )}
             </Formik>
             <DonutChart data={fileData} />
-            <CheckboxGrid />
+            <CheckboxGrid options={piiTags} />
             <GitHubCodeViewer url={githubUrl} language="python" />
             <GitHubCodeViewer url={githubUrl2} language="javascript" />
         </Layout>
