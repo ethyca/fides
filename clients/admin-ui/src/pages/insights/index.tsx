@@ -179,6 +179,13 @@ const InsightsPage: NextPage = () => {
             created_gt: dateRange.startDate,
             created_lt: dateRange.endDate,
         });
+    const { data: consentByCountry, isLoading: isConsentByCountryLoading } =
+        useGetInsightsAggregateQuery({
+            record_type: RecordType.consent,
+            group_by: GroupByOptions.country,
+            created_gt: dateRange.startDate,
+            created_lt: dateRange.endDate,
+        });
 
     // handle date range change
     const handleDateChange = (value?: string) => {
@@ -297,6 +304,24 @@ const InsightsPage: NextPage = () => {
         })
         return traces;
     }, [consentByDayAndPreference]);
+
+    // [
+    //   {
+    //     "User geography": "CIV",
+    //     "count": 1752
+    //   },
+    //   {
+    //     "User geography": "CYP",
+    //     "count": 3992
+    //   },
+    //   {
+    //     "User geography": "CZE",
+    //     "count": 4678
+    //   },
+    //   {
+    //     "User geography": "ETH",
+    //     "count": 2148
+    //   }, ... ]
 
 
     /**
@@ -535,6 +560,27 @@ const InsightsPage: NextPage = () => {
                                     data={consentByNoticeTypeTimeseries} layout={getTimeSeriesPlotlyLayout(LABEL_PREFS_TIMESERIES_BY_PREFERENCE)}
                                 />
                             )}
+                        </div>
+                    </div>
+
+                    {/*row 3 consent*/}
+                    <div style={{display: "flex", textAlign: "center"}}>
+                        <div style={KPI_STYLES}>
+                        </div>
+                        <div style={CHART_STYLES}>
+                            {isConsentByCountryLoading && (
+                                <Center>
+                                    <Spinner />
+                                </Center>
+                            )}
+                            {!isConsentByCountryLoading && (
+                                <Plot
+                                    // todo- replace with map
+                                    data={consentByPreferenceBar} layout={getBarChartPlotlyLayout(LABEL_PREFS_BY_PREFERENCE)}
+                                />
+                            )}
+                        </div>
+                        <div style={CHART_STYLES}>
                         </div>
                     </div>
                 </div>
