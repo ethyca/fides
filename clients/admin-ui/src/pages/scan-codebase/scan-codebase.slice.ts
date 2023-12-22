@@ -7,19 +7,19 @@ import { selectToken } from "~/features/auth";
 import { addCommonHeaders } from "~/features/common/CommonHeaders";
 
 type Stats = {
-  instance_id: string,
-  stats: Record<string,string>
-}
+  instance_id: string;
+  stats: Record<string, string>;
+};
 
 type Scan = {
-    file_url: string,
-    raw_file_url: string,
-    contains_pii: boolean,
-    handles_pii: boolean,
-    pii_occurances: string[],
-    pii_handling: string[],
-    finding_urls: string[]
-}
+  file_url: string;
+  raw_file_url: string;
+  contains_pii: boolean;
+  handles_pii: boolean;
+  pii_occurances: string[];
+  pii_handling: string[];
+  finding_urls: Record<string, string>[];
+};
 /**
  * Note: this one does not extend from baseApi because the health endpoint is
  * not nested under /api/v1
@@ -27,21 +27,22 @@ type Scan = {
 export const scanCodebaseApi = createApi({
   reducerPath: "scanCodebaseApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `http://localhost:8081/api/v1/`
+    baseUrl: `http://localhost:8081/api/v1/`,
   }),
   tagTypes: ["ScanCodebase"],
   endpoints: (build) => ({
-    getScanStats: build.query<Stats, {url: string}>({
-      query: ({url}) => ({url:`stats`}),
-      providesTags: ["ScanCodebase"]
+    getScanStats: build.query<Stats, { url: string }>({
+      query: ({ url }) => ({ url: `stats` }),
+      providesTags: ["ScanCodebase"],
     }),
-    getScanPii: build.query<Scan[], {id: string}>({
-      query: ({id}) => `scan/${id}`,
+    getScanPii: build.query<Scan[], { id: string }>({
+      query: ({ id }) => `scan/${id}`,
     }),
   }),
 });
 
-export const { useLazyGetScanPiiQuery, useLazyGetScanStatsQuery } = scanCodebaseApi;
+export const { useLazyGetScanPiiQuery, useLazyGetScanStatsQuery } =
+  scanCodebaseApi;
 
 // export const selectScanCodebase: (state: RootState) => any | undefined =
 //   createSelector(scanCodebaseApi.endpoints.getScanCodebase.select(), ({ data }) => data);

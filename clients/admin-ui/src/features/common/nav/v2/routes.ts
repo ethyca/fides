@@ -9,7 +9,7 @@ export const DATAMAP_ROUTE = "/datamap";
 export const SYSTEM_ROUTE = "/systems";
 export const CLASSIFY_SYSTEMS_ROUTE = "/classify-systems";
 export const DATASET_ROUTE = "/dataset";
-export const SCAN_CODEBASE_ROUTE = "/scan-codebase"
+export const SCAN_CODEBASE_ROUTE = "/scan-codebase";
 
 // Privacy requests group
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
