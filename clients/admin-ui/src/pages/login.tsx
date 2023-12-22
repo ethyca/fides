@@ -11,6 +11,9 @@ import {
 import Head from "common/Head";
 import Image from "common/Image";
 import { Formik } from "formik";
+// Framer is bundled as part of chakra. TODO: had trouble with package.json's when
+// trying to make framer a first level dev dependency
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { motion } from "framer-motion";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
