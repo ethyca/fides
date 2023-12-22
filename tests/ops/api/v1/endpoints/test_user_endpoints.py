@@ -600,6 +600,7 @@ class TestGetUsers:
                 data={
                     "username": f"user{i}",
                     "password": password,
+                    "email_address": f"test{i}.user@ethyca.com",
                     "first_name": "Test",
                     "last_name": "User",
                     "disabled": False,
@@ -624,7 +625,7 @@ class TestGetUsers:
         assert user_data["first_name"]
         assert user_data["last_name"]
         assert user_data["email_address"]
-        assert user_data["disabled"]
+        assert user_data["disabled"] == False
 
     def test_get_filtered_users(
         self, api_client: TestClient, generate_auth_header, url, db
