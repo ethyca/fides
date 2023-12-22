@@ -70,6 +70,19 @@ const CHART_STYLES: React.CSSProperties = {
     borderRadius: "4px",
 }
 
+const GEO_STYLES: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minWidth: 460,
+    minHeight: 220,
+    flex: 1,
+    padding: 8,
+    margin: 8,
+    border: "1px solid #eee",
+    borderRadius: "4px",
+}
+
 /**
  * LABELS
  */
@@ -322,23 +335,34 @@ const InsightsPage: NextPage = () => {
         return traces;
     }, [consentByDayAndPreference]);
 
-    // [
-    //   {
-    //     "User geography": "CIV",
-    //     "count": 1752
-    //   },
-    //   {
-    //     "User geography": "CYP",
-    //     "count": 3992
-    //   },
-    //   {
-    //     "User geography": "CZE",
-    //     "count": 4678
-    //   },
-    //   {
-    //     "User geography": "ETH",
-    //     "count": 2148
-    //   }, ... ]
+    // consent by country map
+    const consentByCountryMap = useMemo(() => {
+        const arr = [134, 235, 123, 32]
+        return [{
+            type: 'scattergeo',
+            mode: 'markers',
+            locationmode: 'USA-states',
+            // locations: consentByCountry?.map(i => i["User geography"]),
+            locations: ["CA", "NC", "CO", "NY"],
+            marker: {
+                // size: consentByCountry?.map(i => i.count),
+                size: [134, 235, 123, 32],
+                cmin: 0,
+                cmax: Math.max(...arr),
+                colorscale: 'Greens',
+                colorbar: {
+                    title: 'Consent Preferences',
+                    ticksuffix: '',
+                    showticksuffix: 'last'
+                },
+                line: {
+                    color: 'black'
+                }
+            },
+            name: 'world consent'
+        }];
+    }, [consentByCountry])
+
 
 
     /**
@@ -357,6 +381,14 @@ const InsightsPage: NextPage = () => {
             zeroline: false
         }
     }
+
+    const geoLayout = {
+        autosize: false,
+        geo: {
+            scope: 'usa',
+            resolution: 50
+        }
+    };
 
     const getBarChartPlotlyLayout = (title?: string): Partial<Plotly.Layout> => {
         return {
@@ -583,9 +615,7 @@ const InsightsPage: NextPage = () => {
 
                     {/*row 3 consent*/}
                     <div style={{display: "flex", textAlign: "center"}}>
-                        <div style={KPI_STYLES}>
-                        </div>
-                        <div style={CHART_STYLES}>
+                        <div style={GEO_STYLES}>
                             {isConsentByCountryLoading && (
                                 <Center>
                                     <Spinner />
@@ -593,12 +623,9 @@ const InsightsPage: NextPage = () => {
                             )}
                             {!isConsentByCountryLoading && (
                                 <Plot
-                                    // todo- replace with map
-                                    data={consentByPreferenceBar} layout={getBarChartPlotlyLayout(LABEL_PREFS_BY_PREFERENCE)}
+                                    data={consentByCountryMap} layout={geoLayout}
                                 />
                             )}
-                        </div>
-                        <div style={CHART_STYLES}>
                         </div>
                     </div>
                 </div>
