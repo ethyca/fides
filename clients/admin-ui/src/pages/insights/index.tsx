@@ -1,4 +1,4 @@
-import {Center, Heading, Spinner} from "@fidesui/react";
+import {Box, Center, Heading, Spinner} from "@fidesui/react";
 import type { NextPage } from "next";
 import dynamic from "next/dynamic";
 import React, {useEffect, useMemo, useState} from "react";
@@ -9,6 +9,12 @@ import {
     useGetInsightsTimeSeriesQuery
 } from "~/features/plus/plus.slice";
 import {GroupByOptions, RecordType, TimeInterval} from "~/types/api/models/InsightsRequestParams";
+import SelectDropdown from "common/dropdown/SelectDropdown";
+import {ItemOption} from "common/dropdown/types";
+import {ConnectorParameterOption} from "datastore-connections/add-connection/types";
+import {CONNECTOR_PARAMETERS_OPTIONS, STEPS} from "datastore-connections/add-connection/constants";
+import {reset, setStep} from "~/features/connection-type";
+import {setTestingStatus} from "~/features/datastore-connections";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false, })
 
@@ -84,68 +90,96 @@ const LABEL_PREFS_BY_PREFERENCE = "Preferences by Value";
 const LABEL_PREFS_TIMESERIES_BY_PREFERENCE = `${LABEL_INTERVAL} Preferences by Value`;
 
 const InsightsPage: NextPage = () => {
-    const START_DATE = "2023-01-01T00:00:00.000Z";
-    const END_DATE = "2024-01-01T00:00:00.000Z";
+
+    type DateRange = {
+        startDate: string;
+        endDate: string;
+    }
+
+    // need to map selected date val to end and start dates
+    const dateRangeMap = new Map<string, DateRange>();
+    const today = new Date()
+    const todayFormatted = today.toISOString()
+    const prior90DaysDate = new Date(new Date().setDate(today.getDate() - 90)).toISOString()
+    const prior180DaysDate = new Date(new Date().setDate(today.getDate() - 180)).toISOString()
+    dateRangeMap.set("90", {endDate: todayFormatted, startDate: prior90DaysDate})
+    dateRangeMap.set("180", {endDate: todayFormatted, startDate: prior180DaysDate})
+
+    // options for the date selector
+    const dateRangeOptions: Map<string, ItemOption> = new Map<string, ItemOption>();
+    dateRangeOptions.set("last 90 days", {value: "90"})
+    dateRangeOptions.set("last 180 days", {value: "180"})
+
+    const [dateRange, setDateRange] = useState(
+        dateRangeMap.get("90")
+    );
+
 
     const { data: privacyRequestByPolicy, isLoading: isPrivacyRequestByPolicyLoading } =
         useGetInsightsAggregateQuery({
             record_type: RecordType.dsr,
             group_by: GroupByOptions.dsr_policy,
-            created_gt: START_DATE,
-            created_lt: END_DATE,
+            created_gt: dateRange.startDate,
+            created_lt: dateRange.endDate,
+        });
+    const { data: privacyRequestByStatus, isLoading: isPrivacyRequestByStatusLoading } =
+        useGetInsightsAggregateQuery({
+            record_type: RecordType.dsr,
+            group_by: GroupByOptions.status,
+            created_gt: dateRange.startDate,
+            created_lt: dateRange.endDate,
         });
     const { data: privacyRequestByDay, isLoading: isPrivacyRequestByDayLoading } =
         useGetInsightsTimeSeriesQuery({
             record_type: RecordType.dsr,
             time_interval: INTERVAL,
-            created_gt: START_DATE,
-            created_lt: END_DATE,
+            created_gt: dateRange.startDate,
+            created_lt: dateRange.endDate,
         });
     const { data: privacyRequestByDayAndPolicy, isLoading: isPrivacyRequestByDayAndPolicyLoading } =
         useGetInsightsTimeSeriesQuery({
             record_type: RecordType.dsr,
             group_by: GroupByOptions.dsr_policy,
             time_interval: INTERVAL,
-            created_gt: START_DATE,
-            created_lt: END_DATE,
-        });
-    const { data: privacyRequestByStatus, isLoading: isPrivacyRequestByStatusLoading } =
-        useGetInsightsAggregateQuery({
-            record_type: RecordType.dsr,
-            group_by: GroupByOptions.status,
-            created_gt: START_DATE,
-            created_lt: END_DATE,
+            created_gt: dateRange.startDate,
+            created_lt: dateRange.endDate,
         });
     const { data: consentByNotice, isLoading: isConsentByNoticeLoading } =
         useGetInsightsAggregateQuery({
             record_type: RecordType.consent,
             group_by: GroupByOptions.notice,
-            created_gt: START_DATE,
-            created_lt: END_DATE,
+            created_gt: dateRange.startDate,
+            created_lt: dateRange.endDate,
         });
     const { data: consentByDay, isLoading: isConsentByDayLoading } =
         useGetInsightsTimeSeriesQuery({
             record_type: RecordType.consent,
             time_interval: INTERVAL,
-            created_gt: START_DATE,
-            created_lt: END_DATE,
+            created_gt: dateRange.startDate,
+            created_lt: dateRange.endDate,
         });
     const { data: consentByPreference, isLoading: isConsentByPreferenceLoading } =
         useGetInsightsAggregateQuery({
             record_type: RecordType.consent,
             group_by: GroupByOptions.preference,
-            created_gt: START_DATE,
-            created_lt: END_DATE,
+            created_gt: dateRange.startDate,
+            created_lt: dateRange.endDate,
         });
     const { data: consentByDayAndPreference, isLoading: isConsentByDaysAndPreferenceLoading } =
         useGetInsightsTimeSeriesQuery({
             record_type: RecordType.consent,
             time_interval: INTERVAL,
             group_by: GroupByOptions.preference,
-            created_gt: START_DATE,
-            created_lt: END_DATE,
+            created_gt: dateRange.startDate,
+            created_lt: dateRange.endDate,
         });
 
+    // handle date range change
+    const handleDateChange = (value?: string) => {
+        if (value) {
+            setDateRange(dateRangeMap.get(value))
+        }
+    };
 
     // privacy request aggregate
     const privacyRequestTotal = useMemo(() => privacyRequestByPolicy?.map(i => i.count).reduce((sum, el) => sum + el), [privacyRequestByPolicy]) || 0
@@ -326,9 +360,17 @@ const InsightsPage: NextPage = () => {
     }
 
     return (
-
         <>
             <Layout title="Insights">
+                <Box>
+                    <SelectDropdown
+                        label="Date Range"
+                        list={dateRangeOptions}
+                        menuButtonProps={{  }}
+                        onChange={handleDateChange}
+                        selectedValue="last 90 days"
+                    />
+                </Box>
                 <div style={SECTION_STYLES}>
                     <Heading {...SECTION_HEADING_PROPS}>
                         {LABEL_REQUESTS_SECTION}
