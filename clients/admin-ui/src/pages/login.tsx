@@ -26,6 +26,7 @@ import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 
 const parseQueryParam = (query: ParsedUrlQuery) => {
+  const validPathRegex = /^\/[\d\w/-_]*$/;
   const {
     username: rawUsername,
     invite_code: rawInviteCode,
@@ -38,8 +39,10 @@ const parseQueryParam = (query: ParsedUrlQuery) => {
   return {
     username: typeof rawUsername === "string" ? rawUsername : undefined,
     inviteCode: typeof rawInviteCode === "string" ? rawInviteCode : undefined,
-    // Make sure we don't keep redirecting to the login page!
-    redirect: redirectDecoded === "/login" ? undefined : redirectDecoded,
+    redirect:
+      redirectDecoded && validPathRegex.test(redirectDecoded)
+        ? redirectDecoded
+        : undefined,
   };
 };
 

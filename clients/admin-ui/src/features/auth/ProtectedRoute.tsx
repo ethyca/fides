@@ -30,9 +30,9 @@ const useProtectedRoute = (redirectUrl: string) => {
       dispatch(logout());
     }
     if (typeof window !== "undefined") {
-      const query = REDIRECT_IGNORES.includes(router.pathname)
+      const query = REDIRECT_IGNORES.includes(window.location.pathname)
         ? undefined
-        : { redirect: router.pathname };
+        : { redirect: window.location.pathname };
       router.push({
         pathname: redirectUrl,
         query,
