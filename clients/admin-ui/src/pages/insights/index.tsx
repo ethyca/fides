@@ -366,7 +366,7 @@ const InsightsPage: NextPage = () => {
             marker: {
                 size: usSize,
                 sizemode: 'diameter',
-                sizeref: 100,
+                sizeref: 20,
                 cmin: 0,
                 cmax: 10000,
                 line: {
