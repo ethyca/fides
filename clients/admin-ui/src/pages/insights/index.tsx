@@ -4,7 +4,11 @@ import dynamic from "next/dynamic";
 import React, {useEffect, useMemo, useState} from "react";
 
 import Layout from "~/features/common/Layout";
-import {useGetAnalyticsAggregateQuery, useGetAnalyticsTimeSeriesQuery} from "~/features/plus/plus.slice";
+import {
+    useGetInsightsAggregateQuery,
+    useGetInsightsTimeSeriesQuery
+} from "~/features/plus/plus.slice";
+import {GroupByOptions, RecordType, TimeInterval} from "~/types/api/models/InsightsRequestParams";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false, })
 
@@ -16,13 +20,35 @@ const InsightsPage: NextPage = () => {
     //         time_interval: "days",
     //         group_by: "notice",
     //         created_gt: "2023-12-20T14:20:34.000Z",
-    //         created_lt: "2023-12-22T14:20:34.000Z "
+    //         created_lt: "2023-12-22T14:20:34.000Z"
     //     });
-    const { data: consentSeries, isLoading: isConsentSeriesLoading } =
-        useGetAnalyticsTimeSeriesQuery({
-            record_type: "consent",
-            time_interval: "seconds",
-            group_by: "notice",
+    const { data: consentByNotice, isLoading: isConsentByNoticeLoading } =
+        useGetInsightsAggregateQuery({
+            record_type: RecordType.consent,
+            // todo- group by notice title
+            group_by: GroupByOptions.preference,
+            created_gt: "2023-12-20T14:20:34.000Z",
+            created_lt: "2023-12-22T14:20:34.000Z"
+        });
+    const { data: consentByDay, isLoading: isConsentByDayLoading } =
+        useGetInsightsTimeSeriesQuery({
+            record_type: RecordType.consent,
+            time_interval: TimeInterval.days,
+            created_gt: "2023-12-20T14:20:34.000Z",
+            created_lt: "2023-12-22T14:20:34.000Z"
+        });
+    const { data: consentByPreference, isLoading: isConsentByPreferenceLoading } =
+        useGetInsightsAggregateQuery({
+            record_type: RecordType.consent,
+            group_by: GroupByOptions.preference,
+            created_gt: "2023-12-20T14:20:34.000Z",
+            created_lt: "2023-12-22T14:20:34.000Z"
+        });
+    const { data: consentByDayAndPreference, isLoading: isConsentByDaysAndPreferenceLoading } =
+        useGetInsightsTimeSeriesQuery({
+            record_type: RecordType.consent,
+            time_interval: TimeInterval.days,
+            group_by: GroupByOptions.preference,
             created_gt: "2023-12-20T14:20:34.000Z",
             created_lt: "2023-12-22T14:20:34.000Z"
         });
@@ -39,13 +65,13 @@ const InsightsPage: NextPage = () => {
     // Aggregate endpoint api/v1/plus/analytics/aggregate
     // response body example:
     const privacyRequestPolicyAction = [{
-        "Notice_title": "Access",
+        "Notice title": "Access",
         "count": 5
     }, {
-        "Notice_title": "Erasure",
+        "Notice title": "Erasure",
         "count": 2
     }, {
-        "Notice_title": "Consent",
+        "Notice title": "Consent",
         "count": 10
     },
     ]
@@ -53,7 +79,7 @@ const InsightsPage: NextPage = () => {
     // privacy requests by notice type bar
     const privacyRequestsPolicyActionBar = [
         {
-            y: privacyRequestPolicyAction.map(i => i.Notice_title),
+            y: privacyRequestPolicyAction.map(i => i["Notice title"]),
             x: privacyRequestPolicyAction.map(i => i.count),
             type: 'bar',
             orientation: 'h'
@@ -91,44 +117,54 @@ const InsightsPage: NextPage = () => {
         }
     ];
 
-    // todo- get from endpoint
-    // Time series endpoint: api/v1/plus/analytics/time-series?record_type=consent&time_interval=days&group_by=notice&created_gt=2023-12-20T14:20:34.000Z&created_lt=2023-12-22T14:20:34.000Z
-    // response body example:
-    // const consentSeries = [{
-    //     "Created": "2013-10-05 22:34:00",
-    //     "Notice_title": "Essential",
-    //     "count": 1
-    // }, {
-    //     "Created": "2013-10-05 22:32:00",
-    //     "Notice_title": "Data Sales",
-    //     "count": 1
-    // },{
-    //     "Created": "2013-10-06 10:32:00",
-    //     "Notice_title": "Essential",
-    //     "count": 2
-    // }, {
-    //     "Created": "2013-10-06 22:32:00",
-    //     "Notice_title": "Data Sales",
-    //     "count": 2
-    // },{
-    //     "Created": "2013-10-07 08:32:00",
-    //     "Notice_title": "Essential",
-    //     "count": 4
-    // }, {
-    //     "Created": "2013-10-07 06:32:00",
-    //     "Notice_title": "Data Sales",
-    //     "count": 2
-    // }];
+
+    // consent by notice bar chart
+    const consentByNoticeBar = useMemo(() => {
+        return [
+            {
+                y: consentByNotice?.map(i => i["Notice title"]),
+                x: consentByNotice?.map(i => i.count),
+                type: 'bar',
+                orientation: 'h'
+            }
+        ];
+    }, [consentByPreference])
 
 
+    // consent by day bar chart
+    const consentByDayBar = useMemo(() => {
+        return [
+            {
+                y: consentByDay?.map(i => i.Created),
+                x: consentByDay?.map(i => i.count),
+                type: 'bar',
+            }
+        ];
+    }, [consentByDay])
+
+
+    // consent by preference bar chart
+    const consentByPreferenceBar = useMemo(() => {
+        return [
+            {
+                y: consentByPreference?.map(i => i.Preference),
+                x: consentByPreference?.map(i => i.count),
+                type: 'bar',
+                orientation: 'h'
+            }
+        ];
+    }, [consentByPreference])
+
+
+    // consent by notice type timeseries
     const consentByNoticeTypeTimeseries = useMemo(() => {
         // group by notice
-        const uniqueNotices = [...new Set(consentSeries?.map(item => item.Notice_title))];
+        const uniqueNotices = [...new Set(consentByDayAndPreference?.map(item => item["Notice title"]))];
 
         // push a new trace by Notice title
         const traces: { type: string; mode: string; x: string[]; y: number[]; line: { color: string; }; }[] = []
         uniqueNotices.forEach(uniqueNoticeTitle => {
-            const dataForNotice = consentSeries?.filter(item => item.Notice_title === uniqueNoticeTitle)
+            const dataForNotice = consentByDayAndPreference?.filter(item => item["Notice title"] === uniqueNoticeTitle)
             traces.push({
                 type: "scatter",
                 mode: "lines",
@@ -138,7 +174,7 @@ const InsightsPage: NextPage = () => {
             })
         })
         return traces;
-    }, [consentSeries]);
+    }, [consentByDayAndPreference]);
 
 
 
@@ -245,7 +281,8 @@ const InsightsPage: NextPage = () => {
                             Consent
                         </Heading>
                         <hr/>
-                        {/* consent charts */}
+
+                        {/*row 1 consent*/}
                         <div style={{display: "flex", textAlign: "center"}}>
                             <div style={{flex: 1, position: "relative"}}>
                                 <Heading style={{paddingTop:"50px", marginBottom: 0}} mb={8} fontSize="7xl" fontWeight="semibold">
@@ -263,7 +300,37 @@ const InsightsPage: NextPage = () => {
                             </div>
                             <div style={{flex: 2}}>
                                 <Plot
-                                    data={privacyRequestsPolicyActionBar} layout={layoutHorizontalBar}
+                                    data={consentByPreferenceBar} layout={layoutHorizontalBar}
+                                />
+                            </div>
+                            <div style={{flex: 2}}>
+                                <Plot
+                                    data={consentByDayBar} layout={layoutTimeSeries}
+                                />
+                            </div>
+                        </div>
+
+                        {/* row 1 consent chart labels */}
+                        <div style={{display: "flex"}}>
+                            <div style={{flex: 1}}>
+                                <div>Number of preferences created in report period</div>
+                            </div>
+                            <div style={{flex: 2}}>
+                                <div>Number of preferences created in report period by notice</div>
+                            </div>
+                            <div style={{flex: 2}}>
+                                <div>Number of preferences per day created in report period</div>
+                            </div>
+
+                        </div>
+
+                        {/*row 2 consent*/}
+                        <div style={{display: "flex", textAlign: "center"}}>
+                            <div style={{flex: 1, position: "relative"}}>
+                            </div>
+                            <div style={{flex: 2}}>
+                                <Plot
+                                    data={consentByPreferenceBar} layout={layoutHorizontalBar}
                                 />
                             </div>
                             <div style={{flex: 2}}>
@@ -273,16 +340,15 @@ const InsightsPage: NextPage = () => {
                             </div>
                         </div>
 
-                        {/* consent chart labels */}
+                        {/* row 2 consent chart labels */}
                         <div style={{display: "flex"}}>
                             <div style={{flex: 1}}>
-                                <div>Number of requests created in report period</div>
                             </div>
                             <div style={{flex: 2}}>
-                                <div>Number of requests created in report period by policy action</div>
+                                <div>Number of preferences created in report period by preference value</div>
                             </div>
                             <div style={{flex: 2}}>
-                                <div>Privacy requests by notice type</div>
+                                <div>Number of preferences per day created in report period by preference value</div>
                             </div>
 
                         </div>

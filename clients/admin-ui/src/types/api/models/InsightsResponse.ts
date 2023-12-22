@@ -1,9 +1,9 @@
 import { UserConsentPreference } from "./UserConsentPreference";
 
 /**
- * Analytics Schema
+ * Insights Response Schema
  */
-export type AnalyticsSchema = {
+export type InsightsResponse = {
     Created: string;
     count: number;
     Preference?: UserConsentPreference;

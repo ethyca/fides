@@ -47,7 +47,8 @@ import {
   Page_DataUseDeclaration_,
   Page_Vendor_,
 } from "~/types/dictionary-api";
-import {AnalyticsSchema} from "~/types/api/models/AnalyticsSchema";
+import {AnalyticsSchema} from "~/types/api/models/InsightsResponse";
+import {InsightsRequestParams} from "~/types/api/models/InsightsRequestParams";
 
 interface ScanParams {
   classify?: boolean;
@@ -448,12 +449,12 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["TCF Purpose Override"],
     }),
-    getAnalyticsAggregate: build.query<
+    getInsightsAggregate: build.query<
         AnalyticsSchema,
-        { record_type: string; time_interval: string; group_by: string; created_gt: string; created_lt: string; }
+        InsightsRequestParams
         >({
       query: (params) => ({
-        url: "plus/analytics/aggregate",
+        url: "plus/insights/aggregate",
         params: {
           record_type: params.record_type,
           time_interval: params.time_interval,
@@ -464,12 +465,12 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Aggregate Insights"],
     }),
-    getAnalyticsTimeSeries: build.query<
+    getInsightsTimeSeries: build.query<
         AnalyticsSchema,
-        { record_type: string; time_interval: string; group_by: string; created_gt: string; created_lt: string; }
+        InsightsRequestParams
         >({
       query: (params) => ({
-        url: "plus/analytics/time-series",
+        url: "plus/insights/time-series",
         params: {
           record_type: params.record_type,
           time_interval: params.time_interval,
@@ -519,8 +520,8 @@ export const {
   useCreatePlusSaasConnectionConfigMutation,
   useGetTcfPurposeOverridesQuery,
   usePatchTcfPurposeOverridesMutation,
-  useGetAnalyticsAggregateQuery,
-  useGetAnalyticsTimeSeriesQuery,
+  useGetInsightsAggregateQuery,
+  useGetInsightsTimeSeriesQuery,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
