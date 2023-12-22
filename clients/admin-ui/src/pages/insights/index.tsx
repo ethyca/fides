@@ -34,13 +34,17 @@ const SECTION_STYLES: React.CSSProperties = {
 const KPI_STYLES: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
+    justifyContent: "center",
     minWidth: 240,
+    minHeight: 220,
     flex: 1,
+    padding: 8,
+    margin: 8,
+    border: "1px solid #eee",
+    borderRadius: "4px",
 }
 
 const KPI_VALUE_STYLES: React.CSSProperties = {
-    paddingTop: 48,
-    marginBottom: 0,
     fontSize: "3rem",
     fontWeight: 200,
 }
@@ -54,13 +58,24 @@ const KPI_LABEL_STYLES: React.CSSProperties = {
 }
 
 const CHART_STYLES: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minWidth: 460,
+    minHeight: 220,
     flex: 2,
     padding: 8,
+    margin: 8,
+    border: "1px solid #eee",
+    borderRadius: "4px",
 }
 
 /**
  * LABELS
  */
+const INTERVAL = TimeInterval.days;
+const LABEL_INTERVAL = "Daily";
+
 const LABEL_REQUESTS_SECTION = "Privacy Requests";
 const LABEL_REQUESTS_TOTAL = "Total Privacy Requests";
 const LABEL_REQUESTS_BY_POLICY = "Privacy Requests by Policy";
@@ -69,9 +84,9 @@ const LABEL_REQUESTS_TIMESERIES = "Daily Privacy Requests";
 const LABEL_PREFS_SECTION = "Consent Preferences";
 const LABEL_PREFS_TOTAL = "Total Preferences";
 const LABEL_PREFS_BY_NOTICE = "Preferences by Notice";
-const LABEL_PREFS_TIMESERIES = "Daily Preferences";
+const LABEL_PREFS_TIMESERIES = `${LABEL_INTERVAL} Preferences`;
 const LABEL_PREFS_BY_PREFERENCE = "Preferences by Value";
-const LABEL_PREFS_TIMESERIES_BY_PREFERENCE = "Daily Preferences by Value";
+const LABEL_PREFS_TIMESERIES_BY_PREFERENCE = `${LABEL_INTERVAL} Preferences by Value`;
 
 const InsightsPage: NextPage = () => {
 
@@ -106,10 +121,17 @@ const InsightsPage: NextPage = () => {
             created_gt: dateRange.startDate,
             created_lt: dateRange.endDate,
         });
+    const { data: privacyRequestByStatus, isLoading: isPrivacyRequestByStatusLoading } =
+        useGetInsightsAggregateQuery({
+            record_type: RecordType.dsr,
+            group_by: GroupByOptions.status,
+            created_gt: dateRange.startDate,
+            created_lt: dateRange.endDate,
+        });
     const { data: privacyRequestByDay, isLoading: isPrivacyRequestByDayLoading } =
         useGetInsightsTimeSeriesQuery({
             record_type: RecordType.dsr,
-            time_interval: TimeInterval.days,
+            time_interval: INTERVAL,
             created_gt: dateRange.startDate,
             created_lt: dateRange.endDate,
         });
@@ -123,7 +145,7 @@ const InsightsPage: NextPage = () => {
     const { data: consentByDay, isLoading: isConsentByDayLoading } =
         useGetInsightsTimeSeriesQuery({
             record_type: RecordType.consent,
-            time_interval: TimeInterval.days,
+            time_interval: INTERVAL,
             created_gt: dateRange.startDate,
             created_lt: dateRange.endDate,
         });
@@ -137,7 +159,7 @@ const InsightsPage: NextPage = () => {
     const { data: consentByDayAndPreference, isLoading: isConsentByDaysAndPreferenceLoading } =
         useGetInsightsTimeSeriesQuery({
             record_type: RecordType.consent,
-            time_interval: TimeInterval.days,
+            time_interval: INTERVAL,
             group_by: GroupByOptions.preference,
             created_gt: dateRange.startDate,
             created_lt: dateRange.endDate,
@@ -246,7 +268,7 @@ const InsightsPage: NextPage = () => {
      */
     const layoutBase = {
         autosize: false,
-        width: 450,
+        width: 400,
         height: 200,
         yaxis: {
             showgrid: false,
@@ -263,37 +285,19 @@ const InsightsPage: NextPage = () => {
             ...layoutBase,
             margin: {
                 t: 48,
-                l: 48,
+                l: 160,
                 r: 48,
                 b: 24,
             },
             title: {
                 text: title,
+                font: {
+                    family: "Inter",
+                    size: 16,
+                }
             },
         }
     };
-
-    // TODO: add title etc.
-    const layoutTimeSeriesBar = {
-        ... layoutBase,
-        margin: {
-            t: 20,
-            l: 50,
-            r: 50,
-            b: 20
-        },
-        yaxis: {
-            type: 'linear',
-            showgrid: false,
-            zeroline: false,
-        },
-        xaxis: {
-            type: 'date',
-            tickformat: '%m/%d',
-            showgrid: false,
-            zeroline: false,
-        }
-    }
 
     const getTimeSeriesPlotlyLayout = (title?: string): Partial<Plotly.Layout> => {
         return {
@@ -317,6 +321,10 @@ const InsightsPage: NextPage = () => {
             },
             title: {
                 text: title,
+                font: {
+                    family: "Inter",
+                    size: 16,
+                }
             },
         }
     }
