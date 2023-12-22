@@ -30,6 +30,10 @@ const KPI_STYLES: React.CSSProperties = {
     flexDirection: "column",
     minWidth: 240,
     flex: 1,
+    padding: 8,
+    margin: 8,
+    border: "1px solid #eee",
+    borderRadius: "4px",
 }
 
 const KPI_VALUE_STYLES: React.CSSProperties = {
@@ -50,6 +54,9 @@ const KPI_LABEL_STYLES: React.CSSProperties = {
 const CHART_STYLES: React.CSSProperties = {
     flex: 2,
     padding: 8,
+    margin: 8,
+    border: "1px solid #eee",
+    borderRadius: "4px",
 }
 
 /**
@@ -261,37 +268,19 @@ const InsightsPage: NextPage = () => {
             ...layoutBase,
             margin: {
                 t: 48,
-                l: 48,
+                l: 140,
                 r: 48,
                 b: 24,
             },
             title: {
                 text: title,
+                font: {
+                    family: "Inter",
+                    size: 16,
+                }
             },
         }
     };
-
-    // TODO: add title etc.
-    const layoutTimeSeriesBar = {
-        ... layoutBase,
-        margin: {
-            t: 20,
-            l: 50,
-            r: 50,
-            b: 20
-        },
-        yaxis: {
-            type: 'linear',
-            showgrid: false,
-            zeroline: false,
-        },
-        xaxis: {
-            type: 'date',
-            tickformat: '%m/%d',
-            showgrid: false,
-            zeroline: false,
-        }
-    }
 
     const getTimeSeriesPlotlyLayout = (title?: string): Partial<Plotly.Layout> => {
         return {
@@ -315,6 +304,10 @@ const InsightsPage: NextPage = () => {
             },
             title: {
                 text: title,
+                font: {
+                    family: "Inter",
+                    size: 16,
+                }
             },
         }
     }
