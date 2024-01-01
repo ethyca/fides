@@ -66,7 +66,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
       }
     };
 
-    if (bannerIsOpen && !window.Fides.options.preventDismissal) {
+    if (bannerIsOpen && !window.Fides?.options?.preventDismissal) {
       window.addEventListener("mousedown", handleClickOutside);
       window.addEventListener("keydown", handleEsc);
     } else {
@@ -101,7 +101,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
           <CloseButton
             ariaLabel="Close banner"
             onClick={onClose}
-            hidden={window.Fides.options.preventDismissal}
+            hidden={window.Fides?.options?.preventDismissal}
           />
           <div
             id="fides-banner-inner-container"
@@ -128,6 +128,9 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                 <ExperienceDescription
                   description={experience.description}
                   onVendorPageClick={onVendorPageClick}
+                  allowHTMLDescription={
+                    window.Fides?.options?.allowHTMLDescription
+                  }
                 />
               </div>
             </div>

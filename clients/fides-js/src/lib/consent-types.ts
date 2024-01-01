@@ -94,6 +94,9 @@ export type FidesOptions = {
 
   // Prevents the banner and modal from being dismissed
   preventDismissal: boolean;
+
+  // Allows providing rich HTML descriptions
+  allowHTMLDescription: boolean | null;
 };
 
 export type GetPreferencesFnResp = {

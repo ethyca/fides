@@ -198,6 +198,7 @@ _Fides = {
     gppExtensionPath: "",
     customOptionsPath: null,
     preventDismissal: false,
+    allowHTMLDescription: null,
   },
   fides_meta: {},
   identity: {},
