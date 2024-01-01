@@ -277,7 +277,7 @@ describe("Consent overlay", () => {
         });
       });
 
-      describe.only("experience descriptions", () => {
+      describe("experience descriptions", () => {
         describe("when experience uses rich HTML descriptions", () => {
           // Shared helper that overrides the experience config description with
           // an HTML example and allows toggling the allowHTMLDescription option
@@ -325,6 +325,48 @@ describe("Consent overlay", () => {
               cy.get("div#fides-banner-description.fides-banner-description")
                 .contains("a", "clickable links")
                 .should("exist");
+            });
+          });
+        });
+
+        describe("when experience uses different descriptions for modal & banner", () => {
+          beforeEach(() => {
+            const bannerDescription =
+              "This test is overriding the banner description separately from modal!";
+            const modalDescription =
+              "This test is overriding the modal description separately from banner!";
+            cy.fixture("consent/test_banner_options.json").then((config) => {
+              const newExperienceConfig: ExperienceConfig = {
+                ...config.experience.experience_config,
+                ...{
+                  description: modalDescription,
+                  banner_description: bannerDescription,
+                },
+              };
+              stubConfig({
+                experience: {
+                  experience_config: newExperienceConfig,
+                },
+              });
+            });
+          });
+
+          it("renders the expected modal & banner descriptions", () => {
+            cy.get("div#fides-banner").within(() => {
+              cy.get(
+                "div#fides-banner-description.fides-banner-description"
+              ).contains(
+                "This test is overriding the banner description separately from modal!"
+              );
+            });
+
+            cy.contains("button", "Manage preferences").click();
+            cy.getByTestId("consent-modal").should("be.visible");
+
+            cy.get("div#fides-modal").within(() => {
+              cy.get(".fides-modal-description").contains(
+                "This test is overriding the modal description separately from banner!"
+              );
             });
           });
         });

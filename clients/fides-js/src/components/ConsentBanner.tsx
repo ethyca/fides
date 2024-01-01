@@ -88,6 +88,11 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     }
   }, [bannerIsOpen, onOpen]);
 
+  // If an explicit "banner_description" is set, use that; otherwise, use the
+  // generic "description" value that is shared with the modal component
+  const bannerDescription =
+    experience.banner_description || experience.description;
+
   return (
     <div
       id="fides-banner-container"
@@ -126,7 +131,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                 className="fides-banner-description"
               >
                 <ExperienceDescription
-                  description={experience.description}
+                  description={bannerDescription}
                   onVendorPageClick={onVendorPageClick}
                   allowHTMLDescription={
                     window.Fides?.options?.allowHTMLDescription

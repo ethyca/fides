@@ -307,6 +307,7 @@ export type ExperienceConfig = {
   acknowledge_button_label?: string;
   banner_enabled?: BannerEnabled;
   description?: string;
+  banner_description?: string;
   disabled?: boolean;
   is_default?: boolean;
   privacy_policy_link_label?: string;
