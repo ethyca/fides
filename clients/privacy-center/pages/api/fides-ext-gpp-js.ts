@@ -52,6 +52,8 @@ export default async function handler(
   res
     .status(200)
     .setHeader("Content-Type", "application/javascript")
+    // Allow CORS since this is a static file we do not need to lock down
+    .setHeader("Access-Control-Allow-Origin", "*")
     .setHeader("Cache-Control", stringify(cacheHeaders))
     .setHeader("Vary", LOCATION_HEADERS)
     .send(gppJs);
