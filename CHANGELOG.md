@@ -30,6 +30,7 @@ The types of changes are:
 - Omit certain fields from system payload when empty  [#4508](https://github.com/ethyca/fides/pull/4525)
 - Fixed issues with Compass vendor selector behavior [#4521](https://github.com/ethyca/fides/pull/4521)
 - Fixed an issue where the background overlay remained visible after saving consent preferences [#4515](https://github.com/ethyca/fides/pull/4515)
+- Fixed system name being editable when editing GVL systems [#4533](https://github.com/ethyca/fides/pull/4533)
 - Fixed an issue where a privacy policy link could not be removed from privacy experiences [#4542](https://github.com/ethyca/fides/pull/4542)
 
 ### Changed
