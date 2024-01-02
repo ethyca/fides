@@ -17,6 +17,7 @@ import {
   ModalHeader,
   ModalOverlay,
   SimpleGrid,
+  Text,
 } from "@fidesui/react";
 import { useMemo, useState } from "react";
 
@@ -90,7 +91,7 @@ const SubgroupModal = ({
       <ModalOverlay />
       <ModalContent data-testid="subgroup-modal">
         <ModalHeader
-          fontSize="md"
+          fontSize="lg"
           fontWeight="semibold"
           pt={5}
           paddingInline={6}
@@ -108,13 +109,14 @@ const SubgroupModal = ({
               <Checkbox
                 colorScheme="complimentary"
                 size="md"
-                fontWeight={600}
                 isChecked={allSelected}
                 onChange={handleToggleAll}
                 mr={3}
                 data-testid="select-all"
               >
-                {continentName}
+                <Text fontWeight="semibold" fontSize="md">
+                  {continentName}
+                </Text>
               </Checkbox>
               <Badge
                 colorScheme="purple"
@@ -148,7 +150,8 @@ const SubgroupModal = ({
                             as="span"
                             flex="1"
                             textAlign="left"
-                            fontWeight={600}
+                            fontWeight="semibold"
+                            fontSize="sm"
                           >
                             {groupName}
                           </Box>
