@@ -397,9 +397,7 @@ describe("Consent overlay", () => {
 
           it("renders the expected modal & banner title", () => {
             cy.get("div#fides-banner").within(() => {
-              cy.get(
-                "div.fides-banner-title"
-              ).contains(
+              cy.get("div.fides-banner-title").contains(
                 "This test is overriding the banner title separately from modal!"
               );
             });
@@ -415,7 +413,6 @@ describe("Consent overlay", () => {
           });
         });
       });
-
 
       it("can persist state between modal and banner", () => {
         cy.get("div#fides-banner").within(() => {
