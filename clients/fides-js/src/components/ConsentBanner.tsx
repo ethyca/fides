@@ -88,10 +88,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     }
   }, [bannerIsOpen, onOpen]);
 
-  // If an explicit "banner_description" is set, use that; otherwise, use the
-  // generic "description" value that is shared with the modal component
+  // If explicit "banner_description" or "banner_title" values are set, use
+  // those to populate the banner. Otherwise, use the generic "description" and
+  // "title" values that are shared with the modal component
   const bannerDescription =
     experience.banner_description || experience.description;
+  const bannerTitle = experience.banner_title || experience.title;
 
   return (
     <div
@@ -117,7 +119,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
             <div id="fides-banner-inner-description">
               <div id="fides-banner-heading">
                 <div id="fides-banner-title" className="fides-banner-title">
-                  {experience.title}
+                  {bannerTitle}
                 </div>
                 {showGpcBadge && (
                   <GpcBadge

@@ -372,6 +372,51 @@ describe("Consent overlay", () => {
         });
       });
 
+      describe("titles", () => {
+        describe("when experience uses different titles for modal & banner", () => {
+          beforeEach(() => {
+            const bannerTitle =
+              "This test is overriding the banner title separately from modal!";
+            const modalTitle =
+              "This test is overriding the modal title separately from banner!";
+            cy.fixture("consent/test_banner_options.json").then((config) => {
+              const newExperienceConfig: ExperienceConfig = {
+                ...config.experience.experience_config,
+                ...{
+                  title: modalTitle,
+                  banner_title: bannerTitle,
+                },
+              };
+              stubConfig({
+                experience: {
+                  experience_config: newExperienceConfig,
+                },
+              });
+            });
+          });
+
+          it("renders the expected modal & banner title", () => {
+            cy.get("div#fides-banner").within(() => {
+              cy.get(
+                "div.fides-banner-title"
+              ).contains(
+                "This test is overriding the banner title separately from modal!"
+              );
+            });
+
+            cy.contains("button", "Manage preferences").click();
+            cy.getByTestId("consent-modal").should("be.visible");
+
+            cy.get("div#fides-modal").within(() => {
+              cy.get(".fides-modal-title").contains(
+                "This test is overriding the modal title separately from banner!"
+              );
+            });
+          });
+        });
+      });
+
+
       it("can persist state between modal and banner", () => {
         cy.get("div#fides-banner").within(() => {
           cy.get("button").contains("Accept Test").click();

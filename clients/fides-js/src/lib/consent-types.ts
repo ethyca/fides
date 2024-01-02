@@ -305,9 +305,10 @@ export type PrivacyExperience = {
 export type ExperienceConfig = {
   accept_button_label?: string;
   acknowledge_button_label?: string;
-  banner_enabled?: BannerEnabled;
-  description?: string;
   banner_description?: string;
+  banner_enabled?: BannerEnabled;
+  banner_title?: string;
+  description?: string;
   disabled?: boolean;
   is_default?: boolean;
   privacy_policy_link_label?: string;
