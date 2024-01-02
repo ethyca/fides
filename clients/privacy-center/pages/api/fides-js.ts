@@ -152,7 +152,7 @@ export default async function handler(
       fidesString,
       // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
       apiOptions: null,
-      gppExtensionPath: environment.settings.GPP_EXTENSION_PATH,
+      fidesJsBaseUrl: environment.settings.FIDES_JS_BASE_URL,
       customOptionsPath: null,
       preventDismissal: environment.settings.PREVENT_DISMISSAL,
       allowHTMLDescription: environment.settings.ALLOW_HTML_DESCRIPTION,
@@ -216,6 +216,8 @@ export default async function handler(
   res
     .status(200)
     .setHeader("Content-Type", "application/javascript")
+    // Allow CORS since this is a static file we do not need to lock down
+    .setHeader("Access-Control-Allow-Origin", "*")
     .setHeader("Cache-Control", stringify(cacheHeaders))
     .setHeader("Vary", LOCATION_HEADERS)
     .send(script);
