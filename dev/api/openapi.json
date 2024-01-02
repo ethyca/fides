@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.26.1b1.post0.dev5"
+    "version": "2.26.1b1.post0.dev6"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -15365,6 +15365,11 @@
             "type": "string",
             "description": "Overlay 'Acknowledge button label for notice only banner'"
           },
+          "banner_description": {
+            "title": "Banner Description",
+            "type": "string",
+            "description": "Overlay 'Banner Description'"
+          },
           "banner_enabled": {
             "allOf": [
               {
@@ -15372,6 +15377,11 @@
               }
             ],
             "description": "Overlay 'Banner'"
+          },
+          "banner_title": {
+            "title": "Banner Title",
+            "type": "string",
+            "description": "Overlay 'Banner title'"
           },
           "description": {
             "title": "Description",
@@ -15482,6 +15492,11 @@
             "type": "string",
             "description": "Overlay 'Acknowledge button label for notice only banner'"
           },
+          "banner_description": {
+            "title": "Banner Description",
+            "type": "string",
+            "description": "Overlay 'Banner Description'"
+          },
           "banner_enabled": {
             "allOf": [
               {
@@ -15490,10 +15505,15 @@
             ],
             "description": "Overlay 'Banner'"
           },
+          "banner_title": {
+            "title": "Banner Title",
+            "type": "string",
+            "description": "Overlay 'Banner title'"
+          },
           "description": {
             "title": "Description",
             "type": "string",
-            "description": "Overlay 'Banner Description' or Privacy Center 'Description'"
+            "description": "Overlay 'Description' or Privacy Center 'Description'"
           },
           "disabled": {
             "title": "Disabled",
@@ -15544,7 +15564,7 @@
           "title": {
             "title": "Title",
             "type": "string",
-            "description": "Overlay 'Banner title' or Privacy Center 'title'"
+            "description": "Overlay 'title' or Privacy Center 'title'"
           },
           "id": {
             "title": "Id",
@@ -15588,6 +15608,11 @@
             "type": "string",
             "description": "Overlay 'Acknowledge button label for notice only banner'"
           },
+          "banner_description": {
+            "title": "Banner Description",
+            "type": "string",
+            "description": "Overlay 'Banner Description'"
+          },
           "banner_enabled": {
             "allOf": [
               {
@@ -15596,10 +15621,15 @@
             ],
             "description": "Overlay 'Banner'"
           },
+          "banner_title": {
+            "title": "Banner Title",
+            "type": "string",
+            "description": "Overlay 'Banner title'"
+          },
           "description": {
             "title": "Description",
             "type": "string",
-            "description": "Overlay 'Banner Description' or Privacy Center 'Description'"
+            "description": "Overlay 'Description' or Privacy Center 'Description'"
           },
           "disabled": {
             "title": "Disabled",
@@ -15651,7 +15681,7 @@
           "title": {
             "title": "Title",
             "type": "string",
-            "description": "Overlay 'Banner title' or Privacy Center 'title'"
+            "description": "Overlay 'title' or Privacy Center 'title'"
           }
         },
         "additionalProperties": false,
