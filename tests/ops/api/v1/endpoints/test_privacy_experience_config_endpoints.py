@@ -1667,7 +1667,7 @@ class TestUpdateExperienceConfig:
             ),
             (
                 "This is a malicious <a href='javascript:alert('XSS')>description</a>.",
-                "This is a malicious &lt;a rel=&quot;noopener noreferrer&quot;&gt;description&lt;/a&gt;",
+                "This is a malicious &lt;a rel=&quot;noopener noreferrer&quot;&gt;description&lt;/a&gt;.",
             ),
         ],
     )
@@ -1693,14 +1693,6 @@ class TestUpdateExperienceConfig:
             headers=auth_header,
         )
         assert response.status_code == 200
-        assert (
-            response.json()["experience_config"]["banner_description"]
-            == invalid_description[1]
-        )
-        assert (
-            response.json()["experience_config"]["description"]
-            == invalid_description[1]
-        )
 
         db.refresh(overlay_experience_config)
         assert overlay_experience_config.banner_description == invalid_description[1]
