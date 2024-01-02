@@ -53,10 +53,10 @@ const privacyCenterValidationSchema = Yup.object()
     title: Yup.string().required().label("Title"),
     description: Yup.string().required().label("Description"),
     privacy_policy_link_label: Yup.string()
-      .optional()
+      .nullable()
       .label("Privacy policy link label"),
     privacy_policy_url: Yup.string()
-      .optional()
+      .nullable()
       .trim()
       .url()
       .label("Privacy policy URL"),
@@ -76,10 +76,10 @@ const bannerValidationSchema = Yup.object()
     banner_title: Yup.string().optional().label("Banner title"),
     banner_description: Yup.string().optional().label("Banner description"),
     privacy_policy_link_label: Yup.string()
-      .optional()
+      .nullable()
       .label("Privacy policy link label"),
     privacy_policy_url: Yup.string()
-      .optional()
+      .nullable()
       .trim()
       .url()
       .label("Privacy policy URL"),
