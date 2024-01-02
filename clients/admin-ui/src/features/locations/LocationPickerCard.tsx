@@ -8,25 +8,28 @@ import RegulatedToggle from "./RegulatedToggle";
 import SubgroupModal from "./SubgroupModal";
 import { getCheckedStateLocationGroup, isRegulated } from "./transformations";
 
+const SEARCH_FILTER = (data: { name?: string }, search: string) =>
+  data.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
+
 const LocationPickerCard = ({
   title,
   groups,
   locations,
   selected: selectedLocations,
   onChange,
-  showGroupsAndLocations,
+  search,
 }: {
   title: string;
   groups: LocationGroup[];
   locations: Location[];
   selected: Array<string>;
   onChange: (selections: Array<Selection>) => void;
-  /** When we search, we want to show both groups AND locations */
-  showGroupsAndLocations: boolean;
+  search?: string;
 }) => {
   const disclosure = useDisclosure();
   const [showRegulatedOnly, setShowRegulatedOnly] = useState(false);
-  const isGroupedView = groups.length > 0 || showGroupsAndLocations;
+  const showGroupsAndLocations = !!search?.length;
+  const isGroupedView = groups.length > 0;
 
   let locationsForView = locations;
   if (groups.length) {
@@ -37,9 +40,12 @@ const LocationPickerCard = ({
       a.name.localeCompare(b.name)
     );
   }
-  const filteredLocations = showRegulatedOnly
+  const regulatedLocations = showRegulatedOnly
     ? locationsForView.filter((l) => isRegulated(l, locations))
     : locationsForView;
+  const filteredLocations = search
+    ? regulatedLocations.filter((l) => SEARCH_FILTER(l, search))
+    : regulatedLocations;
 
   const selectedGroups = groups
     .filter(
@@ -107,6 +113,10 @@ const LocationPickerCard = ({
     });
     handleChange(Array.from(newSelected));
   };
+
+  if (filteredLocations.length === 0) {
+    return null;
+  }
 
   return (
     <>
