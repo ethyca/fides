@@ -7,7 +7,6 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
-import InfoBox from "~/features/common/InfoBox";
 import { BANNER_ENABLED_MAP } from "~/features/privacy-experience/constants";
 import { BannerEnabled } from "~/types/api";
 
@@ -18,30 +17,26 @@ const BANNER_ENABLED_OPTIONS = enumToOptions(BannerEnabled).map((opt) => ({
   label: BANNER_ENABLED_MAP.get(opt.value) ?? opt.label,
 }));
 
-const INFO_TEXT =
-  "Configure your notice only banner, your consent banner and your privacy preferences below. It is good practice to complete all fields regardless of whether you are showing a notice only banner or an opt-in/opt-out banner.";
-
 const OverlayForm = () => (
   <Stack spacing={6}>
-    <InfoBox text={INFO_TEXT} />
     <FormSection
-      title="Cookie banner and privacy preferences labeling"
+      title="Overlay customization"
       data-testid="banner-and-preferences-labeling"
     >
       <CustomTextInput
+        label="Overlay title"
         name="title"
-        label="Banner title"
         variant="stacked"
         isRequired
       />
       <CustomTextArea
-        label="Banner description"
+        label="Overlay description"
         name="description"
         variant="stacked"
         isRequired
       />
       <CustomTextInput
-        label="Accept button displayed on the Banner and “Privacy preferences”"
+        label="Accept button label, displayed on the overlay and “Privacy preferences”"
         name="accept_button_label"
         variant="stacked"
         isRequired
@@ -69,6 +64,16 @@ const OverlayForm = () => (
         name="acknowledge_button_label"
         variant="stacked"
         isRequired
+      />
+      <CustomTextInput
+        label="Banner title (optional, if different from overlay)"
+        name="banner_title"
+        variant="stacked"
+      />
+      <CustomTextArea
+        label="Banner description (optional, if different from overlay)"
+        name="banner_description"
+        variant="stacked"
       />
     </FormSection>
     <PrivacyPolicy />

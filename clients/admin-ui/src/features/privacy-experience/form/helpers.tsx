@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import * as Yup from "yup";
 
+import { ExperienceConfigUpdateParams } from "~/features/privacy-experience/privacy-experience.slice";
 import {
   ComponentType,
   ExperienceConfigCreate,
@@ -51,21 +52,65 @@ const privacyCenterValidationSchema = Yup.object()
   .shape({
     title: Yup.string().required().label("Title"),
     description: Yup.string().required().label("Description"),
+    privacy_policy_link_label: Yup.string()
+      .optional()
+      .label("Privacy policy link label"),
+    privacy_policy_url: Yup.string()
+      .optional()
+      .trim()
+      .url()
+      .label("Privacy policy URL"),
   })
   .concat(buttonGroupValidationSchema);
 
 const bannerValidationSchema = Yup.object()
   .shape({
-    title: Yup.string().required().label("Banner title"),
-    description: Yup.string().required().label("Banner description"),
+    title: Yup.string().required().label("Overlay title"),
+    description: Yup.string().required().label("Overlay description"),
     acknowledge_button_label: Yup.string()
       .required()
       .label("Acknowledge button label"),
     privacy_preferences_link_label: Yup.string()
       .required()
       .label("Privacy preferences link label"),
+    banner_title: Yup.string().optional().label("Banner title"),
+    banner_description: Yup.string().optional().label("Banner description"),
+    privacy_policy_link_label: Yup.string()
+      .optional()
+      .label("Privacy policy link label"),
+    privacy_policy_url: Yup.string()
+      .optional()
+      .trim()
+      .url()
+      .label("Privacy policy URL"),
   })
   .concat(buttonGroupValidationSchema);
+
+// Coerce empty strings to "null" values for the update API
+// NOTE: this is identical to the transform for the create API below, but copied
+// into a separate function for Typescript type-safety
+export const transformFormValuesToExperienceConfigUpdate = (
+  values: ExperienceConfigUpdateParams
+): ExperienceConfigUpdateParams => ({
+  ...values,
+  banner_title: values.banner_title || null,
+  banner_description: values.banner_description || null,
+  privacy_policy_link_label: values.privacy_policy_link_label || null,
+  privacy_policy_url: values.privacy_policy_url || null,
+});
+
+// Coerce empty strings to "null" values for the create API
+// NOTE: this is identical to the transform for the update API above, but copied
+// into a separate function for Typescript type-safety
+export const transformFormValuesToExperienceConfigCreate = (
+  values: ExperienceConfigCreate
+): ExperienceConfigCreate => ({
+  ...values,
+  banner_title: values.banner_title || null,
+  banner_description: values.banner_description || null,
+  privacy_policy_link_label: values.privacy_policy_link_label || null,
+  privacy_policy_url: values.privacy_policy_url || null,
+});
 
 /**
  * Use the various rules/conditions of a privacy experience form

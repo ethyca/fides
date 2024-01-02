@@ -28,6 +28,9 @@ interface ExperienceConfigParams {
   size?: number;
 }
 
+export type ExperienceConfigUpdateParams = Partial<ExperienceConfigUpdate> &
+  Pick<ExperienceConfigResponse, "id">;
+
 const privacyExperienceConfigApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllExperienceConfigs: build.query<
@@ -42,7 +45,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
     }),
     patchExperienceConfig: build.mutation<
       ExperienceConfigCreateOrUpdateResponse,
-      Partial<ExperienceConfigUpdate> & Pick<ExperienceConfigResponse, "id">
+      ExperienceConfigUpdateParams
     >({
       query: (payload) => {
         const { id, ...body } = payload;
