@@ -36,31 +36,31 @@ const OverlayForm = () => (
         isRequired
       />
       <CustomTextInput
-        label="Accept button label, displayed on the overlay and “Privacy preferences”"
+        label="Accept button label, displayed on the overlay and banner"
         name="accept_button_label"
         variant="stacked"
         isRequired
       />
       <CustomTextInput
-        label="Reject button displayed on the Banner and “Privacy preferences”"
+        label="Reject button label, displayed on the overlay and banner"
         name="reject_button_label"
         variant="stacked"
         isRequired
       />
       <CustomTextInput
-        label="“Privacy preferences” link label"
+        label="“Privacy preferences” button label, displayed only on the banner"
         name="privacy_preferences_link_label"
         variant="stacked"
         isRequired
       />
       <CustomTextInput
-        label="Privacy preferences “Save” button label"
+        label="“Save” button label, displayed only on the overlay"
         name="save_button_label"
         variant="stacked"
         isRequired
       />
       <CustomTextInput
-        label="Acknowledge button label for notice only banner"
+        label="Acknowledge button label, displayed only on a 'notice only' banner"
         name="acknowledge_button_label"
         variant="stacked"
         isRequired
