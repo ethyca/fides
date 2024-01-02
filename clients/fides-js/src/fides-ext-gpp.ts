@@ -91,10 +91,7 @@ export const initializeGppCmpApi = () => {
   window.addEventListener("FidesInitialized", (event) => {
     const { experience, shouldResurfaceConsent } = window.Fides;
     cmpApi.setSupportedAPIs(getSupportedApis());
-    if (
-      isPrivacyExperience(experience) &&
-      !shouldResurfaceConsent
-    ) {
+    if (isPrivacyExperience(experience) && !shouldResurfaceConsent) {
       const tcSet = setTcString(event, cmpApi);
       if (tcSet) {
         cmpApi.setApplicableSections([TcfEuV2.ID]);

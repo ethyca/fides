@@ -1,7 +1,6 @@
 import { Divider, Stack, useToast } from "@fidesui/react";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  ConsentContext,
   CookieKeyConsent,
   getConsentContext,
   getOrMakeFidesCookie,
@@ -10,6 +9,7 @@ import {
   transformUserPreferenceToBoolean,
   getGpcStatusFromNotice,
   PrivacyNotice,
+  ConsentContext,
 } from "fides-js";
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -34,20 +34,32 @@ import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { NoticeHistoryIdToPreference } from "~/features/consent/types";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { useLocalStorage } from "~/common/hooks";
+import { transformConsentToFidesUserPreference } from "fides-js/src/lib/consent-utils";
 import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
 // DEFER(fides#3505): Use the fides-js version of this function
-const resolveConsentValue = (
+export const resolveConsentValue = (
   notice: PrivacyNoticeResponseWithUserPreferences,
-  context: ConsentContext
-) => {
+  context: ConsentContext,
+  current_preference?: boolean | undefined
+): UserConsentPreference | undefined => {
+  if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
+    return UserConsentPreference.ACKNOWLEDGE;
+  }
   const gpcEnabled =
     !!notice.has_gpc_flag && context.globalPrivacyControl === true;
   if (gpcEnabled) {
     return UserConsentPreference.OPT_OUT;
   }
+  if (current_preference) {
+    return transformConsentToFidesUserPreference(
+      current_preference,
+      notice.consent_mechanism
+    );
+  }
+
   return notice.default_preference;
 };
 
@@ -80,13 +92,17 @@ const NoticeDrivenConsent = () => {
           (n) => n.privacy_notice_history_id === key
         )[0];
         const defaultValue = notice
-          ? resolveConsentValue(notice, consentContext)
+          ? resolveConsentValue(
+              notice,
+              consentContext,
+              notice.notice_key ? cookie.consent[notice.notice_key] : undefined
+            )
           : UserConsentPreference.OPT_OUT;
         newPreferences[key] = defaultValue;
       }
     });
     return newPreferences;
-  }, [serverPreferences, experience, consentContext]);
+  }, [serverPreferences, experience, consentContext, cookie]);
 
   const [draftPreferences, setDraftPreferences] =
     useState<NoticeHistoryIdToPreference>(initialDraftPreferences);
@@ -109,6 +125,7 @@ const NoticeDrivenConsent = () => {
             (p) => p.privacy_notice_history_id
           ),
           serving_component: ServingComponent.PRIVACY_CENTER,
+          served_notice_history_id: servedNotice?.served_notice_history_id,
         },
       });
     }

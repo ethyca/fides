@@ -270,6 +270,7 @@ export const buildCookieConsentForExperiences = (
     cookieConsent[notice.notice_key] = resolveConsentValue(
       notice,
       context,
+      cookieConsent[notice.notice_key],
       notice.previously_consented
     );
   });

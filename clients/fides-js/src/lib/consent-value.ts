@@ -24,6 +24,7 @@ export const resolveLegacyConsentValue = (
 export const resolveConsentValue = (
   notice: PrivacyNotice,
   context: ConsentContext,
+  current_preference?: boolean | undefined,
   previouslyConsented?: boolean
 ): boolean => {
   if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
@@ -35,6 +36,9 @@ export const resolveConsentValue = (
     !previouslyConsented;
   if (gpcEnabled) {
     return false;
+  }
+  if (current_preference) {
+    return current_preference;
   }
 
   return transformUserPreferenceToBoolean(notice.default_preference);

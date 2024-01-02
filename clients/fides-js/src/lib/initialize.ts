@@ -128,7 +128,12 @@ const automaticallyApplyGPCPreferences = ({
       return new SaveConsentPreference(
         notice,
         transformConsentToFidesUserPreference(
-          resolveConsentValue(notice, context, !notice.previously_consented),
+          resolveConsentValue(
+            notice,
+            context,
+            cookie.consent[notice.notice_key],
+            !notice.previously_consented
+          ),
           notice.consent_mechanism
         )
       );
