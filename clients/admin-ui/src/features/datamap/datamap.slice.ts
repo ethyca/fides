@@ -8,7 +8,6 @@ import {
   SYSTEM_DESCRIPTION,
   SYSTEM_NAME,
   SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
-  SYSTEM_PRIVACY_DECLARATION_DATA_USE_LEGAL_BASIS,
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
 } from "~/features/datamap/constants";
 
@@ -49,7 +48,6 @@ type View = "map" | "table";
 const DEFAULT_ACTIVE_COLUMNS = [
   SYSTEM_NAME,
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
-  SYSTEM_PRIVACY_DECLARATION_DATA_USE_LEGAL_BASIS,
   DATA_CATEGORY_COLUMN_ID,
   SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
   SYSTEM_DESCRIPTION,
@@ -58,11 +56,8 @@ const DEFAULT_ACTIVE_COLUMNS = [
 const DEPRECATED_COLUMNS = [
   "third_country_combined",
   "system.third_country_safeguards",
-  "system.data_protection_impact_assessment.is_required",
-  "system.data_protection_impact_assessment.progress",
   "dataset.fides_key",
   "system.link_to_processor_contract",
-  "system.privacy_declaration.data_use.legitimate_interest",
 ];
 
 // API endpoints

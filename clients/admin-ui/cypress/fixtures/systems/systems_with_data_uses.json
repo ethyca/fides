@@ -5,17 +5,14 @@
     "tags": null,
     "name": "Fidesctl System",
     "description": "Software that functionally applies Fides.",
-    "registry_id": null,
     "meta": null,
     "fidesctl_meta": null,
     "system_type": "Service",
-    "data_responsibility_title": "Controller",
     "privacy_declarations": [
       {
         "name": "Store system data.",
         "data_categories": ["system.operations", "user.contact"],
         "data_use": "functional.service.improve",
-        "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         "data_subjects": ["anonymous_user"],
         "dataset_references": ["public"],
         "cookies": [],
@@ -25,7 +22,6 @@
         "name": "Collect data for marketing",
         "data_categories": ["user.device.cookie_id"],
         "data_use": "advertising",
-        "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         "data_subjects": ["customer"],
         "dataset_references": null,
         "egress": null,
@@ -34,14 +30,7 @@
         "id": "pri_bc6e6efe-f122-3e33-ac9a-732ae8b437bb"
       }
     ],
-    "joint_controller": null,
-    "third_country_transfers": null,
     "administrating_department": "Not defined",
-    "data_protection_impact_assessment": {
-      "is_required": false,
-      "progress": null,
-      "link": null
-    },
     "ingress": [],
     "egress": [],
     "cookies": [
@@ -58,11 +47,9 @@
     "tags": null,
     "name": "Demo Analytics System",
     "description": "A system used for analyzing customer behaviour.",
-    "registry_id": null,
     "meta": null,
     "fidesctl_meta": null,
     "system_type": "Service",
-    "data_responsibility_title": "Controller",
     "egress": null,
     "ingress": [
       {
@@ -76,7 +63,6 @@
         "name": "Analyze customer behaviour for improvements.",
         "data_categories": ["user.contact", "user.device.cookie_id"],
         "data_use": "functional.service.improve",
-        "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         "data_subjects": ["customer"],
         "dataset_references": ["demo_users_dataset"],
         "egress": null,
@@ -84,14 +70,7 @@
         "id": "pri_ac9d4dfb-d033-4b06-bc7f-968df8d125ff"
       }
     ],
-    "joint_controller": null,
-    "third_country_transfers": ["USA", "CAN"],
     "administrating_department": "Engineering",
-    "data_protection_impact_assessment": {
-      "is_required": true,
-      "progress": "Complete",
-      "link": "https://example.org/analytics_system_data_protection_impact_assessment"
-    },
     "cookies": []
   },
   {
@@ -100,11 +79,9 @@
     "tags": null,
     "name": "Demo Marketing System",
     "description": "Collect data about our users for marketing.",
-    "registry_id": null,
     "meta": null,
     "fidesctl_meta": null,
     "system_type": "Service",
-    "data_responsibility_title": "Processor",
     "egress": [
       {
         "fides_key": "demo_analytics_system",
@@ -118,7 +95,6 @@
         "name": "Collect data for marketing",
         "data_categories": ["user.device.cookie_id"],
         "data_use": "advertising",
-        "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         "data_subjects": ["customer"],
         "dataset_references": null,
         "egress": null,
@@ -126,14 +102,7 @@
         "id": "pri_06430a1c-1365-422e-90a7-d444ddb32181"
       }
     ],
-    "joint_controller": null,
-    "third_country_transfers": null,
     "administrating_department": "Marketing",
-    "data_protection_impact_assessment": {
-      "is_required": false,
-      "progress": null,
-      "link": null
-    },
     "cookies": []
   }
 ]

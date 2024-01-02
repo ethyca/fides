@@ -259,8 +259,8 @@ class TestCRUD:
     def test_ls_no_resources_found(
         self, test_config_path: str, test_cli_runner: CliRunner
     ) -> None:
-        """This test only workss because we don't have any registry resources by default."""
-        result = test_cli_runner.invoke(cli, ["-f", test_config_path, "ls", "registry"])
+        """This test only works because we don't have any system resources by default."""
+        result = test_cli_runner.invoke(cli, ["-f", test_config_path, "ls", "system"])
         print(result.output)
         assert result.exit_code == 0
 

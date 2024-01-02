@@ -150,11 +150,9 @@ export default async function handler(
       fidesDisableBanner: environment.settings.FIDES_DISABLE_BANNER,
       fidesTcfGdprApplies: environment.settings.FIDES_TCF_GDPR_APPLIES,
       fidesString,
-      // DEFER(PROD#1361): this should come from the backend
-      gppEnabled: environment.settings.IS_GPP_ENABLED,
       // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
       apiOptions: null,
-      gppExtensionPath: environment.settings.GPP_EXTENSION_PATH,
+      fidesJsBaseUrl: environment.settings.FIDES_JS_BASE_URL,
       customOptionsPath: null,
       preventDismissal: environment.settings.PREVENT_DISMISSAL,
     },
@@ -217,6 +215,8 @@ export default async function handler(
   res
     .status(200)
     .setHeader("Content-Type", "application/javascript")
+    // Allow CORS since this is a static file we do not need to lock down
+    .setHeader("Access-Control-Allow-Origin", "*")
     .setHeader("Cache-Control", stringify(cacheHeaders))
     .setHeader("Vary", LOCATION_HEADERS)
     .send(script);

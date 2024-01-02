@@ -178,12 +178,11 @@ def evaluate_policy_rule(
     policy_rule: PolicyRule,
     data_subjects: List[str],
     data_categories: List[str],
-    data_qualifier: str,
     data_use: str,
     declaration_violation_message: str,
 ) -> List[Violation]:
     """
-    Given data subjects, data categories, data qualifier and data use,
+    Given data subjects, data categories and data use,
     builds hierarchies of applicable types and evaluates the result of a
     policy rule
     """
@@ -218,27 +217,20 @@ def evaluate_policy_rule(
         rule_match=policy_rule.data_subjects.matches,
     )
 
-    data_qualifier_violation = (
-        policy_rule.data_qualifier
-        in get_fides_key_parent_hierarchy(taxonomy=taxonomy, fides_key=data_qualifier)
-    )
-
     evaluation_result = all(
         [
             data_category_violations,
             data_use_violations,
             data_subject_violations,
-            data_qualifier_violation,
         ]
     )
 
     if evaluation_result:
         violations = [
             Violation(
-                detail="{}. Violated usage of data categories ({}) with qualifier ({}) for data uses ({}) and subjects ({})".format(
+                detail="{}. Violated usage of data categories ({}) for data uses ({}) and subjects ({})".format(
                     declaration_violation_message,
                     ",".join(data_category_violations),
-                    data_qualifier,
                     ",".join(data_use_violations),
                     ",".join(data_subject_violations),
                 ),
@@ -246,7 +238,6 @@ def evaluate_policy_rule(
                     data_categories=list(data_category_violations),
                     data_uses=list(data_use_violations),
                     data_subjects=list(data_subject_violations),
-                    data_qualifier=data_qualifier,
                 ),
             )
         ]
@@ -290,13 +281,11 @@ def evaluate_dataset_reference(
             dataset.fides_key,
         )
 
-        data_qualifier = str(dataset.data_qualifier) if dataset.data_qualifier else ""
         dataset_result_violations = evaluate_policy_rule(
             taxonomy=taxonomy,
             policy_rule=policy_rule,
             data_subjects=[str(x) for x in privacy_declaration.data_subjects],
             data_categories=[str(x) for x in dataset.data_categories],
-            data_qualifier=data_qualifier,
             data_use=privacy_declaration.data_use,
             declaration_violation_message=dataset_violation_message,
         )
@@ -318,7 +307,6 @@ def evaluate_dataset_reference(
                 policy_rule=policy_rule,
                 data_subjects=[str(x) for x in privacy_declaration.data_subjects],
                 data_categories=[str(x) for x in collection.data_categories],
-                data_qualifier=collection.data_qualifier,
                 data_use=privacy_declaration.data_use,
                 declaration_violation_message=collection_violation_message,
             )
@@ -340,7 +328,6 @@ def evaluate_dataset_reference(
                     policy_rule=policy_rule,
                     data_subjects=[str(x) for x in privacy_declaration.data_subjects],
                     data_categories=[str(x) for x in field.data_categories],
-                    data_qualifier=field.data_qualifier,
                     data_use=privacy_declaration.data_use,
                     declaration_violation_message=field_violation_message,
                 )
@@ -372,17 +359,11 @@ def evaluate_privacy_declaration(
         )
     )
 
-    data_qualifier = (
-        str(privacy_declaration.data_qualifier)
-        if privacy_declaration.data_qualifier
-        else ""
-    )
     declaration_result_violations = evaluate_policy_rule(
         taxonomy=taxonomy,
         policy_rule=policy_rule,
         data_subjects=[str(x) for x in privacy_declaration.data_subjects],
         data_categories=[str(x) for x in privacy_declaration.data_categories],
-        data_qualifier=data_qualifier,
         data_use=privacy_declaration.data_use,
         declaration_violation_message=declaration_violation_message,
     )

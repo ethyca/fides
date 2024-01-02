@@ -27,10 +27,6 @@ export type Vendor = {
    */
   description?: string;
   /**
-   * The id of the system registry, if used.
-   */
-  registry_id?: number;
-  /**
    * An optional property to store any extra information for a resource. Data can be structured in any way: simple set of `key: value` pairs or deeply nested objects.
    */
   meta?: any;
@@ -44,10 +40,6 @@ export type Vendor = {
   fidesctl_meta?: SystemMetadata;
   system_type?: string;
   /**
-   * Deprecated. The responsibility or role over the system that processes personal data
-   */
-  data_responsibility_title?: DataResponsibilityTitle;
-  /**
    * The resources to which the system sends data.
    */
   egress?: Array<DataFlow>;
@@ -57,38 +49,9 @@ export type Vendor = {
   ingress?: Array<DataFlow>;
   privacy_declarations?: Array<PrivacyDeclaration>;
   /**
-   * Deprecated.
-   * The contact details information model.
-   *
-   * Used to capture contact information for controllers, used
-   * as part of exporting a data map / ROPA.
-   *
-   * This model is nested under an Organization and
-   * potentially under a system/dataset.
-   *
-   */
-  joint_controller?: ContactDetails;
-  /**
-   * Deprecated. An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1.
-   */
-  third_country_transfers?: Array<string>;
-  /**
    * An optional value to identify the owning department or group of the system within your organization
    */
   administrating_department?: string;
-  /**
-   * Deprecated.
-   * The DataProtectionImpactAssessment (DPIA) resource model.
-   *
-   * Contains information in regard to the data protection
-   * impact assessment exported on a data map or Record of
-   * Processing Activities (RoPA).
-   *
-   * A legal requirement under GDPR for any project that
-   * introduces a high risk to personal information.
-   *
-   */
-  data_protection_impact_assessment?: DataProtectionImpactAssessment;
   /**
    * The unique identifier for the vendor that's associated with this system.
    */

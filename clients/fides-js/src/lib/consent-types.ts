@@ -1,4 +1,5 @@
 import type { CookieKeyConsent } from "./cookie";
+import { GPPSettings } from "./gpp/types";
 import type {
   TCFFeatureRecord,
   TCFPurposeSave,
@@ -82,14 +83,11 @@ export type FidesOptions = {
   // Allows for explicit overrides on various internal API calls made from Fides.
   apiOptions: FidesApiOptions | null;
 
-  // Whether or the GPP extension should be loaded
-  gppEnabled: boolean;
-
   // What the "GDPR Applies" field of TCF should default to
   fidesTcfGdprApplies: boolean;
 
-  // GPP extension path (ex: "/fides-ext-gpp.js")
-  gppExtensionPath: string;
+  // Base URL for directory of fides.js scripts
+  fidesJsBaseUrl: string;
 
   // A custom path to fetch OverrideOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
   customOptionsPath: string | null;
@@ -298,6 +296,7 @@ export type PrivacyExperience = {
   tcf_system_relationships?: Array<TCFVendorRelationships>;
   gvl?: GVLJson;
   meta?: ExperienceMeta;
+  gpp_settings?: GPPSettings;
 };
 
 export type ExperienceConfig = {
@@ -420,13 +419,13 @@ export enum ButtonType {
 }
 
 export enum ConsentMethod {
-  button = "button", // deprecated- keeping for backwards-compatibility
-  reject = "reject",
-  accept = "accept",
-  save = "save",
-  dismiss = "dismiss",
-  gpc = "gpc",
-  individual_notice = "api",
+  BUTTON = "button", // deprecated- keeping for backwards-compatibility
+  REJECT = "reject",
+  ACCEPT = "accept",
+  SAVE = "save",
+  DISMISS = "dismiss",
+  GPC = "gpc",
+  INDIVIDUAL_NOTICE = "individual_notice",
 }
 
 export type PrivacyPreferencesRequest = {
