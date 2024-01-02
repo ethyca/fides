@@ -384,6 +384,7 @@ export const loadPrivacyCenterEnvironment =
       IS_FORCED_TCF: settings.IS_FORCED_TCF,
       FIDES_JS_BASE_URL: settings.FIDES_JS_BASE_URL,
       PREVENT_DISMISSAL: settings.PREVENT_DISMISSAL,
+      ALLOW_HTML_DESCRIPTION: settings.ALLOW_HTML_DESCRIPTION,
     };
 
     // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present
