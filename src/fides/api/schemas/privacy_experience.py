@@ -31,6 +31,9 @@ class ExperienceConfigSchema(FidesSchema):
         description="Overlay 'Banner Description'"
     )
     banner_enabled: Optional[BannerEnabled] = Field(description="Overlay 'Banner'")
+    banner_title: Optional[str] = Field(
+        description="Overlay 'Banner title'"
+    )
     description: Optional[HtmlStr] = Field(
         description="Overlay 'Description' or Privacy Center 'Description'"
     )
@@ -60,7 +63,7 @@ class ExperienceConfigSchema(FidesSchema):
         description="Overlay 'Privacy preferences 'Save' button label"
     )
     title: Optional[str] = Field(
-        description="Overlay 'Banner title' or Privacy Center 'title'"
+        description="Overlay 'title' or Privacy Center 'title'"
     )
 
     @validator("regions")
