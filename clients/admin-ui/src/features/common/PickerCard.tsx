@@ -20,8 +20,10 @@ export const usePicker = <T extends { id: string; name: string }>({
   selected: Array<string>;
   onChange: (newSelected: Array<string>) => void;
 }) => {
-  const allSelected = items.every((item) => selected.includes(item.id));
-  const someSelected = items.some((item) => selected.includes(item.id));
+  const allSelected =
+    items.every((item) => selected.includes(item.id)) && !!items.length;
+  const someSelected =
+    items.some((item) => selected.includes(item.id)) && !!items.length;
 
   const handleToggleSelection = (id: string) => {
     if (selected.includes(id)) {

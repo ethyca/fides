@@ -14,18 +14,29 @@ const LocationPickerCard = ({
   locations,
   selected: selectedLocations,
   onChange,
+  showGroupsAndLocations,
 }: {
   title: string;
   groups: LocationGroup[];
   locations: Location[];
   selected: Array<string>;
   onChange: (selections: Array<Selection>) => void;
+  /** When we search, we want to show both groups AND locations */
+  showGroupsAndLocations: boolean;
 }) => {
   const disclosure = useDisclosure();
   const [showRegulatedOnly, setShowRegulatedOnly] = useState(false);
-  const isGroupedView = groups.length > 0;
+  const isGroupedView = groups.length > 0 || showGroupsAndLocations;
 
-  const locationsForView = isGroupedView ? groups : locations;
+  let locationsForView = locations;
+  if (groups.length) {
+    locationsForView = groups;
+  }
+  if (showGroupsAndLocations) {
+    locationsForView = [...locations, ...groups].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+  }
   const filteredLocations = showRegulatedOnly
     ? locationsForView.filter((l) => isRegulated(l, locations))
     : locationsForView;
