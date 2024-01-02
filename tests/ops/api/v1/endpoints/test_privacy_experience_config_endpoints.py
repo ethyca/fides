@@ -377,7 +377,7 @@ class TestGetExperienceConfigList:
         second_config = resp[1]
         assert second_config["id"] == experience_config_privacy_center.id
         assert (
-            second_config["description"] == "user&#x27;s description &lt;script /&gt;"
+            second_config["description"] == "user's description &lt;script /&gt;"
         )  # Still escaped
         assert second_config["banner_description"] is None
 
