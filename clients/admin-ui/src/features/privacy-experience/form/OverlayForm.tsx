@@ -20,35 +20,45 @@ const BANNER_ENABLED_OPTIONS = enumToOptions(BannerEnabled).map((opt) => ({
 const OverlayForm = () => (
   <Stack spacing={6}>
     <FormSection
-      title="Overlay customization"
+      title="Overlay & banner configuration"
       data-testid="banner-and-preferences-labeling"
     >
       <CustomTextInput
-        label="Overlay title"
+        label="Title, displayed on both the overlay and banner"
         name="title"
         variant="stacked"
         isRequired
       />
       <CustomTextArea
-        label="Overlay description"
+        label="Description, displayed on both the overlay and banner"
         name="description"
         variant="stacked"
         isRequired
       />
       <CustomTextInput
-        label="Accept button label, displayed on the overlay and banner"
+        label="Banner title, if different from overlay"
+        name="banner_title"
+        variant="stacked"
+      />
+      <CustomTextArea
+        label="Banner description, if different from overlay"
+        name="banner_description"
+        variant="stacked"
+      />
+      <CustomTextInput
+        label="“Accept” button label, displayed on both the overlay and banner"
         name="accept_button_label"
         variant="stacked"
         isRequired
       />
       <CustomTextInput
-        label="Reject button label, displayed on the overlay and banner"
+        label="“Reject” button label, displayed on both the overlay and banner"
         name="reject_button_label"
         variant="stacked"
         isRequired
       />
       <CustomTextInput
-        label="“Privacy preferences” button label, displayed only on the banner"
+        label="“Manage preferences” button label, displayed only on the banner"
         name="privacy_preferences_link_label"
         variant="stacked"
         isRequired
@@ -60,20 +70,10 @@ const OverlayForm = () => (
         isRequired
       />
       <CustomTextInput
-        label="Acknowledge button label, displayed only on a 'notice only' banner"
+        label="“Acknowledge” button label, displayed only on a notice-only banner"
         name="acknowledge_button_label"
         variant="stacked"
         isRequired
-      />
-      <CustomTextInput
-        label="Banner title (if different from overlay)"
-        name="banner_title"
-        variant="stacked"
-      />
-      <CustomTextArea
-        label="Banner description (if different from overlay)"
-        name="banner_description"
-        variant="stacked"
       />
     </FormSection>
     <PrivacyPolicy />
