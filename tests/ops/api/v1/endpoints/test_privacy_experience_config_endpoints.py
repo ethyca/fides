@@ -1667,7 +1667,7 @@ class TestUpdateExperienceConfig:
             ),
             (
                 "This is a malicious <a href='javascript:alert('XSS')>description</a>.",
-                'This is a malicious &lt;a rel=&quot;noopener noreferrer&quot;&gt;description&lt;/a&gt;',
+                "This is a malicious &lt;a rel=&quot;noopener noreferrer&quot;&gt;description&lt;/a&gt;",
             ),
         ],
     )
