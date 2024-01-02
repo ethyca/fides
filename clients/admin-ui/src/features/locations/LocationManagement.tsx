@@ -118,7 +118,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
           confirmationDisclosure.onClose();
         }}
         title="Regulation updates"
-        message="Modifications in your location settings may also affect your regulation settings to simplify management. You can override any Fides-initiated changes directly in the location settings."
+        message="Modifications in your location settings may also affect your regulation settings to simplify management. You can override any Fides-initiated changes directly in the regulation settings."
         isCentered
         icon={<WarningIcon color="orange" />}
       />
