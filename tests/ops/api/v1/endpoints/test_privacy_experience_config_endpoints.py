@@ -96,9 +96,7 @@ class TestGetExperienceConfigList:
             first_config["banner_description"]
             == "You can accept, reject, or manage your preferences in detail."
         )
-        assert (
-            first_config["banner_title"] == "Manage Your Consent"
-        )
+        assert first_config["banner_title"] == "Manage Your Consent"
         assert first_config["component"] == "overlay"
         assert first_config["banner_enabled"] == "enabled_where_required"
         assert first_config["disabled"] is False
@@ -179,9 +177,7 @@ class TestGetExperienceConfigList:
             first_config["banner_description"]
             == "You can accept, reject, or manage your preferences in detail."
         )
-        assert (
-            first_config["banner_title"] == "Manage Your Consent"
-        )
+        assert first_config["banner_title"] == "Manage Your Consent"
         assert first_config["component"] == "overlay"
         assert first_config["banner_enabled"] == "enabled_where_required"
         assert first_config["disabled"] is False
@@ -262,9 +258,7 @@ class TestGetExperienceConfigList:
             first_config["banner_description"]
             == "You can accept, reject, or manage your preferences in detail."
         )
-        assert (
-            first_config["banner_title"] == "Manage Your Consent"
-        )
+        assert first_config["banner_title"] == "Manage Your Consent"
         assert first_config["component"] == "overlay"
         assert first_config["banner_enabled"] == "enabled_where_required"
         assert first_config["disabled"] is False
@@ -1831,8 +1825,14 @@ class TestUpdateExperienceConfig:
     @pytest.mark.parametrize(
         "invalid_description",
         [
-            "This is a malicious description. <script>alert('XSS');</script>",
-            "This is a malicious <a href='javascript:alert('XSS')>link</a> in a description",
+            (
+                "This is a malicious description.<script>alert('XSS');</script>. No scripts allowed!",
+                "This is a malicious description. No scripts allowed!",
+            ),
+            (
+                "This is a malicious <a href='javascript:alert('XSS')>description</a>.",
+                'This is a malicious <a rel="noopener noreferrer">description</a>.',
+            ),
         ],
     )
     def test_update_experience_config_with_invalid_description(
@@ -1845,19 +1845,32 @@ class TestUpdateExperienceConfig:
         invalid_description,
     ) -> None:
         """
-        Verify that a malicious description returns a 422.
+        Verify that a malicious description is sanitized before saving.
         """
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
         response = api_client.patch(
             url,
             json={
-                "banner_description": invalid_description,
-                "description": invalid_description,
+                "banner_description": invalid_description[0],
+                "description": invalid_description[0],
             },
             headers=auth_header,
         )
-        assert response.status_code == 422
-        assert response.json()["detail"][0]["msg"] == "Text contains invalid or unsafe HTML."
+        assert response.status_code == 200
+        assert (
+            response.json()["experience_config"]["banner_description"]
+            == invalid_description[1]
+        )
+        assert (
+            response.json()["experience_config"]["description"]
+            == invalid_description[1]
+        )
+
+        db.refresh(overlay_experience_config)
+        assert overlay_experience_config.banner_description == escape(
+            invalid_description[1]
+        )
+        assert overlay_experience_config.description == escape(invalid_description[1])
 
     @pytest.mark.parametrize(
         "valid_description",

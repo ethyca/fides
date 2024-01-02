@@ -31,9 +31,7 @@ class ExperienceConfigSchema(FidesSchema):
         description="Overlay 'Banner Description'"
     )
     banner_enabled: Optional[BannerEnabled] = Field(description="Overlay 'Banner'")
-    banner_title: Optional[str] = Field(
-        description="Overlay 'Banner title'"
-    )
+    banner_title: Optional[str] = Field(description="Overlay 'Banner title'")
     description: Optional[HtmlStr] = Field(
         description="Overlay 'Description' or Privacy Center 'Description'"
     )

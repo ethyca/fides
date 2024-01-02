@@ -1,5 +1,6 @@
 """Logic related to sanitizing and validating user application input."""
 from html import escape
+from nh3 import clean
 from re import compile as regex
 from typing import Generator
 
@@ -37,18 +38,42 @@ class HtmlStr(str):
     supported to prevent XSS or similar attacks.
     """
 
+    # Allow only basic markup tags, for extra safety
+    ALLOWED_HTML_TAGS = {
+        "a",
+        "blockquote" "br",
+        "div",
+        "em",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "i",
+        "li",
+        "ol",
+        "p",
+        "p",
+        "pre",
+        "q",
+        "rt",
+        "ruby",
+        "s",
+        "span",
+        "strong",
+        "u",
+    }
+
     @classmethod
     def __get_validators__(cls) -> Generator:  # pragma: no cover
         yield cls.validate
 
     @classmethod
     def validate(cls, value: str) -> str:
-        """Assert text doesn't include any complex/malicious HTML."""
-        # TODO: add a real sanitizer here!
-        if value and "alert" in value:
-            raise ValueError("Text contains invalid or unsafe HTML.")
-
-        return value
+        """Assert text doesn't include an complex/malicious HTML."""
+        cleaned_str = clean(value, tags=HtmlStr.ALLOWED_HTML_TAGS)
+        return cleaned_str
 
 
 class PhoneNumber(str):

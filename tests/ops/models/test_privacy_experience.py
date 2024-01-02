@@ -68,9 +68,7 @@ class TestExperienceConfig:
             config.banner_description
             == "We care about your privacy. You can accept, reject, or manage your preferences in detail."
         )
-        assert (
-            config.banner_title == "Control Your Privacy"
-        )
+        assert config.banner_title == "Control Your Privacy"
         assert config.disabled is False
         assert config.is_default is False
         assert config.privacy_preferences_link_label == "Manage preferences"
@@ -100,9 +98,7 @@ class TestExperienceConfig:
             history.banner_description
             == "We care about your privacy. You can accept, reject, or manage your preferences in detail."
         )
-        assert (
-            history.banner_title == "Control Your Privacy"
-        )
+        assert history.banner_title == "Control Your Privacy"
         assert history.disabled is False
         assert history.is_default is False
         assert history.privacy_preferences_link_label == "Manage preferences"
