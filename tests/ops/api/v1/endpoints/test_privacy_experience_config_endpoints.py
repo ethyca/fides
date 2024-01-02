@@ -97,7 +97,7 @@ class TestGetExperienceConfigList:
             == "You can accept, reject, or manage your preferences in detail."
         )
         assert (
-            first_config["banner_title"] == "Control Your Privacy"
+            first_config["banner_title"] == "Manage Your Consent"
         )
         assert first_config["component"] == "overlay"
         assert first_config["banner_enabled"] == "enabled_where_required"
@@ -180,7 +180,7 @@ class TestGetExperienceConfigList:
             == "You can accept, reject, or manage your preferences in detail."
         )
         assert (
-            first_config["banner_title"] == "Control Your Privacy"
+            first_config["banner_title"] == "Manage Your Consent"
         )
         assert first_config["component"] == "overlay"
         assert first_config["banner_enabled"] == "enabled_where_required"
@@ -263,7 +263,7 @@ class TestGetExperienceConfigList:
             == "You can accept, reject, or manage your preferences in detail."
         )
         assert (
-            first_config["banner_title"] == "Control Your Privacy"
+            first_config["banner_title"] == "Manage Your Consent"
         )
         assert first_config["component"] == "overlay"
         assert first_config["banner_enabled"] == "enabled_where_required"
@@ -529,7 +529,7 @@ class TestCreateExperienceConfig:
             "acknowledge_button_label": "Confirm",
             "banner_description": "You can accept, reject, or manage your preferences in detail.",
             "banner_enabled": "enabled_where_required",
-            "banner_title": "Control Your Privacy",
+            "banner_title": "Manage Your Consent",
             "component": "overlay",
             "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
             "accept_button_label": "Accept all",
