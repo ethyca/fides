@@ -23,6 +23,7 @@ The types of changes are:
 - Tooltip and styling for disabled rows in add multiple vendor view [#4498](https://github.com/ethyca/fides/pull/4498)
 - Preliminary GPP support for US regions [#4498](https://github.com/ethyca/fides/pull/4504)
 - Access and erasure support for Statsig Enterprise [#4429](https://github.com/ethyca/fides/pull/4429)
+- Update fides.js to support multiple descriptions (banner, overlay) and render HTML descriptions [#4542](https://github.com/ethyca/fides/pull/4542)
 
 ### Fixed
 - Fixed incorrect Compass button behavior in system form [#4508](https://github.com/ethyca/fides/pull/4508)
@@ -30,6 +31,7 @@ The types of changes are:
 - Fixed issues with Compass vendor selector behavior [#4521](https://github.com/ethyca/fides/pull/4521)
 - Fixed an issue where the background overlay remained visible after saving consent preferences [#4515](https://github.com/ethyca/fides/pull/4515)
 - Fixed system name being editable when editing GVL systems [#4533](https://github.com/ethyca/fides/pull/4533)
+- Fixed an issue where a privacy policy link could not be removed from privacy experiences [#4542](https://github.com/ethyca/fides/pull/4542)
 
 ### Changed
 - Upgrade to use Fideslang `3.0.0` and remove associated concepts [#4502](https://github.com/ethyca/fides/pull/4502)

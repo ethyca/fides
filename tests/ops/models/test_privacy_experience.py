@@ -42,7 +42,9 @@ class TestExperienceConfig:
             data={
                 "accept_button_label": "Accept all",
                 "acknowledge_button_label": "OK",
+                "banner_description": "We care about your privacy. You can accept, reject, or manage your preferences in detail.",
                 "banner_enabled": "enabled_where_required",
+                "banner_title": "Control Your Privacy",
                 "component": "overlay",
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                 "privacy_preferences_link_label": "Manage preferences",
@@ -62,6 +64,11 @@ class TestExperienceConfig:
             config.description
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
+        assert (
+            config.banner_description
+            == "We care about your privacy. You can accept, reject, or manage your preferences in detail."
+        )
+        assert config.banner_title == "Control Your Privacy"
         assert config.disabled is False
         assert config.is_default is False
         assert config.privacy_preferences_link_label == "Manage preferences"
@@ -87,6 +94,11 @@ class TestExperienceConfig:
             history.description
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
+        assert (
+            history.banner_description
+            == "We care about your privacy. You can accept, reject, or manage your preferences in detail."
+        )
+        assert history.banner_title == "Control Your Privacy"
         assert history.disabled is False
         assert history.is_default is False
         assert history.privacy_preferences_link_label == "Manage preferences"
@@ -107,6 +119,7 @@ class TestExperienceConfig:
             data={
                 "accept_button_label": "Accept all",
                 "acknowledge_button_label": "OK",
+                "banner_description": "We care about your privacy. You can accept, reject, or manage your preferences in detail.",
                 "banner_enabled": "enabled_where_required",
                 "component": "overlay",
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",

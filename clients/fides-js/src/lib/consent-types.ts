@@ -94,6 +94,9 @@ export type FidesOptions = {
 
   // Prevents the banner and modal from being dismissed
   preventDismissal: boolean;
+
+  // Allows providing rich HTML descriptions
+  allowHTMLDescription: boolean | null;
 };
 
 export type GetPreferencesFnResp = {
@@ -302,7 +305,9 @@ export type PrivacyExperience = {
 export type ExperienceConfig = {
   accept_button_label?: string;
   acknowledge_button_label?: string;
+  banner_description?: string;
   banner_enabled?: BannerEnabled;
+  banner_title?: string;
   description?: string;
   disabled?: boolean;
   is_default?: boolean;
