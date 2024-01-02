@@ -25,9 +25,6 @@ import LocationPickerCard from "./LocationPickerCard";
 import { usePatchLocationsRegulationsMutation } from "./locations.slice";
 import { groupLocationsByContinent } from "./transformations";
 
-const SEARCH_FILTER = (data: { name?: string }, search: string) =>
-  data.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
-
 const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const toast = useToast();
   const confirmationDisclosure = useDisclosure();
@@ -38,16 +35,14 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const [patchLocationsRegulationsMutationTrigger, { isLoading: isSaving }] =
     usePatchLocationsRegulationsMutation();
 
-  const locationGroupsByContinent = useMemo(() => {
-    const filteredSearchLocations =
-      data.locations?.filter((l) => SEARCH_FILTER(l, search)) ?? [];
-    const filteredSearchGroups =
-      data.location_groups?.filter((l) => SEARCH_FILTER(l, search)) ?? [];
-    return groupLocationsByContinent(
-      filteredSearchLocations,
-      filteredSearchGroups || []
-    );
-  }, [data, search]);
+  const locationGroupsByContinent = useMemo(
+    () =>
+      groupLocationsByContinent(
+        data.locations || [],
+        data.location_groups || []
+      ),
+    [data]
+  );
 
   const showSave = !_.isEqual(draftSelections, data.locations);
 
@@ -122,7 +117,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
                 )
                 .map((d) => d.id)}
               onChange={handleDraftChange}
-              showGroupsAndLocations={search.length > 0}
+              search={search}
             />
           )
         )}

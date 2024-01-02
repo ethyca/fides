@@ -131,6 +131,21 @@ describe("Locations", () => {
       // Unchecking Quebec should also uncheck Canada
       cy.getByTestId("Quebec-checkbox").click();
       assertIsChecked("Canada-checkbox", "unchecked");
+
+      // Searching 'can' and then selecting 'Canada' should also select Quebec
+      // (despite Quebec not containing 'can')
+      cy.getByTestId("search-bar").clear().type("can");
+      cy.getByTestId("picker-card-North America").within(() => {
+        cy.getByTestId("Quebec-checkbox").should("not.exist");
+        cy.getByTestId("Canada-checkbox").click();
+        assertIsChecked("Canada-checkbox", "checked");
+        cy.getByTestId("view-more-btn").click();
+      });
+      cy.getByTestId("Canada-accordion")
+        .click()
+        .within(() => {
+          assertIsChecked("Quebec-checkbox", "checked");
+        });
     });
 
     it("renders and unrenders save button appropriately", () => {
