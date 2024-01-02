@@ -138,6 +138,7 @@ const VendorSelector = ({
 
   const isTypeahead = !field.value && !values.vendor_id;
   const hasVendorSuggestions = !!searchParam && suggestions.length > 0;
+  const nameFieldLockedForGVL = lockedForGVL && !isCreate;
 
   useEffect(() => {
     validateForm();
@@ -235,7 +236,7 @@ const VendorSelector = ({
             classNamePrefix="custom-select"
             placeholder="Enter system name..."
             instanceId="select-name"
-            isDisabled={!isCreate && lockedForGVL}
+            isDisabled={nameFieldLockedForGVL}
             menuPosition="absolute"
             isSearchable
             isClearable={!!searchParam}
@@ -304,13 +305,16 @@ const VendorSelector = ({
           label="System name"
           tooltip="Enter the system name"
           variant="stacked"
+          disabled={nameFieldLockedForGVL}
           isRequired
           inputRightElement={
-            <CloseButton
-              onClick={handleClear}
-              size="sm"
-              data-testid="clear-btn"
-            />
+            !nameFieldLockedForGVL ? (
+              <CloseButton
+                onClick={handleClear}
+                size="sm"
+                data-testid="clear-btn"
+              />
+            ) : null
           }
         />
       )}
