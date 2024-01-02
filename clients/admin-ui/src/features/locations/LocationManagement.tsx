@@ -2,12 +2,14 @@ import {
   Box,
   Button,
   SimpleGrid,
+  Text,
   useDisclosure,
   useToast,
   VStack,
   WarningIcon,
 } from "@fidesui/react";
 import _ from "lodash";
+import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -17,6 +19,8 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { LocationRegulationResponse, Selection } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
+import { REGULATIONS_ROUTE } from "../common/nav/v2/routes";
+import ToastLink from "../common/ToastLink";
 import LocationPickerCard from "./LocationPickerCard";
 import { usePatchLocationsRegulationsMutation } from "./locations.slice";
 import { groupLocationsByContinent } from "./transformations";
@@ -47,6 +51,13 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
 
   const showSave = !_.isEqual(draftSelections, data.locations);
 
+  const router = useRouter();
+  const goToRegulations = () => {
+    router.push(REGULATIONS_ROUTE).then(() => {
+      toast.closeAll();
+    });
+  };
+
   const handleSave = async () => {
     const result = await patchLocationsRegulationsMutationTrigger({
       locations: draftSelections.map((s) => ({
@@ -61,8 +72,13 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
     } else {
       toast(
         successToastParams(
-          // TODO: "View regulations here"
-          `Fides has automatically associated the relevant regulations with your location choices.`
+          <Text>
+            Fides has automatically associated the relevant regulations with
+            your location choices.{" "}
+            <ToastLink onClick={goToRegulations}>
+              View regulations here.
+            </ToastLink>
+          </Text>
         )
       );
     }
