@@ -66,12 +66,12 @@ const OverlayForm = () => (
         isRequired
       />
       <CustomTextInput
-        label="Banner title (optional, if different from overlay)"
+        label="Banner title (if different from overlay)"
         name="banner_title"
         variant="stacked"
       />
       <CustomTextArea
-        label="Banner description (optional, if different from overlay)"
+        label="Banner description (if different from overlay)"
         name="banner_description"
         variant="stacked"
       />
