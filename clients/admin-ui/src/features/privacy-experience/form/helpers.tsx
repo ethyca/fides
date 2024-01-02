@@ -122,7 +122,9 @@ export const useExperienceForm = ({
   privacyNotices?: PrivacyNoticeResponse[];
 }) => {
   const isOverlay = useMemo(
-    () => privacyExperience.component === ComponentType.OVERLAY,
+    () =>
+      privacyExperience.component === ComponentType.OVERLAY ||
+      privacyExperience.component === ComponentType.TCF_OVERLAY,
     [privacyExperience.component]
   );
 
