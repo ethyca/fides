@@ -1135,7 +1135,11 @@ dataset:
       data_categories: [ system.operations ]
     - name: acknowledge_button_label
       data_categories: [system.operations]
+    - name: banner_description
+      data_categories: [system.operations]
     - name: banner_enabled
+      data_categories: [system.operations]
+    - name: banner_title
       data_categories: [system.operations]
     - name: component
       data_categories: [system.operations]
@@ -1173,7 +1177,11 @@ dataset:
       data_categories: [ system.operations ]
     - name: acknowledge_button_label
       data_categories: [system.operations]
+    - name: banner_description
+      data_categories: [system.operations]
     - name: banner_enabled
+      data_categories: [system.operations]
+    - name: banner_title
       data_categories: [system.operations]
     - name: component
       data_categories: [system.operations]

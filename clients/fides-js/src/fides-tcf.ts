@@ -308,6 +308,7 @@ _Fides = {
     fidesJsBaseUrl: "",
     customOptionsPath: null,
     preventDismissal: false,
+    allowHTMLDescription: null,
   },
   fides_meta: {},
   identity: {},
