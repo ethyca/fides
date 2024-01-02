@@ -105,6 +105,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
                 )
                 .map((d) => d.id)}
               onChange={handleDraftChange}
+              showGroupsAndLocations={search.length > 0}
             />
           )
         )}

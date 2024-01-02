@@ -110,7 +110,27 @@ describe("Locations", () => {
         cy.getByTestId("California-checkbox").should("not.exist");
         cy.getByTestId("Colorado-checkbox");
         cy.getByTestId("Connecticut-checkbox");
+        // Checking colorado should make North America indeterminate
+        cy.getByTestId("Colorado-checkbox").click();
+        assertIsChecked("Colorado-checkbox", "checked");
+        assertIsChecked("select-all", "indeterminate");
+        // Now check all
+        cy.getByTestId("select-all").click();
       });
+      // Removing the 'o' from the search should only show checked 'co's
+      cy.getByTestId("search-bar").type("{backspace}");
+      assertIsChecked("Colorado-checkbox", "checked");
+      assertIsChecked("Connecticut-checkbox", "checked");
+      assertIsChecked("Quebec-checkbox", "unchecked");
+      assertIsChecked("Canada-checkbox", "unchecked");
+
+      // Checking Canada should also check Quebec
+      cy.getByTestId("Canada-checkbox").click();
+      assertIsChecked("Quebec-checkbox", "checked");
+
+      // Unchecking Quebec should also uncheck Canada
+      cy.getByTestId("Quebec-checkbox").click();
+      assertIsChecked("Canada-checkbox", "unchecked");
     });
 
     it("renders and unrenders save button appropriately", () => {
