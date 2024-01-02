@@ -1,7 +1,10 @@
 import { useMemo } from "react";
 import * as Yup from "yup";
 
-import { ExperienceConfigUpdateParams } from "~/features/privacy-experience/privacy-experience.slice";
+import {
+  ExperienceConfigCreateParams,
+  ExperienceConfigUpdateParams,
+} from "~/features/privacy-experience/privacy-experience.slice";
 import {
   ComponentType,
   ExperienceConfigCreate,
@@ -104,7 +107,7 @@ export const transformFormValuesToExperienceConfigUpdate = (
 // into a separate function for Typescript type-safety
 export const transformFormValuesToExperienceConfigCreate = (
   values: ExperienceConfigCreate
-): ExperienceConfigCreate => ({
+): ExperienceConfigCreateParams => ({
   ...values,
   banner_title: values.banner_title || null,
   banner_description: values.banner_description || null,

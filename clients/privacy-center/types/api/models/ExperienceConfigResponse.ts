@@ -18,12 +18,12 @@ export type ExperienceConfigResponse = {
    * Overlay 'Acknowledge button label for notice only banner'
    */
   acknowledge_button_label?: string;
-  banner_description?: string | null;
+  banner_description?: string;
   /**
    * Overlay 'Banner'
    */
   banner_enabled?: BannerEnabled;
-  banner_title?: string | null;
+  banner_title?: string;
   /**
    * Overlay 'Banner Description' or Privacy Center 'Description'
    */
@@ -39,11 +39,11 @@ export type ExperienceConfigResponse = {
   /**
    * Overlay and Privacy Center 'Privacy policy link label'
    */
-  privacy_policy_link_label?: string | null;
+  privacy_policy_link_label?: string;
   /**
    * Overlay and Privacy Center 'Privacy policy URl'
    */
-  privacy_policy_url?: string | null;
+  privacy_policy_url?: string;
   /**
    * Overlay 'Privacy preferences link label'
    */

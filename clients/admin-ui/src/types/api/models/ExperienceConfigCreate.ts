@@ -17,12 +17,12 @@ export type ExperienceConfigCreate = {
    * Overlay 'Acknowledge button label for notice only banner'
    */
   acknowledge_button_label?: string;
-  banner_description?: string | null;
+  banner_description?: string;
   /**
    * Overlay 'Banner'
    */
   banner_enabled?: BannerEnabled;
-  banner_title?: string | null;
+  banner_title?: string;
   description: string;
   /**
    * Whether the given ExperienceConfig is disabled
@@ -35,11 +35,11 @@ export type ExperienceConfigCreate = {
   /**
    * Overlay and Privacy Center 'Privacy policy link label'
    */
-  privacy_policy_link_label?: string | null;
+  privacy_policy_link_label?: string;
   /**
    * Overlay and Privacy Center 'Privacy policy URL
    */
-  privacy_policy_url?: string | null;
+  privacy_policy_url?: string;
   /**
    * Overlay 'Privacy preferences link label'
    */
