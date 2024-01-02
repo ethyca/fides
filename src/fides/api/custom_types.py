@@ -1,8 +1,10 @@
+# pylint: disable=no-name-in-module
 """Logic related to sanitizing and validating user application input."""
 from html import escape
-from nh3 import clean
 from re import compile as regex
 from typing import Generator
+
+from nh3 import clean
 
 
 class SafeStr(str):
@@ -41,7 +43,8 @@ class HtmlStr(str):
     # Allow only basic markup tags, for extra safety
     ALLOWED_HTML_TAGS = {
         "a",
-        "blockquote" "br",
+        "blockquote",
+        "br",
         "div",
         "em",
         "h1",
@@ -53,7 +56,6 @@ class HtmlStr(str):
         "i",
         "li",
         "ol",
-        "p",
         "p",
         "pre",
         "q",
