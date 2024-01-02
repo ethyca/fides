@@ -42,6 +42,7 @@ class TestExperienceConfig:
             data={
                 "accept_button_label": "Accept all",
                 "acknowledge_button_label": "OK",
+                "banner_description": "We care about your privacy. You can accept, reject, or manage your preferences in detail.",
                 "banner_enabled": "enabled_where_required",
                 "component": "overlay",
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
@@ -61,6 +62,10 @@ class TestExperienceConfig:
         assert (
             config.description
             == "We care about your privacy. Opt in and opt out of the data use cases below."
+        )
+        assert (
+            config.banner_description
+            == "We care about your privacy. You can accept, reject, or manage your preferences in detail."
         )
         assert config.disabled is False
         assert config.is_default is False
@@ -87,6 +92,10 @@ class TestExperienceConfig:
             history.description
             == "We care about your privacy. Opt in and opt out of the data use cases below."
         )
+        assert (
+            history.banner_description
+            == "We care about your privacy. You can accept, reject, or manage your preferences in detail."
+        )
         assert history.disabled is False
         assert history.is_default is False
         assert history.privacy_preferences_link_label == "Manage preferences"
@@ -107,6 +116,7 @@ class TestExperienceConfig:
             data={
                 "accept_button_label": "Accept all",
                 "acknowledge_button_label": "OK",
+                "banner_description": "We care about your privacy. You can accept, reject, or manage your preferences in detail.",
                 "banner_enabled": "enabled_where_required",
                 "component": "overlay",
                 "description": "We care about your privacy. Opt in and opt out of the data use cases below.",

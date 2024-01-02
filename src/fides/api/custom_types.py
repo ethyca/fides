@@ -28,6 +28,29 @@ class SafeStr(str):
         return value
 
 
+class HtmlStr(str):
+    """
+    This class is designed to be used in place of the `str` type
+    any place where user inputted HTML text is expected.
+
+    The validation applied here enforces that only a subset of "safe" HTML is
+    supported to prevent XSS or similar attacks.
+    """
+
+    @classmethod
+    def __get_validators__(cls) -> Generator:  # pragma: no cover
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, value: str) -> str:
+        """Assert text doesn't include any complex/malicious HTML."""
+        # TODO: add a real sanitizer here!
+        if value and "alert" in value:
+            raise ValueError("Text contains invalid or unsafe HTML.")
+
+        return value
+
+
 class PhoneNumber(str):
     """
     Format validated type for phone numbers.

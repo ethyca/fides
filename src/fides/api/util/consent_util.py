@@ -45,6 +45,7 @@ PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "description", "internal_description"]
 PRIVACY_EXPERIENCE_ESCAPE_FIELDS = [
     "accept_button_label",
     "acknowledge_button_label",
+    "banner_description",
     "description",
     "privacy_policy_link_label",
     "privacy_policy_url",

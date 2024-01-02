@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from html import escape
+
 import pytest
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
@@ -86,6 +88,14 @@ class TestGetExperienceConfigList:
 
         first_config = data[0]
         assert first_config["id"] == experience_config_overlay.id
+        assert (
+            first_config["description"]
+            == "On this page you can opt in and out of these data uses cases"
+        )
+        assert (
+            first_config["banner_description"]
+            == "You can accept, reject, or manage your preferences in detail."
+        )
         assert first_config["component"] == "overlay"
         assert first_config["banner_enabled"] == "enabled_where_required"
         assert first_config["disabled"] is False
@@ -103,6 +113,7 @@ class TestGetExperienceConfigList:
         assert (
             second_config["description"] == "user's description <script />"
         )  # Unescaped due to header
+        assert second_config["banner_description"] is None
         assert second_config["component"] == "privacy_center"
         assert second_config["banner_enabled"] is None
         assert second_config["disabled"] is True
@@ -157,6 +168,14 @@ class TestGetExperienceConfigList:
 
         first_config = data[0]
         assert first_config["id"] == experience_config_overlay.id
+        assert (
+            first_config["description"]
+            == "On this page you can opt in and out of these data uses cases"
+        )
+        assert (
+            first_config["banner_description"]
+            == "You can accept, reject, or manage your preferences in detail."
+        )
         assert first_config["component"] == "overlay"
         assert first_config["banner_enabled"] == "enabled_where_required"
         assert first_config["disabled"] is False
@@ -174,6 +193,7 @@ class TestGetExperienceConfigList:
         assert (
             second_config["description"] == "user's description <script />"
         )  # Unescaped due to header
+        assert second_config["banner_description"] is None
         assert second_config["component"] == "privacy_center"
         assert second_config["banner_enabled"] is None
         assert second_config["disabled"] is True
@@ -228,6 +248,14 @@ class TestGetExperienceConfigList:
 
         first_config = data[0]
         assert first_config["id"] == experience_config_overlay.id
+        assert (
+            first_config["description"]
+            == "On this page you can opt in and out of these data uses cases"
+        )
+        assert (
+            first_config["banner_description"]
+            == "You can accept, reject, or manage your preferences in detail."
+        )
         assert first_config["component"] == "overlay"
         assert first_config["banner_enabled"] == "enabled_where_required"
         assert first_config["disabled"] is False
@@ -245,6 +273,7 @@ class TestGetExperienceConfigList:
         assert (
             second_config["description"] == "user's description <script />"
         )  # Unescaped due to header
+        assert second_config["banner_description"] is None
         assert second_config["component"] == "privacy_center"
         assert second_config["banner_enabled"] is None
         assert second_config["disabled"] is True
@@ -349,6 +378,7 @@ class TestGetExperienceConfigList:
         assert (
             second_config["description"] == "user&#x27;s description &lt;script /&gt;"
         )  # Still escaped
+        assert second_config["banner_description"] is None
 
     @pytest.mark.usefixtures(
         "privacy_experience_overlay",
@@ -488,6 +518,7 @@ class TestCreateExperienceConfig:
     def overlay_experience_request_body(self) -> dict:
         return {
             "acknowledge_button_label": "Confirm",
+            "banner_description": "You can accept, reject, or manage your preferences in detail.",
             "banner_enabled": "enabled_where_required",
             "component": "overlay",
             "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
@@ -1786,6 +1817,72 @@ class TestUpdateExperienceConfig:
         )  # Default overlay experience config linked instead
 
         privacy_experience.delete(db)
+
+    @pytest.mark.parametrize(
+        "invalid_description",
+        [
+            "This is a malicious description. <script>alert('XSS');</script>",
+            "This is a malicious <a href='javascript:alert('XSS')>link</a> in a description",
+        ],
+    )
+    def test_update_experience_config_with_invalid_description(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+        overlay_experience_config,
+        invalid_description,
+    ) -> None:
+        """
+        Verify that a malicious description returns a 422.
+        """
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "banner_description": invalid_description,
+                "description": invalid_description,
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+        assert response.json()["detail"][0]["msg"] == "Text contains invalid or unsafe HTML."
+
+    @pytest.mark.parametrize(
+        "valid_description",
+        [
+            "This is a valid description.",
+            "This is a <strong>valid</strong> HTML description.",
+            "This is a <strong>valid</strong> HTML description with a <a href='https://example.com/'>link</a>.",
+        ],
+    )
+    def test_update_experience_config_with_valid_html_description(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+        overlay_experience_config,
+        valid_description,
+    ) -> None:
+        """
+        Verify that a valid description is saved.
+        """
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_EXPERIENCE_UPDATE])
+        response = api_client.patch(
+            url,
+            json={
+                "banner_description": valid_description,
+                "description": valid_description,
+            },
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+
+        db.refresh(overlay_experience_config)
+        assert overlay_experience_config.banner_description == escape(valid_description)
+        assert overlay_experience_config.description == escape(valid_description)
 
     @pytest.mark.usefixtures("privacy_experience_france_tcf_overlay")
     def test_add_regions_to_tcf_overlay(

@@ -2651,6 +2651,7 @@ def experience_config_overlay(db: Session) -> Generator:
         data={
             "accept_button_label": "Accept all",
             "acknowledge_button_label": "Confirm",
+            "banner_description": "You can accept, reject, or manage your preferences in detail.",
             "banner_enabled": "enabled_where_required",
             "component": "overlay",
             "description": "On this page you can opt in and out of these data uses cases",
@@ -2677,6 +2678,7 @@ def experience_config_tcf_overlay(db: Session) -> Generator:
         data={
             "accept_button_label": "Accept all",
             "acknowledge_button_label": "Confirm",
+            "banner_description": "You can accept, reject, or manage your preferences in detail.",
             "banner_enabled": "enabled_where_required",
             "component": "tcf_overlay",
             "description": "On this page you can opt in and out of these data uses cases",
