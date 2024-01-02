@@ -86,7 +86,7 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
 
     accept_button_label: str
     component: ComponentType
-    description: str
+    description: HtmlStr
     reject_button_label: str
     save_button_label: str
     title: str
