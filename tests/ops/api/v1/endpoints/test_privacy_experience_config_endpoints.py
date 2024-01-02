@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from html import escape
-
 import pytest
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
@@ -193,8 +191,8 @@ class TestGetExperienceConfigList:
         second_config = data[1]
         assert second_config["id"] == experience_config_privacy_center.id
         assert (
-            second_config["description"] == "user's description <script />"
-        )  # Unescaped due to header
+            second_config["description"] == "user's description "
+        )  # Sanitized to remove <script /> by HtmlStr
         assert second_config["banner_description"] is None
         assert second_config["component"] == "privacy_center"
         assert second_config["banner_enabled"] is None
@@ -1826,7 +1824,7 @@ class TestUpdateExperienceConfig:
         "invalid_description",
         [
             (
-                "This is a malicious description.<script>alert('XSS');</script>. No scripts allowed!",
+                "This is a malicious description.<script>alert('XSS');</script> No scripts allowed!",
                 "This is a malicious description. No scripts allowed!",
             ),
             (
@@ -1867,17 +1865,21 @@ class TestUpdateExperienceConfig:
         )
 
         db.refresh(overlay_experience_config)
-        assert overlay_experience_config.banner_description == escape(
-            invalid_description[1]
-        )
-        assert overlay_experience_config.description == escape(invalid_description[1])
+        assert overlay_experience_config.banner_description == invalid_description[1]
+        assert overlay_experience_config.description == invalid_description[1]
 
     @pytest.mark.parametrize(
         "valid_description",
         [
-            "This is a valid description.",
-            "This is a <strong>valid</strong> HTML description.",
-            "This is a <strong>valid</strong> HTML description with a <a href='https://example.com/'>link</a>.",
+            ("This is a valid description.", "This is a valid description."),
+            (
+                "This is a <strong>valid</strong> HTML description.",
+                "This is a &lt;strong&gt;valid&lt;/strong&gt; HTML description.",
+            ),
+            (
+                "This is a <strong>valid</strong> HTML description with a <a href='https://example.com/'>link</a>.",
+                "This is a &lt;strong&gt;valid&lt;/strong&gt; HTML description with a &lt;a href=&quot;https://example.com/&quot; rel=&quot;noopener noreferrer&quot;&gt;link&lt;/a&gt;.",
+            ),
         ],
     )
     def test_update_experience_config_with_valid_html_description(
@@ -1896,16 +1898,16 @@ class TestUpdateExperienceConfig:
         response = api_client.patch(
             url,
             json={
-                "banner_description": valid_description,
-                "description": valid_description,
+                "banner_description": valid_description[0],
+                "description": valid_description[0],
             },
             headers=auth_header,
         )
         assert response.status_code == 200
 
         db.refresh(overlay_experience_config)
-        assert overlay_experience_config.banner_description == escape(valid_description)
-        assert overlay_experience_config.description == escape(valid_description)
+        assert overlay_experience_config.banner_description == valid_description[1]
+        assert overlay_experience_config.description == valid_description[1]
 
     @pytest.mark.usefixtures("privacy_experience_france_tcf_overlay")
     def test_add_regions_to_tcf_overlay(

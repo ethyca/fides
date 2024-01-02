@@ -74,8 +74,9 @@ class HtmlStr(str):
     @classmethod
     def validate(cls, value: str) -> str:
         """Assert text doesn't include an complex/malicious HTML."""
-        cleaned_str = clean(value, tags=HtmlStr.ALLOWED_HTML_TAGS)
-        return cleaned_str
+        if value:
+            return clean(value, tags=cls.ALLOWED_HTML_TAGS)
+        return value
 
 
 class PhoneNumber(str):
