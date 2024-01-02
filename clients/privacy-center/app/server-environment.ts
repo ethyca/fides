@@ -55,6 +55,7 @@ export interface PrivacyCenterSettings {
   IS_FORCED_TCF: boolean; // whether to force the privacy center to use the fides-tcf.js bundle
   FIDES_JS_BASE_URL: string; // A base URL to a directory of fides.js scripts
   PREVENT_DISMISSAL: boolean; // whether or not the user is allowed to dismiss the banner/overlay
+  ALLOW_HTML_DESCRIPTION: boolean | null; // (optional) whether or not HTML descriptions should be rendered
 }
 
 /**
@@ -82,6 +83,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "IS_FORCED_TCF"
   | "FIDES_JS_BASE_URL"
   | "PREVENT_DISMISSAL"
+  | "ALLOW_HTML_DESCRIPTION"
 >;
 
 export type Styles = string;
@@ -349,6 +351,10 @@ export const loadPrivacyCenterEnvironment =
       PREVENT_DISMISSAL: process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL
         ? process.env.FIDES_PRIVACY_CENTER__PREVENT_DISMISSAL === "true"
         : false,
+      ALLOW_HTML_DESCRIPTION: process.env
+        .FIDES_PRIVACY_CENTER__ALLOW_HTML_DESCRIPTION
+        ? process.env.FIDES_PRIVACY_CENTER__ALLOW_HTML_DESCRIPTION === "true"
+        : null,
     };
 
     // Load configuration file (if it exists)
