@@ -37,6 +37,7 @@ The types of changes are:
 - Allow CORS for privacy center `fides.js` and `fides-ext-gpp.js` endpoints
 - Replace `GPP_EXT_PATH` env var in favor of a more flexible `FIDES_JS_BASE_URL` environment variable
 - Change vendor add modal on consent configuration screen to use new vendor selector [#4532](https://github.com/ethyca/fides/pull/4532)
+- Remove vendor add modal [#4535](https://github.com/ethyca/fides/pull/4535)
 
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
