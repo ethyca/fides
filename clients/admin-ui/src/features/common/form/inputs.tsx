@@ -352,7 +352,7 @@ export const SelectInput = ({
               ...provided,
               fontSize: "12px",
               background: "gray.200",
-              color: "gray.600",
+              color: textColor ?? "gray.600",
               fontWeight: "400",
               borderRadius: "2px",
               py: 1,

@@ -86,8 +86,8 @@ export type FidesOptions = {
   // What the "GDPR Applies" field of TCF should default to
   fidesTcfGdprApplies: boolean;
 
-  // GPP extension path (ex: "/fides-ext-gpp.js")
-  gppExtensionPath: string;
+  // Base URL for directory of fides.js scripts
+  fidesJsBaseUrl: string;
 
   // A custom path to fetch OverrideOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
   customOptionsPath: string | null;
@@ -419,13 +419,13 @@ export enum ButtonType {
 }
 
 export enum ConsentMethod {
-  button = "button", // deprecated- keeping for backwards-compatibility
-  reject = "reject",
-  accept = "accept",
-  save = "save",
-  dismiss = "dismiss",
-  gpc = "gpc",
-  individual_notice = "api",
+  BUTTON = "button", // deprecated- keeping for backwards-compatibility
+  REJECT = "reject",
+  ACCEPT = "accept",
+  SAVE = "save",
+  DISMISS = "dismiss",
+  GPC = "gpc",
+  INDIVIDUAL_NOTICE = "individual_notice",
 }
 
 export type PrivacyPreferencesRequest = {

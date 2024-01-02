@@ -305,6 +305,7 @@ const SystemInformationForm = ({
             <SystemFormInputGroup heading="System details">
               {features.dictionaryService ? (
                 <VendorSelector
+                  label="System name"
                   options={dictionaryOptions}
                   onVendorSelected={handleVendorSelected}
                   isCreate={!passedInSystem}

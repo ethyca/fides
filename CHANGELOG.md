@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.26.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.27.0...main)
+
+## [2.27.0](https://github.com/ethyca/fides/compare/2.26.0...2.27.0)
 
 ### Added
 - Tooltip and styling for disabled rows in add multiple vendor view [#4498](https://github.com/ethyca/fides/pull/4498)
@@ -31,6 +33,10 @@ The types of changes are:
 ### Changed
 - Upgrade to use Fideslang `3.0.0` and remove associated concepts [#4502](https://github.com/ethyca/fides/pull/4502)
 - `fides.js` now sets `supportsOOB` to `false` [#4516](https://github.com/ethyca/fides/pull/4516)
+- Save consent method ("accept", "reject", "save", etc.) to `fides_consent` cookie as extra metadata [#4529](https://github.com/ethyca/fides/pull/4529)
+- Allow CORS for privacy center `fides.js` and `fides-ext-gpp.js` endpoints
+- Replace `GPP_EXT_PATH` env var in favor of a more flexible `FIDES_JS_BASE_URL` environment variable
+- Change vendor add modal on consent configuration screen to use new vendor selector [#4532](https://github.com/ethyca/fides/pull/4532)
 
 ## [2.26.0](https://github.com/ethyca/fides/compare/2.25.0...main)
 
