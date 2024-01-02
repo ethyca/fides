@@ -2,7 +2,10 @@ import FormSection from "~/features/common/form/FormSection";
 import { CustomTextInput } from "~/features/common/form/inputs";
 
 const PrivacyPolicy = () => (
-  <FormSection title="Privacy policy link configuration" data-testid="privacy-policy">
+  <FormSection
+    title="Privacy policy link configuration"
+    data-testid="privacy-policy"
+  >
     <CustomTextInput
       name="privacy_policy_link_label"
       label="Privacy policy link label"
