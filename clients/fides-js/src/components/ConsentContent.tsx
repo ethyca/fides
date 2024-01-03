@@ -4,7 +4,7 @@ import { ExperienceConfig } from "../lib/consent-types";
 
 import GpcInfo from "./GpcInfo";
 import ExperienceDescription from "./ExperienceDescription";
-import { getConsentContext } from "../fides";
+import { getConsentContext } from "../lib/consent-context";
 
 export interface ConsentContentProps {
   title: HTMLAttributes<HTMLHeadingElement>;
@@ -47,6 +47,7 @@ const ConsentModal = ({
             <ExperienceDescription
               onVendorPageClick={onVendorPageClick}
               description={experience.description}
+              allowHTMLDescription={window.Fides?.options?.allowHTMLDescription}
             />
           </p>
           {showGpcBadge && <GpcInfo />}

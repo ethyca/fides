@@ -1,3 +1,5 @@
+import type { CookieKeyConsent } from "./cookie";
+import { GPPSettings } from "./gpp/types";
 import type {
   TCFFeatureRecord,
   TCFPurposeSave,
@@ -14,7 +16,6 @@ import type {
   TCFVendorLegitimateInterestsRecord,
   TCFVendorRelationships,
 } from "./tcf/types";
-import { CookieKeyConsent } from "~/lib/cookie";
 
 export type EmptyExperience = Record<PropertyKey, never>;
 
@@ -84,6 +85,18 @@ export type FidesOptions = {
 
   // What the "GDPR Applies" field of TCF should default to
   fidesTcfGdprApplies: boolean;
+
+  // Base URL for directory of fides.js scripts
+  fidesJsBaseUrl: string;
+
+  // A custom path to fetch OverrideOptions (e.g. "window.config.overrides"). Defaults to window.fides_overrides
+  customOptionsPath: string | null;
+
+  // Prevents the banner and modal from being dismissed
+  preventDismissal: boolean;
+
+  // Allows providing rich HTML descriptions
+  allowHTMLDescription: boolean | null;
 };
 
 export type GetPreferencesFnResp = {
@@ -286,12 +299,15 @@ export type PrivacyExperience = {
   tcf_system_relationships?: Array<TCFVendorRelationships>;
   gvl?: GVLJson;
   meta?: ExperienceMeta;
+  gpp_settings?: GPPSettings;
 };
 
 export type ExperienceConfig = {
   accept_button_label?: string;
   acknowledge_button_label?: string;
+  banner_description?: string;
   banner_enabled?: BannerEnabled;
+  banner_title?: string;
   description?: string;
   disabled?: boolean;
   is_default?: boolean;
@@ -387,7 +403,7 @@ export type OverrideOptions = {
   fides_tcf_gdpr_applies: boolean;
 };
 
-export type FidesOptionOverrides = Pick<
+export type FidesOptionsOverrides = Pick<
   FidesOptions,
   | "fidesString"
   | "fidesDisableSaveApi"
@@ -397,8 +413,8 @@ export type FidesOptionOverrides = Pick<
 >;
 
 export type FidesOverrides = {
-  overrideOptions: Partial<FidesOptionOverrides>;
-  overrideConsentPrefs: GetPreferencesFnResp | null;
+  optionsOverrides: Partial<FidesOptionsOverrides>;
+  consentPrefsOverrides: GetPreferencesFnResp | null;
 };
 
 export enum ButtonType {
@@ -408,13 +424,13 @@ export enum ButtonType {
 }
 
 export enum ConsentMethod {
-  button = "button", // deprecated- keeping for backwards-compatibility
-  reject = "reject",
-  accept = "accept",
-  save = "save",
-  dismiss = "dismiss",
-  gpc = "gpc",
-  individual_notice = "api",
+  BUTTON = "button", // deprecated- keeping for backwards-compatibility
+  REJECT = "reject",
+  ACCEPT = "accept",
+  SAVE = "save",
+  DISMISS = "dismiss",
+  GPC = "gpc",
+  INDIVIDUAL_NOTICE = "individual_notice",
 }
 
 export type PrivacyPreferencesRequest = {

@@ -64,6 +64,7 @@ export interface CustomInputProps {
   variant?: Variant;
   isRequired?: boolean;
   textColor?: string;
+  inputRightElement?: React.ReactNode;
 }
 
 // We allow `undefined` here and leave it up to each component that uses this field
@@ -87,7 +88,17 @@ export const Label = ({
 );
 
 export const TextInput = forwardRef(
-  ({ isPassword, ...props }: InputProps & { isPassword: boolean }, ref) => {
+  (
+    {
+      isPassword,
+      inputRightElement,
+      ...props
+    }: InputProps & {
+      isPassword: boolean;
+      inputRightElement?: React.ReactNode;
+    },
+    ref
+  ) => {
     const [type, setType] = useState<"text" | "password">(
       isPassword ? "password" : "text"
     );
@@ -103,7 +114,11 @@ export const TextInput = forwardRef(
           type={type}
           pr={isPassword ? "10" : "3"}
           background="white"
+          focusBorderColor="primary.600"
         />
+        {inputRightElement ? (
+          <InputRightElement pr={2}>{inputRightElement}</InputRightElement>
+        ) : null}
         {isPassword ? (
           <InputRightElement pr="2">
             <IconButton
@@ -287,6 +302,7 @@ export const SelectInput = ({
       size={size}
       classNamePrefix="custom-select"
       placeholder={placeholder}
+      focusBorderColor="primary.600"
       chakraStyles={{
         container: (provided) => ({
           ...provided,
@@ -336,7 +352,7 @@ export const SelectInput = ({
               ...provided,
               fontSize: "12px",
               background: "gray.200",
-              color: "gray.600",
+              color: textColor ?? "gray.600",
               fontWeight: "400",
               borderRadius: "2px",
               py: 1,
@@ -433,6 +449,7 @@ const CreatableSelectInput = ({
       value={selected}
       size={size}
       classNamePrefix="custom-creatable-select"
+      focusBorderColor="primary.600"
       isDisabled={isDisabled}
       chakraStyles={{
         container: (provided) => ({
@@ -507,6 +524,7 @@ export const CustomTextInput = ({
   disabled,
   variant = "inline",
   isRequired = false,
+  inputRightElement,
   ...props
 }: CustomInputProps & StringField) => {
   const [initialField, meta] = useField(props);
@@ -515,6 +533,17 @@ export const CustomTextInput = ({
   const field = { ...initialField, value: initialField.value ?? "" };
 
   const isPassword = initialType === "password";
+
+  const innerInput = (
+    <TextInput
+      {...field}
+      isDisabled={disabled}
+      data-testid={`input-${field.name}`}
+      placeholder={placeholder}
+      isPassword={isPassword}
+      inputRightElement={inputRightElement}
+    />
+  );
 
   if (variant === "inline") {
     return (
@@ -525,13 +554,7 @@ export const CustomTextInput = ({
           ) : null}
           <Flex alignItems="center">
             <Flex flexDir="column" flexGrow={1} mr="2">
-              <TextInput
-                {...field}
-                isDisabled={disabled}
-                data-testid={`input-${field.name}`}
-                placeholder={placeholder}
-                isPassword={isPassword}
-              />
+              {innerInput}
               <ErrorMessage
                 isInvalid={isInvalid}
                 message={meta.error}
@@ -555,13 +578,7 @@ export const CustomTextInput = ({
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
           </Flex>
         ) : null}
-        <TextInput
-          {...field}
-          isDisabled={disabled}
-          data-testid={`input-${field.name}`}
-          placeholder={placeholder}
-          isPassword={isPassword}
-        />
+        {innerInput}
         <ErrorMessage
           isInvalid={isInvalid}
           message={meta.error}
@@ -784,6 +801,7 @@ export const CustomTextArea = ({
       {...textAreaProps}
       ref={textareaRef}
       style={{ overflowY: resize ? "hidden" : "visible" }}
+      focusBorderColor="primary.600"
       onChange={(event) => {
         resizeTextarea();
         field.onChange(event);
@@ -933,7 +951,7 @@ export const CustomNumberInput = ({
           <Label htmlFor={props.id || props.name}>{label}</Label>
           <Flex alignItems="center">
             <Flex flexDir="column" flexGrow={1} mr="2">
-              <NumberInput>
+              <NumberInput focusBorderColor="primary.600">
                 <NumberInputField />
                 <NumberInputStepper>
                   <NumberIncrementStepper />
@@ -971,6 +989,7 @@ export const CustomNumberInput = ({
           isDisabled={isDisabled}
           data-testid={`input-${field.name}`}
           min={minValue || undefined}
+          focusBorderColor="primary.600"
         >
           <NumberInputField />
           <NumberInputStepper>
@@ -984,7 +1003,7 @@ export const CustomNumberInput = ({
 };
 
 interface CustomSwitchProps {
-  label: string;
+  label?: string;
   tooltip?: string;
   variant?: "inline" | "condensed" | "stacked";
   isDisabled?: boolean;
@@ -993,6 +1012,7 @@ export const CustomSwitch = ({
   label,
   tooltip,
   variant = "inline",
+  onChange,
   isDisabled,
   ...props
 }: CustomSwitchProps & FieldHookConfig<boolean>) => {
@@ -1003,7 +1023,13 @@ export const CustomSwitch = ({
     <Switch
       name={field.name}
       isChecked={field.checked}
-      onChange={field.onChange}
+      onChange={(e) => {
+        field.onChange(e);
+        if (onChange) {
+          // @ts-ignore - it got confused between select/input element events
+          onChange(e);
+        }
+      }}
       onBlur={field.onBlur}
       colorScheme="purple"
       mr={2}

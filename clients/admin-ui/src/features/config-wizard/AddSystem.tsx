@@ -15,11 +15,11 @@ import {
   ManualSetupIcon,
   OktaLogoIcon,
 } from "~/features/common/Icon";
+import { UpgradeModal } from "~/features/common/modals/UpgradeModal";
 import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_MULTIPLE_ROUTE,
 } from "~/features/common/nav/v2/routes";
-import { UpgradeModal } from "~/features/common/UpgradeModal";
 import { ValidTargets } from "~/types/api";
 
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";

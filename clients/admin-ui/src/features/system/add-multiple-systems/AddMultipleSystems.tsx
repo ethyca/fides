@@ -17,9 +17,9 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
-import ConfirmationModal from "common/ConfirmationModal";
 import { useFeatures } from "common/features";
 import {
   extractVendorSource,
@@ -38,12 +38,14 @@ import {
   RowSelectionBar,
   TableActionBar,
   TableSkeletonLoader,
+  useClientSidePagination,
 } from "common/table/v2";
 import { errorToastParams, successToastParams } from "common/toast";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { INDEX_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   DictSystems,
@@ -65,6 +67,9 @@ export const VendorSourceCell = ({ value }: { value: string }) => {
     </Flex>
   );
 };
+
+const ADDED_VENDOR_TOOLTIP_LABEL =
+  "This vendor has already beed added. You can view the properties of this vendor by going to View Systems.";
 
 type MultipleSystemTable = DictSystems;
 
@@ -106,35 +111,40 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         id: "select",
         header: ({ table }) => (
           <IndeterminateCheckboxCell
-            {...{
-              dataTestId: "select-page-checkbox",
-              checked: table.getIsAllPageRowsSelected(),
-              indeterminate: table
+            dataTestId="select-page-checkbox"
+            isChecked={table.getIsAllPageRowsSelected()}
+            isDisabled={
+              allRowsLinkedToSystem ||
+              table
                 .getPaginationRowModel()
-                .rows.filter((r) => !r.original.linked_system)
-                .some((r) => r.getIsSelected()),
-              onChange: (e) => {
-                table.getToggleAllPageRowsSelectedHandler()(e);
-                setIsRowSelectionBarOpen((prev) => !prev);
-              },
-              manualDisable:
-                allRowsLinkedToSystem ||
-                table
-                  .getPaginationRowModel()
-                  .rows.filter((r) => r.original.linked_system).length ===
-                  table.getState().pagination.pageSize,
+                .rows.filter((r) => r.original.linked_system).length ===
+                table.getState().pagination.pageSize
+            }
+            isIndeterminate={table
+              .getPaginationRowModel()
+              .rows.filter((r) => r.getCanSelect())
+              .some((r) => !r.getIsSelected())}
+            onChange={() => {
+              table.setRowSelection((old) => {
+                const rowSelection: RowSelectionState = { ...old };
+                table.getRowModel().rows.forEach((row) => {
+                  if (row.getCanSelect()) {
+                    rowSelection[row.id] = !rowSelection[row.id];
+                  }
+                });
+
+                return rowSelection;
+              });
+              setIsRowSelectionBarOpen((prev) => !prev);
             }}
           />
         ),
         cell: ({ row }) => (
           <IndeterminateCheckboxCell
-            {...{
-              checked: row.getIsSelected(),
-              disabled: !row.getCanSelect(),
-              indeterminate: row.getIsSomeSelected(),
-              onChange: row.getToggleSelectedHandler(),
-              initialValue: row.original.linked_system,
-            }}
+            isChecked={row.getIsSelected()}
+            isDisabled={!row.getCanSelect()}
+            isIndeterminate={row.getIsSomeSelected()}
+            onChange={row.getToggleSelectedHandler()}
           />
         ),
         meta: {
@@ -160,16 +170,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     [allRowsLinkedToSystem, systemText, isTcfEnabled]
   );
 
-  const rowSelection = useMemo(() => {
-    const innerRowSelection: Record<string, boolean> = {};
-    dictionaryOptions.forEach((ds, index) => {
-      if (ds.linked_system) {
-        innerRowSelection[index] = true;
-      }
-    });
-    return innerRowSelection;
-  }, [dictionaryOptions]);
-
   const tableInstance = useReactTable<MultipleSystemTable>({
     columns,
     data: dictionaryOptions,
@@ -178,7 +178,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onGlobalFilterChange: setGlobalFilter,
-    enableRowSelection: true,
+    enableRowSelection: (row) => !row.original.linked_system,
     enableSorting: true,
     enableGlobalFilter: true,
     state: {
@@ -188,12 +188,35 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       },
     },
     initialState: {
-      rowSelection,
       pagination: {
         pageSize: PAGE_SIZES[0],
       },
     },
   });
+
+  useEffect(() => {
+    const innerRowSelection: RowSelectionState = {};
+    dictionaryOptions.forEach((ds, index) => {
+      if (ds.linked_system) {
+        innerRowSelection[index] = true;
+      }
+    });
+    // Set on the table instance once this is ready
+    if (Object.keys(innerRowSelection).length) {
+      tableInstance.setRowSelection(innerRowSelection);
+    }
+  }, [dictionaryOptions, tableInstance]);
+
+  const {
+    totalRows,
+    onPreviousPageClick,
+    isPreviousPageDisabled,
+    onNextPageClick,
+    isNextPageDisabled,
+    setPageSize,
+    startRange,
+    endRange,
+  } = useClientSidePagination(tableInstance);
 
   const addVendors = async () => {
     const vendorIds = tableInstance
@@ -353,10 +376,23 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
             isOpen={isRowSelectionBarOpen}
           />
         }
+        renderRowTooltipLabel={(row) => {
+          if (!row.getCanSelect()) {
+            return ADDED_VENDOR_TOOLTIP_LABEL;
+          }
+          return undefined;
+        }}
       />
-      <PaginationBar<MultipleSystemTable>
-        tableInstance={tableInstance}
+      <PaginationBar
         pageSizes={PAGE_SIZES}
+        totalRows={totalRows}
+        onPreviousPageClick={onPreviousPageClick}
+        isPreviousPageDisabled={isPreviousPageDisabled}
+        onNextPageClick={onNextPageClick}
+        isNextPageDisabled={isNextPageDisabled}
+        setPageSize={setPageSize}
+        startRange={startRange}
+        endRange={endRange}
       />
     </Flex>
   );

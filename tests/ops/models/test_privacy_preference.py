@@ -1316,7 +1316,6 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
                 "system_id": system_with_no_uses.id,
                 "data_categories": ["user.device.cookie_id"],
                 "data_use": "analytics",
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "dataset_references": None,
                 "egress": None,
@@ -1351,7 +1350,6 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
                 "system_id": system_with_no_uses.id,
                 "data_categories": ["user.device.cookie_id"],
                 "data_use": "marketing.advertising.profiling",
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "dataset_references": None,
                 "legal_basis_for_processing": "Consent",
@@ -1384,7 +1382,6 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
                 "system_id": system_with_no_uses.id,
                 "data_categories": ["user.device.cookie_id"],
                 "data_use": "marketing.advertising.profiling",
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "dataset_references": None,
                 "legal_basis_for_processing": "Legitimate interests",
@@ -1427,7 +1424,6 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
                 "system_id": system_with_no_uses.id,
                 "data_categories": ["user.device.cookie_id"],
                 "data_use": "marketing.advertising.serving",
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "legal_basis_for_processing": "Consent",
                 "dataset_references": None,
@@ -1464,7 +1460,6 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
                 "system_id": system_with_no_uses.id,
                 "data_categories": ["user.device.cookie_id"],
                 "data_use": "marketing.advertising.serving",
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "legal_basis_for_processing": "Consent",
                 "dataset_references": None,
@@ -1491,7 +1486,6 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
                 "system_id": system_with_no_uses.id,
                 "data_categories": ["user.device.cookie_id"],
                 "data_use": "marketing.advertising.serving",
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "legal_basis_for_processing": "Legitimate interests",
                 "dataset_references": None,
@@ -1577,7 +1571,6 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
                 "system_id": system_with_no_uses.id,
                 "data_categories": ["user.device.cookie_id"],
                 "data_use": "marketing.advertising.serving",
-                "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                 "data_subjects": ["customer"],
                 "dataset_references": None,
                 "egress": None,
@@ -1652,6 +1645,56 @@ class TestDeterminePrivacyPreferenceHistoryRelevantSystems:
             )
             == []
         )
+
+    @pytest.mark.usefixtures("purpose_three_consent_publisher_override")
+    @pytest.mark.parametrize(
+        "override_fixture",
+        [
+            "enable_override_vendor_purposes",
+            "enable_override_vendor_purposes_api_set",  # ensure override functionality works when config is set via API
+        ],
+    )
+    def test_determine_relevant_systems_for_with_purpose_override(
+        self,
+        override_fixture,
+        request,
+        db,
+        system_with_no_uses,
+    ):
+        """Relevant system calculation takes into account legal basis overrides"""
+        request.getfixturevalue(override_fixture)
+
+        # Add data use to system that corresponds to purpose 3.  Also has LI legal basis, but override sets it
+        # to Consent
+        pd_1 = PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Collect data for content performance",
+                "system_id": system_with_no_uses.id,
+                "data_categories": ["user.device.cookie_id"],
+                "data_use": "marketing.advertising.profiling",
+                "data_subjects": ["customer"],
+                "dataset_references": None,
+                "legal_basis_for_processing": "Legitimate interests",
+                "egress": None,
+                "ingress": None,
+            },
+        )
+
+        assert PrivacyPreferenceHistory.determine_relevant_systems(
+            db, tcf_field=TCFComponentType.purpose_consent.value, tcf_value=3
+        ) == [system_with_no_uses.fides_key]
+
+        assert (
+            PrivacyPreferenceHistory.determine_relevant_systems(
+                db,
+                tcf_field=TCFComponentType.purpose_legitimate_interests.value,
+                tcf_value=3,
+            )
+            == []
+        )
+
+        pd_1.delete(db)
 
 
 class TestCurrentPrivacyPreference:

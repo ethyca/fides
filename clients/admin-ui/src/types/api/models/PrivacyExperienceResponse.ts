@@ -5,6 +5,7 @@
 import type { ComponentType } from "./ComponentType";
 import type { ExperienceConfigResponse } from "./ExperienceConfigResponse";
 import type { ExperienceMeta } from "./ExperienceMeta";
+import type { GPPSettings } from "./GPPSettings";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { PrivacyNoticeResponseWithUserPreferences } from "./PrivacyNoticeResponseWithUserPreferences";
 import type { TCFFeatureRecord } from "./TCFFeatureRecord";
@@ -22,6 +23,7 @@ import type { TCFVendorRelationships } from "./TCFVendorRelationships";
 export type PrivacyExperienceResponse = {
   region: PrivacyNoticeRegion;
   component?: ComponentType;
+  gpp_settings?: GPPSettings;
   /**
    * The Experience copy or language
    */

@@ -345,6 +345,48 @@ class TestSystemOkta:
             )
 
 
+class TestPrivacyDeclarationPurpose:
+    def test_privacy_declaration_purpose(self):
+        pd = PrivacyDeclaration(
+            name="declaration-name",
+            data_categories=[],
+            data_use="analytics.reporting.campaign_insights",
+            data_subjects=[],
+            dataset_references=[],
+            ingress=None,
+            egress=None,
+        )
+
+        assert pd.purpose == 9
+
+    def test_privacy_declaration_special_purpose(self):
+        """Special purposes are not returned under the purpose hybrid property"""
+        pd = PrivacyDeclaration(
+            name="declaration-name",
+            data_categories=[],
+            data_use="essential.service.security",
+            data_subjects=[],
+            dataset_references=[],
+            ingress=None,
+            egress=None,
+        )
+
+        assert pd.purpose is None
+
+    def test_privacy_declaration_non_tcf_data_use(self):
+        pd = PrivacyDeclaration(
+            name="declaration-name",
+            data_categories=[],
+            data_use="essential",
+            data_subjects=[],
+            dataset_references=[],
+            ingress=None,
+            egress=None,
+        )
+
+        assert pd.purpose is None
+
+
 class TestUpsertCookies:
     @pytest.fixture()
     async def test_cookie_system(
@@ -367,7 +409,6 @@ class TestUpsertCookies:
                     data_categories=[],
                     data_use="essential",
                     data_subjects=[],
-                    data_qualifier="aggregated_data",
                     dataset_references=[],
                 ),
                 PrivacyDeclarationSchema(
@@ -375,7 +416,6 @@ class TestUpsertCookies:
                     data_categories=[],
                     data_use="functional.service.improve",
                     data_subjects=[],
-                    data_qualifier="aggregated_data",
                     dataset_references=[],
                 ),
             ],

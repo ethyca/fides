@@ -7,7 +7,6 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
-import InfoBox from "~/features/common/InfoBox";
 import { BANNER_ENABLED_MAP } from "~/features/privacy-experience/constants";
 import { BannerEnabled } from "~/types/api";
 
@@ -18,54 +17,60 @@ const BANNER_ENABLED_OPTIONS = enumToOptions(BannerEnabled).map((opt) => ({
   label: BANNER_ENABLED_MAP.get(opt.value) ?? opt.label,
 }));
 
-const INFO_TEXT =
-  "Configure your notice only banner, your consent banner and your privacy preferences below. It is good practice to complete all fields regardless of whether you are showing a notice only banner or an opt-in/opt-out banner.";
-
 const OverlayForm = () => (
   <Stack spacing={6}>
-    <InfoBox text={INFO_TEXT} />
     <FormSection
-      title="Cookie banner and privacy preferences labeling"
+      title="Overlay & banner configuration"
       data-testid="banner-and-preferences-labeling"
     >
       <CustomTextInput
+        label="Title, displayed on both the overlay and banner"
         name="title"
-        label="Banner title"
         variant="stacked"
         isRequired
       />
       <CustomTextArea
-        label="Banner description"
+        label="Description, displayed on both the overlay and banner"
         name="description"
         variant="stacked"
         isRequired
       />
       <CustomTextInput
-        label="Accept button displayed on the Banner and “Privacy preferences”"
+        label="Banner title, if different from overlay"
+        name="banner_title"
+        variant="stacked"
+      />
+      <CustomTextArea
+        label="Banner description, if different from overlay"
+        name="banner_description"
+        variant="stacked"
+      />
+      <CustomTextInput
+        label="“Accept” button label, displayed on both the overlay and banner"
         name="accept_button_label"
         variant="stacked"
         isRequired
       />
       <CustomTextInput
-        label="Reject button displayed on the Banner and “Privacy preferences”"
+        label="“Reject” button label, displayed on both the overlay and banner"
         name="reject_button_label"
         variant="stacked"
         isRequired
       />
       <CustomTextInput
-        label="“Privacy preferences” link label"
+        label="“Manage preferences” button label, displayed only on the banner"
         name="privacy_preferences_link_label"
         variant="stacked"
         isRequired
       />
       <CustomTextInput
-        label="Privacy preferences “Save” button label"
+        label="“Save” button label, displayed only on the overlay"
         name="save_button_label"
         variant="stacked"
         isRequired
       />
       <CustomTextInput
-        label="Acknowledge button label for notice only banner"
+        label="“Acknowledge” button label, displayed only on a notice-only banner"
         name="acknowledge_button_label"
         variant="stacked"
         isRequired

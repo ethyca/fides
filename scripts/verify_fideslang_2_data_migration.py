@@ -68,7 +68,6 @@ old_dataset = fideslang.models.Dataset(
                 fideslang.models.DatasetField(
                     name="old_dataset_field",
                     data_categories=["user.observed"],  # new key = user.behavior
-                    retention=None,
                     fields=None,
                 )
             ],

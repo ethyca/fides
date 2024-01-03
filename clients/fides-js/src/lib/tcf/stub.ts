@@ -21,7 +21,6 @@ export const makeStub = ({
 }: {
   gdprAppliesDefault?: boolean;
 }) => {
-  console.log({ gdprAppliesDefault });
   const queue: any[] = [];
   const currentWindow = window;
   /**

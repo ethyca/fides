@@ -13,6 +13,7 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_cloud import FidesCloud
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.messaging_template import MessagingTemplate
@@ -39,3 +40,4 @@ from fides.api.models.storage import StorageConfig
 from fides.api.models.system_compass_sync import SystemCompassSync
 from fides.api.models.system_history import SystemHistory
 from fides.api.models.system_manager import SystemManager
+from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride

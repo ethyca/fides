@@ -4,25 +4,14 @@ import { TCFFeatureRecord, TCFSpecialFeatureRecord } from "../../lib/tcf/types";
 import { PrivacyExperience } from "../../lib/consent-types";
 import type { UpdateEnabledIds } from "./TcfOverlay";
 import RecordsList from "./RecordsList";
+import EmbeddedVendorList from "./EmbeddedVendorList";
 
 const FeatureChildren = ({ feature }: { feature: TCFFeatureRecord }) => {
   const vendors = [...(feature.vendors || []), ...(feature.systems || [])];
   return (
     <div>
       <p className="fides-tcf-toggle-content">{feature.description}</p>
-      {vendors.length ? (
-        <p className="fides-tcf-toggle-content fides-background-dark fides-tcf-purpose-vendor">
-          <span className="fides-tcf-purpose-vendor-title">
-            Vendors we use for this feature
-            <span>{vendors.length} vendor(s)</span>
-          </span>
-          <ul className="fides-tcf-purpose-vendor-list">
-            {vendors.map((v) => (
-              <li>{v.name}</li>
-            ))}
-          </ul>
-        </p>
-      ) : null}
+      <EmbeddedVendorList vendors={vendors} />
     </div>
   );
 };

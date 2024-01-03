@@ -35,8 +35,4 @@ export type PolicyRule = {
    *
    */
   data_subjects: PrivacyRule;
-  /**
-   * The fides key of the data qualifier to be used in a privacy rule.
-   */
-  data_qualifier?: string;
 };

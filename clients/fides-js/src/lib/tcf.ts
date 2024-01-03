@@ -72,6 +72,7 @@ export const generateFidesString = async ({
     tcModel.cmpVersion = CMP_VERSION;
     tcModel.consentScreen = 1; // todo- On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
     tcModel.isServiceSpecific = true;
+    tcModel.supportOOB = false;
 
     // Narrow the GVL to say we've only showed these vendors provided by our experience
     tcModel.gvl.narrowVendorsTo(uniqueGvlVendorIds(experience));

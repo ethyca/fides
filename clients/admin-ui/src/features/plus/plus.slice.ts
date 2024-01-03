@@ -34,10 +34,13 @@ import {
   GenerateTypes,
   HealthCheck,
   Page_SystemHistoryResponse_,
+  Page_SystemSummary_,
   ResourceTypes,
+  SystemPurposeSummary,
   SystemScannerStatus,
   SystemScanResponse,
   SystemsDiff,
+  TCFPurposeOverrideSchema,
 } from "~/types/api";
 import {
   DataUseDeclaration,
@@ -296,6 +299,65 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Fides Cloud Config"],
     }),
+    getSystemPurposeSummary: build.query<SystemPurposeSummary, string>({
+      query: (fidesKey: string) => ({
+        url: `plus/system/${fidesKey}/purpose-summary`,
+        method: "GET",
+      }),
+      providesTags: ["System"],
+    }),
+    getVendorReport: build.query<
+      Page_SystemSummary_,
+      {
+        pageIndex: number;
+        pageSize: number;
+        search?: string;
+        purposes?: string;
+        specialPurposes?: string;
+        dataUses?: string;
+        legalBasis?: string;
+        consentCategories?: string;
+      }
+    >({
+      query: ({
+        pageIndex,
+        pageSize,
+        dataUses,
+        search,
+        legalBasis,
+        purposes,
+        specialPurposes,
+        consentCategories,
+      }) => {
+        let queryString = `page=${pageIndex}&size=${pageSize}`;
+        if (dataUses) {
+          queryString += `&${dataUses}`;
+        }
+
+        if (legalBasis) {
+          queryString += `&${legalBasis}`;
+        }
+        if (purposes) {
+          queryString += `&${purposes}`;
+        }
+        if (specialPurposes) {
+          queryString += `&${specialPurposes}`;
+        }
+        if (consentCategories) {
+          queryString += `&${consentCategories}`;
+        }
+
+        if (search) {
+          queryString += `&search=${search}`;
+        }
+
+        return {
+          url: `plus/system/consent-management/report?${queryString}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["System"],
+    }),
     getDictionaryDataUses: build.query<
       Page_DataUseDeclaration_,
       { vendor_id: string }
@@ -367,6 +429,24 @@ const plusApi = baseApi.injectEndpoints({
       // Creating a connection config also creates a dataset behind the scenes
       invalidatesTags: () => ["Datastore Connection", "Datasets", "System"],
     }),
+    getTcfPurposeOverrides: build.query<TCFPurposeOverrideSchema[], void>({
+      query: () => ({
+        url: `plus/tcf/purpose_overrides`,
+        method: "GET",
+      }),
+      providesTags: ["TCF Purpose Override"],
+    }),
+    patchTcfPurposeOverrides: build.mutation<
+      TCFPurposeOverrideSchema[],
+      TCFPurposeOverrideSchema[]
+    >({
+      query: (overrides) => ({
+        url: `plus/tcf/purpose_overrides`,
+        method: "PATCH",
+        body: overrides,
+      }),
+      invalidatesTags: ["TCF Purpose Override"],
+    }),
   }),
 });
 
@@ -378,6 +458,7 @@ export const {
   useGetAllAllowListQuery,
   useGetAllClassifyInstancesQuery,
   useGetClassifyDatasetQuery,
+  useGetVendorReportQuery,
   useGetClassifySystemQuery,
   useGetCustomFieldDefinitionsByResourceTypeQuery,
   useGetCustomFieldsForResourceQuery,
@@ -399,9 +480,12 @@ export const {
   useGetAllSystemVendorsQuery,
   usePostSystemVendorsMutation,
   useGetSystemHistoryQuery,
+  useGetSystemPurposeSummaryQuery,
   useUpdateCustomAssetMutation,
   usePatchPlusSystemConnectionConfigsMutation,
   useCreatePlusSaasConnectionConfigMutation,
+  useGetTcfPurposeOverridesQuery,
+  usePatchTcfPurposeOverridesMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =

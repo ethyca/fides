@@ -34,6 +34,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.models.sql_models import DataUse, System  # type: ignore[attr-defined]
+from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.schemas.privacy_experience import ExperienceConfigCreateWithId
 from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.schemas.redis_cache import Identity
@@ -44,6 +45,8 @@ PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "description", "internal_description"]
 PRIVACY_EXPERIENCE_ESCAPE_FIELDS = [
     "accept_button_label",
     "acknowledge_button_label",
+    "banner_description",
+    "banner_title",
     "description",
     "privacy_policy_link_label",
     "privacy_policy_url",
@@ -671,3 +674,29 @@ def create_tcf_experiences_on_startup(db: Session) -> List[PrivacyExperience]:
             )
 
     return experiences_created
+
+
+def create_default_tcf_purpose_overrides_on_startup(
+    db: Session,
+) -> List[TCFPurposeOverride]:
+    """On startup, load default Purpose Overrides, one for each purpose, with a default of is_included=True
+    and no legal basis override
+
+    The defaults have no effect on what is returned in the TCF Privacy Experience, and this functionality needs
+    to be enabled via a config variable to be used at all.
+    """
+    purpose_override_resources_created: List[TCFPurposeOverride] = []
+
+    for purpose_id in range(1, 12):
+        if (
+            not db.query(TCFPurposeOverride)
+            .filter(TCFPurposeOverride.purpose == purpose_id)
+            .first()
+        ):
+            purpose_override_resources_created.append(
+                TCFPurposeOverride.create(
+                    db, data={"purpose": purpose_id, "is_included": True}
+                )
+            )
+
+    return purpose_override_resources_created

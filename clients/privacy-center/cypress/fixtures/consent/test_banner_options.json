@@ -128,6 +128,7 @@
     "geolocationApiUrl": "",
     "privacyCenterUrl": "http://localhost:3000",
     "fidesApiUrl": "http://localhost:8080/api/v1",
-    "fidesTcfGdprApplies": true
+    "fidesTcfGdprApplies": true,
+    "fidesJsBaseUrl": "http://localhost:3000"
   }
 }

@@ -235,11 +235,6 @@ export type TcfCookieKeyConsent = {
 };
 
 export interface TcfCookieConsent {
-  purpose_consent_preferences?: TcfCookieKeyConsent;
-  purpose_legitimate_interests_preferences?: TcfCookieKeyConsent;
-  special_feature_preferences?: TcfCookieKeyConsent;
-  vendor_consent_preferences?: TcfCookieKeyConsent;
-  vendor_legitimate_interests_preferences?: TcfCookieKeyConsent;
   system_consent_preferences?: TcfCookieKeyConsent;
   system_legitimate_interests_preferences?: TcfCookieKeyConsent;
 }

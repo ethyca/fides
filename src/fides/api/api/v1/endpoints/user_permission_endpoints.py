@@ -150,7 +150,7 @@ async def get_user_permissions(
                 roles=CONFIG.security.root_user_roles,
             )
 
-        logger.info("Retrieved FidesUserPermission record for current user")
+        logger.debug("Retrieved FidesUserPermission record for current user")
         return FidesUserPermissions.get_by(db, field="user_id", value=current_user.id)
 
     # To look up the permissions of another user, that user must exist and the current user must
