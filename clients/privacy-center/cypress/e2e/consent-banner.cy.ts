@@ -3,7 +3,9 @@ import {
   CONSENT_COOKIE_NAME,
   ConsentMechanism,
   ConsentMethod,
+  ExperienceConfig,
   FidesCookie,
+  FidesOptions,
   UserConsentPreference,
 } from "fides-js";
 
@@ -17,7 +19,7 @@ const PRIVACY_NOTICE_KEY_1 = "advertising";
 const PRIVACY_NOTICE_KEY_2 = "essential";
 const PRIVACY_NOTICE_KEY_3 = "analytics_opt_out";
 
-describe("Consent banner", () => {
+describe("Consent overlay", () => {
   describe("when overlay is disabled", () => {
     describe("when both experience and legacy consent exist", () => {
       beforeEach(() => {
@@ -78,8 +80,8 @@ describe("Consent banner", () => {
     });
   });
 
-  describe("when user has no saved consent cookie", () => {
-    describe("when overlay is enabled", () => {
+  describe("when overlay is enabled", () => {
+    describe("when overlay is shown", () => {
       beforeEach(() => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         stubConfig({
@@ -272,6 +274,143 @@ describe("Consent banner", () => {
               [PRIVACY_NOTICE_KEY_2]: true,
               [PRIVACY_NOTICE_KEY_3]: true,
             });
+        });
+      });
+
+      describe("experience descriptions", () => {
+        describe("when experience uses rich HTML descriptions", () => {
+          // Shared helper that overrides the experience config description with
+          // an HTML example and allows toggling the allowHTMLDescription option
+          const setupHTMLDescriptionTest = (
+            options: Partial<FidesOptions> = {}
+          ) => {
+            const HTMLDescription = `
+            <p>
+              This test is overriding the <pre>experience_config.description</pre> with
+              an <strong>HTML</strong> description, which is used to allow users to configure
+              banners with <a href='https://example.com'>clickable links</a> and...
+            </p>
+            <p>
+              ...multiple paragraphs with ease. However, it's not enabled by default unless
+              the <pre>options.allowHTMLDescription</pre> flag is <pre>true</pre> to reduce
+              the likelihood of XSS attacks.
+            </p>
+            `;
+            cy.fixture("consent/test_banner_options.json").then((config) => {
+              const newExperienceConfig: ExperienceConfig = {
+                ...config.experience.experience_config,
+                ...{ description: HTMLDescription },
+              };
+              stubConfig({
+                experience: {
+                  experience_config: newExperienceConfig,
+                },
+                options,
+              });
+            });
+          };
+
+          it("does not render HTML by default", () => {
+            setupHTMLDescriptionTest({ allowHTMLDescription: false });
+            cy.get("div#fides-banner").within(() => {
+              cy.get("div#fides-banner-description.fides-banner-description")
+                .contains("a", "clickable links")
+                .should("not.exist");
+            });
+          });
+
+          it("renders HTML when options.allowHTMLDescription = true", () => {
+            setupHTMLDescriptionTest({ allowHTMLDescription: true });
+            cy.get("div#fides-banner").within(() => {
+              cy.get("div#fides-banner-description.fides-banner-description")
+                .contains("a", "clickable links")
+                .should("exist");
+            });
+          });
+        });
+
+        describe("when experience uses different descriptions for modal & banner", () => {
+          beforeEach(() => {
+            const bannerDescription =
+              "This test is overriding the banner description separately from modal!";
+            const modalDescription =
+              "This test is overriding the modal description separately from banner!";
+            cy.fixture("consent/test_banner_options.json").then((config) => {
+              const newExperienceConfig: ExperienceConfig = {
+                ...config.experience.experience_config,
+                ...{
+                  description: modalDescription,
+                  banner_description: bannerDescription,
+                },
+              };
+              stubConfig({
+                experience: {
+                  experience_config: newExperienceConfig,
+                },
+              });
+            });
+          });
+
+          it("renders the expected modal & banner descriptions", () => {
+            cy.get("div#fides-banner").within(() => {
+              cy.get(
+                "div#fides-banner-description.fides-banner-description"
+              ).contains(
+                "This test is overriding the banner description separately from modal!"
+              );
+            });
+
+            cy.contains("button", "Manage preferences").click();
+            cy.getByTestId("consent-modal").should("be.visible");
+
+            cy.get("div#fides-modal").within(() => {
+              cy.get(".fides-modal-description").contains(
+                "This test is overriding the modal description separately from banner!"
+              );
+            });
+          });
+        });
+      });
+
+      describe("titles", () => {
+        describe("when experience uses different titles for modal & banner", () => {
+          beforeEach(() => {
+            const bannerTitle =
+              "This test is overriding the banner title separately from modal!";
+            const modalTitle =
+              "This test is overriding the modal title separately from banner!";
+            cy.fixture("consent/test_banner_options.json").then((config) => {
+              const newExperienceConfig: ExperienceConfig = {
+                ...config.experience.experience_config,
+                ...{
+                  title: modalTitle,
+                  banner_title: bannerTitle,
+                },
+              };
+              stubConfig({
+                experience: {
+                  experience_config: newExperienceConfig,
+                },
+              });
+            });
+          });
+
+          it("renders the expected modal & banner title", () => {
+            cy.get("div#fides-banner").within(() => {
+              cy.get("div.fides-banner-title").contains(
+                "This test is overriding the banner title separately from modal!"
+              );
+            });
+
+            cy.contains("button", "Manage preferences").click();
+            cy.getByTestId("consent-modal").should("be.visible");
+
+            cy.get("div#fides-modal").within(() => {
+              cy.get(".fides-modal-title").contains(
+                "This test is overriding the modal title separately from banner!"
+              );
+            });
+          });
         });
       });
 
@@ -499,81 +638,71 @@ describe("Consent banner", () => {
           cy.get("input").should("be.checked");
         });
       });
+    });
 
-      it.skip("should support option to display at top or bottom of page", () => {
-        // TODO: add tests for top/bottom
-        expect(false).is.eql(true);
+    describe("cookie enforcement tests", () => {
+      beforeEach(() => {
+        const cookies = [
+          { name: "cookie1", path: "/" },
+          { name: "cookie2", path: "/" },
+        ];
+        cookies.forEach((cookie) => {
+          cy.setCookie(cookie.name, "value", { path: cookie.path });
+        });
+        stubConfig({
+          experience: {
+            privacy_notices: [
+              mockPrivacyNotice({
+                name: "one",
+                privacy_notice_history_id: "one",
+                notice_key: "one",
+                consent_mechanism: ConsentMechanism.OPT_OUT,
+                cookies: [cookies[0]],
+              }),
+              mockPrivacyNotice({
+                name: "two",
+                privacy_notice_history_id: "two",
+                notice_key: "second",
+                consent_mechanism: ConsentMechanism.OPT_OUT,
+                cookies: [cookies[1]],
+              }),
+            ],
+          },
+          options: {
+            isOverlayEnabled: true,
+          },
+        });
       });
 
-      it.skip("should support styling with CSS variables", () => {
-        // TODO: add tests for CSS
-        expect(false).is.eql(true);
+      it("can remove all cookies when rejecting all", () => {
+        cy.contains("button", "Reject Test").click();
+        cy.get("@FidesUpdated")
+          .should("have.been.calledOnce")
+          .its("lastCall.args.0.detail.extraDetails.consentMethod")
+          .then((consentMethod) => {
+            expect(consentMethod).to.eql(ConsentMethod.REJECT);
+          });
+        cy.getAllCookies().then((allCookies) => {
+          expect(allCookies.map((c) => c.name)).to.eql([CONSENT_COOKIE_NAME]);
+        });
       });
 
-      describe("cookie enforcement", () => {
-        beforeEach(() => {
-          const cookies = [
-            { name: "cookie1", path: "/" },
-            { name: "cookie2", path: "/" },
-          ];
-          cookies.forEach((cookie) => {
-            cy.setCookie(cookie.name, "value", { path: cookie.path });
+      it("can remove just the cookies associated with notices that were opted out", () => {
+        cy.contains("button", "Manage preferences").click();
+        // opt out of the first notice
+        cy.getByTestId("toggle-one").click();
+        cy.getByTestId("Save test-btn").click();
+        cy.get("@FidesUpdated")
+          .should("have.been.calledOnce")
+          .its("lastCall.args.0.detail.extraDetails.consentMethod")
+          .then((consentMethod) => {
+            expect(consentMethod).to.eql(ConsentMethod.SAVE);
           });
-          stubConfig({
-            experience: {
-              privacy_notices: [
-                mockPrivacyNotice({
-                  name: "one",
-                  privacy_notice_history_id: "one",
-                  notice_key: "one",
-                  consent_mechanism: ConsentMechanism.OPT_OUT,
-                  cookies: [cookies[0]],
-                }),
-                mockPrivacyNotice({
-                  name: "two",
-                  privacy_notice_history_id: "two",
-                  notice_key: "second",
-                  consent_mechanism: ConsentMechanism.OPT_OUT,
-                  cookies: [cookies[1]],
-                }),
-              ],
-            },
-            options: {
-              isOverlayEnabled: true,
-            },
-          });
-        });
-
-        it("can remove all cookies when rejecting all", () => {
-          cy.contains("button", "Reject Test").click();
-          cy.get("@FidesUpdated")
-            .should("have.been.calledOnce")
-            .its("lastCall.args.0.detail.extraDetails.consentMethod")
-            .then((consentMethod) => {
-              expect(consentMethod).to.eql(ConsentMethod.REJECT);
-            });
-          cy.getAllCookies().then((allCookies) => {
-            expect(allCookies.map((c) => c.name)).to.eql([CONSENT_COOKIE_NAME]);
-          });
-        });
-
-        it("can remove just the cookies associated with notices that were opted out", () => {
-          cy.contains("button", "Manage preferences").click();
-          // opt out of the first notice
-          cy.getByTestId("toggle-one").click();
-          cy.getByTestId("Save test-btn").click();
-          cy.get("@FidesUpdated")
-            .should("have.been.calledOnce")
-            .its("lastCall.args.0.detail.extraDetails.consentMethod")
-            .then((consentMethod) => {
-              expect(consentMethod).to.eql(ConsentMethod.SAVE);
-            });
-          cy.getAllCookies().then((allCookies) => {
-            expect(allCookies.map((c) => c.name)).to.eql([
-              CONSENT_COOKIE_NAME,
-              "cookie2",
-            ]);
-          });
+        cy.getAllCookies().then((allCookies) => {
+          expect(allCookies.map((c) => c.name)).to.eql([
+            CONSENT_COOKIE_NAME,
+            "cookie2",
+          ]);
         });
       });
     });
@@ -1066,7 +1195,6 @@ describe("Consent banner", () => {
       });
     });
 
-    // TODO: it should be possible in the future to filter for experience on just country
     describe("when experience is not provided, and geolocation is invalid", () => {
       beforeEach(() => {
         stubConfig({

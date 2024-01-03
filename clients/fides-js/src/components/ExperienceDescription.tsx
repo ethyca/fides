@@ -5,12 +5,27 @@ const TEXT_TO_LINK = "vendors page.";
 const ExperienceDescription = ({
   description,
   onVendorPageClick,
+  allowHTMLDescription = false,
 }: {
   description: string | undefined;
   onVendorPageClick?: () => void;
+  allowHTMLDescription?: boolean | null;
 }) => {
   if (!description) {
     return null;
+  }
+
+  // If allowHTMLDescription is true, render rich HTML content
+  // NOTE: We sanitize these descriptions server-side when configuring the
+  // PrivacyExperience, so it's safe to trust these
+  if (allowHTMLDescription) {
+    return (
+      <div
+        className="fides-html-description"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: description }}
+      />
+    );
   }
 
   // Swap out reference to "vendors page" with a button that can go to the vendor page

@@ -50,7 +50,9 @@ class ExperienceConfigBase:
 
     accept_button_label = Column(String)
     acknowledge_button_label = Column(String)
+    banner_description = Column(String)
     banner_enabled = Column(EnumColumn(BannerEnabled), index=True)
+    banner_title = Column(String)
     component = Column(EnumColumn(ComponentType), nullable=False, index=True)
     description = Column(String)
     disabled = Column(Boolean, nullable=False, default=False)

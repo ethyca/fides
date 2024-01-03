@@ -1,7 +1,7 @@
 """privacy_preference_v2
 
 Revision ID: f9b28f36b53e
-Revises: 4ced99dabebb
+Revises: f396c1f84b0f
 Create Date: 2023-12-13 17:14:00.677493
 
 """
@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 from fides.api.models.privacy_notice import ConsentMechanism
 
 revision = "f9b28f36b53e"
-down_revision = "4ced99dabebb"
+down_revision = "f396c1f84b0f"
 branch_labels = None
 depends_on = None
 
