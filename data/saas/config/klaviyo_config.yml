@@ -15,7 +15,7 @@ saas_config:
       sensitive: True
       description: Your Private API key
     - name: revision
-      default_value: "2023-10-15"
+      default_value: "2024-01-03T10:46:35"
       description: The API revision provided as an ISO 8601 date
 
   client_config:
