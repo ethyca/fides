@@ -114,7 +114,8 @@ const LocationPickerCard = ({
     handleChange(Array.from(newSelected));
   };
 
-  if (filteredLocations.length === 0) {
+  // Do not render the card if search ends up with no results
+  if (filteredLocations.length === 0 && search) {
     return null;
   }
 

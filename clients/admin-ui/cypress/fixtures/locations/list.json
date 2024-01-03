@@ -1,6 +1,14 @@
 {
   "locations": [
     {
+      "id": "er",
+      "selected": false,
+      "name": "Eritrea",
+      "continent": "Africa",
+      "belongs_to": [],
+      "regulation": []
+    },
+    {
       "id": "fr",
       "selected": true,
       "name": "France",
