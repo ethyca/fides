@@ -15,7 +15,7 @@ saas_config:
       sensitive: True
       description: Your Private API key
     - name: revision
-      default_value: "2024-01-03T10:46:35"
+      default_value: "2024-01-03"
       description: The API revision provided as an ISO 8601 date
 
   client_config:
@@ -33,9 +33,9 @@ saas_config:
   test_request:
     method: GET
     path: /api/profiles
-
-  endpoints:
-  - name: opt_out
+  ## fix this arrangement -- be smart, look at another optin out for proper formatting (mailchimp transactional)
+  consent_requests:
+    - name: opt_out
       requests:
         delete:
           method: POST
@@ -58,7 +58,7 @@ saas_config:
                 }
               }
             }
-  - name: opt_in
+    - name: opt_in
       requests:
         update:
           method: POST
