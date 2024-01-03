@@ -11,7 +11,7 @@ const locationsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getLocationsRegulations: build.query<LocationRegulationResponse, void>({
       query: () => ({
-        url: `/plus/locations/`,
+        url: `/plus/locations`,
       }),
       providesTags: () => ["Locations"],
     }),
