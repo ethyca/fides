@@ -1,6 +1,11 @@
 import { narrow } from "narrow-minded";
 
-import { Continent, Location, LocationGroup } from "~/types/api";
+import {
+  Continent,
+  Location,
+  LocationGroup,
+  LocationRegulationBase,
+} from "~/types/api";
 
 export const groupLocationsByContinent = (
   locations: Location[],
@@ -28,14 +33,14 @@ export const groupLocationsByContinent = (
   return byContinent;
 };
 
-export const groupByContinent = (
-  locations: Location[]
-): Record<Continent, Location[]> => {
-  const byContinent: Record<string, Location[]> = {};
-  const allContinents = new Set(locations.map((l) => l.continent).sort());
+export const groupRegulationsByContinent = (
+  regulations: LocationRegulationBase[]
+): Record<Continent, LocationRegulationBase[]> => {
+  const byContinent: Record<string, LocationRegulationBase[]> = {};
+  const allContinents = new Set(regulations.map((r) => r.continent).sort());
   allContinents.forEach((continent) => {
-    byContinent[continent] = locations
-      .filter((l) => l.continent === continent)
+    byContinent[continent] = regulations
+      .filter((r) => r.continent === continent)
       .sort((a, b) => a.name.localeCompare(b.name));
   });
   return byContinent;

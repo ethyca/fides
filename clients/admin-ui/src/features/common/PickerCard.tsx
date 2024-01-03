@@ -65,10 +65,10 @@ const PickerCard = <T extends { id: string; name: string }>({
   indeterminate: Array<string>;
   onChange: (newSelected: Array<string>) => void;
   toggle?: ReactNode;
-  onViewMore: () => void;
+  onViewMore?: () => void;
   numSelected: number;
 }) => {
-  const itemsToShow = items.slice(0, NUM_TO_SHOW);
+  const itemsToShow = onViewMore ? items.slice(0, NUM_TO_SHOW) : items;
 
   const { allSelected, someSelected, handleToggleAll, handleToggleSelection } =
     usePicker({
@@ -136,14 +136,16 @@ const PickerCard = <T extends { id: string; name: string }>({
             ))}
           </CheckboxGroup>
         </VStack>
-        <Button
-          size="xs"
-          variant="ghost"
-          onClick={onViewMore}
-          data-testid="view-more-btn"
-        >
-          View more
-        </Button>
+        {onViewMore ? (
+          <Button
+            size="xs"
+            variant="ghost"
+            onClick={onViewMore}
+            data-testid="view-more-btn"
+          >
+            View more
+          </Button>
+        ) : null}
       </VStack>
     </Box>
   );
