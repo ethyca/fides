@@ -18,7 +18,6 @@ export const initOverlay = async ({
   fidesRegionString,
   cookie,
   options,
-  shouldResurfaceConsent,
   renderOverlay,
 }: OverlayProps & {
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
@@ -69,7 +68,6 @@ export const initOverlay = async ({
             fidesRegionString,
             cookie,
             options,
-            shouldResurfaceConsent,
           },
           parentElem
         );

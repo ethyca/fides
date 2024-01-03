@@ -24,18 +24,28 @@ import { useConsentServed } from "../../lib/hooks";
 import { updateCookieFromNoticePreferences } from "../../lib/cookie";
 import PrivacyPolicyLink from "../PrivacyPolicyLink";
 import { dispatchFidesEvent } from "../../lib/events";
+import { resolveConsentValue } from "../../lib/consent-value";
+import { getConsentContext } from "../../lib/consent-context";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   experience,
   options,
   fidesRegionString,
   cookie,
-  shouldResurfaceConsent,
 }) => {
-  const initialEnabledNoticeKeys = useMemo(
-    () => Object.keys(cookie.consent).filter((key) => cookie.consent[key]),
-    [cookie.consent]
-  );
+  const consentContext = useMemo(() => getConsentContext(), []);
+  const initialEnabledNoticeKeys = useMemo(() => {
+    if (experience.privacy_notices) {
+      return experience.privacy_notices?.map((notice) => {
+        const val = resolveConsentValue(notice, consentContext, cookie);
+        if (val) {
+          return notice.notice_key as PrivacyNotice["notice_key"];
+        }
+        return "";
+      });
+    }
+    return [];
+  }, [cookie, experience, consentContext]);
 
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
     Array<PrivacyNotice["notice_key"]>
@@ -134,7 +144,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       options={options}
       experience={experience}
       cookie={cookie}
-      shouldResurfaceConsent={shouldResurfaceConsent}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (

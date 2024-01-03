@@ -12,6 +12,5 @@ export interface OverlayProps {
   options: FidesOptions;
   experience: PrivacyExperience;
   cookie: FidesCookie;
-  shouldResurfaceConsent: boolean;
   fidesRegionString: string;
 }

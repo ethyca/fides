@@ -58,10 +58,9 @@ import {
   GetPreferencesFnResp,
   OverrideOptions,
   PrivacyExperience,
-  UserConsentPreference,
 } from "./lib/consent-types";
 
-import { generateFidesString, initializeTcfCmpApi } from "./lib/tcf";
+import { initializeTcfCmpApi } from "./lib/tcf";
 import {
   getInitialCookie,
   getInitialFides,
@@ -70,16 +69,8 @@ import {
 } from "./lib/initialize";
 import type { Fides } from "./lib/initialize";
 import { dispatchFidesEvent } from "./lib/events";
-import {
-  debugLog,
-  FidesCookie,
-  getTcfDefaultPreference,
-  transformTcfPreferencesToCookieKeys,
-  transformUserPreferenceToBoolean,
-} from "./fides";
+import { debugLog, FidesCookie } from "./fides";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
-import { EnabledIds, TcfSavePreferences } from "./lib/tcf/types";
-import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./lib/tcf/constants";
 import type { GppFunction } from "./lib/gpp/types";
 import { makeStub } from "./lib/tcf/stub";
 import { customGetConsentPreferences } from "./services/external/preferences";
@@ -144,50 +135,8 @@ const updateCookieAndExperience = async ({
     return { cookie, experience: tcfEntities };
   }
 
-  // If there is no fides_string, we use the default prefs on the experience to generate:
-  // 1. a fidesString
-  // 2. a cookie.tcf_consent (which only has system preferences since those are not captured in the fidesString)
-
-  // 1. Generate a fidesString from the experience
-  const enabledIds: EnabledIds = {
-    purposesConsent: [],
-    purposesLegint: [],
-    specialPurposes: [],
-    features: [],
-    specialFeatures: [],
-    vendorsConsent: [],
-    vendorsLegint: [],
-  };
-  TCF_KEY_MAP.forEach(({ experienceKey, enabledIdsKey }) => {
-    experience[experienceKey]?.forEach((record) => {
-      const pref: UserConsentPreference = getTcfDefaultPreference(record);
-      // add to enabledIds only if user consent is True
-      if (transformUserPreferenceToBoolean(pref)) {
-        if (enabledIdsKey) {
-          enabledIds[enabledIdsKey].push(record.id.toString());
-        }
-      }
-    });
-  });
-  const fidesString = await generateFidesString({
-    experience,
-    tcStringPreferences: enabledIds,
-  });
-
-  // 2. Generate a cookie object from the experience
-  const tcSavePrefs: TcfSavePreferences = {};
-  FIDES_SYSTEM_COOKIE_KEY_MAP.forEach(({ cookieKey, experienceKey }) => {
-    tcSavePrefs[cookieKey] = [];
-    experience[experienceKey]?.forEach((record) => {
-      const preference = getTcfDefaultPreference(record);
-      tcSavePrefs[cookieKey]?.push({ id: `${record.id}`, preference });
-    });
-  });
-  const tcfConsent = transformTcfPreferencesToCookieKeys(tcSavePrefs);
-
-  // Return the updated cookie
   return {
-    cookie: { ...cookie, fides_string: fidesString, tcf_consent: tcfConsent },
+    cookie,
     experience,
   };
 };
@@ -290,7 +239,6 @@ _Fides = {
     customOptionsPath: null,
     preventDismissal: false,
   },
-  shouldResurfaceConsent: false,
   fides_meta: {},
   identity: {},
   tcf_consent: {},

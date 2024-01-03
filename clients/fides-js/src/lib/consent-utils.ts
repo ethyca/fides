@@ -8,6 +8,7 @@ import {
   OverrideOptions,
   PrivacyExperience,
   PrivacyNotice,
+  PrivacyNoticeExtended,
   UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
@@ -223,6 +224,15 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
   tcfObject.default_preference ?? UserConsentPreference.OPT_OUT;
 
 /**
+ * Returns true if notice has a corresponding key in cookie. This means a user has a consent val for that notice.
+ * Assumes that cookie has not been overridden with other consent vals prior to being called.
+ */
+export const noticeHasConsentInCookie = (
+  notice: PrivacyNoticeExtended,
+  cookie: FidesCookie
+): boolean => Boolean(Object.hasOwn(cookie.consent, notice.notice_key));
+
+/**
  * Returns true if there are notices in the experience that require a user preference
  * or if an experience's version hash does not match up.
  */
@@ -239,33 +249,10 @@ export const shouldResurfaceConsent = (
   }
   // If not every notice has previous user consent, we need to resurface consent
   return Boolean(
-    !experience.privacy_notices?.every((notice) => notice.previously_consented)
+    !experience.privacy_notices?.every((notice) =>
+      noticeHasConsentInCookie(notice, cookie)
+    )
   );
-};
-
-/**
- * Adds the previously_consented field to notices on the experience.
- * This field tracks whether we have prior user consent for a notice.
- */
-export const assignPreviousConsentToNotices = (
-  experience: PrivacyExperience,
-  cookie: FidesCookie
-): PrivacyExperience => {
-  if (experience.component === ComponentType.TCF_OVERLAY) {
-    return experience;
-  }
-
-  const noticesWithPreviousConsent = experience.privacy_notices?.map(
-    (notice) => {
-      const previouslyConsented = Object.hasOwn(
-        cookie.consent,
-        notice.notice_key
-      );
-      return { ...notice, previously_consented: previouslyConsented };
-    }
-  );
-
-  return { ...experience, privacy_notices: noticesWithPreviousConsent };
 };
 
 /**
@@ -325,6 +312,7 @@ export const getGpcStatusFromNotice = ({
     return GpcStatus.NONE;
   }
 
+  // if gpc is enabled for the notice and consent is opt-out (false)
   if (!value) {
     return GpcStatus.APPLIED;
   }

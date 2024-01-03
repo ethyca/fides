@@ -50,7 +50,6 @@ import { shopify } from "./integrations/shopify";
 
 import {
   FidesCookie,
-  buildCookieConsentForExperiences,
   updateExperienceFromCookieConsentNotices,
   consentCookieObjHasSomeConsentSet,
 } from "./lib/cookie";
@@ -74,7 +73,6 @@ import {
 import type { Fides } from "./lib/initialize";
 
 import { renderOverlay } from "./lib/renderOverlay";
-import { getConsentContext } from "./lib/consent-context";
 import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
@@ -89,34 +87,25 @@ declare global {
 let _Fides: Fides;
 
 const updateCookie = async (
-  oldCookie: FidesCookie,
+  cookie: FidesCookie,
   experience: PrivacyExperience,
   debug?: boolean,
   isExperienceClientSideFetched?: boolean
 ): Promise<{ cookie: FidesCookie; experience: PrivacyExperience }> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
-    oldCookie.consent
+    cookie.consent
   );
   if (isExperienceClientSideFetched && preferencesExistOnCookie) {
     // If we have some preferences on the cookie, we update client-side experience with those preferences
-    // if the name matches
+    // if the name matches. This is used for client-side UI.
     updatedExperience = updateExperienceFromCookieConsentNotices({
       experience,
-      cookie: oldCookie,
+      cookie,
       debug,
     });
   }
-  // Even if we update experience from cookie consent, we must still generate cookie consent based on experience.
-  // It's possible that some notices on the experience were not present on the cookie, e.g. if the cookie
-  // held legacy consent values.
-  const context = getConsentContext();
-  const consent = buildCookieConsentForExperiences(
-    updatedExperience,
-    context,
-    !!debug
-  );
-  return { cookie: { ...oldCookie, consent }, experience: updatedExperience };
+  return { cookie, experience: updatedExperience };
 };
 
 /**
@@ -199,7 +188,6 @@ _Fides = {
     customOptionsPath: null,
     preventDismissal: false,
   },
-  shouldResurfaceConsent: false,
   fides_meta: {},
   identity: {},
   tcf_consent: {},

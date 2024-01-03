@@ -17,7 +17,7 @@ import {
 } from "~/types/api";
 import { selectSettings } from "../common/settings.slice";
 
-import { FidesKeyToConsent, NoticeHistoryIdToPreference } from "./types";
+import { FidesKeyToConsent } from "./types";
 
 export const consentApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -240,24 +240,5 @@ export const selectPrivacyExperience = createSelector(
       region,
       fides_user_device_id: deviceId,
     })(RootState)?.data?.items[0];
-  }
-);
-
-const emptyConsentPreferences: NoticeHistoryIdToPreference = {};
-export const selectCurrentConsentPreferences = createSelector(
-  selectPrivacyExperience,
-  (experience) => {
-    if (
-      !experience ||
-      !experience.privacy_notices ||
-      !experience.privacy_notices.length
-    ) {
-      return emptyConsentPreferences;
-    }
-    const preferences: NoticeHistoryIdToPreference = {};
-    experience.privacy_notices.forEach((notice) => {
-      preferences[notice.privacy_notice_history_id] = notice.current_preference;
-    });
-    return preferences;
   }
 );

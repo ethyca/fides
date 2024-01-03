@@ -10,10 +10,11 @@ import {
   getGpcStatusFromNotice,
   PrivacyNotice,
   ConsentContext,
+  FidesCookie,
+  PrivacyNoticeExtended,
 } from "fides-js";
 import { useAppSelector } from "~/app/hooks";
 import {
-  selectCurrentConsentPreferences,
   selectUserRegion,
   selectPrivacyExperience,
   useUpdatePrivacyPreferencesMutation,
@@ -34,7 +35,10 @@ import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { NoticeHistoryIdToPreference } from "~/features/consent/types";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { useLocalStorage } from "~/common/hooks";
-import { transformConsentToFidesUserPreference } from "fides-js/src/lib/consent-utils";
+import {
+  noticeHasConsentInCookie,
+  transformConsentToFidesUserPreference,
+} from "fides-js/src/lib/consent-utils";
 import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
@@ -43,19 +47,26 @@ import PrivacyPolicyLink from "./PrivacyPolicyLink";
 export const resolveConsentValue = (
   notice: PrivacyNoticeResponseWithUserPreferences,
   context: ConsentContext,
-  current_preference?: boolean | undefined
+  cookie: FidesCookie
 ): UserConsentPreference | undefined => {
   if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
     return UserConsentPreference.ACKNOWLEDGE;
   }
   const gpcEnabled =
-    !!notice.has_gpc_flag && context.globalPrivacyControl === true;
+    !!notice.has_gpc_flag &&
+    context.globalPrivacyControl === true &&
+    !noticeHasConsentInCookie(notice as PrivacyNoticeExtended, cookie);
   if (gpcEnabled) {
     return UserConsentPreference.OPT_OUT;
   }
-  if (current_preference) {
+  const preferenceExistsInCookie = noticeHasConsentInCookie(
+    notice as PrivacyNoticeExtended,
+    cookie
+  );
+  if (preferenceExistsInCookie) {
     return transformConsentToFidesUserPreference(
-      current_preference,
+      // @ts-ignore
+      cookie.consent[notice.notice_key],
       notice.consent_mechanism
     );
   }
@@ -70,7 +81,6 @@ const NoticeDrivenConsent = () => {
   const [verificationCode] = useLocalStorage("verificationCode", "");
   const consentContext = useMemo(() => getConsentContext(), []);
   const experience = useAppSelector(selectPrivacyExperience);
-  const serverPreferences = useAppSelector(selectCurrentConsentPreferences);
   const cookie = getOrMakeFidesCookie();
   const { fides_user_device_id: fidesUserDeviceId } = cookie.identity;
   const [updatePrivacyPreferencesMutationTrigger] =
@@ -83,26 +93,25 @@ const NoticeDrivenConsent = () => {
     return identities ? { ...deviceIdentity, ...identities } : deviceIdentity;
   }, [fidesUserDeviceId]);
 
-  const initialDraftPreferences = useMemo(() => {
-    const newPreferences = { ...serverPreferences };
-    Object.entries(serverPreferences).forEach(([key, value]) => {
-      if (!value) {
-        const notices = experience?.privacy_notices ?? [];
-        const notice = notices.filter(
-          (n) => n.privacy_notice_history_id === key
-        )[0];
-        const defaultValue = notice
-          ? resolveConsentValue(
-              notice,
-              consentContext,
-              notice.notice_key ? cookie.consent[notice.notice_key] : undefined
-            )
-          : UserConsentPreference.OPT_OUT;
-        newPreferences[key] = defaultValue;
-      }
-    });
+  const initialDraftPreferences: NoticeHistoryIdToPreference = useMemo(() => {
+    const newPreferences: NoticeHistoryIdToPreference = {};
+    if (experience?.privacy_notices) {
+      experience.privacy_notices?.forEach((notice) => {
+        const pref: UserConsentPreference | undefined = resolveConsentValue(
+          notice,
+          consentContext,
+          cookie
+        );
+        if (pref) {
+          newPreferences[notice.privacy_notice_history_id] = pref;
+        } else {
+          newPreferences[notice.privacy_notice_history_id] =
+            UserConsentPreference.OPT_OUT;
+        }
+      });
+    }
     return newPreferences;
-  }, [serverPreferences, experience, consentContext, cookie]);
+  }, [experience, consentContext, cookie]);
 
   const [draftPreferences, setDraftPreferences] =
     useState<NoticeHistoryIdToPreference>(initialDraftPreferences);
@@ -133,6 +142,7 @@ const NoticeDrivenConsent = () => {
     consentRequestId,
     updateNoticesServedMutationTrigger,
     experience,
+    servedNotice,
     browserIdentities,
   ]);
 

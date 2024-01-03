@@ -2086,10 +2086,7 @@ describe("Fides-js TCF", () => {
           expect(tcData.tcString).to.not.contain("invalid");
           expect(tcData.eventStatus).to.eql("cmpuishown");
           expect(tcData.purpose.consents).to.eql({});
-          expect(tcData.purpose.legitimateInterests).to.eql({
-            [PURPOSE_2.id]: true,
-            1: false,
-          });
+          expect(tcData.purpose.legitimateInterests).to.eql({});
           expect(tcData.vendor.consents).to.eql({});
           expect(tcData.vendor.legitimateInterests).to.eql({});
         });

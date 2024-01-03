@@ -1,6 +1,14 @@
 import { ConsentContext } from "./consent-context";
-import { ConsentMechanism, ConsentValue, PrivacyNotice } from "./consent-types";
-import { transformUserPreferenceToBoolean } from "./consent-utils";
+import {
+  ConsentMechanism,
+  ConsentValue,
+  PrivacyNoticeExtended,
+} from "./consent-types";
+import {
+  noticeHasConsentInCookie,
+  transformUserPreferenceToBoolean,
+} from "./consent-utils";
+import { FidesCookie } from "~/lib/cookie";
 
 export const resolveLegacyConsentValue = (
   value: ConsentValue | undefined,
@@ -22,24 +30,17 @@ export const resolveLegacyConsentValue = (
 };
 
 export const resolveConsentValue = (
-  notice: PrivacyNotice,
+  notice: PrivacyNoticeExtended,
   context: ConsentContext,
-  current_preference?: boolean | undefined,
-  previouslyConsented?: boolean
+  cookie: FidesCookie
 ): boolean => {
   if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
     return true;
   }
-  const gpcEnabled =
-    !!notice.has_gpc_flag &&
-    context.globalPrivacyControl === true &&
-    !previouslyConsented;
-  if (gpcEnabled) {
-    return false;
+  const preferenceExistsInCookie = noticeHasConsentInCookie(notice, cookie);
+  // Note about GPC - consent has already applied to the cookie at this point, so we can trust preference there
+  if (preferenceExistsInCookie) {
+    return <boolean>cookie.consent[notice.notice_key];
   }
-  if (current_preference) {
-    return current_preference;
-  }
-
   return transformUserPreferenceToBoolean(notice.default_preference);
 };

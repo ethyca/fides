@@ -2,10 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { getCookie, removeCookie, setCookie, Types } from "typescript-cookie";
 
 import { ConsentContext } from "./consent-context";
-import {
-  resolveConsentValue,
-  resolveLegacyConsentValue,
-} from "./consent-value";
+import { resolveLegacyConsentValue } from "./consent-value";
 import {
   Cookies,
   ExperienceMeta,
@@ -249,36 +246,6 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
 };
 
 /**
- * Builds consent preferences for this session, based on:
- * 1) context: browser context, which can automatically override those defaults
- *    in some cases (e.g. global privacy control => false)
- * 2) experience: current experience-based consent configuration.
- *
- * Returns cookie consent that can then be changed according to the
- * user's preferences.
- */
-export const buildCookieConsentForExperiences = (
-  experience: PrivacyExperience,
-  context: ConsentContext,
-  debug: boolean
-): CookieKeyConsent => {
-  const cookieConsent: CookieKeyConsent = {};
-  if (!experience.privacy_notices) {
-    return cookieConsent;
-  }
-  experience.privacy_notices.forEach((notice) => {
-    cookieConsent[notice.notice_key] = resolveConsentValue(
-      notice,
-      context,
-      cookieConsent[notice.notice_key],
-      notice.previously_consented
-    );
-  });
-  debugLog(debug, `Returning cookie consent for experiences.`, cookieConsent);
-  return cookieConsent;
-};
-
-/**
  * Updates prefetched experience, based on:
  * 1) experience: pre-fetched or client-side experience-based consent configuration
  * 2) cookie: cookie containing user preference.
@@ -295,6 +262,7 @@ export const updateExperienceFromCookieConsentNotices = ({
   cookie: FidesCookie;
   debug?: boolean;
 }): PrivacyExperience => {
+  // todo- instead of updating experience here, push this logic into UI
   const noticesWithConsent: PrivacyNoticeExtended[] | undefined =
     experience.privacy_notices?.map((notice) => {
       const preference = Object.hasOwn(cookie.consent, notice.notice_key)

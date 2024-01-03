@@ -27,13 +27,12 @@ import {
   UserGeolocation,
 } from "./consent-types";
 import {
-  assignPreviousConsentToNotices,
   constructFidesRegionString,
   debugLog,
   experienceIsValid,
   getWindowObjFromPath,
   isPrivacyExperience,
-  shouldResurfaceConsent,
+  noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,
   validateOptions,
 } from "./consent-utils";
@@ -52,7 +51,6 @@ export type Fides = {
   experience?: PrivacyExperience | EmptyExperience;
   geolocation?: UserGeolocation;
   fides_string?: string | undefined;
-  shouldResurfaceConsent?: boolean;
   options: FidesOptions;
   fides_meta: CookieMeta;
   tcf_consent: TcfCookieConsent;
@@ -113,10 +111,11 @@ const automaticallyApplyGPCPreferences = ({
   let gpcApplied = false;
   const consentPreferencesToSave = effectiveExperience.privacy_notices.map(
     (notice) => {
-      // Track notices that have current user preference so we don't override it with GPC
+      const hasPriorConsent = noticeHasConsentInCookie(notice, cookie);
+      // only apply GPC for notices that do not have prior consent
       if (
         notice.has_gpc_flag &&
-        !notice.previously_consented &&
+        !hasPriorConsent &&
         notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY
       ) {
         gpcApplied = true;
@@ -128,12 +127,7 @@ const automaticallyApplyGPCPreferences = ({
       return new SaveConsentPreference(
         notice,
         transformConsentToFidesUserPreference(
-          resolveConsentValue(
-            notice,
-            context,
-            cookie.consent[notice.notice_key],
-            !notice.previously_consented
-          ),
+          resolveConsentValue(notice, context, cookie),
           notice.consent_mechanism
         )
       );
@@ -309,7 +303,6 @@ export const initialize = async ({
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
   let effectiveExperience = experience;
   let fidesRegionString: string | null = null;
-  let resurfaceConsent = false;
 
   if (shouldInitOverlay) {
     if (!validateOptions(options)) {
@@ -349,12 +342,6 @@ export const initialize = async ({
       isPrivacyExperience(effectiveExperience) &&
       experienceIsValid(effectiveExperience, options)
     ) {
-      effectiveExperience = assignPreviousConsentToNotices(
-        effectiveExperience,
-        cookie
-      );
-      // determine if consent should be resurfaced before we overwrite cookie vals with the experience defaults
-      resurfaceConsent = shouldResurfaceConsent(effectiveExperience, cookie);
       // apply GPC preferences
       if (shouldInitOverlay && isPrivacyExperience(effectiveExperience)) {
         automaticallyApplyGPCPreferences({
@@ -379,7 +366,6 @@ export const initialize = async ({
           fidesRegionString: fidesRegionString as string,
           cookie,
           options,
-          shouldResurfaceConsent: resurfaceConsent,
           renderOverlay,
         }).catch(() => {});
       }
@@ -399,7 +385,6 @@ export const initialize = async ({
     fides_string: cookie.fides_string,
     tcf_consent: cookie.tcf_consent,
     experience: effectiveExperience,
-    shouldResurfaceConsent: resurfaceConsent,
     geolocation,
     options,
     initialized: true,

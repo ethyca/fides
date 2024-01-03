@@ -348,8 +348,6 @@ export type PrivacyNotice = {
 export type PrivacyNoticeExtended = PrivacyNotice & {
   // Tracks preference to be shown via the UI / served via CMP
   current_preference?: UserConsentPreference;
-  // Tracks whether consent for the notice already exists in fides string / fides cookie
-  previously_consented?: boolean;
 };
 
 export enum EnforcementLevel {
