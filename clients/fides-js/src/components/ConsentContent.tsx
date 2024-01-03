@@ -47,6 +47,7 @@ const ConsentModal = ({
             <ExperienceDescription
               onVendorPageClick={onVendorPageClick}
               description={experience.description}
+              allowHTMLDescription={window.Fides?.options?.allowHTMLDescription}
             />
           </p>
           {showGpcBadge && <GpcInfo />}

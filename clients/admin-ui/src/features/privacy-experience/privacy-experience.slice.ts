@@ -28,6 +28,34 @@ interface ExperienceConfigParams {
   size?: number;
 }
 
+// Construct custom types that allows the optional fields on
+// PrivacyExperienceConfig API requests to be *truly* nullable
+// (see // https://github.com/ethyca/fides/issues/1169)
+type ExperienceConfigOptionalFields =
+  | "banner_title"
+  | "banner_description"
+  | "privacy_policy_link_label"
+  | "privacy_policy_url";
+export type ExperienceConfigUpdateParams = Omit<
+  Partial<ExperienceConfigUpdate>,
+  ExperienceConfigOptionalFields
+> & {
+  id: string;
+  banner_title?: string | null;
+  banner_description?: string | null;
+  privacy_policy_link_label?: string | null;
+  privacy_policy_url?: string | null;
+};
+export type ExperienceConfigCreateParams = Omit<
+  Partial<ExperienceConfigCreate>,
+  ExperienceConfigOptionalFields
+> & {
+  banner_title?: string | null;
+  banner_description?: string | null;
+  privacy_policy_link_label?: string | null;
+  privacy_policy_url?: string | null;
+};
+
 const privacyExperienceConfigApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllExperienceConfigs: build.query<
@@ -42,7 +70,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
     }),
     patchExperienceConfig: build.mutation<
       ExperienceConfigCreateOrUpdateResponse,
-      Partial<ExperienceConfigUpdate> & Pick<ExperienceConfigResponse, "id">
+      ExperienceConfigUpdateParams
     >({
       query: (payload) => {
         const { id, ...body } = payload;
@@ -64,7 +92,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
     }),
     postExperienceConfig: build.mutation<
       ExperienceConfigCreateOrUpdateResponse,
-      ExperienceConfigCreate
+      ExperienceConfigCreateParams
     >({
       query: (payload) => ({
         method: "POST",

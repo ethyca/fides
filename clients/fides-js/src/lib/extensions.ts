@@ -13,7 +13,7 @@ export const setupExtensions = async ({
 }) => {
   if (experience?.gpp_settings?.enabled) {
     try {
-      await import(options.gppExtensionPath);
+      await import(`${options.fidesJsBaseUrl}/fides-ext-gpp.js`);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error("Unable to import GPP extension", e);
