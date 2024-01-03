@@ -1,9 +1,6 @@
-### Marc you are not done yet. Remove this comment only when you're DONE with this test file!
-### Do you have any extraneous tests?
-### All tests passing?
-
 import pytest
-import pdb
+
+# import pdb -- used for trouble shooting
 
 from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
@@ -37,7 +34,7 @@ class TestAppsflyerConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": appsflyer_erasure_identity_email},
         )
-        # pdb.set_trace()
+        # pdb.set_trace() -- used for trouble shooting
         assert erasure_results == {
             "appsflyer_external_dataset:appsflyer_external_collection": 0,
             "appsflyer_instance:apps": 0,
