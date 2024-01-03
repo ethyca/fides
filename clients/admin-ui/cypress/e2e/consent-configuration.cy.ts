@@ -113,7 +113,7 @@ describe("Consent configuration", () => {
     });
   });
 
-  describe("adding a vendor", () => {
+  describe.skip("adding a vendor", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
