@@ -153,6 +153,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresFlag: "locationRegulationConfiguration",
       },
       {
+        title: "Regulations",
+        path: routes.REGULATIONS_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.LOCATION_READ,
+          ScopeRegistryEnum.LOCATION_UPDATE,
+        ],
+        requiresPlus: true,
+        requiresFlag: "locationRegulationConfiguration",
+      },
+      {
         title: "Taxonomy",
         path: routes.TAXONOMY_ROUTE,
         scopes: [

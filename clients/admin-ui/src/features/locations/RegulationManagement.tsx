@@ -14,53 +14,60 @@ import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
+import PickerCard from "~/features/common/PickerCard";
 import SearchBar from "~/features/common/SearchBar";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { LocationRegulationResponse, Selection } from "~/types/api";
+import ToastLink from "~/features/common/ToastLink";
+import {
+  LocationRegulationBase,
+  LocationRegulationResponse,
+  Selection,
+} from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-import { REGULATIONS_ROUTE } from "../common/nav/v2/routes";
-import ToastLink from "../common/ToastLink";
-import LocationPickerCard from "./LocationPickerCard";
+import { LOCATIONS_ROUTE } from "../common/nav/v2/routes";
 import { usePatchLocationsRegulationsMutation } from "./locations.slice";
-import { groupLocationsByContinent } from "./transformations";
+import { groupRegulationsByContinent } from "./transformations";
 
-const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
+const SEARCH_FILTER = (regulation: LocationRegulationBase, search: string) =>
+  regulation.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
+
+const RegulationManagement = ({
+  data,
+}: {
+  data: LocationRegulationResponse;
+}) => {
   const toast = useToast();
   const confirmationDisclosure = useDisclosure();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
-    data.locations ?? []
+    data.regulations ?? []
   );
   const [search, setSearch] = useState("");
   const [patchLocationsRegulationsMutationTrigger, { isLoading: isSaving }] =
     usePatchLocationsRegulationsMutation();
 
-  const locationGroupsByContinent = useMemo(
-    () =>
-      groupLocationsByContinent(
-        data.locations || [],
-        data.location_groups || []
-      ),
-    [data]
-  );
+  const regulationsByContinent = useMemo(() => {
+    const filteredSearchLocations =
+      data.regulations?.filter((l) => SEARCH_FILTER(l, search)) ?? [];
+    return groupRegulationsByContinent(filteredSearchLocations);
+  }, [data.regulations, search]);
 
-  const showSave = !_.isEqual(draftSelections, data.locations);
-
+  const showSave = !_.isEqual(draftSelections, data.regulations);
   const router = useRouter();
-  const goToRegulations = () => {
-    router.push(REGULATIONS_ROUTE).then(() => {
+  const goToLocations = () => {
+    router.push(LOCATIONS_ROUTE).then(() => {
       toast.closeAll();
     });
   };
 
   const handleSave = async () => {
     const result = await patchLocationsRegulationsMutationTrigger({
-      locations: draftSelections.map((s) => ({
+      regulations: draftSelections.map((s) => ({
         id: s.id,
         selected: s.selected,
       })),
       // no changes to regulations
-      regulations: [],
+      locations: [],
     });
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
@@ -68,18 +75,15 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
       toast(
         successToastParams(
           <Text>
-            Fides has automatically associated the relevant regulations with
-            your location choices.{" "}
-            <ToastLink onClick={goToRegulations}>
-              View regulations here.
-            </ToastLink>
+            Fides has automatically associated the relevant locations with your
+            regulation choices.
+            <ToastLink onClick={goToLocations}>View locations here.</ToastLink>
           </Text>
         )
       );
     }
   };
 
-  /** Allow changing a subset so it is easier to handle changes across continents */
   const handleDraftChange = (updatedSelections: Array<Selection>) => {
     const updated = draftSelections.map((draftSelection) => {
       const updatedSelection = updatedSelections.find(
@@ -87,6 +91,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
       );
       return updatedSelection ?? draftSelection;
     });
+
     setDraftSelections(updated);
   };
 
@@ -102,24 +107,34 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
         />
       </Box>
       <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={6} width="100%">
-        {Object.entries(locationGroupsByContinent).map(
-          ([continent, continentData]) => (
-            <LocationPickerCard
-              key={continent}
-              title={continent}
-              groups={continentData.locationGroups}
-              locations={continentData.locations}
-              selected={draftSelections
-                .filter(
-                  (d) =>
-                    continentData.locations.find((l) => l.id === d.id) &&
-                    d.selected
-                )
-                .map((d) => d.id)}
-              onChange={handleDraftChange}
-              search={search}
-            />
-          )
+        {Object.entries(regulationsByContinent).map(
+          ([continent, regulations]) => {
+            const selected = draftSelections
+              .filter(
+                (s) => regulations.find((r) => r.id === s.id) && s.selected
+              )
+              .map((s) => s.id);
+            const handleChange = (newSelected: string[]) => {
+              const updatedSelections = regulations.map((regulation) => {
+                if (newSelected.includes(regulation.id)) {
+                  return { ...regulation, selected: true };
+                }
+                return { ...regulation, selected: false };
+              });
+              handleDraftChange(updatedSelections);
+            };
+            return (
+              <PickerCard
+                key={continent}
+                title={continent}
+                items={regulations}
+                selected={selected}
+                onChange={handleChange}
+                numSelected={selected.length}
+                indeterminate={[]}
+              />
+            );
+          }
         )}
       </SimpleGrid>
       <ConfirmationModal
@@ -129,8 +144,8 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
           handleSave();
           confirmationDisclosure.onClose();
         }}
-        title="Regulation updates"
-        message="Modifications in your location settings may also affect your regulation settings to simplify management. You can override any Fides-initiated changes directly in the regulation settings."
+        title="Location updates"
+        message="Modifications in your regulation settings may also affect your location settings to simplify management. You can override any Fides-initiated changes directly in the location settings."
         isCentered
         icon={<WarningIcon color="orange" />}
       />
@@ -149,4 +164,4 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   );
 };
 
-export default LocationManagement;
+export default RegulationManagement;
