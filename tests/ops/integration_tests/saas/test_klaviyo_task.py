@@ -161,4 +161,6 @@ async def test_klaviyo_erasure_request_task(
         db,
     )
 
+    assert response.status_code == 202
+
     CONFIG.execution.masking_strict = masking_strict
