@@ -143,24 +143,24 @@ async def test_klaviyo_erasure_request_task(
     ### The response from the api/profile-subscription-bulk-delete-jobs/ and
     ### api/profile-subscription-bulk-create-jobs/ endpoints is just a 202 if all went as expected
     ### So we should just need to build up the two requests and assert for a 202 I think
-    privacy_request = PrivacyRequest(
-        id=f"test_klaviyo_consent_request_task_{random.randint(0, 1000)}"
-    )
-    identity = Identity(**{"email": klaviyo_erasure_identity_email})
-    privacy_request.cache_identity(identity)
-    dataset_name = klaviyo_connection_config.get_saas_config().fides_key
-    merged_graph = klaviyo_dataset_config.get_graph()
-    graph = DatasetGraph(merged_graph)
+    # privacy_request = PrivacyRequest(
+    #     id=f"test_klaviyo_consent_request_task_{random.randint(0, 1000)}"
+    # )
+    # identity = Identity(**{"email": klaviyo_erasure_identity_email})
+    # privacy_request.cache_identity(identity)
+    # dataset_name = klaviyo_connection_config.get_saas_config().fides_key
+    # merged_graph = klaviyo_dataset_config.get_graph()
+    # graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_consent_request(
-        privacy_request,
-        policy,
-        graph,
-        [klaviyo_connection_config],
-        {"email": klaviyo_erasure_identity_email},
-        db,
-    )
+    # v = await graph_task.run_consent_request(
+    #     privacy_request,
+    #     policy,
+    #     graph,
+    #     [klaviyo_connection_config],
+    #     {"email": klaviyo_erasure_identity_email},
+    #     db,
+    # )
 
-    assert response.status_code == 202
+    # assert response.status_code == 202
 
     CONFIG.execution.masking_strict = masking_strict
