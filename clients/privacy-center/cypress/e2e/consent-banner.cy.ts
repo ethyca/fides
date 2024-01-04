@@ -1857,6 +1857,7 @@ describe("Consent overlay", () => {
         experience: {
           privacy_notices: [
             mockPrivacyNotice({
+              // fixme- even if consent default pref is opt-in, GPC should apply
               name: "Applied",
               notice_key: "applied",
               has_gpc_flag: true,
