@@ -139,3 +139,8 @@ async def test_klaviyo_erasure_request_task(
     assert response.status_code == 200
 
     CONFIG.execution.masking_strict = masking_strict
+
+
+### I think I need to add two tests for the opt-in and opt-out functionality we're adding.
+### The response from the api/profile-subscription-bulk-delete-jobs/ and
+### api/profile-subscription-bulk-create-jobs/ endpoints is just a 202 if all went as expected
