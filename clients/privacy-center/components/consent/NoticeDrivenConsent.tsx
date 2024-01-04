@@ -11,7 +11,7 @@ import {
   PrivacyNotice,
   ConsentContext,
   FidesCookie,
-  PrivacyNoticeExtended,
+  PrivacyNoticeWithPreference,
 } from "fides-js";
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -55,12 +55,12 @@ export const resolveConsentValue = (
   const gpcEnabled =
     !!notice.has_gpc_flag &&
     context.globalPrivacyControl === true &&
-    !noticeHasConsentInCookie(notice as PrivacyNoticeExtended, cookie);
+    !noticeHasConsentInCookie(notice as PrivacyNoticeWithPreference, cookie);
   if (gpcEnabled) {
     return UserConsentPreference.OPT_OUT;
   }
   const preferenceExistsInCookie = noticeHasConsentInCookie(
-    notice as PrivacyNoticeExtended,
+    notice as PrivacyNoticeWithPreference,
     cookie
   );
   if (preferenceExistsInCookie) {
