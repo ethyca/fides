@@ -281,29 +281,28 @@ describe("Privacy notice driven consent", () => {
 
   describe("when user has consented before", () => {
     it("renders from privacy notices when user has consented before", () => {
-      cy.fixture("consent/experience.json").then((experience) => {
-        const newExperience = { ...experience };
-        const notices = newExperience.items[0].privacy_notices;
-        newExperience.items[0].privacy_notices = notices.map(
-          (notice: PrivacyNoticeResponseWithUserPreferences) => ({
-            ...notice,
-            ...{ current_preference: "opt_in" },
-          })
-        );
-        cy.intercept("GET", `${API_URL}/privacy-experience/*`, {
-          body: newExperience,
-        }).as("getExperienceWithConsentHistory");
-      });
+      const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+      const createdAt = "2023-04-28T12:00:00.000Z";
+      const updatedAt = "2023-04-29T12:00:00.000Z";
+      const cookie = {
+        identity: { fides_user_device_id: uuid },
+        fides_meta: { version: "0.9.0", createdAt, updatedAt },
+        consent: { data_sales: true, advertising: false, essential: true },
+      };
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       // Visit the consent page with notices enabled
       cy.visit("/consent");
       cy.getByTestId("consent");
       cy.overrideSettings(SETTINGS);
-      // Both notices should be checked
-      cy.wait("@getExperienceWithConsentHistory");
+      // Should follow state of consent cookie
+      cy.wait("@getExperience");
       cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
         cy.getRadio().should("be.checked");
       });
       cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
+        cy.getRadio().should("not.be.checked");
+      });
+      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_3}`).within(() => {
         cy.getRadio().should("be.checked");
       });
 
@@ -313,7 +312,7 @@ describe("Privacy notice driven consent", () => {
         const { preferences } = body;
         expect(
           preferences.map((p: ConsentOptionCreate) => p.preference)
-        ).to.eql(["opt_in", "opt_in", "acknowledge"]);
+        ).to.eql(["opt_in", "opt_out", "acknowledge"]);
       });
     });
   });

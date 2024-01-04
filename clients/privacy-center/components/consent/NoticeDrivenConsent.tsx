@@ -79,7 +79,7 @@ const NoticeDrivenConsent = () => {
   const [verificationCode] = useLocalStorage("verificationCode", "");
   const consentContext = useMemo(() => getConsentContext(), []);
   const experience = useAppSelector(selectPrivacyExperience);
-  const cookie = getOrMakeFidesCookie();
+  const cookie = useMemo(() => getOrMakeFidesCookie(), []);
   const { fides_user_device_id: fidesUserDeviceId } = cookie.identity;
   const [updatePrivacyPreferencesMutationTrigger] =
     useUpdatePrivacyPreferencesMutation();
@@ -132,7 +132,6 @@ const NoticeDrivenConsent = () => {
             (p) => p.privacy_notice_history_id
           ),
           serving_component: ServingComponent.PRIVACY_CENTER,
-          served_notice_history_id: servedNotice?.served_notice_history_id,
         },
       });
     }
@@ -140,7 +139,6 @@ const NoticeDrivenConsent = () => {
     consentRequestId,
     updateNoticesServedMutationTrigger,
     experience,
-    servedNotice,
     browserIdentities,
   ]);
 
