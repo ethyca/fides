@@ -8,7 +8,7 @@ import {
   FidesCookie,
   LegacyConsentConfig,
   PrivacyExperience,
-  PrivacyNoticeExtended,
+  PrivacyNoticeWithPreference,
   SaveConsentPreference,
 } from "./consent-types";
 import {
@@ -254,7 +254,7 @@ export const updateExperienceFromCookieConsentNotices = ({
   debug?: boolean;
 }): PrivacyExperience => {
   // todo- instead of updating experience here, push this logic into UI
-  const noticesWithConsent: PrivacyNoticeExtended[] | undefined =
+  const noticesWithConsent: PrivacyNoticeWithPreference[] | undefined =
     experience.privacy_notices?.map((notice) => {
       const preference = Object.hasOwn(cookie.consent, notice.notice_key)
         ? transformConsentToFidesUserPreference(

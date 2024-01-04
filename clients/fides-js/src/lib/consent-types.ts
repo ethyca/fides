@@ -279,7 +279,7 @@ export type PrivacyExperience = {
   created_at: string;
   updated_at: string;
   show_banner?: boolean;
-  privacy_notices?: Array<PrivacyNoticeExtended>;
+  privacy_notices?: Array<PrivacyNoticeWithPreference>;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
@@ -351,7 +351,7 @@ export type PrivacyNotice = {
 };
 
 // This type is exclusively used on front-end
-export type PrivacyNoticeExtended = PrivacyNotice & {
+export type PrivacyNoticeWithPreference = PrivacyNotice & {
   // Tracks preference to be shown via the UI / served via CMP
   current_preference?: UserConsentPreference;
 };

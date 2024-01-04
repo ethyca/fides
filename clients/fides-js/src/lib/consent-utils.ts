@@ -9,7 +9,7 @@ import {
   OverrideOptions,
   PrivacyExperience,
   PrivacyNotice,
-  PrivacyNoticeExtended,
+  PrivacyNoticeWithPreference,
   UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
@@ -228,7 +228,7 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
  * Assumes that cookie has not been overridden with other consent vals prior to being called.
  */
 export const noticeHasConsentInCookie = (
-  notice: PrivacyNoticeExtended,
+  notice: PrivacyNoticeWithPreference,
   cookie: FidesCookie
 ): boolean => Boolean(Object.hasOwn(cookie.consent, notice.notice_key));
 
