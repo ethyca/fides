@@ -1,5 +1,5 @@
+import { FidesCookie } from "./cookie";
 import { debugLog } from "./consent-utils";
-import { FidesCookie } from "~/lib/consent-types";
 
 /**
  * Defines the available event names:

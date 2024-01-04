@@ -2,13 +2,13 @@ import { ConsentContext } from "./consent-context";
 import {
   ConsentMechanism,
   ConsentValue,
-  FidesCookie,
-  PrivacyNoticeWithPreference,
+  PrivacyNoticeExtended,
 } from "./consent-types";
 import {
   noticeHasConsentInCookie,
   transformUserPreferenceToBoolean,
 } from "./consent-utils";
+import { FidesCookie } from "~/lib/cookie";
 
 export const resolveLegacyConsentValue = (
   value: ConsentValue | undefined,
@@ -30,7 +30,7 @@ export const resolveLegacyConsentValue = (
 };
 
 export const resolveConsentValue = (
-  notice: PrivacyNoticeWithPreference,
+  notice: PrivacyNoticeExtended,
   context: ConsentContext,
   cookie: FidesCookie
 ): boolean => {

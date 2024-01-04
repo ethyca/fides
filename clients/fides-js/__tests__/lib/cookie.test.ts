@@ -4,6 +4,7 @@ import { CookieAttributes } from "typescript-cookie/dist/types";
 import {
   CookieKeyConsent,
   CookieMeta,
+  FidesCookie,
   getOrMakeFidesCookie,
   isNewFidesCookie,
   makeConsentDefaultsLegacy,
@@ -17,10 +18,9 @@ import {
 import type { ConsentContext } from "../../src/lib/consent-context";
 import {
   Cookies,
-  FidesCookie,
   LegacyConsentConfig,
   PrivacyExperience,
-  PrivacyNoticeWithPreference,
+  PrivacyNoticeExtended,
   SaveConsentPreference,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
@@ -493,7 +493,7 @@ describe("updateCookieFromNoticePreferences", () => {
     const notices = [
       { notice_key: "one", current_preference: UserConsentPreference.OPT_IN },
       { notice_key: "two", current_preference: UserConsentPreference.OPT_OUT },
-    ] as PrivacyNoticeWithPreference[];
+    ] as PrivacyNoticeExtended[];
     const preferences = notices.map(
       (n) =>
         new SaveConsentPreference(

@@ -1,10 +1,6 @@
 import { h, FunctionComponent, VNode } from "preact";
 import { useEffect, useState, useCallback, useMemo } from "preact/hooks";
-import {
-  FidesCookie,
-  FidesOptions,
-  PrivacyExperience,
-} from "../lib/consent-types";
+import { FidesOptions, PrivacyExperience } from "../lib/consent-types";
 
 import { debugLog, shouldResurfaceConsent } from "../lib/consent-utils";
 
@@ -13,6 +9,7 @@ import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
+import { FidesCookie } from "../lib/cookie";
 import ConsentContent from "./ConsentContent";
 
 interface RenderBannerProps {

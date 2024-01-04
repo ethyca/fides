@@ -6,11 +6,11 @@ import {
   setGppOptOutsFromCookie,
 } from "../../../src/lib/gpp/us-notices";
 import {
-  FidesCookie,
   PrivacyExperience,
   PrivacyNotice,
 } from "../../../src/lib/consent-types";
 import { makeStub } from "../../../src/lib/gpp/stub";
+import { FidesCookie } from "../../../src/lib/cookie";
 
 const EMPTY_GPP_STRING = "DBAA";
 

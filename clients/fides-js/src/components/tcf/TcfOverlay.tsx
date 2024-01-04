@@ -34,12 +34,14 @@ import { updateConsentPreferences } from "../../lib/preferences";
 import {
   ButtonType,
   ConsentMethod,
-  FidesCookie,
   PrivacyExperience,
   ServingComponent,
 } from "../../lib/consent-types";
 import { generateFidesString } from "../../lib/tcf";
-import { transformTcfPreferencesToCookieKeys } from "../../lib/cookie";
+import {
+  FidesCookie,
+  transformTcfPreferencesToCookieKeys,
+} from "../../lib/cookie";
 import InitialLayer from "./InitialLayer";
 import TcfTabs from "./TcfTabs";
 import Button from "../Button";

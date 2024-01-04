@@ -5,10 +5,10 @@ import { ConsentContext } from "./consent-context";
 import { resolveLegacyConsentValue } from "./consent-value";
 import {
   Cookies,
-  FidesCookie,
+  ExperienceMeta,
   LegacyConsentConfig,
   PrivacyExperience,
-  PrivacyNoticeWithPreference,
+  PrivacyNoticeExtended,
   SaveConsentPreference,
 } from "./consent-types";
 import {
@@ -50,6 +50,15 @@ export type CookieIdentity = Record<string, string>;
  * }
  */
 export type CookieMeta = Record<string, string>;
+
+export interface FidesCookie {
+  consent: CookieKeyConsent;
+  identity: CookieIdentity;
+  fides_meta: CookieMeta;
+  fides_string?: string;
+  tcf_consent: TcfCookieConsent;
+  tcf_version_hash?: ExperienceMeta["version_hash"];
+}
 
 /**
  * Save the cookie under the name "fides_consent" for 365 days
@@ -254,7 +263,7 @@ export const updateExperienceFromCookieConsentNotices = ({
   debug?: boolean;
 }): PrivacyExperience => {
   // todo- instead of updating experience here, push this logic into UI
-  const noticesWithConsent: PrivacyNoticeWithPreference[] | undefined =
+  const noticesWithConsent: PrivacyNoticeExtended[] | undefined =
     experience.privacy_notices?.map((notice) => {
       const preference = Object.hasOwn(cookie.consent, notice.notice_key)
         ? transformConsentToFidesUserPreference(

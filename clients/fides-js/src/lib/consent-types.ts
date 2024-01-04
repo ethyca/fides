@@ -1,22 +1,21 @@
-import type { CookieIdentity, CookieKeyConsent, CookieMeta } from "./cookie";
+import type { CookieKeyConsent } from "./cookie";
 import { GPPSettings } from "./gpp/types";
 import type {
-  GVLJson,
   TCFFeatureRecord,
+  TCFPurposeSave,
+  TCFSpecialPurposeSave,
   TCFFeatureSave,
+  TCFSpecialFeatureSave,
+  TCFVendorSave,
+  GVLJson,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
-  TCFPurposeSave,
-  TCFSpecialFeatureRecord,
-  TCFSpecialFeatureSave,
   TCFSpecialPurposeRecord,
-  TCFSpecialPurposeSave,
+  TCFSpecialFeatureRecord,
   TCFVendorConsentRecord,
   TCFVendorLegitimateInterestsRecord,
   TCFVendorRelationships,
-  TCFVendorSave,
 } from "./tcf/types";
-import { TcfCookieConsent } from "./tcf/types";
 
 export type EmptyExperience = Record<PropertyKey, never>;
 
@@ -279,7 +278,7 @@ export type PrivacyExperience = {
   created_at: string;
   updated_at: string;
   show_banner?: boolean;
-  privacy_notices?: Array<PrivacyNoticeWithPreference>;
+  privacy_notices?: Array<PrivacyNoticeExtended>;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
@@ -351,7 +350,7 @@ export type PrivacyNotice = {
 };
 
 // This type is exclusively used on front-end
-export type PrivacyNoticeWithPreference = PrivacyNotice & {
+export type PrivacyNoticeExtended = PrivacyNotice & {
   // Tracks preference to be shown via the UI / served via CMP
   current_preference?: UserConsentPreference;
 };
@@ -557,12 +556,3 @@ export type ConsentOption = {
 export type LegacyConsentConfig = {
   options: ConsentOption[];
 };
-
-export interface FidesCookie {
-  consent: CookieKeyConsent;
-  identity: CookieIdentity;
-  fides_meta: CookieMeta;
-  fides_string?: string;
-  tcf_consent: TcfCookieConsent;
-  tcf_version_hash?: ExperienceMeta["version_hash"];
-}

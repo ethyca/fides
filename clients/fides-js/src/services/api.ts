@@ -3,7 +3,6 @@ import {
   ConsentMethod,
   EmptyExperience,
   FidesApiOptions,
-  FidesCookie,
   FidesOptions,
   PrivacyExperience,
   PrivacyPreferencesRequest,
@@ -11,6 +10,7 @@ import {
   RecordsServedResponse,
 } from "../lib/consent-types";
 import { debugLog } from "../lib/consent-utils";
+import { FidesCookie } from "../lib/cookie";
 
 export enum FidesEndpointPaths {
   PRIVACY_EXPERIENCE = "/privacy-experience",

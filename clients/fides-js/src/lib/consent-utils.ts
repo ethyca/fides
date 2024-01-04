@@ -3,18 +3,18 @@ import {
   ComponentType,
   ConsentMechanism,
   EmptyExperience,
-  FidesCookie,
   FidesOptions,
   GpcStatus,
   OverrideOptions,
   PrivacyExperience,
   PrivacyNotice,
-  PrivacyNoticeWithPreference,
+  PrivacyNoticeExtended,
   UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
 import { TcfModelsRecord } from "./tcf/types";
 import { VALID_ISO_3166_LOCATION_REGEX } from "./consent-constants";
+import type { FidesCookie } from "./cookie";
 
 /**
  * Wrapper around 'console.log' that only logs output when the 'debug' banner
@@ -228,7 +228,7 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
  * Assumes that cookie has not been overridden with other consent vals prior to being called.
  */
 export const noticeHasConsentInCookie = (
-  notice: PrivacyNoticeWithPreference,
+  notice: PrivacyNoticeExtended,
   cookie: FidesCookie
 ): boolean => Boolean(Object.hasOwn(cookie.consent, notice.notice_key));
 
