@@ -1,6 +1,9 @@
 import { TCString } from "@iabtechlabtcf/core";
-import { ConsentMechanism, PrivacyExperience } from "../consent-types";
-import { FidesCookie } from "../cookie";
+import {
+  ConsentMechanism,
+  FidesCookie,
+  PrivacyExperience,
+} from "../consent-types";
 import {
   debugLog,
   transformConsentToFidesUserPreference,

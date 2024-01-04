@@ -1,21 +1,22 @@
-import type { CookieKeyConsent } from "./cookie";
+import type { CookieIdentity, CookieKeyConsent, CookieMeta } from "./cookie";
 import { GPPSettings } from "./gpp/types";
 import type {
-  TCFFeatureRecord,
-  TCFPurposeSave,
-  TCFSpecialPurposeSave,
-  TCFFeatureSave,
-  TCFSpecialFeatureSave,
-  TCFVendorSave,
   GVLJson,
+  TCFFeatureRecord,
+  TCFFeatureSave,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
-  TCFSpecialPurposeRecord,
+  TCFPurposeSave,
   TCFSpecialFeatureRecord,
+  TCFSpecialFeatureSave,
+  TCFSpecialPurposeRecord,
+  TCFSpecialPurposeSave,
   TCFVendorConsentRecord,
   TCFVendorLegitimateInterestsRecord,
   TCFVendorRelationships,
+  TCFVendorSave,
 } from "./tcf/types";
+import { TcfCookieConsent } from "./tcf/types";
 
 export type EmptyExperience = Record<PropertyKey, never>;
 
@@ -556,3 +557,12 @@ export type ConsentOption = {
 export type LegacyConsentConfig = {
   options: ConsentOption[];
 };
+
+export interface FidesCookie {
+  consent: CookieKeyConsent;
+  identity: CookieIdentity;
+  fides_meta: CookieMeta;
+  fides_string?: string;
+  tcf_consent: TcfCookieConsent;
+  tcf_version_hash?: ExperienceMeta["version_hash"];
+}

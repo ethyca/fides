@@ -3,6 +3,7 @@ import {
   ComponentType,
   ConsentMechanism,
   EmptyExperience,
+  FidesCookie,
   FidesOptions,
   GpcStatus,
   OverrideOptions,
@@ -14,7 +15,6 @@ import {
 } from "./consent-types";
 import { TcfModelsRecord } from "./tcf/types";
 import { VALID_ISO_3166_LOCATION_REGEX } from "./consent-constants";
-import type { FidesCookie } from "./cookie";
 
 /**
  * Wrapper around 'console.log' that only logs output when the 'debug' banner

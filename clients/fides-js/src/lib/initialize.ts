@@ -7,7 +7,6 @@ import {
   CookieIdentity,
   CookieKeyConsent,
   CookieMeta,
-  FidesCookie,
   getCookieByName,
   getOrMakeFidesCookie,
   isNewFidesCookie,
@@ -25,6 +24,7 @@ import {
   PrivacyExperience,
   SaveConsentPreference,
   UserGeolocation,
+  FidesCookie,
 } from "./consent-types";
 import {
   constructFidesRegionString,

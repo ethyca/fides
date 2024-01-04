@@ -2,13 +2,13 @@ import { ConsentContext } from "./consent-context";
 import {
   ConsentMechanism,
   ConsentValue,
+  FidesCookie,
   PrivacyNoticeExtended,
 } from "./consent-types";
 import {
   noticeHasConsentInCookie,
   transformUserPreferenceToBoolean,
 } from "./consent-utils";
-import { FidesCookie } from "~/lib/cookie";
 
 export const resolveLegacyConsentValue = (
   value: ConsentValue | undefined,

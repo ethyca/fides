@@ -4,7 +4,6 @@ import { CookieAttributes } from "typescript-cookie/dist/types";
 import {
   CookieKeyConsent,
   CookieMeta,
-  FidesCookie,
   getOrMakeFidesCookie,
   isNewFidesCookie,
   makeConsentDefaultsLegacy,
@@ -18,6 +17,7 @@ import {
 import type { ConsentContext } from "../../src/lib/consent-context";
 import {
   Cookies,
+  FidesCookie,
   LegacyConsentConfig,
   PrivacyExperience,
   PrivacyNoticeExtended,
