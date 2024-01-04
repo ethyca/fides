@@ -130,7 +130,11 @@ describe("Privacy notice driven consent", () => {
             expect(body.browser_identity.fides_user_device_id).to.eql(
               cookie.identity.fides_user_device_id
             );
-            const expectedConsent = { data_sales: true, advertising: true };
+            const expectedConsent = {
+              data_sales: true,
+              advertising: true,
+              essential: true,
+            };
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const { consent, fides_meta } = cookie;
             expect(consent).to.eql(expectedConsent);
