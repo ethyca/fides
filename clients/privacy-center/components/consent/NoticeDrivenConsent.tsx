@@ -132,6 +132,7 @@ const NoticeDrivenConsent = () => {
             (p) => p.privacy_notice_history_id
           ),
           serving_component: ServingComponent.PRIVACY_CENTER,
+          user_geography: region,
         },
       });
     }
