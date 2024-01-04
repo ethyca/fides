@@ -103,8 +103,13 @@ saas_config:
               "data": {
                 "type": "data-privacy-deletion-job",
                 "attributes": {
-                  "profile_id": "<profiles_id>"
-                }
+                  "profile": {
+                    "data": {
+                      "type": "profile",
+                      "id": "<profiles_id>"
+                      }
+                    }
+                  }
               }
             }
           param_values:
