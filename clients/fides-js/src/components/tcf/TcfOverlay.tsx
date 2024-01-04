@@ -3,11 +3,7 @@ import { useCallback, useMemo, useState } from "preact/hooks";
 import ConsentBanner from "../ConsentBanner";
 import PrivacyPolicyLink from "../PrivacyPolicyLink";
 
-import {
-  debugLog,
-  transformConsentToFidesUserPreference,
-  transformUserPreferenceToBoolean,
-} from "../../lib/consent-utils";
+import { debugLog } from "../../lib/consent-utils";
 
 import "../fides.css";
 import Overlay from "../Overlay";
@@ -34,20 +30,22 @@ import { updateConsentPreferences } from "../../lib/preferences";
 import {
   ButtonType,
   ConsentMethod,
+  FidesCookie,
   PrivacyExperience,
   ServingComponent,
 } from "../../lib/consent-types";
 import { generateFidesString } from "../../lib/tcf";
-import {
-  FidesCookie,
-  transformTcfPreferencesToCookieKeys,
-} from "../../lib/cookie";
+import { transformTcfPreferencesToCookieKeys } from "../../lib/cookie";
 import InitialLayer from "./InitialLayer";
 import TcfTabs from "./TcfTabs";
 import Button from "../Button";
 import { useConsentServed } from "../../lib/hooks";
 import VendorInfoBanner from "./VendorInfoBanner";
 import { dispatchFidesEvent } from "../../lib/events";
+import {
+  transformConsentToFidesUserPreference,
+  transformUserPreferenceToBoolean,
+} from "../../lib/shared-consent-utils";
 
 const resolveConsentValueFromTcfModel = (
   model:

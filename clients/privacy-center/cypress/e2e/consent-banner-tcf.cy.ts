@@ -7,7 +7,7 @@ import {
   PrivacyExperience,
 } from "fides-js";
 import { TCString } from "@iabtechlabtcf/core";
-import { CookieKeyConsent } from "fides-js/src/lib/cookie";
+import { CookieKeyConsent } from "fides-js/src/lib/consent-types";
 import { FIDES_SEPARATOR } from "fides-js/src/lib/tcf/constants";
 import {
   API_URL,

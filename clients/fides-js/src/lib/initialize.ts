@@ -4,10 +4,6 @@ import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
 import { getConsentContext } from "./consent-context";
 import {
-  CookieIdentity,
-  CookieKeyConsent,
-  CookieMeta,
-  FidesCookie,
   getCookieByName,
   getOrMakeFidesCookie,
   isNewFidesCookie,
@@ -25,6 +21,10 @@ import {
   PrivacyExperience,
   SaveConsentPreference,
   UserGeolocation,
+  FidesCookie,
+  CookieMeta,
+  CookieIdentity,
+  CookieKeyConsent,
 } from "./consent-types";
 import {
   constructFidesRegionString,
@@ -32,8 +32,6 @@ import {
   experienceIsValid,
   getWindowObjFromPath,
   isPrivacyExperience,
-  noticeHasConsentInCookie,
-  transformConsentToFidesUserPreference,
   validateOptions,
 } from "./consent-utils";
 import { fetchExperience } from "../services/api";
@@ -45,6 +43,10 @@ import { initOverlay } from "./consent";
 import { TcfCookieConsent } from "./tcf/types";
 import { FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP } from "./consent-constants";
 import { setupExtensions } from "./extensions";
+import {
+  noticeHasConsentInCookie,
+  transformConsentToFidesUserPreference,
+} from "./shared-consent-utils";
 
 export type Fides = {
   consent: CookieKeyConsent;

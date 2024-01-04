@@ -49,12 +49,12 @@ import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 
 import {
-  FidesCookie,
   updateExperienceFromCookieConsentNotices,
   consentCookieObjHasSomeConsentSet,
 } from "./lib/cookie";
 import {
   FidesConfig,
+  FidesCookie,
   FidesOptionsOverrides,
   FidesOverrides,
   GetPreferencesFnResp,
@@ -211,6 +211,7 @@ export * from "./lib/consent";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";
 export * from "./lib/consent-utils";
+export * from "./lib/shared-consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
 export * from "./lib/events";

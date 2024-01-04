@@ -3,18 +3,18 @@ import {
   ComponentType,
   ConsentMechanism,
   EmptyExperience,
+  FidesCookie,
   FidesOptions,
   GpcStatus,
   OverrideOptions,
   PrivacyExperience,
   PrivacyNotice,
-  PrivacyNoticeExtended,
   UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
 import { TcfModelsRecord } from "./tcf/types";
 import { VALID_ISO_3166_LOCATION_REGEX } from "./consent-constants";
-import type { FidesCookie } from "./cookie";
+import { noticeHasConsentInCookie } from "./shared-consent-utils";
 
 /**
  * Wrapper around 'console.log' that only logs output when the 'debug' banner
@@ -91,40 +91,6 @@ export const constructFidesRegionString = (
     "cannot construct user location from provided geoLocation params..."
   );
   return null;
-};
-
-/**
- * Convert a user consent preference into true/false
- */
-export const transformUserPreferenceToBoolean = (
-  preference: UserConsentPreference | undefined
-) => {
-  if (!preference) {
-    return false;
-  }
-  if (preference === UserConsentPreference.OPT_OUT) {
-    return false;
-  }
-  if (preference === UserConsentPreference.OPT_IN) {
-    return true;
-  }
-  return preference === UserConsentPreference.ACKNOWLEDGE;
-};
-
-/**
- * Convert a true/false consent to Fides user consent preference
- */
-export const transformConsentToFidesUserPreference = (
-  consented: boolean,
-  consentMechanism?: ConsentMechanism
-): UserConsentPreference => {
-  if (consented) {
-    if (consentMechanism === ConsentMechanism.NOTICE_ONLY) {
-      return UserConsentPreference.ACKNOWLEDGE;
-    }
-    return UserConsentPreference.OPT_IN;
-  }
-  return UserConsentPreference.OPT_OUT;
 };
 
 /**
@@ -222,15 +188,6 @@ export const experienceIsValid = (
  */
 export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
   tcfObject.default_preference ?? UserConsentPreference.OPT_OUT;
-
-/**
- * Returns true if notice has a corresponding key in cookie. This means a user has a consent val for that notice.
- * Assumes that cookie has not been overridden with other consent vals prior to being called.
- */
-export const noticeHasConsentInCookie = (
-  notice: PrivacyNoticeExtended,
-  cookie: FidesCookie
-): boolean => Boolean(Object.hasOwn(cookie.consent, notice.notice_key));
 
 /**
  * Returns true if there are notices in the experience that require a user preference

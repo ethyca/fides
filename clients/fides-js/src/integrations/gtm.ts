@@ -1,5 +1,5 @@
-import { CookieKeyConsent } from "../lib/cookie";
 import { FidesEventDetail } from "../lib/events";
+import { CookieKeyConsent } from "~/lib/consent-types";
 
 declare global {
   interface Window {

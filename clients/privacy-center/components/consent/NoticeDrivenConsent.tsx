@@ -11,7 +11,9 @@ import {
   PrivacyNotice,
   ConsentContext,
   FidesCookie,
-  PrivacyNoticeExtended,
+  PrivacyNoticeWithPreference,
+  noticeHasConsentInCookie,
+  transformConsentToFidesUserPreference,
 } from "fides-js";
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -35,10 +37,6 @@ import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { NoticeHistoryIdToPreference } from "~/features/consent/types";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { useLocalStorage } from "~/common/hooks";
-import {
-  noticeHasConsentInCookie,
-  transformConsentToFidesUserPreference,
-} from "fides-js/src/lib/consent-utils";
 import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
@@ -55,12 +53,12 @@ export const resolveConsentValue = (
   const gpcEnabled =
     !!notice.has_gpc_flag &&
     context.globalPrivacyControl === true &&
-    !noticeHasConsentInCookie(notice as PrivacyNoticeExtended, cookie);
+    !noticeHasConsentInCookie(notice as PrivacyNoticeWithPreference, cookie);
   if (gpcEnabled) {
     return UserConsentPreference.OPT_OUT;
   }
   const preferenceExistsInCookie = noticeHasConsentInCookie(
-    notice as PrivacyNoticeExtended,
+    notice as PrivacyNoticeWithPreference,
     cookie
   );
   if (preferenceExistsInCookie) {

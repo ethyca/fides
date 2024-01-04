@@ -10,10 +10,7 @@ import {
 import ConsentBanner from "../ConsentBanner";
 
 import { updateConsentPreferences } from "../../lib/preferences";
-import {
-  debugLog,
-  transformConsentToFidesUserPreference,
-} from "../../lib/consent-utils";
+import { debugLog } from "../../lib/consent-utils";
 
 import "../fides.css";
 import Overlay from "../Overlay";
@@ -26,6 +23,7 @@ import PrivacyPolicyLink from "../PrivacyPolicyLink";
 import { dispatchFidesEvent } from "../../lib/events";
 import { resolveConsentValue } from "../../lib/consent-value";
 import { getConsentContext } from "../../lib/consent-context";
+import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   experience,
