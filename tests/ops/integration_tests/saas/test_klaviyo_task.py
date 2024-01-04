@@ -138,6 +138,25 @@ async def test_klaviyo_erasure_request_task(
 
     assert response.status_code == 200
 
+    # Marc attempt
+    privacy_request = PrivacyRequest(
+        id=f"test_klaviyo_consent_request_task_{random.randint(0, 1000)}"
+    )
+    identity = Identity(**{"email": klaviyo_erasure_identity_email})
+    privacy_request.cache_identity(identity)
+    dataset_name = klaviyo_connection_config.get_saas_config().fides_key
+    merged_graph = klaviyo_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    v = await graph_task.run_consent_request(
+        privacy_request,
+        policy,
+        graph,
+        [klaviyo_connection_config],
+        {"email": klaviyo_erasure_identity_email},
+        db,
+    )
+
     CONFIG.execution.masking_strict = masking_strict
 
 
