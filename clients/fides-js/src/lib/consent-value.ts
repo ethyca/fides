@@ -40,7 +40,7 @@ export const resolveConsentValue = (
   const preferenceExistsInCookie = noticeHasConsentInCookie(notice, cookie);
   // Note about GPC - consent has already applied to the cookie at this point, so we can trust preference there
   if (preferenceExistsInCookie) {
-    return <boolean>cookie.consent[notice.notice_key];
+    return !!cookie.consent[notice.notice_key];
   }
   return transformUserPreferenceToBoolean(notice.default_preference);
 };

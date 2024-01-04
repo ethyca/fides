@@ -100,7 +100,7 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 let _Fides: Fides;
 
-const updateCookieAndExperience = async ({
+const updateExperience = async ({
   cookie,
   experience,
   debug = false,
@@ -110,14 +110,11 @@ const updateCookieAndExperience = async ({
   experience: PrivacyExperience;
   debug?: boolean;
   isExperienceClientSideFetched: boolean;
-}): Promise<{
-  cookie: FidesCookie;
-  experience: Partial<PrivacyExperience>;
-}> => {
+}): Promise<Partial<PrivacyExperience>> => {
   if (!isExperienceClientSideFetched) {
     // If it's not client side fetched, we don't update anything since the cookie has already
     // been updated earlier.
-    return { cookie, experience };
+    return experience;
   }
 
   // We need the cookie.fides_string to attach user preference to an experience.
@@ -132,13 +129,10 @@ const updateCookieAndExperience = async ({
       experience,
       cookie
     );
-    return { cookie, experience: tcfEntities };
+    return tcfEntities;
   }
 
-  return {
-    cookie,
-    experience,
-  };
+  return experience;
 };
 
 /**
@@ -204,7 +198,7 @@ const init = async (config: FidesConfig) => {
     cookie,
     experience,
     renderOverlay,
-    updateCookieAndExperience,
+    updateExperience,
   });
   Object.assign(_Fides, updatedFides);
 

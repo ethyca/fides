@@ -204,6 +204,13 @@ export const shouldResurfaceConsent = (
     // Ensure we always resurface consent for TCF if for some reason experience does not have version_hash
     return true;
   }
+  // Do not surface consent for null or empty notices
+  if (
+    experience?.privacy_notices == null ||
+    experience.privacy_notices.length === 0
+  ) {
+    return false;
+  }
   // If not every notice has previous user consent, we need to resurface consent
   return Boolean(
     !experience.privacy_notices?.every((notice) =>

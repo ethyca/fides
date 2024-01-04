@@ -94,7 +94,7 @@ const NoticeDrivenConsent = () => {
   const initialDraftPreferences: NoticeHistoryIdToPreference = useMemo(() => {
     const newPreferences: NoticeHistoryIdToPreference = {};
     if (experience?.privacy_notices) {
-      experience.privacy_notices?.forEach((notice) => {
+      experience.privacy_notices.forEach((notice) => {
         const pref: UserConsentPreference | undefined = resolveConsentValue(
           notice,
           consentContext,

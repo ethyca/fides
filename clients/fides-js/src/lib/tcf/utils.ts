@@ -1,11 +1,11 @@
 import { TCString } from "@iabtechlabtcf/core";
+import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./constants";
 import {
   ConsentMechanism,
   FidesCookie,
   PrivacyExperience,
 } from "../consent-types";
 import { debugLog } from "../consent-utils";
-import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./constants";
 import { decodeFidesString, idsFromAcString } from "./fidesString";
 import { transformConsentToFidesUserPreference } from "../shared-consent-utils";
 
@@ -104,6 +104,7 @@ export const updateExperienceFromCookieConsentTcf = ({
   cookie: FidesCookie;
   debug?: boolean;
 }): PrivacyExperience => {
+  // DEFER (PROD-1568) - instead of updating experience here, push this logic into UI
   const tcfEntities = buildTcfEntitiesFromCookieAndFidesString(
     experience,
     cookie

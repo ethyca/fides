@@ -279,7 +279,7 @@ export const initialize = async ({
   experience,
   geolocation,
   renderOverlay,
-  updateCookieAndExperience,
+  updateExperience,
 }: {
   cookie: FidesCookie;
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
@@ -287,7 +287,7 @@ export const initialize = async ({
    * Once we for sure have a valid experience, this is another chance to update values
    * before the overlay renders.
    */
-  updateCookieAndExperience: ({
+  updateExperience: ({
     cookie,
     experience,
     debug,
@@ -297,10 +297,7 @@ export const initialize = async ({
     experience: PrivacyExperience;
     debug?: boolean;
     isExperienceClientSideFetched: boolean;
-  }) => Promise<{
-    cookie: FidesCookie;
-    experience: Partial<PrivacyExperience>;
-  }>;
+  }) => Promise<Partial<PrivacyExperience>>;
 } & FidesConfig): Promise<Partial<Fides>> => {
   let shouldInitOverlay: boolean = options.isOverlayEnabled;
   let effectiveExperience = experience;
@@ -353,15 +350,14 @@ export const initialize = async ({
           fidesOptions: options,
         });
       }
-      const updated = await updateCookieAndExperience({
+      const updatedExperience = await updateExperience({
         cookie,
         experience: effectiveExperience,
         debug: options.debug,
         isExperienceClientSideFetched: fetchedClientSideExperience,
       });
-      debugLog(options.debug, "Updated cookie and experience", updated);
-      Object.assign(cookie, updated.cookie);
-      Object.assign(effectiveExperience, updated.experience);
+      debugLog(options.debug, "Updated experience", updatedExperience);
+      Object.assign(effectiveExperience, updatedExperience);
       if (shouldInitOverlay) {
         await initOverlay({
           experience: effectiveExperience,

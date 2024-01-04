@@ -31,19 +31,15 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   fidesRegionString,
   cookie,
 }) => {
-  const consentContext = useMemo(() => getConsentContext(), []);
   const initialEnabledNoticeKeys = useMemo(() => {
     if (experience.privacy_notices) {
-      return experience.privacy_notices?.map((notice) => {
-        const val = resolveConsentValue(notice, consentContext, cookie);
-        if (val) {
-          return notice.notice_key as PrivacyNotice["notice_key"];
-        }
-        return "";
+      return experience.privacy_notices.map((notice) => {
+        const val = resolveConsentValue(notice, getConsentContext(), cookie);
+        return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
       });
     }
     return [];
-  }, [cookie, experience, consentContext]);
+  }, [cookie, experience]);
 
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
     Array<PrivacyNotice["notice_key"]>

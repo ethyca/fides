@@ -222,7 +222,7 @@ export const updateExperienceFromCookieConsentNotices = ({
   cookie: FidesCookie;
   debug?: boolean;
 }): PrivacyExperience => {
-  // todo- instead of updating experience here, push this logic into UI
+  // DEFER (PROD-1568) - instead of updating experience here, push this logic into UI
   const noticesWithConsent: PrivacyNoticeWithPreference[] | undefined =
     experience.privacy_notices?.map((notice) => {
       const preference = Object.hasOwn(cookie.consent, notice.notice_key)
