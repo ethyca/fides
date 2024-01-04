@@ -244,8 +244,8 @@ const NoticeDrivenConsent = () => {
 
     // 2. Save the cookie and window obj on success
     const noticeKeyMap = new Map<string, boolean>(
-      result.data.preferences.map((preference) => [
-        preference.privacy_notice_history?.notice_key || "",
+      noticePreferences.map((preference) => [
+        preference.notice?.notice_key || "",
         transformUserPreferenceToBoolean(preference.preference),
       ])
     );
