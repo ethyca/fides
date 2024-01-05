@@ -98,19 +98,6 @@ describe("Privacy notice driven consent", () => {
         expect(url).contains("region=us_ca");
       });
       cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
-        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
-          if (cookie) {
-            cy.log(cookie.value);
-          } else {
-            cy.log("no cookie found?");
-          }
-        });
-        cy.window().then((win) => {
-          cy.log(JSON.stringify(win.Fides.options));
-          cy.log(JSON.stringify(win.Fides.geolocation));
-          cy.log(JSON.stringify(win.Fides.experience));
-        });
-
         cy.wait("@patchNoticesServed");
 
         // Opt in, so should default to not checked
