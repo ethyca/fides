@@ -1,10 +1,10 @@
-import { Flex } from "@fidesui/react";
+import { Box, Flex } from "@fidesui/react";
 import Head from "next/head";
 import * as React from "react";
 import { ReactNode } from "react";
 
 import Header from "~/features/common/Header";
-import { NavTopBar } from "~/features/common/nav/v2/NavTopBar";
+import MainSideNav from "~/features/common/nav/v2/MainSideNav";
 
 type HomeLayoutProps = {
   children: ReactNode;
@@ -18,10 +18,12 @@ const HomeLayout: React.FC<HomeLayoutProps> = ({ children, title }) => (
       <meta name="description" content="Privacy Engineering Platform" />
       <link rel="icon" href="/favicon.ico" />
     </Head>
-    <Header />
-    <NavTopBar />
-    <Flex as="main" flexGrow={1} flexDirection="column" gap={10}>
-      {children}
+    <Flex>
+      <MainSideNav />
+      <Flex flexGrow={1} flexDirection="column" gap={10}>
+        <Header />
+        <Box as="main">{children}</Box>
+      </Flex>
     </Flex>
   </Flex>
 );

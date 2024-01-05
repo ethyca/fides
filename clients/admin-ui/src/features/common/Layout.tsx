@@ -5,8 +5,7 @@ import React from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Header from "~/features/common/Header";
-import { NavSideBar } from "~/features/common/nav/v2/NavSideBar";
-import { NavTopBar } from "~/features/common/nav/v2/NavTopBar";
+import MainSideNav from "~/features/common/nav/v2/MainSideNav";
 import {
   useGetActiveMessagingProviderQuery,
   useGetActiveStorageQuery,
@@ -51,15 +50,17 @@ const Layout = ({
         <meta name="description" content="Privacy Engineering Platform" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Header />
-      <NavTopBar />
-      <Flex as="main" flexGrow={1} padding={10} gap={10}>
-        <Box flex={0} flexShrink={0}>
-          <NavSideBar />
-        </Box>
+
+      <Flex>
+        <MainSideNav />
         <Flex direction="column" flex={1} minWidth={0}>
-          {showConfigurationBanner ? <ConfigurationNotificationBanner /> : null}
-          {children}
+          <Header />
+          <Box as="main" py={6} px={10}>
+            {showConfigurationBanner ? (
+              <ConfigurationNotificationBanner />
+            ) : null}
+            {children}
+          </Box>
         </Flex>
       </Flex>
     </Flex>
