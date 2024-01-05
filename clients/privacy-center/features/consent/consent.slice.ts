@@ -147,7 +147,6 @@ export const consentSlice = createSlice({
       draftState.fidesKeyToConsent[key] = value;
     },
 
-
     setFidesUserDeviceId(
       draftState,
       { payload }: PayloadAction<string | undefined>
@@ -168,7 +167,6 @@ export const consentSlice = createSlice({
 export const { reducer } = consentSlice;
 export const {
   changeConsent,
-  updateUserConsentPreferencesFromApi,
   setFidesUserDeviceId,
   setLocation,
   clearLocation,
@@ -213,7 +211,7 @@ export const selectUserRegion = createSelector(
 
 export const selectPrivacyExperience = createSelector(
   [(RootState) => RootState, selectUserRegion, selectFidesUserDeviceId],
-  (RootState, region, deviceId) => {
+  (RootState, region) => {
     if (!region) {
       return undefined;
     }
