@@ -141,6 +141,7 @@ const NoticeDrivenConsent = () => {
     updateNoticesServedMutationTrigger,
     experience,
     browserIdentities,
+    region,
   ]);
 
   const items = useMemo(() => {
