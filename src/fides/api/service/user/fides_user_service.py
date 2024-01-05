@@ -1,8 +1,13 @@
 import uuid
+from datetime import datetime
+from typing import Tuple
 
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.api.v1.endpoints.health import is_email_messaging_enabled
+from fides.api.common_exceptions import AuthenticationError, AuthorizationError
+from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_invite import FidesUserInvite
 from fides.api.schemas.messaging.messaging import (
@@ -36,9 +41,12 @@ def invite_user(db: Session, config: FidesConfig, user: FidesUser):
         )
 
 
-def accept_invite(db: Session, user: FidesUser, new_password: str) -> FidesUser:
+def accept_invite(
+    db: Session, config: FidesConfig, user: FidesUser, new_password: str
+) -> Tuple[FidesUser, str]:
     """
     Updates the user password and enables the user. Also removes the user invite from the database.
+    Returns a tuple of the updated user and their access code.
     """
 
     # update password and enable
@@ -54,4 +62,52 @@ def accept_invite(db: Session, user: FidesUser, new_password: str) -> FidesUser:
     if invite:
         invite.delete(db)
 
-    return user
+    client = perform_login(
+        db,
+        config.security.oauth_client_id_length_bytes,
+        config.security.oauth_client_secret_length_bytes,
+        user,
+    )
+
+    logger.info("Creating login access token")
+    access_code = client.create_access_code_jwe(config.security.app_encryption_key)
+
+    return user, access_code
+
+
+def perform_login(
+    db: Session,
+    client_id_byte_length: int,
+    client_secret_btye_length: int,
+    user: FidesUser,
+) -> ClientDetail:
+    """Performs a login by updating the FidesUser instance and creating and returning
+    an associated ClientDetail.
+    """
+
+    client = user.client
+    if not client:
+        logger.info("Creating client for login")
+        client, _ = ClientDetail.create_client_and_secret(
+            db,
+            client_id_byte_length,
+            client_secret_btye_length,
+            scopes=[],  # type: ignore
+            roles=user.permissions.roles,  # type: ignore
+            systems=user.system_ids,  # type: ignore
+            user_id=user.id,
+        )
+    else:
+        # Refresh the client just in case - for example, scopes and roles were added via the db directly.
+        client.roles = user.permissions.roles  # type: ignore
+        client.systems = user.system_ids  # type: ignore
+        client.save(db)
+
+    if not user.permissions.roles and not user.systems:  # type: ignore
+        logger.warning("User {} needs roles or systems to login.", user.id)
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    user.last_login_at = datetime.utcnow()
+    user.save(db)
+
+    return client

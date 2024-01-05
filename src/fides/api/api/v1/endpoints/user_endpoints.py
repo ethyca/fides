@@ -25,7 +25,7 @@ from starlette.status import (
 from fides.api.api import deps
 from fides.api.api.deps import get_db
 from fides.api.api.v1.endpoints.user_permission_endpoints import validate_user_id
-from fides.api.common_exceptions import AuthenticationError, AuthorizationError
+from fides.api.common_exceptions import AuthenticationError
 from fides.api.cryptography.cryptographic_util import b64_str_to_str
 from fides.api.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
 from fides.api.models.client import ClientDetail
@@ -445,10 +445,7 @@ def create_user(
             detail="User with this email address already exists.",
         )
 
-    user_to_create = user_data.dict()
-    user_to_create["disabled"] = False  # TODO: make dynamic
-
-    user = FidesUser.create(db=db, data=user_to_create)
+    user = FidesUser.create(db=db, data=user_data.dict())
 
     # invite user via email
     invite_user(db=db, config=config, user=user)
@@ -608,44 +605,6 @@ def user_login(
     )
 
 
-def perform_login(
-    db: Session,
-    client_id_byte_length: int,
-    client_secret_btye_length: int,
-    user: FidesUser,
-) -> ClientDetail:
-    """Performs a login by updating the FidesUser instance and creating and returning
-    an associated ClientDetail.
-    """
-
-    client = user.client
-    if not client:
-        logger.info("Creating client for login")
-        client, _ = ClientDetail.create_client_and_secret(
-            db,
-            client_id_byte_length,
-            client_secret_btye_length,
-            scopes=[],  # type: ignore
-            roles=user.permissions.roles,  # type: ignore
-            systems=user.system_ids,  # type: ignore
-            user_id=user.id,
-        )
-    else:
-        # Refresh the client just in case - for example, scopes and roles were added via the db directly.
-        client.roles = user.permissions.roles  # type: ignore
-        client.systems = user.system_ids  # type: ignore
-        client.save(db)
-
-    if not user.permissions.roles and not user.systems:  # type: ignore
-        logger.warning("User {} needs roles or systems to login.", user.id)
-        raise AuthorizationError(detail="Not Authorized for this action")
-
-    user.last_login_at = datetime.utcnow()
-    user.save(db)
-
-    return client
-
-
 async def verify_invite_code(
     username: str,
     invite_code: str,
@@ -699,17 +658,10 @@ def accept_user_invite(
             detail=f"User with username {verified_invite.username} does not exist.",
         )
 
-    user = accept_invite(db=db, user=user, new_password=user_data.new_password)
-
-    client = perform_login(
-        db,
-        config.security.oauth_client_id_length_bytes,
-        config.security.oauth_client_secret_length_bytes,
-        user,
+    user, access_code = accept_invite(
+        db=db, config=config, user=user, new_password=user_data.new_password
     )
 
-    logger.info("Creating login access token")
-    access_code = client.create_access_code_jwe(config.security.app_encryption_key)
     return UserLoginResponse(
         user_data=user,
         token_data=AccessToken(access_token=access_code),

@@ -269,7 +269,6 @@ def application_user(db, oauth_client):
             "email_address": f"{unique_username}@ethyca.com",
             "first_name": "Test",
             "last_name": "User",
-            "disabled": False,
         },
     )
     oauth_client.user_id = user.id
