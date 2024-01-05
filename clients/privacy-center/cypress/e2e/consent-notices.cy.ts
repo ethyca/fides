@@ -69,6 +69,7 @@ describe("Privacy notice driven consent", () => {
 
   describe("when user has not consented before", () => {
     beforeEach(() => {
+      cy.clearAllCookies();
       cy.visit("/consent");
       cy.getByTestId("consent");
       cy.overrideSettings(SETTINGS);
