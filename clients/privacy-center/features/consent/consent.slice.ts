@@ -1,5 +1,9 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { constructFidesRegionString, UserGeolocation } from "fides-js";
+import {
+  constructFidesRegionString,
+  RecordsServedResponse,
+  UserGeolocation,
+} from "fides-js";
 
 import type { RootState } from "~/app/store";
 import { VerificationType } from "~/components/modals/types";
@@ -13,7 +17,6 @@ import {
   Page_PrivacyExperienceResponse_,
   PrivacyNoticeRegion,
   PrivacyPreferencesRequest,
-  RecordsServedResponse,
 } from "~/types/api";
 import { selectSettings } from "../common/settings.slice";
 
@@ -145,6 +148,26 @@ export const consentSlice = createSlice({
       }: PayloadAction<{ key: string; value: boolean }>
     ) {
       draftState.fidesKeyToConsent[key] = value;
+    },
+
+    /**
+     * Update the stored consent preferences with the data returned by the API. These values take
+     * precedence over the locally-stored opt in/out booleans to ensure the UI matches the server.
+     *
+     * Note: we have to store a copy of the API results instead of selecting from the API's cache
+     * directly because there are 3 different endpoints that may return this info. If we simplify
+     * how that fetching works with/without verification, this would also become simpler.
+     */
+    updateUserConsentPreferencesFromApi(
+      draftState,
+      { payload }: PayloadAction<ConsentPreferences>
+    ) {
+      const consentPreferences = payload.consent ?? [];
+      consentPreferences.forEach((consent) => {
+        draftState.fidesKeyToConsent[consent.data_use] = consent.opt_in;
+        draftState.persistedFidesKeyToConsent[consent.data_use] =
+          consent.opt_in;
+      });
     },
 
     setFidesUserDeviceId(
