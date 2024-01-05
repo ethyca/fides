@@ -23,7 +23,6 @@ import {
   useLazyGetConsentRequestPreferencesQuery,
   usePostConsentRequestVerificationMutation,
 } from "~/features/consent/consent.slice";
-import { makeCookieKeyConsent } from "~/features/consent/helpers";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { ConsentPreferences } from "~/types/api";
 import { GpcBanner } from "~/features/consent/GpcMessages";
