@@ -97,6 +97,13 @@ class PrivacyRequestCreate(FidesSchema):
         return value
 
 
+class ConsentRequestCreate(FidesSchema):
+    """Data required to create a consent PrivacyRequest"""
+
+    identity: Identity
+    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
+
+
 class FieldsAffectedResponse(FidesSchema):
     """Schema detailing the individual fields affected by a particular query detailed in the ExecutionLog"""
 

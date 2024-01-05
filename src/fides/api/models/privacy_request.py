@@ -1105,6 +1105,10 @@ class CustomPrivacyRequestField(Base):
         PrivacyRequest,
         backref="custom_fields",
     )
+
+    consent_request_id = Column(String, ForeignKey("consentrequest.id"))
+    consent_request = relationship("ConsentRequest", back_populates="custom_fields")
+
     field_name = Column(
         String,
         index=False,
@@ -1190,6 +1194,10 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         back_populates="consent_request",
     )
 
+    custom_fields = relationship(
+        CustomPrivacyRequestField, back_populates="consent_request"
+    )
+
     preferences = Column(
         MutableList.as_mutable(JSONB),
         nullable=True,
@@ -1222,6 +1230,43 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         self._verify_identity(provided_code=provided_code)
         self.identity_verified_at = datetime.utcnow()
         self.save(db)
+
+    def persist_custom_privacy_request_fields(
+        self,
+        db: Session,
+        custom_privacy_request_fields: Dict[str, CustomPrivacyRequestFieldSchema],
+    ) -> None:
+        if not custom_privacy_request_fields:
+            return
+
+        if CONFIG.execution.allow_custom_privacy_request_field_collection:
+            for key, item in custom_privacy_request_fields.items():
+                if item.value:
+                    hashed_value = CustomPrivacyRequestField.hash_value(item.value)
+                    CustomPrivacyRequestField.create(
+                        db=db,
+                        data={
+                            "consent_request_id": self.id,
+                            "field_name": key,
+                            "field_label": item.label,
+                            "encrypted_value": {"value": item.value},
+                            "hashed_value": hashed_value,
+                        },
+                    )
+        else:
+            logger.info(
+                "Custom fields provided in consent request {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_field_collection' prevents their storage.",
+                self.id,
+            )
+
+    def get_persisted_custom_privacy_request_fields(self) -> Dict[str, Any]:
+        return {
+            field.field_name: {
+                "label": field.field_label,
+                "value": field.encrypted_value["value"],
+            }
+            for field in self.custom_fields  # type: ignore[attr-defined]
+        }
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.

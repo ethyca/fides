@@ -30,6 +30,15 @@ import { ModalViews, VerificationType } from "~/components/modals/types";
 import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
 
+type KnownKeys = {
+  email: string;
+  phone: string;
+};
+
+type FormValues = KnownKeys & {
+  [key: string]: any;
+};
+
 const useConsentRequestForm = ({
   onClose,
   setCurrentView,
@@ -46,20 +55,45 @@ const useConsentRequestForm = ({
   const config = useConfig();
   const identityInputs =
     config.consent?.button.identity_inputs ?? defaultIdentityInput;
+  const customPrivacyRequestFields =
+    config.consent?.button.custom_privacy_request_fields ?? {};
   const settings = useSettings();
   const toast = useToast();
   const cookie = useMemo(() => getOrMakeFidesCookie(), []);
-  const formik = useFormik({
+  const formik = useFormik<FormValues>({
     initialValues: {
       email: "",
       phone: "",
+      ...Object.fromEntries(
+        Object.entries(customPrivacyRequestFields)
+          .filter(([, field]) => !field.hidden)
+          .map(([key, field]) => [key, field.default_value || ""])
+      ),
     },
     onSubmit: async (values) => {
+      const { email, phone, ...customPrivacyRequestFieldValues } = values;
+
+      // populate the values from the form or from the field's default value
+      const transformedCustomPrivacyRequestFields = Object.fromEntries(
+        Object.entries(customPrivacyRequestFields ?? {}).map(([key, field]) => [
+          key,
+          {
+            label: field.label,
+            value: field.hidden
+              ? field.default_value
+              : customPrivacyRequestFieldValues[key] || "",
+          },
+        ])
+      );
+
       const body = {
         // Marshall empty strings back to `undefined` so the backend will not try to validate
-        email: values.email === "" ? undefined : values.email,
-        phone_number: values.phone === "" ? undefined : values.phone,
-        fides_user_device_id: cookie.identity.fides_user_device_id,
+        identity: {
+          email: email === "" ? undefined : email,
+          phone_number: phone === "" ? undefined : phone,
+          fides_user_device_id: cookie.identity.fides_user_device_id,
+        },
+        custom_privacy_request_fields: transformedCustomPrivacyRequestFields,
       };
       const handleError = ({
         title,
@@ -145,10 +179,23 @@ const useConsentRequestForm = ({
           return true;
         }
       ),
+      ...Object.fromEntries(
+        Object.entries(customPrivacyRequestFields)
+          .filter(([, field]) => !field.hidden)
+          .map(([key, { label, required }]) => {
+            const isRequired = required !== false;
+            return [
+              key,
+              isRequired
+                ? Yup.string().required(`${label} is required`)
+                : Yup.string().notRequired(),
+            ];
+          })
+      ),
     }),
   });
 
-  return { ...formik, identityInputs };
+  return { ...formik, identityInputs, customPrivacyRequestFields };
 };
 
 type ConsentRequestFormProps = {
@@ -181,6 +228,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
     setFieldValue,
     resetForm,
     identityInputs,
+    customPrivacyRequestFields,
   } = useConsentRequestForm({
     onClose,
     setCurrentView,
@@ -217,11 +265,6 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
               </Text>
             )
           )}
-          {isVerificationRequired ? (
-            <Text fontSize="sm" color="gray.600" mb={4}>
-              We will send you a verification code.
-            </Text>
-          ) : null}
           <Stack>
             {identityInputs.email ? (
               <FormControl
@@ -263,6 +306,27 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                 <FormErrorMessage>{errors.phone}</FormErrorMessage>
               </FormControl>
             ) : null}
+            {Object.entries(customPrivacyRequestFields)
+              .filter(([, field]) => !field.hidden)
+              .map(([key, item]) => (
+                <FormControl
+                  key={key}
+                  id={key}
+                  isInvalid={touched[key] && Boolean(errors[key])}
+                  isRequired={item.required !== false}
+                >
+                  <FormLabel fontSize="sm">{item.label}</FormLabel>
+                  <Input
+                    id={key}
+                    name={key}
+                    focusBorderColor="primary.500"
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    value={values[key]}
+                  />
+                  <FormErrorMessage>{errors[key]}</FormErrorMessage>
+                </FormControl>
+              ))}
           </Stack>
         </ModalBody>
 

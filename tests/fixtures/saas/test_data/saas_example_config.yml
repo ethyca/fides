@@ -33,6 +33,22 @@ saas_config:
     method: GET
     path: /3.0/lists
 
+  consent_requests:
+    opt_in:
+      method: POST
+      path: /allowlists/add
+      body: |
+        {
+          "first_name": "<custom_privacy_request_fields.first_name>"
+        }
+    opt_out:
+      method: POST
+      path: /allowlists/delete
+      body: |
+        {
+          "first_name": "<custom_privacy_request_fields.first_name>"
+        }
+
   endpoints:
     - name: messages
       requests:
