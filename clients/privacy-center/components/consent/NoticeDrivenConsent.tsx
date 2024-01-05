@@ -140,7 +140,6 @@ const NoticeDrivenConsent = () => {
     consentRequestId,
     updateNoticesServedMutationTrigger,
     experience,
-    region,
     browserIdentities,
     region,
   ]);

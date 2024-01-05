@@ -19,7 +19,6 @@ import {
 } from "~/features/common/config.slice";
 import {
   selectPersistedFidesKeyToConsent,
-  updateUserConsentPreferencesFromApi,
   useLazyGetConsentRequestPreferencesQuery,
   usePostConsentRequestVerificationMutation,
 } from "~/features/consent/consent.slice";
@@ -90,7 +89,6 @@ const Consent: NextPage = () => {
   const storeConsentPreferences = useCallback(
     (data: ConsentPreferences) => {
       dispatch(updateConsentOptionsFromApi(data));
-      dispatch(updateUserConsentPreferencesFromApi(data));
     },
     [dispatch]
   );

@@ -61,7 +61,7 @@ export const consentApi = baseApi.injectEndpoints({
     }),
     getPrivacyExperience: build.query<
       Page_PrivacyExperienceResponse_,
-      { region: PrivacyNoticeRegion; fides_user_device_id?: string }
+      { region: PrivacyNoticeRegion }
     >({
       query: (payload) => ({
         url: "privacy-experience/",
@@ -147,25 +147,6 @@ export const consentSlice = createSlice({
       draftState.fidesKeyToConsent[key] = value;
     },
 
-    /**
-     * Update the stored consent preferences with the data returned by the API. These values take
-     * precedence over the locally-stored opt in/out booleans to ensure the UI matches the server.
-     *
-     * Note: we have to store a copy of the API results instead of selecting from the API's cache
-     * directly because there are 3 different endpoints that may return this info. If we simplify
-     * how that fetching works with/without verification, this would also become simpler.
-     */
-    updateUserConsentPreferencesFromApi(
-      draftState,
-      { payload }: PayloadAction<ConsentPreferences>
-    ) {
-      const consentPreferences = payload.consent ?? [];
-      consentPreferences.forEach((consent) => {
-        draftState.fidesKeyToConsent[consent.data_use] = consent.opt_in;
-        draftState.persistedFidesKeyToConsent[consent.data_use] =
-          consent.opt_in;
-      });
-    },
 
     setFidesUserDeviceId(
       draftState,
@@ -238,7 +219,6 @@ export const selectPrivacyExperience = createSelector(
     }
     return consentApi.endpoints.getPrivacyExperience.select({
       region,
-      fides_user_device_id: deviceId,
     })(RootState)?.data?.items[0];
   }
 );

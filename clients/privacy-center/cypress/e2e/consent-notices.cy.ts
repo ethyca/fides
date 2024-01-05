@@ -90,51 +90,41 @@ describe("Privacy notice driven consent", () => {
       cy.wait("@postConsentRequestVerify");
       cy.wait("@getExperience").then((interception) => {
         const { url } = interception.request;
-        expect(url).contains("fides_user_device_id");
         expect(url).contains("region=us_ca");
       });
-      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
-        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
-          if (cookie) {
-            cy.log(cookie.value);
-          } else {
-            cy.log("no cookie found?");
-          }
-        });
 
-        cy.wait("@patchNoticesServed");
+      cy.wait("@patchNoticesServed");
 
-        // Opt in, so should default to not checked
-        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
-          cy.getRadio().should("not.be.checked");
-        });
-        // Opt out, so should default to checked
-        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
-          cy.getRadio().should("be.checked");
-        });
-        // Notice only, so should be checked and disabled
-        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_3}`).within(() => {
-          cy.getRadio().should("be.checked").should("be.disabled");
-        });
+      // Opt in, so should default to not checked
+      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
+        cy.getRadio().should("not.be.checked");
+      });
+      // Opt out, so should default to checked
+      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
+        cy.getRadio().should("be.checked");
+      });
+      // Notice only, so should be checked and disabled
+      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_3}`).within(() => {
+        cy.getRadio().should("be.checked").should("be.disabled");
+      });
 
-        // Opt in, so should default to not checked
-        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
-          cy.getRadio().should("not.be.checked");
-        });
-        // Opt out, so should default to checked
-        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
-          cy.getRadio().should("be.checked");
-        });
-        // Notice only, so should be checked and disabled
-        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_3}`).within(() => {
-          cy.getRadio().should("be.checked").should("be.disabled");
-        });
+      // Opt in, so should default to not checked
+      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
+        cy.getRadio().should("not.be.checked");
+      });
+      // Opt out, so should default to checked
+      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
+        cy.getRadio().should("be.checked");
+      });
+      // Notice only, so should be checked and disabled
+      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_3}`).within(() => {
+        cy.getRadio().should("be.checked").should("be.disabled");
+      });
 
-        // Opt in to the opt in notice
-        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
-          cy.getRadio().should("not.be.checked").check({ force: true });
-          cy.getRadio().should("be.checked");
-        });
+      // Opt in to the opt in notice
+      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
+        cy.getRadio().should("not.be.checked").check({ force: true });
+        cy.getRadio().should("be.checked");
       });
 
       cy.getByTestId("save-btn").click();
@@ -191,10 +181,6 @@ describe("Privacy notice driven consent", () => {
       };
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
 
-      cy.wait("@getExperience").then((interception) => {
-        const { url } = interception.request;
-        expect(url).contains(`fides_user_device_id=${uuid}`);
-      });
       // Make sure the same uuid propagates to the backend and to the updated cookie
       cy.getByTestId("save-btn").click();
       cy.wait("@patchPrivacyPreference").then((interception) => {
