@@ -4,6 +4,10 @@ import {
   getConsentContext,
   resolveLegacyConsentValue,
   GpcStatus,
+  FidesCookie,
+  getOrMakeFidesCookie,
+  saveFidesCookie,
+  CookieKeyConsent,
 } from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
@@ -48,6 +52,7 @@ const ConfigDrivenConsent = ({
    * Update the consent choices on the backend.
    */
   const saveUserConsentOptions = useCallback(() => {
+    const cookieKeyConsent: CookieKeyConsent = {};
     const consent = consentOptions.map((option) => {
       const defaultValue = resolveLegacyConsentValue(
         option.default,
@@ -59,6 +64,13 @@ const ConfigDrivenConsent = ({
         consentOption: option,
         consentContext,
       });
+      option.cookieKeys?.forEach((cookieKey) => {
+        const previousConsent = cookieKeyConsent[cookieKey];
+        // For a cookie key to have consent, _all_ data uses that target that cookie key
+        // must have consent.
+        cookieKeyConsent[cookieKey] =
+          previousConsent === undefined ? value : previousConsent && value;
+      });
 
       return {
         data_use: option.fidesDataUseKey,
@@ -68,6 +80,8 @@ const ConfigDrivenConsent = ({
         conflicts_with_gpc: gpcStatus === GpcStatus.OVERRIDDEN,
       };
     });
+    const cookie: FidesCookie = getOrMakeFidesCookie();
+    saveFidesCookie({ ...cookie, consent: cookieKeyConsent });
 
     const executableOptions = consentOptions.map((option) => ({
       data_use: option.fidesDataUseKey,
