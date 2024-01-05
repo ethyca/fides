@@ -106,12 +106,12 @@ const Consent: NextPage = () => {
     if (isNoticeDriven) {
       saveFidesCookie(cookie);
     } else {
-      const newConsent = makeCookieKeyConsent({
-        consentOptions,
-        fidesKeyToConsent: persistedFidesKeyToConsent,
-        consentContext,
-      });
-      saveFidesCookie({ ...cookie, consent: newConsent });
+      // const newConsent = makeCookieKeyConsent({
+      //   consentOptions,
+      //   fidesKeyToConsent: persistedFidesKeyToConsent,
+      //   consentContext,
+      // });
+      // saveFidesCookie({ ...cookie, consent: newConsent });
     }
   }, [
     consentOptions,
