@@ -23,6 +23,9 @@ The types of changes are:
 - Tooltip and styling for disabled rows in add multiple vendor view [#4498](https://github.com/ethyca/fides/pull/4498)
 - Preliminary GPP support for US regions [#4498](https://github.com/ethyca/fides/pull/4504)
 - Access and erasure support for Statsig Enterprise [#4429](https://github.com/ethyca/fides/pull/4429)
+- New page for setting locations [#4517](https://github.com/ethyca/fides/pull/4517)
+- New modal for setting granular locations [#4531](https://github.com/ethyca/fides/pull/4531)
+- New page for setting regulations [#4530](https://github.com/ethyca/fides/pull/4530)
 - Update fides.js to support multiple descriptions (banner, overlay) and render HTML descriptions [#4542](https://github.com/ethyca/fides/pull/4542)
 
 ### Fixed
