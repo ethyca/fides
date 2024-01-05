@@ -1,7 +1,5 @@
 import pytest
 
-# import pdb -- used for trouble shooting
-
 from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
@@ -17,6 +15,8 @@ class TestAppsflyerConnector:
         access_results = await appsflyer_runner.access_request(
             access_policy=policy, identities={"email": appsflyer_identity_email}
         )
+
+        assert len(access_results["appsflyer_instance:user"]) == 10
 
     async def test_non_strict_erasure_request(
         self,
@@ -34,7 +34,6 @@ class TestAppsflyerConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": appsflyer_erasure_identity_email},
         )
-        # pdb.set_trace() -- used for trouble shooting
         assert erasure_results == {
             "appsflyer_external_dataset:appsflyer_external_collection": 0,
             "appsflyer_instance:apps": 0,
