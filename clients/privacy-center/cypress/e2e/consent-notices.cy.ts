@@ -72,10 +72,15 @@ describe("Privacy notice driven consent", () => {
       cy.clearAllCookies();
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       cy.visit("/consent");
-      cy.getByTestId("consent");
       cy.overrideSettings(SETTINGS);
+      cy.waitUntil(() =>
+        cy
+          .window()
+          // @ts-ignore window should have a store obj
+          .then((win) => win.store.getState().settings.IS_OVERLAY_ENABLED)
+      );
+      cy.getByTestId("consent");
       cy.wait("@getVerificationConfig");
-      cy.wait("@getGeolocation");
     });
 
     it("populates its header from the experience config", () => {
