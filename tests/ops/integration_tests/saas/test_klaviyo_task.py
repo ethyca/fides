@@ -1,166 +1,69 @@
-import random
-
 import pytest
-import requests
 
-from fides.api.graph.graph import DatasetGraph
-from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.redis_cache import Identity
-from fides.api.service.connectors import get_connector
-from fides.api.task import graph_task
-from fides.api.task.graph_task import get_cached_data_for_erasures
-from fides.config import get_config
-from tests.ops.graph.graph_test_util import assert_rows_match
-
-CONFIG = get_config()
+from fides.api.models.policy import Policy
+from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_klaviyo
-def test_klaviyo_connection_test(klaviyo_connection_config) -> None:
-    get_connector(klaviyo_connection_config).test_connection()
+class TestKlaviyoConnector:
+    def test_connection(self, klaviyo_runner: ConnectorRunner):
+        klaviyo_runner.test_connection()
 
+    async def test_access_request(
+        self,
+        klaviyo_runner: ConnectorRunner,
+        policy: Policy,
+        klaviyo_identity_email: str,
+    ):
+        access_results = await klaviyo_runner.access_request(
+            access_policy=policy, identities={"email": klaviyo_identity_email}
+        )
 
-@pytest.mark.integration_saas
-@pytest.mark.integration_klaviyo
-@pytest.mark.asyncio
-async def test_klaviyo_access_request_task(
-    db,
-    policy,
-    klaviyo_connection_config,
-    klaviyo_dataset_config,
-    klaviyo_identity_email,
-) -> None:
-    """Full access request based on the Klaviyo SaaS config"""
+        # verify we only returned data for our identity email
+        assert (
+            access_results["klaviyo_instance:profiles"][0]["attributes"]["email"]
+            == klaviyo_identity_email
+        )
 
-    privacy_request = PrivacyRequest(
-        id=f"test_klaviyo_access_request_task_{random.randint(0, 1000)}"
-    )
-    identity = Identity(**{"email": klaviyo_identity_email})
-    privacy_request.cache_identity(identity)
+    async def test_non_strict_erasure_request(
+        self,
+        klaviyo_runner: ConnectorRunner,
+        policy: Policy,
+        erasure_policy_string_rewrite: Policy,
+        klaviyo_erasure_identity_email: str,
+        klaviyo_erasure_data,
+    ):
+        (
+            _,
+            erasure_results,
+        ) = await klaviyo_runner.non_strict_erasure_request(
+            access_policy=policy,
+            erasure_policy=erasure_policy_string_rewrite,
+            identities={"email": klaviyo_erasure_identity_email},
+        )
 
-    dataset_name = klaviyo_connection_config.get_saas_config().fides_key
-    merged_graph = klaviyo_dataset_config.get_graph()
-    graph = DatasetGraph(merged_graph)
+        assert erasure_results == {
+            "klaviyo_instance:profiles": 1,
+        }
 
-    v = await graph_task.run_access_request(
-        privacy_request,
-        policy,
-        graph,
-        [klaviyo_connection_config],
-        {"email": klaviyo_identity_email},
-        db,
-    )
+    async def test_old_consent_request(
+        self,
+        klaviyo_runner: ConnectorRunner,
+        consent_policy: Policy,
+        klaviyo_erasure_identity_email,
+    ):
+        consent_results = await klaviyo_runner.old_consent_request(
+            consent_policy, {"email": klaviyo_erasure_identity_email}
+        )
+        assert consent_results == {"opt_in": True, "opt_out": True}
 
-    assert_rows_match(
-        v[f"{dataset_name}:profiles"],
-        min_size=1,
-        keys=["type", "id", "attributes", "links", "relationships"],
-    )
-
-    # verify we only returned data for our identity email
-    assert (
-        v[f"{dataset_name}:profiles"][0]["attributes"]["email"]
-        == klaviyo_identity_email
-    )
-    user_id = v[f"{dataset_name}:profiles"][0]["id"]
-
-
-@pytest.mark.integration_saas
-@pytest.mark.integration_klaviyo
-@pytest.mark.asyncio
-async def test_klaviyo_erasure_request_task(
-    db,
-    policy,
-    erasure_policy_string_rewrite,
-    klaviyo_connection_config,
-    klaviyo_dataset_config,
-    klaviyo_erasure_identity_email,
-    klaviyo_create_erasure_data,
-) -> None:
-    """Full erasure request based on the Klaviyo SaaS config"""
-
-    masking_strict = CONFIG.execution.masking_strict
-    CONFIG.execution.masking_strict = False  # Allow Delete
-
-    privacy_request = PrivacyRequest(
-        id=f"test_klaviyo_erasure_request_task_{random.randint(0, 1000)}"
-    )
-    identity = Identity(**{"email": klaviyo_erasure_identity_email})
-    privacy_request.cache_identity(identity)
-
-    dataset_name = klaviyo_connection_config.get_saas_config().fides_key
-    merged_graph = klaviyo_dataset_config.get_graph()
-    graph = DatasetGraph(merged_graph)
-
-    v = await graph_task.run_access_request(
-        privacy_request,
-        policy,
-        graph,
-        [klaviyo_connection_config],
-        {"email": klaviyo_erasure_identity_email},
-        db,
-    )
-
-    assert_rows_match(
-        v[f"{dataset_name}:profiles"],
-        min_size=1,
-        keys=["type", "id", "attributes", "links", "relationships"],
-    )
-
-    x = await graph_task.run_erasure(
-        privacy_request,
-        erasure_policy_string_rewrite,
-        graph,
-        [klaviyo_connection_config],
-        {"email": klaviyo_erasure_identity_email},
-        get_cached_data_for_erasures(privacy_request.id),
-        db,
-    )
-
-    assert x == {
-        f"{dataset_name}:profiles": 1,
-    }
-
-    klaviyo_secrets = klaviyo_connection_config.secrets
-    base_url = f"https://{klaviyo_secrets['domain']}"
-    headers = {
-        "Authorization": f"Klaviyo-API-Key {klaviyo_secrets['api_key']}",
-        "revision": klaviyo_secrets["revision"],
-    }
-
-    # user
-    response = requests.get(
-        url=f"{base_url}/api/profiles",
-        headers=headers,
-        params={"filter": "equals(email,'" + klaviyo_erasure_identity_email + "')"},
-    )
-
-    assert response.status_code == 200
-
-    # Marc attempt
-    ### I think I need to add two tests for the opt-in and opt-out functionality we're adding.
-    ### The response from the api/profile-subscription-bulk-delete-jobs/ and
-    ### api/profile-subscription-bulk-create-jobs/ endpoints is just a 202 if all went as expected
-    ### So we should just need to build up the two requests and assert for a 202 I think
-    # privacy_request = PrivacyRequest(
-    #     id=f"test_klaviyo_consent_request_task_{random.randint(0, 1000)}"
-    # )
-    # identity = Identity(**{"email": klaviyo_erasure_identity_email})
-    # privacy_request.cache_identity(identity)
-    # dataset_name = klaviyo_connection_config.get_saas_config().fides_key
-    # merged_graph = klaviyo_dataset_config.get_graph()
-    # graph = DatasetGraph(merged_graph)
-
-    # v = await graph_task.run_consent_request(
-    #     privacy_request,
-    #     policy,
-    #     graph,
-    #     [klaviyo_connection_config],
-    #     {"email": klaviyo_erasure_identity_email},
-    #     db,
-    # )
-
-    # assert response.status_code == 202
-
-    CONFIG.execution.masking_strict = masking_strict
+    async def test_new_consent_request(
+        self,
+        klaviyo_runner: ConnectorRunner,
+        consent_policy: Policy,
+        klaviyo_erasure_identity_email,
+    ):
+        consent_results = await klaviyo_runner.new_consent_request(
+            consent_policy, {"email": klaviyo_erasure_identity_email}
+        )
+        assert consent_results == {"opt_in": True, "opt_out": True}

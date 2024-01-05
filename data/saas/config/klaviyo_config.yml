@@ -4,7 +4,7 @@ saas_config:
   type: klaviyo
   description: A sample schema representing the Klaviyo connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/klaviyo
-  version: 0.1.2
+  version: 0.1.3
 
   connector_params:
     - name: domain
@@ -14,9 +14,6 @@ saas_config:
       label: API key
       sensitive: True
       description: Your Private API key
-    - name: revision
-      default_value: "2024-01-03"
-      description: The API revision provided as an ISO 8601 date
 
   client_config:
     protocol: https
@@ -28,59 +25,61 @@ saas_config:
           - name: Authorization
             value: Klaviyo-API-Key <api_key>
           - name: revision
-            value: <revision>
+            value: "2023-10-15"
 
   test_request:
     method: GET
     path: /api/profiles
-  ## fix this arrangement -- be smart, look at another optin out for proper formatting (mailchimp transactional)
+
   consent_requests:
-    - name: opt_out
-      requests:
-        delete:
-          method: POST
-          path: /api/profile-suppression-bulk-create-jobs/
-          body: |
-            {
-            "data": {
-                "type": "profile-suppression-bulk-create-job",
-                "attributes": {
-                  "profiles": {
-                    "data": [
-                      {
-                        "type": "profile",
-                        "attributes": {
-                          "email": "<email>"
-                        }
-                      }
-                    ]
+    opt_in:
+      method: POST
+      path: /api/profile-suppression-bulk-delete-jobs/
+      param_values:
+        - name: email
+          identity: email
+      body: |
+        {
+          "data": {
+            "type": "profile-suppression-bulk-delete-job",
+            "attributes": {
+              "profiles": {
+                "data": [
+                  {
+                    "type": "profile",
+                    "attributes": {
+                      "email": "<email>"
+                    }
                   }
-                }
+                ]
               }
             }
-    - name: opt_in
-      requests:
-        update:
-          method: POST
-          path: /api/profile-suppression-bulk-delete-jobs/
-          body: |
-            {
-            "data": {
-                "type": "profile-suppression-bulk-delete-job",
-                "attributes": {
-                  "profiles": {
-                    "data": [
-                      {
-                        "type": "profile",
-                        "attributes": {
-                          "email": "<email>"
-                        }
-                      }
-                    ]
+          }
+        }
+    opt_out:
+      method: POST
+      path: /api/profile-suppression-bulk-create-jobs/
+      param_values:
+        - name: email
+          identity: email
+      body: |
+        {
+          "data": {
+            "type": "profile-suppression-bulk-create-job",
+            "attributes": {
+              "profiles": {
+                "data": [
+                  {
+                    "type": "profile",
+                    "attributes": {
+                      "email": "<email>"
+                    }
                   }
-                }
+                ]
               }
             }
+          }
+        }
 
   endpoints:
     - name: profiles
@@ -107,9 +106,9 @@ saas_config:
                     "data": {
                       "type": "profile",
                       "id": "<profiles_id>"
-                      }
                     }
                   }
+                }
               }
             }
           param_values:
