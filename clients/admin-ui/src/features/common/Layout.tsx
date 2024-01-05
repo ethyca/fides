@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import React from "react";
 
 import { useFeatures } from "~/features/common/features";
-import Header from "~/features/common/Header";
 import {
   useGetActiveMessagingProviderQuery,
   useGetActiveStorageQuery,
@@ -49,17 +48,10 @@ const Layout = ({
         <meta name="description" content="Privacy Engineering Platform" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Flex height="100%">
-        <Flex direction="column" flex={1} minWidth={0}>
-          <Header />
-          <Box as="main" py={6} px={10}>
-            {showConfigurationBanner ? (
-              <ConfigurationNotificationBanner />
-            ) : null}
-            {children}
-          </Box>
-        </Flex>
-      </Flex>
+      <Box as="main" py={6} px={10}>
+        {showConfigurationBanner ? <ConfigurationNotificationBanner /> : null}
+        {children}
+      </Box>
     </Flex>
   );
 };

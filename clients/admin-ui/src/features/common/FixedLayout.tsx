@@ -2,8 +2,6 @@ import { Flex, FlexProps } from "@fidesui/react";
 import Head from "next/head";
 import React from "react";
 
-import Header from "~/features/common/Header";
-
 const FixedLayout = ({
   children,
   title,
@@ -28,19 +26,16 @@ const FixedLayout = ({
       <meta name="description" content="Privacy Engineering Platform" />
       <link rel="icon" href="/favicon.ico" />
     </Head>
-    <Flex direction="column" flex={1} minWidth={0}>
-      <Header />
-      <Flex
-        pt={6}
-        as="main"
-        overflow="auto"
-        direction="column"
-        flex={1}
-        minWidth={0}
-        {...mainProps}
-      >
-        {children}
-      </Flex>
+    <Flex
+      pt={6}
+      as="main"
+      overflow="auto"
+      direction="column"
+      flex={1}
+      minWidth={0}
+      {...mainProps}
+    >
+      {children}
     </Flex>
   </Flex>
 );
