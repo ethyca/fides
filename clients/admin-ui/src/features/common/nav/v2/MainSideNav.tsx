@@ -1,4 +1,16 @@
-import { Box, Link, VStack } from "@fidesui/react";
+import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
+  Box,
+  Button,
+  Link,
+  ListItem,
+  UnorderedList,
+  VStack,
+} from "@fidesui/react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 
@@ -6,20 +18,104 @@ import logoImage from "~/../public/logo-white.svg";
 import Image from "~/features/common/Image";
 
 import { useNav } from "./hooks";
+import { ActiveNav, NavGroup, NavGroupChild } from "./nav-config";
 import { INDEX_ROUTE } from "./routes";
 
+const LINK_HOVER_BACKGROUND_COLOR = "#28303F";
+const LINK_ACTIVE_BACKGROUND_COLOR = "#7745F0";
+const LINK_COLOR = "#CBD5E0";
+
 const FidesLogoHomeLink = () => (
-  <NextLink href={INDEX_ROUTE} passHref>
-    {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-    <Link display="flex">
-      <Image src={logoImage} width={83} height={26} alt="Fides Logo" />
-    </Link>
-  </NextLink>
+  <Box px={2}>
+    <NextLink href={INDEX_ROUTE} passHref>
+      {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+      <Link display="flex">
+        <Image src={logoImage} alt="Fides Logo" />
+      </Link>
+    </NextLink>
+  </Box>
+);
+
+const NavSideBarLink = ({
+  childGroup,
+  isActive,
+}: {
+  childGroup: NavGroupChild;
+  isActive: boolean;
+}) => {
+  const { title, path } = childGroup;
+  return (
+    <ListItem listStyleType="none">
+      <NextLink href={path} passHref>
+        <Button
+          height="34px"
+          variant="ghost"
+          fontWeight="normal"
+          fontSize="sm"
+          px={2}
+          width="100%"
+          justifyContent="start"
+          color={LINK_COLOR}
+          isActive={isActive}
+          _hover={{
+            backgroundColor: LINK_HOVER_BACKGROUND_COLOR,
+          }}
+          _active={{
+            color: "white",
+            backgroundColor: LINK_ACTIVE_BACKGROUND_COLOR,
+          }}
+        >
+          {title}
+        </Button>
+      </NextLink>
+    </ListItem>
+  );
+};
+
+const NavGroupMenu = ({
+  group,
+  active,
+}: {
+  group: NavGroup;
+  active: ActiveNav | undefined;
+}) => (
+  <AccordionItem border="none">
+    <h3>
+      <AccordionButton px={2} py={3}>
+        <Box
+          fontSize="xs"
+          fontWeight="bold"
+          textTransform="uppercase"
+          as="span"
+          flex="1"
+          textAlign="left"
+        >
+          {group.title}
+        </Box>
+        <AccordionIcon />
+      </AccordionButton>
+    </h3>
+    <AccordionPanel fontSize="sm" p={0}>
+      <UnorderedList m={0}>
+        {group.children.map((child) => {
+          const isActive = !!active?.path?.startsWith(child.path);
+          return (
+            <NavSideBarLink
+              isActive={isActive}
+              key={child.path}
+              childGroup={child}
+            />
+          );
+        })}
+      </UnorderedList>
+    </AccordionPanel>
+  </AccordionItem>
 );
 
 const MainSideNav = () => {
   const router = useRouter();
   const nav = useNav({ path: router.pathname });
+  const { active } = nav;
 
   return (
     <Box p={4} minWidth="200px" backgroundColor="#191D27">
@@ -27,14 +123,11 @@ const MainSideNav = () => {
         <Box pb={6}>
           <FidesLogoHomeLink />
         </Box>
-        {nav.groups.map((group) => (
-          // // The group links to its first child's path.
-          // const { path } = group.children[0]!;
-
-          // const isActive = group.title === nav.active?.title;
-
-          <Box key={group.title}>{group.title}</Box>
-        ))}
+        <Accordion allowMultiple width="100%">
+          {nav.groups.map((group) => (
+            <NavGroupMenu key={group.title} group={group} active={active} />
+          ))}
+        </Accordion>
       </VStack>
     </Box>
   );
