@@ -23,7 +23,7 @@ if (process.env.NEXT_PUBLIC_MOCK_API) {
 }
 
 const SafeHydrate: React.FC = ({ children }) => (
-  <div suppressHydrationWarning>
+  <div suppressHydrationWarning style={{ height: "100%" }}>
     {typeof window === "undefined" ? null : children}
   </div>
 );

@@ -8,6 +8,15 @@ import Image from "~/features/common/Image";
 import { useNav } from "./hooks";
 import { INDEX_ROUTE } from "./routes";
 
+const FidesLogoHomeLink = () => (
+  <NextLink href={INDEX_ROUTE} passHref>
+    {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+    <Link display="flex">
+      <Image src={logoImage} width={83} height={26} alt="Fides Logo" />
+    </Link>
+  </NextLink>
+);
+
 const MainSideNav = () => {
   const router = useRouter();
   const nav = useNav({ path: router.pathname });
@@ -16,12 +25,7 @@ const MainSideNav = () => {
     <Box p={4} minWidth="200px" backgroundColor="#191D27">
       <VStack as="nav" alignItems="start" color="white" height="100%">
         <Box pb={6}>
-          <NextLink href={INDEX_ROUTE} passHref>
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-            <Link display="flex">
-              <Image src={logoImage} width={83} height={26} alt="Fides Logo" />
-            </Link>
-          </NextLink>
+          <FidesLogoHomeLink />
         </Box>
         {nav.groups.map((group) => (
           // // The group links to its first child's path.

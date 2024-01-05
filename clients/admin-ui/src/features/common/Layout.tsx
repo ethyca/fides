@@ -44,14 +44,13 @@ const Layout = ({
     isValidNotificationRoute;
 
   return (
-    <Flex data-testid={title} direction="column">
+    <Flex data-testid={title} direction="column" height="100%">
       <Head>
         <title>Fides Admin UI - {title}</title>
         <meta name="description" content="Privacy Engineering Platform" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
-      <Flex>
+      <Flex height="100%">
         <MainSideNav />
         <Flex direction="column" flex={1} minWidth={0}>
           <Header />
