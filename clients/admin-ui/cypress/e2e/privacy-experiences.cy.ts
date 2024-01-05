@@ -176,17 +176,18 @@ describe("Privacy experiences", () => {
     });
     interface Props {
       component?: "overlay" | "privacy_center";
+      banner_title?: string;
     }
     /**
      * Helper function to swap out the component type in a stubbed experience
      * @example stubExperience({component: "overlay"})
      */
-    const stubExperience = ({ component }: Props) => {
+    const stubExperience = (overrides: Props) => {
       cy.fixture("privacy-experiences/experienceConfig.json").then(
         (experience) => {
           const updatedExperience = {
             ...experience,
-            component: component ?? experience.component,
+            ...overrides,
           };
           cy.intercept("GET", "/api/v1/experience-config/pri*", {
             body: updatedExperience,
@@ -283,6 +284,14 @@ describe("Privacy experiences", () => {
         // Make sure regions is still ["us_ca"] (unchanged)
         expect(body.regions).to.eql(["us_ca"]);
       });
+    });
+
+    it("can still save when banner title is null", () => {
+      stubExperience({ component: "overlay", banner_title: null });
+      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/${OVERLAY_EXPERIENCE_ID}`);
+      cy.getByTestId("save-btn").should("be.disabled");
+      cy.selectOption("input-banner_enabled", "Enabled where legally required");
+      cy.getByTestId("save-btn").should("not.be.disabled");
     });
 
     it("can submit an overlay form excluding optional values", () => {
