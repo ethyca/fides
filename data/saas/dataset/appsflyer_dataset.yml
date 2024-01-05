@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
     name: appsflyer
-    description: A sample dataset representing the Appsflyer connector for Fides
+    description: A sample dataset representing the AppsFlyer connector for Fides
     collections:
       - name: user
         fields:
