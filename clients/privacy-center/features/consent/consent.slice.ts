@@ -190,6 +190,7 @@ export const consentSlice = createSlice({
 export const { reducer } = consentSlice;
 export const {
   changeConsent,
+  updateUserConsentPreferencesFromApi,
   setFidesUserDeviceId,
   setLocation,
   clearLocation,
