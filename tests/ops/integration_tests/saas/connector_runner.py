@@ -176,6 +176,9 @@ class ConnectorRunner:
     async def old_consent_request(
         self, consent_policy: Policy, identities: Dict[str, Any]
     ):
+        """
+        Consent requests using consent preferences on the privacy request (old workflow)
+        """
         privacy_request = PrivacyRequest(
             id=f"test_{self.connection_config.key}_old_consent_request_{random.randint(0, 1000)}",
             status=PrivacyRequestStatus.pending,
@@ -214,6 +217,9 @@ class ConnectorRunner:
     async def new_consent_request(
         self, consent_policy: Policy, identities: Dict[str, Any]
     ):
+        """
+        Consent requests using privacy preference history (new workflow)
+        """
         privacy_request = PrivacyRequest(
             id=f"test_{self.connection_config.key}_new_consent_request_{random.randint(0, 1000)}",
             status=PrivacyRequestStatus.pending,
