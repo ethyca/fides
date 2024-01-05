@@ -247,6 +247,13 @@ describe("Privacy notice driven consent", () => {
         cy.getByTestId("save-btn").click();
 
         cy.wait("@patchPrivacyPreference").then(() => {
+          cy.getAllCookies().then((cookies) => {
+            cy.log(
+              `num cookies: ${cookies.length}. names: ${cookies
+                .map((c) => c.name)
+                .join()}`
+            );
+          });
           // Use waitUntil to help with CI
           cy.waitUntil(() =>
             cy.getAllCookies().then((cookies) => cookies.length === 1)
