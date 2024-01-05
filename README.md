@@ -38,8 +38,8 @@ brew install freetds openssl@1.1
 **Add the following to your run commands (i.e. `.zshrc`), updating any path/versions to match yours**
 
 ```bash
-export LDFLAGS="-L/opt/homebrew/Cellar/freetds/1.3.18_1/lib -L/opt/homebrew/Cellar/openssl@1.1/1.1.1u/lib"
-export CFLAGS="-I/opt/homebrew/Cellar/freetds/1.3.18_1/include"
+export LDFLAGS="-L/opt/homebrew/opt/freetds/lib -L/opt/homebrew/opt/openssl@1.1/lib"
+export CFLAGS="-I/opt/homebrew/opt/freetds/include"
 ```
 
 #### Download and install Fides
