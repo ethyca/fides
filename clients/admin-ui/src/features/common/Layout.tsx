@@ -5,7 +5,6 @@ import React from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Header from "~/features/common/Header";
-import MainSideNav from "~/features/common/nav/v2/MainSideNav";
 import {
   useGetActiveMessagingProviderQuery,
   useGetActiveStorageQuery,
@@ -51,7 +50,6 @@ const Layout = ({
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Flex height="100%">
-        <MainSideNav />
         <Flex direction="column" flex={1} minWidth={0}>
           <Header />
           <Box as="main" py={6} px={10}>

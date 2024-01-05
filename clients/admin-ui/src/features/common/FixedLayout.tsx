@@ -4,8 +4,6 @@ import React from "react";
 
 import Header from "~/features/common/Header";
 
-import MainSideNav from "./nav/v2/MainSideNav";
-
 const FixedLayout = ({
   children,
   title,
@@ -30,21 +28,18 @@ const FixedLayout = ({
       <meta name="description" content="Privacy Engineering Platform" />
       <link rel="icon" href="/favicon.ico" />
     </Head>
-    <Flex flexGrow={1}>
-      <MainSideNav />
-      <Flex direction="column" flex={1} minWidth={0}>
-        <Header />
-        <Flex
-          pt={6}
-          as="main"
-          overflow="auto"
-          direction="column"
-          flex={1}
-          minWidth={0}
-          {...mainProps}
-        >
-          {children}
-        </Flex>
+    <Flex direction="column" flex={1} minWidth={0}>
+      <Header />
+      <Flex
+        pt={6}
+        as="main"
+        overflow="auto"
+        direction="column"
+        flex={1}
+        minWidth={0}
+        {...mainProps}
+      >
+        {children}
       </Flex>
     </Flex>
   </Flex>

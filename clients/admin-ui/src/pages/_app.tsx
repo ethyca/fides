@@ -2,7 +2,7 @@ import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/700.css";
 
-import { FidesProvider } from "@fidesui/react";
+import { Box, FidesProvider, Flex } from "@fidesui/react";
 import type { AppProps } from "next/app";
 import React from "react";
 import { DndProvider } from "react-dnd";
@@ -12,6 +12,7 @@ import { PersistGate } from "redux-persist/integration/react";
 
 import ProtectedRoute from "~/features/auth/ProtectedRoute";
 import CommonSubscriptions from "~/features/common/CommonSubscriptions";
+import MainSideNav from "~/features/common/nav/v2/MainSideNav";
 
 import store, { persistor } from "../app/store";
 import theme from "../theme";
@@ -23,7 +24,7 @@ if (process.env.NEXT_PUBLIC_MOCK_API) {
 }
 
 const SafeHydrate: React.FC = ({ children }) => (
-  <div suppressHydrationWarning style={{ height: "100%" }}>
+  <div suppressHydrationWarning style={{ height: "100%", display: "flex" }}>
     {typeof window === "undefined" ? null : children}
   </div>
 );
@@ -43,7 +44,12 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
             ) : (
               <ProtectedRoute>
                 <CommonSubscriptions />
-                <Component {...pageProps} />
+                <Flex width="100%" height="100%" flex={1}>
+                  <MainSideNav />
+                  <Box width="100%">
+                    <Component {...pageProps} />
+                  </Box>
+                </Flex>
               </ProtectedRoute>
             )}
           </DndProvider>

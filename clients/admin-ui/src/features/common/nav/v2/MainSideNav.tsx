@@ -98,7 +98,9 @@ const NavGroupMenu = ({
     <AccordionPanel fontSize="sm" p={0}>
       <UnorderedList m={0}>
         {group.children.map((child) => {
-          const isActive = !!active?.path?.startsWith(child.path);
+          const isActive = child.exact
+            ? active?.path === child.path
+            : !!active?.path?.startsWith(child.path);
           return (
             <NavSideBarLink
               isActive={isActive}
@@ -118,12 +120,17 @@ const MainSideNav = () => {
   const { active } = nav;
 
   return (
-    <Box p={4} minWidth="200px" backgroundColor="#191D27">
+    <Box p={4} minWidth="200px" maxWidth="200px" backgroundColor="#191D27">
       <VStack as="nav" alignItems="start" color="white" height="100%">
         <Box pb={6}>
           <FidesLogoHomeLink />
         </Box>
-        <Accordion allowMultiple width="100%">
+        <Accordion
+          allowMultiple
+          width="100%"
+          defaultIndex={[...Array(nav.groups.length).keys()]}
+          overflowY="auto"
+        >
           {nav.groups.map((group) => (
             <NavGroupMenu key={group.title} group={group} active={active} />
           ))}

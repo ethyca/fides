@@ -4,7 +4,6 @@ import * as React from "react";
 import { ReactNode } from "react";
 
 import Header from "~/features/common/Header";
-import MainSideNav from "~/features/common/nav/v2/MainSideNav";
 
 type HomeLayoutProps = {
   children: ReactNode;
@@ -19,7 +18,6 @@ const HomeLayout: React.FC<HomeLayoutProps> = ({ children, title }) => (
       <link rel="icon" href="/favicon.ico" />
     </Head>
     <Flex height="100%">
-      <MainSideNav />
       <Flex flexGrow={1} flexDirection="column">
         <Header />
         <Flex as="main" flexDirection="column" gap={10}>
