@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from enum import Enum
 from typing import Optional
 
 from pydantic import EmailStr, validator
@@ -114,3 +115,9 @@ class UserUpdate(FidesSchema):
     email_address: Optional[EmailStr]
     first_name: Optional[str]
     last_name: Optional[str]
+
+
+class DisabledReason(Enum):
+    """Reasons for why a user is disabled"""
+
+    pending_invite = "pending_invite"

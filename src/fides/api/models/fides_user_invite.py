@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+from citext import CIText
 from sqlalchemy import Column, String
 from sqlalchemy.orm import Session
 
@@ -15,7 +16,7 @@ INVITE_CODE_TTL_HOURS = 24
 class FidesUserInvite(Base):
     __tablename__ = "fides_user_invite"
 
-    username = Column(String, primary_key=True, index=True)
+    username = Column(CIText, primary_key=True, index=True)
     hashed_invite_code = Column(String, nullable=False)
     salt = Column(String, nullable=False)
 

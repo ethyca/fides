@@ -6,7 +6,9 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, List
 
 from citext import CIText
-from sqlalchemy import Boolean, Column, DateTime, String
+from sqlalchemy import Boolean, Column, DateTime
+from sqlalchemy import Enum as EnumColumn
+from sqlalchemy import String
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.common_exceptions import SystemManagerException
@@ -16,6 +18,7 @@ from fides.api.models.audit_log import AuditLog
 
 # Intentionally importing SystemManager here to build the FidesUser.systems relationship
 from fides.api.models.system_manager import SystemManager  # type: ignore[unused-import]
+from fides.api.schemas.user import DisabledReason
 
 if TYPE_CHECKING:
     from fides.api.models.sql_models import System  # type: ignore[attr-defined]
@@ -31,7 +34,7 @@ class FidesUser(Base):
     hashed_password = Column(String, nullable=False)
     salt = Column(String, nullable=False)
     disabled = Column(Boolean, nullable=False)
-    disabled_reason = Column(String, nullable=True)
+    disabled_reason = Column(EnumColumn(DisabledReason), nullable=True)
     last_login_at = Column(DateTime(timezone=True), nullable=True)
     password_reset_at = Column(DateTime(timezone=True), nullable=True)
 
