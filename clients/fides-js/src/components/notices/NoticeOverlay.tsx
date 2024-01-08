@@ -10,10 +10,7 @@ import {
 import ConsentBanner from "../ConsentBanner";
 
 import { updateConsentPreferences } from "../../lib/preferences";
-import {
-  debugLog,
-  transformConsentToFidesUserPreference,
-} from "../../lib/consent-utils";
+import { debugLog } from "../../lib/consent-utils";
 
 import "../fides.css";
 import Overlay from "../Overlay";
@@ -24,6 +21,9 @@ import { useConsentServed } from "../../lib/hooks";
 import { updateCookieFromNoticePreferences } from "../../lib/cookie";
 import PrivacyPolicyLink from "../PrivacyPolicyLink";
 import { dispatchFidesEvent } from "../../lib/events";
+import { resolveConsentValue } from "../../lib/consent-value";
+import { getConsentContext } from "../../lib/consent-context";
+import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   experience,
@@ -31,10 +31,15 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   fidesRegionString,
   cookie,
 }) => {
-  const initialEnabledNoticeKeys = useMemo(
-    () => Object.keys(cookie.consent).filter((key) => cookie.consent[key]),
-    [cookie.consent]
-  );
+  const initialEnabledNoticeKeys = useMemo(() => {
+    if (experience.privacy_notices) {
+      return experience.privacy_notices.map((notice) => {
+        const val = resolveConsentValue(notice, getConsentContext(), cookie);
+        return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
+      });
+    }
+    return [];
+  }, [cookie, experience]);
 
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
     Array<PrivacyNotice["notice_key"]>

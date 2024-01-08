@@ -1,21 +1,21 @@
-import type { CookieKeyConsent } from "./cookie";
 import { GPPSettings } from "./gpp/types";
 import type {
-  TCFFeatureRecord,
-  TCFPurposeSave,
-  TCFSpecialPurposeSave,
-  TCFFeatureSave,
-  TCFSpecialFeatureSave,
-  TCFVendorSave,
   GVLJson,
+  TCFFeatureRecord,
+  TCFFeatureSave,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
-  TCFSpecialPurposeRecord,
+  TCFPurposeSave,
   TCFSpecialFeatureRecord,
+  TCFSpecialFeatureSave,
+  TCFSpecialPurposeRecord,
+  TCFSpecialPurposeSave,
   TCFVendorConsentRecord,
   TCFVendorLegitimateInterestsRecord,
   TCFVendorRelationships,
+  TCFVendorSave,
 } from "./tcf/types";
+import { TcfCookieConsent } from "./tcf/types";
 
 export type EmptyExperience = Record<PropertyKey, never>;
 
@@ -99,6 +99,45 @@ export type FidesOptions = {
   allowHTMLDescription: boolean | null;
 };
 
+/**
+ * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
+ * {
+ *   "data_sales": false,
+ *   "analytics": true,
+ *   ...
+ * }
+ */
+export type CookieKeyConsent = {
+  [cookieKey: string]: boolean | undefined;
+};
+/**
+ * Store the user's identity values on the cookie, e.g.
+ * {
+ *   "fides_user_device_id": "1234-",
+ *   "email": "jane@example.com",
+ *   ...
+ * }
+ */
+export type CookieIdentity = Record<string, string>;
+/**
+ * Store metadata about the cookie itself, e.g.
+ * {
+ *   "version": "0.9.0",
+ *   "createdAt": "2023-01-01T12:00:00.000Z",
+ *   ...
+ * }
+ */
+export type CookieMeta = Record<string, string>;
+
+export interface FidesCookie {
+  consent: CookieKeyConsent;
+  identity: CookieIdentity;
+  fides_meta: CookieMeta;
+  fides_string?: string;
+  tcf_consent: TcfCookieConsent;
+  tcf_version_hash?: ExperienceMeta["version_hash"];
+}
+
 export type GetPreferencesFnResp = {
   // Overrides the value for Fides.consent for the user’s notice-based preferences (e.g. { data_sales: false })
   consent?: CookieKeyConsent;
@@ -133,7 +172,7 @@ export type FidesApiOptions = {
    * Intake a custom function that is used to fetch privacy experience.
    *
    * @param {string} userLocationString - user location
-   * @param {string} fidesUserDeviceId - (optional) Fides user device id, if known
+   * @param {string} fidesUserDeviceId - (deprecated) We no longer support handling user preferences on the experience using fidesUserDeviceId
    */
   getPrivacyExperienceFn?: (
     userLocationString: string,
@@ -278,7 +317,7 @@ export type PrivacyExperience = {
   created_at: string;
   updated_at: string;
   show_banner?: boolean;
-  privacy_notices?: Array<PrivacyNotice>;
+  privacy_notices?: Array<PrivacyNoticeWithPreference>;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
@@ -347,8 +386,12 @@ export type PrivacyNotice = {
   privacy_notice_history_id: string;
   cookies: Array<Cookies>;
   default_preference: UserConsentPreference;
+};
+
+// This type is exclusively used on front-end
+export type PrivacyNoticeWithPreference = PrivacyNotice & {
+  // Tracks preference to be shown via the UI / served via CMP
   current_preference?: UserConsentPreference;
-  outdated_preference?: UserConsentPreference;
 };
 
 export enum EnforcementLevel {

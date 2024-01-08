@@ -1,5 +1,9 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { constructFidesRegionString, UserGeolocation } from "fides-js";
+import {
+  constructFidesRegionString,
+  RecordsServedResponse,
+  UserGeolocation,
+} from "fides-js";
 
 import type { RootState } from "~/app/store";
 import { VerificationType } from "~/components/modals/types";
@@ -13,11 +17,10 @@ import {
   Page_PrivacyExperienceResponse_,
   PrivacyNoticeRegion,
   PrivacyPreferencesRequest,
-  RecordsServedResponse,
 } from "~/types/api";
 import { selectSettings } from "../common/settings.slice";
 
-import { FidesKeyToConsent, NoticeHistoryIdToPreference } from "./types";
+import { FidesKeyToConsent } from "./types";
 
 export const consentApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -61,7 +64,7 @@ export const consentApi = baseApi.injectEndpoints({
     }),
     getPrivacyExperience: build.query<
       Page_PrivacyExperienceResponse_,
-      { region: PrivacyNoticeRegion; fides_user_device_id?: string }
+      { region: PrivacyNoticeRegion }
     >({
       query: (payload) => ({
         url: "privacy-experience/",
@@ -232,32 +235,12 @@ export const selectUserRegion = createSelector(
 
 export const selectPrivacyExperience = createSelector(
   [(RootState) => RootState, selectUserRegion, selectFidesUserDeviceId],
-  (RootState, region, deviceId) => {
+  (RootState, region) => {
     if (!region) {
       return undefined;
     }
     return consentApi.endpoints.getPrivacyExperience.select({
       region,
-      fides_user_device_id: deviceId,
     })(RootState)?.data?.items[0];
-  }
-);
-
-const emptyConsentPreferences: NoticeHistoryIdToPreference = {};
-export const selectCurrentConsentPreferences = createSelector(
-  selectPrivacyExperience,
-  (experience) => {
-    if (
-      !experience ||
-      !experience.privacy_notices ||
-      !experience.privacy_notices.length
-    ) {
-      return emptyConsentPreferences;
-    }
-    const preferences: NoticeHistoryIdToPreference = {};
-    experience.privacy_notices.forEach((notice) => {
-      preferences[notice.privacy_notice_history_id] = notice.current_preference;
-    });
-    return preferences;
   }
 );

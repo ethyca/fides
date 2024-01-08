@@ -1,5 +1,6 @@
 import {
   ConsentMethod,
+  FidesCookie,
   FidesOptions,
   PrivacyExperience,
   PrivacyPreferencesRequest,
@@ -7,11 +8,7 @@ import {
   UserConsentPreference,
 } from "./consent-types";
 import { debugLog } from "./consent-utils";
-import {
-  FidesCookie,
-  removeCookiesFromBrowser,
-  saveFidesCookie,
-} from "./cookie";
+import { removeCookiesFromBrowser, saveFidesCookie } from "./cookie";
 import { dispatchFidesEvent, FidesEventExtraDetails } from "./events";
 import { patchUserPreference } from "../services/api";
 import { TcfSavePreferences } from "./tcf/types";
