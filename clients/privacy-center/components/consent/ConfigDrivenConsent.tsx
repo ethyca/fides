@@ -57,7 +57,11 @@ const ConfigDrivenConsent = ({
       consentContext,
     });
     const consent = consentOptions.map((option) => {
-      const value = newConsent[option.fidesDataUseKey] || false;
+      const defaultValue = resolveLegacyConsentValue(
+        option.default,
+        consentContext
+      );
+      const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
       const gpcStatus = getGpcStatus({
         value,
         consentOption: option,
