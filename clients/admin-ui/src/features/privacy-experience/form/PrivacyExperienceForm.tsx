@@ -15,6 +15,8 @@ import { ExperienceConfigCreate, ExperienceConfigResponse } from "~/types/api";
 import {
   defaultInitialValues,
   transformExperienceConfigResponseToCreation,
+  transformFormValuesToExperienceConfigCreate,
+  transformFormValuesToExperienceConfigUpdate,
   useExperienceForm,
 } from "./helpers";
 import OverlayForm from "./OverlayForm";
@@ -44,12 +46,16 @@ const PrivacyExperienceForm = ({
     if (isEditing && passedInPrivacyExperience) {
       // Cannot change component (BE will not accept it)
       const { component, ...payload } = values;
-      result = await patchExperiencesMutationTrigger({
-        ...payload,
-        id: passedInPrivacyExperience.id,
-      });
+      result = await patchExperiencesMutationTrigger(
+        transformFormValuesToExperienceConfigUpdate({
+          ...payload,
+          id: passedInPrivacyExperience.id,
+        })
+      );
     } else {
-      result = await postExperiencesMutationTrigger(values);
+      result = await postExperiencesMutationTrigger(
+        transformFormValuesToExperienceConfigCreate(values)
+      );
     }
 
     if (isErrorResult(result)) {

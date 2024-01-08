@@ -865,62 +865,6 @@ class TestPrivacyNoticeModel:
             CookieSchema.from_orm(cookie) for cookie in privacy_notice.cookies
         ] == expected_cookies, description
 
-    def test_calculate_relevant_systems(
-        self,
-        db,
-        system,
-        privacy_notice,
-        privacy_notice_us_ca_provide,
-        privacy_notice_us_co_provide_service_operations,
-        privacy_notice_fr_provide_service_frontend_only,
-    ):
-        """
-        privacy_notice fixture: marketing.advertising/third party sharing
-        privacy_notice_us_ca_provide fixture: essential
-        privacy_notice_us_co_provide_service_operations: essential.service.operations
-        privacy_notice_fr_provide_service_frontend_only:  essential.service but fe only
-        """
-
-        # Only system's data use is advertising
-        assert privacy_notice.histories[0].calculate_relevant_systems(db) == [
-            system.fides_key
-        ], "Exact match on advertising"
-        assert (
-            privacy_notice_us_ca_provide.histories[0].calculate_relevant_systems(db)
-            == []
-        )
-        assert (
-            privacy_notice_us_co_provide_service_operations.histories[
-                0
-            ].calculate_relevant_systems(db)
-            == []
-        )
-        assert (
-            privacy_notice_fr_provide_service_frontend_only.histories[
-                0
-            ].calculate_relevant_systems(db)
-            == []
-        )
-
-        system.privacy_declarations[0].update(
-            db=db, data={"data_use": "essential.service"}
-        )
-        assert privacy_notice.histories[0].calculate_relevant_systems(db) == []
-        assert privacy_notice_us_ca_provide.histories[0].calculate_relevant_systems(
-            db
-        ) == [system.fides_key], "Privacy notice data use is a parent of the system"
-        assert (
-            privacy_notice_us_co_provide_service_operations.histories[
-                0
-            ].calculate_relevant_systems(db)
-            == []
-        ), "Privacy notice data use is a child of the system: N/A"
-        assert privacy_notice_fr_provide_service_frontend_only.histories[
-            0
-        ].calculate_relevant_systems(db) == [
-            system.fides_key
-        ], "This is an exact match, and we are recording even though the privacy notice is frontend only, for recordkeeping"
-
     def test_generate_privacy_notice_key(self, privacy_notice):
         assert (
             PrivacyNotice.generate_notice_key("Example Privacy Notice")

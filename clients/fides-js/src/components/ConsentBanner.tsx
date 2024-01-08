@@ -66,7 +66,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
       }
     };
 
-    if (bannerIsOpen && !window.Fides.options.preventDismissal) {
+    if (bannerIsOpen && !window.Fides?.options?.preventDismissal) {
       window.addEventListener("mousedown", handleClickOutside);
       window.addEventListener("keydown", handleEsc);
     } else {
@@ -88,6 +88,13 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     }
   }, [bannerIsOpen, onOpen]);
 
+  // If explicit "banner_description" or "banner_title" values are set, use
+  // those to populate the banner. Otherwise, use the generic "description" and
+  // "title" values that are shared with the modal component
+  const bannerDescription =
+    experience.banner_description || experience.description;
+  const bannerTitle = experience.banner_title || experience.title;
+
   return (
     <div
       id="fides-banner-container"
@@ -101,7 +108,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
           <CloseButton
             ariaLabel="Close banner"
             onClick={onClose}
-            hidden={window.Fides.options.preventDismissal}
+            hidden={window.Fides?.options?.preventDismissal}
           />
           <div
             id="fides-banner-inner-container"
@@ -112,7 +119,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
             <div id="fides-banner-inner-description">
               <div id="fides-banner-heading">
                 <div id="fides-banner-title" className="fides-banner-title">
-                  {experience.title}
+                  {bannerTitle}
                 </div>
                 {showGpcBadge && (
                   <GpcBadge
@@ -126,8 +133,11 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                 className="fides-banner-description"
               >
                 <ExperienceDescription
-                  description={experience.description}
+                  description={bannerDescription}
                   onVendorPageClick={onVendorPageClick}
+                  allowHTMLDescription={
+                    window.Fides?.options?.allowHTMLDescription
+                  }
                 />
               </div>
             </div>
