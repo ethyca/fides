@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.27.0...main)
 
+### Changed
+- Redesigned nav bar for the admin UI [#4548](https://github.com/ethyca/fides/pull/4548)
+
 ## [2.27.0](https://github.com/ethyca/fides/compare/2.26.0...2.27.0)
 
 ### Added
