@@ -11,7 +11,6 @@ import { useFeatures } from "common/features";
 import NextLink from "next/link";
 import React from "react";
 
-import FixedLayout from "~/features/common/FixedLayout";
 import Layout from "~/features/common/Layout";
 import { CONFIGURE_CONSENT_ROUTE } from "~/features/common/nav/v2/routes";
 import AddVendor from "~/features/configure-consent/AddVendor";
@@ -71,13 +70,7 @@ const ConfigureConsentPage = () => {
 
   if (isTcfEnabled) {
     return (
-      <FixedLayout
-        title="Configure consent"
-        mainProps={{
-          padding: "40px",
-          paddingRight: "48px",
-        }}
-      >
+      <Layout title="Configure consent">
         <ConsentMetadata
           includeAddVendors
           title="Manage your vendors"
@@ -85,7 +78,7 @@ const ConfigureConsentPage = () => {
           description="Use the table below to manage your vendors. Modify the legal basis for a vendor if permitted and view and group your views by applying different filters"
         />
         <ConsentManagementTable />
-      </FixedLayout>
+      </Layout>
     );
   }
 

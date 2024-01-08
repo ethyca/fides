@@ -1,4 +1,4 @@
-import { Box, Flex } from "@fidesui/react";
+import { Flex, FlexProps } from "@fidesui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React from "react";
@@ -14,9 +14,16 @@ import ConfigurationNotificationBanner from "../privacy-requests/configuration/C
 const Layout = ({
   children,
   title,
+  mainProps,
 }: {
   children: React.ReactNode;
   title: string;
+  /**
+   * Layouts are generally standardized, so make sure you actually want to use this!
+   * Currently only used on the home page and datamap pages
+   * which have different padding requirements compared to other pages in the app.
+   */
+  mainProps?: FlexProps;
 }) => {
   const features = useFeatures();
   const router = useRouter();
@@ -42,16 +49,25 @@ const Layout = ({
     isValidNotificationRoute;
 
   return (
-    <Flex data-testid={title} direction="column" height="100%">
+    <Flex data-testid={title} direction="column" height="calc(100vh - 48px)">
       <Head>
         <title>Fides Admin UI - {title}</title>
         <meta name="description" content="Privacy Engineering Platform" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Box as="main" py={6} px={10}>
+      <Flex
+        as="main"
+        direction="column"
+        py={6}
+        px={10}
+        flex={1}
+        minWidth={0}
+        overflow="auto"
+        {...mainProps}
+      >
         {showConfigurationBanner ? <ConfigurationNotificationBanner /> : null}
         {children}
-      </Box>
+      </Flex>
     </Flex>
   );
 };

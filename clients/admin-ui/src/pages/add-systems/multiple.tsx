@@ -9,8 +9,8 @@ import {
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
-import FixedLayout from "~/features/common/FixedLayout";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
+import Layout from "~/features/common/Layout";
 import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_ROUTE,
@@ -33,12 +33,12 @@ const AddMultipleSystemsPage: NextPage = () => {
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
 
   return (
-    <FixedLayout
+    <Layout
       title="Describe your system"
-      mainProps={{
-        padding: "40px",
-        paddingRight: "48px",
-      }}
+      // mainProps={{
+      //   padding: "40px",
+      //   paddingRight: "48px",
+      // }}
     >
       <Box mb={4}>
         <Header />
@@ -68,7 +68,7 @@ const AddMultipleSystemsPage: NextPage = () => {
         </Text>
       </Box>
       <AddMultipleSystems redirectRoute={DATAMAP_ROUTE} />
-    </FixedLayout>
+    </Layout>
   );
 };
 

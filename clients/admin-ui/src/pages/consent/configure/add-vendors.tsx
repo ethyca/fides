@@ -9,7 +9,7 @@ import {
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
-import FixedLayout from "~/features/common/FixedLayout";
+import Layout from "~/features/common/Layout";
 import {
   ADD_MULTIPLE_VENDORS_ROUTE,
   ADD_SYSTEMS_MANUAL_ROUTE,
@@ -28,13 +28,7 @@ const Header = () => (
 );
 
 const AddMultipleVendorsPage: NextPage = () => (
-  <FixedLayout
-    title="Describe your vendor"
-    mainProps={{
-      padding: "40px",
-      paddingRight: "48px",
-    }}
-  >
+  <Layout title="Describe your vendor">
     <Box mb={4}>
       <Header />
       <Box>
@@ -63,7 +57,7 @@ const AddMultipleVendorsPage: NextPage = () => (
       </Text>
     </Box>
     <AddMultipleSystems redirectRoute={CONFIGURE_CONSENT_ROUTE} />
-  </FixedLayout>
+  </Layout>
 );
 
 export default AddMultipleVendorsPage;
