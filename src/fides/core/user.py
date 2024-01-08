@@ -1,10 +1,10 @@
 """Module for interaction with User endpoints/commands."""
 import json
 from typing import Dict, List, Tuple
-from pydantic import EmailStr
 
 import requests
 from fideslang.validation import FidesKey
+from pydantic import EmailStr
 
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.common.utils import echo_green, echo_red, handle_cli_response
@@ -122,11 +122,11 @@ def update_user_permissions(
 
 
 def create_command(
-    username: str, 
-    password: str, 
-    email_address: EmailStr, 
-    first_name: str, 
-    last_name: str, 
+    username: str,
+    password: str,
+    email_address: EmailStr,
+    first_name: str,
+    last_name: str,
     server_url: str,
 ) -> None:
     """

@@ -5,6 +5,7 @@ from typing import Any
 
 from citext import CIText
 from sqlalchemy import Column, String
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
 
 from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
@@ -14,7 +15,9 @@ INVITE_CODE_TTL_HOURS = 24
 
 
 class FidesUserInvite(Base):
-    __tablename__ = "fides_user_invite"
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "fides_user_invite"
 
     username = Column(CIText, primary_key=True, index=True)
     hashed_invite_code = Column(String, nullable=False)
@@ -34,7 +37,9 @@ class FidesUserInvite(Base):
         return hashed_password, salt
 
     @classmethod
-    def create(cls, db: Session, data: dict[str, Any]) -> FidesUserInvite:
+    def create(
+        cls, db: Session, *, data: dict[str, Any], check_name: bool = False
+    ) -> FidesUserInvite:
         """
         Create a FidesUserInvite by hashing the invite code with a generated salt
         and storing the hashed invite code and the salt.
@@ -67,6 +72,10 @@ class FidesUserInvite(Base):
         """Check if the invite has expired."""
 
         current_time_utc = datetime.now(timezone.utc)
+
+        if not self.updated_at:
+            return True
+
         expiration_datetime = self.updated_at + timedelta(hours=INVITE_CODE_TTL_HOURS)
         return current_time_utc > expiration_datetime
 

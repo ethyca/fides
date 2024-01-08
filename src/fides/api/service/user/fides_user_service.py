@@ -6,7 +6,7 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.api.v1.endpoints.health import is_email_messaging_enabled
-from fides.api.common_exceptions import AuthenticationError, AuthorizationError
+from fides.api.common_exceptions import AuthorizationError
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_invite import FidesUserInvite
@@ -19,7 +19,7 @@ from fides.api.service.messaging.message_dispatch_service import dispatch_messag
 from fides.config import FidesConfig
 
 
-def invite_user(db: Session, config: FidesConfig, user: FidesUser):
+def invite_user(db: Session, config: FidesConfig, user: FidesUser) -> None:
     """
     Generates a user invite and sends the invite code to the user via email.
     """
@@ -58,9 +58,12 @@ def accept_invite(
     db.refresh(user)
 
     # delete invite
-    invite = FidesUserInvite.get_by(db=db, field="username", value=user.username)
-    if invite:
-        invite.delete(db)
+    if user.username:
+        invite = FidesUserInvite.get_by(db=db, field="username", value=user.username)
+        if invite:
+            invite.delete(db)
+    else:
+        logger.warning("Username is missing, skipping invite deletion.")
 
     client = perform_login(
         db,
@@ -78,7 +81,7 @@ def accept_invite(
 def perform_login(
     db: Session,
     client_id_byte_length: int,
-    client_secret_btye_length: int,
+    client_secret_byte_length: int,
     user: FidesUser,
 ) -> ClientDetail:
     """Performs a login by updating the FidesUser instance and creating and returning
@@ -91,7 +94,7 @@ def perform_login(
         client, _ = ClientDetail.create_client_and_secret(
             db,
             client_id_byte_length,
-            client_secret_btye_length,
+            client_secret_byte_length,
             scopes=[],  # type: ignore
             roles=user.permissions.roles,  # type: ignore
             systems=user.system_ids,  # type: ignore

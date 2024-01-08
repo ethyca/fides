@@ -1,10 +1,11 @@
 # pylint: disable=missing-function-docstring
 
 import pytest
+from pydantic import ValidationError
 
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.schemas.user import UserCreate, UserLogin
-from pydantic import ValidationError
+
 
 @pytest.mark.parametrize(
     "password, message",
@@ -38,6 +39,7 @@ def test_user_create_user_name_with_spaces():
             first_name="test",
             last_name="test",
         )
+
 
 def test_user_create_invalid_email():
     with pytest.raises(ValidationError):

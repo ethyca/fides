@@ -2099,7 +2099,6 @@ def application_user(
             "email_address": "test.user@ethyca.com",
             "first_name": "Test",
             "last_name": "User",
-            "disabled": False,
         },
     )
     oauth_client.user_id = user.id
@@ -2171,7 +2170,7 @@ def system_manager(db: Session, system) -> System:
             "username": "test_system_manager_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
             "email_address": "system-manager.user@ethyca.com",
-            "disabled": False
+            "disabled": False,
         },
     )
     client = ClientDetail(

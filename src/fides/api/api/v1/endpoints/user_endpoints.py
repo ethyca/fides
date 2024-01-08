@@ -51,7 +51,11 @@ from fides.api.schemas.user import (
     UserResponse,
     UserUpdate,
 )
-from fides.api.service.user.fides_user_service import accept_invite, invite_user
+from fides.api.service.user.fides_user_service import (
+    accept_invite,
+    invite_user,
+    perform_login,
+)
 from fides.api.util.api_router import APIRouter
 from fides.common.api.scope_registry import (
     SCOPE_REGISTRY,

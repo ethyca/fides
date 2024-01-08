@@ -1,5 +1,6 @@
 """Contains the user command group for the fides CLI."""
 import rich_click as click
+from pydantic import EmailStr
 
 from fides.cli.options import (
     email_address_argument,
@@ -29,7 +30,12 @@ def user(ctx: click.Context) -> None:
 @first_name_option
 @last_name_option
 def create(
-    ctx: click.Context, username: str, password: str, email_address: str, first_name: str, last_name: str
+    ctx: click.Context,
+    username: str,
+    password: str,
+    email_address: EmailStr,
+    first_name: str,
+    last_name: str,
 ) -> None:
     """
     Use the credentials file to create a new user. Gives full permissions to the new user.
