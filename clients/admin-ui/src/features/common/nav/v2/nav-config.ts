@@ -24,9 +24,10 @@ export type NavConfigGroup = {
 export const NAV_CONFIG: NavConfigGroup[] = [
   // Goes last because its root path will match everything.
   {
-    title: "Home",
+    title: "Overview",
     routes: [
       {
+        title: "Home",
         path: "/",
         exact: true,
         scopes: [],
