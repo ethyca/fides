@@ -1,7 +1,7 @@
 """table updates for user invite
 
 Revision ID: 13403fee598a
-Revises: 4ced99dabebb
+Revises: 5a8cee9c014c
 Create Date: 2024-01-06 00:05:49.159006
 
 """
@@ -11,7 +11,7 @@ from citext import CIText
 
 # revision identifiers, used by Alembic.
 revision = "13403fee598a"
-down_revision = "4ced99dabebb"
+down_revision = "5a8cee9c014c"
 branch_labels = None
 depends_on = None
 
