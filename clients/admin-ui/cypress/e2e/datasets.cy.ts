@@ -15,8 +15,7 @@ describe("Dataset", () => {
   describe("List of datasets view", () => {
     it("Can navigate to the datasets list view", () => {
       cy.visit("/");
-      cy.contains("nav a", "Data map").click();
-      cy.contains("nav a", "Manage datasets").click();
+      cy.getByTestId("Manage datasets-nav-link").click();
       cy.wait("@getFilteredDatasets");
       cy.getByTestId("dataset-table");
       cy.getByTestId("dataset-row-demo_users_dataset_4");

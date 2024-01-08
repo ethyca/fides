@@ -48,6 +48,7 @@ const NavSideBarLink = ({
     <ListItem listStyleType="none">
       <NextLink href={path} passHref>
         <Button
+          as="a"
           height="34px"
           variant="ghost"
           fontWeight="normal"
@@ -64,6 +65,7 @@ const NavSideBarLink = ({
             color: "white",
             backgroundColor: LINK_ACTIVE_BACKGROUND_COLOR,
           }}
+          data-testid={`${title}-nav-link`}
         >
           {title}
         </Button>
@@ -79,7 +81,7 @@ const NavGroupMenu = ({
   group: NavGroup;
   active: ActiveNav | undefined;
 }) => (
-  <AccordionItem border="none">
+  <AccordionItem border="none" data-testid={`${group.title}-nav-group`}>
     <h3>
       <AccordionButton px={2} py={3}>
         <Box
