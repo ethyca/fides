@@ -27,6 +27,7 @@ class UserConsentPreference(Enum):
     opt_in = "opt_in"  # The user wants to opt in to the notice
     opt_out = "opt_out"  # The user wants to opt out of the notice
     acknowledge = "acknowledge"  # The user has acknowledged this notice
+    tcf = "tcf"  # Overall preference set for TCF where there are numerous preferences under the single notice
 
 
 # Enum defined using functional API so we can use regions like "is"
@@ -177,15 +178,6 @@ class PrivacyNoticeBase:
     displayed_in_overlay = Column(Boolean, nullable=False, default=False)
     displayed_in_api = Column(Boolean, nullable=False, default=False)
     notice_key = Column(String, nullable=False)
-
-    # Attribute that can be temporarily cached as the result of "get_related_privacy_notices"
-    # for a given user, for surfacing CurrentPrivacyPreferences for the user.
-    current_preference: Optional[str] = None
-    outdated_preference: Optional[str] = None
-    # Attributes that can be temporarily cached on the notice to see if the most
-    # recent version or a previous version of a notice have ever been served to the user
-    current_served: Optional[bool] = None
-    outdated_served: Optional[bool] = None
 
     def applies_to_system(self, system: System) -> bool:
         """Privacy Notice applies to System if a data use matches or the Privacy Notice
@@ -455,18 +447,6 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
     privacy_notice_id = Column(
         String, ForeignKey(PrivacyNotice.id_field_path), nullable=False
     )
-
-    def calculate_relevant_systems(self, db: Session) -> List[FidesKey]:
-        """Method to cache the relevant systems at the time to store on PrivacyPreferenceHistory for record keeping
-
-        A system is relevant if their data use is an exact match or a child of the notice's data use.
-        """
-        relevant_systems: List[FidesKey] = []
-        for system in db.query(System):
-            if self.applies_to_system(system):
-                relevant_systems.append(system.fides_key)
-                continue
-        return relevant_systems
 
 
 def update_if_modified(

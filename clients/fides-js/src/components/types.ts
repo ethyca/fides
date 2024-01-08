@@ -1,5 +1,8 @@
-import type { FidesOptions, PrivacyExperience } from "../lib/consent-types";
-import { FidesCookie } from "../lib/cookie";
+import type {
+  FidesCookie,
+  FidesOptions,
+  PrivacyExperience,
+} from "../lib/consent-types";
 
 /**
  * The type of the parent component for the preact app

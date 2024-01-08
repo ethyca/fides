@@ -71,7 +71,6 @@ export type TCFPurposeLegitimateInterestsRecord = {
 export type TCFPurposeSave = {
   id: number;
   preference: UserConsentPreference;
-  served_notice_history_id?: string;
 };
 
 // Special purposes
@@ -94,7 +93,6 @@ export type TCFSpecialPurposeRecord = {
 export type TCFSpecialPurposeSave = {
   id: number;
   preference: UserConsentPreference;
-  served_notice_history_id?: string;
 };
 
 // Features
@@ -114,7 +112,6 @@ export type TCFFeatureRecord = {
 export type TCFFeatureSave = {
   id: number;
   preference: UserConsentPreference;
-  served_notice_history_id?: string;
 };
 
 // Special features
@@ -134,7 +131,6 @@ export type TCFSpecialFeatureRecord = {
 export type TCFSpecialFeatureSave = {
   id: number;
   preference: UserConsentPreference;
-  served_notice_history_id?: string;
 };
 
 // Vendor records
@@ -183,7 +179,6 @@ export type TCFVendorRelationships = {
 export type TCFVendorSave = {
   id: string;
   preference: UserConsentPreference;
-  served_notice_history_id?: string;
 };
 
 // Convenience types, frontend only
