@@ -82,10 +82,6 @@
             "marketing.advertising.third_party.targeted"
           ],
           "default_preference": "opt_out",
-          "current_preference": "opt_in",
-          "outdated_preference": null,
-          "current_served": null,
-          "outdated_served": null,
           "vendors": [
             {
               "id": "2",
@@ -104,10 +100,6 @@
           ],
           "data_uses": ["personalize.content"],
           "default_preference": "opt_out",
-          "current_preference": "opt_in",
-          "outdated_preference": null,
-          "current_served": null,
-          "outdated_served": null,
           "vendors": [
             {
               "id": "2",
@@ -126,10 +118,6 @@
           ],
           "data_uses": ["analytics.reporting.ad_performance"],
           "default_preference": "opt_out",
-          "current_preference": "opt_in",
-          "outdated_preference": null,
-          "current_served": null,
-          "outdated_served": null,
           "vendors": [
             {
               "id": "2",
@@ -148,10 +136,6 @@
           ],
           "data_uses": ["analytics.reporting.campaign_insights"],
           "default_preference": "opt_out",
-          "current_preference": "opt_in",
-          "outdated_preference": null,
-          "current_served": null,
-          "outdated_served": null,
           "vendors": [
             {
               "id": "2",
@@ -176,10 +160,6 @@
             "marketing.advertising.negative_targeting"
           ],
           "default_preference": "opt_in",
-          "current_preference": "opt_in",
-          "outdated_preference": null,
-          "current_served": null,
-          "outdated_served": null,
           "vendors": [],
           "systems": [
             {
@@ -202,10 +182,6 @@
             "essential.service.security"
           ],
           "default_preference": "acknowledge",
-          "current_preference": null,
-          "outdated_preference": null,
-          "current_served": null,
-          "outdated_served": null,
           "vendors": [
             {
               "id": "2",
@@ -227,10 +203,6 @@
           "name": "Match and combine data from other data sources",
           "description": "Information about your activity on this service may be matched and combined with other information relating to you and originating from various sources (for instance your activity on a separate online service, your use of a loyalty card in-store, or your answers to a survey), in support of the purposes explained in this notice.",
           "default_preference": "acknowledge",
-          "current_preference": null,
-          "outdated_preference": null,
-          "current_served": null,
-          "outdated_served": null,
           "vendors": [],
           "systems": [
             {
@@ -244,10 +216,6 @@
           "name": "Link different devices",
           "description": "In support of the purposes explained in this notice, your device might be considered as likely linked to other devices that belong to you or your household (for instance because you are logged in to the same service on both your phone and your computer, or because you may use the same Internet connection on both devices).",
           "default_preference": "acknowledge",
-          "current_preference": null,
-          "outdated_preference": null,
-          "current_served": null,
-          "outdated_served": null,
           "vendors": [
             {
               "id": "2",
@@ -263,9 +231,6 @@
           "name": "Use precise geolocation data",
           "description": "With your acceptance, your precise location (within a radius of less than 500 metres) may be used in support of the purposes explained in this notice.",
           "default_preference": "opt_out",
-          "outdated_preference": null,
-          "current_served": null,
-          "outdated_served": null,
           "vendors": [
             {
               "id": "2",
@@ -282,10 +247,6 @@
           "name": "Captify",
           "description": "A longer description",
           "default_preference": "opt_out",
-          "current_preference": null,
-          "outdated_preference": null,
-          "current_served": null,
-          "outdated_served": null,
           "purpose_consents": [
             {
               "id": 4,
@@ -342,10 +303,6 @@
           "name": "Fides System",
           "description": "A system that is only in Fides",
           "default_preference": "opt_in",
-          "current_preference": "opt_in",
-          "outdated_preference": null,
-          "current_served": null,
-          "outdated_served": null,
           "purpose_legitimate_interests": [
             {
               "id": 2,

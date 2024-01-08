@@ -1,6 +1,5 @@
 import {
   ConsentOptionCreate,
-  LastServedConsentSchema,
   PrivacyNoticeResponseWithUserPreferences,
 } from "~/types/api";
 import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
@@ -70,9 +69,12 @@ describe("Privacy notice driven consent", () => {
 
   describe("when user has not consented before", () => {
     beforeEach(() => {
+      cy.clearAllCookies();
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       cy.visit("/consent");
-      cy.getByTestId("consent");
       cy.overrideSettings(SETTINGS);
+      cy.getByTestId("consent");
+      cy.wait("@getVerificationConfig");
     });
 
     it("populates its header from the experience config", () => {
@@ -84,28 +86,45 @@ describe("Privacy notice driven consent", () => {
     });
 
     it("renders from privacy notices when there is no initial data", () => {
+      cy.wait("@postConsentRequestVerify");
       cy.wait("@getExperience").then((interception) => {
         const { url } = interception.request;
-        expect(url).contains("fides_user_device_id");
         expect(url).contains("region=us_ca");
       });
-      // Opt in, so should default to not checked
-      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
-        cy.getRadio().should("not.be.checked");
-      });
-      // Opt out, so should default to checked
-      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
-        cy.getRadio().should("be.checked");
-      });
-      // Notice only, so should be checked and disabled
-      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_3}`).within(() => {
-        cy.getRadio().should("be.checked").should("be.disabled");
-      });
+      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+        cy.wait("@patchNoticesServed");
 
-      // Opt in to the opt in notice
-      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
-        cy.getRadio().should("not.be.checked").check({ force: true });
-        cy.getRadio().should("be.checked");
+        // Opt in, so should default to not checked
+        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
+          cy.getRadio().should("not.be.checked");
+        });
+        // Opt out, so should default to checked
+        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
+          cy.getRadio().should("be.checked");
+        });
+        // Notice only, so should be checked and disabled
+        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_3}`).within(() => {
+          cy.getRadio().should("be.checked").should("be.disabled");
+        });
+
+        // Opt in, so should default to not checked
+        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
+          cy.getRadio().should("not.be.checked");
+        });
+        // Opt out, so should default to checked
+        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
+          cy.getRadio().should("be.checked");
+        });
+        // Notice only, so should be checked and disabled
+        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_3}`).within(() => {
+          cy.getRadio().should("be.checked").should("be.disabled");
+        });
+
+        // Opt in to the opt in notice
+        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
+          cy.getRadio().should("not.be.checked").check({ force: true });
+          cy.getRadio().should("be.checked");
+        });
       });
 
       cy.getByTestId("save-btn").click();
@@ -131,7 +150,11 @@ describe("Privacy notice driven consent", () => {
             expect(body.browser_identity.fides_user_device_id).to.eql(
               cookie.identity.fides_user_device_id
             );
-            const expectedConsent = { data_sales: true, advertising: true };
+            const expectedConsent = {
+              data_sales: true,
+              advertising: true,
+              essential: true,
+            };
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const { consent, fides_meta } = cookie;
             expect(consent).to.eql(expectedConsent);
@@ -158,10 +181,6 @@ describe("Privacy notice driven consent", () => {
       };
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
 
-      cy.wait("@getExperience").then((interception) => {
-        const { url } = interception.request;
-        expect(url).contains(`fides_user_device_id=${uuid}`);
-      });
       // Make sure the same uuid propagates to the backend and to the updated cookie
       cy.getByTestId("save-btn").click();
       cy.wait("@patchPrivacyPreference").then((interception) => {
@@ -282,30 +301,30 @@ describe("Privacy notice driven consent", () => {
 
   describe("when user has consented before", () => {
     it("renders from privacy notices when user has consented before", () => {
-      cy.fixture("consent/experience.json").then((experience) => {
-        const newExperience = { ...experience };
-        const notices = newExperience.items[0].privacy_notices;
-        newExperience.items[0].privacy_notices = notices.map(
-          (notice: PrivacyNoticeResponseWithUserPreferences) => ({
-            ...notice,
-            ...{ current_preference: "opt_in" },
-          })
-        );
-        cy.intercept("GET", `${API_URL}/privacy-experience/*`, {
-          body: newExperience,
-        }).as("getExperienceWithConsentHistory");
-      });
+      const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+      const createdAt = "2023-04-28T12:00:00.000Z";
+      const updatedAt = "2023-04-29T12:00:00.000Z";
+      const cookie = {
+        identity: { fides_user_device_id: uuid },
+        fides_meta: { version: "0.9.0", createdAt, updatedAt },
+        consent: { data_sales: true, advertising: false, essential: true },
+      };
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       // Visit the consent page with notices enabled
       cy.visit("/consent");
       cy.getByTestId("consent");
       cy.overrideSettings(SETTINGS);
-      // Both notices should be checked
-      cy.wait("@getExperienceWithConsentHistory");
-      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
-        cy.getRadio().should("be.checked");
-      });
-      cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
-        cy.getRadio().should("be.checked");
+      // Should follow state of consent cookie
+      cy.wait("@getExperience").then(() => {
+        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
+          cy.getRadio().should("be.checked");
+        });
+        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
+          cy.getRadio().should("not.be.checked");
+        });
+        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_3}`).within(() => {
+          cy.getRadio().should("be.checked");
+        });
       });
 
       cy.getByTestId("save-btn").click();
@@ -314,33 +333,20 @@ describe("Privacy notice driven consent", () => {
         const { preferences } = body;
         expect(
           preferences.map((p: ConsentOptionCreate) => p.preference)
-        ).to.eql(["opt_in", "opt_in", "acknowledge"]);
+        ).to.eql(["opt_in", "opt_out", "acknowledge"]);
       });
     });
   });
 
   describe("consent reporting", () => {
     beforeEach(() => {
-      // Make the fixture's privacy notice history Ids match
-      cy.fixture("consent/notices_served.json").then((fixture) => {
-        // the fixture only has 2 entries, so add a third to match the experience payload
-        const body = [...fixture, JSON.parse(JSON.stringify(fixture[0]))];
-        body[0].privacy_notice_history.id = PRIVACY_NOTICE_HISTORY_ID_1;
-        body[1].privacy_notice_history.id = PRIVACY_NOTICE_HISTORY_ID_2;
-        body[2].privacy_notice_history.id = PRIVACY_NOTICE_HISTORY_ID_3;
-        cy.intercept(
-          "PATCH",
-          `${API_URL}/consent-request/consent-request-id/notices-served`,
-          { body }
-        ).as("patchMatchingNoticesServed");
-      });
       cy.visit("/consent");
       cy.getByTestId("consent");
       cy.overrideSettings(SETTINGS);
     });
 
     it("can make calls to consent reporting endpoints", () => {
-      cy.wait("@patchMatchingNoticesServed").then((interception) => {
+      cy.wait("@patchNoticesServed").then((interception) => {
         expect(interception.request.body.privacy_notice_history_ids).to.eql([
           PRIVACY_NOTICE_HISTORY_ID_1,
           PRIVACY_NOTICE_HISTORY_ID_2,
@@ -348,15 +354,11 @@ describe("Privacy notice driven consent", () => {
         ]);
         cy.getByTestId("save-btn").click();
         cy.wait("@patchPrivacyPreference").then((preferenceInterception) => {
-          const { preferences } = preferenceInterception.request.body;
-          const expected = interception.response?.body.map(
-            (s: LastServedConsentSchema) => s.served_notice_history_id
-          );
-          expect(
-            preferences.map(
-              (p: ConsentOptionCreate) => p.served_notice_history_id
-            )
-          ).to.eql(expected);
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          const { served_notice_history_id } =
+            preferenceInterception.request.body;
+          const expected = interception.response?.body.served_notice_history_id;
+          expect(served_notice_history_id).to.eql(expected);
         });
       });
     });
