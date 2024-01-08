@@ -73,12 +73,6 @@ describe("Privacy notice driven consent", () => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       cy.visit("/consent");
       cy.overrideSettings(SETTINGS);
-      cy.waitUntil(() =>
-        cy
-          .window()
-          // @ts-ignore window should have a store obj
-          .then((win) => win.store.getState().settings.IS_OVERLAY_ENABLED)
-      );
       cy.getByTestId("consent");
       cy.wait("@getVerificationConfig");
     });
@@ -234,13 +228,6 @@ describe("Privacy notice driven consent", () => {
         cy.getByTestId("save-btn").click();
 
         cy.wait("@patchPrivacyPreference").then(() => {
-          cy.getAllCookies().then((cookies) => {
-            cy.log(
-              `num cookies: ${cookies.length}. names: ${cookies
-                .map((c) => c.name)
-                .join()}`
-            );
-          });
           // Use waitUntil to help with CI
           cy.waitUntil(() =>
             cy.getAllCookies().then((cookies) => cookies.length === 1)

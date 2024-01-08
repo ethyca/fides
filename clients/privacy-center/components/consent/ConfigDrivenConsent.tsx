@@ -7,7 +7,6 @@ import {
   FidesCookie,
   getOrMakeFidesCookie,
   saveFidesCookie,
-  CookieKeyConsent,
 } from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
@@ -15,7 +14,7 @@ import {
   selectFidesKeyToConsent,
   useUpdateConsentRequestPreferencesDeprecatedMutation,
 } from "~/features/consent/consent.slice";
-import { getGpcStatus } from "~/features/consent/helpers";
+import { getGpcStatus, makeCookieKeyConsent } from "~/features/consent/helpers";
 
 import { useConfig } from "~/features/common/config.slice";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
@@ -52,24 +51,17 @@ const ConfigDrivenConsent = ({
    * Update the consent choices on the backend.
    */
   const saveUserConsentOptions = useCallback(() => {
-    const cookieKeyConsent: CookieKeyConsent = {};
+    const newConsent = makeCookieKeyConsent({
+      consentOptions,
+      fidesKeyToConsent,
+      consentContext,
+    });
     const consent = consentOptions.map((option) => {
-      const defaultValue = resolveLegacyConsentValue(
-        option.default,
-        consentContext
-      );
-      const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
+      const value = newConsent[option.fidesDataUseKey] || false;
       const gpcStatus = getGpcStatus({
         value,
         consentOption: option,
         consentContext,
-      });
-      option.cookieKeys?.forEach((cookieKey) => {
-        const previousConsent = cookieKeyConsent[cookieKey];
-        // For a cookie key to have consent, _all_ data uses that target that cookie key
-        // must have consent.
-        cookieKeyConsent[cookieKey] =
-          previousConsent === undefined ? value : previousConsent && value;
       });
 
       return {
@@ -81,7 +73,7 @@ const ConfigDrivenConsent = ({
       };
     });
     const cookie: FidesCookie = getOrMakeFidesCookie();
-    saveFidesCookie({ ...cookie, consent: cookieKeyConsent });
+    saveFidesCookie({ ...cookie, consent: newConsent });
 
     const executableOptions = consentOptions.map((option) => ({
       data_use: option.fidesDataUseKey,
