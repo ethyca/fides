@@ -3,7 +3,6 @@ import { useState, useCallback, useMemo } from "preact/hooks";
 import {
   ConsentMechanism,
   ConsentMethod,
-  LastServedConsentSchema,
   PrivacyNotice,
   SaveConsentPreference,
   ServingComponent,
@@ -11,10 +10,7 @@ import {
 import ConsentBanner from "../ConsentBanner";
 
 import { updateConsentPreferences } from "../../lib/preferences";
-import {
-  debugLog,
-  transformConsentToFidesUserPreference,
-} from "../../lib/consent-utils";
+import { debugLog } from "../../lib/consent-utils";
 
 import "../fides.css";
 import Overlay from "../Overlay";
@@ -25,6 +21,9 @@ import { useConsentServed } from "../../lib/hooks";
 import { updateCookieFromNoticePreferences } from "../../lib/cookie";
 import PrivacyPolicyLink from "../PrivacyPolicyLink";
 import { dispatchFidesEvent } from "../../lib/events";
+import { resolveConsentValue } from "../../lib/consent-value";
+import { getConsentContext } from "../../lib/consent-context";
+import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   experience,
@@ -32,10 +31,15 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   fidesRegionString,
   cookie,
 }) => {
-  const initialEnabledNoticeKeys = useMemo(
-    () => Object.keys(cookie.consent).filter((key) => cookie.consent[key]),
-    [cookie.consent]
-  );
+  const initialEnabledNoticeKeys = useMemo(() => {
+    if (experience.privacy_notices) {
+      return experience.privacy_notices.map((notice) => {
+        const val = resolveConsentValue(notice, getConsentContext(), cookie);
+        return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
+      });
+    }
+    return [];
+  }, [cookie, experience]);
 
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
     Array<PrivacyNotice["notice_key"]>
@@ -50,7 +54,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     (n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY
   );
 
-  const { servedNotices } = useConsentServed({
+  const { servedNotice } = useConsentServed({
     notices: privacyNotices,
     options,
     userGeography: fidesRegionString,
@@ -60,30 +64,15 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   const createConsentPreferencesToSave = (
     privacyNoticeList: PrivacyNotice[],
-    enabledPrivacyNoticeKeys: string[],
-    servedNoticeList: LastServedConsentSchema[]
-  ): SaveConsentPreference[] => {
-    const servedNoticeMap = Object.fromEntries(
-      servedNoticeList
-        .filter((notice) => notice.privacy_notice_history?.id !== undefined)
-        .map((notice) => [
-          notice.privacy_notice_history?.id,
-          notice.served_notice_history_id,
-        ])
-    );
-
-    return privacyNoticeList.map((notice) => {
+    enabledPrivacyNoticeKeys: string[]
+  ): SaveConsentPreference[] =>
+    privacyNoticeList.map((notice) => {
       const userPreference = transformConsentToFidesUserPreference(
         enabledPrivacyNoticeKeys.includes(notice.notice_key),
         notice.consent_mechanism
       );
-      return new SaveConsentPreference(
-        notice,
-        userPreference,
-        servedNoticeMap[notice.privacy_notice_history_id]
-      );
+      return new SaveConsentPreference(notice, userPreference);
     });
-  };
 
   const handleUpdatePreferences = useCallback(
     (
@@ -92,8 +81,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     ) => {
       const consentPreferencesToSave = createConsentPreferencesToSave(
         privacyNotices,
-        enabledPrivacyNoticeKeys,
-        servedNotices
+        enabledPrivacyNoticeKeys
       );
 
       updateConsentPreferences({
@@ -103,6 +91,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         options,
         userLocationString: fidesRegionString,
         cookie,
+        servedNoticeHistoryId: servedNotice?.served_notice_history_id,
         updateCookie: (oldCookie) =>
           updateCookieFromNoticePreferences(
             oldCookie,
@@ -118,7 +107,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       fidesRegionString,
       experience,
       options,
-      servedNotices,
+      servedNotice,
     ]
   );
 
