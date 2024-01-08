@@ -4,7 +4,7 @@ saas_config:
   type: salesforce
   description: A sample schema representing the Salesforce Classic connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/salesforce
-  version: 0.0.5
+  version: 0.0.6
 
   connector_params:
     - name: domain
