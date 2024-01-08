@@ -18,6 +18,7 @@ from fides.api.graph.config import CollectionAddress
 from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
+    ConsentRequest,
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
@@ -1057,3 +1058,60 @@ class TestPrivacyRequestCustomFieldFunctions:
             },
         )
         assert privacy_request.get_persisted_custom_privacy_request_fields() == {}
+
+
+class TestConsentRequestCustomFieldFunctions:
+    """Similar to the above tests but for the ConsentRequest model but only testing persisting and retrieving from the database."""
+
+    @pytest.fixture(scope="function")
+    def consent_request(self, db) -> ConsentRequest:
+        provided_identity_data = {
+            "privacy_request_id": None,
+            "field_name": "email",
+            "encrypted_value": {"value": "test@email.com"},
+        }
+        provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
+        consent_request = ConsentRequest.create(
+            db=db,
+            data={
+                "provided_identity_id": provided_identity.id,
+            },
+        )
+
+        yield consent_request
+
+        consent_request.delete(db)
+
+    def test_persist_custom_privacy_request_fields(self, db, consent_request):
+        CONFIG.execution.allow_custom_privacy_request_field_collection = True
+        CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = True
+        consent_request.persist_custom_privacy_request_fields(
+            db=db,
+            custom_privacy_request_fields={
+                "first_name": CustomPrivacyRequestField(
+                    label="First name", value="John"
+                ),
+                "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
+            },
+        )
+        assert consent_request.get_persisted_custom_privacy_request_fields() == {
+            "first_name": {"label": "First name", "value": "John"},
+            "last_name": {"label": "Last name", "value": "Doe"},
+        }
+
+    def test_persist_custom_privacy_request_fields_collection_disabled(
+        self, db, consent_request
+    ):
+        """Custom privacy request fields should not be persisted if collection is disabled"""
+        CONFIG.execution.allow_custom_privacy_request_field_collection = False
+        consent_request.persist_custom_privacy_request_fields(
+            db=db,
+            custom_privacy_request_fields={
+                "first_name": CustomPrivacyRequestField(
+                    label="First name", value="John"
+                ),
+                "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
+            },
+        )
+        assert consent_request.get_persisted_custom_privacy_request_fields() == {}

@@ -1234,7 +1234,9 @@ class ConsentRequest(IdentityVerificationMixin, Base):
     def persist_custom_privacy_request_fields(
         self,
         db: Session,
-        custom_privacy_request_fields: Dict[str, CustomPrivacyRequestFieldSchema],
+        custom_privacy_request_fields: Optional[
+            Dict[str, CustomPrivacyRequestFieldSchema]
+        ],
     ) -> None:
         if not custom_privacy_request_fields:
             return
