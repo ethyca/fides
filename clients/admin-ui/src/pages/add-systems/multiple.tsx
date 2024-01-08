@@ -33,13 +33,7 @@ const AddMultipleSystemsPage: NextPage = () => {
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
 
   return (
-    <Layout
-      title="Describe your system"
-      // mainProps={{
-      //   padding: "40px",
-      //   paddingRight: "48px",
-      // }}
-    >
+    <Layout title="Describe your system">
       <Box mb={4}>
         <Header />
         <Box>
