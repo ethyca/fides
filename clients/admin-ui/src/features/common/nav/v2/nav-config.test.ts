@@ -35,7 +35,7 @@ describe("configureNavGroups", () => {
     });
 
     expect(navGroups[0]).toMatchObject({
-      title: "Home",
+      title: "Overview",
       children: [{ title: "Home", path: "/" }],
     });
 
@@ -69,7 +69,7 @@ describe("configureNavGroups", () => {
     });
 
     expect(navGroups[0]).toMatchObject({
-      title: "Home",
+      title: "Overview",
       children: [{ title: "Home", path: "/" }],
     });
 
@@ -94,7 +94,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(navGroups[0]).toMatchObject({
-        title: "Home",
+        title: "Overview",
         children: [{ title: "Home", path: "/" }],
       });
 
@@ -112,7 +112,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(navGroups[0]).toMatchObject({
-        title: "Home",
+        title: "Overview",
         children: [{ title: "Home", path: "/" }],
       });
     });
@@ -137,7 +137,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(navGroups[0]).toMatchObject({
-        title: "Home",
+        title: "Overview",
         children: [{ title: "Home", path: "/" }],
       });
 
@@ -307,7 +307,7 @@ describe("findActiveNav", () => {
     {
       path: "/",
       expected: {
-        title: "Home",
+        title: "Overview",
         path: "/",
       },
     },
