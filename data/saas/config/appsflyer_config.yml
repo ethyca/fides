@@ -21,7 +21,7 @@ saas_config:
 
   client_config:
     protocol: https
-    host: hq1.appsflyer.com
+    host: <domain>
     authentication:
       strategy: bearer
       configuration:
