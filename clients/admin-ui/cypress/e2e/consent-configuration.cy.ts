@@ -252,7 +252,7 @@ describe("Consent configuration", () => {
         cy.url().should("include", "/consent/configure/add-vendors");
       });
 
-      it("can add a vender with dictionary suggestions from the modal", () => {
+      it("can add a vendor with dictionary suggestions from the modal", () => {
         cy.visit(ADD_MULTIPLE_VENDORS_ROUTE);
         cy.getByTestId("add-vendor-btn").click();
         cy.getByTestId("input-name").type("Aniview LTD{enter}");
