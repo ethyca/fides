@@ -82,7 +82,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
               borderRadius="6px"
               fontWeight="500"
               textAlign="center"
-              data-testid="user-permissions-badge"
+              data-testid="invite-sent-badge"
             >
               Invite sent
             </Badge>

@@ -6,7 +6,8 @@
       "email_address": "user_3@ethyca.com",
       "created_at": "2023-01-26T16:24:50.718476+00:00",
       "first_name": "User",
-      "last_name": "Three"
+      "last_name": "Three",
+      "disabled": false
     },
     {
       "id": "fid_560cceb5-f567-4d76-a905-1e16ada1c143",
@@ -14,7 +15,8 @@
       "email_address": "user_2@ethyca.com",
       "created_at": "2023-01-26T16:23:56.023966+00:00",
       "first_name": "User",
-      "last_name": "Two"
+      "last_name": "Two",
+      "disabled": false
     },
     {
       "id": "fid_ee8f54ce-19f7-4640-b311-1cc1e77e7166",
@@ -22,7 +24,9 @@
       "email_address": "user_1@ethyca.com",
       "created_at": "2023-01-26T16:16:49.575653+00:00",
       "first_name": "User",
-      "last_name": "One"
+      "last_name": "One",
+      "disabled": true,
+      "disabled_reason": "pending_invite"
     },
     {
       "id": "123",
@@ -30,7 +34,8 @@
       "email_address": "123@ethyca.com",
       "created_at": "2022-09-28T16:15:30.994Z",
       "first_name": "Cypress",
-      "last_name": "User"
+      "last_name": "User",
+      "disabled": false
     }
   ],
   "total": 4,

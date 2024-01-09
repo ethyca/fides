@@ -135,7 +135,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                       borderRadius="6px"
                       fontWeight="500"
                       textAlign="center"
-                      data-testid="user-permissions-badge"
+                      data-testid="invite-sent-badge"
                     >
                       Invite sent
                     </Badge>

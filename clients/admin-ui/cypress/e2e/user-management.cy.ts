@@ -94,6 +94,31 @@ describe("User management", () => {
       cy.getByTestId("user-systems-badge");
       cy.contains("4");
     });
+
+    it("can see invite sent field", () => {
+      cy.visit("/user-management");
+      cy.wait("@getAllUsers");
+      cy.getByTestId(`row-${USER_1_ID}`).within(() => {
+        cy.getByTestId("invite-sent-badge");
+      });
+      cy.getByTestId(`row-${CYPRESS_USER_ID}`).within(() => {
+        cy.getByTestId("invite-sent-badge").should("not.exist");
+      });
+    });
+  });
+
+  describe("Create users", () => {
+    it("can set a user's password if email messaging is not configured", () => {
+      cy.visit(`/user-management/new`);
+      cy.getByTestId("input-password");
+    });
+
+    it("cannot set a user's password if email messaging is enabled", () => {
+      cy.intercept("/health", { email_messaging: true });
+      cy.visit(`/user-management/new`);
+      cy.getByTestId("input-email_address");
+      cy.getByTestId("input-password").should("not.exist");
+    });
   });
 
   describe("Password management", () => {
