@@ -27,7 +27,7 @@ import {
   ColumnSettingsModal,
   TableSkeletonLoader,
   useServerSidePagination,
-  DraggableColumn  
+  DraggableColumn,
 } from "common/table/v2";
 import { useEffect, useMemo, useState } from "react";
 
@@ -120,6 +120,20 @@ const getColumnOrder = (groupBy: DATAMAP_GROUPING) => {
       COLUMN_IDS.DATA_USE,
       COLUMN_IDS.DATA_SUBJECT,
     ];
+  }
+  return columnOrder;
+};
+
+const getPrefixColumns = (groupBy: DATAMAP_GROUPING) => {
+  let columnOrder: string[] = [];
+  if (DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy) {
+    columnOrder = [COLUMN_IDS.SYSTEM_NAME, COLUMN_IDS.DATA_USE];
+  }
+  if (DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy) {
+    columnOrder = [COLUMN_IDS.DATA_USE, COLUMN_IDS.SYSTEM_NAME];
+  }
+  if (DATAMAP_GROUPING.DATA_CATEGORY_SYSTEM === groupBy) {
+    columnOrder = [COLUMN_IDS.DATA_CATEGORY, COLUMN_IDS.SYSTEM_NAME];
   }
   return columnOrder;
 };
@@ -504,13 +518,20 @@ export const DatamapReportTable = () => {
       <ColumnSettingsModal<DatamapReport>
         isOpen={isColumnSettingsOpen}
         onClose={onColumnSettingsClose}
+        prefixColumns={getPrefixColumns(groupBy)}
         onSave={(e) => {
-          tableInstance.setColumnOrder(e.map((e) => e.id));
+          tableInstance.setColumnOrder([
+            ...getPrefixColumns(groupBy),
+            ...e.map((e) => e.id),
+          ]);
           tableInstance.setColumnVisibility(
-            e.reduce((acc: Record<string, boolean>, current: DraggableColumn) => {
-              acc[current.id] = current.isVisible;
-              return acc;
-            }, {})
+            e.reduce(
+              (acc: Record<string, boolean>, current: DraggableColumn) => {
+                acc[current.id] = current.isVisible;
+                return acc;
+              },
+              {}
+            )
           );
         }}
         tableInstance={tableInstance}

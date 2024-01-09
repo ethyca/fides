@@ -22,6 +22,7 @@ type ColumnSettingsModalProps<T> = {
   isOpen: boolean;
   onClose: () => void;
   onSave: (updatedColumns: DraggableColumn[]) => void;
+  prefixColumns: string[];
   tableInstance: TableInstance<T>;
 };
 
@@ -33,13 +34,17 @@ export const ColumnSettingsModal = <T,>({
   onClose,
   onSave,
   tableInstance,
+  prefixColumns,
 }: ColumnSettingsModalProps<T>) => {
   const initialColumns = useMemo(() => {
-    return tableInstance.getAllColumns().map((c) => ({
-      id: c.id,
-      displayText: c.columnDef?.meta?.displayText || c.id,
-      isVisible: c.getIsVisible(),
-    }));
+    return tableInstance
+      .getAllColumns()
+      .filter((c) => !prefixColumns.includes(c.id))
+      .map((c) => ({
+        id: c.id,
+        displayText: c.columnDef?.meta?.displayText || c.id,
+        isVisible: c.getIsVisible(),
+      }));
   }, [tableInstance]);
   const columnEditor = useEditableColumns({
     columns: initialColumns,
