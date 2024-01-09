@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Erasure support for AppsFlyer [#4512](https://github.com/ethyca/fides/pull/4512)
+- Invite users via email flow [#4539](https://github.com/ethyca/fides/pull/4539)
 
 ### Fixed
 - Fixed DSR zip packages to be unzippable on Windows [#4549](https://github.com/ethyca/fides/pull/4549)
