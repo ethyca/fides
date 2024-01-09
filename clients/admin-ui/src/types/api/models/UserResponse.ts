@@ -12,6 +12,6 @@ export type UserResponse = {
   email_address?: string;
   first_name?: string;
   last_name?: string;
-  disabled: boolean;
+  disabled?: boolean;
   disabled_reason?: string;
 };

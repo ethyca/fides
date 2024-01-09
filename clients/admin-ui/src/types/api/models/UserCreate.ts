@@ -11,4 +11,5 @@ export type UserCreate = {
   email_address: string;
   first_name?: string;
   last_name?: string;
+  disabled?: boolean;
 };
