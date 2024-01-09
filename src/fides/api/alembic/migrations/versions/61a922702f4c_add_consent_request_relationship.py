@@ -1,7 +1,7 @@
 """add consent request relationship
 
 Revision ID: 61a922702f4c
-Revises: f396c1f84b0f
+Revises: 5a8cee9c014c
 Create Date: 2024-01-04 22:57:24.155581
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "61a922702f4c"
-down_revision = "f396c1f84b0f"
+down_revision = "5a8cee9c014c"
 branch_labels = None
 depends_on = None
 
