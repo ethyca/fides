@@ -49,7 +49,7 @@ const Profile = () => {
 
   if (isLoadingUser) {
     return (
-      <UserManagementLayout title="Edit User">
+      <UserManagementLayout>
         <Spinner />
       </UserManagementLayout>
     );
@@ -57,14 +57,12 @@ const Profile = () => {
 
   if (existingUser == null) {
     return (
-      <UserManagementLayout title="Edit User">
-        Could not find profile ID.
-      </UserManagementLayout>
+      <UserManagementLayout>Could not find profile ID.</UserManagementLayout>
     );
   }
 
   return (
-    <UserManagementLayout title="Edit User">
+    <UserManagementLayout>
       <EditUserForm user={existingUser} />
     </UserManagementLayout>
   );
