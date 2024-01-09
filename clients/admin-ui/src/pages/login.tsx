@@ -6,6 +6,7 @@ import {
   Flex,
   Heading,
   Stack,
+  usePrefersReducedMotion,
   useToast,
 } from "@fidesui/react";
 import Head from "common/Head";
@@ -98,6 +99,8 @@ const useLogin = () => {
   const [loginRequest] = useLoginMutation();
   const [acceptInviteRequest] = useAcceptInviteMutation();
   const [showAnimation, setShowAnimation] = useState(false);
+  // If the user prefers no motion, don't show the animation
+  const reduceMotion = usePrefersReducedMotion();
   const token = useSelector(selectToken);
   const toast = useToast();
   const router = useRouter();
@@ -150,7 +153,7 @@ const useLogin = () => {
   useEffect(() => {
     if (token) {
       const destination = redirect ?? "/";
-      if (showAnimation) {
+      if (showAnimation && !reduceMotion) {
         const timer = setTimeout(() => {
           router.push(destination).then(() => {
             setShowAnimation(false);
@@ -163,7 +166,7 @@ const useLogin = () => {
       router.push(destination);
     }
     return () => {};
-  }, [token, router, redirect, showAnimation]);
+  }, [token, router, redirect, showAnimation, reduceMotion]);
 
   return {
     isFromInvite,
