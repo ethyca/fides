@@ -23,6 +23,9 @@ The types of changes are:
 ### Fixed
 - Fixed DSR zip packages to be unzippable on Windows [#4549](https://github.com/ethyca/fides/pull/4549)
 
+### Changed
+- Changed consent management vendor add flow [#4550](https://github.com/ethyca/fides/pull/4550)
+
 
 ## [2.27.0](https://github.com/ethyca/fides/compare/2.26.0...2.27.0)
 
