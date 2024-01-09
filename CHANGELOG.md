@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.27.0...main)
 
+### Added
+- Erasure support for AppsFlyer [#4512](https://github.com/ethyca/fides/pull/4512)
+
 ## [2.27.0](https://github.com/ethyca/fides/compare/2.26.0...2.27.0)
 
 ### Added
