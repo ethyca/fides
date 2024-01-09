@@ -5,7 +5,7 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
 @pytest.mark.integration_saas
-class TestAppsflyerConnector:
+class TestAppsFlyerConnector:
     def test_connection(self, appsflyer_runner: ConnectorRunner):
         appsflyer_runner.test_connection()
 
@@ -24,10 +24,9 @@ class TestAppsflyerConnector:
         policy: Policy,
         erasure_policy_string_rewrite: Policy,
         appsflyer_erasure_identity_email: str,
-        appsflyer_erasure_data,
     ):
         (
-            access_results,
+            _,
             erasure_results,
         ) = await appsflyer_runner.non_strict_erasure_request(
             access_policy=policy,

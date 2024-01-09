@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Appsflyer
+  name: AppsFlyer
   type: appsflyer
   description: A sample schema representing the AppsFlyer connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/appsflyer
@@ -10,15 +10,14 @@ saas_config:
     - name: domain
       default_value: hq1.appsflyer.com
       description: The AppsFlyer domain. Default hq1.appsflyer.com
-    - name: identity_value
-      description: The location in your owned database where you store AppsFlyer IDs
-    - name: API token
-      label: AppsFlyer API Token
+    - name: api_token
+      label: API token
       description: AppsFlyer API Token (https://support.appsflyer.com/hc/en-us/articles/360004562377#retrieving-api-tokens)
 
   external_references:
     - name: appsflyer_user_id
       label: AppsFlyer user ID field
+      description: The location in your owned database where you store AppsFlyer IDs
 
   client_config:
     protocol: https
@@ -26,7 +25,7 @@ saas_config:
     authentication:
       strategy: bearer
       configuration:
-        token: <token>
+        token: <api_token>
 
   test_request:
     method: GET

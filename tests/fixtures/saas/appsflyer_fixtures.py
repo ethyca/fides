@@ -1,5 +1,5 @@
-from typing import Any, Dict, Generator
 import uuid
+from typing import Any, Dict
 
 import pydash
 import pytest
@@ -17,10 +17,8 @@ secrets = get_secrets("appsflyer")
 def appsflyer_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "appsflyer.domain") or secrets["domain"],
-        "email": pydash.get(saas_config, "appsflyer.email") or secrets["email"],
-        "identity_value": pydash.get(saas_config, "appsflyer.email")
-        or secrets["identity_value"],
-        "token": pydash.get(saas_config, "appsflyer.token") or secrets["token"],
+        "api_token": pydash.get(saas_config, "appsflyer.api_token")
+        or secrets["api_token"],
     }
 
 
@@ -44,14 +42,6 @@ def appsflyer_external_references() -> Dict[str, Any]:
 @pytest.fixture
 def appsflyer_erasure_external_references() -> Dict[str, Any]:
     return {"appsflyer_user_id": uuid.uuid4()}
-
-
-@pytest.fixture
-def appsflyer_erasure_data(
-    appsflyer_erasure_identity_email: str,
-) -> Generator:
-    # create the data needed for erasure tests here - create user steps go here if we have them
-    yield {}
 
 
 @pytest.fixture

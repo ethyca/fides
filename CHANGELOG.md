@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.27.0...main)
 
+### Added
+- Erasure support for AppsFlyer [#4512](https://github.com/ethyca/fides/pull/4512)
+
 ## [2.27.0](https://github.com/ethyca/fides/compare/2.26.0...2.27.0)
 
 ### Added
@@ -82,7 +85,6 @@ The types of changes are:
 - Added feature flag for separating system name and Compass vendor selector [#4437](https://github.com/ethyca/fides/pull/4437)
 - Fire GPP events per spec [#4433](https://github.com/ethyca/fides/pull/4433)
 - New override option `fides_tcf_gdpr_applies` for setting `gdprApplies` on the CMP API [#4453](https://github.com/ethyca/fides/pull/4453)
-- Added AppsFlyer Erasure Connector [#4512](https://github.com/ethyca/fides/pull/4512)
 
 ### Changed
 - Improved bulk vendor adding table UX [#4425](https://github.com/ethyca/fides/pull/4425)
