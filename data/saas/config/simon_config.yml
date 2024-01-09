@@ -16,7 +16,7 @@ saas_config:
     authentication:
       strategy: bearer
       configuration:
-        token: <Authorization>
+        token: <api_token>
 
   test_request:
     method: GET
