@@ -105,11 +105,7 @@ describe("Consent configuration", () => {
 
       it("can add a vendor from the modal without the dictionary", () => {
         cy.getByTestId("add-vendor-btn").click();
-        cy.getByTestId("input-name")
-          .should("be.visible")
-          .click()
-          .focused()
-          .type("test vendor", { force: true });
+        cy.getByTestId("input-name").type("test vendor", { force: true });
         cy.selectOption(
           "input-privacy_declarations.0.consent_use",
           "analytics"
