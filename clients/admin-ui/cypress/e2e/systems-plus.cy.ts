@@ -309,9 +309,7 @@ describe("System management with Plus features", () => {
     it("can add new systems and redirects to datamap", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.wait("@getSystemVendors");
-      cy.getByTestId("row-0").within(() => {
-        cy.get('[type="checkbox"]').check({ force: true });
-      });
+      cy.get('[type="checkbox"').check({ force: true });
       cy.getByTestId("add-multiple-systems-btn").click();
       cy.getByTestId("confirmation-modal");
       cy.getByTestId("continue-btn").click();
