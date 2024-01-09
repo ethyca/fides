@@ -7,6 +7,7 @@ import {
   MenuButton,
   MenuItemOption,
   MenuList,
+  useDisclosure,
 } from "@fidesui/react";
 import {
   createColumnHelper,
@@ -23,6 +24,7 @@ import {
   GroupCountBadgeCell,
   PaginationBar,
   TableActionBar,
+  ColumnSettingsModal,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
@@ -241,6 +243,7 @@ export const DatamapReportTable = () => {
         meta: {
           width: cellWidth,
           minWidth: cellWidth,
+          displayText: "System",
         },
       }),
       columnHelper.accessor((row) => row.data_uses, {
@@ -256,6 +259,7 @@ export const DatamapReportTable = () => {
         meta: {
           width: cellWidth,
           minWidth: cellWidth,
+          displayText: "Data use",
         },
       }),
       columnHelper.accessor((row) => row.data_categories, {
@@ -272,6 +276,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           width: cellWidth,
+          displayText: "Data categories",
         },
       }),
       columnHelper.accessor((row) => row.data_subjects, {
@@ -288,14 +293,16 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           width: cellWidth,
+          displayText: "Data subject",
         },
       }),
       columnHelper.accessor((row) => row.legal_name, {
         id: COLUMN_IDS.LEGAL_NAME,
         cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Legal Name" {...props} />,
+        header: (props) => <DefaultHeaderCell value="Legal name" {...props} />,
         meta: {
           width: cellWidth,
+          displayText: "Legal name",
         },
       }),
       columnHelper.accessor((row) => row.dpo, {
@@ -306,6 +313,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           width: cellWidth,
+          displayText: "Data privacy officer",
         },
       }),
       columnHelper.accessor((row) => row.legal_basis_for_processing, {
@@ -316,6 +324,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           width: cellWidth,
+          displayText: "Legal basis for processing",
         },
       }),
       columnHelper.accessor((row) => row.administrating_department, {
@@ -326,6 +335,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           width: cellWidth,
+          displayText: "Administrating department",
         },
       }),
       columnHelper.accessor((row) => row.cookie_max_age_seconds, {
@@ -336,6 +346,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           width: cellWidth,
+          displayText: "Cookie max age seconds",
         },
       }),
       columnHelper.accessor((row) => row.privacy_policy, {
@@ -346,6 +357,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           width: cellWidth,
+          displayText: "Privacy policy",
         },
       }),
       columnHelper.accessor((row) => row.legal_address, {
@@ -356,6 +368,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           width: cellWidth,
+          displayText: "Legal address",
         },
       }),
       columnHelper.accessor((row) => row.cookie_refresh, {
@@ -371,6 +384,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           width: cellWidth,
+          displayText: "Cookie refresh",
         },
       }),
       columnHelper.accessor((row) => row.data_security_practices, {
@@ -381,6 +395,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           width: cellWidth,
+          displayText: "Data security practices",
         },
       }),
       columnHelper.accessor((row) => row.data_shared_with_third_parties, {
@@ -394,19 +409,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           width: cellWidth,
-        },
-      }),
-      columnHelper.accessor((row) => row.data_shared_with_third_parties, {
-        id: COLUMN_IDS.DATA_SHARED_WITH_THIRD_PARTIES,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell
-            value="Data shared with third parties"
-            {...props}
-          />
-        ),
-        meta: {
-          width: cellWidth,
+          displayText: "Data shared with third parties",
         },
       }),
       columnHelper.accessor((row) => row.data_stewards, {
@@ -423,6 +426,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           width: cellWidth,
+          displayText: "Data stewards",
         },
       }),
       columnHelper.accessor((row) => row.declaration_name, {
@@ -433,11 +437,18 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           width: cellWidth,
+          displayText: "Declaration name",
         },
       }),
     ],
     []
   );
+
+  const {
+    isOpen: isColumnSettingsOpen,
+    onOpen: onColumnSettingsOpen,
+    onClose: onColumnSettingsClose,
+  } = useDisclosure();
 
   const tableInstance = useReactTable<DatamapReport>({
     getCoreRowModel: getCoreRowModel(),
@@ -487,6 +498,14 @@ export const DatamapReportTable = () => {
         dataSubjectOptions={dataSubjectOptions}
         onDataSubjectChange={onDataSubjectChange}
       />
+      <ColumnSettingsModal<DatamapReport>
+        isOpen={isColumnSettingsOpen}
+        onClose={onColumnSettingsClose}
+        onSave={(e) => {
+          console.log(e);
+        }}
+        tableInstance={tableInstance}
+      />
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={globalFilter}
@@ -528,6 +547,14 @@ export const DatamapReportTable = () => {
               </MenuItemOption>
             </MenuList>
           </Menu>
+          <Button
+            data-testid="filter-multiple-systems-btn"
+            size="xs"
+            variant="outline"
+            onClick={onColumnSettingsOpen}
+          >
+            Edit columns
+          </Button>
           <Button
             data-testid="filter-multiple-systems-btn"
             size="xs"

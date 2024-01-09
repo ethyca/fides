@@ -21,6 +21,7 @@ declare module "@tanstack/table-core" {
     width?: string;
     minWidth?: string;
     maxWidth?: string;
+    displayText?: string;
   }
 }
 /* eslint-enable */

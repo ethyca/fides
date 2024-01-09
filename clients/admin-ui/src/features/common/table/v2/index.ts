@@ -17,3 +17,4 @@ export {
 export { RowSelectionBar } from "./RowSelectionBar";
 export { TableActionBar } from "./TableActionBar";
 export { TableSkeletonLoader } from "./TableSkeletonLoader";
+export { ColumnSettingsModal } from "./column-settings/ColumnSettingsModal";
