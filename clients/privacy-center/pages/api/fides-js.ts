@@ -113,7 +113,6 @@ export default async function handler(
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
           environment.settings.FIDES_API_URL,
         environment.settings.DEBUG,
-        null,
         null
       );
     }
@@ -155,6 +154,7 @@ export default async function handler(
       fidesJsBaseUrl: environment.settings.FIDES_JS_BASE_URL,
       customOptionsPath: null,
       preventDismissal: environment.settings.PREVENT_DISMISSAL,
+      allowHTMLDescription: environment.settings.ALLOW_HTML_DESCRIPTION,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,

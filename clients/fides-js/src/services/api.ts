@@ -3,14 +3,14 @@ import {
   ConsentMethod,
   EmptyExperience,
   FidesApiOptions,
+  FidesCookie,
   FidesOptions,
-  LastServedConsentSchema,
   PrivacyExperience,
   PrivacyPreferencesRequest,
   RecordConsentServedRequest,
+  RecordsServedResponse,
 } from "../lib/consent-types";
 import { debugLog } from "../lib/consent-utils";
-import { FidesCookie } from "../lib/cookie";
 
 export enum FidesEndpointPaths {
   PRIVACY_EXPERIENCE = "/privacy-experience",
@@ -26,19 +26,17 @@ export const fetchExperience = async (
   userLocationString: string,
   fidesApiUrl: string,
   debug: boolean,
-  apiOptions?: FidesApiOptions | null,
-  fidesUserDeviceId?: string | null
+  apiOptions?: FidesApiOptions | null
 ): Promise<PrivacyExperience | EmptyExperience> => {
-  debugLog(
-    debug,
-    `Fetching experience for userId: ${fidesUserDeviceId} in location: ${userLocationString}`
-  );
+  debugLog(debug, `Fetching experience in location: ${userLocationString}`);
   if (apiOptions?.getPrivacyExperienceFn) {
     debugLog(debug, "Calling custom fetch experience fn");
     try {
       return await apiOptions.getPrivacyExperienceFn(
         userLocationString,
-        fidesUserDeviceId
+        // We no longer support handling user preferences on the experience using fidesUserDeviceId.
+        // For backwards compatibility, we keep fidesUserDeviceId in fn signature but pass in null here.
+        null
       );
     } catch (e) {
       debugLog(
@@ -66,9 +64,6 @@ export const fetchExperience = async (
     include_gvl: "true",
     include_meta: "true",
   };
-  if (fidesUserDeviceId) {
-    params.fides_user_device_id = fidesUserDeviceId;
-  }
   params = new URLSearchParams(params);
   const response = await fetch(
     `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
@@ -166,7 +161,7 @@ export const patchNoticesServed = async ({
 }: {
   request: RecordConsentServedRequest;
   options: FidesOptions;
-}): Promise<Array<LastServedConsentSchema> | null> => {
+}): Promise<RecordsServedResponse | null> => {
   debugLog(options.debug, "Saving that notices were served...");
   if (options.apiOptions?.patchNoticesServedFn) {
     debugLog(options.debug, "Calling custom patch notices served fn");

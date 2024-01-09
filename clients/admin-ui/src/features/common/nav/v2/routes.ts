@@ -25,6 +25,8 @@ export const CONSENT_REPORTING_ROUTE = "/consent/reporting";
 // Management group
 export const USER_MANAGEMENT_ROUTE = "/user-management";
 export const ORGANIZATION_MANAGEMENT_ROUTE = "/management/organization";
+export const LOCATIONS_ROUTE = "/management/locations";
+export const REGULATIONS_ROUTE = "/management/regulations";
 export const TAXONOMY_ROUTE = "/taxonomy";
 export const ABOUT_ROUTE = "/management/about";
 export const CUSTOM_FIELDS_ROUTE = "/management/custom-fields";
