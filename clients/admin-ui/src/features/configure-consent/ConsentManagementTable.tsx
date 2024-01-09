@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
-import { Button, Flex } from "@fidesui/react";
+import { Button, Flex, HStack } from "@fidesui/react";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -17,8 +17,11 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
+import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
+import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/v2/routes";
+import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   ConsentManagementFilterModal,
   Option,
@@ -44,13 +47,16 @@ const emptyVendorReportResponse: Page_SystemSummary_ = {
   pages: 1,
 };
 export const ConsentManagementTable = () => {
-  const { tcf: isTcfEnabled } = useFeatures();
+  const { tcf: isTcfEnabled, dictionaryService } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const {
     isOpen: isRowModalOpen,
     onOpen: onRowModalOpen,
     onClose: onRowModalClose,
   } = useConsentManagementModal();
+
+  const router = useRouter();
+
   const [systemFidesKey, setSystemFidesKey] = useState<string>();
 
   const {
@@ -237,6 +243,10 @@ export const ConsentManagementTable = () => {
     onRowModalOpen();
   };
 
+  const goToAddMultiple = () => {
+    router.push(ADD_MULTIPLE_VENDORS_ROUTE);
+  };
+
   if (isReportLoading || isLoadingHealthCheck) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
@@ -269,7 +279,12 @@ export const ConsentManagementTable = () => {
           consentCategoryOptions={consentCategoryOptions}
           onConsentCategoryChange={onConsentCategoryChange}
         />
-        <Flex alignItems="center">
+        <HStack alignItems="center" spacing={4}>
+          <AddVendor
+            buttonLabel="Add vendors"
+            buttonVariant="outline"
+            onButtonClick={dictionaryService ? goToAddMultiple : undefined}
+          />
           <Button
             onClick={onOpenFilter}
             data-testid="filter-multiple-systems-btn"
@@ -278,7 +293,7 @@ export const ConsentManagementTable = () => {
           >
             Filter
           </Button>
-        </Flex>
+        </HStack>
       </TableActionBar>
       <FidesTableV2 tableInstance={tableInstance} onRowClick={onRowClick} />
       <PaginationBar

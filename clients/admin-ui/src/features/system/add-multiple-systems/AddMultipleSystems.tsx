@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Flex,
+  HStack,
   Spinner,
   Tag,
   Text,
@@ -47,6 +48,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { INDEX_ROUTE } from "~/features/common/nav/v2/routes";
+import EmptyTableState from "~/features/common/table/EmptyTableState";
+import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   DictSystems,
   selectAllDictSystems,
@@ -94,6 +97,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   ] = usePostSystemVendorsMutation();
 
   const dictionaryOptions = useAppSelector(selectAllDictSystems);
+  // console.log(dictionaryOptions);
   const [globalFilter, setGlobalFilter] = useState();
   const {
     isOpen: isFilterOpen,
@@ -292,7 +296,12 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           .length as number)
       : 0;
   return (
-    <Flex flex={1} direction="column" overflow="auto">
+    <Flex
+      flex={1}
+      direction="column"
+      overflow="auto"
+      data-testid="add-multiple-systems-tbl"
+    >
       <ConfirmationModal
         isOpen={isOpen}
         isCentered
@@ -344,7 +353,8 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
             </Button>
           </Tooltip>
         </Flex>
-        <Flex alignItems="center">
+        <HStack spacing={4} alignItems="center">
+          <AddVendor buttonLabel="Add custom vendor" buttonVariant="outline" />
           {isTcfEnabled ? (
             // Wrap in a span so it is consistent height with the add button, whose
             // Tooltip wraps a span
@@ -365,7 +375,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
               </Button>
             </span>
           ) : null}
-        </Flex>
+        </HStack>
       </TableActionBar>
       <FidesTableV2<MultipleSystemTable>
         tableInstance={tableInstance}
@@ -394,6 +404,15 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         startRange={startRange}
         endRange={endRange}
       />
+      {totalRows === 0 ? (
+        <Box mt={6} maxW="70%">
+          <EmptyTableState
+            title={"Can't find the vendor you're looking for?"}
+            description={`Add custom systems or unlisted vendors by selecting "Add custom vendor".`}
+            button={<AddVendor buttonLabel="Add custom vendor" />}
+          />
+        </Box>
+      ) : null}
     </Flex>
   );
 };

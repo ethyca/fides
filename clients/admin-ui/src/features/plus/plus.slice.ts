@@ -647,8 +647,9 @@ export type DictSystems = {
 const EMPTY_DICT_SYSTEMS: DictSystems[] = [];
 export const selectAllDictSystems = createSelector(
   [(RootState) => RootState, plusApi.endpoints.getAllSystemVendors.select()],
-  (RootState, { data }) =>
-    data
+  (RootState, { data }) => {
+    console.log(data);
+    return data
       ? data
           .slice()
           .map((ds) => {
@@ -668,5 +669,6 @@ export const selectAllDictSystems = createSelector(
             };
           })
           .sort((a, b) => a.name.localeCompare(b.name))
-      : EMPTY_DICT_SYSTEMS
+      : EMPTY_DICT_SYSTEMS;
+  }
 );
