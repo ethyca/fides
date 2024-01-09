@@ -63,7 +63,7 @@ export type ConsentConfig = {
     cancelButtonText?: string;
     icon_path: string;
     identity_inputs?: IdentityInputs;
-    custom_privacy_request_fields: CustomPrivacyRequestFields;
+    custom_privacy_request_fields?: CustomPrivacyRequestFields;
     title: string;
     modalTitle?: string;
   };
