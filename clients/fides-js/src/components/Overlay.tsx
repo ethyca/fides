@@ -1,6 +1,10 @@
 import { h, FunctionComponent, VNode } from "preact";
 import { useEffect, useState, useCallback, useMemo } from "preact/hooks";
-import { FidesOptions, PrivacyExperience } from "../lib/consent-types";
+import {
+  FidesCookie,
+  FidesOptions,
+  PrivacyExperience,
+} from "../lib/consent-types";
 
 import { debugLog, shouldResurfaceConsent } from "../lib/consent-utils";
 
@@ -9,7 +13,6 @@ import { useA11yDialog } from "../lib/a11y-dialog";
 import ConsentModal from "./ConsentModal";
 import { useHasMounted } from "../lib/hooks";
 import { dispatchFidesEvent } from "../lib/events";
-import { FidesCookie } from "../lib/cookie";
 import ConsentContent from "./ConsentContent";
 
 interface RenderBannerProps {
@@ -58,7 +61,7 @@ const Overlay: FunctionComponent<Props> = ({
         onDismiss();
       }
     },
-    [cookie, options.debug]
+    [cookie, onDismiss, options.debug]
   );
 
   const { instance, attributes } = useA11yDialog({
@@ -131,7 +134,7 @@ const Overlay: FunctionComponent<Props> = ({
       experience.show_banner &&
       shouldResurfaceConsent(experience, cookie) &&
       !options.fidesEmbed,
-    [experience, options, cookie]
+    [cookie, experience, options]
   );
 
   const handleManagePreferencesClick = (): void => {

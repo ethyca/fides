@@ -81,6 +81,15 @@ describe("Locations", () => {
         cy.getByTestId("Venezuela-checkbox").should("not.exist");
       });
 
+      // Toggle "regulated" in Africa which has no regulations
+      cy.getByTestId("picker-card-Africa").within(() => {
+        cy.getByTestId("Eritrea-checkbox");
+        cy.getByTestId("regulated-toggle").click();
+        cy.getByTestId("Eritrea-checkbox").should("not.exist");
+        cy.getByTestId("regulated-toggle").click();
+        cy.getByTestId("Eritrea-checkbox");
+      });
+
       // North America should have stayed the same through all this
       cy.getByTestId("picker-card-North America").within(() => {
         assertIsChecked("Canada-checkbox", "unchecked");
@@ -196,6 +205,10 @@ describe("Locations", () => {
         expect(body.regulations).to.eql([]);
         // Check locations
         expect(body.locations).to.eql([
+          {
+            id: "er",
+            selected: false,
+          },
           {
             id: "fr",
             selected: true,

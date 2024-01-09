@@ -255,14 +255,14 @@ describe("Consent settings", () => {
 
         // there should be no browser identity
         expect(body.browser_identity).to.eql(undefined);
-      });
 
-      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
-      cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
-        const cookie = JSON.parse(
-          decodeURIComponent(cookieJson!.value)
-        ) as FidesCookie;
-        expect(cookie.consent.data_sales).to.eql(true);
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
+          const cookie = JSON.parse(
+            decodeURIComponent(cookieJson!.value)
+          ) as FidesCookie;
+          expect(cookie.consent.data_sales).to.eql(true);
+        });
       });
     });
 

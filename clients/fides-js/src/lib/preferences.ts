@@ -1,18 +1,14 @@
 import {
   ConsentMethod,
+  FidesCookie,
   FidesOptions,
-  LastServedConsentSchema,
   PrivacyExperience,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
   UserConsentPreference,
 } from "./consent-types";
 import { debugLog } from "./consent-utils";
-import {
-  FidesCookie,
-  removeCookiesFromBrowser,
-  saveFidesCookie,
-} from "./cookie";
+import { removeCookiesFromBrowser, saveFidesCookie } from "./cookie";
 import { dispatchFidesEvent, FidesEventExtraDetails } from "./events";
 import { patchUserPreference } from "../services/api";
 import { TcfSavePreferences } from "./tcf/types";
@@ -27,14 +23,14 @@ async function savePreferencesApi(
   consentMethod: ConsentMethod,
   consentPreferencesToSave?: Array<SaveConsentPreference>,
   tcf?: TcfSavePreferences,
-  userLocationString?: string
+  userLocationString?: string,
+  servedNoticeHistoryId?: string
 ) {
   debugLog(options.debug, "Saving preferences to Fides API");
   // Derive the Fides user preferences array from consent preferences
   const fidesUserPreferences = consentPreferencesToSave?.map((preference) => ({
     privacy_notice_history_id: preference.notice.privacy_notice_history_id,
     preference: preference.consentPreference,
-    served_notice_history_id: preference.servedNoticeHistoryId,
   }));
   const privacyPreferenceCreate: PrivacyPreferencesRequest = {
     browser_identity: cookie.identity,
@@ -42,6 +38,7 @@ async function savePreferencesApi(
     privacy_experience_id: experience.id,
     user_geography: userLocationString,
     method: consentMethod,
+    served_notice_history_id: servedNoticeHistoryId,
     ...(tcf ?? []),
   };
   await patchUserPreference(
@@ -69,6 +66,7 @@ export const updateConsentPreferences = async ({
   options,
   userLocationString,
   cookie,
+  servedNoticeHistoryId,
   tcf,
   updateCookie,
 }: {
@@ -79,7 +77,7 @@ export const updateConsentPreferences = async ({
   userLocationString?: string;
   cookie: FidesCookie;
   debug?: boolean;
-  servedNotices?: Array<LastServedConsentSchema> | null;
+  servedNoticeHistoryId?: string;
   tcf?: TcfSavePreferences;
   updateCookie: (oldCookie: FidesCookie) => Promise<FidesCookie>;
 }) => {
@@ -107,7 +105,8 @@ export const updateConsentPreferences = async ({
         consentMethod,
         consentPreferencesToSave,
         tcf,
-        userLocationString
+        userLocationString,
+        servedNoticeHistoryId
       );
     } catch (e) {
       debugLog(
