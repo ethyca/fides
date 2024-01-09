@@ -36,7 +36,7 @@ const FidesLogoHomeLink = () => (
   </Box>
 );
 
-const NavSideBarLink = ({
+export const NavSideBarLink = ({
   childGroup,
   isActive,
 }: {
@@ -116,30 +116,38 @@ const NavGroupMenu = ({
   </AccordionItem>
 );
 
+/** Inner component which we export for component testing */
+export const UnconnectedMainSideNav = ({
+  groups,
+  active,
+}: {
+  groups: NavGroup[];
+  active: ActiveNav | undefined;
+}) => (
+  <Box p={4} minWidth="200px" maxWidth="200px" backgroundColor="#191D27">
+    <VStack as="nav" alignItems="start" color="white" height="100%">
+      <Box pb={6}>
+        <FidesLogoHomeLink />
+      </Box>
+      <Accordion
+        allowMultiple
+        width="100%"
+        defaultIndex={[...Array(groups.length).keys()]}
+        overflowY="auto"
+      >
+        {groups.map((group) => (
+          <NavGroupMenu key={group.title} group={group} active={active} />
+        ))}
+      </Accordion>
+    </VStack>
+  </Box>
+);
+
 const MainSideNav = () => {
   const router = useRouter();
   const nav = useNav({ path: router.pathname });
-  const { active } = nav;
 
-  return (
-    <Box p={4} minWidth="200px" maxWidth="200px" backgroundColor="#191D27">
-      <VStack as="nav" alignItems="start" color="white" height="100%">
-        <Box pb={6}>
-          <FidesLogoHomeLink />
-        </Box>
-        <Accordion
-          allowMultiple
-          width="100%"
-          defaultIndex={[...Array(nav.groups.length).keys()]}
-          overflowY="auto"
-        >
-          {nav.groups.map((group) => (
-            <NavGroupMenu key={group.title} group={group} active={active} />
-          ))}
-        </Accordion>
-      </VStack>
-    </Box>
-  );
+  return <UnconnectedMainSideNav {...nav} />;
 };
 
 export default MainSideNav;
