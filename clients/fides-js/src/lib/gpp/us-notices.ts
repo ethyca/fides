@@ -4,12 +4,11 @@
 
 import { CmpApi } from "@iabgpp/cmpapi";
 
-import { FidesCookie } from "../cookie";
 import {
   FIDES_REGION_TO_GPP_SECTION,
   NOTICE_KEY_TO_FIDES_REGION_GPP_FIELDS,
 } from "./constants";
-import { PrivacyExperience } from "../consent-types";
+import { FidesCookie, PrivacyExperience } from "../consent-types";
 
 /**
  * Sets the appropriate fields on a GPP CMP API model for whether notices were provided

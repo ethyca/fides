@@ -2,65 +2,23 @@ import { v4 as uuidv4 } from "uuid";
 import { getCookie, removeCookie, setCookie, Types } from "typescript-cookie";
 
 import { ConsentContext } from "./consent-context";
+import { resolveLegacyConsentValue } from "./consent-value";
 import {
-  resolveConsentValue,
-  resolveLegacyConsentValue,
-} from "./consent-value";
-import {
+  CookieKeyConsent,
   Cookies,
-  ExperienceMeta,
+  FidesCookie,
   LegacyConsentConfig,
   PrivacyExperience,
+  PrivacyNoticeWithPreference,
   SaveConsentPreference,
 } from "./consent-types";
-import {
-  debugLog,
-  transformConsentToFidesUserPreference,
-  transformUserPreferenceToBoolean,
-} from "./consent-utils";
+import { debugLog } from "./consent-utils";
 import type { TcfCookieConsent, TcfSavePreferences } from "./tcf/types";
 import { FIDES_SYSTEM_COOKIE_KEY_MAP } from "./tcf/constants";
-
-/**
- * Store the user's consent preferences on the cookie, as key -> boolean pairs, e.g.
- * {
- *   "data_sales": false,
- *   "analytics": true,
- *   ...
- * }
- */
-export type CookieKeyConsent = {
-  [cookieKey: string]: boolean | undefined;
-};
-
-/**
- * Store the user's identity values on the cookie, e.g.
- * {
- *   "fides_user_device_id": "1234-",
- *   "email": "jane@example.com",
- *   ...
- * }
- */
-export type CookieIdentity = Record<string, string>;
-
-/**
- * Store metadata about the cookie itself, e.g.
- * {
- *   "version": "0.9.0",
- *   "createdAt": "2023-01-01T12:00:00.000Z",
- *   ...
- * }
- */
-export type CookieMeta = Record<string, string>;
-
-export interface FidesCookie {
-  consent: CookieKeyConsent;
-  identity: CookieIdentity;
-  fides_meta: CookieMeta;
-  fides_string?: string;
-  tcf_consent: TcfCookieConsent;
-  tcf_version_hash?: ExperienceMeta["version_hash"];
-}
+import {
+  transformConsentToFidesUserPreference,
+  transformUserPreferenceToBoolean,
+} from "./shared-consent-utils";
 
 /**
  * Save the cookie under the name "fides_consent" for 365 days
@@ -248,31 +206,6 @@ export const saveFidesCookie = (cookie: FidesCookie) => {
 };
 
 /**
- * Builds consent preferences for this session, based on:
- * 1) context: browser context, which can automatically override those defaults
- *    in some cases (e.g. global privacy control => false)
- * 2) experience: current experience-based consent configuration.
- *
- * Returns cookie consent that can then be changed according to the
- * user's preferences.
- */
-export const buildCookieConsentForExperiences = (
-  experience: PrivacyExperience,
-  context: ConsentContext,
-  debug: boolean
-): CookieKeyConsent => {
-  const cookieConsent: CookieKeyConsent = {};
-  if (!experience.privacy_notices) {
-    return cookieConsent;
-  }
-  experience.privacy_notices.forEach((notice) => {
-    cookieConsent[notice.notice_key] = resolveConsentValue(notice, context);
-  });
-  debugLog(debug, `Returning cookie consent for experiences.`, cookieConsent);
-  return cookieConsent;
-};
-
-/**
  * Updates prefetched experience, based on:
  * 1) experience: pre-fetched or client-side experience-based consent configuration
  * 2) cookie: cookie containing user preference.
@@ -289,18 +222,17 @@ export const updateExperienceFromCookieConsentNotices = ({
   cookie: FidesCookie;
   debug?: boolean;
 }): PrivacyExperience => {
-  const noticesWithConsent = experience.privacy_notices?.map((notice) => {
-    // Prefers preference in cookie if it exists, else uses current preference on the notice if it exists, else uses
-    // undefined. Undefined will occur for server-side-fetched experience when no corresponding pref exists in cookie.
-    const defaultPreference = notice.current_preference ?? undefined;
-    const preference = Object.hasOwn(cookie.consent, notice.notice_key)
-      ? transformConsentToFidesUserPreference(
-          Boolean(cookie.consent[notice.notice_key]),
-          notice.consent_mechanism
-        )
-      : defaultPreference;
-    return { ...notice, current_preference: preference };
-  });
+  // DEFER (PROD-1568) - instead of updating experience here, push this logic into UI
+  const noticesWithConsent: PrivacyNoticeWithPreference[] | undefined =
+    experience.privacy_notices?.map((notice) => {
+      const preference = Object.hasOwn(cookie.consent, notice.notice_key)
+        ? transformConsentToFidesUserPreference(
+            Boolean(cookie.consent[notice.notice_key]),
+            notice.consent_mechanism
+          )
+        : undefined;
+      return { ...notice, current_preference: preference };
+    });
 
   if (debug) {
     debugLog(

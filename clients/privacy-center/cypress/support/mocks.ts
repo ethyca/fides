@@ -23,8 +23,6 @@ export const mockPrivacyNotice = (params: Partial<PrivacyNotice>) => {
     regions: ["us_ca"],
     consent_mechanism: ConsentMechanism.OPT_OUT,
     default_preference: UserConsentPreference.OPT_IN,
-    current_preference: undefined,
-    outdated_preference: undefined,
     has_gpc_flag: true,
     data_uses: ["advertising", "third_party_sharing"],
     enforcement_level: EnforcementLevel.SYSTEM_WIDE,
