@@ -457,10 +457,12 @@ export const DatamapReportTable = () => {
     columns: tcfColumns,
     manualPagination: true,
     data,
+    initialState: {
+      columnOrder,
+    },
     state: {
       expanded: true,
       grouping,
-      columnOrder,
     },
   });
 
@@ -502,7 +504,13 @@ export const DatamapReportTable = () => {
         isOpen={isColumnSettingsOpen}
         onClose={onColumnSettingsClose}
         onSave={(e) => {
-          console.log(e);
+          tableInstance.setColumnOrder(e.map((e) => e.id));
+          tableInstance.setColumnVisibility(
+            e.reduce((acc, current) => {
+              acc[current.id] = current.isVisible;
+              return acc;
+            }, {})
+          );
         }}
         tableInstance={tableInstance}
       />
