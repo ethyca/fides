@@ -11,6 +11,7 @@ import {
   Tooltip,
   useDisclosure,
   useToast,
+  VStack,
 } from "@fidesui/react";
 import {
   createColumnHelper,
@@ -48,7 +49,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { INDEX_ROUTE } from "~/features/common/nav/v2/routes";
-import EmptyTableState from "~/features/common/table/EmptyTableState";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   DictSystems,
@@ -72,7 +72,7 @@ export const VendorSourceCell = ({ value }: { value: string }) => {
 };
 
 const ADDED_VENDOR_TOOLTIP_LABEL =
-  "This vendor has already beed added. You can view the properties of this vendor by going to View Systems.";
+  "This vendor has already been added. You can view the properties of this vendor by going to View Systems.";
 
 type MultipleSystemTable = DictSystems;
 
@@ -81,6 +81,30 @@ const columnHelper = createColumnHelper<MultipleSystemTable>();
 type Props = {
   redirectRoute: string;
 };
+
+const EmptyTableNotice = () => (
+  <VStack
+    mt={6}
+    p={10}
+    spacing={4}
+    boxShadow="md"
+    borderRadius="base"
+    maxW="70%"
+    data-testid="no-results-notice"
+    alignSelf="center"
+  >
+    <VStack>
+      <Text fontSize="md" fontWeight="600">
+        No results found.
+      </Text>
+      <Text fontSize="sm">
+        {`Can't find the vendor you are looking for? Add custom systems or unlisted
+      vendors by selecting the "Add custom vendor" button below.`}
+      </Text>
+    </VStack>
+    <AddVendor buttonLabel="Add custom vendor" />
+  </VStack>
+);
 
 export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   const systemText = "Vendor";
@@ -403,15 +427,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         startRange={startRange}
         endRange={endRange}
       />
-      {totalRows === 0 ? (
-        <Box mt={6} maxW="70%">
-          <EmptyTableState
-            title={"Can't find the vendor you're looking for?"}
-            description={`Add custom systems or unlisted vendors by selecting "Add custom vendor".`}
-            button={<AddVendor buttonLabel="Add custom vendor" />}
-          />
-        </Box>
-      ) : null}
+      {totalRows === 0 ? <EmptyTableNotice /> : null}
     </Flex>
   );
 };

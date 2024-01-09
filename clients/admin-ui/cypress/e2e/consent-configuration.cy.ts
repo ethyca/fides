@@ -59,7 +59,7 @@ describe("Consent configuration", () => {
         body: [],
       }).as("getEmptySystems");
       cy.visit(ADD_MULTIPLE_VENDORS_ROUTE);
-      cy.getByTestId("empty-state");
+      cy.getByTestId("no-results-notice");
     });
   });
 
