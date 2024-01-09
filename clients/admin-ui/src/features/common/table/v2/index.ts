@@ -18,3 +18,4 @@ export { RowSelectionBar } from "./RowSelectionBar";
 export { TableActionBar } from "./TableActionBar";
 export { TableSkeletonLoader } from "./TableSkeletonLoader";
 export { ColumnSettingsModal } from "./column-settings/ColumnSettingsModal";
+export type { DraggableColumn } from "./column-settings/DraggableColumnList"

@@ -27,6 +27,7 @@ import {
   ColumnSettingsModal,
   TableSkeletonLoader,
   useServerSidePagination,
+  DraggableColumn  
 } from "common/table/v2";
 import { useEffect, useMemo, useState } from "react";
 
@@ -506,7 +507,7 @@ export const DatamapReportTable = () => {
         onSave={(e) => {
           tableInstance.setColumnOrder(e.map((e) => e.id));
           tableInstance.setColumnVisibility(
-            e.reduce((acc, current) => {
+            e.reduce((acc: Record<string, boolean>, current: DraggableColumn) => {
               acc[current.id] = current.isVisible;
               return acc;
             }, {})
