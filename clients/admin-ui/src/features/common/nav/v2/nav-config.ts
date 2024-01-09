@@ -231,12 +231,11 @@ export type NavGroupChild = {
 
 export type NavGroup = {
   /**
-   * Title of the group. Displayed in NavTopBar.
+   * Title of the group. Displayed as an accordion in MainSideNav.
    */
   title: string;
   /**
-   * The routes that are nested under this group. These are displayed in the NavSideBar. If this has
-   * only one child, the side bar should not be shown at all (such as for "Home").
+   * The routes that are nested under this group. These are displayed inside of each group's accordion.
    */
   children: Array<NavGroupChild>;
 };
