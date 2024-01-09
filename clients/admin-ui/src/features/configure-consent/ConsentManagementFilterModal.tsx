@@ -211,7 +211,7 @@ export const useConsentManagementFilters = () => {
     }
   }, [dataUses, dataUseOptions, setDataUseOptions]);
   useEffect(() => {
-    if (purposeResponse && purposeOptions.length === 0) {
+    if (purposeOptions.length === 0) {
       setPurposeOptions([
         ...Object.entries(purposeResponse.purposes).map((p) => ({
           value: `normal.${p[0]}`,

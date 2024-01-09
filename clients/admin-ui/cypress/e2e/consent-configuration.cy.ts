@@ -1,6 +1,7 @@
 import {
   stubPlus,
   stubSystemCrud,
+  stubSystemVendors,
   stubTaxonomyEntities,
   stubVendorList,
 } from "cypress/support/stubs";
@@ -235,15 +236,7 @@ describe("Consent configuration", () => {
             },
           }
         );
-        cy.intercept("GET", "/api/v1/plus/dictionary/system-vendors", {
-          body: [
-            {
-              linked_system: false,
-              name: "Anzu Virtual Reality LTD",
-              vendor_id: "gvl.733",
-            },
-          ],
-        }).as("getSystemVendors");
+        stubSystemVendors();
       });
 
       it("redirects to 'add multiple vendors' page when 'Add vendors' is clicked", () => {

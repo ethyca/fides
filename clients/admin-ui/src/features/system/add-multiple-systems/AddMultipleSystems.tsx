@@ -97,7 +97,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   ] = usePostSystemVendorsMutation();
 
   const dictionaryOptions = useAppSelector(selectAllDictSystems);
-  // console.log(dictionaryOptions);
   const [globalFilter, setGlobalFilter] = useState();
   const {
     isOpen: isFilterOpen,
