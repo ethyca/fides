@@ -24,7 +24,8 @@ def invite_user(db: Session, config: FidesConfig, user: FidesUser) -> None:
     Generates a user invite and sends the invite code to the user via email.
     """
 
-    if is_email_messaging_enabled(db):
+    # invite user via email if email messaging is enabled and the Admin UI URL is defined
+    if is_email_messaging_enabled(db) and config.admin_ui.url:
         invite_code = str(uuid.uuid4())
         FidesUserInvite.create(
             db=db, data={"username": user.username, "invite_code": invite_code}

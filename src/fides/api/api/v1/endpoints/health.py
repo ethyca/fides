@@ -22,17 +22,13 @@ CacheHealth = Literal["healthy", "unhealthy", "no cache configured"]
 HEALTH_ROUTER = APIRouter(tags=["Health"])
 
 
-class EmailMessagingStatus(BaseModel):
-    enabled: bool = False
-
-
 class CoreHealthCheck(BaseModel):
     """Server Healthcheck schema"""
 
     webserver: str
     version: str
     cache: CacheHealth
-    email_messaging: bool
+    invite_users_via_email: bool
 
 
 class DatabaseHealthCheck(BaseModel):
@@ -198,7 +194,8 @@ async def health(db: Session = Depends(get_db)) -> Dict:
             webserver="healthy",
             version=str(fides.__version__),
             cache=cache_health,
-            email_messaging=is_email_messaging_enabled(db),
+            invite_users_via_email=is_email_messaging_enabled(db)
+            and CONFIG.admin_ui.url is not None,
         ).dict()
 
         for _, value in response.items():

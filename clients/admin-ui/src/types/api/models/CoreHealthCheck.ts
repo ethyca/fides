@@ -9,7 +9,7 @@ export type CoreHealthCheck = {
   webserver: string;
   version: string;
   cache: CoreHealthCheck.cache;
-  email_messaging: boolean;
+  invite_users_via_email: boolean;
 };
 
 export namespace CoreHealthCheck {

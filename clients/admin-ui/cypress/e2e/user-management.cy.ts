@@ -114,7 +114,7 @@ describe("User management", () => {
     });
 
     it("cannot set a user's password if email messaging is enabled", () => {
-      cy.intercept("/health", { email_messaging: true });
+      cy.intercept("/health", { invite_users_via_email: true });
       cy.visit(`/user-management/new`);
       cy.getByTestId("input-email_address");
       cy.getByTestId("input-password").should("not.exist");

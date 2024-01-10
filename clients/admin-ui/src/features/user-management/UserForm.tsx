@@ -73,7 +73,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
 
   const isNewUser = !activeUser;
   const nameDisabled = isNewUser ? false : !canEditNames;
-  const showPasswordField = isNewUser && !features.emailMessaging;
+  const showPasswordField = isNewUser && !features.inviteUsersViaEmail;
 
   const handleSubmit = async (values: FormValues) => {
     // first either update or create the user
