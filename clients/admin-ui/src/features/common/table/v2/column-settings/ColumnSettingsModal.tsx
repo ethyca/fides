@@ -21,7 +21,6 @@ import { DraggableColumn } from "./DraggableColumnList";
 type ColumnSettingsModalProps<T> = {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (updatedColumns: DraggableColumn[]) => void;
   prefixColumns: string[];
   tableInstance: TableInstance<T>;
 };
@@ -32,7 +31,6 @@ import { useCallback, useMemo } from "react";
 export const ColumnSettingsModal = <T,>({
   isOpen,
   onClose,
-  onSave,
   tableInstance,
   prefixColumns,
 }: ColumnSettingsModalProps<T>) => {
@@ -51,7 +49,19 @@ export const ColumnSettingsModal = <T,>({
   });
 
   const handleSave = useCallback(() => {
-    onSave(columnEditor.columns);
+    tableInstance.setColumnOrder([
+      ...prefixColumns,
+      ...columnEditor.columns.map((c) => c.id),
+    ]);
+    tableInstance.setColumnVisibility(
+      columnEditor.columns.reduce(
+        (acc: Record<string, boolean>, current: DraggableColumn) => {
+          acc[current.id] = current.isVisible;
+          return acc;
+        },
+        {}
+      )
+    );
     onClose();
   }, [onClose, onSave, columnEditor.columns]);
 

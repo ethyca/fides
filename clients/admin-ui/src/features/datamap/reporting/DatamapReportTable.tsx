@@ -519,21 +519,6 @@ export const DatamapReportTable = () => {
         isOpen={isColumnSettingsOpen}
         onClose={onColumnSettingsClose}
         prefixColumns={getPrefixColumns(groupBy)}
-        onSave={(e) => {
-          tableInstance.setColumnOrder([
-            ...getPrefixColumns(groupBy),
-            ...e.map((e) => e.id),
-          ]);
-          tableInstance.setColumnVisibility(
-            e.reduce(
-              (acc: Record<string, boolean>, current: DraggableColumn) => {
-                acc[current.id] = current.isVisible;
-                return acc;
-              },
-              {}
-            )
-          );
-        }}
         tableInstance={tableInstance}
       />
       <TableActionBar>
