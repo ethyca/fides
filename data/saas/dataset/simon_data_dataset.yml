@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: simondata
-    description: A sample dataset representing the Simondata connector for Fides
+    name: Simon Data
+    description: A sample dataset representing the Simon Data connector for Fides
     collections:
       - name: contact
         fields: []

@@ -1,7 +1,7 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Simondata SaaS Config
-  type: simondata
+  name: Simon Data
+  type: simon_data
   description: A sample schema representing the Simondata connector for Fides
   version: 0.1.0
 
@@ -25,7 +25,7 @@ saas_config:
   endpoints:
     - name: contact
       requests:
-        update:
+        delete:
           method: POST
           path: /v1/privacy/delete/
           body: |

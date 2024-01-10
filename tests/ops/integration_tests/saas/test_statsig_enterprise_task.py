@@ -25,4 +25,4 @@ class TestStatsigEnterpriseConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": statsig_enterprise_erasure_identity_email},
         )
-        assert erasure_results == {"statsig_enterprise_instance:user": 1}
+        assert erasure_results == {"simon_instance:user": 1}
