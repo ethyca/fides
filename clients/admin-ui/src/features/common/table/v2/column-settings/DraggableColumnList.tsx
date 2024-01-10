@@ -251,20 +251,18 @@ type DraggableColumnListProps = {
 export const DraggableColumnList = ({
   columns,
   columnEditor,
-}: DraggableColumnListProps) => {
-  return (
-    <List spacing={4}>
-      {columns.map((column, index) => (
-        <DraggableColumnListItem
-          id={column.id}
-          index={index}
-          isVisible={column.isVisible}
-          key={column.id}
-          moveColumn={columnEditor.moveColumn}
-          setColumnVisible={columnEditor.setColumnVisible}
-          text={column.displayText}
-        />
-      ))}
-    </List>
-  );
-};
+}: DraggableColumnListProps) => (
+  <List spacing={4}>
+    {columns.map((column, index) => (
+      <DraggableColumnListItem
+        id={column.id}
+        index={index}
+        isVisible={column.isVisible}
+        key={column.id}
+        moveColumn={columnEditor.moveColumn}
+        setColumnVisible={columnEditor.setColumnVisible}
+        text={column.displayText}
+      />
+    ))}
+  </List>
+);

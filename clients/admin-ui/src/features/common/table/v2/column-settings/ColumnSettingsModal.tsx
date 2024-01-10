@@ -16,7 +16,13 @@ import {
   Text,
 } from "@fidesui/react";
 import { Table as TableInstance } from "@tanstack/react-table";
-import { DraggableColumn } from "./DraggableColumnList";
+import { useCallback, useMemo } from "react";
+
+import {
+  DraggableColumn,
+  DraggableColumnList,
+  useEditableColumns,
+} from "./DraggableColumnList";
 
 type ColumnSettingsModalProps<T> = {
   isOpen: boolean;
@@ -25,25 +31,24 @@ type ColumnSettingsModalProps<T> = {
   tableInstance: TableInstance<T>;
 };
 
-import { useEditableColumns, DraggableColumnList } from "./DraggableColumnList";
-import { useCallback, useMemo } from "react";
-
 export const ColumnSettingsModal = <T,>({
   isOpen,
   onClose,
   tableInstance,
   prefixColumns,
 }: ColumnSettingsModalProps<T>) => {
-  const initialColumns = useMemo(() => {
-    return tableInstance
-      .getAllColumns()
-      .filter((c) => !prefixColumns.includes(c.id))
-      .map((c) => ({
-        id: c.id,
-        displayText: c.columnDef?.meta?.displayText || c.id,
-        isVisible: c.getIsVisible(),
-      }));
-  }, [tableInstance]);
+  const initialColumns = useMemo(
+    () =>
+      tableInstance
+        .getAllColumns()
+        .filter((c) => !prefixColumns.includes(c.id))
+        .map((c) => ({
+          id: c.id,
+          displayText: c.columnDef?.meta?.displayText || c.id,
+          isVisible: c.getIsVisible(),
+        })),
+    [tableInstance, prefixColumns]
+  );
   const columnEditor = useEditableColumns({
     columns: initialColumns,
   });
@@ -56,6 +61,7 @@ export const ColumnSettingsModal = <T,>({
     tableInstance.setColumnVisibility(
       columnEditor.columns.reduce(
         (acc: Record<string, boolean>, current: DraggableColumn) => {
+          // eslint-disable-next-line no-param-reassign
           acc[current.id] = current.isVisible;
           return acc;
         },
@@ -63,7 +69,7 @@ export const ColumnSettingsModal = <T,>({
       )
     );
     onClose();
-  }, [onClose, columnEditor.columns]);
+  }, [onClose, prefixColumns, tableInstance, columnEditor.columns]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl">

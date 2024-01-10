@@ -17,6 +17,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  ColumnSettingsModal,
   DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
@@ -24,10 +25,8 @@ import {
   GroupCountBadgeCell,
   PaginationBar,
   TableActionBar,
-  ColumnSettingsModal,
   TableSkeletonLoader,
   useServerSidePagination,
-  DraggableColumn,
 } from "common/table/v2";
 import { useEffect, useMemo, useState } from "react";
 
