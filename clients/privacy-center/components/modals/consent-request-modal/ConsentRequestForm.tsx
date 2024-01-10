@@ -265,6 +265,11 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
               </Text>
             )
           )}
+          {isVerificationRequired ? (
+            <Text fontSize="sm" color="gray.600" mb={4}>
+              We will send you a verification code.
+            </Text>
+          ) : null}
           <Stack>
             {identityInputs.email ? (
               <FormControl

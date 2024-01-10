@@ -349,15 +349,18 @@ class TestConsentRequest:
         db,
         url,
     ):
-        data = {
-            "identity": {
-                "email": "testing_123@example.com",
-                "phone_number": "+3368675309",
-            }
-        }
+        data = {"email": "testing_123@example.com", "phone_number": "+3368675309"}
         response = api_client.post(url, json=data)
         assert response.status_code == 200
-        assert not mock_dispatch_message.called
+        assert mock_dispatch_message.called
+        provided_identity = ProvidedIdentity.filter(
+            db=db,
+            conditions=(
+                ProvidedIdentity.hashed_value
+                == ProvidedIdentity.hash_value("testing_123@example.com")
+            ),
+        ).first()
+        assert provided_identity is not None
 
     @pytest.mark.usefixtures(
         "messaging_config",
