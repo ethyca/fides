@@ -63,7 +63,7 @@ export const ColumnSettingsModal = <T,>({
       )
     );
     onClose();
-  }, [onClose, onSave, columnEditor.columns]);
+  }, [onClose, columnEditor.columns]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl">
