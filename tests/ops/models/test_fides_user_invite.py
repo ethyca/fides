@@ -10,7 +10,7 @@ class TestFidesUserInvite:
         username = "test"
         invite_code = "test_invite"
         user_invite = FidesUserInvite.create(
-            db, {"username": "test", "invite_code": invite_code}
+            db=db, data={"username": "test", "invite_code": invite_code}
         )
 
         assert user_invite.username == username
@@ -23,7 +23,7 @@ class TestFidesUserInvite:
         username = "test"
         invite_code = "test_invite"
         user_invite = FidesUserInvite.create(
-            db, {"username": username, "invite_code": invite_code}
+            db=db, data={"username": username, "invite_code": invite_code}
         )
 
         assert user_invite.invite_code_valid(invite_code) is True
@@ -33,7 +33,7 @@ class TestFidesUserInvite:
         username = "test"
         invite_code = "test_invite"
         user_invite = FidesUserInvite.create(
-            db, {"username": username, "invite_code": invite_code}
+            db=db, data={"username": username, "invite_code": invite_code}
         )
         assert user_invite.is_expired() is False
 
@@ -50,7 +50,7 @@ class TestFidesUserInvite:
 
         # Create initial invite
         user_invite = FidesUserInvite.create(
-            db, {"username": username, "invite_code": initial_invite_code}
+            db=db, data={"username": username, "invite_code": initial_invite_code}
         )
         original_hashed_code = user_invite.hashed_invite_code
         original_salt = user_invite.salt

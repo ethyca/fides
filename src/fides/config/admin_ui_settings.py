@@ -12,8 +12,7 @@ class AdminUISettings(FidesSettings):
         default=True, description="Toggle whether the Admin UI is served."
     )
     url: Optional[AnyHttpUrl] = Field(
-        default=None,
-        description="The base URL for the Admin UI.",
+        default=None, description="The base URL for the Admin UI.", exclude=True
     )
 
     class Config:

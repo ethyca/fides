@@ -494,7 +494,7 @@ dataset:
       - system.operations
     - name: first_name
       data_categories:
-      - system.operations
+      - user.contact.name
     - name: hashed_password
       data_categories:
       - system.operations
@@ -506,7 +506,7 @@ dataset:
       - system.operations
     - name: last_name
       data_categories:
-      - system.operations
+      - user.contact.name
     - name: password_reset_at
       data_categories:
       - system.operations
@@ -519,7 +519,16 @@ dataset:
       - system.operations
     - name: username
       data_categories:
+      - user
+    - name: disabled
+      data_categories:
       - system.operations
+    - name: disabled_reason
+      data_categories:
+      - system.operations
+    - name: email_address
+      data_categories:
+      - user.contact.email
   - name: fidesuserpermissions
     fields:
     - name: created_at
@@ -2010,3 +2019,17 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+    - name: fides_user_invite
+      fields:
+        - name: created_at
+          data_categories: [system.operations]
+        - name: hashed_invite_code
+          data_categories: [system.operations]
+        - name: id
+          data_categories: [system.operations]
+        - name: salt
+          data_categories: [system.operations]
+        - name: updated_at
+          data_categories: [system.operations]
+        - name: username
+          data_categories: [system.operations]
