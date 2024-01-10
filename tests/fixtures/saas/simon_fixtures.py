@@ -16,8 +16,7 @@ secrets = get_secrets("simon")
 def simon_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "simon.domain") or secrets["domain"],
-        "api_token": pydash.get(saas_config, "simon.api_token") or secrets["api_token"]
-        # add the rest of your secrets here
+        "api_token": pydash.get(saas_config, "simon.api_token") or secrets["api_token"],
     }
 
 
@@ -31,14 +30,14 @@ def simon_erasure_identity_email() -> str:
     return generate_random_email()
 
 
-@pytest.fixture
-def simon_external_references() -> Dict[str, Any]:
-    return {}
+# @pytest.fixture
+# def simon_external_references() -> Dict[str, Any]:
+#     return {}
 
 
-@pytest.fixture
-def simon_erasure_external_references() -> Dict[str, Any]:
-    return {}
+# @pytest.fixture
+# def simon_erasure_external_references() -> Dict[str, Any]:
+#     return {}
 
 
 @pytest.fixture
