@@ -47,7 +47,8 @@ export const ColumnSettingsModal = <T,>({
           displayText: c.columnDef?.meta?.displayText || c.id,
           isVisible: c.getIsVisible(),
         })),
-    [tableInstance, prefixColumns]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
   const columnEditor = useEditableColumns({
     columns: initialColumns,
