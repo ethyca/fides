@@ -10,7 +10,8 @@ from fideslang.validation import FidesKey
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, or_
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.util import hybridproperty
 
@@ -169,7 +170,10 @@ class PrivacyNoticeBase:
     )
     consent_mechanism = Column(EnumColumn(ConsentMechanism), nullable=False)
     data_uses = Column(
-        ARRAY(String), nullable=False
+        ARRAY(String),
+        nullable=False,
+        server_default="{}",
+        default=dict,
     )  # a list of `fides_key`s of `DataUse` records
     enforcement_level = Column(EnumColumn(EnforcementLevel), nullable=False)
     disabled = Column(Boolean, nullable=False, default=False)
@@ -178,6 +182,10 @@ class PrivacyNoticeBase:
     displayed_in_overlay = Column(Boolean, nullable=False, default=False)
     displayed_in_api = Column(Boolean, nullable=False, default=False)
     notice_key = Column(String, nullable=False)
+    gpp_us_approach = Column(String, nullable=True)
+    gpp_field_mapping = Column(
+        MutableList.as_mutable(JSONB), index=False, unique=False, nullable=True
+    )
 
     def applies_to_system(self, system: System) -> bool:
         """Privacy Notice applies to System if a data use matches or the Privacy Notice
@@ -411,7 +419,7 @@ def check_conflicting_data_uses(
         for region in privacy_notice.regions:
             region_uses = uses_by_region[PrivacyNoticeRegion(region)]
             # check each of the incoming notice's data uses
-            for data_use in privacy_notice.data_uses:
+            for data_use in privacy_notice.data_uses or []:
                 for existing_use, notice_name in region_uses:
                     # we need to check for hierarchical overlaps in _both_ directions
                     # i.e. whether the incoming DataUse is a parent _or_ a child of

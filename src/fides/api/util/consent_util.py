@@ -1,8 +1,10 @@
 from html import escape
+from json import dumps
 from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
 import yaml
 from fastapi import HTTPException
+from fastapi.encoders import jsonable_encoder
 from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
@@ -36,7 +38,11 @@ from fides.api.models.privacy_request import (
 from fides.api.models.sql_models import DataUse, System  # type: ignore[attr-defined]
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.schemas.privacy_experience import ExperienceConfigCreateWithId
-from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
+from fides.api.schemas.privacy_notice import (
+    GPPFieldMapping,
+    PrivacyNoticeCreation,
+    PrivacyNoticeWithId,
+)
 from fides.api.schemas.redis_cache import Identity
 from fides.api.util.endpoint_utils import transform_fields
 from fides.config.helpers import load_file
@@ -350,6 +356,11 @@ def create_privacy_notices_util(
                 model=privacy_notice,
                 fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
             )
+        privacy_notice = transform_fields(
+            transformation=jsonable_encoder,
+            model=privacy_notice,
+            fields=["gpp_field_mapping"],
+        )
         created_privacy_notice = PrivacyNotice.create(
             db=db,
             data=privacy_notice.dict(exclude_unset=True),
@@ -423,6 +434,11 @@ def prepare_privacy_notice_patches(
             model=update_data,
             fields=PRIVACY_NOTICE_ESCAPE_FIELDS,
         )
+        update_data = transform_fields(
+            transformation=jsonable_encoder,
+            model=update_data,
+            fields=["gpp_field_mapping"],
+        )
         if update_data.id not in existing_notices:
             if not allow_create:
                 raise HTTPException(
@@ -458,12 +474,12 @@ def prepare_privacy_notice_patches(
         check_conflicting_data_uses(
             validation_updates,
             existing_notices.values(),
-            ignore_disabled=ignore_disabled,
+            # ignore_disabled=ignore_disabled, # TODO: figure out if we should re-enable disabled checking of templates, how to properly allow GPP overlaps
         )
         check_conflicting_notice_keys(
             validation_updates,
             existing_notices.values(),
-            ignore_disabled=ignore_disabled,
+            # ignore_disabled=ignore_disabled,
         )
     except ValidationError as e:
         raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
@@ -599,6 +615,7 @@ def create_default_experience_config(
         model=(ExperienceConfigCreateWithId(**experience_config_data)),
         fields=PRIVACY_EXPERIENCE_ESCAPE_FIELDS,
     )
+
     if not experience_config_schema.is_default:
         raise Exception("This method is for created default experience configs.")
 

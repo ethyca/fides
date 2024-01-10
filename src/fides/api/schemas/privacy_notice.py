@@ -1,16 +1,35 @@
 from __future__ import annotations
 
 from datetime import datetime
+from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesKey
-from pydantic import Extra, conlist, root_validator, validator
+from pydantic import Extra, Field, conlist, root_validator, validator
 
 from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
 from fides.api.models.privacy_notice import PrivacyNotice as PrivacyNoticeModel
 from fides.api.models.privacy_notice import PrivacyNoticeRegion, UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
+
+
+class GPPMechanismMapping(FidesSchema):
+    field: str
+    not_available: str
+    opt_out: str
+    not_opt_out: str
+
+
+class GPPFieldMapping(FidesSchema):
+    region: str  # TODO: make PrivacyNoticeRegion enum, figure out serialization
+    notice: Optional[List[str]]
+    mechanism: Optional[List[GPPMechanismMapping]]
+
+
+class GPPUSApproach(Enum):
+    national = "national"
+    state = "state"
 
 
 class PrivacyNotice(FidesSchema):
@@ -28,13 +47,17 @@ class PrivacyNotice(FidesSchema):
     origin: Optional[str]
     regions: Optional[conlist(PrivacyNoticeRegion, min_items=1)]  # type: ignore
     consent_mechanism: Optional[ConsentMechanism]
-    data_uses: Optional[conlist(str, min_items=1)]  # type: ignore
+    data_uses: Optional[List[str]] = []
     enforcement_level: Optional[EnforcementLevel]
     disabled: Optional[bool] = False
     has_gpc_flag: Optional[bool] = False
     displayed_in_privacy_center: Optional[bool] = False
     displayed_in_overlay: Optional[bool] = False
     displayed_in_api: Optional[bool] = False
+    gpp_us_approach: Optional[
+        GPPUSApproach
+    ]  # TODO: should this be something more generic? need to understand other GPP regions/approaches beyond US ...
+    gpp_field_mapping: Optional[List[GPPFieldMapping]]
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -73,7 +96,6 @@ class PrivacyNoticeCreation(PrivacyNotice):
     name: str
     regions: conlist(PrivacyNoticeRegion, min_items=1)  # type: ignore
     consent_mechanism: ConsentMechanism
-    data_uses: conlist(str, min_items=1)  # type: ignore
     enforcement_level: EnforcementLevel
 
     @root_validator(pre=True)
