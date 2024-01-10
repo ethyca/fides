@@ -32,7 +32,6 @@ import { selectIsNoticeDriven } from "~/features/common/settings.slice";
 
 const Consent: NextPage = () => {
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
-  const [verificationCode] = useLocalStorage("verificationCode", "");
   const router = useRouter();
   const toast = useToast();
   const dispatch = useAppDispatch();
