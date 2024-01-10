@@ -25,6 +25,8 @@ PRIVACY_REQUEST_ID = "privacy_request_id"
 MASKED_OBJECT_FIELDS = "masked_object_fields"
 ALL_OBJECT_FIELDS = "all_object_fields"
 CUSTOM_PRIVACY_REQUEST_FIELDS = "custom_privacy_request_fields"
+UUID = "uuid"
+ISO_8601_DATETIME = "iso_8601_datetime"
 
 
 def deny_unsafe_hosts(host: str) -> str:

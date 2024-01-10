@@ -76,8 +76,8 @@ const bannerValidationSchema = Yup.object()
     privacy_preferences_link_label: Yup.string()
       .required()
       .label("Privacy preferences link label"),
-    banner_title: Yup.string().optional().label("Banner title"),
-    banner_description: Yup.string().optional().label("Banner description"),
+    banner_title: Yup.string().nullable().label("Banner title"),
+    banner_description: Yup.string().nullable().label("Banner description"),
     privacy_policy_link_label: Yup.string()
       .nullable()
       .label("Privacy policy link label"),
