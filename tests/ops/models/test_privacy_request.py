@@ -978,9 +978,11 @@ class TestPrivacyRequestCustomFieldFunctions:
     the cache and persist functions on the PrivacyRequest model.
     """
 
-    def test_cache_custom_privacy_request_fields(self):
-        CONFIG.execution.allow_custom_privacy_request_field_collection = True
-        CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = True
+    def test_cache_custom_privacy_request_fields(
+        self,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_fields_in_request_execution_enabled,
+    ):
         privacy_request = PrivacyRequest(id=str(uuid4()))
         privacy_request.cache_custom_privacy_request_fields(
             custom_privacy_request_fields={
@@ -995,9 +997,11 @@ class TestPrivacyRequestCustomFieldFunctions:
             "last_name": "Doe",
         }
 
-    def test_cache_custom_privacy_request_fields_collection_disabled(self):
+    def test_cache_custom_privacy_request_fields_collection_disabled(
+        self,
+        allow_custom_privacy_request_field_collection_disabled,
+    ):
         """Custom privacy request fields should not be cached if collection is disabled"""
-        CONFIG.execution.allow_custom_privacy_request_field_collection = False
         privacy_request = PrivacyRequest(id=str(uuid4()))
         privacy_request.cache_custom_privacy_request_fields(
             custom_privacy_request_fields={
@@ -1009,12 +1013,12 @@ class TestPrivacyRequestCustomFieldFunctions:
         )
         assert privacy_request.get_cached_custom_privacy_request_fields() == {}
 
-    def test_cache_custom_privacy_request_fields_collection_enabled_use_disabled(self):
+    def test_cache_custom_privacy_request_fields_collection_enabled_use_disabled(
+        self,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_fields_in_request_execution_disabled,
+    ):
         """Custom privacy request fields should not be cached if use is disabled"""
-        CONFIG.execution.allow_custom_privacy_request_field_collection = True
-        CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = (
-            False
-        )
         privacy_request = PrivacyRequest(id=str(uuid4()))
         privacy_request.cache_custom_privacy_request_fields(
             custom_privacy_request_fields={
@@ -1026,9 +1030,13 @@ class TestPrivacyRequestCustomFieldFunctions:
         )
         assert privacy_request.get_cached_custom_privacy_request_fields() == {}
 
-    def test_persist_custom_privacy_request_fields(self, db, privacy_request):
-        CONFIG.execution.allow_custom_privacy_request_field_collection = True
-        CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = True
+    def test_persist_custom_privacy_request_fields(
+        self,
+        db,
+        privacy_request,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_fields_in_request_execution_enabled,
+    ):
         privacy_request.persist_custom_privacy_request_fields(
             db=db,
             custom_privacy_request_fields={
@@ -1044,10 +1052,12 @@ class TestPrivacyRequestCustomFieldFunctions:
         }
 
     def test_persist_custom_privacy_request_fields_collection_disabled(
-        self, db, privacy_request
+        self,
+        db,
+        privacy_request,
+        allow_custom_privacy_request_field_collection_disabled,
     ):
         """Custom privacy request fields should not be persisted if collection is disabled"""
-        CONFIG.execution.allow_custom_privacy_request_field_collection = False
         privacy_request.persist_custom_privacy_request_fields(
             db=db,
             custom_privacy_request_fields={

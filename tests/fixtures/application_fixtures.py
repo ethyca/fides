@@ -2455,6 +2455,38 @@ def allow_custom_privacy_request_field_collection_enabled():
 
 
 @pytest.fixture(scope="function")
+def allow_custom_privacy_request_field_collection_disabled():
+    original_value = CONFIG.execution.allow_custom_privacy_request_field_collection
+    CONFIG.execution.allow_custom_privacy_request_field_collection = False
+    yield
+    CONFIG.notifications.send_request_review_notification = original_value
+
+
+@pytest.fixture(scope="function")
+def allow_custom_privacy_request_fields_in_request_execution_enabled():
+    original_value = (
+        CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution
+    )
+    CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = True
+    yield
+    CONFIG.notifications.allow_custom_privacy_request_fields_in_request_execution = (
+        original_value
+    )
+
+
+@pytest.fixture(scope="function")
+def allow_custom_privacy_request_fields_in_request_execution_disabled():
+    original_value = (
+        CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution
+    )
+    CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = False
+    yield
+    CONFIG.notifications.allow_custom_privacy_request_fields_in_request_execution = (
+        original_value
+    )
+
+
+@pytest.fixture(scope="function")
 def system_with_no_uses(db: Session) -> System:
     system = System.create(
         db=db,

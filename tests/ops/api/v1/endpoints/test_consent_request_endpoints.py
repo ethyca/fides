@@ -375,7 +375,12 @@ class TestConsentRequest:
     )
     @patch("fides.api.service._verification.dispatch_message")
     def test_consent_request_with_custom_privacy_request_fields(
-        self, mock_dispatch_message, db, api_client, url
+        self,
+        mock_dispatch_message,
+        db,
+        api_client,
+        url,
+        allow_custom_privacy_request_field_collection_enabled,
     ):
         data = {
             "identity": {"email": "test@example.com"},
