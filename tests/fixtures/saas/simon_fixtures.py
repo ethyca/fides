@@ -30,14 +30,14 @@ def simon_erasure_identity_email() -> str:
     return generate_random_email()
 
 
-# @pytest.fixture
-# def simon_external_references() -> Dict[str, Any]:
-#     return {}
+@pytest.fixture
+def simon_external_references() -> Dict[str, Any]:
+    return {}
 
 
-# @pytest.fixture
-# def simon_erasure_external_references() -> Dict[str, Any]:
-#     return {}
+@pytest.fixture
+def simon_erasure_external_references() -> Dict[str, Any]:
+    return {}
 
 
 @pytest.fixture
