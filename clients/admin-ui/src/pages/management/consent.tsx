@@ -1,11 +1,11 @@
 /* eslint-disable react/no-array-index-key */
 import {
-  Badge,
   Box,
   Button,
   Flex,
   Heading,
   Spinner,
+  Stack,
   Switch,
   Text,
   useToast,
@@ -28,6 +28,8 @@ import {
 } from "~/features/common/purpose.slice";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import FrameworkStatus from "~/features/consent-settings/FrameworkStatus";
+import SettingsBox from "~/features/consent-settings/SettingsBox";
 import {
   useGetHealthQuery,
   useGetTcfPurposeOverridesQuery,
@@ -227,61 +229,12 @@ const ConsentConfigPage: NextPage = () => {
           <Heading marginBottom={4} fontSize="2xl">
             Consent settings
           </Heading>
-          <Box>
-            <Box backgroundColor="gray.50" borderRadius="4px" padding="14px">
-              <Text
-                fontSize="md"
-                fontWeight="bold"
-                lineHeight={5}
-                color="gray.700"
-              >
-                Transparency & Consent Framework settings
-              </Text>
-              <Text
-                mb={2}
-                mt={3}
-                fontSize="sm"
-                lineHeight="5"
-                fontWeight="medium"
-                color="gray.700"
-              >
-                TCF status{" "}
-                {isTcfEnabled ? (
-                  <Badge backgroundColor="green.100">Enabled </Badge>
-                ) : (
-                  <Badge backgroundColor="red.100">Disabled</Badge>
-                )}
-              </Text>
-              <Text
-                fontSize="sm"
-                lineHeight="5"
-                fontWeight="medium"
-                color="gray.700"
-              >
-                To {isTcfEnabled ? "disable" : "enable"} TCF, please contact
-                your Fides administrator or{" "}
-                <DocsLink href="mailto:support@ethyca.com">
-                  Ethyca support
-                </DocsLink>
-                .
-              </Text>
-            </Box>
+          <Stack spacing={3}>
+            <SettingsBox title="Transparency & Consent Framework settings">
+              <FrameworkStatus name="TCF" enabled={isTcfEnabled} />
+            </SettingsBox>
 
-            <Box
-              mt="24px"
-              backgroundColor="gray.50"
-              borderRadius="4px"
-              padding="14px"
-            >
-              <Text
-                fontSize="md"
-                fontWeight="bold"
-                lineHeight={5}
-                color="gray.700"
-                mb={3}
-              >
-                Vendor overrides
-              </Text>
+            <SettingsBox title="Vendor overrides">
               {isTcfEnabled ? (
                 <>
                   <Text
@@ -340,9 +293,8 @@ const ConsentConfigPage: NextPage = () => {
                   </DocsLink>
                 </Text>
               ) : null}
-            </Box>
-          </Box>
-
+            </SettingsBox>
+          </Stack>
           {isOverrideEnabled ? (
             <Box mt={4}>
               <Formik<FormValues>
