@@ -9,12 +9,12 @@ class TestSimonConnector:
     def test_connection(self, simon_runner: ConnectorRunner):
         simon_runner.test_connection()
 
-    # async def test_access_request(
-    #     self, simon_runner: ConnectorRunner, policy, simon_identity_email: str
-    # ):
-    #     access_results = await simon_runner.access_request(
-    #         access_policy=policy, identities={"email": simon_identity_email}
-    #     )
+    async def test_access_request(
+        self, simon_runner: ConnectorRunner, policy, simon_identity_email: str
+    ):
+        access_results = await simon_runner.access_request(
+            access_policy=policy, identities={"email": simon_identity_email}
+        )
 
     async def test_non_strict_erasure_request(
         self,
