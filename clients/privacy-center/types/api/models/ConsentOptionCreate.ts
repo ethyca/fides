@@ -10,5 +10,4 @@ import type { UserConsentPreference } from "./UserConsentPreference";
 export type ConsentOptionCreate = {
   privacy_notice_history_id: string;
   preference: UserConsentPreference;
-  served_notice_history_id?: string;
 };

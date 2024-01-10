@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import Extra, Field, HttpUrl, root_validator, validator
 
+from fides.api.custom_types import HtmlStr
 from fides.api.models.privacy_experience import BannerEnabled, ComponentType
 from fides.api.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
@@ -26,9 +27,13 @@ class ExperienceConfigSchema(FidesSchema):
     acknowledge_button_label: Optional[str] = Field(
         description="Overlay 'Acknowledge button label for notice only banner'"
     )
+    banner_description: Optional[HtmlStr] = Field(
+        description="Overlay 'Banner Description'"
+    )
     banner_enabled: Optional[BannerEnabled] = Field(description="Overlay 'Banner'")
-    description: Optional[str] = Field(
-        description="Overlay 'Banner Description' or Privacy Center 'Description'"
+    banner_title: Optional[str] = Field(description="Overlay 'Banner title'")
+    description: Optional[HtmlStr] = Field(
+        description="Overlay 'Description' or Privacy Center 'Description'"
     )
     disabled: Optional[bool] = Field(
         default=False, description="Whether the given ExperienceConfig is disabled"
@@ -56,7 +61,7 @@ class ExperienceConfigSchema(FidesSchema):
         description="Overlay 'Privacy preferences 'Save' button label"
     )
     title: Optional[str] = Field(
-        description="Overlay 'Banner title' or Privacy Center 'title'"
+        description="Overlay 'title' or Privacy Center 'title'"
     )
 
     @validator("regions")
@@ -79,7 +84,7 @@ class ExperienceConfigCreate(ExperienceConfigSchema):
 
     accept_button_label: str
     component: ComponentType
-    description: str
+    description: HtmlStr
     reject_button_label: str
     save_button_label: str
     title: str

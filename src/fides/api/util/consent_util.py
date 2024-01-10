@@ -26,7 +26,7 @@ from fides.api.models.privacy_notice import (
     check_conflicting_data_uses,
     check_conflicting_notice_keys,
 )
-from fides.api.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
@@ -45,6 +45,8 @@ PRIVACY_NOTICE_ESCAPE_FIELDS = ["name", "description", "internal_description"]
 PRIVACY_EXPERIENCE_ESCAPE_FIELDS = [
     "accept_button_label",
     "acknowledge_button_label",
+    "banner_description",
+    "banner_title",
     "description",
     "privacy_policy_link_label",
     "privacy_policy_url",
@@ -57,7 +59,8 @@ UNESCAPE_SAFESTR_HEADER = "unescape-safestr"
 
 
 def filter_privacy_preferences_for_propagation(
-    system: Optional[System], privacy_preferences: List[PrivacyPreferenceHistory]
+    system: Optional[System],
+    privacy_preferences: List[PrivacyPreferenceHistory],
 ) -> List[PrivacyPreferenceHistory]:
     """Filter privacy preferences on a privacy request to just the ones that should be considered for third party
     consent propagation.
@@ -71,7 +74,11 @@ def filter_privacy_preferences_for_propagation(
         if pref.privacy_notice_history
         and pref.privacy_notice_history.enforcement_level
         == EnforcementLevel.system_wide
-        and pref.preference != UserConsentPreference.acknowledge
+        and (
+            pref.preference
+            and pref.preference
+            in [UserConsentPreference.opt_in, UserConsentPreference.opt_out]
+        )
     ]
 
     if not system:

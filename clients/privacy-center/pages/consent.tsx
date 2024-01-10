@@ -23,7 +23,6 @@ import {
   useLazyGetConsentRequestPreferencesQuery,
   usePostConsentRequestVerificationMutation,
 } from "~/features/consent/consent.slice";
-import { makeCookieKeyConsent } from "~/features/consent/helpers";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { ConsentPreferences } from "~/types/api";
 import { GpcBanner } from "~/features/consent/GpcMessages";
@@ -105,13 +104,6 @@ const Consent: NextPage = () => {
     const cookie: FidesCookie = getOrMakeFidesCookie();
     if (isNoticeDriven) {
       saveFidesCookie(cookie);
-    } else {
-      const newConsent = makeCookieKeyConsent({
-        consentOptions,
-        fidesKeyToConsent: persistedFidesKeyToConsent,
-        consentContext,
-      });
-      saveFidesCookie({ ...cookie, consent: newConsent });
     }
   }, [
     consentOptions,

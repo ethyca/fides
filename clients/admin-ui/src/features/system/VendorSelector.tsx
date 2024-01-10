@@ -22,7 +22,7 @@ import {
   SingleValue,
 } from "chakra-react-select";
 import { useField, useFormikContext } from "formik";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -78,6 +78,7 @@ const CompassButton = ({
 };
 
 interface Props {
+  label: string;
   isCreate: boolean;
   lockedForGVL: boolean;
   options: DictOption[];
@@ -108,6 +109,7 @@ const CustomDictOption: React.FC<
 );
 
 const VendorSelector = ({
+  label,
   isCreate,
   lockedForGVL,
   options,
@@ -119,7 +121,7 @@ const VendorSelector = ({
   });
   const isInvalid = !!(meta.touched && meta.error);
   const field = { ...initialField, value: initialField.value ?? "" };
-  const { touched, values, setTouched, setFieldValue } =
+  const { touched, values, setTouched, setFieldValue, validateForm } =
     useFormikContext<FormValues>();
 
   const selected = options.find((o) => o.value === field.value) ?? {
@@ -136,6 +138,11 @@ const VendorSelector = ({
 
   const isTypeahead = !field.value && !values.vendor_id;
   const hasVendorSuggestions = !!searchParam && suggestions.length > 0;
+  const nameFieldLockedForGVL = lockedForGVL && !isCreate;
+
+  useEffect(() => {
+    validateForm();
+  }, [isTypeahead, validateForm]);
 
   const handleClear = () => {
     setValue("");
@@ -202,13 +209,14 @@ const VendorSelector = ({
       <VStack alignItems="start" position="relative" width="100%">
         <HStack spacing={1}>
           <Label htmlFor="name" fontSize="xs" my={0} mr={1}>
-            System name
+            {label}
           </Label>
           <QuestionTooltip label="Enter the system name" />
         </HStack>
         <Box width="100%" data-testid="input-name">
           <CreatableSelect
             name="name"
+            id="name"
             options={suggestions}
             isRequired
             value={selected}
@@ -228,7 +236,7 @@ const VendorSelector = ({
             classNamePrefix="custom-select"
             placeholder="Enter system name..."
             instanceId="select-name"
-            isDisabled={!isCreate && lockedForGVL}
+            isDisabled={nameFieldLockedForGVL}
             menuPosition="absolute"
             isSearchable
             isClearable={!!searchParam}
@@ -287,7 +295,7 @@ const VendorSelector = ({
   );
 
   return (
-    <HStack alignItems="flex-start">
+    <HStack alignItems="flex-start" width="full">
       {isTypeahead ? (
         typeaheadSelect
       ) : (
@@ -297,13 +305,16 @@ const VendorSelector = ({
           label="System name"
           tooltip="Enter the system name"
           variant="stacked"
+          disabled={nameFieldLockedForGVL}
           isRequired
           inputRightElement={
-            <CloseButton
-              onClick={handleClear}
-              size="sm"
-              data-testid="clear-btn"
-            />
+            !nameFieldLockedForGVL ? (
+              <CloseButton
+                onClick={handleClear}
+                size="sm"
+                data-testid="clear-btn"
+              />
+            ) : null
           }
         />
       )}

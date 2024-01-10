@@ -14,7 +14,7 @@ from fides.api.models.privacy_notice import (
     EnforcementLevel,
     UserConsentPreference,
 )
-from fides.api.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,

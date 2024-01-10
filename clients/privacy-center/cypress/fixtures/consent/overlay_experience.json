@@ -50,8 +50,6 @@
           "version": 2.0,
           "privacy_notice_history_id": "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076707",
           "default_preference": "opt_out",
-          "current_preference": null,
-          "outdated_preference": null,
           "cookies": []
         },
         {
@@ -75,8 +73,6 @@
           "version": 2.0,
           "privacy_notice_history_id": "pri_b2a0a2fa-ef59-4f7d-8e3d-d2e9bd076239",
           "default_preference": "opt_in",
-          "current_preference": null,
-          "outdated_preference": null,
           "cookies": [{ "name": "_ga", "path": null, "domain": null }]
         }
       ]
