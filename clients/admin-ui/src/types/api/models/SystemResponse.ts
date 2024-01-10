@@ -36,7 +36,6 @@ export type SystemResponse = {
    * A detailed description of what this resource is.
    */
   description?: string;
-
   /**
    * An optional property to store any extra information for a resource. Data can be structured in any way: simple set of `key: value` pairs or deeply nested objects.
    */
