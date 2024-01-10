@@ -214,15 +214,6 @@ class TestConsentRequestReporting:
 
 
 class TestConsentRequest:
-    """
-    Identity verification was disabled as part of adding custom privacy request fields
-    to consent requests since it's not guaranteed that an email of phone number will be provided.
-    We went this simpler approach of disabling identity verification completely instead of
-    supporting multiple use cases.
-    """
-
-    # keeping the notification fixtures in case we revert our decision to not verify identities
-
     @pytest.fixture(scope="function")
     def url(self) -> str:
         return f"{V1_URL_PREFIX}{CONSENT_REQUEST}"
@@ -259,7 +250,7 @@ class TestConsentRequest:
         data = {"identity": {"email": "test@example.com"}}
         response = api_client.post(url, json=data)
         assert response.status_code == 200
-        assert not mock_dispatch_message.called
+        assert mock_dispatch_message.called
 
     @pytest.mark.usefixtures(
         "messaging_config",
@@ -278,7 +269,7 @@ class TestConsentRequest:
         data = {"identity": {"email": provided_identity.encrypted_value["value"]}}
         response = api_client.post(url, json=data)
         assert response.status_code == 200
-        assert not mock_dispatch_message.called
+        assert mock_dispatch_message.called
 
     @pytest.mark.usefixtures(
         "messaging_config",
@@ -315,7 +306,7 @@ class TestConsentRequest:
         data = {"identity": {"phone_number": "+3368675309"}}
         response = api_client.post(url, json=data)
         assert response.status_code == 200
-        assert not mock_dispatch_message.called
+        assert mock_dispatch_message.called
 
     @pytest.mark.usefixtures(
         "messaging_config",
@@ -334,7 +325,7 @@ class TestConsentRequest:
         data = {"identity": {"email": "test@example.com", "phone_number": "+235624563"}}
         response = api_client.post(url, json=data)
         assert response.status_code == 200
-        assert not mock_dispatch_message.called
+        assert mock_dispatch_message.called
         provided_identity = ProvidedIdentity.filter(
             db=db,
             conditions=(

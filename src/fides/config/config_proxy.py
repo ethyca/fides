@@ -54,6 +54,7 @@ class ExecutionSettingsProxy(ConfigProxyBase):
     prefix = "execution"
 
     subject_identity_verification_required: bool
+    disable_consent_identity_verification: bool
     require_manual_request_approval: bool
 
 

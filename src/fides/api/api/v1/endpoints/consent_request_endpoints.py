@@ -19,6 +19,7 @@ from starlette.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
 from fides.api.api.deps import get_config_proxy, get_db
@@ -28,6 +29,7 @@ from fides.api.api.v1.endpoints.privacy_request_endpoints import (
 from fides.api.common_exceptions import (
     FunctionalityNotConfigured,
     IdentityVerificationException,
+    MessageDispatchException,
 )
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
 from fides.api.models.messaging import get_messaging_method
@@ -52,6 +54,7 @@ from fides.api.schemas.privacy_request import (
     VerificationCode,
 )
 from fides.api.schemas.redis_cache import Identity
+from fides.api.service._verification import send_verification_code_to_user
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
@@ -177,6 +180,7 @@ def report_consent_requests(
 def create_consent_request(
     *,
     db: Session = Depends(get_db),
+    config_proxy: ConfigProxy = Depends(get_config_proxy),
     data: ConsentRequestCreate,
 ) -> ConsentRequestResponse:
     """Creates a verification code for the user to verify access to manage consent preferences."""
@@ -209,6 +213,21 @@ def create_consent_request(
     consent_request.persist_custom_privacy_request_fields(
         db=db, custom_privacy_request_fields=data.custom_privacy_request_fields
     )
+
+    # we send out a verification code if verification is required in general (for access, erasure, and consent),
+    # but have the ability to disable verification just for consent
+    if (
+        config_proxy.execution.subject_identity_verification_required
+        and not config_proxy.execution.disable_consent_identity_verification
+    ):
+        try:
+            send_verification_code_to_user(db, consent_request, data)
+        except MessageDispatchException as exc:
+            logger.error("Error sending the verification code message: {}", str(exc))
+            raise HTTPException(
+                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error sending the verification code message: {str(exc)}",
+            )
 
     return ConsentRequestResponse(
         identity=identity,
