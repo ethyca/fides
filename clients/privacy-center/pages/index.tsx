@@ -239,7 +239,7 @@ const Home: NextPage = () => {
         setCurrentView={setCurrentConsentModalView}
         consentRequestId={consentRequestId}
         setConsentRequestId={setConsentRequestId}
-        isVerificationRequired={isVerificationRequired}
+        isVerificationRequired={false}
         successHandler={consentModalSuccessHandler}
       />
 

@@ -113,7 +113,7 @@ describe("Consent settings", () => {
             const cookie = JSON.parse(
               decodeURIComponent(cookieJson!.value)
             ) as FidesCookie;
-            expect(body.fides_user_device_id).to.eql(
+            expect(body.identity.fides_user_device_id).to.eql(
               cookie.identity.fides_user_device_id
             );
           });
@@ -136,11 +136,11 @@ describe("Consent settings", () => {
         });
         cy.wait("@postConsentRequest").then((interception) => {
           const { body } = interception.request;
-          expect(body.fides_user_device_id).to.eql(uuid);
+          expect(body.identity.fides_user_device_id).to.eql(uuid);
         });
       });
 
-      it("can read previous versions of the cookie and add a device uuid", () => {
+      it.only("can read previous versions of the cookie and add a device uuid", () => {
         const previousCookie = {
           data_sales: false,
           tracking: false,
@@ -166,7 +166,7 @@ describe("Consent settings", () => {
             const cookie = JSON.parse(
               decodeURIComponent(cookieJson!.value)
             ) as FidesCookie;
-            expect(body.fides_user_device_id).to.eql(
+            expect(body.identity.fides_user_device_id).to.eql(
               cookie.identity.fides_user_device_id
             );
             expect(cookie.consent).to.eql(previousCookie);

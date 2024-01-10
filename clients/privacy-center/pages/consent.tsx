@@ -21,9 +21,7 @@ import {
   selectPersistedFidesKeyToConsent,
   updateUserConsentPreferencesFromApi,
   useLazyGetConsentRequestPreferencesQuery,
-  usePostConsentRequestVerificationMutation,
 } from "~/features/consent/consent.slice";
-import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { ConsentPreferences } from "~/types/api";
 import { GpcBanner } from "~/features/consent/GpcMessages";
 import ConsentToggles from "~/components/consent/ConsentToggles";
@@ -47,12 +45,6 @@ const Consent: NextPage = () => {
     [config]
   );
   useSubscribeToPrivacyExperienceQuery();
-
-  const getIdVerificationConfigQueryResult = useGetIdVerificationConfigQuery();
-  const [
-    postConsentRequestVerificationMutationTrigger,
-    postConsentRequestVerificationMutationResult,
-  ] = usePostConsentRequestVerificationMutation();
   const [
     getConsentRequestPreferencesQueryTrigger,
     getConsentRequestPreferencesQueryResult,
@@ -123,65 +115,12 @@ const Consent: NextPage = () => {
       return;
     }
 
-    if (getIdVerificationConfigQueryResult.isError) {
-      toastError({ error: getIdVerificationConfigQueryResult.error });
-      return;
-    }
-
-    if (!getIdVerificationConfigQueryResult.isSuccess) {
-      return;
-    }
-
-    const privacyCenterConfig = getIdVerificationConfigQueryResult.data;
-    if (
-      privacyCenterConfig.identity_verification_required &&
-      !verificationCode
-    ) {
-      toastError({ title: "Identity verification is required." });
-      redirectToIndex();
-      return;
-    }
-
-    if (privacyCenterConfig.identity_verification_required) {
-      postConsentRequestVerificationMutationTrigger({
-        id: consentRequestId,
-        code: verificationCode,
-      });
-    } else {
-      getConsentRequestPreferencesQueryTrigger({
-        id: consentRequestId,
-      });
-    }
+    getConsentRequestPreferencesQueryTrigger({
+      id: consentRequestId,
+    });
   }, [
     consentRequestId,
-    verificationCode,
-    getIdVerificationConfigQueryResult,
-    postConsentRequestVerificationMutationTrigger,
     getConsentRequestPreferencesQueryTrigger,
-    toastError,
-    redirectToIndex,
-  ]);
-
-  /**
-   * Initialize consent items from the request verification response.
-   */
-  useEffect(() => {
-    if (postConsentRequestVerificationMutationResult.isError) {
-      toastError({
-        error: postConsentRequestVerificationMutationResult.error,
-      });
-      redirectToIndex();
-      return;
-    }
-
-    if (postConsentRequestVerificationMutationResult.isSuccess) {
-      storeConsentPreferences(
-        postConsentRequestVerificationMutationResult.data
-      );
-    }
-  }, [
-    postConsentRequestVerificationMutationResult,
-    storeConsentPreferences,
     toastError,
     redirectToIndex,
   ]);
