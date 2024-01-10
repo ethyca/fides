@@ -21,8 +21,8 @@ The types of changes are:
 - Erasure support for AppsFlyer [#4512](https://github.com/ethyca/fides/pull/4512)
 
 ### Fixed
+- Fixed an issue blocking Salesforce sandbox accounts from refreshing tokens [#4547](https://github.com/ethyca/fides/pull/4547)
 - Fixed DSR zip packages to be unzippable on Windows [#4549](https://github.com/ethyca/fides/pull/4549)
-
 
 ## [2.27.0](https://github.com/ethyca/fides/compare/2.26.0...2.27.0)
 
