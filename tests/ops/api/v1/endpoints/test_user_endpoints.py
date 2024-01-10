@@ -103,7 +103,6 @@ class TestCreateUser:
             "username": "test_user",
             "password": str_to_b64_str("TestP@ssword9"),
             "email_address": "test.user@ethyca.com",
-            "disabled": False,
         }
 
         FidesUser.create(db=db, data=body)
@@ -446,7 +445,6 @@ class TestDeleteUser:
                 "username": "test_delete_user",
                 "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
                 "email_address": "test.user@ethyca.com",
-                "disabled": False,
             },
         )
 
@@ -460,7 +458,6 @@ class TestDeleteUser:
                 "username": "user_to_delete",
                 "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
                 "email_address": "other.user@ethyca.com",
-                "disabled": False,
             },
         )
 
@@ -525,7 +522,6 @@ class TestDeleteUser:
                 "username": "test_delete_user",
                 "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
                 "email_address": "test.user@ethyca.com",
-                "disabled": False,
             },
         )
 
@@ -1729,7 +1725,6 @@ class TestGetSpecificSystemUserManages:
                 "username": "another_user",
                 "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
                 "email_address": "test.user@ethyca.com",
-                "disabled": False,
             },
         )
         client = ClientDetail(
