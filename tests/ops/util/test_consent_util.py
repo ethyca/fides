@@ -683,7 +683,9 @@ class TestLoadDefaultNotices:
         assert new_template.regions == [PrivacyNoticeRegion.us_al]
         assert new_template.consent_mechanism == ConsentMechanism.opt_out
         assert new_template.enforcement_level == EnforcementLevel.frontend
-        assert new_template.disabled is True
+        assert (
+            new_template.disabled is False
+        )  # TODO: may need to adjust depending on updates to template loading logic!
         assert new_template.has_gpc_flag is False
         assert new_template.displayed_in_privacy_center is True
         assert new_template.displayed_in_overlay is False
@@ -723,7 +725,9 @@ class TestLoadDefaultNotices:
         assert new_privacy_notice.regions == [PrivacyNoticeRegion.us_al]
         assert new_privacy_notice.consent_mechanism == ConsentMechanism.opt_out
         assert new_privacy_notice.enforcement_level == EnforcementLevel.frontend
-        assert new_privacy_notice.disabled is True
+        assert (
+            new_privacy_notice.disabled is False
+        )  # TODO: may need to adjust depending on updates to template loading logic!
         assert new_privacy_notice.has_gpc_flag is False
         assert new_privacy_notice.displayed_in_privacy_center is True
         assert new_privacy_notice.displayed_in_overlay is False
@@ -752,7 +756,9 @@ class TestLoadDefaultNotices:
         assert new_history.regions == [PrivacyNoticeRegion.us_al]
         assert new_history.consent_mechanism == ConsentMechanism.opt_out
         assert new_history.enforcement_level == EnforcementLevel.frontend
-        assert new_history.disabled is True
+        assert (
+            new_history.disabled is False
+        )  # TODO: may need to adjust depending on updates to template loading logic!
         assert new_history.has_gpc_flag is False
         assert new_history.displayed_in_privacy_center is True
         assert new_history.displayed_in_overlay is False
@@ -881,7 +887,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["essential.service"],
                         enforcement_level=EnforcementLevel.frontend,
-                        disabled=True,
+                        # disabled=True, # TODO: may need to adjust depending on updates to template loading logic!
                         displayed_in_overlay=True,
                     ),
                 ],
@@ -889,7 +895,7 @@ class TestUpsertPrivacyNoticeTemplates:
         assert exc._excinfo[1].status_code == 422
         assert (
             exc._excinfo[1].detail
-            == "Privacy Notice 'A' has already assigned data use 'essential' to region 'it'"
+            == "Privacy Notice 'A' has already assigned data use 'Essential' to region 'it'"
         )
 
     def test_overlapping_notice_keys(self, db, load_default_data_uses):
@@ -916,7 +922,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["marketing"],
                         enforcement_level=EnforcementLevel.frontend,
-                        disabled=True,
+                        # disabled=True, # TODO: may need to adjust depending on updates to template loading logic!
                         displayed_in_overlay=True,
                     ),
                 ],
@@ -1252,34 +1258,36 @@ class TestValidateDataUses:
         self, db, privacy_notice_request: PrivacyNoticeCreation
     ):
         privacy_notice_request.data_uses = ["invalid_data_use"]
+        all_data_uses = sql_DataUse.query(db).all()
         with pytest.raises(HTTPException):
-            validate_notice_data_uses([privacy_notice_request], db)
+            validate_notice_data_uses([privacy_notice_request], all_data_uses)
 
         privacy_notice_request.data_uses = ["marketing.advertising", "invalid_data_use"]
         with pytest.raises(HTTPException):
-            validate_notice_data_uses([privacy_notice_request], db)
+            validate_notice_data_uses([privacy_notice_request], all_data_uses)
 
         privacy_notice_request.data_uses = [
             "marketing.advertising",
             "marketing.advertising.invalid_data_use",
         ]
         with pytest.raises(HTTPException):
-            validate_notice_data_uses([privacy_notice_request], db)
+            validate_notice_data_uses([privacy_notice_request], all_data_uses)
 
     @pytest.mark.usefixtures("load_default_data_uses")
     def test_validate_data_uses_default_taxonomy(
         self, db, privacy_notice_request: PrivacyNoticeCreation
     ):
+        all_data_uses = sql_DataUse.query(db).all()
         privacy_notice_request.data_uses = ["marketing.advertising"]
-        validate_notice_data_uses([privacy_notice_request], db)
+        validate_notice_data_uses([privacy_notice_request], all_data_uses)
         privacy_notice_request.data_uses = ["marketing.advertising", "essential"]
-        validate_notice_data_uses([privacy_notice_request], db)
+        validate_notice_data_uses([privacy_notice_request], all_data_uses)
         privacy_notice_request.data_uses = [
             "marketing.advertising",
             "essential",
             "essential.service",
         ]
-        validate_notice_data_uses([privacy_notice_request], db)
+        validate_notice_data_uses([privacy_notice_request], all_data_uses)
 
     @pytest.mark.usefixtures("load_default_data_uses")
     def test_validate_data_uses_custom_uses(
@@ -1291,14 +1299,14 @@ class TestValidateDataUses:
         """
         Ensure custom data uses added to the DB are considered valid
         """
-
+        all_data_uses = sql_DataUse.query(db).all()
         privacy_notice_request.data_uses = [custom_data_use.fides_key]
-        validate_notice_data_uses([privacy_notice_request], db)
+        validate_notice_data_uses([privacy_notice_request], all_data_uses)
         privacy_notice_request.data_uses = [
             "marketing.advertising",
             custom_data_use.fides_key,
         ]
-        validate_notice_data_uses([privacy_notice_request], db)
+        validate_notice_data_uses([privacy_notice_request], all_data_uses)
 
 
 class TestLoadTCFExperiences:

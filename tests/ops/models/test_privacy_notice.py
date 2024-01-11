@@ -14,7 +14,7 @@ from fides.api.models.privacy_notice import (
     check_conflicting_notice_keys,
     new_data_use_conflicts_with_existing_use,
 )
-from fides.api.models.sql_models import Cookies
+from fides.api.models.sql_models import Cookies, DataUse
 
 
 class TestPrivacyNoticeModel:
@@ -686,18 +686,21 @@ class TestPrivacyNoticeModel:
         ],
     )
     def test_conflicting_data_uses(
-        self, should_error, new_privacy_notices, existing_privacy_notices
+        self, db, should_error, new_privacy_notices, existing_privacy_notices
     ):
+        all_data_uses = DataUse.query(db).all()
         if should_error:
             with pytest.raises(ValidationError):
                 check_conflicting_data_uses(
                     new_privacy_notices=new_privacy_notices,
                     existing_privacy_notices=existing_privacy_notices,
+                    all_data_uses=all_data_uses,
                 )
         else:
             check_conflicting_data_uses(
                 new_privacy_notices=new_privacy_notices,
                 existing_privacy_notices=existing_privacy_notices,
+                all_data_uses=all_data_uses,
             )
 
     @pytest.mark.parametrize(

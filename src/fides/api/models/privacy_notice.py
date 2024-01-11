@@ -19,6 +19,7 @@ from fides.api.common_exceptions import ValidationError
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
+    DataUse,
     PrivacyDeclaration,
     System,
 )
@@ -380,6 +381,7 @@ def check_conflicting_notice_keys(
 def check_conflicting_data_uses(
     new_privacy_notices: Iterable[PRIVACY_NOTICE_TYPE],
     existing_privacy_notices: Iterable[Union[PRIVACY_NOTICE_TYPE]],
+    all_data_uses: Iterable[DataUse],
     ignore_disabled: bool = True,  # For PrivacyNoticeTemplates, set to False
 ) -> None:
     """
@@ -400,14 +402,17 @@ def check_conflicting_data_uses(
     # first, we map the existing [region -> data use] associations based on the set of
     # existing notices.
     # this gives us a simple "lookup table" for region and data use conflicts in incoming notices
-    uses_by_region: Dict[PrivacyNoticeRegion, List[Tuple[str, str]]] = defaultdict(list)
+    all_uses_by_key = {data_use.fides_key: data_use for data_use in all_data_uses}
+    uses_by_region: Dict[PrivacyNoticeRegion, List[Tuple[DataUse, str]]] = defaultdict(
+        list
+    )
     for privacy_notice in existing_privacy_notices:
         if privacy_notice.disabled and ignore_disabled:
             continue
         for region in privacy_notice.regions:
             for data_use in privacy_notice.data_uses:
                 uses_by_region[PrivacyNoticeRegion(region)].append(
-                    (data_use, privacy_notice.name)
+                    (all_uses_by_key[data_use], privacy_notice.name)
                 )
 
     # now, validate the new (incoming) notices
@@ -424,13 +429,15 @@ def check_conflicting_data_uses(
                     # we need to check for hierarchical overlaps in _both_ directions
                     # i.e. whether the incoming DataUse is a parent _or_ a child of
                     # an existing DataUse
-                    if new_data_use_conflicts_with_existing_use(existing_use, data_use):
+                    if new_data_use_conflicts_with_existing_use(
+                        existing_use.fides_key, data_use
+                    ):
                         raise ValidationError(
-                            message=f"Privacy Notice '{unescape(notice_name)}' has already assigned data use '{existing_use}' to region '{region}'"
+                            message=f"Privacy Notice '{unescape(notice_name)}' has already assigned data use '{existing_use.name}' to region '{region}'"
                         )
                 # add the data use to our map, to effectively include it in validation against the
                 # following incoming records
-                region_uses.append((data_use, privacy_notice.name))
+                region_uses.append((all_uses_by_key[data_use], privacy_notice.name))
 
 
 def new_data_use_conflicts_with_existing_use(existing_use: str, new_use: str) -> bool:
