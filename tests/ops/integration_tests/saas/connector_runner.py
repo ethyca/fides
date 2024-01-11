@@ -19,7 +19,7 @@ from fides.api.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeRegion,
 )
-from fides.api.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
