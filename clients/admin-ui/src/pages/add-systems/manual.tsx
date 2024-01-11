@@ -4,9 +4,9 @@ import { useRouter } from "next/router";
 import React, { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import Layout from "~/features/common/Layout";
 import BackButton from "~/features/common/nav/v2/BackButton";
+import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import GVLNotice from "~/features/system/GVLNotice";
@@ -26,7 +26,6 @@ const Header = ({ connector }: { connector?: ConnectionSystemTypeMap }) => (
 );
 
 const NewManualSystem: NextPage = () => {
-  const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
   const router = useRouter();
   const { connectorType } = router.query;
 
@@ -45,7 +44,7 @@ const NewManualSystem: NextPage = () => {
 
   return (
     <Layout title="Describe your system">
-      <BackButton backPath={systemOrDatamapRoute} />
+      <BackButton backPath={ADD_SYSTEMS_ROUTE} />
       <Header connector={connector} />
 
       {lockedForGVL ? <GVLNotice /> : null}

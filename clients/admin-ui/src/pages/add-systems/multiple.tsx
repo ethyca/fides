@@ -1,11 +1,11 @@
 import { Box, Heading, Link, Text } from "@fidesui/react";
 import type { NextPage } from "next";
 
-import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import Layout from "~/features/common/Layout";
 import BackButton from "~/features/common/nav/v2/BackButton";
 import {
   ADD_SYSTEMS_MANUAL_ROUTE,
+  ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
 } from "~/features/common/nav/v2/routes";
 import { AddMultipleSystems } from "~/features/system/add-multiple-systems/AddMultipleSystems";
@@ -21,25 +21,21 @@ const Header = () => (
   </Box>
 );
 
-const AddMultipleSystemsPage: NextPage = () => {
-  const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
-
-  return (
-    <Layout title="Describe your system">
-      <BackButton backPath={systemOrDatamapRoute} />
-      <Header />
-      <Box w={{ base: "100%", md: "75%" }}>
-        <Text fontSize="sm" mb={8}>
-          {DESCRIBE_SYSTEM_COPY}
-          <Link href={ADD_SYSTEMS_MANUAL_ROUTE} color="complimentary.500">
-            {" "}
-            click here.{" "}
-          </Link>
-        </Text>
-      </Box>
-      <AddMultipleSystems redirectRoute={DATAMAP_ROUTE} />
-    </Layout>
-  );
-};
+const AddMultipleSystemsPage: NextPage = () => (
+  <Layout title="Describe your system">
+    <BackButton backPath={ADD_SYSTEMS_ROUTE} />
+    <Header />
+    <Box w={{ base: "100%", md: "75%" }}>
+      <Text fontSize="sm" mb={8}>
+        {DESCRIBE_SYSTEM_COPY}
+        <Link href={ADD_SYSTEMS_MANUAL_ROUTE} color="complimentary.500">
+          {" "}
+          click here.{" "}
+        </Link>
+      </Text>
+    </Box>
+    <AddMultipleSystems redirectRoute={DATAMAP_ROUTE} />
+  </Layout>
+);
 
 export default AddMultipleSystemsPage;
