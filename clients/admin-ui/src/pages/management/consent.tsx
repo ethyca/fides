@@ -29,6 +29,7 @@ import {
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import FrameworkStatus from "~/features/consent-settings/FrameworkStatus";
+import GppConfiguration from "~/features/consent-settings/GppConfiguration";
 import SettingsBox from "~/features/consent-settings/SettingsBox";
 import {
   useGetHealthQuery,
@@ -229,7 +230,7 @@ const ConsentConfigPage: NextPage = () => {
           <Heading marginBottom={4} fontSize="2xl">
             Consent settings
           </Heading>
-          <Stack spacing={3}>
+          <Stack spacing={3} mb={3}>
             <SettingsBox title="Transparency & Consent Framework settings">
               <FrameworkStatus name="TCF" enabled={isTcfEnabled} />
             </SettingsBox>
@@ -467,6 +468,7 @@ const ConsentConfigPage: NextPage = () => {
               </Formik>
             </Box>
           ) : null}
+          <GppConfiguration />
         </Box>
       )}
     </Layout>

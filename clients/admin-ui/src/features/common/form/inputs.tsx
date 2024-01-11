@@ -874,12 +874,14 @@ export const CustomTextArea = ({
 };
 
 interface CustomRadioGroupProps {
-  label: string;
+  label?: string;
   options: Option[];
+  variant?: "inline" | "stacked";
 }
 export const CustomRadioGroup = ({
   label,
   options,
+  variant,
   ...props
 }: CustomRadioGroupProps & StringField) => {
   const [initialField, meta] = useField(props);
@@ -890,6 +892,43 @@ export const CustomRadioGroup = ({
   const handleChange = (o: string) => {
     field.onChange(props.name)(o);
   };
+
+  if (variant === "stacked") {
+    return (
+      <FormControl isInvalid={isInvalid}>
+        <Stack width="fit-content">
+          {label ? (
+            <Label htmlFor={props.id || props.name}>{label}</Label>
+          ) : null}
+          <RadioGroup
+            onChange={handleChange}
+            value={selected.value}
+            data-testid={`input-${field.name}`}
+            colorScheme="complimentary"
+          >
+            <Stack direction="column" spacing={3}>
+              {options.map((o) => (
+                <Radio
+                  key={o.value}
+                  value={o.value}
+                  data-testid={`option-${o.value}`}
+                >
+                  <Text fontSize="sm" fontWeight="medium">
+                    {o.label}
+                  </Text>
+                </Radio>
+              ))}
+            </Stack>
+          </RadioGroup>
+        </Stack>
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
+      </FormControl>
+    );
+  }
 
   return (
     <FormControl isInvalid={isInvalid}>
@@ -1005,7 +1044,7 @@ export const CustomNumberInput = ({
 interface CustomSwitchProps {
   label?: string;
   tooltip?: string;
-  variant?: "inline" | "condensed" | "stacked";
+  variant?: "inline" | "condensed" | "stacked" | "switchFirst";
   isDisabled?: boolean;
 }
 export const CustomSwitch = ({
@@ -1051,6 +1090,20 @@ export const CustomSwitch = ({
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
           </Box>
         </Grid>
+      </FormControl>
+    );
+  }
+
+  if (variant === "switchFirst") {
+    return (
+      <FormControl isInvalid={isInvalid}>
+        <Flex alignItems="center">
+          {innerSwitch}
+          <Label htmlFor={props.id || props.name} my={0} fontSize="sm" mr={2}>
+            {label}
+          </Label>
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Flex>
       </FormControl>
     );
   }
