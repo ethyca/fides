@@ -953,6 +953,7 @@ export const DatamapReportTable = () => {
             size="xs"
             variant="outline"
             onClick={onColumnSettingsOpen}
+            mr={2}
           >
             Edit columns
           </Button>

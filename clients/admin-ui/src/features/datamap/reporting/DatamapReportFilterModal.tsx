@@ -1,11 +1,10 @@
-import { useDisclosure } from "@fidesui/react";
+import { Accordion, useDisclosure } from "@fidesui/react";
 import { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
   AccordionMultifieldFilter,
   FilterModal,
-  FilterSection,
   Option,
 } from "~/features/common/modals/FilterModal";
 import {
@@ -161,26 +160,22 @@ export const DatamapReportFilterModal = ({
   onDataSubjectChange,
 }: Props) => (
   <FilterModal isOpen={isOpen} onClose={onClose} resetFilters={resetFilters}>
-    <FilterSection>
+    <Accordion width="100%" allowToggle>
       <AccordionMultifieldFilter
         options={dataUseOptions}
         onCheckboxChange={onDataUseChange}
         header="Data uses"
       />
-    </FilterSection>
-    <FilterSection>
       <AccordionMultifieldFilter
         options={dataCategoriesOptions}
         onCheckboxChange={onDataCategoriesChange}
         header="Data categories"
       />
-    </FilterSection>
-    <FilterSection>
       <AccordionMultifieldFilter
         options={dataSubjectOptions}
         onCheckboxChange={onDataSubjectChange}
         header="Data subjects"
       />
-    </FilterSection>
+    </Accordion>
   </FilterModal>
 );

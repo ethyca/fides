@@ -1,5 +1,4 @@
 import {
-  Accordion,
   AccordionButton,
   AccordionIcon,
   AccordionItem,
@@ -98,57 +97,55 @@ export const AccordionMultifieldFilter = ({
   const areExtraOptionsAvailable = options.length > numDefaultOptions;
 
   return (
-    <Accordion width="100%" allowToggle>
-      <AccordionItem border="0px">
-        <Heading height="56px">
-          <AccordionButton height="100%">
-            <Box
-              flex="1"
-              alignItems="center"
-              justifyContent="center"
-              textAlign="left"
-              fontWeight={600}
-            >
-              {header}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </Heading>
-        <AccordionPanel>
-          <SimpleGrid columns={columns}>
-            {viewableOptions.map((option) => (
-              <AccordionMultiFieldCheckBox
-                key={option.value}
-                {...option}
-                onCheckboxChange={onCheckboxChange}
-              />
-            ))}
-          </SimpleGrid>
-          {!isViewingMore && areExtraOptionsAvailable ? (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setIsViewingMore(true);
-              }}
-            >
-              View more
-            </Button>
-          ) : null}
-          {isViewingMore && areExtraOptionsAvailable ? (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setIsViewingMore(false);
-              }}
-            >
-              View less
-            </Button>
-          ) : null}
-        </AccordionPanel>
-      </AccordionItem>
-    </Accordion>
+    <AccordionItem border="0px" padding="12px 8px 8px 12px">
+      <Heading height="56px">
+        <AccordionButton height="100%">
+          <Box
+            flex="1"
+            alignItems="center"
+            justifyContent="center"
+            textAlign="left"
+            fontWeight={600}
+          >
+            {header}
+          </Box>
+          <AccordionIcon />
+        </AccordionButton>
+      </Heading>
+      <AccordionPanel id={`panel-${header}`}>
+        <SimpleGrid columns={columns}>
+          {viewableOptions.map((option) => (
+            <AccordionMultiFieldCheckBox
+              key={option.value}
+              {...option}
+              onCheckboxChange={onCheckboxChange}
+            />
+          ))}
+        </SimpleGrid>
+        {!isViewingMore && areExtraOptionsAvailable ? (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              setIsViewingMore(true);
+            }}
+          >
+            View more
+          </Button>
+        ) : null}
+        {isViewingMore && areExtraOptionsAvailable ? (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              setIsViewingMore(false);
+            }}
+          >
+            View less
+          </Button>
+        ) : null}
+      </AccordionPanel>
+    </AccordionItem>
   );
 };
 
