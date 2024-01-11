@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Erasure support for AppsFlyer [#4512](https://github.com/ethyca/fides/pull/4512)
+- Consent support for Klaviyo [#4513](https://github.com/ethyca/fides/pull/4513)
 
 ### Fixed
 - Fixed an issue blocking Salesforce sandbox accounts from refreshing tokens [#4547](https://github.com/ethyca/fides/pull/4547)
