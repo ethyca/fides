@@ -41,6 +41,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.REPORTING_DATAMAP_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
+        requiresFlag: "datamapReportingPage",
       },
       {
         title: "View map",
