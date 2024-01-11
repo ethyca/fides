@@ -1,7 +1,6 @@
 import {
   Button,
   Flex,
-  IconButton,
   Link,
   Menu,
   MenuButton,
@@ -9,22 +8,16 @@ import {
   MenuItem,
   MenuList,
   QuestionIcon,
-  SettingsIcon,
   Stack,
   Text,
   UserIcon,
 } from "@fidesui/react";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 
-import logoImage from "~/../public/logo.svg";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { INDEX_ROUTE, LOGIN_ROUTE } from "~/constants";
+import { LOGIN_ROUTE } from "~/constants";
 import { logout, selectUser, useLogoutMutation } from "~/features/auth";
-import Image from "~/features/common/Image";
-
-import { USER_MANAGEMENT_ROUTE } from "./nav/v2/routes";
 
 const useHeader = () => {
   const { username } = useAppSelector(selectUser) ?? { username: "" };
@@ -53,31 +46,16 @@ const Header: React.FC = () => {
       width="100%"
       paddingX={10}
       flexShrink={0}
-      justifyContent="space-between"
       alignItems="center"
+      justifyContent="end"
       backgroundColor="gray.50"
     >
-      <NextLink href={INDEX_ROUTE} passHref>
-        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-        <Link display="flex">
-          <Image src={logoImage} width={83} height={26} alt="Fides Logo" />
-        </Link>
-      </NextLink>
       <Flex alignItems="center">
         <Link href="https://docs.ethyca.com" isExternal>
           <Button size="sm" variant="ghost">
             <QuestionIcon color="gray.700" boxSize={4} />
           </Button>
         </Link>
-        <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
-          <IconButton
-            aria-label="Management"
-            size="sm"
-            variant="ghost"
-            icon={<SettingsIcon color="gray.700" boxSize={4} />}
-            data-testid="management-btn"
-          />
-        </NextLink>
         {username && (
           <Menu>
             <MenuButton

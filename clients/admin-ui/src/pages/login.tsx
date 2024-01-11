@@ -187,7 +187,7 @@ const Login: NextPage = () => {
   return (
     <Formik {...formikProps} enableReinitialize>
       {({ handleSubmit, isValid, isSubmitting, dirty }) => (
-        <div>
+        <Flex width="100%" justifyContent="center">
           <Head />
 
           <main data-testid="Login">
@@ -296,7 +296,7 @@ const Login: NextPage = () => {
               </Stack>
             </Stack>
           </main>
-        </div>
+        </Flex>
       )}
     </Formik>
   );
