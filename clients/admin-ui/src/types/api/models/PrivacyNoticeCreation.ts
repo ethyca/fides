@@ -4,6 +4,8 @@
 
 import type { ConsentMechanism } from "./ConsentMechanism";
 import type { EnforcementLevel } from "./EnforcementLevel";
+import type { fides__api__schemas__privacy_notice__GPPUSApproach } from "./fides__api__schemas__privacy_notice__GPPUSApproach";
+import type { GPPFieldMapping } from "./GPPFieldMapping";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
@@ -19,11 +21,13 @@ export type PrivacyNoticeCreation = {
   origin?: string;
   regions: Array<PrivacyNoticeRegion>;
   consent_mechanism: ConsentMechanism;
-  data_uses: Array<string>;
+  data_uses?: Array<string>;
   enforcement_level: EnforcementLevel;
   disabled?: boolean;
   has_gpc_flag?: boolean;
   displayed_in_privacy_center?: boolean;
   displayed_in_overlay?: boolean;
   displayed_in_api?: boolean;
+  gpp_us_approach?: fides__api__schemas__privacy_notice__GPPUSApproach;
+  gpp_field_mapping?: Array<GPPFieldMapping>;
 };
