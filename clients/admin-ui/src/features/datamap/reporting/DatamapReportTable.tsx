@@ -72,6 +72,33 @@ enum COLUMN_IDS {
   DATA_STEWARDS = "data_stewards",
   DECLARATION_NAME = "declaration_name",
   DESCRIPTION = "description",
+  DOES_INTERNATIONAL_TRANSFERS = "does_internation_transfers",
+  DPA_LOCATION = "dpa_location",
+  EGRESS = "egress",
+  EXEMPT_FROM_PRIVACY_REGULATIONS = "exempt_from_privacy_regulations",
+  FEATURES = "features",
+  FIDES_KEY = "fides_key",
+  FLEXIBLE_LEGAL_BASIS_FOR_PROCESSING = "flexible_legal_basis_for_processing",
+  IMPACT_ASSESMENT_LOCATION = "impact_assesment_location",
+  INGRESS = "ingress",
+  JOINT_CONTROLLER_INFO = "joint_controller_info",
+  LEGAL_BASIS_FOR_PROFILING = "legal_basis_for_profiling",
+  LEGAL_BASIS_FOR_TRANSFERS = "legal_basis_for_transfers",
+  LEGITIMATE_INTEREST_DISCLOSURE_URL = "legitimate_interest_disclosure_url",
+  LINK_TO_PROCESSOR_CONTRACT = "link_to_processor_contract",
+  PROCESSES_PERSONAL_DATA = "processes_personal_data",
+  REASON_FOR_EXEMPTION = "reason_for_exemption",
+  REQUIRES_DATA_PROTECTION_ASSESSMENTS = "requires_data_protection_assessments",
+  RESPONSIBILITLY = "responsibilitly",
+  RETENTION_PERIOD = "retention_period",
+  SHARED_CATEGORIES = "shared_categories",
+  SPECIAL_CATEGORY_LEGAL_BASIS = "special_category_legal_basis",
+  SYSTEM_DEPENDENCIES = "system_dependencies",
+  THIRD_COUNTRY_SAFEGUARDS = "third_country_safeguards",
+  THIRD_PARTIES = "third_parties",
+  USES_COOKIES = "uses_cookies",
+  USES_NON_COOKIE_ACCESS = "uses_non_cookie_access",
+  USES_PROFILING = "uses_profiling",
 }
 
 const getGrouping = (groupBy: DATAMAP_GROUPING) => {
@@ -452,6 +479,366 @@ export const DatamapReportTable = () => {
         meta: {
           width: cellWidth,
           displayText: "Declaration name",
+        },
+      }),
+      columnHelper.accessor((row) => row.does_international_transfers, {
+        id: COLUMN_IDS.DOES_INTERNATIONAL_TRANSFERS,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Does internation transfers" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Does internation transfers",
+        },
+      }),
+      columnHelper.accessor((row) => row.dpa_location, {
+        id: COLUMN_IDS.DPA_LOCATION,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="DPA Location" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "DPA Location",
+        },
+      }),
+      columnHelper.accessor((row) => row.egress, {
+        id: COLUMN_IDS.EGRESS,
+        cell: (props) => (
+          <GroupCountBadgeCell
+            suffix="egress"
+            expand={false}
+            value={props.getValue()}
+          />
+        ),
+        header: (props) => <DefaultHeaderCell value="Egress" {...props} />,
+        meta: {
+          width: cellWidth,
+          displayText: "Egress",
+        },
+      }),
+      columnHelper.accessor((row) => row.exempt_from_privacy_regulations, {
+        id: COLUMN_IDS.EXEMPT_FROM_PRIVACY_REGULATIONS,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell
+            value="Exempt from privacy regulations"
+            {...props}
+          />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Exempt from privacy regulations",
+        },
+      }),
+      columnHelper.accessor((row) => row.features, {
+        id: COLUMN_IDS.FEATURES,
+        cell: (props) => (
+          <GroupCountBadgeCell
+            suffix="features"
+            expand={false}
+            value={props.getValue()}
+          />
+        ),
+        header: (props) => <DefaultHeaderCell value="Features" {...props} />,
+        meta: {
+          width: cellWidth,
+          displayText: "Features",
+        },
+      }),
+      columnHelper.accessor((row) => row.fides_key, {
+        id: COLUMN_IDS.FIDES_KEY,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Fides key" {...props} />,
+        meta: {
+          width: cellWidth,
+          displayText: "Fides key",
+        },
+      }),
+      columnHelper.accessor((row) => row.flexible_legal_basis_for_processing, {
+        id: COLUMN_IDS.FLEXIBLE_LEGAL_BASIS_FOR_PROCESSING,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell
+            value="Flexible legal basis for processing"
+            {...props}
+          />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Flexible legal basis for processing",
+        },
+      }),
+      columnHelper.accessor((row) => row.impact_assessment_location, {
+        id: COLUMN_IDS.IMPACT_ASSESMENT_LOCATION,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Impact assessment location" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Impact assessment location",
+        },
+      }),
+      columnHelper.accessor((row) => row.impact_assessment_location, {
+        id: COLUMN_IDS.IMPACT_ASSESMENT_LOCATION,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Impact assessment location" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Impact assessment location",
+        },
+      }),
+      columnHelper.accessor((row) => row.ingress, {
+        id: COLUMN_IDS.INGRESS,
+        cell: (props) => (
+          <GroupCountBadgeCell
+            suffix="ingress"
+            expand={false}
+            value={props.getValue()}
+          />
+        ),
+        header: (props) => <DefaultHeaderCell value="Ingress" {...props} />,
+        meta: {
+          width: cellWidth,
+          displayText: "Ingress",
+        },
+      }),
+      columnHelper.accessor((row) => row.joint_controller_info, {
+        id: COLUMN_IDS.JOINT_CONTROLLER_INFO,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Joint controller info" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Joint controller info",
+        },
+      }),
+      columnHelper.accessor((row) => row.legal_basis_for_profiling, {
+        id: COLUMN_IDS.LEGAL_BASIS_FOR_PROFILING,
+        cell: (props) => (
+          <GroupCountBadgeCell
+            suffix="profiles"
+            expand={false}
+            value={props.getValue()}
+          />
+        ),
+        header: (props) => (
+          <DefaultHeaderCell value="Legal basis for profiling" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Legal basis for profiling",
+        },
+      }),
+      columnHelper.accessor((row) => row.legal_basis_for_transfers, {
+        id: COLUMN_IDS.LEGAL_BASIS_FOR_TRANSFERS,
+        cell: (props) => (
+          <GroupCountBadgeCell
+            suffix="transfers"
+            expand={false}
+            value={props.getValue()}
+          />
+        ),
+        header: (props) => (
+          <DefaultHeaderCell value="Legal basis for transfers" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Legal basis for transfers",
+        },
+      }),
+      columnHelper.accessor((row) => row.legitimate_interest_disclosure_url, {
+        id: COLUMN_IDS.LEGITIMATE_INTEREST_DISCLOSURE_URL,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell
+            value="Legitimate interest disclosure url"
+            {...props}
+          />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Legitimate interest disclosure url",
+        },
+      }),
+      columnHelper.accessor((row) => row.link_to_processor_contract, {
+        id: COLUMN_IDS.LINK_TO_PROCESSOR_CONTRACT,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Link to processor contract" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Link to processor contract",
+        },
+      }),
+      columnHelper.accessor((row) => row.processes_personal_data, {
+        id: COLUMN_IDS.PROCESSES_PERSONAL_DATA,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Processes personal data" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Processes personal data",
+        },
+      }),
+      columnHelper.accessor((row) => row.reason_for_exemption, {
+        id: COLUMN_IDS.REASON_FOR_EXEMPTION,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Reason for excemption" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Reason for excemption",
+        },
+      }),
+      columnHelper.accessor((row) => row.requires_data_protection_assessments, {
+        id: COLUMN_IDS.REQUIRES_DATA_PROTECTION_ASSESSMENTS,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell
+            value="Requires data protection assessments"
+            {...props}
+          />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Requires data protection assessments",
+        },
+      }),
+      columnHelper.accessor((row) => row.responsibility, {
+        id: COLUMN_IDS.RESPONSIBILITLY,
+        cell: (props) => (
+          <GroupCountBadgeCell
+            suffix="responsibilitlies"
+            expand={false}
+            value={props.getValue()}
+          />
+        ),
+        header: (props) => (
+          <DefaultHeaderCell value="Responsibility" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Responsibility",
+        },
+      }),
+      columnHelper.accessor((row) => row.retention_period, {
+        id: COLUMN_IDS.RETENTION_PERIOD,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Retention period" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Retention period",
+        },
+      }),
+      columnHelper.accessor((row) => row.shared_categories, {
+        id: COLUMN_IDS.SHARED_CATEGORIES,
+        cell: (props) => (
+          <GroupCountBadgeCell
+            suffix="shared categories"
+            expand={false}
+            value={props.getValue()}
+          />
+        ),
+        header: (props) => (
+          <DefaultHeaderCell value="Shared categories" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Shared categories",
+        },
+      }),
+      columnHelper.accessor((row) => row.special_category_legal_basis, {
+        id: COLUMN_IDS.SPECIAL_CATEGORY_LEGAL_BASIS,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Special category legal basis" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Special category legal basis",
+        },
+      }),
+      columnHelper.accessor((row) => row.system_dependencies, {
+        id: COLUMN_IDS.SYSTEM_DEPENDENCIES,
+        cell: (props) => (
+          <GroupCountBadgeCell
+            suffix="dependencies"
+            expand={false}
+            value={props.getValue()}
+          />
+        ),
+        header: (props) => (
+          <DefaultHeaderCell value="System dependencies" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "System dependencies",
+        },
+      }),
+      columnHelper.accessor((row) => row.third_country_safeguards, {
+        id: COLUMN_IDS.THIRD_COUNTRY_SAFEGUARDS,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Third country safeguards" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Third country safeguards",
+        },
+      }),
+      columnHelper.accessor((row) => row.third_parties, {
+        id: COLUMN_IDS.THIRD_PARTIES,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Third parties" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Third parties",
+        },
+      }),
+      columnHelper.accessor((row) => row.uses_cookies, {
+        id: COLUMN_IDS.USES_COOKIES,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Uses cookies" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Uses cookies",
+        },
+      }),
+      columnHelper.accessor((row) => row.uses_non_cookie_access, {
+        id: COLUMN_IDS.USES_NON_COOKIE_ACCESS,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Uses non cookie access" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Uses non cookie access",
+        },
+      }),
+      columnHelper.accessor((row) => row.uses_profiling, {
+        id: COLUMN_IDS.USES_PROFILING,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Uses profiling" {...props} />
+        ),
+        meta: {
+          width: cellWidth,
+          displayText: "Uses profiling",
         },
       }),
     ],
