@@ -210,8 +210,6 @@ export type { Page_ConnectionConfigurationResponse_ } from "./models/Page_Connec
 export type { Page_ConnectionSystemTypeMap_ } from "./models/Page_ConnectionSystemTypeMap_";
 export type { Page_ConsentReport_ } from "./models/Page_ConsentReport_";
 export type { Page_ConsentReportingSchema_ } from "./models/Page_ConsentReportingSchema_";
-export type { Page_CurrentPrivacyPreferenceReportingSchema_ } from "./models/Page_CurrentPrivacyPreferenceReportingSchema_";
-export type { Page_CurrentPrivacyPreferenceSchema_ } from "./models/Page_CurrentPrivacyPreferenceSchema_";
 export type { Page_DatamapReport_ } from "./models/Page_DatamapReport_";
 export type { Page_Dataset_ } from "./models/Page_Dataset_";
 export type { Page_DatasetConfigSchema_ } from "./models/Page_DatasetConfigSchema_";
