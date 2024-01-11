@@ -1,9 +1,9 @@
-import { Box, Breadcrumb, BreadcrumbItem } from "@fidesui/react";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
+import BackButton from "~/features/common/nav/v2/BackButton";
+import { DATASET_ROUTE } from "~/features/common/nav/v2/routes";
 import DatasetCollectionView from "~/features/dataset/DatasetCollectionView";
 
 const DatasetDetail: NextPage = () => {
@@ -18,16 +18,7 @@ const DatasetDetail: NextPage = () => {
 
   return (
     <Layout title={`Dataset - ${id}`}>
-      <Box mb={6}>
-        <Breadcrumb fontWeight="medium" fontSize="sm" color="gray.600">
-          <BreadcrumbItem>
-            <NextLink href="/dataset">Datasets</NextLink>
-          </BreadcrumbItem>
-          <BreadcrumbItem>
-            <NextLink href="#">{id}</NextLink>
-          </BreadcrumbItem>
-        </Breadcrumb>
-      </Box>
+      <BackButton backPath={DATASET_ROUTE} />
       <DatasetCollectionView fidesKey={fidesKey} />
     </Layout>
   );

@@ -1,12 +1,9 @@
-import { Box, Flex } from "@fidesui/react";
+import { Flex, FlexProps } from "@fidesui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React from "react";
 
 import { useFeatures } from "~/features/common/features";
-import Header from "~/features/common/Header";
-import { NavSideBar } from "~/features/common/nav/v2/NavSideBar";
-import { NavTopBar } from "~/features/common/nav/v2/NavTopBar";
 import {
   useGetActiveMessagingProviderQuery,
   useGetActiveStorageQuery,
@@ -17,9 +14,16 @@ import ConfigurationNotificationBanner from "../privacy-requests/configuration/C
 const Layout = ({
   children,
   title,
+  mainProps,
 }: {
   children: React.ReactNode;
   title: string;
+  /**
+   * Layouts are generally standardized, so make sure you actually want to use this!
+   * Currently only used on the home page and datamap pages
+   * which have different padding requirements compared to other pages in the app.
+   */
+  mainProps?: FlexProps;
 }) => {
   const features = useFeatures();
   const router = useRouter();
@@ -45,22 +49,24 @@ const Layout = ({
     isValidNotificationRoute;
 
   return (
-    <Flex data-testid={title} direction="column">
+    <Flex data-testid={title} direction="column" height="calc(100vh - 48px)">
       <Head>
         <title>Fides Admin UI - {title}</title>
         <meta name="description" content="Privacy Engineering Platform" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Header />
-      <NavTopBar />
-      <Flex as="main" flexGrow={1} padding={10} gap={10}>
-        <Box flex={0} flexShrink={0}>
-          <NavSideBar />
-        </Box>
-        <Flex direction="column" flex={1} minWidth={0}>
-          {showConfigurationBanner ? <ConfigurationNotificationBanner /> : null}
-          {children}
-        </Flex>
+      <Flex
+        as="main"
+        direction="column"
+        py={6}
+        px={10}
+        flex={1}
+        minWidth={0}
+        overflow="auto"
+        {...mainProps}
+      >
+        {showConfigurationBanner ? <ConfigurationNotificationBanner /> : null}
+        {children}
       </Flex>
     </Flex>
   );
