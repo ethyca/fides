@@ -233,6 +233,7 @@ _Fides = {
     customOptionsPath: null,
     preventDismissal: false,
     allowHTMLDescription: null,
+    base64Cookie: false,
   },
   fides_meta: {},
   identity: {},
