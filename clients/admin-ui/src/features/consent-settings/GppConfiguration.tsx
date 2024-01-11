@@ -3,7 +3,11 @@ import { Form, Formik } from "formik";
 import { ReactNode } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { CustomRadioGroup, CustomSwitch } from "~/features/common/form/inputs";
+import {
+  CustomCheckbox,
+  CustomRadioGroup,
+  CustomSwitch,
+} from "~/features/common/form/inputs";
 import { selectGppSettings } from "~/features/privacy-requests";
 import {
   fidesplus__config__gpp_settings__GPPUSApproach as GPPUSApproach,
@@ -62,15 +66,22 @@ const GppConfiguration = () => {
                   {
                     label: "Enable U.S. National",
                     value: GPPUSApproach.NATIONAL,
+                    tooltip: "TODO",
                   },
                   {
                     label: "Enable U.S. State-by-State",
                     value: GPPUSApproach.STATE,
+                    tooltip: "TODO",
                   },
                 ]}
               />
             </Section>
             <Section title="MSPA">
+              <CustomCheckbox
+                name="mspa_covered_transactions"
+                label="All transactions covered by MSPA"
+                tooltip="TODO"
+              />
               <CustomSwitch
                 label="Enable MSPA service provider mode"
                 name="mspa_service_provider_mode"

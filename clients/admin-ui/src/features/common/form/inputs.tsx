@@ -4,6 +4,7 @@
 
 import {
   Box,
+  Checkbox,
   EyeIcon,
   Flex,
   FormControl,
@@ -166,6 +167,7 @@ export interface Option {
   value: string;
   label: string;
   description?: string;
+  tooltip?: string;
 }
 
 const CustomOption: React.FC<
@@ -907,17 +909,24 @@ export const CustomRadioGroup = ({
             colorScheme="complimentary"
           >
             <Stack direction="column" spacing={3}>
-              {options.map((o) => (
-                <Radio
-                  key={o.value}
-                  value={o.value}
-                  data-testid={`option-${o.value}`}
-                >
-                  <Text fontSize="sm" fontWeight="medium">
-                    {o.label}
-                  </Text>
-                </Radio>
-              ))}
+              {options.map(
+                ({ value, label: optionLabel, tooltip: optionTooltip }) => (
+                  <Radio
+                    key={value}
+                    value={value}
+                    data-testid={`option-${value}`}
+                  >
+                    <HStack alignItems="center" spacing={2}>
+                      <Text fontSize="sm" fontWeight="medium">
+                        {optionLabel}
+                      </Text>
+                      {optionTooltip ? (
+                        <QuestionTooltip label={optionTooltip} />
+                      ) : null}
+                    </HStack>
+                  </Radio>
+                )
+              )}
             </Stack>
           </RadioGroup>
         </Stack>
@@ -1075,6 +1084,7 @@ export const CustomSwitch = ({
       data-testid={`input-${field.name}`}
       disabled={isDisabled}
       size="sm"
+      id={field.name}
     />
   );
 
@@ -1139,6 +1149,40 @@ export const CustomSwitch = ({
         {innerSwitch}
         {tooltip ? <QuestionTooltip label={tooltip} /> : null}
       </Box>
+    </FormControl>
+  );
+};
+
+export const CustomCheckbox = ({
+  label,
+  tooltip,
+  onChange,
+  isDisabled,
+  ...props
+}: Omit<CustomSwitchProps, "variant"> & FieldHookConfig<boolean>) => {
+  const [field, meta] = useField({ ...props, type: "checkbox" });
+  const isInvalid = !!(meta.touched && meta.error);
+
+  return (
+    <FormControl isInvalid={isInvalid}>
+      <Flex alignItems="center">
+        <Checkbox
+          name={field.name}
+          isChecked={field.checked}
+          onChange={field.onChange}
+          onBlur={field.onBlur}
+          data-testid={`input-${field.name}`}
+          disabled={isDisabled}
+          colorScheme="complimentary"
+          mr="2"
+        >
+          <Text fontSize="sm" fontWeight="medium">
+            {label}
+          </Text>
+        </Checkbox>
+
+        {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+      </Flex>
     </FormControl>
   );
 };
