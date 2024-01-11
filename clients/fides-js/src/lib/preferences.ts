@@ -119,7 +119,7 @@ export const updateConsentPreferences = async ({
 
   // 4. Save preferences to the cookie in the browser
   debugLog(options.debug, "Saving preferences to cookie");
-  saveFidesCookie(cookie);
+  saveFidesCookie(cookie, options.base64Cookie);
 
   // 5. Remove cookies associated with notices that were opted-out from the browser
   if (consentPreferencesToSave) {
