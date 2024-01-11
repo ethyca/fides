@@ -21,6 +21,9 @@ The types of changes are:
 - Erasure support for AppsFlyer [#4512](https://github.com/ethyca/fides/pull/4512)
 - Consent support for Klaviyo [#4513](https://github.com/ethyca/fides/pull/4513)
 
+### Changed
+- Redesigned nav bar for the admin UI [#4548](https://github.com/ethyca/fides/pull/4548)
+
 ### Fixed
 - Fixed an issue blocking Salesforce sandbox accounts from refreshing tokens [#4547](https://github.com/ethyca/fides/pull/4547)
 - Fixed DSR zip packages to be unzippable on Windows [#4549](https://github.com/ethyca/fides/pull/4549)
