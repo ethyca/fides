@@ -83,6 +83,19 @@ class PrivacyNotice(FidesSchema):
             if data_use not in valid_data_uses:
                 raise ValueError(f"Unknown data_use '{data_use}'")
 
+    @root_validator(pre=True)
+    def validate_enabled_has_data_use(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Validate that enabled privacy notices have at least one data use assigned
+        """
+        disabled: Optional[bool] = values.get("disabled", False)
+        if not disabled and not values.get("data_uses"):
+            raise ValueError(
+                "A privacy notice must have at least one data use assigned in order to be enabled."
+            )
+
+        return values
+
 
 class PrivacyNoticeCreation(PrivacyNotice):
     """

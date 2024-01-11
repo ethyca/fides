@@ -1908,6 +1908,26 @@ class TestPostPrivacyNotices:
         assert resp.status_code == 422
         assert resp.json()["detail"][0]["msg"] == "Duplicate regions found."
 
+    def test_post_privacy_notice_no_data_uses_enabled_errors(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        notice_request: dict[str, Any],
+        url,
+    ):
+        """
+        Assert that an enabled privacy notice with no data uses errors out
+        """
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
+        notice_request["data_uses"] = []
+
+        resp = api_client.post(url, headers=auth_header, json=[notice_request])
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "A privacy notice must have at least one data use assigned in order to be enabled."
+        )
+
     def test_post_privacy_notice_twice_same_name(
         self,
         api_client: TestClient,
@@ -2621,6 +2641,48 @@ class TestPatchPrivacyNotices:
         assert (
             resp.json()["detail"][0]["msg"]
             == "Notice-only notices must be served in an overlay."
+        )
+
+    def test_patch_privacy_notice_no_data_uses_enabled_errors(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        patch_privacy_notice_payload: dict[str, Any],
+        url,
+    ):
+        """
+        Assert that removing data uses on an enabled privacy notice errors out, or that enabling a privacy notice with data uses errors
+        """
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_UPDATE])
+        # existing notice is already enabled, so by removing this from the patch request, we're keeping it enabled
+        patch_privacy_notice_payload.pop("disabled")
+        patch_privacy_notice_payload["data_uses"] = []
+
+        resp = api_client.patch(
+            url, headers=auth_header, json=[patch_privacy_notice_payload]
+        )
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "A privacy notice must have at least one data use assigned in order to be enabled."
+        )
+
+        # now disable the notice to allow us to remove the data uses
+        patch_privacy_notice_payload["disabled"] = True
+        resp = api_client.patch(
+            url, headers=auth_header, json=[patch_privacy_notice_payload]
+        )
+        assert resp.status_code == 200
+
+        # but if we try to enable it, we should error again
+        patch_privacy_notice_payload["disabled"] = False
+        resp = api_client.patch(
+            url, headers=auth_header, json=[patch_privacy_notice_payload]
+        )
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "A privacy notice must have at least one data use assigned in order to be enabled."
         )
 
     def test_patch_privacy_notice(
