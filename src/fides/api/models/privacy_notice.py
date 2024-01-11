@@ -182,7 +182,7 @@ class PrivacyNoticeBase:
     displayed_in_overlay = Column(Boolean, nullable=False, default=False)
     displayed_in_api = Column(Boolean, nullable=False, default=False)
     notice_key = Column(String, nullable=False)
-    gpp_us_approach = Column(String, nullable=True)
+    framework = Column(String, nullable=True)
     gpp_field_mapping = Column(
         MutableList.as_mutable(JSONB), index=False, unique=False, nullable=True
     )

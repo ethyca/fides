@@ -1,7 +1,7 @@
 privacy_notices:
 ### GPP State-by-state ###
-- name: Data sales and sharing (GPP) # TODO: anything about california?
-  notice_key: gpp_data_sales_sharing
+- name: Data sales and sharing
+  notice_key: data_sales_sharing_gpp_us_state
   id: pri_gpp_1 # TODO: update
   description: We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of [cross-context behavioral targeted advertising]. You can learn more about what information is used for this purpose in our privacy notice.
   internal_description: Data sales and sharing (GPP, California) # TODO: update?
@@ -17,7 +17,7 @@ privacy_notices:
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
-  gpp_us_approach: state
+  framework: gpp_us_state
   gpp_field_mapping:
     - region: us_ca
       notice:
@@ -33,8 +33,8 @@ privacy_notices:
           not_opt_out: 2
 
 
-- name: Targeted Advertising (GPP) # TODO: anything about state-by-state?
-  notice_key: gpp_targeted_advertising
+- name: Targeted Advertising
+  notice_key: targeted_advertising_gpp_us_state
   id: pri_gpp_2 # TODO: update
   description: We may transfer or share your personal information to third parties for the purposes of targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.
   internal_description: Targeted advertising (GPP, state-by-state) # TODO: update?
@@ -54,7 +54,7 @@ privacy_notices:
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
-  gpp_us_approach: state
+  framework: gpp_us_state
   gpp_field_mapping:
     - region: us_co
       notice:
@@ -93,8 +93,8 @@ privacy_notices:
       notice:
       mechanism:
 
-- name: Data sharing (GPP) # TODO: anything about state-by-state?
-  notice_key: gpp_data_sharing
+- name: Data sharing
+  notice_key: data_sharing_gpp_us_state
   id: pri_gpp_3 # TODO: update
   description: We may transfer or share your personal information to third parties for the purpose of [performance, analytics and reporting]. You can learn more about what information is used for this purpose in our privacy notice.
   internal_description: Data sharing (GPP, state-by-state) # TODO: update?
@@ -111,7 +111,7 @@ privacy_notices:
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
-  gpp_us_approach: state
+  framework: gpp_us_state
   gpp_field_mapping:
     - region: us_co
       notice:
@@ -126,8 +126,8 @@ privacy_notices:
       notice:
         - SharingNotice
 
-- name: Data sales (GPP) # TODO: anything about state-by-state?
-  notice_key: gpp_data_sales
+- name: Data sales
+  notice_key: data_sales_gpp_us_state
   id: pri_gpp_4 # TODO: update
   description: We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration. You can learn more about what information is used for this purpose in our privacy notice.
   internal_description: Data sales (GPP, state-by-state) # TODO: update?
@@ -145,7 +145,7 @@ privacy_notices:
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
-  gpp_us_approach: state
+  framework: gpp_us_state
   gpp_field_mapping:
     - region: us_co
       notice:
@@ -185,8 +185,8 @@ privacy_notices:
       mechanism:
 
 
-- name: Sensitive Personal Data Sharing (GPP) # TODO: anything about state-by-state?
-  notice_key: gpp_sensitive_personal_data_sharing
+- name: Sensitive Personal Data Sharing
+  notice_key: sensitive_personal_data_sharing_gpp_us_state
   id: pri_gpp_5 # TODO: update
   description: We may transfer or share Sensitive Personal Data about you with third parties for the purpose of [performance, analytics and reporting]. You can learn more about what information is used for this purpose in our privacy notice.
   internal_description: Sensitive personal data sharing (GPP, state-by-state) # TODO: update?
@@ -204,7 +204,7 @@ privacy_notices:
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
-  gpp_us_approach: state
+  framework: gpp_us_state
   gpp_field_mapping:
     - region: us_ca
       notice:
@@ -244,8 +244,8 @@ privacy_notices:
           opt_out: 11111111
           not_opt_out: 22222222
 
-- name: Known Child Sensitive Data Consents (GPP) # TODO: anything about state-by-state?
-  notice_key: gpp_known_child_sensitive_data_consents
+- name: Known Child Sensitive Data Consents
+  notice_key: known_child_sensitive_data_consents_gpp_us_state
   id: pri_gpp_6 # TODO: update
   description: We may process the personal information of children under 16. # TODO: text TBD
   internal_description: Known child sensitive data consents (GPP, state-by-state) # TODO: update?
@@ -263,7 +263,7 @@ privacy_notices:
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
-  gpp_us_approach: state
+  framework: gpp_us_state
   gpp_field_mapping:
     - region: us_ca
       notice:
@@ -304,8 +304,8 @@ privacy_notices:
 
 
 ### GPP US National ###
-- name: Sales, Sharing, Targeted Advertising (GPP) # TODO: anything about US national?
-  notice_key: gpp_sales_sharing_targeted_advertising
+- name: Sales, Sharing, Targeted Advertising
+  notice_key: sales_sharing_targeted_advertising_gpp_us_national
   id: pri_gpp_us_nat_1 # TODO: update
   description: Sales opt out notice & mechanism; Sharing opt out notice & mechanism; Targeted advertising opt out notice & mechanism; Sharing notice only # TODO: this looks wrong
   internal_description: Data sales and sharing (GPP, California) # TODO: update?
@@ -321,7 +321,7 @@ privacy_notices:
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
-  gpp_us_approach: national
+  framework: gpp_us_national
   gpp_field_mapping:
     - region: us
       notice:
@@ -338,8 +338,8 @@ privacy_notices:
           opt_out: 1
           not_opt_out: 2
 
-- name: Sensitive Personal Data Sharing (GPP, US National)
-  notice_key: gpp_sensitive_personal_data_sharing_us_nat
+- name: Sensitive Personal Data Sharing
+  notice_key: sensitive_personal_data_sharing_gpp_us_national
   id: pri_gpp_us_nat_2 # TODO: update
   description: We may transfer or share Sensitive Personal Data about you with third parties for the purpose of [performance, analytics and reporting]. You can learn more about what information is used for this purpose in our privacy notice.
   internal_description: Data sales and sharing (GPP, California) # TODO: update?
@@ -353,7 +353,7 @@ privacy_notices:
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
-  gpp_us_approach: national
+  framework: gpp_us_national
   gpp_field_mapping:
     - region: us
       notice:
@@ -366,7 +366,7 @@ privacy_notices:
           not_opt_out: 222222222222
 
 - name: Known Child Sensitive Data Consents (GPP, US National)
-  notice_key: gpp_known_child_sensitive_data_consents_us_nat
+  notice_key: known_child_sensitive_data_consents_gpp_us_national
   id: pri_gpp_us_nat_3 # TODO: update
   description: We may process the personal information of children under 16. # TODO: text TBD
   internal_description: Known child sensitive data consents (GPP, US National) # TODO: update?
@@ -380,7 +380,7 @@ privacy_notices:
   displayed_in_privacy_center: True
   displayed_in_overlay: True
   displayed_in_api: False
-  gpp_us_approach: national
+  framework: gpp_us_national
   gpp_field_mapping:
     - region: us
       notice:

@@ -27,9 +27,9 @@ class GPPFieldMapping(FidesSchema):
     mechanism: Optional[List[GPPMechanismMapping]]
 
 
-class GPPUSApproach(Enum):
-    national = "national"
-    state = "state"
+class PrivacyNoticeFramework(Enum):
+    gpp_us_national = "gpp_us_national"
+    gpp_us_state = "gpp_us_state"
 
 
 class PrivacyNotice(FidesSchema):
@@ -54,9 +54,7 @@ class PrivacyNotice(FidesSchema):
     displayed_in_privacy_center: Optional[bool] = False
     displayed_in_overlay: Optional[bool] = False
     displayed_in_api: Optional[bool] = False
-    gpp_us_approach: Optional[
-        GPPUSApproach
-    ]  # TODO: should this be something more generic? need to understand other GPP regions/approaches beyond US ...
+    framework: Optional[PrivacyNoticeFramework]
     gpp_field_mapping: Optional[List[GPPFieldMapping]]
 
     class Config:

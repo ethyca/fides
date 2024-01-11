@@ -26,7 +26,7 @@ def upgrade():
     )
     op.add_column(
         "privacynotice",
-        sa.Column("gpp_us_approach", sa.String(), nullable=True),
+        sa.Column("framework", sa.String(), nullable=True),
     )
     op.alter_column("privacynotice", "data_uses", server_default="{}")
 
@@ -38,7 +38,7 @@ def upgrade():
     )
     op.add_column(
         "privacynoticehistory",
-        sa.Column("gpp_us_approach", sa.String(), nullable=True),
+        sa.Column("framework", sa.String(), nullable=True),
     )
     op.alter_column("privacynoticehistory", "data_uses", server_default="{}")
 
@@ -50,7 +50,7 @@ def upgrade():
     )
     op.add_column(
         "privacynoticetemplate",
-        sa.Column("gpp_us_approach", sa.String(), nullable=True),
+        sa.Column("framework", sa.String(), nullable=True),
     )
     op.alter_column("privacynoticetemplate", "data_uses", server_default="{}")
     # ### end Alembic commands ###
