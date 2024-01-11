@@ -35,16 +35,6 @@ def simon_data_erasure_identity_email() -> str:
 
 
 @pytest.fixture
-def simon_data_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def simon_data_erasure_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
 def simon_data_erasure_data(
     simon_data_erasure_identity_email: str,
 ) -> Generator:
@@ -57,14 +47,10 @@ def simon_data_runner(
     db,
     cache,
     simon_data_secrets,
-    simon_data_external_references,
-    simon_data_erasure_external_references,
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
         cache,
         "simon_data",
         simon_data_secrets,
-        external_references=simon_data_external_references,
-        erasure_external_references=simon_data_erasure_external_references,
     )
