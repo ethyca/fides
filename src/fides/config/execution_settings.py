@@ -29,6 +29,7 @@ class ExecutionSettings(FidesSettings):
     disable_consent_identity_verification: Optional[bool] = Field(
         default=None,
         description="Allows selective disabling of identity verification specifically for consent requests. Identity verification for consent requests will be enabled if subject_identity_verification_required is set to true and this setting is empty or false.",
+        exclude=True,
     )
     task_retry_backoff: int = Field(
         default=1,
