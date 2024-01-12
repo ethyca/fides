@@ -216,12 +216,9 @@ def create_consent_request(
 
     # we send out a verification code if verification is required in general (for access, erasure, and consent),
     # but have the ability to disable verification just for consent
-    if (
-        config_proxy.execution.subject_identity_verification_required
-        and not config_proxy.execution.disable_consent_identity_verification
-    ):
+    if not config_proxy.execution.disable_consent_identity_verification:
         try:
-            send_verification_code_to_user(db, consent_request, data)
+            send_verification_code_to_user(db, consent_request, data.identity)
         except MessageDispatchException as exc:
             logger.error("Error sending the verification code message: {}", str(exc))
             raise HTTPException(
@@ -290,8 +287,7 @@ def consent_request_verify(
         HTTP_404_NOT_FOUND: {"detail": "Consent request not found"},
         HTTP_400_BAD_REQUEST: {
             "detail": "Retrieving consent preferences without identity verification is "
-            "only supported with subject_identity_verification_required "
-            "turned off."
+            "only supported with disable_consent_identity_verification set to true"
         },
     },
 )
@@ -303,12 +299,11 @@ def get_consent_preferences_no_id(
 ) -> ConsentPreferences:
     """Returns the current consent preferences if successful."""
 
-    if config_proxy.execution.subject_identity_verification_required:
+    if not config_proxy.execution.disable_consent_identity_verification:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="Retrieving consent preferences without identity verification is "
-            "only supported with subject_identity_verification_required "
-            "turned off.",
+            "only supported with disable_consent_identity_verification set to true",
         )
 
     _, provided_identity = _get_consent_request_and_provided_identity(
@@ -614,7 +609,7 @@ def _get_consent_request_and_provided_identity(
             detail="Consent request not found",
         )
 
-    if ConfigProxy(db).execution.subject_identity_verification_required:
+    if not ConfigProxy(db).execution.disable_consent_identity_verification:
         try:
             consent_request.verify_identity(
                 db,

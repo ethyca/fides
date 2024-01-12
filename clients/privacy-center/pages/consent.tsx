@@ -134,7 +134,7 @@ const Consent: NextPage = () => {
 
     const privacyCenterConfig = getIdVerificationConfigQueryResult.data;
     if (
-      privacyCenterConfig.identity_verification_required &&
+      !privacyCenterConfig.disable_consent_identity_verification &&
       !verificationCode
     ) {
       toastError({ title: "Identity verification is required." });
@@ -142,7 +142,7 @@ const Consent: NextPage = () => {
       return;
     }
 
-    if (privacyCenterConfig.identity_verification_required) {
+    if (!privacyCenterConfig.disable_consent_identity_verification) {
       postConsentRequestVerificationMutationTrigger({
         id: consentRequestId,
         code: verificationCode,
