@@ -1,4 +1,4 @@
-import { useDisclosure } from "@fidesui/react";
+import { Accordion,useDisclosure } from "@fidesui/react";
 import { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -194,36 +194,38 @@ export const ConsentManagementFilterModal = ({
   onConsentCategoryChange,
 }: Props) => (
   <FilterModal isOpen={isOpen} onClose={onClose} resetFilters={resetFilters}>
-    <FilterSection>
-      {isTcfEnabled ? (
+    <Accordion>
+      <FilterSection>
+        {isTcfEnabled ? (
+          <AccordionMultifieldFilter
+            options={purposeOptions}
+            onCheckboxChange={onPurposeChange}
+            header="TCF purposes"
+            columns={1}
+            numDefaultOptions={5}
+          />
+        ) : null}
         <AccordionMultifieldFilter
-          options={purposeOptions}
-          onCheckboxChange={onPurposeChange}
-          header="TCF purposes"
-          columns={1}
-          numDefaultOptions={5}
+          options={dataUseOptions}
+          onCheckboxChange={onDataUseChange}
+          header="Data uses"
         />
-      ) : null}
-      <AccordionMultifieldFilter
-        options={dataUseOptions}
-        onCheckboxChange={onDataUseChange}
-        header="Data uses"
-      />
 
-      {isTcfEnabled ? (
-        <AccordionMultifieldFilter
-          options={legalBasisOptions}
-          onCheckboxChange={onLegalBasisChange}
-          header="Legal basis"
-        />
-      ) : null}
-      {!isTcfEnabled ? (
-        <AccordionMultifieldFilter
-          options={consentCategoryOptions}
-          onCheckboxChange={onConsentCategoryChange}
-          header="Consent categories"
-        />
-      ) : null}
-    </FilterSection>
+        {isTcfEnabled ? (
+          <AccordionMultifieldFilter
+            options={legalBasisOptions}
+            onCheckboxChange={onLegalBasisChange}
+            header="Legal basis"
+          />
+        ) : null}
+        {!isTcfEnabled ? (
+          <AccordionMultifieldFilter
+            options={consentCategoryOptions}
+            onCheckboxChange={onConsentCategoryChange}
+            header="Consent categories"
+          />
+        ) : null}
+      </FilterSection>
+    </Accordion>
   </FilterModal>
 );
