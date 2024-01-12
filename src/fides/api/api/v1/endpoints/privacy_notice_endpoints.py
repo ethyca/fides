@@ -254,7 +254,7 @@ def update_privacy_notices(
     input privacy notice is not found.
     """
     ensure_unique_ids(privacy_notice_updates)
-    validate_notice_data_uses(privacy_notice_updates, db)
+    validate_notice_data_uses(privacy_notice_updates, DataUse.query(db).all())
 
     updates_and_existing: List[
         Tuple[schemas.PrivacyNoticeWithId, PrivacyNotice]

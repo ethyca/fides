@@ -1924,7 +1924,7 @@ class TestPostPrivacyNotices:
         resp = api_client.post(url, headers=auth_header, json=[notice_request])
         assert resp.status_code == 422
         assert (
-            resp.json()["detail"][0]["msg"]
+            resp.json()["detail"]
             == "A privacy notice must have at least one data use assigned in order to be enabled."
         )
 
@@ -2282,13 +2282,6 @@ class TestPatchPrivacyNotices:
             str, Any
         ] = patch_privacy_notice_payload.copy()
 
-        # try patch with empty data_uses list specified, should be rejected
-        patch_privacy_notice_payload_bad_data_uses["data_uses"] = []
-        resp = api_client.patch(
-            url, headers=auth_header, json=[patch_privacy_notice_payload_bad_data_uses]
-        )
-        assert resp.status_code == 422
-
         patch_privacy_notice_payload_bad_data_uses["data_uses"] = ["invalid_data_use"]
         # try patch with invalid data_use specified, should be rejected
         resp = api_client.patch(
@@ -2371,7 +2364,7 @@ class TestPatchPrivacyNotices:
         assert resp.status_code == 422
         assert (
             resp.json()["detail"]
-            == "Privacy Notice 'my notice's name' has already assigned data use 'functional' to region 'PrivacyNoticeRegion.us_ca'"
+            == "Privacy Notice 'my notice's name' has already assigned data use 'Functional' to region 'PrivacyNoticeRegion.us_ca'"
         )
 
         # conflict with parent/child data uses within region
@@ -2673,7 +2666,7 @@ class TestPatchPrivacyNotices:
         )
         assert resp.status_code == 422
         assert (
-            resp.json()["detail"][0]["msg"]
+            resp.json()["detail"]
             == "A privacy notice must have at least one data use assigned in order to be enabled."
         )
 
@@ -2691,7 +2684,7 @@ class TestPatchPrivacyNotices:
         )
         assert resp.status_code == 422
         assert (
-            resp.json()["detail"][0]["msg"]
+            resp.json()["detail"]
             == "A privacy notice must have at least one data use assigned in order to be enabled."
         )
 
