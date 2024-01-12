@@ -1,0 +1,158 @@
+privacy_experience_configs:
+- id: pri-7ae3-f06b-4096-970f-0bbbdef-over
+  regions:
+    - be
+    - bg
+    - cz
+    - dk
+    - de
+    - ee
+    - ie
+    - gr
+    - es
+    - fr
+    - hr
+    - it
+    - cy
+    - lv
+    - lt
+    - lu
+    - hu
+    - mt
+    - nl
+    - at
+    - pl
+    - pt
+    - ro
+    - si
+    - sk
+    - fi
+    - se
+    - gb_eng
+    - gb_sct
+    - gb_wls
+    - gb_nir
+    - is
+    - "no"
+    - li
+  component: overlay
+  banner_enabled: enabled_where_required
+  notices:
+    - essential
+    - functional
+    - analytics
+    - marketing
+  translations:
+    - language: en_us
+      accept_button_label: Opt in to all
+      acknowledge_button_label: OK
+      description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
+      privacy_policy_link_label: Privacy Policy
+      privacy_policy_url: null
+      privacy_preferences_link_label: Manage preferences
+      reject_button_label: Opt out of all
+      save_button_label: Save
+      title: Manage your consent preferences
+
+- id: pri-4b6e-1165-4e12-8125-18f2db8-over
+  regions:
+    - us_ca
+    - us_co
+    - us_ct
+    - us_ia
+    - us_ut
+    - us_va
+  component: overlay
+  banner_enabled: enabled_where_required
+  notices:
+    - data_sales_and_sharing
+  translations:
+    - language: en_us
+      accept_button_label: Opt in to all
+      acknowledge_button_label: OK
+      description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
+      privacy_policy_link_label: Privacy Policy
+      privacy_policy_url: null
+      privacy_preferences_link_label: Manage preferences
+      reject_button_label: Opt out of all
+      save_button_label: Save
+      title: Manage your consent preferences
+
+
+- id: pri-097a-d00d-40b6-a08f-f8e50def-pri
+  regions:
+    - us_ca
+    - us_co
+    - us_ct
+    - us_ia
+    - us_ut
+    - us_va
+  component: privacy_center
+  notices:
+    - data_sales_and_sharing
+  translations:
+    - language: en_us
+      accept_button_label: Opt in to all
+      acknowledge_button_label: OK
+      description: We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.
+      privacy_policy_link_label: Privacy Policy
+      privacy_policy_url: null
+      privacy_preferences_link_label: Manage preferences
+      reject_button_label: Opt out of all
+      save_button_label: Save
+      title: Manage your consent preferences
+
+- id: a4974670-abad-471f-9084-2cb-tcf-over
+  banner_enabled: enabled_where_required
+  notices: []
+  regions:
+    - be
+    - bg
+    - cz
+    - dk
+    - de
+    - ee
+    - ie
+    - gr
+    - es
+    - fr
+    - hr
+    - it
+    - cy
+    - lv
+    - lt
+    - lu
+    - hu
+    - mt
+    - nl
+    - at
+    - pl
+    - pt
+    - ro
+    - si
+    - sk
+    - fi
+    - se
+    - gb_eng
+    - gb_sct
+    - gb_wls
+    - gb_nir
+    - is
+    - "no"
+    - li
+    - eea
+  component: tcf_overlay
+  translations:
+    - language: en_us
+      accept_button_label: Opt in to all
+      acknowledge_button_label: OK
+      description: |
+        We use cookies and similar methods to recognize visitors and remember their preferences. We may also use these technologies to gauge the effectiveness of advertising campaigns, target advertisements, and analyze website traffic. Some of these technologies are essential for ensuring the proper functioning of the service or website and cannot be disabled, while others are optional but serve to enhance the user experience in various ways.
+
+        We, in collaboration with our partners, store and/or access information on a user's device, including but not limited to IP addresses, unique identifiers, and browsing data stored in cookies, in order to process personal data. You have the option to manage your preferences by selecting the 'Manage Preferences' option located in the page's footer. To review or object to instances where our partners assert a legitimate interest in utilizing your data, please visit our vendors page.
+     privacy_policy_link_label: Privacy Policy
+      privacy_policy_url: null
+      privacy_preferences_link_label: Manage preferences
+      reject_button_label: Opt out of all
+      save_button_label: Save
+      title: Manage your consent preferences

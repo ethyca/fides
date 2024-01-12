@@ -7,10 +7,11 @@ from html import unescape
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from fideslang.validation import FidesKey
-from sqlalchemy import Boolean, Column
+from sqlalchemy import Boolean, Column, UniqueConstraint
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, or_
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.util import hybridproperty
 
@@ -21,6 +22,10 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     PrivacyDeclaration,
     System,
 )
+
+class Language(Enum):
+    """Using BCP 47 Language Tags"""
+    en_us = "en_us"  # English (US)
 
 
 class UserConsentPreference(Enum):
@@ -221,6 +226,9 @@ class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
     """
     This table contains the out-of-the-box Privacy Notices that are shipped with Fides
     """
+    translations = Column(
+        MutableDict.as_mutable(JSONB)
+    )
 
 
 class PrivacyNotice(PrivacyNoticeBase, Base):
@@ -329,6 +337,22 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         return resource  # type: ignore[return-value]
 
 
+class NoticeTranslationBase:
+    language = Column(EnumColumn(Language), nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(String)
+
+
+class NoticeTranslation(NoticeTranslationBase, Base):
+    """Available translations for a given Privacy Notice"""
+
+    privacy_notice_id = Column(
+        String, ForeignKey(PrivacyNotice.id_field_path), nullable=False
+    )
+
+    __table_args__ = (UniqueConstraint("language", "privacy_notice_id", name="notice_translation"),)
+
+
 PRIVACY_NOTICE_TYPE = Union[PrivacyNotice, PrivacyNoticeTemplate]
 
 
@@ -433,7 +457,7 @@ def new_data_use_conflicts_with_existing_use(existing_use: str, new_use: str) ->
     return existing_use.startswith(new_use) or new_use.startswith(existing_use)
 
 
-class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
+class PrivacyNoticeHistory(NoticeTranslationBase, PrivacyNoticeBase, Base):
     """
     An "audit table" tracking outdated versions of `PrivacyNotice` records whose
     "current" versions are stored in the `PrivacyNotice` table/model
@@ -444,6 +468,9 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
     )  # pointer back to the PrivacyNoticeTemplate
     version = Column(Float, nullable=False, default=1.0)
 
+    translation_id = Column(
+        String, ForeignKey(NoticeTranslation.id_field_path), nullable=False
+    )  # pointer back to the NoticeTranslation
     privacy_notice_id = Column(
         String, ForeignKey(PrivacyNotice.id_field_path), nullable=False
     )

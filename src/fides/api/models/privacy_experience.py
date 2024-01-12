@@ -6,16 +6,19 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Type
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, and_, or_
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Query, Session, relationship
 from sqlalchemy.util import hybridproperty
 
 from fides.api.db.base_class import Base
+from fides.api.models.custom_asset import CustomAsset
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     PrivacyNotice,
     PrivacyNoticeRegion,
     create_historical_data_from_record,
-    update_if_modified,
+    update_if_modified, Language,
 )
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
@@ -45,6 +48,35 @@ class BannerEnabled(Enum):
     always_disabled = "always_disabled"
 
 
+class ExperienceConfigTemplate(Base):
+    """Table for out-of-the-box Experience Configurations"""
+    regions = Column(
+        ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
+    )
+    component = Column(EnumColumn(ComponentType), nullable=False)
+    privacy_notices: List[str] = []
+    translations = Column(
+        MutableDict.as_mutable(JSONB)
+    )
+
+
+class ExperienceTranslationBase:
+    """Base schema for Experience translations"""
+    language = Column(EnumColumn(Language), nullable=False)
+
+    accept_button_label = Column(String)
+    acknowledge_button_label = Column(String)
+    banner_description = Column(String)
+    banner_title = Column(String)
+    description = Column(String)
+    privacy_policy_link_label = Column(String)
+    privacy_policy_url = Column(String)
+    privacy_preferences_link_label = Column(String)
+    reject_button_label = Column(String)
+    save_button_label = Column(String)
+    title = Column(String)
+
+
 class ExperienceConfigBase:
     """Base schema for PrivacyExperienceConfig."""
 
@@ -72,6 +104,10 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
 
     Can be linked to multiple PrivacyExperiences.
     """
+    custom_asset_id = Column(
+        String, ForeignKey(CustomAsset.id_field_path)
+    )
+    dismissable = Column(Boolean, nullable=False, default=False)
 
     experiences = relationship(
         "PrivacyExperience",
@@ -84,6 +120,11 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         backref="experience_config",
         lazy="dynamic",
     )
+
+    origin = Column(
+        String, ForeignKey(ExperienceConfigTemplate.id_field_path)
+    )
+
 
     @property
     def regions(self) -> List[PrivacyNoticeRegion]:
@@ -169,12 +210,39 @@ class PrivacyExperienceConfig(ExperienceConfigBase, Base):
         )
 
 
-class PrivacyExperienceConfigHistory(ExperienceConfigBase, Base):
+class ExperienceTranslation(ExperienceTranslationBase, Base):
+    experience_config_id = Column(
+        String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=False
+    )
+    is_default = Column(Boolean, nullable=False, default=False)
+
+    __table_args__ = (UniqueConstraint("language", "experience_config_id", name="experience_translation"),)
+
+
+class PrivacyExperienceConfigHistory(ExperienceTranslationBase, Base):
     """Experience Config History - stores the history of how the config has changed over time"""
 
     experience_config_id = Column(
         String, ForeignKey(PrivacyExperienceConfig.id_field_path), nullable=False
     )
+
+    translation_id = Column(
+        String, ForeignKey(ExperienceTranslation.id_field_path), nullable=False
+    )
+
+    origin = Column(
+        String, ForeignKey(ExperienceConfigTemplate.id_field_path)
+    )
+
+    dismissable = Column(Boolean, nullable=False, default=False)
+    version = Column(Float, nullable=False, default=1.0)
+    disabled = Column(Boolean, nullable=False, default=False)
+
+    banner_enabled = Column(EnumColumn(BannerEnabled), index=True)
+    component = Column(EnumColumn(ComponentType), nullable=False, index=True)
+    is_default = Column(Boolean, nullable=False, default=False)
+
+
 
 
 class PrivacyExperience(Base):
@@ -193,6 +261,8 @@ class PrivacyExperience(Base):
         nullable=True,
         index=True,
     )
+
+    disabled = Column(Boolean, nullable=True, default=False)
 
     # There can only be one component per region
     __table_args__ = (UniqueConstraint("region", "component", name="region_component"),)
@@ -536,3 +606,14 @@ def upsert_privacy_experiences_after_config_update(
             )
             linked_regions.append(region)
     return linked_regions, unlinked_regions
+
+
+class ExperienceNotices(Base):
+    """Many-to-many table that stores which Notices are on which Experience Configs"""
+    notice_id = Column(
+        String, ForeignKey(PrivacyNotice.id_field_path), index=True, nullable=False
+    )
+    experience_config_id = Column(
+        String, ForeignKey(PrivacyExperienceConfig.id_field_path), index=True, nullable=False
+    )
+
