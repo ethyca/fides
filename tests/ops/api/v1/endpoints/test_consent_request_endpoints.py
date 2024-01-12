@@ -349,7 +349,12 @@ class TestConsentRequest:
         db,
         url,
     ):
-        data = {"email": "testing_123@example.com", "phone_number": "+3368675309"}
+        data = {
+            "identity": {
+                "email": "testing_123@example.com",
+                "phone_number": "+3368675309",
+            }
+        }
         response = api_client.post(url, json=data)
         assert response.status_code == 200
         assert mock_dispatch_message.called
@@ -384,7 +389,7 @@ class TestConsentRequest:
         }
         response = api_client.post(url, json=data)
         assert response.status_code == 200
-        assert not mock_dispatch_message.called
+        assert mock_dispatch_message.called
 
         consent_request_id = response.json()["consent_request_id"]
         custom_privacy_request_field = CustomPrivacyRequestField.filter(
@@ -640,7 +645,10 @@ class TestGetConsentUnverified:
             json=data,
         )
         assert response.status_code == 400
-        assert "turned off" in response.json()["detail"]
+        assert (
+            "Retrieving consent preferences without identity verification is only supported with disable_consent_identity_verification set to true"
+            in response.json()["detail"]
+        )
 
     @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_unverified_no_email_provided(
