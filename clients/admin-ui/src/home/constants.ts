@@ -78,7 +78,6 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     sortOrder: 5,
     title: "MC",
     scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
-    requiresFlag: "configureConsent",
     requiresPlus: true,
   },
 ];

@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   ButtonGroup,
+  ButtonProps,
   useDisclosure,
   useToast,
   VStack,
@@ -13,18 +14,13 @@ import * as Yup from "yup";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import { CustomTextInput } from "~/features/common/form/inputs";
-import { dataUseIsConsentUse } from "~/features/configure-consent/vendor-transform";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import {
   selectAllDictEntries,
   selectDictEntry,
   useGetAllDictionaryEntriesQuery,
 } from "~/features/plus/plus.slice";
-import {
-  selectAllSystems,
-  useCreateSystemMutation,
-  useUpdateSystemMutation,
-} from "~/features/system";
+import { selectAllSystems, useCreateSystemMutation } from "~/features/system";
 import {
   selectLockedForGVL,
   selectSuggestions,
@@ -43,7 +39,6 @@ import {
 } from "../common/helpers";
 import { errorToastParams, successToastParams } from "../common/toast";
 import AddModal from "./AddModal";
-import { AddMultipleVendors } from "./AddMultipleVendors";
 import { EMPTY_DECLARATION, FormValues } from "./constants";
 import DataUsesForm from "./DataUsesForm";
 
@@ -53,38 +48,23 @@ const defaultInitialValues: FormValues = {
   privacy_declarations: [EMPTY_DECLARATION],
 };
 
+type ButtonVariant = "primary" | "outline";
+
 const AddVendor = ({
-  passedInSystem,
-  onCloseModal,
+  buttonLabel,
+  buttonVariant = "primary",
+  onButtonClick,
 }: {
-  passedInSystem?: System;
-  onCloseModal?: () => void;
+  buttonLabel?: string;
+  buttonVariant?: ButtonVariant;
+  onButtonClick?: () => void;
 }) => {
-  const defaultModal = useDisclosure();
-  const modal = {
-    ...defaultModal,
-    isOpen: passedInSystem ? true : defaultModal.isOpen,
-  };
   const toast = useToast();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const dispatch = useAppDispatch();
 
   const systems = useAppSelector(selectAllSystems);
-  const initialValues = passedInSystem
-    ? {
-        name: passedInSystem.name ?? "",
-        vendor_id: passedInSystem.vendor_id,
-        privacy_declarations: passedInSystem.privacy_declarations
-          .filter((dec) => dataUseIsConsentUse(dec.data_use))
-          .map((dec) => ({
-            ...dec,
-            name: dec.name ?? "",
-            cookies: dec.cookies ?? [],
-            cookieNames: dec.cookies ? dec.cookies.map((c) => c.name) : [],
-            consent_use: dec.data_use.split(".")[0],
-          })),
-      }
-    : defaultInitialValues;
 
   const ValidationSchema = useMemo(
     () =>
@@ -93,9 +73,7 @@ const AddVendor = ({
           .required()
           .label("Vendor name")
           .test("is-unique", "", (value, context) => {
-            const takenSystemNames = systems
-              .map((s) => s.name)
-              .filter((name) => name !== initialValues.name);
+            const takenSystemNames = systems.map((s) => s.name);
             if (takenSystemNames.some((name) => name === value)) {
               return context.createError({
                 message: `You already have a vendor called "${value}". Please specify a unique name for this vendor.`,
@@ -104,7 +82,7 @@ const AddVendor = ({
             return true;
           }),
       }),
-    [systems, initialValues.name]
+    [systems]
   );
 
   // Subscribe and get dictionary values
@@ -116,14 +94,10 @@ const AddVendor = ({
   const lockedForGVL = useAppSelector(selectLockedForGVL);
 
   const [createSystemMutationTrigger] = useCreateSystemMutation();
-  const [updateSystemMutationTrigger] = useUpdateSystemMutation();
   const suggestionsState = useAppSelector(selectSuggestions);
 
   const handleCloseModal = () => {
-    modal.onClose();
-    if (onCloseModal) {
-      onCloseModal();
-    }
+    onClose();
     dispatch(setSuggestions("initial"));
     dispatch(setLockedForGVL(false));
   };
@@ -169,40 +143,22 @@ const AddVendor = ({
           cookies: transformedCookies,
         };
       });
-    // if editing and the system has existing data uses not shown on form
-    // due to not being consent uses, include those in the payload
-    const existingDeclarations = passedInSystem
-      ? passedInSystem.privacy_declarations.filter(
-          (du) => !dataUseIsConsentUse(du.data_use)
-        )
-      : [];
-    const declarationsToSave = passedInSystem
-      ? [...existingDeclarations, ...transformedDeclarations]
-      : transformedDeclarations;
 
     const payload = {
       ...dictEntry,
       ...values,
-      fides_key: passedInSystem
-        ? passedInSystem.fides_key
-        : formatKey(values.name),
-      system_type: passedInSystem ? passedInSystem.system_type : "",
-      privacy_declarations: declarationsToSave,
+      fides_key: formatKey(values.name),
+      system_type: "",
+      privacy_declarations: transformedDeclarations,
     } as System;
 
-    const result = passedInSystem
-      ? await updateSystemMutationTrigger(payload)
-      : await createSystemMutationTrigger(payload);
+    const result = await createSystemMutationTrigger(payload);
 
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
       return;
     }
-    toast(
-      successToastParams(
-        `Vendor successfully ${passedInSystem ? "updated" : "created"}!`
-      )
-    );
+    toast(successToastParams("Vendor successfully created!"));
     helpers.resetForm();
     handleCloseModal();
   };
@@ -224,13 +180,36 @@ const AddVendor = ({
     }
   };
 
+  const handleOpenButtonClicked = () => {
+    if (onButtonClick) {
+      onButtonClick();
+    } else {
+      onOpen();
+    }
+  };
+
+  const openButtonStyles: ButtonProps =
+    buttonVariant === "primary"
+      ? {
+          size: "sm",
+          colorScheme: "primary",
+        }
+      : {
+          size: "xs",
+          variant: "outline",
+        };
+
   return (
     <>
-      <Box mr={2}>
-        <AddMultipleVendors onCancel={modal.onOpen} />
-      </Box>
+      <Button
+        onClick={handleOpenButtonClicked}
+        data-testid="add-vendor-btn"
+        {...openButtonStyles}
+      >
+        {buttonLabel}
+      </Button>
       <Formik
-        initialValues={initialValues}
+        initialValues={defaultInitialValues}
         enableReinitialize
         onSubmit={handleSubmit}
         validationSchema={ValidationSchema}
@@ -238,9 +217,9 @@ const AddVendor = ({
       >
         {({ dirty, isValid, resetForm }) => (
           <AddModal
-            isOpen={modal.isOpen}
-            onClose={modal.onClose}
-            title={passedInSystem ? "Edit vendor" : "Add a vendor"}
+            isOpen={isOpen}
+            onClose={handleCloseModal}
+            title="Add a vendor"
           >
             <Box data-testid="add-vendor-modal-content" my={4}>
               {lockedForGVL ? <GVLNotice /> : null}
@@ -251,7 +230,7 @@ const AddVendor = ({
                       label="Vendor name"
                       options={dictionaryOptions}
                       onVendorSelected={handleVendorSelected}
-                      isCreate={!passedInSystem}
+                      isCreate
                       lockedForGVL={lockedForGVL}
                     />
                   ) : (
@@ -262,12 +241,11 @@ const AddVendor = ({
                       label="Vendor name"
                       tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
                       variant="stacked"
-                      disabled={!!passedInSystem}
                     />
                   )}
                   <DataUsesForm
                     showSuggestions={suggestionsState === "showing"}
-                    isCreate={!passedInSystem}
+                    isCreate
                     disabled={lockedForGVL}
                   />
                   <ButtonGroup
