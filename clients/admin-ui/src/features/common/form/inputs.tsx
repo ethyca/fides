@@ -879,17 +879,21 @@ interface CustomRadioGroupProps {
   label?: string;
   options: Option[];
   variant?: "inline" | "stacked";
+  defaultFirstSelected?: boolean;
 }
 export const CustomRadioGroup = ({
   label,
   options,
   variant,
+  defaultFirstSelected = true,
   ...props
 }: CustomRadioGroupProps & StringField) => {
   const [initialField, meta] = useField(props);
   const field = { ...initialField, value: initialField.value ?? "" };
   const isInvalid = !!(meta.touched && meta.error);
-  const selected = options.find((o) => o.value === field.value) ?? options[0];
+  const defaultSelected = defaultFirstSelected ? options[0] : undefined;
+  const selected =
+    options.find((o) => o.value === field.value) ?? defaultSelected;
 
   const handleChange = (o: string) => {
     field.onChange(props.name)(o);
@@ -904,7 +908,7 @@ export const CustomRadioGroup = ({
           ) : null}
           <RadioGroup
             onChange={handleChange}
-            value={selected.value}
+            value={selected?.value}
             data-testid={`input-${field.name}`}
             colorScheme="complimentary"
           >
@@ -945,7 +949,7 @@ export const CustomRadioGroup = ({
         <Label htmlFor={props.id || props.name}>{label}</Label>
         <RadioGroup
           onChange={handleChange}
-          value={selected.value}
+          value={selected?.value}
           data-testid={`input-${field.name}`}
           colorScheme="secondary"
         >

@@ -66,7 +66,6 @@ describe("Consent settings", () => {
       cy.intercept("/api/v1/config?api_set=false", { body: DEFAULT_CONFIG });
       cy.intercept("/api/v1/config?api_set=true", { body: API_CONFIG });
       cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
-      cy.getByTestId("consent-configuration");
       cy.getByTestId("setting-Global Privacy Platform").within(() => {
         cy.get("p").contains("GPP status Enabled");
         cy.getByTestId("option-national").should("have.attr", "data-checked");
@@ -84,6 +83,17 @@ describe("Consent settings", () => {
           "data-checked"
         );
       });
+    });
+
+    it("does not show MSPA when there is no US approach", () => {
+      cy.intercept("/api/v1/config?api_set=false", {
+        body: { gpp: { enabled: true } },
+      });
+      cy.intercept("/api/v1/config?api_set=true", { body: {} });
+      cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
+      cy.getByTestId("section-MSPA").should("not.exist");
+      cy.getByTestId("option-national").click();
+      cy.getByTestId("section-MSPA").should("exist");
     });
 
     it("disables MSPA settings conditionally", () => {

@@ -555,7 +555,6 @@ export const selectGppSettings: (state: RootState) => GPPSettings =
     (state, { data: apiSetConfig }, { data: config }) => {
       const hasApi = apiSetConfig && apiSetConfig.gpp;
       const hasDefault = config && config.gpp;
-      console.log({ apiSetConfig, config });
       if (hasApi && hasDefault) {
         return { ...config.gpp, ...apiSetConfig.gpp };
       }
