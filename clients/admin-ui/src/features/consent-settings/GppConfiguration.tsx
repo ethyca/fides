@@ -1,8 +1,9 @@
-import { Stack, Text } from "@fidesui/react";
+import { Divider, Stack, Text } from "@fidesui/react";
 import { useFormikContext } from "formik";
 import { ReactNode } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { useFeatures } from "~/features/common/features";
 import {
   CustomCheckbox,
   CustomRadioGroup,
@@ -33,6 +34,7 @@ const Section = ({
 );
 
 const GppConfiguration = () => {
+  const { tcf: isTcfEnabled } = useFeatures();
   const gppSettings = useAppSelector(selectGppSettings);
   const isEnabled = !!gppSettings.enabled;
   const { values } = useFormikContext<{ gpp: GPPSettings }>();
@@ -86,6 +88,22 @@ const GppConfiguration = () => {
                 />
               </Section>
             ) : null}
+          </>
+        ) : null}
+        {isTcfEnabled ? (
+          <>
+            <Divider color="gray.200" />
+            <Section title="GPP Europe">
+              <Text fontSize="sm" fontWeight="medium">
+                Configure TCF string for Global Privacy Platform
+              </Text>
+              <CustomSwitch
+                label="Enable TC string"
+                name="gpp.enable_tc_string"
+                variant="switchFirst"
+                tooltip="TODO"
+              />
+            </Section>
           </>
         ) : null}
       </Stack>

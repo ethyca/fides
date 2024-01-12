@@ -20,6 +20,7 @@ describe("Consent settings", () => {
         mspa_service_provider_mode: true,
         mspa_opt_out_option_mode: false,
         mspa_covered_transactions: true,
+        enable_tc_string: true,
       },
     };
     const DEFAULT_CONFIG = {
@@ -32,6 +33,7 @@ describe("Consent settings", () => {
         mspa_service_provider_mode: false,
         mspa_opt_out_option_mode: false,
         mspa_covered_transactions: false,
+        enable_tc_string: false,
       },
     };
 
@@ -59,6 +61,10 @@ describe("Consent settings", () => {
           "not.have.attr",
           "data-checked"
         );
+        cy.getByTestId("input-gpp.enable_tc_string").should(
+          "not.have.attr",
+          "data-checked"
+        );
       });
     });
 
@@ -80,6 +86,10 @@ describe("Consent settings", () => {
         );
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
           "not.have.attr",
+          "data-checked"
+        );
+        cy.getByTestId("input-gpp.enable_tc_string").should(
+          "have.attr",
           "data-checked"
         );
       });
@@ -130,6 +140,7 @@ describe("Consent settings", () => {
         cy.getByTestId("option-national").click();
         cy.getByTestId("input-gpp.mspa_covered_transactions").click();
         cy.getByTestId("input-gpp.mspa_service_provider_mode").click();
+        cy.getByTestId("input-gpp.enable_tc_string").click();
       });
       cy.getByTestId("save-btn").click();
       cy.wait("@patchConfig").then((interception) => {
@@ -140,8 +151,39 @@ describe("Consent settings", () => {
             mspa_service_provider_mode: true,
             mspa_opt_out_option_mode: false,
             mspa_covered_transactions: true,
+            enable_tc_string: true,
           },
         });
+      });
+    });
+
+    describe("TCF disabled", () => {
+      it("does not show GPP Europe if TCF is not enabled", () => {
+        stubPlus(true, {
+          core_fides_version: "1.9.6",
+          fidesplus_server: "healthy",
+          fidesplus_version: "1.9.6",
+          system_scanner: {
+            enabled: false,
+            cluster_health: null,
+            cluster_error: null,
+          },
+          dictionary: {
+            enabled: false,
+            service_health: null,
+            service_error: null,
+          },
+          tcf: {
+            enabled: false,
+          },
+          fides_cloud: {
+            enabled: false,
+          },
+        });
+        cy.intercept("/api/v1/config?api_set=false", { body: DEFAULT_CONFIG });
+        cy.intercept("/api/v1/config?api_set=true", { body: {} });
+        cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
+        cy.getByTestId("section-GPP Europe").should("not.exist");
       });
     });
   });
