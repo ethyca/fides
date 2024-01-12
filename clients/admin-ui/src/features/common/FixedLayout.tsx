@@ -23,7 +23,7 @@ const FixedLayout = ({
   <Flex
     data-testid={title}
     direction="column"
-    height="100vh"
+    height="calc(100vh - 48px)"
     width="calc(100vw - 200px)"
   >
     <Head>
