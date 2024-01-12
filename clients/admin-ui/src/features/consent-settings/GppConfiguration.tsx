@@ -30,48 +30,53 @@ const Section = ({
 
 const GppConfiguration = () => {
   const gppSettings = useAppSelector(selectGppSettings);
+  const isEnabled = !!gppSettings.enabled;
 
   return (
     <SettingsBox title="Global Privacy Platform">
       <Stack spacing={6}>
-        <FrameworkStatus name="GPP" enabled={!!gppSettings.enabled} />
-        <Section title="GPP U.S.">
-          <CustomRadioGroup
-            name="gpp.us_approach"
-            variant="stacked"
-            options={[
-              {
-                label: "Enable U.S. National",
-                value: GPPUSApproach.NATIONAL,
-                tooltip: "TODO",
-              },
-              {
-                label: "Enable U.S. State-by-State",
-                value: GPPUSApproach.STATE,
-                tooltip: "TODO",
-              },
-            ]}
-          />
-        </Section>
-        <Section title="MSPA">
-          <CustomCheckbox
-            name="gpp.mspa_covered_transactions"
-            label="All transactions covered by MSPA"
-            tooltip="TODO"
-          />
-          <CustomSwitch
-            label="Enable MSPA service provider mode"
-            name="gpp.mspa_service_provider_mode"
-            variant="switchFirst"
-            tooltip="TODO"
-          />
-          <CustomSwitch
-            label="Enable MSPA opt-out option mode"
-            name="gpp.mspa_opt_out_option_mode"
-            variant="switchFirst"
-            tooltip="TODO"
-          />
-        </Section>
+        <FrameworkStatus name="GPP" enabled={isEnabled} />
+        {isEnabled ? (
+          <>
+            <Section title="GPP U.S.">
+              <CustomRadioGroup
+                name="gpp.us_approach"
+                variant="stacked"
+                options={[
+                  {
+                    label: "Enable U.S. National",
+                    value: GPPUSApproach.NATIONAL,
+                    tooltip: "TODO",
+                  },
+                  {
+                    label: "Enable U.S. State-by-State",
+                    value: GPPUSApproach.STATE,
+                    tooltip: "TODO",
+                  },
+                ]}
+              />
+            </Section>
+            <Section title="MSPA">
+              <CustomCheckbox
+                name="gpp.mspa_covered_transactions"
+                label="All transactions covered by MSPA"
+                tooltip="TODO"
+              />
+              <CustomSwitch
+                label="Enable MSPA service provider mode"
+                name="gpp.mspa_service_provider_mode"
+                variant="switchFirst"
+                tooltip="TODO"
+              />
+              <CustomSwitch
+                label="Enable MSPA opt-out option mode"
+                name="gpp.mspa_opt_out_option_mode"
+                variant="switchFirst"
+                tooltip="TODO"
+              />
+            </Section>
+          </>
+        ) : null}
       </Stack>
     </SettingsBox>
   );

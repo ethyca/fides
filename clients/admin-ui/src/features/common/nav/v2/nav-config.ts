@@ -205,7 +205,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       },
       {
         title: "Consent",
-        path: routes.GLOABL_CONSENT_CONFIG_ROUTE,
+        path: routes.GLOBAL_CONSENT_CONFIG_ROUTE,
         requiresPlus: true,
         requiresFidesCloud: false,
         scopes: [

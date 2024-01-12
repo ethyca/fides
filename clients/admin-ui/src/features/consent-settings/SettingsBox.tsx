@@ -6,7 +6,13 @@ const SettingsBox = ({
   children,
   ...props
 }: { title: string; children: ReactNode } & BoxProps) => (
-  <Box backgroundColor="gray.50" borderRadius="4px" padding="3" {...props}>
+  <Box
+    backgroundColor="gray.50"
+    borderRadius="4px"
+    padding="3"
+    data-testid={`setting-${title}`}
+    {...props}
+  >
     <Text
       fontSize="md"
       fontWeight="bold"

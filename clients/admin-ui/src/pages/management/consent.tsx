@@ -103,13 +103,14 @@ const ConsentConfigPage: NextPage = () => {
     formikHelpers: FormikHelpers<FormValues>
   ) => {
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+      result: { data: {} } | { error: FetchBaseQueryError | SerializedError },
+      subject: string
     ) => {
       toast.closeAll();
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          `An unexpected error occurred while saving vendor overrides. Please try again.`
+          `An unexpected error occurred while saving ${subject}. Please try again.`
         );
         toast(errorToastParams(errorMsg));
       } else {
@@ -144,11 +145,11 @@ const ConsentConfigPage: NextPage = () => {
 
     // Try to patch TCF overrides first
     const result = await patchTcfPurposeOverridesTrigger(payload);
-    handleResult(result);
+    handleResult(result, "vendor overrides");
     // Then do GPP (do not pass in `enabled`)
     const { enabled, ...updatedGpp } = values.gpp;
     const gppResult = await patchConfigSettingsTrigger({ gpp: updatedGpp });
-    handleResult(gppResult);
+    handleResult(gppResult, "GPP settings");
   };
 
   const handleOverrideOnChange = async (e: ChangeEvent<HTMLInputElement>) => {
