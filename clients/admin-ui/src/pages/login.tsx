@@ -92,7 +92,7 @@ const Login: NextPage = () => {
         touched,
         values,
       }) => (
-        <div>
+        <Flex width="100%" justifyContent="center">
           <Head />
 
           <main data-testid="Login">
@@ -222,7 +222,7 @@ const Login: NextPage = () => {
               </Stack>
             </Stack>
           </main>
-        </div>
+        </Flex>
       )}
     </Formik>
   );

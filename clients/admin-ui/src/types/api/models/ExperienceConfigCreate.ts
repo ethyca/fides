@@ -17,11 +17,17 @@ export type ExperienceConfigCreate = {
    * Overlay 'Acknowledge button label for notice only banner'
    */
   acknowledge_button_label?: string;
+  /**
+   * Overlay 'Banner Description'
+   */
   banner_description?: string;
   /**
    * Overlay 'Banner'
    */
   banner_enabled?: BannerEnabled;
+  /**
+   * Overlay 'Banner title'
+   */
   banner_title?: string;
   description: string;
   /**
