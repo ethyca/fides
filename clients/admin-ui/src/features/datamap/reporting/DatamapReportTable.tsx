@@ -3,6 +3,7 @@ import {
   Button,
   ChevronDownIcon,
   Flex,
+  Heading,
   Menu,
   MenuButton,
   MenuItemOption,
@@ -31,7 +32,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
-import { useGetMininimalDatamapReportQuery } from "~/features/datamap/datamap.slice";
+import { useGetMinimalDatamapReportQuery } from "~/features/datamap/datamap.slice";
 import {
   DatamapReportFilterModal,
   useDatamapReportFilters,
@@ -230,7 +231,7 @@ export const DatamapReportTable = () => {
     data: datamapReport,
     isLoading: isReportLoading,
     isFetching: isReportFetching,
-  } = useGetMininimalDatamapReportQuery({
+  } = useGetMinimalDatamapReportQuery({
     pageIndex,
     pageSize,
     groupBy,
@@ -581,17 +582,6 @@ export const DatamapReportTable = () => {
           displayText: "Impact assessment location",
         },
       }),
-      columnHelper.accessor((row) => row.impact_assessment_location, {
-        id: COLUMN_IDS.IMPACT_ASSESMENT_LOCATION,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Impact assessment location" {...props} />
-        ),
-        meta: {
-          width: cellWidth,
-          displayText: "Impact assessment location",
-        },
-      }),
       columnHelper.accessor((row) => row.ingress, {
         id: COLUMN_IDS.INGRESS,
         cell: (props) => (
@@ -890,6 +880,9 @@ export const DatamapReportTable = () => {
 
   return (
     <Flex flex={1} direction="column" overflow="auto">
+      <Heading mb={8} fontSize="2xl" fontWeight="semibold">
+        Datamap Report
+      </Heading>
       <DatamapReportFilterModal
         isOpen={isOpen}
         onClose={onClose}

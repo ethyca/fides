@@ -64,7 +64,7 @@ const DEPRECATED_COLUMNS = [
 // API endpoints
 const datamapApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getMininimalDatamapReport: build.query<
+    getMinimalDatamapReport: build.query<
       Page_DatamapReport_,
       {
         groupBy: DATAMAP_GROUPING;
@@ -154,7 +154,7 @@ const datamapApi = baseApi.injectEndpoints({
 export const {
   useGetDatamapQuery,
   useLazyGetDatamapQuery,
-  useGetMininimalDatamapReportQuery,
+  useGetMinimalDatamapReportQuery,
 } = datamapApi;
 
 export interface SettingsState {

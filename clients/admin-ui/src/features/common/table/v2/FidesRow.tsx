@@ -25,6 +25,7 @@ export const FidesRow = <T,>({
           ? { backgroundColor: "gray.50", cursor: "pointer" }
           : undefined
       }
+      key={row.id}
       data-testid={`row-${row.id}`}
       backgroundColor={row.getCanSelect() ? undefined : "gray.50"}
     >
