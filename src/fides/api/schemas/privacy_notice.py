@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional
 
 from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesKey
-from pydantic import Extra, Field, conlist, root_validator, validator
+from pydantic import Extra, conlist, root_validator, validator
 
 from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
 from fides.api.models.privacy_notice import PrivacyNotice as PrivacyNoticeModel

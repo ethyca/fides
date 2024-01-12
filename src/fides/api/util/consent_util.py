@@ -1,5 +1,4 @@
 from html import escape
-from json import dumps
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
 
 import yaml
@@ -38,11 +37,7 @@ from fides.api.models.privacy_request import (
 from fides.api.models.sql_models import DataUse, System  # type: ignore[attr-defined]
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.schemas.privacy_experience import ExperienceConfigCreateWithId
-from fides.api.schemas.privacy_notice import (
-    GPPFieldMapping,
-    PrivacyNoticeCreation,
-    PrivacyNoticeWithId,
-)
+from fides.api.schemas.privacy_notice import PrivacyNoticeCreation, PrivacyNoticeWithId
 from fides.api.schemas.redis_cache import Identity
 from fides.api.util.endpoint_utils import transform_fields
 from fides.config.helpers import load_file
