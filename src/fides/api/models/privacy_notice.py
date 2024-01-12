@@ -337,6 +337,13 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
         return resource  # type: ignore[return-value]
 
+    def validate_enabled_has_data_uses(self) -> None:
+        """Validated that enabled privacy notices have data uses"""
+        if not self.disabled and not self.data_uses:
+            raise ValidationError(
+                "A privacy notice must have at least one data use assigned in order to be enabled."
+            )
+
 
 PRIVACY_NOTICE_TYPE = Union[PrivacyNotice, PrivacyNoticeTemplate]
 

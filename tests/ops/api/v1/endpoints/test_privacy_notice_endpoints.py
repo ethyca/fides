@@ -2114,6 +2114,16 @@ class TestPatchPrivacyNotices:
         }
 
     @pytest.fixture(scope="function")
+    def patch_privacy_notice_payload_disabled(
+        self,
+        privacy_notice: PrivacyNotice,
+    ):
+        return {
+            "id": privacy_notice.id,
+            "disabled": True,
+        }
+
+    @pytest.fixture(scope="function")
     def patch_privacy_notice_payload_us_ca_provide(
         self, privacy_notice_us_ca_provide: PrivacyNotice, load_default_data_uses
     ):
@@ -2810,6 +2820,49 @@ class TestPatchPrivacyNotices:
         assert overlay_exp.component == ComponentType.overlay
 
         assert privacy_center_exp.component == ComponentType.privacy_center
+
+    def test_patch_privacy_notice_enabled_disabled(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_notice: PrivacyNotice,
+        patch_privacy_notice_payload_disabled: dict[str, Any],
+        url,
+        db,
+    ):
+        """Test patching privacy notice simply to switch between enabled/disabled state."""
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_UPDATE])
+        resp = api_client.patch(
+            url, headers=auth_header, json=[patch_privacy_notice_payload_disabled]
+        )
+        assert resp.json()
+        assert resp.status_code == 200
+        assert len(resp.json()) == 1
+        response_notice = resp.json()[0]
+        assert response_notice["disabled"] is True
+        # assert the db privacy notice record has the updated state
+        db_notice: PrivacyNotice = PrivacyNotice.get(
+            db=db, object_id=response_notice["id"]
+        )
+        db.refresh(db_notice)
+        assert db_notice.disabled is True
+
+        # now ensure we can re-enable it
+        patch_privacy_notice_payload_disabled["disabled"] = False
+        resp = api_client.patch(
+            url, headers=auth_header, json=[patch_privacy_notice_payload_disabled]
+        )
+        assert resp.json()
+        assert resp.status_code == 200
+        assert len(resp.json()) == 1
+        response_notice = resp.json()[0]
+        assert response_notice["disabled"] is False
+        # assert the db privacy notice record has the updated state
+        db_notice: PrivacyNotice = PrivacyNotice.get(
+            db=db, object_id=response_notice["id"]
+        )
+        db.refresh(db_notice)
+        assert db_notice.disabled is False
 
     def test_patch_privacy_notice_escaping(
         self,

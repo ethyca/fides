@@ -344,6 +344,8 @@ def create_privacy_notices_util(
     ]
     check_conflicting_data_uses(new_notices, existing_notices, all_data_uses)
     check_conflicting_notice_keys(new_notices, existing_notices)
+    for new_notice in new_notices:
+        new_notice.validate_enabled_has_data_uses()
 
     created_privacy_notices: List[PrivacyNotice] = []
     affected_regions: Set = set()
@@ -452,7 +454,7 @@ def prepare_privacy_notice_patches(
             updates_and_existing.append((update_data, existing_notices[update_data.id]))
 
     # we temporarily store proposed update data in-memory for validation purposes only
-    validation_updates = []
+    validation_updates: List[PRIVACY_NOTICE_TYPE] = []
     for update_data, existing_notice in updates_and_existing:
         # add the patched update to our temporary updates for validation
         if existing_notice:
@@ -484,6 +486,9 @@ def prepare_privacy_notice_patches(
             existing_notices.values(),
             # ignore_disabled=ignore_disabled,
         )
+        for validation_update in validation_updates:
+            validation_update.validate_enabled_has_data_uses()
+
     except ValidationError as e:
         raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
 
