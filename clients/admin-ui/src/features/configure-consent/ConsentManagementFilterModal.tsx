@@ -1,4 +1,4 @@
-import { Accordion,useDisclosure } from "@fidesui/react";
+import { Accordion, useDisclosure } from "@fidesui/react";
 import { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
