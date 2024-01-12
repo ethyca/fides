@@ -606,6 +606,7 @@ export const CustomSelect = ({
   isFormikOnChange,
   isCustomOption,
   textColor,
+  placeholder,
   ...props
 }: SelectProps & StringField) => {
   const [field, meta] = useField(props);
@@ -680,6 +681,7 @@ export const CustomSelect = ({
             menuPosition={props.menuPosition}
             onChange={!isFormikOnChange ? onChange : undefined}
             textColor={textColor}
+            placeholder={placeholder}
           />
         </Box>
         <ErrorMessage

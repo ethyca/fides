@@ -4,12 +4,49 @@ import {
   ConsentMechanism,
   EnforcementLevel,
   PrivacyNoticeCreation,
+  PrivacyNoticeRegion,
   PrivacyNoticeResponse,
 } from "~/types/api";
 
 interface PrivacyNoticeUpdateOrCreate extends PrivacyNoticeCreation {
   id?: string;
 }
+
+// TEMP
+export type NewPrivacyNotice = {
+  name?: string;
+  consent_mechanism?: ConsentMechanism;
+  data_uses?: string[];
+  disabled?: boolean;
+  enforcement_level?: EnforcementLevel;
+  has_gpc_flag?: boolean;
+  internal_description?: string;
+  regions?: PrivacyNoticeRegion[];
+  notice_key?: string;
+  translations: NoticeTranslation[];
+};
+
+// TEMP
+export type NoticeTranslation = {
+  language: string;
+  title: string;
+  description: string;
+};
+
+const DEFAULT_TRANSLATION = {
+  language: "English",
+  title: "",
+  description: "",
+};
+
+export const newDefaultInitialValues: NewPrivacyNotice = {
+  name: "",
+  regions: [],
+  consent_mechanism: ConsentMechanism.OPT_IN,
+  data_uses: [],
+  enforcement_level: EnforcementLevel.SYSTEM_WIDE,
+  translations: [DEFAULT_TRANSLATION],
+};
 
 export const defaultInitialValues: PrivacyNoticeUpdateOrCreate = {
   name: "",
