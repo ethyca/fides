@@ -905,7 +905,7 @@ export const DatamapReportTable = () => {
         <GlobalFilterV2
           globalFilter={globalFilter}
           setGlobalFilter={updateGlobalFilter}
-          placeholder="Search"
+          placeholder="System name, Fides key, or ID"
         />
         <Flex alignItems="center">
           <Menu>
