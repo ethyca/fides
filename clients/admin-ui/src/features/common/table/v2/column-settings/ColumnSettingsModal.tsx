@@ -27,6 +27,7 @@ import {
 type ColumnSettingsModalProps<T> = {
   isOpen: boolean;
   onClose: () => void;
+  headerText: string;
   prefixColumns: string[];
   tableInstance: TableInstance<T>;
 };
@@ -34,6 +35,7 @@ type ColumnSettingsModalProps<T> = {
 export const ColumnSettingsModal = <T,>({
   isOpen,
   onClose,
+  headerText,
   tableInstance,
   prefixColumns,
 }: ColumnSettingsModalProps<T>) => {
@@ -76,7 +78,7 @@ export const ColumnSettingsModal = <T,>({
     <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader pb={0}>Data Map Settings</ModalHeader>
+        <ModalHeader pb={0}>{headerText}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Text fontSize="sm" color="gray.500" mb={2}>

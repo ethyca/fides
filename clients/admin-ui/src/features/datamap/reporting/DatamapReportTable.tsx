@@ -881,7 +881,7 @@ export const DatamapReportTable = () => {
   return (
     <Flex flex={1} direction="column" overflow="auto">
       <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-        Datamap Report
+        Data Map Report
       </Heading>
       <DatamapReportFilterModal
         isOpen={isOpen}
@@ -897,6 +897,7 @@ export const DatamapReportTable = () => {
       <ColumnSettingsModal<DatamapReport>
         isOpen={isColumnSettingsOpen}
         onClose={onColumnSettingsClose}
+        headerText="Data Map Settings"
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}
       />
