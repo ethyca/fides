@@ -73,14 +73,14 @@ enum COLUMN_IDS {
   DATA_STEWARDS = "data_stewards",
   DECLARATION_NAME = "declaration_name",
   DESCRIPTION = "description",
-  DOES_INTERNATIONAL_TRANSFERS = "does_internation_transfers",
+  DOES_INTERNATIONAL_TRANSFERS = "does_international_transfers",
   DPA_LOCATION = "dpa_location",
   EGRESS = "egress",
   EXEMPT_FROM_PRIVACY_REGULATIONS = "exempt_from_privacy_regulations",
   FEATURES = "features",
   FIDES_KEY = "fides_key",
   FLEXIBLE_LEGAL_BASIS_FOR_PROCESSING = "flexible_legal_basis_for_processing",
-  IMPACT_ASSESMENT_LOCATION = "impact_assesment_location",
+  IMPACT_ASSESSMENT_LOCATION = "impact_assessment_location",
   INGRESS = "ingress",
   JOINT_CONTROLLER_INFO = "joint_controller_info",
   LEGAL_BASIS_FOR_PROFILING = "legal_basis_for_profiling",
@@ -90,7 +90,7 @@ enum COLUMN_IDS {
   PROCESSES_PERSONAL_DATA = "processes_personal_data",
   REASON_FOR_EXEMPTION = "reason_for_exemption",
   REQUIRES_DATA_PROTECTION_ASSESSMENTS = "requires_data_protection_assessments",
-  RESPONSIBILITLY = "responsibilitly",
+  RESPONSIBILITY = "responsibility",
   RETENTION_PERIOD = "retention_period",
   SHARED_CATEGORIES = "shared_categories",
   SPECIAL_CATEGORY_LEGAL_BASIS = "special_category_legal_basis",
@@ -572,7 +572,7 @@ export const DatamapReportTable = () => {
         },
       }),
       columnHelper.accessor((row) => row.impact_assessment_location, {
-        id: COLUMN_IDS.IMPACT_ASSESMENT_LOCATION,
+        id: COLUMN_IDS.IMPACT_ASSESSMENT_LOCATION,
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => (
           <DefaultHeaderCell value="Impact assessment location" {...props} />
@@ -704,7 +704,7 @@ export const DatamapReportTable = () => {
         },
       }),
       columnHelper.accessor((row) => row.responsibility, {
-        id: COLUMN_IDS.RESPONSIBILITLY,
+        id: COLUMN_IDS.RESPONSIBILITY,
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="responsibilitlies"
