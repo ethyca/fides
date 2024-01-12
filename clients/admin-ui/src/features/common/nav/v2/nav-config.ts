@@ -96,7 +96,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Vendors",
         path: routes.CONFIGURE_CONSENT_ROUTE,
-        requiresFlag: "configureConsent",
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
