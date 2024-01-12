@@ -1,4 +1,4 @@
-import { Box, Breadcrumb, BreadcrumbItem, Heading } from "@fidesui/react";
+import { Box, Breadcrumb, BreadcrumbItem, Heading, Text } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
@@ -42,6 +42,13 @@ const AddMultipleVendorsPage: NextPage = () => (
           </BreadcrumbItem>
         </Breadcrumb>
       </Box>
+    </Box>
+    <Box w={{ base: "100%", md: "75%" }}>
+      <Text fontSize="sm" mb={8}>
+        Select your vendors below and they will be added as systems to your data
+        map. Fides Compass will automatically populate the system information so
+        that you can quickly configure privacy requests and consent.
+      </Text>
     </Box>
     <AddMultipleSystems redirectRoute={CONFIGURE_CONSENT_ROUTE} />
   </FixedLayout>

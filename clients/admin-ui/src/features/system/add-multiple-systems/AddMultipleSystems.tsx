@@ -353,28 +353,29 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
             />
           </Box>
           {totalSelectSystemsLength > 0 ? (
-            <Text fontWeight="700" fontSize="sm" lineHeight="2" ml={4}>
-              {totalSelectSystemsLength.toLocaleString("en")} selected
-            </Text>
+            <>
+              <Text fontWeight="700" fontSize="sm" lineHeight="2" ml={4}>
+                {totalSelectSystemsLength.toLocaleString("en")} selected
+              </Text>
+              <Tooltip
+                label={toolTipText}
+                shouldWrapChildren
+                placement="top"
+                isDisabled={isTooltipDisabled}
+              >
+                <Button
+                  onClick={onOpen}
+                  data-testid="add-multiple-systems-btn"
+                  size="xs"
+                  variant="outline"
+                  disabled={!anyNewSelectedRows}
+                  ml={4}
+                >
+                  Add
+                </Button>
+              </Tooltip>
+            </>
           ) : null}
-
-          <Tooltip
-            label={toolTipText}
-            shouldWrapChildren
-            placement="top"
-            isDisabled={isTooltipDisabled}
-          >
-            <Button
-              onClick={onOpen}
-              data-testid="add-multiple-systems-btn"
-              size="xs"
-              variant="outline"
-              disabled={!anyNewSelectedRows}
-              ml={4}
-            >
-              Add
-            </Button>
-          </Tooltip>
         </Flex>
         <HStack spacing={4} alignItems="center">
           <AddVendor buttonLabel="Add custom vendor" buttonVariant="outline" />
