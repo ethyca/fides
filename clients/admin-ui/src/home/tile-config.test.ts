@@ -110,7 +110,7 @@ describe("configureTiles", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
         userScopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
-        flags: { configureConsent: true },
+        flags: {},
         hasPlus: true,
       });
       expect(tiles.map((t) => t.name)).toEqual(["Manage consent"]);
