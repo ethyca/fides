@@ -12,24 +12,21 @@ import {
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { FieldArray, Form, Formik, FormikHelpers } from "formik";
+import { Form, Formik, FormikHelpers } from "formik";
 import type { NextPage } from "next";
-import { ChangeEvent, FC, useMemo } from "react";
+import { ChangeEvent, useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import DocsLink from "~/features/common/DocsLink";
 import { useFeatures } from "~/features/common/features";
-import { CustomSwitch } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
-import {
-  selectPurposes,
-  useGetPurposesQuery,
-} from "~/features/common/purpose.slice";
+import { useGetPurposesQuery } from "~/features/common/purpose.slice";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import FrameworkStatus from "~/features/consent-settings/FrameworkStatus";
 import GppConfiguration from "~/features/consent-settings/GppConfiguration";
+import PurposeOverrides from "~/features/consent-settings/PurposeOverrides";
 import SettingsBox from "~/features/consent-settings/SettingsBox";
 import {
   useGetHealthQuery,
@@ -37,32 +34,15 @@ import {
   usePatchTcfPurposeOverridesMutation,
 } from "~/features/plus/plus.slice";
 import {
+  selectGppSettings,
   useGetConfigurationSettingsQuery,
   usePatchConfigurationSettingsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
-import { TCFLegalBasisEnum, TCFPurposeOverrideSchema } from "~/types/api";
-
-const LegalBasisContainer: FC<{
-  purpose: number;
-  endCol?: boolean;
-}> = ({ children, purpose, endCol }) => {
-  const hiddenPurposes = [1, 3, 4, 5, 6];
-
-  return (
-    <Flex
-      flex="1"
-      justifyContent="center"
-      alignItems="center"
-      borderLeft="solid 1px"
-      borderRight={endCol ? "solid 1px" : "unset"}
-      borderColor="gray.200"
-      height="100%"
-      minWidth="36px"
-    >
-      {hiddenPurposes.includes(purpose) ? null : <Box>{children}</Box>}
-    </Flex>
-  );
-};
+import {
+  GPPSettings,
+  TCFLegalBasisEnum,
+  TCFPurposeOverrideSchema,
+} from "~/types/api";
 
 type FormPurposeOverride = {
   purpose: number;
@@ -71,7 +51,10 @@ type FormPurposeOverride = {
   is_legitimate_interest: boolean;
 };
 
-type FormValues = { purposeOverrides: FormPurposeOverride[] };
+type FormValues = {
+  purposeOverrides: FormPurposeOverride[];
+  gpp: GPPSettings;
+};
 
 const ConsentConfigPage: NextPage = () => {
   const { isLoading: isHealthCheckLoading } = useGetHealthQuery();
@@ -80,10 +63,8 @@ const ConsentConfigPage: NextPage = () => {
     useGetTcfPurposeOverridesQuery(undefined, {
       skip: isHealthCheckLoading || !isTcfEnabled,
     });
-  const [
-    patchTcfPurposeOverridesTrigger,
-    { isLoading: isLoadingPatchMutation },
-  ] = usePatchTcfPurposeOverridesMutation();
+  const [patchTcfPurposeOverridesTrigger] =
+    usePatchTcfPurposeOverridesMutation();
   const { data: apiConfigSet, isLoading: isApiConfigSetLoading } =
     useGetConfigurationSettingsQuery({ api_set: true });
   const { data: configSet, isLoading: isConfigSetLoading } =
@@ -92,6 +73,7 @@ const ConsentConfigPage: NextPage = () => {
     patchConfigSettingsTrigger,
     { isLoading: isPatchConfigSettingsLoading },
   ] = usePatchConfigurationSettingsMutation();
+  const gppSettings = useAppSelector(selectGppSettings);
 
   const isOverrideEnabled = useMemo(() => {
     if (
@@ -113,7 +95,6 @@ const ConsentConfigPage: NextPage = () => {
   }, [apiConfigSet, configSet]);
 
   const { isLoading: isPurposesLoading } = useGetPurposesQuery();
-  const { purposes: purposeMapping } = useAppSelector(selectPurposes);
 
   const toast = useToast();
 
@@ -132,7 +113,11 @@ const ConsentConfigPage: NextPage = () => {
         );
         toast(errorToastParams(errorMsg));
       } else {
-        toast(successToastParams("TCF Purpose Overrides saved successfully"));
+        toast(
+          successToastParams(
+            "TCF Purpose Overrides and GPP settings saved successfully"
+          )
+        );
         // Reset state such that isDirty will be checked again before next save
         formikHelpers.resetForm({ values });
       }
@@ -157,9 +142,13 @@ const ConsentConfigPage: NextPage = () => {
       }),
     ];
 
+    // Try to patch TCF overrides first
     const result = await patchTcfPurposeOverridesTrigger(payload);
-
     handleResult(result);
+    // Then do GPP (do not pass in `enabled`)
+    const { enabled, ...updatedGpp } = values.gpp;
+    const gppResult = await patchConfigSettingsTrigger({ gpp: updatedGpp });
+    handleResult(gppResult);
   };
 
   const handleOverrideOnChange = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -211,8 +200,9 @@ const ConsentConfigPage: NextPage = () => {
               } as FormPurposeOverride)
           )
         : [],
+      gpp: gppSettings,
     }),
-    [tcfPurposeOverrides]
+    [tcfPurposeOverrides, gppSettings]
   );
 
   return (
@@ -296,179 +286,31 @@ const ConsentConfigPage: NextPage = () => {
               ) : null}
             </SettingsBox>
           </Stack>
-          {isOverrideEnabled ? (
-            <Box mt={4}>
-              <Formik<FormValues>
-                initialValues={initialValues}
-                enableReinitialize
-                onSubmit={handleSubmit}
-              >
-                {({ values, dirty, isValid, setFieldValue }) => (
-                  <Form>
-                    <FieldArray
-                      name="purposeOverrides"
-                      render={() => (
-                        <Flex flexDirection="column" minWidth="944px">
-                          <Flex
-                            width="100%"
-                            border="solid 1px"
-                            borderColor="gray.200"
-                            backgroundColor="gray.50"
-                            height="36px"
-                          >
-                            <Flex
-                              width="600px"
-                              pl="4"
-                              fontSize="xs"
-                              fontWeight="medium"
-                              lineHeight="4"
-                              alignItems="center"
-                              borderRight="solid 1px"
-                              borderColor="gray.200"
-                            >
-                              TCF purpose
-                            </Flex>
-                            <Flex
-                              flex="1"
-                              alignItems="center"
-                              borderRight="solid 1px"
-                              borderColor="gray.200"
-                              minWidth="36px"
-                            >
-                              <Text
-                                pl="4"
-                                fontSize="xs"
-                                fontWeight="medium"
-                                lineHeight="4"
-                              >
-                                Allowed
-                              </Text>
-                            </Flex>
-                            <Flex
-                              flex="1"
-                              alignItems="center"
-                              borderRight="solid 1px"
-                              borderColor="gray.200"
-                            >
-                              <Text
-                                pl="4"
-                                fontSize="xs"
-                                fontWeight="medium"
-                                lineHeight="4"
-                              >
-                                Consent
-                              </Text>
-                            </Flex>
-                            <Flex flex="1" alignItems="center">
-                              <Text
-                                pl="4"
-                                fontSize="xs"
-                                fontWeight="medium"
-                                lineHeight="4"
-                              >
-                                Legitimate interest
-                              </Text>
-                            </Flex>
-                          </Flex>
-                          {values.purposeOverrides.map((po, index) => (
-                            <Flex
-                              key={po.purpose}
-                              width="100%"
-                              height="36px"
-                              alignItems="center"
-                              borderBottom="solid 1px"
-                              borderColor="gray.200"
-                            >
-                              <Flex
-                                width="600px"
-                                borderLeft="solid 1px"
-                                borderColor="gray.200"
-                                p={0}
-                                alignItems="center"
-                                height="100%"
-                                pl="4"
-                                fontSize="xs"
-                                fontWeight="normal"
-                                lineHeight="4"
-                              >
-                                Purpose {po.purpose}:{" "}
-                                {purposeMapping[po.purpose].name}
-                              </Flex>
-
-                              <Flex
-                                flex="1"
-                                justifyContent="center"
-                                alignItems="center"
-                                borderLeft="solid 1px"
-                                borderColor="gray.200"
-                                height="100%"
-                              >
-                                <Box>
-                                  <CustomSwitch
-                                    name={`purposeOverrides[${index}].is_included`}
-                                    onChange={(
-                                      e: ChangeEvent<HTMLInputElement>
-                                    ) => {
-                                      if (!e.target.checked) {
-                                        setFieldValue(
-                                          `purposeOverrides[${index}].is_consent`,
-                                          false
-                                        );
-                                        setFieldValue(
-                                          `purposeOverrides[${index}].is_legitimate_interest`,
-                                          false
-                                        );
-                                      }
-                                    }}
-                                  />
-                                </Box>
-                              </Flex>
-                              <LegalBasisContainer purpose={po.purpose}>
-                                <CustomSwitch
-                                  isDisabled={
-                                    !values.purposeOverrides[index]
-                                      .is_included ||
-                                    values.purposeOverrides[index]
-                                      .is_legitimate_interest
-                                  }
-                                  name={`purposeOverrides[${index}].is_consent`}
-                                />
-                              </LegalBasisContainer>
-                              <LegalBasisContainer purpose={po.purpose} endCol>
-                                <CustomSwitch
-                                  isDisabled={
-                                    !values.purposeOverrides[index]
-                                      .is_included ||
-                                    values.purposeOverrides[index].is_consent
-                                  }
-                                  name={`purposeOverrides[${index}].is_legitimate_interest`}
-                                />
-                              </LegalBasisContainer>
-                            </Flex>
-                          ))}
-                        </Flex>
-                      )}
-                    />
-                    <Box mt={6}>
-                      <Button
-                        type="submit"
-                        variant="primary"
-                        size="sm"
-                        isDisabled={
-                          isLoadingPatchMutation || !dirty || !isValid
-                        }
-                        isLoading={isLoadingPatchMutation}
-                        data-testid="save-btn"
-                      >
-                        Save
-                      </Button>
-                    </Box>
-                  </Form>
-                )}
-              </Formik>
-            </Box>
-          ) : null}
-          <GppConfiguration />
+          <Formik<FormValues>
+            initialValues={initialValues}
+            enableReinitialize
+            onSubmit={handleSubmit}
+          >
+            {({ dirty, isValid, isSubmitting }) => (
+              <Form>
+                <Stack spacing={6}>
+                  {isOverrideEnabled ? <PurposeOverrides /> : null}
+                  <GppConfiguration />
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                    isDisabled={!dirty || !isValid}
+                    isLoading={isSubmitting}
+                    data-testid="save-btn"
+                    width="fit-content"
+                  >
+                    Save
+                  </Button>
+                </Stack>
+              </Form>
+            )}
+          </Formik>
         </Box>
       )}
     </Layout>
