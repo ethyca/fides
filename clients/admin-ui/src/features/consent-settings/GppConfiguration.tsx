@@ -1,4 +1,5 @@
 import { Stack, Text } from "@fidesui/react";
+import { useFormikContext } from "formik";
 import { ReactNode } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -8,7 +9,10 @@ import {
   CustomSwitch,
 } from "~/features/common/form/inputs";
 import { selectGppSettings } from "~/features/privacy-requests";
-import { fidesplus__config__gpp_settings__GPPUSApproach as GPPUSApproach } from "~/types/api";
+import {
+  fidesplus__config__gpp_settings__GPPUSApproach as GPPUSApproach,
+  GPPSettings,
+} from "~/types/api";
 
 import FrameworkStatus from "./FrameworkStatus";
 import SettingsBox from "./SettingsBox";
@@ -31,6 +35,7 @@ const Section = ({
 const GppConfiguration = () => {
   const gppSettings = useAppSelector(selectGppSettings);
   const isEnabled = !!gppSettings.enabled;
+  const { values } = useFormikContext<{ gpp: GPPSettings }>();
 
   return (
     <SettingsBox title="Global Privacy Platform">
@@ -67,12 +72,14 @@ const GppConfiguration = () => {
                 name="gpp.mspa_service_provider_mode"
                 variant="switchFirst"
                 tooltip="TODO"
+                isDisabled={values.gpp.mspa_opt_out_option_mode}
               />
               <CustomSwitch
                 label="Enable MSPA opt-out option mode"
                 name="gpp.mspa_opt_out_option_mode"
                 variant="switchFirst"
                 tooltip="TODO"
+                isDisabled={values.gpp.mspa_service_provider_mode}
               />
             </Section>
           </>

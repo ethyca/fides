@@ -12,7 +12,7 @@ import {
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { Form, Formik, FormikHelpers } from "formik";
+import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import { ChangeEvent, useMemo } from "react";
 
@@ -98,29 +98,19 @@ const ConsentConfigPage: NextPage = () => {
 
   const toast = useToast();
 
-  const handleSubmit = async (
-    values: FormValues,
-    formikHelpers: FormikHelpers<FormValues>
-  ) => {
+  const handleSubmit = async (values: FormValues) => {
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError },
-      subject: string
+      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
     ) => {
       toast.closeAll();
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          `An unexpected error occurred while saving ${subject}. Please try again.`
+          `An unexpected error occurred while saving. Please try again.`
         );
         toast(errorToastParams(errorMsg));
       } else {
-        toast(
-          successToastParams(
-            "TCF Purpose Overrides and GPP settings saved successfully"
-          )
-        );
-        // Reset state such that isDirty will be checked again before next save
-        formikHelpers.resetForm({ values });
+        toast(successToastParams("Settings saved successfully"));
       }
     };
 
@@ -144,12 +134,17 @@ const ConsentConfigPage: NextPage = () => {
     ];
 
     // Try to patch TCF overrides first
-    const result = await patchTcfPurposeOverridesTrigger(payload);
-    handleResult(result, "vendor overrides");
+    if (isOverrideEnabled) {
+      const result = await patchTcfPurposeOverridesTrigger(payload);
+      if (isErrorResult(result)) {
+        handleResult(result);
+        return;
+      }
+    }
     // Then do GPP (do not pass in `enabled`)
     const { enabled, ...updatedGpp } = values.gpp;
     const gppResult = await patchConfigSettingsTrigger({ gpp: updatedGpp });
-    handleResult(gppResult, "GPP settings");
+    handleResult(gppResult);
   };
 
   const handleOverrideOnChange = async (e: ChangeEvent<HTMLInputElement>) => {

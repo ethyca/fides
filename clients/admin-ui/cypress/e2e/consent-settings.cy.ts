@@ -18,7 +18,7 @@ describe("Consent settings", () => {
       gpp: {
         us_approach: "national",
         mspa_service_provider_mode: true,
-        mspa_opt_out_option_mode: true,
+        mspa_opt_out_option_mode: false,
         mspa_covered_transactions: true,
       },
     };
@@ -80,8 +80,31 @@ describe("Consent settings", () => {
           "data-checked"
         );
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
-          "have.attr",
+          "not.have.attr",
           "data-checked"
+        );
+      });
+    });
+
+    it("disables MSPA settings conditionally", () => {
+      cy.intercept("/api/v1/config?api_set=false", { body: DEFAULT_CONFIG });
+      cy.intercept("/api/v1/config?api_set=true", { body: {} });
+      cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
+      cy.getByTestId("setting-Global Privacy Platform").within(() => {
+        cy.getByTestId("input-gpp.mspa_service_provider_mode").click();
+        cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
+          "have.attr",
+          "data-disabled"
+        );
+        cy.getByTestId("input-gpp.mspa_service_provider_mode").click();
+        cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
+          "not.have.attr",
+          "data-disabled"
+        );
+        cy.getByTestId("input-gpp.mspa_opt_out_option_mode").click();
+        cy.getByTestId("input-gpp.mspa_service_provider_mode").should(
+          "have.attr",
+          "data-disabled"
         );
       });
     });
@@ -97,7 +120,6 @@ describe("Consent settings", () => {
         cy.getByTestId("option-national").click();
         cy.getByTestId("input-gpp.mspa_covered_transactions").click();
         cy.getByTestId("input-gpp.mspa_service_provider_mode").click();
-        cy.getByTestId("input-gpp.mspa_opt_out_option_mode").click();
       });
       cy.getByTestId("save-btn").click();
       cy.wait("@patchConfig").then((interception) => {
@@ -106,7 +128,7 @@ describe("Consent settings", () => {
           gpp: {
             us_approach: "national",
             mspa_service_provider_mode: true,
-            mspa_opt_out_option_mode: true,
+            mspa_opt_out_option_mode: false,
             mspa_covered_transactions: true,
           },
         });
