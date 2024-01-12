@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 - Erasure support for AppsFlyer [#4512](https://github.com/ethyca/fides/pull/4512)
 - Consent support for Klaviyo [#4513](https://github.com/ethyca/fides/pull/4513)
+- Form for configuring GPP settings [#4557](https://github.com/ethyca/fides/pull/4557)
 
 ### Changed
 - Redesigned nav bar for the admin UI [#4548](https://github.com/ethyca/fides/pull/4548)
