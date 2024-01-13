@@ -20,11 +20,11 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
+import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
 import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/v2/routes";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   ConsentManagementFilterModal,
-  Option,
   useConsentManagementFilters,
 } from "~/features/configure-consent/ConsentManagementFilterModal";
 import {
@@ -74,14 +74,6 @@ export const ConsentManagementTable = () => {
     onConsentCategoryChange,
   } = useConsentManagementFilters();
 
-  const getQueryParamsFromList = (optionList: Option[], queryParam: string) => {
-    const checkedOptions = optionList.filter((option) => option.isChecked);
-    return checkedOptions.length > 0
-      ? `${queryParam}=${checkedOptions
-          .map((option) => option.value)
-          .join(`&${queryParam}=`)}`
-      : undefined;
-  };
   const selectedDataUseFilters = useMemo(
     () => getQueryParamsFromList(dataUseOptions, "data_uses"),
     [dataUseOptions]

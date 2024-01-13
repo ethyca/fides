@@ -59,7 +59,7 @@ const Header: React.FC = () => {
             >
               <UserIcon color="gray.700" />
             </MenuButton>
-            <MenuList shadow="xl">
+            <MenuList shadow="xl" zIndex="20">
               <Stack px={3} py={2} spacing={1}>
                 <Text fontWeight="medium">{username}</Text>
               </Stack>

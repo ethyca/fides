@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 
 - Erasure support for AppsFlyer [#4512](https://github.com/ethyca/fides/pull/4512)
+- Datamap Reporting page [#4519](https://github.com/ethyca/fides/pull/4519)
 - Consent support for Klaviyo [#4513](https://github.com/ethyca/fides/pull/4513)
 
 ### Changed
