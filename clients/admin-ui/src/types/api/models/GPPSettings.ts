@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { fidesplus__config__gpp_settings__GPPUSApproach } from "./fidesplus__config__gpp_settings__GPPUSApproach";
+import type { GPPUSApproach } from "./GPPUSApproach";
 
 /**
  * Configuration settings for GPP
@@ -12,7 +12,7 @@ export type GPPSettings = {
   /**
    * National ('national') or state-by-state ('state') approach.
    */
-  us_approach?: fidesplus__config__gpp_settings__GPPUSApproach;
+  us_approach?: GPPUSApproach;
   /**
    * Whether MSPA service provider mode is enabled
    */
@@ -25,4 +25,8 @@ export type GPPSettings = {
    * Whether all transactions are MSPA covered
    */
   mspa_covered_transactions?: boolean;
+  /**
+   * Whether TC string should be included as a section in GPP
+   */
+  enable_tc_string?: boolean;
 };
