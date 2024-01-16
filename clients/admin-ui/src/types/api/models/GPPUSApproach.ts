@@ -5,7 +5,7 @@
 /**
  * An enumeration.
  */
-export enum fidesplus__config__gpp_settings__GPPUSApproach {
+export enum GPPUSApproach {
   NATIONAL = "national",
   STATE = "state",
 }
