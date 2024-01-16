@@ -10,10 +10,7 @@ import {
   CustomSwitch,
 } from "~/features/common/form/inputs";
 import { selectGppSettings } from "~/features/privacy-requests";
-import {
-  fidesplus__config__gpp_settings__GPPUSApproach as GPPUSApproach,
-  GPPSettings,
-} from "~/types/api";
+import { GPPSettings, GPPUSApproach } from "~/types/api";
 
 import FrameworkStatus from "./FrameworkStatus";
 import SettingsBox from "./SettingsBox";
