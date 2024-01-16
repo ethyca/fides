@@ -1,4 +1,4 @@
-import { GPPSettings } from "./gpp/types";
+import { GPPFieldMapping, GPPSettings, GPPUSApproach } from "./gpp/types";
 import type {
   GVLJson,
   TCFFeatureRecord,
@@ -379,6 +379,8 @@ export type PrivacyNotice = {
   displayed_in_privacy_center?: boolean;
   displayed_in_overlay?: boolean;
   displayed_in_api?: boolean;
+  gpp_us_approach?: GPPUSApproach;
+  gpp_field_mapping?: Array<GPPFieldMapping>;
   id: string;
   created_at: string;
   updated_at: string;
