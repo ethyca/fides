@@ -12,6 +12,12 @@ import {
   CmpStatus,
   SignalStatus,
   TcfEuV2,
+  UsCaV1,
+  UsCoV1,
+  UsCtV1,
+  UsNatV1,
+  UsUtV1,
+  UsVaV1,
 } from "@iabgpp/cmpapi";
 import { makeStub } from "./lib/gpp/stub";
 import { extractTCStringForCmpApi } from "./lib/tcf/events";
@@ -22,13 +28,12 @@ import {
 import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
 import type { Fides } from "./lib/initialize";
 import type { OverrideOptions } from "./lib/consent-types";
-import { GppFunction } from "./lib/gpp/types";
+import { GPPUSApproach, GppFunction } from "./lib/gpp/types";
 import { FidesEvent } from "./fides";
 import {
   setGppNoticesProvidedFromExperience,
   setGppOptOutsFromCookie,
 } from "./lib/gpp/us-notices";
-import { FIDES_REGION_TO_GPP_SECTION } from "./lib/gpp/constants";
 
 const CMP_VERSION = 1;
 
@@ -67,20 +72,22 @@ const setTcString = (event: FidesEvent, cmpApi: CmpApi) => {
 /** From our options, derive what APIs of GPP are applicable */
 const getSupportedApis = () => {
   const supportedApis: string[] = [];
-  if (window.Fides.options.tcfEnabled) {
-    supportedApis.push(`${TcfEuV2.ID}:${TcfEuV2.NAME}`);
-    return supportedApis;
-  }
   if (isPrivacyExperience(window.Fides.experience)) {
     const { gpp_settings: gppSettings } = window.Fides.experience;
-    if (gppSettings && gppSettings.enabled && gppSettings.regions) {
-      const gppSections = Object.values(FIDES_REGION_TO_GPP_SECTION);
-      gppSettings.regions.forEach((region) => {
-        const section = gppSections.find((d) => d.prefix === region);
-        if (section) {
-          supportedApis.push(`${section.id}:${section.prefix}`);
-        }
-      });
+    if (gppSettings && gppSettings.enabled && gppSettings.enable_tc_string) {
+      if (gppSettings.enable_tc_string) {
+        supportedApis.push(`${TcfEuV2.ID}:${TcfEuV2.NAME}`);
+      }
+      if (gppSettings.us_approach === GPPUSApproach.NATIONAL) {
+        supportedApis.push(`${UsNatV1.ID}:${UsNatV1.NAME}`);
+      }
+      if (gppSettings.us_approach === GPPUSApproach.STATE) {
+        // TODO: include the states based off of locations/regulations.
+        // For now, hard code all of them.
+        [UsCaV1, UsCoV1, UsCtV1, UsUtV1, UsVaV1].forEach((state) => {
+          supportedApis.push(`${state.ID}:${state.NAME}`);
+        });
+      }
     }
   }
   return supportedApis;

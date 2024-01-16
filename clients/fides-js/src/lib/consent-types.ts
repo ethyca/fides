@@ -1,4 +1,4 @@
-import { GPPFieldMapping, GPPSettings, GPPUSApproach } from "./gpp/types";
+import type { GPPFieldMapping, GPPSettings } from "./gpp/types";
 import type {
   GVLJson,
   TCFFeatureRecord,
@@ -364,6 +364,11 @@ export type Cookies = {
   domain?: string;
 };
 
+export enum PrivacyNoticeFramework {
+  GPP_US_NATIONAL = "gpp_us_national",
+  GPP_US_STATE = "gpp_us_state",
+}
+
 export type PrivacyNotice = {
   name?: string;
   notice_key: string;
@@ -379,7 +384,7 @@ export type PrivacyNotice = {
   displayed_in_privacy_center?: boolean;
   displayed_in_overlay?: boolean;
   displayed_in_api?: boolean;
-  gpp_us_approach?: GPPUSApproach;
+  framework?: PrivacyNoticeFramework;
   gpp_field_mapping?: Array<GPPFieldMapping>;
   id: string;
   created_at: string;

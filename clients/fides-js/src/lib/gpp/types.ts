@@ -39,6 +39,10 @@ export type GPPSettings = {
    * Whether all transactions are MSPA covered
    */
   mspa_covered_transactions?: boolean;
+  /**
+   * Whether TC string should be included as a section in GPP
+   */
+  enable_tc_string?: boolean;
 };
 
 export type GPPMechanismMapping = {
