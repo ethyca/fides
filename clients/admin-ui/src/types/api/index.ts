@@ -93,6 +93,8 @@ export type { DatabaseConfig } from "./models/DatabaseConfig";
 export type { DatabaseHealthCheck } from "./models/DatabaseHealthCheck";
 export type { DataCategory } from "./models/DataCategory";
 export type { DataFlow } from "./models/DataFlow";
+export { DATAMAP_GROUPING } from "./models/DATAMAP_GROUPING";
+export type { DatamapReport } from "./models/DatamapReport";
 export { DataResponsibilityTitle } from "./models/DataResponsibilityTitle";
 export type { Dataset } from "./models/Dataset";
 export type { DatasetCollection } from "./models/DatasetCollection";
@@ -209,6 +211,7 @@ export type { Page_ConnectionConfigurationResponse_ } from "./models/Page_Connec
 export type { Page_ConnectionSystemTypeMap_ } from "./models/Page_ConnectionSystemTypeMap_";
 export type { Page_ConsentReport_ } from "./models/Page_ConsentReport_";
 export type { Page_ConsentReportingSchema_ } from "./models/Page_ConsentReportingSchema_";
+export type { Page_DatamapReport_ } from "./models/Page_DatamapReport_";
 export type { Page_Dataset_ } from "./models/Page_Dataset_";
 export type { Page_DatasetConfigSchema_ } from "./models/Page_DatasetConfigSchema_";
 export type { Page_ExecutionLogDetailResponse_ } from "./models/Page_ExecutionLogDetailResponse_";

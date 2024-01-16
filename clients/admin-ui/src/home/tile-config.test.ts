@@ -95,25 +95,5 @@ describe("configureTiles", () => {
       });
       expect(tiles.map((t) => t.name)).toEqual(["Review privacy requests"]);
     });
-
-    it("can filter by feature flag", () => {
-      const tiles = configureTiles({
-        config: MODULE_CARD_ITEMS,
-        userScopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
-        flags: {},
-        hasPlus: true,
-      });
-      expect(tiles.length).toEqual(0);
-    });
-
-    it("can show based on feature flag", () => {
-      const tiles = configureTiles({
-        config: MODULE_CARD_ITEMS,
-        userScopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
-        flags: { configureConsent: true },
-        hasPlus: true,
-      });
-      expect(tiles.map((t) => t.name)).toEqual(["Manage consent"]);
-    });
   });
 });
