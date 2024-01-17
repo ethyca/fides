@@ -56,7 +56,11 @@ declare global {
  * @param cmpApi: the CMP API model
  */
 const setTcString = (event: FidesEvent, cmpApi: CmpApi) => {
-  if (!window.Fides.options.tcfEnabled) {
+  if (!isPrivacyExperience(window.Fides.experience)) {
+    return false;
+  }
+  const { gpp_settings: gppSettings } = window.Fides.experience;
+  if (!window.Fides.options.tcfEnabled || !gppSettings?.enable_tc_string) {
     return false;
   }
   const tcString = extractTCStringForCmpApi(event);
@@ -74,8 +78,8 @@ const getSupportedApis = () => {
   const supportedApis: string[] = [];
   if (isPrivacyExperience(window.Fides.experience)) {
     const { gpp_settings: gppSettings } = window.Fides.experience;
-    if (gppSettings && gppSettings.enabled && gppSettings.enable_tc_string) {
-      if (gppSettings.enable_tc_string) {
+    if (gppSettings && gppSettings.enabled) {
+      if (window.Fides.options.tcfEnabled && gppSettings.enable_tc_string) {
         supportedApis.push(`${TcfEuV2.ID}:${TcfEuV2.NAME}`);
       }
       if (gppSettings.us_approach === GPPUSApproach.NATIONAL) {

@@ -38,7 +38,7 @@ describe("Fides-js GPP extension", () => {
   });
 
   describe("with TCF and GPP enabled", () => {
-    const tcfGppSettings = { enabled: true, regions: ["tcfeuv2"] };
+    const tcfGppSettings = { enabled: true, enable_tc_string: true };
     beforeEach(() => {
       cy.fixture("consent/experience_tcf.json").then((payload) => {
         const experience = payload.items[0];
@@ -287,6 +287,45 @@ describe("Fides-js GPP extension", () => {
           );
       });
     });
+
+    it("can handle TCF enabled globally but disabled in GPP", () => {
+      cy.fixture("consent/experience_tcf.json").then((experience) => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: true,
+          },
+          experience: {
+            ...experience.items[0],
+            gpp_settings: { enabled: true, enable_tc_string: false },
+          },
+        });
+      });
+
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.window().then((win) => {
+          win.__gpp("addEventListener", cy.stub().as("gppListener"));
+        });
+        cy.get("@FidesUIShown").should("have.been.calledOnce");
+        cy.get("@gppListener")
+          .its("lastCall.args")
+          .then(([data, success]) => {
+            expect(success).to.eql(true);
+            expect(data.eventName).to.eql("cmpDisplayStatus");
+            expect(data.data).to.eql("visible");
+            const {
+              signalStatus,
+              gppString,
+              applicableSections,
+              supportedAPIs,
+            } = data.pingData;
+            expect(signalStatus).to.eql("not ready");
+            expect(applicableSections).to.eql([]);
+            expect(supportedAPIs).to.eql([]);
+            expect(gppString).to.eql("DBAA");
+          });
+      });
+    });
   });
 
   describe("with TCF disabled and GPP enabled", () => {
@@ -329,32 +368,32 @@ describe("Fides-js GPP extension", () => {
             decodeURIComponent(cookie!.value)
           );
           const { consent } = fidesCookie;
-          expect(consent).to.eql({ data_sales_and_sharing: true });
+          expect(consent).to.eql({ data_sales_sharing_gpp_us_state: true });
         });
       });
 
       const expected = [
-        // First two gppStrings indicate the data_sales_and_sharing notice was served
+        // First two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served
         {
           eventName: "listenerRegistered",
           data: true,
-          gppString: "DBABBg~BWAAAAAA.QA",
+          gppString: "DBABBg~BWAAAABY.QA",
         },
         {
           eventName: "cmpDisplayStatus",
           data: "hidden",
-          gppString: "DBABBg~BWAAAAAA.QA",
+          gppString: "DBABBg~BWAAAABY.QA",
         },
-        // Second two gppStrings indicate the data_sales_and_sharing notice was served and opted into
+        // Second two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted into
         {
           eventName: "sectionChange",
           data: "uscav1",
-          gppString: "DBABBg~BWoAAAAA.QA",
+          gppString: "DBABBg~BWoAAABY.QA",
         },
         {
           eventName: "signalStatus",
           data: "ready",
-          gppString: "DBABBg~BWoAAAAA.QA",
+          gppString: "DBABBg~BWoAAABY.QA",
         },
       ];
       // Check the GPP events
@@ -380,7 +419,14 @@ describe("Fides-js GPP extension", () => {
         .then((args) => {
           const [data] = args;
           expect(data.pingData.applicableSections).to.eql([8]);
-          expect(data.pingData.supportedAPIs).to.eql(["8:usca"]);
+          // TODO: once locations and regulations are set, this value may change as it is currently hard coded
+          expect(data.pingData.supportedAPIs).to.eql([
+            "8:uscav1",
+            "10:uscov1",
+            "12:usctv1",
+            "11:usutv1",
+            "9:usvav1",
+          ]);
         });
     });
 
@@ -392,32 +438,32 @@ describe("Fides-js GPP extension", () => {
             decodeURIComponent(cookie!.value)
           );
           const { consent } = fidesCookie;
-          expect(consent).to.eql({ data_sales_and_sharing: false });
+          expect(consent).to.eql({ data_sales_sharing_gpp_us_state: false });
         });
       });
 
       const expected = [
-        // First two gppStrings indicate the data_sales_and_sharing notice was served
+        // First two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served
         {
           eventName: "listenerRegistered",
           data: true,
-          gppString: "DBABBg~BWAAAAAA.QA",
+          gppString: "DBABBg~BWAAAABY.QA",
         },
         {
           eventName: "cmpDisplayStatus",
           data: "hidden",
-          gppString: "DBABBg~BWAAAAAA.QA",
+          gppString: "DBABBg~BWAAAABY.QA",
         },
-        // Second two gppStrings indicate the data_sales_and_sharing notice was served and opted out of
+        // Second two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted out of
         {
           eventName: "sectionChange",
           data: "uscav1",
-          gppString: "DBABBg~BWUAAAAA.QA",
+          gppString: "DBABBg~BWUAAABY.QA",
         },
         {
           eventName: "signalStatus",
           data: "ready",
-          gppString: "DBABBg~BWUAAAAA.QA",
+          gppString: "DBABBg~BWUAAABY.QA",
         },
       ];
       // Check the GPP events
@@ -442,7 +488,7 @@ describe("Fides-js GPP extension", () => {
 
     it("can handle a returning user", () => {
       const cookie = mockCookie({
-        consent: { data_sales_and_sharing: true },
+        consent: { data_sales_sharing_gpp_us_state: true },
       });
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       cy.fixture("consent/experience_gpp.json").then((payload) => {
@@ -467,7 +513,7 @@ describe("Fides-js GPP extension", () => {
             expect(success).to.eql(true);
             // Opt in string
             expect(data.pingData.applicableSections).to.eql([8]);
-            expect(data.pingData.gppString).to.eql("DBABBg~BWoAAAAA.QA");
+            expect(data.pingData.gppString).to.eql("DBABBg~BWoAAABY.QA");
           });
       });
     });
