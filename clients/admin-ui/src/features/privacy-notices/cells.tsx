@@ -4,13 +4,20 @@ import { CellProps } from "react-table";
 
 import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
 import { EnableCell, MapCell } from "~/features/common/table/";
-import { MECHANISM_MAP } from "~/features/privacy-notices/constants";
+import {
+  FRAMEWORK_MAP,
+  MECHANISM_MAP,
+} from "~/features/privacy-notices/constants";
 import { usePatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
 import { PrivacyNoticeResponse } from "~/types/api";
 
 export const MechanismCell = (
   cellProps: CellProps<typeof MECHANISM_MAP, string>
 ) => <MapCell map={MECHANISM_MAP} {...cellProps} />;
+
+export const FrameworkCell = (
+  cellProps: CellProps<typeof FRAMEWORK_MAP, string>
+) => <MapCell map={FRAMEWORK_MAP} {...cellProps} />;
 
 type TagNames = "available" | "enabled" | "inactive";
 
