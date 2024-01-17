@@ -362,7 +362,9 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: params,
       }),
-      invalidatesTags: ["Configuration Settings"],
+      // Switching GPP settings causes the backend to update privacy notices behind the scenes, so
+      // invalidate privacy notices when a patch goes through.
+      invalidatesTags: ["Configuration Settings", "Privacy Notices"],
     }),
     putConfigurationSettings: build.mutation<
       ApplicationConfig,
