@@ -38,7 +38,7 @@ const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
       backgroundColor: "gray.100",
       color: "gray.800",
       tooltip:
-        "This privacy notice cannot be enabled because the linked data use has not been assigned to a system",
+        "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
     },
   };
 
@@ -82,9 +82,14 @@ export const EnablePrivacyNoticeCell = (
       },
     ]);
 
-  const { systems_applicable: systemsApplicable, disabled: noticeIsDisabled } =
-    row.original;
-  const toggleIsDisabled = noticeIsDisabled && !systemsApplicable;
+  const {
+    systems_applicable: systemsApplicable,
+    disabled: noticeIsDisabled,
+    data_uses: dataUses,
+  } = row.original;
+  const hasDataUses = !!dataUses;
+  const toggleIsDisabled =
+    (noticeIsDisabled && !systemsApplicable) || !hasDataUses;
 
   return (
     <EnableCell<PrivacyNoticeResponse>
@@ -105,8 +110,14 @@ export const PrivacyNoticeStatusCell = (
   const { row } = cellProps;
 
   let tagValue: TagNames | undefined;
-  const { systems_applicable: systemsApplicable, disabled } = row.original;
-  if (systemsApplicable) {
+  const {
+    systems_applicable: systemsApplicable,
+    disabled,
+    data_uses: dataUses,
+  } = row.original;
+  if (!dataUses) {
+    tagValue = "inactive";
+  } else if (systemsApplicable) {
     tagValue = disabled ? "available" : "enabled";
   } else {
     tagValue = "inactive";
