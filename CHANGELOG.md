@@ -27,6 +27,7 @@ The types of changes are:
 ### Changed
 
 - Redesigned nav bar for the admin UI [#4548](https://github.com/ethyca/fides/pull/4548)
+- Fides.js GPP for US geographies now derives values from backend privacy notices [#4559](https://github.com/ethyca/fides/pull/4559)
 
 ### Fixed
 
