@@ -213,6 +213,7 @@ export interface SelectProps {
   isFormikOnChange?: boolean;
   isCustomOption?: boolean;
   textColor?: string;
+  autoFocus?: boolean;
 }
 
 export const SelectInput = ({
@@ -229,6 +230,7 @@ export const SelectInput = ({
   onChange,
   isCustomOption,
   textColor,
+  autoFocus,
 }: { fieldName: string; isMulti?: boolean; onChange?: any } & Omit<
   SelectProps,
   "label"
@@ -302,6 +304,7 @@ export const SelectInput = ({
       size={size}
       classNamePrefix="custom-select"
       placeholder={placeholder}
+      autoFocus={autoFocus}
       focusBorderColor="primary.600"
       chakraStyles={{
         container: (provided) => ({
@@ -525,6 +528,7 @@ export const CustomTextInput = ({
   variant = "inline",
   isRequired = false,
   inputRightElement,
+  autoFocus,
   ...props
 }: CustomInputProps & StringField) => {
   const [initialField, meta] = useField(props);
@@ -542,6 +546,7 @@ export const CustomTextInput = ({
       placeholder={placeholder}
       isPassword={isPassword}
       inputRightElement={inputRightElement}
+      autoFocus={autoFocus}
     />
   );
 
@@ -607,6 +612,7 @@ export const CustomSelect = ({
   isCustomOption,
   textColor,
   placeholder,
+  autoFocus,
   ...props
 }: SelectProps & StringField) => {
   const [field, meta] = useField(props);
@@ -637,6 +643,7 @@ export const CustomSelect = ({
                 menuPosition={props.menuPosition}
                 onChange={!isFormikOnChange ? onChange : undefined}
                 textColor={textColor}
+                autoFocus={autoFocus}
               />
               <ErrorMessage
                 isInvalid={isInvalid}

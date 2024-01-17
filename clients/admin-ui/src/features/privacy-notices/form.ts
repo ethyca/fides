@@ -1,5 +1,7 @@
+import localeCodes from "locale-codes";
 import * as Yup from "yup";
 
+import { Option } from "~/features/common/form/inputs";
 import {
   ConsentMechanism,
   EnforcementLevel,
@@ -33,12 +35,26 @@ export type NoticeTranslation = {
   description: string;
 };
 
+// TEMP
 const DEFAULT_TRANSLATION = {
-  language: "English",
+  language: "en-US",
   title: "",
   description: "",
 };
 
+export const getLanguageNameByTag = (tag: string): string => {
+  const localeInfo = localeCodes.getByTag(tag);
+  return localeInfo.location
+    ? `${localeInfo.name} (${localeInfo.location})`
+    : localeInfo.name;
+};
+
+export const getLanguageOptionByTag = (tag: string): Option => ({
+  value: tag,
+  label: getLanguageNameByTag(tag),
+});
+
+// TEMP
 export const newDefaultInitialValues: NewPrivacyNotice = {
   name: "",
   regions: [],
@@ -47,6 +63,28 @@ export const newDefaultInitialValues: NewPrivacyNotice = {
   enforcement_level: EnforcementLevel.SYSTEM_WIDE,
   translations: [DEFAULT_TRANSLATION],
 };
+
+export type NewPrivacyNoticeCreation = {
+  name: string;
+  notice_key?: string;
+  description?: string;
+  internal_description?: string;
+  origin?: string;
+  regions: Array<PrivacyNoticeRegion>;
+  consent_mechanism: ConsentMechanism;
+  data_uses: Array<string>;
+  enforcement_level: EnforcementLevel;
+  disabled?: boolean;
+  has_gpc_flag?: boolean;
+  displayed_in_privacy_center?: boolean;
+  displayed_in_overlay?: boolean;
+  displayed_in_api?: boolean;
+  translations: NoticeTranslation[];
+};
+
+interface NewPrivacyNoticeUpdateOrCreate extends NewPrivacyNoticeCreation {
+  id?: string;
+}
 
 export const defaultInitialValues: PrivacyNoticeUpdateOrCreate = {
   name: "",
@@ -80,6 +118,23 @@ export const transformPrivacyNoticeResponseToCreation = (
   id: notice.id,
   internal_description: notice.internal_description,
   origin: notice.origin,
+});
+
+export const transformNewPrivacyNoticeResponseToCreation = (
+  notice: NewPrivacyNotice
+): NewPrivacyNoticeUpdateOrCreate => ({
+  name: notice.name ?? newDefaultInitialValues.name!,
+  regions: notice.regions ?? newDefaultInitialValues.regions!,
+  consent_mechanism:
+    notice.consent_mechanism ?? newDefaultInitialValues.consent_mechanism!,
+  data_uses: notice.data_uses ?? newDefaultInitialValues.data_uses!,
+  enforcement_level:
+    notice.enforcement_level ?? newDefaultInitialValues.enforcement_level!,
+  translations: notice.translations ?? newDefaultInitialValues.translations,
+  notice_key: notice.notice_key,
+  disabled: notice.disabled,
+  has_gpc_flag: notice.has_gpc_flag,
+  internal_description: notice.internal_description,
 });
 
 export const ValidationSchema = Yup.object().shape({
