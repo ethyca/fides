@@ -21,6 +21,8 @@ export const defaultInitialValues: PrivacyNoticeUpdateOrCreate = {
   displayed_in_api: true,
   displayed_in_overlay: true,
   displayed_in_privacy_center: true,
+  // When creating, set to disabled to start
+  disabled: true,
 };
 
 export const transformPrivacyNoticeResponseToCreation = (
