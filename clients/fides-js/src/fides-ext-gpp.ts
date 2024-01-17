@@ -32,7 +32,7 @@ import { GPPUSApproach, GppFunction } from "./lib/gpp/types";
 import { FidesEvent } from "./fides";
 import {
   setGppNoticesProvidedFromExperience,
-  setGppOptOutsFromCookie,
+  setGppOptOutsFromCookieAndExperience,
 } from "./lib/gpp/us-notices";
 
 const CMP_VERSION = 1;
@@ -110,10 +110,10 @@ export const initializeGppCmpApi = () => {
         cmpApi.setApplicableSections([TcfEuV2.ID]);
       }
       setGppNoticesProvidedFromExperience({ cmpApi, experience });
-      const sectionsChanged = setGppOptOutsFromCookie({
+      const sectionsChanged = setGppOptOutsFromCookieAndExperience({
         cmpApi,
         cookie: event.detail,
-        region: experience.region,
+        experience,
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
@@ -159,16 +159,18 @@ export const initializeGppCmpApi = () => {
     }
 
     // Set US GPP opt outs
-    const sectionsChanged = setGppOptOutsFromCookie({
-      cmpApi,
-      cookie: event.detail,
-      region: window.Fides.experience?.region ?? "",
-    });
-    if (sectionsChanged.length) {
-      cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
-      sectionsChanged.forEach((section) => {
-        cmpApi.fireSectionChange(section.name);
+    if (isPrivacyExperience(window.Fides.experience)) {
+      const sectionsChanged = setGppOptOutsFromCookieAndExperience({
+        cmpApi,
+        cookie: event.detail,
+        experience: window.Fides.experience,
       });
+      if (sectionsChanged.length) {
+        cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
+        sectionsChanged.forEach((section) => {
+          cmpApi.fireSectionChange(section.name);
+        });
+      }
     }
     cmpApi.setSignalStatus(SignalStatus.READY);
   });
