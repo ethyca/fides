@@ -412,6 +412,55 @@ class TestPrivacyExperience:
             privacy_experience_france_tcf_overlay.get_related_privacy_notices(db) == []
         )
 
+    def test_get_related_privacy_notices_region_country_logic(self, db, system):
+        """
+        Test PrivacyExperience.get_related_privacy_notices returns privacy notices that apply to the country
+        of the experience's region.
+        """
+        privacy_experience = PrivacyExperience.create(
+            db=db,
+            data={
+                "component": ComponentType.overlay,
+                "region": "us_ca",
+            },
+        )
+
+        # No privacy notices exist
+        assert privacy_experience.get_related_privacy_notices(db) == []
+
+        privacy_notice = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "Test privacy notice",
+                "notice_key": "test_privacy_notice",
+                "description": "a test sample privacy notice configuration",
+                "regions": [PrivacyNoticeRegion.us],
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["marketing.advertising", "third_party_sharing"],
+                "enforcement_level": EnforcementLevel.system_wide,
+                "displayed_in_overlay": False,
+                "displayed_in_api": True,
+                "displayed_in_privacy_center": True,
+            },
+        )
+
+        # Privacy Notice has an overlapping country of the experience region, but is not displayed in overlay
+        assert privacy_experience.get_related_privacy_notices(db) == []
+
+        privacy_notice.displayed_in_overlay = True
+        privacy_notice.save(db)
+
+        # Privacy Notice has an overlapping country of the experience region and is displayed in overlay
+        assert privacy_experience.get_related_privacy_notices(db) == [privacy_notice]
+
+        privacy_notice.regions = ["us_co"]
+        privacy_notice.save(db)
+        # While privacy notice is displayed in the overlay, it doesn't have a matching region
+        assert privacy_experience.get_related_privacy_notices(db) == []
+
+        privacy_notice.histories[0].delete(db)
+        privacy_notice.delete(db)
+
     def test_get_should_show_banner(self, db):
         """Test PrivacyExperience.get_should_show_banner that is calculated at runtime"""
         privacy_experience = PrivacyExperience.create(
