@@ -10,7 +10,11 @@ from pydantic import Extra, conlist, root_validator, validator
 
 from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
 from fides.api.models.privacy_notice import PrivacyNotice as PrivacyNoticeModel
-from fides.api.models.privacy_notice import PrivacyNoticeRegion, UserConsentPreference
+from fides.api.models.privacy_notice import (
+    PrivacyNoticeFramework,
+    PrivacyNoticeRegion,
+    UserConsentPreference,
+)
 from fides.api.schemas.base_class import FidesSchema
 
 
@@ -25,11 +29,6 @@ class GPPFieldMapping(FidesSchema):
     region: str  # TODO: make PrivacyNoticeRegion enum, figure out serialization
     notice: Optional[List[str]]
     mechanism: Optional[List[GPPMechanismMapping]]
-
-
-class PrivacyNoticeFramework(Enum):
-    gpp_us_national = "gpp_us_national"
-    gpp_us_state = "gpp_us_state"
 
 
 class PrivacyNotice(FidesSchema):

@@ -474,12 +474,12 @@ def prepare_privacy_notice_patches(
             validation_updates,
             existing_notices.values(),
             all_data_uses=DataUse.query(db).all(),
-            # ignore_disabled=ignore_disabled, # TODO: figure out if we should re-enable disabled checking of templates, how to properly allow GPP overlaps
+            ignore_disabled=ignore_disabled,  # TODO: figure out if we should re-enable disabled checking of templates, how to properly allow GPP overlaps
         )
         check_conflicting_notice_keys(
             validation_updates,
             existing_notices.values(),
-            # ignore_disabled=ignore_disabled,
+            ignore_disabled=ignore_disabled,
         )
         for validation_update in validation_updates:
             validation_update.validate_enabled_has_data_uses()

@@ -25,6 +25,11 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
 )
 
 
+class PrivacyNoticeFramework(Enum):
+    gpp_us_national = "gpp_us_national"
+    gpp_us_state = "gpp_us_state"
+
+
 class UserConsentPreference(Enum):
     opt_in = "opt_in"  # The user wants to opt in to the notice
     opt_out = "opt_out"  # The user wants to opt out of the notice
@@ -187,6 +192,13 @@ class PrivacyNoticeBase:
     gpp_field_mapping = Column(
         MutableList.as_mutable(JSONB), index=False, unique=False, nullable=True
     )
+
+    @property
+    def is_gpp(self) -> bool:
+        return self.framework in (
+            PrivacyNoticeFramework.gpp_us_national.value,
+            PrivacyNoticeFramework.gpp_us_state.value,
+        )
 
     def applies_to_system(self, system: System) -> bool:
         """Privacy Notice applies to System if a data use matches or the Privacy Notice
@@ -414,7 +426,9 @@ def check_conflicting_data_uses(
         list
     )
     for privacy_notice in existing_privacy_notices:
-        if privacy_notice.disabled and ignore_disabled:
+        if privacy_notice.disabled and (
+            ignore_disabled or privacy_notice.is_gpp
+        ):  # disabled GPP notices should always be ignored
             continue
         for region in privacy_notice.regions:
             for data_use in privacy_notice.data_uses:
@@ -424,7 +438,7 @@ def check_conflicting_data_uses(
 
     # now, validate the new (incoming) notices
     for privacy_notice in new_privacy_notices:
-        if privacy_notice.disabled and ignore_disabled:
+        if privacy_notice.disabled and (ignore_disabled or privacy_notice.is_gpp):
             # if the incoming notice is disabled, it skips validation
             continue
         # check each of the incoming notice's regions
