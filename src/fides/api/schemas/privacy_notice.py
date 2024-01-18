@@ -76,8 +76,8 @@ class PrivacyNotice(FidesSchema):
     @root_validator(pre=True)
     def validate_framework(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         gpp_framework: bool = (
-            values.get("framework") == PrivacyNoticeFramework.gpp_us_national
-            or values.get("framework") == PrivacyNoticeFramework.gpp_us_state
+            values.get("framework") == PrivacyNoticeFramework.gpp_us_national.value
+            or values.get("framework") == PrivacyNoticeFramework.gpp_us_state.value
         )
         if gpp_framework and not values.get("gpp_field_mapping"):
             raise ValueError(
