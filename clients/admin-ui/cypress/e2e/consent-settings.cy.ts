@@ -20,7 +20,7 @@ describe("Consent settings", () => {
         mspa_service_provider_mode: true,
         mspa_opt_out_option_mode: false,
         mspa_covered_transactions: true,
-        enable_tc_string: true,
+        enable_tcfeu_string: true,
       },
     };
     const DEFAULT_CONFIG = {
@@ -33,7 +33,7 @@ describe("Consent settings", () => {
         mspa_service_provider_mode: false,
         mspa_opt_out_option_mode: false,
         mspa_covered_transactions: false,
-        enable_tc_string: false,
+        enable_tcfeu_string: false,
       },
     };
 
@@ -61,7 +61,7 @@ describe("Consent settings", () => {
           "not.have.attr",
           "data-checked"
         );
-        cy.getByTestId("input-gpp.enable_tc_string").should(
+        cy.getByTestId("input-gpp.enable_tcfeu_string").should(
           "not.have.attr",
           "data-checked"
         );
@@ -88,7 +88,7 @@ describe("Consent settings", () => {
           "not.have.attr",
           "data-checked"
         );
-        cy.getByTestId("input-gpp.enable_tc_string").should(
+        cy.getByTestId("input-gpp.enable_tcfeu_string").should(
           "have.attr",
           "data-checked"
         );
@@ -140,7 +140,7 @@ describe("Consent settings", () => {
         cy.getByTestId("option-national").click();
         cy.getByTestId("input-gpp.mspa_covered_transactions").click();
         cy.getByTestId("input-gpp.mspa_service_provider_mode").click();
-        cy.getByTestId("input-gpp.enable_tc_string").click();
+        cy.getByTestId("input-gpp.enable_tcfeu_string").click();
       });
       cy.getByTestId("save-btn").click();
       cy.wait("@patchConfig").then((interception) => {
@@ -151,7 +151,7 @@ describe("Consent settings", () => {
             mspa_service_provider_mode: true,
             mspa_opt_out_option_mode: false,
             mspa_covered_transactions: true,
-            enable_tc_string: true,
+            enable_tcfeu_string: true,
           },
         });
       });

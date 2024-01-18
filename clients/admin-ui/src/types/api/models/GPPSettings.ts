@@ -26,7 +26,7 @@ export type GPPSettings = {
    */
   mspa_covered_transactions?: boolean;
   /**
-   * Whether TC string should be included as a section in GPP
+   * Whether the TCF EU string should be included as a section in GPP
    */
-  enable_tc_string?: boolean;
+  enable_tcfeu_string?: boolean;
 };

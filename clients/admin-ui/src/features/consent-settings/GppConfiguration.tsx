@@ -96,7 +96,7 @@ const GppConfiguration = () => {
               </Text>
               <CustomSwitch
                 label="Enable TC string"
-                name="gpp.enable_tc_string"
+                name="gpp.enable_tcfeu_string"
                 variant="switchFirst"
                 tooltip="TODO"
               />
