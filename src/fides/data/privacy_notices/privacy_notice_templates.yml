@@ -25,13 +25,13 @@ privacy_notices:
         - SharingOptOutNotice
       mechanism:
         - field: SaleOptOut
-          not_available: 0
-          opt_out: 1
-          not_opt_out: 2
+          not_available: "0"
+          opt_out: "1"
+          not_opt_out: "2"
         - field: SharingOptOut
-          not_available: 0
-          opt_out: 1
-          not_opt_out: 2
+          not_available: "0"
+          opt_out: "1"
+          not_opt_out: "2"
 
 
 - name: Targeted Advertising
@@ -62,33 +62,33 @@ privacy_notices:
         - TargetedAdvertisingOptOutNotice
       mechanism:
         - field: TargetedAdvertisingOptOut
-          not_available: 0
-          opt_out: 1
-          not_opt_out: 2
+          not_available: "0"
+          opt_out: "1"
+          not_opt_out: "2"
     - region: us_ct
       notice:
         - TargetedAdvertisingOptOutNotice
       mechanism:
         - field: TargetedAdvertisingOptOut
-          not_available: 0
-          opt_out: 1
-          not_opt_out: 2
+          not_available: "0"
+          opt_out: "1"
+          not_opt_out: "2"
     - region: us_ut
       notice:
         - TargetedAdvertisingOptOutNotice
       mechanism:
         - field: TargetedAdvertisingOptOut
-          not_available: 0
-          opt_out: 1
-          not_opt_out: 2
+          not_available: "0"
+          opt_out: "1"
+          not_opt_out: "2"
     - region: us_va
       notice:
         - TargetedAdvertisingOptOutNotice
       mechanism:
         - field: TargetedAdvertisingOptOut
-          not_available: 0
-          opt_out: 1
-          not_opt_out: 2
+          not_available: "0"
+          opt_out: "1"
+          not_opt_out: "2"
     - region: us_ia
       # Iowa not yet part of GPP
       notice:
@@ -153,33 +153,33 @@ privacy_notices:
         - SaleOptOutNotice
       mechanism:
         - field: SaleOptOut
-          not_available: 0
-          opt_out: 1
-          not_opt_out: 2
+          not_available: "0"
+          opt_out: "1"
+          not_opt_out: "2"
     - region: us_ct
       notice:
         - SaleOptOutNotice
       mechanism:
         - field: SaleOptOut
-          not_available: 0
-          opt_out: 1
-          not_opt_out: 2
+          not_available: "0"
+          opt_out: "1"
+          not_opt_out: "2"
     - region: us_ut
       notice:
         - SaleOptOutNotice
       mechanism:
         - field: SaleOptOut
-          not_available: 0
-          opt_out: 1
-          not_opt_out: 2
+          not_available: "0"
+          opt_out: "1"
+          not_opt_out: "2"
     - region: us_va
       notice:
         - SaleOptOutNotice
       mechanism:
         - field: SaleOptOut
-          not_available: 0
-          opt_out: 1
-          not_opt_out: 2
+          not_available: "0"
+          opt_out: "1"
+          not_opt_out: "2"
     - region: us_ia
       # Iowa not yet part of GPP
       notice:
@@ -212,38 +212,38 @@ privacy_notices:
         - SensitiveDataLimitUseNotice
       mechanism:
       - field: SensitiveDataProcessing
-        not_available: 000000000
-        opt_out: 111111111
-        not_opt_out: 222222222
+        not_available: "000000000"
+        opt_out: "111111111"
+        not_opt_out: "222222222"
     - region: us_co
       notice:
       mechanism:
         - field: SensitiveDataProcessing
-          not_available: 0000000
-          opt_out: 1111111
-          not_opt_out: 2222222
+          not_available: "0000000"
+          opt_out: "1111111"
+          not_opt_out: "2222222"
     - region: us_ct
       notice:
       mechanism:
         - field: SensitiveDataProcessing
-          not_available: 00000000
-          opt_out: 11111111
-          not_opt_out: 22222222
+          not_available: "00000000"
+          opt_out: "11111111"
+          not_opt_out: "22222222"
     - region: us_ut
       notice:
         - SensitiveDataProcessingOptOutNotice
       mechanism:
         - field: SensitiveDataProcessing
-          not_available: 00000000
-          opt_out: 11111111
-          not_opt_out: 22222222
+          not_available: "00000000"
+          opt_out: "11111111"
+          not_opt_out: "22222222"
     - region: us_va
       notice:
       mechanism:
         - field: SensitiveDataProcessing
-          not_available: 00000000
-          opt_out: 11111111
-          not_opt_out: 22222222
+          not_available: "00000000"
+          opt_out: "11111111"
+          not_opt_out: "22222222"
 
 - name: Known Child Sensitive Data Consents
   notice_key: known_child_sensitive_data_consents_gpp_us_state
@@ -270,37 +270,37 @@ privacy_notices:
       notice:
       mechanism:
       - field: KnownChildSensitiveDataConsents
-        not_available: 00
-        opt_out: 11
-        not_opt_out: 22
+        not_available: "00"
+        opt_out: "11"
+        not_opt_out: "22"
     - region: us_co
       notice:
       mechanism:
       - field: KnownChildSensitiveDataConsents
-        not_available: 0
-        opt_out: 1
-        not_opt_out: 2
+        not_available: "0"
+        opt_out: "1"
+        not_opt_out: "2"
     - region: us_ct
       notice:
       mechanism:
       - field: KnownChildSensitiveDataConsents
-        not_available: 000
-        opt_out: 111
-        not_opt_out: 222
+        not_available: "000"
+        opt_out: "111"
+        not_opt_out: "222"
     - region: us_ut
       notice:
       mechanism:
       - field: KnownChildSensitiveDataConsents
-        not_available: 0
-        opt_out: 1
-        not_opt_out: 2
+        not_available: "0"
+        opt_out: "1"
+        not_opt_out: "2"
     - region: us_va
       notice:
       mechanism:
       - field: KnownChildSensitiveDataConsents
-        not_available: 0
-        opt_out: 1
-        not_opt_out: 2
+        not_available: "0"
+        opt_out: "1"
+        not_opt_out: "2"
 
 
 
@@ -331,13 +331,13 @@ privacy_notices:
         - SharingNotice
       mechanism:
         - field: SaleOptOut
-          not_available: 0
-          opt_out: 1
-          not_opt_out: 2
+          not_available: "0"
+          opt_out: "1"
+          not_opt_out: "2"
         - field: SharingOptOut
-          not_available: 0
-          opt_out: 1
-          not_opt_out: 2
+          not_available: "0"
+          opt_out: "1"
+          not_opt_out: "2"
 
 - name: Sensitive Personal Data Sharing
   notice_key: sensitive_personal_data_sharing_gpp_us_national
@@ -362,9 +362,9 @@ privacy_notices:
         - SensitiveDataProcessingOptOutNotice
       mechanism:
         - field: SensitiveDataProcessing
-          not_available: 000000000000
-          opt_out: 111111111111
-          not_opt_out: 222222222222
+          not_available: "000000000000"
+          opt_out: "111111111111"
+          not_opt_out: "222222222222"
 
 - name: Known Child Sensitive Data Consents
   notice_key: known_child_sensitive_data_consents_gpp_us_national
@@ -387,9 +387,9 @@ privacy_notices:
       notice:
       mechanism:
       - field: KnownChildSensitiveDataConsents
-        not_available: 00
-        opt_out: 11
-        not_opt_out: 22
+        not_available: "00"
+        opt_out: "11"
+        not_opt_out: "22"
 
 
 

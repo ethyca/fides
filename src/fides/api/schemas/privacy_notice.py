@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesKey
 from pydantic import Extra, conlist, root_validator, validator
 
+from fides.api.custom_types import GPPMechanismConsentValue
 from fides.api.models.privacy_notice import ConsentMechanism, EnforcementLevel
 from fides.api.models.privacy_notice import PrivacyNotice as PrivacyNoticeModel
 from fides.api.models.privacy_notice import (
@@ -20,9 +20,9 @@ from fides.api.schemas.base_class import FidesSchema
 
 class GPPMechanismMapping(FidesSchema):
     field: str
-    not_available: str
-    opt_out: str
-    not_opt_out: str
+    not_available: GPPMechanismConsentValue
+    opt_out: GPPMechanismConsentValue
+    not_opt_out: GPPMechanismConsentValue
 
 
 class GPPFieldMapping(FidesSchema):
