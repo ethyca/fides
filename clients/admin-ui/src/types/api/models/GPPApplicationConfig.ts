@@ -12,5 +12,5 @@ export type GPPApplicationConfig = {
   mspa_service_provider_mode?: boolean;
   mspa_opt_out_option_mode?: boolean;
   mspa_covered_transactions?: boolean;
-  enable_tc_string?: boolean;
+  enable_tcfeu_string?: boolean;
 };
