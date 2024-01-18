@@ -366,7 +366,7 @@ privacy_notices:
           opt_out: 111111111111
           not_opt_out: 222222222222
 
-- name: Known Child Sensitive Data Consents (GPP, US National)
+- name: Known Child Sensitive Data Consents
   notice_key: known_child_sensitive_data_consents_gpp_us_national
   id: pri_gpp_us_nat_3 # TODO: update
   description: We may process the personal information of children under 16. # TODO: text TBD
