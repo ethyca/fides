@@ -26,7 +26,7 @@ class GPPMechanismMapping(FidesSchema):
 
 
 class GPPFieldMapping(FidesSchema):
-    region: str  # TODO: make PrivacyNoticeRegion enum, figure out serialization
+    region: PrivacyNoticeRegion
     notice: Optional[List[str]]
     mechanism: Optional[List[GPPMechanismMapping]]
 
@@ -53,8 +53,8 @@ class PrivacyNotice(FidesSchema):
     displayed_in_privacy_center: Optional[bool] = False
     displayed_in_overlay: Optional[bool] = False
     displayed_in_api: Optional[bool] = False
-    framework: Optional[PrivacyNoticeFramework]
-    gpp_field_mapping: Optional[List[GPPFieldMapping]]
+    framework: Optional[PrivacyNoticeFramework] = None
+    gpp_field_mapping: Optional[List[GPPFieldMapping]] = None
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -72,6 +72,18 @@ class PrivacyNotice(FidesSchema):
         if len(regions) != len(set(regions)):
             raise ValueError("Duplicate regions found.")
         return regions
+
+    @root_validator(pre=True)
+    def validate_framework(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        gpp_framework: bool = (
+            values.get("framework") == PrivacyNoticeFramework.gpp_us_national
+            or values.get("framework") == PrivacyNoticeFramework.gpp_us_state
+        )
+        if gpp_framework and not values.get("gpp_field_mapping"):
+            raise ValueError(
+                "GPP field mapping must be defined on notices assigned with a GPP framework."
+            )
+        return values
 
     def validate_data_uses(self, valid_data_uses: List[str]) -> None:
         """
