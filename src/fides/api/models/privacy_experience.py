@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from enum import Enum
-from html import escape
 from typing import Any, Dict, List, Optional, Set, Tuple, Type
 
 from sqlalchemy import Boolean, Column
@@ -18,7 +17,7 @@ from fides.api.models.privacy_notice import (
     create_historical_data_from_record,
     update_if_modified,
 )
-from fides.api.models.sql_models import System
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
     ConsentMechanism.notice_only,
@@ -227,7 +226,7 @@ class PrivacyExperience(Base):
     @property
     def region_country(self) -> str:
         """The experience's country, based on naming convention of its region string."""
-        return region_country(self.region.value)
+        return region_country(self.region.value)  # type: ignore[attr-defined]
 
     def get_should_show_banner(
         self, db: Session, show_disabled: Optional[bool] = True
@@ -252,7 +251,7 @@ class PrivacyExperience(Base):
                 return True
 
         privacy_notice_query = get_privacy_notices_by_region_and_component(
-            db, [self.region.value], self.component  # type: ignore[arg-type]
+            db, [self.region.value], self.component  # type: ignore[arg-type, attr-defined]
         )
         if show_disabled is False:
             privacy_notice_query = privacy_notice_query.filter(
@@ -281,7 +280,7 @@ class PrivacyExperience(Base):
             return []
 
         privacy_notice_query = get_privacy_notices_by_region_and_component(
-            db, [self.region.value, self.region_country], self.component  # type: ignore[arg-type]
+            db, [self.region.value, self.region_country], self.component  # type: ignore[arg-type, attr-defined]
         )
         if show_disabled is False:
             privacy_notice_query = privacy_notice_query.filter(
