@@ -22,6 +22,7 @@ privacy_notices:
     - region: us_ca
       notice:
         - SaleOptOutNotice
+        - SharingOptOutNotice
       mechanism:
         - field: SaleOptOut
           not_available: 0
