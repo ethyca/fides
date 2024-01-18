@@ -112,7 +112,7 @@ The types of changes are:
 - Change focus outline color of form inputs [#4467](https://github.com/ethyca/fides/pull/4467)
 
 ### Fixed
-- Fixed a bug where selected vendors in "configure consent" add vendor modal were unstyled [#4454](https://github.com/ethyca/fides/pull/4454)
+- Fixed a bug where selected vendors in "Consent reporting" add vendor modal were unstyled [#4454](https://github.com/ethyca/fides/pull/4454)
 - Use correct defaults when there is no associated preference in the cookie [#4451](https://github.com/ethyca/fides/pull/4451)
 - IP Addresses behind load balancers for consent reporting [#4440](https://github.com/ethyca/fides/pull/4440)
 
@@ -266,7 +266,7 @@ The types of changes are:
 - Update frontend to use new legal basis dimension on vendors [#4216](https://github.com/ethyca/fides/pull/4216)
 - Updated privacy center patch preferences call to handle updated API response [#4235](https://github.com/ethyca/fides/pull/4235)
 - Added our CMP ID [#4233](https://github.com/ethyca/fides/pull/4233)
-- Allow Admin UI users to turn on Configure Consent flag [#4246](https://github.com/ethyca/fides/pull/4246)
+- Allow Admin UI users to turn on Consent reporting flag [#4246](https://github.com/ethyca/fides/pull/4246)
 - Styling improvements for the fides.js consent banners and modals [#4222](https://github.com/ethyca/fides/pull/4222)
 - Update frontend to handle updated Compass schema [#4254](https://github.com/ethyca/fides/pull/4254)
 - Assume Universal Vendor ID usage in TC String translation [#4256](https://github.com/ethyca/fides/pull/4256)

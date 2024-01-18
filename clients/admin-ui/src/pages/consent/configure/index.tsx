@@ -43,7 +43,7 @@ const ConfigureConsentPage = () => {
 
   if (isTcfEnabled) {
     return (
-      <Layout title="Configure consent">
+      <Layout title="Consent reporting">
         <ConsentMetadata
           includeAddVendors
           title="Manage your vendors"
@@ -55,9 +55,9 @@ const ConfigureConsentPage = () => {
   }
 
   return (
-    <Layout title="Configure consent">
+    <Layout title="Consent reporting">
       <ConsentMetadata
-        title="Configure consent"
+        title="Consent reporting"
         description="Your current cookies and tracking information."
       />
       <ConfigureConsent />
