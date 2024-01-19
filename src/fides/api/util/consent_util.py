@@ -24,7 +24,6 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeRegion,
     PrivacyNoticeTemplate,
     UserConsentPreference,
-    check_conflicting_data_uses,
     check_conflicting_notice_keys,
 )
 from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
@@ -337,7 +336,6 @@ def create_privacy_notices_util(
         PrivacyNotice(**privacy_notice.dict(exclude_unset=True))
         for privacy_notice in privacy_notice_schemas
     ]
-    check_conflicting_data_uses(new_notices, existing_notices, all_data_uses)
     check_conflicting_notice_keys(new_notices, existing_notices)
     for new_notice in new_notices:
         new_notice.validate_enabled_has_data_uses()
@@ -470,12 +468,6 @@ def prepare_privacy_notice_patches(
 
     # run the validation here on our proposed "dry-run" updates
     try:
-        check_conflicting_data_uses(
-            validation_updates,
-            existing_notices.values(),
-            all_data_uses=DataUse.query(db).all(),
-            ignore_disabled=ignore_disabled,  # TODO: figure out if we should re-enable disabled checking of templates, how to properly allow GPP overlaps
-        )
         check_conflicting_notice_keys(
             validation_updates,
             existing_notices.values(),
