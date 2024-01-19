@@ -10,8 +10,7 @@ describe("Organization page", () => {
 
   it("can navigate to the Organization page", () => {
     cy.visit("/");
-    cy.getByTestId("management-btn").click();
-    cy.contains("nav a", "Organization").click();
+    cy.getByTestId("Organization-nav-link").click();
     cy.getByTestId("organization-management");
   });
 
