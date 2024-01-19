@@ -17,7 +17,6 @@ from fides.api.models.privacy_notice import (
     create_historical_data_from_record,
     update_if_modified,
 )
-from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
     ConsentMechanism.notice_only,
@@ -263,37 +262,6 @@ class PrivacyExperience(Base):
                 PrivacyNotice.consent_mechanism.in_(BANNER_CONSENT_MECHANISMS)
             ).count()
         )
-
-    def get_related_privacy_notices(
-        self,
-        db: Session,
-        show_disabled: Optional[bool] = True,
-        systems_applicable: Optional[bool] = False,
-    ) -> List[PrivacyNotice]:
-        """Return privacy notices that overlap on at least one region
-        and match on ComponentType
-
-        If show_disabled=False, only return enabled notices.
-
-        """
-        if self.component == ComponentType.tcf_overlay:
-            return []
-
-        privacy_notice_query = get_privacy_notices_by_region_and_component(
-            db, [self.region.value, self.region_country], self.component  # type: ignore[arg-type, attr-defined]
-        )
-        if show_disabled is False:
-            privacy_notice_query = privacy_notice_query.filter(
-                PrivacyNotice.disabled.is_(False)
-            )
-
-        if systems_applicable:
-            data_uses: set[str] = System.get_data_uses(
-                System.all(db), include_parents=True
-            )
-            privacy_notice_query = privacy_notice_query.filter(PrivacyNotice.data_uses.overlap(data_uses))  # type: ignore
-
-        return privacy_notice_query.order_by(PrivacyNotice.created_at.desc()).all()
 
     @staticmethod
     def create_default_experience_for_region(
