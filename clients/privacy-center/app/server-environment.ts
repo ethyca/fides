@@ -358,7 +358,7 @@ export const loadPrivacyCenterEnvironment =
         ? process.env.FIDES_PRIVACY_CENTER__ALLOW_HTML_DESCRIPTION === "true"
         : null,
       BASE_64_COOKIE: process.env.BASE_64_COOKIE
-        ? process.env.BASE_64_COOKIE === "true"
+        ? process.env.FIDES_PRIVACY_CENTER__BASE_64_COOKIE === "true"
         : false,
     };
 
