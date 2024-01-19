@@ -6,7 +6,7 @@ import { CmpApi, UsNatV1Field } from "@iabgpp/cmpapi";
 
 import { FIDES_REGION_TO_GPP_SECTION } from "./constants";
 import { FidesCookie, PrivacyExperience } from "../consent-types";
-import { GPPSettings } from "./types";
+import { GPPSettings, GPPUSApproach } from "./types";
 
 const setMspaSections = ({
   cmpApi,
@@ -41,6 +41,24 @@ const setMspaSections = ({
 };
 
 /**
+ * For US National, the privacy experience region is still the state where the user came from.
+ * However, the GPP field mapping will only contain "us", so make sure we use "us" since we are configured for the national case.
+ * Otherwise, we can use the experience region directly.
+ */
+const deriveGppFieldRegion = ({
+  experienceRegion,
+  usApproach,
+}: {
+  experienceRegion: string;
+  usApproach: GPPUSApproach | undefined;
+}) => {
+  if (usApproach === GPPUSApproach.NATIONAL) {
+    return "us";
+  }
+  return experienceRegion;
+};
+
+/**
  * Sets the appropriate fields on a GPP CMP API model for whether notices were provided
  *
  * Returns GPP section IDs which were updated
@@ -58,7 +76,11 @@ export const setGppNoticesProvidedFromExperience = ({
     region,
     gpp_settings: gppSettings,
   } = experience;
-  const gppSection = FIDES_REGION_TO_GPP_SECTION[region];
+  const gppRegion = deriveGppFieldRegion({
+    experienceRegion: region,
+    usApproach: gppSettings?.us_approach,
+  });
+  const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
 
   if (!gppSection) {
     return [];
@@ -68,7 +90,9 @@ export const setGppNoticesProvidedFromExperience = ({
 
   notices.forEach((notice) => {
     const { gpp_field_mapping: fieldMapping } = notice;
-    const gppNotices = fieldMapping?.find((fm) => fm.region === region)?.notice;
+    const gppNotices = fieldMapping?.find(
+      (fm) => fm.region === gppRegion
+    )?.notice;
     if (gppNotices) {
       gppNotices.forEach((gppNotice) => {
         // 1 means notice was provided
@@ -99,7 +123,11 @@ export const setGppOptOutsFromCookieAndExperience = ({
 }) => {
   const sectionsChanged = new Set<{ name: string; id: number }>();
   const { consent } = cookie;
-  const gppSection = FIDES_REGION_TO_GPP_SECTION[experience.region];
+  const gppRegion = deriveGppFieldRegion({
+    experienceRegion: experience.region,
+    usApproach: experience.gpp_settings?.us_approach,
+  });
+  const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
 
   if (!gppSection) {
     return [];
@@ -115,7 +143,7 @@ export const setGppOptOutsFromCookieAndExperience = ({
     if (privacyNotice) {
       const { gpp_field_mapping: fieldMapping } = privacyNotice;
       const gppMechanisms = fieldMapping?.find(
-        (fm) => fm.region === experience.region
+        (fm) => fm.region === gppRegion
       )?.mechanism;
       if (gppMechanisms) {
         gppMechanisms.forEach((gppMechanism) => {
