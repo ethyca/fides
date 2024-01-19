@@ -19,7 +19,6 @@ from fides.api.common_exceptions import ValidationError
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
-    DataUse,
     PrivacyDeclaration,
     System,
 )
