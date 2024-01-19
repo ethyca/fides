@@ -38,6 +38,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     title: "Data map",
     routes: [
       {
+        title: "Reporting",
+        path: routes.REPORTING_DATAMAP_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.DATAMAP_READ],
+        requiresFlag: "datamapReportingPage",
+      },
+      {
         title: "View map",
         path: routes.DATAMAP_ROUTE,
         requiresPlus: true,
@@ -96,7 +103,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Vendors",
         path: routes.CONFIGURE_CONSENT_ROUTE,
-        requiresFlag: "configureConsent",
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },

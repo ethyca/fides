@@ -20,7 +20,12 @@ const FixedLayout = ({
   // Ideally we could have one common layout used by *all* pages, but we couldn't
   // come up with a common method here without introducing other gotchas, so having
   // a slightly different layout was decided as the most maintainable option
-  <Flex data-testid={title} direction="column" height="100vh">
+  <Flex
+    data-testid={title}
+    direction="column"
+    height="calc(100vh - 48px)"
+    width="calc(100vw - 200px)"
+  >
     <Head>
       <title>Fides Admin UI - {title}</title>
       <meta name="description" content="Privacy Engineering Platform" />

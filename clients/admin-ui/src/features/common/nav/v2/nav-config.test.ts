@@ -65,6 +65,9 @@ describe("configureNavGroups", () => {
     const navGroups = configureNavGroups({
       config: NAV_CONFIG,
       hasPlus: true,
+      flags: {
+        datamapReportingPage: true,
+      },
       userScopes: ALL_SCOPES,
     });
 
@@ -77,6 +80,7 @@ describe("configureNavGroups", () => {
     expect(navGroups[1]).toMatchObject({
       title: "Data map",
       children: [
+        { title: "Reporting", path: routes.REPORTING_DATAMAP_ROUTE },
         { title: "View map", path: routes.DATAMAP_ROUTE },
         { title: "View systems", path: routes.SYSTEM_ROUTE },
         { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
