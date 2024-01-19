@@ -377,23 +377,23 @@ describe("Fides-js GPP extension", () => {
         {
           eventName: "listenerRegistered",
           data: true,
-          gppString: "DBABBg~BWAAAABY.QA",
+          gppString: "DBABBg~BUAAAABY.QA",
         },
         {
           eventName: "cmpDisplayStatus",
           data: "hidden",
-          gppString: "DBABBg~BWAAAABY.QA",
+          gppString: "DBABBg~BUAAAABY.QA",
         },
         // Second two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted into
         {
           eventName: "sectionChange",
           data: "uscav1",
-          gppString: "DBABBg~BWoAAABY.QA",
+          gppString: "DBABBg~BUoAAABY.QA",
         },
         {
           eventName: "signalStatus",
           data: "ready",
-          gppString: "DBABBg~BWoAAABY.QA",
+          gppString: "DBABBg~BUoAAABY.QA",
         },
       ];
       // Check the GPP events
@@ -447,23 +447,23 @@ describe("Fides-js GPP extension", () => {
         {
           eventName: "listenerRegistered",
           data: true,
-          gppString: "DBABBg~BWAAAABY.QA",
+          gppString: "DBABBg~BUAAAABY.QA",
         },
         {
           eventName: "cmpDisplayStatus",
           data: "hidden",
-          gppString: "DBABBg~BWAAAABY.QA",
+          gppString: "DBABBg~BUAAAABY.QA",
         },
         // Second two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted out of
         {
           eventName: "sectionChange",
           data: "uscav1",
-          gppString: "DBABBg~BWUAAABY.QA",
+          gppString: "DBABBg~BUUAAABY.QA",
         },
         {
           eventName: "signalStatus",
           data: "ready",
-          gppString: "DBABBg~BWUAAABY.QA",
+          gppString: "DBABBg~BUUAAABY.QA",
         },
       ];
       // Check the GPP events
@@ -513,7 +513,7 @@ describe("Fides-js GPP extension", () => {
             expect(success).to.eql(true);
             // Opt in string
             expect(data.pingData.applicableSections).to.eql([8]);
-            expect(data.pingData.gppString).to.eql("DBABBg~BWoAAABY.QA");
+            expect(data.pingData.gppString).to.eql("DBABBg~BUoAAABY.QA");
           });
       });
     });
