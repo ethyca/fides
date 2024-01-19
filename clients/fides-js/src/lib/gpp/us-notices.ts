@@ -80,18 +80,6 @@ export const setGppNoticesProvidedFromExperience = ({
   // Set MSPA
   setMspaSections({ cmpApi, sectionName: gppSection.name, gppSettings });
 
-  // Set all other *Notice fields to 2
-  const section = cmpApi.getSection(gppSection.name);
-  const sectionNoticeKeys = Object.keys(section).filter((key) =>
-    key.endsWith("Notice")
-  );
-  sectionNoticeKeys.forEach((sectionKey) => {
-    const curValue = cmpApi.getFieldValue(gppSection.name, sectionKey);
-    if (curValue !== 1) {
-      cmpApi.setFieldValue(gppSection.name, sectionKey, 2);
-    }
-  });
-
   return Array.from(sectionsChanged);
 };
 

@@ -138,15 +138,16 @@ describe("setGppNoticesProvidedFromExperience", () => {
       { name: "usnatv1", id: 7, prefix: "usnat" },
     ]);
     const section = cmpApi.getSection("usnatv1");
-    // 2 means notice was not provided. All other consent fields should be 0 (N/A)
+    // We decided to use 0 to mean notice was not provided (https://ethyca.atlassian.net/wiki/spaces/PM/pages/2895937552/GPP+Notice+Requirements)
+    // All other consent fields should be 0 (N/A)
     expect(section).toEqual({
       Version: 1,
-      SharingNotice: 2,
-      SaleOptOutNotice: 2,
-      SharingOptOutNotice: 2,
-      TargetedAdvertisingOptOutNotice: 2,
-      SensitiveDataProcessingOptOutNotice: 2,
-      SensitiveDataLimitUseNotice: 2,
+      SharingNotice: 0,
+      SaleOptOutNotice: 0,
+      SharingOptOutNotice: 0,
+      TargetedAdvertisingOptOutNotice: 0,
+      SensitiveDataProcessingOptOutNotice: 0,
+      SensitiveDataLimitUseNotice: 0,
       SaleOptOut: 0,
       SharingOptOut: 0,
       TargetedAdvertisingOptOut: 0,
@@ -159,7 +160,56 @@ describe("setGppNoticesProvidedFromExperience", () => {
       GpcSegmentType: 1,
       Gpc: false,
     });
-    expect(cmpApi.getGppString()).toEqual("DBABLA~BqqAAAAAAWA.QA");
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BAAAAAAAAWA.QA");
+  });
+
+  it("can set some to provided", () => {
+    const cmpApi = new CmpApi(1, 1);
+    const notices = [
+      mockPrivacyNotice({
+        notice_key: "data_sales_and_sharing",
+        gpp_field_mapping: [
+          mockGppField({
+            region: "us",
+            notice: [
+              "SharingNotice",
+              "SaleOptOutNotice",
+              "SharingOptOutNotice",
+            ],
+          }),
+        ],
+      }),
+    ];
+    const experience = mockPrivacyExperience({ privacy_notices: notices });
+    const sectionsChanged = setGppNoticesProvidedFromExperience({
+      cmpApi,
+      experience,
+    });
+    expect(sectionsChanged).toEqual([
+      { name: "usnatv1", id: 7, prefix: "usnat" },
+    ]);
+    const section = cmpApi.getSection("usnatv1");
+    expect(section).toEqual({
+      Version: 1,
+      SharingNotice: 1,
+      SaleOptOutNotice: 1,
+      SharingOptOutNotice: 1,
+      TargetedAdvertisingOptOutNotice: 0,
+      SensitiveDataProcessingOptOutNotice: 0,
+      SensitiveDataLimitUseNotice: 0,
+      SaleOptOut: 0,
+      SharingOptOut: 0,
+      TargetedAdvertisingOptOut: 0,
+      SensitiveDataProcessing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      KnownChildSensitiveDataConsents: [0, 0],
+      PersonalDataConsents: 0,
+      MspaCoveredTransaction: 1,
+      MspaOptOutOptionMode: 1,
+      MspaServiceProviderMode: 2,
+      GpcSegmentType: 1,
+      Gpc: false,
+    });
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BVAAAAAAAWA.QA");
   });
 
   it("can set all to provided", () => {
