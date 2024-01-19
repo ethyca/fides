@@ -359,6 +359,7 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
     provided_identity: ProvidedIdentity,
     policy: Union[FidesKey, str],
     consent_preferences: ConsentPreferences,
+    consent_request: ConsentRequest,
     executable_consents: Optional[List[ConsentWithExecutableStatus]] = [],
     browser_identity: Optional[Identity] = None,
 ) -> Optional[BulkPostPrivacyRequests]:
@@ -406,6 +407,7 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
                 identity=identity,
                 policy_key=policy,
                 consent_preferences=executable_consent_preferences,
+                custom_privacy_request_fields=consent_request.get_persisted_custom_privacy_request_fields(),
             )
         ],
         authenticated=True,
@@ -481,6 +483,7 @@ def set_consent_preferences(
         provided_identity,
         data.policy_key or DEFAULT_CONSENT_POLICY,
         consent_preferences,
+        consent_request,
         data.executable_options,
         data.browser_identity,
     )

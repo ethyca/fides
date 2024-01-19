@@ -21,7 +21,7 @@ def upgrade():
         sa.Column("consent_request_id", sa.String(), nullable=True),
     )
     op.create_foreign_key(
-        None,
+        "consent_request_id_fkey",
         "custom_privacy_request_field",
         "consentrequest",
         ["consent_request_id"],
@@ -30,5 +30,7 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_constraint(None, "custom_privacy_request_field", type_="foreignkey")
+    op.drop_constraint(
+        "consent_request_id_fkey", "custom_privacy_request_field", type_="foreignkey"
+    )
     op.drop_column("custom_privacy_request_field", "consent_request_id")

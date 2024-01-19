@@ -1,4 +1,5 @@
 from unittest import mock
+from unittest.mock import MagicMock, patch
 
 from fides.api.api.v1.endpoints.consent_request_endpoints import (
     queue_privacy_request_to_propagate_consent_old_workflow,
@@ -123,6 +124,11 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
     def test_queue_privacy_request_to_propagate_consent(
         self, mock_create_privacy_request, db, consent_policy
     ):
+        custom_fields = {"first_name": {"label": "First name", "value": "John"}}
+        mock_consent_request = MagicMock(spec=ConsentRequest)
+        mock_consent_request.get_persisted_custom_privacy_request_fields.return_value = (
+            custom_fields
+        )
         mock_create_privacy_request.return_value = BulkPostPrivacyRequests(
             succeeded=[
                 PrivacyRequestResponse(
@@ -154,6 +160,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             provided_identity=provided_identity,
             policy=DEFAULT_CONSENT_POLICY,
             consent_preferences=consent_preferences,
+            consent_request=mock_consent_request,
             executable_consents=executable_consents,
         )
         assert mock_create_privacy_request.called
@@ -171,6 +178,8 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             call_kwargs["authenticated"] is True
         ), "We already validated identity with a verification code earlier in the request"
 
+        assert call_kwargs["data"][0].custom_privacy_request_fields == custom_fields
+
         provided_identity.delete(db)
 
     @mock.patch(
@@ -179,6 +188,11 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
     def test_do_not_queue_privacy_request_if_no_executable_preferences(
         self, mock_create_privacy_request, db, consent_policy
     ):
+        custom_fields = {"first_name": {"label": "First name", "value": "John"}}
+        mock_consent_request = MagicMock(spec=ConsentRequest)
+        mock_consent_request.get_persisted_custom_privacy_request_fields.return_value = (
+            custom_fields
+        )
         mock_create_privacy_request.return_value = BulkPostPrivacyRequests(
             succeeded=[
                 PrivacyRequestResponse(
@@ -205,6 +219,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             provided_identity=provided_identity,
             policy=DEFAULT_CONSENT_POLICY,
             consent_preferences=consent_preferences,
+            consent_request=mock_consent_request,
             executable_consents=[
                 ConsentWithExecutableStatus(
                     data_use="marketing.advertising", executable=False
@@ -220,6 +235,11 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
     def test_merge_in_browser_identity_with_provided_identity(
         self, mock_create_privacy_request, db, consent_policy
     ):
+        custom_fields = {"first_name": {"label": "First name", "value": "John"}}
+        mock_consent_request = MagicMock(spec=ConsentRequest)
+        mock_consent_request.get_persisted_custom_privacy_request_fields.return_value = (
+            custom_fields
+        )
         mock_create_privacy_request.return_value = BulkPostPrivacyRequests(
             succeeded=[
                 PrivacyRequestResponse(
@@ -247,6 +267,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             provided_identity=provided_identity,
             policy=DEFAULT_CONSENT_POLICY,
             consent_preferences=consent_preferences,
+            consent_request=mock_consent_request,
             executable_consents=[
                 ConsentWithExecutableStatus(
                     data_use="marketing.advertising", executable=True
@@ -260,5 +281,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         identity_of_privacy_request = call_kwargs["data"][0].identity
         assert identity_of_privacy_request.email == "test@email.com"
         assert identity_of_privacy_request.ga_client_id == browser_identity.ga_client_id
+
+        assert call_kwargs["data"][0].custom_privacy_request_fields == custom_fields
 
         provided_identity.delete(db)

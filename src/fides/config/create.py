@@ -195,7 +195,6 @@ def generate_config_docs(
     docs: str = build_config_header() + "\n".join(nested_settings_docs + object_docs)
 
     # Verify it is a valid Fides config file
-    print(docs)
     validate_generated_config(docs)
 
     with open(outfile_path, "w", encoding="utf-8") as output_file:
