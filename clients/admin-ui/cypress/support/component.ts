@@ -13,6 +13,9 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
+// Enable the @cypress/code-coverage plugin
+import "@cypress/code-coverage/support";
+
 // Import commands.js using ES2015 syntax:
 import "./commands";
 import "@fontsource/inter/400.css";
