@@ -85,6 +85,9 @@ jobs:
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
 
+      - name: E2E code coverage report (${{ matrix.clients }})
+        run: npm run coverage
+
       - name: Upload coverage (${{ matrix.clients }})
         uses: codecov/codecov-action@v3
         with:
