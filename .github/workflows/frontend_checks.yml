@@ -87,8 +87,7 @@ jobs:
 
       - name: E2E code coverage report (${{ matrix.clients }})
         run: npm run coverage
-        with:
-          working-directory: clients/${{ matrix.clients }}
+        working-directory: clients/${{ matrix.clients }}
 
       - name: Upload coverage (${{ matrix.clients }})
         uses: codecov/codecov-action@v3
