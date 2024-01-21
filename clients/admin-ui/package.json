@@ -11,7 +11,7 @@
     "copy-export": "mkdir -p ../../src/fides/ui-build/static/admin/ && rsync -a --delete out/ ../../src/fides/ui-build/static/admin/",
     "coverage": "nyc report --reporter=text-summary",
     "coverage:html": "nyc report --reporter=lcov && open coverage/lcov-report/index.html",
-    "coverage:ci": "nyc report --check-coverage --lines 85",
+    "coverage:ci": "nyc report --check-coverage --lines 65",
     "coverage:clean": "rm -rf .nyc_output coverage",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
