@@ -1,5 +1,4 @@
 module.exports = {
   presets: ["next/babel"],
-  // plugins: process.env.NODE_ENV == "test" ? ["istanbul"] : [],
-  plugins: ["istanbul"], 
+  plugins: process.env.NODE_ENV == "test" ? ["istanbul"] : [],
 };

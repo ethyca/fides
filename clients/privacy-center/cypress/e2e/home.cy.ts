@@ -2,14 +2,6 @@ import { Config } from "~/types/config";
 import { API_URL } from "../support/constants";
 
 describe("Home", () => {
-  it("has coverage data", () => {
-    // TODO: delete me
-    cy.visit("/");
-    cy.window().then((win) => {
-      cy.wrap(win).should("have.property", "__coverage__");
-    });
-  });
-
   it("renders the configured page info", () => {
     cy.visit("/");
     cy.getByTestId("home");

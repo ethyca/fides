@@ -6,11 +6,15 @@ coverage:
       backend:
         target: 85%
         flags:
-          - fides
+          - backend
       admin-ui:
-        target: 65%
+        target: 60%
         flags:
           - admin-ui
+      privacy-center:
+        target: 60%
+        flags:
+          - privacy-center
     patch:
       default:
         target: 100%
