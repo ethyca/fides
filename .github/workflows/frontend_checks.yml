@@ -57,6 +57,7 @@ jobs:
         node-version: [16.x]
         clients:
           - "admin-ui"
+          - "privacy-center"
     defaults:
       run:
         working-directory: clients
