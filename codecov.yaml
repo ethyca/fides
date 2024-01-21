@@ -1,8 +1,6 @@
 coverage:
   status:
     project:
-      default:
-        target: 85%
       backend:
         target: 85%
         flags:
