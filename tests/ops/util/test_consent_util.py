@@ -1236,7 +1236,6 @@ class TestValidateDataUses:
     def test_validate_data_uses_default_taxonomy(
         self, db, privacy_notice_request: PrivacyNoticeCreation
     ):
-        db = sql_DataUse.query(db).all()
         privacy_notice_request.data_uses = ["marketing.advertising"]
         validate_notice_data_uses([privacy_notice_request], db)
         privacy_notice_request.data_uses = ["marketing.advertising", "essential"]
