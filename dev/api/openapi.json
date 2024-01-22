@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.27.1b1.post0.dev9"
+    "version": "2.27.1b1.post0.dev10"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -4238,7 +4238,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Identity"
+                "$ref": "#/components/schemas/ConsentRequestCreate"
               }
             }
           },
@@ -4370,7 +4370,7 @@
           },
           "400": {
             "description": "Bad Request",
-            "detail": "Retrieving consent preferences without identity verification is only supported with subject_identity_verification_required turned off."
+            "detail": "Retrieving consent preferences without identity verification is only supported with disable_consent_identity_verification set to true"
           },
           "422": {
             "description": "Validation Error",
@@ -13478,6 +13478,26 @@
         },
         "description": "Keeps record of each of the preferences that have been recorded via ConsentReporting endpoints."
       },
+      "ConsentRequestCreate": {
+        "title": "ConsentRequestCreate",
+        "required": [
+          "identity"
+        ],
+        "type": "object",
+        "properties": {
+          "identity": {
+            "$ref": "#/components/schemas/Identity"
+          },
+          "custom_privacy_request_fields": {
+            "title": "Custom Privacy Request Fields",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CustomPrivacyRequestField"
+            }
+          }
+        },
+        "description": "Data required to create a consent PrivacyRequest"
+      },
       "ConsentRequestMap": {
         "title": "ConsentRequestMap",
         "type": "object",
@@ -14721,6 +14741,10 @@
             "title": "Subject Identity Verification Required",
             "type": "boolean"
           },
+          "disable_consent_identity_verification": {
+            "title": "Disable Consent Identity Verification",
+            "type": "boolean"
+          },
           "require_manual_request_approval": {
             "title": "Require Manual Request Approval",
             "type": "boolean"
@@ -15493,12 +15517,17 @@
         "title": "IdentityVerificationConfigResponse",
         "required": [
           "identity_verification_required",
+          "disable_consent_identity_verification",
           "valid_email_config_exists"
         ],
         "type": "object",
         "properties": {
           "identity_verification_required": {
             "title": "Identity Verification Required",
+            "type": "boolean"
+          },
+          "disable_consent_identity_verification": {
+            "title": "Disable Consent Identity Verification",
             "type": "boolean"
           },
           "valid_email_config_exists": {
@@ -18026,6 +18055,10 @@
           },
           "identity": {
             "$ref": "#/components/schemas/Identity"
+          },
+          "consent_request_id": {
+            "title": "Consent Request Id",
+            "type": "string"
           },
           "custom_privacy_request_fields": {
             "title": "Custom Privacy Request Fields",

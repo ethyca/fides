@@ -1460,54 +1460,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">345</span>
 <span class="normal">346</span>
 <span class="normal">347</span>
-<span class="normal">348</span>
-<span class="normal">349</span>
-<span class="normal">350</span>
-<span class="normal">351</span>
-<span class="normal">352</span>
-<span class="normal">353</span>
-<span class="normal">354</span>
-<span class="normal">355</span>
-<span class="normal">356</span>
-<span class="normal">357</span>
-<span class="normal">358</span>
-<span class="normal">359</span>
-<span class="normal">360</span>
-<span class="normal">361</span>
-<span class="normal">362</span>
-<span class="normal">363</span>
-<span class="normal">364</span>
-<span class="normal">365</span>
-<span class="normal">366</span>
-<span class="normal">367</span>
-<span class="normal">368</span>
-<span class="normal">369</span>
-<span class="normal">370</span>
-<span class="normal">371</span>
-<span class="normal">372</span>
-<span class="normal">373</span>
-<span class="normal">374</span>
-<span class="normal">375</span>
-<span class="normal">376</span>
-<span class="normal">377</span>
-<span class="normal">378</span>
-<span class="normal">379</span>
-<span class="normal">380</span>
-<span class="normal">381</span>
-<span class="normal">382</span>
-<span class="normal">383</span>
-<span class="normal">384</span>
-<span class="normal">385</span>
-<span class="normal">386</span>
-<span class="normal">387</span>
-<span class="normal">388</span>
-<span class="normal">389</span>
-<span class="normal">390</span>
-<span class="normal">391</span>
-<span class="normal">392</span>
-<span class="normal">393</span>
-<span class="normal">394</span>
-<span class="normal">395</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">348</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1525,7 +1478,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;4bcbcb40d94c68e6b0d281b91bfd20e0&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;e7e3e555ad4866fe067117e63db08224&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1680,11 +1633,6 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1">#--------------------------------------------------------------------#</span>
 <span class="k">[notifications]</span><span class="w"> </span><span class="c1"># Configuration settings for Data Subject and/or Data Processor notifications.</span>
 
-<span class="c1"># Sets the notification service type used to send notifications.</span>
-<span class="c1"># Accepts mailchimp_transactional, mailgun, twilio_sms, or</span>
-<span class="c1"># twilio_email.</span>
-<span class="n">notification_service_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
-
 <span class="c1"># When set to True, enables subject notifications upon privacy request</span>
 <span class="c1"># completion.</span>
 <span class="n">send_request_completion_notification</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
@@ -1767,17 +1715,6 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># The key used to sign Fides API access tokens.</span>
 <span class="n">app_encryption_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
-<span class="c1"># A list of client addresses allowed to communicate with the Fides</span>
-<span class="c1"># webserver.</span>
-<span class="n">cors_origins</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="c1"># array</span>
-
-<span class="c1"># A regex pattern used to set the CORS origin allowlist.</span>
-<span class="n">cors_origin_regex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
-
-<span class="c1"># JWT secret by which passed-in identity is decrypted according to the</span>
-<span class="c1"># HS256 algorithm.</span>
-<span class="n">drp_jwt_secret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
-
 <span class="c1"># Text encoding to use for the application.</span>
 <span class="n">encoding</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;UTF-8&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
@@ -1798,10 +1735,6 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># client.</span>
 <span class="n">oauth_root_client_secret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
-<span class="c1"># Automatically generated by Fides, and represents a hashed value of</span>
-<span class="c1"># the oauth_root_client_secret.</span>
-<span class="n">oauth_root_client_secret_hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="c1"># array</span>
-
 <span class="c1"># The time in minutes for which Fides API tokens will be valid. Default</span>
 <span class="c1"># value is equal to 8 days.</span>
 <span class="n">oauth_access_token_expire_minutes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">11520</span><span class="w"> </span><span class="c1"># integer</span>
@@ -1812,14 +1745,6 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># Sets desired length in bytes of generated client secret used for</span>
 <span class="c1"># oauth.</span>
 <span class="n">oauth_client_secret_length_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">16</span><span class="w"> </span><span class="c1"># integer</span>
-
-<span class="c1"># When using a parent/child Fides deployment, this password will be</span>
-<span class="c1"># used by the child server to access the parent server.</span>
-<span class="n">parent_server_password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
-
-<span class="c1"># When using a parent/child Fides deployment, this username will be</span>
-<span class="c1"># used by the child server to access the parent server.</span>
-<span class="n">parent_server_username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># The number of requests from a single IP address allowed to hit a</span>
 <span class="c1"># public endpoint within the specified time period</span>
@@ -1838,14 +1763,6 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># The list of roles that are given to the root user.</span>
 <span class="n">root_user_roles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="c1"># array</span>
 
-<span class="c1"># If set, this can be used in conjunction with root_username to log in</span>
-<span class="c1"># without first creating a user in the database.</span>
-<span class="n">root_password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
-
-<span class="c1"># If set, this can be used in conjunction with root_password to log in</span>
-<span class="c1"># without first creating a user in the database.</span>
-<span class="n">root_username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
-
 <span class="c1"># The number of seconds that a pre-signed download URL when using S3</span>
 <span class="c1"># storage will be valid. The default is equal to 5 days.</span>
 <span class="n">subject_request_download_link_ttl_seconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">432000</span><span class="w"> </span><span class="c1"># integer</span>
@@ -1853,17 +1770,6 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># Either enables the collection of audit log resource data or bypasses</span>
 <span class="c1"># the middleware</span>
 <span class="n">enable_audit_log_resource_middleware</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
-
-<span class="c1"># An optional field to store the bastion server host</span>
-<span class="n">bastion_server_host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
-
-<span class="c1"># An optional field to store the username used to access the bastion</span>
-<span class="c1"># server</span>
-<span class="n">bastion_server_ssh_username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
-
-<span class="c1"># An optional field to store the key used to SSH into the bastion</span>
-<span class="c1"># server.</span>
-<span class="n">bastion_server_ssh_private_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># The timeout in seconds for the transport socket</span>
 <span class="c1"># (``socket.settimeout``)</span>
