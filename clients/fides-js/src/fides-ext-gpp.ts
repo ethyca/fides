@@ -87,7 +87,7 @@ const getSupportedApis = () => {
       }
       if (gppSettings.us_approach === GPPUSApproach.STATE) {
         // TODO: include the states based off of locations/regulations.
-        // For now, hard code all of them.
+        // For now, hard code all of them. https://ethyca.atlassian.net/browse/PROD-1595
         [UsCaV1, UsCoV1, UsCtV1, UsUtV1, UsVaV1].forEach((state) => {
           supportedApis.push(`${state.ID}:${state.NAME}`);
         });
