@@ -1218,36 +1218,35 @@ class TestValidateDataUses:
         self, db, privacy_notice_request: PrivacyNoticeCreation
     ):
         privacy_notice_request.data_uses = ["invalid_data_use"]
-        all_data_uses = sql_DataUse.query(db).all()
         with pytest.raises(HTTPException):
-            validate_notice_data_uses([privacy_notice_request], all_data_uses)
+            validate_notice_data_uses([privacy_notice_request], db)
 
         privacy_notice_request.data_uses = ["marketing.advertising", "invalid_data_use"]
         with pytest.raises(HTTPException):
-            validate_notice_data_uses([privacy_notice_request], all_data_uses)
+            validate_notice_data_uses([privacy_notice_request], db)
 
         privacy_notice_request.data_uses = [
             "marketing.advertising",
             "marketing.advertising.invalid_data_use",
         ]
         with pytest.raises(HTTPException):
-            validate_notice_data_uses([privacy_notice_request], all_data_uses)
+            validate_notice_data_uses([privacy_notice_request], db)
 
     @pytest.mark.usefixtures("load_default_data_uses")
     def test_validate_data_uses_default_taxonomy(
         self, db, privacy_notice_request: PrivacyNoticeCreation
     ):
-        all_data_uses = sql_DataUse.query(db).all()
+        db = sql_DataUse.query(db).all()
         privacy_notice_request.data_uses = ["marketing.advertising"]
-        validate_notice_data_uses([privacy_notice_request], all_data_uses)
+        validate_notice_data_uses([privacy_notice_request], db)
         privacy_notice_request.data_uses = ["marketing.advertising", "essential"]
-        validate_notice_data_uses([privacy_notice_request], all_data_uses)
+        validate_notice_data_uses([privacy_notice_request], db)
         privacy_notice_request.data_uses = [
             "marketing.advertising",
             "essential",
             "essential.service",
         ]
-        validate_notice_data_uses([privacy_notice_request], all_data_uses)
+        validate_notice_data_uses([privacy_notice_request], db)
 
     @pytest.mark.usefixtures("load_default_data_uses")
     def test_validate_data_uses_custom_uses(
@@ -1259,14 +1258,14 @@ class TestValidateDataUses:
         """
         Ensure custom data uses added to the DB are considered valid
         """
-        all_data_uses = sql_DataUse.query(db).all()
+        db = sql_DataUse.query(db).all()
         privacy_notice_request.data_uses = [custom_data_use.fides_key]
-        validate_notice_data_uses([privacy_notice_request], all_data_uses)
+        validate_notice_data_uses([privacy_notice_request], db)
         privacy_notice_request.data_uses = [
             "marketing.advertising",
             custom_data_use.fides_key,
         ]
-        validate_notice_data_uses([privacy_notice_request], all_data_uses)
+        validate_notice_data_uses([privacy_notice_request], db)
 
 
 class TestLoadTCFExperiences:

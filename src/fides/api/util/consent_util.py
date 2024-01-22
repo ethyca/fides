@@ -286,17 +286,16 @@ def get_or_create_fides_user_device_id_provided_identity(
 
 def validate_notice_data_uses(
     privacy_notices: List[Union[PrivacyNoticeWithId, PrivacyNoticeCreation]],
-    valid_data_uses: Iterable[DataUse],
+    db: Session,
 ) -> None:
     """
     Ensures that all the provided `PrivacyNotice`s data has valid data uses.
     Raises a 422 HTTP exception if an unknown data use is found on any `PrivacyNotice`
     """
+    valid_data_uses = [data_use.fides_key for data_use in DataUse.query(db).all()]
     try:
         for privacy_notice in privacy_notices:
-            privacy_notice.validate_data_uses(
-                [data_use.fides_key for data_use in valid_data_uses]
-            )
+            privacy_notice.validate_data_uses(valid_data_uses)
     except ValueError as e:
         raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
 
@@ -327,8 +326,7 @@ def create_privacy_notices_util(
     """Performs validation before creating Privacy Notices and Privacy Notice History records
     and then ensures that Privacy Experiences exist for all Privacy Notices.
     """
-    all_data_uses = DataUse.query(db).all()
-    validate_notice_data_uses(privacy_notice_schemas, all_data_uses)  # type: ignore[arg-type]
+    validate_notice_data_uses(privacy_notice_schemas, db)  # type: ignore[arg-type]
 
     existing_notices = PrivacyNotice.query(db).filter(PrivacyNotice.disabled.is_(False)).all()  # type: ignore[attr-defined]
 
@@ -492,7 +490,7 @@ def upsert_privacy_notice_templates_util(
     Fides ships with out of the box.
     """
     ensure_unique_ids(template_schemas)
-    validate_notice_data_uses(template_schemas, DataUse.query(db).all())  # type: ignore[arg-type]
+    validate_notice_data_uses(template_schemas, db)
 
     upserts_and_existing: List[
         Tuple[PrivacyNoticeWithId, Optional[PrivacyNoticeTemplate]]
