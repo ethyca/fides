@@ -38,7 +38,7 @@ describe("Fides-js GPP extension", () => {
   });
 
   describe("with TCF and GPP enabled", () => {
-    const tcfGppSettings = { enabled: true, enable_tc_string: true };
+    const tcfGppSettings = { enabled: true, enable_tcfeu_string: true };
     beforeEach(() => {
       cy.fixture("consent/experience_tcf.json").then((payload) => {
         const experience = payload.items[0];
@@ -297,7 +297,7 @@ describe("Fides-js GPP extension", () => {
           },
           experience: {
             ...experience.items[0],
-            gpp_settings: { enabled: true, enable_tc_string: false },
+            gpp_settings: { enabled: true, enable_tcfeu_string: false },
           },
         });
       });

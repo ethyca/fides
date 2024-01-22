@@ -9,7 +9,7 @@
         "mspa_covered_transactions": true,
         "mspa_opt_out_option_mode": true,
         "mspa_service_provider_mode": false,
-        "enable_tc_string": true
+        "enable_tcfeu_string": true
       },
       "experience_config": {
         "accept_button_label": "Opt in to all",

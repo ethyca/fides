@@ -76,7 +76,7 @@ const mockPrivacyExperience = (override?: Partial<PrivacyExperience>) => {
       mspa_covered_transactions: true,
       mspa_opt_out_option_mode: true,
       mspa_service_provider_mode: false,
-      enable_tc_string: true,
+      enable_tcfeu_string: true,
     },
   };
 
@@ -564,7 +564,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
         mspa_covered_transactions: true,
         mspa_opt_out_option_mode: true,
         mspa_service_provider_mode: false,
-        enable_tc_string: true,
+        enable_tcfeu_string: true,
       },
     });
     setGppOptOutsFromCookieAndExperience({ cmpApi, cookie, experience });

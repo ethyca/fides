@@ -42,7 +42,7 @@ export type GPPSettings = {
   /**
    * Whether TC string should be included as a section in GPP
    */
-  enable_tc_string?: boolean;
+  enable_tcfeu_string?: boolean;
 };
 
 export type GPPMechanismMapping = {
