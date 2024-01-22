@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.27.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.28.0...main)
+
+## [2.28.0](https://github.com/ethyca/fides/compare/2.27.0...2.28.0)
 
 ### Added
 
@@ -28,16 +30,17 @@ The types of changes are:
 
 - Redesigned nav bar for the admin UI [#4548](https://github.com/ethyca/fides/pull/4548)
 - Fides.js GPP for US geographies now derives values from backend privacy notices [#4559](https://github.com/ethyca/fides/pull/4559)
+- No longer generate the `vendors_disclosed` section of the TC string in `fides.js` [#4553](https://github.com/ethyca/fides/pull/4553)
+- Changed consent management vendor add flow [#4550](https://github.com/ethyca/fides/pull/4550)
 
 ### Fixed
 
 - Fixed an issue blocking Salesforce sandbox accounts from refreshing tokens [#4547](https://github.com/ethyca/fides/pull/4547)
 - Fixed DSR zip packages to be unzippable on Windows [#4549](https://github.com/ethyca/fides/pull/4549)
 
-### Changed
+### Developer Experience
 
-- No longer generate the `vendors_disclosed` section of the TC string in `fides.js` [#4553](https://github.com/ethyca/fides/pull/4553)
-- Changed consent management vendor add flow [#4550](https://github.com/ethyca/fides/pull/4550)
+- Switch to anyascii for unicode transliteration [#4550](https://github.com/ethyca/fides/pull/4564)
 
 ## [2.27.0](https://github.com/ethyca/fides/compare/2.26.0...2.27.0)
 
