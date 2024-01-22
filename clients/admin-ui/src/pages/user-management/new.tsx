@@ -3,7 +3,7 @@ import NewUserForm from "user-management/NewUserForm";
 import UserManagementLayout from "user-management/UserManagementLayout";
 
 const CreateNewUser = () => (
-  <UserManagementLayout title="New User">
+  <UserManagementLayout>
     {/* 
       We're going to have some problems with flow here. The NewUserForm no longer
       redirects to the user management table after a user is created since there

@@ -1,17 +1,10 @@
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  Button,
-  Heading,
-  Stack,
-  Text,
-} from "@fidesui/react";
+import { Box, Button, Heading, Stack, Text } from "@fidesui/react";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useState } from "react";
 
 import Layout from "~/features/common/Layout";
+import BackButton from "~/features/common/nav/v2/BackButton";
+import { DATASET_ROUTE } from "~/features/common/nav/v2/routes";
 import DatabaseConnectForm from "~/features/dataset/DatabaseConnectForm";
 import DatasetYamlForm from "~/features/dataset/DatasetYamlForm";
 
@@ -21,19 +14,10 @@ const NewDataset: NextPage = () => {
   >(null);
   return (
     <Layout title="Datasets">
+      <BackButton backPath={DATASET_ROUTE} />
       <Heading mb={2} fontSize="2xl" fontWeight="semibold">
         Datasets
       </Heading>
-      <Box mb={8}>
-        <Breadcrumb fontWeight="medium" fontSize="sm" color="gray.600">
-          <BreadcrumbItem>
-            <NextLink href="/dataset">Datasets</NextLink>
-          </BreadcrumbItem>
-          <BreadcrumbItem>
-            <NextLink href="#">Create new dataset</NextLink>
-          </BreadcrumbItem>
-        </Breadcrumb>
-      </Box>
       <Stack spacing={8}>
         <Box w={{ base: "100%", lg: "50%" }}>
           <Text>Create a dataset using YAML or connect to a database.</Text>

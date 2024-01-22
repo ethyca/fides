@@ -25,8 +25,8 @@ def appsflyer_user_read(
     platform information for use with erasure endpoint.
     """
 
-    user_ids = input_data.get("user_id")
-    app_ids = input_data.get("app_id")
+    user_ids = input_data.get("user_id", [])
+    app_ids = input_data.get("app_id", [])
 
     users = []
     for app_id in app_ids:

@@ -6,6 +6,7 @@ export const ADD_SYSTEMS_ROUTE = "/add-systems";
 export const ADD_SYSTEMS_MANUAL_ROUTE = "/add-systems/manual";
 export const ADD_SYSTEMS_MULTIPLE_ROUTE = "/add-systems/multiple";
 export const DATAMAP_ROUTE = "/datamap";
+export const REPORTING_DATAMAP_ROUTE = "/reporting/datamap";
 export const SYSTEM_ROUTE = "/systems";
 export const CLASSIFY_SYSTEMS_ROUTE = "/classify-systems";
 export const DATASET_ROUTE = "/dataset";
