@@ -1,6 +1,6 @@
 import re
 
-import unidecode
+from anyascii import anyascii
 
 
 def to_snake_case(text: str) -> str:
@@ -14,7 +14,7 @@ def to_snake_case(text: str) -> str:
         "foo-bar" -> "foo_bar"
         "foo*bar" -> "foobar"
     """
-    text = unidecode.unidecode(text).lower().strip()
+    text = anyascii(text).lower().strip()
     text = re.sub(r"[^\w\s-]", "", text)
     text = re.sub(r"[\s-]+", "_", text)
     text = re.sub(r"^-+|-+$", "", text)
