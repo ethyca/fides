@@ -683,9 +683,7 @@ class TestLoadDefaultNotices:
         assert new_template.regions == [PrivacyNoticeRegion.us_al]
         assert new_template.consent_mechanism == ConsentMechanism.opt_out
         assert new_template.enforcement_level == EnforcementLevel.frontend
-        assert (
-            new_template.disabled is False
-        )  # TODO: may need to adjust depending on updates to template loading logic!
+        assert new_template.disabled is True
         assert new_template.has_gpc_flag is False
         assert new_template.displayed_in_privacy_center is True
         assert new_template.displayed_in_overlay is False
@@ -725,9 +723,7 @@ class TestLoadDefaultNotices:
         assert new_privacy_notice.regions == [PrivacyNoticeRegion.us_al]
         assert new_privacy_notice.consent_mechanism == ConsentMechanism.opt_out
         assert new_privacy_notice.enforcement_level == EnforcementLevel.frontend
-        assert (
-            new_privacy_notice.disabled is False
-        )  # TODO: may need to adjust depending on updates to template loading logic!
+        assert new_privacy_notice.disabled is True
         assert new_privacy_notice.has_gpc_flag is False
         assert new_privacy_notice.displayed_in_privacy_center is True
         assert new_privacy_notice.displayed_in_overlay is False
@@ -756,9 +752,7 @@ class TestLoadDefaultNotices:
         assert new_history.regions == [PrivacyNoticeRegion.us_al]
         assert new_history.consent_mechanism == ConsentMechanism.opt_out
         assert new_history.enforcement_level == EnforcementLevel.frontend
-        assert (
-            new_history.disabled is False
-        )  # TODO: may need to adjust depending on updates to template loading logic!
+        assert new_history.disabled is True
         assert new_history.has_gpc_flag is False
         assert new_history.displayed_in_privacy_center is True
         assert new_history.displayed_in_overlay is False
@@ -882,7 +876,7 @@ class TestUpsertPrivacyNoticeTemplates:
                         consent_mechanism=ConsentMechanism.opt_in,
                         data_uses=["marketing"],
                         enforcement_level=EnforcementLevel.frontend,
-                        # disabled=True, # TODO: may need to adjust depending on updates to template loading logic!
+                        disabled=True,
                         displayed_in_overlay=True,
                     ),
                 ],
@@ -1257,7 +1251,6 @@ class TestValidateDataUses:
         """
         Ensure custom data uses added to the DB are considered valid
         """
-        db = sql_DataUse.query(db).all()
         privacy_notice_request.data_uses = [custom_data_use.fides_key]
         validate_notice_data_uses([privacy_notice_request], db)
         privacy_notice_request.data_uses = [

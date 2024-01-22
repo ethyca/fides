@@ -26,7 +26,7 @@ privacy_notices:
   data_uses:
     - train_ai_system
   enforcement_level: frontend
-  # disabled: True # TODO: may need to adjust depending on updates to template loading logic!
+  disabled: True
   has_gpc_flag: False
   displayed_in_privacy_center: True
   displayed_in_overlay: False
