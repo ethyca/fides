@@ -1,7 +1,7 @@
 """notice translations
 
 Revision ID: 4ee4876f4be1
-Revises: 5a8cee9c014c
+Revises: 61a922702f4c
 Create Date: 2024-01-09 21:03:50.717091
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "4ee4876f4be1"
-down_revision = "5a8cee9c014c"
+down_revision = "61a922702f4c"
 branch_labels = None
 depends_on = None
 
