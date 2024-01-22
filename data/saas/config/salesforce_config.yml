@@ -4,7 +4,7 @@ saas_config:
   type: salesforce
   description: A sample schema representing the Salesforce Classic connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/salesforce
-  version: 0.0.5
+  version: 0.0.6
 
   connector_params:
     - name: domain
@@ -19,6 +19,10 @@ saas_config:
     - name: redirect_uri
       label: Redirect URL
       description: The Fides URL to which users will be redirected upon successful authentication
+    - name: token_refresh_url
+      label: Token Refresh URL
+      description: The Salesforce URL for refresh tokens. This should not be changed unless using a Sandbox account, when it should be set to test.salesforce.com
+      default_value: login.salesforce.com
 
   client_config:
     protocol: https
@@ -57,7 +61,7 @@ saas_config:
           method: POST
           client_config:
             protocol: https
-            host: login.salesforce.com
+            host: <token_refresh_url>
           path: /services/oauth2/token
           headers:
             - name: Content-Type

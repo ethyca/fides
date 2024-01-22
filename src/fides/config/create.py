@@ -3,7 +3,7 @@ This module auto-generates a documented config from the config source.
 """
 import os
 from textwrap import wrap
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 import toml
 from click import echo
@@ -53,7 +53,9 @@ def format_value_for_toml(value: str, value_type: str) -> str:
     return value
 
 
-def build_field_documentation(field_name: str, field_info: Dict[str, str]) -> str:
+def build_field_documentation(
+    field_name: str, field_info: Dict[str, str]
+) -> Optional[str]:
     """Build a docstring for an individual docstring."""
     try:
         field_type = field_info["type"]
@@ -65,11 +67,11 @@ def build_field_documentation(field_name: str, field_info: Dict[str, str]) -> st
                 initial_indent="# ",
             )
         )
-        field_default = format_value_for_toml(field_info.get("default", ""), field_type)
-        doc_string = (
-            f"{field_description}\n{field_name} = {field_default} # {field_type}\n"
-        )
-        return doc_string
+        field_default = field_info.get("default")
+        if field_default is not None:
+            formatted_default = format_value_for_toml(field_default, field_type)
+            return f"{field_description}\n{field_name} = {formatted_default} # {field_type}\n"
+        return None
     except KeyError:
         print(field_info)
         raise SystemExit(f"!Failed to parse field: {field_name}!")
@@ -121,8 +123,9 @@ def convert_settings_to_toml_docs(settings_name: str, settings: BaseSettings) ->
     # Build the field docstrings
     fields = remove_excluded_fields(settings_schema["properties"], included_keys)
     field_docstrings = [
-        build_field_documentation(field_name, field_info)
+        docstring
         for field_name, field_info in fields.items()
+        if (docstring := build_field_documentation(field_name, field_info))
     ]
     full_docstring = (
         title_header + settings_docstring + "\n" + "\n".join(field_docstrings)

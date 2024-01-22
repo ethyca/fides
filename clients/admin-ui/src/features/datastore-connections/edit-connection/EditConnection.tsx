@@ -3,13 +3,14 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { TabData } from "~/features/common/DataTabs";
+import BackButton from "~/features/common/nav/v2/BackButton";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   reset,
   selectConnectionTypeState,
   setStep,
 } from "~/features/connection-type";
 
-import Breadcrumb from "../add-connection/Breadcrumb";
 import { ConnectorParameters } from "../add-connection/ConnectorParameters";
 import {
   ConfigurationSettings,
@@ -90,6 +91,7 @@ const EditConnection: React.FC = () => {
 
   return connection && connectionOption ? (
     <>
+      <BackButton backPath={DATASTORE_CONNECTION_ROUTE} />
       <Heading
         fontSize="2xl"
         fontWeight="semibold"
@@ -102,7 +104,6 @@ const EditConnection: React.FC = () => {
           <Text ml="8px">{connection.name}</Text>
         </Box>
       </Heading>
-      <Breadcrumb steps={[STEPS[0], STEPS[2]]} />
       <VStack alignItems="stretch" flex="1" gap="18px">
         <DataTabs data={getTabs()} flexGrow={1} isLazy />
       </VStack>

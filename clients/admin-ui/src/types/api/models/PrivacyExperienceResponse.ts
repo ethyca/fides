@@ -7,7 +7,7 @@ import type { ExperienceConfigResponse } from "./ExperienceConfigResponse";
 import type { ExperienceMeta } from "./ExperienceMeta";
 import type { GPPSettings } from "./GPPSettings";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
-import type { PrivacyNoticeResponseWithUserPreferences } from "./PrivacyNoticeResponseWithUserPreferences";
+import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
 import type { TCFFeatureRecord } from "./TCFFeatureRecord";
 import type { TCFPurposeConsentRecord } from "./TCFPurposeConsentRecord";
 import type { TCFPurposeLegitimateInterestsRecord } from "./TCFPurposeLegitimateInterestsRecord";
@@ -49,7 +49,7 @@ export type PrivacyExperienceResponse = {
   /**
    * The Privacy Notices associated with this experience, if applicable
    */
-  privacy_notices?: Array<PrivacyNoticeResponseWithUserPreferences>;
+  privacy_notices?: Array<PrivacyNoticeResponse>;
   gvl?: any;
   meta?: ExperienceMeta;
 };

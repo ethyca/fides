@@ -1,13 +1,4 @@
-import {
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tooltip,
-  Tr,
-} from "@fidesui/react";
+import { Table, TableContainer, Tbody, Th, Thead, Tr } from "@fidesui/react";
 import {
   flexRender,
   Row,
@@ -16,15 +7,8 @@ import {
 } from "@tanstack/react-table";
 import React, { ReactNode } from "react";
 
-const getTableTHandTDStyles = (cellId: string) =>
-  cellId === "select"
-    ? { padding: "0px" }
-    : {
-        paddingLeft: "16px",
-        paddingRight: "8px",
-        paddingTop: "0px",
-        paddingBottom: "0px",
-      };
+import { FidesRow } from "~/features/common/table/v2/FidesRow";
+import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
 /*
   This was throwing a false positive for unused parameters.
@@ -37,6 +21,7 @@ declare module "@tanstack/table-core" {
     width?: string;
     minWidth?: string;
     maxWidth?: string;
+    displayText?: string;
   }
 }
 /* eslint-enable */
@@ -113,56 +98,12 @@ export const FidesTableV2 = <T,>({
       <Tbody data-testid="fidesTable-body">
         {rowActionBar}
         {tableInstance.getRowModel().rows.map((row) => (
-          <Tooltip
-            key={`tooltip-${row.id}`}
-            label={
-              renderRowTooltipLabel ? renderRowTooltipLabel(row) : undefined
-            }
-            hasArrow
-            placement="top"
-          >
-            <Tr
-              key={row.id}
-              height="36px"
-              _hover={
-                onRowClick
-                  ? { backgroundColor: "gray.50", cursor: "pointer" }
-                  : undefined
-              }
-              data-testid={`row-${row.id}`}
-              backgroundColor={row.getCanSelect() ? undefined : "gray.50"}
-            >
-              {row.getVisibleCells().map((cell) => (
-                <Td
-                  key={cell.id}
-                  width={
-                    cell.column.columnDef.meta?.width
-                      ? cell.column.columnDef.meta.width
-                      : "unset"
-                  }
-                  borderBottomWidth="1px"
-                  borderBottomColor="gray.200"
-                  borderRightWidth="1px"
-                  borderRightColor="gray.200"
-                  _first={{
-                    borderLeftWidth: "1px",
-                    borderLeftColor: "gray.200",
-                  }}
-                  height="inherit"
-                  style={getTableTHandTDStyles(cell.column.id)}
-                  onClick={
-                    cell.column.columnDef.header !== "Enable" && onRowClick
-                      ? () => {
-                          onRowClick(row.original);
-                        }
-                      : undefined
-                  }
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </Td>
-              ))}
-            </Tr>
-          </Tooltip>
+          <FidesRow<T>
+            key={row.id}
+            row={row}
+            onRowClick={onRowClick}
+            renderRowTooltipLabel={renderRowTooltipLabel}
+          />
         ))}
       </Tbody>
       {footer}
