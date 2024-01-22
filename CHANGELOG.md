@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.28.0...main)
 
+### Developer Experience
+
+- Add automated E2E code coverage for client applications [#4563](https://github.com/ethyca/fides/pull/4563)
+
 ## [2.28.0](https://github.com/ethyca/fides/compare/2.27.0...2.28.0)
 
 ### Added
