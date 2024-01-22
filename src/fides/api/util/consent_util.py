@@ -285,7 +285,7 @@ def get_or_create_fides_user_device_id_provided_identity(
 
 
 def validate_notice_data_uses(
-    privacy_notices: List[Union[PrivacyNoticeWithId, PrivacyNoticeCreation]],
+    privacy_notices: Iterable[Union[PrivacyNoticeWithId, PrivacyNoticeCreation]],
     db: Session,
 ) -> None:
     """
@@ -483,7 +483,7 @@ def prepare_privacy_notice_patches(
 
 def upsert_privacy_notice_templates_util(
     db: Session,
-    template_schemas: List[Union[PrivacyNoticeWithId]],
+    template_schemas: List[PrivacyNoticeWithId],
 ) -> List[PrivacyNoticeTemplate]:
     """
     Create or update *Privacy Notice Templates*. These are the resources that
