@@ -40,6 +40,8 @@ export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
           ? cell.column.columnDef.meta.width
           : "unset"
       }
+      maxWidth={cell.column.getCanResize() ? cell.column.getSize() : "unset"}
+      overflowX="auto"
       borderBottomWidth={isLastRowOfPage || isGroupedColumn ? "0px" : "1px"}
       borderBottomColor="gray.200"
       borderRightWidth="1px"

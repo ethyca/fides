@@ -1,4 +1,12 @@
-import { Table, TableContainer, Tbody, Th, Thead, Tr } from "@fidesui/react";
+import {
+  Box,
+  Table,
+  TableContainer,
+  Tbody,
+  Th,
+  Thead,
+  Tr,
+} from "@fidesui/react";
 import {
   flexRender,
   Row,
@@ -52,6 +60,7 @@ export const FidesTableV2 = <T,>({
       style={{
         borderCollapse: "separate",
         borderSpacing: 0,
+        width: tableInstance.getCenterTotalSize(),
       }}
     >
       <Thead
@@ -81,15 +90,35 @@ export const FidesTableV2 = <T,>({
                 style={{
                   ...getTableTHandTDStyles(header.column.id),
                   width: header.column.columnDef.meta?.width || "unset",
-                  minWidth: header.column.columnDef.meta?.minWidth || "unset",
-                  maxWidth: header.column.columnDef.meta?.maxWidth || "unset",
+                  minWidth:
+                    header.column.columnDef.meta?.minWidth ||
+                    (header.column.getCanResize() ? header.getSize() : "unset"),
+                  maxWidth:
+                    header.column.columnDef.meta?.maxWidth ||
+                    (header.column.getCanResize() ? header.getSize() : "unset"),
+                  overflowX: "auto",
                 }}
                 textTransform="unset"
+                position="relative"
               >
                 {flexRender(
                   header.column.columnDef.header,
                   header.getContext()
                 )}
+                {/* Capture area to render resizer cursor */}
+                {header.column.getCanResize() ? (
+                  <Box
+                    onDoubleClick={header.column.resetSize}
+                    onMouseDown={header.getResizeHandler()}
+                    position="absolute"
+                    height="100%"
+                    top="0"
+                    right="0"
+                    width="5px"
+                    cursor="col-resize"
+                    userSelect="none"
+                  />
+                ) : null}
               </Th>
             ))}
           </Tr>
