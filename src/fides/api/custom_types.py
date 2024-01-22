@@ -121,7 +121,7 @@ class GPPMechanismConsentValue(str):
 
     @classmethod
     def validate(cls, value: str) -> str:
-        pattern = regex(r"^\d*$")
-        if not pattern.search(value):
+        pattern = regex(r"^\d+$")
+        if not isinstance(value, str) or not pattern.search(value):
             raise ValueError("GPP Mechanism consent value must be a string of digits.")
         return value

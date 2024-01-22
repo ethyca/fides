@@ -7,6 +7,7 @@ from fides.api.common_exceptions import ValidationError
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     PrivacyNotice,
+    PrivacyNoticeFramework,
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
     UserConsentPreference,
@@ -444,6 +445,92 @@ class TestPrivacyNoticeModel:
 
         with pytest.raises(Exception):
             privacy_notice.generate_notice_key(1)
+
+    def test_is_gpp(self):
+        assert (
+            PrivacyNotice(
+                name="pn_1",
+                notice_key="pn_1",
+                data_uses=["marketing.advertising"],
+                regions=[PrivacyNoticeRegion.us_ca],
+                framework=PrivacyNoticeFramework.gpp_us_national.value,
+            ).is_gpp
+            is True
+        )
+
+        assert (
+            PrivacyNotice(
+                name="pn_1",
+                notice_key="pn_1",
+                data_uses=["marketing.advertising"],
+                regions=[PrivacyNoticeRegion.us_ca],
+                framework=PrivacyNoticeFramework.gpp_us_state.value,
+            ).is_gpp
+            is True
+        )
+
+        assert (
+            PrivacyNotice(
+                name="pn_1",
+                notice_key="pn_1",
+                data_uses=["marketing.advertising"],
+                regions=[PrivacyNoticeRegion.us_ca],
+                framework="bogus_framework",
+            ).is_gpp
+            is False
+        )
+
+        assert (
+            PrivacyNotice(
+                name="pn_1",
+                notice_key="pn_1",
+                data_uses=["marketing.advertising"],
+                regions=[PrivacyNoticeRegion.us_ca],
+            ).is_gpp
+            is False
+        )
+
+    def test_validate_enabled_has_data_uses(self):
+        PrivacyNotice(
+            name="pn_1",
+            disabled=False,
+            notice_key="pn_1",
+            data_uses=["marketing.advertising"],
+            regions=[PrivacyNoticeRegion.us_ca],
+        ).validate_enabled_has_data_uses()
+
+        PrivacyNotice(
+            name="pn_1",
+            disabled=True,
+            notice_key="pn_1",
+            data_uses=[],  # disabled, so no data uses is OK
+            regions=[PrivacyNoticeRegion.us_ca],
+        ).validate_enabled_has_data_uses()
+
+        with pytest.raises(ValidationError):
+            PrivacyNotice(
+                name="pn_1",
+                disabled=False,
+                notice_key="pn_1",
+                data_uses=[],
+                regions=[PrivacyNoticeRegion.us_ca],
+            ).validate_enabled_has_data_uses()
+
+        with pytest.raises(ValidationError):
+            PrivacyNotice(
+                name="pn_1",
+                disabled=False,
+                notice_key="pn_1",
+                regions=[PrivacyNoticeRegion.us_ca],
+            ).validate_enabled_has_data_uses()
+
+        with pytest.raises(ValidationError):
+            # default is enabled, so this should error
+            PrivacyNotice(
+                name="pn_1",
+                notice_key="pn_1",
+                regions=[PrivacyNoticeRegion.us_ca],
+            ).validate_enabled_has_data_uses()
 
 
 class TestDataUseConflictFound:

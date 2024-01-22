@@ -10,6 +10,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from starlette.exceptions import HTTPException
 
 from fides.api.app_setup import DEFAULT_PRIVACY_NOTICES_PATH
+from fides.api.common_exceptions import ValidationError
 from fides.api.models.privacy_experience import (
     BannerEnabled,
     ComponentType,
@@ -562,6 +563,69 @@ class TestCreatePrivacyNoticeUtils:
         db.delete(notice.histories[0])
         db.delete(notice)
 
+    def test_enabled_data_use_constraint(self, db, load_default_data_uses):
+        """Test enabled/data use logic - enabled must have data uses."""
+
+        # default is enabled, should throw error if no data uses
+        with pytest.raises(ValidationError):
+            create_privacy_notices_util(
+                db,
+                [
+                    PrivacyNoticeWithId(
+                        id="test_id_1",
+                        name="A",
+                        notice_key="a",
+                        regions=["it"],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=[],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        displayed_in_overlay=True,
+                    )
+                ],
+            )
+
+        # explicitly enabled should throw error if no data uses
+        with pytest.raises(ValidationError):
+            create_privacy_notices_util(
+                db,
+                [
+                    PrivacyNoticeWithId(
+                        id="test_id_1",
+                        name="A",
+                        disabled=False,
+                        notice_key="a",
+                        regions=["it"],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=[],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        displayed_in_overlay=True,
+                    )
+                ],
+            )
+
+        # if disabled, we can have no data uses
+        templates = create_privacy_notices_util(
+            db,
+            [
+                PrivacyNoticeWithId(
+                    id="test_id_1",
+                    name="A",
+                    disabled=True,
+                    notice_key="a",
+                    regions=["it"],
+                    consent_mechanism=ConsentMechanism.opt_in,
+                    data_uses=[],
+                    enforcement_level=EnforcementLevel.system_wide,
+                    displayed_in_overlay=True,
+                )
+            ],
+        )
+
+        # ensure our template was created properly
+        assert len(templates[0]) == 1
+        assert templates[0][0].id == "test_id_1"
+        assert templates[0][0].disabled is True
+
 
 class TestLoadDefaultNotices:
     def test_load_default_notices(self, db, load_default_data_uses):
@@ -907,6 +971,79 @@ class TestUpsertPrivacyNoticeTemplates:
             )
         assert exc._excinfo[1].status_code == 422
         assert exc._excinfo[1].detail == "Unknown data_use 'bad use'"
+
+    def test_enabled_data_use_constraint(self, db, load_default_data_uses):
+        """Test enabled/data use logic - enabled must have data uses."""
+
+        # default is enabled, should throw error if no data uses
+        with pytest.raises(HTTPException) as exc:
+            upsert_privacy_notice_templates_util(
+                db,
+                [
+                    PrivacyNoticeWithId(
+                        id="test_id_1",
+                        name="A",
+                        notice_key="a",
+                        regions=["it"],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=[],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        displayed_in_overlay=True,
+                    )
+                ],
+            )
+        assert exc._excinfo[1].status_code == 422
+        assert (
+            exc._excinfo[1].detail
+            == "A privacy notice must have at least one data use assigned in order to be enabled."
+        )
+
+        # explicitly enabled should throw error if no data uses
+        with pytest.raises(HTTPException) as exc:
+            upsert_privacy_notice_templates_util(
+                db,
+                [
+                    PrivacyNoticeWithId(
+                        id="test_id_1",
+                        name="A",
+                        disabled=False,
+                        notice_key="a",
+                        regions=["it"],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=[],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        displayed_in_overlay=True,
+                    )
+                ],
+            )
+        assert exc._excinfo[1].status_code == 422
+        assert (
+            exc._excinfo[1].detail
+            == "A privacy notice must have at least one data use assigned in order to be enabled."
+        )
+
+        # if disabled, we can have no data uses
+        templates = upsert_privacy_notice_templates_util(
+            db,
+            [
+                PrivacyNoticeWithId(
+                    id="test_id_1",
+                    name="A",
+                    disabled=True,
+                    notice_key="a",
+                    regions=["it"],
+                    consent_mechanism=ConsentMechanism.opt_in,
+                    data_uses=[],
+                    enforcement_level=EnforcementLevel.system_wide,
+                    displayed_in_overlay=True,
+                )
+            ],
+        )
+
+        # ensure our template was created properly
+        assert len(templates) == 1
+        assert templates[0].id == "test_id_1"
+        assert templates[0].disabled is True
 
     def test_create_two_templates_then_update_second(self, db, load_default_data_uses):
         """Test create two brand new templates"""

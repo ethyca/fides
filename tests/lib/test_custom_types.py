@@ -1,6 +1,6 @@
 import pytest
 
-from fides.api.custom_types import PhoneNumber, SafeStr
+from fides.api.custom_types import GPPMechanismConsentValue, PhoneNumber, SafeStr
 
 DANGEROUS_STRINGS = [
     "<svg onload=alert(1)>",
@@ -144,3 +144,43 @@ class TestPhoneNumber:
         """Test that a list of valid phone numbers doesn't throw any errors."""
         validated_number = PhoneNumber.validate(phone_number)
         assert validated_number == phone_number
+
+
+INVALID_GPP_MECHANISM_CONSENT_VALUES = [
+    "a",
+    "foo",
+    "00a",
+    "10a",
+    "1_",
+    "_2",
+    "0a0",
+    "100000000a",
+    "1.0",
+    "",
+    0,  # raw ints are not accepted!
+    1,
+]
+VALID_GPP_MECHANISM_CONSENT_VALUES = [
+    "0",
+    "1",
+    "2",
+    "00000000",
+    "11111111",
+    "010",
+    "100",
+]
+
+
+@pytest.mark.unit
+class TestGppMechanismConsentValue:
+    @pytest.mark.parametrize("consent_value", INVALID_GPP_MECHANISM_CONSENT_VALUES)
+    def test_invalid_gpp_mechanism_consent_values(self, consent_value: str) -> None:
+        """Test that invalid GPP consent mechanism values are caught."""
+        with pytest.raises(ValueError):
+            GPPMechanismConsentValue.validate(consent_value)
+
+    @pytest.mark.parametrize("consent_value", VALID_GPP_MECHANISM_CONSENT_VALUES)
+    def test_valid_phone_numbers(self, consent_value: str) -> None:
+        """Test that valid GPP consent mechanism values do not throw any errors."""
+        validated_value = GPPMechanismConsentValue.validate(consent_value)
+        assert validated_value == validated_value

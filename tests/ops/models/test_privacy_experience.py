@@ -7,6 +7,7 @@ from fides.api.models.privacy_experience import (
     PrivacyExperience,
     PrivacyExperienceConfig,
     PrivacyExperienceConfigHistory,
+    get_privacy_notices_by_region_and_component,
     upsert_privacy_experiences_after_config_update,
 )
 from fides.api.models.privacy_notice import (
@@ -472,6 +473,100 @@ class TestPrivacyExperience:
 
         exp_2.delete(db)
         exp.delete(db)
+
+    @pytest.mark.parametrize(
+        "region,country",
+        [
+            ("us_ca", "us"),
+            ("us_tx", "us"),
+            ("us", "us"),
+            ("ca_qc", "ca"),
+            ("ca", "ca"),
+            ("fr", "fr"),
+        ],
+    )
+    def test_region_country_property(self, db, region, country):
+        exp: PrivacyExperience = PrivacyExperience.create(
+            db=db,
+            data={
+                "component": "overlay",
+                "region": region,
+            },
+        )
+
+        assert exp.region_country == country
+
+        exp.delete(db)
+
+    def test_get_privacy_notices_by_region_and_component(self, db):
+        """
+        Test that `get_privacy_notices_by_region_and_component` properly
+        finds notices against multiple regions.
+        """
+
+        privacy_notice = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "Test privacy notice",
+                "notice_key": "test_privacy_notice",
+                "description": "a test sample privacy notice configuration",
+                "regions": [PrivacyNoticeRegion.us],
+                "consent_mechanism": ConsentMechanism.opt_out,
+                "data_uses": ["marketing.advertising", "third_party_sharing"],
+                "enforcement_level": EnforcementLevel.system_wide,
+                "displayed_in_overlay": False,
+                "displayed_in_api": True,
+                "displayed_in_privacy_center": True,
+            },
+        )
+
+        assert (
+            get_privacy_notices_by_region_and_component(
+                db,
+                [PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us],
+                ComponentType.privacy_center,
+            ).all()[0]
+            == privacy_notice
+        )
+        assert (
+            get_privacy_notices_by_region_and_component(
+                db,
+                [PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us],
+                ComponentType.overlay,
+            ).all()
+            == []
+        )
+        assert (
+            get_privacy_notices_by_region_and_component(
+                db, [PrivacyNoticeRegion.us], ComponentType.privacy_center
+            ).all()[0]
+            == privacy_notice
+        )
+        assert (
+            get_privacy_notices_by_region_and_component(
+                db,
+                [PrivacyNoticeRegion.us, PrivacyNoticeRegion.fr],
+                ComponentType.privacy_center,
+            ).all()[0]
+            == privacy_notice
+        )
+        assert (
+            get_privacy_notices_by_region_and_component(
+                db, [PrivacyNoticeRegion.us_ca], ComponentType.privacy_center
+            ).all()
+            == []
+        )
+        assert (
+            get_privacy_notices_by_region_and_component(
+                db,
+                [PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us_tx],
+                ComponentType.privacy_center,
+            ).all()
+            == []
+        )
+
+        privacy_notice.histories[0].delete(db)
+        privacy_notice.delete(db)
 
 
 class TestUpsertPrivacyExperiencesOnConfigChange:
