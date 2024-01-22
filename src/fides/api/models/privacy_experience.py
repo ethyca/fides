@@ -406,10 +406,12 @@ def upsert_privacy_experiences_after_notice_update(
         )
 
         privacy_center_notices: Query = get_privacy_notices_by_region_and_component(
-            db, [region.value], ComponentType.privacy_center
+            db,
+            [region.value, region_country(region.value)],
+            ComponentType.privacy_center,
         )
         overlay_notices: Query = get_privacy_notices_by_region_and_component(
-            db, [region.value], ComponentType.overlay
+            db, [region.value, region_country(region.value)], ComponentType.overlay
         )
 
         # See if we need to create a Privacy Center Experience for the Privacy Center Notices
