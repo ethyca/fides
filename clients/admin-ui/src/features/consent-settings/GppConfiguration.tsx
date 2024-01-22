@@ -52,12 +52,14 @@ const GppConfiguration = () => {
                   {
                     label: "Enable U.S. National",
                     value: GPPUSApproach.NATIONAL,
-                    tooltip: "TODO",
+                    tooltip:
+                      "When US National is selected, Fides will present the same privacy notices to all consumers located anywhere in the United States.",
                   },
                   {
                     label: "Enable U.S. State-by-State",
                     value: GPPUSApproach.STATE,
-                    tooltip: "TODO",
+                    tooltip:
+                      "When state-by-state is selected, Fides will only present consent to consumers and save their preferences if they are located in a state that is supported by the GPP. The consent options presented to consumers will vary depending on the regulations in each state.",
                   },
                 ]}
               />
@@ -67,20 +69,20 @@ const GppConfiguration = () => {
                 <CustomCheckbox
                   name="gpp.mspa_covered_transactions"
                   label="All transactions covered by MSPA"
-                  tooltip="TODO"
+                  tooltip="When selected, the Fides CMP will communicate to downstream vendors that all preferences are covered under the MSPA."
                 />
                 <CustomSwitch
                   label="Enable MSPA service provider mode"
                   name="gpp.mspa_service_provider_mode"
                   variant="switchFirst"
-                  tooltip="TODO"
+                  tooltip="Enable opt-out option mode if you engage or may engage in the sales or sharing of personal information, or process any information for the purpose of targeted advertising."
                   isDisabled={values.gpp.mspa_opt_out_option_mode}
                 />
                 <CustomSwitch
                   label="Enable MSPA opt-out option mode"
                   name="gpp.mspa_opt_out_option_mode"
                   variant="switchFirst"
-                  tooltip="TODO"
+                  tooltip="Enable service provider mode if you do not engage in any sales or sharing of personal information."
                   isDisabled={values.gpp.mspa_service_provider_mode}
                 />
               </Section>
