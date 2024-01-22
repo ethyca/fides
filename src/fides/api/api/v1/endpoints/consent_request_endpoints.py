@@ -407,6 +407,7 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
                 identity=identity,
                 policy_key=policy,
                 consent_preferences=executable_consent_preferences,
+                consent_request_id=consent_request.id,
                 custom_privacy_request_fields=consent_request.get_persisted_custom_privacy_request_fields(),
             )
         ],

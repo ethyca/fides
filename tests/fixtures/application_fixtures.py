@@ -2116,6 +2116,22 @@ def provided_identity_and_consent_request(
 
 
 @pytest.fixture(scope="function")
+def provided_identity_and_consent_request_with_custom_fields(
+    db,
+    provided_identity_and_consent_request,
+):
+    _, consent_request = provided_identity_and_consent_request
+    consent_request.persist_custom_privacy_request_fields(
+        db=db,
+        custom_privacy_request_fields={
+            "first_name": CustomPrivacyRequestField(label="First name", value="John"),
+            "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
+        },
+    )
+    return consent_request
+
+
+@pytest.fixture(scope="function")
 def fides_user_provided_identity(db):
     provided_identity_data = {
         "privacy_request_id": None,

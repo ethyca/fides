@@ -1,5 +1,5 @@
 from unittest import mock
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from fides.api.api.v1.endpoints.consent_request_endpoints import (
     queue_privacy_request_to_propagate_consent_old_workflow,
@@ -126,6 +126,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
     ):
         custom_fields = {"first_name": {"label": "First name", "value": "John"}}
         mock_consent_request = MagicMock(spec=ConsentRequest)
+        mock_consent_request.id = "123"
         mock_consent_request.get_persisted_custom_privacy_request_fields.return_value = (
             custom_fields
         )
@@ -190,6 +191,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
     ):
         custom_fields = {"first_name": {"label": "First name", "value": "John"}}
         mock_consent_request = MagicMock(spec=ConsentRequest)
+        mock_consent_request.id = "123"
         mock_consent_request.get_persisted_custom_privacy_request_fields.return_value = (
             custom_fields
         )
@@ -237,6 +239,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
     ):
         custom_fields = {"first_name": {"label": "First name", "value": "John"}}
         mock_consent_request = MagicMock(spec=ConsentRequest)
+        mock_consent_request.id = "123"
         mock_consent_request.get_persisted_custom_privacy_request_fields.return_value = (
             custom_fields
         )

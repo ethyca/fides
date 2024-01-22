@@ -1093,9 +1093,13 @@ class TestConsentRequestCustomFieldFunctions:
 
         consent_request.delete(db)
 
-    def test_persist_custom_privacy_request_fields(self, db, consent_request):
-        CONFIG.execution.allow_custom_privacy_request_field_collection = True
-        CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = True
+    def test_persist_custom_privacy_request_fields(
+        self,
+        db,
+        consent_request,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_fields_in_request_execution_enabled,
+    ):
         consent_request.persist_custom_privacy_request_fields(
             db=db,
             custom_privacy_request_fields={
@@ -1111,10 +1115,12 @@ class TestConsentRequestCustomFieldFunctions:
         }
 
     def test_persist_custom_privacy_request_fields_collection_disabled(
-        self, db, consent_request
+        self,
+        db,
+        consent_request,
+        allow_custom_privacy_request_field_collection_disabled,
     ):
         """Custom privacy request fields should not be persisted if collection is disabled"""
-        CONFIG.execution.allow_custom_privacy_request_field_collection = False
         consent_request.persist_custom_privacy_request_fields(
             db=db,
             custom_privacy_request_fields={
