@@ -296,6 +296,7 @@ export const DatamapReportTable = () => {
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
         meta: {
           displayText: "Data use",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.data_categories, {
@@ -312,6 +313,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           displayText: "Data categories",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.data_subjects, {
@@ -328,6 +330,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           displayText: "Data subject",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.legal_name, {
@@ -450,6 +453,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           displayText: "Data stewards",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.declaration_name, {
@@ -494,6 +498,7 @@ export const DatamapReportTable = () => {
         header: (props) => <DefaultHeaderCell value="Egress" {...props} />,
         meta: {
           displayText: "Egress",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.exempt_from_privacy_regulations, {
@@ -521,6 +526,7 @@ export const DatamapReportTable = () => {
         header: (props) => <DefaultHeaderCell value="Features" {...props} />,
         meta: {
           displayText: "Features",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.fides_key, {
@@ -566,6 +572,7 @@ export const DatamapReportTable = () => {
         header: (props) => <DefaultHeaderCell value="Ingress" {...props} />,
         meta: {
           displayText: "Ingress",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.joint_controller_info, {
@@ -592,6 +599,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           displayText: "Legal basis for profiling",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.legal_basis_for_transfers, {
@@ -608,6 +616,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           displayText: "Legal basis for transfers",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.legitimate_interest_disclosure_url, {
@@ -680,6 +689,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           displayText: "Responsibility",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.retention_period, {
@@ -706,6 +716,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           displayText: "Shared categories",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.special_category_legal_basis, {
@@ -732,6 +743,7 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           displayText: "System dependencies",
+          showHeaderMenu: true,
         },
       }),
       columnHelper.accessor((row) => row.third_country_safeguards, {

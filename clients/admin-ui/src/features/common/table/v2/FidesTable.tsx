@@ -26,6 +26,7 @@ import React, { ReactNode, useState } from "react";
 import { FidesRow } from "~/features/common/table/v2/FidesRow";
 
 import { DisplayAllIcon, GroupedIcon } from "../../Icon";
+import { getTableTHandTDStyles } from "./util";
 // import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
 /*
@@ -40,6 +41,7 @@ declare module "@tanstack/table-core" {
     minWidth?: string;
     maxWidth?: string;
     displayText?: string;
+    showHeaderMenu?: boolean;
   }
 }
 /* eslint-enable */
@@ -54,40 +56,49 @@ const HeaderContent = <T,>({
   onGroupAll: (id: string) => void;
   onDisplayAll: (id: string) => void;
   isDisplayAll: boolean;
-}) => (
+}) => {
   // TODO: return regular render if there is no grouping possible
-  // const [displayAll, setDisplayAll] = useState(false);
 
-  <Menu size="xs">
-    <MenuButton
-      as={Button}
-      rightIcon={<ChevronDownIcon />}
-      variant="ghost"
-      width="100%"
-      pr={1}
-      textAlign="start"
-    >
-      {flexRender(header.column.columnDef.header, header.getContext())}
-    </MenuButton>
-    <Portal>
-      <MenuList fontSize="xs">
-        <MenuItem
-          color={!isDisplayAll ? "complimentary.500" : undefined}
-          onClick={() => onGroupAll(header.id)}
-        >
-          <GroupedIcon mr="2" /> Group all
-        </MenuItem>
-        <MenuItem
-          color={isDisplayAll ? "complimentary.500" : undefined}
-          onClick={() => onDisplayAll(header.id)}
-        >
-          <DisplayAllIcon mr="2" />
-          Display all
-        </MenuItem>
-      </MenuList>
-    </Portal>
-  </Menu>
-);
+  if (!header.column.columnDef.meta?.showHeaderMenu) {
+    return (
+      <Box style={{ ...getTableTHandTDStyles(header.column.id) }}>
+        {flexRender(header.column.columnDef.header, header.getContext())}
+      </Box>
+    );
+  }
+
+  return (
+    <Menu>
+      <MenuButton
+        as={Button}
+        rightIcon={<ChevronDownIcon />}
+        variant="ghost"
+        width="100%"
+        pr={1}
+        textAlign="start"
+      >
+        {flexRender(header.column.columnDef.header, header.getContext())}
+      </MenuButton>
+      <Portal>
+        <MenuList fontSize="xs" minW="0" w="158px">
+          <MenuItem
+            color={!isDisplayAll ? "complimentary.500" : undefined}
+            onClick={() => onGroupAll(header.id)}
+          >
+            <GroupedIcon mr="2" /> Group all
+          </MenuItem>
+          <MenuItem
+            color={isDisplayAll ? "complimentary.500" : undefined}
+            onClick={() => onDisplayAll(header.id)}
+          >
+            <DisplayAllIcon mr="2" />
+            Display all
+          </MenuItem>
+        </MenuList>
+      </Portal>
+    </Menu>
+  );
+};
 type Props<T> = {
   tableInstance: TableInstance<T>;
   rowActionBar?: ReactNode;
@@ -153,7 +164,6 @@ export const FidesTableV2 = <T,>({
                   colSpan={header.colSpan}
                   data-testid={`column-${header.id}`}
                   style={{
-                    // ...getTableTHandTDStyles(header.column.id),
                     padding: 0,
                     width: header.column.columnDef.meta?.width || "unset",
                     minWidth:
