@@ -55,27 +55,30 @@ export const BadgeCell = ({
 export const GroupCountBadgeCell = ({
   value,
   suffix,
-  expand,
+  isDisplayAll,
 }: {
   value: string[] | string | undefined;
   suffix?: string;
-  expand: boolean;
+  isDisplayAll?: boolean;
 }) => {
   let badges = null;
-  if (Array.isArray(value) || !value) {
-    badges = expand ? (
-      // @ts-ignore
-      value.map((d) => (
-        <Box px={1} key={d}>
-          <FidesBadge>{d}</FidesBadge>
-        </Box>
-      ))
-    ) : (
-      <FidesBadge>
-        {value ? value.length : 0}
-        {suffix ? ` ${suffix}` : null}
-      </FidesBadge>
-    );
+  if (!value) {
+    return <FidesBadge>0{suffix ? ` ${suffix}` : ""}</FidesBadge>;
+  }
+  if (Array.isArray(value)) {
+    badges =
+      isDisplayAll && value.length > 0 ? (
+        value.map((d) => (
+          <Box px={1} key={d}>
+            <FidesBadge>{d}</FidesBadge>
+          </Box>
+        ))
+      ) : (
+        <FidesBadge>
+          {value.length}
+          {suffix ? ` ${suffix}` : null}
+        </FidesBadge>
+      );
   } else {
     badges = <FidesBadge>{value}</FidesBadge>;
   }

@@ -6,9 +6,14 @@ import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 type FidesCellProps<T> = {
   cell: Cell<T, unknown>;
   onRowClick?: (row: T) => void;
+  isDisplayAll: boolean;
 };
 
-export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
+export const FidesCell = <T,>({
+  cell,
+  onRowClick,
+  isDisplayAll,
+}: FidesCellProps<T>) => {
   const isTableGrouped = cell.getContext().table.getState().grouping.length > 0;
   const groupedColumnId = isTableGrouped
     ? cell.getContext().table.getState().grouping[0]
@@ -75,7 +80,10 @@ export const FidesCell = <T,>({ cell, onRowClick }: FidesCellProps<T>) => {
       }
     >
       {!cell.getIsPlaceholder() || isFirstRowOfGroupedRows
-        ? flexRender(cell.column.columnDef.cell, cell.getContext())
+        ? flexRender(cell.column.columnDef.cell, {
+            ...cell.getContext(),
+            isDisplayAll,
+          })
         : null}
     </Td>
   );

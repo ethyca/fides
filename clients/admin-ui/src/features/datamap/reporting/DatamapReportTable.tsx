@@ -289,8 +289,8 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data uses"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
@@ -303,8 +303,8 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data categories"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
@@ -319,8 +319,8 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data subjects"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
@@ -440,9 +440,9 @@ export const DatamapReportTable = () => {
         id: COLUMN_IDS.DATA_STEWARDS,
         cell: (props) => (
           <GroupCountBadgeCell
-            expand={false}
             suffix="data stewards"
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
@@ -487,8 +487,8 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="egress"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => <DefaultHeaderCell value="Egress" {...props} />,
@@ -514,8 +514,8 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="features"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => <DefaultHeaderCell value="Features" {...props} />,
@@ -559,8 +559,8 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="ingress"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => <DefaultHeaderCell value="Ingress" {...props} />,
@@ -583,8 +583,8 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="profiles"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
@@ -599,8 +599,8 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="transfers"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
@@ -671,8 +671,8 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="responsibilitlies"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
@@ -697,8 +697,8 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="shared categories"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
@@ -723,8 +723,8 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="dependencies"
-            expand={false}
             value={props.getValue()}
+            {...props}
           />
         ),
         header: (props) => (
